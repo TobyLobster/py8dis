@@ -314,7 +314,9 @@ def formatted_comment(runtime_addr, text, inline=False, align=None, indent=0):
     disassembly.comment(runtime_addr, text, word_wrap=False, indent=indent, align=align)
 
 def no_automatic_comment(runtime_addr):
-    trace.no_auto_comment_set.add(runtime_addr)
+    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    trace.no_auto_comment_set.add(binary_loc)
 
 def auto_comment(runtime_addr, text, inline=False, align=None, indent=0, show_blank=False, word_wrap=True):
     """For internal use only. Generates a comment if not inhibited."""
@@ -325,15 +327,14 @@ def auto_comment(runtime_addr, text, inline=False, align=None, indent=0, show_bl
     # Convert the old True/False values into the modern 'Align' type as needed
     align = _convert_inline_to_align_internal(inline, align)
 
-    if not (runtime_addr in trace.no_auto_comment_set):
-        # Make sure we are within the binary
-        runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
-        binary_addr, _ = movemanager.r2b(runtime_addr)
-        if binary_addr:
-            if memorymanager.is_data_loaded_at_binary_addr(binary_addr):
-                if show_blank:
-                    blank(runtime_addr)
-                disassembly.comment(runtime_addr, text, word_wrap=word_wrap, indent=indent, align=align, auto_generated=True)
+    # Make sure we are within the binary
+    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    binary_addr, _ = movemanager.r2b(runtime_addr)
+    if binary_addr:
+        if memorymanager.is_data_loaded_at_binary_addr(binary_addr):
+            if show_blank:
+                blank(runtime_addr)
+            disassembly.comment(runtime_addr, text, word_wrap=word_wrap, indent=indent, align=align, auto_generated=True)
 
 def annotate(runtime_addr, s, *, align=Align.BEFORE_LABEL, priority=None):
     """Add a raw string directly to the assembly code output at the
@@ -382,13 +383,12 @@ def auto_expr(runtime_addr, s):
     if runtime_addr == None:
         return
 
-    if not (runtime_addr in trace.no_auto_comment_set):
-        # Make sure we are within the binary
-        runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
-        binary_addr, _ = movemanager.r2b(runtime_addr)
-        if binary_addr:
-            if memorymanager.is_data_loaded_at_binary_addr(binary_addr):
-                expr(runtime_addr, s)
+    # Make sure we are within the binary
+    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    if not (binary_loc in trace.no_auto_comment_set):
+        if memorymanager.is_data_loaded_at_binary_addr(binary_loc.binary_addr):
+            expr(runtime_addr, s)
 
 def byte(runtime_addr, n=1, cols=None):
     """Categorise a number of bytes at the given address as byte data."""
@@ -771,6 +771,9 @@ def make_op2(expr1, op, expr2):
     if isinstance(expr1, utils.LazyString) or isinstance(expr2, utils.LazyString):
         return utils.LazyString("%s %s %s", bracket(expr1), op_name, bracket(expr2))
     return bracket(expr1) + " " + op_name + " " + bracket(expr2)
+
+def make_hex(value):
+    return config.get_assembler().hex(value)
 
 # Convenience functions
 def make_lo(expr):

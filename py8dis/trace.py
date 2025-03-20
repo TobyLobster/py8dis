@@ -15,7 +15,7 @@ cpu                              = None     # an object of class Cpu
 subroutine_argument_finder_hooks = []       # Python routines ('hooks') for naming constant arguments to subroutines
 substitute_constant_list         = []       # List of SubConst() objects (see cpu6502) for naming constants
 subroutines_list                 = []       # List of Subroutine() objects
-no_auto_comment_set              = set()    # runtime addresses not to be auto-commented
+no_auto_comment_set              = set()    # binary locations not to be auto-commented
 references                       = None     # dictionary of references keyed by binary location
 
 def add_subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id):
