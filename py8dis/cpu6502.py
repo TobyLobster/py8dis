@@ -3,6 +3,7 @@ import collections
 import config
 import disassembly
 import labelmanager
+import optionallabel
 import mainformatter
 import memorymanager
 import movemanager
@@ -61,7 +62,7 @@ class SubConst(object):
 
         # TODO: Optimise!
         for addr in disassembly.optional_labels:
-            if disassembly.optional_labels[addr][0] == self.operand:
+            if disassembly.optional_labels[addr].name == self.operand:
                 return addr
 
         # Assume hex of some kind. Remove common prefixes.
