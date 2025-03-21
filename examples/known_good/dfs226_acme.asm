@@ -1841,8 +1841,8 @@ loop_c88bc
     sta l1006                                                         ; 88e5: 8d 06 10    ...
     lda l00cc                                                         ; 88e8: a5 cc       ..
     sta l1005                                                         ; 88ea: 8d 05 10    ...
-    ldx #<(l1000)                                                     ; 88ed: a2 00       ..
-    ldy #>(l1000)                                                     ; 88ef: a0 10       ..
+    ldx #<l1000                                                       ; 88ed: a2 00       ..
+    ldy #>l1000                                                       ; 88ef: a0 10       ..
     jmp oscli                                                         ; 88f1: 4c f7 ff    L..
 
 ; $88f4 referenced 2 times by $88ae, $88b8
@@ -7900,8 +7900,8 @@ c0636
     tya                                                               ; ae1f: 98          .   :0644[2]
 ; $ae20 referenced 1 time by $0634[2]
 c0645
-    ldx #<(l0128)                                                     ; ae20: a2 28       .(  :0645[2]
-    ldy #>(l0128)                                                     ; ae22: a0 01       ..  :0647[2]
+    ldx #<l0128                                                       ; ae20: a2 28       .(  :0645[2]
+    ldy #>l0128                                                       ; ae22: a0 01       ..  :0647[2]
     jsr osword                                                        ; ae24: 20 f1 ff     .. :0649[2]
 ; $ae27 referenced 1 time by $064f[2]
 loop_c064c
@@ -10799,12 +10799,6 @@ pydis_end
 !if (<(c956d-1)) != $6c {
     !error "Assertion failed: <(c956d-1) == $6c"
 }
-!if (<(l0128)) != $28 {
-    !error "Assertion failed: <(l0128) == $28"
-}
-!if (<(l1000)) != $00 {
-    !error "Assertion failed: <(l1000) == $00"
-}
 !if (<(sub_c8238-1)) != $37 {
     !error "Assertion failed: <(sub_c8238-1) == $37"
 }
@@ -10907,6 +10901,12 @@ pydis_end
 !if (<jump_address_low) != $51 {
     !error "Assertion failed: <jump_address_low == $51"
 }
+!if (<l0128) != $28 {
+    !error "Assertion failed: <l0128 == $28"
+}
+!if (<l1000) != $00 {
+    !error "Assertion failed: <l1000 == $00"
+}
 !if (<tube_brkv_handler) != $16 {
     !error "Assertion failed: <tube_brkv_handler == $16"
 }
@@ -10915,12 +10915,6 @@ pydis_end
 }
 !if (>(c956d-1)) != $95 {
     !error "Assertion failed: >(c956d-1) == $95"
-}
-!if (>(l0128)) != $01 {
-    !error "Assertion failed: >(l0128) == $01"
-}
-!if (>(l1000)) != $10 {
-    !error "Assertion failed: >(l1000) == $10"
 }
 !if (>(sub_c8238-1)) != $82 {
     !error "Assertion failed: >(sub_c8238-1) == $82"
@@ -11020,6 +11014,12 @@ pydis_end
 }
 !if (>(sub_cbc81-1)) != $bc {
     !error "Assertion failed: >(sub_cbc81-1) == $bc"
+}
+!if (>l0128) != $01 {
+    !error "Assertion failed: >l0128 == $01"
+}
+!if (>l1000) != $10 {
+    !error "Assertion failed: >l1000 == $10"
 }
 !if (>tube_brkv_handler) != $00 {
     !error "Assertion failed: >tube_brkv_handler == $00"

@@ -1283,9 +1283,9 @@ c864d
     pha                                                               // 867f: 48          H
     rts                                                               // 8680: 60          `
 
-    .byt <((sub_c868d)-1), <((sub_c8691)-1), <((sub_c86d3)-1)         // 8681: 8c 90 d2    ...
-    .byt <((sub_c86d3)-1), <((sub_c86d3)-1),     <((c86e3)-1)         // 8684: d2 d2 e2    ...
-    .byt     <((c86e3)-1), <((sub_c8689)-1)                           // 8687: e2 88       ..
+    .byt <(sub_c868d - 1), <(sub_c8691 - 1), <(sub_c86d3 - 1)         // 8681: 8c 90 d2    ...
+    .byt <(sub_c86d3 - 1), <(sub_c86d3 - 1),     <(c86e3 - 1)         // 8684: d2 d2 e2    ...
+    .byt     <(c86e3 - 1), <(sub_c8689 - 1)                           // 8687: e2 88       ..
 
 sub_c8689
     lda #3                                                            // 8689: a9 03       ..
@@ -1659,22 +1659,22 @@ c88d6
     sta l0d60                                                         // 88dc: 8d 60 0d    .`.
     jmp c83f5                                                         // 88df: 4c f5 83    L..
 
-    .byt >(l0e81)                                                     // 88e2: 0e          .
-    .byt >(l0e00)                                                     // 88e3: 0e          .
-    .byt >(l0a00)                                                     // 88e4: 0a          .
-    .byt >(l0a00)                                                     // 88e5: 0a          .
-    .byt >(l0a00)                                                     // 88e6: 0a          .
-    .byt >(l0601)                                                     // 88e7: 06          .
-    .byt >(l0601)                                                     // 88e8: 06          .
-    .byt >(l0a81)                                                     // 88e9: 0a          .
-    .byt <(l0e81)                                                     // 88ea: 81          .
-    .byt <(l0e00)                                                     // 88eb: 00          .
-    .byt <(l0a00)                                                     // 88ec: 00          .
-    .byt <(l0a00)                                                     // 88ed: 00          .
-    .byt <(l0a00)                                                     // 88ee: 00          .
-    .byt <(l0601)                                                     // 88ef: 01          .
-    .byt <(l0601)                                                     // 88f0: 01          .
-    .byt <(l0a81)                                                     // 88f1: 81          .
+    .byt >l0e81                                                       // 88e2: 0e          .
+    .byt >l0e00                                                       // 88e3: 0e          .
+    .byt >l0a00                                                       // 88e4: 0a          .
+    .byt >l0a00                                                       // 88e5: 0a          .
+    .byt >l0a00                                                       // 88e6: 0a          .
+    .byt >l0601                                                       // 88e7: 06          .
+    .byt >l0601                                                       // 88e8: 06          .
+    .byt >l0a81                                                       // 88e9: 0a          .
+    .byt <l0e81                                                       // 88ea: 81          .
+    .byt <l0e00                                                       // 88eb: 00          .
+    .byt <l0a00                                                       // 88ec: 00          .
+    .byt <l0a00                                                       // 88ed: 00          .
+    .byt <l0a00                                                       // 88ee: 00          .
+    .byt <l0601                                                       // 88ef: 01          .
+    .byt <l0601                                                       // 88f0: 01          .
+    .byt <l0a81                                                       // 88f1: 81          .
 
 // $88f2 referenced 3 times by $81bf, $84d8, $86e0
 sub_c88f2
@@ -5579,8 +5579,8 @@ sub_ca07b
     lda #1                                                            // a08e: a9 01       ..
     sta l00b4                                                         // a090: 85 b4       ..
     lda #$13                                                          // a092: a9 13       ..
-    ldx #<(l00b4)                                                     // a094: a2 b4       ..
-    ldy #>(l00b4)                                                     // a096: a0 00       ..
+    ldx #<l00b4                                                       // a094: a2 b4       ..
+    ldy #>l00b4                                                       // a096: a0 00       ..
     jmp osword                                                        // a098: 4c f1 ff    L..            // Read/Write NFS information (see https://beebwiki.mdfs.net/OSWORDs)
 
 // $a09b referenced 1 time by $a089

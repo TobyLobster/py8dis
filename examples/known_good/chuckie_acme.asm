@@ -1725,8 +1725,8 @@ displaydigit
 ; ----------------------------------------------------------------------------------
 framedelay
     lda #osword_read_interval_timer                                   ; 1b10: a9 03       ..
-    ldx #<(intervaltimerblock)                                        ; 1b12: a2 00       ..
-    ldy #>(intervaltimerblock)                                        ; 1b14: a0 00       ..
+    ldx #<intervaltimerblock                                          ; 1b12: a2 00       ..
+    ldy #>intervaltimerblock                                          ; 1b14: a0 00       ..
     jsr osword                                                        ; 1b16: 20 f1 ff     ..            ; Read interval timer
     lda intervaltimerblock + 1                                        ; 1b19: a5 01       ..
     bne finisheddelay                                                 ; 1b1b: d0 06       ..
@@ -1738,8 +1738,8 @@ finisheddelay
     sta intervaltimerblock                                            ; 1b25: 85 00       ..
     sta intervaltimerblock + 1                                        ; 1b27: 85 01       ..
     lda #osword_write_interval_timer                                  ; 1b29: a9 04       ..
-    ldx #<(intervaltimerblock)                                        ; 1b2b: a2 00       ..
-    ldy #>(intervaltimerblock)                                        ; 1b2d: a0 00       ..
+    ldx #<intervaltimerblock                                          ; 1b2b: a2 00       ..
+    ldy #>intervaltimerblock                                          ; 1b2d: a0 00       ..
     jsr osword                                                        ; 1b2f: 20 f1 ff     ..            ; Write interval timer
     rts                                                               ; 1b32: 60          `
 
@@ -2802,8 +2802,8 @@ skip19
     dec numeggsleft                                                   ; 220f: c6 39       .9
     lda #6                                                            ; 2211: a9 06       ..
     sta eggsoundblock_pitch                                           ; 2213: 8d ac 0c    ...
-    ldx #<(eggsoundblock)                                             ; 2216: a2 a8       ..
-    ldy #>(eggsoundblock)                                             ; 2218: a0 0c       ..
+    ldx #<eggsoundblock                                               ; 2216: a2 a8       ..
+    ldy #>eggsoundblock                                               ; 2218: a0 0c       ..
     lda #osword_sound                                                 ; 221a: a9 07       ..
     jsr osword                                                        ; 221c: 20 f1 ff     ..            ; SOUND command
     lda temp1                                                         ; 221f: a5 88       ..
@@ -2834,8 +2834,8 @@ skip9
 hitseed
     lda #5                                                            ; 2248: a9 05       ..
     sta eggsoundblock_pitch                                           ; 224a: 8d ac 0c    ...
-    ldx #<(eggsoundblock)                                             ; 224d: a2 a8       ..
-    ldy #>(eggsoundblock)                                             ; 224f: a0 0c       ..
+    ldx #<eggsoundblock                                               ; 224d: a2 a8       ..
+    ldy #>eggsoundblock                                               ; 224f: a0 0c       ..
     lda #osword_sound                                                 ; 2251: a9 07       ..
     jsr osword                                                        ; 2253: 20 f1 ff     ..            ; SOUND command
     lda temp1                                                         ; 2256: a5 88       ..
@@ -4113,8 +4113,8 @@ awardbonusloop
     cmp #5                                                            ; 2a1f: c9 05       ..
     bne dontplaybonussound                                            ; 2a21: d0 09       ..
 playbonussound
-    ldx #<(bonussoundblock)                                           ; 2a23: a2 b0       ..
-    ldy #>(bonussoundblock)                                           ; 2a25: a0 0c       ..
+    ldx #<bonussoundblock                                             ; 2a23: a2 b0       ..
+    ldy #>bonussoundblock                                             ; 2a25: a0 0c       ..
     lda #osword_sound                                                 ; 2a27: a9 07       ..
     jsr osword                                                        ; 2a29: 20 f1 ff     ..            ; SOUND command
 dontplaybonussound
@@ -4252,16 +4252,16 @@ copyloop
     lda #$98                                                          ; 2b39: a9 98       ..
     sta keynum_right                                                  ; 2b3b: 85 61       .a
     jsr resethiscoretab                                               ; 2b3d: 20 96 27     .'
-    ldx #<(deathtune_end)                                             ; 2b40: a2 d1       ..
-    ldy #>(deathtune_end)                                             ; 2b42: a0 2f       ./
+    ldx #<deathtune_end                                               ; 2b40: a2 d1       ..
+    ldy #>deathtune_end                                               ; 2b42: a0 2f       ./
     lda #osword_envelope                                              ; 2b44: a9 08       ..
     jsr osword                                                        ; 2b46: 20 f1 ff     ..            ; ENVELOPE command
-    ldx #<(envelope2)                                                 ; 2b49: a2 df       ..
-    ldy #>(envelope2)                                                 ; 2b4b: a0 2f       ./
+    ldx #<envelope2                                                   ; 2b49: a2 df       ..
+    ldy #>envelope2                                                   ; 2b4b: a0 2f       ./
     lda #osword_envelope                                              ; 2b4d: a9 08       ..
     jsr osword                                                        ; 2b4f: 20 f1 ff     ..            ; ENVELOPE command
-    ldx #<(envelope3)                                                 ; 2b52: a2 ed       ..
-    ldy #>(envelope3)                                                 ; 2b54: a0 2f       ./
+    ldx #<envelope3                                                   ; 2b52: a2 ed       ..
+    ldy #>envelope3                                                   ; 2b54: a0 2f       ./
     lda #osword_envelope                                              ; 2b56: a9 08       ..
     jsr osword                                                        ; 2b58: 20 f1 ff     ..            ; ENVELOPE command
     ldx #$0f                                                          ; 2b5b: a2 0f       ..
@@ -4918,8 +4918,8 @@ playdeathtuneloop
     lda (read),y                                                      ; 2f9b: b1 76       .v
     sta deathsoundblock_length                                        ; 2f9d: 8d a6 0c    ...
     sty temp2                                                         ; 2fa0: 84 89       ..
-    ldx #<(deathsoundblock)                                           ; 2fa2: a2 a0       ..
-    ldy #>(deathsoundblock)                                           ; 2fa4: a0 0c       ..
+    ldx #<deathsoundblock                                             ; 2fa2: a2 a0       ..
+    ldy #>deathsoundblock                                             ; 2fa4: a0 0c       ..
     lda #osword_sound                                                 ; 2fa6: a9 07       ..
     jsr osword                                                        ; 2fa8: 20 f1 ff     ..            ; SOUND command
     dec temp3                                                         ; 2fab: c6 8a       ..
@@ -5480,8 +5480,8 @@ movingonlift
 ; ----------------------------------------------------------------------------------
 playsoundblip
     sta blipsoundblock_pitch                                          ; 338b: 8d 9c 0c    ... :0c8b[1]
-    ldx #<(blipsoundblock)                                            ; 338e: a2 98       ..  :0c8e[1]
-    ldy #>(blipsoundblock)                                            ; 3390: a0 0c       ..  :0c90[1]
+    ldx #<blipsoundblock                                              ; 338e: a2 98       ..  :0c8e[1]
+    ldy #>blipsoundblock                                              ; 3390: a0 0c       ..  :0c90[1]
     lda #osword_sound                                                 ; 3392: a9 07       ..  :0c92[1]
     jsr osword                                                        ; 3394: 20 f1 ff     .. :0c94[1]   ; SOUND command
     rts                                                               ; 3397: 60          `   :0c97[1]
@@ -6234,35 +6234,35 @@ pydis_end
 !if (255 - inkey_key_h) != $54 {
     !error "Assertion failed: 255 - inkey_key_h == $54"
 }
-!if (<(blipsoundblock)) != $98 {
-    !error "Assertion failed: <(blipsoundblock) == $98"
+!if (<blipsoundblock) != $98 {
+    !error "Assertion failed: <blipsoundblock == $98"
 }
-!if (<(bonussoundblock)) != $b0 {
-    !error "Assertion failed: <(bonussoundblock) == $b0"
+!if (<bonussoundblock) != $b0 {
+    !error "Assertion failed: <bonussoundblock == $b0"
 }
-!if (<(deathsoundblock)) != $a0 {
-    !error "Assertion failed: <(deathsoundblock) == $a0"
+!if (<deathsoundblock) != $a0 {
+    !error "Assertion failed: <deathsoundblock == $a0"
 }
-!if (<(deathtune_end)) != $d1 {
-    !error "Assertion failed: <(deathtune_end) == $d1"
-}
-!if (<(eggsoundblock)) != $a8 {
-    !error "Assertion failed: <(eggsoundblock) == $a8"
-}
-!if (<(envelope2)) != $df {
-    !error "Assertion failed: <(envelope2) == $df"
-}
-!if (<(envelope3)) != $ed {
-    !error "Assertion failed: <(envelope3) == $ed"
-}
-!if (<(intervaltimerblock)) != $00 {
-    !error "Assertion failed: <(intervaltimerblock) == $00"
+!if (<deathtune_end) != $d1 {
+    !error "Assertion failed: <deathtune_end == $d1"
 }
 !if (<deathtunedata) != $b0 {
     !error "Assertion failed: <deathtunedata == $b0"
 }
+!if (<eggsoundblock) != $a8 {
+    !error "Assertion failed: <eggsoundblock == $a8"
+}
+!if (<envelope2) != $df {
+    !error "Assertion failed: <envelope2 == $df"
+}
+!if (<envelope3) != $ed {
+    !error "Assertion failed: <envelope3 == $ed"
+}
 !if (<hiscoretab) != $30 {
     !error "Assertion failed: <hiscoretab == $30"
+}
+!if (<intervaltimerblock) != $00 {
+    !error "Assertion failed: <intervaltimerblock == $00"
 }
 !if (<osword0block) != $9d {
     !error "Assertion failed: <osword0block == $9d"
@@ -6366,35 +6366,35 @@ pydis_end
 !if (<string_vdu19) != $76 {
     !error "Assertion failed: <string_vdu19 == $76"
 }
-!if (>(blipsoundblock)) != $0c {
-    !error "Assertion failed: >(blipsoundblock) == $0c"
+!if (>blipsoundblock) != $0c {
+    !error "Assertion failed: >blipsoundblock == $0c"
 }
-!if (>(bonussoundblock)) != $0c {
-    !error "Assertion failed: >(bonussoundblock) == $0c"
+!if (>bonussoundblock) != $0c {
+    !error "Assertion failed: >bonussoundblock == $0c"
 }
-!if (>(deathsoundblock)) != $0c {
-    !error "Assertion failed: >(deathsoundblock) == $0c"
+!if (>deathsoundblock) != $0c {
+    !error "Assertion failed: >deathsoundblock == $0c"
 }
-!if (>(deathtune_end)) != $2f {
-    !error "Assertion failed: >(deathtune_end) == $2f"
-}
-!if (>(eggsoundblock)) != $0c {
-    !error "Assertion failed: >(eggsoundblock) == $0c"
-}
-!if (>(envelope2)) != $2f {
-    !error "Assertion failed: >(envelope2) == $2f"
-}
-!if (>(envelope3)) != $2f {
-    !error "Assertion failed: >(envelope3) == $2f"
-}
-!if (>(intervaltimerblock)) != $00 {
-    !error "Assertion failed: >(intervaltimerblock) == $00"
+!if (>deathtune_end) != $2f {
+    !error "Assertion failed: >deathtune_end == $2f"
 }
 !if (>deathtunedata) != $2f {
     !error "Assertion failed: >deathtunedata == $2f"
 }
+!if (>eggsoundblock) != $0c {
+    !error "Assertion failed: >eggsoundblock == $0c"
+}
+!if (>envelope2) != $2f {
+    !error "Assertion failed: >envelope2 == $2f"
+}
+!if (>envelope3) != $2f {
+    !error "Assertion failed: >envelope3 == $2f"
+}
 !if (>hiscoretab) != $04 {
     !error "Assertion failed: >hiscoretab == $04"
+}
+!if (>intervaltimerblock) != $00 {
+    !error "Assertion failed: >intervaltimerblock == $00"
 }
 !if (>osword0block) != $29 {
     !error "Assertion failed: >osword0block == $29"

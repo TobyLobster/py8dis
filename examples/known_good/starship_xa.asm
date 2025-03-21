@@ -3153,20 +3153,20 @@ loop3
 
 // ----------------------------------------------------------------------------------
 initialise_envelopes
-    ldx #<(envelope1)                                                 // 33d5: a2 84       ..  :22d5[1]
-    ldy #>(envelope1)                                                 // 33d7: a0 21       .!  :22d7[1]
+    ldx #<envelope1                                                   // 33d5: a2 84       ..  :22d5[1]
+    ldy #>envelope1                                                   // 33d7: a0 21       .!  :22d7[1]
     lda #osword_envelope                                              // 33d9: a9 08       ..  :22d9[1]
     jsr osword                                                        // 33db: 20 f1 ff     .. :22db[1]   // ENVELOPE command
-    ldx #<(envelope2)                                                 // 33de: a2 92       ..  :22de[1]
-    ldy #>(envelope2)                                                 // 33e0: a0 21       .!  :22e0[1]
+    ldx #<envelope2                                                   // 33de: a2 92       ..  :22de[1]
+    ldy #>envelope2                                                   // 33e0: a0 21       .!  :22e0[1]
     lda #osword_envelope                                              // 33e2: a9 08       ..  :22e2[1]
     jsr osword                                                        // 33e4: 20 f1 ff     .. :22e4[1]   // ENVELOPE command
-    ldx #<(envelope3)                                                 // 33e7: a2 a0       ..  :22e7[1]
-    ldy #>(envelope3)                                                 // 33e9: a0 21       .!  :22e9[1]
+    ldx #<envelope3                                                   // 33e7: a2 a0       ..  :22e7[1]
+    ldy #>envelope3                                                   // 33e9: a0 21       .!  :22e9[1]
     lda #osword_envelope                                              // 33eb: a9 08       ..  :22eb[1]
     jsr osword                                                        // 33ed: 20 f1 ff     .. :22ed[1]   // ENVELOPE command
-    ldx #<(envelope4)                                                 // 33f0: a2 ae       ..  :22f0[1]
-    ldy #>(envelope4)                                                 // 33f2: a0 21       .!  :22f2[1]
+    ldx #<envelope4                                                   // 33f0: a2 ae       ..  :22f0[1]
+    ldy #>envelope4                                                   // 33f2: a0 21       .!  :22f2[1]
     lda #osword_envelope                                              // 33f4: a9 08       ..  :22f4[1]
     jsr osword                                                        // 33f6: 20 f1 ff     .. :22f6[1]   // ENVELOPE command
     rts                                                               // 33f9: 60          `   :22f9[1]
@@ -3436,8 +3436,8 @@ set_escape_capsule_sound_channel
     lda score_delta_low                                               // 359e: ad 63 2d    .c- :249e[1]
     ora score_delta_high                                              // 35a1: 0d 64 2d    .d- :24a1[1]
     beq skip_sound_for_exploding_enemy_ship                           // 35a4: f0 09       ..  :24a4[1]
-    ldx #<(sound_11)                                                  // 35a6: a2 f8       ..  :24a6[1]
-    ldy #>(sound_11)                                                  // 35a8: a0 49       .I  :24a8[1]
+    ldx #<sound_11                                                    // 35a6: a2 f8       ..  :24a6[1]
+    ldy #>sound_11                                                    // 35a8: a0 49       .I  :24a8[1]
     lda #osword_sound                                                 // 35aa: a9 07       ..  :24aa[1]
     jsr osword                                                        // 35ac: 20 f1 ff     .. :24ac[1]   // SOUND command
 skip_sound_for_exploding_enemy_ship
@@ -3449,8 +3449,8 @@ escape_capsule_not_launched
     lda sound_needed_for_low_energy                                   // 35b7: ad f1 25    ..% :24b7[1]
     beq play_starship_engine_sound                                    // 35ba: f0 0f       ..  :24ba[1]
     dec sound_needed_for_low_energy                                   // 35bc: ce f1 25    ..% :24bc[1]
-    ldx #<(sound_9)                                                   // 35bf: a2 08       ..  :24bf[1]
-    ldy #>(sound_9)                                                   // 35c1: a0 22       ."  :24c1[1]
+    ldx #<sound_9                                                     // 35bf: a2 08       ..  :24bf[1]
+    ldy #>sound_9                                                     // 35c1: a0 22       ."  :24c1[1]
     lda #osword_sound                                                 // 35c3: a9 07       ..  :24c3[1]
     jsr osword                                                        // 35c5: 20 f1 ff     .. :24c5[1]   // SOUND command
     jmp consider_torpedo_sound                                        // 35c8: 4c 7d 25    L}% :24c8[1]
@@ -3477,8 +3477,8 @@ skip_ceiling
     lda #$ff                                                          // 35ef: a9 ff       ..  :24ef[1]
     adc #0                                                            // 35f1: 69 00       i.  :24f1[1]
     sta sound_10_volume_high                                          // 35f3: 8d f3 49    ..I :24f3[1]
-    ldx #<(sound_10)                                                  // 35f6: a2 f0       ..  :24f6[1]
-    ldy #>(sound_10)                                                  // 35f8: a0 49       .I  :24f8[1]
+    ldx #<sound_10                                                    // 35f6: a2 f0       ..  :24f6[1]
+    ldy #>sound_10                                                    // 35f8: a0 49       .I  :24f8[1]
     lda #osword_sound                                                 // 35fa: a9 07       ..  :24fa[1]
     jsr osword                                                        // 35fc: 20 f1 ff     .. :24fc[1]   // SOUND command
     jmp consider_torpedo_sound                                        // 35ff: 4c 7d 25    L}% :24ff[1]
@@ -3510,12 +3510,12 @@ skip_ceiling1
     lda #$ff                                                          // 362a: a9 ff       ..  :252a[1]
     adc #0                                                            // 362c: 69 00       i.  :252c[1]
     sta sound_1_volume_high                                           // 362e: 8d d3 21    ..! :252e[1]
-    ldx #<(sound_1)                                                   // 3631: a2 c8       ..  :2531[1]
-    ldy #>(sound_1)                                                   // 3633: a0 21       .!  :2533[1]
+    ldx #<sound_1                                                     // 3631: a2 c8       ..  :2531[1]
+    ldy #>sound_1                                                     // 3633: a0 21       .!  :2533[1]
     lda #osword_sound                                                 // 3635: a9 07       ..  :2535[1]
     jsr osword                                                        // 3637: 20 f1 ff     .. :2537[1]   // SOUND command
-    ldx #<(sound_2)                                                   // 363a: a2 d0       ..  :253a[1]
-    ldy #>(sound_2)                                                   // 363c: a0 21       .!  :253c[1]
+    ldx #<sound_2                                                     // 363a: a2 d0       ..  :253a[1]
+    ldy #>sound_2                                                     // 363c: a0 21       .!  :253c[1]
     lda #osword_sound                                                 // 363e: a9 07       ..  :253e[1]
     jsr osword                                                        // 3640: 20 f1 ff     .. :2540[1]   // SOUND command
 skip_starship_explosion_sound
@@ -3541,8 +3541,8 @@ set_volume
     lda #$ff                                                          // 3668: a9 ff       ..  :2568[1]
 set_volume_high
     sta sound_8_volume_high                                           // 366a: 8d 03 22    .." :256a[1]
-    ldx #<(sound_8)                                                   // 366d: a2 00       ..  :256d[1]
-    ldy #>(sound_8)                                                   // 366f: a0 22       ."  :256f[1]
+    ldx #<sound_8                                                     // 366d: a2 00       ..  :256d[1]
+    ldy #>sound_8                                                     // 366f: a0 22       ."  :256f[1]
     lda #osword_sound                                                 // 3671: a9 07       ..  :2571[1]
     jsr osword                                                        // 3673: 20 f1 ff     .. :2573[1]   // SOUND command
     lda escape_capsule_sound_channel                                  // 3676: ad db 1c    ... :2576[1]
@@ -3551,16 +3551,16 @@ set_volume_high
 consider_torpedo_sound
     lda starship_fired_torpedo                                        // 367d: ad 58 26    .X& :257d[1]
     beq skip_starship_torpedo_sound                                   // 3680: f0 09       ..  :2580[1]
-    ldx #<(sound_3)                                                   // 3682: a2 d8       ..  :2582[1]
-    ldy #>(sound_3)                                                   // 3684: a0 21       .!  :2584[1]
+    ldx #<sound_3                                                     // 3682: a2 d8       ..  :2582[1]
+    ldy #>sound_3                                                     // 3684: a0 21       .!  :2584[1]
     lda #osword_sound                                                 // 3686: a9 07       ..  :2586[1]
     jmp osword                                                        // 3688: 4c f1 ff    L.. :2588[1]   // SOUND command
 
 skip_starship_torpedo_sound
     lda enemy_ships_collided_with_each_other                          // 368b: ad d1 17    ... :258b[1]
     beq return19                                                      // 368e: f0 09       ..  :258e[1]
-    ldx #<(sound_7)                                                   // 3690: a2 f8       ..  :2590[1]
-    ldy #>(sound_7)                                                   // 3692: a0 21       .!  :2592[1]
+    ldx #<sound_7                                                     // 3690: a2 f8       ..  :2590[1]
+    ldy #>sound_7                                                     // 3692: a0 21       .!  :2592[1]
     lda #osword_sound                                                 // 3694: a9 07       ..  :2594[1]
     jsr osword                                                        // 3696: 20 f1 ff     .. :2596[1]   // SOUND command
 return19
@@ -4247,41 +4247,41 @@ angle_to_action_table
 unused61
     .byt $ea                                                          // 3b5e: ea          .   :2a5e[1]
 enemy_ship_behaviour_routine_low_table
-    .byt <(enemy_ship_behaviour_routine0)                             // 3b5f: 49          I   :2a5f[1]
-    .byt <(enemy_ship_behaviour_routine1)                             // 3b60: b1          .   :2a60[1]
-    .byt <(enemy_ship_behaviour_routine2)                             // 3b61: ee          .   :2a61[1]
-    .byt <(enemy_ship_behaviour_routine3)                             // 3b62: 1e          .   :2a62[1]
-    .byt <(enemy_ship_behaviour_routine4)                             // 3b63: 41          A   :2a63[1]
-    .byt <(enemy_ship_behaviour_routine5)                             // 3b64: 6a          j   :2a64[1]
-    .byt <(enemy_ship_behaviour_routine6)                             // 3b65: 2e          .   :2a65[1]
-    .byt <(enemy_ship_behaviour_routine7)                             // 3b66: 61          a   :2a66[1]
-    .byt <(enemy_ship_behaviour_routine4)                             // 3b67: 41          A   :2a67[1]
-    .byt <(enemy_ship_behaviour_routine0)                             // 3b68: 49          I   :2a68[1]
-    .byt <(enemy_ship_behaviour_routine7)                             // 3b69: 61          a   :2a69[1]
-    .byt <(enemy_ship_behaviour_routine5)                             // 3b6a: 6a          j   :2a6a[1]
-    .byt <(enemy_ship_behaviour_routine6)                             // 3b6b: 2e          .   :2a6b[1]
-    .byt <(enemy_ship_behaviour_routine2)                             // 3b6c: ee          .   :2a6c[1]
-    .byt <(enemy_ship_behaviour_routine3)                             // 3b6d: 1e          .   :2a6d[1]
-    .byt <(enemy_ship_behaviour_routine1)                             // 3b6e: b1          .   :2a6e[1]
+    .byt <enemy_ship_behaviour_routine0                               // 3b5f: 49          I   :2a5f[1]
+    .byt <enemy_ship_behaviour_routine1                               // 3b60: b1          .   :2a60[1]
+    .byt <enemy_ship_behaviour_routine2                               // 3b61: ee          .   :2a61[1]
+    .byt <enemy_ship_behaviour_routine3                               // 3b62: 1e          .   :2a62[1]
+    .byt <enemy_ship_behaviour_routine4                               // 3b63: 41          A   :2a63[1]
+    .byt <enemy_ship_behaviour_routine5                               // 3b64: 6a          j   :2a64[1]
+    .byt <enemy_ship_behaviour_routine6                               // 3b65: 2e          .   :2a65[1]
+    .byt <enemy_ship_behaviour_routine7                               // 3b66: 61          a   :2a66[1]
+    .byt <enemy_ship_behaviour_routine4                               // 3b67: 41          A   :2a67[1]
+    .byt <enemy_ship_behaviour_routine0                               // 3b68: 49          I   :2a68[1]
+    .byt <enemy_ship_behaviour_routine7                               // 3b69: 61          a   :2a69[1]
+    .byt <enemy_ship_behaviour_routine5                               // 3b6a: 6a          j   :2a6a[1]
+    .byt <enemy_ship_behaviour_routine6                               // 3b6b: 2e          .   :2a6b[1]
+    .byt <enemy_ship_behaviour_routine2                               // 3b6c: ee          .   :2a6c[1]
+    .byt <enemy_ship_behaviour_routine3                               // 3b6d: 1e          .   :2a6d[1]
+    .byt <enemy_ship_behaviour_routine1                               // 3b6e: b1          .   :2a6e[1]
 unused62
     .byt $ea                                                          // 3b6f: ea          .   :2a6f[1]
 enemy_ship_behaviour_routine_high_table
-    .byt >(enemy_ship_behaviour_routine0)                             // 3b70: 32          2   :2a70[1]
-    .byt >(enemy_ship_behaviour_routine1)                             // 3b71: 32          2   :2a71[1]
-    .byt >(enemy_ship_behaviour_routine2)                             // 3b72: 32          2   :2a72[1]
-    .byt >(enemy_ship_behaviour_routine3)                             // 3b73: 33          3   :2a73[1]
-    .byt >(enemy_ship_behaviour_routine4)                             // 3b74: 33          3   :2a74[1]
-    .byt >(enemy_ship_behaviour_routine5)                             // 3b75: 33          3   :2a75[1]
-    .byt >(enemy_ship_behaviour_routine6)                             // 3b76: 37          7   :2a76[1]
-    .byt >(enemy_ship_behaviour_routine7)                             // 3b77: 37          7   :2a77[1]
-    .byt >(enemy_ship_behaviour_routine4)                             // 3b78: 33          3   :2a78[1]
-    .byt >(enemy_ship_behaviour_routine0)                             // 3b79: 32          2   :2a79[1]
-    .byt >(enemy_ship_behaviour_routine7)                             // 3b7a: 37          7   :2a7a[1]
-    .byt >(enemy_ship_behaviour_routine5)                             // 3b7b: 33          3   :2a7b[1]
-    .byt >(enemy_ship_behaviour_routine6)                             // 3b7c: 37          7   :2a7c[1]
-    .byt >(enemy_ship_behaviour_routine2)                             // 3b7d: 32          2   :2a7d[1]
-    .byt >(enemy_ship_behaviour_routine3)                             // 3b7e: 33          3   :2a7e[1]
-    .byt >(enemy_ship_behaviour_routine1)                             // 3b7f: 32          2   :2a7f[1]
+    .byt >enemy_ship_behaviour_routine0                               // 3b70: 32          2   :2a70[1]
+    .byt >enemy_ship_behaviour_routine1                               // 3b71: 32          2   :2a71[1]
+    .byt >enemy_ship_behaviour_routine2                               // 3b72: 32          2   :2a72[1]
+    .byt >enemy_ship_behaviour_routine3                               // 3b73: 33          3   :2a73[1]
+    .byt >enemy_ship_behaviour_routine4                               // 3b74: 33          3   :2a74[1]
+    .byt >enemy_ship_behaviour_routine5                               // 3b75: 33          3   :2a75[1]
+    .byt >enemy_ship_behaviour_routine6                               // 3b76: 37          7   :2a76[1]
+    .byt >enemy_ship_behaviour_routine7                               // 3b77: 37          7   :2a77[1]
+    .byt >enemy_ship_behaviour_routine4                               // 3b78: 33          3   :2a78[1]
+    .byt >enemy_ship_behaviour_routine0                               // 3b79: 32          2   :2a79[1]
+    .byt >enemy_ship_behaviour_routine7                               // 3b7a: 37          7   :2a7a[1]
+    .byt >enemy_ship_behaviour_routine5                               // 3b7b: 33          3   :2a7b[1]
+    .byt >enemy_ship_behaviour_routine6                               // 3b7c: 37          7   :2a7c[1]
+    .byt >enemy_ship_behaviour_routine2                               // 3b7d: 32          2   :2a7d[1]
+    .byt >enemy_ship_behaviour_routine3                               // 3b7e: 33          3   :2a7e[1]
+    .byt >enemy_ship_behaviour_routine1                               // 3b7f: 32          2   :2a7f[1]
 unused63
     .byt $ea                                                          // 3b80: ea          .   :2a80[1]
 enemy_ship_desired_velocity
@@ -5930,8 +5930,8 @@ prepare_starship_for_next_command
 // clear screen
     lda #$0c                                                          // 466a: a9 0c       ..  :356a[1]
     jsr oswrch                                                        // 466c: 20 ee ff     .. :356c[1]   // Write character 12
-    ldx #<(sound_0)                                                   // 466f: a2 08       ..  :356f[1]
-    ldy #>(sound_0)                                                   // 4671: a0 20       .   :3571[1]
+    ldx #<sound_0                                                     // 466f: a2 08       ..  :356f[1]
+    ldy #>sound_0                                                     // 4671: a0 20       .   :3571[1]
     lda #osword_sound                                                 // 4673: a9 07       ..  :3573[1]
     jsr osword                                                        // 4675: 20 f1 ff     .. :3575[1]   // SOUND command
 initialise_starship_sprite
@@ -7275,8 +7275,8 @@ plot_enter_your_name_loop
     inc temp0_high                                                    // 5652: e6 81       ..  :4552[1]
     bne plot_enter_your_name_loop                                     // 5654: d0 ef       ..  :4554[1]
 finished_plotting_enter_your_name
-    ldx #<(input_osword_block)                                        // 5656: a2 e1       ..  :4556[1]
-    ldy #>(input_osword_block)                                        // 5658: a0 44       .D  :4558[1]
+    ldx #<input_osword_block                                          // 5656: a2 e1       ..  :4556[1]
+    ldy #>input_osword_block                                          // 5658: a0 44       .D  :4558[1]
     lda #osword_read_line                                             // 565a: a9 00       ..  :455a[1]
     jsr osword                                                        // 565c: 20 f1 ff     .. :455c[1]   // Read line from input stream (exits with C=1 if ESCAPE pressed)
     sty y_pixels                                                      // 565f: 84 7b       .{  :455f[1]   // Y contains line length, including carriage return if used.

@@ -1850,8 +1850,8 @@ loop_c88bc
     sta l1006                                                         // 28e5: 8d 06 10    ... :88e5[1]
     lda l00cc                                                         // 28e8: a5 cc       ..  :88e8[1]
     sta l1005                                                         // 28ea: 8d 05 10    ... :88ea[1]
-    ldx #<(l1000)                                                     // 28ed: a2 00       ..  :88ed[1]
-    ldy #>(l1000)                                                     // 28ef: a0 10       ..  :88ef[1]
+    ldx #<l1000                                                       // 28ed: a2 00       ..  :88ed[1]
+    ldy #>l1000                                                       // 28ef: a0 10       ..  :88ef[1]
     jmp oscli                                                         // 28f1: 4c f7 ff    L.. :88f1[1]
 
 // $28f4 referenced 2 times by $88ae[1], $88b8[1]
@@ -7902,8 +7902,8 @@ c0636
     tya                                                               // 4e1f: 98          .   :0644[3]
 // $4e20 referenced 1 time by $0634[3]
 c0645
-    ldx #<(l0128)                                                     // 4e20: a2 28       .(  :0645[3]
-    ldy #>(l0128)                                                     // 4e22: a0 01       ..  :0647[3]
+    ldx #<l0128                                                       // 4e20: a2 28       .(  :0645[3]
+    ldy #>l0128                                                       // 4e22: a0 01       ..  :0647[3]
     jsr osword                                                        // 4e24: 20 f1 ff     .. :0649[3]
 // $4e27 referenced 1 time by $064f[3]
 loop_c064c

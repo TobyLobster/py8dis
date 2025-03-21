@@ -5134,8 +5134,8 @@ cdb87
     bne cdbb8                                                         ; dba2: d0 14       ..
     lda #$8d                                                          ; dba4: a9 8d       ..
     jsr osbyte140EntryPoint                                           ; dba6: 20 35 f1     5.
-    ldx #<(lead2)                                                     ; dba9: a2 d2       ..
-    ldy #>(lead2)                                                     ; dbab: a0 ea       ..
+    ldx #<lead2                                                       ; dba9: a2 d2       ..
+    ldy #>lead2                                                       ; dbab: a0 ea       ..
     dec l0267                                                         ; dbad: ce 67 02    .g.
     jsr oscli                                                         ; dbb0: 20 f7 ff     ..
     inc l0267                                                         ; dbb3: ee 67 02    .g.
@@ -10637,8 +10637,8 @@ oscli
     !byte 0, $0d, $cd, $d9, $1c, $dc                                  ; fffa: 00 0d cd... ...
 pydis_end
 
-!if (<(lead2)) != $d2 {
-    !error "Assertion failed: <(lead2) == $d2"
+!if (<lead2) != $d2 {
+    !error "Assertion failed: <lead2 == $d2"
 }
 !if (<plotLine0) != $6a {
     !error "Assertion failed: <plotLine0 == $6a"
@@ -10652,8 +10652,8 @@ pydis_end
 !if (<plotLine3) != $4b {
     !error "Assertion failed: <plotLine3 == $4b"
 }
-!if (>(lead2)) != $ea {
-    !error "Assertion failed: >(lead2) == $ea"
+!if (>lead2) != $ea {
+    !error "Assertion failed: >lead2 == $ea"
 }
 !if (>plotLine0) != $d3 {
     !error "Assertion failed: >plotLine0 == $d3"

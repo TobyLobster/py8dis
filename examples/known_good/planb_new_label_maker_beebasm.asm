@@ -10437,15 +10437,15 @@ osbyte                          = &fff4
 ; ***************************************************************************************
 .wait
     lda #osword_read_clock                                            ; 3ffe: a9 01       ..
-    ldx #<(wait_clock_read_value)                                     ; 4000: a2 17       ..
-    ldy #>(wait_clock_read_value)                                     ; 4002: a0 40       .@
+    ldx #<wait_clock_read_value                                       ; 4000: a2 17       ..
+    ldy #>wait_clock_read_value                                       ; 4002: a0 40       .@
     jsr osword                                                        ; 4004: 20 f1 ff     ..            ; Read system clock
     lda wait_clock_read_value                                         ; 4007: ad 17 40    ..@
     cmp #5                                                            ; 400a: c9 05       ..
     bcc wait                                                          ; 400c: 90 f0       ..
     lda #osword_write_clock                                           ; 400e: a9 02       ..
-    ldx #<(wait_clock_write_value)                                    ; 4010: a2 1c       ..
-    ldy #>(wait_clock_write_value)                                    ; 4012: a0 40       .@
+    ldx #<wait_clock_write_value                                      ; 4010: a2 1c       ..
+    ldy #>wait_clock_write_value                                      ; 4012: a0 40       .@
     jmp osword                                                        ; 4014: 4c f1 ff    L..            ; Write system clock
 
 .wait_clock_read_value
@@ -12580,8 +12580,8 @@ screen_addr_high = opcode10+2
     sta current_room_index                                            ; 4e8a: 85 0d       ..
     sta computer_bar_level                                            ; 4e8c: 85 40       .@
     lda #osword_read_clock                                            ; 4e8e: a9 01       ..
-    ldx #<(clock)                                                     ; 4e90: a2 00       ..
-    ldy #>(clock)                                                     ; 4e92: a0 0e       ..
+    ldx #<clock                                                       ; 4e90: a2 00       ..
+    ldy #>clock                                                       ; 4e92: a0 0e       ..
     jsr osword                                                        ; 4e94: 20 f1 ff     ..            ; Read system clock
     lda clock                                                         ; 4e97: ad 00 0e    ...
     sta rnd_rom_addr_low                                              ; 4e9a: 85 38       .8
@@ -12807,20 +12807,20 @@ copy_highscores_dest_addr_high = opcode11+2
     inc copy_highscores_dest_addr_high                                ; 50be: ee b7 50    ..P
     dex                                                               ; 50c1: ca          .
     bne copy_highscores_loop                                          ; 50c2: d0 ee       ..
-    ldx #<(envelope1)                                                 ; 50c4: a2 e8       ..
-    ldy #>(envelope1)                                                 ; 50c6: a0 50       .P
+    ldx #<envelope1                                                   ; 50c4: a2 e8       ..
+    ldy #>envelope1                                                   ; 50c6: a0 50       .P
     lda #osword_envelope                                              ; 50c8: a9 08       ..
     jsr osword                                                        ; 50ca: 20 f1 ff     ..            ; ENVELOPE command
-    ldx #<(envelope2)                                                 ; 50cd: a2 f6       ..
-    ldy #>(envelope2)                                                 ; 50cf: a0 50       .P
+    ldx #<envelope2                                                   ; 50cd: a2 f6       ..
+    ldy #>envelope2                                                   ; 50cf: a0 50       .P
     lda #osword_envelope                                              ; 50d1: a9 08       ..
     jsr osword                                                        ; 50d3: 20 f1 ff     ..            ; ENVELOPE command
-    ldx #<(envelope3)                                                 ; 50d6: a2 04       ..
-    ldy #>(envelope3)                                                 ; 50d8: a0 51       .Q
+    ldx #<envelope3                                                   ; 50d6: a2 04       ..
+    ldy #>envelope3                                                   ; 50d8: a0 51       .Q
     lda #osword_envelope                                              ; 50da: a9 08       ..
     jsr osword                                                        ; 50dc: 20 f1 ff     ..            ; ENVELOPE command
-    ldx #<(envelope4)                                                 ; 50df: a2 12       ..
-    ldy #>(envelope4)                                                 ; 50e1: a0 51       .Q
+    ldx #<envelope4                                                   ; 50df: a2 12       ..
+    ldy #>envelope4                                                   ; 50e1: a0 51       .Q
     lda #osword_envelope                                              ; 50e3: a9 08       ..
     jmp osword                                                        ; 50e5: 4c f1 ff    L..            ; ENVELOPE command
 
@@ -13169,16 +13169,14 @@ copy_highscores_dest_addr_high = opcode11+2
     assert <($5800 + 7 * $0140) == &c0
     assert <($5800 + 8 * $0140) == &00
     assert <($5800 + 9 * $0140) == &40
-    assert <(clock) == &00
-    assert <(envelope1) == &e8
-    assert <(envelope2) == &f6
-    assert <(envelope3) == &04
-    assert <(envelope4) == &12
-    assert <(wait_clock_read_value) == &17
-    assert <(wait_clock_write_value) == &1c
     assert <ammo_bar_screen_address == &10
+    assert <clock == &00
     assert <computer_bar_screen_address == &50
     assert <energy_bar_screen_address == &d0
+    assert <envelope1 == &e8
+    assert <envelope2 == &f6
+    assert <envelope3 == &04
+    assert <envelope4 == &12
     assert <event_routine == &9d
     assert <room_0_definition == &3c
     assert <room_10_definition == &19
@@ -13251,6 +13249,8 @@ copy_highscores_dest_addr_high = opcode11+2
     assert <sound7 == &d2
     assert <sound8 == &da
     assert <sprite0 == &10
+    assert <wait_clock_read_value == &17
+    assert <wait_clock_write_value == &1c
     assert >($5800 + 0 * $0140) == &58
     assert >($5800 + 1 * $0140) == &59
     assert >($5800 + 10 * $0140) == &64
@@ -13283,16 +13283,14 @@ copy_highscores_dest_addr_high = opcode11+2
     assert >($5800 + 7 * $0140) == &60
     assert >($5800 + 8 * $0140) == &62
     assert >($5800 + 9 * $0140) == &63
-    assert >(clock) == &0e
-    assert >(envelope1) == &50
-    assert >(envelope2) == &50
-    assert >(envelope3) == &51
-    assert >(envelope4) == &51
-    assert >(wait_clock_read_value) == &40
-    assert >(wait_clock_write_value) == &40
     assert >ammo_bar_screen_address == &5a
+    assert >clock == &0e
     assert >computer_bar_screen_address == &5b
     assert >energy_bar_screen_address == &58
+    assert >envelope1 == &50
+    assert >envelope2 == &50
+    assert >envelope3 == &51
+    assert >envelope4 == &51
     assert >event_routine == &51
     assert >room_0_definition == &21
     assert >room_10_definition == &25
@@ -13365,6 +13363,8 @@ copy_highscores_dest_addr_high = opcode11+2
     assert >sound7 == &40
     assert >sound8 == &40
     assert >sprite0 == &12
+    assert >wait_clock_read_value == &40
+    assert >wait_clock_write_value == &40
     assert bar_pixels_set_table + 1 == &3f5c
     assert clock + 1 == &0e01
     assert collision_map_addr_high - 5 == &40f8

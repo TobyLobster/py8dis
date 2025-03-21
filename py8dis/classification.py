@@ -449,3 +449,47 @@ def get_stats():
 
         binary_addr += 1
     return result
+
+def get_classification_map():
+    result = ""
+    memory_binary = memorymanager.memory_binary
+    old_c = None
+
+    digits = "0123456789abcdef"
+    result += "   "
+    for i in range(0, 16):
+        c = digits[i]
+        result += c*16
+    result += "\n   " + digits*16
+    result += "\n   " + "-"*256 + "\n"
+
+    for i in range(0, 256):
+        prefix = f"{i:02x}|"
+        result += prefix
+        for j in range(0, 256):
+            binary_addr = i*256 + j
+            c = disassembly.get_classification(binary_addr)
+            if isinstance(c, Byte):
+                result += 'B'
+            elif isinstance(c, Word):
+                result += 'W'
+            elif isinstance(c, String):
+                result += 'S'
+            elif isinstance(c, trace.cpu.Opcode):
+                result += 'I'
+            elif c == INSIDE_A_CLASSIFICATION:
+                if isinstance(oldc, Byte):
+                    result += 'b'
+                elif isinstance(oldc, Word):
+                    result += 'w'
+                elif isinstance(oldc, String):
+                    result += 's'
+                elif isinstance(oldc, trace.cpu.Opcode):
+                    result += 'i'
+            else:
+                result += '.'
+
+            if c != INSIDE_A_CLASSIFICATION:
+                oldc = c
+        result += "\n"
+    return result

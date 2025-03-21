@@ -289,8 +289,8 @@ oscli   = &fff7
     sta HILISP+1                                   ; 80f1: 8d 01 d7    ...
     lda #>HIWARM                                   ; 80f4: a9 d9       ..
     sta HILISP+2                                   ; 80f6: 8d 02 d7    ...
-    ldx #<(GOSTR)                                  ; 80f9: a2 31       .1
-    ldy #>(GOSTR)                                  ; 80fb: a0 82       ..
+    ldx #<GOSTR                                    ; 80f9: a2 31       .1
+    ldy #>GOSTR                                    ; 80fb: a0 82       ..
     jsr oscli                                      ; 80fd: 20 f7 ff     ..
 
     ; General copy routine
@@ -522,8 +522,8 @@ oscli   = &fff7
     jsr oswrch                                     ; 82b6: 20 ee ff     ..            ; Write character 67
     jsr CROUT                                      ; 82b9: 20 19 85     ..
     jsr CROUT                                      ; 82bc: 20 19 85     ..
-    ldx #<(LISTR)                                  ; 82bf: a2 39       .9
-    ldy #>(LISTR)                                  ; 82c1: a0 82       ..
+    ldx #<LISTR                                    ; 82bf: a2 39       .9
+    ldy #>LISTR                                    ; 82c1: a0 82       ..
     jmp oscli                                      ; 82c3: 4c f7 ff    L..
 
 
@@ -997,8 +997,8 @@ oscli   = &fff7
     equb 0                                         ; 8546: 00          .
 
 .KBCHK
-    ldx #<(IODCB)                                  ; 8547: a2 16       ..
-    ldy #>(IODCB)                                  ; 8549: a0 04       ..
+    ldx #<IODCB                                    ; 8547: a2 16       ..
+    ldy #>IODCB                                    ; 8549: a0 04       ..
     lda #osword_read_io_memory                     ; 854b: a9 05       ..
     jsr osword                                     ; 854d: 20 f1 ff     ..            ; Read byte of I/O processor memory
     lda #&80                                       ; 8550: a9 80       ..
@@ -1360,8 +1360,8 @@ oscli   = &fff7
     dex                                            ; 8796: ca          .
     bpl PRDEPT                                     ; 8797: 10 f6       ..
 .READON
-    ldx #<(INCB)                                   ; 8799: a2 3e       .>
-    ldy #>(INCB)                                   ; 879b: a0 82       ..
+    ldx #<INCB                                     ; 8799: a2 3e       .>
+    ldy #>INCB                                     ; 879b: a0 82       ..
     lda #osword_read_line                          ; 879d: a9 00       ..
     jsr osword                                     ; 879f: 20 f1 ff     ..            ; Read line; Read line from input stream (exits with C=1 if ESCAPE pressed)
     bcc OKLINE                                     ; 87a2: 90 09       ..
@@ -2706,8 +2706,8 @@ oscli   = &fff7
 .LOAD
     jsr SETDCB                                     ; 8f5c: 20 1f 8f     ..
     lda #osfile_load                               ; 8f5f: a9 ff       ..             ; Load operation
-    ldx #<(OSINFO)                                 ; 8f61: a2 38       .8
-    ldy #>(OSINFO)                                 ; 8f63: a0 04       ..
+    ldx #<OSINFO                                   ; 8f61: a2 38       .8
+    ldy #>OSINFO                                   ; 8f63: a0 04       ..
     jsr osfile                                     ; 8f65: 20 dd ff     ..            ; Load named file (if XY+6 contains 0, use specified address) (A=255)
 .INUREL
     lda #AREEXT                                    ; 8f68: a9 00       ..             ; Set up base
@@ -2724,8 +2724,8 @@ oscli   = &fff7
     jsr SETDCB                                     ; 8f7a: 20 1f 8f     ..            ; Set up before relat
     jsr RELAT                                      ; 8f7d: 20 5d 91     ].            ; Make relocatable
     lda #osfile_save                               ; 8f80: a9 00       ..             ; Save
-    ldx #<(OSINFO)                                 ; 8f82: a2 38       .8
-    ldy #>(OSINFO)                                 ; 8f84: a0 04       ..
+    ldx #<OSINFO                                   ; 8f82: a2 38       .8
+    ldy #>OSINFO                                   ; 8f84: a0 04       ..
     jsr osfile                                     ; 8f86: 20 dd ff     ..            ; Save a block of memory (returning file length and attributes) (A=0)
     jmp POP                                        ; 8f89: 4c 3a 83    L:.
 
@@ -2892,8 +2892,8 @@ oscli   = &fff7
     bcs MORLEZ                                     ; 908c: b0 f4       ..             ; ALWAYS branch
 
 .STARRY
-    ldx #<(DOSBUF)                                 ; 908e: a2 00       ..
-    ldy #>(DOSBUF)                                 ; 9090: a0 07       ..
+    ldx #<DOSBUF                                   ; 908e: a2 00       ..
+    ldy #>DOSBUF                                   ; 9090: a0 07       ..
     jsr oscli                                      ; 9092: 20 f7 ff     ..
     jmp NO                                         ; 9095: 4c 2d 83    L-.
 
@@ -4160,8 +4160,8 @@ oscli   = &fff7
     bne MORSOU                                     ; 987d: d0 e6       ..
     lda #7                                         ; 987f: a9 07       ..
 .ENTOSW
-    ldx #<(OSWBUF)                                 ; 9881: a2 00       ..
-    ldy #>(OSWBUF)                                 ; 9883: a0 06       ..
+    ldx #<OSWBUF                                   ; 9881: a2 00       ..
+    ldy #>OSWBUF                                   ; 9883: a0 06       ..
     jsr osword                                     ; 9885: 20 f1 ff     ..
     jmp YES                                        ; 9888: 4c 31 83    L1.
 
@@ -4220,8 +4220,8 @@ oscli   = &fff7
 .STCLK
     lda #2                                         ; 98c8: a9 02       ..             ; Write clock
 .ZERTIM
-    ldy #>(TIMZER)                                 ; 98ca: a0 82       ..
-    ldx #<(TIMZER)                                 ; 98cc: a2 76       .v
+    ldy #>TIMZER                                   ; 98ca: a0 82       ..
+    ldx #<TIMZER                                   ; 98cc: a2 76       .v
     jsr osword                                     ; 98ce: 20 f1 ff     ..
     ldx #&76                                       ; 98d1: a2 76       .v             ; Restore pointer
     ldy #&82                                       ; 98d3: a0 82       ..
@@ -4240,8 +4240,8 @@ oscli   = &fff7
     ; **** Read the clock
 .TIMER
     lda #osword_read_clock                         ; 98e0: a9 01       ..
-    ldx #<(TIMEW)                                  ; 98e2: a2 25       .%
-    ldy #>(TIMEW)                                  ; 98e4: a0 04       ..
+    ldx #<TIMEW                                    ; 98e2: a2 25       .%
+    ldy #>TIMEW                                    ; 98e4: a0 04       ..
     jsr osword                                     ; 98e6: 20 f1 ff     ..            ; Read the clock; Read system clock
     ldx #<TIMEW                                    ; 98e9: a2 25       .%             ; Restore pointer
     ldy #>TIMEW                                    ; 98eb: a0 04       ..
@@ -4329,8 +4329,8 @@ oscli   = &fff7
     lda (ARGB),y                                   ; 997b: b1 3c       .<             ; Y msb
     sta PWORD+3                                    ; 997d: 8d 1e 04    ...
     lda #osword_read_pixel                         ; 9980: a9 09       ..
-    ldx #<(PWORD)                                  ; 9982: a2 1b       ..
-    ldy #>(PWORD)                                  ; 9984: a0 04       ..
+    ldx #<PWORD                                    ; 9982: a2 1b       ..
+    ldy #>PWORD                                    ; 9984: a0 04       ..
     jsr osword                                     ; 9986: 20 f1 ff     ..            ; Read pixel value
     jsr ALNUM                                      ; 9989: 20 3d 84     =.
     ldy #2                                         ; 998c: a0 02       ..
@@ -5036,8 +5036,8 @@ oscli   = &fff7
     sta HANDLE                                     ; 9dca: 85 13       ..             ; Restore file handle
 .NOMESC
     lda #osword_read_interval_timer                ; 9dcc: a9 03       ..
-    ldx #<(TIMEW)                                  ; 9dce: a2 25       .%
-    ldy #>(TIMEW)                                  ; 9dd0: a0 04       ..
+    ldx #<TIMEW                                    ; 9dce: a2 25       .%
+    ldy #>TIMEW                                    ; 9dd0: a0 04       ..
     jsr osword                                     ; 9dd2: 20 f1 ff     ..            ; Read timer; Read interval timer
     clc                                            ; 9dd5: 18          .
     ldy #0                                         ; 9dd6: a0 00       ..
@@ -8054,61 +8054,59 @@ MOVE_OFFSET = HILISP-LISVAL
     assert 'c' == &63
     assert (>(LISPEN-LISVAL-1))+1 == &21
     assert <(BACALL+1) == &dd
-    assert <(DOSBUF) == &00
     assert <(ELFIN-1) == &c6
-    assert <(GOSTR) == &31
-    assert <(INCB) == &3e
-    assert <(IODCB) == &16
-    assert <(LISTR) == &39
-    assert <(OSINFO) == &38
-    assert <(OSWBUF) == &00
-    assert <(PWORD) == &1b
-    assert <(TIMEW) == &25
-    assert <(TIMZER) == &76
     assert <ACL == &72
     assert <CTRUE == &11
+    assert <DOSBUF == &00
     assert <DWARF == &eb
     assert <ERROR == &87
     assert <GCTIME == &20
+    assert <GOSTR == &31
     assert <HILISP == &00
     assert <HIWARM == &7b
+    assert <INCB == &3e
+    assert <IODCB == &16
     assert <KBD == &ff
     assert <LAMBDA == &18
     assert <LISPST == &00
+    assert <LISTR == &39
     assert <NAMBUF == &00
     assert <NIL == &24
+    assert <OSINFO == &38
+    assert <OSWBUF == &00
     assert <PRINGO+2 == &25
+    assert <PWORD == &1b
     assert <QUOTE == &2d
     assert <RELTAB == &00
     assert <TIMEW == &25
+    assert <TIMZER == &76
     assert <VECTAB == &00
     assert <VECTAB+2 == &02
     assert <WRITGO+2 == &eb
     assert <ZA == &02
     assert >(BACALL+1) == &8f
-    assert >(DOSBUF) == &07
     assert >(ELFIN-1) == &9f
-    assert >(GOSTR) == &82
     assert >(HILISP-LISVAL) == &57
-    assert >(INCB) == &82
-    assert >(IODCB) == &04
-    assert >(LISTR) == &82
-    assert >(OSINFO) == &04
-    assert >(OSWBUF) == &06
-    assert >(PWORD) == &04
-    assert >(TIMEW) == &04
-    assert >(TIMZER) == &82
+    assert >DOSBUF == &07
     assert >DWARF == &9e
     assert >ERROR == &9e
     assert >GCTIME == &04
+    assert >GOSTR == &82
     assert >HILISP == &d7
     assert >HIWARM == &d9
+    assert >INCB == &82
+    assert >IODCB == &04
     assert >KBD == &00
     assert >LISPST == &80
+    assert >LISTR == &82
     assert >NAMBUF == &06
+    assert >OSINFO == &04
+    assert >OSWBUF == &06
     assert >PRINGO == &8b
+    assert >PWORD == &04
     assert >RELTAB == &b8
     assert >TIMEW == &04
+    assert >TIMZER == &82
     assert >VECTAB == &a4
     assert >WRITGO == &8a
     assert ACL == &72

@@ -10438,15 +10438,15 @@ print_score_loop
 // ***************************************************************************************
 wait
     lda #osword_read_clock                                            // 3ffe: a9 01       ..
-    ldx #<(wait_clock_read_value)                                     // 4000: a2 17       ..
-    ldy #>(wait_clock_read_value)                                     // 4002: a0 40       .@
+    ldx #<wait_clock_read_value                                       // 4000: a2 17       ..
+    ldy #>wait_clock_read_value                                       // 4002: a0 40       .@
     jsr osword                                                        // 4004: 20 f1 ff     ..            // Read system clock
     lda wait_clock_read_value                                         // 4007: ad 17 40    ..@
     cmp #5                                                            // 400a: c9 05       ..
     bcc wait                                                          // 400c: 90 f0       ..
     lda #osword_write_clock                                           // 400e: a9 02       ..
-    ldx #<(wait_clock_write_value)                                    // 4010: a2 1c       ..
-    ldy #>(wait_clock_write_value)                                    // 4012: a0 40       .@
+    ldx #<wait_clock_write_value                                      // 4010: a2 1c       ..
+    ldy #>wait_clock_write_value                                      // 4012: a0 40       .@
     jmp osword                                                        // 4014: 4c f1 ff    L..            // Write system clock
 
 wait_clock_read_value
@@ -12581,8 +12581,8 @@ show_title_and_play_game
     sta current_room_index                                            // 4e8a: 85 0d       ..
     sta computer_bar_level                                            // 4e8c: 85 40       .@
     lda #osword_read_clock                                            // 4e8e: a9 01       ..
-    ldx #<(clock)                                                     // 4e90: a2 00       ..
-    ldy #>(clock)                                                     // 4e92: a0 0e       ..
+    ldx #<clock                                                       // 4e90: a2 00       ..
+    ldy #>clock                                                       // 4e92: a0 0e       ..
     jsr osword                                                        // 4e94: 20 f1 ff     ..            // Read system clock
     lda clock                                                         // 4e97: ad 00 0e    ...
     sta rnd_rom_addr_low                                              // 4e9a: 85 38       .8
@@ -12808,20 +12808,20 @@ copy_highscores_dest_addr_high = opcode11+2
     inc copy_highscores_dest_addr_high                                // 50be: ee b7 50    ..P
     dex                                                               // 50c1: ca          .
     bne copy_highscores_loop                                          // 50c2: d0 ee       ..
-    ldx #<(envelope1)                                                 // 50c4: a2 e8       ..
-    ldy #>(envelope1)                                                 // 50c6: a0 50       .P
+    ldx #<envelope1                                                   // 50c4: a2 e8       ..
+    ldy #>envelope1                                                   // 50c6: a0 50       .P
     lda #osword_envelope                                              // 50c8: a9 08       ..
     jsr osword                                                        // 50ca: 20 f1 ff     ..            // ENVELOPE command
-    ldx #<(envelope2)                                                 // 50cd: a2 f6       ..
-    ldy #>(envelope2)                                                 // 50cf: a0 50       .P
+    ldx #<envelope2                                                   // 50cd: a2 f6       ..
+    ldy #>envelope2                                                   // 50cf: a0 50       .P
     lda #osword_envelope                                              // 50d1: a9 08       ..
     jsr osword                                                        // 50d3: 20 f1 ff     ..            // ENVELOPE command
-    ldx #<(envelope3)                                                 // 50d6: a2 04       ..
-    ldy #>(envelope3)                                                 // 50d8: a0 51       .Q
+    ldx #<envelope3                                                   // 50d6: a2 04       ..
+    ldy #>envelope3                                                   // 50d8: a0 51       .Q
     lda #osword_envelope                                              // 50da: a9 08       ..
     jsr osword                                                        // 50dc: 20 f1 ff     ..            // ENVELOPE command
-    ldx #<(envelope4)                                                 // 50df: a2 12       ..
-    ldy #>(envelope4)                                                 // 50e1: a0 51       .Q
+    ldx #<envelope4                                                   // 50df: a2 12       ..
+    ldy #>envelope4                                                   // 50e1: a0 51       .Q
     lda #osword_envelope                                              // 50e3: a9 08       ..
     jmp osword                                                        // 50e5: 4c f1 ff    L..            // ENVELOPE command
 

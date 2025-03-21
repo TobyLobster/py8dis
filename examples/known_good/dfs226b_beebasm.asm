@@ -1850,8 +1850,8 @@ l8004 = service_entry+1
     sta l1006                                                         ; 28e5: 8d 06 10    ... :88e5[1]
     lda l00cc                                                         ; 28e8: a5 cc       ..  :88e8[1]
     sta l1005                                                         ; 28ea: 8d 05 10    ... :88ea[1]
-    ldx #<(l1000)                                                     ; 28ed: a2 00       ..  :88ed[1]
-    ldy #>(l1000)                                                     ; 28ef: a0 10       ..  :88ef[1]
+    ldx #<l1000                                                       ; 28ed: a2 00       ..  :88ed[1]
+    ldy #>l1000                                                       ; 28ef: a0 10       ..  :88ef[1]
     jmp oscli                                                         ; 28f1: 4c f7 ff    L.. :88f1[1]
 
 ; &28f4 referenced 2 times by &88ae[1], &88b8[1]
@@ -7974,8 +7974,8 @@ l0600 = sub_c05ff+1
     tya                                                               ; 4e1f: 98          .   :0644[3]
 ; &4e20 referenced 1 time by &0634[3]
 .c0645
-    ldx #<(l0128)                                                     ; 4e20: a2 28       .(  :0645[3]
-    ldy #>(l0128)                                                     ; 4e22: a0 01       ..  :0647[3]
+    ldx #<l0128                                                       ; 4e20: a2 28       .(  :0645[3]
+    ldy #>l0128                                                       ; 4e22: a0 01       ..  :0647[3]
     jsr osword                                                        ; 4e24: 20 f1 ff     .. :0649[3]
 ; &4e27 referenced 1 time by &064f[3]
 .loop_c064c
@@ -10927,8 +10927,6 @@ lb6ce = sub_cb6cd+1
 .pydis_end
 
     assert <(c956d-1) == &6c
-    assert <(l0128) == &28
-    assert <(l1000) == &00
     assert <(sub_c8238-1) == &37
     assert <(sub_c8254-1) == &53
     assert <(sub_c8750-1) == &4f
@@ -10962,11 +10960,11 @@ lb6ce = sub_cb6cd+1
     assert <(sub_cbbd7-1) == &d6
     assert <(sub_cbc37-1) == &36
     assert <(sub_cbc81-1) == &80
+    assert <l0128 == &28
+    assert <l1000 == &00
     assert <tube_brkv_handler == &16
     assert <tube_evntv_handler == &ad
     assert >(c956d-1) == &95
-    assert >(l0128) == &01
-    assert >(l1000) == &10
     assert >(sub_c8238-1) == &82
     assert >(sub_c8254-1) == &82
     assert >(sub_c8750-1) == &87
@@ -11000,6 +10998,8 @@ lb6ce = sub_cb6cd+1
     assert >(sub_cbbd7-1) == &bb
     assert >(sub_cbc37-1) == &bc
     assert >(sub_cbc81-1) == &bc
+    assert >l0128 == &01
+    assert >l1000 == &10
     assert >tube_brkv_handler == &00
     assert >tube_evntv_handler == &06
     assert copyright - rom_header == &11

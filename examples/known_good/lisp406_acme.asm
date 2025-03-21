@@ -289,8 +289,8 @@ LOOP3
     sta HILISP+1                                   ; 80f1: 8d 01 d7    ...
     lda #>HIWARM                                   ; 80f4: a9 d9       ..
     sta HILISP+2                                   ; 80f6: 8d 02 d7    ...
-    ldx #<(GOSTR)                                  ; 80f9: a2 31       .1
-    ldy #>(GOSTR)                                  ; 80fb: a0 82       ..
+    ldx #<GOSTR                                    ; 80f9: a2 31       .1
+    ldy #>GOSTR                                    ; 80fb: a0 82       ..
     jsr oscli                                      ; 80fd: 20 f7 ff     ..
 
     ; General copy routine
@@ -522,8 +522,8 @@ REBOOT
     jsr oswrch                                     ; 82b6: 20 ee ff     ..            ; Write character 67
     jsr CROUT                                      ; 82b9: 20 19 85     ..
     jsr CROUT                                      ; 82bc: 20 19 85     ..
-    ldx #<(LISTR)                                  ; 82bf: a2 39       .9
-    ldy #>(LISTR)                                  ; 82c1: a0 82       ..
+    ldx #<LISTR                                    ; 82bf: a2 39       .9
+    ldy #>LISTR                                    ; 82c1: a0 82       ..
     jmp oscli                                      ; 82c3: 4c f7 ff    L..
 
 
@@ -997,8 +997,8 @@ EVALU
     !byte 0                                        ; 8546: 00          .
 
 KBCHK
-    ldx #<(IODCB)                                  ; 8547: a2 16       ..
-    ldy #>(IODCB)                                  ; 8549: a0 04       ..
+    ldx #<IODCB                                    ; 8547: a2 16       ..
+    ldy #>IODCB                                    ; 8549: a0 04       ..
     lda #osword_read_io_memory                     ; 854b: a9 05       ..
     jsr osword                                     ; 854d: 20 f1 ff     ..            ; Read byte of I/O processor memory
     lda #$80                                       ; 8550: a9 80       ..
@@ -1360,8 +1360,8 @@ PRDEPT
     dex                                            ; 8796: ca          .
     bpl PRDEPT                                     ; 8797: 10 f6       ..
 READON
-    ldx #<(INCB)                                   ; 8799: a2 3e       .>
-    ldy #>(INCB)                                   ; 879b: a0 82       ..
+    ldx #<INCB                                     ; 8799: a2 3e       .>
+    ldy #>INCB                                     ; 879b: a0 82       ..
     lda #osword_read_line                          ; 879d: a9 00       ..
     jsr osword                                     ; 879f: 20 f1 ff     ..            ; Read line; Read line from input stream (exits with C=1 if ESCAPE pressed)
     bcc OKLINE                                     ; 87a2: 90 09       ..
@@ -2706,8 +2706,8 @@ SETDCB
 LOAD
     jsr SETDCB                                     ; 8f5c: 20 1f 8f     ..
     lda #osfile_load                               ; 8f5f: a9 ff       ..             ; Load operation
-    ldx #<(OSINFO)                                 ; 8f61: a2 38       .8
-    ldy #>(OSINFO)                                 ; 8f63: a0 04       ..
+    ldx #<OSINFO                                   ; 8f61: a2 38       .8
+    ldy #>OSINFO                                   ; 8f63: a0 04       ..
     jsr osfile                                     ; 8f65: 20 dd ff     ..            ; Load named file (if XY+6 contains 0, use specified address) (A=255)
 INUREL
     lda #AREEXT                                    ; 8f68: a9 00       ..             ; Set up base
@@ -2724,8 +2724,8 @@ DUMP
     jsr SETDCB                                     ; 8f7a: 20 1f 8f     ..            ; Set up before relat
     jsr RELAT                                      ; 8f7d: 20 5d 91     ].            ; Make relocatable
     lda #osfile_save                               ; 8f80: a9 00       ..             ; Save
-    ldx #<(OSINFO)                                 ; 8f82: a2 38       .8
-    ldy #>(OSINFO)                                 ; 8f84: a0 04       ..
+    ldx #<OSINFO                                   ; 8f82: a2 38       .8
+    ldy #>OSINFO                                   ; 8f84: a0 04       ..
     jsr osfile                                     ; 8f86: 20 dd ff     ..            ; Save a block of memory (returning file length and attributes) (A=0)
     jmp POP                                        ; 8f89: 4c 3a 83    L:.
 
@@ -2892,8 +2892,8 @@ MORLEZ
     bcs MORLEZ                                     ; 908c: b0 f4       ..             ; ALWAYS branch
 
 STARRY
-    ldx #<(DOSBUF)                                 ; 908e: a2 00       ..
-    ldy #>(DOSBUF)                                 ; 9090: a0 07       ..
+    ldx #<DOSBUF                                   ; 908e: a2 00       ..
+    ldy #>DOSBUF                                   ; 9090: a0 07       ..
     jsr oscli                                      ; 9092: 20 f7 ff     ..
     jmp NO                                         ; 9095: 4c 2d 83    L-.
 
@@ -4160,8 +4160,8 @@ MORSOU
     bne MORSOU                                     ; 987d: d0 e6       ..
     lda #7                                         ; 987f: a9 07       ..
 ENTOSW
-    ldx #<(OSWBUF)                                 ; 9881: a2 00       ..
-    ldy #>(OSWBUF)                                 ; 9883: a0 06       ..
+    ldx #<OSWBUF                                   ; 9881: a2 00       ..
+    ldy #>OSWBUF                                   ; 9883: a0 06       ..
     jsr osword                                     ; 9885: 20 f1 ff     ..
     jmp YES                                        ; 9888: 4c 31 83    L1.
 
@@ -4220,8 +4220,8 @@ RESET
 STCLK
     lda #2                                         ; 98c8: a9 02       ..             ; Write clock
 ZERTIM
-    ldy #>(TIMZER)                                 ; 98ca: a0 82       ..
-    ldx #<(TIMZER)                                 ; 98cc: a2 76       .v
+    ldy #>TIMZER                                   ; 98ca: a0 82       ..
+    ldx #<TIMZER                                   ; 98cc: a2 76       .v
     jsr osword                                     ; 98ce: 20 f1 ff     ..
     ldx #$76                                       ; 98d1: a2 76       .v             ; Restore pointer
     ldy #$82                                       ; 98d3: a0 82       ..
@@ -4240,8 +4240,8 @@ MGCTIM
     ; **** Read the clock
 TIMER
     lda #osword_read_clock                         ; 98e0: a9 01       ..
-    ldx #<(TIMEW)                                  ; 98e2: a2 25       .%
-    ldy #>(TIMEW)                                  ; 98e4: a0 04       ..
+    ldx #<TIMEW                                    ; 98e2: a2 25       .%
+    ldy #>TIMEW                                    ; 98e4: a0 04       ..
     jsr osword                                     ; 98e6: 20 f1 ff     ..            ; Read the clock; Read system clock
     ldx #<TIMEW                                    ; 98e9: a2 25       .%             ; Restore pointer
     ldy #>TIMEW                                    ; 98eb: a0 04       ..
@@ -4329,8 +4329,8 @@ PVAL
     lda (ARGB),y                                   ; 997b: b1 3c       .<             ; Y msb
     sta PWORD+3                                    ; 997d: 8d 1e 04    ...
     lda #osword_read_pixel                         ; 9980: a9 09       ..
-    ldx #<(PWORD)                                  ; 9982: a2 1b       ..
-    ldy #>(PWORD)                                  ; 9984: a0 04       ..
+    ldx #<PWORD                                    ; 9982: a2 1b       ..
+    ldy #>PWORD                                    ; 9984: a0 04       ..
     jsr osword                                     ; 9986: 20 f1 ff     ..            ; Read pixel value
     jsr ALNUM                                      ; 9989: 20 3d 84     =.
     ldy #2                                         ; 998c: a0 02       ..
@@ -5036,8 +5036,8 @@ CLUPB
     sta HANDLE                                     ; 9dca: 85 13       ..             ; Restore file handle
 NOMESC
     lda #osword_read_interval_timer                ; 9dcc: a9 03       ..
-    ldx #<(TIMEW)                                  ; 9dce: a2 25       .%
-    ldy #>(TIMEW)                                  ; 9dd0: a0 04       ..
+    ldx #<TIMEW                                    ; 9dce: a2 25       .%
+    ldy #>TIMEW                                    ; 9dd0: a0 04       ..
     jsr osword                                     ; 9dd2: 20 f1 ff     ..            ; Read timer; Read interval timer
     clc                                            ; 9dd5: 18          .
     ldy #0                                         ; 9dd6: a0 00       ..
@@ -8106,44 +8106,17 @@ pydis_end
 !if (<(BACALL+1)) != $dd {
     !error "Assertion failed: <(BACALL+1) == $dd"
 }
-!if (<(DOSBUF)) != $00 {
-    !error "Assertion failed: <(DOSBUF) == $00"
-}
 !if (<(ELFIN-1)) != $c6 {
     !error "Assertion failed: <(ELFIN-1) == $c6"
-}
-!if (<(GOSTR)) != $31 {
-    !error "Assertion failed: <(GOSTR) == $31"
-}
-!if (<(INCB)) != $3e {
-    !error "Assertion failed: <(INCB) == $3e"
-}
-!if (<(IODCB)) != $16 {
-    !error "Assertion failed: <(IODCB) == $16"
-}
-!if (<(LISTR)) != $39 {
-    !error "Assertion failed: <(LISTR) == $39"
-}
-!if (<(OSINFO)) != $38 {
-    !error "Assertion failed: <(OSINFO) == $38"
-}
-!if (<(OSWBUF)) != $00 {
-    !error "Assertion failed: <(OSWBUF) == $00"
-}
-!if (<(PWORD)) != $1b {
-    !error "Assertion failed: <(PWORD) == $1b"
-}
-!if (<(TIMEW)) != $25 {
-    !error "Assertion failed: <(TIMEW) == $25"
-}
-!if (<(TIMZER)) != $76 {
-    !error "Assertion failed: <(TIMZER) == $76"
 }
 !if (<ACL) != $72 {
     !error "Assertion failed: <ACL == $72"
 }
 !if (<CTRUE) != $11 {
     !error "Assertion failed: <CTRUE == $11"
+}
+!if (<DOSBUF) != $00 {
+    !error "Assertion failed: <DOSBUF == $00"
 }
 !if (<DWARF) != $eb {
     !error "Assertion failed: <DWARF == $eb"
@@ -8154,11 +8127,20 @@ pydis_end
 !if (<GCTIME) != $20 {
     !error "Assertion failed: <GCTIME == $20"
 }
+!if (<GOSTR) != $31 {
+    !error "Assertion failed: <GOSTR == $31"
+}
 !if (<HILISP) != $00 {
     !error "Assertion failed: <HILISP == $00"
 }
 !if (<HIWARM) != $7b {
     !error "Assertion failed: <HIWARM == $7b"
+}
+!if (<INCB) != $3e {
+    !error "Assertion failed: <INCB == $3e"
+}
+!if (<IODCB) != $16 {
+    !error "Assertion failed: <IODCB == $16"
 }
 !if (<KBD) != $ff {
     !error "Assertion failed: <KBD == $ff"
@@ -8169,14 +8151,26 @@ pydis_end
 !if (<LISPST) != $00 {
     !error "Assertion failed: <LISPST == $00"
 }
+!if (<LISTR) != $39 {
+    !error "Assertion failed: <LISTR == $39"
+}
 !if (<NAMBUF) != $00 {
     !error "Assertion failed: <NAMBUF == $00"
 }
 !if (<NIL) != $24 {
     !error "Assertion failed: <NIL == $24"
 }
+!if (<OSINFO) != $38 {
+    !error "Assertion failed: <OSINFO == $38"
+}
+!if (<OSWBUF) != $00 {
+    !error "Assertion failed: <OSWBUF == $00"
+}
 !if (<PRINGO+2) != $25 {
     !error "Assertion failed: <PRINGO+2 == $25"
+}
+!if (<PWORD) != $1b {
+    !error "Assertion failed: <PWORD == $1b"
 }
 !if (<QUOTE) != $2d {
     !error "Assertion failed: <QUOTE == $2d"
@@ -8186,6 +8180,9 @@ pydis_end
 }
 !if (<TIMEW) != $25 {
     !error "Assertion failed: <TIMEW == $25"
+}
+!if (<TIMZER) != $76 {
+    !error "Assertion failed: <TIMZER == $76"
 }
 !if (<VECTAB) != $00 {
     !error "Assertion failed: <VECTAB == $00"
@@ -8202,41 +8199,14 @@ pydis_end
 !if (>(BACALL+1)) != $8f {
     !error "Assertion failed: >(BACALL+1) == $8f"
 }
-!if (>(DOSBUF)) != $07 {
-    !error "Assertion failed: >(DOSBUF) == $07"
-}
 !if (>(ELFIN-1)) != $9f {
     !error "Assertion failed: >(ELFIN-1) == $9f"
-}
-!if (>(GOSTR)) != $82 {
-    !error "Assertion failed: >(GOSTR) == $82"
 }
 !if (>(HILISP-LISVAL)) != $57 {
     !error "Assertion failed: >(HILISP-LISVAL) == $57"
 }
-!if (>(INCB)) != $82 {
-    !error "Assertion failed: >(INCB) == $82"
-}
-!if (>(IODCB)) != $04 {
-    !error "Assertion failed: >(IODCB) == $04"
-}
-!if (>(LISTR)) != $82 {
-    !error "Assertion failed: >(LISTR) == $82"
-}
-!if (>(OSINFO)) != $04 {
-    !error "Assertion failed: >(OSINFO) == $04"
-}
-!if (>(OSWBUF)) != $06 {
-    !error "Assertion failed: >(OSWBUF) == $06"
-}
-!if (>(PWORD)) != $04 {
-    !error "Assertion failed: >(PWORD) == $04"
-}
-!if (>(TIMEW)) != $04 {
-    !error "Assertion failed: >(TIMEW) == $04"
-}
-!if (>(TIMZER)) != $82 {
-    !error "Assertion failed: >(TIMZER) == $82"
+!if (>DOSBUF) != $07 {
+    !error "Assertion failed: >DOSBUF == $07"
 }
 !if (>DWARF) != $9e {
     !error "Assertion failed: >DWARF == $9e"
@@ -8247,11 +8217,20 @@ pydis_end
 !if (>GCTIME) != $04 {
     !error "Assertion failed: >GCTIME == $04"
 }
+!if (>GOSTR) != $82 {
+    !error "Assertion failed: >GOSTR == $82"
+}
 !if (>HILISP) != $d7 {
     !error "Assertion failed: >HILISP == $d7"
 }
 !if (>HIWARM) != $d9 {
     !error "Assertion failed: >HIWARM == $d9"
+}
+!if (>INCB) != $82 {
+    !error "Assertion failed: >INCB == $82"
+}
+!if (>IODCB) != $04 {
+    !error "Assertion failed: >IODCB == $04"
 }
 !if (>KBD) != $00 {
     !error "Assertion failed: >KBD == $00"
@@ -8259,17 +8238,32 @@ pydis_end
 !if (>LISPST) != $80 {
     !error "Assertion failed: >LISPST == $80"
 }
+!if (>LISTR) != $82 {
+    !error "Assertion failed: >LISTR == $82"
+}
 !if (>NAMBUF) != $06 {
     !error "Assertion failed: >NAMBUF == $06"
 }
+!if (>OSINFO) != $04 {
+    !error "Assertion failed: >OSINFO == $04"
+}
+!if (>OSWBUF) != $06 {
+    !error "Assertion failed: >OSWBUF == $06"
+}
 !if (>PRINGO) != $8b {
     !error "Assertion failed: >PRINGO == $8b"
+}
+!if (>PWORD) != $04 {
+    !error "Assertion failed: >PWORD == $04"
 }
 !if (>RELTAB) != $b8 {
     !error "Assertion failed: >RELTAB == $b8"
 }
 !if (>TIMEW) != $04 {
     !error "Assertion failed: >TIMEW == $04"
+}
+!if (>TIMZER) != $82 {
+    !error "Assertion failed: >TIMZER == $82"
 }
 !if (>VECTAB) != $a4 {
     !error "Assertion failed: >VECTAB == $a4"

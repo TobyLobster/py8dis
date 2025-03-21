@@ -859,6 +859,7 @@ def emit(print_output=True):
         output.append("{0}     Number of string bytes   = {1} bytes".format(comment_prefix, stats.num_string_bytes))
         output.append("{0}     Number of strings        = {1}".format(comment_prefix, stats.num_strings))
         output.append("")
+        # output.append(comment_prefix + ("\n"+comment_prefix).join(classification.get_classification_map().split("\n")))
 
     # Join all lines of output
     result = "\n".join(formatter.sanitise(str(line)) for line in output)

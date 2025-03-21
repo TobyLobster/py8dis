@@ -7666,8 +7666,8 @@ sub_cac5d
     stx l002d                                                         ; ac6b: 86 2d       .-
     pla                                                               ; ac6d: 68          h
     sta l002c                                                         ; ac6e: 85 2c       .,
-    ldy #>(l002a)                                                     ; ac70: a0 00       ..
-    ldx #<(l002a)                                                     ; ac72: a2 2a       .*
+    ldy #>l002a                                                       ; ac70: a0 00       ..
+    ldx #<l002a                                                       ; ac72: a2 2a       .*
     lda #osword_read_pixel                                            ; ac74: a9 09       ..
     jsr osword                                                        ; ac76: 20 f1 ff     ..            ; Read pixel value
     lda l002e                                                         ; ac79: a5 2e       ..
@@ -8076,8 +8076,8 @@ sub_cae8c
     lda (l0019),y                                                     ; ae8d: b1 19       ..
     cmp #$24 ; '$'                                                    ; ae8f: c9 24       .$
     beq cae9f                                                         ; ae91: f0 0c       ..
-    ldx #<(l002a)                                                     ; ae93: a2 2a       .*
-    ldy #>(l002a)                                                     ; ae95: a0 00       ..
+    ldx #<l002a                                                       ; ae93: a2 2a       .*
+    ldy #>l002a                                                       ; ae95: a0 00       ..
     lda #osword_read_clock                                            ; ae97: a9 01       ..
     jsr osword                                                        ; ae99: 20 f1 ff     ..            ; Read system clock
     lda #$40 ; '@'                                                    ; ae9c: a9 40       .@
@@ -8087,8 +8087,8 @@ sub_cae8c
 cae9f
     inc l001b                                                         ; ae9f: e6 1b       ..
     lda #osword_read_cmos_clock                                       ; aea1: a9 0e       ..
-    ldx #<(l0600)                                                     ; aea3: a2 00       ..
-    ldy #>(l0600)                                                     ; aea5: a0 06       ..
+    ldx #<l0600                                                       ; aea3: a2 00       ..
+    ldy #>l0600                                                       ; aea5: a0 06       ..
     stz l0600                                                         ; aea7: 9c 00 06    ...
     jsr osword                                                        ; aeaa: 20 f1 ff     ..            ; Read CMOS clock
     lda #$18                                                          ; aead: a9 18       ..
@@ -8815,8 +8815,8 @@ cb341
     dex                                                               ; b344: ca          .
     bpl cb341                                                         ; b345: 10 fa       ..
     tya                                                               ; b347: 98          .
-    ldx #<(l0037)                                                     ; b348: a2 37       .7
-    ldy #>(l0037)                                                     ; b34a: a0 00       ..
+    ldx #<l0037                                                       ; b348: a2 37       .7
+    ldy #>l0037                                                       ; b34a: a0 00       ..
 ; $b34c referenced 1 time by $9750
 cb34c
     jsr osword                                                        ; b34c: 20 f1 ff     ..
@@ -10688,9 +10688,9 @@ sub_cbe06
 sub_cbe17
     jsr sub_cbe81                                                     ; be17: 20 81 be     ..
     stz l003d                                                         ; be1a: 64 3d       d=
-    ldy #>(l0037)                                                     ; be1c: a0 00       ..
+    ldy #>l0037                                                       ; be1c: a0 00       ..
     lda #osfile_load                                                  ; be1e: a9 ff       ..
-    ldx #<(l0037)                                                     ; be20: a2 37       .7
+    ldx #<l0037                                                       ; be20: a2 37       .7
     jsr osfile                                                        ; be22: 20 dd ff     ..            ; Load named file (if XY+6 contains 0, use specified address) (A=255)
 ; $be25 referenced 6 times by $8fd2, $8fed, $944f, $b42f, $bb8b, $be95
 sub_cbe25
@@ -10800,15 +10800,15 @@ sub_cbe95
     stx l0042                                                         ; bebb: 86 42       .B
     lda #osfile_save                                                  ; bebd: a9 00       ..
     tay                                                               ; bebf: a8          .              ; Y=$00
-    ldx #<(l0037)                                                     ; bec0: a2 37       .7
+    ldx #<l0037                                                       ; bec0: a2 37       .7
     jsr osfile                                                        ; bec2: 20 dd ff     ..            ; Save a block of memory (returning file length and attributes) (A=0)
     bra cbeeb                                                         ; bec5: 80 24       .$
 sub_cbec7
     jsr sub_cbe76                                                     ; bec7: 20 76 be     v.
-    ldx #<(l0600)                                                     ; beca: a2 00       ..
+    ldx #<l0600                                                       ; beca: a2 00       ..
 sub_cbecc
 lbecd = sub_cbecc+1
-    ldy #>(l0600)                                                     ; becc: a0 06       ..
+    ldy #>l0600                                                       ; becc: a0 06       ..
 ; overlapping: asl l0020                                              ; becd: 06 20       .
 ; $becd referenced 1 time by $be59
     jsr oscli                                                         ; bece: 20 f7 ff     ..
@@ -10874,8 +10874,8 @@ cbf1a
 sub_cbf22
     lda #osword_read_io_memory                                        ; bf22: a9 05       ..
     phx                                                               ; bf24: da          .
-    ldx #<(l002a)                                                     ; bf25: a2 2a       .*
-    ldy #>(l002a)                                                     ; bf27: a0 00       ..
+    ldx #<l002a                                                       ; bf25: a2 2a       .*
+    ldy #>l002a                                                       ; bf27: a0 00       ..
     jsr osword                                                        ; bf29: 20 f1 ff     ..            ; Read byte of I/O processor memory
     plx                                                               ; bf2c: fa          .
     lda l002e                                                         ; bf2d: a5 2e       ..
@@ -10916,8 +10916,8 @@ loop_cbf56
     sta l0600,y                                                       ; bf59: 99 00 06    ...
     dey                                                               ; bf5c: 88          .
     bpl loop_cbf56                                                    ; bf5d: 10 f7       ..
-    ldx #<(l0600)                                                     ; bf5f: a2 00       ..
-    ldy #>(l0600)                                                     ; bf61: a0 06       ..
+    ldx #<l0600                                                       ; bf5f: a2 00       ..
+    ldy #>l0600                                                       ; bf61: a0 06       ..
     jmp oscli                                                         ; bf63: 4c f7 ff    L..
 
 ; $bf66 referenced 1 time by $80ac
@@ -10948,23 +10948,23 @@ lbf71
     !text "fff"                                                       ; bffd: 66 66 66    fff
 pydis_end
 
-!if (<(l002a)) != $2a {
-    !error "Assertion failed: <(l002a) == $2a"
+!if (<l002a) != $2a {
+    !error "Assertion failed: <l002a == $2a"
 }
-!if (<(l0037)) != $37 {
-    !error "Assertion failed: <(l0037) == $37"
+!if (<l0037) != $37 {
+    !error "Assertion failed: <l0037 == $37"
 }
-!if (<(l0600)) != $00 {
-    !error "Assertion failed: <(l0600) == $00"
+!if (<l0600) != $00 {
+    !error "Assertion failed: <l0600 == $00"
 }
-!if (>(l002a)) != $00 {
-    !error "Assertion failed: >(l002a) == $00"
+!if (>l002a) != $00 {
+    !error "Assertion failed: >l002a == $00"
 }
-!if (>(l0037)) != $00 {
-    !error "Assertion failed: >(l0037) == $00"
+!if (>l0037) != $00 {
+    !error "Assertion failed: >l0037 == $00"
 }
-!if (>(l0600)) != $06 {
-    !error "Assertion failed: >(l0600) == $06"
+!if (>l0600) != $06 {
+    !error "Assertion failed: >l0600 == $06"
 }
 !if (c9073) != $9073 {
     !error "Assertion failed: c9073 == $9073"

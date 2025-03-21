@@ -5134,8 +5134,8 @@ cdb87
     bne cdbb8                                                         // dba2: d0 14       ..
     lda #$8d                                                          // dba4: a9 8d       ..
     jsr osbyte140EntryPoint                                           // dba6: 20 35 f1     5.
-    ldx #<(lead2)                                                     // dba9: a2 d2       ..
-    ldy #>(lead2)                                                     // dbab: a0 ea       ..
+    ldx #<lead2                                                       // dba9: a2 d2       ..
+    ldy #>lead2                                                       // dbab: a0 ea       ..
     dec l0267                                                         // dbad: ce 67 02    .g.
     jsr oscli                                                         // dbb0: 20 f7 ff     ..
     inc l0267                                                         // dbb3: ee 67 02    .g.

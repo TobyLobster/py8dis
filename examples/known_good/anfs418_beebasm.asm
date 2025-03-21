@@ -1283,9 +1283,9 @@ l8600 = sub_c85ff+1
     pha                                                               ; 867f: 48          H
     rts                                                               ; 8680: 60          `
 
-    equb <((sub_c868d)-1), <((sub_c8691)-1), <((sub_c86d3)-1)         ; 8681: 8c 90 d2    ...
-    equb <((sub_c86d3)-1), <((sub_c86d3)-1),     <((c86e3)-1)         ; 8684: d2 d2 e2    ...
-    equb     <((c86e3)-1), <((sub_c8689)-1)                           ; 8687: e2 88       ..
+    equb <(sub_c868d - 1), <(sub_c8691 - 1), <(sub_c86d3 - 1)         ; 8681: 8c 90 d2    ...
+    equb <(sub_c86d3 - 1), <(sub_c86d3 - 1),     <(c86e3 - 1)         ; 8684: d2 d2 e2    ...
+    equb     <(c86e3 - 1), <(sub_c8689 - 1)                           ; 8687: e2 88       ..
 
 .sub_c8689
     lda #3                                                            ; 8689: a9 03       ..
@@ -1659,22 +1659,22 @@ l8869 = c8868+1
     sta l0d60                                                         ; 88dc: 8d 60 0d    .`.
     jmp c83f5                                                         ; 88df: 4c f5 83    L..
 
-    equb >(l0e81)                                                     ; 88e2: 0e          .
-    equb >(l0e00)                                                     ; 88e3: 0e          .
-    equb >(l0a00)                                                     ; 88e4: 0a          .
-    equb >(l0a00)                                                     ; 88e5: 0a          .
-    equb >(l0a00)                                                     ; 88e6: 0a          .
-    equb >(l0601)                                                     ; 88e7: 06          .
-    equb >(l0601)                                                     ; 88e8: 06          .
-    equb >(l0a81)                                                     ; 88e9: 0a          .
-    equb <(l0e81)                                                     ; 88ea: 81          .
-    equb <(l0e00)                                                     ; 88eb: 00          .
-    equb <(l0a00)                                                     ; 88ec: 00          .
-    equb <(l0a00)                                                     ; 88ed: 00          .
-    equb <(l0a00)                                                     ; 88ee: 00          .
-    equb <(l0601)                                                     ; 88ef: 01          .
-    equb <(l0601)                                                     ; 88f0: 01          .
-    equb <(l0a81)                                                     ; 88f1: 81          .
+    equb >l0e81                                                       ; 88e2: 0e          .
+    equb >l0e00                                                       ; 88e3: 0e          .
+    equb >l0a00                                                       ; 88e4: 0a          .
+    equb >l0a00                                                       ; 88e5: 0a          .
+    equb >l0a00                                                       ; 88e6: 0a          .
+    equb >l0601                                                       ; 88e7: 06          .
+    equb >l0601                                                       ; 88e8: 06          .
+    equb >l0a81                                                       ; 88e9: 0a          .
+    equb <l0e81                                                       ; 88ea: 81          .
+    equb <l0e00                                                       ; 88eb: 00          .
+    equb <l0a00                                                       ; 88ec: 00          .
+    equb <l0a00                                                       ; 88ed: 00          .
+    equb <l0a00                                                       ; 88ee: 00          .
+    equb <l0601                                                       ; 88ef: 01          .
+    equb <l0601                                                       ; 88f0: 01          .
+    equb <l0a81                                                       ; 88f1: 81          .
 
 ; &88f2 referenced 3 times by &81bf, &84d8, &86e0
 .sub_c88f2
@@ -5579,8 +5579,8 @@ error_template_minus_1 = sub_c96b3+1
     lda #1                                                            ; a08e: a9 01       ..
     sta l00b4                                                         ; a090: 85 b4       ..
     lda #&13                                                          ; a092: a9 13       ..
-    ldx #<(l00b4)                                                     ; a094: a2 b4       ..
-    ldy #>(l00b4)                                                     ; a096: a0 00       ..
+    ldx #<l00b4                                                       ; a094: a2 b4       ..
+    ldy #>l00b4                                                       ; a096: a0 00       ..
     jmp osword                                                        ; a098: 4c f1 ff    L..            ; Read/Write NFS information (see https://beebwiki.mdfs.net/OSWORDs)
 
 ; &a09b referenced 1 time by &a089
@@ -9861,25 +9861,19 @@ lb487 = sub_cb485+2
 .pydis_end
 
     assert (255 - inkey_key_ctrl) EOR 128 == &81
-    assert <((c86e3)-1) == &e2
-    assert <((sub_c8689)-1) == &88
-    assert <((sub_c868d)-1) == &8c
-    assert <((sub_c8691)-1) == &90
-    assert <((sub_c86d3)-1) == &d2
+    assert <(c86e3 - 1) == &e2
     assert <(ca114-1) == &13
     assert <(ca1c1-1) == &c0
     assert <(ca2f4-1) == &f3
     assert <(just_rts-1) == &57
-    assert <(l00b4) == &b4
-    assert <(l0601) == &01
-    assert <(l0a00) == &00
-    assert <(l0a81) == &81
-    assert <(l0e00) == &00
-    assert <(l0e81) == &81
     assert <(service_handler_claim_absolute_workspace-1) == &a4
     assert <(service_handler_claim_private_workspace-1) == &b7
     assert <(sub_c8028-1) == &27
     assert <(sub_c8090-1) == &8f
+    assert <(sub_c8689 - 1) == &88
+    assert <(sub_c868d - 1) == &8c
+    assert <(sub_c8691 - 1) == &90
+    assert <(sub_c86d3 - 1) == &d2
     assert <(sub_c8983-1) == &82
     assert <(sub_c8b0d-1) == &0c
     assert <(sub_c8c4e-1) == &4d
@@ -9904,16 +9898,16 @@ lb487 = sub_cb485+2
     assert <(sub_cac98-1) == &97
     assert <(sub_cad80-1) == &7f
     assert <(sub_caf3e-1) == &3d
+    assert <l00b4 == &b4
+    assert <l0601 == &01
+    assert <l0a00 == &00
+    assert <l0a81 == &81
+    assert <l0e00 == &00
+    assert <l0e81 == &81
     assert >(ca114-1) == &a1
     assert >(ca1c1-1) == &a1
     assert >(ca2f4-1) == &a2
     assert >(just_rts-1) == &8e
-    assert >(l00b4) == &00
-    assert >(l0601) == &06
-    assert >(l0a00) == &0a
-    assert >(l0a81) == &0a
-    assert >(l0e00) == &0e
-    assert >(l0e81) == &0e
     assert >(service_handler_claim_absolute_workspace-1) == &8e
     assert >(service_handler_claim_private_workspace-1) == &8e
     assert >(sub_c8028-1) == &80
@@ -9942,6 +9936,12 @@ lb487 = sub_cb485+2
     assert >(sub_cac98-1) == &ac
     assert >(sub_cad80-1) == &ad
     assert >(sub_caf3e-1) == &af
+    assert >l00b4 == &00
+    assert >l0601 == &06
+    assert >l0a00 == &0a
+    assert >l0a81 == &0a
+    assert >l0e00 == &0e
+    assert >l0e81 == &0e
     assert c8dbc-1 == &8dbb
     assert c8e15-1 == &8e14
     assert copyright - rom_header == &19

@@ -86,7 +86,8 @@ for i in range(8):
     addr = 0x8600 + min_y + i
     code_at = (0x8600 + memory[addr]) + 1
     entry(code_at)
-    expr(addr, utils.LazyString("<((%s)-1)", get_label(code_at, addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)))
+    lab = get_label(code_at, addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+    expr(addr, make_lo(make_subtract(lab, 1)))
 
 nonentry(0xa17c) # preceding BNE is always taken
 nonentry(0xaefb) # preceding BNE is always taken

@@ -725,7 +725,13 @@ def bracket(expr):
     """Add brackets to an expression if it's not a simple label name or number"""
 
     if isinstance(expr, utils.LazyString):
-        return utils.LazyString("(%s)", expr)
+        def late_formatter():
+            strtext = str(expr)
+            if strtext.isdigit() or is_simple_name(strtext):
+                return strtext
+            return "({0})".format(strtext)
+
+        return utils.LazyString("%s", late_formatter)
     elif utils.is_integer_type(expr) or expr.isdigit() or is_simple_name(expr):
         return str(expr)
     return "(" + expr + ")"
