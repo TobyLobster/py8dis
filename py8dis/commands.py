@@ -65,6 +65,7 @@ from memorymanager import get_u8_binary, get_u16_binary, get_u16_be_binary, get_
 from align import Align
 from format import Format
 from binaryaddrtype import BinaryAddrType
+from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 
 # These modules are used to implement things in this file and aren't so directly
 # exposed to the user. The user can still access them using the qualified names
@@ -721,101 +722,6 @@ def stringn(runtime_addr):
 def is_simple_name(s):
     return disassembly.is_simple_name(s)
 
-def bracket(expr):
-    """Add brackets to an expression if it's not a simple label name or number"""
-
-    if isinstance(expr, utils.LazyString):
-        def late_formatter():
-            strtext = str(expr)
-            if strtext.isdigit() or is_simple_name(strtext):
-                return strtext
-            return "({0})".format(strtext)
-
-        return utils.LazyString("%s", late_formatter)
-    elif utils.is_integer_type(expr) or expr.isdigit() or is_simple_name(expr):
-        return str(expr)
-    return "(" + expr + ")"
-
-# Get assembler specific operator name from a generic operator name
-def assembler_op_name(s):
-    """Translate an operator name into one that is assembler specific"""
-
-    trans = config.get_assembler().translate_binary_operator_names()
-    if s in trans:
-        result = trans[s]
-        if result == None:
-            utils.error("Assembler can't handle operator " + s)
-        return result
-    return s
-
-# Unary operators
-def make_op1(op, expr):
-    """Make a unary operator expression for the assembler"""
-
-    if (op == None) or (expr == None):
-        return None
-
-    trans = config.get_assembler().translate_unary_operator_names()
-    if op in trans:
-        op = trans[op]
-        if result == None:
-            utils.error("Assembler can't handle operator " + op)
-
-    if isinstance(expr, utils.LazyString):
-        return utils.LazyString("%s%s", op, bracket(expr))
-    return op + bracket(expr)
-
-# Binary operators
-def make_op2(expr1, op, expr2):
-    """Make a binary operator expression for the assembler"""
-    if (expr1 == None) or (op == None) or (expr2 == None):
-        return None
-    op_name = assembler_op_name(op)
-    if op_name == None:
-        return None
-
-    if isinstance(expr1, utils.LazyString) or isinstance(expr2, utils.LazyString):
-        return utils.LazyString("%s %s %s", bracket(expr1), op_name, bracket(expr2))
-    return bracket(expr1) + " " + op_name + " " + bracket(expr2)
-
-def make_hex(value):
-    return config.get_assembler().hex(value)
-
-# Convenience functions
-def make_lo(expr):
-    return make_op1('<', expr)
-
-def make_hi(expr):
-    return make_op1('>', expr)
-
-def make_or(expr1, expr2):
-    return make_op2(expr1, 'OR', expr2)
-
-def make_and(expr1, expr2):
-    return make_op2(expr1, 'AND', expr2)
-
-def make_eor(expr1, expr2):
-    return make_op2(expr1, 'EOR', expr2)
-
-def make_xor(expr1, expr2):
-    return make_op2(expr1, 'EOR', expr2)
-
-def make_add(expr1, expr2):
-    return make_op2(expr1, '+', expr2)
-
-def make_subtract(expr1, expr2):
-    return make_op2(expr1, '-', expr2)
-
-def make_multiply(expr1, expr2):
-    return make_op2(expr1, '*', expr2)
-
-def make_divide(expr1, expr2):
-    return make_op2(expr1, 'DIV', expr2)
-
-def make_modulo(expr1, expr2):
-    return make_op2(expr1, 'MOD', expr2)
-
-
 def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     """
     Classifies code and data, calculates labels and emits assembly.
@@ -845,6 +751,9 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Output all the references
     if config.get_label_references():
         trace.cpu.add_references_comments()
+
+    # Do regex style matches to find common code tropes and comment them
+    trace.cpu.analyse_with_regex()
 
     # Scan the binary for strings (or allow a user function to do it)
     # We do this after tracing so we have the classifications.

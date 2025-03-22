@@ -5497,6 +5497,7 @@ DWARF=NERRC-1
     dey                                            ; a06d: 88          .
     bpl MDIV3                                      ; a06e: 10 f3       ..
     bcc DIV40C                                     ; a070: 90 0e       ..
+    ; This loop copies 5 bytes of memory from TEMP40 to REM40
     ldx #4                                         ; a072: a2 04       ..
 .MDIV4
     lda TEMP40,x                                   ; a074: bd 11 04    ...

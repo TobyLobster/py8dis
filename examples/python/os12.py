@@ -100,6 +100,7 @@ for i in range(0, 4):
 # Output initial section as bytes, in picture binary format
 byte(0xc000, 0x300, cols=1)
 picture_binary(0xc000, 0x300)
+label(0xd952, "ld952")
 
 string(0xfc00, 0xfefe-0xfc00)
 

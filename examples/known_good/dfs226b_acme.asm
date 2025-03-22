@@ -1827,6 +1827,7 @@ c88a6
     and l0f0b,y                                                       ; 28b3: 39 0b 0f    9.. :88b3[1]
     cmp #$ff                                                          ; 28b6: c9 ff       ..  :88b6[1]
     bne c88f4                                                         ; 28b8: d0 3a       .:  :88b8[1]
+    ; This loop copies 7 bytes of memory from l1000 to l1007
     ldx #6                                                            ; 28ba: a2 06       ..  :88ba[1]
 ; $28bc referenced 1 time by $88c3[1]
 loop_c88bc
@@ -2618,6 +2619,7 @@ c8d92
     bvs c8e0e                                                         ; 2da3: 70 69       pi  :8da3[1]
     bit l108a                                                         ; 2da5: 2c 8a 10    ,.. :8da5[1]
     bvc c8e0e                                                         ; 2da8: 50 64       Pd  :8da8[1]
+    ; This loop copies 52 bytes of memory from c0d60 to l1000
     ldx #$33 ; '3'                                                    ; 2daa: a2 33       .3  :8daa[1]
 ; $2dac referenced 1 time by $8db3[1]
 loop_c8dac
@@ -2626,6 +2628,7 @@ loop_c8dac
     dex                                                               ; 2db2: ca          .   :8db2[1]
     bpl loop_c8dac                                                    ; 2db3: 10 f7       ..  :8db3[1]
     jsr sub_c8dc6                                                     ; 2db5: 20 c6 8d     .. :8db5[1]
+    ; This loop copies 52 bytes of memory from l1000 to c0d60
     ldx #$33 ; '3'                                                    ; 2db8: a2 33       .3  :8db8[1]
 ; $2dba referenced 1 time by $8dc1[1]
 loop_c8dba
@@ -2995,6 +2998,7 @@ sub_c8f82
 
 ; $2f94 referenced 1 time by $8cb4[1]
 sub_c8f94
+    ; This loop copies 94 bytes of memory from nmi_handler_rom_start to nmi_handler_ram
     ldx #nmi_handler_rom_end-nmi_handler_rom_start-1                  ; 2f94: a2 5d       .]  :8f94[1]
 ; $2f96 referenced 1 time by $8f9d[1]
 loop_c8f96
@@ -3007,10 +3011,11 @@ loop_c8f96
     bvc c8fb5                                                         ; 2fa3: 50 10       P.  :8fa3[1]
     lda #nmi_XXX8-(nmi_beq+2)                                         ; 2fa5: a9 4d       .M  :8fa5[1]
     sta nmi_lda_immXXX4+1                                             ; 2fa7: 8d 22 0d    .". :8fa7[1]
+    ; This loop copies 14 bytes of memory from nmi_handler_rom_end to nmi_XXX2
     ldx #nmi3_handler_rom_end-nmi3_handler_rom_start                  ; 2faa: a2 0e       ..  :8faa[1]
 ; $2fac referenced 1 time by $8fb3[1]
 loop_c8fac
-    lda nmi3_handler_rom_start-1,x                                    ; 2fac: bd 2f 90    ./. :8fac[1]
+    lda nmi_handler_rom_end - 1,x                                     ; 2fac: bd 2f 90    ./. :8fac[1]
     sta nmi_XXX2-1,x                                                  ; 2faf: 9d 38 0d    .8. :8faf[1]
     dex                                                               ; 2fb2: ca          .   :8fb2[1]
     bne loop_c8fac                                                    ; 2fb3: d0 f7       ..  :8fb3[1]
@@ -3167,11 +3172,12 @@ nmi3_handler_rom_end
     ldx nmi_sta_abs+1                                                 ; 303e: ae 3d 0d    .=. :903e[1]
     lda nmi_sta_abs+2                                                 ; 3041: ad 3e 0d    .>. :9041[1]
     pha                                                               ; 3044: 48          H   :9044[1]
+    ; This loop copies 148 bytes of memory from nmi_handler2_rom_start to nmi_handler_ram
     ldy #nmi_handler2_rom_end-nmi_handler2_rom_start                  ; 3045: a0 94       ..  :9045[1]
 ; $3047 referenced 1 time by $904e[1]
 loop_c9047
-    lda nmi_handler2_rom_start-1,y                                    ; 3047: b9 66 90    .f. :9047[1]
-    sta l0cff,y                                                       ; 304a: 99 ff 0c    ... :904a[1]
+    lda nmi_handler2_rom_start - 1,y                                  ; 3047: b9 66 90    .f. :9047[1]
+    sta nmi_handler_ram - 1,y                                         ; 304a: 99 ff 0c    ... :904a[1]
     dey                                                               ; 304d: 88          .   :904d[1]
     bne loop_c9047                                                    ; 304e: d0 f7       ..  :904e[1]
     pla                                                               ; 3050: 68          h   :9050[1]
@@ -4040,6 +4046,7 @@ c956f
     lda #6                                                            ; 3573: a9 06       ..  :9573[1]
     jsr sub_c8020                                                     ; 3575: 20 20 80      . :9575[1]
     lda fdc_1770_data                                                 ; 3578: ad 87 fe    ... :9578[1]
+    ; This loop copies 14 bytes of memory from l9aec to filev
     ldx #$0d                                                          ; 357b: a2 0d       ..  :957b[1]
 ; $357d referenced 1 time by $9584[1]
 loop_c957d
@@ -11107,6 +11114,15 @@ pydis_end
 }
 !if (nmi_handler2_rom_end-nmi_handler2_rom_start) != $94 {
     !error "Assertion failed: nmi_handler2_rom_end-nmi_handler2_rom_start == $94"
+}
+!if (nmi_handler2_rom_start - 1) != $9066 {
+    !error "Assertion failed: nmi_handler2_rom_start - 1 == $9066"
+}
+!if (nmi_handler_ram - 1) != $0cff {
+    !error "Assertion failed: nmi_handler_ram - 1 == $0cff"
+}
+!if (nmi_handler_rom_end - 1) != $902f {
+    !error "Assertion failed: nmi_handler_rom_end - 1 == $902f"
 }
 !if (nmi_handler_rom_end-nmi_handler_rom_start-1) != $5d {
     !error "Assertion failed: nmi_handler_rom_end-nmi_handler_rom_start-1 == $5d"

@@ -243,8 +243,6 @@ nmi3_move_id = move(0xd39, 0x9030, 0xe)
 label(0x9030, "nmi3_handler_rom_start")
 label(0x902f+0xf, "nmi3_handler_rom_end")
 expr(0x8fab, "nmi3_handler_rom_end-nmi3_handler_rom_start")
-expr_label(0x902f, "nmi3_handler_rom_start-1")
-expr(0x8fb0, "nmi_XXX2-1")
 with nmi3_move_id:
     # Note that there are two different blocks of code move()d to 0xd39, so to get the labels
     # to appear in the desired place in the output we have to disambiguate with this "with".

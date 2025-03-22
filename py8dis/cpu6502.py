@@ -14,6 +14,7 @@ import utils
 import sys
 from align import Align
 from binaryaddrtype import BinaryAddrType
+from memorymanager import RuntimeAddr, BinaryAddr, BinaryLocation
 
 memory_binary = memorymanager.memory_binary
 
@@ -1494,3 +1495,7 @@ class Cpu6502(cpu.Cpu):
                                 self.return_array[defined_at_binary_addr] = self.return_index
 
                             lmd.name = "return_{0}".format(self.return_array[defined_at_binary_addr])
+
+
+    def analyse_with_regex(self):
+        super().analyse_with_regex_for_6502_like_cpus()

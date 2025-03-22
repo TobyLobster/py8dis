@@ -265,7 +265,7 @@ def get_constant16(binary_addr):
         return get_expression(binary_addr, memorymanager.get_u16_binary(binary_addr))
     return mainformatter.constant16(binary_addr)
 
-def get_address8(binary_addr):
+def get_address8(binary_addr, offset=0):
     """Get a string representing the 8 bit address at binary_addr.
 
     This could return a label name, an expression or failing that just
@@ -273,12 +273,12 @@ def get_address8(binary_addr):
     e.g. for converting 'LDA $12' into 'LDA num_lives'.
     """
 
-    operand = memory_binary[binary_addr]
+    operand = (memory_binary[binary_addr] + offset) & 255
     if binary_addr not in expressions:
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
     return get_expression(binary_addr, operand)
 
-def get_address16(binary_addr):
+def get_address16(binary_addr, offset=0):
     """Get a string representing the 16 bit address at binary_addr.
 
     This could return a label name, an expression or failing that just
@@ -286,8 +286,8 @@ def get_address16(binary_addr):
     for converting 'JSR $1234' into 'JSR my_label'.
     """
 
-    operand = memorymanager.get_u16_binary(binary_addr)
-    if binary_addr not in expressions:
+    operand = (memorymanager.get_u16_binary(binary_addr) + offset) & 65535
+    if binary_addr not in expressions or (offset != 0):
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
 
     assert isinstance(disassembly.get_classification(binary_addr), Word) or (isinstance(disassembly.get_classification(binary_addr - 1), trace.cpu.Opcode) and disassembly.get_classification(binary_addr - 1).length() == 3), "Address: %s" % hex(binary_addr)

@@ -119,6 +119,7 @@ evntv                                           = &0220
 l028d                                           = &028d
 l0700                                           = &0700
 l0cff                                           = &0cff
+l0d38                                           = &0d38
 l0df0                                           = &0df0
 l0e00                                           = &0e00
 l0e07                                           = &0e07
@@ -253,6 +254,7 @@ l111a                                           = &111a
 l111b                                           = &111b
 l111c                                           = &111c
 l111d                                           = &111d
+c902f                                           = &902f
 romsel                                          = &fe30
 fdc_8271_command_or_status_or_1770_drive_control = &fe80
 fdc_8271_data_or_1770_command_or_status         = &fe84
@@ -1818,6 +1820,7 @@ l8004 = service_entry+1
     and l0f0b,y                                                       ; 88b3: 39 0b 0f    9..
     cmp #&ff                                                          ; 88b6: c9 ff       ..
     bne c88f4                                                         ; 88b8: d0 3a       .:
+    ; This loop copies 7 bytes of memory from l1000 to l1007
     ldx #6                                                            ; 88ba: a2 06       ..
 ; &88bc referenced 1 time by &88c3
 .loop_c88bc
@@ -2609,6 +2612,7 @@ l8004 = service_entry+1
     bvs c8e0e                                                         ; 8da3: 70 69       pi
     bit l108a                                                         ; 8da5: 2c 8a 10    ,..
     bvc c8e0e                                                         ; 8da8: 50 64       Pd
+    ; This loop copies 52 bytes of memory from c0d60 to l1000
     ldx #&33 ; '3'                                                    ; 8daa: a2 33       .3
 ; &8dac referenced 1 time by &8db3
 .loop_c8dac
@@ -2617,6 +2621,7 @@ l8004 = service_entry+1
     dex                                                               ; 8db2: ca          .
     bpl loop_c8dac                                                    ; 8db3: 10 f7       ..
     jsr sub_c8dc6                                                     ; 8db5: 20 c6 8d     ..
+    ; This loop copies 52 bytes of memory from l1000 to c0d60
     ldx #&33 ; '3'                                                    ; 8db8: a2 33       .3
 ; &8dba referenced 1 time by &8dc1
 .loop_c8dba
@@ -2986,6 +2991,7 @@ l8004 = service_entry+1
 
 ; &8f94 referenced 1 time by &8cb4
 .sub_c8f94
+    ; This loop copies 94 bytes of memory from nmi_handler_rom_start to nmi_handler_ram
     ldx #nmi_handler_rom_end-nmi_handler_rom_start-1                  ; 8f94: a2 5d       .]
 ; &8f96 referenced 1 time by &8f9d
 .loop_c8f96
@@ -2998,11 +3004,12 @@ l8004 = service_entry+1
     bvc c8fb5                                                         ; 8fa3: 50 10       P.
     lda #nmi_XXX8-(nmi_beq+2)                                         ; 8fa5: a9 4d       .M
     sta nmi_lda_immXXX4+1                                             ; 8fa7: 8d 22 0d    .".
+    ; This loop copies 14 bytes of memory from nmi_handler_rom_end to nmi_XXX2
     ldx #nmi3_handler_rom_end-nmi3_handler_rom_start                  ; 8faa: a2 0e       ..
 ; &8fac referenced 1 time by &8fb3
 .loop_c8fac
-    lda nmi3_handler_rom_start-1,x                                    ; 8fac: bd 2f 90    ./.
-    sta nmi_XXX2-1,x                                                  ; 8faf: 9d 38 0d    .8.
+    lda nmi_handler_rom_end - 1,x                                     ; 8fac: bd 2f 90    ./.
+    sta nmi_XXX2 - 1,x                                                ; 8faf: 9d 38 0d    .8.
     dex                                                               ; 8fb2: ca          .
     bne loop_c8fac                                                    ; 8fb3: d0 f7       ..
 ; &8fb5 referenced 1 time by &8fa3
@@ -3177,11 +3184,12 @@ nmi_XXX5 = l0d1f+1
     ldx nmi_sta_abs+1                                                 ; 903e: ae 3d 0d    .=.
     lda nmi_sta_abs+2                                                 ; 9041: ad 3e 0d    .>.
     pha                                                               ; 9044: 48          H
+    ; This loop copies 148 bytes of memory from nmi_handler2_rom_start to nmi_handler_ram
     ldy #nmi_handler2_rom_end-nmi_handler2_rom_start                  ; 9045: a0 94       ..
 ; &9047 referenced 1 time by &904e
 .loop_c9047
-    lda nmi_handler2_rom_start-1,y                                    ; 9047: b9 66 90    .f.
-    sta l0cff,y                                                       ; 904a: 99 ff 0c    ...
+    lda nmi_handler2_rom_start - 1,y                                  ; 9047: b9 66 90    .f.
+    sta nmi_handler_ram - 1,y                                         ; 904a: 99 ff 0c    ...
     dey                                                               ; 904d: 88          .
     bne loop_c9047                                                    ; 904e: d0 f7       ..
     pla                                                               ; 9050: 68          h
@@ -4065,6 +4073,7 @@ nmi_XXX5 = l0d1f+1
     lda #6                                                            ; 9573: a9 06       ..
     jsr sub_c8020                                                     ; 9575: 20 20 80      .
     lda fdc_1770_data                                                 ; 9578: ad 87 fe    ...
+    ; This loop copies 14 bytes of memory from l9aec to filev
     ldx #&0d                                                          ; 957b: a2 0d       ..
 ; &957d referenced 1 time by &9584
 .loop_c957d
@@ -10949,8 +10958,8 @@ lb6ce = sub_cb6cd+1
     assert nmi_XXX17-(nmi_bcs+2) == &06
     assert nmi_XXX18-(nmi_bcs+2) == &11
     assert nmi_XXX19-(nmi_bcs+2) == &7b
+    assert nmi_XXX2 - 1 == &0d38
     assert nmi_XXX2-(nmi_beq+2) == &2f
-    assert nmi_XXX2-1 == &0d38
     assert nmi_XXX20-(nmi_bcs+2) == &7f
     assert nmi_XXX21-(nmi_bcs+2) == &26
     assert nmi_XXX22-(nmi_bcs+2) == &77
@@ -10959,6 +10968,9 @@ lb6ce = sub_cb6cd+1
     assert nmi_XXX7-(nmi_XXX6+2) == &06
     assert nmi_XXX8-(nmi_beq+2) == &4d
     assert nmi_handler2_rom_end-nmi_handler2_rom_start == &94
+    assert nmi_handler2_rom_start - 1 == &9066
+    assert nmi_handler_ram - 1 == &0cff
+    assert nmi_handler_rom_end - 1 == &902f
     assert nmi_handler_rom_end-nmi_handler_rom_start-1 == &5d
     assert sub_c0520 == &0520
     assert sub_c052d == &052d
@@ -11672,6 +11684,7 @@ save pydis_start, pydis_end
 ;     c8f21:                                              1
 ;     c8fb5:                                              1
 ;     c8fc7:                                              1
+;     c902f:                                              1
 ;     c9060:                                              1
 ;     c9115:                                              1
 ;     c91cc:                                              1
@@ -11986,6 +11999,7 @@ save pydis_start, pydis_end
 ;     l0d0f:                                              1
 ;     l0d12:                                              1
 ;     l0d2a:                                              1
+;     l0d38:                                              1
 ;     l0d50:                                              1
 ;     l0e0e:                                              1
 ;     l0e10:                                              1
@@ -12240,7 +12254,6 @@ save pydis_start, pydis_end
 ;     loop_cbf1c:                                         1
 ;     loop_cbf78:                                         1
 ;     nmi3_handler_rom_end:                               1
-;     nmi3_handler_rom_start-1:                           1
 ;     nmi_XXX18:                                          1
 ;     nmi_XXX2:                                           1
 ;     nmi_XXX21:                                          1
@@ -12586,6 +12599,7 @@ save pydis_start, pydis_end
 ;     c8f2a
 ;     c8fb5
 ;     c8fc7
+;     c902f
 ;     c9060
 ;     c9115
 ;     c91af
@@ -13065,6 +13079,7 @@ save pydis_start, pydis_end
 ;     l0d26
 ;     l0d2a
 ;     l0d30
+;     l0d38
 ;     l0d3d
 ;     l0d50
 ;     l0df0

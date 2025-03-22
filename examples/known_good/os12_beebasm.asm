@@ -4843,15 +4843,17 @@ tube_data_register_3                    = &fee5
     equb &eb, &e7, &a4, &e0, &c5                                      ; d94c: eb e7 a4... ...
 ; &d951 referenced 1 time by &f15b
 .ld951
-    equb &de, &7d, &f2, &8e, &f1, &c9, &f4, &29, &f5, &a6, &ff, &ca   ; d951: de 7d f2... .}.
-    equb &f3, &b1, &f1, &a6, &ff, &a6, &ff, &a6, &ff, &a6, &ff,   2   ; d95d: f3 b1 f1... ...
-    equb &ef, &b3, &e4, &64, &e4, &d1, &e1, &a6, &ff, &a6, &ff, &a6   ; d969: ef b3 e4... ...
-    equb &ff, &90,   1, &9f, &0d, &a1,   2, &2b, &f0,   0,   3,   0   ; d975: ff 90 01... ...
-    equb   0, &ff,   0,   0,   1,   0,   0,   0,   0,   0, &ff,   4   ; d981: 00 ff 00... ...
-    equb   4,   0, &ff, &56, &19, &19, &19, &32,   8,   0,   0,   0   ; d98d: 04 00 ff... ...
-    equb   0, &20,   9,   0,   0,   0,   0,   0, &50,   0,   3, &90   ; d999: 00 20 09... . .
-    equb &64,   6, &81,   0,   0,   0,   9, &1b,   1, &d0, &e0, &f0   ; d9a5: 64 06 81... d..
-    equb   1, &80, &90,   0,   0,   0                                 ; d9b1: 01 80 90... ...
+    equb &de                                                          ; d951: de          .
+.ld952
+    equb &7d, &f2, &8e, &f1, &c9, &f4, &29, &f5, &a6, &ff, &ca, &f3   ; d952: 7d f2 8e... }..
+    equb &b1, &f1, &a6, &ff, &a6, &ff, &a6, &ff, &a6, &ff,   2, &ef   ; d95e: b1 f1 a6... ...
+    equb &b3, &e4, &64, &e4, &d1, &e1, &a6, &ff, &a6, &ff, &a6, &ff   ; d96a: b3 e4 64... ..d
+    equb &90,   1, &9f, &0d, &a1,   2, &2b, &f0,   0,   3,   0,   0   ; d976: 90 01 9f... ...
+    equb &ff,   0,   0,   1,   0,   0,   0,   0,   0, &ff,   4,   4   ; d982: ff 00 00... ...
+    equb   0, &ff, &56, &19, &19, &19, &32,   8,   0,   0,   0,   0   ; d98e: 00 ff 56... ..V
+    equb &20,   9,   0,   0,   0,   0,   0, &50,   0,   3, &90, &64   ; d99a: 20 09 00...  ..
+    equb   6, &81,   0,   0,   0,   9, &1b,   1, &d0, &e0, &f0,   1   ; d9a6: 06 81 00... ...
+    equb &80, &90,   0,   0,   0                                      ; d9b2: 80 90 00... ...
 ; &d9b7 referenced 8 times by &de2b, &e45b, &e73b, &e7d8, &ea82, &ef25, &f065, &f719
 .ld9b7
     equb &ff, &ff, &ff, 0, 0,   0, 0, 0, 0, 0, 0, &64, 5, &ff, 1, &0a ; d9b7: ff ff ff... ...
@@ -8690,11 +8692,12 @@ le5b4 = le5b3+1
 ; &f157 referenced 1 time by &f154
 .cf157
     stx l00c6                                                         ; f157: 86 c6       ..
+    ; This loop copies 14 bytes of memory from ld952 to filev
     ldx #&0e                                                          ; f159: a2 0e       ..
 ; &f15b referenced 1 time by &f162
 .loop_cf15b
-    lda ld951,x                                                       ; f15b: bd 51 d9    .Q.
-    sta rdchv+1,x                                                     ; f15e: 9d 11 02    ...
+    lda ld952 - 1,x                                                   ; f15b: bd 51 d9    .Q.
+    sta filev - 1,x                                                   ; f15e: 9d 11 02    ...
     dex                                                               ; f161: ca          .
     bne loop_cf15b                                                    ; f162: d0 f7       ..
     stx l00c2                                                         ; f164: 86 c2       ..
@@ -9234,6 +9237,7 @@ le5b4 = le5b3+1
 ; &f496 referenced 2 times by &f48e, &f53f
 .sub_cf496
     jsr sub_cfb1a                                                     ; f496: 20 1a fb     ..
+    ; This loop copies 18 bytes of memory from l038c to l03be
     ldx #&11                                                          ; f499: a2 11       ..
 ; &f49b referenced 1 time by &f4a2
 .loop_cf49b
@@ -9553,6 +9557,7 @@ le5b4 = le5b3+1
     jsr sub_cfb69                                                     ; f6e3: 20 69 fb     i.
     stx l03dd                                                         ; f6e6: 8e dd 03    ...
     sty l03de                                                         ; f6e9: 8c de 03    ...
+    ; This loop copies 3 bytes of memory from l03c8 to l02ea
     ldx #2                                                            ; f6ec: a2 02       ..
 ; &f6ee referenced 1 time by &f6f5
 .loop_cf6ee
@@ -10647,6 +10652,8 @@ lffb3 = osbyte150EntryPoint+1
     assert >plotLine1 == &d3
     assert >plotLine2 == &d3
     assert >plotLine3 == &d3
+    assert filev - 1 == &0211
+    assert ld952 - 1 == &d951
     assert osbyte0EntryPoint == &e821
     assert osbyte10EntryPoint == &e6b2
     assert osbyte117EntryPoint == &e86c

@@ -10,6 +10,7 @@ import utils
 import classification
 import machinetype
 from memorymanager import BinaryAddr, RuntimeAddr
+from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 
 def xy_addr(x_addr, y_addr):
     """Given two binary addresses holding the low byte and high byte of an address,
@@ -1873,7 +1874,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
                 inkey_key = (255-key) ^ 0x80
                 if inkey_key in inkey_enum:
                     constant(inkey_key, inkey_enum[inkey_key])
-                    key_exp = make_eor(make_op2(255, "-", inkey_enum[inkey_key]), 128)
+                    key_exp = make_eor(make_subtract(255, inkey_enum[inkey_key]), 128)
                     auto_expr(x_runtime_addr, key_exp)
                     auto_comment(x_runtime_addr, "X=internal key number EOR 128", align=Align.INLINE)
                 com = "Test for " + key_name(inkey_key) + " key pressed (X=%d)" % key
@@ -1882,7 +1883,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
                 inkey_key = 255-key
                 if inkey_key in inkey_enum:
                     constant(inkey_key, inkey_enum[inkey_key])
-                    key_exp = make_op2(255, "-", inkey_enum[inkey_key])
+                    key_exp = make_subtract(255, inkey_enum[inkey_key])
                     auto_expr(x_runtime_addr, key_exp)
                     auto_comment(x_runtime_addr, "X=internal key number", align=Align.INLINE)
 

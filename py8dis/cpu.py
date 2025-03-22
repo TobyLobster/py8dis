@@ -1,3 +1,4 @@
+import assembler
 import classification
 import collections
 import copy
@@ -7,10 +8,12 @@ import labelmanager
 import mainformatter
 import memorymanager
 import movemanager
+import re
 import trace
 import utils
 from memorymanager import BinaryLocation
 from align import Align
+from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 
 class Cpu(object):
     """Abstract base class representing a CPU"""
@@ -230,3 +233,109 @@ class Cpu(object):
 
     def label_maker(self, d):
         pass
+
+    #
+    # Regex style analysis
+    #
+    def analyse_with_regex(self):
+        # No analysis done by default
+        pass
+
+    # Analysis shared between 6502 and 65C02
+    def analyse_with_regex_for_6502_like_cpus(self):
+        memory_binary = memorymanager.memory_binary
+
+        # Compile regex patterns with the DOTALL flag (dot matches a newline)
+        # Each pattern should be tied to comment function to output e.g. "; This loop copies 6 bytes of memory from source to dest"
+
+        def comment_full_loop(binary_loc):
+            # Move on two bytes past the LDX #nn instruction
+            comment_simple_loop(memorymanager.BinaryLocation(binary_loc.binary_addr+2, binary_loc.move_id), binary_loc)
+
+        def comment_simple_loop(binary_loc, comment_loc=None):
+            OPCODE_LDA_ZP_COMMA_X = 0xb5
+            OPCODE_STA_ZP_COMMA_X = 0x95
+            OPCODE_DEX            = 0xca
+            OPCODE_BNE            = 0xd0
+
+            if comment_loc == None:
+                comment_loc = binary_loc
+
+            zp_load = memory_binary[binary_loc.binary_addr] == OPCODE_LDA_ZP_COMMA_X
+            if zp_load:
+                next = binary_loc.binary_addr + 2
+            else:
+                next = binary_loc.binary_addr + 3
+
+            zp_save = memory_binary[next] == OPCODE_STA_ZP_COMMA_X
+            dest_pos = next + 1
+            if zp_save:
+                next += 2
+            else:
+                next += 3
+
+            stop_at_zero = memory_binary[next+1] == OPCODE_BNE
+            offset = 1 if stop_at_zero else 0
+            source_pos = binary_loc.binary_addr + 1
+            if zp_load:
+                source_label = classification.get_address8(source_pos, offset=offset)
+            else:
+                source_label = classification.get_address16(source_pos, offset=offset)
+
+            if zp_save:
+                dest_label = classification.get_address8(dest_pos, offset=offset)
+            else:
+                dest_label = classification.get_address16(dest_pos, offset=offset)
+
+            if offset:
+                classification.add_expression(source_pos, make_subtract(source_label, offset))
+                classification.add_expression(dest_pos, make_subtract(dest_label, offset))
+
+            # Get loop initial value, look at known register state
+            state = trace.cpu.cpu_state_optimistic[comment_loc.binary_addr]
+            reg = 'x' if memory_binary[next] == OPCODE_DEX else 'y'
+            loop_counter = state[reg].value if state and state[reg] else None
+
+            if not stop_at_zero and loop_counter != None:
+                # Stop at -1
+                loop_counter += 1
+
+            zp_save = memory_binary[next] == OPCODE_STA_ZP_COMMA_X
+
+            def late_formatter():
+                if loop_counter != None:
+                    return "This loop copies {0} bytes of memory from {1} to {2}".format(loop_counter, source_label, dest_label)
+                return "This loop copies memory from {1}+{0} to {2}+{0}".format(reg.upper(), source_label, dest_label)
+
+            disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+
+        patterns = [
+            #    a2 XX           ; ldx #nn
+            #label
+            #    bd XX XX        ; lda addr,x        [or: b5 XX   ; lda zp,x]
+            #    9d XX XX        ; sta other,x       [or: 95 XX   ; sta zp,x]
+            #    ca              ; dex
+            #    10|d0 f7        ; bpl label or bne label
+            (re.compile(rb'\xa2.(\xbd..|\xb5.)(\x9d..|\x95.)\xca(\x10|\xd0)\xf7', re.DOTALL), comment_full_loop),
+
+            #    a0 XX           ; ldy #nn
+            #label
+            #    b9 XX XX        ; lda addr,y       [note: no lda zp,y addressing mode]
+            #    99 XX XX        ; sta other,y      [note: no sta zp,y addressing mode]
+            #    88              ; dey
+            #    10|d0 f7        ; bpl label or bne label
+            (re.compile(rb'\xa0.\xb9..\x99..\x88(\x10|\xd0)\xf7', re.DOTALL), comment_full_loop),
+        ]
+
+        bytes_array = bytes([0 if x is None else x for x in memory_binary])
+
+        for tup in patterns:
+            # Find all matches
+            matches = re.finditer(tup[0], bytes_array) #, flags=re.MULTILINE)
+
+            for match in matches:
+                #print(f'Match: {match.group()}, Start: {hex(match.start())}, End: {hex(match.end())}')
+                binary_addr = match.start()
+                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
+                tup[1](binary_loc)

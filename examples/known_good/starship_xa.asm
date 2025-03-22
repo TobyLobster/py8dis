@@ -6286,6 +6286,7 @@ start_game_continuation
     sta score_as_bcd                                                  // 4906: 8d 65 2d    .e- :3806[1]
     lda maximum_number_of_stars_in_game                               // 4909: ad b9 34    ..4 :3809[1]
     sta maximum_number_of_stars                                       // 490c: 8d 50 0e    .P. :380c[1]
+    // This loop copies 4 bytes of memory from initial_enemy_ship_spawning_probabilities to probability_of_new_enemy_ship_being_defensive_about_damage
     ldy #3                                                            // 490f: a0 03       ..  :380f[1]
 reset_enemy_ship_spawning_probabilities_loop
     lda initial_enemy_ship_spawning_probabilities,y                   // 4911: b9 cc 33    ..3 :3811[1]
