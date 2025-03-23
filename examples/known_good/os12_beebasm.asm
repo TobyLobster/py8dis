@@ -9501,7 +9501,7 @@ le5b4 = le5b3+1
 
 ; &f68b referenced 2 times by &e27c, &fa31
 .sub_cf68b
-    lda #0                                                            ; f68b: a9 00       ..
+    lda #osfind_close                                                 ; f68b: a9 00       ..
 ; &f68d referenced 1 time by &e66b
 .sub_cf68d
     php                                                               ; f68d: 08          .

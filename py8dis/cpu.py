@@ -36,7 +36,7 @@ class Cpu(object):
 
         # This is called "optimistic" because it's based on straight line
         # code "this is *a* possible execution path".
-        self.cpu_state_optimistic = [None] * 64*1024
+        self.cpu_states = [None] * 64*1024
 
 
     def disassemble_instruction(self, binary_addr):
@@ -104,7 +104,7 @@ class Cpu(object):
             if c is not None:
                 if c.is_code(binary_addr):
                     c.update_cpu_state(binary_addr, state)
-                    self.cpu_state_optimistic[binary_addr] = copy.deepcopy(state)
+                    self.cpu_states[binary_addr] = copy.deepcopy(state)
                 else:
                     state = self.CpuState()
                 binary_addr += c.length()
@@ -292,7 +292,7 @@ class Cpu(object):
                 classification.add_expression(dest_pos, make_subtract(dest_label, offset))
 
             # Get loop initial value, look at known register state
-            state = trace.cpu.cpu_state_optimistic[comment_loc.binary_addr]
+            state = trace.cpu.cpu_states[comment_loc.binary_addr]
             reg = 'x' if memory_binary[next] == OPCODE_DEX else 'y'
             loop_counter = state[reg].value if state and state[reg] else None
 

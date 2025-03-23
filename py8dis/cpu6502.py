@@ -449,7 +449,7 @@ class Cpu6502(cpu.Cpu):
 
         # Look for where we set up registers before the subroutine call
         for reg in ('a', 'x', 'y'):
-            reg_addr = state.get_previous_adjust(reg)
+            reg_addr = state.get_previous_adjust_optimistic(reg)
             if reg_addr is not None:
                 if reg in subroutine.on_entry:
                     disassembly.comment_binary(reg_addr, reg.upper() + "=" + subroutine.on_entry[reg], align=Align.INLINE, word_wrap=False, auto_generated=True)
@@ -522,41 +522,48 @@ class Cpu6502(cpu.Cpu):
 
             ...and similarly for the X and Y registers.
             """
+            state.always_branch = False
             for reg in ('a','x','y'):
                 c = self.reg_changes[reg]
                 if c == 'O' or c == 'T':
                     state[reg].value              = None        # Current value, if known
-                    state[reg].previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
-                if c == 'A':
-                    state[reg].previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
-                if c == 'U':
-                    state[reg].previous_use       = binary_addr # The address of the previous use of the register if present
+                    state[reg].optimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state[reg].optimistic.previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state[reg].optimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
 
-        def clear_state_if_label_here(self, binary_addr, state):
-            # if there's a label at this address, then we lose all known state.
+                    state[reg].pessimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state[reg].pessimistic.previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state[reg].pessimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
+                if c == 'A':
+                    state[reg].optimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state[reg].optimistic.previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state[reg].optimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
+
+                    state[reg].pessimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state[reg].pessimistic.previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state[reg].pessimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
+                if c == 'U':
+                    state[reg].pessimistic.previous_use       = binary_addr # The address of the previous use of the register if present
+
+        def clear_pessimistic_state_if_label_here(self, binary_addr, state):
+            # if there's a label at this address, then we lose all known (pessimistic) state.
             # This is because somewhere will be jumping to the label with unknown state.
             runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
             if runtime_addr:
                 if runtime_addr in labelmanager.labels:
-                    #label = labelmanager.labels[runtime_addr]
-                    #if not label.is_empty():
-                    state.clear()
+                    state.clear(pessimistic_only=True)
 
         def update_cpu_state(self, binary_addr, state):
-            # if there's a label at this address, then we lose all known state.
+            # if there's a label at this address, then we lose all known (pessimistic) state.
             # This is because somewhere will be jumping to the label with unknown state.
-            self.clear_state_if_label_here(binary_addr, state)
+            self.clear_pessimistic_state_if_label_here(binary_addr, state)
 
             # otherwise we update state if there's an update function
             if self.update is not None:
                 self.regular_update(binary_addr, state)
                 self.update(binary_addr, state)
             else:
-                state.clear()
+                state.clear(pessimistic_only=False)
 
         def is_block_end(self):
             return False
@@ -913,30 +920,63 @@ class Cpu6502(cpu.Cpu):
             return True
 
         def update_cpu_state(self, binary_addr, state):
-            # if there's a label at this address, then we lose all known state.
+            # if there's a label at this address, then we lose all known (pessimistic) state.
             # This is because somewhere will be jumping to the label with unknown state.
-            self.clear_state_if_label_here(binary_addr, state)
+            self.clear_pessimistic_state_if_label_here(binary_addr, state)
 
-            # If a conditional branch is not taken, we continue tracing
-            if self.update is not None:
-                self.regular_update(binary_addr, state)
-                self.update(binary_addr, state)
+            # Work out if ALWAYS branch is appropriate
+            always_branch = False
+            # if the state of the flag is known and will cause the instruction to branch, then 'ALWAYS branch' is output
+            if self.mnemonic.upper() == "BCC" and state['c'] == False:
+                always_branch = True
+            elif self.mnemonic.upper() == "BCS" and state['c'] == True:
+                always_branch = True
+            elif self.mnemonic.upper() == "BVC" and state['v'] == False:
+                always_branch = True
+            elif self.mnemonic.upper() == "BVS" and state['v'] == True:
+                always_branch = True
+            elif self.mnemonic.upper() == "BNE" and state['z'] == False:
+                always_branch = True
+            elif self.mnemonic.upper() == "BEQ" and state['z'] == True:
+                always_branch = True
+            elif self.mnemonic.upper() == "BPL" and state['n'] == False:
+                always_branch = True
+            elif self.mnemonic.upper() == "BMI" and state['n'] == True:
+                always_branch = True
+
+            if always_branch:
+                # Branch is always taken, so known state is cleared, and always_branch flag is set.
+                state.clear(pessimistic_only=False)
+                state.always_branch = True
+            else:
+                # Assume conditional branch is not taken, we continue tracing
+                if self.update is not None:
+                    self.regular_update(binary_addr, state)
+                    self.update(binary_addr, state)
+                else:
+                    state.clear(pessimistic_only=False)
 
         def as_string(self, binary_addr):
             label = disassembly.get_label(self.target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
             return utils.LazyString("%s%s %s", utils.make_indent(1), utils.force_case(self.mnemonic), label)
 
 
-    class RegState(object):
+    class RegStateTrackingType(object):
         def __init__(self):
-            self.clear()
-
-        def clear(self):
-            self.value              = None      # Current value, if known
             self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
             self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
             self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
             self.previous_use       = None      # The address of the previous 'read only use of a register' instruction if present
+
+    class RegState(object):
+        def __init__(self):
+            self.clear(pessimistic_only=False)
+
+        def clear(self, *, pessimistic_only):
+            self.value              = None      # Current value, if known
+            if not pessimistic_only:
+                self.optimistic     = Cpu6502.RegStateTrackingType()
+            self.pessimistic        = Cpu6502.RegStateTrackingType()
 
         def __repl__(self):
             return "value: {0}".format(self.value)
@@ -946,9 +986,6 @@ class Cpu6502(cpu.Cpu):
 
     class CpuState(object):
         def __init__(self):
-            self.clear()
-
-        def clear(self):
             self._d = {
                 # For A/X/Y, value is RegState.
                 "a": Cpu6502.RegState(),
@@ -963,6 +1000,20 @@ class Cpu6502(cpu.Cpu):
                 "c": None,
             }
             self.next_instruction = None
+            self.always_branch = False
+
+        def clear(self, *, pessimistic_only):
+            self._d["a"].clear(pessimistic_only=pessimistic_only)
+            self._d["x"].clear(pessimistic_only=pessimistic_only)
+            self._d["y"].clear(pessimistic_only=pessimistic_only)
+            self._d["n"] = None
+            self._d["v"] = None
+            self._d["d"] = None
+            self._d["i"] = None
+            self._d["z"] = None
+            self._d["c"] = None
+            self.next_instruction = None
+            self.always_branch = False
 
         def __getitem__(self, key):
             assert key in "axynvdizc"
@@ -1000,26 +1051,50 @@ class Cpu6502(cpu.Cpu):
         def __str__(self):
             return self.__repl__()
 
-        def get_previous_load_imm(self, reg):
-            v = self[reg].previous_load_imm
+        def get_previous_load_imm_optimistic(self, reg):
+            v = self[reg].optimistic.previous_load_imm
             if not v:
                 return None
             return memorymanager.BinaryAddr(v + 1)
 
-        def get_previous_load(self, reg):
-            v = self[reg].previous_load
+        def get_previous_load_optimistic(self, reg):
+            v = self[reg].optimistic.previous_load
             if not v:
                 return None
             return memorymanager.BinaryAddr(v)
 
-        def get_previous_adjust(self, reg):
-            v = self[reg].previous_adjust
+        def get_previous_adjust_optimistic(self, reg):
+            v = self[reg].optimistic.previous_adjust
             if not v:
                 return None
             return memorymanager.BinaryAddr(v)
 
-        def get_previous_use(self, reg):
-            v = self[reg].previous_use
+        def get_previous_use_optimistic(self, reg):
+            v = self[reg].optimistic.previous_use
+            if not v:
+                return None
+            return memorymanager.BinaryAddr(v)
+
+        def get_previous_load_imm_pessimistic(self, reg):
+            v = self[reg].pessimistic.previous_load_imm
+            if not v:
+                return None
+            return memorymanager.BinaryAddr(v + 1)
+
+        def get_previous_load_pessimistic(self, reg):
+            v = self[reg].pessimistic.previous_load
+            if not v:
+                return None
+            return memorymanager.BinaryAddr(v)
+
+        def get_previous_adjust_pessimistic(self, reg):
+            v = self[reg].pessimistic.previous_adjust
+            if not v:
+                return None
+            return memorymanager.BinaryAddr(v)
+
+        def get_previous_use_pessimistic(self, reg):
+            v = self[reg].pessimistic.previous_use
             if not v:
                 return None
             return memorymanager.BinaryAddr(v)
@@ -1038,9 +1113,16 @@ class Cpu6502(cpu.Cpu):
                 if v == -1:
                     v = 0xff
                 state[reg].value = v
-                state[reg].previous_load_imm = None
-                state[reg].previous_load     = None
-                state[reg].previous_adjust   = addr
+
+                # Now we have a new value for the register, the address where we previously
+                # loaded the current value no longer valid
+                state[reg].pessimistic.previous_load_imm = None
+                state[reg].pessimistic.previous_load     = None
+                state[reg].pessimistic.previous_adjust   = addr
+
+                state[reg].optimistic.previous_load_imm  = None
+                state[reg].optimistic.previous_load      = None
+                state[reg].optimistic.previous_adjust    = addr
 
                 state['n'] = ((v & 0x80) == 0x80)
                 state['z'] = (v == 0)
@@ -1056,9 +1138,13 @@ class Cpu6502(cpu.Cpu):
                 if v == 0x100:
                     v = 0
                 state[reg].value = v
-                state[reg].previous_load_imm = None
-                state[reg].previous_load     = None
-                state[reg].previous_adjust   = addr
+                state[reg].pessimistic.previous_load_imm = None
+                state[reg].pessimistic.previous_load     = None
+                state[reg].pessimistic.previous_adjust   = addr
+
+                state[reg].optimistic.previous_load_imm  = None
+                state[reg].optimistic.previous_load      = None
+                state[reg].optimistic.previous_adjust    = addr
 
                 state['n'] = ((v & 0x80) == 0x80)
                 state['z'] = (v == 0)
@@ -1070,9 +1156,13 @@ class Cpu6502(cpu.Cpu):
         def load_immediate(addr, state):
             v = memory_binary[addr+1]
             state[reg].value = v
-            state[reg].previous_load_imm = addr
-            state[reg].previous_load     = addr
-            state[reg].previous_adjust   = addr
+            state[reg].pessimistic.previous_load_imm = addr
+            state[reg].pessimistic.previous_load     = addr
+            state[reg].pessimistic.previous_adjust   = addr
+
+            state[reg].optimistic.previous_load_imm  = addr
+            state[reg].optimistic.previous_load      = addr
+            state[reg].optimistic.previous_adjust    = addr
 
             state['n'] = ((v & 0x80) == 0x80)
             state['z'] = (v == 0)
@@ -1083,7 +1173,7 @@ class Cpu6502(cpu.Cpu):
             state[dest_reg].value = state[src_reg].value
 
             # If we have a load address, keep it. This allows
-            # the code (from basic4) to understand X and Y form an
+            # the code (e.g. from basic4) to understand X and Y form an
             # address <const> here:
             #
             #    lda #<const>
@@ -1091,9 +1181,13 @@ class Cpu6502(cpu.Cpu):
             #    ldx #<const>
             #    jsr OSWORD
             #
-            state[dest_reg].previous_load_imm = state[src_reg].previous_load_imm
-            state[dest_reg].previous_load = addr
-            state[dest_reg].previous_adjust = addr
+            state[dest_reg].optimistic.previous_load_imm = state[src_reg].optimistic.previous_load_imm
+            state[dest_reg].optimistic.previous_load = addr
+            state[dest_reg].optimistic.previous_adjust = addr
+
+            state[dest_reg].pessimistic.previous_load_imm = state[src_reg].pessimistic.previous_load_imm
+            state[dest_reg].pessimistic.previous_load = addr
+            state[dest_reg].pessimistic.previous_adjust = addr
 
             v = state[dest_reg].value
             if v is not None:
@@ -1238,28 +1332,28 @@ class Cpu6502(cpu.Cpu):
         if len(trace.subroutine_argument_finder_hooks) == 0:
             return
 
-        addr = 0
+        binary_addr = 0
         state = None
-        while addr < 0x10000:
-            c = disassembly.classifications[addr]
+        while binary_addr < 0x10000:
+            c = disassembly.classifications[binary_addr]
             if c is not None:
                 if state == None:
                     state = trace.cpu.CpuState()
 
                 if isinstance(c, trace.cpu.Opcode):
-                    opcode = memory_binary[addr]
+                    opcode = memory_binary[binary_addr]
                     if opcode in (OPCODE_JSR, OPCODE_JMP):
-                        target = memorymanager.get_u16_binary(addr + 1)
+                        target = memorymanager.get_u16_binary(binary_addr + 1)
                         for hook in trace.subroutine_argument_finder_hooks:
                             if hook(memorymanager.RuntimeAddr(target),
-                                state.get_previous_load_imm('a'),
-                                state.get_previous_load_imm('x'),
-                                state.get_previous_load_imm('y')) is not None:
+                                state.get_previous_load_imm_optimistic('a'),
+                                state.get_previous_load_imm_optimistic('x'),
+                                state.get_previous_load_imm_optimistic('y')) is not None:
                                 break
-                state = trace.cpu.cpu_state_optimistic[addr]
-                addr += c.length()
+                state = trace.cpu.cpu_states[binary_addr]
+                binary_addr += c.length()
             else:
-                addr += 1
+                binary_addr += 1
 
     def scan_ahead_for_post_exit_state(self, binary_addr, state):
         assert binary_addr is not None
@@ -1268,7 +1362,7 @@ class Cpu6502(cpu.Cpu):
         state.next_instruction = None
         state.next_use = {'a': None, 'x': None, 'y': None }
 
-        newstate = trace.cpu.cpu_state_optimistic[binary_addr]    # State after instruction following JSR
+        newstate = trace.cpu.cpu_states[binary_addr]    # State after instruction following JSR
 
         while binary_addr < 0x10000:
             c = disassembly.classifications[binary_addr]
@@ -1311,7 +1405,7 @@ class Cpu6502(cpu.Cpu):
             binary_addr += c.length()                               # Move to next instruction
             if state.next_instruction == None:
                 state.next_instruction = binary_addr                # Set to the instruction address following the JSR
-            newstate = trace.cpu.cpu_state_optimistic[binary_addr]  # State after instruction at addr has executed
+            newstate = trace.cpu.cpu_states[binary_addr]  # State after instruction at addr has executed
 
     def show_register_knowledge(self):
         """Adds comments to show any known state of the processor"""
@@ -1321,7 +1415,7 @@ class Cpu6502(cpu.Cpu):
         while binary_addr < 0x10000:
             c = disassembly.classifications[binary_addr]
             if c is not None:
-                state = trace.cpu.cpu_state_optimistic[binary_addr]
+                state = trace.cpu.cpu_states[binary_addr]
 
                 # Show the value of a register as an inline comment (if known) once they have been
                 # altered (e.g. for 'LDY #0:LDA (zp),Y:STA mem:INY' output '; Y=1' on the 'INY' line).
@@ -1341,27 +1435,8 @@ class Cpu6502(cpu.Cpu):
                                 disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
 
                 # Find "ALWAYS branch" instructions
-                always_branch = False
                 if isinstance(c, self.OpcodeConditionalBranch):
-                    # if the state of the flag is known and will cause the instruction to branch, then 'ALWAYS branch' is output
-                    if c.mnemonic.upper() == "BCC" and state['c'] == False:
-                        always_branch = True
-                    elif c.mnemonic.upper() == "BCS" and state['c'] == True:
-                        always_branch = True
-                    elif c.mnemonic.upper() == "BVC" and state['v'] == False:
-                        always_branch = True
-                    elif c.mnemonic.upper() == "BVS" and state['v'] == True:
-                        always_branch = True
-                    elif c.mnemonic.upper() == "BNE" and state['z'] == False:
-                        always_branch = True
-                    elif c.mnemonic.upper() == "BEQ" and state['z'] == True:
-                        always_branch = True
-                    elif c.mnemonic.upper() == "BPL" and state['n'] == False:
-                        always_branch = True
-                    elif c.mnemonic.upper() == "BMI" and state['n'] == True:
-                        always_branch = True
-
-                    if always_branch:
+                    if state.always_branch:
                         move_id = movemanager.move_id_for_binary_addr[binary_addr]
                         binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                         disassembly.comment_binary(binary_loc, "ALWAYS branch", align=Align.INLINE, auto_generated=True)
@@ -1383,19 +1458,19 @@ class Cpu6502(cpu.Cpu):
         the calling code.
         """
 
-        addr = 0
+        binary_addr = 0
         state = None
 
-        while addr < 0x10000:
-            c = disassembly.classifications[addr]
+        while binary_addr < 0x10000:
+            c = disassembly.classifications[binary_addr]
             if c is not None:
                 if state == None:
                     state = trace.cpu.CpuState()
 
                 if isinstance(c, trace.cpu.Opcode):
                     could_be_call_to_subroutine = c.could_be_call_to_subroutine()
-                    addr = memorymanager.BinaryAddr(addr)
-                    target = c.target(addr)
+                    binary_addr = memorymanager.BinaryAddr(binary_addr)
+                    target = c.target(binary_addr)
 
                     # check each subroutine
                     for subroutine in trace.subroutines_list:
@@ -1406,8 +1481,8 @@ class Cpu6502(cpu.Cpu):
                         fall_through = False
 
                         # convert to binary address
-                        binary_addr, _ = movemanager.r2b(subroutine.runtime_addr)
-                        if addr == binary_addr:
+                        sub_binary_addr, _ = movemanager.r2b(subroutine.runtime_addr)
+                        if binary_addr == sub_binary_addr:
                             # We are at the subroutine address itself.
                             # We might have fallen through from above
                             # and so we count this as a match.
@@ -1423,32 +1498,32 @@ class Cpu6502(cpu.Cpu):
                             state.next_instruction = None
                             state.next_use = {'a': None, 'x': None, 'y': None }
 
-                            runtime_addr = movemanager.b2r(addr)
+                            runtime_addr = movemanager.b2r(binary_addr)
                             if not fall_through and isinstance(c, trace.cpu.OpcodeJsr):
-                                self.scan_ahead_for_post_exit_state(addr, state)
+                                self.scan_ahead_for_post_exit_state(binary_addr, state)
                             subroutine.hook_function(runtime_addr, state, subroutine)
 
-                state = trace.cpu.cpu_state_optimistic[addr]
-                addr += c.length()
+                state = trace.cpu.cpu_states[binary_addr]
+                binary_addr += c.length()
             else:
-                addr += 1
+                binary_addr += 1
                 state = trace.cpu.CpuState()
 
     def substitute_constants(self):
         if len(trace.substitute_constant_list) == 0:
             return
 
-        addr = 0
+        binary_addr = 0
         state = None
 
-        while addr < 0x10000:
-            c = disassembly.classifications[addr]
+        while binary_addr < 0x10000:
+            c = disassembly.classifications[binary_addr]
             if c is not None:
                 if state == None:
                     state = trace.cpu.CpuState()
 
                 if isinstance(c, trace.cpu.Opcode):
-                    opcode = memory_binary[addr]
+                    opcode = memory_binary[binary_addr]
                     # for each const_sub
                     for const_sub in trace.substitute_constant_list:
                         # check we have the right opcode
@@ -1457,10 +1532,10 @@ class Cpu6502(cpu.Cpu):
                             reg_value = state[const_sub.reg].value
                             if reg_value != None:
                                 # check that we know where the register was set
-                                where_reg_set = state.get_previous_load_imm(const_sub.reg)
+                                where_reg_set = state.get_previous_load_imm_optimistic(const_sub.reg)
                                 if where_reg_set != None:
                                     # if we have an operand, make sure it matches too
-                                    if not const_sub.operand or (const_sub.get_operand_value() == c.target(addr)):
+                                    if not const_sub.operand or (const_sub.get_operand_value() == c.target(binary_addr)):
                                         # check the const_sub dictionary has the current value as a key
                                         if reg_value in const_sub.constants_dict:
                                             # set the constant or expression at this address
@@ -1474,10 +1549,10 @@ class Cpu6502(cpu.Cpu):
                                                     # define the constant
                                                     disassembly.add_constant(reg_value, const_or_expression)
 
-                state = trace.cpu.cpu_state_optimistic[addr]
-                addr += c.length()
+                state = trace.cpu.cpu_states[binary_addr]
+                binary_addr += c.length()
             else:
-                addr += 1
+                binary_addr += 1
 
     def label_maker(self, lmd):
         # Label return1, return2 etc

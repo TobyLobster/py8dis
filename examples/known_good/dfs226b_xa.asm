@@ -4953,7 +4953,7 @@ c9adf
     lda #$8f                                                          // 3adf: a9 8f       ..  :9adf[1]
     bne c9ae9                                                         // 3ae1: d0 06       ..  :9ae1[1]   // ALWAYS branch
 
-    lda #$ff                                                          // 3ae3: a9 ff       ..  :9ae3[1]
+    lda #osbyte_read_write_startup_options                            // 3ae3: a9 ff       ..  :9ae3[1]
 // $3ae5 referenced 8 times by $80a5[1], $9588[1], $96a0[1], $9e32[1], $9e43[1], $aae2[1], $ac7c[1], $aeb7[1]
 osbyte_read
     ldx #0                                                            // 3ae5: a2 00       ..  :9ae5[1]
@@ -5493,7 +5493,7 @@ c9e41
     jsr osbyte_read                                                   // 3e43: 20 e5 9a     .. :9e43[1]
     jsr sub_c9e54                                                     // 3e46: 20 54 9e     T. :9e46[1]
     bne return_40                                                     // 3e49: d0 11       ..  :9e49[1]
-    lda #$c7                                                          // 3e4b: a9 c7       ..  :9e4b[1]
+    lda #osbyte_read_write_spool_file_handle                          // 3e4b: a9 c7       ..  :9e4b[1]
 // $3e4d referenced 1 time by $9e3f[1]
 osbyte_write_0
     ldx #0                                                            // 3e4d: a2 00       ..  :9e4d[1]
@@ -9573,7 +9573,7 @@ sub_cb882
     ldy #$ff                                                          // 5890: a0 ff       ..  :b890[1]
     lda #$4e // 'N'                                                   // 5892: a9 4e       .N  :b892[1]
     sta (l00b8),y                                                     // 5894: 91 b8       ..  :b894[1]
-    ldy #$0f                                                          // 5896: a0 0f       ..  :b896[1]
+    ldy #$0f                                                          // 5896: a0 0f       ..  :b896[1]   // Y=ROM number
 // $5898 referenced 1 time by $b8e7[1]
 cb898
     lda lb726,y                                                       // 5898: b9 26 b7    .&. :b898[1]

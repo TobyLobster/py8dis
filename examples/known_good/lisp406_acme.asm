@@ -29,11 +29,14 @@ osbyte_read_tube_presence               = 234
 osfile_load                             = 255
 osfile_save                             = 0
 osfind_close                            = 0
+osfind_open_output                      = 128
 osword_read_clock                       = 1
 osword_read_interval_timer              = 3
 osword_read_io_memory                   = 5
 osword_read_line                        = 0
 osword_read_pixel                       = 9
+osword_sound                            = 7
+osword_write_clock                      = 2
 service_star_help_command               = 9
 service_unrecognised_star_command       = 4
 SUBRF                                   = 8
@@ -1328,7 +1331,7 @@ EVPOP
 
     ; **** Get a character
 GTCHAR
-    ldy HANDLE                                     ; 876c: a4 13       ..             ; Y=file handle
+    ldy HANDLE                                     ; 876c: a4 13       ..
     beq KEYCH                                      ; 876e: f0 10       ..
     lda LSCHAR                                     ; 8770: ad 30 04    .0.            ; From file
     bpl RENEW                                      ; 8773: 10 04       ..
@@ -2908,7 +2911,7 @@ OPE
     jmp ROPEN                                      ; 90a3: 4c a8 90    L..
 
 WOPEN
-    lda #$80                                       ; 90a6: a9 80       ..             ; OPEN FOR WRITE
+    lda #osfind_open_output                        ; 90a6: a9 80       ..             ; OPEN FOR WRITE
 ROPEN
     ldx OSINFO                                     ; 90a8: ae 38 04    .8.
     ldy OSINFO+1                                   ; 90ab: ac 39 04    .9.
@@ -4158,7 +4161,7 @@ MORSOU
     inx                                            ; 987a: e8          .
     cpx #$12                                       ; 987b: e0 12       ..
     bne MORSOU                                     ; 987d: d0 e6       ..
-    lda #7                                         ; 987f: a9 07       ..
+    lda #osword_sound                              ; 987f: a9 07       ..
 ENTOSW
     ldx #<OSWBUF                                   ; 9881: a2 00       ..
     ldy #>OSWBUF                                   ; 9883: a0 06       ..
@@ -4191,8 +4194,7 @@ MORENV
     lda #8                                         ; 98ab: a9 08       ..
     bne ENTOSW                                     ; 98ad: d0 d2       ..             ; ALWAYS branch
 
-    bne MORENV                                     ; 98af: d0 e1       ..             ; ALWAYS branch
-
+    bne MORENV                                     ; 98af: d0 e1       ..
     lda #8                                         ; 98b1: a9 08       ..
     bne ENTOSW                                     ; 98b3: d0 cc       ..             ; ALWAYS branch
 
@@ -4218,7 +4220,7 @@ RESET
 
     ; **** Zero the clock
 STCLK
-    lda #2                                         ; 98c8: a9 02       ..             ; Write clock
+    lda #osword_write_clock                        ; 98c8: a9 02       ..             ; Write clock
 ZERTIM
     ldy #>TIMZER                                   ; 98ca: a0 82       ..
     ldx #<TIMZER                                   ; 98cc: a2 76       .v

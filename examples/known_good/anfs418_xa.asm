@@ -1,25 +1,26 @@
 // Constants
-buffer_printer                              = 3
-inkey_key_ctrl                              = 254
-osbyte_acknowledge_escape                   = 126
-osbyte_close_spool_exec                     = 119
-osbyte_explode_chars                        = 20
-osbyte_flush_buffer_class                   = 15
-osbyte_insert_input_buffer                  = 153
-osbyte_issue_service_request                = 143
-osbyte_read_buffer                          = 145
-osbyte_read_os_version                      = 0
-osbyte_read_write_econet_keyboard_disable   = 201
-osbyte_scan_keyboard                        = 121
-osbyte_scan_keyboard_from_16                = 122
-osbyte_vsync                                = 19
-osbyte_write_keys_pressed                   = 120
-osfile_read_catalogue_info                  = 5
-osfind_close                                = 0
-osfind_open_input                           = 64
-osword_read_palette                         = 11
-service_claim_absolute_workspace            = 1
-service_vectors_changed                     = 15
+buffer_printer                                  = 3
+inkey_key_ctrl                                  = 254
+osbyte_acknowledge_escape                       = 126
+osbyte_close_spool_exec                         = 119
+osbyte_explode_chars                            = 20
+osbyte_flush_buffer_class                       = 15
+osbyte_insert_input_buffer                      = 153
+osbyte_issue_service_request                    = 143
+osbyte_read_buffer                              = 145
+osbyte_read_os_version                          = 0
+osbyte_read_write_econet_keyboard_disable       = 201
+osbyte_read_write_econet_os_call_interception   = 206
+osbyte_scan_keyboard                            = 121
+osbyte_scan_keyboard_from_16                    = 122
+osbyte_vsync                                    = 19
+osbyte_write_keys_pressed                       = 120
+osfile_read_catalogue_info                      = 5
+osfind_close                                    = 0
+osfind_open_input                               = 64
+osword_read_palette                             = 11
+service_claim_absolute_workspace                = 1
+service_vectors_changed                         = 15
 
 // Memory locations
 l0000                                   = $0000
@@ -2081,7 +2082,7 @@ sub_c8ad4
 // $8aea referenced 1 time by $959f
 sub_c8aea
     stx l009e                                                         // 8aea: 86 9e       ..
-    lda #$ce                                                          // 8aec: a9 ce       ..
+    lda #osbyte_read_write_econet_os_call_interception                // 8aec: a9 ce       ..
 // $8aee referenced 1 time by $8af9
 loop_c8aee
     ldx l009e                                                         // 8aee: a6 9e       ..

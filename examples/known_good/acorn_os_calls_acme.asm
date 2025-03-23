@@ -648,7 +648,7 @@ pydis_start
     ldx #$0a                                                          ; 13d3: a2 0a       ..
     ldy #0                                                            ; 13d5: a0 00       ..
     jsr osbyte                                                        ; 13d7: 20 f4 ff     ..            ; Disable event X
-    cpx #0                                                            ; 13da: e0 00       ..             ; X is the previous event enable flag (0=disabled, non-zero=enabled)
+    cpx #0                                                            ; 13da: e0 00       ..             ; X is the previous value of the event enable flag (0=disabled, non-zero=enabled)
 
     ; *************** Test OSBYTE 0x0e ***************
     lda #osbyte_enable_event                                          ; 13dc: a9 0e       ..

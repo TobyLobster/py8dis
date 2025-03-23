@@ -14,6 +14,7 @@ osbyte_read_write_basic_rom_bank        = 187
 osfile_load                             = 255
 osfile_save                             = 0
 osfind_close                            = 0
+osword_envelope                         = 8
 osword_read_clock                       = 1
 osword_read_cmos_clock                  = 14
 osword_read_io_memory                   = 5
@@ -8809,7 +8810,7 @@ l8993 = sub_c8992+1
     lda l002a                                                         ; b339: a5 2a       .*
     sta l0044                                                         ; b33b: 85 44       .D
     ldx #&0c                                                          ; b33d: a2 0c       ..
-    ldy #8                                                            ; b33f: a0 08       ..
+    ldy #osword_envelope                                              ; b33f: a0 08       ..
 ; &b341 referenced 2 times by &b324, &b345
 .cb341
     pla                                                               ; b341: 68          h

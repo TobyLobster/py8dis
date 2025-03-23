@@ -355,7 +355,7 @@ class Cpu8080(cpu.Cpu):
             if self.update is not None:
                 self.update(binary_addr, state)
             else:
-                state.clear()
+                state.clear(pessimistic_only=False)
 
         def update_references(self, binary_loc):
             pass
@@ -486,11 +486,8 @@ class Cpu8080(cpu.Cpu):
             return [binary_loc.binary_addr + 3] + trace.cpu.get_target_binary_addr_preferring_given_move_id(self._target(binary_loc.binary_addr), binary_loc.move_id)
 
         def update_cpu_state(self, binary_addr, state):
-            # In our optimistic model (at least), a branch invalidates everything.
-            # Consider "ldy #3:.label:dey:bne label" - in the optimistic model we ignore
-            # labels and the only way we don't finish that sequence assuming y=2 is if
-            # the branch invalidates.
-            state.clear()
+            # TODO: No state being tracked for 8080 code, yet
+            state.clear(pessimistic_only=False)
 
         def as_string(self, binary_addr):
             label = disassembly.get_label(self._target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
@@ -579,9 +576,9 @@ class Cpu8080(cpu.Cpu):
 
     class CpuState(object):
         def __init__(self):
-            self.clear()
+            self.clear(pessimistic_only=False)
 
-        def clear(self):
+        def clear(self, *, pessimistic_only):
             self._d = {
                 # For A/X/Y, value is (integer value if known, address of integer
                 # value if set by LDA/X/Y #).

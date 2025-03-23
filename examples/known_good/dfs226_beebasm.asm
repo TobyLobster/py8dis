@@ -4985,7 +4985,7 @@ nmi_XXX5 = l0d1f+1
     lda #&8f                                                          ; 9adf: a9 8f       ..
     bne c9ae9                                                         ; 9ae1: d0 06       ..             ; ALWAYS branch
 
-    lda #&ff                                                          ; 9ae3: a9 ff       ..
+    lda #osbyte_read_write_startup_options                            ; 9ae3: a9 ff       ..
 ; &9ae5 referenced 8 times by &80a5, &9588, &96a0, &9e32, &9e43, &aae2, &ac7c, &aeb7
 .osbyte_read
     ldx #0                                                            ; 9ae5: a2 00       ..
@@ -5525,7 +5525,7 @@ nmi_XXX5 = l0d1f+1
     jsr osbyte_read                                                   ; 9e43: 20 e5 9a     ..
     jsr sub_c9e54                                                     ; 9e46: 20 54 9e     T.
     bne return_40                                                     ; 9e49: d0 11       ..
-    lda #&c7                                                          ; 9e4b: a9 c7       ..
+    lda #osbyte_read_write_spool_file_handle                          ; 9e4b: a9 c7       ..
 ; &9e4d referenced 1 time by &9e3f
 .osbyte_write_0
     ldx #0                                                            ; 9e4d: a2 00       ..
@@ -9641,7 +9641,7 @@ lb6ce = sub_cb6cd+1
     ldy #&ff                                                          ; b890: a0 ff       ..
     lda #&4e ; 'N'                                                    ; b892: a9 4e       .N
     sta (l00b8),y                                                     ; b894: 91 b8       ..
-    ldy #&0f                                                          ; b896: a0 0f       ..
+    ldy #&0f                                                          ; b896: a0 0f       ..             ; Y=ROM number
 ; &b898 referenced 1 time by &b8e7
 .cb898
     lda lb726,y                                                       ; b898: b9 26 b7    .&.

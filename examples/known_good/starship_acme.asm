@@ -3025,7 +3025,7 @@ sound_3
 ; Enemy ship fired torpedo
 ; ----------------------------------------------------------------------------------
 sound_4
-    !byte $12, 0, 2, 0, $c0, 0, $1f, 0                                ; 32e0: 12 00 02... ... :21e0[1]
+    !byte $12, 0, 2, 0, $c0, 0, $1f, 0                                ; 32e0: 12 00 02... ... :21e0[1]   ; Channel (2 bytes); Amplitude (2 bytes); Pitch (2 bytes); Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 ; Enemy ship hit by torpedo
 ; ----------------------------------------------------------------------------------
@@ -3417,8 +3417,8 @@ no_enemy_torpedo_hits_against_starship
 no_enemy_ship_was_hit
     lda enemy_ship_fired_torpedo                                      ; 357b: ad dc 1c    ... :247b[1]
     beq skip_explosion_or_firing_sound                                ; 357e: f0 09       ..  :247e[1]
-    ldx #$e0                                                          ; 3580: a2 e0       ..  :2480[1]
-    ldy #$21                                                          ; 3582: a0 21       .!  :2482[1]
+    ldx #<sound_4                                                     ; 3580: a2 e0       ..  :2480[1]
+    ldy #>sound_4                                                     ; 3582: a0 21       .!  :2482[1]
 play_explosion_or_firing_sound
     lda #osword_sound                                                 ; 3584: a9 07       ..  :2484[1]
     jsr osword                                                        ; 3586: 20 f1 ff     .. :2486[1]   ; SOUND command
@@ -7994,6 +7994,9 @@ pydis_end
 !if (<sound_3) != $d8 {
     !error "Assertion failed: <sound_3 == $d8"
 }
+!if (<sound_4) != $e0 {
+    !error "Assertion failed: <sound_4 == $e0"
+}
 !if (<sound_7) != $f8 {
     !error "Assertion failed: <sound_7 == $f8"
 }
@@ -8146,6 +8149,9 @@ pydis_end
 }
 !if (>sound_3) != $21 {
     !error "Assertion failed: >sound_3 == $21"
+}
+!if (>sound_4) != $21 {
+    !error "Assertion failed: >sound_4 == $21"
 }
 !if (>sound_7) != $21 {
     !error "Assertion failed: >sound_7 == $21"
