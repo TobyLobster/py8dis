@@ -526,18 +526,18 @@ class Cpu6502(cpu.Cpu):
             for reg in ('a','x','y'):
                 c = self.reg_changes[reg]
                 if c == 'O' or c == 'T':
-                    state[reg].value              = None        # Current value, if known
-                    state[reg].optimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].optimistic.previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].optimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
+                    state[reg].value                          = None        # Current value, if known
+                    state[reg].optimistic.previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state[reg].optimistic.previous_load       = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state[reg].optimistic.previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
 
                     state[reg].pessimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
                     state[reg].pessimistic.previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
                     state[reg].pessimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
                 if c == 'A':
-                    state[reg].optimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].optimistic.previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].optimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
+                    state[reg].optimistic.previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state[reg].optimistic.previous_load       = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state[reg].optimistic.previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
 
                     state[reg].pessimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
                     state[reg].pessimistic.previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
@@ -1518,41 +1518,53 @@ class Cpu6502(cpu.Cpu):
 
         while binary_addr < 0x10000:
             c = disassembly.classifications[binary_addr]
-            if c is not None:
-                if state == None:
-                    state = trace.cpu.CpuState()
-
-                if isinstance(c, trace.cpu.Opcode):
-                    opcode = memory_binary[binary_addr]
-                    # for each const_sub
-                    for const_sub in trace.substitute_constant_list:
-                        # check we have the right opcode
-                        if opcode == const_sub.get_opcode(self.opcodes):
-                            # make sure we know the current value of the appropriate register
-                            reg_value = state[const_sub.reg].value
-                            if reg_value != None:
-                                # check that we know where the register was set
-                                where_reg_set = state.get_previous_load_imm_optimistic(const_sub.reg)
-                                if where_reg_set != None:
-                                    # if we have an operand, make sure it matches too
-                                    if not const_sub.operand or (const_sub.get_operand_value() == c.target(binary_addr)):
-                                        # check the const_sub dictionary has the current value as a key
-                                        if reg_value in const_sub.constants_dict:
-                                            # set the constant or expression at this address
-                                            const_or_expression = const_sub.constants_dict[reg_value]
-                                            classification.add_expression(where_reg_set, const_or_expression)
-
-                                            # define the constant, if desired
-                                            if const_sub.define_constant:
-                                                # is this a constant?
-                                                if disassembly.is_simple_name(const_or_expression):
-                                                    # define the constant
-                                                    disassembly.add_constant(reg_value, const_or_expression)
-
-                state = trace.cpu.cpu_states[binary_addr]
-                binary_addr += c.length()
-            else:
+            if c is None:
                 binary_addr += 1
+                continue
+
+            if state == None:
+                state = trace.cpu.CpuState()
+
+            if isinstance(c, trace.cpu.Opcode):
+                opcode = memory_binary[binary_addr]
+
+                # for each const_sub
+                for const_sub in trace.substitute_constant_list:
+                    # check we have the right opcode
+                    if opcode != const_sub.get_opcode(self.opcodes):
+                        continue
+
+                    # make sure we know the current value of the appropriate register
+                    reg_value = state[const_sub.reg].value
+                    if reg_value == None:
+                        continue
+
+                    # check that we know where the register was set
+                    where_reg_set = state.get_previous_load_imm_optimistic(const_sub.reg)
+                    if where_reg_set == None:
+                        continue
+
+                    # if we have an operand, make sure it matches too
+                    if const_sub.operand and (const_sub.get_operand_value() != c.target(binary_addr)):
+                        continue
+
+                    # check the const_sub dictionary has the current value as a key
+                    if not reg_value in const_sub.constants_dict:
+                        continue
+
+                    # set the constant or expression at this address
+                    const_or_expression = const_sub.constants_dict[reg_value]
+                    classification.add_expression(where_reg_set, const_or_expression)
+
+                    # define the constant, if desired
+                    if const_sub.define_constant:
+                        # is this a constant?
+                        if disassembly.is_simple_name(const_or_expression):
+                            # define the constant
+                            disassembly.add_constant(reg_value, const_or_expression)
+
+            state = trace.cpu.cpu_states[binary_addr]
+            binary_addr += c.length()
 
     def label_maker(self, lmd):
         # Label return1, return2 etc
