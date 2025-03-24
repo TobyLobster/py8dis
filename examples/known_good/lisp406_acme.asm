@@ -1437,9 +1437,10 @@ ODDAT
     sta ARG                                        ; 8810: 85 30       .0
     lda POINT+1                                    ; 8812: a5 7b       .{
     sta ARG+1                                      ; 8814: 85 31       .1
+    ; This loop copies 4 bytes of memory from WSA
     ldy #4                                         ; 8816: a0 04       ..
 MORODD
-    lda TVSEXT,y                                   ; 8818: b9 33 00    .3.
+    lda WSA - 1,y                                  ; 8818: b9 33 00    .3.
     sta (ARG),y                                    ; 881b: 91 30       .0
     dey                                            ; 881d: 88          .
     bne MORODD                                     ; 881e: d0 f8       ..
@@ -2492,9 +2493,10 @@ RIPON
     ; **** CONS
 CONS
     jsr ALPAIR                                     ; 8e1e: 20 53 84     S.
+    ; This loop copies 4 bytes of memory from ARGA
     ldy #4                                         ; 8e21: a0 04       ..
 CONSLP
-    lda WSC+1,y                                    ; 8e23: b9 39 00    .9.
+    lda ARGA - 1,y                                 ; 8e23: b9 39 00    .9.
     sta (POINT),y                                  ; 8e26: 91 7a       .z
     dey                                            ; 8e28: 88          .
     bne CONSLP                                     ; 8e29: d0 f8       ..
@@ -8277,6 +8279,9 @@ pydis_end
 !if (ACL) != $72 {
     !error "Assertion failed: ACL == $72"
 }
+!if (ARGA - 1) != $39 {
+    !error "Assertion failed: ARGA - 1 == $39"
+}
 !if (ARGINF) != $90 {
     !error "Assertion failed: ARGINF == $90"
 }
@@ -9653,6 +9658,9 @@ pydis_end
 }
 !if (WRMOFF) != $72 {
     !error "Assertion failed: WRMOFF == $72"
+}
+!if (WSA - 1) != $33 {
+    !error "Assertion failed: WSA - 1 == $33"
 }
 !if (XTNDL) != $74 {
     !error "Assertion failed: XTNDL == $74"

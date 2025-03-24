@@ -1437,9 +1437,10 @@ oscli   = &fff7
     sta ARG                                        ; 8810: 85 30       .0
     lda POINT+1                                    ; 8812: a5 7b       .{
     sta ARG+1                                      ; 8814: 85 31       .1
+    ; This loop copies 4 bytes of memory from WSA
     ldy #4                                         ; 8816: a0 04       ..
 .MORODD
-    lda TVSEXT,y                                   ; 8818: b9 33 00    .3.
+    lda WSA - 1,y                                  ; 8818: b9 33 00    .3.
     sta (ARG),y                                    ; 881b: 91 30       .0
     dey                                            ; 881d: 88          .
     bne MORODD                                     ; 881e: d0 f8       ..
@@ -2492,9 +2493,10 @@ oscli   = &fff7
     ; **** CONS
 .CONS
     jsr ALPAIR                                     ; 8e1e: 20 53 84     S.
+    ; This loop copies 4 bytes of memory from ARGA
     ldy #4                                         ; 8e21: a0 04       ..
 .CONSLP
-    lda WSC+1,y                                    ; 8e23: b9 39 00    .9.
+    lda ARGA - 1,y                                 ; 8e23: b9 39 00    .9.
     sta (POINT),y                                  ; 8e26: 91 7a       .z
     dey                                            ; 8e28: 88          .
     bne CONSLP                                     ; 8e29: d0 f8       ..
@@ -8113,6 +8115,7 @@ MOVE_OFFSET = HILISP-LISVAL
     assert >VECTAB == &a4
     assert >WRITGO == &8a
     assert ACL == &72
+    assert ARGA - 1 == &39
     assert ARGINF == &90
     assert ARGOFF == &6b
     assert AUXL == &76
@@ -8572,6 +8575,7 @@ MOVE_OFFSET = HILISP-LISVAL
     assert TVS-1 == &2f
     assert VALOFF == &0d
     assert WRMOFF == &72
+    assert WSA - 1 == &33
     assert XTNDL == &74
 
 save pydis_start, pydis_end

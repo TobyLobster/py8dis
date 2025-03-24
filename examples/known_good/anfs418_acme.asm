@@ -126,7 +126,6 @@ l0695                                   = $0695
 l069e                                   = $069e
 l0a00                                   = $0a00
 l0a81                                   = $0a81
-l0cff                                   = $0cff
 l0d00                                   = $0d00
 l0d07                                   = $0d07
 l0d0c                                   = $0d0c
@@ -1815,7 +1814,6 @@ c8988
     ldy #5                                                            ; 89a2: a0 05       ..
 ; $89a4 referenced 1 time by $8986
 c89a4
-l89a6 = c89a4+2
     jmp c8978                                                         ; 89a4: 4c 78 89    Lx.
 
 ; $89a6 referenced 1 time by $8096
@@ -2170,6 +2168,7 @@ loop_c8b4c
     sta l0e08                                                         ; 8b6f: 8d 08 0e    ...
     jsr sub_c8cc0                                                     ; 8b72: 20 c0 8c     ..
     jsr sub_cb449                                                     ; 8b75: 20 49 b4     I.
+    ; This loop copies 120 bytes of memory to l1000
     ldy #$77 ; 'w'                                                    ; 8b78: a0 77       .w
 ; $8b7a referenced 1 time by $8b80
 loop_c8b7a
@@ -2602,7 +2601,7 @@ c8dfa
     ldy #0                                                            ; 8e05: a0 00       ..
     beq c8e24                                                         ; 8e07: f0 1b       ..             ; ALWAYS branch
 
-; $8e09 referenced 1 time by $8da0
+; $8e09 referenced 2 times by $8da0, $a687
 sub_c8e09
     jsr sub_ca865                                                     ; 8e09: 20 65 a8     e.
     eor l0e01                                                         ; 8e0c: 4d 01 0e    M..
@@ -2803,7 +2802,6 @@ c8f40
     bne c8f4c                                                         ; 8f44: d0 06       ..
 ; $8f46 referenced 1 time by $8f4d
 loop_c8f46
-l8f48 = loop_c8f46+2
     jmp c9215                                                         ; 8f46: 4c 15 92    L..
 
 ; $8f48 referenced 1 time by $8f18
@@ -4337,6 +4335,7 @@ c9902
 
 ; $9908 referenced 1 time by $9938
 sub_c9908
+    ; This loop copies 2 bytes of memory to os_text_ptr
     ldy #1                                                            ; 9908: a0 01       ..
 ; $990a referenced 1 time by $9910
 loop_c990a
@@ -4484,11 +4483,12 @@ loop_c99cd
     jsr sub_c9a7e                                                     ; 99e3: 20 7e 9a     ~.
     dex                                                               ; 99e6: ca          .
     bne loop_c99cd                                                    ; 99e7: d0 e4       ..
+    ; This loop copies 9 bytes of memory to l0f04
     ldy #9                                                            ; 99e9: a0 09       ..
 ; $99eb referenced 1 time by $99f1
 loop_c99eb
     lda (l00bb),y                                                     ; 99eb: b1 bb       ..
-    sta l0f03,y                                                       ; 99ed: 99 03 0f    ...
+    sta l0f04 - 1,y                                                   ; 99ed: 99 03 0f    ...
     dey                                                               ; 99f0: 88          .
     bne loop_c99eb                                                    ; 99f1: d0 f8       ..
     lda #$91                                                          ; 99f3: a9 91       ..
@@ -6369,13 +6369,24 @@ la52a
     !text "hH)"                                                       ; a573: 68 48 29    hH)
     !byte $0f, $20, $95, $a5, $8d, 6, $0f                             ; a576: 0f 20 95... . .
     !text "hJJJJiQ "                                                  ; a57d: 68 4a 4a... hJJ
-    !byte $95, $a5, $8d,   5, $0f, $a0,   6, $b9,   5, $0f, $91, $ac  ; a585: 95 a5 8d... ...
-    !byte $88, $10, $f8, $60,   8, $aa, $f0,   9, $f8, $a9,   0, $18  ; a591: 88 10 f8... ...
-    !byte $69,   1, $ca, $d0, $fa, $28, $60, $0e, $60, $0d, $98, $b0  ; a59d: 69 01 ca... i..
-    !byte   3, $91, $ac, $60, $a5, $9d, $85, $ab, $85, $a1, $a9, $6f  ; a5a9: 03 91 ac... ...
-    !byte $85, $aa, $85, $a0, $a2, $0f, $20, $f8, $a6, $4c, $8c, $85  ; a5b5: 85 aa 85... ...
-    !byte $a6, $9f, $86, $ab, $84, $aa, $6e, $61, $0d, $a8, $85, $ae  ; a5c1: a6 9f 86... ...
-    !byte $d0, $1b, $a9,   3, $20, $ce, $a0, $b0                      ; a5cd: d0 1b a9... ...
+    !byte $95, $a5, $8d, 5, $0f                                       ; a585: 95 a5 8d... ...
+
+    ; This loop copies 7 bytes of memory from l0f05
+    ldy #6                                                            ; a58a: a0 06       ..
+; $a58c referenced 1 time by $a592
+loop_ca58c
+    lda l0f05,y                                                       ; a58c: b9 05 0f    ...
+    sta (l00ac),y                                                     ; a58f: 91 ac       ..
+    dey                                                               ; a591: 88          .
+    bpl loop_ca58c                                                    ; a592: 10 f8       ..
+    rts                                                               ; a594: 60          `
+
+    !byte   8, $aa, $f0,   9, $f8, $a9,   0, $18, $69,   1, $ca, $d0  ; a595: 08 aa f0... ...
+    !byte $fa, $28, $60, $0e, $60, $0d, $98, $b0,   3, $91, $ac, $60  ; a5a1: fa 28 60... .(`
+    !byte $a5, $9d, $85, $ab, $85, $a1, $a9, $6f, $85, $aa, $85, $a0  ; a5ad: a5 9d 85... ...
+    !byte $a2, $0f, $20, $f8, $a6, $4c, $8c, $85, $a6, $9f, $86, $ab  ; a5b9: a2 0f 20... ..
+    !byte $84, $aa, $6e, $61, $0d, $a8, $85, $ae, $d0, $1b, $a9,   3  ; a5c5: 84 aa 6e... ..n
+    !byte $20, $ce, $a0, $b0                                          ; a5d1: 20 ce a0...  ..
     !text "=JJ"                                                       ; a5d5: 3d 4a 4a    =JJ
     !byte $aa, $b1, $aa, $f0, $36, $c9, $3f, $f0,   4, $e8, $8a, $d0  ; a5d8: aa b1 aa... ...
     !byte $ec, $8a, $a2,   0, $81, $ac, $20, $ce, $a0, $b0, $24, $88  ; a5e4: ec 8a a2... ...
@@ -6392,46 +6403,126 @@ la52a
     !byte $e3, $ec, $fa,   1, $e7, $ea,   6, $0e, $19, $24, $a6, $a6  ; a644: e3 ec fa... ...
     !byte $a7, $a7, $a7, $a7, $a7, $a7, $a7, $a7, $a7, $a8, $a6, $a6  ; a650: a7 a7 a7... ...
     !byte $a8, $a8, $a8, $a8, $2c, $6c, $0d, $30,   3, $4c, $49, $a7  ; a65c: a8 a8 a8... ...
-    !byte $a0,   2, $b9, $ff, $0d, $91, $f0, $88, $d0, $f8            ; a668: a0 02 b9... ...
-    !text "`,l"                                                       ; a672: 60 2c 6c    `,l
-    !byte $0d, $10, $ed, $a0,   0, $20, $99, $b7, $a0,   2, $b1, $f0  ; a675: 0d 10 ed... ...
-    !byte $99, $ff, $0d, $88, $d0, $f8, $20,   9, $8e, $a2, $0f, $bd  ; a681: 99 ff 0d... ...
-    !byte $60, $10, $a8, $29,   2, $f0, $50, $98, $29, $df, $9d, $60  ; a68d: 60 10 a8... `..
-    !byte $10, $a8, $20, $86, $b5, $d0, $44, $18, $98, $29,   4, $f0  ; a699: 10 a8 20... ..
-    !byte $10, $98,   9, $20, $a8, $bd, $30, $10, $8d,   2, $0e, $8a  ; a6a5: 10 98 09... ...
-    !byte $69, $20, $8d, $72, $10, $98, $29,   8, $f0, $10, $98,   9  ; a6b1: 69 20 8d... i .
-    !byte $20, $a8, $bd, $30, $10, $8d,   3, $0e, $8a, $69, $20, $8d  ; a6bd: 20 a8 bd...  ..
-    !byte $73, $10, $98, $29, $10, $f0, $10, $98,   9, $20, $a8, $bd  ; a6c9: 73 10 98... s..
-    !byte $30, $10, $8d,   4, $0e, $8a, $69, $20, $8d, $74, $10, $98  ; a6d5: 30 10 8d... 0..
-    !byte $9d, $60, $10, $ca, $10, $a5, $60, $18, $90,   1, $38, $a9  ; a6e1: 9d 60 10... .`.
-    !byte $17, $85, $aa, $a5, $9d, $85, $ab, $a0,   1, $a2,   5, $90  ; a6ed: 17 85 aa... ...
-    !byte   4, $b1, $ac, $91, $aa, $b1, $aa, $91, $ac, $c8, $ca, $10  ; a6f9: 04 b1 ac... ...
-    !byte $f2, $60, $a5, $9f, $85, $ab, $c8, $98, $85, $aa, $aa, $18  ; a705: f2 60 a5... .`.
-    !byte $90, $e5, $c8, $b1, $ac, $c8, $91, $9e, $b1, $ac, $c8, $91  ; a711: 90 e5 c8... ...
-    !byte $9e, $20, $65, $a8, $51, $9e, $d0,   2, $91, $9e, $60, $ad  ; a71d: 9e 20 65... . e
-    !byte $68, $0d, $4c, $fe, $a7, $c8, $b1, $ac, $4c, $36, $b3, $2c  ; a729: 68 0d 4c... h.L
-    !byte $6c, $0d, $10, $10, $a0,   3, $b9, $71, $10, $91, $ac, $88  ; a735: 6c 0d 10... l..
-    !byte $d0, $f8                                                    ; a741: d0 f8       ..
-    !text "`,l"                                                       ; a743: 60 2c 6c    `,l
-    !byte $0d, $30,   6, $a9,   0, $a8, $91, $ac, $60, $a0,   1, $b1  ; a746: 0d 30 06... .0.
-    !byte $ac, $c9, $20, $90, $0a, $c9, $30, $b0,   6, $aa, $bd, $10  ; a752: ac c9 20... ..
-    !byte $10, $d0,   7, $a9,   0, $aa, $81, $ac, $f0, $26, $bd, $40  ; a75e: 10 d0 07... ...
-    !byte $10, $29,   2, $f0, $f2, $8a, $99, $71, $10, $bd, $10, $10  ; a76a: 10 29 02... .).
-    !byte $99,   1, $0e, $c0,   1, $d0, $18, $98, $48, $a0,   4, $20  ; a776: 99 01 0e... ...
-    !byte $bf, $a7, $68, $a8, $bd, $40, $10,   9, $24, $9d, $40, $10  ; a782: bf a7 68... ..h
-    !byte $c8, $c0,   4, $d0, $be, $88, $60, $c0,   2, $d0, $13, $98  ; a78e: c8 c0 04... ...
-    !byte $48, $a0,   8, $20, $bf, $a7, $68, $a8, $bd, $40, $10,   9  ; a79a: 48 a0 08... H..
-    !byte $28, $9d, $40, $10, $d0, $e2, $98, $48, $a0, $10, $20, $bf  ; a7a6: 28 9d 40... (.@
-    !byte $a7, $68, $a8, $bd, $40, $10,   9, $30, $9d, $40, $10, $d0  ; a7b2: a7 68 a8... .h.
-    !byte $cf, $8a, $48, $a2, $0f, $bd, $60, $10, $2a, $2a, $10, $14  ; a7be: cf 8a 48... ..H
-    !byte $98, $3d, $60, $10, $f0,   5, $98,   9, $20, $d0,   1, $98  ; a7ca: 98 3d 60... .=`
-    !byte $49, $ff, $3d, $60, $10, $9d, $60, $10, $ca, $10, $e2, $68  ; a7d6: 49 ff 3d... I.=
-    !byte $aa, $60, $a0,   1, $b1, $9c, $a0,   0, $4c, $fe, $a7, $a0  ; a7e2: aa 60 a0... .`.
-    !byte $7f, $b1, $9c, $a0,   1, $91, $ac, $c8, $a9, $80, $91, $ac  ; a7ee: 7f b1 9c... ...
-    !byte $60, $ad,   9, $0e, $c8, $91, $ac, $60, $ad,   8, $0e, $10  ; a7fa: 60 ad 09... `..
-    !byte $f7, $a9, $6f, $38, $ed, $6b, $0d, $b0, $ef, $c8, $b9, $6c  ; a806: f7 a9 6f... ..o
-    !byte $0d, $91, $ac, $c0,   3, $d0, $f6, $60, $c8, $b1, $ac, $99  ; a812: 0d 91 ac... ...
-    !byte $6c, $0d, $c0,   3, $d0, $f6                                ; a81e: 6c 0d c0... l..
+
+    ; This loop copies 2 bytes of memory from l0e00
+    ldy #2                                                            ; a668: a0 02       ..
+; $a66a referenced 1 time by $a670
+loop_ca66a
+    lda l0e00 - 1,y                                                   ; a66a: b9 ff 0d    ...
+    sta (l00f0),y                                                     ; a66d: 91 f0       ..
+    dey                                                               ; a66f: 88          .
+    bne loop_ca66a                                                    ; a670: d0 f8       ..
+    rts                                                               ; a672: 60          `
+
+    !byte $2c, $6c, $0d, $10, $ed, $a0, 0, $20, $99, $b7              ; a673: 2c 6c 0d... ,l.
+
+    ; This loop copies 2 bytes of memory to l0e00
+    ldy #2                                                            ; a67d: a0 02       ..
+; $a67f referenced 1 time by $a685
+loop_ca67f
+    lda (l00f0),y                                                     ; a67f: b1 f0       ..
+    sta l0e00 - 1,y                                                   ; a681: 99 ff 0d    ...
+    dey                                                               ; a684: 88          .
+    bne loop_ca67f                                                    ; a685: d0 f8       ..
+    jsr sub_c8e09                                                     ; a687: 20 09 8e     ..
+    ldx #$0f                                                          ; a68a: a2 0f       ..
+; $a68c referenced 1 time by $a6e5
+ca68c
+    lda l1060,x                                                       ; a68c: bd 60 10    .`.
+    tay                                                               ; a68f: a8          .
+    and #2                                                            ; a690: 29 02       ).
+    beq ca6e4                                                         ; a692: f0 50       .P
+    tya                                                               ; a694: 98          .
+    and #$df                                                          ; a695: 29 df       ).
+    sta l1060,x                                                       ; a697: 9d 60 10    .`.
+    tay                                                               ; a69a: a8          .
+    jsr sub_cb586                                                     ; a69b: 20 86 b5     ..
+    bne ca6e4                                                         ; a69e: d0 44       .D
+    clc                                                               ; a6a0: 18          .
+    tya                                                               ; a6a1: 98          .
+    and #4                                                            ; a6a2: 29 04       ).
+    beq ca6b6                                                         ; a6a4: f0 10       ..
+    tya                                                               ; a6a6: 98          .
+    ora #$20 ; ' '                                                    ; a6a7: 09 20       .
+    tay                                                               ; a6a9: a8          .
+    lda l1030,x                                                       ; a6aa: bd 30 10    .0.
+    sta l0e02                                                         ; a6ad: 8d 02 0e    ...
+    txa                                                               ; a6b0: 8a          .
+    adc #$20 ; ' '                                                    ; a6b1: 69 20       i
+    sta l1072                                                         ; a6b3: 8d 72 10    .r.
+; $a6b6 referenced 1 time by $a6a4
+ca6b6
+    tya                                                               ; a6b6: 98          .
+    and #8                                                            ; a6b7: 29 08       ).
+    beq ca6cb                                                         ; a6b9: f0 10       ..
+    tya                                                               ; a6bb: 98          .
+    ora #$20 ; ' '                                                    ; a6bc: 09 20       .
+    tay                                                               ; a6be: a8          .
+    lda l1030,x                                                       ; a6bf: bd 30 10    .0.
+    sta l0e03                                                         ; a6c2: 8d 03 0e    ...
+    txa                                                               ; a6c5: 8a          .
+    adc #$20 ; ' '                                                    ; a6c6: 69 20       i
+    sta l1073                                                         ; a6c8: 8d 73 10    .s.
+; $a6cb referenced 1 time by $a6b9
+ca6cb
+    tya                                                               ; a6cb: 98          .
+    and #$10                                                          ; a6cc: 29 10       ).
+    beq ca6e0                                                         ; a6ce: f0 10       ..
+    tya                                                               ; a6d0: 98          .
+    ora #$20 ; ' '                                                    ; a6d1: 09 20       .
+    tay                                                               ; a6d3: a8          .
+    lda l1030,x                                                       ; a6d4: bd 30 10    .0.
+    sta l0e04                                                         ; a6d7: 8d 04 0e    ...
+    txa                                                               ; a6da: 8a          .
+    adc #$20 ; ' '                                                    ; a6db: 69 20       i
+    sta l1074                                                         ; a6dd: 8d 74 10    .t.
+; $a6e0 referenced 1 time by $a6ce
+ca6e0
+    tya                                                               ; a6e0: 98          .
+    sta l1060,x                                                       ; a6e1: 9d 60 10    .`.
+; $a6e4 referenced 2 times by $a692, $a69e
+ca6e4
+    dex                                                               ; a6e4: ca          .
+    bpl ca68c                                                         ; a6e5: 10 a5       ..
+    rts                                                               ; a6e7: 60          `
+
+    !byte $18, $90,   1, $38, $a9, $17, $85, $aa, $a5, $9d, $85, $ab  ; a6e8: 18 90 01... ...
+    !byte $a0,   1, $a2,   5, $90,   4, $b1, $ac, $91, $aa, $b1, $aa  ; a6f4: a0 01 a2... ...
+    !byte $91, $ac, $c8, $ca, $10, $f2, $60, $a5, $9f, $85, $ab, $c8  ; a700: 91 ac c8... ...
+    !byte $98, $85, $aa, $aa, $18, $90, $e5, $c8, $b1, $ac, $c8, $91  ; a70c: 98 85 aa... ...
+    !byte $9e, $b1, $ac, $c8, $91, $9e, $20, $65, $a8, $51, $9e, $d0  ; a718: 9e b1 ac... ...
+    !byte   2, $91, $9e, $60, $ad, $68, $0d, $4c, $fe, $a7, $c8, $b1  ; a724: 02 91 9e... ...
+    !byte $ac, $4c, $36, $b3, $2c, $6c, $0d, $10, $10                 ; a730: ac 4c 36... .L6
+
+    ; This loop copies 3 bytes of memory from l1072
+    ldy #3                                                            ; a739: a0 03       ..
+; $a73b referenced 1 time by $a741
+loop_ca73b
+    lda l1072 - 1,y                                                   ; a73b: b9 71 10    .q.
+    sta (l00ac),y                                                     ; a73e: 91 ac       ..
+    dey                                                               ; a740: 88          .
+    bne loop_ca73b                                                    ; a741: d0 f8       ..
+    rts                                                               ; a743: 60          `
+
+    !byte $2c, $6c, $0d, $30,   6, $a9,   0, $a8, $91, $ac, $60, $a0  ; a744: 2c 6c 0d... ,l.
+    !byte   1, $b1, $ac, $c9, $20, $90, $0a, $c9, $30, $b0,   6, $aa  ; a750: 01 b1 ac... ...
+    !byte $bd, $10, $10, $d0,   7, $a9,   0, $aa, $81, $ac, $f0, $26  ; a75c: bd 10 10... ...
+    !byte $bd, $40, $10, $29,   2, $f0, $f2, $8a, $99, $71, $10, $bd  ; a768: bd 40 10... .@.
+    !byte $10, $10, $99,   1, $0e, $c0,   1, $d0, $18, $98, $48, $a0  ; a774: 10 10 99... ...
+    !byte   4, $20, $bf, $a7, $68, $a8, $bd, $40, $10,   9, $24, $9d  ; a780: 04 20 bf... . .
+    !byte $40, $10, $c8, $c0,   4, $d0, $be, $88, $60, $c0,   2, $d0  ; a78c: 40 10 c8... @..
+    !byte $13, $98, $48, $a0,   8, $20, $bf, $a7, $68, $a8, $bd, $40  ; a798: 13 98 48... ..H
+    !byte $10,   9, $28, $9d, $40, $10, $d0, $e2, $98, $48, $a0, $10  ; a7a4: 10 09 28... ..(
+    !byte $20, $bf, $a7, $68, $a8, $bd, $40, $10,   9, $30, $9d, $40  ; a7b0: 20 bf a7...  ..
+    !byte $10, $d0, $cf, $8a, $48, $a2, $0f, $bd, $60, $10, $2a, $2a  ; a7bc: 10 d0 cf... ...
+    !byte $10, $14, $98, $3d, $60, $10, $f0,   5, $98,   9, $20, $d0  ; a7c8: 10 14 98... ...
+    !byte   1, $98, $49, $ff, $3d, $60, $10, $9d, $60, $10, $ca, $10  ; a7d4: 01 98 49... ..I
+    !byte $e2, $68, $aa, $60, $a0,   1, $b1, $9c, $a0,   0, $4c, $fe  ; a7e0: e2 68 aa... .h.
+    !byte $a7, $a0, $7f, $b1, $9c, $a0,   1, $91, $ac, $c8, $a9, $80  ; a7ec: a7 a0 7f... ...
+    !byte $91, $ac, $60, $ad,   9, $0e, $c8, $91, $ac, $60, $ad,   8  ; a7f8: 91 ac 60... ..`
+    !byte $0e, $10, $f7, $a9, $6f, $38, $ed, $6b, $0d, $b0, $ef, $c8  ; a804: 0e 10 f7... ...
+    !byte $b9, $6c, $0d, $91, $ac, $c0,   3, $d0, $f6, $60, $c8, $b1  ; a810: b9 6c 0d... .l.
+    !byte $ac, $99, $6c, $0d, $c0,   3, $d0, $f6                      ; a81c: ac 99 6c... ..l
     !text "` e"                                                       ; a824: 60 20 65    ` e
     !byte $a8, $a0,   0, $ad, $71, $0d, $c9, $ff, $d0,   6, $98, $91  ; a827: a8 a0 00... ...
     !byte $ac, $c8, $d0, $13, $c8, $91, $ac, $c8, $c8, $b1, $ac, $f0  ; a833: ac c8 d0... ...
@@ -7848,6 +7939,7 @@ loop_cb179
     sta l009b                                                         ; b183: 85 9b       ..
     lda #$0c                                                          ; b185: a9 0c       ..
     sta l009a                                                         ; b187: 85 9a       ..
+    ; This loop copies 4 bytes of memory from lb194
     ldy #3                                                            ; b189: a0 03       ..
 ; $b18b referenced 1 time by $b191
 loop_cb18b
@@ -8504,7 +8596,7 @@ cb577
     sta l1030,x                                                       ; b581: 9d 30 10    .0.
     beq cb55f                                                         ; b584: f0 d9       ..             ; ALWAYS branch
 
-; $b586 referenced 6 times by $a306, $a331, $a368, $ac40, $b4b7, $b577
+; $b586 referenced 7 times by $a306, $a331, $a368, $a69b, $ac40, $b4b7, $b577
 sub_cb586
     lda l1040,x                                                       ; b586: bd 40 10    .@.
     eor l0e00                                                         ; b589: 4d 00 0e    M..
@@ -9425,6 +9517,7 @@ cbbbc
     lda (os_text_ptr),y                                               ; bbcc: b1 f2       ..
     cmp #$0d                                                          ; bbce: c9 0d       ..
     bne cbc0a                                                         ; bbd0: d0 38       .8
+    ; This loop copies 2 bytes of memory from os_text_ptr
     ldy #1                                                            ; bbd2: a0 01       ..
 ; $bbd4 referenced 1 time by $bbda
 loop_cbbd4
@@ -10143,6 +10236,15 @@ pydis_end
 !if (l0d6d - 1) != $0d6c {
     !error "Assertion failed: l0d6d - 1 == $0d6c"
 }
+!if (l0e00 - 1) != $0dff {
+    !error "Assertion failed: l0e00 - 1 == $0dff"
+}
+!if (l0f04 - 1) != $0f03 {
+    !error "Assertion failed: l0f04 - 1 == $0f03"
+}
+!if (l1072 - 1) != $1071 {
+    !error "Assertion failed: l1072 - 1 == $1071"
+}
 !if (l8f49 - 1) != $8f48 {
     !error "Assertion failed: l8f49 - 1 == $8f48"
 }
@@ -10230,7 +10332,7 @@ pydis_end
 
 ; Label references by decreasing frequency:
 ;     l009e:                                   71
-;     l0f05:                                   66
+;     l0f05:                                   67
 ;     l00bb:                                   55
 ;     l009c:                                   50
 ;     econet_control23_or_status2:             46
@@ -10242,8 +10344,8 @@ pydis_end
 ;     l00b2:                                   34
 ;     l00be:                                   34
 ;     econet_control1_or_status1:              32
-;     l1071:                                   30
-;     l00ac:                                   28
+;     l1071:                                   31
+;     l00ac:                                   30
 ;     l0d3e:                                   27
 ;     l0f06:                                   27
 ;     l00b4:                                   25
@@ -10260,6 +10362,8 @@ pydis_end
 ;     l10b8:                                   18
 ;     osnewl:                                  18
 ;     l0e30:                                   17
+;     l1030:                                   17
+;     l1060:                                   17
 ;     l00a5:                                   16
 ;     l00b5:                                   16
 ;     os_text_ptr:                             16
@@ -10273,8 +10377,6 @@ pydis_end
 ;     l00a4:                                   14
 ;     l00a9:                                   14
 ;     l0d0e:                                   14
-;     l1030:                                   14
-;     l1060:                                   14
 ;     l00bd:                                   13
 ;     l1000:                                   13
 ;     sub_caf32:                               13
@@ -10323,6 +10425,7 @@ pydis_end
 ;     l1040:                                    7
 ;     l10c9:                                    7
 ;     sub_cb509:                                7
+;     sub_cb586:                                7
 ;     sub_cb98f:                                7
 ;     tube_status_1_and_tube_control:           7
 ;     c83f5:                                    6
@@ -10337,12 +10440,12 @@ pydis_end
 ;     l00f3:                                    6
 ;     l0d14:                                    6
 ;     l0e00:                                    6
+;     l0e03:                                    6
 ;     l0e05:                                    6
 ;     l0f08:                                    6
 ;     l10d8:                                    6
 ;     sta_e09_if_d6c_b7_set:                    6
 ;     sub_caf02:                                6
-;     sub_cb586:                                6
 ;     c80fd:                                    5
 ;     c881d:                                    5
 ;     c9473:                                    5
@@ -10354,6 +10457,7 @@ pydis_end
 ;     l00b9:                                    5
 ;     l00ba:                                    5
 ;     l00bf:                                    5
+;     l00f0:                                    5
 ;     l0102:                                    5
 ;     l0d21:                                    5
 ;     l0d30:                                    5
@@ -10361,7 +10465,8 @@ pydis_end
 ;     l0d40:                                    5
 ;     l0d63:                                    5
 ;     l0d6b:                                    5
-;     l0e03:                                    5
+;     l0e02:                                    5
+;     l0e04:                                    5
 ;     l0e07:                                    5
 ;     l10cf:                                    5
 ;     l10d4:                                    5
@@ -10396,8 +10501,6 @@ pydis_end
 ;     l0d44:                                    4
 ;     l0d62:                                    4
 ;     l0d71:                                    4
-;     l0e02:                                    4
-;     l0e04:                                    4
 ;     l0e09:                                    4
 ;     l0e0a:                                    4
 ;     l0f09:                                    4
@@ -10447,7 +10550,6 @@ pydis_end
 ;     just_rts:                                 3
 ;     l0054:                                    3
 ;     l00a1:                                    3
-;     l00f0:                                    3
 ;     l00fd:                                    3
 ;     l0355:                                    3
 ;     l0d0c:                                    3
@@ -10560,6 +10662,7 @@ pydis_end
 ;     ca365:                                    2
 ;     ca38b:                                    2
 ;     ca3e3:                                    2
+;     ca6e4:                                    2
 ;     ca889:                                    2
 ;     caa8a:                                    2
 ;     caaa9:                                    2
@@ -10627,6 +10730,9 @@ pydis_end
 ;     l0fdc:                                    2
 ;     l0fdd:                                    2
 ;     l0fde:                                    2
+;     l1072:                                    2
+;     l1073:                                    2
+;     l1074:                                    2
 ;     l10d9:                                    2
 ;     l8d38:                                    2
 ;     l8e54:                                    2
@@ -10656,6 +10762,7 @@ pydis_end
 ;     sub_c8c33:                                2
 ;     sub_c8c9f:                                2
 ;     sub_c8cc0:                                2
+;     sub_c8e09:                                2
 ;     sub_c9269:                                2
 ;     sub_c9273:                                2
 ;     sub_c929b:                                2
@@ -11015,6 +11122,10 @@ pydis_end
 ;     ca389:                                    1
 ;     ca3b4:                                    1
 ;     ca3e8:                                    1
+;     ca68c:                                    1
+;     ca6b6:                                    1
+;     ca6cb:                                    1
+;     ca6e0:                                    1
 ;     ca8b5:                                    1
 ;     ca8db:                                    1
 ;     ca935:                                    1
@@ -11174,7 +11285,6 @@ pydis_end
 ;     l04c7:                                    1
 ;     l0518:                                    1
 ;     l0600:                                    1
-;     l0cff:                                    1
 ;     l0d07:                                    1
 ;     l0d1a:                                    1
 ;     l0d23:                                    1
@@ -11202,9 +11312,6 @@ pydis_end
 ;     l0ff0:                                    1
 ;     l0fff:                                    1
 ;     l1050:                                    1
-;     l1072:                                    1
-;     l1073:                                    1
-;     l1074:                                    1
 ;     l10cb:                                    1
 ;     l10cd:                                    1
 ;     l10ce:                                    1
@@ -11217,9 +11324,7 @@ pydis_end
 ;     l8600:                                    1
 ;     l8861:                                    1
 ;     l8869:                                    1
-;     l89a6:                                    1
 ;     l8e61:                                    1
-;     l8f48:                                    1
 ;     l9022:                                    1
 ;     l9122:                                    1
 ;     l9286:                                    1
@@ -11370,6 +11475,10 @@ pydis_end
 ;     loop_ca2a8:                               1
 ;     loop_ca4fc:                               1
 ;     loop_ca50e:                               1
+;     loop_ca58c:                               1
+;     loop_ca66a:                               1
+;     loop_ca67f:                               1
+;     loop_ca73b:                               1
 ;     loop_ca875:                               1
 ;     loop_ca89d:                               1
 ;     loop_ca8d3:                               1
@@ -11497,7 +11606,6 @@ pydis_end
 ;     sub_c8cfc:                                1
 ;     sub_c8d05:                                1
 ;     sub_c8d17:                                1
-;     sub_c8e09:                                1
 ;     sub_c8e85:                                1
 ;     sub_c8e8c:                                1
 ;     sub_c8f5d:                                1
@@ -11961,6 +12069,11 @@ pydis_end
 ;     ca3b4
 ;     ca3e3
 ;     ca3e8
+;     ca68c
+;     ca6b6
+;     ca6cb
+;     ca6e0
+;     ca6e4
 ;     ca889
 ;     ca8b5
 ;     ca8db
@@ -12235,7 +12348,6 @@ pydis_end
 ;     l069e
 ;     l0a00
 ;     l0a81
-;     l0cff
 ;     l0d00
 ;     l0d07
 ;     l0d0c
@@ -12374,11 +12486,9 @@ pydis_end
 ;     l8600
 ;     l8861
 ;     l8869
-;     l89a6
 ;     l8d38
 ;     l8e54
 ;     l8e61
-;     l8f48
 ;     l8f49
 ;     l9022
 ;     l9122
@@ -12537,6 +12647,10 @@ pydis_end
 ;     loop_ca2a8
 ;     loop_ca4fc
 ;     loop_ca50e
+;     loop_ca58c
+;     loop_ca66a
+;     loop_ca67f
+;     loop_ca73b
 ;     loop_ca875
 ;     loop_ca89d
 ;     loop_ca8d3
@@ -12879,12 +12993,12 @@ pydis_end
 
 ; Stats:
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 12911 bytes (79%)
-;     Data                     = 3473 bytes (21%)
+;     Code                     = 13051 bytes (80%)
+;     Data                     = 3333 bytes (20%)
 ;
-;     Number of instructions   = 6319
-;     Number of data bytes     = 2206 bytes
+;     Number of instructions   = 6393
+;     Number of data bytes     = 2072 bytes
 ;     Number of data words     = 60 bytes
-;     Number of string bytes   = 1207 bytes
-;     Number of strings        = 159
+;     Number of string bytes   = 1201 bytes
+;     Number of strings        = 157
 

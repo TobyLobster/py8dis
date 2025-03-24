@@ -1828,6 +1828,7 @@ cc732
     jmp cca02                                                         ; c732: 4c 02 ca    L..
 
 osword9EntryPoint
+    ; This loop copies 4 bytes of memory to l0328
     ldy #3                                                            ; c735: a0 03       ..
 ; $c737 referenced 1 time by $c73d
 loop_cc737
@@ -2160,6 +2161,7 @@ loop_cc920
 cc927
     pla                                                               ; c927: 68          h
     jsr sub_cd03e                                                     ; c928: 20 3e d0     >.
+    ; This loop copies 8 bytes of memory from l031c
     ldy #7                                                            ; c92b: a0 07       ..
 ; $c92d referenced 1 time by $c933
 loop_cc92d
@@ -4842,7 +4844,6 @@ return_24
     !byte $10, $e3, $54, $dc, $93, $dc, $89, $de, $89, $df, $72, $e7  ; d940: 10 e3 54... ..T
     !byte $eb, $e7, $a4, $e0, $c5                                     ; d94c: eb e7 a4... ...
 ; $d951 referenced 1 time by $f15b
-ld951
     !byte $de                                                         ; d951: de          .
 ld952
     !byte $7d, $f2, $8e, $f1, $c9, $f4, $29, $f5, $a6, $ff, $ca, $f3  ; d952: 7d f2 8e... }..
@@ -12227,7 +12228,6 @@ pydis_end
 ;     lc4ae:                                    1
 ;     lc4b2:                                    1
 ;     lc4ba:                                    1
-;     ld951:                                    1
 ;     ldf0e:                                    1
 ;     ldf11:                                    1
 ;     le435:                                    1
@@ -13639,7 +13639,6 @@ pydis_end
 ;     lc4b6
 ;     lc4b7
 ;     lc4ba
-;     ld951
 ;     ld9b7
 ;     ldf0c
 ;     ldf0e

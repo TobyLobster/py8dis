@@ -11,6 +11,7 @@ import classification
 import machinetype
 from memorymanager import BinaryAddr, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
+from classification import INSIDE_A_CLASSIFICATION
 
 def xy_addr(x_addr, y_addr):
     """Given two binary addresses holding the low byte and high byte of an address,
@@ -25,14 +26,14 @@ def xy_addr(x_addr, y_addr):
         x_runtime_addr = None if x_addr is None else movemanager.b2r(x_addr)
         y_runtime_addr = None if y_addr is None else movemanager.b2r(y_addr)
 
-        if isinstance(disassembly.get_classification(x_addr), classification.Word) and (y_runtime_addr == (x_runtime_addr+1)):
+        if isinstance(classification.get_classification(x_addr), classification.Word) and (y_runtime_addr == (x_runtime_addr+1)):
             # If memory is classified as Word, we can have the expression be for the whole address
             auto_expr(x_runtime_addr, label)
         else:
             # If memory is classified as a byte or 'INSIDE_A_CLASSIFICATION' (e.g. an operand of an instruction) then code them as individual bytes
-            if isinstance(disassembly.get_classification(x_addr), classification.Byte) or (disassembly.get_classification(x_addr) == INSIDE_A_CLASSIFICATION):
+            if isinstance(classification.get_classification(x_addr), classification.Byte) or (classification.get_classification(x_addr) == INSIDE_A_CLASSIFICATION):
                 auto_expr(x_runtime_addr, make_lo(label))
-            if isinstance(disassembly.get_classification(y_addr), classification.Byte) or (disassembly.get_classification(y_addr) == INSIDE_A_CLASSIFICATION):
+            if isinstance(classification.get_classification(y_addr), classification.Byte) or (classification.get_classification(y_addr) == INSIDE_A_CLASSIFICATION):
                 auto_expr(y_runtime_addr, make_hi(label))
 
         return RuntimeAddr((memory_binary[y_addr] << 8) | memory_binary[x_addr])

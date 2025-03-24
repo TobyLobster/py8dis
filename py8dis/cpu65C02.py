@@ -133,7 +133,7 @@ class Cpu65C02(Cpu6502):
         state['z'] = None
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
-        c = disassembly.classifications[binary_addr]
+        c = classification.get_classification(binary_addr)
 
         # Special case for 65C02's unconditional branch instruction...
         if isinstance(c, Cpu65C02.OpcodeUnconditionalBranch):
@@ -141,6 +141,9 @@ class Cpu65C02(Cpu6502):
 
         # ...otherwise everything is the same as 6502
         return Cpu6502.is_branch_to(self, binary_addr, target_runtime_addr)
+
+    def find_common_code_with_regex(self):
+        super().find_common_code_with_regex_for_6502_like_cpus()
 
     def analyse_with_regex(self):
         super().analyse_with_regex_for_6502_like_cpus()

@@ -158,7 +158,6 @@ l05e6       = $05e6
 l05ff       = $05ff
 l0600       = $0600
 l0700       = $0700
-l07ef       = $07ef
 l07f0       = $07f0
 l0bb1       = $0bb1
 l0e4e       = $0e4e
@@ -10935,7 +10934,6 @@ sub_cbf66
     rts                                                               ; bf70: 60          `
 
 ; $bf71 referenced 1 time by $bbed
-lbf71
     !byte $52                                                         ; bf71: 52          R
 lbf72
     !byte $0b, $a8, $34, $a6, $e4, $a6, $0a, $a7, $10, $ad, $7e, $a5  ; bf72: 0b a8 34... ..4
@@ -12457,7 +12455,6 @@ pydis_end
 ;     l05cc:                1
 ;     l05e5:                1
 ;     l05e6:                1
-;     l07ef:                1
 ;     l0bb1:                1
 ;     l0e4e:                1
 ;     l4e4e:                1
@@ -12478,7 +12475,6 @@ pydis_end
 ;     lb3be:                1
 ;     lbecd:                1
 ;     lbefe:                1
-;     lbf71:                1
 ;     le09c:                1
 ;     loop_c8057:           1
 ;     loop_c8091:           1
@@ -13713,7 +13709,6 @@ pydis_end
 ;     l05ff
 ;     l0600
 ;     l0700
-;     l07ef
 ;     l07f0
 ;     l0bb1
 ;     l0e4e
@@ -13735,7 +13730,6 @@ pydis_end
 ;     lb3be
 ;     lbecd
 ;     lbefe
-;     lbf71
 ;     lbf72
 ;     le09c
 ;     loop_c8057

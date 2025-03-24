@@ -3797,6 +3797,7 @@ osbyte                  = &fff4
 
 .inserthiscore
     jsr shufflehiscores                                               ; 27ed: 20 06 28     .(
+    ; This loop copies 8 bytes of memory from score
     ldy #7                                                            ; 27f0: a0 07       ..
 .inserthiscoreloop
     lda score,y                                                       ; 27f2: b9 28 00    .(.
@@ -3823,6 +3824,7 @@ osbyte                  = &fff4
     cpx temp3                                                         ; 280c: e4 8a       ..
     bcc shuffled                                                      ; 280e: 90 22       ."
     jsr gethiscoreaddr                                                ; 2810: 20 7c 27     |'
+    ; This loop copies 16 bytes of memory to bigbirdxpos
     ldy #&0f                                                          ; 2813: a0 0f       ..
 .readhiscoreloop
     lda (hiscoreaddr),y                                               ; 2815: b1 76       .v
@@ -3832,6 +3834,7 @@ osbyte                  = &fff4
     ldx temp4                                                         ; 281d: a6 8b       ..
     inx                                                               ; 281f: e8          .
     jsr gethiscoreaddr                                                ; 2820: 20 7c 27     |'
+    ; This loop copies 16 bytes of memory from bigbirdxpos
     ldy #&0f                                                          ; 2823: a0 0f       ..
 .writehiscoreloop
     lda bigbirdxpos,y                                                 ; 2825: b9 30 00    .0.

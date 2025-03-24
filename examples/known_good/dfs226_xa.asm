@@ -118,8 +118,6 @@ fscv                                            = $021e
 evntv                                           = $0220
 l028d                                           = $028d
 l0700                                           = $0700
-l0cff                                           = $0cff
-l0d38                                           = $0d38
 l0df0                                           = $0df0
 l0e00                                           = $0e00
 l0e07                                           = $0e07
@@ -254,7 +252,6 @@ l111a                                           = $111a
 l111b                                           = $111b
 l111c                                           = $111c
 l111d                                           = $111d
-c902f                                           = $902f
 romsel                                          = $fe30
 fdc_8271_command_or_status_or_1770_drive_control = $fe80
 fdc_8271_data_or_1770_command_or_status         = $fe84
@@ -3386,6 +3383,7 @@ c91af
     sta l1082                                                         // 91b1: 8d 82 10    ...
     stx l00c7                                                         // 91b4: 86 c7       ..
     sty l00c8                                                         // 91b6: 84 c8       ..
+    // This loop copies 13 bytes of memory to l00ba
     ldy #$0c                                                          // 91b8: a0 0c       ..
 // $91ba referenced 1 time by $91c0
 loop_c91ba
@@ -3610,6 +3608,7 @@ c92e3
     sta l00b6                                                         // 92e6: 85 b6       ..
     lda l9146,x                                                       // 92e8: bd 46 91    .F.
     sta l00b7                                                         // 92eb: 85 b7       ..
+    // This loop copies 36 bytes of memory
     ldy #$23 // '#'                                                   // 92ed: a0 23       .#
 // $92ef referenced 1 time by $92f4
 loop_c92ef
@@ -4457,6 +4456,7 @@ sub_c97e8
     php                                                               // 97fa: 08          .
     sta l107f                                                         // 97fb: 8d 7f 10    ...
     jsr sub_c995a                                                     // 97fe: 20 5a 99     Z.
+    // This loop copies 13 bytes of memory to l1060
     ldy #$0c                                                          // 9801: a0 0c       ..
 // $9803 referenced 1 time by $9809
 loop_c9803
@@ -9348,6 +9348,7 @@ sub_cb745
     inc l00b1                                                         // b752: e6 b1       ..
     lda #0                                                            // b754: a9 00       ..
     sta l00b0                                                         // b756: 85 b0       ..
+    // This loop copies 15 bytes of memory from cb736
     ldy #$0e                                                          // b758: a0 0e       ..
 // $b75a referenced 1 time by $b760
 loop_cb75a
@@ -11487,7 +11488,6 @@ pydis_end
 //     c8f21:                                              1
 //     c8fb5:                                              1
 //     c8fc7:                                              1
-//     c902f:                                              1
 //     c9060:                                              1
 //     c9115:                                              1
 //     c91cc:                                              1
@@ -11798,11 +11798,9 @@ pydis_end
 //     l010e:                                              1
 //     l028d:                                              1
 //     l0600:                                              1
-//     l0cff:                                              1
 //     l0d0f:                                              1
 //     l0d12:                                              1
 //     l0d2a:                                              1
-//     l0d38:                                              1
 //     l0d50:                                              1
 //     l0e0e:                                              1
 //     l0e10:                                              1
@@ -12402,7 +12400,6 @@ pydis_end
 //     c8f2a
 //     c8fb5
 //     c8fc7
-//     c902f
 //     c9060
 //     c9115
 //     c91af
@@ -12875,14 +12872,12 @@ pydis_end
 //     l0500
 //     l0600
 //     l0700
-//     l0cff
 //     l0d0f
 //     l0d12
 //     l0d1f
 //     l0d26
 //     l0d2a
 //     l0d30
-//     l0d38
 //     l0d3d
 //     l0d50
 //     l0df0

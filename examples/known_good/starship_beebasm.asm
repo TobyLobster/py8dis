@@ -5420,6 +5420,7 @@ osbyte                                  = &fff4
     sta temp0_high                                                    ; 42a3: 85 81       ..  :31a3[1]
     ldx #8                                                            ; 42a5: a2 08       ..  :31a5[1]
 .plot_static_row_loop
+    ; This loop copies 64 bytes of memory
     ldy #&3f                                                          ; 42a7: a0 3f       .?  :31a7[1]
 .plot_static_column_loop
     lda (temp5),y                                                     ; 42a9: b1 86       ..  :31a9[1]

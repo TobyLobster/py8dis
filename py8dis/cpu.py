@@ -14,6 +14,7 @@ import utils
 from memorymanager import BinaryLocation
 from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
+from memorymanager import BinaryAddr, RuntimeAddr
 
 class Cpu(object):
     """Abstract base class representing a CPU"""
@@ -63,7 +64,7 @@ class Cpu(object):
             # If we hit something that's already classified, we can't/don't
             # re-classify it but that doesn't mean we can't continue to
             # trace until something breaks the control flow.
-            if disassembly.is_classified(binary_addr, 1 + opcode.operand_length):
+            if classification.is_classified(binary_addr, 1 + opcode.operand_length):
                 # Format the comment using a LazyString and a late_formatter,
                 # to be resolved later.
                 s = opcode.as_string(binary_addr)
@@ -74,7 +75,7 @@ class Cpu(object):
                 disassembly.add_raw_annotation(binary_loc, utils.LazyString("%s", late_formatter))
             else:
                 # Classify the address as code
-                disassembly.add_classification(binary_addr, opcode)
+                classification.add_classification(binary_addr, opcode)
                 opcode.update_references(binary_loc)
 
             # Call the opcode routine to actually disassemble the instruction
@@ -100,7 +101,7 @@ class Cpu(object):
         binary_addr = 0
         state = self.CpuState()
         while binary_addr < 0x10000:
-            c = disassembly.classifications[binary_addr]
+            c = classification.get_classification(binary_addr)
             if c is not None:
                 if c.is_code(binary_addr):
                     c.update_cpu_state(binary_addr, state)
@@ -121,6 +122,11 @@ class Cpu(object):
         # As each instruction is processed, the next possible instructions
         # are added to the 'entry_points' list. The first of these will be
         # the following instruction (if there is one; it might be None).
+
+        # We have a number of regular expressions that represent common segments
+        # of code. If we find one of these, then there's likely to be code there.
+        # We generate entry_points for these.
+        self.find_common_code_with_regex()
 
         # Work through each entry point
         while len(self.entry_points) > 0:
@@ -144,8 +150,11 @@ class Cpu(object):
                     runtime_addr = movemanager.b2r(new_entry_point)
                     self.add_entry(new_entry_point, runtime_addr, move_id=move_id, name=None)
 
-        # Calculate the CPU states and analyse the code
+        # Calculate the CPU states and analyse the code to add commentary
         self.analyse_code()
+
+        # Do regex style matches to find common code tropes and comment them
+        self.analyse_with_regex()
 
         # We defer final label name generating (using LazyString) until tracing
         # is complete, since e.g. part way through tracing we may not have
@@ -237,99 +246,152 @@ class Cpu(object):
     #
     # Regex style analysis
     #
+    def find_common_code_with_regex(self):
+        # Do nothing by default
+        pass
+
     def analyse_with_regex(self):
         # No analysis done by default
         pass
 
-    # Analysis shared between 6502 and 65C02
-    def analyse_with_regex_for_6502_like_cpus(self):
+    def comment_full_loop(binary_loc):
+        if not classification.is_code(binary_loc.binary_addr):
+            utils.warn("Possible code found at {0}, but this is not marked as code".format(hex(binary_loc.binary_addr)))
+        else:
+            # Move on two bytes past the LDX #nn instruction
+            state = trace.cpu.cpu_states[binary_loc.binary_addr]
+            Cpu.comment_simple_loop(memorymanager.BinaryLocation(binary_loc.binary_addr+2, binary_loc.move_id), binary_loc, state)
+
+    def comment_simple_loop(binary_loc, comment_loc=None, state=None):
+        OPCODE_LDA_ZP_COMMA_X           = 0xb5      # lda zp,x
+        OPCODE_STA_ZP_COMMA_X           = 0x95      # sta zp,x
+        OPCODE_LDA_BRACKETS_ZP_COMMA_Y  = 0xb1      # lda (zp),y
+        OPCODE_STA_BRACKETS_ZP_COMMA_Y  = 0x91      # sta (zp),y
+        OPCODE_DEX                      = 0xca      # dex
+        OPCODE_BNE                      = 0xd0      # bne loop
+
         memory_binary = memorymanager.memory_binary
 
-        # Compile regex patterns with the DOTALL flag (dot matches a newline)
-        # Each pattern should be tied to comment function to output e.g. "; This loop copies 6 bytes of memory from source to dest"
+        if comment_loc == None:
+            comment_loc = binary_loc
 
-        def comment_full_loop(binary_loc):
-            # Move on two bytes past the LDX #nn instruction
-            comment_simple_loop(memorymanager.BinaryLocation(binary_loc.binary_addr+2, binary_loc.move_id), binary_loc)
+        is_load_indirect = (memory_binary[binary_loc.binary_addr] == OPCODE_LDA_BRACKETS_ZP_COMMA_Y)
 
-        def comment_simple_loop(binary_loc, comment_loc=None):
-            OPCODE_LDA_ZP_COMMA_X = 0xb5
-            OPCODE_STA_ZP_COMMA_X = 0x95
-            OPCODE_DEX            = 0xca
-            OPCODE_BNE            = 0xd0
+        zp_load = (memory_binary[binary_loc.binary_addr] == OPCODE_LDA_ZP_COMMA_X) or (memory_binary[binary_loc.binary_addr] == OPCODE_LDA_BRACKETS_ZP_COMMA_Y)
+        if zp_load:
+            next = binary_loc.binary_addr + 2
+        else:
+            next = binary_loc.binary_addr + 3
 
-            if comment_loc == None:
-                comment_loc = binary_loc
+        is_store_indirect = (memory_binary[next] == OPCODE_STA_BRACKETS_ZP_COMMA_Y)
+        zp_save = (memory_binary[next] == OPCODE_STA_ZP_COMMA_X) or (memory_binary[next] == OPCODE_STA_BRACKETS_ZP_COMMA_Y)
+        dest_pos = next + 1
+        if zp_save:
+            next += 2
+        else:
+            next += 3
 
-            zp_load = memory_binary[binary_loc.binary_addr] == OPCODE_LDA_ZP_COMMA_X
-            if zp_load:
-                next = binary_loc.binary_addr + 2
-            else:
-                next = binary_loc.binary_addr + 3
-
-            zp_save = memory_binary[next] == OPCODE_STA_ZP_COMMA_X
-            dest_pos = next + 1
-            if zp_save:
-                next += 2
-            else:
-                next += 3
-
-            stop_at_zero = memory_binary[next+1] == OPCODE_BNE
-            offset = 1 if stop_at_zero else 0
-            source_pos = binary_loc.binary_addr + 1
+        stop_at_zero = memory_binary[next+1] == OPCODE_BNE
+        offset = 1 if stop_at_zero else 0
+        source_pos = binary_loc.binary_addr + 1
+        if is_load_indirect:
+            source_label = ""
+        else:
             if zp_load:
                 source_label = classification.get_address8(source_pos, offset=offset)
             else:
                 source_label = classification.get_address16(source_pos, offset=offset)
 
+            if offset:
+                classification.add_expression(source_pos, make_subtract(source_label, offset))
+            source_label = utils.LazyString(" from %s", source_label)
+
+        if is_store_indirect:
+            dest_label = ""
+        else:
             if zp_save:
                 dest_label = classification.get_address8(dest_pos, offset=offset)
             else:
                 dest_label = classification.get_address16(dest_pos, offset=offset)
 
             if offset:
-                classification.add_expression(source_pos, make_subtract(source_label, offset))
                 classification.add_expression(dest_pos, make_subtract(dest_label, offset))
+            dest_label = utils.LazyString(" to %s", dest_label)
 
-            # Get loop initial value, look at known register state
+        # Get loop initial value, look at known register state
+        reg = 'x' if memory_binary[next] == OPCODE_DEX else 'y'
+        if state == None:
             state = trace.cpu.cpu_states[comment_loc.binary_addr]
-            reg = 'x' if memory_binary[next] == OPCODE_DEX else 'y'
-            loop_counter = state[reg].value if state and state[reg] else None
+        loop_counter = state[reg].value if state and state[reg] else None
 
-            if not stop_at_zero and loop_counter != None:
-                # Stop at -1
-                loop_counter += 1
+        if not stop_at_zero and loop_counter != None:
+            # Stop at -1
+            loop_counter += 1
 
-            zp_save = memory_binary[next] == OPCODE_STA_ZP_COMMA_X
+        # with a loop counter initialised to zero, we actually loop 256 times
+        if stop_at_zero and (loop_counter == 0):
+            # "bne loop"
+            loop_counter = 256
+        elif not stop_at_zero and (loop_counter > 128):
+            # "bpl loop" and initial value is 129 or higher then the loop will only happen once.
+            # Not sure why you would write a loop like this though...
+            loop_counter = 1
 
-            def late_formatter():
-                if loop_counter != None:
-                    return "This loop copies {0} bytes of memory from {1} to {2}".format(loop_counter, source_label, dest_label)
-                return "This loop copies memory from {1}+{0} to {2}+{0}".format(reg.upper(), source_label, dest_label)
+        zp_save = memory_binary[next] == OPCODE_STA_ZP_COMMA_X
 
-            disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+        def late_formatter():
+            if loop_counter != None:
+                loop_counter_string = " " + utils.count_with_units(loop_counter, "byte", "bytes"+ " of memory")
+                return "This loop copies{0}{1}{2}".format(loop_counter_string, source_label, dest_label)
+            return "This loop copies{1}+{0}{2}+{0}".format(reg.upper(), source_label, dest_label)
 
-        patterns = [
-            #    a2 XX           ; ldx #nn
-            #label
-            #    bd XX XX        ; lda addr,x        [or: b5 XX   ; lda zp,x]
-            #    9d XX XX        ; sta other,x       [or: 95 XX   ; sta zp,x]
-            #    ca              ; dex
-            #    10|d0 f7        ; bpl label or bne label
-            (re.compile(rb'\xa2.(\xbd..|\xb5.)(\x9d..|\x95.)\xca(\x10|\xd0)\xf7', re.DOTALL), comment_full_loop),
+        disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
 
-            #    a0 XX           ; ldy #nn
-            #label
-            #    b9 XX XX        ; lda addr,y       [note: no lda zp,y addressing mode]
-            #    99 XX XX        ; sta other,y      [note: no sta zp,y addressing mode]
-            #    88              ; dey
-            #    10|d0 f7        ; bpl label or bne label
-            (re.compile(rb'\xa0.\xb9..\x99..\x88(\x10|\xd0)\xf7', re.DOTALL), comment_full_loop),
-        ]
+    # Compile regex patterns with the DOTALL flag (dot matches a newline)
+    # Each pattern should be tied to comment function to output e.g. "; This loop copies 6 bytes of memory from source to dest"
+    patterns = [
+        #    a2 XX           ; ldx #nn
+        #label
+        #    bd XX XX        ; lda addr,x        [or: b5 XX   ; lda zp,x]
+        #    9d XX XX        ; sta other,x       [or: 95 XX   ; sta zp,x]
+        #    ca              ; dex
+        #    10|d0 f7        ; bpl label or bne label
+        (re.compile(rb'\xa2.(\xbd..|\xb5.)(\x9d..|\x95.)\xca(\x10|\xd0)\xf7', re.DOTALL), comment_full_loop),
 
+        #    a0 XX           ; ldy #nn
+        #label
+        #    b9 XX XX        ; lda addr,y       [or:  b1 XX    ; lda (zp),Y     note: no lda zp,y addressing mode]
+        #    99 XX XX        ; sta other,y      [or:  91 XX    ; sta (zp),Y     note: no sta zp,y addressing mode]
+        #    88              ; dey
+        #    10|d0 f7        ; bpl label or bne label
+        (re.compile(rb'\xa0.(\xb9..|\xb1.)(\x99..|\x91.)\x88(\x10|\xd0).', re.DOTALL), comment_full_loop),
+    ]
+
+    # Analysis shared between 6502 and 65C02
+    def find_common_code_with_regex_for_6502_like_cpus(self):
+
+        # Make a byte array of memory
+        memory_binary = memorymanager.memory_binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
 
-        for tup in patterns:
+        # For each pattern
+        for tup in Cpu.patterns:
+            # Find all matches
+            matches = re.finditer(tup[0], bytes_array) #, flags=re.MULTILINE)
+
+            for match in matches:
+                # Mark as code
+                binary_addr = BinaryAddr(match.start())
+                runtime_addr = movemanager.b2r(binary_addr)
+                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                trace.cpu.add_entry(binary_addr, runtime_addr, move_id, name=None)
+
+    def analyse_with_regex_for_6502_like_cpus(self):
+        # Make a byte array of memory
+        memory_binary = memorymanager.memory_binary
+        bytes_array = bytes([0 if x is None else x for x in memory_binary])
+
+        for tup in Cpu.patterns:
             # Find all matches
             matches = re.finditer(tup[0], bytes_array) #, flags=re.MULTILINE)
 

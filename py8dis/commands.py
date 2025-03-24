@@ -398,7 +398,7 @@ def byte(runtime_addr, n=1, cols=None):
     binary_loc = movemanager.r2b_checked(runtime_addr)
     if not memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, n, True):
         return
-    disassembly.add_classification(binary_loc.binary_addr, classification.Byte(n, cols=cols))
+    classification.add_classification(binary_loc.binary_addr, classification.Byte(n, cols=cols))
 
 # TODO: byte()/word() should probably optionally (via an optional arg or a variant function)
 # allow the user to specify a format hint for the range without having to make a separate call
@@ -414,7 +414,7 @@ def word(runtime_addr, n=1, cols=None):
     binary_loc = movemanager.r2b_checked(runtime_addr)
     if not memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, n * 2, True):
         return
-    disassembly.add_classification(binary_loc.binary_addr, classification.Word(n * 2, cols=cols))
+    classification.add_classification(binary_loc.binary_addr, classification.Word(n * 2, cols=cols))
 
 def entry(runtime_addr, label=None, warn=True):
     """
@@ -751,9 +751,6 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Output all the references
     if config.get_label_references():
         trace.cpu.add_references_comments()
-
-    # Do regex style matches to find common code tropes and comment them
-    trace.cpu.analyse_with_regex()
 
     # Scan the binary for strings (or allow a user function to do it)
     # We do this after tracing so we have the classifications.

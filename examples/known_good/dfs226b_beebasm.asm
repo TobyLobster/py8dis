@@ -118,7 +118,6 @@ fscv                                            = &021e
 evntv                                           = &0220
 l028d                                           = &028d
 l0700                                           = &0700
-l0cff                                           = &0cff
 l0df0                                           = &0df0
 l0e00                                           = &0e00
 l0e07                                           = &0e07
@@ -3450,6 +3449,7 @@ nmi_XXX5 = l0d1f+1
     sta l1082                                                         ; 31b1: 8d 82 10    ... :91b1[1]
     stx l00c7                                                         ; 31b4: 86 c7       ..  :91b4[1]
     sty l00c8                                                         ; 31b6: 84 c8       ..  :91b6[1]
+    ; This loop copies 13 bytes of memory to l00ba
     ldy #&0c                                                          ; 31b8: a0 0c       ..  :91b8[1]
 ; &31ba referenced 1 time by &91c0[1]
 .loop_c91ba
@@ -3674,6 +3674,7 @@ nmi_XXX5 = l0d1f+1
     sta l00b6                                                         ; 32e6: 85 b6       ..  :92e6[1]
     lda l9146,x                                                       ; 32e8: bd 46 91    .F. :92e8[1]
     sta l00b7                                                         ; 32eb: 85 b7       ..  :92eb[1]
+    ; This loop copies 36 bytes of memory
     ldy #&23 ; '#'                                                    ; 32ed: a0 23       .#  :92ed[1]
 ; &32ef referenced 1 time by &92f4[1]
 .loop_c92ef
@@ -4521,6 +4522,7 @@ nmi_XXX5 = l0d1f+1
     php                                                               ; 37fa: 08          .   :97fa[1]
     sta l107f                                                         ; 37fb: 8d 7f 10    ... :97fb[1]
     jsr sub_c995a                                                     ; 37fe: 20 5a 99     Z. :97fe[1]
+    ; This loop copies 13 bytes of memory to l1060
     ldy #&0c                                                          ; 3801: a0 0c       ..  :9801[1]
 ; &3803 referenced 1 time by &9809[1]
 .loop_c9803
@@ -9472,6 +9474,7 @@ lb6ce = sub_cb6cd+1
     inc l00b1                                                         ; 5752: e6 b1       ..  :b752[1]
     lda #0                                                            ; 5754: a9 00       ..  :b754[1]
     sta l00b0                                                         ; 5756: 85 b0       ..  :b756[1]
+    ; This loop copies 15 bytes of memory from cb736
     ldy #&0e                                                          ; 5758: a0 0e       ..  :b758[1]
 ; &575a referenced 1 time by &b760[1]
 .loop_cb75a
@@ -12059,7 +12062,6 @@ save pydis_start, pydis_end
 ;     l010e:                                              1
 ;     l028d:                                              1
 ;     l0600:                                              1
-;     l0cff:                                              1
 ;     l0d0f:                                              1
 ;     l0d12:                                              1
 ;     l0d2a:                                              1
@@ -13134,7 +13136,6 @@ save pydis_start, pydis_end
 ;     l0500
 ;     l0600
 ;     l0700
-;     l0cff
 ;     l0d0f
 ;     l0d12
 ;     l0d1f
