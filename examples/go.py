@@ -113,6 +113,11 @@ def call_acme(basename: Path,
         return "skipped"
 
     try:
+        if check_asm_against_known_good:
+            result = check_identical(f.asm_output_file, f.known_good_file)
+            if result:
+                return result
+
         # Assemble with Acme
         cmd = ['acme', '-o', str(f.binary_output_file)]
         if make_extras:
@@ -138,6 +143,11 @@ def call_beebasm(basename: Path,
         return "skipped"
 
     try:
+        if check_asm_against_known_good:
+            result = check_identical(f.asm_output_file, f.known_good_file)
+            if result:
+                return result
+
         # Assemble with Beebasm
         cmd = ['beebasm', '-v', '-o', str(f.binary_output_file), '-i', str(f.asm_output_file)]
         if make_extras:
@@ -165,9 +175,6 @@ def call_xa(basename: Path,
         return "skipped"
 
     try:
-        # Run through py8dis
-        run_py8dis(f, "xa")
-
         if check_asm_against_known_good:
             result = check_identical(f.asm_output_file, f.known_good_file)
             if result:
@@ -202,6 +209,11 @@ def call_z80asm(basename: Path,
         return "skipped"
 
     try:
+        if check_asm_against_known_good:
+            result = check_identical(f.asm_output_file, f.known_good_file)
+            if result:
+                return result
+
         # Assemble with z88dk-z80asm
         cmd = ['z88dk-z80asm', '-m8080', '-b']
         if make_extras:
