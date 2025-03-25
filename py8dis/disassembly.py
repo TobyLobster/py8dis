@@ -837,8 +837,8 @@ def isolate_range(start_addr, end_addr):
     """If a move boundary is in the middle of an instruction etc, then
     split the classification."""
 
-    classification.split_classification(start_addr)
-    classification.split_classification(end_addr)
+    classification.split_classification(start_addr, warn=True)
+    classification.split_classification(end_addr, warn=True)
 
 def emit_labels(binary_loc, output_annotations):
     """Emit labels and non-inline annotations for the given address"""

@@ -37,6 +37,7 @@ expression must be of the operand, not the opcode.
 from __future__ import print_function
 import collections
 import config
+import copy
 import disassembly
 import labelmanager
 import mainformatter
@@ -57,6 +58,9 @@ assembler     = config.get_assembler
 
 # `classifications` stores classifications indexed by binary address.
 classifications = [None] * 64*1024
+
+# Remember the addresses where a split_classification is requested
+split_classifications = set()
 
 # `INSIDE_A_CLASSIFICATION` is an arbitrary constant value.
 #
@@ -193,6 +197,7 @@ class String(object):
 
 def init():
     classifications = [None] * 64*1024
+    split_classifications = set()
 
 def add_expression(binary_addr, s):
     """Add an expression for the given binary address."""
@@ -257,9 +262,17 @@ def add_classification(binary_addr, c):
     assert c is not None
     assert not is_classified(binary_addr, c.length()), "Binary address {0} is already classified as {1}".format(hex(binary_addr), classification)
 
-    classifications[binary_addr] = c
+    prev_addr = binary_addr
+    classifications[binary_addr] = copy.copy(c)
     for i in range(1, c.length()):
-        classifications[binary_addr+i] = INSIDE_A_CLASSIFICATION
+        current_addr = binary_addr+i
+        if current_addr in split_classifications:
+            classifications[prev_addr].set_length(current_addr-prev_addr)
+            classifications[current_addr] = copy.copy(c)
+            classifications[current_addr].set_length(c.length() - i)
+            prev_addr = current_addr
+        else:
+            classifications[current_addr] = INSIDE_A_CLASSIFICATION
 
 def get_classification(binary_addr):
     return classifications[binary_addr]
@@ -277,20 +290,26 @@ def is_code(binary_addr):
         return False
     return c.is_code(binary_addr)
 
-def split_classification(binary_addr):
-    """If a move boundary is in the middle of an instruction etc, then
-    split the classification."""
+def split_classification(binary_addr, *, warn):
+    """If e.g. a move boundary is in the middle of an instruction, then split the classification."""
 
     if binary_addr >= 0x10000:
         return
+
+    # Remember the split addresses for later, so that we can avoid adding a string across the split.
+    split_classifications.add(binary_addr)
+
     if classifications[binary_addr] != INSIDE_A_CLASSIFICATION:
         return
 
     # TODO: Do we need to check and not warn if this is just an automatic string/byte classification?
-    utils.warn("move boundary at binary address {0} splits a classification".format(config.get_assembler().hex(binary_addr)))
+    if warn:
+        utils.warn("move boundary at binary address {0} splits a classification".format(config.get_assembler().hex(binary_addr)))
     split_addr = binary_addr
     while classifications[binary_addr] == INSIDE_A_CLASSIFICATION:
         binary_addr -= 1
+
+    # classify as bytes
     first_split_length = split_addr - binary_addr
     classifications[split_addr] = Byte(classifications[binary_addr].length() - first_split_length)
     classifications[binary_addr] = Byte(first_split_length)
@@ -326,13 +345,14 @@ def stringterm_binary(binary_addr, terminator, exclude_terminator=False):
         add_classification(initial_addr, String(string_length))
     return movemanager.b2r(binary_addr + 1)
 
-def string_binary(binary_addr, n=None):
+def string_binary(binary_addr, n):
     if n is None:
         assert not is_classified(binary_addr), "Address " + hex(binary_addr) + " already classified"
         n = 0
         while not is_classified(binary_addr + n) and utils.isprint(memory_binary[binary_addr + n]):
             n += 1
         assert(not is_classified(binary_addr, n))
+
     if n > 0:
         add_classification(binary_addr, String(n))
     return movemanager.b2r(binary_addr + n)

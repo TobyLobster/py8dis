@@ -660,6 +660,7 @@ def string(runtime_addr, n=None):
 
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
+
     return classification.string_binary(binary_loc.binary_addr, n=n)
 
 def stringterm(runtime_addr, terminator, exclude_terminator=False):
@@ -721,6 +722,11 @@ def stringn(runtime_addr):
 
 def is_simple_name(s):
     return disassembly.is_simple_name(s)
+
+def split_classification(runtime_addr):
+    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    classification.split_classification(binary_loc.binary_addr, warn=False)
 
 def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     """
