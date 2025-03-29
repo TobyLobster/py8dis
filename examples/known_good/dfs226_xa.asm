@@ -8397,11 +8397,12 @@ cb1d5
 cb1dd
     cmp #$42 // 'B'                                                   // b1dd: c9 42       .B
     bne cb203                                                         // b1df: d0 22       ."
+    // This loop copies 2 bytes of memory to l00bc
     ldy #9                                                            // b1e1: a0 09       ..
 // $b1e3 referenced 1 time by $b1eb
 loop_cb1e3
     lda (l00f0),y                                                     // b1e3: b1 f0       ..
-    sta l00b4,y                                                       // b1e5: 99 b4 00    ...
+    sta l00bc - 8,y                                                   // b1e5: 99 b4 00    ...
     dey                                                               // b1e8: 88          .
     cpy #8                                                            // b1e9: c0 08       ..
     bcs loop_cb1e3                                                    // b1eb: b0 f6       ..

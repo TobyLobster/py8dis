@@ -8415,11 +8415,12 @@ cb1d5
 cb1dd
     cmp #$42 ; 'B'                                                    ; 51dd: c9 42       .B  :b1dd[1]
     bne cb203                                                         ; 51df: d0 22       ."  :b1df[1]
+    ; This loop copies 2 bytes of memory to l00bc
     ldy #9                                                            ; 51e1: a0 09       ..  :b1e1[1]
 ; $51e3 referenced 1 time by $b1eb[1]
 loop_cb1e3
     lda (l00f0),y                                                     ; 51e3: b1 f0       ..  :b1e3[1]
-    sta l00b4,y                                                       ; 51e5: 99 b4 00    ... :b1e5[1]
+    sta l00bc - 8,y                                                   ; 51e5: 99 b4 00    ... :b1e5[1]
     dey                                                               ; 51e8: 88          .   :b1e8[1]
     cpy #8                                                            ; 51e9: c0 08       ..  :b1e9[1]
     bcs loop_cb1e3                                                    ; 51eb: b0 f6       ..  :b1eb[1]
@@ -11053,6 +11054,9 @@ pydis_end
 }
 !if (copyright - rom_header) != $11 {
     !error "Assertion failed: copyright - rom_header == $11"
+}
+!if (l00bc - 8) != $b4 {
+    !error "Assertion failed: l00bc - 8 == $b4"
 }
 !if (nmi3_handler_rom_end-nmi3_handler_rom_start) != $0e {
     !error "Assertion failed: nmi3_handler_rom_end-nmi3_handler_rom_start == $0e"

@@ -7217,11 +7217,12 @@ loop_ce8f2
     rts                                                               // e901: 60          `
 
 osword0EntryPoint
+    // This loop copies 3 bytes of memory to l02b3
     ldy #4                                                            // e902: a0 04       ..
 // $e904 referenced 1 time by $e90c
 loop_ce904
     lda (l00f0),y                                                     // e904: b1 f0       ..
-    sta l02b1,y                                                       // e906: 99 b1 02    ...
+    sta l02b3 - 2,y                                                   // e906: 99 b1 02    ...
     dey                                                               // e909: 88          .
     cpy #2                                                            // e90a: c0 02       ..
     bcs loop_ce904                                                    // e90c: b0 f6       ..

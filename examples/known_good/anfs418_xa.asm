@@ -4587,11 +4587,12 @@ c9a64
 
 // $9a72 referenced 2 times by $9961, $996c
 sub_c9a72
+    // This loop copies 4 bytes of memory to l00b0
     ldy #5                                                            // 9a72: a0 05       ..
 // $9a74 referenced 1 time by $9a7c
 loop_c9a74
     lda (l00bb),y                                                     // 9a74: b1 bb       ..
-    sta l00ae,y                                                       // 9a76: 99 ae 00    ...
+    sta l00b0 - 2,y                                                   // 9a76: 99 ae 00    ...
     dey                                                               // 9a79: 88          .
     cpy #2                                                            // 9a7a: c0 02       ..
     bcs loop_c9a74                                                    // 9a7c: b0 f6       ..
