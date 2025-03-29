@@ -4292,7 +4292,6 @@ MCLK1
     tya                                            ; 9918: 98          .
     sta REM40,x                                    ; 9919: 9d 07 04    ...            ; Zero remainder
     sta AUX40,x                                    ; 991c: 9d 0c 04    ...            ; Zero divisor
-    ; This loop copies X+1 bytes of memory from TIMEW to ACL40
     lda TIMEW,x                                    ; 991f: bd 25 04    .%.            ; Dividend
     sta ACL40,x                                    ; 9922: 9d 02 04    ...
     dex                                            ; 9925: ca          .

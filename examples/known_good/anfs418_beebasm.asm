@@ -90,7 +90,7 @@ l00c8                                   = &00c8
 l00cc                                   = &00cc
 l00cd                                   = &00cd
 l00d0                                   = &00d0
-l00ee                                   = &00ee
+l00ed                                   = &00ed
 l00ef                                   = &00ef
 l00f0                                   = &00f0
 l00f1                                   = &00f1
@@ -127,6 +127,7 @@ l053a                                   = &053a
 l0582                                   = &0582
 l059c                                   = &059c
 l059e                                   = &059e
+l0600                                   = &0600
 l0601                                   = &0601
 l0695                                   = &0695
 l069e                                   = &069e
@@ -3567,7 +3568,6 @@ l8e54 = sub_c8e52+2
     sta l00c0,y                                                       ; 9479: 99 c0 00    ...
     cpy #2                                                            ; 947c: c0 02       ..
     bpl c9486                                                         ; 947e: 10 06       ..
-    ; This loop copies Y+1 bytes of memory from l0e00 to l00c2
     lda l0e00,y                                                       ; 9480: b9 00 0e    ...
     sta l00c2,y                                                       ; 9483: 99 c2 00    ...
 ; &9486 referenced 1 time by &947e
@@ -6346,9 +6346,8 @@ la3f2 = la3f0+2
 .loop_ca4fc
     lda l00a9,y                                                       ; a4fc: b9 a9 00    ...
     pha                                                               ; a4ff: 48          H
-    ; This loop copies Y bytes of memory from l00ee to l00aa
-    lda l00ee - 1,y                                                   ; a500: b9 ed 00    ...
-    sta l00aa - 1,y                                                   ; a503: 99 a9 00    ...
+    lda l00ed,y                                                       ; a500: b9 ed 00    ...
+    sta l00a9,y                                                       ; a503: 99 a9 00    ...
     dey                                                               ; a506: 88          .
     bne loop_ca4fc                                                    ; a507: d0 f3       ..
     jsr sub_ca516                                                     ; a509: 20 16 a5     ..
@@ -9900,9 +9899,10 @@ lb487 = sub_cb485+2
 ; &bd90 referenced 2 times by &bd93, &bdb9
 .cbd90
     bit tube_status_register_2                                        ; bd90: 2c e2 fe    ,..
+.sub_cbd93
+lbd94 = sub_cbd93+1
     bvc cbd90                                                         ; bd93: 50 fb       P.
 ; &bd94 referenced 1 time by &beaa
-.sub_cbd95
     stx tube_data_register_2                                          ; bd95: 8e e3 fe    ...
 ; &bd98 referenced 1 time by &bdab
 .loop_cbd98
@@ -10076,9 +10076,8 @@ lb487 = sub_cb485+2
     sta l0400,y                                                       ; bea1: 99 00 04    ...
     lda lbc94,y                                                       ; bea4: b9 94 bc    ...
     sta l0500,y                                                       ; bea7: 99 00 05    ...
-    ; This loop copies Y bytes of memory from sub_cbd95 to l0601
-    lda sub_cbd95 - 1,y                                               ; beaa: b9 94 bd    ...
-    sta l0601 - 1,y                                                   ; bead: 99 00 06    ...
+    lda lbd94,y                                                       ; beaa: b9 94 bd    ...
+    sta l0600,y                                                       ; bead: 99 00 06    ...
     dey                                                               ; beb0: 88          .
     bne loop_cbe9e                                                    ; beb1: d0 eb       ..
     jsr sub_c0421                                                     ; beb3: 20 21 04     !.
@@ -10405,10 +10404,7 @@ lb487 = sub_cb485+2
     assert c8dbc-1 == &8dbb
     assert c8e15-1 == &8e14
     assert copyright - rom_header == &19
-    assert l00aa - 1 == &a9
     assert l00be - 1 == &bd
-    assert l00ee - 1 == &ed
-    assert l0601 - 1 == &0600
     assert l0d00 - 1 == &0cff
     assert l0d6d - 1 == &0d6c
     assert l0e00 - 1 == &0dff
@@ -10442,7 +10438,6 @@ lb487 = sub_cb485+2
     assert sub_cb99a-1 == &b999
     assert sub_cb99d-1 == &b99c
     assert sub_cba1b-1 == &ba1a
-    assert sub_cbd95 - 1 == &bd94
 
 save pydis_start, pydis_end
 
@@ -11417,6 +11412,7 @@ save pydis_start, pydis_end
 ;     l00c2:                                    1
 ;     l00c7:                                    1
 ;     l00cd:                                    1
+;     l00ed:                                    1
 ;     l00f1:                                    1
 ;     l00f7:                                    1
 ;     l0103:                                    1
@@ -11428,6 +11424,7 @@ save pydis_start, pydis_end
 ;     l0400:                                    1
 ;     l04c7:                                    1
 ;     l0518:                                    1
+;     l0600:                                    1
 ;     l0d07:                                    1
 ;     l0d1a:                                    1
 ;     l0d23:                                    1
@@ -11492,6 +11489,7 @@ save pydis_start, pydis_end
 ;     lb13f:                                    1
 ;     lb194:                                    1
 ;     lbc94:                                    1
+;     lbd94:                                    1
 ;     lbf04:                                    1
 ;     lffb0:                                    1
 ;     lffbd:                                    1
@@ -12497,7 +12495,7 @@ save pydis_start, pydis_end
 ;     l00cc
 ;     l00cd
 ;     l00d0
-;     l00ee
+;     l00ed
 ;     l00ef
 ;     l00f0
 ;     l00f1
@@ -12527,6 +12525,7 @@ save pydis_start, pydis_end
 ;     l0582
 ;     l059c
 ;     l059e
+;     l0600
 ;     l0601
 ;     l0695
 ;     l069e
@@ -12708,6 +12707,7 @@ save pydis_start, pydis_end
 ;     lb194
 ;     lb487
 ;     lbc94
+;     lbd94
 ;     lbf04
 ;     lffb0
 ;     lffbd
@@ -13202,7 +13202,7 @@ save pydis_start, pydis_end
 ;     sub_cbc86
 ;     sub_cbc89
 ;     sub_cbc8c
-;     sub_cbd95
+;     sub_cbd93
 
 ; Stats:
 ;     Total size (Code + Data) = 16384 bytes

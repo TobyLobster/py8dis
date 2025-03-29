@@ -256,7 +256,6 @@ nmi3_handler_rom_start                          = &9030
 nmi_handler_rom_end                             = &9030
 nmi_handler2_rom_start                          = &9067
 tube_host_code2                                 = &acdb
-laddc                                           = &addc
 tube_host_code3                                 = &af38
 tube_host_code1                                 = &af79
 romsel                                          = &fe30
@@ -7937,9 +7936,10 @@ nmi_XXX5 = l0d1f+1
 ; &4dd7 referenced 2 times by &05ff[3], &0625[3]
 .c05fc
     bit tube_status_register_2                                        ; 4dd7: 2c e2 fe    ,.. :05fc[3]
+.sub_c05ff
+l0600 = sub_c05ff+1
     bvc c05fc                                                         ; 4dda: 50 fb       P.  :05ff[3]
 ; &4ddb referenced 1 time by &af22[1]
-.sub_c0601
     stx tube_data_register_2                                          ; 4ddc: 8e e3 fe    ... :0601[3]
 ; &4ddf referenced 1 time by &0617[3]
 .loop_c0604
@@ -8162,9 +8162,8 @@ nmi_XXX5 = l0d1f+1
     sta c0400,y                                                       ; 4f16: 99 00 04    ... :af16[1]
     lda tube_host_code2,y                                             ; 4f19: b9 db ac    ... :af19[1]
     sta l0500,y                                                       ; 4f1c: 99 00 05    ... :af1c[1]
-    ; This loop copies Y bytes of memory from laddc to sub_c0601
-    lda laddc - 1,y                                                   ; 4f1f: b9 db ad    ... :af1f[1]
-    sta sub_c0601 - 1,y                                               ; 4f22: 99 00 06    ... :af22[1]
+    lda tube_host_code2+256,y                                         ; 4f1f: b9 db ad    ... :af1f[1]
+    sta l0600,y                                                       ; 4f22: 99 00 06    ... :af22[1]
     dey                                                               ; 4f25: 88          .   :af25[1]
     bne loop_caf13                                                    ; 4f26: d0 eb       ..  :af26[1]
     jsr sub_c0421                                                     ; 4f28: 20 21 04     !. :af28[1]
@@ -11017,7 +11016,6 @@ lb6ce = sub_cb6cd+1
     assert >tube_evntv_handler == &06
     assert copyright - rom_header == &11
     assert jump_address_low == &51
-    assert laddc - 1 == &addb
     assert nmi3_handler_rom_end-nmi3_handler_rom_start == &0e
     assert nmi_XXX1-(nmi_beq+2) == &48
     assert nmi_XXX10-(nmi_bcs+2) == &32
@@ -11053,7 +11051,6 @@ lb6ce = sub_cb6cd+1
     assert sub_c05a9 == &05a9
     assert sub_c05d1 == &05d1
     assert sub_c05f2 == &05f2
-    assert sub_c0601 - 1 == &0600
     assert sub_c0607 == &0607
     assert sub_c0627 == &0627
     assert sub_c9785 == &9785
@@ -12066,6 +12063,7 @@ save pydis_start, pydis_end
 ;     l010d:                                              1
 ;     l010e:                                              1
 ;     l028d:                                              1
+;     l0600:                                              1
 ;     l0d0f:                                              1
 ;     l0d12:                                              1
 ;     l0d2a:                                              1
@@ -13138,6 +13136,7 @@ save pydis_start, pydis_end
 ;     l0128
 ;     l028d
 ;     l0500
+;     l0600
 ;     l0700
 ;     l0d0f
 ;     l0d12
@@ -13301,7 +13300,6 @@ save pydis_start, pydis_end
 ;     l9b3a
 ;     l9b43
 ;     la1d3
-;     laddc
 ;     lb075
 ;     lb175
 ;     lb283
@@ -13591,7 +13589,7 @@ save pydis_start, pydis_end
 ;     sub_c05a9
 ;     sub_c05d1
 ;     sub_c05f2
-;     sub_c0601
+;     sub_c05ff
 ;     sub_c0607
 ;     sub_c0627
 ;     sub_c8020

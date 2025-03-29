@@ -252,7 +252,6 @@ l111a                                           = &111a
 l111b                                           = &111b
 l111c                                           = &111c
 l111d                                           = &111d
-sub_caddc                                       = &addc
 romsel                                          = &fe30
 fdc_8271_command_or_status_or_1770_drive_control = &fe80
 fdc_8271_data_or_1770_command_or_status         = &fe84
@@ -7896,9 +7895,10 @@ nmi_XXX5 = l0d1f+1
 ; &add7 referenced 2 times by &05ff[2], &0625[2]
 .c05fc
     bit tube_status_register_2                                        ; add7: 2c e2 fe    ,.. :05fc[2]
+.sub_c05ff
+l0600 = sub_c05ff+1
     bvc c05fc                                                         ; adda: 50 fb       P.  :05ff[2]
 ; &addb referenced 1 time by &af22
-.sub_c0601
     stx tube_data_register_2                                          ; addc: 8e e3 fe    ... :0601[2]
 ; &addf referenced 1 time by &0617[2]
 .loop_c0604
@@ -8118,9 +8118,8 @@ nmi_XXX5 = l0d1f+1
     sta c0400,y                                                       ; af16: 99 00 04    ...
     lda tube_host_code2,y                                             ; af19: b9 db ac    ...
     sta l0500,y                                                       ; af1c: 99 00 05    ...
-    ; This loop copies Y bytes of memory from sub_caddc to sub_c0601
-    lda sub_caddc - 1,y                                               ; af1f: b9 db ad    ...
-    sta sub_c0601 - 1,y                                               ; af22: 99 00 06    ...
+    lda tube_host_code2+256,y                                         ; af1f: b9 db ad    ...
+    sta l0600,y                                                       ; af22: 99 00 06    ...
     dey                                                               ; af25: 88          .
     bne loop_caf13                                                    ; af26: d0 eb       ..
     jsr sub_c0421                                                     ; af28: 20 21 04     !.
@@ -10985,7 +10984,6 @@ lb6ce = sub_cb6cd+1
     assert sub_c05a9 == &05a9
     assert sub_c05d1 == &05d1
     assert sub_c05f2 == &05f2
-    assert sub_c0601 - 1 == &0600
     assert sub_c0607 == &0607
     assert sub_c0627 == &0627
     assert sub_c9785 == &9785
@@ -10995,7 +10993,6 @@ lb6ce = sub_cb6cd+1
     assert sub_c9d9b == &9d9b
     assert sub_c9e94 == &9e94
     assert sub_c9f82 == &9f82
-    assert sub_caddc - 1 == &addb
     assert tube_host_osword_0 == &0668
 
 save pydis_start, pydis_end
@@ -11999,6 +11996,7 @@ save pydis_start, pydis_end
 ;     l010d:                                              1
 ;     l010e:                                              1
 ;     l028d:                                              1
+;     l0600:                                              1
 ;     l0d0f:                                              1
 ;     l0d12:                                              1
 ;     l0d2a:                                              1
@@ -13071,6 +13069,7 @@ save pydis_start, pydis_end
 ;     l0128
 ;     l028d
 ;     l0500
+;     l0600
 ;     l0700
 ;     l0d0f
 ;     l0d12
@@ -13523,7 +13522,7 @@ save pydis_start, pydis_end
 ;     sub_c05a9
 ;     sub_c05d1
 ;     sub_c05f2
-;     sub_c0601
+;     sub_c05ff
 ;     sub_c0607
 ;     sub_c0627
 ;     sub_c8020
@@ -13764,7 +13763,6 @@ save pydis_start, pydis_end
 ;     sub_cac62
 ;     sub_cac6a
 ;     sub_cac72
-;     sub_caddc
 ;     sub_cb234
 ;     sub_cb2c8
 ;     sub_cb580

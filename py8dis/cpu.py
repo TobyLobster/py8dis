@@ -80,6 +80,18 @@ class SnippetHelper:
             assert 0 <= binary_addr < 0x10000
             return(trace.cpu.cpu_states[binary_addr])
 
+    def check_branch_matches(self, label_name):
+        branch_operand_value = self.get_memory(label_name)
+        branch_operand_addr = self.get_binary_address(label_name, prioritise_definition=False)
+        binary_definition_addr = self.get_binary_address(label_name, prioritise_definition=True)
+        expected_branch_operand = binary_definition_addr - branch_operand_addr-1
+        if -128 <= expected_branch_operand <= 127:
+            # bring into range 0-255
+            expected_branch_operand = (256 + expected_branch_operand) & 255
+            return expected_branch_operand == branch_operand_value
+        return False
+
+
 class Cpu(object):
     """Abstract base class representing a CPU"""
 

@@ -19,11 +19,15 @@ snippets = []
 def comment_memory_copy_loop(p):
     # e.g. "This loop copies 8 bytes from source+Y to dest+Y"
 
+    # Make sure the branch instruction's operand jumps to the definition of the label
+    if not p.check_branch_matches('loop'):
+        return
+
     # Get loop initial value, look at known register state
     comment_loc         = p.get_start_loc()
-    is_load_indirect    = p.get_memory('zp1')
-    is_store_indirect   = p.get_memory('zp2')
-    is_stop_at_zero     = p.get_memory('branch') == OPCODE_BNE
+    is_load_indirect    = p.get_memory('zp1')   # This is treated as a flag, being None if 'zp1' isn't found
+    is_store_indirect   = p.get_memory('zp2')   # This is treated as a flag, being None if 'zp2' isn't found
+    is_stop_at_zero     = p.get_memory('branch') == OPCODE_BNE      # BNE or BPL
     offset              = 1 if is_stop_at_zero else 0
     source_label        = ""
     dest_label          = ""
