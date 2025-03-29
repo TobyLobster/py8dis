@@ -199,13 +199,17 @@ def init():
     classifications = [None] * 64*1024
     split_classifications = set()
 
-def add_expression(binary_addr, s):
+def add_expression(binary_addr, s, *, force=True):
     """Add an expression for the given binary address."""
 
     assert not isinstance(s, labelmanager.Label) # TODO!?
     # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
-    if binary_addr not in expressions:
+    has_existing_expr = binary_addr in expressions
+    if force or not has_existing_expr:
         expressions[binary_addr] = s
+
+    # Returns the current expression
+    return expressions[binary_addr]
 
 def check_expr(expr, value):
     """Add an assert to the output based on an expression."""
@@ -248,6 +252,7 @@ def get_expression(binary_addr, expected_value):
             binary_addr += 1
         expected_value = string_at_binary
     check_expr(expression, expected_value)
+
     return expression
 
 def add_classification(binary_addr, c):
@@ -351,7 +356,7 @@ def string_binary(binary_addr, n):
         n = 0
         while not is_classified(binary_addr + n) and utils.isprint(memory_binary[binary_addr + n]):
             n += 1
-        assert(not is_classified(binary_addr, n))
+        assert not is_classified(binary_addr, n)
 
     if n > 0:
         add_classification(binary_addr, String(n))
@@ -434,7 +439,7 @@ def autostring(min_length=3):
         # if a string is found with at least the minimum length, classify it as a string
         if i >= min_length:
             runtime_addr = movemanager.b2r(binary_addr)
-            assert(not is_classified(binary_addr, i))
+            assert not is_classified(binary_addr, i)
             string_binary(binary_addr, i)
         binary_addr += max(1, i)
 
@@ -471,7 +476,7 @@ def get_address8(binary_addr, offset=0):
     e.g. for converting 'LDA $12' into 'LDA num_lives'.
     """
 
-    operand = (memory_binary[binary_addr] + offset) & 255
+    operand = (memorymanager.get_u8_binary(binary_addr) + offset) & 255
     if binary_addr not in expressions:
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
     return get_expression(binary_addr, operand)

@@ -668,8 +668,9 @@ NOBOUN
     pha                                            ; 8376: 48          H
     dey                                            ; 8377: 88          .
 MORSP
+    ; This loop copies Y bytes of memory to TVSEXT
     lda (SP),y                                     ; 8378: b1 7e       .~             ; Copy back TVS
-    sta BINDER,y                                   ; 837a: 99 32 00    .2.            ; WSA, WSB and WSC
+    sta TVSEXT - 1,y                               ; 837a: 99 32 00    .2.            ; WSA, WSB and WSC
     dey                                            ; 837d: 88          .
     bne MORSP                                      ; 837e: d0 f8       ..
     sec                                            ; 8380: 38          8              ; Add TVSEXT + 2 to stack
@@ -743,6 +744,7 @@ SROOM
     dey                                            ; 83da: 88          .
     dey                                            ; 83db: 88          .
 PILE
+    ; This loop copies Y+1 bytes of memory from BINDER
     lda BINDER,y                                   ; 83dc: b9 32 00    .2.
     sta (SP),y                                     ; 83df: 91 7e       .~
     dey                                            ; 83e1: 88          .
@@ -4290,6 +4292,7 @@ MCLK1
     tya                                            ; 9918: 98          .
     sta REM40,x                                    ; 9919: 9d 07 04    ...            ; Zero remainder
     sta AUX40,x                                    ; 991c: 9d 0c 04    ...            ; Zero divisor
+    ; This loop copies X+1 bytes of memory from TIMEW to ACL40
     lda TIMEW,x                                    ; 991f: bd 25 04    .%.            ; Dividend
     sta ACL40,x                                    ; 9922: 9d 02 04    ...
     dex                                            ; 9925: ca          .
@@ -9652,6 +9655,9 @@ pydis_end
 }
 !if (TVS-1) != $2f {
     !error "Assertion failed: TVS-1 == $2f"
+}
+!if (TVSEXT - 1) != $32 {
+    !error "Assertion failed: TVSEXT - 1 == $32"
 }
 !if (VALOFF) != $0d {
     !error "Assertion failed: VALOFF == $0d"

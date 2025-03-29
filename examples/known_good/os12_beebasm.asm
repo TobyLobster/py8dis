@@ -92,7 +92,6 @@ l0104                                   = &0104
 l0190                                   = &0190
 l0191                                   = &0191
 l01df                                   = &01df
-l01ff                                   = &01ff
 userv                                   = &0200
 brkv                                    = &0202
 irq1v                                   = &0204
@@ -2153,6 +2152,7 @@ tube_data_register_3                    = &fee5
     sty l00de                                                         ; c91e: 84 de       ..
 ; &c920 referenced 1 time by &c925
 .loop_cc920
+    ; This loop copies Y bytes of memory
     lda (l00de),y                                                     ; c920: b1 de       ..
     sta (l00dc),y                                                     ; c922: 91 dc       ..
     dey                                                               ; c924: 88          .
@@ -2997,6 +2997,7 @@ tube_data_register_3                    = &fee5
     dey                                                               ; ce82: 88          .
 ; &ce83 referenced 1 time by &ce88
 .loop_cce83
+    ; This loop copies Y+1 bytes of memory
     lda (l00da),y                                                     ; ce83: b1 da       ..
     sta (l00d8),y                                                     ; ce85: 91 d8       ..
     dey                                                               ; ce87: 88          .
@@ -4838,9 +4839,9 @@ tube_data_register_3                    = &fee5
 .cd93e
     tay                                                               ; d93e: a8          .
 ; &d93f referenced 1 time by &da5b
-.return_24
     rts                                                               ; d93f: 60          `
 
+.ld940
     equb &10, &e3, &54, &dc, &93, &dc, &89, &de, &89, &df, &72, &e7   ; d940: 10 e3 54... ..T
     equb &eb, &e7, &a4, &e0, &c5                                      ; d94c: eb e7 a4... ...
 ; &d951 referenced 1 time by &f15b
@@ -4958,8 +4959,9 @@ tube_data_register_3                    = &fee5
     bne loop_cda56                                                    ; da59: d0 fb       ..
 ; &da5b referenced 1 time by &da62
 .loop_cda5b
-    lda return_24,y                                                   ; da5b: b9 3f d9    .?.
-    sta l01ff,y                                                       ; da5e: 99 ff 01    ...
+    ; This loop copies Y bytes of memory from ld940 to userv
+    lda ld940 - 1,y                                                   ; da5b: b9 3f d9    .?.
+    sta userv - 1,y                                                   ; da5e: 99 ff 01    ...
     dey                                                               ; da61: 88          .
     bne loop_cda5b                                                    ; da62: d0 f7       ..
     lda #&62 ; 'b'                                                    ; da64: a9 62       .b
@@ -5275,13 +5277,13 @@ tube_data_register_3                    = &fee5
     and #&3a ; ':'                                                    ; dc80: 29 3a       ):
     bne cdcb8                                                         ; dc82: d0 34       .4
     ldx l025c                                                         ; dc84: ae 5c 02    .\.
-    bne return_25                                                     ; dc87: d0 09       ..
+    bne return_24                                                     ; dc87: d0 09       ..
     inx                                                               ; dc89: e8          .
     jsr osbyte153EntryPoint                                           ; dc8a: 20 f3 e4     ..
     jsr sub_ce741                                                     ; dc8d: 20 41 e7     A.
     bcc cdc78                                                         ; dc90: 90 e6       ..
 ; &dc92 referenced 1 time by &dc87
-.return_25
+.return_24
     rts                                                               ; dc92: 60          `
 
     cld                                                               ; dc93: d8          .
@@ -5306,7 +5308,7 @@ tube_data_register_3                    = &fee5
     ldx l00ea                                                         ; dca9: a6 ea       ..
     dex                                                               ; dcab: ca          .
     bmi cdcde                                                         ; dcac: 30 30       00
-    bvs return_26                                                     ; dcae: 70 2d       p-
+    bvs return_25                                                     ; dcae: 70 2d       p-
     jmp cf588                                                         ; dcb0: 4c 88 f5    L..
 
 ; &dcb3 referenced 1 time by &dced
@@ -5339,7 +5341,7 @@ tube_data_register_3                    = &fee5
     lda #&e7                                                          ; dcd9: a9 e7       ..
     sta l00ea                                                         ; dcdb: 85 ea       ..
 ; &dcdd referenced 3 times by &dcae, &dcf1, &dcf8
-.return_26
+.return_25
     rts                                                               ; dcdd: 60          `
 
 ; &dcde referenced 1 time by &dcac
@@ -5356,12 +5358,12 @@ tube_data_register_3                    = &fee5
     ror a                                                             ; dcec: 6a          j
     bcs cdcb3                                                         ; dced: b0 c4       ..
     bmi cdcbf                                                         ; dcef: 30 ce       0.
-    bvs return_26                                                     ; dcf1: 70 ea       p.
+    bvs return_25                                                     ; dcf1: 70 ea       p.
 ; &dcf3 referenced 4 times by &dd4a, &dd54, &dd5a, &de7f
 .cdcf3
     ldx #5                                                            ; dcf3: a2 05       ..
     jsr osbyte143EntryPoint                                           ; dcf5: 20 68 f1     h.
-    beq return_26                                                     ; dcf8: f0 e3       ..
+    beq return_25                                                     ; dcf8: f0 e3       ..
     pla                                                               ; dcfa: 68          h
     pla                                                               ; dcfb: 68          h
     pla                                                               ; dcfc: 68          h
@@ -5446,11 +5448,11 @@ tube_data_register_3                    = &fee5
 .cdd7d
     jsr osbyte152EntryPoint                                           ; dd7d: 20 5b e4     [.
     ror l02d7                                                         ; dd80: 6e d7 02    n..
-    bmi return_27                                                     ; dd83: 30 44       0D
+    bmi return_26                                                     ; dd83: 30 44       0D
     tay                                                               ; dd85: a8          .
     beq cdd8d                                                         ; dd86: f0 05       ..
     jsr osbyte158EntryPoint                                           ; dd88: 20 6d ee     m.
-    bmi return_27                                                     ; dd8b: 30 3c       0<
+    bmi return_26                                                     ; dd8b: 30 3c       0<
 ; &dd8d referenced 1 time by &dd86
 .cdd8d
     jsr osbyte145EntryPoint                                           ; dd8d: 20 60 e4     `.
@@ -5488,7 +5490,7 @@ tube_data_register_3                    = &fee5
     lsr l00fb                                                         ; ddc5: 46 fb       F.
     bne cdd7d                                                         ; ddc7: d0 b4       ..
 ; &ddc9 referenced 2 times by &dd83, &dd8b
-.return_27
+.return_26
     rts                                                               ; ddc9: 60          `
 
 ; &ddca referenced 1 time by &dd6d
@@ -5780,13 +5782,13 @@ tube_data_register_3                    = &fee5
 ; &dfa0 referenced 1 time by &dfa7
 .loop_cdfa0
     jsr ce039                                                         ; dfa0: 20 39 e0     9.
-    beq return_28                                                     ; dfa3: f0 72       .r
+    beq return_27                                                     ; dfa3: f0 72       .r
     cmp #&2a ; '*'                                                    ; dfa5: c9 2a       .*
     beq loop_cdfa0                                                    ; dfa7: f0 f7       ..
     jsr sub_ce03a                                                     ; dfa9: 20 3a e0     :.
-    beq return_28                                                     ; dfac: f0 69       .i
+    beq return_27                                                     ; dfac: f0 69       .i
     cmp #&7c ; '|'                                                    ; dfae: c9 7c       .|
-    beq return_28                                                     ; dfb0: f0 65       .e
+    beq return_27                                                     ; dfb0: f0 65       .e
     cmp #&2f ; '/'                                                    ; dfb2: c9 2f       ./
     bne cdfbe                                                         ; dfb4: d0 08       ..
     iny                                                               ; dfb6: c8          .
@@ -5858,7 +5860,7 @@ tube_data_register_3                    = &fee5
 ; &e004 referenced 1 time by &e000
 .sub_ce004
     lda ldf12,x                                                       ; e004: bd 12 df    ...
-    bmi return_28                                                     ; e007: 30 0e       0.
+    bmi return_27                                                     ; e007: 30 0e       0.
 ; &e009 referenced 1 time by &dfb7
 .sub_ce009
     tya                                                               ; e009: 98          .
@@ -5870,10 +5872,10 @@ tube_data_register_3                    = &fee5
     tax                                                               ; e010: aa          .
     tya                                                               ; e011: 98          .
     ldy l00f3                                                         ; e012: a4 f3       ..
-    bcc return_28                                                     ; e014: 90 01       ..
+    bcc return_27                                                     ; e014: 90 01       ..
     iny                                                               ; e016: c8          .
 ; &e017 referenced 6 times by &dfa3, &dfac, &dfb0, &e007, &e014, &e028
-.return_28
+.return_27
     rts                                                               ; e017: 60          `
 
     equb &ae, &4b, 2, &30, 4, &38, &4c, &e7, &db                      ; e018: ae 4b 02... .K.
@@ -5883,7 +5885,7 @@ tube_data_register_3                    = &fee5
     ldy l00e6                                                         ; e021: a4 e6       ..
     ldx #4                                                            ; e023: a2 04       ..
     jsr osbyte143EntryPoint                                           ; e025: 20 68 f1     h.
-    beq return_28                                                     ; e028: f0 ed       ..
+    beq return_27                                                     ; e028: f0 ed       ..
     lda l00e6                                                         ; e02a: a5 e6       ..
     jsr sub_ce00d                                                     ; e02c: 20 0d e0     ..
     lda #3                                                            ; e02f: a9 03       ..
@@ -6006,9 +6008,9 @@ tube_data_register_3                    = &fee5
 ; &e114 referenced 1 time by &e0d3
 .sub_ce114
     bit l027c                                                         ; e114: 2c 7c 02    ,|.
-    bvs return_29                                                     ; e117: 70 20       p
+    bvs return_28                                                     ; e117: 70 20       p
     cmp l0286                                                         ; e119: cd 86 02    ...
-    beq return_29                                                     ; e11c: f0 1b       ..
+    beq return_28                                                     ; e11c: f0 1b       ..
 ; &e11e referenced 1 time by &c542
 .ce11e
     php                                                               ; e11e: 08          .
@@ -6028,7 +6030,7 @@ tube_data_register_3                    = &fee5
 .ce138
     plp                                                               ; e138: 28          (
 ; &e139 referenced 2 times by &e117, &e11c
-.return_29
+.return_28
     rts                                                               ; e139: 60          `
 
 ; &e13a referenced 2 times by &dd66, &e135
@@ -6039,7 +6041,7 @@ tube_data_register_3                    = &fee5
     bne ce164                                                         ; e141: d0 21       .!
     jsr osbyte145EntryPoint                                           ; e143: 20 60 e4     `.
     ror l02d2                                                         ; e146: 6e d2 02    n..
-    bmi return_30                                                     ; e149: 30 45       0E
+    bmi return_29                                                     ; e149: 30 45       0E
     ldy #&82                                                          ; e14b: a0 82       ..
     sty user_via_ier                                                  ; e14d: 8c 6e fe    .n.
     sta user_via_ora_ira                                              ; e150: 8d 61 fe    .a.
@@ -6049,7 +6051,7 @@ tube_data_register_3                    = &fee5
     sta user_via_pcr                                                  ; e15a: 8d 6c fe    .l.
     ora #&0e                                                          ; e15d: 09 0e       ..
     sta user_via_pcr                                                  ; e15f: 8d 6c fe    .l.
-    bne return_30                                                     ; e162: d0 2c       .,             ; ALWAYS branch
+    bne return_29                                                     ; e162: d0 2c       .,             ; ALWAYS branch
 
 ; &e164 referenced 1 time by &e141
 .ce164
@@ -6065,7 +6067,7 @@ tube_data_register_3                    = &fee5
 ; &e173 referenced 2 times by &e543, &e6e8
 .sub_ce173
     jsr sub_ce741                                                     ; e173: 20 41 e7     A.
-    bcc return_30                                                     ; e176: 90 18       ..
+    bcc return_29                                                     ; e176: 90 18       ..
     ldx #&20 ; ' '                                                    ; e178: a2 20       .
 ; &e17a referenced 1 time by &dc7a
 .ce17a
@@ -6084,7 +6086,7 @@ tube_data_register_3                    = &fee5
     sta acia_control_or_status                                        ; e18c: 8d 08 fe    ...
     plp                                                               ; e18f: 28          (
 ; &e190 referenced 3 times by &e149, &e162, &e176
-.return_30
+.return_29
     rts                                                               ; e190: 60          `
 
 ; &e191 referenced 1 time by &e166
@@ -6095,13 +6097,13 @@ tube_data_register_3                    = &fee5
 .osbyte123EntryPoint
     ror l02d2                                                         ; e197: 6e d2 02    n..
 ; &e19a referenced 1 time by &e19e
-.return_31
+.return_30
     rts                                                               ; e19a: 60          `
 
 ; &e19b referenced 1 time by &de3e
 .sub_ce19b
     bit l02d2                                                         ; e19b: 2c d2 02    ,..
-    bmi return_31                                                     ; e19e: 30 fa       0.
+    bmi return_30                                                     ; e19e: 30 fa       0.
     lda #0                                                            ; e1a0: a9 00       ..
 ; &e1a2 referenced 3 times by &c596, &c5a1, &e194
 .sub_ce1a2
@@ -6174,18 +6176,18 @@ tube_data_register_3                    = &fee5
 .ce1f8
     sei                                                               ; e1f8: 78          x
     jsr sub_ce4b0                                                     ; e1f9: 20 b0 e4     ..
-    bcc return_32                                                     ; e1fc: 90 0f       ..
+    bcc return_31                                                     ; e1fc: 90 0f       ..
     jsr sub_ce9ea                                                     ; e1fe: 20 ea e9     ..
     php                                                               ; e201: 08          .
     pha                                                               ; e202: 48          H
     jsr ceeeb                                                         ; e203: 20 eb ee     ..
     pla                                                               ; e206: 68          h
     plp                                                               ; e207: 28          (
-    bmi return_32                                                     ; e208: 30 03       0.
+    bmi return_31                                                     ; e208: 30 03       0.
     cli                                                               ; e20a: 58          X
     bcs ce1f8                                                         ; e20b: b0 eb       ..
 ; &e20d referenced 2 times by &e1fc, &e208
-.return_32
+.return_31
     rts                                                               ; e20d: 60          `
 
     equb &48, &a9,   0, &9d, &ee,   2, &9d, &ef, 2, &9d, &f0, 2, &9d  ; e20e: 48 a9 00... H..
@@ -6210,7 +6212,7 @@ tube_data_register_3                    = &fee5
 .osbyte119EntryPoint
     ldx #&10                                                          ; e275: a2 10       ..
     jsr osbyte143EntryPoint                                           ; e277: 20 68 f1     h.
-    beq return_33                                                     ; e27a: f0 23       .#
+    beq return_32                                                     ; e27a: f0 23       .#
     jsr sub_cf68b                                                     ; e27c: 20 8b f6     ..
     lda #osfind_close                                                 ; e27f: a9 00       ..
     php                                                               ; e281: 08          .
@@ -6223,14 +6225,14 @@ tube_data_register_3                    = &fee5
 .ce28f
     ldy l00e6                                                         ; e28f: a4 e6       ..
     plp                                                               ; e291: 28          (
-    beq return_33                                                     ; e292: f0 0b       ..
+    beq return_32                                                     ; e292: f0 0b       ..
     lda #osfind_open_output                                           ; e294: a9 80       ..
     jsr osfind                                                        ; e296: 20 ce ff     ..            ; Open file for output (A=128)
     tay                                                               ; e299: a8          .              ; A=file handle (or zero on failure)
     beq ce310                                                         ; e29a: f0 74       .t
     sta l0257                                                         ; e29c: 8d 57 02    .W.
 ; &e29f referenced 2 times by &e27a, &e292
-.return_33
+.return_32
     rts                                                               ; e29f: 60          `
 
     equb &d0, &6e, &ee, &f4,   2, &a2, &ee, &a0,   2, &68, &4c, &dd   ; e2a0: d0 6e ee... .n.
@@ -6514,7 +6516,7 @@ tube_data_register_3                    = &fee5
 ; &e539 referenced 3 times by &e52a, &e568, &e584
 .ce539
     jsr osbyte145EntryPoint                                           ; e539: 20 60 e4     `.
-    bcs return_34                                                     ; e53c: b0 55       .U
+    bcs return_33                                                     ; e53c: b0 55       .U
     pha                                                               ; e53e: 48          H
     cpx #1                                                            ; e53f: e0 01       ..
     bne ce549                                                         ; e541: d0 06       ..
@@ -6573,7 +6575,7 @@ tube_data_register_3                    = &fee5
 .ce592
     clc                                                               ; e592: 18          .
 ; &e593 referenced 1 time by &e53c
-.return_34
+.return_33
     rts                                                               ; e593: 60          `
 
 ; &e594 referenced 1 time by &e527
@@ -6841,11 +6843,11 @@ le5b4 = le5b3+1
 .osbyte130EntryPoint
     ldx #&ff                                                          ; e729: a2 ff       ..
     ldy #&ff                                                          ; e72b: a0 ff       ..
-    bcs return_35                                                     ; e72d: b0 02       ..
+    bcs return_34                                                     ; e72d: b0 02       ..
     inx                                                               ; e72f: e8          .              ; X=&00
     iny                                                               ; e730: c8          .              ; Y=&00
 ; &e731 referenced 1 time by &e72d
-.return_35
+.return_34
     rts                                                               ; e731: 60          `
 
 ; &e732 referenced 1 time by &e74f
@@ -6872,10 +6874,10 @@ le5b4 = le5b3+1
     ldx #1                                                            ; e742: a2 01       ..
     jsr sub_ce738                                                     ; e744: 20 38 e7     8.
     cpy #1                                                            ; e747: c0 01       ..
-    bcs return_36                                                     ; e749: b0 03       ..
+    bcs return_35                                                     ; e749: b0 03       ..
     cpx l025b                                                         ; e74b: ec 5b 02    .[.
 ; &e74e referenced 1 time by &e749
-.return_36
+.return_35
     rts                                                               ; e74e: 60          `
 
 .osbyte128EntryPoint
@@ -6994,11 +6996,11 @@ le5b4 = le5b3+1
     bmi ce812                                                         ; e7de: 30 32       02
     lda #8                                                            ; e7e0: a9 08       ..
     and l00e2                                                         ; e7e2: 25 e2       %.
-    bne return_37                                                     ; e7e4: d0 04       ..
+    bne return_36                                                     ; e7e4: d0 04       ..
     lda #&88                                                          ; e7e6: a9 88       ..
     and l00bb                                                         ; e7e8: 25 bb       %.
 ; &e7ea referenced 1 time by &e7e4
-.return_37
+.return_36
     rts                                                               ; e7ea: 60          `
 
     pha                                                               ; e7eb: 48          H
@@ -7186,7 +7188,7 @@ le5b4 = le5b3+1
     dey                                                               ; e8e0: 88          .
     bpl loop_ce8da                                                    ; e8e1: 10 f7       ..
 ; &e8e3 referenced 1 time by &e8fc
-.return_38
+.return_37
     rts                                                               ; e8e3: 60          `
 
 .osword4EntryPoint
@@ -7210,7 +7212,7 @@ le5b4 = le5b3+1
     dey                                                               ; e8f8: 88          .
     bpl loop_ce8f2                                                    ; e8f9: 10 f7       ..
     pla                                                               ; e8fb: 68          h
-    bcs return_38                                                     ; e8fc: b0 e5       ..
+    bcs return_37                                                     ; e8fc: b0 e5       ..
     sta l0283                                                         ; e8fe: 8d 83 02    ...
     rts                                                               ; e901: 60          `
 
@@ -7307,7 +7309,7 @@ le5b4 = le5b3+1
     cli                                                               ; e976: 58          X
     sei                                                               ; e977: 78          x
     bit l00ff                                                         ; e978: 24 ff       $.
-    bmi return_39                                                     ; e97a: 30 30       00
+    bmi return_38                                                     ; e97a: 30 30       00
     bit l02d2                                                         ; e97c: 2c d2 02    ,..
     bpl osbyte5EntryPoint                                             ; e97f: 10 f5       ..
     jsr sub_ce1a4                                                     ; e981: 20 a4 e1     ..
@@ -7343,7 +7345,7 @@ le5b4 = le5b3+1
     lda l0191,y                                                       ; e9a8: b9 91 01    ...
     tay                                                               ; e9ab: a8          .
 ; &e9ac referenced 1 time by &e97a
-.return_39
+.return_38
     rts                                                               ; e9ac: 60          `
 
 ; &e9ad referenced 2 times by &e1b3, &e696
@@ -7540,12 +7542,12 @@ le5b4 = le5b3+1
 ; &ea9c referenced 3 times by &efad, &efbe, &efce
 .sub_cea9c
     cmp #&30 ; '0'                                                    ; ea9c: c9 30       .0
-    beq return_40                                                     ; ea9e: f0 1e       ..
+    beq return_39                                                     ; ea9e: f0 1e       ..
     cmp #&40 ; '@'                                                    ; eaa0: c9 40       .@
-    beq return_40                                                     ; eaa2: f0 1a       ..
+    beq return_39                                                     ; eaa2: f0 1a       ..
     bcc ceab8                                                         ; eaa4: 90 12       ..
     cmp #&7f                                                          ; eaa6: c9 7f       ..
-    beq return_40                                                     ; eaa8: f0 14       ..
+    beq return_39                                                     ; eaa8: f0 14       ..
     bcs ceabc                                                         ; eaaa: b0 10       ..
 ; &eaac referenced 1 time by &eac3
 .loop_ceaac
@@ -7560,18 +7562,18 @@ le5b4 = le5b3+1
 ; &eab8 referenced 2 times by &eaa4, &eab4
 .ceab8
     cmp #&21 ; '!'                                                    ; eab8: c9 21       .!
-    bcc return_40                                                     ; eaba: 90 02       ..
+    bcc return_39                                                     ; eaba: 90 02       ..
 ; &eabc referenced 1 time by &eaaa
 .ceabc
     eor #&10                                                          ; eabc: 49 10       I.
 ; &eabe referenced 4 times by &ea9e, &eaa2, &eaa8, &eaba
-.return_40
+.return_39
     rts                                                               ; eabe: 60          `
 
 ; &eabf referenced 2 times by &ea7f, &efa6
 .sub_ceabf
     cmp #&7f                                                          ; eabf: c9 7f       ..
-    beq return_41                                                     ; eac1: f0 0e       ..
+    beq return_40                                                     ; eac1: f0 0e       ..
     bcs loop_ceaac                                                    ; eac3: b0 e7       ..
     cmp #&60 ; '`'                                                    ; eac5: c9 60       .`
     bne ceacb                                                         ; eac7: d0 02       ..
@@ -7579,10 +7581,10 @@ le5b4 = le5b3+1
 ; &eacb referenced 1 time by &eac7
 .ceacb
     cmp #&40 ; '@'                                                    ; eacb: c9 40       .@
-    bcc return_41                                                     ; eacd: 90 02       ..
+    bcc return_40                                                     ; eacd: 90 02       ..
     and #&1f                                                          ; eacf: 29 1f       ).
 ; &ead1 referenced 2 times by &eac1, &eacd
-.return_41
+.return_40
     rts                                                               ; ead1: 60          `
 
 .lead2
@@ -7593,7 +7595,7 @@ le5b4 = le5b3+1
 .sub_cead9
     lda l0287                                                         ; ead9: ad 87 02    ...
     eor #&4c ; 'L'                                                    ; eadc: 49 4c       IL
-    bne return_42                                                     ; eade: d0 13       ..
+    bne return_41                                                     ; eade: d0 13       ..
     jmp l0287                                                         ; eae0: 4c 87 02    L..
 
 .osbyte144EntryPoint
@@ -7605,7 +7607,7 @@ le5b4 = le5b3+1
     ldy l0291                                                         ; eaed: ac 91 02    ...
     sta l0291                                                         ; eaf0: 8d 91 02    ...
 ; &eaf3 referenced 1 time by &eade
-.return_42
+.return_41
     rts                                                               ; eaf3: 60          `
 
 .osbyte147EntryPoint
@@ -7826,7 +7828,7 @@ le5b4 = le5b3+1
 ; &ec59 referenced 4 times by &eb44, &ec0c, &ec23, &ec3b
 .cec59
     cpx #4                                                            ; ec59: e0 04       ..
-    beq return_43                                                     ; ec5b: f0 0d       ..
+    beq return_42                                                     ; ec5b: f0 0d       ..
     jmp ceb59                                                         ; ec5d: 4c 59 eb    LY.
 
 ; &ec60 referenced 1 time by &daaa
@@ -7839,7 +7841,7 @@ le5b4 = le5b3+1
     cpx #4                                                            ; ec66: e0 04       ..
     bne loop_cec62                                                    ; ec68: d0 f8       ..
 ; &ec6a referenced 1 time by &ec5b
-.return_43
+.return_42
     rts                                                               ; ec6a: 60          `
 
 ; &ec6b referenced 2 times by &eb69, &eb84
@@ -7910,10 +7912,10 @@ le5b4 = le5b3+1
 .cecd0
     ldy l0820,x                                                       ; ecd0: bc 20 08    . .
     cpy #&ff                                                          ; ecd3: c0 ff       ..
-    bne return_44                                                     ; ecd5: d0 03       ..
+    bne return_43                                                     ; ecd5: d0 03       ..
     jsr sub_ceb03                                                     ; ecd7: 20 03 eb     ..
 ; &ecda referenced 2 times by &ecd5, &ed04
-.return_44
+.return_43
     rts                                                               ; ecda: 60          `
 
 ; &ecdb referenced 1 time by &ec93
@@ -7942,7 +7944,7 @@ le5b4 = le5b3+1
 ; &ed01 referenced 2 times by &ec56, &edf3
 .sub_ced01
     cmp l082c,x                                                       ; ed01: dd 2c 08    .,.
-    beq return_44                                                     ; ed04: f0 d4       ..
+    beq return_43                                                     ; ed04: f0 d4       ..
 ; &ed06 referenced 1 time by &ecba
 .ced06
     sta l082c,x                                                       ; ed06: 9d 2c 08    .,.
@@ -8235,7 +8237,7 @@ le5b4 = le5b3+1
     lda l03cc                                                         ; eeb2: ad cc 03    ...
     sta l00f7                                                         ; eeb5: 85 f7       ..
     lda l00f5                                                         ; eeb7: a5 f5       ..
-    bpl return_45                                                     ; eeb9: 10 1e       ..
+    bpl return_44                                                     ; eeb9: 10 1e       ..
 ; &eebb referenced 4 times by &dda6, &ee27, &ee3b, &ee4f
 .ceebb
     php                                                               ; eebb: 08          .
@@ -8256,7 +8258,7 @@ le5b4 = le5b3+1
     jsr sub_cee7a                                                     ; eed5: 20 7a ee     z.
     plp                                                               ; eed8: 28          (
 ; &eed9 referenced 1 time by &eeb9
-.return_45
+.return_44
     rts                                                               ; eed9: 60          `
 
 ; &eeda referenced 1 time by &f00c
@@ -8733,9 +8735,9 @@ le5b4 = le5b3+1
     rts                                                               ; f18d: 60          `
 
     ora #0                                                            ; f18e: 09 00       ..
-    bne return_46                                                     ; f190: d0 10       ..
+    bne return_45                                                     ; f190: d0 10       ..
     cpy #0                                                            ; f192: c0 00       ..
-    bne return_46                                                     ; f194: d0 0c       ..
+    bne return_45                                                     ; f194: d0 0c       ..
     lda l00c6                                                         ; f196: a5 c6       ..
     and #&fb                                                          ; f198: 29 fb       ).
     ora l0247                                                         ; f19a: 0d 47 02    .G.
@@ -8743,7 +8745,7 @@ le5b4 = le5b3+1
     ora l0247                                                         ; f19e: 0d 47 02    .G.
     lsr a                                                             ; f1a1: 4a          J
 ; &f1a2 referenced 3 times by &f190, &f194, &f1b3
-.return_46
+.return_45
     rts                                                               ; f1a2: 60          `
 
 ; &f1a3 referenced 1 time by &f1bd
@@ -8754,7 +8756,7 @@ le5b4 = le5b3+1
     equb &f5, &1d, &f6, 4, &f3, &0f, &e3, 4, &f3, &2a, &f3, &74, &e2  ; f1a4: f5 1d f6... ...
 
     cmp #7                                                            ; f1b1: c9 07       ..
-    bcs return_46                                                     ; f1b3: b0 ed       ..
+    bcs return_45                                                     ; f1b3: b0 ed       ..
     stx l00bc                                                         ; f1b5: 86 bc       ..
     asl a                                                             ; f1b7: 0a          .
     tax                                                               ; f1b8: aa          .
@@ -8857,14 +8859,14 @@ le5b4 = le5b3+1
 ; &f249 referenced 2 times by &f6fc, &f8b6
 .sub_cf249
     bit l00ba                                                         ; f249: 24 ba       $.
-    bmi return_47                                                     ; f24b: 30 07       0.
+    bmi return_46                                                     ; f24b: 30 07       0.
 ; &f24d referenced 1 time by &f78d
 .sub_cf24d
     php                                                               ; f24d: 08          .
     jsr sub_cfa46                                                     ; f24e: 20 46 fa     F.
     ora l2800                                                         ; f251: 0d 00 28    ..(
 ; &f254 referenced 2 times by &f24b, &f2a2
-.return_47
+.return_46
     rts                                                               ; f254: 60          `
 
 ; &f255 referenced 1 time by &f220
@@ -8919,7 +8921,7 @@ le5b4 = le5b3+1
     pla                                                               ; f29d: 68          h
     beq cf2a7                                                         ; f29e: f0 07       ..
     cmp #&ff                                                          ; f2a0: c9 ff       ..
-    bne return_47                                                     ; f2a2: d0 b0       ..
+    bne return_46                                                     ; f2a2: d0 b0       ..
     jmp cf1c4                                                         ; f2a4: 4c c4 f1    L..
 
 ; &f2a7 referenced 1 time by &f29e
@@ -8969,7 +8971,7 @@ le5b4 = le5b3+1
 .cf2f0
     stx l03ca                                                         ; f2f0: 8e ca 03    ...
     jsr sub_cf7ec                                                     ; f2f3: 20 ec f7     ..
-    bmi return_48                                                     ; f2f6: 30 49       0I
+    bmi return_47                                                     ; f2f6: 30 49       0I
     jsr sub_cf96a                                                     ; f2f8: 20 6a f9     j.
     inc l03c6                                                         ; f2fb: ee c6 03    ...
     bne cf2c8                                                         ; f2fe: d0 c8       ..
@@ -9009,7 +9011,7 @@ le5b4 = le5b3+1
 .loop_cf33f
     sta l00e2                                                         ; f33f: 85 e2       ..
 ; &f341 referenced 1 time by &f2f6
-.return_48
+.return_47
     rts                                                               ; f341: 60          `
 
 ; &f342 referenced 3 times by &f42c, &f50e, &f513
@@ -9217,14 +9219,14 @@ le5b4 = le5b3+1
     tax                                                               ; f474: aa          .
     lda l00bc                                                         ; f475: a5 bc       ..
 ; &f477 referenced 1 time by &f47c
-.return_49
+.return_48
     rts                                                               ; f477: 60          `
 
 ; &f478 referenced 2 times by &f3da, &f3ec
 .sub_cf478
     lda #2                                                            ; f478: a9 02       ..
     and l00e2                                                         ; f47a: 25 e2       %.
-    beq return_49                                                     ; f47c: f0 f9       ..
+    beq return_48                                                     ; f47c: f0 f9       ..
     lda #0                                                            ; f47e: a9 00       ..
     sta l0397                                                         ; f480: 8d 97 03    ...
     lda #&80                                                          ; f483: a9 80       ..
@@ -9259,10 +9261,10 @@ le5b4 = le5b3+1
     jsr sub_cfbe2                                                     ; f4ba: 20 e2 fb     ..
     jsr sub_cf7ec                                                     ; f4bd: 20 ec f7     ..
     inc l0394                                                         ; f4c0: ee 94 03    ...
-    bne return_50                                                     ; f4c3: d0 03       ..
+    bne return_49                                                     ; f4c3: d0 03       ..
     inc l0395                                                         ; f4c5: ee 95 03    ...
 ; &f4c8 referenced 1 time by &f4c3
-.return_50
+.return_49
     rts                                                               ; f4c8: 60          `
 
     txa                                                               ; f4c9: 8a          .
@@ -9387,10 +9389,10 @@ le5b4 = le5b3+1
 ; &f5b0 referenced 1 time by &f594
 .cf5b0
     ldx l00c2                                                         ; f5b0: a6 c2       ..
-    beq return_51                                                     ; f5b2: f0 69       .i
+    beq return_50                                                     ; f5b2: f0 69       .i
     dex                                                               ; f5b4: ca          .
     bne cf5bd                                                         ; f5b5: d0 06       ..
-    bcc return_51                                                     ; f5b7: 90 64       .d
+    bcc return_50                                                     ; f5b7: 90 64       .d
     ldy #2                                                            ; f5b9: a0 02       ..
     bne cf61b                                                         ; f5bb: d0 5e       .^             ; ALWAYS branch
 
@@ -9398,7 +9400,7 @@ le5b4 = le5b3+1
 .cf5bd
     dex                                                               ; f5bd: ca          .
     bne cf5d3                                                         ; f5be: d0 13       ..
-    bcs return_51                                                     ; f5c0: b0 5b       .[
+    bcs return_50                                                     ; f5c0: b0 5b       .[
     tya                                                               ; f5c2: 98          .
     jsr sub_cfb78                                                     ; f5c3: 20 78 fb     x.
     ldy #3                                                            ; f5c6: a0 03       ..
@@ -9414,13 +9416,13 @@ le5b4 = le5b3+1
     bne cf5e2                                                         ; f5d4: d0 0c       ..
     bcs cf5dc                                                         ; f5d6: b0 04       ..
     sty l00bd                                                         ; f5d8: 84 bd       ..
-    beq return_51                                                     ; f5da: f0 41       .A             ; ALWAYS branch
+    beq return_50                                                     ; f5da: f0 41       .A             ; ALWAYS branch
 
 ; &f5dc referenced 1 time by &f5d6
 .cf5dc
     lda #&80                                                          ; f5dc: a9 80       ..
     sta l00c0                                                         ; f5de: 85 c0       ..
-    bne return_51                                                     ; f5e0: d0 3b       .;             ; ALWAYS branch
+    bne return_50                                                     ; f5e0: d0 3b       .;             ; ALWAYS branch
 
 ; &f5e2 referenced 1 time by &f5d4
 .cf5e2
@@ -9446,7 +9448,7 @@ le5b4 = le5b3+1
 .cf600
     iny                                                               ; f600: c8          .
     cpy l03c8                                                         ; f601: cc c8 03    ...
-    bne return_51                                                     ; f604: d0 17       ..
+    bne return_50                                                     ; f604: d0 17       ..
     lda #1                                                            ; f606: a9 01       ..
     sta l00bc                                                         ; f608: 85 bc       ..
     ldy #5                                                            ; f60a: a0 05       ..
@@ -9457,7 +9459,7 @@ le5b4 = le5b3+1
     tya                                                               ; f60e: 98          .
     jsr cf7b0                                                         ; f60f: 20 b0 f7     ..
     dec l00bc                                                         ; f612: c6 bc       ..
-    bpl return_51                                                     ; f614: 10 07       ..
+    bpl return_50                                                     ; f614: 10 07       ..
 ; &f616 referenced 1 time by &f5e5
 .cf616
     jsr sub_cfb46                                                     ; f616: 20 46 fb     F.
@@ -9466,7 +9468,7 @@ le5b4 = le5b3+1
 .cf61b
     sty l00c2                                                         ; f61b: 84 c2       ..
 ; &f61d referenced 7 times by &f5b2, &f5b7, &f5c0, &f5da, &f5e0, &f604, &f614
-.return_51
+.return_50
     rts                                                               ; f61d: 60          `
 
     equb &48, &98, &48, &8a, &a8, &a9,   3, &20, &9c, &fb, &a5, &e2   ; f61e: 48 98 48... H.H
@@ -9515,14 +9517,14 @@ le5b4 = le5b3+1
 .cf69b
     ldy l00e6                                                         ; f69b: a4 e6       ..
     plp                                                               ; f69d: 28          (
-    beq return_52                                                     ; f69e: f0 0b       ..
+    beq return_51                                                     ; f69e: f0 0b       ..
     lda #osfind_open_input                                            ; f6a0: a9 40       .@
     jsr osfind                                                        ; f6a2: 20 ce ff     ..            ; Open file for input (A=64)
     tay                                                               ; f6a5: a8          .              ; A=file handle (or zero on failure)
     beq cf674                                                         ; f6a6: f0 cc       ..
     sta l0256                                                         ; f6a8: 8d 56 02    .V.
 ; &f6ab referenced 1 time by &f69e
-.return_52
+.return_51
     rts                                                               ; f6ab: 60          `
 
 ; &f6ac referenced 1 time by &f4f9
@@ -9653,7 +9655,7 @@ le5b4 = le5b3+1
     jsr sub_cfb78                                                     ; f773: 20 78 fb     x.
     sty l00c2                                                         ; f776: 84 c2       ..
     txa                                                               ; f778: 8a          .
-    bne return_53                                                     ; f779: d0 59       .Y
+    bne return_52                                                     ; f779: d0 59       .Y
 ; &f77b referenced 4 times by &f22d, &f359, &f373, &f6b1
 .sub_cf77b
     lda l0247                                                         ; f77b: ad 47 02    .G.
@@ -9722,7 +9724,7 @@ le5b4 = le5b3+1
     pla                                                               ; f7d2: 68          h
     plp                                                               ; f7d3: 28          (
 ; &f7d4 referenced 1 time by &f779
-.return_53
+.return_52
     rts                                                               ; f7d4: 60          `
 
 ; &f7d5 referenced 2 times by &f21a, &f6d5
@@ -9814,13 +9816,13 @@ le5b4 = le5b3+1
     plp                                                               ; f863: 28          (
     jsr cf8b9                                                         ; f864: 20 b9 f8     ..
     bit l03ca                                                         ; f867: 2c ca 03    ,..
-    bpl return_54                                                     ; f86a: 10 08       ..
+    bpl return_53                                                     ; f86a: 10 08       ..
     php                                                               ; f86c: 08          .
     jsr sub_cf892                                                     ; f86d: 20 92 f8     ..
     jsr sub_cf246                                                     ; f870: 20 46 f2     F.
     plp                                                               ; f873: 28          (
 ; &f874 referenced 1 time by &f86a
-.return_54
+.return_53
     rts                                                               ; f874: 60          `
 
 ; &f875 referenced 3 times by &f81c, &f826, &f849
@@ -9886,7 +9888,7 @@ le5b4 = le5b3+1
     lda l03ca                                                         ; f8bd: ad ca 03    ...
     sta l03df                                                         ; f8c0: 8d df 03    ...
     jsr sub_ce7dc                                                     ; f8c3: 20 dc e7     ..
-    beq return_55                                                     ; f8c6: f0 6b       .k
+    beq return_54                                                     ; f8c6: f0 6b       .k
     lda #&0d                                                          ; f8c8: a9 0d       ..
     jsr oswrch                                                        ; f8ca: 20 ee ff     ..            ; Write character 13
 ; &f8cd referenced 1 time by &f8e0
@@ -9910,7 +9912,7 @@ le5b4 = le5b3+1
     lda l0247                                                         ; f8e2: ad 47 02    .G.
     beq cf8eb                                                         ; f8e5: f0 04       ..
     bit l00bb                                                         ; f8e7: 24 bb       $.
-    bvc return_55                                                     ; f8e9: 50 48       PH
+    bvc return_54                                                     ; f8e9: 50 48       PH
 ; &f8eb referenced 1 time by &f8e5
 .cf8eb
     jsr sub_cf991                                                     ; f8eb: 20 91 f9     ..
@@ -9921,7 +9923,7 @@ le5b4 = le5b3+1
     tax                                                               ; f8f6: aa          .
     jsr sub_cf97a                                                     ; f8f7: 20 7a f9     z.
     bit l03ca                                                         ; f8fa: 2c ca 03    ,..
-    bpl return_55                                                     ; f8fd: 10 34       .4
+    bpl return_54                                                     ; f8fd: 10 34       .4
     txa                                                               ; f8ff: 8a          .
     clc                                                               ; f900: 18          .
     adc l03c9                                                         ; f901: 6d c9 03    m..
@@ -9931,7 +9933,7 @@ le5b4 = le5b3+1
     sta l00cc                                                         ; f90c: 85 cc       ..
     jsr sub_cf97a                                                     ; f90e: 20 7a f9     z.
     bit l00bb                                                         ; f911: 24 bb       $.
-    bvc return_55                                                     ; f913: 50 1e       P.
+    bvc return_54                                                     ; f913: 50 1e       P.
     ldx #4                                                            ; f915: a2 04       ..
 ; &f917 referenced 1 time by &f91b
 .loop_cf917
@@ -9953,7 +9955,7 @@ le5b4 = le5b3+1
     dey                                                               ; f930: 88          .
     bne loop_cf929                                                    ; f931: d0 f6       ..
 ; &f933 referenced 5 times by &f8c6, &f8e9, &f8fd, &f913, &f945
-.return_55
+.return_54
     rts                                                               ; f933: 60          `
 
 ; &f934 referenced 2 times by &f2bd, &f462
@@ -9967,7 +9969,7 @@ le5b4 = le5b3+1
     jsr sub_cfb8e                                                     ; f93c: 20 8e fb     ..
     jsr sub_cfbe2                                                     ; f93f: 20 e2 fb     ..
     jsr sub_ce7dc                                                     ; f942: 20 dc e7     ..
-    beq return_55                                                     ; f945: f0 ec       ..
+    beq return_54                                                     ; f945: f0 ec       ..
     jsr sub_cfa46                                                     ; f947: 20 46 fa     F.
     equs "RECORD then RETURN"                                         ; f94a: 52 45 43... REC
     equb   0, &20, &95, &f9, &20, &e0, &ff, &c9, &0d, &d0, &f6, &4c   ; f95c: 00 20 95... . .
@@ -9976,12 +9978,12 @@ le5b4 = le5b3+1
 ; &f96a referenced 2 times by &f22a, &f2f8
 .sub_cf96a
     inc l00b1                                                         ; f96a: e6 b1       ..
-    bne return_56                                                     ; f96c: d0 06       ..
+    bne return_55                                                     ; f96c: d0 06       ..
     inc l00b2                                                         ; f96e: e6 b2       ..
-    bne return_56                                                     ; f970: d0 02       ..
+    bne return_55                                                     ; f970: d0 02       ..
     inc l00b3                                                         ; f972: e6 b3       ..
 ; &f974 referenced 2 times by &f96c, &f970
-.return_56
+.return_55
     rts                                                               ; f974: 60          `
 
 ; &f975 referenced 1 time by &f906
@@ -10106,7 +10108,7 @@ le5b4 = le5b3+1
     tax                                                               ; fa0d: aa          .
     lda l00be                                                         ; fa0e: a5 be       ..
     ora l00bf                                                         ; fa10: 05 bf       ..
-    beq return_57                                                     ; fa12: f0 79       .y
+    beq return_56                                                     ; fa12: f0 79       .y
     ldy #&8e                                                          ; fa14: a0 8e       ..
     lda #&fa                                                          ; fa16: a9 fa       ..
 ; &fa18 referenced 1 time by &fa02
@@ -10189,10 +10191,10 @@ le5b4 = le5b3+1
     lda l03d2,x                                                       ; fa75: bd d2 03    ...
     bne cfa81                                                         ; fa78: d0 07       ..
     txa                                                               ; fa7a: 8a          .
-    beq return_58                                                     ; fa7b: f0 03       ..
+    beq return_57                                                     ; fa7b: f0 03       ..
     lda l03b2,x                                                       ; fa7d: bd b2 03    ...
 ; &fa80 referenced 1 time by &fa7b
-.return_58
+.return_57
     rts                                                               ; fa80: 60          `
 
 ; &fa81 referenced 1 time by &fa78
@@ -10205,7 +10207,7 @@ le5b4 = le5b3+1
 .cfa8b
     beq loop_cfa74                                                    ; fa8b: f0 e7       ..
 ; &fa8d referenced 1 time by &fa12
-.return_57
+.return_56
     rts                                                               ; fa8d: 60          `
 
     equb 0, &d8, &0d                                                  ; fa8e: 00 d8 0d    ...
@@ -10220,7 +10222,7 @@ le5b4 = le5b3+1
     equb &0d, &0d, 0                                                  ; facf: 0d 0d 00    ...
 
 ; &fad2 referenced 1 time by &fad8
-.return_59
+.return_58
     rts                                                               ; fad2: 60          `
 
     equb &20, &4d, &f2                                                ; fad3: 20 4d f2     M.
@@ -10228,7 +10230,7 @@ le5b4 = le5b3+1
 ; &fad6 referenced 3 times by &fa09, &fae0, &fae5
 .cfad6
     lda l00c2                                                         ; fad6: a5 c2       ..
-    beq return_59                                                     ; fad8: f0 f8       ..
+    beq return_58                                                     ; fad8: f0 f8       ..
     jsr sub_cf995                                                     ; fada: 20 95 f9     ..
     lda l0247                                                         ; fadd: ad 47 02    .G.
     beq cfad6                                                         ; fae0: f0 f4       ..
@@ -10402,7 +10404,7 @@ le5b4 = le5b3+1
     bne cfbb1                                                         ; fbad: d0 02       ..
 ; &fbaf referenced 1 time by &fba9
 .cfbaf
-    bcs return_60                                                     ; fbaf: b0 4d       .M
+    bcs return_59                                                     ; fbaf: b0 4d       .M
 ; &fbb1 referenced 2 times by &f3e9, &fbad
 .cfbb1
     brk                                                               ; fbb1: 00          .
@@ -10417,7 +10419,7 @@ le5b4 = le5b3+1
 ; &fbbd referenced 2 times by &f2c2, &faf4
 .sub_cfbbd
     jsr sub_cfbd3                                                     ; fbbd: 20 d3 fb     ..
-    beq return_60                                                     ; fbc0: f0 3c       .<
+    beq return_59                                                     ; fbc0: f0 3c       .<
     txa                                                               ; fbc2: 8a          .
     ldx #&b0                                                          ; fbc3: a2 b0       ..
     ldy #0                                                            ; fbc5: a0 00       ..
@@ -10438,11 +10440,11 @@ le5b4 = le5b3+1
     lda l00b2                                                         ; fbd4: a5 b2       ..
     and l00b3                                                         ; fbd6: 25 b3       %.
     cmp #&ff                                                          ; fbd8: c9 ff       ..
-    beq return_61                                                     ; fbda: f0 05       ..
+    beq return_60                                                     ; fbda: f0 05       ..
     lda l027a                                                         ; fbdc: ad 7a 02    .z.
     and #&80                                                          ; fbdf: 29 80       ).
 ; &fbe1 referenced 1 time by &fbda
-.return_61
+.return_60
     rts                                                               ; fbe1: 60          `
 
 ; &fbe2 referenced 3 times by &f2c5, &f4ba, &f93f
@@ -10461,7 +10463,7 @@ le5b4 = le5b3+1
     lda #&aa                                                          ; fbf9: a9 aa       ..
     sta acia_data                                                     ; fbfb: 8d 09 fe    ...
 ; &fbfe referenced 2 times by &fbaf, &fbc0
-.return_60
+.return_59
     rts                                                               ; fbfe: 60          `
 
     equb 0                                                            ; fbff: 00          .
@@ -10654,6 +10656,7 @@ lffb3 = osbyte150EntryPoint+1
     assert >plotLine2 == &d3
     assert >plotLine3 == &d3
     assert filev - 1 == &0211
+    assert ld940 - 1 == &d93f
     assert ld952 - 1 == &d951
     assert osbyte0EntryPoint == &e821
     assert osbyte10EntryPoint == &e6b2
@@ -10736,6 +10739,7 @@ lffb3 = osbyte150EntryPoint+1
     assert osword7EntryPoint == &e82d
     assert osword8EntryPoint == &e8ae
     assert osword9EntryPoint == &c735
+    assert userv - 1 == &01ff
     assert uservJumper == &e659
 
 save pydis_start, pydis_end
@@ -10829,7 +10833,7 @@ save pydis_start, pydis_end
 ;     l0351:                                    7
 ;     l0367:                                    7
 ;     l0810:                                    7
-;     return_51:                                7
+;     return_50:                                7
 ;     sub_cf02a:                                7
 ;     system_via_ifr:                           7
 ;     acia_control_or_status:                   6
@@ -10860,7 +10864,7 @@ save pydis_start, pydis_end
 ;     l0818:                                    6
 ;     l083e:                                    6
 ;     osbyte159EntryPoint:                      6
-;     return_28:                                6
+;     return_27:                                6
 ;     romsel:                                   6
 ;     cc59d:                                    5
 ;     cd1ad:                                    5
@@ -10901,7 +10905,7 @@ save pydis_start, pydis_end
 ;     osfind:                                   5
 ;     osnewl:                                   5
 ;     return_3:                                 5
-;     return_55:                                5
+;     return_54:                                5
 ;     serial_ula_set_baud_cassette_and_motor:   5
 ;     sub_cd03e:                                5
 ;     sub_cd10f:                                5
@@ -10958,7 +10962,7 @@ save pydis_start, pydis_end
 ;     l0830:                                    4
 ;     l0839:                                    4
 ;     le447:                                    4
-;     return_40:                                4
+;     return_39:                                4
 ;     sub_ccde2:                                4
 ;     sub_cd10d:                                4
 ;     sub_cd47c:                                4
@@ -11062,9 +11066,9 @@ save pydis_start, pydis_end
 ;     l08c0:                                    3
 ;     lc3ef:                                    3
 ;     osbyte118EntryPoint:                      3
-;     return_26:                                3
-;     return_30:                                3
-;     return_46:                                3
+;     return_25:                                3
+;     return_29:                                3
+;     return_45:                                3
 ;     sub_ccad4:                                3
 ;     sub_cccf5:                                3
 ;     sub_cccf8:                                3
@@ -11267,15 +11271,15 @@ save pydis_start, pydis_end
 ;     osbyte158EntryPoint:                      2
 ;     return_2:                                 2
 ;     return_20:                                2
-;     return_27:                                2
-;     return_29:                                2
+;     return_26:                                2
+;     return_28:                                2
+;     return_31:                                2
 ;     return_32:                                2
-;     return_33:                                2
-;     return_41:                                2
-;     return_44:                                2
-;     return_47:                                2
-;     return_56:                                2
-;     return_60:                                2
+;     return_40:                                2
+;     return_43:                                2
+;     return_46:                                2
+;     return_55:                                2
+;     return_59:                                2
 ;     sub_cc568:                                2
 ;     sub_cc951:                                2
 ;     sub_cca88:                                2
@@ -11868,7 +11872,6 @@ save pydis_start, pydis_end
 ;     l00e9:                                    1
 ;     l0104:                                    1
 ;     l0191:                                    1
-;     l01ff:                                    1
 ;     l0249:                                    1
 ;     l024a:                                    1
 ;     l024b:                                    1
@@ -12225,30 +12228,29 @@ save pydis_start, pydis_end
 ;     return_22:                                1
 ;     return_23:                                1
 ;     return_24:                                1
-;     return_25:                                1
-;     return_31:                                1
+;     return_30:                                1
+;     return_33:                                1
 ;     return_34:                                1
 ;     return_35:                                1
 ;     return_36:                                1
 ;     return_37:                                1
 ;     return_38:                                1
-;     return_39:                                1
 ;     return_4:                                 1
+;     return_41:                                1
 ;     return_42:                                1
-;     return_43:                                1
-;     return_45:                                1
+;     return_44:                                1
+;     return_47:                                1
 ;     return_48:                                1
 ;     return_49:                                1
 ;     return_5:                                 1
-;     return_50:                                1
+;     return_51:                                1
 ;     return_52:                                1
 ;     return_53:                                1
-;     return_54:                                1
+;     return_56:                                1
 ;     return_57:                                1
 ;     return_58:                                1
-;     return_59:                                1
 ;     return_6:                                 1
-;     return_61:                                1
+;     return_60:                                1
 ;     return_7:                                 1
 ;     return_8:                                 1
 ;     return_9:                                 1
@@ -13092,7 +13094,6 @@ save pydis_start, pydis_end
 ;     l0190
 ;     l0191
 ;     l01df
-;     l01ff
 ;     l0240
 ;     l0241
 ;     l0242
@@ -13453,6 +13454,7 @@ save pydis_start, pydis_end
 ;     lc4b6
 ;     lc4b7
 ;     lc4ba
+;     ld940
 ;     ld9b7
 ;     ldf0c
 ;     ldf0e
@@ -13665,7 +13667,6 @@ save pydis_start, pydis_end
 ;     return_59
 ;     return_6
 ;     return_60
-;     return_61
 ;     return_7
 ;     return_8
 ;     return_9

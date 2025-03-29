@@ -148,8 +148,26 @@ class keydefaultdict(collections.defaultdict):
             ret = self[key] = self.default_factory(key)
             return ret
 
-def sorted_annotations(annotations):
-    return sorted(annotations, key=lambda x: (x.align, x.priority))
+def remove_consecutive_duplicates(binary_loc, annotations):
+    if not annotations:
+        return []
+
+    # Initialize the result list with the first object
+    result = [annotations[0]]
+
+    # Remove duplicate annotations if they are auto_generated
+    for i in range(1, len(annotations)):
+        # Compare the string representation of the current object with the last one in the result list
+        if not annotations[i].auto_generated:
+            result.append(annotations[i])
+        elif annotations[i].as_string(binary_loc.binary_addr) != result[-1].as_string(binary_loc.binary_addr):
+            result.append(annotations[i])
+
+    return result
+
+def sorted_annotations(binary_loc, annotations):
+    result = remove_consecutive_duplicates(binary_loc, sorted(annotations, key=lambda x: (x.align, x.priority)))
+    return result
 
 def round_up(n: int, multiple: int = 4) -> int:
     """
@@ -272,6 +290,11 @@ def get_callstack():
         library_frames.append(StackEntry(i, frame_info.function, frame_info.filename, frame_info.lineno, code, frame_info.lineno))
 
     return library_frames
+
+def show_callstack():
+    callstack = get_callstack()[2:]
+    for entry in callstack:
+        debug(entry)
 
 def find_external_callstack():
     """

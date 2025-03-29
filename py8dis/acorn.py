@@ -1440,7 +1440,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
     x_adjust_addr_optimistic = state.get_previous_adjust_optimistic('x')
     y_adjust_addr_optimistic = state.get_previous_adjust_optimistic('y')
 
-    assert((a_addr_pessimistic == a_addr_optimistic) or (a_addr_pessimistic is None))
+    assert (a_addr_pessimistic == a_addr_optimistic) or (a_addr_pessimistic is None)
 
     x_next_use = state.next_use['x']
     y_next_use = state.next_use['y']

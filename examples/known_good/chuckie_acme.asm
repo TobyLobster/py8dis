@@ -4232,6 +4232,7 @@ copyloop
     sta showkeys+$0500,x                                              ; 2b03: 9d 00 0e    ...
     lda codemain_end+1536,x                                           ; 2b06: bd 00 36    ..6
     sta showkeys+$0600,x                                              ; 2b09: 9d 00 0f    ...
+    ; This loop copies X bytes of memory from (codemain_end+1792) + 1 to (showkeys+$0700) + 1
     lda codemain_end+1792,x                                           ; 2b0c: bd 00 37    ..7
     sta showkeys+$0700,x                                              ; 2b0f: 9d 00 10    ...
     dex                                                               ; 2b12: ca          .
@@ -4956,15 +4957,13 @@ deathtune_start
 ; ----------------------------------------------------------------------------------
 deathtune_end
 envelope1
-    !byte $01, $01, $00, $00, $00, $00, $00, $00, $7e, $ce, $00, $00, $64, $00; 2fd1: 01 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
+    !byte 1, 1, 0, 0, 0, 0, 0, 0, 126, -50, 0, 0, 100, 0              ; 2fd1: 01 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
 envelope2
-    !byte $02, $01, $00, $00, $00, $00, $00, $00, $7e, $fe, $00, $fb, $7e, $64; 2fdf: 02 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
+    !byte 2, 1, 0, 0, 0, 0, 0, 0, 126, -2, 0, -5, 126, 100            ; 2fdf: 02 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
 envelope3
-    !byte $03, $01, $00, $00, $00, $00, $00, $00, $32, $00, $00, $e7, $64, $00; 2fed: 03 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
+    !byte 3, 1, 0, 0, 0, 0, 0, 0, 50, 0, 0, -25, 100, 0               ; 2fed: 03 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
     !byte 0, 0, 0, 0, 0                                               ; 2ffb: 00 00 00... ...
 codemain_end
-relocated_code
-relocated_code_end
 
 ; Move 1: $3000 to $0900 for length 2048
 !pseudopc $0900 {
@@ -6513,6 +6512,9 @@ pydis_end
 !if (SpriteId_BirdUpDown1 - SpriteId_BirdRight1) != $04 {
     !error "Assertion failed: SpriteId_BirdUpDown1 - SpriteId_BirdRight1 == $04"
 }
+!if (codemain_end+1792) != $3700 {
+    !error "Assertion failed: codemain_end+1792 == $3700"
+}
 !if (hiscorenamebuffer) != $29a2 {
     !error "Assertion failed: hiscorenamebuffer == $29a2"
 }
@@ -6542,6 +6544,9 @@ pydis_end
 }
 !if (map7data) != $1072 {
     !error "Assertion failed: map7data == $1072"
+}
+!if (showkeys+$0700) != $1000 {
+    !error "Assertion failed: showkeys+$0700 == $1000"
 }
 !if (sprite_bigbirdleft1) != $131c {
     !error "Assertion failed: sprite_bigbirdleft1 == $131c"

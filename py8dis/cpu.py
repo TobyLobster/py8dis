@@ -15,6 +15,70 @@ from memorymanager import BinaryLocation
 from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from memorymanager import BinaryAddr, RuntimeAddr
+import snippets6502
+from snippets6502 import snippets
+
+class SnippetHelper:
+    def __init__(self, memory_binary, binary_loc, match, labels):
+        self.memory_binary = memory_binary
+        self.binary_loc    = binary_loc
+        self.match         = match
+        self.labels        = labels
+
+    def get_start_loc(self):
+        return self.binary_loc
+
+    def get_binary_address_and_length(self, label_name, prioritise_definition=False):
+        # Look for the 'declaration' of the label
+        for priority in [prioritise_definition, not prioritise_definition]:
+            for label in self.labels[label_name]:
+                if label[1] == priority:
+                    start, end = self.match.span(label[0])
+                    if start is None or (start < 0):
+                        # Match not found, could have been one of the '|' options that are not present... keep trying
+                        continue
+                    length = end - start
+                    assert 0 <= start < 0x10000, "label='{0}' index={1} start={2}".format(label_name, label[0], start)
+                    return (start, length)
+
+        return (None, None)
+
+    def get_binary_address(self, label_name, prioritise_definition=True):
+        binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=prioritise_definition)
+        return binary_addr
+
+    def get_memory(self, label_name, offset=0):
+        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
+        if binary_addr:
+            binary_addr += offset
+            if length == 2:
+                assert 0 <= binary_addr < 0xffff
+                return self.memory_binary[binary_addr] + 256*self.memory_binary[binary_addr+1]
+            elif length <= 1:
+                assert 0 <= binary_addr < 0x10000
+                return self.memory_binary[binary_addr]
+            assert False, "length={0}, label={1}\nlabels:{2}".format(length, label_name, self.labels)
+        return None
+
+    def get_expr(self, label_name, *, label_offset=0, final_offset=0):
+        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
+        if binary_addr:
+            binary_addr += label_offset
+            if length == 2:
+                assert 0 <= binary_addr < 0xffff
+                return classification.get_address16(binary_addr, offset=final_offset)
+            elif length <= 1:
+                assert 0 <= binary_addr < 0x10000
+                return classification.get_address8(binary_addr, offset=0)
+            assert False, "length={0}, label={1}\nlabels:{2}".format(length, label_name, self.labels)
+        return None
+
+    def get_state(self, label_name, offset=0):
+        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=True)
+        if binary_addr:
+            binary_addr += offset
+            assert 0 <= binary_addr < 0x10000
+            return(trace.cpu.cpu_states[binary_addr])
 
 class Cpu(object):
     """Abstract base class representing a CPU"""
@@ -34,9 +98,6 @@ class Cpu(object):
         # analyse the code. e.g. We look to see if we set a register with an
         # immediate mode constant before a subroutine call so that we can give
         # that constant a proper symbol name.
-
-        # This is called "optimistic" because it's based on straight line
-        # code "this is *a* possible execution path".
         self.cpu_states = [None] * 64*1024
 
 
@@ -254,130 +315,18 @@ class Cpu(object):
         # No analysis done by default
         pass
 
-    def comment_full_loop(binary_loc):
-        if not classification.is_code(binary_loc.binary_addr):
-            utils.warn("Possible code found at {0}, but this is not marked as code".format(hex(binary_loc.binary_addr)))
-        else:
-            # Move on two bytes past the LDX #nn instruction
-            state = trace.cpu.cpu_states[binary_loc.binary_addr]
-            Cpu.comment_simple_loop(memorymanager.BinaryLocation(binary_loc.binary_addr+2, binary_loc.move_id), binary_loc, state)
-
-    def comment_simple_loop(binary_loc, comment_loc=None, state=None):
-        OPCODE_LDA_ZP_COMMA_X           = 0xb5      # lda zp,x
-        OPCODE_STA_ZP_COMMA_X           = 0x95      # sta zp,x
-        OPCODE_LDA_BRACKETS_ZP_COMMA_Y  = 0xb1      # lda (zp),y
-        OPCODE_STA_BRACKETS_ZP_COMMA_Y  = 0x91      # sta (zp),y
-        OPCODE_DEX                      = 0xca      # dex
-        OPCODE_BNE                      = 0xd0      # bne loop
-
-        memory_binary = memorymanager.memory_binary
-
-        if comment_loc == None:
-            comment_loc = binary_loc
-
-        is_load_indirect = (memory_binary[binary_loc.binary_addr] == OPCODE_LDA_BRACKETS_ZP_COMMA_Y)
-
-        zp_load = (memory_binary[binary_loc.binary_addr] == OPCODE_LDA_ZP_COMMA_X) or (memory_binary[binary_loc.binary_addr] == OPCODE_LDA_BRACKETS_ZP_COMMA_Y)
-        if zp_load:
-            next = binary_loc.binary_addr + 2
-        else:
-            next = binary_loc.binary_addr + 3
-
-        is_store_indirect = (memory_binary[next] == OPCODE_STA_BRACKETS_ZP_COMMA_Y)
-        zp_save = (memory_binary[next] == OPCODE_STA_ZP_COMMA_X) or (memory_binary[next] == OPCODE_STA_BRACKETS_ZP_COMMA_Y)
-        dest_pos = next + 1
-        if zp_save:
-            next += 2
-        else:
-            next += 3
-
-        stop_at_zero = memory_binary[next+1] == OPCODE_BNE
-        offset = 1 if stop_at_zero else 0
-        source_pos = binary_loc.binary_addr + 1
-        if is_load_indirect:
-            source_label = ""
-        else:
-            if zp_load:
-                source_label = classification.get_address8(source_pos, offset=offset)
-            else:
-                source_label = classification.get_address16(source_pos, offset=offset)
-
-            if offset:
-                classification.add_expression(source_pos, make_subtract(source_label, offset))
-            source_label = utils.LazyString(" from %s", source_label)
-
-        if is_store_indirect:
-            dest_label = ""
-        else:
-            if zp_save:
-                dest_label = classification.get_address8(dest_pos, offset=offset)
-            else:
-                dest_label = classification.get_address16(dest_pos, offset=offset)
-
-            if offset:
-                classification.add_expression(dest_pos, make_subtract(dest_label, offset))
-            dest_label = utils.LazyString(" to %s", dest_label)
-
-        # Get loop initial value, look at known register state
-        reg = 'x' if memory_binary[next] == OPCODE_DEX else 'y'
-        if state == None:
-            state = trace.cpu.cpu_states[comment_loc.binary_addr]
-        loop_counter = state[reg].value if state and state[reg] else None
-
-        if not stop_at_zero and loop_counter != None:
-            # Stop at -1
-            loop_counter += 1
-
-        # with a loop counter initialised to zero, we actually loop 256 times
-        if stop_at_zero and (loop_counter == 0):
-            # "bne loop"
-            loop_counter = 256
-        elif not stop_at_zero and (loop_counter > 128):
-            # "bpl loop" and initial value is 129 or higher then the loop will only happen once.
-            # Not sure why you would write a loop like this though...
-            loop_counter = 1
-
-        zp_save = memory_binary[next] == OPCODE_STA_ZP_COMMA_X
-
-        def late_formatter():
-            if loop_counter != None:
-                loop_counter_string = " " + utils.count_with_units(loop_counter, "byte", "bytes"+ " of memory")
-                return "This loop copies{0}{1}{2}".format(loop_counter_string, source_label, dest_label)
-            return "This loop copies{1}+{0}{2}+{0}".format(reg.upper(), source_label, dest_label)
-
-        disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
-
-    # Compile regex patterns with the DOTALL flag (dot matches a newline)
-    # Each pattern should be tied to comment function to output e.g. "; This loop copies 6 bytes of memory from source to dest"
-    patterns = [
-        #    a2 XX           ; ldx #nn
-        #label
-        #    bd XX XX        ; lda addr,x        [or: b5 XX   ; lda zp,x]
-        #    9d XX XX        ; sta other,x       [or: 95 XX   ; sta zp,x]
-        #    ca              ; dex
-        #    10|d0 f7        ; bpl label or bne label
-        (re.compile(rb'\xa2.(\xbd..|\xb5.)(\x9d..|\x95.)\xca(\x10|\xd0)\xf7', re.DOTALL), comment_full_loop),
-
-        #    a0 XX           ; ldy #nn
-        #label
-        #    b9 XX XX        ; lda addr,y       [or:  b1 XX    ; lda (zp),Y     note: no lda zp,y addressing mode]
-        #    99 XX XX        ; sta other,y      [or:  91 XX    ; sta (zp),Y     note: no sta zp,y addressing mode]
-        #    88              ; dey
-        #    10|d0 f7        ; bpl label or bne label
-        (re.compile(rb'\xa0.(\xb9..|\xb1.)(\x99..|\x91.)\x88(\x10|\xd0).', re.DOTALL), comment_full_loop),
-    ]
-
     # Analysis shared between 6502 and 65C02
     def find_common_code_with_regex_for_6502_like_cpus(self):
+        """Make sure that any code found with a regex is marked as code"""
 
         # Make a byte array of memory
         memory_binary = memorymanager.memory_binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
 
         # For each pattern
-        for tup in Cpu.patterns:
+        for tup in snippets:
             # Find all matches
-            matches = re.finditer(tup[0], bytes_array) #, flags=re.MULTILINE)
+            matches = re.finditer(tup[0].pattern, bytes_array)
 
             for match in matches:
                 # Mark as code
@@ -391,13 +340,15 @@ class Cpu(object):
         memory_binary = memorymanager.memory_binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
 
-        for tup in Cpu.patterns:
+        # for each pattern
+        for tup in snippets:
             # Find all matches
-            matches = re.finditer(tup[0], bytes_array) #, flags=re.MULTILINE)
+            matches = re.finditer(tup[0].pattern, bytes_array)
+            #utils.debug("Hello: {0}".format(tup[0].pattern))
 
             for match in matches:
-                #print(f'Match: {match.group()}, Start: {hex(match.start())}, End: {hex(match.end())}')
                 binary_addr = match.start()
                 move_id = movemanager.move_id_for_binary_addr[binary_addr]
                 binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
-                tup[1](binary_loc)
+                helper = SnippetHelper(memory_binary, binary_loc, match, tup[0].labels)
+                tup[1](helper)

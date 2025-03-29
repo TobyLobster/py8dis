@@ -4232,6 +4232,7 @@ osbyte                  = &fff4
     sta showkeys+$0500,x                                              ; 2b03: 9d 00 0e    ...
     lda codemain_end+1536,x                                           ; 2b06: bd 00 36    ..6
     sta showkeys+$0600,x                                              ; 2b09: 9d 00 0f    ...
+    ; This loop copies X bytes of memory from (codemain_end+1792) + 1 to (showkeys+$0700) + 1
     lda codemain_end+1792,x                                           ; 2b0c: bd 00 37    ..7
     sta showkeys+$0700,x                                              ; 2b0f: 9d 00 10    ...
     dex                                                               ; 2b12: ca          .
@@ -4956,15 +4957,13 @@ osbyte                  = &fff4
 ; ----------------------------------------------------------------------------------
 .deathtune_end
 .envelope1
-    equb &01, &01, &00, &00, &00, &00, &00, &00, &7e, &ce, &00, &00, &64, &00; 2fd1: 01 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
+    equb 1, 1, 0, 0, 0, 0, 0, 0, 126, -50, 0, 0, 100, 0               ; 2fd1: 01 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
 .envelope2
-    equb &02, &01, &00, &00, &00, &00, &00, &00, &7e, &fe, &00, &fb, &7e, &64; 2fdf: 02 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
+    equb 2, 1, 0, 0, 0, 0, 0, 0, 126, -2, 0, -5, 126, 100             ; 2fdf: 02 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
 .envelope3
-    equb &03, &01, &00, &00, &00, &00, &00, &00, &32, &00, &00, &e7, &64, &00; 2fed: 03 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
+    equb 3, 1, 0, 0, 0, 0, 0, 0, 50, 0, 0, -25, 100, 0                ; 2fed: 03 01 00... ...            ; Envelope Number (1-16) and rest of definition (14 bytes)
     equb 0, 0, 0, 0, 0                                                ; 2ffb: 00 00 00... ...
 .codemain_end
-.relocated_code
-.relocated_code_end
 
 ; Move 1: &3000 to &0900 for length 2048
     org &0900
@@ -6284,6 +6283,7 @@ osbyte                  = &fff4
     assert SpriteId_BirdLeft1 - SpriteId_BirdRight1 == &02
     assert SpriteId_BirdRight1 - SpriteId_BirdRight1 == &00
     assert SpriteId_BirdUpDown1 - SpriteId_BirdRight1 == &04
+    assert codemain_end+1792 == &3700
     assert hiscorenamebuffer == &29a2
     assert hiscorenamebuffer_end - hiscorenamebuffer - 1 == &08
     assert map0data == &0cd0
@@ -6294,6 +6294,7 @@ osbyte                  = &fff4
     assert map5data == &0f6c
     assert map6data == &0fe8
     assert map7data == &1072
+    assert showkeys+$0700 == &1000
     assert sprite_bigbirdleft1 == &131c
     assert sprite_bigbirdleft2 == &134c
     assert sprite_bigbirdright1 == &12bc

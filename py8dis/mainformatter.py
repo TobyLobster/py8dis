@@ -88,7 +88,7 @@ def add_inline_comment_including_hexdump(binary_loc, length, cycles_description,
     # Add any inline annotations
     if annotations:
         for i in range(0, length):
-            for annotation in utils.sorted_annotations(annotations[binary_loc]):
+            for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
                 if annotation.align == Align.INLINE:
                     s += annotation.as_string(binary_loc.binary_addr)
             binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + 1, binary_loc.move_id)
@@ -155,17 +155,18 @@ def uint_formatter(n, bits, pad=False):
 
 def sint_formatter(n, bits):
     """Format an 8 or 16 bit number as a signed decimal."""
-
     assert bits in (8, 16)
     assert 0 <= n < (1<<bits)
 
-    if bits == 8:
-        signedn = n if n < 128 else n-256
-    elif bits == 16:
-        signedn = n if n < 32768 else n-65536
+    if config.get_assembler().supports_signed_integers():
+        if bits == 8:
+            signedn = n if n < 128 else n-256
+        elif bits == 16:
+            signedn = n if n < 32768 else n-65536
 
-    s = "%d" % signedn
-    return s
+        s = "%d" % signedn
+        return s
+    return str(n)
 
 def char_formatter(n, bits):
     """Format a quoted character.

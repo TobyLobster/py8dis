@@ -158,7 +158,7 @@ def constant(value, name, comment=None, *, align=Align.INLINE, format=Format.DEF
 
     These names can then be used in subsequent calls to expr().
     """
-    assert((comment == None) or (isinstance(comment, str)))
+    assert (comment == None) or (isinstance(comment, str))
 
     disassembly.add_constant(value, name, comment, align, format)
 
@@ -348,7 +348,7 @@ def annotate(runtime_addr, s, *, align=Align.BEFORE_LABEL, priority=None):
 def blank(runtime_addr, *, align=Align.BEFORE_LABEL, priority=None):
     annotate(runtime_addr, "", align=align, priority=priority)
 
-def expr(runtime_addr, s):
+def expr(runtime_addr, s, force=True):
     """Define a string expression for an address.
 
     A string expression is output at the given runtime address
@@ -374,9 +374,9 @@ def expr(runtime_addr, s):
         # Dictionary supplied.
         # Look up value in binary, and use that as key in dictionary
         val = get_u8_binary(binary_loc.binary_addr)
-        classification.add_expression(binary_loc.binary_addr, s[val])
+        classification.add_expression(binary_loc.binary_addr, s[val], force=force)
     else:
-        classification.add_expression(binary_loc.binary_addr, s)
+        classification.add_expression(binary_loc.binary_addr, s, force=force)
 
 def auto_expr(runtime_addr, s):
     """For internal use only. Generates an expression if not inhibited."""
@@ -389,7 +389,7 @@ def auto_expr(runtime_addr, s):
     binary_loc = movemanager.r2b_checked(runtime_addr)
     if not (binary_loc in trace.no_auto_comment_set):
         if memorymanager.is_data_loaded_at_binary_addr(binary_loc.binary_addr):
-            expr(runtime_addr, s)
+            expr(runtime_addr, s, force=False)
 
 def byte(runtime_addr, n=1, cols=None):
     """Categorise a number of bytes at the given address as byte data."""

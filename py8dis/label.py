@@ -181,13 +181,13 @@ class Label(object):
 
         self.local_labels[move_id].append(self.LocalLabelName(name, start_addr, end_addr))
 
-    def add_expression(self, s, move_id):
+    def add_expression(self, s, move_id, *, force=True):
         """Add an expression to use when referencing a runtime address"""
 
         assert not disassembly.is_simple_name(s)
         assert movemanager.is_valid_move_id(move_id)
 
-        if s not in self.all_names():
+        if force or (s not in self.all_names()):
             self.expressions[move_id].append(s)
 
     def find_max_explicit_name_length(self):

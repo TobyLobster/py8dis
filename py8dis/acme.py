@@ -194,7 +194,10 @@ class Acme(assembler.Assembler):
         # data
         return s.replace("0", ".").replace("1", "#")
 
-    def sanitise(self, s):
+    def sanitise_line(self, s):
         return s
+
+    def supports_signed_integers(self):
+        return True
 
 config.set_assembler(Acme())

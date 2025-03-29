@@ -270,12 +270,16 @@ class Xa(assembler.Assembler):
         # data. Sadly xa does not support this.
         return s
 
-    def sanitise(self, s):
+    def sanitise_line(self, s):
         # xa uses "\" as a line continuation character, so if a line (e.g. an
         # ASCII dump of some byte data) happens to end with that, add a space to
         # stop it being misinterpreted.
         if len(s) > 0 and s[-1] == "\\":
             return s + " "
         return s
+
+    def supports_signed_integers(self):
+        # e.g. ".byt -2" is an error, so don't use signed integers
+        return False
 
 config.set_assembler(Xa())

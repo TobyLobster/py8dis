@@ -256,6 +256,7 @@ nmi3_handler_rom_start                          = $9030
 nmi_handler_rom_end                             = $9030
 nmi_handler2_rom_start                          = $9067
 tube_host_code2                                 = $acdb
+laddc                                           = $addc
 tube_host_code3                                 = $af38
 tube_host_code1                                 = $af79
 romsel                                          = $fe30
@@ -3010,7 +3011,7 @@ loop_c8f96
     bvc c8fb5                                                         ; 2fa3: 50 10       P.  :8fa3[1]
     lda #nmi_XXX8-(nmi_beq+2)                                         ; 2fa5: a9 4d       .M  :8fa5[1]
     sta nmi_lda_immXXX4+1                                             ; 2fa7: 8d 22 0d    .". :8fa7[1]
-    ; This loop copies 14 bytes of memory from nmi_handler_rom_end to nmi_XXX2
+    ; This loop copies 14 bytes of memory from nmi_handler_rom_end to (nmi_XXX2-1) + 1
     ldx #nmi3_handler_rom_end-nmi3_handler_rom_start                  ; 2faa: a2 0e       ..  :8faa[1]
 ; $2fac referenced 1 time by $8fb3[1]
 loop_c8fac
@@ -4553,6 +4554,7 @@ c9873
     jsr sub_c995a                                                     ; 387e: 20 5a 99     Z. :987e[1]
 ; $3881 referenced 1 time by $9887[1]
 loop_c9881
+    ; This loop copies Y+1 bytes of memory from l1060
     lda l1060,y                                                       ; 3881: b9 60 10    .`. :9881[1]
     sta (l00b4),y                                                     ; 3884: 91 b4       ..  :9884[1]
     dey                                                               ; 3886: 88          .   :9886[1]
@@ -7869,10 +7871,9 @@ sub_c05f2
 ; $4dd7 referenced 2 times by $05ff[3], $0625[3]
 c05fc
     bit tube_status_register_2                                        ; 4dd7: 2c e2 fe    ,.. :05fc[3]
-sub_c05ff
-l0600 = sub_c05ff+1
     bvc c05fc                                                         ; 4dda: 50 fb       P.  :05ff[3]
 ; $4ddb referenced 1 time by $af22[1]
+sub_c0601
     stx tube_data_register_2                                          ; 4ddc: 8e e3 fe    ... :0601[3]
 ; $4ddf referenced 1 time by $0617[3]
 loop_c0604
@@ -8084,8 +8085,9 @@ loop_caf13
     sta c0400,y                                                       ; 4f16: 99 00 04    ... :af16[1]
     lda tube_host_code2,y                                             ; 4f19: b9 db ac    ... :af19[1]
     sta l0500,y                                                       ; 4f1c: 99 00 05    ... :af1c[1]
-    lda tube_host_code2+256,y                                         ; 4f1f: b9 db ad    ... :af1f[1]
-    sta l0600,y                                                       ; 4f22: 99 00 06    ... :af22[1]
+    ; This loop copies Y bytes of memory from laddc to sub_c0601
+    lda laddc - 1,y                                                   ; 4f1f: b9 db ad    ... :af1f[1]
+    sta sub_c0601 - 1,y                                               ; 4f22: 99 00 06    ... :af22[1]
     dey                                                               ; 4f25: 88          .   :af25[1]
     bne loop_caf13                                                    ; 4f26: d0 eb       ..  :af26[1]
     jsr sub_c0421                                                     ; 4f28: 20 21 04     !. :af28[1]
@@ -8424,6 +8426,7 @@ loop_cb1e3
     bcs loop_cb1e3                                                    ; 51eb: b0 f6       ..  :b1eb[1]
 ; $51ed referenced 1 time by $b1f3[1]
 loop_cb1ed
+    ; This loop copies Y+1 bytes of memory to l00b0
     lda (l00f0),y                                                     ; 51ed: b1 f0       ..  :b1ed[1]
     sta l00b0,y                                                       ; 51ef: 99 b0 00    ... :b1ef[1]
     dey                                                               ; 51f2: 88          .   :b1f2[1]
@@ -11052,6 +11055,9 @@ pydis_end
 !if (copyright - rom_header) != $11 {
     !error "Assertion failed: copyright - rom_header == $11"
 }
+!if (laddc - 1) != $addb {
+    !error "Assertion failed: laddc - 1 == $addb"
+}
 !if (nmi3_handler_rom_end-nmi3_handler_rom_start) != $0e {
     !error "Assertion failed: nmi3_handler_rom_end-nmi3_handler_rom_start == $0e"
 }
@@ -11156,6 +11162,9 @@ pydis_end
 }
 !if (sub_c05f2) != $05f2 {
     !error "Assertion failed: sub_c05f2 == $05f2"
+}
+!if (sub_c0601 - 1) != $0600 {
+    !error "Assertion failed: sub_c0601 - 1 == $0600"
 }
 !if (sub_c0607) != $0607 {
     !error "Assertion failed: sub_c0607 == $0607"
@@ -12187,7 +12196,6 @@ pydis_end
 ;     l010d:                                              1
 ;     l010e:                                              1
 ;     l028d:                                              1
-;     l0600:                                              1
 ;     l0d0f:                                              1
 ;     l0d12:                                              1
 ;     l0d2a:                                              1
@@ -13260,7 +13268,6 @@ pydis_end
 ;     l0128
 ;     l028d
 ;     l0500
-;     l0600
 ;     l0700
 ;     l0d0f
 ;     l0d12
@@ -13424,6 +13431,7 @@ pydis_end
 ;     l9b3a
 ;     l9b43
 ;     la1d3
+;     laddc
 ;     lb075
 ;     lb175
 ;     lb283
@@ -13713,7 +13721,7 @@ pydis_end
 ;     sub_c05a9
 ;     sub_c05d1
 ;     sub_c05f2
-;     sub_c05ff
+;     sub_c0601
 ;     sub_c0607
 ;     sub_c0627
 ;     sub_c8020

@@ -306,7 +306,10 @@ class Beebasm(assembler.Assembler):
         # data. Sadly, beebasm does not support this.
         return s
 
-    def sanitise(self, s):
+    def sanitise_line(self, s):
         return s
+
+    def supports_signed_integers(self):
+        return True
 
 config.set_assembler(Beebasm())

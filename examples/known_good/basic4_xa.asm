@@ -155,6 +155,7 @@ l05e5       = $05e5
 l05e6       = $05e6
 l05ff       = $05ff
 l0600       = $0600
+l0601       = $0601
 l0700       = $0700
 l07f0       = $07f0
 l0bb1       = $0bb1
@@ -2178,6 +2179,7 @@ c8dff
     jsr sub_c8e5f                                                     // 8e13: 20 5f 8e     _.
 // $8e16 referenced 1 time by $8e1b
 loop_c8e16
+    // This loop copies Y bytes of memory
     lda (l0039),y                                                     // 8e16: b1 39       .9
     sta (l0037),y                                                     // 8e18: 91 37       .7
     dey                                                               // 8e1a: 88          .
@@ -2892,7 +2894,8 @@ c91ef
     beq c9201                                                         // 91f4: f0 0b       ..
 // $91f6 referenced 1 time by $91fc
 loop_c91f6
-    lda l0600,y                                                       // 91f6: b9 00 06    ...
+    // This loop copies Y bytes of memory from l0601
+    lda l0601 - 1,y                                                   // 91f6: b9 00 06    ...
     sta (l002a),y                                                     // 91f9: 91 2a       .*
     dey                                                               // 91fb: 88          .
     bne loop_c91f6                                                    // 91fc: d0 f8       ..
@@ -10373,7 +10376,8 @@ cbc91
     beq cbca5                                                         // bc9b: f0 08       ..
 // $bc9d referenced 1 time by $bca3
 loop_cbc9d
-    lda l05ff,y                                                       // bc9d: b9 ff 05    ...
+    // This loop copies Y bytes of memory from l0600
+    lda l0600 - 1,y                                                   // bc9d: b9 ff 05    ...
     sta (l0004),y                                                     // bca0: 91 04       ..
     dey                                                               // bca2: 88          .
     bne loop_cbc9d                                                    // bca3: d0 f8       ..
@@ -10469,8 +10473,9 @@ sub_cbd12
     tay                                                               // bd18: a8          .
 // $bd19 referenced 1 time by $bd1f
 loop_cbd19
+    // This loop copies Y bytes of memory to l0600
     lda (l0004),y                                                     // bd19: b1 04       ..
-    sta l05ff,y                                                       // bd1b: 99 ff 05    ...
+    sta l0600 - 1,y                                                   // bd1b: 99 ff 05    ...
     dey                                                               // bd1e: 88          .
     bne loop_cbd19                                                    // bd1f: d0 f8       ..
 // $bd21 referenced 5 times by $9dea, $ab8e, $accf, $ace8, $bcd3
@@ -13334,6 +13339,7 @@ pydis_end
 //     l05e6
 //     l05ff
 //     l0600
+//     l0601
 //     l0700
 //     l07f0
 //     l0bb1

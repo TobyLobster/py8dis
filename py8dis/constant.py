@@ -17,7 +17,7 @@ class Constant:
         self.name = name
         self.comment = comment
         if comment:
-            assert(align != None)
+            assert align != None
         self.align = align
         self.format = format
 

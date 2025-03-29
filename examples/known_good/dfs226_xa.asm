@@ -252,6 +252,7 @@ l111a                                           = $111a
 l111b                                           = $111b
 l111c                                           = $111c
 l111d                                           = $111d
+sub_caddc                                       = $addc
 romsel                                          = $fe30
 fdc_8271_command_or_status_or_1770_drive_control = $fe80
 fdc_8271_data_or_1770_command_or_status         = $fe84
@@ -4542,6 +4543,7 @@ c9873
     jsr sub_c995a                                                     // 987e: 20 5a 99     Z.
 // $9881 referenced 1 time by $9887
 loop_c9881
+    // This loop copies Y+1 bytes of memory from l1060
     lda l1060,y                                                       // 9881: b9 60 10    .`.
     sta (l00b4),y                                                     // 9884: 91 b4       ..
     dey                                                               // 9886: 88          .
@@ -7858,10 +7860,9 @@ sub_c05f2
 // $add7 referenced 2 times by $05ff[2], $0625[2]
 c05fc
     bit tube_status_register_2                                        // add7: 2c e2 fe    ,.. :05fc[2]
-sub_c05ff
-l0600 = sub_c05ff+1
     bvc c05fc                                                         // adda: 50 fb       P.  :05ff[2]
 // $addb referenced 1 time by $af22
+sub_c0601
     stx tube_data_register_2                                          // addc: 8e e3 fe    ... :0601[2]
 // $addf referenced 1 time by $0617[2]
 loop_c0604
@@ -8069,8 +8070,9 @@ loop_caf13
     sta c0400,y                                                       // af16: 99 00 04    ...
     lda tube_host_code2,y                                             // af19: b9 db ac    ...
     sta l0500,y                                                       // af1c: 99 00 05    ...
-    lda tube_host_code2+256,y                                         // af1f: b9 db ad    ...
-    sta l0600,y                                                       // af22: 99 00 06    ...
+    // This loop copies Y bytes of memory from sub_caddc to sub_c0601
+    lda sub_caddc - 1,y                                               // af1f: b9 db ad    ...
+    sta sub_c0601 - 1,y                                               // af22: 99 00 06    ...
     dey                                                               // af25: 88          .
     bne loop_caf13                                                    // af26: d0 eb       ..
     jsr sub_c0421                                                     // af28: 20 21 04     !.
@@ -8406,6 +8408,7 @@ loop_cb1e3
     bcs loop_cb1e3                                                    // b1eb: b0 f6       ..
 // $b1ed referenced 1 time by $b1f3
 loop_cb1ed
+    // This loop copies Y+1 bytes of memory to l00b0
     lda (l00f0),y                                                     // b1ed: b1 f0       ..
     sta l00b0,y                                                       // b1ef: 99 b0 00    ...
     dey                                                               // b1f2: 88          .
@@ -11797,7 +11800,6 @@ pydis_end
 //     l010d:                                              1
 //     l010e:                                              1
 //     l028d:                                              1
-//     l0600:                                              1
 //     l0d0f:                                              1
 //     l0d12:                                              1
 //     l0d2a:                                              1
@@ -12870,7 +12872,6 @@ pydis_end
 //     l0128
 //     l028d
 //     l0500
-//     l0600
 //     l0700
 //     l0d0f
 //     l0d12
@@ -13323,7 +13324,7 @@ pydis_end
 //     sub_c05a9
 //     sub_c05d1
 //     sub_c05f2
-//     sub_c05ff
+//     sub_c0601
 //     sub_c0607
 //     sub_c0627
 //     sub_c8020
@@ -13564,6 +13565,7 @@ pydis_end
 //     sub_cac62
 //     sub_cac6a
 //     sub_cac72
+//     sub_caddc
 //     sub_cb234
 //     sub_cb2c8
 //     sub_cb580

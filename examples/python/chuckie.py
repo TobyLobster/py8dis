@@ -60,6 +60,12 @@ def hex_block(addr, bytes_per_line, lines):
         byte(addr, bytes_per_line, bytes_per_line)
         addr += bytes_per_line
 
+def sint_block(addr, bytes_per_line, lines):
+    sint(addr, bytes_per_line * lines)
+    for y in range(0, lines):
+        byte(addr, bytes_per_line, bytes_per_line)
+        addr += bytes_per_line
+
 def picture_sprite(addr, label, width, height):
     mylabel(addr, label)
     bytes_per_line = (width + 7) // 8
@@ -850,12 +856,10 @@ byte(0x2FB1, 0x2FD1-0x2FB1, 2)
 decimal(0x2FB1, 0x2FD1 - 0x2FB1)
 mylabel(0x2FD1, "deathtune_end")
 label_with_comment(0x2FD1, "envelope1", "Envelope data")
-hex_block(0x2fd1, 14, 3)
+sint_block(0x2fd1, 14, 3)
 mylabel(0x2FDF, "envelope2")
 mylabel(0x2FED, "envelope3")
 mylabel(0x3000, "codemain_end")
-mylabel(0x3000, "relocated_code")
-mylabel(0x3000, "relocated_code_end")
 
 mylabel(0x3100, "codemain_end+256")
 mylabel(0x3200, "codemain_end+512")
@@ -863,14 +867,14 @@ mylabel(0x3300, "codemain_end+768")
 mylabel(0x3400, "codemain_end+1024")
 mylabel(0x3500, "codemain_end+1280")
 mylabel(0x3600, "codemain_end+1536")
-mylabel(0x3700, "codemain_end+1792")
+expr(0x2b0d, "codemain_end+1792")
 mylabel(0x0a00, "showkeys+$0100")
 mylabel(0x0b00, "showkeys+$0200")
 mylabel(0x0c00, "showkeys+$0300")
 mylabel(0x0d00, "showkeys+$0400")
 mylabel(0x0e00, "showkeys+$0500")
 mylabel(0x0f00, "showkeys+$0600")
-mylabel(0x1000, "showkeys+$0700")
+expr(0x2b10, "showkeys+$0700")
 
 ldxy(0x283c)
 ldxy(0x284d)
