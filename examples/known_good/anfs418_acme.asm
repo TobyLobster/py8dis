@@ -143,7 +143,6 @@ l0d0d                                   = $0d0d
 l0d0e                                   = $0d0e
 l0d11                                   = $0d11
 l0d14                                   = $0d14
-l0d1a                                   = $0d1a
 l0d1e                                   = $0d1e
 l0d20                                   = $0d20
 l0d21                                   = $0d21
@@ -1214,11 +1213,12 @@ c85cf
     bcc c862f                                                         ; 85d1: 90 5c       .\
     cpx #$89                                                          ; 85d3: e0 89       ..
     bcs c862f                                                         ; 85d5: b0 58       .X
+    ; This loop copies 4 bytes of memory to l0d26
     ldy #$0c                                                          ; 85d7: a0 0c       ..
 ; $85d9 referenced 1 time by $85e1
 loop_c85d9
     lda (l00a0),y                                                     ; 85d9: b1 a0       ..
-    sta l0d1a,y                                                       ; 85db: 99 1a 0d    ...
+    sta l0d26 - 12,y                                                  ; 85db: 99 1a 0d    ...
     iny                                                               ; 85de: c8          .
     cpy #$10                                                          ; 85df: c0 10       ..
     bcc loop_c85d9                                                    ; 85e1: 90 f6       ..
@@ -1362,11 +1362,12 @@ c86ac
     sta l0d3f                                                         ; 86b8: 8d 3f 0d    .?.
     lda #$40 ; '@'                                                    ; 86bb: a9 40       .@
     sta l0d3e                                                         ; 86bd: 8d 3e 0d    .>.
+    ; This loop copies 8 bytes of memory to l0d26
     ldy #4                                                            ; 86c0: a0 04       ..
 ; $86c2 referenced 1 time by $86ca
 loop_c86c2
     lda (l00a0),y                                                     ; 86c2: b1 a0       ..
-    sta l0d22,y                                                       ; 86c4: 99 22 0d    .".
+    sta l0d26 - 4,y                                                   ; 86c4: 99 22 0d    .".
     iny                                                               ; 86c7: c8          .
     cpy #$0c                                                          ; 86c8: c0 0c       ..
     bcc loop_c86c2                                                    ; 86ca: 90 f6       ..
@@ -10577,6 +10578,12 @@ pydis_end
 !if (l0d00 - 1) != $0cff {
     !error "Assertion failed: l0d00 - 1 == $0cff"
 }
+!if (l0d26 - 12) != $0d1a {
+    !error "Assertion failed: l0d26 - 12 == $0d1a"
+}
+!if (l0d26 - 4) != $0d22 {
+    !error "Assertion failed: l0d26 - 4 == $0d22"
+}
 !if (l0d6d - 1) != $0d6c {
     !error "Assertion failed: l0d6d - 1 == $0d6c"
 }
@@ -11659,7 +11666,6 @@ pydis_end
 ;     l0518:                                    1
 ;     l0600:                                    1
 ;     l0d07:                                    1
-;     l0d1a:                                    1
 ;     l0d23:                                    1
 ;     l0d26:                                    1
 ;     l0d32:                                    1
@@ -12774,7 +12780,6 @@ pydis_end
 ;     l0d0e
 ;     l0d11
 ;     l0d14
-;     l0d1a
 ;     l0d1e
 ;     l0d20
 ;     l0d21

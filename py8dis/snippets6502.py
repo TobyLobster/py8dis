@@ -9,6 +9,7 @@ from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_
 OPCODE_LDA_ZP_COMMA_X           = 0xb5      # lda zp,x
 OPCODE_STA_ZP_COMMA_X           = 0x95      # sta zp,x
 OPCODE_DEX                      = 0xca      # dex
+OPCODE_INX                      = 0xe8      # inx
 OPCODE_BNE                      = 0xd0      # bne loop
 
 # Global snippets array
@@ -34,7 +35,7 @@ def comment_memory_copy_loop(p):
     state               = p.get_state('comment')
     bytes_to_copy       = state[reg].value if state and state[reg] else None
     if bytes_to_copy == None:
-        bytes_to_copy = p.get_memory("nn")
+        bytes_to_copy = p.get_memory("start_count")
         assert bytes_to_copy == None        # DEBUG!
 
     if not is_load_indirect:
@@ -113,7 +114,7 @@ def comment_memory_copy_with_limited_end_loop(p):
     state               = p.get_state('comment')
     start_count         = state[reg].value if state and state[reg] else None
     if start_count == None:
-        start_count = p.get_memory("nn")
+        start_count = p.get_memory("start_count")
     bytes_to_copy       = start_count - end_count + 1  if start_count else None
 
     if not is_load_indirect:
@@ -153,12 +154,67 @@ def comment_memory_copy_with_limited_end_loop(p):
 
     disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
 
+
+# ************************************************************************************************
+def comment_memory_copy_increment(p):
+    # e.g. "This loop copies 8 bytes from source to dest"
+
+    # Make sure the branch instruction's operand jumps to the definition of the label as expected
+    if not p.check_branch_matches('loop'):
+        return
+
+    # Get loop initial value, look at known register state
+    comment_loc         = p.get_start_loc()
+    is_load_indirect    = p.get_memory('zp1')   # This is treated as a flag, being None if 'zp1' isn't found
+    is_store_indirect   = p.get_memory('zp2')   # This is treated as a flag, being None if 'zp2' isn't found
+    end_count           = p.get_memory('end_count')
+    source_label        = ""
+    dest_label          = ""
+    reg                 = 'x' if p.get_memory('update') == OPCODE_INX else 'y'
+    state               = p.get_state('comment')
+    start_count         = state[reg].value if state and state[reg] else None
+    if start_count == None:
+        start_count = p.get_memory("start_count")
+        if start_count == None:
+            return
+
+    bytes_to_copy = end_count - start_count
+
+    if not is_load_indirect:
+        source_label = p.get_expr('addr', label_offset=0, final_offset=start_count)
+
+        source_binary_addr = p.get_binary_address('load')+1
+        proposed_expression = make_subtract(source_label, start_count)
+        new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
+        if new_expression != proposed_expression:
+            source_label = make_subtract(new_expression, start_count)
+        source_label = utils.LazyString(" from %s", source_label)
+
+    if not is_store_indirect:
+        dest_label = p.get_expr('other', label_offset=0, final_offset=start_count)
+
+        dest_binary_addr = p.get_binary_address('store')+1
+        proposed_expression = make_subtract(dest_label, start_count)
+        new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
+        if new_expression != proposed_expression:
+            dest_label = make_subtract(new_expression, start_count)
+        dest_label = utils.LazyString(" to %s", dest_label)
+
+    def late_formatter():
+        if bytes_to_copy != None:
+            bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
+        else:
+            bytes_to_copy_string = " some bytes of memory"
+        return "This loop copies{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
+
+    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+
 # ************************************************************************************************
 snippets.append((comment_memory_copy_loop, snippet6502.parse_snippet("""
 ; memory copy, using X as the loop counter
 
 comment
-?    ldx #nn
+?   ldx #start_count
 loop
 load
     lda addr,x | lda (zp1),x
@@ -175,7 +231,7 @@ snippets.append((comment_memory_copy_loop, snippet6502.parse_snippet("""
 ; memory copy, using Y as the loop counter
 
 comment
-?    ldy #nn
+?   ldy #start_count
 loop
 load
     lda addr,y | lda (zp1),y
@@ -192,7 +248,7 @@ snippets.append((comment_memory_copy_with_limited_end_loop, snippet6502.parse_sn
 ; memory copy with final counter check, using Y as the loop counter
 
 comment
-?    ldy #nn
+?   ldy #start_count
 loop
 load
     lda addr,y | lda (zp1),y
@@ -210,7 +266,7 @@ snippets.append((comment_memory_copy_with_limited_end_loop, snippet6502.parse_sn
 ; memory copy with final counter check, using X as the loop counter
 
 comment
-?    ldx #nn
+?   ldx #start_count
 loop
 load
     lda addr,x | lda (zp1),x
@@ -221,4 +277,37 @@ update
     cpx #end_count
 branch
     bcs loop
+""")))
+
+
+snippets.append((comment_memory_copy_increment, snippet6502.parse_snippet("""
+; memory copy increasing loop counter, using X as the loop counter
+comment
+?    ldx #start_count
+loop
+load
+    lda addr,x | lda (zp1),x
+store
+    sta other,x | sta (zp2),x
+update
+    inx
+    cpx #end_count
+branch
+    bne loop | bcc loop
+""")))
+
+snippets.append((comment_memory_copy_increment, snippet6502.parse_snippet("""
+; memory copy increasing loop counter, using X as the loop counter
+comment
+?    ldy #start_count
+loop
+load
+    lda addr,y | lda (zp1),y
+store
+    sta other,y | sta (zp2),y
+update
+    iny
+    cpy #end_count
+branch
+    bne loop | bcc loop
 """)))

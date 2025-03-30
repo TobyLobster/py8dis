@@ -82,9 +82,21 @@ def make_xor(expr1, expr2):
     return make_op2(expr1, 'EOR', expr2)
 
 def make_add(expr1, expr2):
+    if isinstance(expr2, int):
+        if expr2 == 0:
+            return expr1
+    if isinstance(expr1, int):
+        if expr1 == 0:
+            return expr2
     return make_op2(expr1, '+', expr2)
 
 def make_subtract(expr1, expr2):
+    if isinstance(expr2, int):
+        if expr2 == 0:
+            return expr1
+    if isinstance(expr1, int):
+        if expr1 == 0:
+            return expr2
     return make_op2(expr1, '-', expr2)
 
 def make_multiply(expr1, expr2):

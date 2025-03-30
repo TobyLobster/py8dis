@@ -2414,11 +2414,12 @@ l8004 = service_entry+1
     jsr sub_c8f82                                                     ; 8c68: 20 82 8f     ..
     lda #0                                                            ; 8c6b: a9 00       ..
     sta l00a1                                                         ; 8c6d: 85 a1       ..
+    ; This loop copies 3 bytes of memory to l00b3
     ldy #9                                                            ; 8c6f: a0 09       ..
 ; &8c71 referenced 1 time by &8c79
 .loop_c8c71
     lda (l00b0),y                                                     ; 8c71: b1 b0       ..
-    sta l00aa,y                                                       ; 8c73: 99 aa 00    ...
+    sta l00b3 - 9,y                                                   ; 8c73: 99 aa 00    ...
     iny                                                               ; 8c76: c8          .
     cpy #&0c                                                          ; 8c77: c0 0c       ..
     bne loop_c8c71                                                    ; 8c79: d0 f6       ..
@@ -10950,6 +10951,7 @@ lb6ce = sub_cb6cd+1
     assert >tube_evntv_handler == &06
     assert copyright - rom_header == &11
     assert jump_address_low == &51
+    assert l00b3 - 9 == &aa
     assert l00bc - 8 == &b4
     assert nmi3_handler_rom_end-nmi3_handler_rom_start == &0e
     assert nmi_XXX1-(nmi_beq+2) == &48

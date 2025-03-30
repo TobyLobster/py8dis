@@ -5,6 +5,7 @@ lffe3   = $ffe3
     * = $2000
 
 pydis_start
+    ; This loop copies 15 bytes of memory from c201e to print_and_inc_zp
     ldx #0                                                            ; 2000: a2 00       ..
 ; $2002 referenced 1 time by $200b
 loop_c2002
@@ -47,6 +48,12 @@ sub_c0908
 
 pydis_end
 
+!if (c201e) != $201e {
+    !error "Assertion failed: c201e == $201e"
+}
+!if (print_and_inc_zp) != $0900 {
+    !error "Assertion failed: print_and_inc_zp == $0900"
+}
 
 ; Label references by decreasing frequency:
 ;     l0070:              3

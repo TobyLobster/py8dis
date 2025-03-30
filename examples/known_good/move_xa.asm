@@ -5,6 +5,7 @@ lffe3   = $ffe3
     * = $2000
 
 pydis_start
+    // This loop copies 15 bytes of memory from c201e to print_and_inc_zp
     ldx #0                                                            // 2000: a2 00       ..
 // $2002 referenced 1 time by $200b
 loop_c2002
