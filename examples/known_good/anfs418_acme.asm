@@ -349,7 +349,7 @@ sub_c8028
 
 ; $8032 referenced 1 time by $802d
 c8032
-    txa                                                               ; 8032: 8a          .
+    txa                                                               ; 8032: 8a          .              ; push X,Y onto the stack
     pha                                                               ; 8033: 48          H
     tya                                                               ; 8034: 98          .
     pha                                                               ; 8035: 48          H
@@ -1153,7 +1153,7 @@ return_4
 
 ; $8585 referenced 1 time by $8057
 c8585
-    pla                                                               ; 8585: 68          h
+    pla                                                               ; 8585: 68          h              ; pull X,Y from the stack
     tay                                                               ; 8586: a8          .
     pla                                                               ; 8587: 68          h
     tax                                                               ; 8588: aa          .
@@ -1833,7 +1833,7 @@ c89a4
 ; $89a6 referenced 1 time by $8096
 sub_c89a7
     bit station_id_disable_net_nmis                                   ; 89a7: 2c 18 fe    ,..
-    pha                                                               ; 89aa: 48          H
+    pha                                                               ; 89aa: 48          H              ; push A,Y onto the stack
     tya                                                               ; 89ab: 98          .
     pha                                                               ; 89ac: 48          H
     lda #0                                                            ; 89ad: a9 00       ..
@@ -1844,7 +1844,7 @@ sub_c89a7
     sta l0d0c                                                         ; 89b8: 8d 0c 0d    ...
     lda romsel_copy                                                   ; 89bb: a5 f4       ..
     sta romsel                                                        ; 89bd: 8d 30 fe    .0.
-    pla                                                               ; 89c0: 68          h
+    pla                                                               ; 89c0: 68          h              ; pull A,Y from the stack
     tay                                                               ; 89c1: a8          .
     pla                                                               ; 89c2: 68          h
     bit video_ula_control                                             ; 89c3: 2c 20 fe    , .
@@ -1967,7 +1967,7 @@ c8a33
 ; $8a38 referenced 2 times by $8a25, $8a29
 c8a38
     ldx romsel_copy                                                   ; 8a38: a6 f4       ..
-    pla                                                               ; 8a3a: 68          h
+    pla                                                               ; 8a3a: 68          h              ; pull A,Y from the stack
     tay                                                               ; 8a3b: a8          .
 ; $8a3c referenced 1 time by $8a18
 service_handler_common1
@@ -2208,12 +2208,12 @@ sub_c8b96
 ; $8b98 referenced 2 times by $8b8f, $8b94
 c8b98
     bvc c8ba8                                                         ; 8b98: 50 0e       P.
-    txa                                                               ; 8b9a: 8a          .
+    txa                                                               ; 8b9a: 8a          .              ; push X,Y onto the stack
     pha                                                               ; 8b9b: 48          H
     tya                                                               ; 8b9c: 98          .
     pha                                                               ; 8b9d: 48          H
     jsr sub_c8c9f                                                     ; 8b9e: 20 9f 8c     ..
-    pla                                                               ; 8ba1: 68          h
+    pla                                                               ; 8ba1: 68          h              ; pull X,Y from the stack
     tay                                                               ; 8ba2: a8          .
     pla                                                               ; 8ba3: 68          h
     tax                                                               ; 8ba4: aa          .
@@ -2911,7 +2911,7 @@ return_11
 ; $8fcb referenced 5 times by $9bbe, $9d4e, $9dee, $9e2f, $b5fb
 sub_c8fcb
     php                                                               ; 8fcb: 08          .
-    pha                                                               ; 8fcc: 48          H
+    pha                                                               ; 8fcc: 48          H              ; push A,Y onto the stack
     tya                                                               ; 8fcd: 98          .
     pha                                                               ; 8fce: 48          H
     ldy #$76 ; 'v'                                                    ; 8fcf: a0 76       .v
@@ -2925,7 +2925,7 @@ loop_c8fd4
     ldy #$77 ; 'w'                                                    ; 8fd9: a0 77       .w
     cmp (l00cc),y                                                     ; 8fdb: d1 cc       ..
     bne c8fe4                                                         ; 8fdd: d0 05       ..
-    pla                                                               ; 8fdf: 68          h
+    pla                                                               ; 8fdf: 68          h              ; pull A,Y from the stack
     tay                                                               ; 8fe0: a8          .
     pla                                                               ; 8fe1: 68          h
     plp                                                               ; 8fe2: 28          (
@@ -3281,7 +3281,7 @@ sub_c92b0
 ; $92b5 referenced 2 times by $9c48, $9e8f
 sub_c92b5
     php                                                               ; 92b5: 08          .
-    pha                                                               ; 92b6: 48          H
+    pha                                                               ; 92b6: 48          H              ; push A,X onto the stack
     txa                                                               ; 92b7: 8a          .
     pha                                                               ; 92b8: 48          H
     tsx                                                               ; 92b9: ba          .
@@ -3295,7 +3295,7 @@ sub_c92b5
 ; $92cc referenced 2 times by $9ca9, $9e8a
 sub_c92cc
     php                                                               ; 92cc: 08          .
-    pha                                                               ; 92cd: 48          H
+    pha                                                               ; 92cd: 48          H              ; push A,X onto the stack
     txa                                                               ; 92ce: 8a          .
     pha                                                               ; 92cf: 48          H
     tsx                                                               ; 92d0: ba          .
@@ -3307,7 +3307,7 @@ sub_c92cc
     sta l1060,x                                                       ; 92de: 9d 60 10    .`.
 ; $92e1 referenced 3 times by $92c0, $92ca, $92d7
 c92e1
-    pla                                                               ; 92e1: 68          h
+    pla                                                               ; 92e1: 68          h              ; pull A,X from the stack
     tax                                                               ; 92e2: aa          .
     pla                                                               ; 92e3: 68          h
     plp                                                               ; 92e4: 28          (
@@ -3465,7 +3465,7 @@ c93bc
     txa                                                               ; 93cd: 8a          .
     pha                                                               ; 93ce: 48          H
     jsr sub_cae97                                                     ; 93cf: 20 97 ae     ..
-    pla                                                               ; 93d2: 68          h
+    pla                                                               ; 93d2: 68          h              ; pull A,X from the stack
     tax                                                               ; 93d3: aa          .
     pla                                                               ; 93d4: 68          h
     cmp l1071                                                         ; 93d5: cd 71 10    .q.
@@ -3581,7 +3581,7 @@ c9486
 ; $948b referenced 1 time by $9476
 l948b
     !byte $80, $99, 0, 0, 0, $0f                                      ; 948b: 80 99 00... ...
-; $9491 referenced 21 times by $8c73, $964e, $977d, $9b41, $9d0f, $a09e, $a19d, $a316, $a341, $a378, $aa80, $af7f, $af85, $b025, $b1a5, $b205, $b246, $b2ce, $b55a, $b598, $b99d
+; $9491 referenced 22 times by $8c73, $964e, $977d, $9b41, $9d0f, $a09e, $a19d, $a316, $a341, $a378, $aa80, $af7f, $af85, $b025, $b1a5, $b205, $b246, $b2ce, $b55a, $b598, $b888, $b99d
 l9491
     !byte $ff, $ff, $ff, $0f, $ff, $ff                                ; 9491: ff ff ff... ...
 
@@ -3987,7 +3987,7 @@ loop_c96c4
     bne loop_c96c4                                                    ; 96cd: d0 f5       ..
     beq c96dd                                                         ; 96cf: f0 0c       ..             ; ALWAYS branch
 
-; $96d1 referenced 8 times by $942f, $95b3, $a276, $ac00, $ac12, $b485, $b4fb, $b547
+; $96d1 referenced 9 times by $942f, $95b3, $a276, $ac00, $ac12, $b485, $b4fb, $b547, $b863
 generate_error_inline3
     jsr sta_e09_if_d6c_b7_set                                         ; 96d1: 20 11 96     ..
 ; $96d4 referenced 4 times by $a129, $ba11, $bba7, $bc5d
@@ -4026,7 +4026,7 @@ c96fa
 ; $96fd referenced 1 time by $96f3
 c96fd
     sta l0e08                                                         ; 96fd: 8d 08 0e    ...
-    pha                                                               ; 9700: 48          H
+    pha                                                               ; 9700: 48          H              ; push A,X onto the stack
     txa                                                               ; 9701: 8a          .
     pha                                                               ; 9702: 48          H
     jsr sub_cb98a                                                     ; 9703: 20 8a b9     ..
@@ -4190,8 +4190,8 @@ c983f
 ; $9846 referenced 1 time by $9842
 c9846
     ldy #$60 ; '`'                                                    ; 9846: a0 60       .`
-    pha                                                               ; 9848: 48          H
-    tya                                                               ; 9849: 98          .              ; A=$60
+    pha                                                               ; 9848: 48          H              ; push A,Y onto the stack
+    tya                                                               ; 9849: 98          .
     pha                                                               ; 984a: 48          H
     ldx #0                                                            ; 984b: a2 00       ..
     lda (l009a,x)                                                     ; 984d: a1 9a       ..
@@ -4205,7 +4205,7 @@ c984f
     asl                                                               ; 9858: 0a          .
     beq c987e                                                         ; 9859: f0 23       .#
     jsr sub_c9570                                                     ; 985b: 20 70 95     p.
-    pla                                                               ; 985e: 68          h
+    pla                                                               ; 985e: 68          h              ; pull A,Y,X from the stack
     tax                                                               ; 985f: aa          .
     pla                                                               ; 9860: 68          h
     tay                                                               ; 9861: a8          .
@@ -4214,7 +4214,7 @@ c984f
 ; $9865 referenced 1 time by $987c
 loop_c9865
     sbc #1                                                            ; 9865: e9 01       ..
-    pha                                                               ; 9867: 48          H
+    pha                                                               ; 9867: 48          H              ; push A,Y onto the stack
     tya                                                               ; 9868: 98          .
     pha                                                               ; 9869: 48          H
     txa                                                               ; 986a: 8a          .
@@ -4273,7 +4273,7 @@ c98ab
     dey                                                               ; 98ab: 88          .
     bpl loop_c989e                                                    ; 98ac: 10 f0       ..
     lda l0d6f                                                         ; 98ae: ad 6f 0d    .o.
-    pha                                                               ; 98b1: 48          H
+    pha                                                               ; 98b1: 48          H              ; push A,Y onto the stack
     tya                                                               ; 98b2: 98          .
     pha                                                               ; 98b3: 48          H
     ldx #0                                                            ; 98b4: a2 00       ..
@@ -4309,14 +4309,14 @@ loop_c98d9
 
 ; $98de referenced 1 time by $98c2
 c98de
-    pla                                                               ; 98de: 68          h
+    pla                                                               ; 98de: 68          h              ; pull A,Y,X from the stack
     tax                                                               ; 98df: aa          .
     pla                                                               ; 98e0: 68          h
     tay                                                               ; 98e1: a8          .
     pla                                                               ; 98e2: 68          h
     beq loop_c98c4                                                    ; 98e3: f0 df       ..
     sbc #1                                                            ; 98e5: e9 01       ..
-    pha                                                               ; 98e7: 48          H
+    pha                                                               ; 98e7: 48          H              ; push A,Y onto the stack
     tya                                                               ; 98e8: 98          .
     pha                                                               ; 98e9: 48          H
     txa                                                               ; 98ea: 8a          .
@@ -4891,7 +4891,7 @@ c9bf8
 
 ; $9c03 referenced 1 time by $9bfe
 c9c03
-    pha                                                               ; 9c03: 48          H
+    pha                                                               ; 9c03: 48          H              ; push A,X,Y onto the stack
     txa                                                               ; 9c04: 8a          .
     pha                                                               ; 9c05: 48          H
     tya                                                               ; 9c06: 98          .
@@ -4901,7 +4901,7 @@ c9c03
     jsr sub_cb98f                                                     ; 9c0c: 20 8f b9     ..
     lda l1030,x                                                       ; 9c0f: bd 30 10    .0.
     sta l0f05                                                         ; 9c12: 8d 05 0f    ...
-    pla                                                               ; 9c15: 68          h
+    pla                                                               ; 9c15: 68          h              ; pull A,X from the stack
     tax                                                               ; 9c16: aa          .
     pla                                                               ; 9c17: 68          h
     lsr                                                               ; 9c18: 4a          J
@@ -5219,7 +5219,7 @@ c9e09
     ldx #0                                                            ; 9e09: a2 00       ..
 ; $9e0b referenced 1 time by $9e07
 c9e0b
-    pla                                                               ; 9e0b: 68          h
+    pla                                                               ; 9e0b: 68          h              ; pull A,Y from the stack
     tay                                                               ; 9e0c: a8          .
     pla                                                               ; 9e0d: 68          h
     rts                                                               ; 9e0e: 60          `
@@ -6738,13 +6738,44 @@ sub_ca976
     cli                                                               ; a976: 58          X
     jmp c983f                                                         ; a977: 4c 3f 98    L?.
 
-    !byte 8, $48, $8a, $48, $98, $48, $ba, $bd,   3, 1, $c9, 9, $b0   ; a97a: 08 48 8a... .H.
-    !byte 4, $aa, $20, $93, $a9, $68, $a8, $68, $aa                   ; a987: 04 aa 20... ..
-    !text "h(`"                                                       ; a990: 68 28 60    h(`
-    !byte $bd, $a7, $a9, $48, $bd, $9e, $a9, $48, $a5, $ef, $60, $57  ; a993: bd a7 a9... ...
-    !byte $ec, $ec, $ec, $af, $d7, $57, $e1, $50, $8e, $aa, $aa, $aa  ; a99f: ec ec ec... ...
-    !byte $a9, $aa, $8e, $a9, $aa, $ba, $7e,   6,   1, $1e,   6,   1  ; a9ab: a9 aa 8e... ...
-    !byte $98, $a0, $da, $91, $9e, $a9,   0                           ; a9b7: 98 a0 da... ...
+    php                                                               ; a97a: 08          .              ; push flags,A,X,Y onto the stack
+    pha                                                               ; a97b: 48          H
+    txa                                                               ; a97c: 8a          .
+    pha                                                               ; a97d: 48          H
+    tya                                                               ; a97e: 98          .
+    pha                                                               ; a97f: 48          H
+    tsx                                                               ; a980: ba          .
+    lda l0103,x                                                       ; a981: bd 03 01    ...
+    cmp #9                                                            ; a984: c9 09       ..
+    bcs ca98c                                                         ; a986: b0 04       ..
+    tax                                                               ; a988: aa          .
+    jsr sub_ca993                                                     ; a989: 20 93 a9     ..
+; $a98c referenced 1 time by $a986
+ca98c
+    pla                                                               ; a98c: 68          h              ; pull flags,A,X,Y from the stack
+    tay                                                               ; a98d: a8          .
+    pla                                                               ; a98e: 68          h
+    tax                                                               ; a98f: aa          .
+    pla                                                               ; a990: 68          h
+    plp                                                               ; a991: 28          (
+    rts                                                               ; a992: 60          `
+
+; $a993 referenced 1 time by $a989
+sub_ca993
+    lda la9a7,x                                                       ; a993: bd a7 a9    ...
+    pha                                                               ; a996: 48          H
+    lda la99e,x                                                       ; a997: bd 9e a9    ...
+    pha                                                               ; a99a: 48          H
+    lda l00ef                                                         ; a99b: a5 ef       ..
+    rts                                                               ; a99d: 60          `
+
+; $a99e referenced 1 time by $a997
+la99e
+    !byte $57, $ec, $ec, $ec, $af, $d7, $57, $e1, $50                 ; a99e: 57 ec ec... W..
+; $a9a7 referenced 1 time by $a993
+la9a7
+    !byte $8e, $aa, $aa, $aa, $a9, $aa, $8e, $a9, $aa, $ba, $7e, 6, 1 ; a9a7: 8e aa aa... ...
+    !byte $1e,   6,   1, $98, $a0, $da, $91, $9e, $a9,   0            ; a9b4: 1e 06 01... ...
 
 ; $a9be referenced 3 times by $8ae7, $aa11, $aa77
 sub_ca9be
@@ -8598,6 +8629,8 @@ loop_cb4df
     bne loop_cb4df                                                    ; b4e7: d0 f6       ..
     jmp l0100                                                         ; b4e9: 4c 00 01    L..
 
+; $b4ec referenced 1 time by $b859
+sub_cb4ec
     lda l10c9                                                         ; b4ec: ad c9 10    ...
     jsr sub_cb98f                                                     ; b4ef: 20 8f b9     ..
 ; $b4f2 referenced 2 times by $9c08, $9e53
@@ -8956,7 +8989,7 @@ loop_cb723
 ; $b72d referenced 1 time by $b74c
 loop_cb72d
     jsr sub_cb66a                                                     ; b72d: 20 6a b6     j.
-; $b730 referenced 1 time by $9df8
+; $b730 referenced 2 times by $9df8, $b88b
 sub_cb730
     ldx #$ff                                                          ; b730: a2 ff       ..
 ; $b732 referenced 2 times by $b76e, $b776
@@ -9007,12 +9040,20 @@ cb788
     and #$20 ; ' '                                                    ; b788: 29 20       )
     rts                                                               ; b78a: 60          `
 
-    !byte $fe, 0, $10, $d0, 8, $fe, $10, $10, $d0, 3, $fe, $20, $10   ; b78b: fe 00 10... ...
-    !byte $60                                                         ; b798: 60          `
+; $b78b referenced 1 time by $b8cb
+sub_cb78b
+    inc l1000,x                                                       ; b78b: fe 00 10    ...
+    bne return_36                                                     ; b78e: d0 08       ..
+    inc l1010,x                                                       ; b790: fe 10 10    ...
+    bne return_36                                                     ; b793: d0 03       ..
+    inc l1020,x                                                       ; b795: fe 20 10    . .
+; $b798 referenced 2 times by $b78e, $b793
+return_36
+    rts                                                               ; b798: 60          `
 
 ; $b799 referenced 8 times by $8d87, $8fa0, $94a0, $9bdc, $9c21, $9cc4, $9d8a, $9e58
 sub_cb799
-    txa                                                               ; b799: 8a          .
+    txa                                                               ; b799: 8a          .              ; push X,Y onto the stack
     pha                                                               ; b79a: 48          H
     tya                                                               ; b79b: 98          .
     pha                                                               ; b79c: 48          H
@@ -9049,7 +9090,7 @@ loop_cb7c3
     sta l00b4,x                                                       ; b7c4: 95 b4       ..
     dex                                                               ; b7c6: ca          .
     bpl loop_cb7c3                                                    ; b7c7: 10 fa       ..
-    pla                                                               ; b7c9: 68          h
+    pla                                                               ; b7c9: 68          h              ; pull X,Y from the stack
     tay                                                               ; b7ca: a8          .
     pla                                                               ; b7cb: 68          h
     tax                                                               ; b7cc: aa          .
@@ -9066,31 +9107,89 @@ loop_cb7c3
     !byte   0, $b9,   0, $10, $48, $98, $aa, $a9,   0, $20, $8f, $b9  ; b827: 00 b9 00... ...
     !byte $20, $8b, $b7, $68, $a8, $ad, $c8, $10, $18, $69, $11, $85  ; b833: 20 8b b7...  ..
     !byte $b3, $a9,   0, $85, $b2, $68, $aa, $b1, $b2, $ac, $c9, $10  ; b83f: b3 a9 00... ...
-    !byte $18, $60, $8c, $c9, $10, $48, $a8, $8a, $48, $98, $48, $8d  ; b84b: 18 60 8c... .`.
-    !byte $d7, $10, $20, $ec, $b4, $bd, $60, $10, $30, $19, $a9, $c1  ; b857: d7 10 20... ..
-    !byte $20, $d1, $96                                               ; b863: 20 d1 96     ..
-    !text "Not open for update"                                       ; b866: 4e 6f 74... Not
-    !byte 0, $29, $20, $f0, $0a, $bc, $30, $10                        ; b879: 00 29 20... .)
-    !text "h +"                                                       ; b881: 68 20 2b    h +
-    !byte $b9, $4c, $cb, $b8, $2c, $91, $94, $20, $30, $b7, $b9,   0  ; b884: b9 4c cb... .L.
-    !byte $10, $c9, $ff, $d0,   3, $20, $e4, $b8, $dd, $98, $10, $90  ; b890: 10 c9 ff... ...
-    !byte $0f, $69,   0, $9d, $98, $10, $d0,   8, $a9, $df, $3d, $b8  ; b89c: 0f 69 00... .i.
-    !byte $10, $9d, $b8, $10, $a9,   1, $1d, $b8, $10, $9d, $b8, $10  ; b8a8: 10 9d b8... ...
-    !byte $b9,   0, $10, $48, $98, $aa, $68, $a8, $ad, $c8, $10, $18  ; b8b4: b9 00 10... ...
-    !byte $69, $11, $85, $b3, $a9,   0, $85, $b2, $68, $91, $b2, $20  ; b8c0: 69 11 85... i..
-    !byte $8b, $b7, $a9,   0, $20, $8f, $b9, $68, $aa, $68, $ac, $c9  ; b8cc: 8b b7 a9... ...
-    !byte $10, $60                                                    ; b8d8: 10 60       .`
+    !byte $18, $60, $8c, $c9, $10, $48, $a8                           ; b84b: 18 60 8c... .`.
+
+    txa                                                               ; b852: 8a          .              ; push X,Y onto the stack
+    pha                                                               ; b853: 48          H
+    tya                                                               ; b854: 98          .
+    pha                                                               ; b855: 48          H
+    sta l10d7                                                         ; b856: 8d d7 10    ...
+    jsr sub_cb4ec                                                     ; b859: 20 ec b4     ..
+    lda l1060,x                                                       ; b85c: bd 60 10    .`.
+    bmi cb87a                                                         ; b85f: 30 19       0.
+    lda #$c1                                                          ; b861: a9 c1       ..
+    jsr generate_error_inline3                                        ; b863: 20 d1 96     ..
+    !text "Not open for update", 0                                    ; b866: 4e 6f 74... Not
+
+; $b87a referenced 1 time by $b85f
+cb87a
+    and #$20 ; ' '                                                    ; b87a: 29 20       )
+    beq cb888                                                         ; b87c: f0 0a       ..
+    ldy l1030,x                                                       ; b87e: bc 30 10    .0.
+    pla                                                               ; b881: 68          h
+    jsr sub_cb92b                                                     ; b882: 20 2b b9     +.
+    jmp cb8cb                                                         ; b885: 4c cb b8    L..
+
+; $b888 referenced 1 time by $b87c
+cb888
+    bit l9491                                                         ; b888: 2c 91 94    ,..
+    jsr sub_cb730                                                     ; b88b: 20 30 b7     0.
+    lda l1000,y                                                       ; b88e: b9 00 10    ...
+    cmp #$ff                                                          ; b891: c9 ff       ..
+    bne cb898                                                         ; b893: d0 03       ..
+    jsr sub_cb8e4                                                     ; b895: 20 e4 b8     ..
+; $b898 referenced 1 time by $b893
+cb898
+    cmp l1098,x                                                       ; b898: dd 98 10    ...
+    bcc cb8ac                                                         ; b89b: 90 0f       ..
+    adc #0                                                            ; b89d: 69 00       i.
+    sta l1098,x                                                       ; b89f: 9d 98 10    ...
+    bne cb8ac                                                         ; b8a2: d0 08       ..
+    lda #$df                                                          ; b8a4: a9 df       ..
+    and l10b8,x                                                       ; b8a6: 3d b8 10    =..
+    sta l10b8,x                                                       ; b8a9: 9d b8 10    ...
+; $b8ac referenced 2 times by $b89b, $b8a2
+cb8ac
+    lda #1                                                            ; b8ac: a9 01       ..
+    ora l10b8,x                                                       ; b8ae: 1d b8 10    ...
+    sta l10b8,x                                                       ; b8b1: 9d b8 10    ...
+    lda l1000,y                                                       ; b8b4: b9 00 10    ...
+    pha                                                               ; b8b7: 48          H
+    tya                                                               ; b8b8: 98          .
+    tax                                                               ; b8b9: aa          .
+    pla                                                               ; b8ba: 68          h
+    tay                                                               ; b8bb: a8          .
+    lda l10c8                                                         ; b8bc: ad c8 10    ...
+    clc                                                               ; b8bf: 18          .
+    adc #$11                                                          ; b8c0: 69 11       i.
+    sta l00b3                                                         ; b8c2: 85 b3       ..
+    lda #0                                                            ; b8c4: a9 00       ..
+    sta l00b2                                                         ; b8c6: 85 b2       ..
+    pla                                                               ; b8c8: 68          h
+    sta (l00b2),y                                                     ; b8c9: 91 b2       ..
+; $b8cb referenced 1 time by $b885
+cb8cb
+    jsr sub_cb78b                                                     ; b8cb: 20 8b b7     ..
+    lda #0                                                            ; b8ce: a9 00       ..
+    jsr sub_cb98f                                                     ; b8d0: 20 8f b9     ..
+    pla                                                               ; b8d3: 68          h              ; pull A,X from the stack
+    tax                                                               ; b8d4: aa          .
+    pla                                                               ; b8d5: 68          h
+    ldy l10c9                                                         ; b8d6: ac c9 10    ...
+    rts                                                               ; b8d9: 60          `
 
 ; $b8da referenced 1 time by $b6c3
 sub_cb8da
-    pha                                                               ; b8da: 48          H
+    pha                                                               ; b8da: 48          H              ; push A,X,Y onto the stack
     txa                                                               ; b8db: 8a          .
     pha                                                               ; b8dc: 48          H
     tya                                                               ; b8dd: 98          .
     pha                                                               ; b8de: 48          H
     lda l1030,y                                                       ; b8df: b9 30 10    .0.
     bne cb8f3                                                         ; b8e2: d0 0f       ..
-    pha                                                               ; b8e4: 48          H
+; $b8e4 referenced 1 time by $b895
+sub_cb8e4
+    pha                                                               ; b8e4: 48          H              ; push A,X,Y onto the stack
     txa                                                               ; b8e5: 8a          .
     pha                                                               ; b8e6: 48          H
     tya                                                               ; b8e7: 98          .
@@ -9106,7 +9205,7 @@ cb8f3
     tax                                                               ; b8f6: aa          .
     pla                                                               ; b8f7: 68          h
     tay                                                               ; b8f8: a8          .
-    pha                                                               ; b8f9: 48          H
+    pha                                                               ; b8f9: 48          H              ; push A,X onto the stack
     txa                                                               ; b8fa: 8a          .
     pha                                                               ; b8fb: 48          H
     ldx #0                                                            ; b8fc: a2 00       ..
@@ -9125,18 +9224,18 @@ cb8f3
     lda l10d7                                                         ; b91c: ad d7 10    ...
     jsr sub_cb92b                                                     ; b91f: 20 2b b9     +.
     jsr sub_cb721                                                     ; b922: 20 21 b7     !.
-    pla                                                               ; b925: 68          h
+    pla                                                               ; b925: 68          h              ; pull A,X,Y from the stack
     tay                                                               ; b926: a8          .
     pla                                                               ; b927: 68          h
     tax                                                               ; b928: aa          .
     pla                                                               ; b929: 68          h
     rts                                                               ; b92a: 60          `
 
-; $b92b referenced 1 time by $b91f
+; $b92b referenced 2 times by $b882, $b91f
 sub_cb92b
     sty l0fde                                                         ; b92b: 8c de 0f    ...
     sta l0fdf                                                         ; b92e: 8d df 0f    ...
-    tya                                                               ; b931: 98          .
+    tya                                                               ; b931: 98          .              ; push Y,X onto the stack
     pha                                                               ; b932: 48          H
     txa                                                               ; b933: 8a          .
     pha                                                               ; b934: 48          H
@@ -9178,7 +9277,7 @@ cb974
     lda l1040,x                                                       ; b977: bd 40 10    .@.
     eor #1                                                            ; b97a: 49 01       I.
     sta l1040,x                                                       ; b97c: 9d 40 10    .@.
-    pla                                                               ; b97f: 68          h
+    pla                                                               ; b97f: 68          h              ; pull Y,X from the stack
     tax                                                               ; b980: aa          .
     pla                                                               ; b981: 68          h
     tay                                                               ; b982: a8          .
@@ -9195,7 +9294,7 @@ sub_cb98a
     lda (l009c),y                                                     ; b98c: b1 9c       ..
     rts                                                               ; b98e: 60          `
 
-; $b98f referenced 7 times by $8b6c, $9c0c, $9ccc, $9d1c, $b4ef, $b656, $b6da
+; $b98f referenced 8 times by $8b6c, $9c0c, $9ccc, $9d1c, $b4ef, $b656, $b6da, $b8d0
 sub_cb98f
     ldy #$0a                                                          ; b98f: a0 0a       ..
     sta (l009c),y                                                     ; b991: 91 9c       ..
@@ -9508,7 +9607,7 @@ cbb1a
 ; $bb39 referenced 1 time by $bb2d
 cbb39
     and #$0f                                                          ; bb39: 29 0f       ).
-    pha                                                               ; bb3b: 48          H
+    pha                                                               ; bb3b: 48          H              ; push A,X onto the stack
     txa                                                               ; bb3c: 8a          .
     pha                                                               ; bb3d: 48          H
     ldx #4                                                            ; bb3e: a2 04       ..
@@ -9533,7 +9632,7 @@ loop_cbb43
     bcs cbb64                                                         ; bb53: b0 0f       ..
     dex                                                               ; bb55: ca          .
     bne loop_cbb40                                                    ; bb56: d0 e8       ..
-    pla                                                               ; bb58: 68          h
+    pla                                                               ; bb58: 68          h              ; pull A,X from the stack
     tax                                                               ; bb59: aa          .
     pla                                                               ; bb5a: 68          h
     ldy #0                                                            ; bb5b: a0 00       ..
@@ -10043,10 +10142,10 @@ loop_cbe59
 ; $be62 referenced 1 time by $8a3d
 service_handler_tube_service_calls
     cmp #$fe                                                          ; be62: c9 fe       ..
-    bcc return_36                                                     ; be64: 90 5c       .\
+    bcc return_37                                                     ; be64: 90 5c       .\
     bne cbe83                                                         ; be66: d0 1b       ..
     cpy #0                                                            ; be68: c0 00       ..
-    beq return_36                                                     ; be6a: f0 56       .V
+    beq return_37                                                     ; be6a: f0 56       .V
     ldx #6                                                            ; be6c: a2 06       ..
     lda #osbyte_explode_chars                                         ; be6e: a9 14       ..
     jsr osbyte                                                        ; be70: 20 f4 ff     ..            ; Explode character definition RAM (six extra pages), can redefine all characters 32-255 (X=6)
@@ -10094,7 +10193,7 @@ loop_cbeb8
 cbec0
     lda #0                                                            ; bec0: a9 00       ..
 ; $bec2 referenced 2 times by $be64, $be6a
-return_36
+return_37
     rts                                                               ; bec2: 60          `
 
 ; $bec3 referenced 1 time by $beb8
@@ -10153,7 +10252,7 @@ c0406
     bcs c0428                                                         ; bf10: b0 1a       ..  :040c[1]
     ora #$40 ; '@'                                                    ; bf12: 09 40       .@  :040e[1]
     cmp l0015                                                         ; bf14: c5 15       ..  :0410[1]
-    bne return_37                                                     ; bf16: d0 20       .   :0412[1]
+    bne return_38                                                     ; bf16: d0 20       .   :0412[1]
 ; $bf18 referenced 1 time by $0471[1]
 sub_c0414
     php                                                               ; bf18: 08          .   :0414[1]
@@ -10175,7 +10274,7 @@ c0428
     asl l0014                                                         ; bf2c: 06 14       ..  :0428[1]
     bcs c0432                                                         ; bf2e: b0 06       ..  :042a[1]
     cmp l0015                                                         ; bf30: c5 15       ..  :042c[1]
-    beq return_37                                                     ; bf32: f0 04       ..  :042e[1]
+    beq return_38                                                     ; bf32: f0 04       ..  :042e[1]
     clc                                                               ; bf34: 18          .   :0430[1]
     rts                                                               ; bf35: 60          `   :0431[1]
 
@@ -10183,7 +10282,7 @@ c0428
 c0432
     sta l0015                                                         ; bf36: 85 15       ..  :0432[1]
 ; $bf38 referenced 2 times by $0412[1], $042e[1]
-return_37
+return_38
     rts                                                               ; bf38: 60          `   :0434[1]
 
 ; $bf39 referenced 1 time by $0408[1]
@@ -10690,9 +10789,9 @@ pydis_end
 ;     l00ae:                                   38
 ;     econet_data_continue_frame:              37
 ;     l009a:                                   37
+;     l00b2:                                   36
 ;     print_inline_top_bit_clear:              35
 ;     l00a6:                                   34
-;     l00b2:                                   34
 ;     l00be:                                   34
 ;     econet_control1_or_status1:              32
 ;     l1071:                                   31
@@ -10705,19 +10804,20 @@ pydis_end
 ;     l00a2:                                   23
 ;     l00aa:                                   23
 ;     l00b0:                                   22
+;     l10b8:                                   22
+;     l9491:                                   22
 ;     osasci:                                  22
 ;     l00b8:                                   21
-;     l9491:                                   21
 ;     l00a8:                                   20
 ;     l0101:                                   20
 ;     l06c5:                                   20
-;     l10b8:                                   18
+;     l1030:                                   18
+;     l1060:                                   18
 ;     osnewl:                                  18
 ;     l0e30:                                   17
-;     l1030:                                   17
-;     l1060:                                   17
 ;     l00a5:                                   16
 ;     l00b5:                                   16
+;     l1000:                                   16
 ;     os_text_ptr:                             16
 ;     l00bc:                                   15
 ;     l0d6c:                                   15
@@ -10731,13 +10831,12 @@ pydis_end
 ;     l0d0e:                                   14
 ;     l00bd:                                   13
 ;     l0695:                                   13
-;     l1000:                                   13
+;     l1010:                                   13
+;     l10c8:                                   13
 ;     sub_caf32:                               13
 ;     c8236:                                   12
 ;     c9cc7:                                   12
 ;     l0d61:                                   12
-;     l1010:                                   12
-;     l10c8:                                   12
 ;     la3f0:                                   12
 ;     c88d4:                                   11
 ;     generate_error_inline:                   11
@@ -10747,15 +10846,16 @@ pydis_end
 ;     l0f07:                                   11
 ;     tube_data_register_2:                    11
 ;     c0406:                                   10
+;     l00b3:                                   10
 ;     l0d6a:                                   10
 ;     l0f03:                                   10
 ;     sub_caf04:                               10
 ;     tube_data_register_3:                    10
 ;     tube_status_register_2:                  10
-;     l00b3:                                    9
+;     generate_error_inline3:                   9
 ;     l00c8:                                    9
 ;     l0d2e:                                    9
-;     generate_error_inline3:                   8
+;     l1020:                                    9
 ;     l0000:                                    8
 ;     l0001:                                    8
 ;     l009d:                                    8
@@ -10763,11 +10863,12 @@ pydis_end
 ;     l00af:                                    8
 ;     l0d11:                                    8
 ;     l0d68:                                    8
-;     l1020:                                    8
+;     l10c9:                                    8
 ;     l97b9:                                    8
 ;     romsel_copy:                              8
 ;     sub_cafb5:                                8
 ;     sub_cb799:                                8
+;     sub_cb98f:                                8
 ;     tube_status_1_and_tube_control:           8
 ;     c8776:                                    7
 ;     l0015:                                    7
@@ -10782,10 +10883,8 @@ pydis_end
 ;     l0e01:                                    7
 ;     l0f02:                                    7
 ;     l1040:                                    7
-;     l10c9:                                    7
 ;     sub_cb509:                                7
 ;     sub_cb586:                                7
-;     sub_cb98f:                                7
 ;     c83f5:                                    6
 ;     c9211:                                    6
 ;     c95dd:                                    6
@@ -10801,6 +10900,7 @@ pydis_end
 ;     l0e03:                                    6
 ;     l0e05:                                    6
 ;     l0f08:                                    6
+;     l1098:                                    6
 ;     l10d8:                                    6
 ;     osfind:                                   6
 ;     sta_e09_if_d6c_b7_set:                    6
@@ -10852,6 +10952,7 @@ pydis_end
 ;     l0002:                                    4
 ;     l00b7:                                    4
 ;     l00c1:                                    4
+;     l00ef:                                    4
 ;     l0d2f:                                    4
 ;     l0d3f:                                    4
 ;     l0d43:                                    4
@@ -10861,7 +10962,6 @@ pydis_end
 ;     l0e09:                                    4
 ;     l0e0a:                                    4
 ;     l0f09:                                    4
-;     l1098:                                    4
 ;     l10a8:                                    4
 ;     osword:                                   4
 ;     sub_c8cb9:                                4
@@ -10909,7 +11009,6 @@ pydis_end
 ;     just_rts:                                 3
 ;     l0054:                                    3
 ;     l00a1:                                    3
-;     l00ef:                                    3
 ;     l00fd:                                    3
 ;     l0106:                                    3
 ;     l0355:                                    3
@@ -11058,6 +11157,7 @@ pydis_end
 ;     cb718:                                    2
 ;     cb732:                                    2
 ;     cb735:                                    2
+;     cb8ac:                                    2
 ;     cb9cd:                                    2
 ;     cb9e7:                                    2
 ;     cba33:                                    2
@@ -11077,6 +11177,7 @@ pydis_end
 ;     l0055:                                    2
 ;     l0056:                                    2
 ;     l00ab:                                    2
+;     l0103:                                    2
 ;     l0128:                                    2
 ;     l028d:                                    2
 ;     l04ce:                                    2
@@ -11106,6 +11207,7 @@ pydis_end
 ;     l1072:                                    2
 ;     l1073:                                    2
 ;     l1074:                                    2
+;     l10d7:                                    2
 ;     l10d9:                                    2
 ;     l8d38:                                    2
 ;     l8e54:                                    2
@@ -11122,6 +11224,7 @@ pydis_end
 ;     return_27:                                2
 ;     return_36:                                2
 ;     return_37:                                2
+;     return_38:                                2
 ;     return_5:                                 2
 ;     return_6:                                 2
 ;     return_8:                                 2
@@ -11187,6 +11290,8 @@ pydis_end
 ;     sub_cb5d8:                                2
 ;     sub_cb5fb:                                2
 ;     sub_cb66a:                                2
+;     sub_cb730:                                2
+;     sub_cb92b:                                2
 ;     sub_cb984:                                2
 ;     sub_cb9ff:                                2
 ;     sub_cbadd:                                2
@@ -11501,6 +11606,7 @@ pydis_end
 ;     ca8db:                                    1
 ;     ca935:                                    1
 ;     ca96b:                                    1
+;     ca98c:                                    1
 ;     caa04:                                    1
 ;     caa2e:                                    1
 ;     caa9f:                                    1
@@ -11597,6 +11703,10 @@ pydis_end
 ;     cb788:                                    1
 ;     cb7b6:                                    1
 ;     cb7bc:                                    1
+;     cb87a:                                    1
+;     cb888:                                    1
+;     cb898:                                    1
+;     cb8cb:                                    1
 ;     cb8f3:                                    1
 ;     cb96b:                                    1
 ;     cb974:                                    1
@@ -11655,7 +11765,6 @@ pydis_end
 ;     l00ed:                                    1
 ;     l00f1:                                    1
 ;     l00f7:                                    1
-;     l0103:                                    1
 ;     l0104:                                    1
 ;     l026a:                                    1
 ;     l02a0:                                    1
@@ -11696,7 +11805,6 @@ pydis_end
 ;     l10ce:                                    1
 ;     l10d1:                                    1
 ;     l10d6:                                    1
-;     l10d7:                                    1
 ;     l8001:                                    1
 ;     l8002:                                    1
 ;     l8004:                                    1
@@ -11716,6 +11824,8 @@ pydis_end
 ;     la52a:                                    1
 ;     la841:                                    1
 ;     la84d:                                    1
+;     la99e:                                    1
+;     la9a7:                                    1
 ;     laa3f:                                    1
 ;     laab1:                                    1
 ;     lac80:                                    1
@@ -12037,6 +12147,7 @@ pydis_end
 ;     sub_ca09e:                                1
 ;     sub_ca300:                                1
 ;     sub_ca516:                                1
+;     sub_ca993:                                1
 ;     sub_caa85:                                1
 ;     sub_caa89:                                1
 ;     sub_cace4:                                1
@@ -12050,11 +12161,12 @@ pydis_end
 ;     sub_cb165:                                1
 ;     sub_cb2e0:                                1
 ;     sub_cb449:                                1
+;     sub_cb4ec:                                1
 ;     sub_cb55d:                                1
 ;     sub_cb721:                                1
-;     sub_cb730:                                1
+;     sub_cb78b:                                1
 ;     sub_cb8da:                                1
-;     sub_cb92b:                                1
+;     sub_cb8e4:                                1
 ;     sub_cbb77:                                1
 ;     sub_cbc89:                                1
 ;     sub_cbc8c:                                1
@@ -12481,6 +12593,7 @@ pydis_end
 ;     ca8db
 ;     ca935
 ;     ca96b
+;     ca98c
 ;     ca9fb
 ;     caa04
 ;     caa2e
@@ -12614,6 +12727,11 @@ pydis_end
 ;     cb788
 ;     cb7b6
 ;     cb7bc
+;     cb87a
+;     cb888
+;     cb898
+;     cb8ac
+;     cb8cb
 ;     cb8f3
 ;     cb96b
 ;     cb974
@@ -12933,6 +13051,8 @@ pydis_end
 ;     la52a
 ;     la841
 ;     la84d
+;     la99e
+;     la9a7
 ;     laa3f
 ;     laab1
 ;     lac80
@@ -13214,6 +13334,7 @@ pydis_end
 ;     return_35
 ;     return_36
 ;     return_37
+;     return_38
 ;     return_4
 ;     return_5
 ;     return_6
@@ -13353,6 +13474,7 @@ pydis_end
 ;     sub_ca865
 ;     sub_ca92b
 ;     sub_ca976
+;     sub_ca993
 ;     sub_ca9be
 ;     sub_caa7c
 ;     sub_caa85
@@ -13409,6 +13531,7 @@ pydis_end
 ;     sub_cb46b
 ;     sub_cb47a
 ;     sub_cb485
+;     sub_cb4ec
 ;     sub_cb4f2
 ;     sub_cb509
 ;     sub_cb53d
@@ -13421,8 +13544,10 @@ pydis_end
 ;     sub_cb66a
 ;     sub_cb721
 ;     sub_cb730
+;     sub_cb78b
 ;     sub_cb799
 ;     sub_cb8da
+;     sub_cb8e4
 ;     sub_cb92b
 ;     sub_cb984
 ;     sub_cb98a
@@ -13444,12 +13569,12 @@ pydis_end
 
 ; Stats:
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 13604 bytes (83%)
-;     Data                     = 2780 bytes (17%)
+;     Code                     = 13770 bytes (84%)
+;     Data                     = 2614 bytes (16%)
 ;
-;     Number of instructions   = 6653
-;     Number of data bytes     = 1525 bytes
+;     Number of instructions   = 6739
+;     Number of data bytes     = 1364 bytes
 ;     Number of data words     = 60 bytes
-;     Number of string bytes   = 1195 bytes
-;     Number of strings        = 155
+;     Number of string bytes   = 1190 bytes
+;     Number of strings        = 153
 

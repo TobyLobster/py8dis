@@ -352,7 +352,10 @@ class Cpu(object):
         memory_binary = memorymanager.memory_binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
 
-        # for each pattern
+        # Remember which bytes are auto commented via a regex so we don't comment the same bytes again with a different regex.
+        found_already = [False]*65536
+
+        # for each snippet
         for tup in snippets:
             # Find all matches
             matches = re.finditer(tup[1].pattern, bytes_array)
@@ -360,7 +363,20 @@ class Cpu(object):
 
             for match in matches:
                 binary_addr = match.start()
+                length = match.end() - match.start()
+
+                # Check if any of the bytes are already commented on
+                if any(found_already[binary_addr:binary_addr+length]):
+                    continue
+
                 move_id = movemanager.move_id_for_binary_addr[binary_addr]
                 binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
+
+                # Mark these bytes as True, already commented on
+                found_already[binary_addr:binary_addr+length] = [True]*length
                 helper = SnippetHelper(memory_binary, binary_loc, match, tup[1].labels)
-                tup[0](helper)
+                if isinstance(tup[0], str):
+                    # A string means just add an inline string
+                    disassembly.comment_binary(helper.get_start_loc(), tup[0], align=Align.INLINE, auto_generated=True)
+                else:
+                    tup[0](helper)

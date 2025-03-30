@@ -115,5 +115,7 @@ entry(0xffdd, "osfile")
 entry(0xffec, "oswrcr")
 entry(0xfff1, "osword")
 
+entry(0xff51)
+
 # Use all the information provided to actually disassemble the program.
 go()

@@ -311,3 +311,124 @@ update
 branch
     bne loop | bcc loop
 """)))
+
+snippets.append(("push flags,A,X,Y onto the stack", snippet6502.parse_snippet("""
+    php
+    pha
+    txa
+    pha
+    tya
+    pha
+""")))
+
+snippets.append(("pull flags,A,X,Y from the stack", snippet6502.parse_snippet("""
+    pla
+    tay
+    pla
+    tax
+    pla
+    plp
+""")))
+
+snippets.append(("push A,X,Y onto the stack", snippet6502.parse_snippet("""
+    pha
+    txa
+    pha
+    tya
+    pha
+""")))
+
+snippets.append(("pull A,X,Y from the stack", snippet6502.parse_snippet("""
+    pla
+    tay
+    pla
+    tax
+    pla
+""")))
+
+snippets.append(("push flags,A,Y,X onto the stack", snippet6502.parse_snippet("""
+    php
+    pha
+    tya
+    pha
+    txa
+    pha
+""")))
+
+snippets.append(("pull flags,A,Y,X from the stack", snippet6502.parse_snippet("""
+    pla
+    tax
+    pla
+    tay
+    pla
+    plp
+""")))
+
+snippets.append(("push A,Y,X onto the stack", snippet6502.parse_snippet("""
+    pha
+    tya
+    pha
+    txa
+    pha
+""")))
+
+snippets.append(("pull A,Y,X from the stack", snippet6502.parse_snippet("""
+    pla
+    tax
+    pla
+    tay
+    pla
+""")))
+
+snippets.append(("push X,Y onto the stack", snippet6502.parse_snippet("""
+    txa
+    pha
+    tya
+    pha
+""")))
+
+snippets.append(("pull X,Y from the stack", snippet6502.parse_snippet("""
+    pla
+    tay
+    pla
+    tax
+""")))
+
+snippets.append(("push Y,X onto the stack", snippet6502.parse_snippet("""
+    tya
+    pha
+    txa
+    pha
+""")))
+
+snippets.append(("pull Y,X from the stack", snippet6502.parse_snippet("""
+    pla
+    tax
+    pla
+    tay
+""")))
+
+snippets.append(("push A,X onto the stack", snippet6502.parse_snippet("""
+    pha
+    txa
+    pha
+""")))
+
+snippets.append(("pull A,X from the stack", snippet6502.parse_snippet("""
+    pla
+    tax
+    pla
+""")))
+
+snippets.append(("push A,Y onto the stack", snippet6502.parse_snippet("""
+    pha
+    tya
+    pha
+""")))
+
+snippets.append(("pull A,Y from the stack", snippet6502.parse_snippet("""
+    pla
+    tay
+    pla
+""")))
+
