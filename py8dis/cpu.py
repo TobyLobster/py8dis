@@ -338,7 +338,7 @@ class Cpu(object):
         # For each pattern
         for tup in snippets:
             # Find all matches
-            matches = re.finditer(tup[0].pattern, bytes_array)
+            matches = re.finditer(tup[1].pattern, bytes_array)
 
             for match in matches:
                 # Mark as code
@@ -355,12 +355,12 @@ class Cpu(object):
         # for each pattern
         for tup in snippets:
             # Find all matches
-            matches = re.finditer(tup[0].pattern, bytes_array)
-            #utils.debug("Hello: {0}".format(tup[0].pattern))
+            matches = re.finditer(tup[1].pattern, bytes_array)
+            #utils.debug("Hello: {0}".format(tup[1].pattern))
 
             for match in matches:
                 binary_addr = match.start()
                 move_id = movemanager.move_id_for_binary_addr[binary_addr]
                 binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
-                helper = SnippetHelper(memory_binary, binary_loc, match, tup[0].labels)
-                tup[1](helper)
+                helper = SnippetHelper(memory_binary, binary_loc, match, tup[1].labels)
+                tup[0](helper)

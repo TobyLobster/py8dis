@@ -8,8 +8,6 @@ from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_
 # Opcodes
 OPCODE_LDA_ZP_COMMA_X           = 0xb5      # lda zp,x
 OPCODE_STA_ZP_COMMA_X           = 0x95      # sta zp,x
-#OPCODE_LDA_BRACKETS_ZP_COMMA_Y  = 0xb1      # lda (zp),y
-#OPCODE_STA_BRACKETS_ZP_COMMA_Y  = 0x91      # sta (zp),y
 OPCODE_DEX                      = 0xca      # dex
 OPCODE_BNE                      = 0xd0      # bne loop
 
@@ -156,7 +154,7 @@ def comment_memory_copy_with_limited_end_loop(p):
     disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
 
 # ************************************************************************************************
-snippets.append((snippet6502.parse_snippet("""
+snippets.append((comment_memory_copy_loop, snippet6502.parse_snippet("""
 ; memory copy, using X as the loop counter
 
 comment
@@ -170,10 +168,10 @@ update
     dex
 branch
     bpl loop | bne loop
-"""), comment_memory_copy_loop))
+""")))
 
 
-snippets.append((snippet6502.parse_snippet("""
+snippets.append((comment_memory_copy_loop, snippet6502.parse_snippet("""
 ; memory copy, using Y as the loop counter
 
 comment
@@ -187,10 +185,10 @@ update
     dey
 branch
     bpl loop | bne loop
-"""), comment_memory_copy_loop))
+""")))
 
 
-snippets.append((snippet6502.parse_snippet("""
+snippets.append((comment_memory_copy_with_limited_end_loop, snippet6502.parse_snippet("""
 ; memory copy with final counter check, using Y as the loop counter
 
 comment
@@ -205,9 +203,10 @@ update
     cpy #end_count
 branch
     bcs loop
-"""), comment_memory_copy_with_limited_end_loop))
+""")))
 
-snippets.append((snippet6502.parse_snippet("""
+
+snippets.append((comment_memory_copy_with_limited_end_loop, snippet6502.parse_snippet("""
 ; memory copy with final counter check, using X as the loop counter
 
 comment
@@ -222,4 +221,4 @@ update
     cpx #end_count
 branch
     bcs loop
-"""), comment_memory_copy_with_limited_end_loop))
+""")))
