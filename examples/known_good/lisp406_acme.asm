@@ -3778,7 +3778,7 @@ GETCHA
     jmp POST                                       ; 9611: 4c 29 96    L).
 
 GETDIR
-    jsr osrdch                                     ; 9614: 20 e0 ff     ..            ; Grab a char; Read a character from the current input stream
+    jsr osrdch                                     ; 9614: 20 e0 ff     ..            ; Read a character from the current input stream
     bcc POST                                       ; 9617: 90 10       ..
     brk                                            ; 9619: 00          .
 
@@ -4026,7 +4026,7 @@ MODCHN
     pha                                            ; 979e: 48          H
     tax                                            ; 979f: aa          .              ; X=MODE number
     lda #osbyte_read_himem_for_mode                ; 97a0: a9 85       ..
-    jsr osbyte                                     ; 97a2: 20 f4 ff     ..            ; Get new aretop; Read top of user memory for a given screen mode X
+    jsr osbyte                                     ; 97a2: 20 f4 ff     ..            ; Read top of user memory for a given screen mode X
     cpy AREVAL+1                                   ; 97a5: cc 2e 04    ...            ; Room for OBLIST?; X and Y contain the address (low, high)
     bcc MODERR                                     ; 97a8: 90 07       ..
     bne CHARE                                      ; 97aa: d0 19       ..
@@ -4248,7 +4248,7 @@ TIMER
     lda #osword_read_clock                         ; 98e0: a9 01       ..
     ldx #<TIMEW                                    ; 98e2: a2 25       .%
     ldy #>TIMEW                                    ; 98e4: a0 04       ..
-    jsr osword                                     ; 98e6: 20 f1 ff     ..            ; Read the clock; Read system clock
+    jsr osword                                     ; 98e6: 20 f1 ff     ..            ; Read system clock
     ldx #<TIMEW                                    ; 98e9: a2 25       .%             ; Restore pointer
     ldy #>TIMEW                                    ; 98eb: a0 04       ..
     rts                                            ; 98ed: 60          `
@@ -5044,7 +5044,7 @@ NOMESC
     lda #osword_read_interval_timer                ; 9dcc: a9 03       ..
     ldx #<TIMEW                                    ; 9dce: a2 25       .%
     ldy #>TIMEW                                    ; 9dd0: a0 04       ..
-    jsr osword                                     ; 9dd2: 20 f1 ff     ..            ; Read timer; Read interval timer
+    jsr osword                                     ; 9dd2: 20 f1 ff     ..            ; Read interval timer
     clc                                            ; 9dd5: 18          .
     ldy #0                                         ; 9dd6: a0 00       ..
     ldx #5                                         ; 9dd8: a2 05       ..

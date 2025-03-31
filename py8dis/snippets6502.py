@@ -210,6 +210,58 @@ def comment_memory_copy_increment(p):
     disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
 
 # ************************************************************************************************
+def comment_add_to_y(p):
+    disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=1, align=Align.INLINE)
+
+# ************************************************************************************************
+def comment_set_memory_r_loop(p, reg):
+    # Make sure the branch instruction's operand jumps to the definition of the label as expected
+    if not p.check_branch_matches('loop'):
+        return
+
+    comment_loc         = p.get_start_loc()
+    is_stop_at_zero     = p.get_memory('branch') == OPCODE_BNE      # BNE or BPL
+    state               = p.get_state('comment')
+    is_store_indirect   = p.get_memory('zp')   # This is treated as a flag, being None if 'zp' isn't found
+    bytes_to_set        = state[reg].value if state and state[reg] else None
+    offset              = 1 if is_stop_at_zero else 0
+    dest_label          = ""
+    to_value_string     = ""
+
+    if bytes_to_set != None:
+        to_value_string = " to {0}".format(bytes_to_set)
+
+    if not is_store_indirect:
+        dest_label = p.get_expr('addr', label_offset=0, final_offset=offset)
+
+        if offset:
+            dest_binary_addr = p.get_binary_address('loop')+1
+            proposed_expression = make_subtract(dest_label, offset)
+            new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
+            if new_expression != proposed_expression:
+                dest_label = make_add(new_expression, 1)
+        dest_label = utils.LazyString(" at %s", dest_label)
+
+    def late_formatter():
+        if bytes_to_set != None:
+            bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
+        else:
+            bytes_to_set_string = " some bytes of memory"
+        return "This loop sets{0}{1}{2}".format(bytes_to_set_string, dest_label, to_value_string)
+
+    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+
+# ************************************************************************************************
+def comment_set_memory_x_loop(p):
+    comment_set_memory_r_loop(p, 'x')
+
+# ************************************************************************************************
+def comment_set_memory_y_loop(p):
+    comment_set_memory_r_loop(p, 'y')
+
+# ************************************************************************************************
+# ************************************************************************************************
+# ************************************************************************************************
 snippets.append((comment_memory_copy_loop, snippet6502.parse_snippet("""
 ; memory copy, using X as the loop counter
 
@@ -432,3 +484,27 @@ snippets.append(("pull A,Y from the stack", snippet6502.parse_snippet("""
     pla
 """)))
 
+snippets.append((comment_add_to_y, snippet6502.parse_snippet("""
+    tya
+    clc
+    adc #nn
+    tay
+""")))
+
+snippets.append((comment_set_memory_x_loop, snippet6502.parse_snippet("""
+loop
+    sta addr,y | sta (zp),y
+    iny
+    dex
+branch
+    bne loop | bpl loop
+""")))
+
+snippets.append((comment_set_memory_y_loop, snippet6502.parse_snippet("""
+loop
+    sta addr,x | sta (zp),x
+    inx
+    dey
+branch
+    bne loop | bpl loop
+""")))

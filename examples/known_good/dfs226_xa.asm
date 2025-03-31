@@ -233,6 +233,7 @@ l10e2                                           = $10e2
 l10e3                                           = $10e3
 l10e4                                           = $10e4
 l1100                                           = $1100
+l1101                                           = $1101
 l1109                                           = $1109
 l110b                                           = $110b
 l110c                                           = $110c
@@ -3761,7 +3762,7 @@ sub_c93c5
     tay                                                               // 93c5: a8          .
     lda (l00b2),y                                                     // 93c6: b1 b2       ..
     tax                                                               // 93c8: aa          .
-    tya                                                               // 93c9: 98          .
+    tya                                                               // 93c9: 98          .                  // add 18 to Y
     clc                                                               // 93ca: 18          .
     adc #$12                                                          // 93cb: 69 12       i.
     tay                                                               // 93cd: a8          .
@@ -5212,7 +5213,8 @@ loop_c9c90
     lda #0                                                            // 9ca6: a9 00       ..
 // $9ca8 referenced 1 time by $9cad
 loop_c9ca8
-    sta l1100,y                                                       // 9ca8: 99 00 11    ...
+    // This loop sets some bytes of memory at l1101
+    sta l1101 - 1,y                                                   // 9ca8: 99 00 11    ...
     iny                                                               // 9cab: c8          .
     dex                                                               // 9cac: ca          .
     bne loop_c9ca8                                                    // 9cad: d0 f9       ..
@@ -12999,6 +13001,7 @@ pydis_end
 //     l10e3
 //     l10e4
 //     l1100
+//     l1101
 //     l1109
 //     l110b
 //     l110c

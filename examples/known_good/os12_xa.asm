@@ -3278,7 +3278,7 @@ ccfee
     ora l00d2                                                         // cff9: 05 d2       ..
     eor l00d3                                                         // cffb: 45 d3       E.
     sta (l00d8),y                                                     // cffd: 91 d8       ..
-    tya                                                               // cfff: 98          .
+    tya                                                               // cfff: 98          .                  // add 8 to Y
     clc                                                               // d000: 18          .
     adc #8                                                            // d001: 69 08       i.
     tay                                                               // d003: a8          .

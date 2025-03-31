@@ -233,6 +233,7 @@ l10e2                                           = $10e2
 l10e3                                           = $10e3
 l10e4                                           = $10e4
 l1100                                           = $1100
+l1101                                           = $1101
 l1109                                           = $1109
 l110b                                           = $110b
 l110c                                           = $110c
@@ -3772,7 +3773,7 @@ sub_c93c5
     tay                                                               ; 33c5: a8          .   :93c5[1]
     lda (l00b2),y                                                     ; 33c6: b1 b2       ..  :93c6[1]
     tax                                                               ; 33c8: aa          .   :93c8[1]
-    tya                                                               ; 33c9: 98          .   :93c9[1]
+    tya                                                               ; 33c9: 98          .   :93c9[1]       ; add 18 to Y
     clc                                                               ; 33ca: 18          .   :93ca[1]
     adc #$12                                                          ; 33cb: 69 12       i.  :93cb[1]
     tay                                                               ; 33cd: a8          .   :93cd[1]
@@ -5223,7 +5224,8 @@ loop_c9c90
     lda #0                                                            ; 3ca6: a9 00       ..  :9ca6[1]
 ; $3ca8 referenced 1 time by $9cad[1]
 loop_c9ca8
-    sta l1100,y                                                       ; 3ca8: 99 00 11    ... :9ca8[1]
+    ; This loop sets some bytes of memory at l1101
+    sta l1101 - 1,y                                                   ; 3ca8: 99 00 11    ... :9ca8[1]
     iny                                                               ; 3cab: c8          .   :9cab[1]
     dex                                                               ; 3cac: ca          .   :9cac[1]
     bne loop_c9ca8                                                    ; 3cad: d0 f9       ..  :9cad[1]
@@ -11062,6 +11064,9 @@ pydis_end
 !if (l00bc - 8) != $b4 {
     !error "Assertion failed: l00bc - 8 == $b4"
 }
+!if (l1101 - 1) != $1100 {
+    !error "Assertion failed: l1101 - 1 == $1100"
+}
 !if (nmi3_handler_rom_end-nmi3_handler_rom_start) != $0e {
     !error "Assertion failed: nmi3_handler_rom_end-nmi3_handler_rom_start == $0e"
 }
@@ -13395,6 +13400,7 @@ pydis_end
 ;     l10e3
 ;     l10e4
 ;     l1100
+;     l1101
 ;     l1109
 ;     l110b
 ;     l110c

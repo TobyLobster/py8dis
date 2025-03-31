@@ -1391,7 +1391,7 @@ morebitsleft
     lsr pixelvalue                                                    // 194b: 46 82       F.
     dec columncounter                                                 // 194d: c6 81       ..
     bne plotpixelloop                                                 // 194f: d0 da       ..
-    tya                                                               // 1951: 98          .
+    tya                                                               // 1951: 98          .                  // add 8 to Y
     clc                                                               // 1952: 18          .
     adc #8                                                            // 1953: 69 08       i.
     tay                                                               // 1955: a8          .
@@ -4388,6 +4388,7 @@ resetplayerscores
     ldy #7                                                            // 2c19: a0 07       ..
     lda #0                                                            // 2c1b: a9 00       ..
 resetplayerscores2
+    // This loop sets some bytes of memory at playerscore
     sta playerscore,x                                                 // 2c1d: 9d 00 05    ...
     inx                                                               // 2c20: e8          .
     dey                                                               // 2c21: 88          .

@@ -92,16 +92,8 @@ for i in range(8):
     lab = get_label(code_at, addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
     expr(addr, make_lo(make_subtract(lab, 1)))
 
-nonentry(0xa17c) # preceding BNE is always taken
-nonentry(0xaefb) # preceding BNE is always taken
 
 #entry((0x421-0x400)+0xbf04, "copied_to_421")
-
-entry(0x89a7)
-entry(0x89b5)
-
-entry(0xbfd2)
-entry(0xbf95)
 
 # This subroutine prints non-top-bit-set characters following it, then continues
 # execution at the first top-bit-set byte following it.
@@ -123,21 +115,19 @@ def stringz_block(pc, n):
     for i in range(n):
         pc = stringz(pc)
 
-entry(0x810d)
-entry(0x8244)
-entry(0x82a1)
-entry(0x8326)
-
 entry(0x80db)
+entry(0x810d)
+nonentry(0xa17c) # preceding BNE is always taken
 entry(0x81dd)
 entry(0x81e7)
 entry(0x81fb)
+entry(0x8244)
+entry(0x82a1)
+entry(0x8326)
 entry(0x8396)
 entry(0x8490)
 entry(0x84ae)
 entry(0x84b9)
-entry(0xb4ec)
-
 entry(0x8543)
 entry(0x86ea)
 entry(0x8710)
@@ -149,17 +139,31 @@ entry(0x87e6)
 entry(0x8837)
 entry(0x8884)
 entry(0x8898)
-entry(0x9bbe)
-entry(0x9e2f)
-label(0x8e59, "print")
-expr(0xb01c, make_subtract("print", make_hex(0xf8)))
+entry(0x89a7)
+entry(0x89b5)
 string(0x8d61)
 no_automatic_comment(0x8d61)
+label(0x8e59, "print")
+nonentry(0xaefb) # preceding BNE is always taken
 entry(0x9935)
+entry(0x9bbe)
+entry(0x9e2f)
+entry(0xa6e8)
+entry(0xa707)
+entry(0xa728)
+entry(0xa72e)
+entry(0xa734)
+entry(0xa744)
+entry(0xa7e4)
+entry(0xa7ed)
+entry(0xa802)
+entry(0xa81a)
+entry(0xa825)
 entry(0xa8c5)
-entry(0xaaed)
-entry(0xbec3)
 entry(0xa9e2)
+entry(0xaaed)
+expr(0xb01c, make_subtract("print", make_hex(0xf8)))
+entry(0xb4ec)
 entry(0xbcb3)
 entry(0xbcc1)
 entry(0xbccb)
@@ -178,5 +182,7 @@ entry(0xbe3b)
 entry(0xbe59)
 entry(0xbe62)
 entry(0xbec3)
+entry(0xbf95)
+entry(0xbfd2)
 
 go()

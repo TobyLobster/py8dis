@@ -912,7 +912,7 @@ MAPCON  95B4+8
 OLDMAP  95C9+8
 ; **** GETCHAR
 GETCHA  95FD+8  ; File arg?
-GETDIR  960C+8  ; Grab a char
+GETDIR  960C+8
 ; **** CHARACTER
 ASCII   961A+8
 POST    9621+8  ; Finds char atom
@@ -956,7 +956,7 @@ MODCHN  9783+8
         9788+8  ; Clear flag bit
         978E+8  ; M/c HO addr.
         9793+8  ; In 2nd processor?
-        979A+8  ; Get new aretop
+        979A+8
         979D+8  ; Room for OBLIST?
 MODERR  97A9+8  ; No room
 CHARE   97BD+8  ; New ARETOP
@@ -1017,7 +1017,7 @@ GCTIMZ  98ce+8
 MGCTIM  98D2+8
 ; **** Read the clock
 TIMER   98D8+8
-        98DE+8  ; Read the clock
+        98DE+8  ;
         98E1+8  ; Restore pointer
 ; **** TIME
 TIME    98E6+8
@@ -1191,7 +1191,7 @@ CLUPB   9d77+8
         9dbe+8  ; ' Bytes free<CR>'
         9dc2+8  ; Restore file handle
 NOMESC  9dc4+8
-        9dca+8  ; Read timer
+        9dca+8
 MORTIM  9dd2+8
 AJCELL  9ded+8
         9df8+8  ; Bottom of top block
@@ -2125,44 +2125,6 @@ expr(0x916c, "RELBS")
 expr(0x9172, "RELBS")
 expr(0x80af, "RAMBS")
 expr(0x80b3, "RAMBS+1")
-
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-#expr(0x, "")
-
-# Calculated expressions put at the end of the assembly so they resolve on the first pass
-# which makes the asserts following them work.
-# end_addr = 0xa538
-# annotate(end_addr, "HIWARM = WRMCHK + HILISP - LISVAL")
-# annotate(end_addr, "EVOFF  = TEXT-TEXT")
-# annotate(end_addr, "VALOFF = VALTXT-TEXT")
-# annotate(end_addr, "NILOFF = NILTXT-TEXT")
-# annotate(end_addr, "DOTOFF = DOTTXT-TEXT")
-# annotate(end_addr, "INSOFF = INSTXT-TEXT")
-# annotate(end_addr, "GCOFF  = GCTXT-TEXT")
-# annotate(end_addr, "COLOFF = COLTXT-TEXT")
-# annotate(end_addr, "FROFF  = FRTXT-TEXT")
-# annotate(end_addr, "SUBOFF = SUBTXT-TEXT")
-# annotate(end_addr, "ERROFF = ERRTXT-TEXT")
-# annotate(end_addr, "ARGOFF = ARGTXT-TEXT")
-# annotate(end_addr, "WRMOFF = WRMTXT-TEXT")
-# annotate(end_addr, "HLPOFF = HLPTXT-TEXT")
 
 blank(0xb800)
 comment(0xb800, "relocation table (entries point to high bytes of addresses)")
