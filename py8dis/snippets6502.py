@@ -33,7 +33,7 @@ def comment_memory_copy_loop(p):
     dest_label          = ""
     reg                 = 'x' if p.get_memory('update') == OPCODE_DEX else 'y'
     state               = p.get_state('comment')
-    bytes_to_copy       = state[reg].value if state and state[reg] else None
+    bytes_to_copy       = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
     if bytes_to_copy == None:
         bytes_to_copy = p.get_memory("start_count")
         assert bytes_to_copy == None        # DEBUG!
@@ -112,7 +112,7 @@ def comment_memory_copy_with_limited_end_loop(p):
     dest_label          = ""
     reg                 = 'x' if p.get_memory('update') == OPCODE_DEX else 'y'
     state               = p.get_state('comment')
-    start_count         = state[reg].value if state and state[reg] else None
+    start_count         = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
     if start_count == None:
         start_count = p.get_memory("start_count")
     bytes_to_copy       = start_count - end_count + 1  if start_count else None
@@ -172,7 +172,7 @@ def comment_memory_copy_increment(p):
     dest_label          = ""
     reg                 = 'x' if p.get_memory('update') == OPCODE_INX else 'y'
     state               = p.get_state('comment')
-    start_count         = state[reg].value if state and state[reg] else None
+    start_count         = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
     if start_count == None:
         start_count = p.get_memory("start_count")
         if start_count == None:
@@ -223,7 +223,7 @@ def comment_set_memory_r_loop(p, reg):
     is_stop_at_zero     = p.get_memory('branch') == OPCODE_BNE      # BNE or BPL
     state               = p.get_state('comment')
     is_store_indirect   = p.get_memory('zp')   # This is treated as a flag, being None if 'zp' isn't found
-    bytes_to_set        = state[reg].value if state and state[reg] else None
+    bytes_to_set        = state.optimistic[reg].value if state and state.optimistic[reg] else None
     offset              = 1 if is_stop_at_zero else 0
     dest_label          = ""
     to_value_string     = ""

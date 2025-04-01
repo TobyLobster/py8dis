@@ -130,7 +130,8 @@ class Cpu65C02(Cpu6502):
             return [None]
 
     def update_clear_z(self, binary_addr, state):
-        state['z'] = None
+        state.optimistic['z'] = None
+        state.pessimistic['z'] = None
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
         c = classification.get_classification(binary_addr)

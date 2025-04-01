@@ -449,7 +449,7 @@ class Cpu6502(cpu.Cpu):
 
         # Look for where we set up registers before the subroutine call
         for reg in ('a', 'x', 'y'):
-            reg_addr = state.get_previous_adjust_optimistic(reg)
+            reg_addr = state.optimistic[reg].previous_adjust
             if reg_addr is not None:
                 if reg in subroutine.on_entry:
                     disassembly.comment_binary(reg_addr, reg.upper() + "=" + subroutine.on_entry[reg], align=Align.INLINE, word_wrap=False, auto_generated=True)
@@ -522,28 +522,31 @@ class Cpu6502(cpu.Cpu):
 
             ...and similarly for the X and Y registers.
             """
+            binary_addr = BinaryAddr(binary_addr)
             state.always_branch = False
             for reg in ('a','x','y'):
                 c = self.reg_changes[reg]
                 if c == 'O' or c == 'T':
-                    state[reg].value                          = None        # Current value, if known
-                    state[reg].optimistic.previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].optimistic.previous_load       = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].optimistic.previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
+                    state.optimistic[reg].value               = None        # Current value, if known
+                    state.optimistic[reg].previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state.optimistic[reg].previous_load       = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state.optimistic[reg].previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
 
-                    state[reg].pessimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].pessimistic.previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].pessimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
+                    state.pessimistic[reg].value              = None        # Current value, if known
+                    state.pessimistic[reg].previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state.pessimistic[reg].previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state.pessimistic[reg].previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
                 if c == 'A':
-                    state[reg].optimistic.previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].optimistic.previous_load       = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].optimistic.previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
+                    state.optimistic[reg].previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state.optimistic[reg].previous_load       = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state.optimistic[reg].previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
 
-                    state[reg].pessimistic.previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state[reg].pessimistic.previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state[reg].pessimistic.previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
+                    state.pessimistic[reg].previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
+                    state.pessimistic[reg].previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                    state.pessimistic[reg].previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
                 if c == 'U':
-                    state[reg].pessimistic.previous_use       = binary_addr # The address of the previous use of the register if present
+                    state.optimistic[reg].previous_use        = binary_addr # The address of the previous use of the register if present
+                    state.pessimistic[reg].previous_use       = binary_addr # The address of the previous use of the register if present
 
         def clear_pessimistic_state_if_label_here(self, binary_addr, state):
             # if there's a label at this address, then we lose all known (pessimistic) state.
@@ -554,7 +557,7 @@ class Cpu6502(cpu.Cpu):
                     state.clear(pessimistic_only=True)
 
         def update_cpu_state(self, binary_addr, state):
-            # if there's a label at this address, then we lose all known (pessimistic) state.
+            # if there's a label at this address, then we lose all known pessimistic state.
             # This is because somewhere will be jumping to the label with unknown state.
             self.clear_pessimistic_state_if_label_here(binary_addr, state)
 
@@ -920,28 +923,28 @@ class Cpu6502(cpu.Cpu):
             return True
 
         def update_cpu_state(self, binary_addr, state):
-            # if there's a label at this address, then we lose all known (pessimistic) state.
+            # if there's a label at this address, then we lose all known pessimistic state.
             # This is because somewhere will be jumping to the label with unknown state.
             self.clear_pessimistic_state_if_label_here(binary_addr, state)
 
             # Work out if ALWAYS branch is appropriate
             always_branch = False
             # if the state of the flag is known and will cause the instruction to branch, then 'ALWAYS branch' is output
-            if self.mnemonic.upper() == "BCC" and state['c'] == False:
+            if self.mnemonic.upper() == "BCC" and state.pessimistic['c'] == False:
                 always_branch = True
-            elif self.mnemonic.upper() == "BCS" and state['c'] == True:
+            elif self.mnemonic.upper() == "BCS" and state.pessimistic['c'] == True:
                 always_branch = True
-            elif self.mnemonic.upper() == "BVC" and state['v'] == False:
+            elif self.mnemonic.upper() == "BVC" and state.pessimistic['v'] == False:
                 always_branch = True
-            elif self.mnemonic.upper() == "BVS" and state['v'] == True:
+            elif self.mnemonic.upper() == "BVS" and state.pessimistic['v'] == True:
                 always_branch = True
-            elif self.mnemonic.upper() == "BNE" and state['z'] == False:
+            elif self.mnemonic.upper() == "BNE" and state.pessimistic['z'] == False:
                 always_branch = True
-            elif self.mnemonic.upper() == "BEQ" and state['z'] == True:
+            elif self.mnemonic.upper() == "BEQ" and state.pessimistic['z'] == True:
                 always_branch = True
-            elif self.mnemonic.upper() == "BPL" and state['n'] == False:
+            elif self.mnemonic.upper() == "BPL" and state.pessimistic['n'] == False:
                 always_branch = True
-            elif self.mnemonic.upper() == "BMI" and state['n'] == True:
+            elif self.mnemonic.upper() == "BMI" and state.pessimistic['n'] == True:
                 always_branch = True
 
             if always_branch:
@@ -961,22 +964,21 @@ class Cpu6502(cpu.Cpu):
             return utils.LazyString("%s%s %s", utils.make_indent(1), utils.force_case(self.mnemonic), label)
 
 
-    class RegStateTrackingType(object):
+    class RegState(object):
         def __init__(self):
+            self.clear()
+
+        def clear(self):
+            self.value              = None      # Current value, if known
             self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
             self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
             self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
             self.previous_use       = None      # The address of the previous 'read only use of a register' instruction if present
 
-    class RegState(object):
-        def __init__(self):
-            self.clear(pessimistic_only=False)
-
-        def clear(self, *, pessimistic_only):
-            self.value              = None      # Current value, if known
-            if not pessimistic_only:
-                self.optimistic     = Cpu6502.RegStateTrackingType()
-            self.pessimistic        = Cpu6502.RegStateTrackingType()
+        def get_previous_load_imm_operand(self):
+            if self.previous_load_imm != None:
+                return self.previous_load_imm+1
+            return None
 
         def __repl__(self):
             return "value: {0}".format(self.value)
@@ -984,7 +986,7 @@ class Cpu6502(cpu.Cpu):
         def __str__(self):
             return self.__repl__()
 
-    class CpuState(object):
+    class CpuStateDisposition(object):
         def __init__(self):
             self._d = {
                 # For A/X/Y, value is RegState.
@@ -999,21 +1001,17 @@ class Cpu6502(cpu.Cpu):
                 "z": None,
                 "c": None,
             }
-            self.next_instruction = None
-            self.always_branch = False
 
-        def clear(self, *, pessimistic_only):
-            self._d["a"].clear(pessimistic_only=pessimistic_only)
-            self._d["x"].clear(pessimistic_only=pessimistic_only)
-            self._d["y"].clear(pessimistic_only=pessimistic_only)
+        def clear(self):
+            self._d["a"].clear()
+            self._d["x"].clear()
+            self._d["y"].clear()
             self._d["n"] = None
             self._d["v"] = None
             self._d["d"] = None
             self._d["i"] = None
             self._d["z"] = None
             self._d["c"] = None
-            self.next_instruction = None
-            self.always_branch = False
 
         def __getitem__(self, key):
             assert key in "axynvdizc"
@@ -1029,17 +1027,178 @@ class Cpu6502(cpu.Cpu):
                 assert item is None or utils.is_integer_type(item)
             self._d[key] = item
 
+        def update_clear_nz(self, binary_addr):
+            self._d['n'] = None
+            self._d['z'] = None
+
+        def update_clear_nza(self, binary_addr):
+            self._d['n'] = None
+            self._d['z'] = None
+            self._d['a'].value = None
+
+        def update_clear_nzc(self, binary_addr):
+            assert binary_addr is not None
+            self._d['n'] = None
+            self._d['z'] = None
+            self._d['c'] = None
+
+        def update_clear_nzca(self, binary_addr):
+            self._d['n'] = None
+            self._d['z'] = None
+            self._d['c'] = None
+            self._d['a'].value = None
+
+        def update_bit(self, binary_addr):
+            assert binary_addr is not None
+            self._d['n'] = None
+            self._d['v'] = None
+            self._d['z'] = None
+
+        def update_adc_sbc(self, binary_addr):
+            assert binary_addr is not None
+            self._d['a'].value = None
+            self._d['n'] = None
+            self._d['v'] = None
+            self._d['z'] = None
+            self._d['c'] = None
+
+        def update_all_flags(self, binary_addr):
+            assert binary_addr is not None
+            self._d['n'] = None
+            self._d['v'] = None
+            self._d['d'] = None
+            self._d['i'] = None
+            self._d['z'] = None
+            self._d['c'] = None
+
+        def update_AND_immediate(self, binary_addr):
+            assert binary_addr is not None
+            v = memory_binary[binary_addr+1]
+            if self._d['a'].value != None:
+                # Value of A is known, so calculate new value of A
+                v = self._d['a'].value & v
+                self._d['a'].value = v
+
+                # Update the flags based on new value of A
+                self._d['n'] = ((v & 0x80) == 0x80)
+                self._d['z'] = (v == 0)
+            elif v < 0xff:
+                if v == 0:
+                    # AND #0 sets the Z flag, and A=0
+                    self._d['z'] = 1
+                    self._d['a'].value = 0
+                else:
+                    # AND with value $01-$fe leaves the Z flag unknown
+                    self._d['z'] = None
+
+                # AND with value $00-$7f leaves the N flag clear
+                if v < 0x80:
+                    self._d['n'] = 0
+
+        def update_ORA_immediate(self, binary_addr):
+            assert binary_addr is not None
+            v = memory_binary[binary_addr+1]
+            if self._d['a'].value != None:
+                # Value of A is known, so calculate new value of A
+                v = self._d['a'].value | v
+                self._d['a'].value = v
+
+                # Update the flags based on new value of A
+                self._d['n'] = ((v & 0x80) == 0x80)
+                self._d['z'] = (v == 0)
+            elif v > 0:
+                # ORA with non-zero value means Z is clear
+                self._d['z'] = 0
+                if v >= 0x80:
+                    # ORA with a value $80-$ff, so set N flag
+                    self._d['n'] = 1
+
+        def decrement(self, addr, reg):
+            v = self[reg].value
+            if v is not None:
+                v -= 1
+                if v == -1:
+                    v = 0xff
+                self[reg].value = v
+                self['n'] = ((v & 0x80) == 0x80)
+                self['z'] = (v == 0)
+
+                # Now we have a new value for the register, the address where we previously
+                # loaded the current value no longer valid
+                self[reg].previous_load_imm = None
+                self[reg].previous_load     = None
+                self[reg].previous_adjust   = BinaryAddr(addr)
+            else:
+                self.update_clear_nz(addr)
+
+        def increment(self, addr, reg):
+            v = self[reg].value
+            if v is not None:
+                v += 1
+                if v == 0x100:
+                    v = 0
+                self[reg].value = v
+                self['n'] = ((v & 0x80) == 0x80)
+                self['z'] = (v == 0)
+
+                self[reg].previous_load_imm    = None
+                self[reg].previous_load        = None
+                self[reg].previous_adjust      = BinaryAddr(addr)
+            else:
+                self.update_clear_nz(addr)
+
+        def load_immediate(self, addr, reg, v):
+            # Move to operand
+            addr = BinaryAddr(addr)
+
+            self[reg].value = v
+            self['n'] = ((v & 0x80) == 0x80)
+            self['z'] = (v == 0)
+            self[reg].previous_load_imm = addr
+            self[reg].previous_load     = addr
+            self[reg].previous_adjust   = addr
+
+
+        def transfer(self, addr, src_reg, dest_reg):
+            addr = BinaryAddr(addr)
+            self[dest_reg].value = self[src_reg].value
+
+            # If we have a load address, keep it. This allows
+            # the code (e.g. from basic4) to understand X and Y form an
+            # address <const> here:
+            #
+            #    lda #<const>
+            #    tay
+            #    ldx #<const>
+            #    jsr OSWORD
+            #
+            self[dest_reg].previous_load_imm = self[src_reg].previous_load_imm
+            self[dest_reg].previous_load = addr
+            self[dest_reg].previous_adjust = addr
+
+            v = self[dest_reg].value
+            if v is not None:
+                self['n'] = ((v & 0x80) == 0x80)
+                self['z'] = (v == 0)
+            else:
+                self['n'] = None
+                self['z'] = None
+
+        def update_transfer(self, addr, flag, flag_state):
+            if self[flag] == None:
+                self[flag] = flag_state
+
         def show(self):
             s = ""
             def reg(r):
-                v = self[r].value
+                v = self._d[r].value
                 if v is None:
                     return "--"
                 return utils.plainhex2(v)
             s += "A:%s X:%s Y:%s" % (reg('a'), reg('x'), reg('y'))
 
             def flag(name):
-                b = self[name]
+                b = self._d[name]
                 if b is None:
                     return "-"
                 return name.upper() if b else name.lower()
@@ -1051,151 +1210,49 @@ class Cpu6502(cpu.Cpu):
         def __str__(self):
             return self.__repl__()
 
-        def get_previous_load_imm_optimistic(self, reg):
-            v = self[reg].optimistic.previous_load_imm
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v + 1)
+    class CpuState(object):
+        def __init__(self):
+            self.optimistic  = Cpu6502.CpuStateDisposition()
+            self.pessimistic = Cpu6502.CpuStateDisposition()
+            self.always_branch = False
+            self.next_instruction = None
 
-        def get_previous_load_optimistic(self, reg):
-            v = self[reg].optimistic.previous_load
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v)
-
-        def get_previous_adjust_optimistic(self, reg):
-            v = self[reg].optimistic.previous_adjust
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v)
-
-        def get_previous_use_optimistic(self, reg):
-            v = self[reg].optimistic.previous_use
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v)
-
-        def get_previous_load_imm_pessimistic(self, reg):
-            v = self[reg].pessimistic.previous_load_imm
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v + 1)
-
-        def get_previous_load_pessimistic(self, reg):
-            v = self[reg].pessimistic.previous_load
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v)
-
-        def get_previous_adjust_pessimistic(self, reg):
-            v = self[reg].pessimistic.previous_adjust
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v)
-
-        def get_previous_use_pessimistic(self, reg):
-            v = self[reg].pessimistic.previous_use
-            if not v:
-                return None
-            return memorymanager.BinaryAddr(v)
-
+        def clear(self, *, pessimistic_only):
+            self.pessimistic.clear()
+            self.always_branch = False
+            self.next_instruction = None
+            if not pessimistic_only:
+                self.optimistic.clear()
 
     def make_update_flag(self, flag, b):
         def update_flag(addr, state):
-            state[flag] = b
+            state.optimistic[flag] = b
+            state.pessimistic[flag] = b
         return update_flag
 
     def make_decrement(self, reg):
         def decrement(addr, state):
-            v = state[reg].value
-            if v is not None:
-                v -= 1
-                if v == -1:
-                    v = 0xff
-                state[reg].value = v
-
-                # Now we have a new value for the register, the address where we previously
-                # loaded the current value no longer valid
-                state[reg].pessimistic.previous_load_imm = None
-                state[reg].pessimistic.previous_load     = None
-                state[reg].pessimistic.previous_adjust   = addr
-
-                state[reg].optimistic.previous_load_imm  = None
-                state[reg].optimistic.previous_load      = None
-                state[reg].optimistic.previous_adjust    = addr
-
-                state['n'] = ((v & 0x80) == 0x80)
-                state['z'] = (v == 0)
-            else:
-                self.update_clear_nz(addr, state)
+            state.pessimistic.decrement(addr, reg)
+            state.optimistic.decrement(addr, reg)
         return decrement
 
     def make_increment(self, reg):
         def increment(addr, state):
-            v = state[reg].value
-            if v is not None:
-                v += 1
-                if v == 0x100:
-                    v = 0
-                state[reg].value = v
-                state[reg].pessimistic.previous_load_imm = None
-                state[reg].pessimistic.previous_load     = None
-                state[reg].pessimistic.previous_adjust   = addr
-
-                state[reg].optimistic.previous_load_imm  = None
-                state[reg].optimistic.previous_load      = None
-                state[reg].optimistic.previous_adjust    = addr
-
-                state['n'] = ((v & 0x80) == 0x80)
-                state['z'] = (v == 0)
-            else:
-                self.update_clear_nz(addr, state)
+            state.optimistic.increment(addr, reg)
+            state.pessimistic.increment(addr, reg)
         return increment
 
     def make_load_immediate(self, reg):
         def load_immediate(addr, state):
             v = memory_binary[addr+1]
-            state[reg].value = v
-            state[reg].pessimistic.previous_load_imm = addr
-            state[reg].pessimistic.previous_load     = addr
-            state[reg].pessimistic.previous_adjust   = addr
-
-            state[reg].optimistic.previous_load_imm  = addr
-            state[reg].optimistic.previous_load      = addr
-            state[reg].optimistic.previous_adjust    = addr
-
-            state['n'] = ((v & 0x80) == 0x80)
-            state['z'] = (v == 0)
+            state.optimistic.load_immediate(addr, reg, v)
+            state.pessimistic.load_immediate(addr, reg, v)
         return load_immediate
 
     def make_transfer(self, src_reg, dest_reg):
         def transfer(addr, state):
-            state[dest_reg].value = state[src_reg].value
-
-            # If we have a load address, keep it. This allows
-            # the code (e.g. from basic4) to understand X and Y form an
-            # address <const> here:
-            #
-            #    lda #<const>
-            #    tay
-            #    ldx #<const>
-            #    jsr OSWORD
-            #
-            state[dest_reg].optimistic.previous_load_imm = state[src_reg].optimistic.previous_load_imm
-            state[dest_reg].optimistic.previous_load = addr
-            state[dest_reg].optimistic.previous_adjust = addr
-
-            state[dest_reg].pessimistic.previous_load_imm = state[src_reg].pessimistic.previous_load_imm
-            state[dest_reg].pessimistic.previous_load = addr
-            state[dest_reg].pessimistic.previous_adjust = addr
-
-            v = state[dest_reg].value
-            if v is not None:
-                state['n'] = ((v & 0x80) == 0x80)
-                state['z'] = (v == 0)
-            else:
-                state['n'] = None
-                state['z'] = None
+            state.optimistic.transfer(addr, src_reg, dest_reg)
+            state.pessimistic.transfer(addr, src_reg, dest_reg)
         return transfer
 
     def make_branch(self, flag, flag_state):
@@ -1209,8 +1266,8 @@ class Cpu6502(cpu.Cpu):
         #    BNE addr1
         #    BEQ addr2              ; ALWAYS branch
         def update_branch(addr, state):
-            if state[flag] == None:
-                state[flag] = flag_state
+            state.optimistic.update_transfer(addr, flag, flag_state)
+            state.pessimistic.update_transfer(addr, flag, flag_state)
 
         return update_branch
 
@@ -1220,90 +1277,48 @@ class Cpu6502(cpu.Cpu):
 
     def update_clear_nz(self, binary_addr, state):
         assert binary_addr is not None
-        state['n'] = None
-        state['z'] = None
+        state.optimistic.update_clear_nz(binary_addr)
+        state.pessimistic.update_clear_nz(binary_addr)
 
     def update_clear_nza(self, binary_addr, state):
-        state['n'] = None
-        state['z'] = None
-        state['a'].value = None
+        assert binary_addr is not None
+        state.optimistic.update_clear_nza(binary_addr)
+        state.pessimistic.update_clear_nza(binary_addr)
 
     def update_clear_nzc(self, binary_addr, state):
         assert binary_addr is not None
-        state['n'] = None
-        state['z'] = None
-        state['c'] = None
+        state.optimistic.update_clear_nzc(binary_addr)
+        state.pessimistic.update_clear_nzc(binary_addr)
 
     def update_clear_nzca(self, binary_addr, state):
-        state['n'] = None
-        state['z'] = None
-        state['c'] = None
-        state['a'].value = None
+        assert binary_addr is not None
+        state.optimistic.update_clear_nzca(binary_addr)
+        state.pessimistic.update_clear_nzca(binary_addr)
 
     def update_bit(self, binary_addr, state):
         assert binary_addr is not None
-        state['n'] = None
-        state['v'] = None
-        state['z'] = None
+        state.optimistic.update_bit(binary_addr)
+        state.pessimistic.update_bit(binary_addr)
 
     def update_adc_sbc(self, binary_addr, state):
         assert binary_addr is not None
-        state['a'].value = None
-        state['n'] = None
-        state['v'] = None
-        state['z'] = None
-        state['c'] = None
+        state.optimistic.update_adc_sbc(binary_addr)
+        state.pessimistic.update_adc_sbc(binary_addr)
 
     def update_all_flags(self, binary_addr, state):
         assert binary_addr is not None
-        state['n'] = None
-        state['v'] = None
-        state['d'] = None
-        state['i'] = None
-        state['z'] = None
-        state['c'] = None
+        state.optimistic.update_all_flags(binary_addr)
+        state.pessimistic.update_all_flags(binary_addr)
 
     def update_AND_immediate(self, binary_addr, state):
         assert binary_addr is not None
-        v = memory_binary[binary_addr+1]
-        if state['a'].value != None:
-            # Value of A is known, so calculate new value of A
-            v = state['a'].value & v
-            state['a'].value = v
-
-            # Update the flags based on new value of A
-            state['n'] = ((v & 0x80) == 0x80)
-            state['z'] = (v == 0)
-        elif v < 0xff:
-            if v == 0:
-                # AND #0 sets the Z flag, and A=0
-                state['z'] = 1
-                state['a'].value = 0
-            else:
-                # AND with value $01-$fe leaves the Z flag unknown
-                state['z'] = None
-
-            # AND with value $00-$7f leaves the N flag clear
-            if v < 0x80:
-                state['n'] = 0
+        state.optimistic.update_AND_immediate(binary_addr)
+        state.pessimistic.update_AND_immediate(binary_addr)
 
     def update_ORA_immediate(self, binary_addr, state):
         assert binary_addr is not None
-        v = memory_binary[binary_addr+1]
-        if state['a'].value != None:
-            # Value of A is known, so calculate new value of A
-            v = state['a'].value | v
-            state['a'].value = v
-
-            # Update the flags based on new value of A
-            state['n'] = ((v & 0x80) == 0x80)
-            state['z'] = (v == 0)
-        elif v > 0:
-            # ORA with non-zero value means Z is clear
-            state['z'] = 0
-            if v >= 0x80:
-                # ORA with a value $80-$ff, so set N flag
-                state['n'] = 1
+        state.optimistic.update_ORA_immediate(binary_addr)
+        state.pessimistic.update_ORA_immediate(binary_addr)
 
     def is_subroutine_call(self, binary_addr):
         assert binary_addr is not None
@@ -1346,9 +1361,9 @@ class Cpu6502(cpu.Cpu):
                         target = memorymanager.get_u16_binary(binary_addr + 1)
                         for hook in trace.subroutine_argument_finder_hooks:
                             if hook(memorymanager.RuntimeAddr(target),
-                                state.get_previous_load_imm_optimistic('a'),
-                                state.get_previous_load_imm_optimistic('x'),
-                                state.get_previous_load_imm_optimistic('y')) is not None:
+                                state.optimistic['a'].get_previous_load_imm_operand(),
+                                state.optimistic['x'].get_previous_load_imm_operand(),
+                                state.optimistic['y'].get_previous_load_imm_operand()) is not None:
                                 break
                 state = trace.cpu.cpu_states[binary_addr]
                 binary_addr += c.length()
@@ -1405,7 +1420,7 @@ class Cpu6502(cpu.Cpu):
             binary_addr += c.length()                               # Move to next instruction
             if state.next_instruction == None:
                 state.next_instruction = binary_addr                # Set to the instruction address following the JSR
-            newstate = trace.cpu.cpu_states[binary_addr]  # State after instruction at addr has executed
+            newstate = trace.cpu.cpu_states[binary_addr]            # State after instruction at addr has executed
 
     def show_register_knowledge(self):
         """Adds comments to show any known state of the processor"""
@@ -1422,11 +1437,11 @@ class Cpu6502(cpu.Cpu):
 
                 for reg in ['a', 'x', 'y']:
                     # If we know about the state of the register 'reg'
-                    if state and state[reg]:
+                    if state and state.pessimistic[reg]:
                         # If this instruction alters the register 'reg'
                         if c.reg_changes and ((c.reg_changes[reg] == 'A') or (c.reg_changes[reg] == 'T')):
                             # Get the value of the register
-                            r = state[reg].value
+                            r = state.pessimistic[reg].value
                             if r != None:
                                 move_id = movemanager.move_id_for_binary_addr[binary_addr]
                                 binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
@@ -1535,12 +1550,12 @@ class Cpu6502(cpu.Cpu):
                         continue
 
                     # make sure we know the current value of the appropriate register
-                    reg_value = state[const_sub.reg].value
+                    reg_value = state.optimistic[const_sub.reg].value
                     if reg_value == None:
                         continue
 
                     # check that we know where the register was set
-                    where_reg_set = state.get_previous_load_imm_optimistic(const_sub.reg)
+                    where_reg_set = state.optimistic[const_sub.reg].get_previous_load_imm_operand()
                     if where_reg_set == None:
                         continue
 

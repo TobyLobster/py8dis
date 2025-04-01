@@ -53,7 +53,7 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
     if config.get_show_cpu_state():
         state = trace.cpu.cpu_states[binary_addr]
         if state:
-            dump_cpu_state = " " + state.show()
+            dump_cpu_state = " " + state.pessimistic.show()
         dump_cpu_state = utils.tab_to(dump_cpu_state, 22)
 
     # Add move commentary, as a fixed width string

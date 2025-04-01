@@ -1093,9 +1093,9 @@ def enum_lookup(reg_binary_addr, e, comment=None):
     return r
 
 def oswrsc_hook(runtime_addr, state, subroutine):
-    a_adjust_addr = state.get_previous_adjust_optimistic('a')
+    a_adjust_addr = state.optimistic['a'].previous_adjust
     a_runtime_adjust = None if a_adjust_addr is None else movemanager.b2r(a_adjust_addr)
-    y_adjust_addr = state.get_previous_adjust_optimistic('y')
+    y_adjust_addr = state.optimistic['y'].previous_adjust
     y_runtime_adjust = None if y_adjust_addr is None else movemanager.b2r(y_adjust_addr)
 
     auto_comment(a_runtime_adjust, "A=value to be written", align=Align.INLINE)
@@ -1103,7 +1103,7 @@ def oswrsc_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, "Write byte to screen", align=Align.INLINE)
 
 def osrdsc_hook(runtime_addr, state, subroutine):
-    y_adjust_addr = state.get_previous_adjust_optimistic('y')
+    y_adjust_addr = state.optimistic['y'].previous_adjust
     y_runtime_adjust = None if y_adjust_addr is None else movemanager.b2r(y_adjust_addr)
     auto_comment(y_runtime_adjust, "Y=ROM number", align=Align.INLINE)
 
@@ -1113,8 +1113,8 @@ def osrdsc_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, "Read byte from ROM Y or screen", align=Align.INLINE)
 
 def oseven_hook(runtime_addr, state, subroutine):
-    y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
-    y_addr_pessimistic = state.get_previous_load_imm_pessimistic('y')
+    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
+    y_addr_pessimistic = state.pessimistic['y'].get_previous_load_imm_operand()
 
     # label the optimistic load immediate
     if y_addr_optimistic is not None:
@@ -1133,13 +1133,13 @@ def oseven_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, com, align=Align.INLINE)
 
 def osfind_hook(runtime_addr, state, subroutine):
-    a_addr_optimistic = state.get_previous_load_imm_optimistic('a')
-    x_addr_optimistic = state.get_previous_load_imm_optimistic('x')
-    y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
+    a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
+    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
+    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
 
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
-    x_addr_pessimistic = state.get_previous_load_imm_pessimistic('x')
-    y_addr_pessimistic = state.get_previous_load_imm_pessimistic('y')
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
+    x_addr_pessimistic = state.pessimistic['x'].get_previous_load_imm_operand()
+    y_addr_pessimistic = state.pessimistic['y'].get_previous_load_imm_operand()
 
     enum_lookup(a_addr_optimistic, osfind_enum)
 
@@ -1177,13 +1177,13 @@ def osrdch_hook(runtime_addr, state, subroutine):
     auto_comment(a_runtime_next_use, "A=character read", align=Align.INLINE)
 
 def osgbpb_hook(runtime_addr, state, subroutine):
-    a_addr_optimistic = state.get_previous_load_imm_optimistic('a')
-    #x_addr_optimistic = state.get_previous_load_imm_optimistic('x')
-    #y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
+    a_addr_optimistic  = state.optimistic['a'].get_previous_load_imm_operand()
+    #x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
+    #y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
 
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
-    x_addr_pessimistic = state.get_previous_load_imm_pessimistic('x')
-    y_addr_pessimistic = state.get_previous_load_imm_pessimistic('y')
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
+    x_addr_pessimistic = state.pessimistic['x'].get_previous_load_imm_operand()
+    y_addr_pessimistic = state.pessimistic['y'].get_previous_load_imm_operand()
 
     # label enumeration optimistically
     enum_lookup(a_addr_optimistic, osgbpb_enum)
@@ -1212,8 +1212,8 @@ def osgbpb_hook(runtime_addr, state, subroutine):
         auto_comment(runtime_addr, "Read or write multiple bytes to an open file", align=Align.INLINE)
 
 def osbput_hook(runtime_addr, state, subroutine):
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
-    y_addr_optimistic = state.get_previous_adjust_optimistic('y')
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
+    y_addr_optimistic  = state.optimistic['y'].previous_adjust
     y_runtime_addr_optimistic = None if y_addr_optimistic is None else movemanager.b2r(y_addr_optimistic)
 
     if a_addr_pessimistic is not None:
@@ -1226,23 +1226,23 @@ def osbput_hook(runtime_addr, state, subroutine):
     auto_comment(y_runtime_addr_optimistic, "Y=file handle", align=Align.INLINE)
 
 def osbget_hook(runtime_addr, state, subroutine):
-    y_addr = state.get_previous_adjust_optimistic('y')
+    y_addr = state.optimistic['y'].previous_adjust
     y_runtime_addr_optimistic = None if y_addr is None else movemanager.b2r(y_addr)
 
     auto_comment(runtime_addr, "Read a single byte from an open file Y", align=Align.INLINE)
     auto_comment(y_runtime_addr_optimistic, "Y=file handle", align=Align.INLINE)
 
 def osargs_hook(runtime_addr, state, subroutine):
-    a_addr_optimistic = state.get_previous_load_imm_optimistic('a')
-    x_addr_optimistic = state.get_previous_load_imm_optimistic('x')
-    y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
+    a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
+    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
+    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
 
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
-    x_addr_pessimistic = state.get_previous_load_imm_pessimistic('x')
-    y_addr_pessimistic = state.get_previous_load_imm_pessimistic('y')
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
+    x_addr_pessimistic = state.pessimistic['x'].get_previous_load_imm_operand()
+    y_addr_pessimistic = state.pessimistic['y'].get_previous_load_imm_operand()
 
-    x_adjust_addr_optimistic = state.get_previous_adjust_optimistic('x')
-    y_adjust_addr_optimistic = state.get_previous_adjust_optimistic('y')
+    x_adjust_addr_optimistic = state.optimistic['x'].previous_adjust
+    y_adjust_addr_optimistic = state.optimistic['y'].previous_adjust
 
     # Runtime equivalents
     x_runtime_adjust_addr_optimistic = None if x_adjust_addr_optimistic is None else movemanager.b2r(x_adjust_addr_optimistic)
@@ -1311,7 +1311,7 @@ def oswrcr_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, "Write carriage return (character 13)", align=Align.INLINE)
 
 def oswrch_hook(runtime_addr, state, subroutine):
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
     if a_addr_pessimistic is not None:
         a = " " + str(memory_binary[a_addr_pessimistic])
     else:
@@ -1319,11 +1319,11 @@ def oswrch_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, "Write character%s" % a, align=Align.INLINE)
 
 def osfile_hook(runtime_addr, state, subroutine):
-    a_addr_optimistic = state.get_previous_load_imm_optimistic('a')
-    x_addr_optimistic = state.get_previous_load_imm_optimistic('x')
-    y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
+    a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
+    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
+    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
 
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
 
     # label where the accumulator is being set (optimistically)
     enum_lookup(a_addr_optimistic, osfile_enum)
@@ -1343,11 +1343,11 @@ def osfile_hook(runtime_addr, state, subroutine):
         auto_comment(runtime_addr, "unknown OSFILE call (A=%d)" % action_pessimistic, align=Align.INLINE)
 
 def osword_hook(runtime_addr, state, subroutine):
-    a_addr_optimistic = state.get_previous_load_imm_optimistic('a')
-    x_addr_optimistic = state.get_previous_load_imm_optimistic('x')
-    y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
+    a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
+    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
+    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
 
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
 
     # label where the accumulator is being set (optimistically)
     enum_lookup(a_addr_optimistic, osword_enum)
@@ -1420,8 +1420,8 @@ def append_bit_string(str, x, bit, result1, result0):
     return str
 
 def osbyte_hook(runtime_addr, state, subroutine):
-    a_addr_optimistic = state.get_previous_load_imm_optimistic('a')
-    a_addr_pessimistic = state.get_previous_load_imm_pessimistic('a')
+    a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
+    a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
     if a_addr_optimistic is None:
         return
 
@@ -1429,16 +1429,16 @@ def osbyte_hook(runtime_addr, state, subroutine):
     enum_lookup(a_addr_optimistic, osbyte_enum)
 
     # Binary addresses (optimistic)
-    x_addr_optimistic = state.get_previous_load_imm_optimistic('x')
-    y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
+    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
+    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
 
-    x_addr_pessimistic = state.get_previous_load_imm_pessimistic('x')
-    y_addr_pessimistic = state.get_previous_load_imm_pessimistic('y')
+    x_addr_pessimistic = state.pessimistic['x'].get_previous_load_imm_operand()
+    y_addr_pessimistic = state.pessimistic['y'].get_previous_load_imm_operand()
 
-    x_load_addr_optimistic = state.get_previous_load_optimistic('x')
-    y_load_addr_optimistic = state.get_previous_load_optimistic('y')
-    x_adjust_addr_optimistic = state.get_previous_adjust_optimistic('x')
-    y_adjust_addr_optimistic = state.get_previous_adjust_optimistic('y')
+    x_load_addr_optimistic = state.optimistic['x'].previous_load
+    y_load_addr_optimistic = state.optimistic['y'].previous_load
+    x_adjust_addr_optimistic = state.optimistic['x'].previous_adjust
+    y_adjust_addr_optimistic = state.optimistic['y'].previous_adjust
 
     assert (a_addr_pessimistic == a_addr_optimistic) or (a_addr_pessimistic is None)
 
@@ -2004,7 +2004,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
 
     elif action_optimistic == 0x7f:
         # Comment on setting the X register (optimistically)
-        # x_adjust_addr_optimistic = state.get_previous_adjust_optimistic('x')
+        # x_adjust_addr_optimistic = state.optimistic['x'].previous_adjust
         auto_comment(x_runtime_adjust_addr_optimistic, "X=File handle", align=Align.INLINE)
 
         # Comment on the line itself (pessimistically)
@@ -2650,8 +2650,8 @@ Disc drive timing links:
         auto_comment(runtime_addr, com, align=Align.INLINE)
 
 def oscli_hook(runtime_addr, state, subroutine):
-    x_addr_optimistic = state.get_previous_load_imm_optimistic('x')
-    y_addr_optimistic = state.get_previous_load_imm_optimistic('y')
+    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
+    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
     xy_addr(x_addr_optimistic, y_addr_optimistic)
 
 # ENHANCE: Split this up somehow into "tube or host" and "just host"?
