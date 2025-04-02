@@ -144,4 +144,4 @@ class Cpu65C02(Cpu6502):
         return Cpu6502.is_branch_to(self, binary_addr, target_runtime_addr)
 
     def find_code_with_regex(self):
-        super().find_code_with_regex_for_6502_like_cpus()
+        super().find_code_with_regex()

@@ -151,6 +151,9 @@ class Cpu(object):
                     runtime_addr = movemanager.b2r(new_entry_point)
                     self.add_entry(new_entry_point, runtime_addr, move_id=move_id, name=None)
 
+        # Generate all the references
+        self.generate_references()
+
         # Calculate the CPU states and analyse the code to add commentary
         self.analyse_code()
 
@@ -247,24 +250,4 @@ class Cpu(object):
     def find_code_with_regex(self):
         # Do nothing by default
         pass
-
-    # Analysis shared between 6502 and 65C02
-    def find_code_with_regex_for_6502_like_cpus(self):
-        """Make sure that any code found with a regex is marked as code"""
-
-        # Make a byte array of memory
-        memory_binary = memorymanager.memory_binary
-        bytes_array = bytes([0 if x is None else x for x in memory_binary])
-
-        # For each pattern
-        for tup in snippets:
-            # Find all matches
-            matches = re.finditer(tup[1].pattern, bytes_array)
-
-            for match in matches:
-                # Mark as code
-                binary_addr = BinaryAddr(match.start())
-                runtime_addr = movemanager.b2r(binary_addr)
-                move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                trace.cpu.add_entry(binary_addr, runtime_addr, move_id, name=None)
 

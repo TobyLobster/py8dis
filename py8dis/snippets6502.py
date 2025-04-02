@@ -224,15 +224,16 @@ def comment_set_memory_r_loop(p, reg):
     if not p.check_branch_matches('loop'):
         return
 
-    comment_loc         = p.get_start_loc()
-    is_stop_at_zero     = p.get_memory('branch') == OPCODE_BNE      # BNE or BPL
-    state               = p.get_state('comment')
-    is_store_indirect   = p.get_memory('zp')   # This is treated as a flag, being None if 'zp' isn't found
-    bytes_to_set        = state.optimistic[reg].value if state and state.optimistic[reg] else None
-    to_value            = state.optimistic['a'].value if state and state.optimistic['a'] else None
-    offset              = 1 if is_stop_at_zero else 0
-    dest_label          = ""
-    to_value_string     = ""
+    comment_loc             = p.get_start_loc()
+    is_stop_at_zero         = p.get_memory('branch') == OPCODE_BNE      # BNE or BPL
+    state                   = p.get_state('comment')
+    is_store_indirect       = p.get_memory('zp')   # This is treated as a flag, being None if 'zp' isn't found
+    loop_has_one_reference  = p.num_references('loop') == 1
+    bytes_to_set            = state.optimistic[reg].value if state and state.optimistic[reg] and loop_has_one_reference else None
+    to_value                = state.optimistic['a'].value if state and state.optimistic['a'] and loop_has_one_reference else None
+    offset                  = 1 if is_stop_at_zero else 0
+    dest_label              = ""
+    to_value_string         = ""
 
     if not is_stop_at_zero:
         bytes_to_set += 1

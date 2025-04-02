@@ -748,9 +748,6 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Trace where code lives
     trace.cpu.trace()
 
-    # Generate all the references
-    trace.cpu.generate_references()
-
     # Fix up the final label names (evaluating LazyStrings into actual strings)
     disassembly.fix_label_names()
 

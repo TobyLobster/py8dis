@@ -1,5 +1,7 @@
-import trace
 import classification
+import movemanager
+import trace
+from memorymanager import BinaryLocation
 
 class SnippetHelper:
     def __init__(self, memory_binary, binary_loc, match, labels):
@@ -29,6 +31,11 @@ class SnippetHelper:
     def get_binary_address(self, label_name, prioritise_definition=True):
         binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=prioritise_definition)
         return binary_addr
+
+    def get_binary_location(self, label_name, prioritise_definition=True):
+        binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=prioritise_definition)
+        move_id = movemanager.move_id_for_binary_addr[binary_addr]
+        return BinaryLocation(binary_addr, move_id)
 
     def get_memory(self, label_name, offset=0):
         binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
@@ -63,11 +70,21 @@ class SnippetHelper:
             assert 0 <= binary_addr < 0x10000
             return(trace.cpu.cpu_states[binary_addr])
 
+    def num_references(self, label_name):
+        binary_loc = self.get_binary_location(label_name, prioritise_definition=True)
+
+        if binary_loc in trace.references:
+            references = trace.references[binary_loc]
+            return len(references)
+        return 0
+
     def check_branch_matches(self, label_name):
         branch_operand_value = self.get_memory(label_name)
         branch_operand_addr = self.get_binary_address(label_name, prioritise_definition=False)
-        binary_definition_addr = self.get_binary_address(label_name, prioritise_definition=True)
-        expected_branch_operand = binary_definition_addr - branch_operand_addr-1
+        definition_binary_addr = self.get_binary_address(label_name, prioritise_definition=True)
+
+        # Check the branch operand will take us to the loop definition address
+        expected_branch_operand = definition_binary_addr - branch_operand_addr-1
         if -128 <= expected_branch_operand <= 127:
             # bring into range 0-255
             expected_branch_operand = (256 + expected_branch_operand) & 255

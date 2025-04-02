@@ -1602,8 +1602,25 @@ class Cpu6502(cpu.Cpu):
 
                             lmd.name = "return_{0}".format(self.return_array[defined_at_binary_addr])
 
+    # Analysis (shared between 6502 and 65C02)
     def find_code_with_regex(self):
-        super().find_code_with_regex_for_6502_like_cpus()
+        """Make sure that any code found with a regex is marked as code"""
+
+        # Make a byte array of memory
+        memory_binary = memorymanager.memory_binary
+        bytes_array = bytes([0 if x is None else x for x in memory_binary])
+
+        # For each pattern
+        for tup in snippets:
+            # Find all matches
+            matches = re.finditer(tup[1].pattern, bytes_array)
+
+            for match in matches:
+                # Mark as code
+                binary_addr = BinaryAddr(match.start())
+                runtime_addr = movemanager.b2r(binary_addr)
+                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                trace.cpu.add_entry(binary_addr, runtime_addr, move_id, name=None)
 
     def analyse_with_regex(self):
         # Make a byte array of memory
