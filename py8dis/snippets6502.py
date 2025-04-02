@@ -16,6 +16,10 @@ OPCODE_BNE                      = 0xd0      # bne loop
 snippets = []
 
 # ************************************************************************************************
+def register_snippet(fn, snippet):
+    snippets.append((fn, snippet6502.parse_snippet(snippet)))
+
+# ************************************************************************************************
 def comment_memory_copy_loop(p):
     # e.g. "This loop copies 8 bytes from source to dest"
 
@@ -267,7 +271,7 @@ def comment_set_memory_y_loop(p):
 # ************************************************************************************************
 # ************************************************************************************************
 # ************************************************************************************************
-snippets.append((comment_memory_copy_loop, snippet6502.parse_snippet("""
+register_snippet(comment_memory_copy_loop, """
 ; memory copy, using X as the loop counter
 
 comment
@@ -281,10 +285,25 @@ update
     dex
 branch
     bpl loop | bne loop
-""")))
+""")
 
+register_snippet(comment_memory_copy_loop, """
+; memory copy, using X as the loop counter
 
-snippets.append((comment_memory_copy_loop, snippet6502.parse_snippet("""
+comment
+?   ldx #start_count
+loop
+load
+    lda addr,x | lda (zp1),x
+store
+    sta other,x | sta (zp2),x
+update
+    dex
+branch
+    bpl loop | bne loop
+""")
+
+register_snippet(comment_memory_copy_loop, """
 ; memory copy, using Y as the loop counter
 
 comment
@@ -298,10 +317,9 @@ update
     dey
 branch
     bpl loop | bne loop
-""")))
+""")
 
-
-snippets.append((comment_memory_copy_with_limited_end_loop, snippet6502.parse_snippet("""
+register_snippet(comment_memory_copy_with_limited_end_loop, """
 ; memory copy with final counter check, using Y as the loop counter
 
 comment
@@ -316,10 +334,10 @@ update
     cpy #end_count
 branch
     bcs loop
-""")))
+""")
 
 
-snippets.append((comment_memory_copy_with_limited_end_loop, snippet6502.parse_snippet("""
+register_snippet(comment_memory_copy_with_limited_end_loop, """
 ; memory copy with final counter check, using X as the loop counter
 
 comment
@@ -334,10 +352,9 @@ update
     cpx #end_count
 branch
     bcs loop
-""")))
+""")
 
-
-snippets.append((comment_memory_copy_increment, snippet6502.parse_snippet("""
+register_snippet(comment_memory_copy_increment, """
 ; memory copy increasing loop counter, using X as the loop counter
 comment
 ?    ldx #start_count
@@ -351,9 +368,9 @@ update
     cpx #end_count
 branch
     bne loop | bcc loop
-""")))
+""")
 
-snippets.append((comment_memory_copy_increment, snippet6502.parse_snippet("""
+register_snippet(comment_memory_copy_increment, """
 ; memory copy increasing loop counter, using X as the loop counter
 comment
 ?    ldy #start_count
@@ -367,136 +384,136 @@ update
     cpy #end_count
 branch
     bne loop | bcc loop
-""")))
+""")
 
-snippets.append(("push flags,A,X,Y onto the stack", snippet6502.parse_snippet("""
+register_snippet("push flags,A,X,Y onto the stack", """
     php
     pha
     txa
     pha
     tya
     pha
-""")))
+""")
 
-snippets.append(("pull flags,A,X,Y from the stack", snippet6502.parse_snippet("""
+register_snippet("pull flags,A,X,Y from the stack", """
     pla
     tay
     pla
     tax
     pla
     plp
-""")))
+""")
 
-snippets.append(("push A,X,Y onto the stack", snippet6502.parse_snippet("""
+register_snippet("push A,X,Y onto the stack", """
     pha
     txa
     pha
     tya
     pha
-""")))
+""")
 
-snippets.append(("pull A,X,Y from the stack", snippet6502.parse_snippet("""
+register_snippet("pull A,X,Y from the stack", """
     pla
     tay
     pla
     tax
     pla
-""")))
+""")
 
-snippets.append(("push flags,A,Y,X onto the stack", snippet6502.parse_snippet("""
+register_snippet("push flags,A,Y,X onto the stack", """
     php
     pha
     tya
     pha
     txa
     pha
-""")))
+""")
 
-snippets.append(("pull flags,A,Y,X from the stack", snippet6502.parse_snippet("""
+register_snippet("pull flags,A,Y,X from the stack", """
     pla
     tax
     pla
     tay
     pla
     plp
-""")))
+""")
 
-snippets.append(("push A,Y,X onto the stack", snippet6502.parse_snippet("""
+register_snippet("push A,Y,X onto the stack", """
     pha
     tya
     pha
     txa
     pha
-""")))
+""")
 
-snippets.append(("pull A,Y,X from the stack", snippet6502.parse_snippet("""
+register_snippet("pull A,Y,X from the stack", """
     pla
     tax
     pla
     tay
     pla
-""")))
+""")
 
-snippets.append(("push X,Y onto the stack", snippet6502.parse_snippet("""
+register_snippet("push X,Y onto the stack", """
     txa
     pha
     tya
     pha
-""")))
+""")
 
-snippets.append(("pull X,Y from the stack", snippet6502.parse_snippet("""
+register_snippet("pull X,Y from the stack", """
     pla
     tay
     pla
     tax
-""")))
+""")
 
-snippets.append(("push Y,X onto the stack", snippet6502.parse_snippet("""
+register_snippet("push Y,X onto the stack", """
     tya
     pha
     txa
     pha
-""")))
+""")
 
-snippets.append(("pull Y,X from the stack", snippet6502.parse_snippet("""
+register_snippet("pull Y,X from the stack", """
     pla
     tax
     pla
     tay
-""")))
+""")
 
-snippets.append(("push A,X onto the stack", snippet6502.parse_snippet("""
+register_snippet("push A,X onto the stack", """
     pha
     txa
     pha
-""")))
+""")
 
-snippets.append(("pull A,X from the stack", snippet6502.parse_snippet("""
+register_snippet("pull A,X from the stack", """
     pla
     tax
     pla
-""")))
+""")
 
-snippets.append(("push A,Y onto the stack", snippet6502.parse_snippet("""
+register_snippet("push A,Y onto the stack", """
     pha
     tya
     pha
-""")))
+""")
 
-snippets.append(("pull A,Y from the stack", snippet6502.parse_snippet("""
+register_snippet("pull A,Y from the stack", """
     pla
     tay
     pla
-""")))
+""")
 
-snippets.append((comment_add_to_y, snippet6502.parse_snippet("""
+register_snippet(comment_add_to_y, """
     tya
     clc
     adc #nn
     tay
-""")))
+""")
 
-snippets.append((comment_set_memory_x_loop, snippet6502.parse_snippet("""
+register_snippet(comment_set_memory_x_loop, """
 comment
 loop
     sta addr,y | sta (zp),y
@@ -504,9 +521,9 @@ loop
     dex
 branch
     bne loop | bpl loop
-""")))
+""")
 
-snippets.append((comment_set_memory_y_loop, snippet6502.parse_snippet("""
+register_snippet(comment_set_memory_y_loop, """
 comment
 loop
     sta addr,x | sta (zp),x
@@ -514,4 +531,4 @@ loop
     dey
 branch
     bne loop | bpl loop
-""")))
+""")
