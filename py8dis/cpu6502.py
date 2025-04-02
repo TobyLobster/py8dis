@@ -11,10 +11,13 @@ import re
 import cpu
 import trace
 import utils
+import snippets6502
 import sys
 from align import Align
 from binaryaddrtype import BinaryAddrType
 from memorymanager import RuntimeAddr, BinaryAddr, BinaryLocation
+from snippets6502 import snippets
+from snippethelper import *
 
 memory_binary = memorymanager.memory_binary
 
@@ -112,10 +115,11 @@ class Cpu6502(cpu.Cpu):
     def __init__(self):
         super(Cpu6502, self).__init__()
 
-        self.code_analysis_fns.append(self.subroutine_argument_finder)
-        self.code_analysis_fns.append(self.substitute_constants)
-        self.code_analysis_fns.append(self.find_subroutine_calls)
-        self.code_analysis_fns.append(self.show_register_knowledge)
+        self.code_analysis_fns.append(self.subroutine_argument_finder)  # TODO: For the subroutine() command? Is this used?
+        self.code_analysis_fns.append(self.substitute_constants)        # If a subroutine is being called, we can infer context of initialising registers beforehand.
+        self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
+        self.code_analysis_fns.append(self.show_register_knowledge)     # Show places where we use an inferred value of a register.
+        self.code_analysis_fns.append(self.analyse_with_regex)          # Do regex style matches to find common code tropes and comment them
 
         # For labelling rts instructions numerically
         self.return_index = 0
@@ -1598,8 +1602,39 @@ class Cpu6502(cpu.Cpu):
 
                             lmd.name = "return_{0}".format(self.return_array[defined_at_binary_addr])
 
-    def find_common_code_with_regex(self):
-        super().find_common_code_with_regex_for_6502_like_cpus()
+    def find_code_with_regex(self):
+        super().find_code_with_regex_for_6502_like_cpus()
 
     def analyse_with_regex(self):
-        super().analyse_with_regex_for_6502_like_cpus()
+        # Make a byte array of memory
+        memory_binary = memorymanager.memory_binary
+        bytes_array = bytes([0 if x is None else x for x in memory_binary])
+
+        # Remember which bytes are auto commented via a regex so we don't comment the same bytes again with a different regex.
+        found_already = [False]*65536
+
+        # for each snippet
+        for tup in snippets:
+            # Find all matches
+            matches = re.finditer(tup[1].pattern, bytes_array)
+            #utils.debug("Hello: {0}".format(tup[1].pattern))
+
+            for match in matches:
+                binary_addr = match.start()
+                length = match.end() - match.start()
+
+                # Check if any of the bytes are already commented on
+                if any(found_already[binary_addr:binary_addr+length]):
+                    continue
+
+                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
+
+                # Mark these bytes as True, already commented on
+                found_already[binary_addr:binary_addr+length] = [True]*length
+                helper = SnippetHelper(memory_binary, binary_loc, match, tup[1].labels)
+                if isinstance(tup[0], str):
+                    # A string means just add an inline string
+                    disassembly.comment_binary(helper.get_start_loc(), tup[0], align=Align.INLINE, auto_generated=True)
+                else:
+                    tup[0](helper)

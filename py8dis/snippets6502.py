@@ -4,6 +4,7 @@ import snippet6502
 import utils
 from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
+from snippethelper import *
 
 # Opcodes
 OPCODE_LDA_ZP_COMMA_X           = 0xb5      # lda zp,x

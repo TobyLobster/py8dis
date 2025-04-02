@@ -18,78 +18,6 @@ from memorymanager import BinaryAddr, RuntimeAddr
 import snippets6502
 from snippets6502 import snippets
 
-class SnippetHelper:
-    def __init__(self, memory_binary, binary_loc, match, labels):
-        self.memory_binary = memory_binary
-        self.binary_loc    = binary_loc
-        self.match         = match
-        self.labels        = labels
-
-    def get_start_loc(self):
-        return self.binary_loc
-
-    def get_binary_address_and_length(self, label_name, prioritise_definition=False):
-        # Look for the 'declaration' of the label
-        for priority in [prioritise_definition, not prioritise_definition]:
-            for label in self.labels[label_name]:
-                if label[1] == priority:
-                    start, end = self.match.span(label[0])
-                    if start is None or (start < 0):
-                        # Match not found, could have been one of the '|' options that are not present... keep trying
-                        continue
-                    length = end - start
-                    assert 0 <= start < 0x10000, "label='{0}' index={1} start={2}".format(label_name, label[0], start)
-                    return (start, length)
-
-        return (None, None)
-
-    def get_binary_address(self, label_name, prioritise_definition=True):
-        binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=prioritise_definition)
-        return binary_addr
-
-    def get_memory(self, label_name, offset=0):
-        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
-        if binary_addr:
-            binary_addr += offset
-            if length == 2:
-                assert 0 <= binary_addr < 0xffff
-                return self.memory_binary[binary_addr] + 256*self.memory_binary[binary_addr+1]
-            elif length <= 1:
-                assert 0 <= binary_addr < 0x10000
-                return self.memory_binary[binary_addr]
-            assert False, "length={0}, label={1}\nlabels:{2}".format(length, label_name, self.labels)
-        return None
-
-    def get_expr(self, label_name, *, label_offset=0, final_offset=0):
-        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
-        if binary_addr:
-            binary_addr += label_offset
-            if length == 2:
-                assert 0 <= binary_addr < 0xffff
-                return classification.get_address16(binary_addr, offset=final_offset)
-            elif length <= 1:
-                assert 0 <= binary_addr < 0x10000
-                return classification.get_address8(binary_addr, offset=0)
-            assert False, "length={0}, label={1}\nlabels:{2}".format(length, label_name, self.labels)
-        return None
-
-    def get_state(self, label_name, offset=0):
-        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=True)
-        if binary_addr:
-            binary_addr += offset
-            assert 0 <= binary_addr < 0x10000
-            return(trace.cpu.cpu_states[binary_addr])
-
-    def check_branch_matches(self, label_name):
-        branch_operand_value = self.get_memory(label_name)
-        branch_operand_addr = self.get_binary_address(label_name, prioritise_definition=False)
-        binary_definition_addr = self.get_binary_address(label_name, prioritise_definition=True)
-        expected_branch_operand = binary_definition_addr - branch_operand_addr-1
-        if -128 <= expected_branch_operand <= 127:
-            # bring into range 0-255
-            expected_branch_operand = (256 + expected_branch_operand) & 255
-            return expected_branch_operand == branch_operand_value
-        return False
 
 
 class Cpu(object):
@@ -198,8 +126,8 @@ class Cpu(object):
 
         # We have a number of regular expressions that represent common segments
         # of code. If we find one of these, then there's likely to be code there.
-        # We generate entry_points for these.
-        self.find_common_code_with_regex()
+        # We generate entry() points for these.
+        self.find_code_with_regex()
 
         # Work through each entry point
         while len(self.entry_points) > 0:
@@ -225,9 +153,6 @@ class Cpu(object):
 
         # Calculate the CPU states and analyse the code to add commentary
         self.analyse_code()
-
-        # Do regex style matches to find common code tropes and comment them
-        self.analyse_with_regex()
 
         # We defer final label name generating (using LazyString) until tracing
         # is complete, since e.g. part way through tracing we may not have
@@ -319,16 +244,12 @@ class Cpu(object):
     #
     # Regex style analysis
     #
-    def find_common_code_with_regex(self):
+    def find_code_with_regex(self):
         # Do nothing by default
         pass
 
-    def analyse_with_regex(self):
-        # No analysis done by default
-        pass
-
     # Analysis shared between 6502 and 65C02
-    def find_common_code_with_regex_for_6502_like_cpus(self):
+    def find_code_with_regex_for_6502_like_cpus(self):
         """Make sure that any code found with a regex is marked as code"""
 
         # Make a byte array of memory
@@ -347,36 +268,3 @@ class Cpu(object):
                 move_id = movemanager.move_id_for_binary_addr[binary_addr]
                 trace.cpu.add_entry(binary_addr, runtime_addr, move_id, name=None)
 
-    def analyse_with_regex_for_6502_like_cpus(self):
-        # Make a byte array of memory
-        memory_binary = memorymanager.memory_binary
-        bytes_array = bytes([0 if x is None else x for x in memory_binary])
-
-        # Remember which bytes are auto commented via a regex so we don't comment the same bytes again with a different regex.
-        found_already = [False]*65536
-
-        # for each snippet
-        for tup in snippets:
-            # Find all matches
-            matches = re.finditer(tup[1].pattern, bytes_array)
-            #utils.debug("Hello: {0}".format(tup[1].pattern))
-
-            for match in matches:
-                binary_addr = match.start()
-                length = match.end() - match.start()
-
-                # Check if any of the bytes are already commented on
-                if any(found_already[binary_addr:binary_addr+length]):
-                    continue
-
-                move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
-
-                # Mark these bytes as True, already commented on
-                found_already[binary_addr:binary_addr+length] = [True]*length
-                helper = SnippetHelper(memory_binary, binary_loc, match, tup[1].labels)
-                if isinstance(tup[0], str):
-                    # A string means just add an inline string
-                    disassembly.comment_binary(helper.get_start_loc(), tup[0], align=Align.INLINE, auto_generated=True)
-                else:
-                    tup[0](helper)
