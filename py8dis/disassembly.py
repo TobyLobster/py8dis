@@ -100,7 +100,7 @@ def comment_binary(binary_loc, text, *, word_wrap=False, indent=0, align=Align.B
     """Add a comment, either inline or standalone."""
 
     binary_loc = movemanager.make_binloc(binary_loc)
-    if auto_generated and (binary_loc in trace.no_auto_comment_set):
+    if auto_generated and (binary_loc.binary_addr in trace.no_auto_comment_set):
         return
 
     new_comment = Comment(text, word_wrap, indent, align=align, priority=priority, auto_generated=auto_generated)

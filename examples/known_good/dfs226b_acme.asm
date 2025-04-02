@@ -5224,7 +5224,7 @@ loop_c9c90
     lda #0                                                            ; 3ca6: a9 00       ..  :9ca6[1]
 ; $3ca8 referenced 1 time by $9cad[1]
 loop_c9ca8
-    ; This loop sets some bytes of memory at l1101
+    ; This loop sets 16 bytes of memory at l1101 to 0
     sta l1101 - 1,y                                                   ; 3ca8: 99 00 11    ... :9ca8[1]
     iny                                                               ; 3cab: c8          .   :9cab[1]
     dex                                                               ; 3cac: ca          .   :9cac[1]

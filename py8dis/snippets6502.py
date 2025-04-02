@@ -224,12 +224,16 @@ def comment_set_memory_r_loop(p, reg):
     state               = p.get_state('comment')
     is_store_indirect   = p.get_memory('zp')   # This is treated as a flag, being None if 'zp' isn't found
     bytes_to_set        = state.optimistic[reg].value if state and state.optimistic[reg] else None
+    to_value            = state.optimistic['a'].value if state and state.optimistic['a'] else None
     offset              = 1 if is_stop_at_zero else 0
     dest_label          = ""
     to_value_string     = ""
 
-    if bytes_to_set != None:
-        to_value_string = " to {0}".format(bytes_to_set)
+    if not is_stop_at_zero:
+        bytes_to_set += 1
+
+    if to_value != None:
+        to_value_string = " to {0}".format(to_value)
 
     if not is_store_indirect:
         dest_label = p.get_expr('addr', label_offset=0, final_offset=offset)
@@ -246,7 +250,8 @@ def comment_set_memory_r_loop(p, reg):
         if bytes_to_set != None:
             bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
         else:
-            bytes_to_set_string = " some bytes of memory"
+            reg_with_offset_string = reg.upper() if offset != 0 else reg+"+1"
+            bytes_to_set_string = " {0} bytes of memory".format(reg_with_offset_string)
         return "This loop sets{0}{1}{2}".format(bytes_to_set_string, dest_label, to_value_string)
 
     disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
@@ -492,6 +497,7 @@ snippets.append((comment_add_to_y, snippet6502.parse_snippet("""
 """)))
 
 snippets.append((comment_set_memory_x_loop, snippet6502.parse_snippet("""
+comment
 loop
     sta addr,y | sta (zp),y
     iny
@@ -501,6 +507,7 @@ branch
 """)))
 
 snippets.append((comment_set_memory_y_loop, snippet6502.parse_snippet("""
+comment
 loop
     sta addr,x | sta (zp),x
     inx

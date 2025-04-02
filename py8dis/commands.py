@@ -317,7 +317,7 @@ def formatted_comment(runtime_addr, text, inline=False, align=None, indent=0):
 def no_automatic_comment(runtime_addr):
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    trace.no_auto_comment_set.add(binary_loc)
+    trace.no_auto_comment_set.add(binary_loc.binary_addr)
 
 def auto_comment(runtime_addr, text, inline=False, align=None, indent=0, show_blank=False, word_wrap=True):
     """For internal use only. Generates a comment if not inhibited."""
@@ -387,7 +387,7 @@ def auto_expr(runtime_addr, s):
     # Make sure we are within the binary
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    if not (binary_loc in trace.no_auto_comment_set):
+    if not (binary_loc.binary_addr in trace.no_auto_comment_set):
         if memorymanager.is_data_loaded_at_binary_addr(binary_loc.binary_addr):
             expr(runtime_addr, s, force=False)
 

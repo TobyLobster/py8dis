@@ -4141,7 +4141,7 @@ l8993 = sub_c8992+1
     lda #0                                                            ; 9952: a9 00       ..
 ; &9954 referenced 1 time by &9958
 .loop_c9954
-    ; This loop sets some bytes of memory
+    ; This loop sets X bytes of memory to 0
     sta (l0002),y                                                     ; 9954: 91 02       ..
     iny                                                               ; 9956: c8          .
     dex                                                               ; 9957: ca          .

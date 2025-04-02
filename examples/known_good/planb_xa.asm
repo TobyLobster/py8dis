@@ -10323,7 +10323,7 @@ draw_bar
     ldx #6                                                            // 3f51: a2 06       ..
     iny                                                               // 3f53: c8          .
 draw_bar_loop
-    // This loop sets some bytes of memory
+    // This loop sets 6 bytes of memory
     sta (print_addr_low),y                                            // 3f54: 91 2f       ./
     iny                                                               // 3f56: c8          .
     dex                                                               // 3f57: ca          .
@@ -10375,7 +10375,7 @@ print_decremented_bar
     ldx #6                                                            // 3f9a: a2 06       ..
     iny                                                               // 3f9c: c8          .
 draw_bar_loop2
-    // This loop sets some bytes of memory
+    // This loop sets 6 bytes of memory
     sta (print_addr_low),y                                            // 3f9d: 91 2f       ./
     iny                                                               // 3f9f: c8          .
     dex                                                               // 3fa0: ca          .

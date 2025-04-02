@@ -8058,7 +8058,7 @@ cb028
     lda #$20 ; ' '                                                    ; b030: a9 20       .
 ; $b032 referenced 1 time by $b036
 loop_cb032
-    ; This loop sets some bytes of memory
+    ; This loop sets 6 bytes of memory to 32
     sta (l009c),y                                                     ; b032: 91 9c       ..
     iny                                                               ; b034: c8          .
     dex                                                               ; b035: ca          .
@@ -8380,7 +8380,7 @@ cb208
     lda #$20 ; ' '                                                    ; b20e: a9 20       .
 ; $b210 referenced 1 time by $b214
 loop_cb210
-    ; This loop sets some bytes of memory
+    ; This loop sets 6 bytes of memory to 32
     sta (l009c),y                                                     ; b210: 91 9c       ..
     iny                                                               ; b212: c8          .
     dex                                                               ; b213: ca          .

@@ -4388,7 +4388,7 @@ resetplayerscores
     ldy #7                                                            // 2c19: a0 07       ..
     lda #0                                                            // 2c1b: a9 00       ..
 resetplayerscores2
-    // This loop sets some bytes of memory at playerscore
+    // This loop sets 8 bytes of memory at playerscore to 0
     sta playerscore,x                                                 // 2c1d: 9d 00 05    ...
     inx                                                               // 2c20: e8          .
     dey                                                               // 2c21: 88          .

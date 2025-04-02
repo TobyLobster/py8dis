@@ -205,7 +205,7 @@ def add_expression(binary_addr, s, *, force=True):
     assert not isinstance(s, labelmanager.Label) # TODO!?
     # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
     has_existing_expr = binary_addr in expressions
-    if force or not has_existing_expr:
+    if (force or not has_existing_expr) and not (binary_addr in trace.no_auto_comment_set):
         expressions[binary_addr] = s
 
     # Returns the current expression
