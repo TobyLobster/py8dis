@@ -15,8 +15,6 @@ from memorymanager import BinaryLocation
 from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from memorymanager import BinaryAddr, RuntimeAddr
-import snippets6502
-from snippets6502 import snippets
 
 
 
