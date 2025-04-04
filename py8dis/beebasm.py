@@ -94,7 +94,7 @@ class Beebasm(assembler.Assembler):
     def code_start(self, start_addr, end_addr, first):
         """At the start of the code we provide the address at which to
         assemble."""
-        result = ["", utils.make_indent(1) + utils.force_case("org %s" % self.hex4(start_addr))]
+        result = ["", utils.make_indent(1) + "{0} {1}".format(utils.force_case("org"), self.hex4(start_addr))]
         result.append("")
         return result
 
@@ -142,16 +142,16 @@ class Beebasm(assembler.Assembler):
         if overlap_length > 0:
             result.append(self.format_comment("1. We want to move to a lower memory address to assemble the next block of code at it's runtime address. First we temporarily copy the existing code/data that overlaps out of the way while we do so."))
             result.append(self.format_comment("(Note the parameter order: 'copyblock <start>,<end>,<dest>')"))
-            result.append(utils.make_indent(1) + utils.force_case("copyblock %s, %s, %s" % (disassembly.get_emitted_label(overlap_start), disassembly.get_emitted_label(overlap_start + overlap_length), disassembly.get_emitted_label(temp_start))))
+            result.append(utils.make_indent(1) + "%s %s, %s, %s" % (utils.force_case('copyblock'), disassembly.get_emitted_label(overlap_start), disassembly.get_emitted_label(overlap_start + overlap_length), disassembly.get_emitted_label(temp_start)))
 
             result.append("")
             result.append(self.format_comment("2. Clear the existing code area so that we are allowed to assemble there again."))
-            result.append(utils.make_indent(1) + utils.force_case("clear %s, %s" % (disassembly.get_emitted_label(overlap_start), disassembly.get_emitted_label(overlap_start + overlap_length))))
+            result.append(utils.make_indent(1) + "%s %s, %s" % (utils.force_case('clear'), disassembly.get_emitted_label(overlap_start), disassembly.get_emitted_label(overlap_start + overlap_length)))
 
             result.append("")
             result.append(self.format_comment("3. Assemble the new block at it's runtime address."))
 
-        result.append(utils.make_indent(1) + utils.force_case("org %s" % self.hex(dest)))
+        result.append(utils.make_indent(1) + "{0} {1}".format(utils.force_case("org"), self.hex(dest)))
         # We will need some labels in pseudopc_end() but by then
         # it will be too late to create them, so do it now.
 
