@@ -3,12 +3,12 @@ import collections
 import utils
 
 class Snippet:
-    def __init__(self, pattern, labels):
-        self.pattern = pattern
+    def __init__(self, whole_pattern, labels):
+        self.whole_pattern = re.compile(bytes(whole_pattern), re.DOTALL | re.MULTILINE)
         self.labels = labels
 
     def __repr__(self):
-        return f"{self.pattern} {self.labels}"
+        return f"{self.whole_pattern} {self.labels}"
 
 opcodes = {
         "brk implicit":  0x00,
@@ -181,13 +181,13 @@ opcodes = {
         "sbc immediate": 0xE9,
         "sbc absolutey": 0xF9,
 
-        "asl accumulator": 0x0A, "asl": 0x0A,
-        "ina accumulator": 0x1A, "ina": 0x1A,
-        "rol accumulator": 0x2A, "rol": 0x2A,
-        "dea accumulator": 0x3A, "dea": 0x3A,
-        "lsr accumulator": 0x4A, "lsr": 0x4A,
+        "asl accumulator": 0x0A, "asl implicit": 0x0A,
+        "ina accumulator": 0x1A, "ina implicit": 0x1A,
+        "rol accumulator": 0x2A, "rol implicit": 0x2A,
+        "dea accumulator": 0x3A, "dea implicit": 0x3A,
+        "lsr accumulator": 0x4A, "lsr implicit": 0x4A,
         "phy implicit": 0x5A,
-        "ror accumulator": 0x6A, "ror": 0x6A,
+        "ror accumulator": 0x6A, "ror implicit": 0x6A,
         "ply implicit": 0x7A,
         "txa implicit": 0x8A,
         "txs implicit": 0x9A,
@@ -283,6 +283,21 @@ opcodes = {
         #"": 0xEF,
         #"": 0xFF,
 }
+
+any_valid_instruction = \
+    b'(?:\x00|\x10.|\x20..|\x30.|\x40|\x50.|\x60|\x70.|\x80.|\x90.|\xa0.|\xb0.|\xc0.|\d0.|xe0.|\xf0.|'+\
+    b'\x01.|\x11.|\x21.|\x31.|\x41.|\x51.|\x61.|\x71.|\x81.|\x91.|\xa1.|\xb1.|\xc1.|\xd1.|\xe1.|\xf1.|'+\
+    b'\x12.|\x32.|\x52.|\x72.|\x92.|\xa2.|\xb2.|\xd2.|\xf2.|'+\
+    b'\x04.|\x14.|\\x24.|\x34.|\x64.|\x74.|\x84.|\x94.|\xa4.|\xb4.|\xc4.|\xe4.|'+\
+    b'\x05.|\x15.|\x25.|\x35.|\x45.|\x55.|\x65.|\x75.|\x85.|\x95.|\xa5.|\xb5.|\xc5.|\xd5.|\xe5.|\xf5.|'+\
+    b'\x06.|\x16.|\x26.|\x36.|\x46.|\x56.|\x66.|\x76.|\x86.|\x96.|\xa6.|\xb6.|\xc6.|\xd6.|\xe6.|\xf6.|'+\
+    b'\x08|\x18|\\x28|\x38|\x48|\x58|\x68|\x78|\x88|\x98|\xa8|\xb8|\xc8|\xd8|\xe8|\xf8|'+\
+    b'\x09.|\x19..|\\x29.|\x39..|\x49.|\x59..|\x69.|\x79..|\x89.|\x99..|\xa9.|\xb9..|\xc9.|\xd9..|\xe9.|\xf9..|'+\
+    b'\x0a|\x1a|\\x2a|\x3a|\x4a|\x5a|\x6a|\x7a|\x8a|\x9a|\xaa|\xba|\xca|\xda|\xea|\xfa|'+\
+    b'\x0c..|\x1c..|\x2c..|\x3c..|\x4c..|\x6c..|\\x7c..|\x8c..|\x9c..|\xac..|\xbc..|\xcc..|\xec..|'+\
+    b'\x0d..|\x1d..|\x2d..|\x3d..|\x4d..|\\x5d..|\x6d..|\\x7d..|\x8d..|\x9d..|\xad..|\xbd..|\xcd..|\xdd..|\xed..|\xfd..|'+\
+    b'\x0e..|\x1e..|\\x2e..|\x3e..|\x4e..|\\x5e..|\x6e..|\x7e..|\x8e..|\x9e..|\xae..|\xbe..|\xce..|\xde..|\xee..|\xfe..)'
+
 
 mnemonics = {
     "adc", "and", "asl", "bcc", "bcs", "beq", "bit", "bmi", "bne", "bpl", "bra",
@@ -413,13 +428,19 @@ def parse_line(line, group_number):
     return(pattern, labels, group_number)
 
 def parse_instruction(inst, group_number):
+    labels = collections.defaultdict(list)
+
     inst = inst.strip()         # Remove any extra spaces and newlines
     if not inst:
-        return (None, None, group_number)
+        return (None, labels, group_number)
 
     # Split the inst into parts (mnemonic and operand)
     parts = inst.split(maxsplit=1)
     mnemonic = parts[0].lower()
+
+    if mnemonic == '.':
+        result = any_valid_instruction
+        return (result, labels, group_number)
 
     if mnemonic not in mnemonics:
         raise ValueError(f"Unknown mnemonic: {mnemonic}")
@@ -432,7 +453,6 @@ def parse_instruction(inst, group_number):
     match_groups = None
     result_operand = bytearray()
     instruction_template = mnemonic
-    labels = collections.defaultdict(list)
     if not operand:
         details = Details(re.compile(""), 1)
         instruction_template = mnemonic + " implicit"
@@ -479,7 +499,7 @@ def parse_instruction(inst, group_number):
         raise ValueError(f"Invalid operand format: {operand}")
 
     if not instruction_template in opcodes:
-        raise ValueError(f"Invalid operand for instruction: {instruction_template}")
+        raise ValueError(f"Invalid operand for instruction: {instruction_template}, operand {operand}")
 
     opcode = opcodes[instruction_template]
     result = re.escape(bytearray([opcode]))+result_operand
@@ -489,6 +509,7 @@ def parse_instruction(inst, group_number):
 
 # Parse a full snippet (list of assembly lines)
 def parse_snippet(program):
+    # parse the program into a whole_pattern
     whole_pattern = bytearray()
     whole_labels = collections.defaultdict(list)
     group_number = 1
@@ -500,4 +521,5 @@ def parse_snippet(program):
         if labels:
             for label in labels:
                 whole_labels[label].extend(labels[label])
-    return Snippet(re.compile(bytes(whole_pattern), re.DOTALL | re.MULTILINE), whole_labels)
+
+    return Snippet(whole_pattern, whole_labels)

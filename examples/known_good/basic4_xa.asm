@@ -4136,10 +4136,10 @@ loop_c9948
 
 // $9952 referenced 4 times by $9108, $9642, $997a, $b036
 sub_c9952
+    // This loop sets X bytes of memory to 0
     lda #0                                                            // 9952: a9 00       ..
 // $9954 referenced 1 time by $9958
 loop_c9954
-    // This loop sets X bytes of memory to 0
     sta (l0002),y                                                     // 9954: 91 02       ..
     iny                                                               // 9956: c8          .
     dex                                                               // 9957: ca          .

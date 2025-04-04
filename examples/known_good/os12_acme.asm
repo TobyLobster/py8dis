@@ -10583,9 +10583,8 @@ return_59
     pla                                                               ; ff87: 68          h
     rti                                                               ; ff88: 40          @
 
-    !byte 8                                                           ; ff89: 08          .
-
-    pha                                                               ; ff8a: 48          H              ; push A,X onto the stack
+    php                                                               ; ff89: 08          .              ; push flags,A,X onto the stack
+    pha                                                               ; ff8a: 48          H
     txa                                                               ; ff8b: 8a          .
     pha                                                               ; ff8c: 48          H
     tsx                                                               ; ff8d: ba          .
@@ -14155,11 +14154,11 @@ pydis_end
 
 ; Stats:
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 12715 bytes (78%)
-;     Data                     = 3669 bytes (22%)
+;     Code                     = 12716 bytes (78%)
+;     Data                     = 3668 bytes (22%)
 ;
-;     Number of instructions   = 6148
-;     Number of data bytes     = 2364 bytes
+;     Number of instructions   = 6149
+;     Number of data bytes     = 2363 bytes
 ;     Number of data words     = 164 bytes
 ;     Number of string bytes   = 1141 bytes
 ;     Number of strings        = 67

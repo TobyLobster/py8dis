@@ -233,7 +233,6 @@ l10e2                                           = &10e2
 l10e3                                           = &10e3
 l10e4                                           = &10e4
 l1100                                           = &1100
-l1101                                           = &1101
 l1109                                           = &1109
 l110b                                           = &110b
 l110c                                           = &110c
@@ -5275,12 +5274,12 @@ nmi_XXX5 = l0d1f+1
     inx                                                               ; 3c9e: e8          .   :9c9e[1]
     dec l10c4                                                         ; 3c9f: ce c4 10    ... :9c9f[1]
     bne loop_c9c90                                                    ; 3ca2: d0 ec       ..  :9ca2[1]
+    ; This loop sets 16 bytes of memory at l1100+Y to 0
     ldx #&10                                                          ; 3ca4: a2 10       ..  :9ca4[1]
     lda #0                                                            ; 3ca6: a9 00       ..  :9ca6[1]
 ; &3ca8 referenced 1 time by &9cad[1]
 .loop_c9ca8
-    ; This loop sets 16 bytes of memory at l1101 to 0
-    sta l1101 - 1,y                                                   ; 3ca8: 99 00 11    ... :9ca8[1]
+    sta l1100,y                                                       ; 3ca8: 99 00 11    ... :9ca8[1]
     iny                                                               ; 3cab: c8          .   :9cab[1]
     dex                                                               ; 3cac: ca          .   :9cac[1]
     bne loop_c9ca8                                                    ; 3cad: d0 f9       ..  :9cad[1]
@@ -9506,9 +9505,27 @@ lb6ce = sub_cb6cd+1
 
 ; &5774 referenced 1 time by &b7be[1]
 .lb774
-    equb &85, &f4, &8d, &30, &fe, &b1, &b1, &91, &b3, &c8, &d0,   5   ; 5774: 85 f4 8d... ... :b774[1]
-    equb &e6, &b2, &e6, &b4, &ca, &c4, &b5, &d0, &f0, &8a, &d0, &ed   ; 5780: e6 b2 e6... ... :b780[1]
-    equb &68, &85, &f4, &8d, &30, &fe, &4c, &d5, &b7                  ; 578c: 68 85 f4... h.. :b78c[1]
+    equb &85, &f4, &8d, &30, &fe                                      ; 5774: 85 f4 8d... ... :b774[1]
+
+; &5779 referenced 2 times by &b787[1], &b78a[1]
+.cb779
+    lda (l00b1),y                                                     ; 5779: b1 b1       ..  :b779[1]
+    sta (l00b3),y                                                     ; 577b: 91 b3       ..  :b77b[1]
+    iny                                                               ; 577d: c8          .   :b77d[1]
+    bne cb785                                                         ; 577e: d0 05       ..  :b77e[1]
+    inc l00b2                                                         ; 5780: e6 b2       ..  :b780[1]
+    inc l00b4                                                         ; 5782: e6 b4       ..  :b782[1]
+    dex                                                               ; 5784: ca          .   :b784[1]
+; &5785 referenced 1 time by &b77e[1]
+.cb785
+    cpy l00b5                                                         ; 5785: c4 b5       ..  :b785[1]
+    bne cb779                                                         ; 5787: d0 f0       ..  :b787[1]
+    txa                                                               ; 5789: 8a          .   :b789[1]
+    bne cb779                                                         ; 578a: d0 ed       ..  :b78a[1]
+    pla                                                               ; 578c: 68          h   :b78c[1]
+    sta romsel_copy                                                   ; 578d: 85 f4       ..  :b78d[1]
+    sta romsel                                                        ; 578f: 8d 30 fe    .0. :b78f[1]
+    jmp cb7d5                                                         ; 5792: 4c d5 b7    L.. :b792[1]
 
 ; &5795 referenced 5 times by &b4ca[1], &b51d[1], &bd0b[1], &bdb0[1], &bded[1]
 .cb795
@@ -9558,6 +9575,8 @@ lb6ce = sub_cb6cd+1
     ldy #0                                                            ; 57d2: a0 00       ..  :b7d2[1]
     rts                                                               ; 57d4: 60          `   :b7d4[1]
 
+; &57d5 referenced 1 time by &b792[1]
+.cb7d5
     ldx #&21 ; '!'                                                    ; 57d5: a2 21       .!  :b7d5[1]
 ; &57d7 referenced 1 time by &b7d9[1]
 .loop_cb7d7
@@ -9617,8 +9636,8 @@ lb6ce = sub_cb6cd+1
 
 ; &582b referenced 16 times by &b1c1[1], &b2c8[1], &b2e7[1], &b32c[1], &b35a[1], &b3b0[1], &b3ec[1], &b429[1], &b4a3[1], &b573[1], &b5ca[1], &b5e8[1], &b604[1], &b611[1], &b86b[1], &beb5[1]
 .cb82b
-    php                                                               ; 582b: 08          .   :b82b[1]
-    pha                                                               ; 582c: 48          H   :b82c[1]   ; push A,X onto the stack
+    php                                                               ; 582b: 08          .   :b82b[1]   ; push flags,A,X onto the stack
+    pha                                                               ; 582c: 48          H   :b82c[1]
     txa                                                               ; 582d: 8a          .   :b82d[1]
     pha                                                               ; 582e: 48          H   :b82e[1]
     lda #0                                                            ; 582f: a9 00       ..  :b82f[1]
@@ -9626,7 +9645,7 @@ lb6ce = sub_cb6cd+1
     ldx romsel_copy                                                   ; 5833: a6 f4       ..  :b833[1]
     lda l0df0,x                                                       ; 5835: bd f0 0d    ... :b835[1]
     sta l00b9                                                         ; 5838: 85 b9       ..  :b838[1]
-    pla                                                               ; 583a: 68          h   :b83a[1]   ; pull A,X from the stack
+    pla                                                               ; 583a: 68          h   :b83a[1]   ; pull flags,A,X from the stack
     tax                                                               ; 583b: aa          .   :b83b[1]
     pla                                                               ; 583c: 68          h   :b83c[1]
     plp                                                               ; 583d: 28          (   :b83d[1]
@@ -11022,7 +11041,6 @@ lb6ce = sub_cb6cd+1
     assert jump_address_low == &51
     assert l00b3 - 9 == &aa
     assert l00bc - 8 == &b4
-    assert l1101 - 1 == &1100
     assert nmi3_handler_rom_end-nmi3_handler_rom_start == &0e
     assert nmi_XXX1-(nmi_beq+2) == &48
     assert nmi_XXX10-(nmi_bcs+2) == &32
@@ -11081,24 +11099,24 @@ save pydis_start, pydis_end
 ;     l00be:                                             31
 ;     l00cd:                                             31
 ;     print_inline_l809f_top_bit_clear:                  31
+;     l00b1:                                             30
 ;     l00c2:                                             30
-;     l00b1:                                             29
 ;     sub_c83e3:                                         29
 ;     l00b9:                                             28
 ;     l00bb:                                             28
-;     l00b5:                                             26
+;     l00b5:                                             27
+;     l00b4:                                             26
 ;     l00bd:                                             26
-;     l00b4:                                             25
-;     l00b3:                                             23
+;     l00b3:                                             24
 ;     l00c1:                                             23
 ;     os_text_ptr:                                       23
 ;     osbyte:                                            22
+;     romsel_copy:                                       22
 ;     l0f0e:                                             21
 ;     read_tube_r2_data:                                 21
-;     romsel_copy:                                       21
 ;     c809f:                                             20
+;     l00b2:                                             20
 ;     l00c4:                                             20
-;     l00b2:                                             19
 ;     l10c2:                                             19
 ;     l0001:                                             18
 ;     l00a8:                                             18
@@ -11234,6 +11252,7 @@ save pydis_start, pydis_end
 ;     l1116:                                              5
 ;     nmi_XXX23:                                          5
 ;     osnewl:                                             5
+;     romsel:                                             5
 ;     sub_c80bb:                                          5
 ;     sub_c80ed:                                          5
 ;     sub_c80f3:                                          5
@@ -11301,7 +11320,6 @@ save pydis_start, pydis_end
 ;     osrdch:                                             4
 ;     return_14:                                          4
 ;     return_64:                                          4
-;     romsel:                                             4
 ;     sub_c80c8:                                          4
 ;     sub_c8174:                                          4
 ;     sub_c821d:                                          4
@@ -11487,6 +11505,7 @@ save pydis_start, pydis_end
 ;     cb45e:                                              2
 ;     cb655:                                              2
 ;     cb718:                                              2
+;     cb779:                                              2
 ;     cb7ed:                                              2
 ;     cb8e4:                                              2
 ;     cb9e8:                                              2
@@ -11993,8 +12012,10 @@ save pydis_start, pydis_end
 ;     cb6eb:                                              1
 ;     cb6f5:                                              1
 ;     cb736:                                              1
+;     cb785:                                              1
 ;     cb7ae:                                              1
 ;     cb7b2:                                              1
+;     cb7d5:                                              1
 ;     cb7e8:                                              1
 ;     cb898:                                              1
 ;     cb8e6:                                              1
@@ -12979,9 +13000,12 @@ save pydis_start, pydis_end
 ;     cb6f5
 ;     cb718
 ;     cb736
+;     cb779
+;     cb785
 ;     cb795
 ;     cb7ae
 ;     cb7b2
+;     cb7d5
 ;     cb7e8
 ;     cb7ed
 ;     cb82b
@@ -13268,7 +13292,6 @@ save pydis_start, pydis_end
 ;     l10e3
 ;     l10e4
 ;     l1100
-;     l1101
 ;     l1109
 ;     l110b
 ;     l110c
@@ -13891,11 +13914,11 @@ save pydis_start, pydis_end
 
 ; Stats:
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 14446 bytes (88%)
-;     Data                     = 1938 bytes (12%)
+;     Code                     = 14474 bytes (88%)
+;     Data                     = 1910 bytes (12%)
 ;
-;     Number of instructions   = 6996
-;     Number of data bytes     = 616 bytes
+;     Number of instructions   = 7011
+;     Number of data bytes     = 588 bytes
 ;     Number of data words     = 38 bytes
 ;     Number of string bytes   = 1284 bytes
 ;     Number of strings        = 150

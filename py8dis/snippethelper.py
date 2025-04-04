@@ -1,6 +1,7 @@
 import classification
 import movemanager
 import trace
+import utils
 from memorymanager import BinaryLocation
 
 class SnippetHelper:
@@ -64,7 +65,10 @@ class SnippetHelper:
         return None
 
     def get_state(self, label_name, offset=0):
-        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=True)
+        if isinstance(label_name, str):
+            binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=True)
+        else:
+            binary_addr = label_name
         if binary_addr:
             binary_addr += offset
             assert 0 <= binary_addr < 0x10000

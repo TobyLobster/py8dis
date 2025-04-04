@@ -3280,8 +3280,8 @@ sub_c92b0
 
 ; $92b5 referenced 2 times by $9c48, $9e8f
 sub_c92b5
-    php                                                               ; 92b5: 08          .
-    pha                                                               ; 92b6: 48          H              ; push A,X onto the stack
+    php                                                               ; 92b5: 08          .              ; push flags,A,X onto the stack
+    pha                                                               ; 92b6: 48          H
     txa                                                               ; 92b7: 8a          .
     pha                                                               ; 92b8: 48          H
     tsx                                                               ; 92b9: ba          .
@@ -3294,8 +3294,8 @@ sub_c92b5
     bne c92e1                                                         ; 92ca: d0 15       ..
 ; $92cc referenced 2 times by $9ca9, $9e8a
 sub_c92cc
-    php                                                               ; 92cc: 08          .
-    pha                                                               ; 92cd: 48          H              ; push A,X onto the stack
+    php                                                               ; 92cc: 08          .              ; push flags,A,X onto the stack
+    pha                                                               ; 92cd: 48          H
     txa                                                               ; 92ce: 8a          .
     pha                                                               ; 92cf: 48          H
     tsx                                                               ; 92d0: ba          .
@@ -3307,7 +3307,7 @@ sub_c92cc
     sta l1060,x                                                       ; 92de: 9d 60 10    .`.
 ; $92e1 referenced 3 times by $92c0, $92ca, $92d7
 c92e1
-    pla                                                               ; 92e1: 68          h              ; pull A,X from the stack
+    pla                                                               ; 92e1: 68          h              ; pull flags,A,X from the stack
     tax                                                               ; 92e2: aa          .
     pla                                                               ; 92e3: 68          h
     plp                                                               ; 92e4: 28          (
@@ -8053,12 +8053,12 @@ cb025
 cb028
     sty l00ac                                                         ; b028: 84 ac       ..
     bvs cb058                                                         ; b02a: 70 2c       p,
+    ; This loop sets 6 bytes of memory to 32
     ldx #6                                                            ; b02c: a2 06       ..
     ldy #$18                                                          ; b02e: a0 18       ..
     lda #$20 ; ' '                                                    ; b030: a9 20       .
 ; $b032 referenced 1 time by $b036
 loop_cb032
-    ; This loop sets 6 bytes of memory to 32
     sta (l009c),y                                                     ; b032: 91 9c       ..
     iny                                                               ; b034: c8          .
     dex                                                               ; b035: ca          .
@@ -8375,12 +8375,12 @@ cb205
 ; $b208 referenced 1 time by $b1df
 cb208
     bvs cb236                                                         ; b208: 70 2c       p,
+    ; This loop sets 6 bytes of memory to 32
     ldx #6                                                            ; b20a: a2 06       ..
     ldy #$10                                                          ; b20c: a0 10       ..
     lda #$20 ; ' '                                                    ; b20e: a9 20       .
 ; $b210 referenced 1 time by $b214
 loop_cb210
-    ; This loop sets 6 bytes of memory to 32
     sta (l009c),y                                                     ; b210: 91 9c       ..
     iny                                                               ; b212: c8          .
     dex                                                               ; b213: ca          .

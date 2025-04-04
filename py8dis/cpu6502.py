@@ -16,7 +16,7 @@ import sys
 from align import Align
 from binaryaddrtype import BinaryAddrType
 from memorymanager import RuntimeAddr, BinaryAddr, BinaryLocation
-from snippets6502 import snippets
+from snippets6502 import find_code_snippets, mark_up_snippets
 from snippethelper import *
 
 memory_binary = memorymanager.memory_binary
@@ -1611,9 +1611,12 @@ class Cpu6502(cpu.Cpu):
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
 
         # For each pattern
-        for tup in snippets:
+        for pattern in find_code_snippets:
+            if pattern == None:
+                continue
+
             # Find all matches
-            matches = re.finditer(tup[1].pattern, bytes_array)
+            matches = re.finditer(pattern, bytes_array)
 
             for match in matches:
                 # Mark as code
@@ -1631,10 +1634,10 @@ class Cpu6502(cpu.Cpu):
         found_already = [False]*65536
 
         # for each snippet
-        for tup in snippets:
+        for tup in mark_up_snippets:
             # Find all matches
-            matches = re.finditer(tup[1].pattern, bytes_array)
-            #utils.debug("Hello: {0}".format(tup[1].pattern))
+            matches = re.finditer(tup[1].whole_pattern, bytes_array)
+            #utils.debug("Hello: {0}".format(tup[1].whole_pattern))
 
             for match in matches:
                 binary_addr = match.start()
