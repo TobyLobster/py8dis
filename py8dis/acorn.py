@@ -12,7 +12,107 @@ import machinetype
 from memorymanager import BinaryAddr, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from classification import INSIDE_A_CLASSIFICATION
+from snippets6502 import register_mark_up_snippet, register_find_code_snippet, OPCODE_TXA, OPCODE_TYA
 
+# ************************************************************************************************
+def comment_print_tab(p):
+    def get_coord_str(operand_label, instruction_label):
+        coord = p.get_memory(operand_label)
+        if coord == None:
+            opcode = p.get_memory(instruction_label)
+            if opcode == OPCODE_TXA:
+                coord = 'X'
+            elif opcode == OPCODE_TYA:
+                coord = 'Y'
+            else:
+                coord = '?'
+        else:
+            coord = str(coord)
+        return coord
+    x = get_coord_str('nn1', 'transfer1')
+    y = get_coord_str('nn2', 'transfer2')
+    disassembly.comment_binary(p.get_start_loc(), "Position text cursor at ({0},{1})".format(x,y), indent=1, align=Align.AFTER_LABEL)
+
+# ************************************************************************************************
+def comment_print_message(p):
+    # Make sure the branch instruction's operand jumps to the definition of the label as expected
+    if not p.check_branch_matches('loop'):
+        return
+
+    disassembly.comment_binary(p.get_start_loc(), "print message", indent=1, align=Align.AFTER_LABEL)
+
+# ************************************************************************************************
+def comment_print_repeated_character(p):
+    if not p.check_branch_matches('loop1') and not p.check_branch_matches('loop2'):
+        return
+    cc = p.get_memory('nn1')
+    if cc == None:
+        cc = 'A'
+
+    disassembly.comment_binary(p.get_start_loc(), "print character {0} repeatedly".format(cc), indent=1, align=Align.AFTER_LABEL)
+
+# ************************************************************************************************
+# ************************************************************************************************
+# ************************************************************************************************
+def register_snippets():
+    register_mark_up_snippet(comment_print_tab, """
+    lda #$1f
+    jsr $ffee
+transfer1
+    lda #nn1 | txa | tya
+    jsr $ffee
+transfer2
+    lda #nn2 | txa | tya
+    jsr $ffee
+""")
+
+    register_mark_up_snippet(comment_print_message, """
+?   ldy #nn1 | ldy zp | ldy zp,x | ldy addr | ldy addr,x
+loop
+    lda message,y | lda zp,y | lda (zp1),y
+?   bmi other | beq other
+    jsr $ffee
+    iny | dey
+?   cpy #nn2
+    bne loop | bpl loop
+""")
+
+    register_mark_up_snippet(comment_print_message, """
+?   ldx #nn1 | ldx zp | ldx zp,y | ldx addr | ldx addr,y
+loop
+    lda message,x | lda zp,x | lda (zp1),x
+?   bmi other | beq other
+    jsr $ffee
+    inx | dex
+?   cpx #nn2
+    bne loop | bpl loop
+""")
+
+    register_mark_up_snippet(comment_print_repeated_character, """
+loop1
+?   lda #nn1 | lda addr | lda zp | ldx #nn | ldx addr | ldx zp
+?   lda #nn1 | lda addr | lda zp | ldx #nn | ldx addr | ldx zp
+loop2
+    jsr $ffee
+    dex
+    bne loop1 | bne loop2 | bpl loop1 | bpl loop2
+""")
+
+    # ********************************************************************************************
+    # ********************************************************************************************
+    # ********************************************************************************************
+    # PRINT TAB(nn1,nn2)
+    register_find_code_snippet("""
+    lda #$1f
+    jsr $ffee
+    lda #nn1
+    jsr $ffee
+    lda #nn2
+    jsr $ffee
+""")
+
+
+# ************************************************************************************************
 def xy_addr(x_addr, y_addr):
     """Given two binary addresses holding the low byte and high byte of an address,
     output expressions for each and return the address."""
@@ -3281,3 +3381,5 @@ def master():
     mos_labels()
     add_oswrsc()
     hardware_master()
+
+register_snippets()

@@ -8630,6 +8630,7 @@ jump_address_low = sub_c0050+1
     lda #&0d                                                          ; 526c: a9 0d       ..  :b26c[1]
     jsr sub_cbac4                                                     ; 526e: 20 c4 ba     .. :b26e[1]
     bcs cb297                                                         ; 5271: b0 24       .$  :b271[1]
+    ; print message
     ldx #0                                                            ; 5273: a2 00       ..  :b273[1]
 ; &5275 referenced 1 time by &b27e[1]
 .loop_cb275
@@ -8671,6 +8672,7 @@ jump_address_low = sub_c0050+1
 
 ; &52b2 referenced 1 time by &b29c[1]
 .cb2b2
+    ; print message
     ldy #0                                                            ; 52b2: a0 00       ..  :b2b2[1]
 ; &52b4 referenced 1 time by &b2bb[1]
 .loop_cb2b4
@@ -8680,6 +8682,7 @@ jump_address_low = sub_c0050+1
     bne loop_cb2b4                                                    ; 52bb: d0 f7       ..  :b2bb[1]
 ; &52bd referenced 1 time by &b2c6[1]
 .loop_cb2bd
+    ; print message
     lda lb175,y                                                       ; 52bd: b9 75 b1    .u. :b2bd[1]
     beq cb280                                                         ; 52c0: f0 be       ..  :b2c0[1]
     jsr oswrch                                                        ; 52c2: 20 ee ff     .. :b2c2[1]   ; Write character

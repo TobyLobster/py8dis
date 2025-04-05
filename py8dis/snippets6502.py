@@ -12,6 +12,8 @@ OPCODE_STA_ZP_COMMA_X           = 0x95      # sta zp,x
 OPCODE_DEX                      = 0xca      # dex
 OPCODE_INX                      = 0xe8      # inx
 OPCODE_BNE                      = 0xd0      # bne loop
+OPCODE_TXA                      = 0x8a      # txa
+OPCODE_TYA                      = 0x98      # tya
 
 # 'mark_up_snippets' is the list of 'snippets' (which are turned into regexes) for binary data to
 # find common code tropes, and an associated function (to both comment on it and add expressions)
@@ -292,6 +294,7 @@ def comment_set_memory_x_loop(p):
 # ************************************************************************************************
 def comment_set_memory_y_loop(p):
     comment_set_memory_r_loop(p, 'y', 'x')
+
 
 # ************************************************************************************************
 # ************************************************************************************************
@@ -616,11 +619,6 @@ branch
     bne loop | bpl loop
 """)
 
-
-
-
-
-
 #################################################################################################
 #################################################################################################
 #################################################################################################
@@ -717,6 +715,7 @@ register_find_code_snippet("""
     tay
 """)
 
+# Memory copy (reversed) with X as the loop counter
 register_find_code_snippet("""
 ?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
 ?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
@@ -728,6 +727,7 @@ loop
     bne loop | bpl loop
 """)
 
+# Memory copy (reversed) with Y as the loop counter
 register_find_code_snippet("""
 ?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
 ?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x

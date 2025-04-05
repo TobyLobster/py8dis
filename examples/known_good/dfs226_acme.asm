@@ -8512,6 +8512,7 @@ cb268
     lda #$0d                                                          ; b26c: a9 0d       ..
     jsr sub_cbac4                                                     ; b26e: 20 c4 ba     ..
     bcs cb297                                                         ; b271: b0 24       .$
+    ; print message
     ldx #0                                                            ; b273: a2 00       ..
 ; $b275 referenced 1 time by $b27e
 loop_cb275
@@ -8553,6 +8554,7 @@ cb2a0
 
 ; $b2b2 referenced 1 time by $b29c
 cb2b2
+    ; print message
     ldy #0                                                            ; b2b2: a0 00       ..
 ; $b2b4 referenced 1 time by $b2bb
 loop_cb2b4
@@ -8562,6 +8564,7 @@ loop_cb2b4
     bne loop_cb2b4                                                    ; b2bb: d0 f7       ..
 ; $b2bd referenced 1 time by $b2c6
 loop_cb2bd
+    ; print message
     lda lb175,y                                                       ; b2bd: b9 75 b1    .u.
     beq cb280                                                         ; b2c0: f0 be       ..
     jsr oswrch                                                        ; b2c2: 20 ee ff     ..            ; Write character

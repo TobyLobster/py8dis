@@ -3112,6 +3112,7 @@ plot_energy_bar_edges_loop
 
 ; ----------------------------------------------------------------------------------
 plot_energy_text
+    ; print message
     ldx #8                                                            ; 33a3: a2 08       ..  :22a3[1]
 loop
     lda energy_string,x                                               ; 33a5: bd 22 22    ."" :22a5[1]
@@ -3123,6 +3124,7 @@ loop
 
 ; ----------------------------------------------------------------------------------
 plot_one_two_three_four_text
+    ; print message
     ldx #$11                                                          ; 33b1: a2 11       ..  :22b1[1]
 loop1
     lda one_two_three_four_string,x                                   ; 33b3: bd 2b 22    .+" :22b3[1]
@@ -3133,6 +3135,7 @@ loop1
 
 ; ----------------------------------------------------------------------------------
 plot_shields_text
+    ; print message
     ldx #$0e                                                          ; 33bd: a2 0e       ..  :22bd[1]
 loop2
     lda shields_string,x                                              ; 33bf: bd 3d 22    .=" :22bf[1]
@@ -3143,6 +3146,7 @@ loop2
 
 ; ----------------------------------------------------------------------------------
 plot_blank_text
+    ; print message
     ldx #$0e                                                          ; 33c9: a2 0e       ..  :22c9[1]
 loop3
     lda blank_string,x                                                ; 33cb: bd 4c 22    .L" :22cb[1]
@@ -3172,6 +3176,7 @@ initialise_envelopes
     rts                                                               ; 33f9: 60          `   :22f9[1]
 
 plot_screen_border
+    ; print message
     ldx #$29                                                          ; 33fa: a2 29       .)  :22fa[1]
 loop_c22fc
     lda screen_border_string,x                                        ; 33fc: bd 5a 21    .Z! :22fc[1]
@@ -3181,6 +3186,7 @@ loop_c22fc
     rts                                                               ; 3405: 60          `   :2305[1]
 
 set_foreground_colour_to_white
+    ; print message
     ldx #5                                                            ; 3406: a2 05       ..  :2306[1]
 loop_c2308
     lda set_foreground_colour_to_white_string,x                       ; 3408: bd 10 22    .." :2308[1]
@@ -3190,6 +3196,7 @@ loop_c2308
     rts                                                               ; 3411: 60          `   :2311[1]
 
 set_foreground_colour_to_black
+    ; print message
     ldx #5                                                            ; 3412: a2 05       ..  :2312[1]
 loop_c2314
     lda set_foreground_colour_to_black_string,x                       ; 3414: bd 16 22    .." :2314[1]
@@ -3199,6 +3206,7 @@ loop_c2314
     rts                                                               ; 341d: 60          `   :231d[1]
 
 set_background_colour_to_black
+    ; print message
     ldx #5                                                            ; 341e: a2 05       ..  :231e[1]
 loop_c2320
     lda set_background_colour_to_black_string,x                       ; 3420: bd 1c 22    .." :2320[1]
@@ -3208,6 +3216,7 @@ loop_c2320
     rts                                                               ; 3429: 60          `   :2329[1]
 
 enable_cursor
+    ; print message
     ldx #9                                                            ; 342a: a2 09       ..  :232a[1]
 enable_cursor_loop
     lda enable_cursor_string,x                                        ; 342c: bd 5b 22    .[" :232c[1]
@@ -3218,6 +3227,7 @@ enable_cursor_loop
 
 ; ----------------------------------------------------------------------------------
 disable_cursor
+    ; print message
     ldx #9                                                            ; 3436: a2 09       ..  :2336[1]
 loop4
 disable_cursor_loop
@@ -4954,6 +4964,7 @@ convert_score_as_bcd_to_score_as_digits
     and #$0f                                                          ; 3f32: 29 0f       ).  :2e32[1]
     sta score_as_digits                                               ; 3f34: 8d 6e 2d    .n- :2e34[1]
 ; tab into position, TAB(33,30):
+    ; Position text cursor at (33,30)
     lda #$1f                                                          ; 3f37: a9 1f       ..  :2e37[1]
     jsr oswrch                                                        ; 3f39: 20 ee ff     .. :2e39[1]   ; Write character 31
     lda #$21                                                          ; 3f3c: a9 21       .!  :2e3c[1]
@@ -5969,6 +5980,7 @@ plot_command_number
     lda #$3f                                                          ; 46af: a9 3f       .?  :35af[1]
     jsr plot_horizontal_line                                          ; 46b1: 20 db 1b     .. :35b1[1]
     dec screen_start_high                                             ; 46b4: c6 79       .y  :35b4[1]
+    ; print message
     ldy #$0d                                                          ; 46b6: a0 0d       ..  :35b6[1]
 plot_command_loop
     lda command_string,y                                              ; 46b8: b9 e4 34    ..4 :35b8[1]
@@ -5986,6 +5998,7 @@ plot_command_loop
     ldy #$63                                                          ; 46cd: a0 63       .c  :35cd[1]
 single_digit_command_number_for_move
     sty command_move_string_horizontal_pos                            ; 46cf: 8c e1 34    ..4 :35cf[1]
+    ; print message
     ldy #5                                                            ; 46d2: a0 05       ..  :35d2[1]
 plot_command_move_loop
     lda command_move_string,y                                         ; 46d4: b9 de 34    ..4 :35d4[1]
@@ -6008,6 +6021,7 @@ single_digit_command_number
     rts                                                               ; 46f6: 60          `   :35f6[1]
 
 plot_escape_capsule_launched
+    ; print message
     ldy #$1d                                                          ; 46f7: a0 1d       ..  :35f7[1]
 plot_escape_capsule_launched_loop_loop
     lda escape_capsule_launched_string,y                              ; 46f9: b9 c0 34    ..4 :35f9[1]
@@ -6581,6 +6595,7 @@ leading_zero1
     lda command_number                                                ; 4d47: ad b1 34    ..4 :3c47[1]
     cmp #1                                                            ; 4d4a: c9 01       ..  :3c4a[1]
     beq skip_previous_command_score                                   ; 4d4c: f0 29       .)  :3c4c[1]
+    ; print message
     ldy #0                                                            ; 4d4e: a0 00       ..  :3c4e[1]
 plot_having_just_gained_loop
     lda having_just_gained_string,y                                   ; 4d50: b9 72 3a    .r: :3c50[1]
@@ -6605,6 +6620,7 @@ skip_previous_command_score
     jmp leave_after_plotting_line_of_underscores                      ; 4d7c: 4c 17 3d    L.= :3c7c[1]
 
 plot_after_your_performance
+    ; print message
     ldy #0                                                            ; 4d7f: a0 00       ..  :3c7f[1]
 plot_after_your_performance_loop
     lda after_your_performance_string,y                               ; 4d81: b9 bd 39    ..9 :3c81[1]
@@ -6706,6 +6722,7 @@ plot_line_of_underscores_loop
     rts                                                               ; 4e2f: 60          `   :3d2f[1]
 
 tab_to_x_y
+    ; Position text cursor at (X,Y)
     lda #$1f                                                          ; 4e30: a9 1f       ..  :3d30[1]
     jsr oswrch                                                        ; 4e32: 20 ee ff     .. :3d32[1]   ; Write character 31
     txa                                                               ; 4e35: 8a          .   :3d35[1]
@@ -6826,6 +6843,7 @@ unused97
 
 plot_line_of_underscores_at_y
     tay                                                               ; 514c: a8          .   :404c[1]
+    ; Position text cursor at (0,Y)
     lda #$1f                                                          ; 514d: a9 1f       ..  :404d[1]
     jsr oswrch                                                        ; 514f: 20 ee ff     .. :404f[1]   ; Write character 31
     lda #0                                                            ; 5152: a9 00       ..  :4052[1]

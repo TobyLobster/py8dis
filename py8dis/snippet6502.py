@@ -468,7 +468,20 @@ def parse_instruction(inst, group_number):
                 if len(m.group()) > 1:
                     # Record the matches if they are labels, or check the values if they are integers
                     operand_expr = m.group(1)
-                    is_integer = operand_expr and (operand_expr[0] in ['+-&$0123456789'])
+                    is_integer = operand_expr and (operand_expr[0] in '+-&$0123456789')
+                    sign = 1
+                    if is_integer:
+                        if operand_expr[0] == '-':
+                            sign = -1
+                            operand_expr = operand_expr[1:]
+                        elif operand_expr[0] == '+':
+                            operand_expr = operand_expr[1:]
+
+                        if operand_expr[0] in '$&':
+                            operand_expr = int(operand_expr[1:], 16)
+                        else:
+                            operand_expr = int(operand_expr)
+                        operand_expr = sign * operand_expr
 
                     # check instruction length
                     if details.length == 2:
@@ -482,8 +495,7 @@ def parse_instruction(inst, group_number):
                     elif details.length == 3:
                         # get a two byte operand
                         if is_integer:
-                            i = int(operand_expr)
-                            result_operand += re.escape(bytearray([i & 255, i >> 8]))
+                            result_operand += re.escape(bytearray([operand_expr & 255, operand_expr >> 8]))
                         else:
                             labels[operand_expr] = [(group_number, False)]
                             result_operand += "(..)".encode()

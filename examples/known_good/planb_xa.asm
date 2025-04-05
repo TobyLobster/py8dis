@@ -10424,12 +10424,14 @@ add_to_score_loop
     cpy #7                                                            // 3fdf: c0 07       ..
     bne add_to_score_loop                                             // 3fe1: d0 e9       ..
 print_score
+    // Position text cursor at (0,2)
     lda #$1f                                                          // 3fe3: a9 1f       ..
     jsr oswrch                                                        // 3fe5: 20 ee ff     ..            // Write character 31
     lda #0                                                            // 3fe8: a9 00       ..
     jsr oswrch                                                        // 3fea: 20 ee ff     ..            // Write character 0
     lda #2                                                            // 3fed: a9 02       ..
     jsr oswrch                                                        // 3fef: 20 ee ff     ..            // Write character 2
+    // print message
     ldy #6                                                            // 3ff2: a0 06       ..
 print_score_loop
     lda score_digits_0,y                                              // 3ff4: b9 28 00    .(.
@@ -10829,10 +10831,12 @@ count_room_title_length
     sta half_length_of_room_title                                     // 4299: 85 45       .E
     tax                                                               // 429b: aa          .
 print_x_spaces_loop
+    // print character 32 repeatedly
     lda #$20                                                          // 429c: a9 20       .
     jsr oswrch                                                        // 429e: 20 ee ff     ..            // Write character 32
     dex                                                               // 42a1: ca          .
     bne print_x_spaces_loop                                           // 42a2: d0 f8       ..
+    // print message
     ldy title_offset                                                  // 42a4: a4 44       .D
 print_room_name_loop
     lda current_room_cache,y                                          // 42a6: b9 00 04    ...
@@ -11726,6 +11730,7 @@ key_taken
     inc number_of_key0_held,x                                         // 4803: f6 24       .$
     lda number_of_key0_held,x                                         // 4805: b5 24       .$
     sta temp_counter                                                  // 4807: 85 3a       .:
+    // Position text cursor at (15,X)
     lda #$1f                                                          // 4809: a9 1f       ..
     jsr oswrch                                                        // 480b: 20 ee ff     ..            // Write character 31
     lda #$0f                                                          // 480e: a9 0f       ..
