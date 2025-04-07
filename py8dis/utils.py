@@ -108,6 +108,14 @@ def is_string_type(item):
 def is_integer_type(item):
     return isinstance(item, _integer_types)
 
+def is_integer_string(s):
+    assert s != None
+    if s == None:
+        return False
+    if re.fullmatch(r'[+-]?[$&]?[0-9A-Fa-f]+', s):
+        return True
+    return False
+
 # See https://stackoverflow.com/a/11150413
 def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()

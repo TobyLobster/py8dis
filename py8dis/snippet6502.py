@@ -427,6 +427,33 @@ def parse_line(line, group_number):
 
     return(pattern, labels, group_number)
 
+def parse_integer(s):
+    """Parse a string as an integer, decimal, hex or binary, with optional sign"""
+    assert s != None
+    if s == None:
+        return 0
+
+    s = s.strip().strip(',')
+
+    sign = 1
+    if s[0] == '-':
+        sign = -1
+        s = s[1:]
+    elif s[0] == '+':
+        s = s[1:]
+
+    if s[0] in '$&':
+        # hexadecimal number
+        s = int(s[1:], 16)
+    elif s[0] == '%':
+        # binary number
+        s = s[1:].replace('.', '0').replace('#', '1')
+        s = int(s, 2)
+    else:
+        # decimal number
+        s = int(s)
+    return sign * s
+
 def parse_instruction(inst, group_number):
     labels = collections.defaultdict(list)
 
@@ -440,6 +467,20 @@ def parse_instruction(inst, group_number):
 
     if mnemonic == '.':
         result = any_valid_instruction
+        return (result, labels, group_number)
+
+    if mnemonic == "!byte":
+        result = bytearray()
+        for entry in parts[1].split():
+            by = parse_integer(entry)
+            result += re.escape(bytearray([by]))
+        return (result, labels, group_number)
+
+    if mnemonic == "!word":
+        result = bytearray()
+        for entry in parts[1].split():
+            by = parse_integer(entry)
+            result += re.escape(bytearray([by & 255, by >> 8]))
         return (result, labels, group_number)
 
     if mnemonic not in mnemonics:
@@ -469,19 +510,8 @@ def parse_instruction(inst, group_number):
                     # Record the matches if they are labels, or check the values if they are integers
                     operand_expr = m.group(1)
                     is_integer = operand_expr and (operand_expr[0] in '+-&$0123456789')
-                    sign = 1
                     if is_integer:
-                        if operand_expr[0] == '-':
-                            sign = -1
-                            operand_expr = operand_expr[1:]
-                        elif operand_expr[0] == '+':
-                            operand_expr = operand_expr[1:]
-
-                        if operand_expr[0] in '$&':
-                            operand_expr = int(operand_expr[1:], 16)
-                        else:
-                            operand_expr = int(operand_expr)
-                        operand_expr = sign * operand_expr
+                        operand_expr = parse_integer(operand_expr)
 
                     # check instruction length
                     if details.length == 2:

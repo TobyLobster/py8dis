@@ -8039,7 +8039,7 @@ lad43 = sub_cad41+2
     ldx #&f8                                                          ; b019: a2 f8       ..
 ; &b01b referenced 1 time by &b022
 .loop_cb01b
-    lda print - (&f8),x                                               ; b01b: bd 61 8d    .a.
+    lda print - &f8,x                                                 ; b01b: bd 61 8d    .a.
     sta (l009c),y                                                     ; b01e: 91 9c       ..
     iny                                                               ; b020: c8          .
     inx                                                               ; b021: e8          .
@@ -10742,7 +10742,7 @@ lbd94 = sub_cbd93+1
     assert l0f04 - 1 == &0f03
     assert l1072 - 1 == &1071
     assert l8f49 - 1 == &8f48
-    assert print - (&f8) == &8d61
+    assert print - &f8 == &8d61
     assert sub_c89a7 - 1 == &89a6
     assert sub_c8ad4-1 == &8ad3
     assert sub_c8b1a-1 == &8b19

@@ -1119,16 +1119,6 @@ formatted_comment(0x4431, divider)
 label(0x4431, "screen_address_table_low")
 label(0x4451, "screen_address_table_high")
 
-addr_low = 0x4431
-addr_high = 0x4451
-for i in range(0,32):
-    expr(addr_low, "<($5800 + " + str(i) + " * $0140)")
-    expr(addr_high, ">($5800 + " + str(i) + " * $0140)")
-    byte(addr_low, 1)
-    byte(addr_high, 1)
-    addr_low += 1
-    addr_high += 1
-
 label(0x4415, "eor_top_two_bits_loop")
 label(0x4417, "eor_top_two_bits_internal_loop")
 sublabel(0x4471, "get_sprite_a_address")

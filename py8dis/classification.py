@@ -265,7 +265,7 @@ def add_classification(binary_addr, c):
 
     binary_addr = BinaryAddr(binary_addr)
     assert c is not None
-    assert not is_classified(binary_addr, c.length()), "Binary address {0} is already classified as {1}".format(hex(binary_addr), classification)
+    assert not is_classified(binary_addr, c.length()), "Binary address {0} is already classified as {1}".format(hex(binary_addr), get_classification(binary_addr))
 
     prev_addr = binary_addr
     classifications[binary_addr] = copy.copy(c)

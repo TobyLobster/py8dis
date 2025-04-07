@@ -13,7 +13,7 @@ def bracket(expr):
             return "({0})".format(strtext)
 
         return utils.LazyString("%s", late_formatter)
-    elif utils.is_integer_type(expr) or expr.isdigit() or disassembly.is_simple_name(expr):
+    elif utils.is_integer_type(expr) or expr.isdigit() or disassembly.is_simple_name(expr) or utils.is_integer_string(expr):
         return str(expr)
     return "(" + expr + ")"
 

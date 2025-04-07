@@ -39,7 +39,11 @@ class SnippetHelper:
         return BinaryLocation(binary_addr, move_id)
 
     def get_memory(self, label_name, offset=0):
-        binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
+        if isinstance(label_name, str):
+            binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
+        else:
+            binary_addr = label_name
+            length = 1
         if binary_addr:
             binary_addr += offset
             if length == 2:

@@ -8039,7 +8039,7 @@ sub_cb019
     ldx #$f8                                                          // b019: a2 f8       ..
 // $b01b referenced 1 time by $b022
 loop_cb01b
-    lda print - ($f8),x                                               // b01b: bd 61 8d    .a.
+    lda print - $f8,x                                                 // b01b: bd 61 8d    .a.
     sta (l009c),y                                                     // b01e: 91 9c       ..
     iny                                                               // b020: c8          .
     inx                                                               // b021: e8          .

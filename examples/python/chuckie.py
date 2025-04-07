@@ -54,12 +54,6 @@ def label_with_comment(addr, lab, comm):
     comment_lined(addr, comm)
     mylabel(addr, lab)
 
-def hex_block(addr, bytes_per_line, lines):
-    hexadecimal(addr, bytes_per_line * lines)
-    for y in range(0, lines):
-        byte(addr, bytes_per_line, bytes_per_line)
-        addr += bytes_per_line
-
 def sint_block(addr, bytes_per_line, lines):
     sint(addr, bytes_per_line * lines)
     for y in range(0, lines):

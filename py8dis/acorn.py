@@ -52,6 +52,50 @@ def comment_print_repeated_character(p):
     disassembly.comment_binary(p.get_start_loc(), "print character {0} repeatedly".format(cc), indent=1, align=Align.AFTER_LABEL)
 
 # ************************************************************************************************
+def comment_screen_addresses(p):
+    low_addr = p.get_binary_address('low')
+    high_addr = p.get_binary_address('high')
+
+    is_word = low_addr == None and high_addr == None
+    if is_word:
+        low_addr = p.get_start_loc().binary_address
+        high_addr = low_addr + 1
+        offset_to_next_entry = 2
+    else:
+        offset_to_next_entry = 1
+
+    start = p.get_memory(low_addr) + 256*p.get_memory(high_addr)
+    second = p.get_memory(low_addr+offset_to_next_entry) + 256*p.get_memory(high_addr+offset_to_next_entry)
+    offset = second - start
+
+    for i in range(0,32):
+        exp = make_add(config.get_assembler().hex(start), make_multiply(str(i), config.get_assembler().hex(offset)))
+        if not is_word:
+            byte(low_addr+i, 1)
+            byte(high_addr+i, 1)
+            expr(low_addr+i, make_lo(exp))
+            expr(high_addr+i, make_hi(exp))
+        else:
+            word(low_addr+i*2, 1)
+            expr(low_addr+i*2, exp)
+
+    if low_addr:
+        disassembly.comment_binary(low_addr, "table of screen addresses for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
+    if high_addr:
+        disassembly.comment_binary(high_addr, "table of screen addresses for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
+    if is_word:
+        disassembly.comment_binary(low_addr, "table of screen addresses for each character row", indent=1, align=Align.AFTER_LABEL)
+
+# ************************************************************************************************
+def comment_screen_offsets(p):
+    low_addr = p.get_binary_address('low')
+    high_addr = p.get_binary_address('high')
+    if low_addr:
+        disassembly.comment_binary(low_addr, "table of offsets for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
+    if high_addr:
+        disassembly.comment_binary(high_addr, "table of offsets for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
+
+# ************************************************************************************************
 # ************************************************************************************************
 # ************************************************************************************************
 def register_snippets():
@@ -98,6 +142,36 @@ loop2
     bne loop1 | bne loop2 | bpl loop1 | bpl loop2
 """)
 
+    # e.g.:
+    #low
+    #    !byte $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0
+    #high
+    #    !byte $58, $59, $5a, $5b, $5d, $5e, $5f, $60, $62, $63, $64, $65, $67, $68, $69, $6a, $6c, $6d, $6e, $6f, $71, $72, $73, $74, $76, $77, $78, $79, $7b, $7c, $7d, $7e
+
+    for pair in [(0x3000, 0x280), (0x5800, 0x140), (0x0, 0x280), (0x0, 0x140)]:
+        start = pair[0]
+        offset = pair[1]
+        for length in range(32,33):
+            for order in [('!byte', 2, 'high', 'low'), ('!byte', 2, 'low', 'high'), ('!word', 3, '', '')]:
+                snip = ""
+                for index in range(order[1],4):
+                    snip += "\n" + order[index] + "\n    {0}".format(order[0])
+                    for i in range(length):
+                        v = start + i*offset
+                        if order[index] == 'low':
+                            snip += " $"+hex(v & 255)[2:]+","
+                        elif order[index] == 'high':
+                            snip += " $"+hex(v >> 8)[2:]+","
+                        else:
+                            snip += " $"+hex(v)[2:]+","
+
+                #utils.debug("Snip:{0}".format(snip))
+                if start == 0:
+                    register_mark_up_snippet(comment_screen_offsets, snip)
+                else:
+                    register_mark_up_snippet(comment_screen_addresses, snip)
+
+
     # ********************************************************************************************
     # ********************************************************************************************
     # ********************************************************************************************
@@ -110,7 +184,6 @@ loop2
     lda #nn2
     jsr $ffee
 """)
-
 
 # ************************************************************************************************
 def xy_addr(x_addr, y_addr):
