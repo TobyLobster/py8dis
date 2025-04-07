@@ -600,16 +600,26 @@ def set_formatter(runtime_addr, n, formatter):
         binary_loc = movemanager.r2b_checked(runtime_addr + i)
         disassembly.format_hint[binary_loc.binary_addr] = formatter
 
+def uhex(runtime_addr, n=1):
+    """Specifies unsigned hex formatting for data in the given block"""
+
+    set_formatter(runtime_addr, n, mainformatter.uhex_formatter)
+
 def uint(runtime_addr, n=1):
-    """Specifies uint formatting for data in the given block"""
+    """Specifies unsigned decimal/hex formatting for data in the given block"""
 
     # This is nearly the default behaviour, but by specifying a formatter explicitly the
     # automatic addition of a comment showing the corresponding ASCII character for
     # immediate constants will be disabled for this address.
     set_formatter(runtime_addr, n, mainformatter.uint_formatter)
 
+def uint_no_hex(runtime_addr, n=1):
+    """Specifies unsigned decimal integer formatting for data in the given block"""
+
+    set_formatter(runtime_addr, n, mainformatter.uint_no_hex_formatter)
+
 def sint(runtime_addr, n=1):
-    """Specifies signed int formatting for data in the given block"""
+    """Specifies signed decimal formatting for data in the given block"""
 
     set_formatter(runtime_addr, n, mainformatter.sint_formatter)
 

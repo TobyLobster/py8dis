@@ -10527,26 +10527,26 @@ sound_addr_table_high
     !byte >sound0, >sound1, >sound2, >sound3, >sound4, >sound5        ; 4091: 40 40 40... @@@
     !byte >sound6, >sound7, >sound8                                   ; 4097: 40 40 40    @@@
 sound0
-    !byte $11, 0, 1, 0, $fc, 0, $0a, 0                                ; 409a: 11 00 01... ...
+    !word $11, 1, 252, 10                                             ; 409a: 11 00 01... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound1
-    !byte $12, 0, 2, 0, 0, 0, $0a, 0                                  ; 40a2: 12 00 02... ...
+    !word $12, 2, 0, 10                                               ; 40a2: 12 00 02... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound2
-    !byte $13, 0, 3, 0, $9a, 0, $0f, 0                                ; 40aa: 13 00 03... ...
+    !word $13, 3, 154, 15                                             ; 40aa: 13 00 03... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound3
-    !byte $13, 0, 4, 0, $64, 0, 3, 0                                  ; 40b2: 13 00 04... ...
+    !word $13, 4, 100, 3                                              ; 40b2: 13 00 04... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound4
-    !byte $10, 0, $f1, $ff, 4, 0, 1, 0                                ; 40ba: 10 00 f1... ...
+    !word $10, -15, 4, 1                                              ; 40ba: 10 00 f1... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound5
 sound5_duration = sound5+6
-    !byte 1, 0, 2, 0, 0, 0, 0, 0                                      ; 40c2: 01 00 02... ...
+    !word $01, 2, 0, 0                                                ; 40c2: 01 00 02... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound6
 sound6_duration = sound6+6
-    !byte 1, 0, 1, 0, 0, 0, 0, 0                                      ; 40ca: 01 00 01... ...
+    !word $01, 1, 0, 0                                                ; 40ca: 01 00 01... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound7
 sound7_pitch = sound7+4
-    !byte 1, 0, $f1, $ff, 0, 0, 3, 0                                  ; 40d2: 01 00 f1... ...
+    !word $01, -15, 0, 3                                              ; 40d2: 01 00 f1... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 sound8
-    !byte 1, 0, 0, 0, 0, 0, 3, 0                                      ; 40da: 01 00 00... ...
+    !word $01, 0, 0, 3                                                ; 40da: 01 00 00... ...            ; SOUND &HSFN (hold,sync,flush,channel), amplitude or envelope, pitch, duration
 
 ; ***************************************************************************************
 collision_map_addr_low
@@ -13989,8 +13989,8 @@ pydis_end
 ;     Data                     = 12211 bytes (71%)
 ;
 ;     Number of instructions   = 2452
-;     Number of data bytes     = 10546 bytes
-;     Number of data words     = 0 bytes
+;     Number of data bytes     = 10474 bytes
+;     Number of data words     = 72 bytes
 ;     Number of string bytes   = 1665 bytes
 ;     Number of strings        = 93
 

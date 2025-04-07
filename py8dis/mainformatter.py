@@ -133,6 +133,16 @@ def format_data_block(binary_loc, length, cols, element_size, annotations):
         format_data_block_line(binary_loc, text, start_index, end_index, element_size, annotations, prefix))
     return result
 
+def uhex_formatter(n, bits, pad=False):
+    """Format an 8 or 16 bit number as hex.
+    """
+
+    assert bits in (8, 16)
+    assert 0 <= n < (1<<bits)
+    if bits == 8:
+        return config.get_assembler().hex2(n)
+    return config.get_assembler().hex4(n)
+
 def uint_formatter(n, bits, pad=False):
     """Format an 8 or 16 bit number as hex or single digit decimal.
 
@@ -152,6 +162,17 @@ def uint_formatter(n, bits, pad=False):
     if bits == 8:
         return config.get_assembler().hex2(n)
     return config.get_assembler().hex4(n)
+
+def uint_no_hex_formatter(n, bits, pad=False):
+    """Format an 8 or 16 bit number as an unsigned decimal.
+    """
+
+    assert bits in (8, 16)
+    assert 0 <= n < (1<<bits)
+    s = "%d" % n
+    if pad:
+        s = ("    " + s)[-3 if bits == 8 else -5:]
+    return s
 
 def sint_formatter(n, bits):
     """Format an 8 or 16 bit number as a signed decimal."""
