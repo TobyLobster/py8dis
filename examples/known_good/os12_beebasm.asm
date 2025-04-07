@@ -1316,7 +1316,7 @@ tube_data_register_3                    = &fee5
     equb 1, &aa, &55, &88, &44, &22, &11                              ; c406: 01 aa 55... ..U
 ; &c40d referenced 2 times by &c8ff, &d04c
 .lc40d
-    equb &80, &40, &20, &10, 8, 4, 2                                  ; c40d: 80 40 20... .@
+    equb &80, &40, &20, &10, 8, 4, 2                                  ; c40d: 80 40 20... .@             ; bitmask
 ; &c414 referenced 1 time by &cb40
 .lc414
     equb 1, 3, &0f, 1, 1, 3, 1                                        ; c414: 01 03 0f... ...

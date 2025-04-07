@@ -124,7 +124,7 @@ enemy_torpedo_table_address_high
 unused4
     !byte $37, $5f                                                    ; 1f3f: 37 5f       7_  :0e3f[1]
 bit_table
-    !byte $80, $40, $20, $10, 8, 4, 2, 1                              ; 1f41: 80 40 20... .@  :0e41[1]
+    !byte $80, $40, $20, $10, 8, 4, 2, 1                              ; 1f41: 80 40 20... .@  :0e41[1]   ; bitmask
 star_table_address_low
     !byte <star_table                                                 ; 1f49: 00          .   :0e49[1]
 star_table_address_high
