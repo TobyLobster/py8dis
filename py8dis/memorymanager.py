@@ -14,23 +14,25 @@ import utils
 # We make one class to hold a runtime address, and another for a binary address.
 # They are just integers underneath, but storing them in classes means we can
 # check they are of the correct type.
-class TypedInt(int):
-    """An abstract base class for address types"""
-    def __add__(self, other):
-        res = super(TypedInt, self).__add__(other)
-        return self.__class__(res)
-
-class BinaryAddr(TypedInt):
+class BinaryAddr(int):
     """Address of data at load time"""
     def __new__(cls, value, *args, **kwargs):
         assert not isinstance(value, RuntimeAddr)
         return super(BinaryAddr, cls).__new__(cls, value)
 
-class RuntimeAddr(TypedInt):
+    def __add__(self, other):
+        res = super(BinaryAddr, self).__add__(other)
+        return self.__class__(res)
+
+class RuntimeAddr(int):
     """Address of data at execution time"""
     def __new__(cls, value, *args, **kwargs):
         assert not isinstance(value, BinaryAddr)
         return super(RuntimeAddr, cls).__new__(cls, value)
+
+    def __add__(self, other):
+        res = super(RuntimeAddr, self).__add__(other)
+        return self.__class__(res)
 
 # Address validation
 def is_valid_runtime_addr(runtime_addr, allow_final_address = False):

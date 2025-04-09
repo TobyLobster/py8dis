@@ -75,6 +75,253 @@ class SubConst(object):
             result = result[1:]
         return int(result, 16)
 
+
+class RegState(object):
+    def __init__(self):
+        self.clear()
+
+    def clear(self):
+        self.value              = None      # Current value, if known
+        self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
+        self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+        self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
+        self.previous_use       = None      # The address of the previous 'read only use of a register' instruction if present
+
+    def get_previous_load_imm_operand(self):
+        if self.previous_load_imm != None:
+            return self.previous_load_imm+1
+        return None
+
+    def __repl__(self):
+        return "value: {0}".format(self.value)
+
+    def __str__(self):
+        return self.__repl__()
+
+class CpuStateDisposition(object):
+    def __init__(self):
+        self._d = {
+            # For A/X/Y, value is RegState.
+            "a": RegState(),
+            "x": RegState(),
+            "y": RegState(),
+            # For flags, value is True/False if known.
+            "n": None,
+            "v": None,
+            "d": None,
+            "i": None,
+            "z": None,
+            "c": None,
+        }
+
+    def clear(self):
+        self._d["a"].clear()
+        self._d["x"].clear()
+        self._d["y"].clear()
+        self._d["n"] = None
+        self._d["v"] = None
+        self._d["d"] = None
+        self._d["i"] = None
+        self._d["z"] = None
+        self._d["c"] = None
+
+    def __getitem__(self, key):
+        assert key in "axynvdizc"
+        return self._d[key]
+
+    def __setitem__(self, key, item):
+        assert key in "axynvdizc"
+        if key in "axy":
+            if item is None:
+                item = Cpu6502.RegState()
+            assert isinstance(item, Cpu6502.RegState)
+        else:
+            assert item is None or utils.is_integer_type(item)
+        self._d[key] = item
+
+    def update_clear_nz(self, binary_addr):
+        self._d['n'] = None
+        self._d['z'] = None
+
+    def update_clear_nza(self, binary_addr):
+        self._d['n'] = None
+        self._d['z'] = None
+        self._d['a'].value = None
+
+    def update_clear_nzc(self, binary_addr):
+        assert binary_addr is not None
+        self._d['n'] = None
+        self._d['z'] = None
+        self._d['c'] = None
+
+    def update_clear_nzca(self, binary_addr):
+        self._d['n'] = None
+        self._d['z'] = None
+        self._d['c'] = None
+        self._d['a'].value = None
+
+    def update_bit(self, binary_addr):
+        assert binary_addr is not None
+        self._d['n'] = None
+        self._d['v'] = None
+        self._d['z'] = None
+
+    def update_adc_sbc(self, binary_addr):
+        assert binary_addr is not None
+        self._d['a'].value = None
+        self._d['n'] = None
+        self._d['v'] = None
+        self._d['z'] = None
+        self._d['c'] = None
+
+    def update_all_flags(self, binary_addr):
+        assert binary_addr is not None
+        self._d['n'] = None
+        self._d['v'] = None
+        self._d['d'] = None
+        self._d['i'] = None
+        self._d['z'] = None
+        self._d['c'] = None
+
+    def update_AND_immediate(self, binary_addr):
+        assert binary_addr is not None
+        v = memory_binary[binary_addr+1]
+        if self._d['a'].value != None:
+            # Value of A is known, so calculate new value of A
+            v = self._d['a'].value & v
+            self._d['a'].value = v
+
+            # Update the flags based on new value of A
+            self._d['n'] = ((v & 0x80) == 0x80)
+            self._d['z'] = (v == 0)
+        elif v < 0xff:
+            if v == 0:
+                # AND #0 sets the Z flag, and A=0
+                self._d['z'] = 1
+                self._d['a'].value = 0
+            else:
+                # AND with value $01-$fe leaves the Z flag unknown
+                self._d['z'] = None
+
+            # AND with value $00-$7f leaves the N flag clear
+            if v < 0x80:
+                self._d['n'] = 0
+
+    def update_ORA_immediate(self, binary_addr):
+        assert binary_addr is not None
+        v = memory_binary[binary_addr+1]
+        if self._d['a'].value != None:
+            # Value of A is known, so calculate new value of A
+            v = self._d['a'].value | v
+            self._d['a'].value = v
+
+            # Update the flags based on new value of A
+            self._d['n'] = ((v & 0x80) == 0x80)
+            self._d['z'] = (v == 0)
+        elif v > 0:
+            # ORA with non-zero value means Z is clear
+            self._d['z'] = 0
+            if v >= 0x80:
+                # ORA with a value $80-$ff, so set N flag
+                self._d['n'] = 1
+
+    def decrement(self, addr, reg):
+        v = self[reg].value
+        if v is not None:
+            v -= 1
+            if v == -1:
+                v = 0xff
+            self[reg].value = v
+            self['n'] = ((v & 0x80) == 0x80)
+            self['z'] = (v == 0)
+
+            # Now we have a new value for the register, the address where we previously
+            # loaded the current value no longer valid
+            self[reg].previous_load_imm = None
+            self[reg].previous_load     = None
+            self[reg].previous_adjust   = BinaryAddr(addr)
+        else:
+            self.update_clear_nz(addr)
+
+    def increment(self, addr, reg):
+        v = self[reg].value
+        if v is not None:
+            v += 1
+            if v == 0x100:
+                v = 0
+            self[reg].value = v
+            self['n'] = ((v & 0x80) == 0x80)
+            self['z'] = (v == 0)
+
+            self[reg].previous_load_imm    = None
+            self[reg].previous_load        = None
+            self[reg].previous_adjust      = BinaryAddr(addr)
+        else:
+            self.update_clear_nz(addr)
+
+    def load_immediate(self, addr, reg, v):
+        # Move to operand
+        addr = BinaryAddr(addr)
+
+        self[reg].value = v
+        self['n'] = ((v & 0x80) == 0x80)
+        self['z'] = (v == 0)
+        self[reg].previous_load_imm = addr
+        self[reg].previous_load     = addr
+        self[reg].previous_adjust   = addr
+
+
+    def transfer(self, addr, src_reg, dest_reg):
+        addr = BinaryAddr(addr)
+        self[dest_reg].value = self[src_reg].value
+
+        # If we have a load address, keep it. This allows
+        # the code (e.g. from basic4) to understand X and Y form an
+        # address <const> here:
+        #
+        #    lda #<const>
+        #    tay
+        #    ldx #<const>
+        #    jsr OSWORD
+        #
+        self[dest_reg].previous_load_imm = self[src_reg].previous_load_imm
+        self[dest_reg].previous_load = addr
+        self[dest_reg].previous_adjust = addr
+
+        v = self[dest_reg].value
+        if v is not None:
+            self['n'] = ((v & 0x80) == 0x80)
+            self['z'] = (v == 0)
+        else:
+            self['n'] = None
+            self['z'] = None
+
+    def update_transfer(self, addr, flag, flag_state):
+        if self[flag] == None:
+            self[flag] = flag_state
+
+    def show(self):
+        s = ""
+        def reg(r):
+            v = self._d[r].value
+            if v is None:
+                return "--"
+            return utils.plainhex2(v)
+        s += "A:%s X:%s Y:%s" % (reg('a'), reg('x'), reg('y'))
+
+        def flag(name):
+            b = self._d[name]
+            if b is None:
+                return "-"
+            return name.upper() if b else name.lower()
+        s += " %s%s%s%s%s%s" % (flag('n'), flag('v'), flag('d'), flag('i'), flag('z'), flag('c'))
+        return s
+
+    def __repl__(self):
+        return self.show()
+    def __str__(self):
+        return self.__repl__()
+
 class Cpu6502(cpu.Cpu):
     """Singleton class representing a 6502 CPU"""
 
@@ -107,6 +354,20 @@ class Cpu6502(cpu.Cpu):
     indirect_pattern            = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+\((.*)\)$", re.IGNORECASE)
     zp_or_addr_pattern          = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+(.+)$", re.IGNORECASE)
 
+    class CpuState(object):
+        def __init__(self):
+            self.optimistic  = CpuStateDisposition()
+            self.pessimistic = CpuStateDisposition()
+            self.always_branch = False
+            self.next_instruction = None
+
+        def clear(self, *, pessimistic_only):
+            self.pessimistic.clear()
+            self.always_branch = False
+            self.next_instruction = None
+            if not pessimistic_only:
+                self.optimistic.clear()
+
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Cpu6502, cls).__new__(cls)
@@ -114,6 +375,8 @@ class Cpu6502(cpu.Cpu):
 
     def __init__(self):
         super(Cpu6502, self).__init__()
+
+        self.EMPTY_STATE = self.CpuState()
 
         self.code_analysis_fns.append(self.subroutine_argument_finder)  # TODO: For the subroutine() command? Is this used?
         self.code_analysis_fns.append(self.substitute_constants)        # If a subroutine is being called, we can infer context of initialising registers beforehand.
@@ -968,266 +1231,6 @@ class Cpu6502(cpu.Cpu):
             return utils.LazyString("%s%s %s", utils.make_indent(1), utils.force_case(self.mnemonic), label)
 
 
-    class RegState(object):
-        def __init__(self):
-            self.clear()
-
-        def clear(self):
-            self.value              = None      # Current value, if known
-            self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
-            self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-            self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
-            self.previous_use       = None      # The address of the previous 'read only use of a register' instruction if present
-
-        def get_previous_load_imm_operand(self):
-            if self.previous_load_imm != None:
-                return self.previous_load_imm+1
-            return None
-
-        def __repl__(self):
-            return "value: {0}".format(self.value)
-
-        def __str__(self):
-            return self.__repl__()
-
-    class CpuStateDisposition(object):
-        def __init__(self):
-            self._d = {
-                # For A/X/Y, value is RegState.
-                "a": Cpu6502.RegState(),
-                "x": Cpu6502.RegState(),
-                "y": Cpu6502.RegState(),
-                # For flags, value is True/False if known.
-                "n": None,
-                "v": None,
-                "d": None,
-                "i": None,
-                "z": None,
-                "c": None,
-            }
-
-        def clear(self):
-            self._d["a"].clear()
-            self._d["x"].clear()
-            self._d["y"].clear()
-            self._d["n"] = None
-            self._d["v"] = None
-            self._d["d"] = None
-            self._d["i"] = None
-            self._d["z"] = None
-            self._d["c"] = None
-
-        def __getitem__(self, key):
-            assert key in "axynvdizc"
-            return self._d[key]
-
-        def __setitem__(self, key, item):
-            assert key in "axynvdizc"
-            if key in "axy":
-                if item is None:
-                    item = Cpu6502.RegState()
-                assert isinstance(item, Cpu6502.RegState)
-            else:
-                assert item is None or utils.is_integer_type(item)
-            self._d[key] = item
-
-        def update_clear_nz(self, binary_addr):
-            self._d['n'] = None
-            self._d['z'] = None
-
-        def update_clear_nza(self, binary_addr):
-            self._d['n'] = None
-            self._d['z'] = None
-            self._d['a'].value = None
-
-        def update_clear_nzc(self, binary_addr):
-            assert binary_addr is not None
-            self._d['n'] = None
-            self._d['z'] = None
-            self._d['c'] = None
-
-        def update_clear_nzca(self, binary_addr):
-            self._d['n'] = None
-            self._d['z'] = None
-            self._d['c'] = None
-            self._d['a'].value = None
-
-        def update_bit(self, binary_addr):
-            assert binary_addr is not None
-            self._d['n'] = None
-            self._d['v'] = None
-            self._d['z'] = None
-
-        def update_adc_sbc(self, binary_addr):
-            assert binary_addr is not None
-            self._d['a'].value = None
-            self._d['n'] = None
-            self._d['v'] = None
-            self._d['z'] = None
-            self._d['c'] = None
-
-        def update_all_flags(self, binary_addr):
-            assert binary_addr is not None
-            self._d['n'] = None
-            self._d['v'] = None
-            self._d['d'] = None
-            self._d['i'] = None
-            self._d['z'] = None
-            self._d['c'] = None
-
-        def update_AND_immediate(self, binary_addr):
-            assert binary_addr is not None
-            v = memory_binary[binary_addr+1]
-            if self._d['a'].value != None:
-                # Value of A is known, so calculate new value of A
-                v = self._d['a'].value & v
-                self._d['a'].value = v
-
-                # Update the flags based on new value of A
-                self._d['n'] = ((v & 0x80) == 0x80)
-                self._d['z'] = (v == 0)
-            elif v < 0xff:
-                if v == 0:
-                    # AND #0 sets the Z flag, and A=0
-                    self._d['z'] = 1
-                    self._d['a'].value = 0
-                else:
-                    # AND with value $01-$fe leaves the Z flag unknown
-                    self._d['z'] = None
-
-                # AND with value $00-$7f leaves the N flag clear
-                if v < 0x80:
-                    self._d['n'] = 0
-
-        def update_ORA_immediate(self, binary_addr):
-            assert binary_addr is not None
-            v = memory_binary[binary_addr+1]
-            if self._d['a'].value != None:
-                # Value of A is known, so calculate new value of A
-                v = self._d['a'].value | v
-                self._d['a'].value = v
-
-                # Update the flags based on new value of A
-                self._d['n'] = ((v & 0x80) == 0x80)
-                self._d['z'] = (v == 0)
-            elif v > 0:
-                # ORA with non-zero value means Z is clear
-                self._d['z'] = 0
-                if v >= 0x80:
-                    # ORA with a value $80-$ff, so set N flag
-                    self._d['n'] = 1
-
-        def decrement(self, addr, reg):
-            v = self[reg].value
-            if v is not None:
-                v -= 1
-                if v == -1:
-                    v = 0xff
-                self[reg].value = v
-                self['n'] = ((v & 0x80) == 0x80)
-                self['z'] = (v == 0)
-
-                # Now we have a new value for the register, the address where we previously
-                # loaded the current value no longer valid
-                self[reg].previous_load_imm = None
-                self[reg].previous_load     = None
-                self[reg].previous_adjust   = BinaryAddr(addr)
-            else:
-                self.update_clear_nz(addr)
-
-        def increment(self, addr, reg):
-            v = self[reg].value
-            if v is not None:
-                v += 1
-                if v == 0x100:
-                    v = 0
-                self[reg].value = v
-                self['n'] = ((v & 0x80) == 0x80)
-                self['z'] = (v == 0)
-
-                self[reg].previous_load_imm    = None
-                self[reg].previous_load        = None
-                self[reg].previous_adjust      = BinaryAddr(addr)
-            else:
-                self.update_clear_nz(addr)
-
-        def load_immediate(self, addr, reg, v):
-            # Move to operand
-            addr = BinaryAddr(addr)
-
-            self[reg].value = v
-            self['n'] = ((v & 0x80) == 0x80)
-            self['z'] = (v == 0)
-            self[reg].previous_load_imm = addr
-            self[reg].previous_load     = addr
-            self[reg].previous_adjust   = addr
-
-
-        def transfer(self, addr, src_reg, dest_reg):
-            addr = BinaryAddr(addr)
-            self[dest_reg].value = self[src_reg].value
-
-            # If we have a load address, keep it. This allows
-            # the code (e.g. from basic4) to understand X and Y form an
-            # address <const> here:
-            #
-            #    lda #<const>
-            #    tay
-            #    ldx #<const>
-            #    jsr OSWORD
-            #
-            self[dest_reg].previous_load_imm = self[src_reg].previous_load_imm
-            self[dest_reg].previous_load = addr
-            self[dest_reg].previous_adjust = addr
-
-            v = self[dest_reg].value
-            if v is not None:
-                self['n'] = ((v & 0x80) == 0x80)
-                self['z'] = (v == 0)
-            else:
-                self['n'] = None
-                self['z'] = None
-
-        def update_transfer(self, addr, flag, flag_state):
-            if self[flag] == None:
-                self[flag] = flag_state
-
-        def show(self):
-            s = ""
-            def reg(r):
-                v = self._d[r].value
-                if v is None:
-                    return "--"
-                return utils.plainhex2(v)
-            s += "A:%s X:%s Y:%s" % (reg('a'), reg('x'), reg('y'))
-
-            def flag(name):
-                b = self._d[name]
-                if b is None:
-                    return "-"
-                return name.upper() if b else name.lower()
-            s += " %s%s%s%s%s%s" % (flag('n'), flag('v'), flag('d'), flag('i'), flag('z'), flag('c'))
-            return s
-
-        def __repl__(self):
-            return self.show()
-        def __str__(self):
-            return self.__repl__()
-
-    class CpuState(object):
-        def __init__(self):
-            self.optimistic  = Cpu6502.CpuStateDisposition()
-            self.pessimistic = Cpu6502.CpuStateDisposition()
-            self.always_branch = False
-            self.next_instruction = None
-
-        def clear(self, *, pessimistic_only):
-            self.pessimistic.clear()
-            self.always_branch = False
-            self.next_instruction = None
-            if not pessimistic_only:
-                self.optimistic.clear()
-
     def make_update_flag(self, flag, b):
         def update_flag(addr, state):
             state.optimistic[flag] = b
@@ -1357,7 +1360,7 @@ class Cpu6502(cpu.Cpu):
             c = classification.get_classification(binary_addr)
             if c is not None:
                 if state == None:
-                    state = trace.cpu.CpuState()
+                    state = self.EMPTY_STATE
 
                 if isinstance(c, trace.cpu.Opcode):
                     opcode = memory_binary[binary_addr]
@@ -1429,7 +1432,7 @@ class Cpu6502(cpu.Cpu):
     def show_register_knowledge(self):
         """Adds comments to show any known state of the processor"""
         binary_addr = 0
-        state = trace.cpu.CpuState()
+        state = self.EMPTY_STATE
 
         while binary_addr < 0x10000:
             c = classification.get_classification(binary_addr)
@@ -1463,7 +1466,7 @@ class Cpu6502(cpu.Cpu):
                 binary_addr += c.length()
             else:
                 binary_addr += 1
-                state = trace.cpu.CpuState()
+                state = self.EMPTY_STATE
 
 
     def find_subroutine_calls(self):
@@ -1484,7 +1487,7 @@ class Cpu6502(cpu.Cpu):
             c = classification.get_classification(binary_addr)
             if c is not None:
                 if state == None:
-                    state = trace.cpu.CpuState()
+                    state = self.EMPTY_STATE
 
                 if isinstance(c, trace.cpu.Opcode):
                     could_be_call_to_subroutine = c.could_be_call_to_subroutine()
@@ -1526,7 +1529,7 @@ class Cpu6502(cpu.Cpu):
                 binary_addr += c.length()
             else:
                 binary_addr += 1
-                state = trace.cpu.CpuState()
+                state = self.EMPTY_STATE
 
     def substitute_constants(self):
         if len(trace.substitute_constant_list) == 0:
@@ -1542,7 +1545,7 @@ class Cpu6502(cpu.Cpu):
                 continue
 
             if state == None:
-                state = trace.cpu.CpuState()
+                state = self.EMPTY_STATE
 
             if isinstance(c, trace.cpu.Opcode):
                 opcode = memory_binary[binary_addr]
