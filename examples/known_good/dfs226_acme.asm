@@ -8358,13 +8358,11 @@ lb075
     !byte $0d, $0a                                                    ; b090: 0d 0a       ..
     !text "  SRLOAD  <filename> <sram address> (<id.>) (Q)"           ; b092: 20 20 53...   S
     !byte $0d, $0a                                                    ; b0c1: 0d 0a       ..
-    !text "  SRREAD  <dest. start> <dest. end> <sram start> (<id.>"   ; b0c3: 20 20 53...   S
-    !text ")"                                                         ; b0fa: 29          )
+    !text "  SRREAD  <dest. start> <dest. end> <sram start> (<id.>)"  ; b0c3: 20 20 53...   S
     !byte $0d, $0a                                                    ; b0fb: 0d 0a       ..
     !text "  SRROM   <id.>"                                           ; b0fd: 20 20 53...   S
     !byte $0d, $0a                                                    ; b10c: 0d 0a       ..
-    !text "  SRSAVE  <filename> <sram start> <sram end> (<id.>) (Q"   ; b10e: 20 20 53...   S
-    !text ")"                                                         ; b145: 29          )
+    !text "  SRSAVE  <filename> <sram start> <sram end> (<id.>) (Q)"  ; b10e: 20 20 53...   S
     !byte $0d, $0a                                                    ; b146: 0d 0a       ..
     !text "  SRWRITE <source start> <source end> <sram s"             ; b148: 20 20 53...   S
 ; $b175 referenced 1 time by $b2bd
@@ -9693,8 +9691,8 @@ loop_cb910
 
 ; $b924 referenced 1 time by $b910
 lb924
-    !text "Illegal parameterIllegal addressNo filing systemBad com"   ; b924: 49 6c 6c... Ill
-    !text "mandFile not foundRAM occupied"                            ; b95b: 6d 61 6e... man
+    !text "Illegal parameterIllegal addressNo filing systemBad comma" ; b924: 49 6c 6c... Ill
+    !text "ndFile not foundRAM occupied"                              ; b95d: 6e 64 46... ndF
 ; $b979 referenced 1 time by $b90b
 lb979
     !byte 0                                                           ; b979: 00          .

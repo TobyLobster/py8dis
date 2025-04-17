@@ -440,7 +440,8 @@ ERRTXT
 ARGTXT
     !text $0d, "Arg :", $80+' '                    ; 8203: 0d 41 72... .Ar
 WRMTXT
-    !text $0d, "Warm or cold start (W/C) ?", $80+' '; 820a: 0d 57 61... .Wa
+    !text $0d, "Warm or cold start (W/C) ?"        ; 820a: 0d 57 61... .Wa
+    !text $80+' '                                  ; 8225: a0          .
 HLPTXT
     !text $0d, "LISP 4.06", $80+$0d                ; 8226: 0d 4c 49... .LI
 

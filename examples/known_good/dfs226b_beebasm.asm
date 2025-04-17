@@ -9811,8 +9811,8 @@ lb6ce = sub_cb6cd+1
 
 ; &5924 referenced 1 time by &b910[1]
 .lb924
-    equs "Illegal parameterIllegal addressNo filing systemBad comm"   ; 5924: 49 6c 6c... Ill :b924[1]
-    equs "andFile not foundRAM occupied"                              ; 595c: 61 6e 64... and :b95c[1]
+    equs "Illegal parameterIllegal addressNo filing systemBad comman" ; 5924: 49 6c 6c... Ill :b924[1]
+    equs "dFile not foundRAM occupied"                                ; 595e: 64 46 69... dFi :b95e[1]
 ; &5979 referenced 1 time by &b90b[1]
 .lb979
     equb 0                                                            ; 5979: 00          .   :b979[1]

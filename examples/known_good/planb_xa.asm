@@ -12681,15 +12681,15 @@ wait_for_sounds_to_finish_loop
     lda computer_bar_level                                            // 4f90: a5 40       .@
     beq destroyed_computer                                            // 4f92: f0 3e       .>
     jsr print_following_string                                        // 4f94: 20 4e 3e     N>
-    .asc $1f, 6, $10, "but you haven't destroyed it", $1f, 8, $13, "Y"// 4f97: 1f 06 10... ...
-    .asc "ou'll have to try agai", $80+'n'                            // 4fba: 6f 75 27... ou'
+    .asc $1f, 6, $10, "but you haven't destroyed it", $1f, 8, $13     // 4f97: 1f 06 10... ...
+    .asc "You'll have to try agai", $80+'n'                           // 4fb9: 59 6f 75... You
 
     rts                                                               // 4fd1: 60          `
 
 destroyed_computer
     jsr print_following_string                                        // 4fd2: 20 4e 3e     N>
-    .asc $1f, 8, $10, "and rendered it useless", $1f, $0b, $13, "B"   // 4fd5: 1f 08 10... ...
-    .asc "onus 5,000 point", $80+'s'                                  // 4ff3: 6f 6e 75... onu
+    .asc $1f, 8, $10, "and rendered it useless", $1f, $0b, $13, "Bon" // 4fd5: 1f 08 10... ...
+    .asc "us 5,000 point", $80+'s'                                    // 4ff5: 75 73 20... us
 
 // add 5000 to score
     lda #5                                                            // 5004: a9 05       ..
@@ -12894,14 +12894,14 @@ reset_music
     rts                                                               // 51ca: 60          `
 
 // author's comment (unused)
-    .asc "....If God had meant us to look at other peoples code he"   // 51cb: 2e 2e 2e... ...
-    .asc " would have given us memory editors...."                    // 5203: 20 77 6f...  wo
+    .asc "....If God had meant us to look at other peoples code he w" // 51cb: 2e 2e 2e... ...
+    .asc "ould have given us memory editors...."                      // 5205: 6f 75 6c... oul
 
 // ***************************************************************************************
 no_highscore
     jsr print_following_string                                        // 522a: 20 4e 3e     N>
-    .asc $1f, 3, 6, "Your feeble attempt didn't even make", $1f, 7    // 522d: 1f 03 06... ...
-    .asc 8, "it into the top ten score", $80+'s'                      // 5256: 08 69 74... .it
+    .asc $1f, 3, 6, "Your feeble attempt didn't even make", $1f, 7, 8 // 522d: 1f 03 06... ...
+    .asc "it into the top ten score", $80+'s'                         // 5257: 69 74 20... it
 
     jmp wait_for_key                                                  // 5271: 4c 55 4e    LUN
 
@@ -12959,8 +12959,8 @@ made_space_in_highscore_table
     lda delta_x                                                       // 52cc: a5 05       ..
     beq no_highscore_local                                            // 52ce: f0 a4       ..
     jsr print_following_string                                        // 52d0: 20 4e 3e     N>
-    .asc $1f, 2, 6, "Your score is good enough to go into", $1f, 2    // 52d3: 1f 02 06... ...
-    .asc 8, "the top ten, please enter your name", $80+':'            // 52fc: 08 74 68... .th
+    .asc $1f, 2, 6, "Your score is good enough to go into", $1f, 2, 8 // 52d3: 1f 02 06... ...
+    .asc "the top ten, please enter your name", $80+':'               // 52fd: 74 68 65... the
 
     jsr set_inverse_colours                                           // 5321: 20 a3 50     .P
 // show cursor and start to position the cursor

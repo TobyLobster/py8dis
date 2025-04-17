@@ -10495,20 +10495,20 @@ le5b4 = le5b3+1
 
     equb 0                                                            ; fbff: 00          .
 ; &fc00 referenced 2 times by &eaf5, &ffaa
-    equs "(C) 1981 Acorn Computers Ltd.Thanks are due to the follo"   ; fc00: 28 43 29... (C)
-    equs "wing contributors to the development of the BBC Computer"   ; fc38: 77 69 6e... win
-    equs " (among others too numerous to mention):- David Allen,Bo"   ; fc70: 20 28 61...  (a
-    equs "b Austin,Ram Banerjee,Paul Bond,Allen Boothroyd,Cambridg"   ; fca8: 62 20 41... b A
-    equs "e,Cleartone,John Coll,John Cox,Andy Cripps,Chris Curry,6"   ; fce0: 65 2c 43... e,C
-    equs "502 designers,Jeremy Dion,Tim Dobson,Joe Dunn,Paul Farre"   ; fd18: 35 30 32... 502
-    equs "ll,Ferranti,Steve Furber,Jon Gibbons,Andrew Gordon,Lawre"   ; fd50: 6c 6c 2c... ll,
-    equs "nce Hardwick,Dylan Harris,Hermann Hauser,Hitachi,Andy Ho"   ; fd88: 6e 63 65... nce
-    equs "pper,ICL,Martin Jackson,Brian Jones,Chris Jordan,David K"   ; fdc0: 70 70 65... ppe
-    equs "ing,David Kitson,Paul Kriwaczek,Computer Laboratory,Pete"   ; fdf8: 69 6e 67... ing
-    equs "r Miller,Arthur Norman,Glyn Phillips,Mike Prees,John Rad"   ; fe30: 72 20 4d... r M
-    equs "cliffe,Wilberforce Road,Peter Robinson,Richard Russell,K"   ; fe68: 63 6c 69... cli
-    equs "im Spence-Jones,Graham Tebby,Jon Thackray,Chris Turner,A"   ; fea0: 69 6d 20... im
-    equs "drian Warner,Roger Wilson,Alan Wright."                     ; fed8: 64 72 69... dri
+    equs "(C) 1981 Acorn Computers Ltd.Thanks are due to the followi" ; fc00: 28 43 29... (C)
+    equs "ng contributors to the development of the BBC Computer (am" ; fc3a: 6e 67 20... ng
+    equs "ong others too numerous to mention):- David Allen,Bob Aust" ; fc74: 6f 6e 67... ong
+    equs "in,Ram Banerjee,Paul Bond,Allen Boothroyd,Cambridge,Cleart" ; fcae: 69 6e 2c... in,
+    equs "one,John Coll,John Cox,Andy Cripps,Chris Curry,6502 design" ; fce8: 6f 6e 65... one
+    equs "ers,Jeremy Dion,Tim Dobson,Joe Dunn,Paul Farrell,Ferranti," ; fd22: 65 72 73... ers
+    equs "Steve Furber,Jon Gibbons,Andrew Gordon,Lawrence Hardwick,D" ; fd5c: 53 74 65... Ste
+    equs "ylan Harris,Hermann Hauser,Hitachi,Andy Hopper,ICL,Martin " ; fd96: 79 6c 61... yla
+    equs "Jackson,Brian Jones,Chris Jordan,David King,David Kitson,P" ; fdd0: 4a 61 63... Jac
+    equs "aul Kriwaczek,Computer Laboratory,Peter Miller,Arthur Norm" ; fe0a: 61 75 6c... aul
+    equs "an,Glyn Phillips,Mike Prees,John Radcliffe,Wilberforce Roa" ; fe44: 61 6e 2c... an,
+    equs "d,Peter Robinson,Richard Russell,Kim Spence-Jones,Graham T" ; fe7e: 64 2c 50... d,P
+    equs "ebby,Jon Thackray,Chris Turner,Adrian Warner,Roger Wilson," ; feb8: 65 62 62... ebb
+    equs "Alan Wright."                                               ; fef2: 41 6c 61... Ala
 ; &fd00 referenced 2 times by &eafa, &ffae
 ; &fdfe referenced 1 time by &f055
 ; &fe00 referenced 5 times by &c985, &ca2b, &ca32, &eaff, &ffb2

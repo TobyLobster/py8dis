@@ -12,8 +12,8 @@ stack   EQU $07ad
 pydis_start:
     jmp cpu                                                           ; 0100: c3 ab 01    ...            ; jump to 8080 CPU diagnostic
 
-    db "MICROCOSM ASSOCIATES 8080/8085 CPU DIAGNOSTIC VERSION 1.0 "   ; 0103: 4d 49 43... MIC
-    db "(C) 1980"                                                     ; 013d: 28 43 29... (C)
+    db "MICROCOSM ASSOCIATES 8080/8085 CPU DIAGNOSTIC VERSION 1.0 (C" ; 0103: 4d 49 43... MIC
+    db ") 1980"                                                       ; 013f: 29 20 31... ) 1
 
 
 ; 

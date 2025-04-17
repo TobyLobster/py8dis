@@ -8368,13 +8368,11 @@ lb075
     !byte $0d, $0a                                                    ; 5090: 0d 0a       ..  :b090[1]
     !text "  SRLOAD  <filename> <sram address> (<id.>) (Q)"           ; 5092: 20 20 53...   S :b092[1]
     !byte $0d, $0a                                                    ; 50c1: 0d 0a       ..  :b0c1[1]
-    !text "  SRREAD  <dest. start> <dest. end> <sram start> (<id.>"   ; 50c3: 20 20 53...   S :b0c3[1]
-    !text ")"                                                         ; 50fa: 29          )   :b0fa[1]
+    !text "  SRREAD  <dest. start> <dest. end> <sram start> (<id.>)"  ; 50c3: 20 20 53...   S :b0c3[1]
     !byte $0d, $0a                                                    ; 50fb: 0d 0a       ..  :b0fb[1]
     !text "  SRROM   <id.>"                                           ; 50fd: 20 20 53...   S :b0fd[1]
     !byte $0d, $0a                                                    ; 510c: 0d 0a       ..  :b10c[1]
-    !text "  SRSAVE  <filename> <sram start> <sram end> (<id.>) (Q"   ; 510e: 20 20 53...   S :b10e[1]
-    !text ")"                                                         ; 5145: 29          )   :b145[1]
+    !text "  SRSAVE  <filename> <sram start> <sram end> (<id.>) (Q)"  ; 510e: 20 20 53...   S :b10e[1]
     !byte $0d, $0a                                                    ; 5146: 0d 0a       ..  :b146[1]
     !text "  SRWRITE <source start> <source end> <sram s"             ; 5148: 20 20 53...   S :b148[1]
 ; $5175 referenced 1 time by $b2bd[1]
@@ -9703,8 +9701,8 @@ loop_cb910
 
 ; $5924 referenced 1 time by $b910[1]
 lb924
-    !text "Illegal parameterIllegal addressNo filing systemBad com"   ; 5924: 49 6c 6c... Ill :b924[1]
-    !text "mandFile not foundRAM occupied"                            ; 595b: 6d 61 6e... man :b95b[1]
+    !text "Illegal parameterIllegal addressNo filing systemBad comma" ; 5924: 49 6c 6c... Ill :b924[1]
+    !text "ndFile not foundRAM occupied"                              ; 595d: 6e 64 46... ndF :b95d[1]
 ; $5979 referenced 1 time by $b90b[1]
 lb979
     !byte 0                                                           ; 5979: 00          .   :b979[1]

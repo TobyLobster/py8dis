@@ -9685,8 +9685,8 @@ loop_cb910
 
 // $b924 referenced 1 time by $b910
 lb924
-    .asc "Illegal parameterIllegal addressNo filing systemBad comm"   // b924: 49 6c 6c... Ill
-    .asc "andFile not foundRAM occupied"                              // b95c: 61 6e 64... and
+    .asc "Illegal parameterIllegal addressNo filing systemBad comman" // b924: 49 6c 6c... Ill
+    .asc "dFile not foundRAM occupied"                                // b95e: 64 46 69... dFi
 // $b979 referenced 1 time by $b90b
 lb979
     .byt 0                                                            // b979: 00          .

@@ -440,7 +440,8 @@ oscli   = &fff7
 .ARGTXT
     equs &0d, "Arg :", &80+' '                     ; 8203: 0d 41 72... .Ar
 .WRMTXT
-    equs &0d, "Warm or cold start (W/C) ?", &80+' '; 820a: 0d 57 61... .Wa
+    equs &0d, "Warm or cold start (W/C) ?"         ; 820a: 0d 57 61... .Wa
+    equs &80+' '                                   ; 8225: a0          .
 .HLPTXT
     equs &0d, "LISP 4.06", &80+&0d                 ; 8226: 0d 4c 49... .LI
 

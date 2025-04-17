@@ -18,8 +18,8 @@ library_path = os.path.dirname(os.path.abspath(__file__))
 def die(s):
     """Print an error message and halt execution."""
 
-    # Print callstack
-    print(traceback.format_exc(), file=sys.stderr)
+    # Alternative: Raise exception (which reports the callstack too)
+    #raise ValueError(s)
 
     # Print error message
     print(s, file=sys.stderr)

@@ -142,47 +142,63 @@ class String(object):
         prefix = utils.make_indent(1) + assembler().string_prefix()
         s = prefix
         state = 0       # 0=not started first string yet, 1=within string, 2=finished string
-        s_i = 0
+        start_line_i = 0
 
         if binary_loc.binary_addr in expressions:
             s = get_expression(binary_loc.binary_addr, memory_binary[binary_loc.binary_addr])
             result.append(mainformatter.add_inline_comment_including_hexdump(binary_loc, self._length, "", annotations, prefix + s))
             return result
 
-        for i in range(self._length):
+        i = 0
+        while(i < self._length):
             c = memory_binary[binary_loc.binary_addr + i]
             c_in_string = assembler().string_chr(c)
+
+            # Calculate how to add 'c' to  the current assembly string in 'next_char'
+            next_char = ""
+            next_state = state
             if c_in_string is not None:
                 if state == 0:
-                    s += '"'
+                    next_char += '"'
                 elif state == 2:
-                    s += ', "'
-                state = 1
-                s += c_in_string
+                    next_char += ', "'
+                next_state = 1
+                next_char += c_in_string
             else:
                 if state == 1:
-                    s += '", '
+                    next_char += '", '
                 elif state == 2:
-                    s += ", "
-                state = 2
+                    next_char += ", "
+                next_state = 2
                 if c == ord('"'):
-                    s += "'\"'"
+                    next_char += "'\"'"
                 else:
-                    s += get_constant8(binary_loc.binary_addr + i)
-            if len(s) > (config.get_inline_comment_column() - 5):
+                    next_char += get_constant8(binary_loc.binary_addr + i)
+
+            new_s = s + next_char
+            len_new_s = len(new_s)
+            if next_state == 1:
+                len_new_s += 1
+
+            if len_new_s > (config.get_inline_comment_column() - 1):
+                # Save out the line before the next char
                 if state == 1:
                     s += '"'
-                temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + s_i, binary_loc.move_id)
-                result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, i - s_i, "", annotations, s))
+                temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
+                result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, i - start_line_i, "", annotations, s))
                 s = prefix
-                s_i = i + 1
+                start_line_i = i
                 state = 0
+            else:
+                s = new_s
+                state = next_state
+                i += 1
 
         if s != prefix:
             if state == 1:
                 s += '"'
-            temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + s_i, binary_loc.move_id)
-            result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, self._length - s_i, "", annotations, s))
+            temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
+            result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, self._length - start_line_i, "", annotations, s))
         return result
 
     def __str__(self):
@@ -211,7 +227,7 @@ def add_expression(binary_addr, s, *, force=True):
     # Returns the current expression
     return expressions[binary_addr]
 
-def check_expr(expr, value):
+def check_expr(expr, value, message):
     """Add an assert to the output based on an expression."""
 
     # ENHANCE: It would be good to at least try to evaluate "expression" and generate
@@ -234,7 +250,7 @@ def check_expr(expr, value):
             elif constant.format == Format.STRING:
                 return
             elif (constant.value != value):
-                utils.die("Constant '{0}' found to be {1} but expected to be {2}".format(expr, constant.value, value))
+                utils.die("Constant '{0}' found to be {1} but expected to be {2} {3}".format(expr, constant.value, value, message))
             return
 
     config.get_assembler().assert_expr(expr, value)
@@ -251,7 +267,7 @@ def get_expression(binary_addr, expected_value):
             string_at_binary += chr(memory_binary[binary_addr])
             binary_addr += 1
         expected_value = string_at_binary
-    check_expr(expression, expected_value)
+    check_expr(expression, expected_value, "at {0}".format(hex(binary_addr)))
 
     return expression
 

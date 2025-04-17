@@ -10495,20 +10495,20 @@ return_59
 
     !byte 0                                                           ; fbff: 00          .
 ; $fc00 referenced 2 times by $eaf5, $ffaa
-    !text "(C) 1981 Acorn Computers Ltd.Thanks are due to the foll"   ; fc00: 28 43 29... (C)
-    !text "owing contributors to the development of the BBC Comput"   ; fc37: 6f 77 69... owi
-    !text "er (among others too numerous to mention):- David Allen"   ; fc6e: 65 72 20... er
-    !text ",Bob Austin,Ram Banerjee,Paul Bond,Allen Boothroyd,Camb"   ; fca5: 2c 42 6f... ,Bo
-    !text "ridge,Cleartone,John Coll,John Cox,Andy Cripps,Chris Cu"   ; fcdc: 72 69 64... rid
-    !text "rry,6502 designers,Jeremy Dion,Tim Dobson,Joe Dunn,Paul"   ; fd13: 72 72 79... rry
-    !text " Farrell,Ferranti,Steve Furber,Jon Gibbons,Andrew Gordo"   ; fd4a: 20 46 61...  Fa
-    !text "n,Lawrence Hardwick,Dylan Harris,Hermann Hauser,Hitachi"   ; fd81: 6e 2c 4c... n,L
-    !text ",Andy Hopper,ICL,Martin Jackson,Brian Jones,Chris Jorda"   ; fdb8: 2c 41 6e... ,An
-    !text "n,David King,David Kitson,Paul Kriwaczek,Computer Labor"   ; fdef: 6e 2c 44... n,D
-    !text "atory,Peter Miller,Arthur Norman,Glyn Phillips,Mike Pre"   ; fe26: 61 74 6f... ato
-    !text "es,John Radcliffe,Wilberforce Road,Peter Robinson,Richa"   ; fe5d: 65 73 2c... es,
-    !text "rd Russell,Kim Spence-Jones,Graham Tebby,Jon Thackray,C"   ; fe94: 72 64 20... rd
-    !text "hris Turner,Adrian Warner,Roger Wilson,Alan Wright."       ; fecb: 68 72 69... hri
+    !text "(C) 1981 Acorn Computers Ltd.Thanks are due to the follow" ; fc00: 28 43 29... (C)
+    !text "ing contributors to the development of the BBC Computer (" ; fc39: 69 6e 67... ing
+    !text "among others too numerous to mention):- David Allen,Bob A" ; fc72: 61 6d 6f... amo
+    !text "ustin,Ram Banerjee,Paul Bond,Allen Boothroyd,Cambridge,Cl" ; fcab: 75 73 74... ust
+    !text "eartone,John Coll,John Cox,Andy Cripps,Chris Curry,6502 d" ; fce4: 65 61 72... ear
+    !text "esigners,Jeremy Dion,Tim Dobson,Joe Dunn,Paul Farrell,Fer" ; fd1d: 65 73 69... esi
+    !text "ranti,Steve Furber,Jon Gibbons,Andrew Gordon,Lawrence Har" ; fd56: 72 61 6e... ran
+    !text "dwick,Dylan Harris,Hermann Hauser,Hitachi,Andy Hopper,ICL" ; fd8f: 64 77 69... dwi
+    !text ",Martin Jackson,Brian Jones,Chris Jordan,David King,David" ; fdc8: 2c 4d 61... ,Ma
+    !text " Kitson,Paul Kriwaczek,Computer Laboratory,Peter Miller,A" ; fe01: 20 4b 69...  Ki
+    !text "rthur Norman,Glyn Phillips,Mike Prees,John Radcliffe,Wilb" ; fe3a: 72 74 68... rth
+    !text "erforce Road,Peter Robinson,Richard Russell,Kim Spence-Jo" ; fe73: 65 72 66... erf
+    !text "nes,Graham Tebby,Jon Thackray,Chris Turner,Adrian Warner," ; feac: 6e 65 73... nes
+    !text "Roger Wilson,Alan Wright."                                 ; fee5: 52 6f 67... Rog
 ; $fd00 referenced 2 times by $eafa, $ffae
 ; $fdfe referenced 1 time by $f055
 ; $fe00 referenced 5 times by $c985, $ca2b, $ca32, $eaff, $ffb2

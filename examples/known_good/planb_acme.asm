@@ -12687,8 +12687,8 @@ wait_for_sounds_to_finish_loop
 
 destroyed_computer
     jsr print_following_string                                        ; 4fd2: 20 4e 3e     N>
-    !text $1f, 8, $10, "and rendered it useless", $1f, $0b, $13, "B"  ; 4fd5: 1f 08 10... ...
-    !text "onus 5,000 point", $80+'s'                                 ; 4ff3: 6f 6e 75... onu
+    !text $1f, 8, $10, "and rendered it useless", $1f, $0b, $13, "Bo" ; 4fd5: 1f 08 10... ...
+    !text "nus 5,000 point", $80+'s'                                  ; 4ff4: 6e 75 73... nus
 
 ; add 5000 to score
     lda #5                                                            ; 5004: a9 05       ..
@@ -12893,8 +12893,8 @@ reset_music
     rts                                                               ; 51ca: 60          `
 
 ; author's comment (unused)
-    !text "....If God had meant us to look at other peoples code h"   ; 51cb: 2e 2e 2e... ...
-    !text "e would have given us memory editors...."                  ; 5202: 65 20 77... e w
+    !text "....If God had meant us to look at other peoples code he " ; 51cb: 2e 2e 2e... ...
+    !text "would have given us memory editors...."                    ; 5204: 77 6f 75... wou
 
 ; ***************************************************************************************
 no_highscore

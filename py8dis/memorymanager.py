@@ -214,3 +214,4 @@ def check_data_loaded_at_binary_addr(binary_addr, n, do_warn):
 
     if is_data_loaded_at_binary_addr(binary_addr, n):
         return True
+    return False

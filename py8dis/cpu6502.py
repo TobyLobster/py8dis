@@ -160,6 +160,25 @@ class CpuStateDisposition(object):
         self._d['c'] = None
         self._d['a'].value = None
 
+    def update_rora(self, binary_addr):
+        if self._d['a'].value != None and self._d['c'] != None:
+            # We know that state of A and carry, so we can calculate the new value of A
+            oldv = self._d['a'].value
+            newc = oldv & 1
+            self._d['a'].value = oldv // 2
+            if self._d['c']:
+                self._d['a'].value += 0x80
+
+            self._d['n'] = (self._d['a'].value & 0x80) == 0x80
+            self._d['z'] = (self._d['a'].value == 0)
+            self._d['c'] = newc
+            return
+
+        self._d['n'] = None
+        self._d['z'] = None
+        self._d['c'] = None
+        self._d['a'].value = None
+
     def update_bit(self, binary_addr):
         assert binary_addr is not None
         self._d['n'] = None
@@ -466,7 +485,7 @@ class Cpu6502(cpu.Cpu):
             0x66: self.OpcodeZp(                "ROR zp",     "---", cycles="5",  update=self.update_clear_nzc),
             0x68: self.OpcodeImplied(           "PLA",        "O--", cycles="4",  update=self.update_clear_nz),
             0x69: self.OpcodeImmediate(         "ADC #imm",   "A--", cycles="2",  update=self.update_adc_sbc),
-            0x6a: self.OpcodeImplied(           "ROR A",      "A--", cycles="2",  update=self.update_clear_nzca),
+            0x6a: self.OpcodeImplied(           "ROR A",      "A--", cycles="2",  update=self.update_rora),
             0x6c: self.OpcodeJmpInd(            "JMP (addr)", "---", cycles="5"),
             0x6d: self.OpcodeDataAbs(           "ADC addr",   "A--", cycles="4",  update=self.update_adc_sbc),
             0x6e: self.OpcodeDataAbs(           "ROR addr",   "---", cycles="6",  update=self.update_clear_nzc),
@@ -1301,6 +1320,11 @@ class Cpu6502(cpu.Cpu):
         assert binary_addr is not None
         state.optimistic.update_clear_nzca(binary_addr)
         state.pessimistic.update_clear_nzca(binary_addr)
+
+    def update_rora(self, binary_addr, state):
+        assert binary_addr is not None
+        state.optimistic.update_rora(binary_addr)
+        state.pessimistic.update_rora(binary_addr)
 
     def update_bit(self, binary_addr, state):
         assert binary_addr is not None

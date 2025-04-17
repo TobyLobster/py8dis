@@ -12512,13 +12512,13 @@ reset_music_rooms_and_goto_title
 attract_loop
     jsr clear_play_area                                               ; 4d0d: 20 e8 43     .C
     jsr print_following_string                                        ; 4d10: 20 4e 3e     N>
-    !text $1f, $0e, 7, "P L A N  B", $1f, 6, $0a, "  A Bug Byte Pr"   ; 4d13: 1f 0e 07... ...
-    !text "oduction    ", $1f, $0a, $0c, "(C)1987 Andrew Foord", $1f  ; 4d32: 6f 64 75... odu
+    !text $1f, $0e, 7, "P L A N  B", $1f, 6, $0a, "  A Bug Byte Prod" ; 4d13: 1f 0e 07... ...
+    !text "uction    ", $1f, $0a, $0c, "(C)1987 Andrew Foord", $1f    ; 4d34: 75 63 74... uct
     !text $0f, $0f, "Z.....Left", $1f, $0f, $11, "X.....Right", $1f   ; 4d56: 0f 0f 5a... ..Z
     !text $0b, $13, "Shift.....Up", $1f, $0b, $15, "Space.....Fire"   ; 4d71: 0b 13 53... ..S
-    !text $1f, $0a, $17, "Return.....Open door", $1f, 6, $1a, "Q.."   ; 4d90: 1f 0a 17... ...
-    !text "enable  Sound  disable..W", $1f, 6, $1c, "O..stop    Pa"   ; 4dad: 65 6e 61... ena
-    !text "use    start..", $80+'P'                                   ; 4dd6: 75 73 65... use
+    !text $1f, $0a, $17, "Return.....Open door", $1f, 6, $1a, "Q..en" ; 4d90: 1f 0a 17... ...
+    !text "able  Sound  disable..W", $1f, 6, $1c, "O..stop    Pause " ; 4daf: 61 62 6c... abl
+    !text "   start..", $80+'P'                                       ; 4dda: 20 20 20...
 
 
     jsr press_space                                                   ; 4de5: 20 17 4e     .N
@@ -12685,8 +12685,8 @@ wait_for_sounds_to_finish_loop
 
 destroyed_computer
     jsr print_following_string                                        ; 4fd2: 20 4e 3e     N>
-    !text $1f, 8, $10, "and rendered it useless", $1f, $0b, $13, "B"  ; 4fd5: 1f 08 10... ...
-    !text "onus 5,000 point", $80+'s'                                 ; 4ff3: 6f 6e 75... onu
+    !text $1f, 8, $10, "and rendered it useless", $1f, $0b, $13, "Bo" ; 4fd5: 1f 08 10... ...
+    !text "nus 5,000 point", $80+'s'                                  ; 4ff4: 6e 75 73... nus
 
 ; add 5000 to score
     lda #5                                                            ; 5004: a9 05       ..
@@ -12891,8 +12891,8 @@ reset_music
     rts                                                               ; 51ca: 60          `
 
 ; author's comment (unused)
-    !text "....If God had meant us to look at other peoples code h"   ; 51cb: 2e 2e 2e... ...
-    !text "e would have given us memory editors...."                  ; 5202: 65 20 77... e w
+    !text "....If God had meant us to look at other peoples code he " ; 51cb: 2e 2e 2e... ...
+    !text "would have given us memory editors...."                    ; 5204: 77 6f 75... wou
 
 ; ***************************************************************************************
 no_highscore

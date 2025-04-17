@@ -760,7 +760,6 @@ def emit(print_output=True):
             d.extend(emit_labels(BinaryLocation(end_addr, movemanager.BASE_MOVE_ID), False))
         old_end_addr = end_addr
 
-
     # Emit labels which haven't been emitted inline with the disassembly.
     output.append("{0} Memory locations".format(formatter.comment_prefix()))
 
@@ -855,7 +854,6 @@ def emit_labels(binary_loc, output_annotations):
 def emit_addr(binary_loc):
     """Emit labels, the output for the classification, any remaining
     annotations in the range of the classification"""
-
     result = []
     classification_length = classification.get_classification(binary_loc.binary_addr).length()
 
