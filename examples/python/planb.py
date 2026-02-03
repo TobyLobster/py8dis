@@ -43,6 +43,12 @@ from commands import *
 import acorn
 import config
 import sys
+#import cProfile
+#import pstats
+#import io
+
+#profiler = cProfile.Profile()
+#profiler.enable()
 
 config.set_label_references(False)
 config.set_indent_loops(False)
@@ -1574,5 +1580,14 @@ for key in found_keys:
     constant(key, acorn.inkey_enum[key])
 
 go()
+
+# Disable the profiler and print stats
+#profiler.disable()
+#
+# Format and display the results
+#s = io.StringIO()
+#stats = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+#stats.print_stats(20)  # Print top 20 functions
+#print(s.getvalue())
 
 #print("free_total = $5800 - *")

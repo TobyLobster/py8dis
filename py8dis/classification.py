@@ -151,7 +151,7 @@ class String(object):
 
         i = 0
         while(i < self._length):
-            c = memory_binary[binary_loc.binary_addr + i]
+            c = memorymanager.get_u8_binary(binary_loc.binary_addr + i)
             c_in_string = assembler().string_chr(c)
 
             # Calculate how to add 'c' to  the current assembly string in 'next_char'
@@ -423,7 +423,7 @@ def stringhiz_binary(binary_addr, include_terminator_fn=None):
         add_classification(initial_addr, String(binary_addr - initial_addr))
     return movemanager.b2r(binary_addr)
 
-def stringn_binary(binary_addr):
+def stringn_binary(runtime_addr, binary_addr):
     """Classifies a part of the binary as a string with the first byte
     giving the length.
 
@@ -434,7 +434,7 @@ def stringn_binary(binary_addr):
     label_start = disassembly.get_label(runtime_addr + 1, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     label_end   = disassembly.get_label(runtime_addr + 1 + length, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     add_expression(binary_addr, utils.LazyString("%s - %s", label_end, label_start))
-    return string(runtime_addr + 1, length)
+    return RuntimeAddr(runtime_addr + 1 + length)
 
 def autostring(min_length=3):
     """Attempt to automatically find and classify strings through the entire binary."""
