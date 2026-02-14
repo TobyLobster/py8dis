@@ -60,6 +60,7 @@ class Z88DK(assembler.Assembler):
                   '%': None,
                  '!=': None,
         }
+
     def translate_unary_operator_names(self):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
@@ -167,5 +168,8 @@ class Z88DK(assembler.Assembler):
 
     def supports_signed_integers(self):
         return True
+
+    def include_binary_file(self, binary_filepath):
+        return  "; TODO:"
 
 config.set_assembler(Z88DK())

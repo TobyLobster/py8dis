@@ -24,6 +24,8 @@ stringhi()    the string terminates at a top-bit-set character,
 stringhiz()   as stringhi, but also terminates at zero
 stringn()     the first byte holds the length, followed by the string
 
+An included binary file is marked as type Byte.
+
 This module also manages 'Expressions'. Expressions are user defined
 output strings associated with an address. They are typically used for
 applying some calculation or arithmetic to the immediate operands of
@@ -58,6 +60,9 @@ assembler     = config.get_assembler
 
 # `classifications` stores classifications indexed by binary address.
 classifications = [None] * 64*1024
+
+# Dictionary of binary files to include in the output, keyed by binary address
+include_binary_files = dict()
 
 # Remember the addresses where a split_classification is requested
 split_classifications = set()
@@ -214,6 +219,7 @@ class String(object):
 def init():
     classifications = [None] * 64*1024
     split_classifications = set()
+    include_binary_files = dict()
 
 def add_expression(binary_addr, s, *, force=True):
     """Add an expression for the given binary address."""
@@ -458,6 +464,26 @@ def autostring(min_length=3):
             assert not is_classified(binary_addr, i)
             string_binary(binary_addr, i)
         binary_addr += max(1, i)
+
+def include_binary_file(binary_addr, relative_filepath):
+    """Add an 'include binary' command in the assembly output. The contents are
+    verified to be identical to our current file contents."""
+    # Add to the list of files to include
+    include_binary_files[binary_addr] = relative_filepath
+
+    # Read the binary file
+    with open(relative_filepath, "rb") as fh:
+        contents = fh.read()
+    length = len(contents)
+
+    # Check the contents of the file matches the file we are disassembling
+    i = 0
+    for b in contents:
+        assert (memory_binary[binary_addr + i] == contents[i])
+        i += 1
+
+    add_classification(binary_addr, Byte(length))
+
 
 def get_constant8(binary_addr):
     """Get a string representing the 8 bit constant at binary_addr.

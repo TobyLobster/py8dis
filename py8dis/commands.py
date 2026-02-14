@@ -53,6 +53,8 @@ uint()                  Specifies uint formatting.
 padded_uint()           Specifies padded uint formatting.
 set_formatter()         Specifies a function used to format data.
 
+include_binary_file()   Include a binary file into the assembly.
+
 go()                    Classifies code and data and emits assembly.
 """
 
@@ -737,6 +739,13 @@ def split_classification(runtime_addr):
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     classification.split_classification(binary_loc.binary_addr, warn=False)
+
+def include_binary_file(runtime_addr, relative_filepath):
+    """Add an 'include binary' command in the assembly output. The contents are
+    verified to be identical to our current file contents."""
+    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    return classification.include_binary_file(binary_loc.binary_addr, relative_filepath)
 
 def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     """

@@ -740,8 +740,13 @@ def emit(print_output=True):
                 d.extend([""])
             was_code = now_is_code
 
-            # output the line itself
-            d.extend(emit_addr(BinaryLocation(addr, move_id)))
+            if addr in classification.include_binary_files:
+                # output an included binary
+                inc_binary_filepath = classification.include_binary_files[addr]
+                d.extend([formatter.include_binary_file(inc_binary_filepath)])
+            else:
+                # output the line itself
+                d.extend(emit_addr(BinaryLocation(addr, move_id)))
 
             # move to the next address
             addr += classification.get_classification(addr).length()

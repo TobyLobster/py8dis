@@ -312,4 +312,7 @@ class Beebasm(assembler.Assembler):
     def supports_signed_integers(self):
         return True
 
+    def include_binary_file(self, binary_filepath):
+        return utils.make_indent(1) + 'INCBIN "' + binary_filepath + '"'
+
 config.set_assembler(Beebasm())

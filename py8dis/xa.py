@@ -282,4 +282,7 @@ class Xa(assembler.Assembler):
         # e.g. ".byt -2" is an error, so don't use signed integers
         return False
 
+    def include_binary_file(self, binary_filepath):
+        return utils.make_indent(1) + '.bin 0,0,"' + binary_filepath + '"'
+
 config.set_assembler(Xa())
