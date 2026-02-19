@@ -160,7 +160,7 @@ def constant(value, name, comment=None, *, align=Align.INLINE, format=Format.DEF
 
     These names can then be used in subsequent calls to expr().
     """
-    assert (comment == None) or (isinstance(comment, str))
+    assert (comment is None) or (isinstance(comment, str))
 
     disassembly.add_constant(value, name, comment, align, format)
 
@@ -169,7 +169,7 @@ def label(runtime_addr, name, move_id=None):
 
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     assert isinstance(name, str)
-    assert (move_id == None) or isinstance(move_id, int)
+    assert (move_id is None) or isinstance(move_id, int)
     if move_id is None:
         # Look up the associated binary address, just to get the best move_id
         _, move_id = movemanager.r2b(runtime_addr)
@@ -206,12 +206,13 @@ def optional_label(runtime_addr, name, base_runtime_addr=None, *, definable_inli
     disassembly.add_optional_label(runtime_addr, name, base_addr=base_runtime_addr, definable_inline=definable_inline)
 
 def local_label(runtime_addr, name, start_addr, end_addr, move_id=None):
+    """Define a label name for a runtime address but only within a given memory range"""
     disassembly.add_local_label(runtime_addr, name, start_addr, end_addr, move_id)
 
 def substitute_constants(instruction, reg, constants_dict, define_all_constants=None):
-    """When loading a register with an immediate value somewhere
-    before the given instruction, fill in a constant or expression
-    from the given dictionary.
+    """Substitute a name or expression from a dictionary whenever a load
+    immediate to a given register is done before the given instruction.
+    e.g. Supply a list of sprite id names to 'lda #15:jsr sprite_plot'
 
     `define_all_constants` has three possible values:
         None    - define no constants (the default)
@@ -219,7 +220,7 @@ def substitute_constants(instruction, reg, constants_dict, define_all_constants=
         True    - define all constants
     """
 
-    if define_all_constants == True:
+    if define_all_constants:
         for entry in constants_dict:
             if disassembly.is_simple_name(constants_dict[entry]):
                 constant(entry, constants_dict[entry])
@@ -244,7 +245,7 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
             optional_label(runtime_addr, name, move_id, definable_inline=True)
 
     # Use default hook function
-    if hook == False and trace.cpu.default_subroutine_hook:
+    if not hook and trace.cpu.default_subroutine_hook:
         hook = trace.cpu.default_subroutine_hook
 
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
@@ -255,10 +256,10 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
         # Format a comment for the subroutine header
         if config.get_subroutine_header() is not None:
             auto_comment(runtime_addr, config.get_subroutine_header(), word_wrap=False)
-        com = "";
+        com = ""
         middle = ""
         if title is not None and len(title)>0:
-            middle += title + "\n";
+            middle += title + "\n"
         if description is not None and len(description)>0:
             middle += "\n" + description + "\n"
         if on_entry is not None and len(on_entry)>0:
@@ -281,7 +282,7 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
 
 def _convert_inline_to_align_internal(inline, align):
     # If no 'align' value is specified, convert the old True/False 'inline' values into the modern 'Align' type
-    if align == None:
+    if align is None:
         if inline:
             align = Align.INLINE
         else:
@@ -301,7 +302,7 @@ def comment(runtime_addr, text, inline=False, indent=0, word_wrap=True, *, align
     assert isinstance(inline, bool)
     assert isinstance(indent, int)
     assert isinstance(word_wrap, bool)
-    assert (align == None) or isinstance(align, Align)
+    assert (align is None) or isinstance(align, Align)
 
     # Convert the old True/False values into the modern 'Align' type as needed
     align = _convert_inline_to_align_internal(inline, align)
@@ -317,6 +318,7 @@ def formatted_comment(runtime_addr, text, inline=False, align=None, indent=0):
     disassembly.comment(runtime_addr, text, word_wrap=False, indent=indent, align=align)
 
 def no_automatic_comment(runtime_addr):
+    """Inhibits the output of any automatically generated comment at the given address"""
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     trace.no_auto_comment_set.add(binary_loc.binary_addr)
@@ -324,7 +326,7 @@ def no_automatic_comment(runtime_addr):
 def auto_comment(runtime_addr, text, inline=False, align=None, indent=0, show_blank=False, word_wrap=True):
     """For internal use only. Generates a comment if not inhibited."""
 
-    if runtime_addr == None:
+    if runtime_addr is None:
         return
 
     # Convert the old True/False values into the modern 'Align' type as needed
@@ -381,9 +383,9 @@ def expr(runtime_addr, s, force=True):
         classification.add_expression(binary_loc.binary_addr, s, force=force)
 
 def auto_expr(runtime_addr, s):
-    """For internal use only. Generates an expression if not inhibited."""
+    """For internal use only. Called internally in order to generate an expression, such as 'end_address - start_address' etc."""
 
-    if runtime_addr == None:
+    if runtime_addr is None:
         return
 
     # Make sure we are within the binary
@@ -733,9 +735,11 @@ def stringn(runtime_addr):
 #
 
 def is_simple_name(s):
+    """Check for a string being a single identifier (like 'start_of_table') vs a more complex expression like 'end_address - start_address'"""
     return disassembly.is_simple_name(s)
 
 def split_classification(runtime_addr):
+    """Split a single classification into two at the given address. Allows partial strings to be shown on different lines of the output."""
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     classification.split_classification(binary_loc.binary_addr, warn=False)

@@ -58,7 +58,7 @@ def comment_screen_addresses(p):
 
     is_word = low_addr == None and high_addr == None
     if is_word:
-        low_addr = p.get_start_loc().binary_address
+        low_addr = p.get_start_loc().binary_addr
         high_addr = low_addr + 1
         offset_to_next_entry = 2
     else:
@@ -68,23 +68,27 @@ def comment_screen_addresses(p):
     second = p.get_memory(low_addr+offset_to_next_entry) + 256*p.get_memory(high_addr+offset_to_next_entry)
     offset = second - start
 
+    # get runtime addresses
+    low_addr_runtime = movemanager.b2r(low_addr)
+    high_addr_runtime = movemanager.b2r(high_addr)
+
     for i in range(0,32):
         exp = make_add(config.get_assembler().hex(start), make_multiply(str(i), config.get_assembler().hex(offset)))
         if not is_word:
-            byte(low_addr+i, 1)
-            byte(high_addr+i, 1)
-            expr(low_addr+i, make_lo(exp))
-            expr(high_addr+i, make_hi(exp))
+            byte(low_addr_runtime+i, 1)
+            byte(high_addr_runtime+i, 1)
+            expr(low_addr_runtime+i, make_lo(exp))
+            expr(high_addr_runtime+i, make_hi(exp))
         else:
-            word(low_addr+i*2, 1)
-            expr(low_addr+i*2, exp)
+            word(low_addr_runtime+i*2, 1)
+            expr(low_addr_runtime+i*2, exp)
 
-    if low_addr:
-        disassembly.comment_binary(low_addr, "table of screen addresses for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
-    if high_addr:
-        disassembly.comment_binary(high_addr, "table of screen addresses for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
     if is_word:
         disassembly.comment_binary(low_addr, "table of screen addresses for each character row", indent=1, align=Align.AFTER_LABEL)
+    elif low_addr:
+        disassembly.comment_binary(low_addr, "table of screen addresses for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
+    elif high_addr:
+        disassembly.comment_binary(high_addr, "table of screen addresses for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
 
 # ************************************************************************************************
 def comment_screen_offsets(p):
