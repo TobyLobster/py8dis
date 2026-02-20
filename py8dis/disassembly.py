@@ -536,8 +536,9 @@ def fix_label_names():
     while binary_addr < len(classification.classifications):
         c = classification.get_classification(binary_addr)
         if c is not None:
-            move_id = movemanager.move_id_for_binary_addr[binary_addr]
-            dummy = [str(x) for x in c.as_string_list(movemanager.BinaryLocation(binary_addr, move_id), None)]
+            if not (binary_addr in classification.include_binary_files):
+                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                dummy = [str(x) for x in c.as_string_list(movemanager.BinaryLocation(binary_addr, move_id), None)]
             binary_addr += c.length()
         else:
             binary_addr += 1
