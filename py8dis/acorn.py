@@ -85,10 +85,11 @@ def comment_screen_addresses(p):
 
     if is_word:
         disassembly.comment_binary(low_addr, "table of screen addresses for each character row", indent=1, align=Align.AFTER_LABEL)
-    elif low_addr:
-        disassembly.comment_binary(low_addr, "table of screen addresses for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
-    elif high_addr:
-        disassembly.comment_binary(high_addr, "table of screen addresses for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
+    else:
+        if low_addr:
+            disassembly.comment_binary(low_addr, "table of screen addresses for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
+        if high_addr:
+            disassembly.comment_binary(high_addr, "table of screen addresses for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
 
 # ************************************************************************************************
 def comment_screen_offsets(p):

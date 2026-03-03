@@ -2,7 +2,7 @@ import classification
 import movemanager
 import trace
 import utils
-from memorymanager import BinaryLocation
+from memorymanager import BinaryLocation, BinaryAddr
 
 class SnippetHelper:
     def __init__(self, memory_binary, binary_loc, match, labels):
@@ -25,7 +25,7 @@ class SnippetHelper:
                         continue
                     length = end - start
                     assert 0 <= start < 0x10000, "label='{0}' index={1} start={2}".format(label_name, label[0], start)
-                    return (start, length)
+                    return (BinaryAddr(start), length)
 
         return (None, None)
 
