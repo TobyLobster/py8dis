@@ -73,11 +73,21 @@ class Cpu(object):
 
                 disassembly.add_raw_annotation(binary_loc, utils.LazyString("%s", late_formatter))
             else:
+                # Check if we run out of binary within this instruction
+                if not memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1 + opcode.operand_length):
+                    # Mark the final partial instruction as being data, not code
+                    for i in range(1, 1 + opcode.operand_length):
+                        if memorymanager.memory_binary[binary_addr + i] is not None:
+                            classification.add_classification(binary_addr, classification.Byte(1))
+                        else:
+                            break
+                    return [None]
+
                 # Classify the address as code
                 classification.add_classification(binary_addr, opcode)
                 opcode.update_references(binary_loc)
 
-            # Call the opcode routine to actually disassemble the instruction
+            # Call the opcode routine to work out the list of next addresses to disassmble
             result = opcode.disassemble(binary_loc)
             return result
 
