@@ -108,5 +108,5 @@ class SnippetHelper:
         assert label_runtime_addr is not None, f"Label {snippet_label} not found"
     
         if (label_runtime_addr + offset) > 0xffff:
-            return make_and(make_subtract(source_label, offset), make_hex(0xffff))
+            return make_and(make_hex(0xffff), make_subtract(source_label, offset))
         return make_subtract(source_label, offset)

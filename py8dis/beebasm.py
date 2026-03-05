@@ -243,7 +243,7 @@ class Beebasm(assembler.Assembler):
             old = ("", 0)
             for expr, value in spa:
                 if (expr != old[0]) or (value != old[1]):
-                    result.append(utils.make_indent(1) + utils.force_case("assert ") + "%s == %s" % (expr, value))
+                    result.append(utils.make_indent(1) + utils.force_case("assert ") + "%s == %s" % (value, expr))
                 old = (expr, value)
 
         result.append("")
