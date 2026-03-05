@@ -2,6 +2,7 @@ import classification
 import movemanager
 import trace
 import utils
+from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from memorymanager import BinaryLocation, BinaryAddr
 
 class SnippetHelper:
@@ -98,3 +99,14 @@ class SnippetHelper:
             expected_branch_operand = (256 + expected_branch_operand) & 255
             return expected_branch_operand == branch_operand_value
         return False
+
+    def make_subtract_wrapped(self, source_label, snippet_label, offset):
+        # To cope with an instruction like 'lda l0000-1,x' where the result operand wraps around
+        # a 64k boundary e.g. equivalent to 'lda $ffff,x' we encode it as e.g. 'lda (l0000-1) & 0xffff,x'
+        # to appease the assembler.
+        label_runtime_addr = self.get_memory(snippet_label)
+        assert label_runtime_addr is not None, f"Label {snippet_label} not found"
+    
+        if (label_runtime_addr + offset) > 0xffff:
+            return make_and(make_subtract(source_label, offset), make_hex(0xffff))
+        return make_subtract(source_label, offset)

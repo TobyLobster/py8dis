@@ -2,6 +2,8 @@ import classification
 import disassembly
 import snippet6502
 import utils
+import labelmanager
+import sys
 from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from snippethelper import *
@@ -59,7 +61,7 @@ def comment_memory_copy_loop(p):
 
         if offset:
             source_binary_addr = p.get_binary_address('load')+1
-            proposed_expression = make_subtract(source_label, offset)
+            proposed_expression = p.make_subtract_wrapped(source_label, 'addr', offset)
             new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
             if new_expression != proposed_expression:
                 source_label = make_add(new_expression, 1)
@@ -72,7 +74,7 @@ def comment_memory_copy_loop(p):
 
         if offset:
             dest_binary_addr = p.get_binary_address('store')+1
-            proposed_expression = make_subtract(dest_label, offset)
+            proposed_expression = p.make_subtract_wrapped(dest_label, 'other', offset)
             new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
             if new_expression != proposed_expression:
                 dest_label = make_add(new_expression, 1)
@@ -138,7 +140,7 @@ def comment_memory_copy_with_limited_end_loop(p):
 
         if end_count:
             source_binary_addr = p.get_binary_address('load')+1
-            proposed_expression = make_subtract(source_label, end_count)
+            proposed_expression = p.make_subtract_wrapped(source_label,'addr',end_count)
             new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
             if new_expression != proposed_expression:
                 source_label = make_add(new_expression, 1)
@@ -151,7 +153,7 @@ def comment_memory_copy_with_limited_end_loop(p):
 
         if end_count:
             dest_binary_addr = p.get_binary_address('store')+1
-            proposed_expression = make_subtract(dest_label, end_count)
+            proposed_expression = p.make_subtract_wrapped(dest_label, 'other', end_count)
             new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
             if new_expression != proposed_expression:
                 dest_label = make_add(new_expression, 1)
@@ -200,20 +202,20 @@ def comment_memory_copy_increment(p):
         source_label = p.get_expr('addr', label_offset=0, final_offset=start_count)
 
         source_binary_addr = p.get_binary_address('load')+1
-        proposed_expression = make_subtract(source_label, start_count)
+        proposed_expression = p.make_subtract_wrapped(source_label, 'addr', start_count)
         new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
         if new_expression != proposed_expression:
-            source_label = make_subtract(new_expression, start_count)
+            source_label = p.make_subtract_wrapped(new_expression, 'addr', start_count)
         source_label = utils.LazyString(" from %s", source_label)
 
     if not is_store_indirect:
         dest_label = p.get_expr('other', label_offset=0, final_offset=start_count)
 
         dest_binary_addr = p.get_binary_address('store')+1
-        proposed_expression = make_subtract(dest_label, start_count)
+        proposed_expression = p.make_subtract_wrapped(dest_label, 'other', start_count)
         new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
         if new_expression != proposed_expression:
-            dest_label = make_subtract(new_expression, start_count)
+            dest_label = p.make_subtract_wrapped(new_expression, 'other', start_count)
         dest_label = utils.LazyString(" to %s", dest_label)
 
     def late_formatter():

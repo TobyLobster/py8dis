@@ -9,6 +9,7 @@ import trace
 import utils
 import classification
 import machinetype
+import sys
 from memorymanager import BinaryAddr, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from classification import INSIDE_A_CLASSIFICATION
@@ -2918,7 +2919,9 @@ def is_sideways_rom():
         label(nul_at_title_end, "version")
         stringz(nul_at_title_end + 1, True)
     label(0x8000 + copyright_offset, "copyright")
-    stringz(0x8000 + copyright_offset + 1)
+    
+    if not classification.is_classified(0x8000 + copyright_offset + 1):
+        stringz(0x8000 + copyright_offset + 1)
     # ENHANCE: We could recognise tube transfer/relocation data in header
 
 def label_tube(base, name):
