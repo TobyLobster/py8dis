@@ -838,7 +838,7 @@ class Cpu6502(cpu.Cpu):
             # if there's a label at this address, then we lose all known (pessimistic) state.
             # This is because somewhere will be jumping to the label with unknown state.
             runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
-            if runtime_addr:
+            if runtime_addr is not None:
                 if runtime_addr in labelmanager.labels:
                     state.clear(pessimistic_only=True)
 
