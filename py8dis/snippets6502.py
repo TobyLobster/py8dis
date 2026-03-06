@@ -56,8 +56,9 @@ def comment_memory_copy_loop(p):
     if bytes_to_copy == None:
         bytes_to_copy = p.get_memory("start_count")
 
-    if not is_load_indirect:
+    if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=offset)
+        utils.warn(f"Source label: {type(source_label)} {p.match} {is_store_indirect} {p.labels}")
 
         if offset:
             source_binary_addr = p.get_binary_address('load')+1
@@ -69,7 +70,7 @@ def comment_memory_copy_loop(p):
         #if bytes_to_copy == None:
         #    source_label = utils.LazyString("%s+%s", source_label, reg.upper())
 
-    if not is_store_indirect:
+    if is_store_indirect is None:
         dest_label = p.get_expr('other', label_offset=0, final_offset=offset)
 
         if offset:
@@ -84,7 +85,7 @@ def comment_memory_copy_loop(p):
 
     offset_string = ""
 
-    if bytes_to_copy != None:
+    if bytes_to_copy is not None:
         if not is_stop_at_zero:
             # "bpl loop"
             if bytes_to_copy > 128:
@@ -104,7 +105,7 @@ def comment_memory_copy_loop(p):
             offset_string = "+1"
 
     def late_formatter():
-        if bytes_to_copy != None:
+        if bytes_to_copy is not None:
             bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
         else:
             bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"

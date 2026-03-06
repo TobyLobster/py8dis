@@ -335,7 +335,7 @@ def auto_comment(runtime_addr, text, inline=False, align=None, indent=0, show_bl
     # Make sure we are within the binary
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_addr, _ = movemanager.r2b(runtime_addr)
-    if binary_addr:
+    if binary_addr is not None:
         if memorymanager.is_data_loaded_at_binary_addr(binary_addr):
             if show_blank:
                 blank(runtime_addr)

@@ -45,7 +45,7 @@ class SnippetHelper:
         else:
             binary_addr = label_name
             length = 1
-        if binary_addr:
+        if binary_addr is not None:
             binary_addr += offset
             if length == 2:
                 assert 0 <= binary_addr < 0xffff
@@ -58,7 +58,7 @@ class SnippetHelper:
 
     def get_expr(self, label_name, *, label_offset=0, final_offset=0):
         binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
-        if binary_addr:
+        if binary_addr is not None:
             binary_addr += label_offset
             if length == 2:
                 assert 0 <= binary_addr < 0xffff
@@ -74,7 +74,7 @@ class SnippetHelper:
             binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=True)
         else:
             binary_addr = label_name
-        if binary_addr:
+        if binary_addr is not None:
             binary_addr += offset
             assert 0 <= binary_addr < 0x10000
             return(trace.cpu.cpu_states[binary_addr])
@@ -104,8 +104,9 @@ class SnippetHelper:
         # To cope with an instruction like 'lda l0000-1,x' where the result operand wraps around
         # a 64k boundary e.g. equivalent to 'lda $ffff,x' we encode it as e.g. 'lda (l0000-1) & 0xffff,x'
         # to appease the assembler.
-        label_runtime_addr = self.get_memory(snippet_label)
-        assert label_runtime_addr is not None, f"Label {snippet_label} not found"
+        label_runtime_addr, length = self.get_binary_address_and_length(snippet_label, prioritise_definition=False)
+
+        assert label_runtime_addr is not None, f"Snippet label '{snippet_label}' not found"
     
         if (label_runtime_addr + offset) > 0xffff:
             return make_and(make_hex(0xffff), make_subtract(source_label, offset))
