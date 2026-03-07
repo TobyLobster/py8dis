@@ -104,7 +104,7 @@ class SnippetHelper:
         # To cope with an instruction like 'lda l0000-1,x' where the result operand wraps around
         # a 64k boundary e.g. equivalent to 'lda $ffff,x' we encode it as e.g. 'lda (l0000-1) & 0xffff,x'
         # to appease the assembler.
-        label_runtime_addr, length = self.get_binary_address_and_length(snippet_label, prioritise_definition=False)
+        label_runtime_addr = self.get_memory(snippet_label)
 
         assert label_runtime_addr is not None, f"Snippet label '{snippet_label}' not found"
     

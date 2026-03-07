@@ -58,7 +58,6 @@ def comment_memory_copy_loop(p):
 
     if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=offset)
-        utils.warn(f"Source label: {type(source_label)} {p.match} {is_store_indirect} {p.labels}")
 
         if offset:
             source_binary_addr = p.get_binary_address('load')+1
