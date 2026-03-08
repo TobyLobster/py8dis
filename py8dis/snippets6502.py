@@ -229,7 +229,11 @@ def comment_memory_copy_increment(p):
 
 # ************************************************************************************************
 def comment_add_to_y(p):
-    disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=1, align=Align.INLINE)
+    disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=0, align=Align.INLINE)
+
+# ************************************************************************************************
+def comment_add_to_x(p):
+    disassembly.comment_binary(p.get_start_loc(), "add {0} to X".format(p.get_memory("nn")), indent=0, align=Align.INLINE)
 
 # ************************************************************************************************
 def comment_set_memory_r_loop(p, reg, other_reg):
@@ -587,6 +591,13 @@ register_mark_up_snippet(comment_add_to_y, """
     clc
     adc #nn
     tay
+""")
+
+register_mark_up_snippet(comment_add_to_x, """
+    txa
+    clc
+    adc #nn
+    tax
 """)
 
 register_mark_up_snippet(comment_set_memory_x_loop, """

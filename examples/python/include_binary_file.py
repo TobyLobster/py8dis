@@ -9,6 +9,6 @@ config.set_show_all_labels(False)
 
 load(0x0e00, "orig/include_binary_file.orig", "6502")
 
-include_binary_file(0x0e05, "orig/include_binary_data.bin", 8)
+include_binary_file(0x0e05, "orig/include_binary_data.bin")
 
 go()
