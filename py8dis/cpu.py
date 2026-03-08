@@ -188,14 +188,14 @@ class Cpu(object):
                 label_move_id = label.relevant_active_move_ids[0] if label.relevant_active_move_ids else None
 
                 binary_addr, move_id = movemanager.r2b(runtime_addr, label_move_id)
-                if binary_addr == None:
+                if binary_addr is None:
                     # get the first of the possible move_ids suggested by the references and try that
                     best_guess_move_id = next(iter(sorted([ref_binary_loc.move_id for ref_binary_loc in label.references])), None)
                     binary_addr, move_id = movemanager.r2b(runtime_addr, best_guess_move_id)
-                    if binary_addr == None:
+                    if binary_addr is None:
                         binary_addr, move_id = movemanager.r2b(runtime_addr, None)
 
-                if binary_addr != None:
+                if binary_addr is not None:
                     binary_loc = BinaryLocation(binary_addr, move_id)
                     trace.references[binary_loc].extend(label.references)
 

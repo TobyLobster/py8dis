@@ -19,7 +19,7 @@ from snippets6502 import register_mark_up_snippet, register_find_code_snippet, O
 def comment_print_tab(p):
     def get_coord_str(operand_label, instruction_label):
         coord = p.get_memory(operand_label)
-        if coord == None:
+        if coord is None:
             opcode = p.get_memory(instruction_label)
             if opcode == OPCODE_TXA:
                 coord = 'X'
@@ -47,7 +47,7 @@ def comment_print_repeated_character(p):
     if not p.check_branch_matches('loop1') and not p.check_branch_matches('loop2'):
         return
     cc = p.get_memory('nn1')
-    if cc == None:
+    if cc is None:
         cc = 'A'
 
     disassembly.comment_binary(p.get_start_loc(), "print character {0} repeatedly".format(cc), indent=1, align=Align.AFTER_LABEL)
@@ -57,7 +57,7 @@ def comment_screen_addresses(p):
     low_addr = p.get_binary_address('low')
     high_addr = p.get_binary_address('high')
 
-    is_word = low_addr == None and high_addr == None
+    is_word = low_addr is None and high_addr is None
     if is_word:
         low_addr = p.get_start_loc().binary_addr
         high_addr = low_addr + 1
@@ -1579,7 +1579,7 @@ def osbyte_rw(x_binary_addr, y_binary_addr):
 def format_osbyte_rw(x_addr, y_addr, comment_name):
     com, write_value = osbyte_rw(x_addr, y_addr)
     result = com + " " + comment_name
-    if write_value != None:
+    if write_value is not None:
         result += ", value X=" + str(write_value)
 
     return result
@@ -2590,7 +2590,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
         if action_pessimistic == 0x9c:
             _, write_value = osbyte_rw(x_addr_pessimistic, y_addr_pessimistic)
             com = format_osbyte_rw(x_addr_pessimistic, y_addr_pessimistic, "6850 (ACIA) control register")
-            if write_value != None:
+            if write_value is not None:
                 com += ": "
                 com += { 0: "divide counter by 1",
                          1: "divide counter by 16",
@@ -2752,7 +2752,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
                     auto_comment(x_runtime_adjust_addr_optimistic, "X=File handle", align=Align.INLINE)
 
             if action_pessimistic == 0xc8:
-                if write_value != None:
+                if write_value is not None:
                     if write_value & 1:
                         name = "Disable ESCAPE action, "
                     else:
@@ -2763,7 +2763,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
                         name += "clear memory on BREAK"
             elif action_pessimistic == 0xc9:
                 result = "Enable/Disable keyboard (for Econet)"
-                if write_value != None:
+                if write_value is not None:
                     if write_value == 0:
                         result = "Enable keyboard (for Econet)"
                     else:
@@ -2795,7 +2795,7 @@ def osbyte_hook(runtime_addr, state, subroutine):
             if next_name and (next_next_name == next_name + " (high byte)"):
                 next_name += " (low byte)"
             if x_runtime_next_use:
-                if write_value == None:
+                if write_value is None:
                     auto_comment(x_runtime_next_use, "X=value of " + name, align=Align.INLINE)
                 else:
                     auto_comment(x_runtime_next_use, "X=old value of " + name, align=Align.INLINE)
@@ -3356,7 +3356,7 @@ def hardware(machine):
             optional_label(base + 12, name + "_via_pcr", definable_inline=False)
             optional_label(base + 13, name + "_via_ifr", definable_inline=False)
             optional_label(base + 14, name + "_via_ier", definable_inline=False)
-            optional_label(base + 15, name + "_via_ora_ira", definable_inline=False)
+            optional_label(base + 15, name + "_via_ora_ira_no_handshake", definable_inline=False)
         label_via(0xfe40, "system")
         label_via(0xfe60, "user")
 

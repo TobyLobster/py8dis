@@ -53,7 +53,7 @@ def comment_memory_copy_loop(p):
     reg                 = 'x' if p.get_memory('update') == OPCODE_DEX else 'y'
     state               = p.get_state('comment')
     bytes_to_copy       = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
-    if bytes_to_copy == None:
+    if bytes_to_copy is None:
         bytes_to_copy = p.get_memory("start_count")
 
     if is_load_indirect is None:
@@ -66,7 +66,7 @@ def comment_memory_copy_loop(p):
             if new_expression != proposed_expression:
                 source_label = make_add(new_expression, 1)
         source_label = utils.LazyString(" from %s", source_label)
-        #if bytes_to_copy == None:
+        #if bytes_to_copy is None:
         #    source_label = utils.LazyString("%s+%s", source_label, reg.upper())
 
     if is_store_indirect is None:
@@ -79,7 +79,7 @@ def comment_memory_copy_loop(p):
             if new_expression != proposed_expression:
                 dest_label = make_add(new_expression, 1)
         dest_label = utils.LazyString(" to %s", dest_label)
-        #if bytes_to_copy == None:
+        #if bytes_to_copy is None:
         #    dest_label = utils.LazyString("%s+%s", dest_label, reg.upper())
 
     offset_string = ""
@@ -131,11 +131,11 @@ def comment_memory_copy_with_limited_end_loop(p):
     reg                 = 'x' if p.get_memory('update') == OPCODE_DEX else 'y'
     state               = p.get_state('comment')
     start_count         = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
-    if start_count == None:
+    if start_count is None:
         start_count = p.get_memory("start_count")
     bytes_to_copy       = start_count - end_count + 1  if start_count else None
 
-    if not is_load_indirect:
+    if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=end_count)
 
         if end_count:
@@ -145,10 +145,10 @@ def comment_memory_copy_with_limited_end_loop(p):
             if new_expression != proposed_expression:
                 source_label = make_add(new_expression, 1)
         source_label = utils.LazyString(" from %s", source_label)
-        #if bytes_to_copy == None:
+        #if bytes_to_copy is None:
         #    source_label = utils.LazyString("%s+%s", source_label, reg.upper())
 
-    if not is_store_indirect:
+    if is_store_indirect is None:
         dest_label = p.get_expr('other', label_offset=0, final_offset=end_count)
 
         if end_count:
@@ -158,13 +158,13 @@ def comment_memory_copy_with_limited_end_loop(p):
             if new_expression != proposed_expression:
                 dest_label = make_add(new_expression, 1)
         dest_label = utils.LazyString(" to %s", dest_label)
-        #if bytes_to_copy == None:
+        #if bytes_to_copy is None:
         #    dest_label = utils.LazyString("%s+%s", dest_label, reg.upper())
 
     offset_string = str(end_count)
 
     def late_formatter():
-        if bytes_to_copy != None:
+        if bytes_to_copy is not None:
             bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
         else:
             bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
@@ -191,14 +191,14 @@ def comment_memory_copy_increment(p):
     reg                 = 'x' if p.get_memory('update') == OPCODE_INX else 'y'
     state               = p.get_state('comment')
     start_count         = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
-    if start_count == None:
+    if start_count is None:
         start_count = p.get_memory("start_count")
-        if start_count == None:
+        if start_count is None:
             return
 
     bytes_to_copy = end_count - start_count
 
-    if not is_load_indirect:
+    if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=start_count)
 
         source_binary_addr = p.get_binary_address('load')+1
@@ -208,7 +208,7 @@ def comment_memory_copy_increment(p):
             source_label = p.make_subtract_wrapped(new_expression, 'addr', start_count)
         source_label = utils.LazyString(" from %s", source_label)
 
-    if not is_store_indirect:
+    if is_store_indirect is None:
         dest_label = p.get_expr('other', label_offset=0, final_offset=start_count)
 
         dest_binary_addr = p.get_binary_address('store')+1
@@ -219,7 +219,7 @@ def comment_memory_copy_increment(p):
         dest_label = utils.LazyString(" to %s", dest_label)
 
     def late_formatter():
-        if bytes_to_copy != None:
+        if bytes_to_copy is not None:
             bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
         else:
             bytes_to_copy_string = " some bytes of memory"
@@ -252,7 +252,7 @@ def comment_set_memory_r_loop(p, reg, other_reg):
                 load_addr   = None
 
     loop_has_one_reference  = p.num_references('loop') == 1
-    if load_addr == None:
+    if load_addr is None:
         state               = p.get_state('loop')
         # if we don't have any load instruction directly before the loop, use optimistic
         # state to guess the loop counter and value to store and hope for the best
@@ -269,19 +269,19 @@ def comment_set_memory_r_loop(p, reg, other_reg):
 
     bytes_to_set = loop_counter
     plus_reg = "+"+other_reg.upper()
-    if bytes_to_set != None:
+    if bytes_to_set is not None:
         if not is_stop_at_zero:
             bytes_to_set += 1
 
-    if to_value != None:
+    if to_value is not None:
         to_value_string = " to {0}".format(to_value)
 
-    if not is_store_indirect:
+    if is_store_indirect is None:
         dest_label = p.get_expr('addr', label_offset=0, final_offset=0)
         dest_label = utils.LazyString(" at %s%s", dest_label, plus_reg)
 
     def late_formatter():
-        if bytes_to_set != None:
+        if bytes_to_set is not None:
             bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
         else:
             bytes_to_set_string = " {0} bytes of memory".format(reg.upper())

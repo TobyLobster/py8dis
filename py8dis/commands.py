@@ -225,7 +225,7 @@ def substitute_constants(instruction, reg, constants_dict, define_all_constants=
             if disassembly.is_simple_name(constants_dict[entry]):
                 constant(entry, constants_dict[entry])
 
-    trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, constants_dict, define_all_constants != None))
+    trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, constants_dict, define_all_constants is not None))
 
 def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=False, move_id=None, is_entry_point=True):
     """

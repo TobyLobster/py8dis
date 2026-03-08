@@ -289,7 +289,7 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
     # Rule 2
     if move_id not in move_ids2:
         candidate_move_ids = list(move_ids2)
-        if move_id != None:
+        if move_id is not None:
             candidate_move_ids = [move_id] + candidate_move_ids
 
         # Get the label
@@ -708,7 +708,7 @@ def emit(print_output=True):
     # Output disassembly for each range in turn
     old_end_addr = None
     for start_addr, end_addr in move_ranges:
-        if old_end_addr == None:
+        if old_end_addr is None:
             # Output an ORG at the beginning
             d.extend(formatter.code_start(start_addr, end_addr, True))
             old_end_addr = start_addr

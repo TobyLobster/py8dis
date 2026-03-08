@@ -123,8 +123,8 @@ class BinaryLocation:
     """BinaryLocation holds a binary address and move id"""
 
     def __init__(self, binary_addr, move_id):
-        assert binary_addr != None
-        assert move_id != None
+        assert binary_addr is not None
+        assert move_id is not None
         self.binary_addr = BinaryAddr(binary_addr)
         self.move_id = move_id
 

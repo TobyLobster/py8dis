@@ -109,8 +109,8 @@ def is_integer_type(item):
     return isinstance(item, _integer_types)
 
 def is_integer_string(s):
-    assert s != None
-    if s == None:
+    assert s is not None
+    if s is None:
         return False
     if re.fullmatch(r'[+-]?[$&]?[0-9A-Fa-f]+', s):
         return True
@@ -135,7 +135,7 @@ class LazyString(object):
         self.resolved = None
 
     def __str__(self):
-        if self.resolved == None:
+        if self.resolved is None:
             self.resolved = self._fmt % tuple(x() if callable(x) else x for x in self._args)
         return self.resolved
 

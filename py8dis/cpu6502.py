@@ -42,7 +42,7 @@ class SubConst(object):
 
     def get_opcode(self, opcodes):
         # If already calculated, return it
-        if self._opcode != None:
+        if self._opcode is not None:
             return self._opcode
 
         runtime_addr = self.get_operand_value()
@@ -61,7 +61,7 @@ class SubConst(object):
     def get_operand_value(self):
         # Look up label
         result = labelmanager.addr(self.operand)
-        if result != None:
+        if result is not None:
             return result
 
         # TODO: Optimise!
@@ -88,7 +88,7 @@ class RegState(object):
         self.previous_use       = None      # The address of the previous 'read only use of a register' instruction if present
 
     def get_previous_load_imm_operand(self):
-        if self.previous_load_imm != None:
+        if self.previous_load_imm is not None:
             return self.previous_load_imm+1
         return None
 
@@ -161,7 +161,7 @@ class CpuStateDisposition(object):
         self._d['a'].value = None
 
     def update_rora(self, binary_addr):
-        if self._d['a'].value != None and self._d['c'] != None:
+        if self._d['a'].value is not None and self._d['c'] is not None:
             # We know that state of A and carry, so we can calculate the new value of A
             oldv = self._d['a'].value
             newc = oldv & 1
@@ -205,7 +205,7 @@ class CpuStateDisposition(object):
     def update_AND_immediate(self, binary_addr):
         assert binary_addr is not None
         v = memory_binary[binary_addr+1]
-        if self._d['a'].value != None:
+        if self._d['a'].value is not None:
             # Value of A is known, so calculate new value of A
             v = self._d['a'].value & v
             self._d['a'].value = v
@@ -229,7 +229,7 @@ class CpuStateDisposition(object):
     def update_ORA_immediate(self, binary_addr):
         assert binary_addr is not None
         v = memory_binary[binary_addr+1]
-        if self._d['a'].value != None:
+        if self._d['a'].value is not None:
             # Value of A is known, so calculate new value of A
             v = self._d['a'].value | v
             self._d['a'].value = v
@@ -316,7 +316,7 @@ class CpuStateDisposition(object):
             self['z'] = None
 
     def update_transfer(self, addr, flag, flag_state):
-        if self[flag] == None:
+        if self[flag] is None:
             self[flag] = flag_state
 
     def show(self):
@@ -1383,7 +1383,7 @@ class Cpu6502(cpu.Cpu):
         while binary_addr < 0x10000:
             c = classification.get_classification(binary_addr)
             if c is not None:
-                if state == None:
+                if state is None:
                     state = self.EMPTY_STATE
 
                 if isinstance(c, trace.cpu.Opcode):
@@ -1426,7 +1426,7 @@ class Cpu6502(cpu.Cpu):
                 return
 
             # Must have known state
-            if newstate == None:
+            if newstate is None:
                 return
 
             # Must be an opcode
@@ -1449,7 +1449,7 @@ class Cpu6502(cpu.Cpu):
                             return
 
             binary_addr += c.length()                               # Move to next instruction
-            if state.next_instruction == None:
+            if state.next_instruction is None:
                 state.next_instruction = binary_addr                # Set to the instruction address following the JSR
             newstate = trace.cpu.cpu_states[binary_addr]            # State after instruction at addr has executed
 
@@ -1473,7 +1473,7 @@ class Cpu6502(cpu.Cpu):
                         if c.reg_changes and ((c.reg_changes[reg] == 'A') or (c.reg_changes[reg] == 'T')):
                             # Get the value of the register
                             r = state.pessimistic[reg].value
-                            if r != None:
+                            if r is not None:
                                 move_id = movemanager.move_id_for_binary_addr[binary_addr]
                                 binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                                 formatter = config.get_assembler()
@@ -1510,7 +1510,7 @@ class Cpu6502(cpu.Cpu):
         while binary_addr < 0x10000:
             c = classification.get_classification(binary_addr)
             if c is not None:
-                if state == None:
+                if state is None:
                     state = self.EMPTY_STATE
 
                 if isinstance(c, trace.cpu.Opcode):
@@ -1568,7 +1568,7 @@ class Cpu6502(cpu.Cpu):
                 binary_addr += 1
                 continue
 
-            if state == None:
+            if state is None:
                 state = self.EMPTY_STATE
 
             if isinstance(c, trace.cpu.Opcode):
@@ -1582,12 +1582,12 @@ class Cpu6502(cpu.Cpu):
 
                     # make sure we know the current value of the appropriate register
                     reg_value = state.optimistic[const_sub.reg].value
-                    if reg_value == None:
+                    if reg_value is None:
                         continue
 
                     # check that we know where the register was set
                     where_reg_set = state.optimistic[const_sub.reg].get_previous_load_imm_operand()
-                    if where_reg_set == None:
+                    if where_reg_set is None:
                         continue
 
                     # if we have an operand, make sure it matches too
@@ -1639,7 +1639,7 @@ class Cpu6502(cpu.Cpu):
 
         # For each pattern
         for pattern in find_code_snippets:
-            if pattern == None:
+            if pattern is None:
                 continue
 
             # Find all matches

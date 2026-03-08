@@ -429,8 +429,8 @@ def parse_line(line, group_number):
 
 def parse_integer(s):
     """Parse a string as an integer, decimal, hex or binary, with optional sign"""
-    assert s != None
-    if s == None:
+    assert s is not None
+    if s is None:
         return 0
 
     s = s.strip().strip(',')
