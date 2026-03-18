@@ -76,13 +76,15 @@ def comment_screen_addresses(p):
     for i in range(0,32):
         exp = make_add(config.get_assembler().hex(start), make_multiply(str(i), config.get_assembler().hex(offset)))
         if not is_word:
-            byte(low_addr_runtime+i, 1)
-            byte(high_addr_runtime+i, 1)
-            expr(low_addr_runtime+i, make_lo(exp))
-            expr(high_addr_runtime+i, make_hi(exp))
+            if not classification.get_classification(low_addr_runtime+i) and not classification.get_classification(high_addr_runtime+i):
+                byte(low_addr_runtime+i, 1)
+                byte(high_addr_runtime+i, 1)
+                expr(low_addr_runtime+i, make_lo(exp))
+                expr(high_addr_runtime+i, make_hi(exp))
         else:
-            word(low_addr_runtime+i*2, 1)
-            expr(low_addr_runtime+i*2, exp)
+            if not classification.get_classification(low_addr_runtime+i*2):
+                word(low_addr_runtime+i*2, 1)
+                expr(low_addr_runtime+i*2, exp)
 
     if is_word:
         disassembly.comment_binary(low_addr, "table of screen addresses for each character row", indent=1, align=Align.AFTER_LABEL)
@@ -3341,8 +3343,8 @@ def hardware(machine):
 
 
         def label_via(base, name):
-            optional_label(base +  0, name + "_via_orb_irb", definable_inline=False)
-            optional_label(base +  1, name + "_via_ora_ira", definable_inline=False)
+            optional_label(base +  0, name + "_via_register_b", definable_inline=False)
+            optional_label(base +  1, name + "_via_register_a", definable_inline=False)
             optional_label(base +  2, name + "_via_ddrb", definable_inline=False)
             optional_label(base +  3, name + "_via_ddra", definable_inline=False)
             optional_label(base +  4, name + "_via_t1c_l", definable_inline=False)
@@ -3356,7 +3358,7 @@ def hardware(machine):
             optional_label(base + 12, name + "_via_pcr", definable_inline=False)
             optional_label(base + 13, name + "_via_ifr", definable_inline=False)
             optional_label(base + 14, name + "_via_ier", definable_inline=False)
-            optional_label(base + 15, name + "_via_ora_ira_no_handshake", definable_inline=False)
+            optional_label(base + 15, name + "_via_register_a_no_handshake", definable_inline=False)
         label_via(0xfe40, "system")
         label_via(0xfe60, "user")
 
