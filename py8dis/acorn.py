@@ -32,7 +32,7 @@ def comment_print_tab(p):
         return coord
     x = get_coord_str('nn1', 'transfer1')
     y = get_coord_str('nn2', 'transfer2')
-    disassembly.comment_binary(p.get_start_loc(), "Position text cursor at ({0},{1})".format(x,y), indent=1, align=Align.AFTER_LABEL)
+    disassembly.comment_binary(p.get_start_loc(), "Position text cursor at ({0},{1})".format(x,y), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_print_message(p):
@@ -40,7 +40,7 @@ def comment_print_message(p):
     if not p.check_branch_matches('loop'):
         return
 
-    disassembly.comment_binary(p.get_start_loc(), "print message", indent=1, align=Align.AFTER_LABEL)
+    disassembly.comment_binary(p.get_start_loc(), "print message", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_print_repeated_character(p):
@@ -50,7 +50,7 @@ def comment_print_repeated_character(p):
     if cc is None:
         cc = 'A'
 
-    disassembly.comment_binary(p.get_start_loc(), "print character {0} repeatedly".format(cc), indent=1, align=Align.AFTER_LABEL)
+    disassembly.comment_binary(p.get_start_loc(), "print character {0} repeatedly".format(cc), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_screen_addresses(p):
@@ -87,21 +87,21 @@ def comment_screen_addresses(p):
                 expr(low_addr_runtime+i*2, exp)
 
     if is_word:
-        disassembly.comment_binary(low_addr, "table of screen addresses for each character row", indent=1, align=Align.AFTER_LABEL)
+        disassembly.comment_binary(low_addr, "table of screen addresses for each character row", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
     else:
         if low_addr:
-            disassembly.comment_binary(low_addr, "table of screen addresses for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
+            disassembly.comment_binary(low_addr, "table of screen addresses for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
         if high_addr:
-            disassembly.comment_binary(high_addr, "table of screen addresses for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
+            disassembly.comment_binary(high_addr, "table of screen addresses for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_screen_offsets(p):
     low_addr = p.get_binary_address('low')
     high_addr = p.get_binary_address('high')
     if low_addr:
-        disassembly.comment_binary(low_addr, "table of offsets for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL)
+        disassembly.comment_binary(low_addr, "table of offsets for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
     if high_addr:
-        disassembly.comment_binary(high_addr, "table of offsets for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL)
+        disassembly.comment_binary(high_addr, "table of offsets for each character row (high bytes)", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 # ************************************************************************************************
@@ -187,9 +187,9 @@ loop2
     register_find_code_snippet("""
     lda #$1f
     jsr $ffee
-    lda #nn1
+    lda #nn1 | txa | tya
     jsr $ffee
-    lda #nn2
+    lda #nn2 | txa | tya
     jsr $ffee
 """)
 

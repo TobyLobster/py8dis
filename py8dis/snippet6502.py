@@ -517,7 +517,11 @@ def parse_instruction(inst, group_number):
                     if details.length == 2:
                         # get single byte operand
                         if is_integer:
-                            result_operand += re.escape(bytearray([operand_expr]))
+                            if (operand_expr >= 0) and (operand_expr < 256):
+                                result_operand += re.escape(bytearray([operand_expr]))
+                            else:
+                                # Not a 2 byte instruction length, so try the three instruction length
+                                continue
                         else:
                             labels[operand_expr] = [(group_number, False)]
                             result_operand += "(.)".encode()
