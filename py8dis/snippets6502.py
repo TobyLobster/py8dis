@@ -30,10 +30,10 @@ def add_entry(p):
 
 def add_code_comment(p, comment):
     p.entry()
-    disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE)
+    disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE, auto_generated=True)
 
 def add_data_comment(p, comment):
-    disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE)
+    disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE, auto_generated=True)
 
 
 def register_snippet(pre_trace_fn, post_trace_fn, snippet):
@@ -125,9 +125,9 @@ def comment_memory_copy_loop(p):
             bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
         else:
             bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
-        return "This loop copies{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
+        return "Copy{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
 
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_memory_copy_with_limited_end_loop(p):
@@ -185,9 +185,9 @@ def comment_memory_copy_with_limited_end_loop(p):
             bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
         else:
             bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
-        return "This loop copies{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
+        return "Copy{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
 
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 
 # ************************************************************************************************
@@ -240,17 +240,17 @@ def comment_memory_copy_increment(p):
             bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
         else:
             bytes_to_copy_string = " some bytes of memory"
-        return "This loop copies{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
+        return "Copy{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
 
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_add_to_y(p):
-    disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=0, align=Align.INLINE)
+    disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=0, align=Align.INLINE, auto_generated=True)
 
 # ************************************************************************************************
 def comment_add_to_x(p):
-    disassembly.comment_binary(p.get_start_loc(), "add {0} to X".format(p.get_memory("nn")), indent=0, align=Align.INLINE)
+    disassembly.comment_binary(p.get_start_loc(), "add {0} to X".format(p.get_memory("nn")), indent=0, align=Align.INLINE, auto_generated=True)
 
 # ************************************************************************************************
 def comment_set_memory_r_loop(p, reg, other_reg):
@@ -306,9 +306,14 @@ def comment_set_memory_r_loop(p, reg, other_reg):
             bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
         else:
             bytes_to_set_string = " {0} bytes of memory".format(reg.upper())
-        return "This loop sets{0}{1}{2}".format(bytes_to_set_string, dest_label, to_value_string)
+        
+        if to_value == 0:
+            # "This loop clears 18 bytes of memory at l20e1+Y"
+            return "Clear{0}{1}".format(bytes_to_set_string, dest_label)
+        # "This loop sets 18 bytes of memory at l20e1+Y to 0"
+        return "Set{0}{1}{2}".format(bytes_to_set_string, dest_label, to_value_string)
 
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL)
+    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_set_memory_x_loop(p):
