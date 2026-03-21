@@ -1837,7 +1837,7 @@ cc732
     jmp cca02                                                         // c732: 4c 02 ca    L..
 
 osword9EntryPoint
-    // This loop copies 4 bytes of memory to l0328
+    // Copy 4 bytes of memory to l0328
     ldy #3                                                            // c735: a0 03       ..
 // $c737 referenced 1 time by $c73d
 loop_cc737
@@ -2162,7 +2162,7 @@ vdu23EntryPoint
     sty l00de                                                         // c91e: 84 de       ..
 // $c920 referenced 1 time by $c925
 loop_cc920
-    // This loop copies Y bytes of memory
+    // Copy Y bytes of memory
     lda (l00de),y                                                     // c920: b1 de       ..
     sta (l00dc),y                                                     // c922: 91 dc       ..
     dey                                                               // c924: 88          .
@@ -2171,7 +2171,7 @@ loop_cc920
 cc927
     pla                                                               // c927: 68          h
     jsr sub_cd03e                                                     // c928: 20 3e d0     >.
-    // This loop copies 8 bytes of memory from l031c
+    // Copy 8 bytes of memory from l031c
     ldy #7                                                            // c92b: a0 07       ..
 // $c92d referenced 1 time by $c933
 loop_cc92d
@@ -3007,7 +3007,7 @@ cce7f
     dey                                                               // ce82: 88          .
 // $ce83 referenced 1 time by $ce88
 loop_cce83
-    // This loop copies Y+1 bytes of memory
+    // Copy Y+1 bytes of memory
     lda (l00da),y                                                     // ce83: b1 da       ..
     sta (l00d8),y                                                     // ce85: 91 d8       ..
     dey                                                               // ce87: 88          .
@@ -4969,7 +4969,7 @@ loop_cda56
     bne loop_cda56                                                    // da59: d0 fb       ..
 // $da5b referenced 1 time by $da62
 loop_cda5b
-    // This loop copies Y bytes of memory from ld940 to userv
+    // Copy Y bytes of memory from ld940 to userv
     lda ld940 - 1,y                                                   // da5b: b9 3f d9    .?.
     sta userv - 1,y                                                   // da5e: 99 ff 01    ...
     dey                                                               // da61: 88          .
@@ -7231,7 +7231,7 @@ loop_ce8f2
     rts                                                               // e901: 60          `
 
 osword0EntryPoint
-    // This loop copies 3 bytes of memory to l02b3
+    // Copy 3 bytes of memory to l02b3
     ldy #4                                                            // e902: a0 04       ..
 // $e904 referenced 1 time by $e90c
 loop_ce904
@@ -8710,7 +8710,7 @@ cf14b
 // $f157 referenced 1 time by $f154
 cf157
     stx l00c6                                                         // f157: 86 c6       ..
-    // This loop copies 14 bytes of memory from ld952 to filev
+    // Copy 14 bytes of memory from ld952 to filev
     ldx #$0e                                                          // f159: a2 0e       ..
 // $f15b referenced 1 time by $f162
 loop_cf15b
@@ -9255,7 +9255,7 @@ sub_cf478
 // $f496 referenced 2 times by $f48e, $f53f
 sub_cf496
     jsr sub_cfb1a                                                     // f496: 20 1a fb     ..
-    // This loop copies 18 bytes of memory from l038c to l03be
+    // Copy 18 bytes of memory from l038c to l03be
     ldx #$11                                                          // f499: a2 11       ..
 // $f49b referenced 1 time by $f4a2
 loop_cf49b
@@ -9587,7 +9587,7 @@ cf6bd
     jsr sub_cfb69                                                     // f6e3: 20 69 fb     i.
     stx l03dd                                                         // f6e6: 8e dd 03    ...
     sty l03de                                                         // f6e9: 8c de 03    ...
-    // This loop copies 3 bytes of memory from l03c8 to l02ea
+    // Copy 3 bytes of memory from l03c8 to l02ea
     ldx #2                                                            // f6ec: a2 02       ..
 // $f6ee referenced 1 time by $f6f5
 loop_cf6ee

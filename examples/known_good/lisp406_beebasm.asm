@@ -669,7 +669,7 @@ oscli   = &fff7
     pha                                            ; 8376: 48          H
     dey                                            ; 8377: 88          .
 .MORSP
-    ; This loop copies Y bytes of memory to TVSEXT
+    ; Copy Y bytes of memory to TVSEXT
     lda (SP),y                                     ; 8378: b1 7e       .~             ; Copy back TVS
     sta TVSEXT - 1,y                               ; 837a: 99 32 00    .2.            ; WSA, WSB and WSC
     dey                                            ; 837d: 88          .
@@ -745,7 +745,7 @@ oscli   = &fff7
     dey                                            ; 83da: 88          .
     dey                                            ; 83db: 88          .
 .PILE
-    ; This loop copies Y+1 bytes of memory from BINDER
+    ; Copy Y+1 bytes of memory from BINDER
     lda BINDER,y                                   ; 83dc: b9 32 00    .2.
     sta (SP),y                                     ; 83df: 91 7e       .~
     dey                                            ; 83e1: 88          .
@@ -1441,7 +1441,7 @@ oscli   = &fff7
     sta ARG                                        ; 8810: 85 30       .0
     lda POINT+1                                    ; 8812: a5 7b       .{
     sta ARG+1                                      ; 8814: 85 31       .1
-    ; This loop copies 4 bytes of memory from WSA
+    ; Copy 4 bytes of memory from WSA
     ldy #4                                         ; 8816: a0 04       ..
 .MORODD
     lda WSA - 1,y                                  ; 8818: b9 33 00    .3.
@@ -2497,7 +2497,7 @@ oscli   = &fff7
     ; **** CONS
 .CONS
     jsr ALPAIR                                     ; 8e1e: 20 53 84     S.
-    ; This loop copies 4 bytes of memory from ARGA
+    ; Copy 4 bytes of memory from ARGA
     ldy #4                                         ; 8e21: a0 04       ..
 .CONSLP
     lda ARGA - 1,y                                 ; 8e23: b9 39 00    .9.
@@ -5505,7 +5505,7 @@ DWARF=NERRC-1
     dey                                            ; a06d: 88          .
     bpl MDIV3                                      ; a06e: 10 f3       ..
     bcc DIV40C                                     ; a070: 90 0e       ..
-    ; This loop copies 5 bytes of memory from TEMP40 to REM40
+    ; Copy 5 bytes of memory from TEMP40 to REM40
     ldx #4                                         ; a072: a2 04       ..
 .MDIV4
     lda TEMP40,x                                   ; a074: bd 11 04    ...

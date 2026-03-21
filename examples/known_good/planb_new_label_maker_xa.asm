@@ -10323,7 +10323,7 @@ draw_bar
     ldx #6                                                            // 3f51: a2 06       ..
     iny                                                               // 3f53: c8          .
 draw_bar_loop
-    // This loop sets 6 bytes of memory
+    // Set 6 bytes of memory
     sta (print_addr_low),y                                            // 3f54: 91 2f       ./
     iny                                                               // 3f56: c8          .
     dex                                                               // 3f57: ca          .
@@ -10375,7 +10375,7 @@ print_decremented_bar
     ldx #6                                                            // 3f9a: a2 06       ..
     iny                                                               // 3f9c: c8          .
 draw_bar_loop2
-    // This loop sets 6 bytes of memory
+    // Set 6 bytes of memory
     sta (print_addr_low),y                                            // 3f9d: 91 2f       ./
     iny                                                               // 3f9f: c8          .
     dex                                                               // 3fa0: ca          .
@@ -12257,7 +12257,7 @@ update_key_count
     beq plot_updated_number                                           // 4b5d: f0 2c       .,
     lda current_room_cache + 3,y                                      // 4b5f: b9 03 04    ...
     pha                                                               // 4b62: 48          H
-    // This loop copies 256 bytes of memory from l0401
+    // Copy 256 bytes of memory from l0401
     ldy #0                                                            // 4b63: a0 00       ..
 copy_cache_back_to_room_definition
     lda l0401 - 1,y                                                   // 4b65: b9 00 04    ...
@@ -12275,7 +12275,7 @@ copy_cache_back_to_room_definition
     and #$f8                                                          // 4b7d: 29 f8       ).
     sta (temp_addr_low),y                                             // 4b7f: 91 1d       ..
 skip_reset_door_animation
-    // This loop copies 256 bytes of memory to l0401
+    // Copy 256 bytes of memory to l0401
     ldy #0                                                            // 4b81: a0 00       ..
 copy_room_definition_to_cache_loop
     lda (current_room_low),y                                          // 4b83: b1 08       ..
@@ -12335,7 +12335,7 @@ no_teleport_destination_found
 change_room
     ldx stack_ptr                                                     // 4bee: a6 36       .6
     txs                                                               // 4bf0: 9a          .
-    // This loop copies 256 bytes of memory from l0401
+    // Copy 256 bytes of memory from l0401
     ldy #0                                                            // 4bf1: a0 00       ..
 copy_current_room_cache_back_to_definition_loop
     lda l0401 - 1,y                                                   // 4bf3: b9 00 04    ...

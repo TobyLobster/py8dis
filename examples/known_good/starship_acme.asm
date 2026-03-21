@@ -5431,7 +5431,7 @@ skip_unplotting_scanners
     sta temp0_high                                                    ; 42a3: 85 81       ..  :31a3[1]
     ldx #8                                                            ; 42a5: a2 08       ..  :31a5[1]
 plot_static_row_loop
-    ; This loop copies 64 bytes of memory
+    ; Copy 64 bytes of memory
     ldy #$3f                                                          ; 42a7: a0 3f       .?  :31a7[1]
 plot_static_column_loop
     lda (temp5),y                                                     ; 42a9: b1 86       ..  :31a9[1]
@@ -6301,7 +6301,7 @@ start_game_continuation
     sta score_as_bcd                                                  ; 4906: 8d 65 2d    .e- :3806[1]
     lda maximum_number_of_stars_in_game                               ; 4909: ad b9 34    ..4 :3809[1]
     sta maximum_number_of_stars                                       ; 490c: 8d 50 0e    .P. :380c[1]
-    ; This loop copies 4 bytes of memory from initial_enemy_ship_spawning_probabilities to probability_of_new_enemy_ship_being_defensive_about_damage
+    ; Copy 4 bytes of memory from initial_enemy_ship_spawning_probabilities to probability_of_new_enemy_ship_being_defensive_about_damage
     ldy #3                                                            ; 490f: a0 03       ..  :380f[1]
 reset_enemy_ship_spawning_probabilities_loop
     lda initial_enemy_ship_spawning_probabilities,y                   ; 4911: b9 cc 33    ..3 :3811[1]
