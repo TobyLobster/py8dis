@@ -440,6 +440,7 @@ def stringn_binary(runtime_addr, binary_addr):
     label_start = disassembly.get_label(runtime_addr + 1, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     label_end   = disassembly.get_label(runtime_addr + 1 + length, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     add_expression(binary_addr, utils.LazyString("%s - %s", label_end, label_start))
+    add_classification(binary_addr + 1, String(length))
     return RuntimeAddr(runtime_addr + 1 + length)
 
 def autostring(min_length=3):

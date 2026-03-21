@@ -10,7 +10,7 @@ page    = &1900
     equb &21                                                          ; 0e04: 21          !
 .pydis_end
 
-    assert STR$~(page) == "1900"
+    assert "1900" == STR$~(page)
 
 save pydis_start, pydis_end
 

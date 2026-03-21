@@ -9806,7 +9806,7 @@ osbyte                          = &fff4
     dec temp_loop_counter                                             ; 3bc8: c6 21       .!
     beq return_1                                                      ; 3bca: f0 07       ..
 .next_enemy
-    tya                                                               ; 3bcc: 98          .                  ; add 6 to Y
+    tya                                                               ; 3bcc: 98          .              ; add 6 to Y
     clc                                                               ; 3bcd: 18          .
     adc #6                                                            ; 3bce: 69 06       i.
     tay                                                               ; 3bd0: a8          .
@@ -10084,7 +10084,7 @@ osbyte                          = &fff4
 .update_enemies_loop
     lda enemies_state,y                                               ; 3d95: b9 00 0c    ...
     beq update_enemy                                                  ; 3d98: f0 07       ..
-    tya                                                               ; 3d9a: 98          .                  ; add 6 to Y
+    tya                                                               ; 3d9a: 98          .              ; add 6 to Y
     clc                                                               ; 3d9b: 18          .
     adc #6                                                            ; 3d9c: 69 06       i.
     tay                                                               ; 3d9e: a8          .
@@ -10702,7 +10702,7 @@ routine_addr_high = opcode1+2
     adc #5                                                            ; 41d4: 69 05       i.
     bit current_room_door_info                                        ; 41d6: 24 15       $.
     bvc got_door_coordinates                                          ; 41d8: 50 07       P.             ; if door is horizontal then branch
-    tya                                                               ; 41da: 98          .                  ; add 5 to Y
+    tya                                                               ; 41da: 98          .              ; add 5 to Y
     clc                                                               ; 41db: 18          .
     adc #5                                                            ; 41dc: 69 05       i.
     tay                                                               ; 41de: a8          .
@@ -11618,7 +11618,7 @@ screen_addr_high = opcode10+2
     bne check_for_collision_horizontal_loop                           ; 4740: d0 f6       ..
     dec sprite_cell_height                                            ; 4742: c6 03       ..
     beq finished_collision_check                                      ; 4744: f0 07       ..
-    tya                                                               ; 4746: 98          .                  ; add 37 to Y
+    tya                                                               ; 4746: 98          .              ; add 37 to Y
     clc                                                               ; 4747: 18          .
     adc #&25                                                          ; 4748: 69 25       i%
     tay                                                               ; 474a: a8          .
@@ -12186,7 +12186,7 @@ screen_addr_high = opcode10+2
     jmp check_play_sound_a                                            ; 4af0: 4c 65 40    Le@
 
 .check_next_enemy_state
-    tya                                                               ; 4af3: 98          .                  ; add 6 to Y
+    tya                                                               ; 4af3: 98          .              ; add 6 to Y
     clc                                                               ; 4af4: 18          .
     adc #6                                                            ; 4af5: 69 06       i.
     tay                                                               ; 4af7: a8          .
@@ -13125,279 +13125,279 @@ copy_highscores_dest_addr_high = opcode11+2
     equs "0000000"                                                    ; 5550: 30 30 30... 000
 .pydis_end
 
-    assert &80+&00 == &80
-    assert &80+&03 == &83
-    assert &80+&05 == &85
-    assert &80+&0b == &8b
-    assert &80+&0d == &8d
-    assert &80+&11 == &91
-    assert &80+' ' == &a0
-    assert &80+'1' == &b1
-    assert &80+'2' == &b2
-    assert &80+':' == &ba
-    assert &80+'B' == &c2
-    assert &80+'P' == &d0
-    assert &80+'S' == &d3
-    assert &80+'c' == &e3
-    assert &80+'d' == &e4
-    assert &80+'e' == &e5
-    assert &80+'f' == &e6
-    assert &80+'h' == &e8
-    assert &80+'l' == &ec
-    assert &80+'m' == &ed
-    assert &80+'n' == &ee
-    assert &80+'r' == &f2
-    assert &80+'s' == &f3
-    assert &80+'t' == &f4
-    assert &80+'y' == &f9
-    assert '0' == &30
-    assert 100 == &64
-    assert <(&5800 + (0 * &0140)) == &00
-    assert <(&5800 + (1 * &0140)) == &40
-    assert <(&5800 + (10 * &0140)) == &80
-    assert <(&5800 + (11 * &0140)) == &c0
-    assert <(&5800 + (12 * &0140)) == &00
-    assert <(&5800 + (13 * &0140)) == &40
-    assert <(&5800 + (14 * &0140)) == &80
-    assert <(&5800 + (15 * &0140)) == &c0
-    assert <(&5800 + (16 * &0140)) == &00
-    assert <(&5800 + (17 * &0140)) == &40
-    assert <(&5800 + (18 * &0140)) == &80
-    assert <(&5800 + (19 * &0140)) == &c0
-    assert <(&5800 + (2 * &0140)) == &80
-    assert <(&5800 + (20 * &0140)) == &00
-    assert <(&5800 + (21 * &0140)) == &40
-    assert <(&5800 + (22 * &0140)) == &80
-    assert <(&5800 + (23 * &0140)) == &c0
-    assert <(&5800 + (24 * &0140)) == &00
-    assert <(&5800 + (25 * &0140)) == &40
-    assert <(&5800 + (26 * &0140)) == &80
-    assert <(&5800 + (27 * &0140)) == &c0
-    assert <(&5800 + (28 * &0140)) == &00
-    assert <(&5800 + (29 * &0140)) == &40
-    assert <(&5800 + (3 * &0140)) == &c0
-    assert <(&5800 + (30 * &0140)) == &80
-    assert <(&5800 + (31 * &0140)) == &c0
-    assert <(&5800 + (4 * &0140)) == &00
-    assert <(&5800 + (5 * &0140)) == &40
-    assert <(&5800 + (6 * &0140)) == &80
-    assert <(&5800 + (7 * &0140)) == &c0
-    assert <(&5800 + (8 * &0140)) == &00
-    assert <(&5800 + (9 * &0140)) == &40
-    assert <ammo_bar_screen_address == &10
-    assert <clock == &00
-    assert <computer_bar_screen_address == &50
-    assert <energy_bar_screen_address == &d0
-    assert <envelope1 == &e8
-    assert <envelope2 == &f6
-    assert <envelope3 == &04
-    assert <envelope4 == &12
-    assert <event_routine == &9d
-    assert <room_0_definition == &3c
-    assert <room_10_definition == &19
-    assert <room_11_definition == &a0
-    assert <room_12_definition == &19
-    assert <room_13_definition == &b0
-    assert <room_14_definition == &28
-    assert <room_15_definition == &8e
-    assert <room_16_definition == &0c
-    assert <room_17_definition == &69
-    assert <room_18_definition == &fb
-    assert <room_19_definition == &83
-    assert <room_1_definition == &99
-    assert <room_20_definition == &f3
-    assert <room_21_definition == &6d
-    assert <room_22_definition == &c6
-    assert <room_23_definition == &3a
-    assert <room_24_definition == &b5
-    assert <room_25_definition == &33
-    assert <room_26_definition == &93
-    assert <room_27_definition == &f3
-    assert <room_28_definition == &87
-    assert <room_29_definition == &1b
-    assert <room_2_definition == &e0
-    assert <room_30_definition == &a8
-    assert <room_31_definition == &08
-    assert <room_32_definition == &6c
-    assert <room_33_definition == &f3
-    assert <room_34_definition == &59
-    assert <room_35_definition == &b7
-    assert <room_36_definition == &5b
-    assert <room_37_definition == &fe
-    assert <room_38_definition == &85
-    assert <room_39_definition == &04
-    assert <room_3_definition == &60
-    assert <room_40_definition == &b6
-    assert <room_41_definition == &50
-    assert <room_42_definition == &e4
-    assert <room_43_definition == &92
-    assert <room_44_definition == &0b
-    assert <room_45_definition == &8a
-    assert <room_46_definition == &d7
-    assert <room_47_definition == &86
-    assert <room_48_definition == &d3
-    assert <room_49_definition == &6d
-    assert <room_4_definition == &d1
-    assert <room_50_definition == &e8
-    assert <room_51_definition == &b9
-    assert <room_52_definition == &2c
-    assert <room_53_definition == &c8
-    assert <room_54_definition == &20
-    assert <room_5_definition == &19
-    assert <room_6_definition == &4a
-    assert <room_7_definition == &ee
-    assert <room_8_definition == &2c
-    assert <room_9_definition == &8c
-    assert <room_decode_draw_rect == &19
-    assert <room_decode_move_in_delta_direction == &88
-    assert <room_decode_plot_strip == &61
-    assert <room_decode_set_cellxy == &ef
-    assert <room_decode_set_deltax_or_y == &c5
-    assert <room_decode_set_sprite == &ff
-    assert <sound0 == &9a
-    assert <sound1 == &a2
-    assert <sound2 == &aa
-    assert <sound3 == &b2
-    assert <sound4 == &ba
-    assert <sound5 == &c2
-    assert <sound6 == &ca
-    assert <sound7 == &d2
-    assert <sound8 == &da
-    assert <sprite0 == &10
-    assert <wait_clock_read_value == &17
-    assert <wait_clock_write_value == &1c
-    assert >(&5800 + (0 * &0140)) == &58
-    assert >(&5800 + (1 * &0140)) == &59
-    assert >(&5800 + (10 * &0140)) == &64
-    assert >(&5800 + (11 * &0140)) == &65
-    assert >(&5800 + (12 * &0140)) == &67
-    assert >(&5800 + (13 * &0140)) == &68
-    assert >(&5800 + (14 * &0140)) == &69
-    assert >(&5800 + (15 * &0140)) == &6a
-    assert >(&5800 + (16 * &0140)) == &6c
-    assert >(&5800 + (17 * &0140)) == &6d
-    assert >(&5800 + (18 * &0140)) == &6e
-    assert >(&5800 + (19 * &0140)) == &6f
-    assert >(&5800 + (2 * &0140)) == &5a
-    assert >(&5800 + (20 * &0140)) == &71
-    assert >(&5800 + (21 * &0140)) == &72
-    assert >(&5800 + (22 * &0140)) == &73
-    assert >(&5800 + (23 * &0140)) == &74
-    assert >(&5800 + (24 * &0140)) == &76
-    assert >(&5800 + (25 * &0140)) == &77
-    assert >(&5800 + (26 * &0140)) == &78
-    assert >(&5800 + (27 * &0140)) == &79
-    assert >(&5800 + (28 * &0140)) == &7b
-    assert >(&5800 + (29 * &0140)) == &7c
-    assert >(&5800 + (3 * &0140)) == &5b
-    assert >(&5800 + (30 * &0140)) == &7d
-    assert >(&5800 + (31 * &0140)) == &7e
-    assert >(&5800 + (4 * &0140)) == &5d
-    assert >(&5800 + (5 * &0140)) == &5e
-    assert >(&5800 + (6 * &0140)) == &5f
-    assert >(&5800 + (7 * &0140)) == &60
-    assert >(&5800 + (8 * &0140)) == &62
-    assert >(&5800 + (9 * &0140)) == &63
-    assert >ammo_bar_screen_address == &5a
-    assert >clock == &0e
-    assert >computer_bar_screen_address == &5b
-    assert >energy_bar_screen_address == &58
-    assert >envelope1 == &50
-    assert >envelope2 == &50
-    assert >envelope3 == &51
-    assert >envelope4 == &51
-    assert >event_routine == &51
-    assert >room_0_definition == &21
-    assert >room_10_definition == &25
-    assert >room_11_definition == &25
-    assert >room_12_definition == &26
-    assert >room_13_definition == &26
-    assert >room_14_definition == &27
-    assert >room_15_definition == &27
-    assert >room_16_definition == &28
-    assert >room_17_definition == &28
-    assert >room_18_definition == &28
-    assert >room_19_definition == &29
-    assert >room_1_definition == &21
-    assert >room_20_definition == &29
-    assert >room_21_definition == &2a
-    assert >room_22_definition == &2a
-    assert >room_23_definition == &2b
-    assert >room_24_definition == &2b
-    assert >room_25_definition == &2c
-    assert >room_26_definition == &2c
-    assert >room_27_definition == &2c
-    assert >room_28_definition == &2d
-    assert >room_29_definition == &2e
-    assert >room_2_definition == &21
-    assert >room_30_definition == &2e
-    assert >room_31_definition == &2f
-    assert >room_32_definition == &2f
-    assert >room_33_definition == &2f
-    assert >room_34_definition == &30
-    assert >room_35_definition == &30
-    assert >room_36_definition == &31
-    assert >room_37_definition == &31
-    assert >room_38_definition == &32
-    assert >room_39_definition == &33
-    assert >room_3_definition == &22
-    assert >room_40_definition == &33
-    assert >room_41_definition == &34
-    assert >room_42_definition == &34
-    assert >room_43_definition == &35
-    assert >room_44_definition == &36
-    assert >room_45_definition == &36
-    assert >room_46_definition == &36
-    assert >room_47_definition == &37
-    assert >room_48_definition == &37
-    assert >room_49_definition == &38
-    assert >room_4_definition == &22
-    assert >room_50_definition == &38
-    assert >room_51_definition == &39
-    assert >room_52_definition == &3a
-    assert >room_53_definition == &3a
-    assert >room_54_definition == &3b
-    assert >room_5_definition == &23
-    assert >room_6_definition == &23
-    assert >room_7_definition == &23
-    assert >room_8_definition == &24
-    assert >room_9_definition == &24
-    assert >room_decode_draw_rect == &43
-    assert >room_decode_move_in_delta_direction == &43
-    assert >room_decode_plot_strip == &43
-    assert >room_decode_set_cellxy == &42
-    assert >room_decode_set_deltax_or_y == &42
-    assert >room_decode_set_sprite == &42
-    assert >sound0 == &40
-    assert >sound1 == &40
-    assert >sound2 == &40
-    assert >sound3 == &40
-    assert >sound4 == &40
-    assert >sound5 == &40
-    assert >sound6 == &40
-    assert >sound7 == &40
-    assert >sound8 == &40
-    assert >sprite0 == &12
-    assert >wait_clock_read_value == &40
-    assert >wait_clock_write_value == &40
-    assert bar_pixels_set_table + 1 == &3f5c
-    assert clock + 1 == &0e01
-    assert collision_map_addr_high - 5 == &40f8
-    assert collision_map_addr_low - 5 == &40dd
-    assert current_room_cache + 1 == &0401
-    assert current_room_cache + 2 == &0402
-    assert current_room_cache + 3 == &0403
-    assert current_room_cache + 4 == &0404
-    assert current_room_cache + 5 == &0405
-    assert current_room_cache - 1 == &03ff
-    assert current_room_cache - 5 == &03fb
-    assert highscore_table_names + 25 == &0619
-    assert highscore_table_names - $70 == &0590
-    assert highscore_table_names - 1 == &05ff
-    assert highscore_table_scores - 7 == &06f3
-    assert initial_highscore_table - $70 == &53a7
-    assert l0401 - 1 == &0400
-    assert score_digits_0 - 1 == &27
+    assert &80 == &80+&00
+    assert &83 == &80+&03
+    assert &85 == &80+&05
+    assert &8b == &80+&0b
+    assert &8d == &80+&0d
+    assert &91 == &80+&11
+    assert &a0 == &80+' '
+    assert &b1 == &80+'1'
+    assert &b2 == &80+'2'
+    assert &ba == &80+':'
+    assert &c2 == &80+'B'
+    assert &d0 == &80+'P'
+    assert &d3 == &80+'S'
+    assert &e3 == &80+'c'
+    assert &e4 == &80+'d'
+    assert &e5 == &80+'e'
+    assert &e6 == &80+'f'
+    assert &e8 == &80+'h'
+    assert &ec == &80+'l'
+    assert &ed == &80+'m'
+    assert &ee == &80+'n'
+    assert &f2 == &80+'r'
+    assert &f3 == &80+'s'
+    assert &f4 == &80+'t'
+    assert &f9 == &80+'y'
+    assert &30 == '0'
+    assert &64 == 100
+    assert &00 == <(&5800 + (0 * &0140))
+    assert &40 == <(&5800 + (1 * &0140))
+    assert &80 == <(&5800 + (10 * &0140))
+    assert &c0 == <(&5800 + (11 * &0140))
+    assert &00 == <(&5800 + (12 * &0140))
+    assert &40 == <(&5800 + (13 * &0140))
+    assert &80 == <(&5800 + (14 * &0140))
+    assert &c0 == <(&5800 + (15 * &0140))
+    assert &00 == <(&5800 + (16 * &0140))
+    assert &40 == <(&5800 + (17 * &0140))
+    assert &80 == <(&5800 + (18 * &0140))
+    assert &c0 == <(&5800 + (19 * &0140))
+    assert &80 == <(&5800 + (2 * &0140))
+    assert &00 == <(&5800 + (20 * &0140))
+    assert &40 == <(&5800 + (21 * &0140))
+    assert &80 == <(&5800 + (22 * &0140))
+    assert &c0 == <(&5800 + (23 * &0140))
+    assert &00 == <(&5800 + (24 * &0140))
+    assert &40 == <(&5800 + (25 * &0140))
+    assert &80 == <(&5800 + (26 * &0140))
+    assert &c0 == <(&5800 + (27 * &0140))
+    assert &00 == <(&5800 + (28 * &0140))
+    assert &40 == <(&5800 + (29 * &0140))
+    assert &c0 == <(&5800 + (3 * &0140))
+    assert &80 == <(&5800 + (30 * &0140))
+    assert &c0 == <(&5800 + (31 * &0140))
+    assert &00 == <(&5800 + (4 * &0140))
+    assert &40 == <(&5800 + (5 * &0140))
+    assert &80 == <(&5800 + (6 * &0140))
+    assert &c0 == <(&5800 + (7 * &0140))
+    assert &00 == <(&5800 + (8 * &0140))
+    assert &40 == <(&5800 + (9 * &0140))
+    assert &10 == <ammo_bar_screen_address
+    assert &00 == <clock
+    assert &50 == <computer_bar_screen_address
+    assert &d0 == <energy_bar_screen_address
+    assert &e8 == <envelope1
+    assert &f6 == <envelope2
+    assert &04 == <envelope3
+    assert &12 == <envelope4
+    assert &9d == <event_routine
+    assert &3c == <room_0_definition
+    assert &19 == <room_10_definition
+    assert &a0 == <room_11_definition
+    assert &19 == <room_12_definition
+    assert &b0 == <room_13_definition
+    assert &28 == <room_14_definition
+    assert &8e == <room_15_definition
+    assert &0c == <room_16_definition
+    assert &69 == <room_17_definition
+    assert &fb == <room_18_definition
+    assert &83 == <room_19_definition
+    assert &99 == <room_1_definition
+    assert &f3 == <room_20_definition
+    assert &6d == <room_21_definition
+    assert &c6 == <room_22_definition
+    assert &3a == <room_23_definition
+    assert &b5 == <room_24_definition
+    assert &33 == <room_25_definition
+    assert &93 == <room_26_definition
+    assert &f3 == <room_27_definition
+    assert &87 == <room_28_definition
+    assert &1b == <room_29_definition
+    assert &e0 == <room_2_definition
+    assert &a8 == <room_30_definition
+    assert &08 == <room_31_definition
+    assert &6c == <room_32_definition
+    assert &f3 == <room_33_definition
+    assert &59 == <room_34_definition
+    assert &b7 == <room_35_definition
+    assert &5b == <room_36_definition
+    assert &fe == <room_37_definition
+    assert &85 == <room_38_definition
+    assert &04 == <room_39_definition
+    assert &60 == <room_3_definition
+    assert &b6 == <room_40_definition
+    assert &50 == <room_41_definition
+    assert &e4 == <room_42_definition
+    assert &92 == <room_43_definition
+    assert &0b == <room_44_definition
+    assert &8a == <room_45_definition
+    assert &d7 == <room_46_definition
+    assert &86 == <room_47_definition
+    assert &d3 == <room_48_definition
+    assert &6d == <room_49_definition
+    assert &d1 == <room_4_definition
+    assert &e8 == <room_50_definition
+    assert &b9 == <room_51_definition
+    assert &2c == <room_52_definition
+    assert &c8 == <room_53_definition
+    assert &20 == <room_54_definition
+    assert &19 == <room_5_definition
+    assert &4a == <room_6_definition
+    assert &ee == <room_7_definition
+    assert &2c == <room_8_definition
+    assert &8c == <room_9_definition
+    assert &19 == <room_decode_draw_rect
+    assert &88 == <room_decode_move_in_delta_direction
+    assert &61 == <room_decode_plot_strip
+    assert &ef == <room_decode_set_cellxy
+    assert &c5 == <room_decode_set_deltax_or_y
+    assert &ff == <room_decode_set_sprite
+    assert &9a == <sound0
+    assert &a2 == <sound1
+    assert &aa == <sound2
+    assert &b2 == <sound3
+    assert &ba == <sound4
+    assert &c2 == <sound5
+    assert &ca == <sound6
+    assert &d2 == <sound7
+    assert &da == <sound8
+    assert &10 == <sprite0
+    assert &17 == <wait_clock_read_value
+    assert &1c == <wait_clock_write_value
+    assert &58 == >(&5800 + (0 * &0140))
+    assert &59 == >(&5800 + (1 * &0140))
+    assert &64 == >(&5800 + (10 * &0140))
+    assert &65 == >(&5800 + (11 * &0140))
+    assert &67 == >(&5800 + (12 * &0140))
+    assert &68 == >(&5800 + (13 * &0140))
+    assert &69 == >(&5800 + (14 * &0140))
+    assert &6a == >(&5800 + (15 * &0140))
+    assert &6c == >(&5800 + (16 * &0140))
+    assert &6d == >(&5800 + (17 * &0140))
+    assert &6e == >(&5800 + (18 * &0140))
+    assert &6f == >(&5800 + (19 * &0140))
+    assert &5a == >(&5800 + (2 * &0140))
+    assert &71 == >(&5800 + (20 * &0140))
+    assert &72 == >(&5800 + (21 * &0140))
+    assert &73 == >(&5800 + (22 * &0140))
+    assert &74 == >(&5800 + (23 * &0140))
+    assert &76 == >(&5800 + (24 * &0140))
+    assert &77 == >(&5800 + (25 * &0140))
+    assert &78 == >(&5800 + (26 * &0140))
+    assert &79 == >(&5800 + (27 * &0140))
+    assert &7b == >(&5800 + (28 * &0140))
+    assert &7c == >(&5800 + (29 * &0140))
+    assert &5b == >(&5800 + (3 * &0140))
+    assert &7d == >(&5800 + (30 * &0140))
+    assert &7e == >(&5800 + (31 * &0140))
+    assert &5d == >(&5800 + (4 * &0140))
+    assert &5e == >(&5800 + (5 * &0140))
+    assert &5f == >(&5800 + (6 * &0140))
+    assert &60 == >(&5800 + (7 * &0140))
+    assert &62 == >(&5800 + (8 * &0140))
+    assert &63 == >(&5800 + (9 * &0140))
+    assert &5a == >ammo_bar_screen_address
+    assert &0e == >clock
+    assert &5b == >computer_bar_screen_address
+    assert &58 == >energy_bar_screen_address
+    assert &50 == >envelope1
+    assert &50 == >envelope2
+    assert &51 == >envelope3
+    assert &51 == >envelope4
+    assert &51 == >event_routine
+    assert &21 == >room_0_definition
+    assert &25 == >room_10_definition
+    assert &25 == >room_11_definition
+    assert &26 == >room_12_definition
+    assert &26 == >room_13_definition
+    assert &27 == >room_14_definition
+    assert &27 == >room_15_definition
+    assert &28 == >room_16_definition
+    assert &28 == >room_17_definition
+    assert &28 == >room_18_definition
+    assert &29 == >room_19_definition
+    assert &21 == >room_1_definition
+    assert &29 == >room_20_definition
+    assert &2a == >room_21_definition
+    assert &2a == >room_22_definition
+    assert &2b == >room_23_definition
+    assert &2b == >room_24_definition
+    assert &2c == >room_25_definition
+    assert &2c == >room_26_definition
+    assert &2c == >room_27_definition
+    assert &2d == >room_28_definition
+    assert &2e == >room_29_definition
+    assert &21 == >room_2_definition
+    assert &2e == >room_30_definition
+    assert &2f == >room_31_definition
+    assert &2f == >room_32_definition
+    assert &2f == >room_33_definition
+    assert &30 == >room_34_definition
+    assert &30 == >room_35_definition
+    assert &31 == >room_36_definition
+    assert &31 == >room_37_definition
+    assert &32 == >room_38_definition
+    assert &33 == >room_39_definition
+    assert &22 == >room_3_definition
+    assert &33 == >room_40_definition
+    assert &34 == >room_41_definition
+    assert &34 == >room_42_definition
+    assert &35 == >room_43_definition
+    assert &36 == >room_44_definition
+    assert &36 == >room_45_definition
+    assert &36 == >room_46_definition
+    assert &37 == >room_47_definition
+    assert &37 == >room_48_definition
+    assert &38 == >room_49_definition
+    assert &22 == >room_4_definition
+    assert &38 == >room_50_definition
+    assert &39 == >room_51_definition
+    assert &3a == >room_52_definition
+    assert &3a == >room_53_definition
+    assert &3b == >room_54_definition
+    assert &23 == >room_5_definition
+    assert &23 == >room_6_definition
+    assert &23 == >room_7_definition
+    assert &24 == >room_8_definition
+    assert &24 == >room_9_definition
+    assert &43 == >room_decode_draw_rect
+    assert &43 == >room_decode_move_in_delta_direction
+    assert &43 == >room_decode_plot_strip
+    assert &42 == >room_decode_set_cellxy
+    assert &42 == >room_decode_set_deltax_or_y
+    assert &42 == >room_decode_set_sprite
+    assert &40 == >sound0
+    assert &40 == >sound1
+    assert &40 == >sound2
+    assert &40 == >sound3
+    assert &40 == >sound4
+    assert &40 == >sound5
+    assert &40 == >sound6
+    assert &40 == >sound7
+    assert &40 == >sound8
+    assert &12 == >sprite0
+    assert &40 == >wait_clock_read_value
+    assert &40 == >wait_clock_write_value
+    assert &3f5c == bar_pixels_set_table + 1
+    assert &0e01 == clock + 1
+    assert &40f8 == collision_map_addr_high - 5
+    assert &40dd == collision_map_addr_low - 5
+    assert &0401 == current_room_cache + 1
+    assert &0402 == current_room_cache + 2
+    assert &0403 == current_room_cache + 3
+    assert &0404 == current_room_cache + 4
+    assert &0405 == current_room_cache + 5
+    assert &03ff == current_room_cache - 1
+    assert &03fb == current_room_cache - 5
+    assert &0619 == highscore_table_names + 25
+    assert &0590 == highscore_table_names - $70
+    assert &05ff == highscore_table_names - 1
+    assert &06f3 == highscore_table_scores - 7
+    assert &53a7 == initial_highscore_table - $70
+    assert &0400 == l0401 - 1
+    assert &27 == score_digits_0 - 1
 
 save pydis_start, pydis_end
 

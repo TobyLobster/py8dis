@@ -1391,7 +1391,7 @@ osbyte                  = &fff4
     lsr pixelvalue                                                    ; 194b: 46 82       F.
     dec columncounter                                                 ; 194d: c6 81       ..
     bne plotpixelloop                                                 ; 194f: d0 da       ..
-    tya                                                               ; 1951: 98          .                  ; add 8 to Y
+    tya                                                               ; 1951: 98          .              ; add 8 to Y
     clc                                                               ; 1952: 18          .
     adc #8                                                            ; 1953: 69 08       i.
     tay                                                               ; 1955: a8          .
@@ -6163,219 +6163,219 @@ osbyte                  = &fff4
 
 .pydis_end
 
-    assert ((map0ladder_end - map0ladder_start) / 3) == &04
-    assert ((map0platform_end - map0platform_start) / 3) == &0d
-    assert ((map0seed_end - map0seed_start) / 2) == &0a
-    assert ((map1ladder_end - map1ladder_start) / 3) == &08
-    assert ((map1platform_end - map1platform_start) / 3) == &0d
-    assert ((map1seed_end - map1seed_start) / 2) == &07
-    assert ((map2ladder_end - map2ladder_start) / 3) == &07
-    assert ((map2platform_end - map2platform_start) / 3) == &18
-    assert ((map2seed_end - map2seed_start) / 2) == &0a
-    assert ((map3ladder_end - map3ladder_start) / 3) == &05
-    assert ((map3platform_end - map3platform_start) / 3) == &1a
-    assert ((map3seed_end - map3seed_start) / 2) == &06
-    assert ((map4ladder_end - map4ladder_start) / 3) == &09
-    assert ((map4platform_end - map4platform_start) / 3) == &11
-    assert ((map4seed_end - map4seed_start) / 2) == &0d
-    assert ((map5ladder_end - map5ladder_start) / 3) == &06
-    assert ((map5platform_end - map5platform_start) / 3) == &10
-    assert ((map5seed_end - map5seed_start) / 2) == &09
-    assert ((map6ladder_end - map6ladder_start) / 3) == &07
-    assert ((map6platform_end - map6platform_start) / 3) == &17
-    assert ((map6seed_end - map6seed_start) / 2) == &04
-    assert ((map7ladder_end - map7ladder_start) / 3) == &06
-    assert ((map7platform_end - map7platform_start) / 3) == &0f
-    assert ((map7seed_end - map7seed_start) / 2) == &10
-    assert (255 - inkey_key_ctrl) EOR 128 == &81
-    assert (255 - inkey_key_shift) EOR 128 == &80
-    assert (MapId_Egg OR MapId_Seed) == &0c
-    assert 255 - inkey_key_h == &54
-    assert <blipsoundblock == &98
-    assert <bonussoundblock == &b0
-    assert <deathsoundblock == &a0
-    assert <deathtune_end == &d1
-    assert <deathtunedata == &b0
-    assert <eggsoundblock == &a8
-    assert <envelope2 == &df
-    assert <envelope3 == &ed
-    assert <hiscoretab == &30
-    assert <intervaltimerblock == &00
-    assert <osword0block == &9d
-    assert <spritetable == &00
-    assert <string_capslock == &2a
-    assert <string_control == &90
-    assert <string_copy == &5a
-    assert <string_delete == &4c
-    assert <string_down == &e9
-    assert <string_downarrow == &76
-    assert <string_enteryourname == &69
-    assert <string_escape == &3f
-    assert <string_gameover == &94
-    assert <string_getready == &b2
-    assert <string_highscores == &3f
-    assert <string_hiscorepos == &57
-    assert <string_hiscoreprompt == &5e
-    assert <string_holdabort == &09
-    assert <string_howmanyplayers == &44
-    assert <string_jump == &17
-    assert <string_keyhelp == &4c
-    assert <string_keys == &f8
-    assert <string_keyselection == &b2
-    assert <string_left == &f8
-    assert <string_leftarrow == &5f
-    assert <string_playerN == &c9
-    assert <string_return == &53
-    assert <string_right == &07
-    assert <string_rightarrow == &6a
-    assert <string_shift == &8a
-    assert <string_shiftlock == &34
-    assert <string_space == &46
-    assert <string_tab == &26
-    assert <string_up == &dc
-    assert <string_uparrow == &81
-    assert <string_vdu19 == &76
-    assert >blipsoundblock == &0c
-    assert >bonussoundblock == &0c
-    assert >deathsoundblock == &0c
-    assert >deathtune_end == &2f
-    assert >deathtunedata == &2f
-    assert >eggsoundblock == &0c
-    assert >envelope2 == &2f
-    assert >envelope3 == &2f
-    assert >hiscoretab == &04
-    assert >intervaltimerblock == &00
-    assert >osword0block == &29
-    assert >spritetable == &11
-    assert >string_capslock == &0b
-    assert >string_control == &0b
-    assert >string_copy == &0b
-    assert >string_delete == &0b
-    assert >string_down == &0a
-    assert >string_downarrow == &0b
-    assert >string_enteryourname == &29
-    assert >string_escape == &0b
-    assert >string_gameover == &2a
-    assert >string_getready == &2a
-    assert >string_highscores == &29
-    assert >string_hiscorepos == &29
-    assert >string_hiscoreprompt == &29
-    assert >string_holdabort == &0c
-    assert >string_howmanyplayers == &2c
-    assert >string_jump == &0b
-    assert >string_keyhelp == &2d
-    assert >string_keys == &0b
-    assert >string_keyselection == &0a
-    assert >string_left == &0a
-    assert >string_leftarrow == &0b
-    assert >string_playerN == &2a
-    assert >string_return == &0b
-    assert >string_right == &0b
-    assert >string_rightarrow == &0b
-    assert >string_shift == &0b
-    assert >string_shiftlock == &0b
-    assert >string_space == &0b
-    assert >string_tab == &0b
-    assert >string_up == &0a
-    assert >string_uparrow == &0b
-    assert >string_vdu19 == &2b
-    assert SpriteId_BirdEatRight1 - SpriteId_BirdRight1 == &06
-    assert SpriteId_BirdLeft1 - SpriteId_BirdRight1 == &02
-    assert SpriteId_BirdRight1 - SpriteId_BirdRight1 == &00
-    assert SpriteId_BirdUpDown1 - SpriteId_BirdRight1 == &04
-    assert codemain_end+1792 == &3700
-    assert hiscorenamebuffer == &29a2
-    assert hiscorenamebuffer_end - hiscorenamebuffer - 1 == &08
-    assert map0data == &0cd0
-    assert map1data == &0d3e
-    assert map2data == &0db2
-    assert map3data == &0e4b
-    assert map4data == &0edc
-    assert map5data == &0f6c
-    assert map6data == &0fe8
-    assert map7data == &1072
-    assert showkeys+$0700 == &1000
-    assert sprite_bigbirdleft1 == &131c
-    assert sprite_bigbirdleft2 == &134c
-    assert sprite_bigbirdright1 == &12bc
-    assert sprite_bigbirdright2 == &12ec
-    assert sprite_bigc == &16f2
-    assert sprite_bige == &181e
-    assert sprite_bigg == &185a
-    assert sprite_bigh == &172e
-    assert sprite_bigi == &17e2
-    assert sprite_bigk == &17a6
-    assert sprite_bigu == &176a
-    assert sprite_birdeatleft1 == &1566
-    assert sprite_birdeatleft2 == &158e
-    assert sprite_birdeatright1 == &1516
-    assert sprite_birdeatright2 == &153e
-    assert sprite_birdleft1 == &14c4
-    assert sprite_birdleft2 == &14d8
-    assert sprite_birdright1 == &149c
-    assert sprite_birdright2 == &14b0
-    assert sprite_birdupdown1 == &14ec
-    assert sprite_birdupdown2 == &1500
-    assert sprite_bonus == &168c
-    assert sprite_cage == &140c
-    assert sprite_cagewithhole == &137c
-    assert sprite_digit0 == &15b6
-    assert sprite_digit1 == &15bd
-    assert sprite_digit2 == &15c4
-    assert sprite_digit3 == &15cb
-    assert sprite_digit4 == &15d2
-    assert sprite_digit5 == &15d9
-    assert sprite_digit6 == &15e0
-    assert sprite_digit7 == &15e7
-    assert sprite_digit8 == &15ee
-    assert sprite_digit9 == &15f5
-    assert sprite_egg == &1210
-    assert sprite_highlightbox == &1617
-    assert sprite_ladder == &1208
-    assert sprite_level == &165f
-    assert sprite_life == &16ef
-    assert sprite_lift == &1220
-    assert sprite_manleft1 == &1258
-    assert sprite_manleft2 == &1268
-    assert sprite_manleft3 == &1278
-    assert sprite_manright1 == &1228
-    assert sprite_manright2 == &1238
-    assert sprite_manright3 == &1248
-    assert sprite_manupdown1 == &1288
-    assert sprite_manupdown2 == &1298
-    assert sprite_manupdown3 == &12aa
-    assert sprite_platform == &1200
-    assert sprite_player == &163b
-    assert sprite_score == &15fc
-    assert sprite_seed == &1218
-    assert sprite_time == &16c2
-    assert string_capslock_end - string_capslock_start == &09
-    assert string_control_end - string_control_start == &07
-    assert string_copy_end - string_copy_start == &04
-    assert string_delete_end - string_delete_start == &06
-    assert string_down_end - string_down_start == &0e
-    assert string_downarrow_end - string_downarrow_start == &0a
-    assert string_enteryourname_end - string_enteryourname_start == &33
-    assert string_escape_end - string_escape_start == &06
-    assert string_highscores_end - string_highscores_start == &17
-    assert string_hiscorepos_end - string_hiscorepos_start == &06
-    assert string_hiscoreprompt_end - string_hiscoreprompt_start == &0a
-    assert string_holdabort_end - string_holdabort_start == &2e
-    assert string_jump_end - string_jump_start == &0e
-    assert string_keyhelp_end - string_keyhelp_start == &3b
-    assert string_keys_end - string_keys_start == &10
-    assert string_keyselection_end - string_keyselection_start == &29
-    assert string_left_end - string_left_start == &0e
-    assert string_leftarrow_end - string_leftarrow_start == &0a
-    assert string_return_end - string_return_start == &06
-    assert string_right_end - string_right_start == &0f
-    assert string_rightarrow_end - string_rightarrow_start == &0b
-    assert string_shift_end - string_shift_start == &05
-    assert string_shiftlock_end - string_shiftlock_start == &0a
-    assert string_space_end - string_space_start == &05
-    assert string_tab_end - string_tab_start == &03
-    assert string_up_end - string_up_start == &0c
-    assert string_uparrow_end - string_uparrow_start == &08
+    assert &04 == ((map0ladder_end - map0ladder_start) / 3)
+    assert &0d == ((map0platform_end - map0platform_start) / 3)
+    assert &0a == ((map0seed_end - map0seed_start) / 2)
+    assert &08 == ((map1ladder_end - map1ladder_start) / 3)
+    assert &0d == ((map1platform_end - map1platform_start) / 3)
+    assert &07 == ((map1seed_end - map1seed_start) / 2)
+    assert &07 == ((map2ladder_end - map2ladder_start) / 3)
+    assert &18 == ((map2platform_end - map2platform_start) / 3)
+    assert &0a == ((map2seed_end - map2seed_start) / 2)
+    assert &05 == ((map3ladder_end - map3ladder_start) / 3)
+    assert &1a == ((map3platform_end - map3platform_start) / 3)
+    assert &06 == ((map3seed_end - map3seed_start) / 2)
+    assert &09 == ((map4ladder_end - map4ladder_start) / 3)
+    assert &11 == ((map4platform_end - map4platform_start) / 3)
+    assert &0d == ((map4seed_end - map4seed_start) / 2)
+    assert &06 == ((map5ladder_end - map5ladder_start) / 3)
+    assert &10 == ((map5platform_end - map5platform_start) / 3)
+    assert &09 == ((map5seed_end - map5seed_start) / 2)
+    assert &07 == ((map6ladder_end - map6ladder_start) / 3)
+    assert &17 == ((map6platform_end - map6platform_start) / 3)
+    assert &04 == ((map6seed_end - map6seed_start) / 2)
+    assert &06 == ((map7ladder_end - map7ladder_start) / 3)
+    assert &0f == ((map7platform_end - map7platform_start) / 3)
+    assert &10 == ((map7seed_end - map7seed_start) / 2)
+    assert &81 == (255 - inkey_key_ctrl) EOR 128
+    assert &80 == (255 - inkey_key_shift) EOR 128
+    assert &0c == (MapId_Egg OR MapId_Seed)
+    assert &54 == 255 - inkey_key_h
+    assert &98 == <blipsoundblock
+    assert &b0 == <bonussoundblock
+    assert &a0 == <deathsoundblock
+    assert &d1 == <deathtune_end
+    assert &b0 == <deathtunedata
+    assert &a8 == <eggsoundblock
+    assert &df == <envelope2
+    assert &ed == <envelope3
+    assert &30 == <hiscoretab
+    assert &00 == <intervaltimerblock
+    assert &9d == <osword0block
+    assert &00 == <spritetable
+    assert &2a == <string_capslock
+    assert &90 == <string_control
+    assert &5a == <string_copy
+    assert &4c == <string_delete
+    assert &e9 == <string_down
+    assert &76 == <string_downarrow
+    assert &69 == <string_enteryourname
+    assert &3f == <string_escape
+    assert &94 == <string_gameover
+    assert &b2 == <string_getready
+    assert &3f == <string_highscores
+    assert &57 == <string_hiscorepos
+    assert &5e == <string_hiscoreprompt
+    assert &09 == <string_holdabort
+    assert &44 == <string_howmanyplayers
+    assert &17 == <string_jump
+    assert &4c == <string_keyhelp
+    assert &f8 == <string_keys
+    assert &b2 == <string_keyselection
+    assert &f8 == <string_left
+    assert &5f == <string_leftarrow
+    assert &c9 == <string_playerN
+    assert &53 == <string_return
+    assert &07 == <string_right
+    assert &6a == <string_rightarrow
+    assert &8a == <string_shift
+    assert &34 == <string_shiftlock
+    assert &46 == <string_space
+    assert &26 == <string_tab
+    assert &dc == <string_up
+    assert &81 == <string_uparrow
+    assert &76 == <string_vdu19
+    assert &0c == >blipsoundblock
+    assert &0c == >bonussoundblock
+    assert &0c == >deathsoundblock
+    assert &2f == >deathtune_end
+    assert &2f == >deathtunedata
+    assert &0c == >eggsoundblock
+    assert &2f == >envelope2
+    assert &2f == >envelope3
+    assert &04 == >hiscoretab
+    assert &00 == >intervaltimerblock
+    assert &29 == >osword0block
+    assert &11 == >spritetable
+    assert &0b == >string_capslock
+    assert &0b == >string_control
+    assert &0b == >string_copy
+    assert &0b == >string_delete
+    assert &0a == >string_down
+    assert &0b == >string_downarrow
+    assert &29 == >string_enteryourname
+    assert &0b == >string_escape
+    assert &2a == >string_gameover
+    assert &2a == >string_getready
+    assert &29 == >string_highscores
+    assert &29 == >string_hiscorepos
+    assert &29 == >string_hiscoreprompt
+    assert &0c == >string_holdabort
+    assert &2c == >string_howmanyplayers
+    assert &0b == >string_jump
+    assert &2d == >string_keyhelp
+    assert &0b == >string_keys
+    assert &0a == >string_keyselection
+    assert &0a == >string_left
+    assert &0b == >string_leftarrow
+    assert &2a == >string_playerN
+    assert &0b == >string_return
+    assert &0b == >string_right
+    assert &0b == >string_rightarrow
+    assert &0b == >string_shift
+    assert &0b == >string_shiftlock
+    assert &0b == >string_space
+    assert &0b == >string_tab
+    assert &0a == >string_up
+    assert &0b == >string_uparrow
+    assert &2b == >string_vdu19
+    assert &06 == SpriteId_BirdEatRight1 - SpriteId_BirdRight1
+    assert &02 == SpriteId_BirdLeft1 - SpriteId_BirdRight1
+    assert &00 == SpriteId_BirdRight1 - SpriteId_BirdRight1
+    assert &04 == SpriteId_BirdUpDown1 - SpriteId_BirdRight1
+    assert &3700 == codemain_end+1792
+    assert &29a2 == hiscorenamebuffer
+    assert &08 == hiscorenamebuffer_end - hiscorenamebuffer - 1
+    assert &0cd0 == map0data
+    assert &0d3e == map1data
+    assert &0db2 == map2data
+    assert &0e4b == map3data
+    assert &0edc == map4data
+    assert &0f6c == map5data
+    assert &0fe8 == map6data
+    assert &1072 == map7data
+    assert &1000 == showkeys+$0700
+    assert &131c == sprite_bigbirdleft1
+    assert &134c == sprite_bigbirdleft2
+    assert &12bc == sprite_bigbirdright1
+    assert &12ec == sprite_bigbirdright2
+    assert &16f2 == sprite_bigc
+    assert &181e == sprite_bige
+    assert &185a == sprite_bigg
+    assert &172e == sprite_bigh
+    assert &17e2 == sprite_bigi
+    assert &17a6 == sprite_bigk
+    assert &176a == sprite_bigu
+    assert &1566 == sprite_birdeatleft1
+    assert &158e == sprite_birdeatleft2
+    assert &1516 == sprite_birdeatright1
+    assert &153e == sprite_birdeatright2
+    assert &14c4 == sprite_birdleft1
+    assert &14d8 == sprite_birdleft2
+    assert &149c == sprite_birdright1
+    assert &14b0 == sprite_birdright2
+    assert &14ec == sprite_birdupdown1
+    assert &1500 == sprite_birdupdown2
+    assert &168c == sprite_bonus
+    assert &140c == sprite_cage
+    assert &137c == sprite_cagewithhole
+    assert &15b6 == sprite_digit0
+    assert &15bd == sprite_digit1
+    assert &15c4 == sprite_digit2
+    assert &15cb == sprite_digit3
+    assert &15d2 == sprite_digit4
+    assert &15d9 == sprite_digit5
+    assert &15e0 == sprite_digit6
+    assert &15e7 == sprite_digit7
+    assert &15ee == sprite_digit8
+    assert &15f5 == sprite_digit9
+    assert &1210 == sprite_egg
+    assert &1617 == sprite_highlightbox
+    assert &1208 == sprite_ladder
+    assert &165f == sprite_level
+    assert &16ef == sprite_life
+    assert &1220 == sprite_lift
+    assert &1258 == sprite_manleft1
+    assert &1268 == sprite_manleft2
+    assert &1278 == sprite_manleft3
+    assert &1228 == sprite_manright1
+    assert &1238 == sprite_manright2
+    assert &1248 == sprite_manright3
+    assert &1288 == sprite_manupdown1
+    assert &1298 == sprite_manupdown2
+    assert &12aa == sprite_manupdown3
+    assert &1200 == sprite_platform
+    assert &163b == sprite_player
+    assert &15fc == sprite_score
+    assert &1218 == sprite_seed
+    assert &16c2 == sprite_time
+    assert &09 == string_capslock_end - string_capslock_start
+    assert &07 == string_control_end - string_control_start
+    assert &04 == string_copy_end - string_copy_start
+    assert &06 == string_delete_end - string_delete_start
+    assert &0e == string_down_end - string_down_start
+    assert &0a == string_downarrow_end - string_downarrow_start
+    assert &33 == string_enteryourname_end - string_enteryourname_start
+    assert &06 == string_escape_end - string_escape_start
+    assert &17 == string_highscores_end - string_highscores_start
+    assert &06 == string_hiscorepos_end - string_hiscorepos_start
+    assert &0a == string_hiscoreprompt_end - string_hiscoreprompt_start
+    assert &2e == string_holdabort_end - string_holdabort_start
+    assert &0e == string_jump_end - string_jump_start
+    assert &3b == string_keyhelp_end - string_keyhelp_start
+    assert &10 == string_keys_end - string_keys_start
+    assert &29 == string_keyselection_end - string_keyselection_start
+    assert &0e == string_left_end - string_left_start
+    assert &0a == string_leftarrow_end - string_leftarrow_start
+    assert &06 == string_return_end - string_return_start
+    assert &0f == string_right_end - string_right_start
+    assert &0b == string_rightarrow_end - string_rightarrow_start
+    assert &05 == string_shift_end - string_shift_start
+    assert &0a == string_shiftlock_end - string_shiftlock_start
+    assert &05 == string_space_end - string_space_start
+    assert &03 == string_tab_end - string_tab_start
+    assert &0c == string_up_end - string_up_start
+    assert &08 == string_uparrow_end - string_uparrow_start
 
 save pydis_start, pydis_end
 

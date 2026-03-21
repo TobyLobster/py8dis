@@ -265,6 +265,7 @@ tube_data_register_2                            = $fee3
 tube_data_register_3                            = $fee5
 tube_status_register_4_and_cpu_control          = $fee6
 tube_data_register_4                            = $fee7
+handle_bytev                                    = $ff0f
 osrdsc                                          = $ffb9
 gsinit                                          = $ffc2
 gsread                                          = $ffc5
@@ -3761,7 +3762,7 @@ sub_c93c5
     tay                                                               // 93c5: a8          .
     lda (l00b2),y                                                     // 93c6: b1 b2       ..
     tax                                                               // 93c8: aa          .
-    tya                                                               // 93c9: 98          .                  // add 18 to Y
+    tya                                                               // 93c9: 98          .              // add 18 to Y
     clc                                                               // 93ca: 18          .
     adc #$12                                                          // 93cb: 69 12       i.
     tay                                                               // 93cd: a8          .
@@ -7655,9 +7656,10 @@ sub_cac72
     sta l10e4                                                         // ac93: 8d e4 10    ...
     php                                                               // ac96: 08          .
     sei                                                               // ac97: 78          x
-    lda #$0f                                                          // ac98: a9 0f       ..
+    // Set 'bytev' to 'handle_bytev'
+    lda #<handle_bytev                                                // ac98: a9 0f       ..
     sta bytev                                                         // ac9a: 8d 0a 02    ...
-    lda #$ff                                                          // ac9d: a9 ff       ..
+    lda #>handle_bytev                                                // ac9d: a9 ff       ..
     sta bytev+1                                                       // ac9f: 8d 0b 02    ...
     lda #$b2                                                          // aca2: a9 b2       ..
     sta (l00b0),y                                                     // aca4: 91 b0       ..
@@ -8055,10 +8057,12 @@ tube_banner_loop
 
 // $aef8 referenced 1 time by $aedb
 service_handler_tube_main_init
+    // Set 'evntv' to 'tube_evntv_handler'
     lda #<tube_evntv_handler                                          // aef8: a9 ad       ..
     sta evntv                                                         // aefa: 8d 20 02    . .
     lda #>tube_evntv_handler                                          // aefd: a9 06       ..
     sta evntv+1                                                       // aeff: 8d 21 02    .!.
+    // Set 'brkv' to 'tube_brkv_handler'
     lda #<tube_brkv_handler                                           // af02: a9 16       ..
     sta brkv                                                          // af04: 8d 02 02    ...
     lda #>tube_brkv_handler                                           // af07: a9 00       ..
@@ -8745,7 +8749,7 @@ cb3ba
 cb3de
     lda #osbyte_read_himem                                            // b3de: a9 84       ..
     jsr osbyte                                                        // b3e0: 20 f4 ff     ..            // Read top of user memory (HIMEM)
-    tya                                                               // b3e3: 98          .              // X and Y contain the address of HIMEM (low, high)// push Y,X onto the stack
+    tya                                                               // b3e3: 98          .              // push Y,X onto the stack// X and Y contain the address of HIMEM (low, high)
     pha                                                               // b3e4: 48          H
     txa                                                               // b3e5: 8a          .
     pha                                                               // b3e6: 48          H

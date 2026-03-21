@@ -31,7 +31,7 @@ l0012                                   = &0012
 l0013                                   = &0013
 l0014                                   = &0014
 l0015                                   = &0015
-l0016                                   = &0016
+handle_brkv                             = &0016
 l0032                                   = &0032
 l0036                                   = &0036
 l0051                                   = &0051
@@ -131,6 +131,7 @@ l0600                                   = &0600
 l0601                                   = &0601
 l0695                                   = &0695
 l069e                                   = &069e
+handle_evntv                            = &06ad
 l06bc                                   = &06bc
 l06c5                                   = &06c5
 l0700                                   = &0700
@@ -4191,7 +4192,7 @@ error_template_minus_1 = sub_c96b3+1
 .c9846
     ldy #&60 ; '`'                                                    ; 9846: a0 60       .`
     pha                                                               ; 9848: 48          H              ; push A,Y onto the stack
-    tya                                                               ; 9849: 98          .
+    tya                                                               ; 9849: 98          .              ; A=&60
     pha                                                               ; 984a: 48          H
     ldx #0                                                            ; 984b: a2 00       ..
     lda (l009a,x)                                                     ; 984d: a1 9a       ..
@@ -10387,13 +10388,15 @@ lbd94 = sub_cbd93+1
 
 ; &be83 referenced 1 time by &be66
 .cbe83
-    lda #&ad                                                          ; be83: a9 ad       ..
+    ; Set 'evntv' to 'handle_evntv'
+    lda #<handle_evntv                                                ; be83: a9 ad       ..
     sta evntv                                                         ; be85: 8d 20 02    . .
-    lda #6                                                            ; be88: a9 06       ..
+    lda #>handle_evntv                                                ; be88: a9 06       ..
     sta evntv+1                                                       ; be8a: 8d 21 02    .!.
-    lda #&16                                                          ; be8d: a9 16       ..
+    ; Set 'brkv' to 'handle_brkv'
+    lda #<handle_brkv                                                 ; be8d: a9 16       ..
     sta brkv                                                          ; be8f: 8d 02 02    ...
-    lda #0                                                            ; be92: a9 00       ..
+    lda #>handle_brkv                                                 ; be92: a9 00       ..
     sta brkv+1                                                        ; be94: 8d 03 02    ...
     lda #&8e                                                          ; be97: a9 8e       ..
     sta tube_status_1_and_tube_control                                ; be99: 8d e0 fe    ...
@@ -10413,7 +10416,7 @@ lbd94 = sub_cbd93+1
 ; &beb8 referenced 1 time by &bebe
 .loop_cbeb8
     lda cbec3,x                                                       ; beb8: bd c3 be    ...
-    sta l0016,x                                                       ; bebb: 95 16       ..
+    sta handle_brkv,x                                                 ; bebb: 95 16       ..
     dex                                                               ; bebd: ca          .
     bpl loop_cbeb8                                                    ; bebe: 10 f8       ..
 ; &bec0 referenced 1 time by &be7b
@@ -10645,130 +10648,134 @@ lbd94 = sub_cbd93+1
 
 .pydis_end
 
-    assert (255 - inkey_key_ctrl) EOR 128 == &81
-    assert <(c86e3 - 1) == &e2
-    assert <(ca114-1) == &13
-    assert <(ca1c1-1) == &c0
-    assert <(ca2f4-1) == &f3
-    assert <(just_rts-1) == &57
-    assert <(service_handler_claim_absolute_workspace-1) == &a4
-    assert <(service_handler_claim_private_workspace-1) == &b7
-    assert <(sub_c8028-1) == &27
-    assert <(sub_c8090-1) == &8f
-    assert <(sub_c8689 - 1) == &88
-    assert <(sub_c868d - 1) == &8c
-    assert <(sub_c8691 - 1) == &90
-    assert <(sub_c86d3 - 1) == &d2
-    assert <(sub_c8983-1) == &82
-    assert <(sub_c8b0d-1) == &0c
-    assert <(sub_c8c4e-1) == &4d
-    assert <(sub_c8c5d-1) == &5c
-    assert <(sub_c8cca-1) == &c9
-    assert <(sub_c8e92-1) == &91
-    assert <(sub_c8f99-1) == &98
-    assert <(sub_c92b0-1) == &af
-    assert <(sub_c9580-1) == &7f
-    assert <(sub_c95ae-1) == &ad
-    assert <(sub_c95be-1) == &bd
-    assert <(sub_c95ce-1) == &cd
-    assert <(sub_c9dc8-1) == &c7
-    assert <(sub_c9dee-1) == &ed
-    assert <(sub_ca0e4-1) == &e3
-    assert <(sub_ca0ea-1) == &e9
-    assert <(sub_ca0fa-1) == &f9
-    assert <(sub_ca2fa-1) == &f9
-    assert <(sub_ca391-1) == &90
-    assert <(sub_ca39b-1) == &9a
-    assert <(sub_ca4ee-1) == &ed
-    assert <(sub_cac98-1) == &97
-    assert <(sub_cad80-1) == &7f
-    assert <(sub_caf3e-1) == &3d
-    assert <l00b4 == &b4
-    assert <l0128 == &28
-    assert <l0601 == &01
-    assert <l0a00 == &00
-    assert <l0a81 == &81
-    assert <l0e00 == &00
-    assert <l0e81 == &81
-    assert >(ca114-1) == &a1
-    assert >(ca1c1-1) == &a1
-    assert >(ca2f4-1) == &a2
-    assert >(just_rts-1) == &8e
-    assert >(service_handler_claim_absolute_workspace-1) == &8e
-    assert >(service_handler_claim_private_workspace-1) == &8e
-    assert >(sub_c8028-1) == &80
-    assert >(sub_c8090-1) == &80
-    assert >(sub_c8983-1) == &89
-    assert >(sub_c8b0d-1) == &8b
-    assert >(sub_c8c4e-1) == &8c
-    assert >(sub_c8c5d-1) == &8c
-    assert >(sub_c8cca-1) == &8c
-    assert >(sub_c8e92-1) == &8e
-    assert >(sub_c8f99-1) == &8f
-    assert >(sub_c92b0-1) == &92
-    assert >(sub_c9580-1) == &95
-    assert >(sub_c95ae-1) == &95
-    assert >(sub_c95be-1) == &95
-    assert >(sub_c95ce-1) == &95
-    assert >(sub_c9dc8-1) == &9d
-    assert >(sub_c9dee-1) == &9d
-    assert >(sub_ca0e4-1) == &a0
-    assert >(sub_ca0ea-1) == &a0
-    assert >(sub_ca0fa-1) == &a0
-    assert >(sub_ca2fa-1) == &a2
-    assert >(sub_ca391-1) == &a3
-    assert >(sub_ca39b-1) == &a3
-    assert >(sub_ca4ee-1) == &a4
-    assert >(sub_cac98-1) == &ac
-    assert >(sub_cad80-1) == &ad
-    assert >(sub_caf3e-1) == &af
-    assert >l00b4 == &00
-    assert >l0128 == &01
-    assert >l0601 == &06
-    assert >l0a00 == &0a
-    assert >l0a81 == &0a
-    assert >l0e00 == &0e
-    assert >l0e81 == &0e
-    assert c8dbc-1 == &8dbb
-    assert c8e15-1 == &8e14
-    assert copyright - rom_header == &19
-    assert l00b0 - 2 == &ae
-    assert l00be - 1 == &bd
-    assert l0d00 - 1 == &0cff
-    assert l0d26 - 12 == &0d1a
-    assert l0d26 - 4 == &0d22
-    assert l0d6d - 1 == &0d6c
-    assert l0e00 - 1 == &0dff
-    assert l0f04 - 1 == &0f03
-    assert l1072 - 1 == &1071
-    assert l8f49 - 1 == &8f48
-    assert print - &f8 == &8d61
-    assert sub_c89a7 - 1 == &89a6
-    assert sub_c8ad4-1 == &8ad3
-    assert sub_c8b1a-1 == &8b19
-    assert sub_c8b92-1 == &8b91
-    assert sub_c8b96-1 == &8b95
-    assert sub_c8d79-1 == &8d78
-    assert sub_c92e6-1 == &92e5
-    assert sub_c938b-1 == &938a
-    assert sub_c93dd-1 == &93dc
-    assert sub_c949e-1 == &949d
-    assert sub_ca07b-1 == &a07a
-    assert sub_ca356-1 == &a355
-    assert sub_cad10-1 == &ad0f
-    assert sub_cad5f-1 == &ad5e
-    assert sub_cad65-1 == &ad64
-    assert sub_cad6b-1 == &ad6a
-    assert sub_caf66-1 == &af65
-    assert sub_cafee-1 == &afed
-    assert sub_cb1c3-1 == &b1c2
-    assert sub_cb30c-1 == &b30b
-    assert sub_cb33d-1 == &b33c
-    assert sub_cb359-1 == &b358
-    assert sub_cb994-1 == &b993
-    assert sub_cb99a-1 == &b999
-    assert sub_cb99d-1 == &b99c
-    assert sub_cba1b-1 == &ba1a
+    assert &81 == (255 - inkey_key_ctrl) EOR 128
+    assert &e2 == <(c86e3 - 1)
+    assert &13 == <(ca114-1)
+    assert &c0 == <(ca1c1-1)
+    assert &f3 == <(ca2f4-1)
+    assert &57 == <(just_rts-1)
+    assert &a4 == <(service_handler_claim_absolute_workspace-1)
+    assert &b7 == <(service_handler_claim_private_workspace-1)
+    assert &27 == <(sub_c8028-1)
+    assert &8f == <(sub_c8090-1)
+    assert &88 == <(sub_c8689 - 1)
+    assert &8c == <(sub_c868d - 1)
+    assert &90 == <(sub_c8691 - 1)
+    assert &d2 == <(sub_c86d3 - 1)
+    assert &82 == <(sub_c8983-1)
+    assert &0c == <(sub_c8b0d-1)
+    assert &4d == <(sub_c8c4e-1)
+    assert &5c == <(sub_c8c5d-1)
+    assert &c9 == <(sub_c8cca-1)
+    assert &91 == <(sub_c8e92-1)
+    assert &98 == <(sub_c8f99-1)
+    assert &af == <(sub_c92b0-1)
+    assert &7f == <(sub_c9580-1)
+    assert &ad == <(sub_c95ae-1)
+    assert &bd == <(sub_c95be-1)
+    assert &cd == <(sub_c95ce-1)
+    assert &c7 == <(sub_c9dc8-1)
+    assert &ed == <(sub_c9dee-1)
+    assert &e3 == <(sub_ca0e4-1)
+    assert &e9 == <(sub_ca0ea-1)
+    assert &f9 == <(sub_ca0fa-1)
+    assert &f9 == <(sub_ca2fa-1)
+    assert &90 == <(sub_ca391-1)
+    assert &9a == <(sub_ca39b-1)
+    assert &ed == <(sub_ca4ee-1)
+    assert &97 == <(sub_cac98-1)
+    assert &7f == <(sub_cad80-1)
+    assert &3d == <(sub_caf3e-1)
+    assert &16 == <handle_brkv
+    assert &ad == <handle_evntv
+    assert &b4 == <l00b4
+    assert &28 == <l0128
+    assert &01 == <l0601
+    assert &00 == <l0a00
+    assert &81 == <l0a81
+    assert &00 == <l0e00
+    assert &81 == <l0e81
+    assert &a1 == >(ca114-1)
+    assert &a1 == >(ca1c1-1)
+    assert &a2 == >(ca2f4-1)
+    assert &8e == >(just_rts-1)
+    assert &8e == >(service_handler_claim_absolute_workspace-1)
+    assert &8e == >(service_handler_claim_private_workspace-1)
+    assert &80 == >(sub_c8028-1)
+    assert &80 == >(sub_c8090-1)
+    assert &89 == >(sub_c8983-1)
+    assert &8b == >(sub_c8b0d-1)
+    assert &8c == >(sub_c8c4e-1)
+    assert &8c == >(sub_c8c5d-1)
+    assert &8c == >(sub_c8cca-1)
+    assert &8e == >(sub_c8e92-1)
+    assert &8f == >(sub_c8f99-1)
+    assert &92 == >(sub_c92b0-1)
+    assert &95 == >(sub_c9580-1)
+    assert &95 == >(sub_c95ae-1)
+    assert &95 == >(sub_c95be-1)
+    assert &95 == >(sub_c95ce-1)
+    assert &9d == >(sub_c9dc8-1)
+    assert &9d == >(sub_c9dee-1)
+    assert &a0 == >(sub_ca0e4-1)
+    assert &a0 == >(sub_ca0ea-1)
+    assert &a0 == >(sub_ca0fa-1)
+    assert &a2 == >(sub_ca2fa-1)
+    assert &a3 == >(sub_ca391-1)
+    assert &a3 == >(sub_ca39b-1)
+    assert &a4 == >(sub_ca4ee-1)
+    assert &ac == >(sub_cac98-1)
+    assert &ad == >(sub_cad80-1)
+    assert &af == >(sub_caf3e-1)
+    assert &00 == >handle_brkv
+    assert &06 == >handle_evntv
+    assert &00 == >l00b4
+    assert &01 == >l0128
+    assert &06 == >l0601
+    assert &0a == >l0a00
+    assert &0a == >l0a81
+    assert &0e == >l0e00
+    assert &0e == >l0e81
+    assert &8dbb == c8dbc-1
+    assert &8e14 == c8e15-1
+    assert &19 == copyright - rom_header
+    assert &ae == l00b0 - 2
+    assert &bd == l00be - 1
+    assert &0cff == l0d00 - 1
+    assert &0d1a == l0d26 - 12
+    assert &0d22 == l0d26 - 4
+    assert &0d6c == l0d6d - 1
+    assert &0dff == l0e00 - 1
+    assert &0f03 == l0f04 - 1
+    assert &1071 == l1072 - 1
+    assert &8f48 == l8f49 - 1
+    assert &8d61 == print - &f8
+    assert &89a6 == sub_c89a7 - 1
+    assert &8ad3 == sub_c8ad4-1
+    assert &8b19 == sub_c8b1a-1
+    assert &8b91 == sub_c8b92-1
+    assert &8b95 == sub_c8b96-1
+    assert &8d78 == sub_c8d79-1
+    assert &92e5 == sub_c92e6-1
+    assert &938a == sub_c938b-1
+    assert &93dc == sub_c93dd-1
+    assert &949d == sub_c949e-1
+    assert &a07a == sub_ca07b-1
+    assert &a355 == sub_ca356-1
+    assert &ad0f == sub_cad10-1
+    assert &ad5e == sub_cad5f-1
+    assert &ad64 == sub_cad65-1
+    assert &ad6a == sub_cad6b-1
+    assert &af65 == sub_caf66-1
+    assert &afed == sub_cafee-1
+    assert &b1c2 == sub_cb1c3-1
+    assert &b30b == sub_cb30c-1
+    assert &b33c == sub_cb33d-1
+    assert &b358 == sub_cb359-1
+    assert &b993 == sub_cb994-1
+    assert &b999 == sub_cb99a-1
+    assert &b99c == sub_cb99d-1
+    assert &ba1a == sub_cba1b-1
 
 save pydis_start, pydis_end
 
@@ -11762,10 +11769,10 @@ save pydis_start, pydis_end
 ;     fdc_1770_data:                            1
 ;     filev:                                    1
 ;     fscv:                                     1
+;     handle_brkv:                              1
 ;     jump_table_high:                          1
 ;     jump_table_low:                           1
 ;     l0013:                                    1
-;     l0016:                                    1
 ;     l0032:                                    1
 ;     l0051:                                    1
 ;     l0063:                                    1
@@ -12827,7 +12834,6 @@ save pydis_start, pydis_end
 ;     l0013
 ;     l0014
 ;     l0015
-;     l0016
 ;     l0032
 ;     l0036
 ;     l0051

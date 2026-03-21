@@ -59,8 +59,8 @@ lffe3   = &ffe3
 
 .pydis_end
 
-    assert c201e == &201e
-    assert print_and_inc_zp == &0900
+    assert &201e == c201e
+    assert &0900 == print_and_inc_zp
 
 save pydis_start, pydis_end
 

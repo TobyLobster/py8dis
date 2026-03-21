@@ -461,7 +461,7 @@ serial_ula_set_baud_cassette_and_motor  = &fe10
 video_ula_control                       = &fe20
 video_ula_palette                       = &fe21
 romsel                                  = &fe30
-system_via_orb_irb                      = &fe40
+system_via_register_b                   = &fe40
 system_via_ddrb                         = &fe42
 system_via_ddra                         = &fe43
 system_via_t1c_h                        = &fe45
@@ -473,8 +473,8 @@ system_via_acr                          = &fe4b
 system_via_pcr                          = &fe4c
 system_via_ifr                          = &fe4d
 system_via_ier                          = &fe4e
-system_via_ora_ira                      = &fe4f
-user_via_ora_ira                        = &fe61
+system_via_register_a_no_handshake      = &fe4f
+user_via_register_a                     = &fe61
 user_via_ddra                           = &fe63
 user_via_pcr                            = &fe6c
 user_via_ifr                            = &fe6d
@@ -3278,7 +3278,7 @@ tube_data_register_3                    = &fee5
     ora l00d2                                                         ; cff9: 05 d2       ..
     eor l00d3                                                         ; cffb: 45 d3       E.
     sta (l00d8),y                                                     ; cffd: 91 d8       ..
-    tya                                                               ; cfff: 98          .                  ; add 8 to Y
+    tya                                                               ; cfff: 98          .              ; add 8 to Y
     clc                                                               ; d000: 18          .
     adc #8                                                            ; d001: 69 08       i.
     tay                                                               ; d003: a8          .
@@ -4914,7 +4914,7 @@ tube_data_register_3                    = &fee5
 ; &da08 referenced 1 time by &da0e
 .loop_cda08
     dex                                                               ; da08: ca          .
-    stx system_via_orb_irb                                            ; da09: 8e 40 fe    .@.
+    stx system_via_register_b                                         ; da09: 8e 40 fe    .@.
     cpx #9                                                            ; da0c: e0 09       ..
     bcs loop_cda08                                                    ; da0e: b0 f8       ..
     inx                                                               ; da10: e8          .
@@ -5071,7 +5071,7 @@ tube_data_register_3                    = &fee5
     inx                                                               ; db0c: e8          .
     cpx #&10                                                          ; db0d: e0 10       ..
     bcc cdabd                                                         ; db0f: 90 ac       ..
-    bit system_via_orb_irb                                            ; db11: 2c 40 fe    ,@.
+    bit system_via_register_b                                         ; db11: 2c 40 fe    ,@.
     bmi cdb27                                                         ; db14: 30 11       0.
     dec l027b                                                         ; db16: ce 7b 02    .{.
 ; &db19 referenced 1 time by &db1f
@@ -6058,7 +6058,7 @@ tube_data_register_3                    = &fee5
     bmi return_29                                                     ; e149: 30 45       0E
     ldy #&82                                                          ; e14b: a0 82       ..
     sty user_via_ier                                                  ; e14d: 8c 6e fe    .n.
-    sta user_via_ora_ira                                              ; e150: 8d 61 fe    .a.
+    sta user_via_register_a                                           ; e150: 8d 61 fe    .a.
     lda user_via_pcr                                                  ; e153: ad 6c fe    .l.
     and #&f1                                                          ; e156: 29 f1       ).
     ora #&0c                                                          ; e158: 09 0c       ..
@@ -6906,7 +6906,7 @@ le5b4 = le5b3+1
 
 ; &e75f referenced 1 time by &e751
 .ce75f
-    lda system_via_orb_irb                                            ; e75f: ad 40 fe    .@.
+    lda system_via_register_b                                         ; e75f: ad 40 fe    .@.
     ror a                                                             ; e762: 6a          j
     ror a                                                             ; e763: 6a          j
     ror a                                                             ; e764: 6a          j
@@ -7414,9 +7414,9 @@ le5b4 = le5b3+1
 .sub_ce9ea
     bcc ce9f5                                                         ; e9ea: 90 09       ..
     ldy #7                                                            ; e9ec: a0 07       ..
-    sty system_via_orb_irb                                            ; e9ee: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; e9ee: 8c 40 fe    .@.
     dey                                                               ; e9f1: 88          .              ; Y=&06
-    sty system_via_orb_irb                                            ; e9f2: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; e9f2: 8c 40 fe    .@.
 ; &e9f5 referenced 1 time by &e9ea
 .ce9f5
     bit l00ff                                                         ; e9f5: 24 ff       $.
@@ -7426,7 +7426,7 @@ le5b4 = le5b3+1
 .sub_ce9f8
     php                                                               ; e9f8: 08          .
     sei                                                               ; e9f9: 78          x
-    sta system_via_orb_irb                                            ; e9fa: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; e9fa: 8d 40 fe    .@.
     plp                                                               ; e9fd: 28          (
     rts                                                               ; e9fe: 60          `
 
@@ -7669,16 +7669,16 @@ le5b4 = le5b3+1
     sei                                                               ; eb22: 78          x
     ldy #&ff                                                          ; eb23: a0 ff       ..
     sty system_via_ddra                                               ; eb25: 8c 43 fe    .C.
-    sta system_via_ora_ira                                            ; eb28: 8d 4f fe    .O.
+    sta system_via_register_a_no_handshake                            ; eb28: 8d 4f fe    .O.
     iny                                                               ; eb2b: c8          .              ; Y=&00
-    sty system_via_orb_irb                                            ; eb2c: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; eb2c: 8c 40 fe    .@.
     ldy #2                                                            ; eb2f: a0 02       ..
 ; &eb31 referenced 1 time by &eb32
 .loop_ceb31
     dey                                                               ; eb31: 88          .
     bne loop_ceb31                                                    ; eb32: d0 fd       ..
     ldy #8                                                            ; eb34: a0 08       ..
-    sty system_via_orb_irb                                            ; eb36: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; eb36: 8c 40 fe    .@.
     ldy #4                                                            ; eb39: a0 04       ..
 ; &eb3b referenced 1 time by &eb3c
 .loop_ceb3b
@@ -8227,17 +8227,17 @@ le5b4 = le5b3+1
     lda lf075,y                                                       ; ee8a: b9 75 f0    .u.
     sta system_via_ddra                                               ; ee8d: 8d 43 fe    .C.
     pla                                                               ; ee90: 68          h
-    sta system_via_ora_ira                                            ; ee91: 8d 4f fe    .O.
+    sta system_via_register_a_no_handshake                            ; ee91: 8d 4f fe    .O.
     lda lf077,y                                                       ; ee94: b9 77 f0    .w.
-    sta system_via_orb_irb                                            ; ee97: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; ee97: 8d 40 fe    .@.
 ; &ee9a referenced 1 time by &ee9d
 .loop_cee9a
-    bit system_via_orb_irb                                            ; ee9a: 2c 40 fe    ,@.
+    bit system_via_register_b                                         ; ee9a: 2c 40 fe    ,@.
     bmi loop_cee9a                                                    ; ee9d: 30 fb       0.
-    lda system_via_ora_ira                                            ; ee9f: ad 4f fe    .O.
+    lda system_via_register_a_no_handshake                            ; ee9f: ad 4f fe    .O.
     pha                                                               ; eea2: 48          H
     lda lf079,y                                                       ; eea3: b9 79 f0    .y.
-    sta system_via_orb_irb                                            ; eea6: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; eea6: 8d 40 fe    .@.
     pla                                                               ; eea9: 68          h
 ; &eeaa referenced 1 time by &ee87
 .ceeaa
@@ -8295,10 +8295,10 @@ le5b4 = le5b3+1
     lsr a                                                             ; eeef: 4a          J
     and #&18                                                          ; eef0: 29 18       ).
     ora #6                                                            ; eef2: 09 06       ..
-    sta system_via_orb_irb                                            ; eef4: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; eef4: 8d 40 fe    .@.
     lsr a                                                             ; eef7: 4a          J
     ora #7                                                            ; eef8: 09 07       ..
-    sta system_via_orb_irb                                            ; eefa: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; eefa: 8d 40 fe    .@.
     jsr cf12e                                                         ; eefd: 20 2e f1     ..
     pla                                                               ; ef00: 68          h
     rts                                                               ; ef01: 60          `
@@ -8504,11 +8504,11 @@ le5b4 = le5b3+1
 ; &f02a referenced 7 times by &da12, &ef1d, &ef2b, &ef3b, &efed, &f00f, &f0d4
 .sub_cf02a
     ldy #3                                                            ; f02a: a0 03       ..
-    sty system_via_orb_irb                                            ; f02c: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; f02c: 8c 40 fe    .@.
     ldy #&7f                                                          ; f02f: a0 7f       ..
     sty system_via_ddra                                               ; f031: 8c 43 fe    .C.
-    stx system_via_ora_ira                                            ; f034: 8e 4f fe    .O.
-    ldx system_via_ora_ira                                            ; f037: ae 4f fe    .O.
+    stx system_via_register_a_no_handshake                            ; f034: 8e 4f fe    .O.
+    ldx system_via_register_a_no_handshake                            ; f037: ae 4f fe    .O.
     rts                                                               ; f03a: 60          `
 
     equs "q345"                                                       ; f03b: 71 33 34... q34
@@ -8628,12 +8628,12 @@ le5b4 = le5b3+1
     lda #&7f                                                          ; f0e6: a9 7f       ..
     sta system_via_ddra                                               ; f0e8: 8d 43 fe    .C.
     lda #3                                                            ; f0eb: a9 03       ..
-    sta system_via_orb_irb                                            ; f0ed: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; f0ed: 8d 40 fe    .@.
     lda #&0f                                                          ; f0f0: a9 0f       ..
-    sta system_via_ora_ira                                            ; f0f2: 8d 4f fe    .O.
+    sta system_via_register_a_no_handshake                            ; f0f2: 8d 4f fe    .O.
     lda #1                                                            ; f0f5: a9 01       ..
     sta system_via_ifr                                                ; f0f7: 8d 4d fe    .M.
-    stx system_via_ora_ira                                            ; f0fa: 8e 4f fe    .O.
+    stx system_via_register_a_no_handshake                            ; f0fa: 8e 4f fe    .O.
     bit system_via_ifr                                                ; f0fd: 2c 4d fe    ,M.
     beq cf123                                                         ; f100: f0 21       .!
     txa                                                               ; f102: 8a          .
@@ -8641,8 +8641,8 @@ le5b4 = le5b3+1
 .loop_cf103
     cmp l01df,y                                                       ; f103: d9 df 01    ...
     bcc cf11e                                                         ; f106: 90 16       ..
-    sta system_via_ora_ira                                            ; f108: 8d 4f fe    .O.
-    bit system_via_ora_ira                                            ; f10b: 2c 4f fe    ,O.
+    sta system_via_register_a_no_handshake                            ; f108: 8d 4f fe    .O.
+    bit system_via_register_a_no_handshake                            ; f10b: 2c 4f fe    ,O.
     bpl cf11e                                                         ; f10e: 10 0e       ..
     plp                                                               ; f110: 28          (
     php                                                               ; f111: 08          .
@@ -8675,7 +8675,7 @@ le5b4 = le5b3+1
 ; &f12e referenced 3 times by &eefd, &f0d7, &f129
 .cf12e
     lda #&0b                                                          ; f12e: a9 0b       ..
-    sta system_via_orb_irb                                            ; f130: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; f130: 8d 40 fe    .@.
     txa                                                               ; f133: 8a          .
     rts                                                               ; f134: 60          `
 
@@ -10714,103 +10714,103 @@ lffb3 = osbyte150EntryPoint+1
     equb 0, &0d, &cd, &d9, &1c, &dc                                   ; fffa: 00 0d cd... ...
 .pydis_end
 
-    assert <lead2 == &d2
-    assert <plotLine0 == &6a
-    assert <plotLine1 == &74
-    assert <plotLine2 == &42
-    assert <plotLine3 == &4b
-    assert >lead2 == &ea
-    assert >plotLine0 == &d3
-    assert >plotLine1 == &d3
-    assert >plotLine2 == &d3
-    assert >plotLine3 == &d3
-    assert filev - 1 == &0211
-    assert l02b3 - 2 == &02b1
-    assert ld940 - 1 == &d93f
-    assert ld952 - 1 == &d951
-    assert osbyte0EntryPoint == &e821
-    assert osbyte10EntryPoint == &e6b2
-    assert osbyte117EntryPoint == &e86c
-    assert osbyte118EntryPoint == &e9d9
-    assert osbyte119EntryPoint == &e275
-    assert osbyte11EntryPoint == &e995
-    assert osbyte120EntryPoint == &f045
-    assert osbyte121EntryPoint == &f0cf
-    assert osbyte122EntryPoint == &f0cd
-    assert osbyte123EntryPoint == &e197
-    assert osbyte124EntryPoint == &e673
-    assert osbyte125EntryPoint == &e674
-    assert osbyte126EntryPoint == &e65c
-    assert osbyte127EntryPoint == &e035
-    assert osbyte128EntryPoint == &e74f
-    assert osbyte129EntryPoint == &e713
-    assert osbyte12EntryPoint == &e98c
-    assert osbyte130EntryPoint == &e729
-    assert osbyte131EntryPoint == &f085
-    assert osbyte132EntryPoint == &d923
-    assert osbyte133EntryPoint == &d926
-    assert osbyte134EntryPoint == &d647
-    assert osbyte135EntryPoint == &d7c2
-    assert osbyte136EntryPoint == &e657
-    assert osbyte137EntryPoint == &e67f
-    assert osbyte138EntryPoint == &e4af
-    assert osbyte139EntryPoint == &e034
-    assert osbyte13EntryPoint == &e6f9
-    assert osbyte140EntryPoint == &f135
-    assert osbyte141EntryPoint == &f135
-    assert osbyte142EntryPoint == &dbe7
-    assert osbyte143EntryPoint == &f168
-    assert osbyte144EntryPoint == &eae3
-    assert osbyte145EntryPoint == &e460
-    assert osbyte146EntryPoint == &ffaa
-    assert osbyte147EntryPoint == &eaf4
-    assert osbyte148EntryPoint == &ffae
-    assert osbyte149EntryPoint == &eaf9
-    assert osbyte14EntryPoint == &e6fa
-    assert osbyte150EntryPoint == &ffb2
-    assert osbyte151EntryPoint == &eafe
-    assert osbyte152EntryPoint == &e45b
-    assert osbyte153EntryPoint == &e4f3
-    assert osbyte154EntryPoint == &e9ff
-    assert osbyte155EntryPoint == &ea10
-    assert osbyte156EntryPoint == &e17c
-    assert osbyte157EntryPoint == &ffa7
-    assert osbyte158EntryPoint == &ee6d
-    assert osbyte159EntryPoint == &ee7f
-    assert osbyte15EntryPoint == &f0a8
-    assert osbyte160EntryPoint == &e9c0
-    assert osbyte166to255EntryPoint == &e99c
-    assert osbyte16EntryPoint == &e706
-    assert osbyte17EntryPoint == &de8c
-    assert osbyte18EntryPoint == &e9c8
-    assert osbyte19EntryPoint == &e9b6
-    assert osbyte1EntryPoint == &e988
-    assert osbyte20EntryPoint == &cd07
-    assert osbyte21EntryPoint == &f0b4
-    assert osbyte2EntryPoint == &e6d3
-    assert osbyte3EntryPoint == &e997
-    assert osbyte4EntryPoint == &e997
-    assert osbyte5EntryPoint == &e976
-    assert osbyte6EntryPoint == &e988
-    assert osbyte7EntryPoint == &e68b
-    assert osbyte8EntryPoint == &e689
-    assert osbyte9EntryPoint == &e6b0
-    assert osword0EntryPoint == &e902
-    assert osword10EntryPoint == &cbf3
-    assert osword11EntryPoint == &c748
-    assert osword12EntryPoint == &c8e0
-    assert osword13EntryPoint == &d5ce
-    assert osword1EntryPoint == &e8d5
-    assert osword2EntryPoint == &e8e8
-    assert osword3EntryPoint == &e8d1
-    assert osword4EntryPoint == &e8e4
-    assert osword5EntryPoint == &e803
-    assert osword6EntryPoint == &e80b
-    assert osword7EntryPoint == &e82d
-    assert osword8EntryPoint == &e8ae
-    assert osword9EntryPoint == &c735
-    assert userv - 1 == &01ff
-    assert uservJumper == &e659
+    assert &d2 == <lead2
+    assert &6a == <plotLine0
+    assert &74 == <plotLine1
+    assert &42 == <plotLine2
+    assert &4b == <plotLine3
+    assert &ea == >lead2
+    assert &d3 == >plotLine0
+    assert &d3 == >plotLine1
+    assert &d3 == >plotLine2
+    assert &d3 == >plotLine3
+    assert &0211 == filev - 1
+    assert &02b1 == l02b3 - 2
+    assert &d93f == ld940 - 1
+    assert &d951 == ld952 - 1
+    assert &e821 == osbyte0EntryPoint
+    assert &e6b2 == osbyte10EntryPoint
+    assert &e86c == osbyte117EntryPoint
+    assert &e9d9 == osbyte118EntryPoint
+    assert &e275 == osbyte119EntryPoint
+    assert &e995 == osbyte11EntryPoint
+    assert &f045 == osbyte120EntryPoint
+    assert &f0cf == osbyte121EntryPoint
+    assert &f0cd == osbyte122EntryPoint
+    assert &e197 == osbyte123EntryPoint
+    assert &e673 == osbyte124EntryPoint
+    assert &e674 == osbyte125EntryPoint
+    assert &e65c == osbyte126EntryPoint
+    assert &e035 == osbyte127EntryPoint
+    assert &e74f == osbyte128EntryPoint
+    assert &e713 == osbyte129EntryPoint
+    assert &e98c == osbyte12EntryPoint
+    assert &e729 == osbyte130EntryPoint
+    assert &f085 == osbyte131EntryPoint
+    assert &d923 == osbyte132EntryPoint
+    assert &d926 == osbyte133EntryPoint
+    assert &d647 == osbyte134EntryPoint
+    assert &d7c2 == osbyte135EntryPoint
+    assert &e657 == osbyte136EntryPoint
+    assert &e67f == osbyte137EntryPoint
+    assert &e4af == osbyte138EntryPoint
+    assert &e034 == osbyte139EntryPoint
+    assert &e6f9 == osbyte13EntryPoint
+    assert &f135 == osbyte140EntryPoint
+    assert &f135 == osbyte141EntryPoint
+    assert &dbe7 == osbyte142EntryPoint
+    assert &f168 == osbyte143EntryPoint
+    assert &eae3 == osbyte144EntryPoint
+    assert &e460 == osbyte145EntryPoint
+    assert &ffaa == osbyte146EntryPoint
+    assert &eaf4 == osbyte147EntryPoint
+    assert &ffae == osbyte148EntryPoint
+    assert &eaf9 == osbyte149EntryPoint
+    assert &e6fa == osbyte14EntryPoint
+    assert &ffb2 == osbyte150EntryPoint
+    assert &eafe == osbyte151EntryPoint
+    assert &e45b == osbyte152EntryPoint
+    assert &e4f3 == osbyte153EntryPoint
+    assert &e9ff == osbyte154EntryPoint
+    assert &ea10 == osbyte155EntryPoint
+    assert &e17c == osbyte156EntryPoint
+    assert &ffa7 == osbyte157EntryPoint
+    assert &ee6d == osbyte158EntryPoint
+    assert &ee7f == osbyte159EntryPoint
+    assert &f0a8 == osbyte15EntryPoint
+    assert &e9c0 == osbyte160EntryPoint
+    assert &e99c == osbyte166to255EntryPoint
+    assert &e706 == osbyte16EntryPoint
+    assert &de8c == osbyte17EntryPoint
+    assert &e9c8 == osbyte18EntryPoint
+    assert &e9b6 == osbyte19EntryPoint
+    assert &e988 == osbyte1EntryPoint
+    assert &cd07 == osbyte20EntryPoint
+    assert &f0b4 == osbyte21EntryPoint
+    assert &e6d3 == osbyte2EntryPoint
+    assert &e997 == osbyte3EntryPoint
+    assert &e997 == osbyte4EntryPoint
+    assert &e976 == osbyte5EntryPoint
+    assert &e988 == osbyte6EntryPoint
+    assert &e68b == osbyte7EntryPoint
+    assert &e689 == osbyte8EntryPoint
+    assert &e6b0 == osbyte9EntryPoint
+    assert &e902 == osword0EntryPoint
+    assert &cbf3 == osword10EntryPoint
+    assert &c748 == osword11EntryPoint
+    assert &c8e0 == osword12EntryPoint
+    assert &d5ce == osword13EntryPoint
+    assert &e8d5 == osword1EntryPoint
+    assert &e8e8 == osword2EntryPoint
+    assert &e8d1 == osword3EntryPoint
+    assert &e8e4 == osword4EntryPoint
+    assert &e803 == osword5EntryPoint
+    assert &e80b == osword6EntryPoint
+    assert &e82d == osword7EntryPoint
+    assert &e8ae == osword8EntryPoint
+    assert &c735 == osword9EntryPoint
+    assert &01ff == userv - 1
+    assert &e659 == uservJumper
 
 save pydis_start, pydis_end
 
@@ -10829,7 +10829,7 @@ save pydis_start, pydis_end
 ;     l0301:                                   20
 ;     l00bc:                                   16
 ;     l0247:                                   16
-;     system_via_orb_irb:                      16
+;     system_via_register_b:                   16
 ;     l0319:                                   15
 ;     l00df:                                   14
 ;     l00fb:                                   14
@@ -10872,7 +10872,7 @@ save pydis_start, pydis_end
 ;     l035d:                                    9
 ;     l0804:                                    9
 ;     sub_cc588:                                9
-;     system_via_ora_ira:                       9
+;     system_via_register_a_no_handshake:       9
 ;     l00bd:                                    8
 ;     l00c2:                                    8
 ;     l00eb:                                    8
@@ -12425,7 +12425,7 @@ save pydis_start, pydis_end
 ;     system_via_t2c_l:                         1
 ;     uptv:                                     1
 ;     user_via_ddra:                            1
-;     user_via_ora_ira:                         1
+;     user_via_register_a:                      1
 ;     vdu20EntryPoint:                          1
 ;     vdu24EntryPoint:                          1
 ;     vdu26EntryPoint:                          1

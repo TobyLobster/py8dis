@@ -461,7 +461,7 @@ serial_ula_set_baud_cassette_and_motor  = $fe10
 video_ula_control                       = $fe20
 video_ula_palette                       = $fe21
 romsel                                  = $fe30
-system_via_orb_irb                      = $fe40
+system_via_register_b                   = $fe40
 system_via_ddrb                         = $fe42
 system_via_ddra                         = $fe43
 system_via_t1c_h                        = $fe45
@@ -473,8 +473,8 @@ system_via_acr                          = $fe4b
 system_via_pcr                          = $fe4c
 system_via_ifr                          = $fe4d
 system_via_ier                          = $fe4e
-system_via_ora_ira                      = $fe4f
-user_via_ora_ira                        = $fe61
+system_via_register_a_no_handshake      = $fe4f
+user_via_register_a                     = $fe61
 user_via_ddra                           = $fe63
 user_via_pcr                            = $fe6c
 user_via_ifr                            = $fe6d
@@ -3278,7 +3278,7 @@ ccfee
     ora l00d2                                                         ; cff9: 05 d2       ..
     eor l00d3                                                         ; cffb: 45 d3       E.
     sta (l00d8),y                                                     ; cffd: 91 d8       ..
-    tya                                                               ; cfff: 98          .                  ; add 8 to Y
+    tya                                                               ; cfff: 98          .              ; add 8 to Y
     clc                                                               ; d000: 18          .
     adc #8                                                            ; d001: 69 08       i.
     tay                                                               ; d003: a8          .
@@ -4914,7 +4914,7 @@ cda03
 ; $da08 referenced 1 time by $da0e
 loop_cda08
     dex                                                               ; da08: ca          .
-    stx system_via_orb_irb                                            ; da09: 8e 40 fe    .@.
+    stx system_via_register_b                                         ; da09: 8e 40 fe    .@.
     cpx #9                                                            ; da0c: e0 09       ..
     bcs loop_cda08                                                    ; da0e: b0 f8       ..
     inx                                                               ; da10: e8          .
@@ -5071,7 +5071,7 @@ cdb0c
     inx                                                               ; db0c: e8          .
     cpx #$10                                                          ; db0d: e0 10       ..
     bcc cdabd                                                         ; db0f: 90 ac       ..
-    bit system_via_orb_irb                                            ; db11: 2c 40 fe    ,@.
+    bit system_via_register_b                                         ; db11: 2c 40 fe    ,@.
     bmi cdb27                                                         ; db14: 30 11       0.
     dec l027b                                                         ; db16: ce 7b 02    .{.
 ; $db19 referenced 1 time by $db1f
@@ -6058,7 +6058,7 @@ ce13a
     bmi return_29                                                     ; e149: 30 45       0E
     ldy #$82                                                          ; e14b: a0 82       ..
     sty user_via_ier                                                  ; e14d: 8c 6e fe    .n.
-    sta user_via_ora_ira                                              ; e150: 8d 61 fe    .a.
+    sta user_via_register_a                                           ; e150: 8d 61 fe    .a.
     lda user_via_pcr                                                  ; e153: ad 6c fe    .l.
     and #$f1                                                          ; e156: 29 f1       ).
     ora #$0c                                                          ; e158: 09 0c       ..
@@ -6906,7 +6906,7 @@ osbyte128EntryPoint
 
 ; $e75f referenced 1 time by $e751
 ce75f
-    lda system_via_orb_irb                                            ; e75f: ad 40 fe    .@.
+    lda system_via_register_b                                         ; e75f: ad 40 fe    .@.
     ror                                                               ; e762: 6a          j
     ror                                                               ; e763: 6a          j
     ror                                                               ; e764: 6a          j
@@ -7414,9 +7414,9 @@ ce9e7
 sub_ce9ea
     bcc ce9f5                                                         ; e9ea: 90 09       ..
     ldy #7                                                            ; e9ec: a0 07       ..
-    sty system_via_orb_irb                                            ; e9ee: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; e9ee: 8c 40 fe    .@.
     dey                                                               ; e9f1: 88          .              ; Y=$06
-    sty system_via_orb_irb                                            ; e9f2: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; e9f2: 8c 40 fe    .@.
 ; $e9f5 referenced 1 time by $e9ea
 ce9f5
     bit l00ff                                                         ; e9f5: 24 ff       $.
@@ -7426,7 +7426,7 @@ ce9f5
 sub_ce9f8
     php                                                               ; e9f8: 08          .
     sei                                                               ; e9f9: 78          x
-    sta system_via_orb_irb                                            ; e9fa: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; e9fa: 8d 40 fe    .@.
     plp                                                               ; e9fd: 28          (
     rts                                                               ; e9fe: 60          `
 
@@ -7669,16 +7669,16 @@ ceb22
     sei                                                               ; eb22: 78          x
     ldy #$ff                                                          ; eb23: a0 ff       ..
     sty system_via_ddra                                               ; eb25: 8c 43 fe    .C.
-    sta system_via_ora_ira                                            ; eb28: 8d 4f fe    .O.
+    sta system_via_register_a_no_handshake                            ; eb28: 8d 4f fe    .O.
     iny                                                               ; eb2b: c8          .              ; Y=$00
-    sty system_via_orb_irb                                            ; eb2c: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; eb2c: 8c 40 fe    .@.
     ldy #2                                                            ; eb2f: a0 02       ..
 ; $eb31 referenced 1 time by $eb32
 loop_ceb31
     dey                                                               ; eb31: 88          .
     bne loop_ceb31                                                    ; eb32: d0 fd       ..
     ldy #8                                                            ; eb34: a0 08       ..
-    sty system_via_orb_irb                                            ; eb36: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; eb36: 8c 40 fe    .@.
     ldy #4                                                            ; eb39: a0 04       ..
 ; $eb3b referenced 1 time by $eb3c
 loop_ceb3b
@@ -8227,17 +8227,17 @@ cee84
     lda lf075,y                                                       ; ee8a: b9 75 f0    .u.
     sta system_via_ddra                                               ; ee8d: 8d 43 fe    .C.
     pla                                                               ; ee90: 68          h
-    sta system_via_ora_ira                                            ; ee91: 8d 4f fe    .O.
+    sta system_via_register_a_no_handshake                            ; ee91: 8d 4f fe    .O.
     lda lf077,y                                                       ; ee94: b9 77 f0    .w.
-    sta system_via_orb_irb                                            ; ee97: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; ee97: 8d 40 fe    .@.
 ; $ee9a referenced 1 time by $ee9d
 loop_cee9a
-    bit system_via_orb_irb                                            ; ee9a: 2c 40 fe    ,@.
+    bit system_via_register_b                                         ; ee9a: 2c 40 fe    ,@.
     bmi loop_cee9a                                                    ; ee9d: 30 fb       0.
-    lda system_via_ora_ira                                            ; ee9f: ad 4f fe    .O.
+    lda system_via_register_a_no_handshake                            ; ee9f: ad 4f fe    .O.
     pha                                                               ; eea2: 48          H
     lda lf079,y                                                       ; eea3: b9 79 f0    .y.
-    sta system_via_orb_irb                                            ; eea6: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; eea6: 8d 40 fe    .@.
     pla                                                               ; eea9: 68          h
 ; $eeaa referenced 1 time by $ee87
 ceeaa
@@ -8295,10 +8295,10 @@ ceeeb
     lsr                                                               ; eeef: 4a          J
     and #$18                                                          ; eef0: 29 18       ).
     ora #6                                                            ; eef2: 09 06       ..
-    sta system_via_orb_irb                                            ; eef4: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; eef4: 8d 40 fe    .@.
     lsr                                                               ; eef7: 4a          J
     ora #7                                                            ; eef8: 09 07       ..
-    sta system_via_orb_irb                                            ; eefa: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; eefa: 8d 40 fe    .@.
     jsr cf12e                                                         ; eefd: 20 2e f1     ..
     pla                                                               ; ef00: 68          h
     rts                                                               ; ef01: 60          `
@@ -8504,11 +8504,11 @@ sub_cf01f
 ; $f02a referenced 7 times by $da12, $ef1d, $ef2b, $ef3b, $efed, $f00f, $f0d4
 sub_cf02a
     ldy #3                                                            ; f02a: a0 03       ..
-    sty system_via_orb_irb                                            ; f02c: 8c 40 fe    .@.
+    sty system_via_register_b                                         ; f02c: 8c 40 fe    .@.
     ldy #$7f                                                          ; f02f: a0 7f       ..
     sty system_via_ddra                                               ; f031: 8c 43 fe    .C.
-    stx system_via_ora_ira                                            ; f034: 8e 4f fe    .O.
-    ldx system_via_ora_ira                                            ; f037: ae 4f fe    .O.
+    stx system_via_register_a_no_handshake                            ; f034: 8e 4f fe    .O.
+    ldx system_via_register_a_no_handshake                            ; f037: ae 4f fe    .O.
     rts                                                               ; f03a: 60          `
 
     !text "q345"                                                      ; f03b: 71 33 34... q34
@@ -8628,12 +8628,12 @@ cf0e3
     lda #$7f                                                          ; f0e6: a9 7f       ..
     sta system_via_ddra                                               ; f0e8: 8d 43 fe    .C.
     lda #3                                                            ; f0eb: a9 03       ..
-    sta system_via_orb_irb                                            ; f0ed: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; f0ed: 8d 40 fe    .@.
     lda #$0f                                                          ; f0f0: a9 0f       ..
-    sta system_via_ora_ira                                            ; f0f2: 8d 4f fe    .O.
+    sta system_via_register_a_no_handshake                            ; f0f2: 8d 4f fe    .O.
     lda #1                                                            ; f0f5: a9 01       ..
     sta system_via_ifr                                                ; f0f7: 8d 4d fe    .M.
-    stx system_via_ora_ira                                            ; f0fa: 8e 4f fe    .O.
+    stx system_via_register_a_no_handshake                            ; f0fa: 8e 4f fe    .O.
     bit system_via_ifr                                                ; f0fd: 2c 4d fe    ,M.
     beq cf123                                                         ; f100: f0 21       .!
     txa                                                               ; f102: 8a          .
@@ -8641,8 +8641,8 @@ cf0e3
 loop_cf103
     cmp l01df,y                                                       ; f103: d9 df 01    ...
     bcc cf11e                                                         ; f106: 90 16       ..
-    sta system_via_ora_ira                                            ; f108: 8d 4f fe    .O.
-    bit system_via_ora_ira                                            ; f10b: 2c 4f fe    ,O.
+    sta system_via_register_a_no_handshake                            ; f108: 8d 4f fe    .O.
+    bit system_via_register_a_no_handshake                            ; f10b: 2c 4f fe    ,O.
     bpl cf11e                                                         ; f10e: 10 0e       ..
     plp                                                               ; f110: 28          (
     php                                                               ; f111: 08          .
@@ -8675,7 +8675,7 @@ sub_cf129
 ; $f12e referenced 3 times by $eefd, $f0d7, $f129
 cf12e
     lda #$0b                                                          ; f12e: a9 0b       ..
-    sta system_via_orb_irb                                            ; f130: 8d 40 fe    .@.
+    sta system_via_register_b                                         ; f130: 8d 40 fe    .@.
     txa                                                               ; f133: 8a          .
     rts                                                               ; f134: 60          `
 
@@ -11021,7 +11021,7 @@ pydis_end
 ;     l0301:                                   20
 ;     l00bc:                                   16
 ;     l0247:                                   16
-;     system_via_orb_irb:                      16
+;     system_via_register_b:                   16
 ;     l0319:                                   15
 ;     l00df:                                   14
 ;     l00fb:                                   14
@@ -11064,7 +11064,7 @@ pydis_end
 ;     l035d:                                    9
 ;     l0804:                                    9
 ;     sub_cc588:                                9
-;     system_via_ora_ira:                       9
+;     system_via_register_a_no_handshake:       9
 ;     l00bd:                                    8
 ;     l00c2:                                    8
 ;     l00eb:                                    8
@@ -12617,7 +12617,7 @@ pydis_end
 ;     system_via_t2c_l:                         1
 ;     uptv:                                     1
 ;     user_via_ddra:                            1
-;     user_via_ora_ira:                         1
+;     user_via_register_a:                      1
 ;     vdu20EntryPoint:                          1
 ;     vdu24EntryPoint:                          1
 ;     vdu26EntryPoint:                          1

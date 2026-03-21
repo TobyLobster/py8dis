@@ -1391,7 +1391,7 @@ morebitsleft
     lsr pixelvalue                                                    ; 194b: 46 82       F.
     dec columncounter                                                 ; 194d: c6 81       ..
     bne plotpixelloop                                                 ; 194f: d0 da       ..
-    tya                                                               ; 1951: 98          .                  ; add 8 to Y
+    tya                                                               ; 1951: 98          .              ; add 8 to Y
     clc                                                               ; 1952: 18          .
     adc #8                                                            ; 1953: 69 08       i.
     tay                                                               ; 1955: a8          .

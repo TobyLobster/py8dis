@@ -17,22 +17,39 @@ OPCODE_BNE                      = 0xd0      # bne loop
 OPCODE_TXA                      = 0x8a      # txa
 OPCODE_TYA                      = 0x98      # tya
 
-# 'mark_up_snippets' is the list of 'snippets' (which are turned into regexes) for binary data to
-# find common code tropes, and an associated function (to both comment on it and add expressions)
-mark_up_snippets = []
-
-# 'find_code_snippets' is the list of snippets just for *finding* where code might be hiding
-# (by looking for common tropes). It is similar to the mark_up_snippets patterns, but can't
-# start with a '.' for 'any instruction' since this is ambiguous giving different instruction
-# lengths.
-find_code_snippets = []
+# The list of 'SnippetDetails' which contain a regex for binary data to find common code tropes, 
+# and two associated functions (for commenting, adding expressions etc). 
+# One function is executed before the code is traced, allowing new entry points to be added for the trace.
+# The other happens after tracing which allows for more detailed comments to be added because we know the 
+# cpu_state of registers.
+snippets = []
 
 # ************************************************************************************************
-def register_mark_up_snippet(fn, snippet):
-    mark_up_snippets.append((fn, snippet6502.parse_snippet(snippet)))
+def add_entry(p):
+    p.entry()
 
-def register_find_code_snippet(snippet):
-    find_code_snippets.append(snippet6502.parse_snippet(snippet).whole_pattern)
+def add_code_comment(p, comment):
+    p.entry()
+    disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE)
+
+def add_data_comment(p, comment):
+    disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE)
+
+
+def register_snippet(pre_trace_fn, post_trace_fn, snippet):
+    snippets.append(SnippetDetails(pre_trace_fn, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+
+def register_code_snippet(post_trace_fn, snippet):
+    snippets.append(SnippetDetails(add_entry, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+
+def register_data_snippet(post_trace_fn, snippet):
+    snippets.append(SnippetDetails(None, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+
+def register_comment_code_snippet(comment, snippet):
+    snippets.append(SnippetDetails(add_code_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
+
+def register_comment_data_snippet(comment, snippet):
+    snippets.append(SnippetDetails(add_data_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
 
 # ************************************************************************************************
 def comment_memory_copy_loop(p):
@@ -305,7 +322,7 @@ def comment_set_memory_y_loop(p):
 # ************************************************************************************************
 # ************************************************************************************************
 # ************************************************************************************************
-register_mark_up_snippet(comment_memory_copy_loop, """
+register_code_snippet(comment_memory_copy_loop, """
 ; memory copy, using X as the loop counter
 
 comment
@@ -321,23 +338,7 @@ branch
     bpl loop | bne loop
 """)
 
-register_mark_up_snippet(comment_memory_copy_loop, """
-; memory copy, using X as the loop counter
-
-comment
-?   ldx #start_count
-loop
-load
-    lda addr,x | lda (zp1),x
-store
-    sta other,x | sta (zp2),x
-update
-    dex
-branch
-    bpl loop | bne loop
-""")
-
-register_mark_up_snippet(comment_memory_copy_loop, """
+register_code_snippet(comment_memory_copy_loop, """
 ; memory copy, using Y as the loop counter
 
 comment
@@ -353,7 +354,7 @@ branch
     bpl loop | bne loop
 """)
 
-register_mark_up_snippet(comment_memory_copy_with_limited_end_loop, """
+register_code_snippet(comment_memory_copy_with_limited_end_loop, """
 ; memory copy with final counter check, using Y as the loop counter
 
 comment
@@ -371,7 +372,7 @@ branch
 """)
 
 
-register_mark_up_snippet(comment_memory_copy_with_limited_end_loop, """
+register_code_snippet(comment_memory_copy_with_limited_end_loop, """
 ; memory copy with final counter check, using X as the loop counter
 
 comment
@@ -388,7 +389,7 @@ branch
     bcs loop
 """)
 
-register_mark_up_snippet(comment_memory_copy_increment, """
+register_code_snippet(comment_memory_copy_increment, """
 ; memory copy increasing loop counter, using X as the loop counter
 comment
 ?    ldx #start_count
@@ -404,7 +405,7 @@ branch
     bne loop | bcc loop
 """)
 
-register_mark_up_snippet(comment_memory_copy_increment, """
+register_code_snippet(comment_memory_copy_increment, """
 ; memory copy increasing loop counter, using X as the loop counter
 comment
 ?    ldy #start_count
@@ -420,7 +421,7 @@ branch
     bne loop | bcc loop
 """)
 
-register_mark_up_snippet("push flags,A,X,Y onto the stack", """
+register_comment_code_snippet("push flags,A,X,Y onto the stack", """
     php
     pha
     txa
@@ -429,7 +430,7 @@ register_mark_up_snippet("push flags,A,X,Y onto the stack", """
     pha
 """)
 
-register_mark_up_snippet("pull flags,A,X,Y from the stack", """
+register_comment_code_snippet("pull flags,A,X,Y from the stack", """
     pla
     tay
     pla
@@ -438,7 +439,7 @@ register_mark_up_snippet("pull flags,A,X,Y from the stack", """
     plp
 """)
 
-register_mark_up_snippet("push A,X,Y onto the stack", """
+register_comment_code_snippet("push A,X,Y onto the stack", """
     pha
     txa
     pha
@@ -446,7 +447,7 @@ register_mark_up_snippet("push A,X,Y onto the stack", """
     pha
 """)
 
-register_mark_up_snippet("pull A,X,Y from the stack", """
+register_comment_code_snippet("pull A,X,Y from the stack", """
     pla
     tay
     pla
@@ -454,7 +455,7 @@ register_mark_up_snippet("pull A,X,Y from the stack", """
     pla
 """)
 
-register_mark_up_snippet("push flags,A,Y,X onto the stack", """
+register_comment_code_snippet("push flags,A,Y,X onto the stack", """
     php
     pha
     tya
@@ -463,7 +464,7 @@ register_mark_up_snippet("push flags,A,Y,X onto the stack", """
     pha
 """)
 
-register_mark_up_snippet("pull flags,A,Y,X from the stack", """
+register_comment_code_snippet("pull flags,A,Y,X from the stack", """
     pla
     tax
     pla
@@ -472,7 +473,7 @@ register_mark_up_snippet("pull flags,A,Y,X from the stack", """
     plp
 """)
 
-register_mark_up_snippet("push flags,X,Y onto the stack", """
+register_comment_code_snippet("push flags,X,Y onto the stack", """
     php
     txa
     pha
@@ -480,7 +481,7 @@ register_mark_up_snippet("push flags,X,Y onto the stack", """
     pha
 """)
 
-register_mark_up_snippet("pull flags,X,Y from the stack", """
+register_comment_code_snippet("pull flags,X,Y from the stack", """
     pla
     tay
     pla
@@ -488,7 +489,7 @@ register_mark_up_snippet("pull flags,X,Y from the stack", """
     plp
 """)
 
-register_mark_up_snippet("push flags,Y,X onto the stack", """
+register_comment_code_snippet("push flags,Y,X onto the stack", """
     php
     tya
     pha
@@ -496,7 +497,7 @@ register_mark_up_snippet("push flags,Y,X onto the stack", """
     pha
 """)
 
-register_mark_up_snippet("pull flags,Y,X from the stack", """
+register_comment_code_snippet("pull flags,Y,X from the stack", """
     pla
     tax
     pla
@@ -504,21 +505,21 @@ register_mark_up_snippet("pull flags,Y,X from the stack", """
     plp
 """)
 
-register_mark_up_snippet("push flags,A,X onto the stack", """
+register_comment_code_snippet("push flags,A,X onto the stack", """
     php
     pha
     txa
     pha
 """)
 
-register_mark_up_snippet("pull flags,A,X from the stack", """
+register_comment_code_snippet("pull flags,A,X from the stack", """
     pla
     tax
     pla
     plp
 """)
 
-register_mark_up_snippet("push A,Y,X onto the stack", """
+register_comment_code_snippet("push A,Y,X onto the stack", """
     pha
     tya
     pha
@@ -526,7 +527,7 @@ register_mark_up_snippet("push A,Y,X onto the stack", """
     pha
 """)
 
-register_mark_up_snippet("pull A,Y,X from the stack", """
+register_comment_code_snippet("pull A,Y,X from the stack", """
     pla
     tax
     pla
@@ -534,73 +535,73 @@ register_mark_up_snippet("pull A,Y,X from the stack", """
     pla
 """)
 
-register_mark_up_snippet("push X,Y onto the stack", """
+register_comment_code_snippet("push X,Y onto the stack", """
     txa
     pha
     tya
     pha
 """)
 
-register_mark_up_snippet("pull X,Y from the stack", """
+register_comment_code_snippet("pull X,Y from the stack", """
     pla
     tay
     pla
     tax
 """)
 
-register_mark_up_snippet("push Y,X onto the stack", """
+register_comment_code_snippet("push Y,X onto the stack", """
     tya
     pha
     txa
     pha
 """)
 
-register_mark_up_snippet("pull Y,X from the stack", """
+register_comment_code_snippet("pull Y,X from the stack", """
     pla
     tax
     pla
     tay
 """)
 
-register_mark_up_snippet("push A,X onto the stack", """
+register_comment_code_snippet("push A,X onto the stack", """
     pha
     txa
     pha
 """)
 
-register_mark_up_snippet("pull A,X from the stack", """
+register_comment_code_snippet("pull A,X from the stack", """
     pla
     tax
     pla
 """)
 
-register_mark_up_snippet("push A,Y onto the stack", """
+register_comment_code_snippet("push A,Y onto the stack", """
     pha
     tya
     pha
 """)
 
-register_mark_up_snippet("pull A,Y from the stack", """
+register_comment_code_snippet("pull A,Y from the stack", """
     pla
     tay
     pla
 """)
 
-register_mark_up_snippet(comment_add_to_y, """
+register_code_snippet(comment_add_to_y, """
     tya
     clc
     adc #nn
     tay
 """)
 
-register_mark_up_snippet(comment_add_to_x, """
+register_code_snippet(comment_add_to_x, """
     txa
     clc
     adc #nn
     tax
 """)
 
-register_mark_up_snippet(comment_set_memory_x_loop, """
+register_code_snippet(comment_set_memory_x_loop, """
 comment
 load1
 ?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
@@ -616,7 +617,7 @@ branch
     bne loop | bpl loop
 """)
 
-register_mark_up_snippet(comment_set_memory_y_loop, """
+register_code_snippet(comment_set_memory_y_loop, """
 comment
 load1
 ?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
@@ -632,7 +633,7 @@ branch
     bne loop | bpl loop
 """)
 
-register_mark_up_snippet("bitmask", """
+register_comment_data_snippet("bitmask", """
     !byte 1
     !byte 2
     !byte 4
@@ -643,7 +644,7 @@ register_mark_up_snippet("bitmask", """
     !byte $80
 """)
 
-register_mark_up_snippet("bitmask", """
+register_comment_data_snippet("bitmask", """
     !byte $80
     !byte $40
     !byte $20
@@ -654,122 +655,3 @@ register_mark_up_snippet("bitmask", """
     !byte 1
 """)
 
-#################################################################################################
-#################################################################################################
-#################################################################################################
-#################################################################################################
-register_find_code_snippet("""
-comment
-?   ldx #nn1 | ldy #nn2
-loop
-    lda addr,x | lda (zp1),x | lda addr,y | lda (zp1),y
-    sta other,x | sta (zp2),x | sta other,y | sta (zp2),y
-    dex | dey | inx | iny
-?   cpy #nn1 | cpx #nn2
-    bpl loop | bne loop | bcs loop | bcc loop
-""")
-
-# Push (flags,A),X,Y
-register_find_code_snippet("""
-?   php
-?   pha
-    txa
-    pha
-    tya
-    pha
-""")
-
-# Pull (flags,A),X,Y
-register_find_code_snippet("""
-    pla
-    tay
-    pla
-    tax
-?   pla
-?   plp
-""")
-
-# Push (flags,A),Y,X
-register_find_code_snippet("""
-?   php
-?   pha
-    tya
-    pha
-    txa
-    pha
-""")
-
-# Pull (flags,A),Y,X
-register_find_code_snippet("""
-    pla
-    tax
-    pla
-    tay
-?   pla
-?   plp
-""")
-
-# Push A,X,Y or X,Y or A,Y
-register_find_code_snippet("""
-?   pha
-?   txa
-    pha
-    tya
-    pha
-""")
-
-# Pull X,Y or Y,X
-register_find_code_snippet("""
-    pla
-    tax | tay
-    pla
-?   tay | tax
-?   plp
-""")
-
-# Push (flags),A,X
-register_find_code_snippet("""
-?   php
-    pha
-    txa
-    pha
-""")
-
-# Pull (flags),A,X
-register_find_code_snippet("""
-    pla
-    tax
-    pla
-?   plp
-""")
-
-register_find_code_snippet("""
-    tya
-    clc
-    adc #nn
-    tay
-""")
-
-# Memory copy (reversed) with X as the loop counter
-register_find_code_snippet("""
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
-loop
-    sta addr,y | sta (zp),y
-    iny
-    dex
-    bne loop | bpl loop
-""")
-
-# Memory copy (reversed) with Y as the loop counter
-register_find_code_snippet("""
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
-loop
-    sta addr,x | sta (zp),x
-    inx
-    dey
-    bne loop | bpl loop
-""")

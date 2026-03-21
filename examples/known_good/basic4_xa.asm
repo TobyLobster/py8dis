@@ -1,4 +1,5 @@
 // Constants
+osbyte_acknowledge_escape               = 126
 osbyte_check_eof                        = 127
 osbyte_enter_language                   = 142
 osbyte_inkey                            = 129
@@ -9,6 +10,7 @@ osbyte_read_himem_for_mode              = 133
 osbyte_read_text_cursor_pos             = 134
 osbyte_read_tube_presence               = 234
 osbyte_read_write_basic_rom_bank        = 187
+osbyte_read_write_vdu_queue_size        = 218
 osfile_load                             = 255
 osfile_save                             = 0
 osfind_close                            = 0
@@ -375,9 +377,10 @@ c80ff
     stx l0400                                                         // 8124: 8e 00 04    ...
     dex                                                               // 8127: ca          .              // X=$09
     stx l0401                                                         // 8128: 8e 01 04    ...
-    lda #$b2                                                          // 812b: a9 b2       ..
+    // Set 'brkv' to 'handle_brkv'
+    lda #<handle_brkv                                                 // 812b: a9 b2       ..
     sta brkv                                                          // 812d: 8d 02 02    ...
-    lda #$b2                                                          // 8130: a9 b2       ..
+    lda #>handle_brkv                                                 // 8130: a9 b2       ..
     sta brkv+1                                                        // 8132: 8d 03 02    ...
     cli                                                               // 8135: 58          X
     jmp c8ff2                                                         // 8136: 4c f2 8f    L..
@@ -2237,8 +2240,9 @@ sub_c8e58
     bne c8e51                                                         // 8e5a: d0 f5       ..
     rts                                                               // 8e5c: 60          `
 
-    .byt $b2, $37                                                     // 8e5d: b2 37       .7
-
+// $8e5d referenced 4 times by $b28b, $b299, $b2a2, $b2a7
+sub_c8e5d
+    lda (l0037)                                                       // 8e5d: b2 37       .7
 // $8e5f referenced 9 times by $8e0d, $8e10, $8e13, $8e66, $8e6c, $8ea1, $8ed7, $8eee, $8f81
 sub_c8e5f
     inc l0037                                                         // 8e5f: e6 37       .7
@@ -2691,7 +2695,7 @@ c90ca
     lda (l000b)                                                       // 90ca: b2 0b       ..
     cmp #$3a // ':'                                                   // 90cc: c9 3a       .:
     bne c9082                                                         // 90ce: d0 b2       ..
-// $90d0 referenced 8 times by $89da, $90d8, $9ce8, $b0c7, $b5dc, $b6ce, $b766, $ba9d
+// $90d0 referenced 9 times by $89da, $90d8, $9ce8, $b0c7, $b2dd, $b5dc, $b6ce, $b766, $ba9d
 c90d0
     ldy l000a                                                         // 90d0: a4 0a       ..
 // $90d2 referenced 1 time by $90a4
@@ -4740,7 +4744,7 @@ c9c74
     beq c9c80                                                         // 9c7a: f0 04       ..
     cmp #$8b                                                          // 9c7c: c9 8b       ..
     bne c9c2d                                                         // 9c7e: d0 ad       ..
-// $9c80 referenced 10 times by $89e4, $9069, $907d, $9c76, $9c7a, $b02e, $b40d, $b451, $b77b, $ba8e
+// $9c80 referenced 11 times by $89e4, $9069, $907d, $9c76, $9c7a, $b02e, $b276, $b40d, $b451, $b77b, $ba8e
 c9c80
     clc                                                               // 9c80: 18          .
     tya                                                               // 9c81: 98          .
@@ -8749,19 +8753,75 @@ sub_cb269
     lda l002a                                                         // b26c: a5 2a       .*
     jmp caeb4                                                         // b26e: 4c b4 ae    L..
 
-    .byt $a4, $0a, $f0, 1, $88, $20, $80, $9c, $64, 8, $64, 9, $a6    // b271: a4 0a f0... ...
-    .byt $18, $86                                                     // b27e: 18 86       ..
-    .asc "8d7"                                                        // b280: 38 64 37    8d7
-    .byt $a4, $0c, $c0,   7, $f0, $28, $a6, $0b, $20, $5d, $8e, $c9   // b283: a4 0c c0... ...
-    .byt $0d, $d0, $18, $e4, $37, $98, $e5, $38, $90, $18, $20, $5d   // b28f: 0d d0 18... ...
-    .byt $8e,   9,   0, $30, $11, $85,   9, $20, $5d, $8e, $85,   8   // b29b: 8e 09 00... ...
-    .byt $20, $5d, $8e, $e4, $37, $98, $e5, $38, $b0, $da, $60, $a2   // b2a7: 20 5d 8e...  ].
-    .byt $ff, $86, $28, $9a, $e8, $a0,   0, $a9, $da, $20, $f4, $ff   // b2b3: ff 86 28... ..(
-    .byt $a9, $7e, $20, $f4, $ff, $20, $71, $b2, $64, $20, $b2, $fd   // b2bf: a9 7e 20... .~
-    .byt $d0,   3, $20, $e0, $b2, $a5, $16, $85, $0b, $a5, $17, $85   // b2cb: d0 03 20... ..
-    .byt $0c, $64, $0a, $20, $ff, $bb, $4c, $d0, $90                  // b2d7: 0c 64 0a... .d.
+// $b271 referenced 1 time by $b2c4
+sub_cb271
+    ldy l000a                                                         // b271: a4 0a       ..
+    beq cb276                                                         // b273: f0 01       ..
+    dey                                                               // b275: 88          .
+// $b276 referenced 1 time by $b273
+cb276
+    jsr c9c80                                                         // b276: 20 80 9c     ..
+    stz l0008                                                         // b279: 64 08       d.
+    stz l0009                                                         // b27b: 64 09       d.
+    ldx l0018                                                         // b27d: a6 18       ..
+    stx l0038                                                         // b27f: 86 38       .8
+    stz l0037                                                         // b281: 64 37       d7
+    ldy l000c                                                         // b283: a4 0c       ..
+    cpy #7                                                            // b285: c0 07       ..
+    beq return_31                                                     // b287: f0 28       .(
+    ldx l000b                                                         // b289: a6 0b       ..
+// $b28b referenced 1 time by $b2af
+cb28b
+    jsr sub_c8e5d                                                     // b28b: 20 5d 8e     ].
+    cmp #$0d                                                          // b28e: c9 0d       ..
+    bne cb2aa                                                         // b290: d0 18       ..
+    cpx l0037                                                         // b292: e4 37       .7
+    tya                                                               // b294: 98          .
+    sbc l0038                                                         // b295: e5 38       .8
+    bcc return_31                                                     // b297: 90 18       ..
+    jsr sub_c8e5d                                                     // b299: 20 5d 8e     ].
+    ora #0                                                            // b29c: 09 00       ..
+    bmi return_31                                                     // b29e: 30 11       0.
+    sta l0009                                                         // b2a0: 85 09       ..
+    jsr sub_c8e5d                                                     // b2a2: 20 5d 8e     ].
+    sta l0008                                                         // b2a5: 85 08       ..
+    jsr sub_c8e5d                                                     // b2a7: 20 5d 8e     ].
+// $b2aa referenced 1 time by $b290
+cb2aa
+    cpx l0037                                                         // b2aa: e4 37       .7
+    tya                                                               // b2ac: 98          .
+    sbc l0038                                                         // b2ad: e5 38       .8
+    bcs cb28b                                                         // b2af: b0 da       ..
+// $b2b1 referenced 3 times by $b287, $b297, $b29e
+return_31
+    rts                                                               // b2b1: 60          `
 
-// $b2e0 referenced 3 times by $9051, $905f, $b76c
+handle_brkv
+    ldx #$ff                                                          // b2b2: a2 ff       ..
+    stx l0028                                                         // b2b4: 86 28       .(
+    txs                                                               // b2b6: 9a          .
+    inx                                                               // b2b7: e8          .              // X=$00
+    ldy #0                                                            // b2b8: a0 00       ..
+    lda #osbyte_read_write_vdu_queue_size                             // b2ba: a9 da       ..
+    jsr osbyte                                                        // b2bc: 20 f4 ff     ..            // Write VDU queue
+    lda #osbyte_acknowledge_escape                                    // b2bf: a9 7e       .~
+    jsr osbyte                                                        // b2c1: 20 f4 ff     ..            // Clear escape condition and perform escape effects
+    jsr sub_cb271                                                     // b2c4: 20 71 b2     q.
+    stz l0020                                                         // b2c7: 64 20       d
+    lda (l00fd)                                                       // b2c9: b2 fd       ..
+    bne cb2d0                                                         // b2cb: d0 03       ..
+    jsr sub_cb2e0                                                     // b2cd: 20 e0 b2     ..
+// $b2d0 referenced 1 time by $b2cb
+cb2d0
+    lda l0016                                                         // b2d0: a5 16       ..
+    sta l000b                                                         // b2d2: 85 0b       ..
+    lda l0017                                                         // b2d4: a5 17       ..
+    sta l000c                                                         // b2d6: 85 0c       ..
+    stz l000a                                                         // b2d8: 64 0a       d.
+    jsr sub_cbbff                                                     // b2da: 20 ff bb     ..
+    jmp c90d0                                                         // b2dd: 4c d0 90    L..
+
+// $b2e0 referenced 4 times by $9051, $905f, $b2cd, $b76c
 sub_cb2e0
     lda #$e9                                                          // b2e0: a9 e9       ..
     sta l0016                                                         // b2e2: 85 16       ..
@@ -8868,7 +8928,7 @@ cb380
     lda l002a                                                         // b380: a5 2a       .*
     sta (l0037)                                                       // b382: 92 37       .7
     lda l0039                                                         // b384: a5 39       .9
-    beq return_31                                                     // b386: f0 10       ..
+    beq return_32                                                     // b386: f0 10       ..
     lda l002b                                                         // b388: a5 2b       .+
     ldy #1                                                            // b38a: a0 01       ..
     sta (l0037),y                                                     // b38c: 91 37       .7
@@ -8879,7 +8939,7 @@ cb380
     iny                                                               // b395: c8          .              // Y=$03
     sta (l0037),y                                                     // b396: 91 37       .7
 // $b398 referenced 1 time by $b386
-return_31
+return_32
     rts                                                               // b398: 60          `
 
 // $b399 referenced 1 time by $b379
@@ -9888,15 +9948,15 @@ sub_cb9dc
     sta l001a                                                         // b9e5: 85 1a       ..
     stz l001b                                                         // b9e7: 64 1b       d.
     jsr sub_c8fa8                                                     // b9e9: 20 a8 8f     ..
-    beq return_32                                                     // b9ec: f0 58       .X
+    beq return_33                                                     // b9ec: f0 58       .X
     cmp #$dc                                                          // b9ee: c9 dc       ..
-    beq return_32                                                     // b9f0: f0 54       .T
+    beq return_33                                                     // b9f0: f0 54       .T
     cmp #$0d                                                          // b9f2: c9 0d       ..
     beq cb9ff                                                         // b9f4: f0 09       ..
 // $b9f6 referenced 1 time by $b9fd
 loop_cb9f6
     jsr sub_c8fa8                                                     // b9f6: 20 a8 8f     ..
-    beq return_32                                                     // b9f9: f0 4b       .K
+    beq return_33                                                     // b9f9: f0 4b       .K
     cmp #$0d                                                          // b9fb: c9 0d       ..
     bne loop_cb9f6                                                    // b9fd: d0 f7       ..
 // $b9ff referenced 3 times by $b9f4, $ba1b, $ba1f
@@ -9955,7 +10015,7 @@ cba43
     iny                                                               // ba43: c8          .
     sty l001b                                                         // ba44: 84 1b       ..
 // $ba46 referenced 3 times by $b9ec, $b9f0, $b9f9
-return_32
+return_33
     rts                                                               // ba46: 60          `
 
 sub_cba47
@@ -10046,7 +10106,7 @@ cbac5
 // $bac8 referenced 2 times by $93fa, $bb47
 sub_cbac8
     jsr sub_c8191                                                     // bac8: 20 91 81     ..
-    bcc return_33                                                     // bacb: 90 4d       .M
+    bcc return_34                                                     // bacb: 90 4d       .M
     lda l003d                                                         // bacd: a5 3d       .=
     sta l0037                                                         // bacf: 85 37       .7
     sta l0012                                                         // bad1: 85 12       ..
@@ -10102,7 +10162,7 @@ cbb16
     lda (l0037),y                                                     // bb16: b1 37       .7
     sta (l0012),y                                                     // bb18: 91 12       ..
 // $bb1a referenced 3 times by $bacb, $bb36, $bb54
-return_33
+return_34
     rts                                                               // bb1a: 60          `
 
 // $bb1b referenced 2 times by $903d, $9062
@@ -10119,7 +10179,7 @@ sub_cbb1b
     stz l000a                                                         // bb2e: 64 0a       d.
     jsr c8e6f                                                         // bb30: 20 6f 8e     o.
     jsr sub_c9be2                                                     // bb33: 20 e2 9b     ..
-    bcc return_33                                                     // bb36: 90 e2       ..
+    bcc return_34                                                     // bb36: 90 e2       ..
 // $bb38 referenced 1 time by $9566
 sub_cbb38
     lda l001f                                                         // bb38: a5 1f       ..
@@ -10140,7 +10200,7 @@ cbb45
     ldy #0                                                            // bb4e: a0 00       ..
     lda #$0d                                                          // bb50: a9 0d       ..
     cmp (l003b)                                                       // bb52: d2 3b       .;
-    beq return_33                                                     // bb54: f0 c4       ..
+    beq return_34                                                     // bb54: f0 c4       ..
 // $bb56 referenced 1 time by $bb59
 loop_cbb56
     iny                                                               // bb56: c8          .
@@ -10261,7 +10321,7 @@ loop_cbbf8
     bne loop_cbbf8                                                    // bbfc: d0 fa       ..
     rts                                                               // bbfe: 60          `
 
-// $bbff referenced 2 times by $bb21, $bbe8
+// $bbff referenced 3 times by $b2da, $bb21, $bbe8
 sub_cbbff
     lda l0018                                                         // bbff: a5 18       ..
     sta l001d                                                         // bc01: 85 1d       ..
@@ -10507,10 +10567,10 @@ cbd3a
 cbd3d
     adc l0004                                                         // bd3d: 65 04       e.
     sta l0004                                                         // bd3f: 85 04       ..
-    bcc return_34                                                     // bd41: 90 02       ..
+    bcc return_35                                                     // bd41: 90 02       ..
     inc l0005                                                         // bd43: e6 05       ..
 // $bd45 referenced 1 time by $bd41
-return_34
+return_35
     rts                                                               // bd45: 60          `
 
 // $bd46 referenced 3 times by $989b, $b0d8, $b8da
@@ -10540,11 +10600,11 @@ cbd64
     ldy l0005                                                         // bd64: a4 05       ..
     cpy l0003                                                         // bd66: c4 03       ..
     bcc cbd74                                                         // bd68: 90 0a       ..
-    bne return_35                                                     // bd6a: d0 04       ..
+    bne return_36                                                     // bd6a: d0 04       ..
     cmp l0002                                                         // bd6c: c5 02       ..
     bcc cbd74                                                         // bd6e: 90 04       ..
 // $bd70 referenced 1 time by $bd6a
-return_35
+return_36
     rts                                                               // bd70: 60          `
 
 // $bd71 referenced 1 time by $bdef
@@ -10649,7 +10709,7 @@ sub_cbdd8
 cbde2
     sta (l0002)                                                       // bde2: 92 02       ..
     inc l0002                                                         // bde4: e6 02       ..
-    bne return_36                                                     // bde6: d0 1d       ..
+    bne return_37                                                     // bde6: d0 1d       ..
     inc l0003                                                         // bde8: e6 03       ..
     pha                                                               // bdea: 48          H
     lda l0003                                                         // bdeb: a5 03       ..
@@ -10664,19 +10724,19 @@ sub_cbdf3
 // $bdf4 referenced 1 time by $b4cd
 sub_cbdf4
     and l001f                                                         // bdf4: 25 1f       %.
-    beq return_36                                                     // bdf6: f0 0d       ..
+    beq return_37                                                     // bdf6: f0 0d       ..
     txa                                                               // bdf8: 8a          .
-    bmi return_36                                                     // bdf9: 30 0a       0.
+    bmi return_37                                                     // bdf9: 30 0a       0.
     rol                                                               // bdfb: 2a          *
     tax                                                               // bdfc: aa          .
-    beq return_36                                                     // bdfd: f0 06       ..
+    beq return_37                                                     // bdfd: f0 06       ..
 // $bdff referenced 6 times by $8a19, $8a2f, $8a4b, $9325, $a121, $be03
 cbdff
     jsr cbdd2                                                         // bdff: 20 d2 bd     ..
     dex                                                               // be02: ca          .
     bne cbdff                                                         // be03: d0 fa       ..
 // $be05 referenced 4 times by $bde6, $bdf6, $bdf9, $bdfd
-return_36
+return_37
     rts                                                               // be05: 60          `
 
 // $be06 referenced 6 times by $8d6a, $9fea, $aac3, $b194, $b1c7, $b400
@@ -10889,14 +10949,14 @@ sub_cbf22
 // $bf2f referenced 4 times by $9400, $958e, $965e, $aabc
 sub_cbf2f
     inc l002a                                                         // bf2f: e6 2a       .*
-    bne return_37                                                     // bf31: d0 0a       ..
+    bne return_38                                                     // bf31: d0 0a       ..
     inc l002b                                                         // bf33: e6 2b       .+
-    bne return_37                                                     // bf35: d0 06       ..
+    bne return_38                                                     // bf35: d0 06       ..
     inc l002c                                                         // bf37: e6 2c       .,
-    bne return_37                                                     // bf39: d0 02       ..
+    bne return_38                                                     // bf39: d0 02       ..
     inc l002d                                                         // bf3b: e6 2d       .-
 // $bf3d referenced 3 times by $bf31, $bf35, $bf39
-return_37
+return_38
     rts                                                               // bf3d: 60          `
 
 // $bf3e referenced 2 times by $9019, $9045
@@ -10960,20 +11020,20 @@ pydis_end
 
 // Label references by decreasing frequency:
 //     l002a:              206
-//     l0037:              133
+//     l0037:              137
 //     l002b:              119
 //     l0031:               88
-//     l000b:               82
+//     l000b:               84
+//     l000a:               83
 //     l001b:               82
-//     l000a:               81
 //     l003d:               78
 //     l0004:               75
 //     l002c:               75
 //     l0033:               66
 //     l0032:               65
 //     l0034:               63
+//     l0038:               61
 //     l0039:               59
-//     l0038:               58
 //     l0030:               57
 //     l002d:               56
 //     l0019:               52
@@ -10983,7 +11043,7 @@ pydis_end
 //     l002e:               48
 //     l003e:               48
 //     l0035:               42
-//     l000c:               37
+//     l000c:               39
 //     l003c:               36
 //     l0040:               34
 //     l004c:               31
@@ -11005,28 +11065,29 @@ pydis_end
 //     l0005:               17
 //     l002f:               17
 //     c8f92:               16
+//     l0018:               16
 //     l004d:               16
 //     l0013:               15
-//     l0018:               15
 //     l0049:               15
 //     oswrch:              15
 //     c9155:               14
 //     cad78:               14
 //     sub_c9dff:           14
 //     l0026:               13
+//     osbyte:              13
 //     sub_cbd26:           13
 //     l0029:               12
 //     c90ca:               11
+//     c9c80:               11
 //     ca2cc:               11
 //     cae60:               11
-//     osbyte:              11
-//     c9c80:               10
+//     l0028:               11
 //     l0007:               10
 //     l000d:               10
-//     l0028:               10
 //     l0042:               10
 //     sub_c9779:           10
 //     sub_c9be2:           10
+//     c90d0:                9
 //     l000f:                9
 //     l001f:                9
 //     l05ff:                9
@@ -11034,7 +11095,6 @@ pydis_end
 //     sub_c997d:            9
 //     sub_c9c5a:            9
 //     c828d:                8
-//     c90d0:                8
 //     c9338:                8
 //     c95f1:                8
 //     cae62:                8
@@ -11054,6 +11114,7 @@ pydis_end
 //     ca72b:                7
 //     cbc91:                7
 //     l0014:                7
+//     l0020:                7
 //     sub_c8fa8:            7
 //     sub_c9774:            7
 //     sub_c9783:            7
@@ -11071,7 +11132,6 @@ pydis_end
 //     cbdff:                6
 //     l000e:                6
 //     l0015:                6
-//     l0020:                6
 //     osbget:               6
 //     osbput:               6
 //     osword:               6
@@ -11140,21 +11200,25 @@ pydis_end
 //     cbdd2:                4
 //     cbeeb:                4
 //     l0011:                4
+//     l0016:                4
 //     l001c:                4
 //     l001d:                4
 //     l0046:                4
+//     l00fd:                4
 //     l0100:                4
 //     l0440:                4
 //     l0441:                4
 //     return_2:             4
 //     return_25:            4
-//     return_36:            4
+//     return_37:            4
 //     sub_c8149:            4
+//     sub_c8e5d:            4
 //     sub_c977e:            4
 //     sub_c9781:            4
 //     sub_c9952:            4
 //     sub_c9f07:            4
 //     sub_ca06c:            4
+//     sub_cb2e0:            4
 //     sub_cbc24:            4
 //     sub_cbd5e:            4
 //     sub_cbd77:            4
@@ -11213,9 +11277,10 @@ pydis_end
 //     cb997:                3
 //     cb9ff:                3
 //     cbd3a:                3
-//     l0016:                3
+//     l0008:                3
+//     l0009:                3
+//     l0017:                3
 //     l0023:                3
-//     l00fd:                3
 //     l0401:                3
 //     l046c:                3
 //     l051d:                3
@@ -11226,9 +11291,10 @@ pydis_end
 //     return_1:             3
 //     return_17:            3
 //     return_24:            3
-//     return_32:            3
+//     return_31:            3
 //     return_33:            3
-//     return_37:            3
+//     return_34:            3
+//     return_38:            3
 //     return_4:             3
 //     return_8:             3
 //     sub_c80d8:            3
@@ -11254,9 +11320,9 @@ pydis_end
 //     sub_ca6ff:            3
 //     sub_ca73e:            3
 //     sub_ca9d1:            3
-//     sub_cb2e0:            3
 //     sub_cba6e:            3
 //     sub_cba7a:            3
+//     sub_cbbff:            3
 //     sub_cbd46:            3
 //     c8067:                2
 //     c808f:                2
@@ -11404,7 +11470,6 @@ pydis_end
 //     cbd74:                2
 //     cbd86:                2
 //     cbe51:                2
-//     l0017:                2
 //     l0021:                2
 //     l0022:                2
 //     l0044:                2
@@ -11493,7 +11558,6 @@ pydis_end
 //     sub_cbac8:            2
 //     sub_cbb0f:            2
 //     sub_cbb1b:            2
-//     sub_cbbff:            2
 //     sub_cbc18:            2
 //     sub_cbc36:            2
 //     sub_cbc62:            2
@@ -11947,6 +12011,10 @@ pydis_end
 //     cb235:                1
 //     cb257:                1
 //     cb266:                1
+//     cb276:                1
+//     cb28b:                1
+//     cb2aa:                1
+//     cb2d0:                1
 //     cb34c:                1
 //     cb35c:                1
 //     cb380:                1
@@ -12057,8 +12125,6 @@ pydis_end
 //     cbf1a:                1
 //     cbf54:                1
 //     copy_to_stack_loop:   1
-//     l0008:                1
-//     l0009:                1
 //     l0043:                1
 //     l0045:                1
 //     l0061:                1
@@ -12305,9 +12371,9 @@ pydis_end
 //     return_28:            1
 //     return_3:             1
 //     return_30:            1
-//     return_31:            1
-//     return_34:            1
+//     return_32:            1
 //     return_35:            1
+//     return_36:            1
 //     return_5:             1
 //     return_9:             1
 //     service_handler:      1
@@ -12374,6 +12440,7 @@ pydis_end
 //     sub_cad1c:            1
 //     sub_cad8e:            1
 //     sub_cadc6:            1
+//     sub_cb271:            1
 //     sub_cbaa0:            1
 //     sub_cbb38:            1
 //     sub_cbbeb:            1
@@ -13057,6 +13124,10 @@ pydis_end
 //     cb235
 //     cb257
 //     cb266
+//     cb276
+//     cb28b
+//     cb2aa
+//     cb2d0
 //     cb341
 //     cb34c
 //     cb35c
@@ -13578,6 +13649,7 @@ pydis_end
 //     return_35
 //     return_36
 //     return_37
+//     return_38
 //     return_4
 //     return_5
 //     return_6
@@ -13613,6 +13685,7 @@ pydis_end
 //     sub_c8e1f
 //     sub_c8e41
 //     sub_c8e58
+//     sub_c8e5d
 //     sub_c8e5f
 //     sub_c8e66
 //     sub_c8ea4
@@ -13832,6 +13905,7 @@ pydis_end
 //     sub_cb057
 //     sub_cb1bf
 //     sub_cb269
+//     sub_cb271
 //     sub_cb2e0
 //     sub_cb302
 //     sub_cb326
@@ -13911,12 +13985,12 @@ pydis_end
 
 // Stats:
 //     Total size (Code + Data) = 16384 bytes
-//     Code                     = 14391 bytes (88%)
-//     Data                     = 1993 bytes (12%)
+//     Code                     = 14504 bytes (89%)
+//     Data                     = 1880 bytes (11%)
 //
-//     Number of instructions   = 7238
-//     Number of data bytes     = 780 bytes
+//     Number of instructions   = 7292
+//     Number of data bytes     = 670 bytes
 //     Number of data words     = 234 bytes
-//     Number of string bytes   = 979 bytes
-//     Number of strings        = 184
+//     Number of string bytes   = 976 bytes
+//     Number of strings        = 183
 

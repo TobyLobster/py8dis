@@ -12,8 +12,8 @@
     equs "wo", &0d, "ld"                                              ; 0e07: 77 6f 0d... wo.
 .pydis_end
 
-    assert l0e06 - l0e01 == &05
-    assert pydis_end - l0e07 == &05
+    assert &05 == l0e06 - l0e01
+    assert &05 == pydis_end - l0e07
 
 save pydis_start, pydis_end
 

@@ -906,9 +906,10 @@ oscli   = &fff7
     ; routines
     ; ******************************
 .INIT
-    lda #<ERROR                                    ; 84b5: a9 87       ..
+    ; Set 'brkv' to 'ERRORS'
+    lda #<ERRORS                                   ; 84b5: a9 87       ..
     sta brkv                                       ; 84b7: 8d 02 02    ...            ; Error handling
-    lda #>ERROR                                    ; 84ba: a9 9e       ..
+    lda #>ERRORS                                   ; 84ba: a9 9e       ..
     sta brkv+1                                     ; 84bc: 8d 03 02    ...
     lda #osbyte_read_himem                         ; 84bf: a9 84       ..             ; Find end of memory
     jsr osbyte                                     ; 84c1: 20 f4 ff     ..            ; Read top of user memory (HIMEM)
@@ -8036,551 +8037,551 @@ MOVE_OFFSET = HILISP-LISVAL
 .ROMTOP
 .pydis_end
 
-    assert &80+&0d == &8d
-    assert &80+' ' == &a0
-    assert &80+'#' == &a3
-    assert &80+'L' == &cc
-    assert &80+'y' == &f9
-    assert ' ' == &20
-    assert '!' == &21
-    assert '(' == &28
-    assert ')' == &29
-    assert '-' == &2d
-    assert '.' == &2e
-    assert '0' == &30
-    assert '=' == &3d
-    assert 'C' == &43
-    assert 'F' == &46
-    assert 'G' == &47
-    assert 'I' == &49
-    assert 'L' == &4c
-    assert 'P' == &50
-    assert 'S' == &53
-    assert 'W' == &57
-    assert '[' == &5b
-    assert '^' == &5e
-    assert 'c' == &63
-    assert (>(LISPEN-LISVAL-1))+1 == &21
-    assert <(BACALL+1) == &dd
-    assert <(ELFIN-1) == &c6
-    assert <ACL == &72
-    assert <CTRUE == &11
-    assert <DOSBUF == &00
-    assert <DWARF == &eb
-    assert <ERROR == &87
-    assert <GCTIME == &20
-    assert <GOSTR == &31
-    assert <HILISP == &00
-    assert <HIWARM == &7b
-    assert <INCB == &3e
-    assert <IODCB == &16
-    assert <KBD == &ff
-    assert <LAMBDA == &18
-    assert <LISPST == &00
-    assert <LISTR == &39
-    assert <NAMBUF == &00
-    assert <NIL == &24
-    assert <OSINFO == &38
-    assert <OSWBUF == &00
-    assert <PRINGO+2 == &25
-    assert <PWORD == &1b
-    assert <QUOTE == &2d
-    assert <RELTAB == &00
-    assert <TIMEW == &25
-    assert <TIMZER == &76
-    assert <VECTAB == &00
-    assert <VECTAB+2 == &02
-    assert <WRITGO+2 == &eb
-    assert <ZA == &02
-    assert >(BACALL+1) == &8f
-    assert >(ELFIN-1) == &9f
-    assert >(HILISP-LISVAL) == &57
-    assert >DOSBUF == &07
-    assert >DWARF == &9e
-    assert >ERROR == &9e
-    assert >GCTIME == &04
-    assert >GOSTR == &82
-    assert >HILISP == &d7
-    assert >HIWARM == &d9
-    assert >INCB == &82
-    assert >IODCB == &04
-    assert >KBD == &00
-    assert >LISPST == &80
-    assert >LISTR == &82
-    assert >NAMBUF == &06
-    assert >OSINFO == &04
-    assert >OSWBUF == &06
-    assert >PRINGO == &8b
-    assert >PWORD == &04
-    assert >RELTAB == &b8
-    assert >TIMEW == &04
-    assert >TIMZER == &82
-    assert >VECTAB == &a4
-    assert >WRITGO == &8a
-    assert ACL == &72
-    assert ARGA - 1 == &39
-    assert ARGINF == &90
-    assert ARGOFF == &6b
-    assert AUXL == &76
-    assert BINDER == &32
-    assert COLOFF == &3a
-    assert CPYOFF-ROMHDR == &12
-    assert DOSBUF == &0700
-    assert ERROFF == &5d
-    assert EVOFF == &00
-    assert FROFF == &4c
-    assert GCOFF == &33
-    assert HLPOFF == &8e
-    assert MOVE_OFFSET + $8002 == &d702
-    assert MOVE_OFFSET + $8005 == &d705
-    assert MOVE_OFFSET + $8050 == &d750
-    assert MOVE_OFFSET + $807b == &d77b
-    assert MOVE_OFFSET + $80a3 == &d7a3
-    assert MOVE_OFFSET + $80a9 == &d7a9
-    assert MOVE_OFFSET + $80b5 == &d7b5
-    assert MOVE_OFFSET + $80b8 == &d7b8
-    assert MOVE_OFFSET + $80c5 == &d7c5
-    assert MOVE_OFFSET + $80fc == &d7fc
-    assert MOVE_OFFSET + $8132 == &d832
-    assert MOVE_OFFSET + $8149 == &d849
-    assert MOVE_OFFSET + $8284 == &d984
-    assert MOVE_OFFSET + $8291 == &d991
-    assert MOVE_OFFSET + $8294 == &d994
-    assert MOVE_OFFSET + $829e == &d99e
-    assert MOVE_OFFSET + $82b3 == &d9b3
-    assert MOVE_OFFSET + $82bb == &d9bb
-    assert MOVE_OFFSET + $82be == &d9be
-    assert MOVE_OFFSET + $82c2 == &d9c2
-    assert MOVE_OFFSET + $82d8 == &d9d8
-    assert MOVE_OFFSET + $82dd == &d9dd
-    assert MOVE_OFFSET + $82e0 == &d9e0
-    assert MOVE_OFFSET + $82e3 == &d9e3
-    assert MOVE_OFFSET + $82e8 == &d9e8
-    assert MOVE_OFFSET + $82eb == &d9eb
-    assert MOVE_OFFSET + $82ee == &d9ee
-    assert MOVE_OFFSET + $83af == &daaf
-    assert MOVE_OFFSET + $8402 == &db02
-    assert MOVE_OFFSET + $8475 == &db75
-    assert MOVE_OFFSET + $84bb == &dbbb
-    assert MOVE_OFFSET + $84e3 == &dbe3
-    assert MOVE_OFFSET + $84e6 == &dbe6
-    assert MOVE_OFFSET + $84fb == &dbfb
-    assert MOVE_OFFSET + $8502 == &dc02
-    assert MOVE_OFFSET + $8508 == &dc08
-    assert MOVE_OFFSET + $8538 == &dc38
-    assert MOVE_OFFSET + $853b == &dc3b
-    assert MOVE_OFFSET + $8571 == &dc71
-    assert MOVE_OFFSET + $858a == &dc8a
-    assert MOVE_OFFSET + $858d == &dc8d
-    assert MOVE_OFFSET + $8590 == &dc90
-    assert MOVE_OFFSET + $8593 == &dc93
-    assert MOVE_OFFSET + $8596 == &dc96
-    assert MOVE_OFFSET + $85c9 == &dcc9
-    assert MOVE_OFFSET + $85e5 == &dce5
-    assert MOVE_OFFSET + $8636 == &dd36
-    assert MOVE_OFFSET + $869a == &dd9a
-    assert MOVE_OFFSET + $86b5 == &ddb5
-    assert MOVE_OFFSET + $86b8 == &ddb8
-    assert MOVE_OFFSET + $86c1 == &ddc1
-    assert MOVE_OFFSET + $8710 == &de10
-    assert MOVE_OFFSET + $8713 == &de13
-    assert MOVE_OFFSET + $872d == &de2d
-    assert MOVE_OFFSET + $873a == &de3a
-    assert MOVE_OFFSET + $8755 == &de55
-    assert MOVE_OFFSET + $8762 == &de62
-    assert MOVE_OFFSET + $876b == &de6b
-    assert MOVE_OFFSET + $879c == &de9c
-    assert MOVE_OFFSET + $87d5 == &ded5
-    assert MOVE_OFFSET + $87d8 == &ded8
-    assert MOVE_OFFSET + $87f4 == &def4
-    assert MOVE_OFFSET + $87f7 == &def7
-    assert MOVE_OFFSET + $880d == &df0d
-    assert MOVE_OFFSET + $8822 == &df22
-    assert MOVE_OFFSET + $8825 == &df25
-    assert MOVE_OFFSET + $8834 == &df34
-    assert MOVE_OFFSET + $8847 == &df47
-    assert MOVE_OFFSET + $884e == &df4e
-    assert MOVE_OFFSET + $8857 == &df57
-    assert MOVE_OFFSET + $885c == &df5c
-    assert MOVE_OFFSET + $8861 == &df61
-    assert MOVE_OFFSET + $8866 == &df66
-    assert MOVE_OFFSET + $8871 == &df71
-    assert MOVE_OFFSET + $887c == &df7c
-    assert MOVE_OFFSET + $8883 == &df83
-    assert MOVE_OFFSET + $8893 == &df93
-    assert MOVE_OFFSET + $8896 == &df96
-    assert MOVE_OFFSET + $88c0 == &dfc0
-    assert MOVE_OFFSET + $88c7 == &dfc7
-    assert MOVE_OFFSET + $88ca == &dfca
-    assert MOVE_OFFSET + $88d8 == &dfd8
-    assert MOVE_OFFSET + $88db == &dfdb
-    assert MOVE_OFFSET + $88de == &dfde
-    assert MOVE_OFFSET + $88e1 == &dfe1
-    assert MOVE_OFFSET + $88e4 == &dfe4
-    assert MOVE_OFFSET + $88e7 == &dfe7
-    assert MOVE_OFFSET + $88f4 == &dff4
-    assert MOVE_OFFSET + $8913 == &e013
-    assert MOVE_OFFSET + $894d == &e04d
-    assert MOVE_OFFSET + $89b8 == &e0b8
-    assert MOVE_OFFSET + $89c5 == &e0c5
-    assert MOVE_OFFSET + $89f1 == &e0f1
-    assert MOVE_OFFSET + $8a4d == &e14d
-    assert MOVE_OFFSET + $8a54 == &e154
-    assert MOVE_OFFSET + $8a9e == &e19e
-    assert MOVE_OFFSET + $8aa8 == &e1a8
-    assert MOVE_OFFSET + $8aad == &e1ad
-    assert MOVE_OFFSET + $8abb == &e1bb
-    assert MOVE_OFFSET + $8ad9 == &e1d9
-    assert MOVE_OFFSET + $8ade == &e1de
-    assert MOVE_OFFSET + $8aeb == &e1eb
-    assert MOVE_OFFSET + $8af0 == &e1f0
-    assert MOVE_OFFSET + $8af4 == &e1f4
-    assert MOVE_OFFSET + $8b00 == &e200
-    assert MOVE_OFFSET + $8b03 == &e203
-    assert MOVE_OFFSET + $8b13 == &e213
-    assert MOVE_OFFSET + $8b18 == &e218
-    assert MOVE_OFFSET + $8b25 == &e225
-    assert MOVE_OFFSET + $8b28 == &e228
-    assert MOVE_OFFSET + $8b49 == &e249
-    assert MOVE_OFFSET + $8b58 == &e258
-    assert MOVE_OFFSET + $8b6e == &e26e
-    assert MOVE_OFFSET + $8b88 == &e288
-    assert MOVE_OFFSET + $8b93 == &e293
-    assert MOVE_OFFSET + $8b9e == &e29e
-    assert MOVE_OFFSET + $8ba1 == &e2a1
-    assert MOVE_OFFSET + $8bb0 == &e2b0
-    assert MOVE_OFFSET + $8bb3 == &e2b3
-    assert MOVE_OFFSET + $8bb6 == &e2b6
-    assert MOVE_OFFSET + $8bcd == &e2cd
-    assert MOVE_OFFSET + $8bd0 == &e2d0
-    assert MOVE_OFFSET + $8bd5 == &e2d5
-    assert MOVE_OFFSET + $8bd8 == &e2d8
-    assert MOVE_OFFSET + $8bff == &e2ff
-    assert MOVE_OFFSET + $8c04 == &e304
-    assert MOVE_OFFSET + $8c12 == &e312
-    assert MOVE_OFFSET + $8c15 == &e315
-    assert MOVE_OFFSET + $8c23 == &e323
-    assert MOVE_OFFSET + $8c26 == &e326
-    assert MOVE_OFFSET + $8c2b == &e32b
-    assert MOVE_OFFSET + $8c33 == &e333
-    assert MOVE_OFFSET + $8c37 == &e337
-    assert MOVE_OFFSET + $8c3a == &e33a
-    assert MOVE_OFFSET + $8c4f == &e34f
-    assert MOVE_OFFSET + $8c56 == &e356
-    assert MOVE_OFFSET + $8c6c == &e36c
-    assert MOVE_OFFSET + $8c87 == &e387
-    assert MOVE_OFFSET + $8cab == &e3ab
-    assert MOVE_OFFSET + $8ccc == &e3cc
-    assert MOVE_OFFSET + $8ccf == &e3cf
-    assert MOVE_OFFSET + $8cd2 == &e3d2
-    assert MOVE_OFFSET + $8cdf == &e3df
-    assert MOVE_OFFSET + $8cf4 == &e3f4
-    assert MOVE_OFFSET + $8cf7 == &e3f7
-    assert MOVE_OFFSET + $8d16 == &e416
-    assert MOVE_OFFSET + $8d27 == &e427
-    assert MOVE_OFFSET + $8d2e == &e42e
-    assert MOVE_OFFSET + $8d31 == &e431
-    assert MOVE_OFFSET + $8d3a == &e43a
-    assert MOVE_OFFSET + $8d43 == &e443
-    assert MOVE_OFFSET + $8d4c == &e44c
-    assert MOVE_OFFSET + $8d4f == &e44f
-    assert MOVE_OFFSET + $8d52 == &e452
-    assert MOVE_OFFSET + $8daf == &e4af
-    assert MOVE_OFFSET + $8dbe == &e4be
-    assert MOVE_OFFSET + $8dc3 == &e4c3
-    assert MOVE_OFFSET + $8dc6 == &e4c6
-    assert MOVE_OFFSET + $8dde == &e4de
-    assert MOVE_OFFSET + $8de1 == &e4e1
-    assert MOVE_OFFSET + $8de8 == &e4e8
-    assert MOVE_OFFSET + $8def == &e4ef
-    assert MOVE_OFFSET + $8df2 == &e4f2
-    assert MOVE_OFFSET + $8df9 == &e4f9
-    assert MOVE_OFFSET + $8e12 == &e512
-    assert MOVE_OFFSET + $8e1d == &e51d
-    assert MOVE_OFFSET + $8e20 == &e520
-    assert MOVE_OFFSET + $8e33 == &e533
-    assert MOVE_OFFSET + $8e36 == &e536
-    assert MOVE_OFFSET + $8e39 == &e539
-    assert MOVE_OFFSET + $8e3c == &e53c
-    assert MOVE_OFFSET + $8e49 == &e549
-    assert MOVE_OFFSET + $8e4c == &e54c
-    assert MOVE_OFFSET + $8e5a == &e55a
-    assert MOVE_OFFSET + $8e7a == &e57a
-    assert MOVE_OFFSET + $8ea2 == &e5a2
-    assert MOVE_OFFSET + $8ea5 == &e5a5
-    assert MOVE_OFFSET + $8ebf == &e5bf
-    assert MOVE_OFFSET + $8ecc == &e5cc
-    assert MOVE_OFFSET + $8ee7 == &e5e7
-    assert MOVE_OFFSET + $8eea == &e5ea
-    assert MOVE_OFFSET + $8f09 == &e609
-    assert MOVE_OFFSET + $8f1e == &e61e
-    assert MOVE_OFFSET + $8f21 == &e621
-    assert MOVE_OFFSET + $8f5e == &e65e
-    assert MOVE_OFFSET + $8f73 == &e673
-    assert MOVE_OFFSET + $8f76 == &e676
-    assert MOVE_OFFSET + $8f79 == &e679
-    assert MOVE_OFFSET + $8f7c == &e67c
-    assert MOVE_OFFSET + $8f7f == &e67f
-    assert MOVE_OFFSET + $8f8b == &e68b
-    assert MOVE_OFFSET + $8fbc == &e6bc
-    assert MOVE_OFFSET + $8fcb == &e6cb
-    assert MOVE_OFFSET + $8fcd == &e6cd
-    assert MOVE_OFFSET + $8fd9 == &e6d9
-    assert MOVE_OFFSET + $8fe6 == &e6e6
-    assert MOVE_OFFSET + $8fe9 == &e6e9
-    assert MOVE_OFFSET + $8ff8 == &e6f8
-    assert MOVE_OFFSET + $8ffb == &e6fb
-    assert MOVE_OFFSET + $9006 == &e706
-    assert MOVE_OFFSET + $9013 == &e713
-    assert MOVE_OFFSET + $9037 == &e737
-    assert MOVE_OFFSET + $903c == &e73c
-    assert MOVE_OFFSET + $9054 == &e754
-    assert MOVE_OFFSET + $9074 == &e774
-    assert MOVE_OFFSET + $9097 == &e797
-    assert MOVE_OFFSET + $909a == &e79a
-    assert MOVE_OFFSET + $90a5 == &e7a5
-    assert MOVE_OFFSET + $90bd == &e7bd
-    assert MOVE_OFFSET + $9109 == &e809
-    assert MOVE_OFFSET + $910e == &e80e
-    assert MOVE_OFFSET + $9119 == &e819
-    assert MOVE_OFFSET + $9120 == &e820
-    assert MOVE_OFFSET + $9123 == &e823
-    assert MOVE_OFFSET + $912c == &e82c
-    assert MOVE_OFFSET + $913c == &e83c
-    assert MOVE_OFFSET + $9176 == &e876
-    assert MOVE_OFFSET + $9179 == &e879
-    assert MOVE_OFFSET + $9184 == &e884
-    assert MOVE_OFFSET + $918d == &e88d
-    assert MOVE_OFFSET + $91a7 == &e8a7
-    assert MOVE_OFFSET + $91b0 == &e8b0
-    assert MOVE_OFFSET + $91c0 == &e8c0
-    assert MOVE_OFFSET + $91c3 == &e8c3
-    assert MOVE_OFFSET + $91c6 == &e8c6
-    assert MOVE_OFFSET + $91db == &e8db
-    assert MOVE_OFFSET + $91de == &e8de
-    assert MOVE_OFFSET + $91f1 == &e8f1
-    assert MOVE_OFFSET + $91f4 == &e8f4
-    assert MOVE_OFFSET + $91f7 == &e8f7
-    assert MOVE_OFFSET + $91ff == &e8ff
-    assert MOVE_OFFSET + $9202 == &e902
-    assert MOVE_OFFSET + $922b == &e92b
-    assert MOVE_OFFSET + $922e == &e92e
-    assert MOVE_OFFSET + $925c == &e95c
-    assert MOVE_OFFSET + $925f == &e95f
-    assert MOVE_OFFSET + $9288 == &e988
-    assert MOVE_OFFSET + $929b == &e99b
-    assert MOVE_OFFSET + $92a6 == &e9a6
-    assert MOVE_OFFSET + $92b4 == &e9b4
-    assert MOVE_OFFSET + $92b7 == &e9b7
-    assert MOVE_OFFSET + $92d3 == &e9d3
-    assert MOVE_OFFSET + $92df == &e9df
-    assert MOVE_OFFSET + $92e2 == &e9e2
-    assert MOVE_OFFSET + $92ee == &e9ee
-    assert MOVE_OFFSET + $930a == &ea0a
-    assert MOVE_OFFSET + $930d == &ea0d
-    assert MOVE_OFFSET + $9336 == &ea36
-    assert MOVE_OFFSET + $934f == &ea4f
-    assert MOVE_OFFSET + $9354 == &ea54
-    assert MOVE_OFFSET + $93be == &eabe
-    assert MOVE_OFFSET + $93d5 == &ead5
-    assert MOVE_OFFSET + $93d8 == &ead8
-    assert MOVE_OFFSET + $93db == &eadb
-    assert MOVE_OFFSET + $93eb == &eaeb
-    assert MOVE_OFFSET + $93ee == &eaee
-    assert MOVE_OFFSET + $93f1 == &eaf1
-    assert MOVE_OFFSET + $9403 == &eb03
-    assert MOVE_OFFSET + $9406 == &eb06
-    assert MOVE_OFFSET + $9411 == &eb11
-    assert MOVE_OFFSET + $9449 == &eb49
-    assert MOVE_OFFSET + $944c == &eb4c
-    assert MOVE_OFFSET + $944f == &eb4f
-    assert MOVE_OFFSET + $9478 == &eb78
-    assert MOVE_OFFSET + $9486 == &eb86
-    assert MOVE_OFFSET + $94b5 == &ebb5
-    assert MOVE_OFFSET + $94b8 == &ebb8
-    assert MOVE_OFFSET + $94bb == &ebbb
-    assert MOVE_OFFSET + $9538 == &ec38
-    assert MOVE_OFFSET + $9574 == &ec74
-    assert MOVE_OFFSET + $9577 == &ec77
-    assert MOVE_OFFSET + $957a == &ec7a
-    assert MOVE_OFFSET + $9594 == &ec94
-    assert MOVE_OFFSET + $9597 == &ec97
-    assert MOVE_OFFSET + $959c == &ec9c
-    assert MOVE_OFFSET + $959f == &ec9f
-    assert MOVE_OFFSET + $95a4 == &eca4
-    assert MOVE_OFFSET + $95a7 == &eca7
-    assert MOVE_OFFSET + $95ac == &ecac
-    assert MOVE_OFFSET + $95be == &ecbe
-    assert MOVE_OFFSET + $95c1 == &ecc1
-    assert MOVE_OFFSET + $95f6 == &ecf6
-    assert MOVE_OFFSET + $9604 == &ed04
-    assert MOVE_OFFSET + $960d == &ed0d
-    assert MOVE_OFFSET + $9610 == &ed10
-    assert MOVE_OFFSET + $9613 == &ed13
-    assert MOVE_OFFSET + $9624 == &ed24
-    assert MOVE_OFFSET + $962b == &ed2b
-    assert MOVE_OFFSET + $962e == &ed2e
-    assert MOVE_OFFSET + $9631 == &ed31
-    assert MOVE_OFFSET + $9634 == &ed34
-    assert MOVE_OFFSET + $9644 == &ed44
-    assert MOVE_OFFSET + $9647 == &ed47
-    assert MOVE_OFFSET + $966e == &ed6e
-    assert MOVE_OFFSET + $96ac == &edac
-    assert MOVE_OFFSET + $96b9 == &edb9
-    assert MOVE_OFFSET + $96d4 == &edd4
-    assert MOVE_OFFSET + $96e7 == &ede7
-    assert MOVE_OFFSET + $9704 == &ee04
-    assert MOVE_OFFSET + $9720 == &ee20
-    assert MOVE_OFFSET + $9751 == &ee51
-    assert MOVE_OFFSET + $9754 == &ee54
-    assert MOVE_OFFSET + $975f == &ee5f
-    assert MOVE_OFFSET + $9762 == &ee62
-    assert MOVE_OFFSET + $976f == &ee6f
-    assert MOVE_OFFSET + $9772 == &ee72
-    assert MOVE_OFFSET + $9775 == &ee75
-    assert MOVE_OFFSET + $978a == &ee8a
-    assert MOVE_OFFSET + $97d4 == &eed4
-    assert MOVE_OFFSET + $97f2 == &eef2
-    assert MOVE_OFFSET + $97f5 == &eef5
-    assert MOVE_OFFSET + $980e == &ef0e
-    assert MOVE_OFFSET + $9812 == &ef12
-    assert MOVE_OFFSET + $9816 == &ef16
-    assert MOVE_OFFSET + $981a == &ef1a
-    assert MOVE_OFFSET + $981d == &ef1d
-    assert MOVE_OFFSET + $9822 == &ef22
-    assert MOVE_OFFSET + $9825 == &ef25
-    assert MOVE_OFFSET + $9849 == &ef49
-    assert MOVE_OFFSET + $9860 == &ef60
-    assert MOVE_OFFSET + $988a == &ef8a
-    assert MOVE_OFFSET + $988d == &ef8d
-    assert MOVE_OFFSET + $98c1 == &efc1
-    assert MOVE_OFFSET + $98c4 == &efc4
-    assert MOVE_OFFSET + $98c7 == &efc7
-    assert MOVE_OFFSET + $98cb == &efcb
-    assert MOVE_OFFSET + $98d4 == &efd4
-    assert MOVE_OFFSET + $98f0 == &eff0
-    assert MOVE_OFFSET + $98f3 == &eff3
-    assert MOVE_OFFSET + $98fe == &effe
-    assert MOVE_OFFSET + $9910 == &f010
-    assert MOVE_OFFSET + $9913 == &f013
-    assert MOVE_OFFSET + $992f == &f02f
-    assert MOVE_OFFSET + $993c == &f03c
-    assert MOVE_OFFSET + $9946 == &f046
-    assert MOVE_OFFSET + $9953 == &f053
-    assert MOVE_OFFSET + $9959 == &f059
-    assert MOVE_OFFSET + $9962 == &f062
-    assert MOVE_OFFSET + $9965 == &f065
-    assert MOVE_OFFSET + $9968 == &f068
-    assert MOVE_OFFSET + $998b == &f08b
-    assert MOVE_OFFSET + $999e == &f09e
-    assert MOVE_OFFSET + $99a1 == &f0a1
-    assert MOVE_OFFSET + $99a4 == &f0a4
-    assert MOVE_OFFSET + $99c1 == &f0c1
-    assert MOVE_OFFSET + $99c4 == &f0c4
-    assert MOVE_OFFSET + $99cd == &f0cd
-    assert MOVE_OFFSET + $99ea == &f0ea
-    assert MOVE_OFFSET + $99f4 == &f0f4
-    assert MOVE_OFFSET + $9a06 == &f106
-    assert MOVE_OFFSET + $9a09 == &f109
-    assert MOVE_OFFSET + $9a2c == &f12c
-    assert MOVE_OFFSET + $9a45 == &f145
-    assert MOVE_OFFSET + $9a48 == &f148
-    assert MOVE_OFFSET + $9a4b == &f14b
-    assert MOVE_OFFSET + $9a5d == &f15d
-    assert MOVE_OFFSET + $9a60 == &f160
-    assert MOVE_OFFSET + $9a63 == &f163
-    assert MOVE_OFFSET + $9a8d == &f18d
-    assert MOVE_OFFSET + $9a90 == &f190
-    assert MOVE_OFFSET + $9a93 == &f193
-    assert MOVE_OFFSET + $9abd == &f1bd
-    assert MOVE_OFFSET + $9aca == &f1ca
-    assert MOVE_OFFSET + $9ad5 == &f1d5
-    assert MOVE_OFFSET + $9b3a == &f23a
-    assert MOVE_OFFSET + $9b45 == &f245
-    assert MOVE_OFFSET + $9b53 == &f253
-    assert MOVE_OFFSET + $9b71 == &f271
-    assert MOVE_OFFSET + $9b7c == &f27c
-    assert MOVE_OFFSET + $9b82 == &f282
-    assert MOVE_OFFSET + $9b97 == &f297
-    assert MOVE_OFFSET + $9bac == &f2ac
-    assert MOVE_OFFSET + $9bc2 == &f2c2
-    assert MOVE_OFFSET + $9bd5 == &f2d5
-    assert MOVE_OFFSET + $9bda == &f2da
-    assert MOVE_OFFSET + $9bf0 == &f2f0
-    assert MOVE_OFFSET + $9bf3 == &f2f3
-    assert MOVE_OFFSET + $9c05 == &f305
-    assert MOVE_OFFSET + $9c15 == &f315
-    assert MOVE_OFFSET + $9c19 == &f319
-    assert MOVE_OFFSET + $9c21 == &f321
-    assert MOVE_OFFSET + $9c2f == &f32f
-    assert MOVE_OFFSET + $9c34 == &f334
-    assert MOVE_OFFSET + $9c52 == &f352
-    assert MOVE_OFFSET + $9ccb == &f3cb
-    assert MOVE_OFFSET + $9ceb == &f3eb
-    assert MOVE_OFFSET + $9cf4 == &f3f4
-    assert MOVE_OFFSET + $9cf7 == &f3f7
-    assert MOVE_OFFSET + $9d0f == &f40f
-    assert MOVE_OFFSET + $9d12 == &f412
-    assert MOVE_OFFSET + $9d1f == &f41f
-    assert MOVE_OFFSET + $9d31 == &f431
-    assert MOVE_OFFSET + $9d74 == &f474
-    assert MOVE_OFFSET + $9d81 == &f481
-    assert MOVE_OFFSET + $9da4 == &f4a4
-    assert MOVE_OFFSET + $9da9 == &f4a9
-    assert MOVE_OFFSET + $9dac == &f4ac
-    assert MOVE_OFFSET + $9db1 == &f4b1
-    assert MOVE_OFFSET + $9dc3 == &f4c3
-    assert MOVE_OFFSET + $9dc8 == &f4c8
-    assert MOVE_OFFSET + $9e81 == &f581
-    assert MOVE_OFFSET + $9eaa == &f5aa
-    assert MOVE_OFFSET + $9ed2 == &f5d2
-    assert MOVE_OFFSET + $9ed9 == &f5d9
-    assert MOVE_OFFSET + $9ee2 == &f5e2
-    assert MOVE_OFFSET + $9eeb == &f5eb
-    assert MOVE_OFFSET + $9efd == &f5fd
-    assert MOVE_OFFSET + $9f1b == &f61b
-    assert MOVE_OFFSET + $9f3b == &f63b
-    assert MOVE_OFFSET + $9f42 == &f642
-    assert MOVE_OFFSET + $9f66 == &f666
-    assert MOVE_OFFSET + $9f69 == &f669
-    assert MOVE_OFFSET + $9f6e == &f66e
-    assert MOVE_OFFSET + $9f73 == &f673
-    assert MOVE_OFFSET + $9f82 == &f682
-    assert MOVE_OFFSET + $9f91 == &f691
-    assert MOVE_OFFSET + $9f94 == &f694
-    assert MOVE_OFFSET + $9fa4 == &f6a4
-    assert MOVE_OFFSET + $9fab == &f6ab
-    assert MOVE_OFFSET + $9fb5 == &f6b5
-    assert MOVE_OFFSET + $9fbf == &f6bf
-    assert MOVE_OFFSET + $9fc2 == &f6c2
-    assert MOVE_OFFSET + $9fc6 == &f6c6
-    assert MOVE_OFFSET + $9fc9 == &f6c9
-    assert MOVE_OFFSET + $9fd7 == &f6d7
-    assert MOVE_OFFSET + $9fda == &f6da
-    assert MOVE_OFFSET + $9fdd == &f6dd
-    assert MOVE_OFFSET + $9fe0 == &f6e0
-    assert MOVE_OFFSET + $9fe3 == &f6e3
-    assert MOVE_OFFSET + $a004 == &f704
-    assert MOVE_OFFSET + $a02d == &f72d
-    assert NILOFF == &19
-    assert RAMBS == &7c
-    assert RAMBS+1 == &7d
-    assert RELBS == &7a
-    assert RELBS+1 == &7b
-    assert RELOC == &7c
-    assert RELOC+1 == &7d
-    assert ROMBS == &7a
-    assert ROMBS+1 == &7b
-    assert SUBOFF == &58
-    assert TVS == &30
-    assert TVS+1 == &31
-    assert TVS+10 == &3a
-    assert TVS-1 == &2f
-    assert TVSEXT - 1 == &32
-    assert VALOFF == &0d
-    assert WRMOFF == &72
-    assert WSA - 1 == &33
-    assert XTNDL == &74
+    assert &8d == &80+&0d
+    assert &a0 == &80+' '
+    assert &a3 == &80+'#'
+    assert &cc == &80+'L'
+    assert &f9 == &80+'y'
+    assert &20 == ' '
+    assert &21 == '!'
+    assert &28 == '('
+    assert &29 == ')'
+    assert &2d == '-'
+    assert &2e == '.'
+    assert &30 == '0'
+    assert &3d == '='
+    assert &43 == 'C'
+    assert &46 == 'F'
+    assert &47 == 'G'
+    assert &49 == 'I'
+    assert &4c == 'L'
+    assert &50 == 'P'
+    assert &53 == 'S'
+    assert &57 == 'W'
+    assert &5b == '['
+    assert &5e == '^'
+    assert &63 == 'c'
+    assert &21 == (>(LISPEN-LISVAL-1))+1
+    assert &dd == <(BACALL+1)
+    assert &c6 == <(ELFIN-1)
+    assert &72 == <ACL
+    assert &11 == <CTRUE
+    assert &00 == <DOSBUF
+    assert &eb == <DWARF
+    assert &87 == <ERRORS
+    assert &20 == <GCTIME
+    assert &31 == <GOSTR
+    assert &00 == <HILISP
+    assert &7b == <HIWARM
+    assert &3e == <INCB
+    assert &16 == <IODCB
+    assert &ff == <KBD
+    assert &18 == <LAMBDA
+    assert &00 == <LISPST
+    assert &39 == <LISTR
+    assert &00 == <NAMBUF
+    assert &24 == <NIL
+    assert &38 == <OSINFO
+    assert &00 == <OSWBUF
+    assert &25 == <PRINGO+2
+    assert &1b == <PWORD
+    assert &2d == <QUOTE
+    assert &00 == <RELTAB
+    assert &25 == <TIMEW
+    assert &76 == <TIMZER
+    assert &00 == <VECTAB
+    assert &02 == <VECTAB+2
+    assert &eb == <WRITGO+2
+    assert &02 == <ZA
+    assert &8f == >(BACALL+1)
+    assert &9f == >(ELFIN-1)
+    assert &57 == >(HILISP-LISVAL)
+    assert &07 == >DOSBUF
+    assert &9e == >DWARF
+    assert &9e == >ERRORS
+    assert &04 == >GCTIME
+    assert &82 == >GOSTR
+    assert &d7 == >HILISP
+    assert &d9 == >HIWARM
+    assert &82 == >INCB
+    assert &04 == >IODCB
+    assert &00 == >KBD
+    assert &80 == >LISPST
+    assert &82 == >LISTR
+    assert &06 == >NAMBUF
+    assert &04 == >OSINFO
+    assert &06 == >OSWBUF
+    assert &8b == >PRINGO
+    assert &04 == >PWORD
+    assert &b8 == >RELTAB
+    assert &04 == >TIMEW
+    assert &82 == >TIMZER
+    assert &a4 == >VECTAB
+    assert &8a == >WRITGO
+    assert &72 == ACL
+    assert &39 == ARGA - 1
+    assert &90 == ARGINF
+    assert &6b == ARGOFF
+    assert &76 == AUXL
+    assert &32 == BINDER
+    assert &3a == COLOFF
+    assert &12 == CPYOFF-ROMHDR
+    assert &0700 == DOSBUF
+    assert &5d == ERROFF
+    assert &00 == EVOFF
+    assert &4c == FROFF
+    assert &33 == GCOFF
+    assert &8e == HLPOFF
+    assert &d702 == MOVE_OFFSET + $8002
+    assert &d705 == MOVE_OFFSET + $8005
+    assert &d750 == MOVE_OFFSET + $8050
+    assert &d77b == MOVE_OFFSET + $807b
+    assert &d7a3 == MOVE_OFFSET + $80a3
+    assert &d7a9 == MOVE_OFFSET + $80a9
+    assert &d7b5 == MOVE_OFFSET + $80b5
+    assert &d7b8 == MOVE_OFFSET + $80b8
+    assert &d7c5 == MOVE_OFFSET + $80c5
+    assert &d7fc == MOVE_OFFSET + $80fc
+    assert &d832 == MOVE_OFFSET + $8132
+    assert &d849 == MOVE_OFFSET + $8149
+    assert &d984 == MOVE_OFFSET + $8284
+    assert &d991 == MOVE_OFFSET + $8291
+    assert &d994 == MOVE_OFFSET + $8294
+    assert &d99e == MOVE_OFFSET + $829e
+    assert &d9b3 == MOVE_OFFSET + $82b3
+    assert &d9bb == MOVE_OFFSET + $82bb
+    assert &d9be == MOVE_OFFSET + $82be
+    assert &d9c2 == MOVE_OFFSET + $82c2
+    assert &d9d8 == MOVE_OFFSET + $82d8
+    assert &d9dd == MOVE_OFFSET + $82dd
+    assert &d9e0 == MOVE_OFFSET + $82e0
+    assert &d9e3 == MOVE_OFFSET + $82e3
+    assert &d9e8 == MOVE_OFFSET + $82e8
+    assert &d9eb == MOVE_OFFSET + $82eb
+    assert &d9ee == MOVE_OFFSET + $82ee
+    assert &daaf == MOVE_OFFSET + $83af
+    assert &db02 == MOVE_OFFSET + $8402
+    assert &db75 == MOVE_OFFSET + $8475
+    assert &dbbb == MOVE_OFFSET + $84bb
+    assert &dbe3 == MOVE_OFFSET + $84e3
+    assert &dbe6 == MOVE_OFFSET + $84e6
+    assert &dbfb == MOVE_OFFSET + $84fb
+    assert &dc02 == MOVE_OFFSET + $8502
+    assert &dc08 == MOVE_OFFSET + $8508
+    assert &dc38 == MOVE_OFFSET + $8538
+    assert &dc3b == MOVE_OFFSET + $853b
+    assert &dc71 == MOVE_OFFSET + $8571
+    assert &dc8a == MOVE_OFFSET + $858a
+    assert &dc8d == MOVE_OFFSET + $858d
+    assert &dc90 == MOVE_OFFSET + $8590
+    assert &dc93 == MOVE_OFFSET + $8593
+    assert &dc96 == MOVE_OFFSET + $8596
+    assert &dcc9 == MOVE_OFFSET + $85c9
+    assert &dce5 == MOVE_OFFSET + $85e5
+    assert &dd36 == MOVE_OFFSET + $8636
+    assert &dd9a == MOVE_OFFSET + $869a
+    assert &ddb5 == MOVE_OFFSET + $86b5
+    assert &ddb8 == MOVE_OFFSET + $86b8
+    assert &ddc1 == MOVE_OFFSET + $86c1
+    assert &de10 == MOVE_OFFSET + $8710
+    assert &de13 == MOVE_OFFSET + $8713
+    assert &de2d == MOVE_OFFSET + $872d
+    assert &de3a == MOVE_OFFSET + $873a
+    assert &de55 == MOVE_OFFSET + $8755
+    assert &de62 == MOVE_OFFSET + $8762
+    assert &de6b == MOVE_OFFSET + $876b
+    assert &de9c == MOVE_OFFSET + $879c
+    assert &ded5 == MOVE_OFFSET + $87d5
+    assert &ded8 == MOVE_OFFSET + $87d8
+    assert &def4 == MOVE_OFFSET + $87f4
+    assert &def7 == MOVE_OFFSET + $87f7
+    assert &df0d == MOVE_OFFSET + $880d
+    assert &df22 == MOVE_OFFSET + $8822
+    assert &df25 == MOVE_OFFSET + $8825
+    assert &df34 == MOVE_OFFSET + $8834
+    assert &df47 == MOVE_OFFSET + $8847
+    assert &df4e == MOVE_OFFSET + $884e
+    assert &df57 == MOVE_OFFSET + $8857
+    assert &df5c == MOVE_OFFSET + $885c
+    assert &df61 == MOVE_OFFSET + $8861
+    assert &df66 == MOVE_OFFSET + $8866
+    assert &df71 == MOVE_OFFSET + $8871
+    assert &df7c == MOVE_OFFSET + $887c
+    assert &df83 == MOVE_OFFSET + $8883
+    assert &df93 == MOVE_OFFSET + $8893
+    assert &df96 == MOVE_OFFSET + $8896
+    assert &dfc0 == MOVE_OFFSET + $88c0
+    assert &dfc7 == MOVE_OFFSET + $88c7
+    assert &dfca == MOVE_OFFSET + $88ca
+    assert &dfd8 == MOVE_OFFSET + $88d8
+    assert &dfdb == MOVE_OFFSET + $88db
+    assert &dfde == MOVE_OFFSET + $88de
+    assert &dfe1 == MOVE_OFFSET + $88e1
+    assert &dfe4 == MOVE_OFFSET + $88e4
+    assert &dfe7 == MOVE_OFFSET + $88e7
+    assert &dff4 == MOVE_OFFSET + $88f4
+    assert &e013 == MOVE_OFFSET + $8913
+    assert &e04d == MOVE_OFFSET + $894d
+    assert &e0b8 == MOVE_OFFSET + $89b8
+    assert &e0c5 == MOVE_OFFSET + $89c5
+    assert &e0f1 == MOVE_OFFSET + $89f1
+    assert &e14d == MOVE_OFFSET + $8a4d
+    assert &e154 == MOVE_OFFSET + $8a54
+    assert &e19e == MOVE_OFFSET + $8a9e
+    assert &e1a8 == MOVE_OFFSET + $8aa8
+    assert &e1ad == MOVE_OFFSET + $8aad
+    assert &e1bb == MOVE_OFFSET + $8abb
+    assert &e1d9 == MOVE_OFFSET + $8ad9
+    assert &e1de == MOVE_OFFSET + $8ade
+    assert &e1eb == MOVE_OFFSET + $8aeb
+    assert &e1f0 == MOVE_OFFSET + $8af0
+    assert &e1f4 == MOVE_OFFSET + $8af4
+    assert &e200 == MOVE_OFFSET + $8b00
+    assert &e203 == MOVE_OFFSET + $8b03
+    assert &e213 == MOVE_OFFSET + $8b13
+    assert &e218 == MOVE_OFFSET + $8b18
+    assert &e225 == MOVE_OFFSET + $8b25
+    assert &e228 == MOVE_OFFSET + $8b28
+    assert &e249 == MOVE_OFFSET + $8b49
+    assert &e258 == MOVE_OFFSET + $8b58
+    assert &e26e == MOVE_OFFSET + $8b6e
+    assert &e288 == MOVE_OFFSET + $8b88
+    assert &e293 == MOVE_OFFSET + $8b93
+    assert &e29e == MOVE_OFFSET + $8b9e
+    assert &e2a1 == MOVE_OFFSET + $8ba1
+    assert &e2b0 == MOVE_OFFSET + $8bb0
+    assert &e2b3 == MOVE_OFFSET + $8bb3
+    assert &e2b6 == MOVE_OFFSET + $8bb6
+    assert &e2cd == MOVE_OFFSET + $8bcd
+    assert &e2d0 == MOVE_OFFSET + $8bd0
+    assert &e2d5 == MOVE_OFFSET + $8bd5
+    assert &e2d8 == MOVE_OFFSET + $8bd8
+    assert &e2ff == MOVE_OFFSET + $8bff
+    assert &e304 == MOVE_OFFSET + $8c04
+    assert &e312 == MOVE_OFFSET + $8c12
+    assert &e315 == MOVE_OFFSET + $8c15
+    assert &e323 == MOVE_OFFSET + $8c23
+    assert &e326 == MOVE_OFFSET + $8c26
+    assert &e32b == MOVE_OFFSET + $8c2b
+    assert &e333 == MOVE_OFFSET + $8c33
+    assert &e337 == MOVE_OFFSET + $8c37
+    assert &e33a == MOVE_OFFSET + $8c3a
+    assert &e34f == MOVE_OFFSET + $8c4f
+    assert &e356 == MOVE_OFFSET + $8c56
+    assert &e36c == MOVE_OFFSET + $8c6c
+    assert &e387 == MOVE_OFFSET + $8c87
+    assert &e3ab == MOVE_OFFSET + $8cab
+    assert &e3cc == MOVE_OFFSET + $8ccc
+    assert &e3cf == MOVE_OFFSET + $8ccf
+    assert &e3d2 == MOVE_OFFSET + $8cd2
+    assert &e3df == MOVE_OFFSET + $8cdf
+    assert &e3f4 == MOVE_OFFSET + $8cf4
+    assert &e3f7 == MOVE_OFFSET + $8cf7
+    assert &e416 == MOVE_OFFSET + $8d16
+    assert &e427 == MOVE_OFFSET + $8d27
+    assert &e42e == MOVE_OFFSET + $8d2e
+    assert &e431 == MOVE_OFFSET + $8d31
+    assert &e43a == MOVE_OFFSET + $8d3a
+    assert &e443 == MOVE_OFFSET + $8d43
+    assert &e44c == MOVE_OFFSET + $8d4c
+    assert &e44f == MOVE_OFFSET + $8d4f
+    assert &e452 == MOVE_OFFSET + $8d52
+    assert &e4af == MOVE_OFFSET + $8daf
+    assert &e4be == MOVE_OFFSET + $8dbe
+    assert &e4c3 == MOVE_OFFSET + $8dc3
+    assert &e4c6 == MOVE_OFFSET + $8dc6
+    assert &e4de == MOVE_OFFSET + $8dde
+    assert &e4e1 == MOVE_OFFSET + $8de1
+    assert &e4e8 == MOVE_OFFSET + $8de8
+    assert &e4ef == MOVE_OFFSET + $8def
+    assert &e4f2 == MOVE_OFFSET + $8df2
+    assert &e4f9 == MOVE_OFFSET + $8df9
+    assert &e512 == MOVE_OFFSET + $8e12
+    assert &e51d == MOVE_OFFSET + $8e1d
+    assert &e520 == MOVE_OFFSET + $8e20
+    assert &e533 == MOVE_OFFSET + $8e33
+    assert &e536 == MOVE_OFFSET + $8e36
+    assert &e539 == MOVE_OFFSET + $8e39
+    assert &e53c == MOVE_OFFSET + $8e3c
+    assert &e549 == MOVE_OFFSET + $8e49
+    assert &e54c == MOVE_OFFSET + $8e4c
+    assert &e55a == MOVE_OFFSET + $8e5a
+    assert &e57a == MOVE_OFFSET + $8e7a
+    assert &e5a2 == MOVE_OFFSET + $8ea2
+    assert &e5a5 == MOVE_OFFSET + $8ea5
+    assert &e5bf == MOVE_OFFSET + $8ebf
+    assert &e5cc == MOVE_OFFSET + $8ecc
+    assert &e5e7 == MOVE_OFFSET + $8ee7
+    assert &e5ea == MOVE_OFFSET + $8eea
+    assert &e609 == MOVE_OFFSET + $8f09
+    assert &e61e == MOVE_OFFSET + $8f1e
+    assert &e621 == MOVE_OFFSET + $8f21
+    assert &e65e == MOVE_OFFSET + $8f5e
+    assert &e673 == MOVE_OFFSET + $8f73
+    assert &e676 == MOVE_OFFSET + $8f76
+    assert &e679 == MOVE_OFFSET + $8f79
+    assert &e67c == MOVE_OFFSET + $8f7c
+    assert &e67f == MOVE_OFFSET + $8f7f
+    assert &e68b == MOVE_OFFSET + $8f8b
+    assert &e6bc == MOVE_OFFSET + $8fbc
+    assert &e6cb == MOVE_OFFSET + $8fcb
+    assert &e6cd == MOVE_OFFSET + $8fcd
+    assert &e6d9 == MOVE_OFFSET + $8fd9
+    assert &e6e6 == MOVE_OFFSET + $8fe6
+    assert &e6e9 == MOVE_OFFSET + $8fe9
+    assert &e6f8 == MOVE_OFFSET + $8ff8
+    assert &e6fb == MOVE_OFFSET + $8ffb
+    assert &e706 == MOVE_OFFSET + $9006
+    assert &e713 == MOVE_OFFSET + $9013
+    assert &e737 == MOVE_OFFSET + $9037
+    assert &e73c == MOVE_OFFSET + $903c
+    assert &e754 == MOVE_OFFSET + $9054
+    assert &e774 == MOVE_OFFSET + $9074
+    assert &e797 == MOVE_OFFSET + $9097
+    assert &e79a == MOVE_OFFSET + $909a
+    assert &e7a5 == MOVE_OFFSET + $90a5
+    assert &e7bd == MOVE_OFFSET + $90bd
+    assert &e809 == MOVE_OFFSET + $9109
+    assert &e80e == MOVE_OFFSET + $910e
+    assert &e819 == MOVE_OFFSET + $9119
+    assert &e820 == MOVE_OFFSET + $9120
+    assert &e823 == MOVE_OFFSET + $9123
+    assert &e82c == MOVE_OFFSET + $912c
+    assert &e83c == MOVE_OFFSET + $913c
+    assert &e876 == MOVE_OFFSET + $9176
+    assert &e879 == MOVE_OFFSET + $9179
+    assert &e884 == MOVE_OFFSET + $9184
+    assert &e88d == MOVE_OFFSET + $918d
+    assert &e8a7 == MOVE_OFFSET + $91a7
+    assert &e8b0 == MOVE_OFFSET + $91b0
+    assert &e8c0 == MOVE_OFFSET + $91c0
+    assert &e8c3 == MOVE_OFFSET + $91c3
+    assert &e8c6 == MOVE_OFFSET + $91c6
+    assert &e8db == MOVE_OFFSET + $91db
+    assert &e8de == MOVE_OFFSET + $91de
+    assert &e8f1 == MOVE_OFFSET + $91f1
+    assert &e8f4 == MOVE_OFFSET + $91f4
+    assert &e8f7 == MOVE_OFFSET + $91f7
+    assert &e8ff == MOVE_OFFSET + $91ff
+    assert &e902 == MOVE_OFFSET + $9202
+    assert &e92b == MOVE_OFFSET + $922b
+    assert &e92e == MOVE_OFFSET + $922e
+    assert &e95c == MOVE_OFFSET + $925c
+    assert &e95f == MOVE_OFFSET + $925f
+    assert &e988 == MOVE_OFFSET + $9288
+    assert &e99b == MOVE_OFFSET + $929b
+    assert &e9a6 == MOVE_OFFSET + $92a6
+    assert &e9b4 == MOVE_OFFSET + $92b4
+    assert &e9b7 == MOVE_OFFSET + $92b7
+    assert &e9d3 == MOVE_OFFSET + $92d3
+    assert &e9df == MOVE_OFFSET + $92df
+    assert &e9e2 == MOVE_OFFSET + $92e2
+    assert &e9ee == MOVE_OFFSET + $92ee
+    assert &ea0a == MOVE_OFFSET + $930a
+    assert &ea0d == MOVE_OFFSET + $930d
+    assert &ea36 == MOVE_OFFSET + $9336
+    assert &ea4f == MOVE_OFFSET + $934f
+    assert &ea54 == MOVE_OFFSET + $9354
+    assert &eabe == MOVE_OFFSET + $93be
+    assert &ead5 == MOVE_OFFSET + $93d5
+    assert &ead8 == MOVE_OFFSET + $93d8
+    assert &eadb == MOVE_OFFSET + $93db
+    assert &eaeb == MOVE_OFFSET + $93eb
+    assert &eaee == MOVE_OFFSET + $93ee
+    assert &eaf1 == MOVE_OFFSET + $93f1
+    assert &eb03 == MOVE_OFFSET + $9403
+    assert &eb06 == MOVE_OFFSET + $9406
+    assert &eb11 == MOVE_OFFSET + $9411
+    assert &eb49 == MOVE_OFFSET + $9449
+    assert &eb4c == MOVE_OFFSET + $944c
+    assert &eb4f == MOVE_OFFSET + $944f
+    assert &eb78 == MOVE_OFFSET + $9478
+    assert &eb86 == MOVE_OFFSET + $9486
+    assert &ebb5 == MOVE_OFFSET + $94b5
+    assert &ebb8 == MOVE_OFFSET + $94b8
+    assert &ebbb == MOVE_OFFSET + $94bb
+    assert &ec38 == MOVE_OFFSET + $9538
+    assert &ec74 == MOVE_OFFSET + $9574
+    assert &ec77 == MOVE_OFFSET + $9577
+    assert &ec7a == MOVE_OFFSET + $957a
+    assert &ec94 == MOVE_OFFSET + $9594
+    assert &ec97 == MOVE_OFFSET + $9597
+    assert &ec9c == MOVE_OFFSET + $959c
+    assert &ec9f == MOVE_OFFSET + $959f
+    assert &eca4 == MOVE_OFFSET + $95a4
+    assert &eca7 == MOVE_OFFSET + $95a7
+    assert &ecac == MOVE_OFFSET + $95ac
+    assert &ecbe == MOVE_OFFSET + $95be
+    assert &ecc1 == MOVE_OFFSET + $95c1
+    assert &ecf6 == MOVE_OFFSET + $95f6
+    assert &ed04 == MOVE_OFFSET + $9604
+    assert &ed0d == MOVE_OFFSET + $960d
+    assert &ed10 == MOVE_OFFSET + $9610
+    assert &ed13 == MOVE_OFFSET + $9613
+    assert &ed24 == MOVE_OFFSET + $9624
+    assert &ed2b == MOVE_OFFSET + $962b
+    assert &ed2e == MOVE_OFFSET + $962e
+    assert &ed31 == MOVE_OFFSET + $9631
+    assert &ed34 == MOVE_OFFSET + $9634
+    assert &ed44 == MOVE_OFFSET + $9644
+    assert &ed47 == MOVE_OFFSET + $9647
+    assert &ed6e == MOVE_OFFSET + $966e
+    assert &edac == MOVE_OFFSET + $96ac
+    assert &edb9 == MOVE_OFFSET + $96b9
+    assert &edd4 == MOVE_OFFSET + $96d4
+    assert &ede7 == MOVE_OFFSET + $96e7
+    assert &ee04 == MOVE_OFFSET + $9704
+    assert &ee20 == MOVE_OFFSET + $9720
+    assert &ee51 == MOVE_OFFSET + $9751
+    assert &ee54 == MOVE_OFFSET + $9754
+    assert &ee5f == MOVE_OFFSET + $975f
+    assert &ee62 == MOVE_OFFSET + $9762
+    assert &ee6f == MOVE_OFFSET + $976f
+    assert &ee72 == MOVE_OFFSET + $9772
+    assert &ee75 == MOVE_OFFSET + $9775
+    assert &ee8a == MOVE_OFFSET + $978a
+    assert &eed4 == MOVE_OFFSET + $97d4
+    assert &eef2 == MOVE_OFFSET + $97f2
+    assert &eef5 == MOVE_OFFSET + $97f5
+    assert &ef0e == MOVE_OFFSET + $980e
+    assert &ef12 == MOVE_OFFSET + $9812
+    assert &ef16 == MOVE_OFFSET + $9816
+    assert &ef1a == MOVE_OFFSET + $981a
+    assert &ef1d == MOVE_OFFSET + $981d
+    assert &ef22 == MOVE_OFFSET + $9822
+    assert &ef25 == MOVE_OFFSET + $9825
+    assert &ef49 == MOVE_OFFSET + $9849
+    assert &ef60 == MOVE_OFFSET + $9860
+    assert &ef8a == MOVE_OFFSET + $988a
+    assert &ef8d == MOVE_OFFSET + $988d
+    assert &efc1 == MOVE_OFFSET + $98c1
+    assert &efc4 == MOVE_OFFSET + $98c4
+    assert &efc7 == MOVE_OFFSET + $98c7
+    assert &efcb == MOVE_OFFSET + $98cb
+    assert &efd4 == MOVE_OFFSET + $98d4
+    assert &eff0 == MOVE_OFFSET + $98f0
+    assert &eff3 == MOVE_OFFSET + $98f3
+    assert &effe == MOVE_OFFSET + $98fe
+    assert &f010 == MOVE_OFFSET + $9910
+    assert &f013 == MOVE_OFFSET + $9913
+    assert &f02f == MOVE_OFFSET + $992f
+    assert &f03c == MOVE_OFFSET + $993c
+    assert &f046 == MOVE_OFFSET + $9946
+    assert &f053 == MOVE_OFFSET + $9953
+    assert &f059 == MOVE_OFFSET + $9959
+    assert &f062 == MOVE_OFFSET + $9962
+    assert &f065 == MOVE_OFFSET + $9965
+    assert &f068 == MOVE_OFFSET + $9968
+    assert &f08b == MOVE_OFFSET + $998b
+    assert &f09e == MOVE_OFFSET + $999e
+    assert &f0a1 == MOVE_OFFSET + $99a1
+    assert &f0a4 == MOVE_OFFSET + $99a4
+    assert &f0c1 == MOVE_OFFSET + $99c1
+    assert &f0c4 == MOVE_OFFSET + $99c4
+    assert &f0cd == MOVE_OFFSET + $99cd
+    assert &f0ea == MOVE_OFFSET + $99ea
+    assert &f0f4 == MOVE_OFFSET + $99f4
+    assert &f106 == MOVE_OFFSET + $9a06
+    assert &f109 == MOVE_OFFSET + $9a09
+    assert &f12c == MOVE_OFFSET + $9a2c
+    assert &f145 == MOVE_OFFSET + $9a45
+    assert &f148 == MOVE_OFFSET + $9a48
+    assert &f14b == MOVE_OFFSET + $9a4b
+    assert &f15d == MOVE_OFFSET + $9a5d
+    assert &f160 == MOVE_OFFSET + $9a60
+    assert &f163 == MOVE_OFFSET + $9a63
+    assert &f18d == MOVE_OFFSET + $9a8d
+    assert &f190 == MOVE_OFFSET + $9a90
+    assert &f193 == MOVE_OFFSET + $9a93
+    assert &f1bd == MOVE_OFFSET + $9abd
+    assert &f1ca == MOVE_OFFSET + $9aca
+    assert &f1d5 == MOVE_OFFSET + $9ad5
+    assert &f23a == MOVE_OFFSET + $9b3a
+    assert &f245 == MOVE_OFFSET + $9b45
+    assert &f253 == MOVE_OFFSET + $9b53
+    assert &f271 == MOVE_OFFSET + $9b71
+    assert &f27c == MOVE_OFFSET + $9b7c
+    assert &f282 == MOVE_OFFSET + $9b82
+    assert &f297 == MOVE_OFFSET + $9b97
+    assert &f2ac == MOVE_OFFSET + $9bac
+    assert &f2c2 == MOVE_OFFSET + $9bc2
+    assert &f2d5 == MOVE_OFFSET + $9bd5
+    assert &f2da == MOVE_OFFSET + $9bda
+    assert &f2f0 == MOVE_OFFSET + $9bf0
+    assert &f2f3 == MOVE_OFFSET + $9bf3
+    assert &f305 == MOVE_OFFSET + $9c05
+    assert &f315 == MOVE_OFFSET + $9c15
+    assert &f319 == MOVE_OFFSET + $9c19
+    assert &f321 == MOVE_OFFSET + $9c21
+    assert &f32f == MOVE_OFFSET + $9c2f
+    assert &f334 == MOVE_OFFSET + $9c34
+    assert &f352 == MOVE_OFFSET + $9c52
+    assert &f3cb == MOVE_OFFSET + $9ccb
+    assert &f3eb == MOVE_OFFSET + $9ceb
+    assert &f3f4 == MOVE_OFFSET + $9cf4
+    assert &f3f7 == MOVE_OFFSET + $9cf7
+    assert &f40f == MOVE_OFFSET + $9d0f
+    assert &f412 == MOVE_OFFSET + $9d12
+    assert &f41f == MOVE_OFFSET + $9d1f
+    assert &f431 == MOVE_OFFSET + $9d31
+    assert &f474 == MOVE_OFFSET + $9d74
+    assert &f481 == MOVE_OFFSET + $9d81
+    assert &f4a4 == MOVE_OFFSET + $9da4
+    assert &f4a9 == MOVE_OFFSET + $9da9
+    assert &f4ac == MOVE_OFFSET + $9dac
+    assert &f4b1 == MOVE_OFFSET + $9db1
+    assert &f4c3 == MOVE_OFFSET + $9dc3
+    assert &f4c8 == MOVE_OFFSET + $9dc8
+    assert &f581 == MOVE_OFFSET + $9e81
+    assert &f5aa == MOVE_OFFSET + $9eaa
+    assert &f5d2 == MOVE_OFFSET + $9ed2
+    assert &f5d9 == MOVE_OFFSET + $9ed9
+    assert &f5e2 == MOVE_OFFSET + $9ee2
+    assert &f5eb == MOVE_OFFSET + $9eeb
+    assert &f5fd == MOVE_OFFSET + $9efd
+    assert &f61b == MOVE_OFFSET + $9f1b
+    assert &f63b == MOVE_OFFSET + $9f3b
+    assert &f642 == MOVE_OFFSET + $9f42
+    assert &f666 == MOVE_OFFSET + $9f66
+    assert &f669 == MOVE_OFFSET + $9f69
+    assert &f66e == MOVE_OFFSET + $9f6e
+    assert &f673 == MOVE_OFFSET + $9f73
+    assert &f682 == MOVE_OFFSET + $9f82
+    assert &f691 == MOVE_OFFSET + $9f91
+    assert &f694 == MOVE_OFFSET + $9f94
+    assert &f6a4 == MOVE_OFFSET + $9fa4
+    assert &f6ab == MOVE_OFFSET + $9fab
+    assert &f6b5 == MOVE_OFFSET + $9fb5
+    assert &f6bf == MOVE_OFFSET + $9fbf
+    assert &f6c2 == MOVE_OFFSET + $9fc2
+    assert &f6c6 == MOVE_OFFSET + $9fc6
+    assert &f6c9 == MOVE_OFFSET + $9fc9
+    assert &f6d7 == MOVE_OFFSET + $9fd7
+    assert &f6da == MOVE_OFFSET + $9fda
+    assert &f6dd == MOVE_OFFSET + $9fdd
+    assert &f6e0 == MOVE_OFFSET + $9fe0
+    assert &f6e3 == MOVE_OFFSET + $9fe3
+    assert &f704 == MOVE_OFFSET + $a004
+    assert &f72d == MOVE_OFFSET + $a02d
+    assert &19 == NILOFF
+    assert &7c == RAMBS
+    assert &7d == RAMBS+1
+    assert &7a == RELBS
+    assert &7b == RELBS+1
+    assert &7c == RELOC
+    assert &7d == RELOC+1
+    assert &7a == ROMBS
+    assert &7b == ROMBS+1
+    assert &58 == SUBOFF
+    assert &30 == TVS
+    assert &31 == TVS+1
+    assert &3a == TVS+10
+    assert &2f == TVS-1
+    assert &32 == TVSEXT - 1
+    assert &0d == VALOFF
+    assert &72 == WRMOFF
+    assert &33 == WSA - 1
+    assert &74 == XTNDL
 
 save pydis_start, pydis_end
 

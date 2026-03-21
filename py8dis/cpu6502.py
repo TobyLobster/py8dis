@@ -16,7 +16,7 @@ import sys
 from align import Align
 from binaryaddrtype import BinaryAddrType
 from memorymanager import RuntimeAddr, BinaryAddr, BinaryLocation
-from snippets6502 import find_code_snippets, mark_up_snippets
+from snippets6502 import snippets
 from snippethelper import *
 
 memory_binary = memorymanager.memory_binary
@@ -401,7 +401,6 @@ class Cpu6502(cpu.Cpu):
         self.code_analysis_fns.append(self.substitute_constants)        # If a subroutine is being called, we can infer context of initialising registers beforehand.
         self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
         self.code_analysis_fns.append(self.show_register_knowledge)     # Show places where we use an inferred value of a register.
-        self.code_analysis_fns.append(self.analyse_with_regex)          # Do regex style matches to find common code tropes and comment them
 
         # For labelling rts instructions numerically
         self.return_index = 0
@@ -1629,30 +1628,8 @@ class Cpu6502(cpu.Cpu):
 
                             lmd.name = "return_{0}".format(self.return_array[defined_at_binary_addr])
 
-    # Analysis (shared between 6502 and 65C02)
-    def find_code_with_regex(self):
-        """Make sure that any code found with a regex is marked as code"""
-
-        # Make a byte array of memory
-        memory_binary = memorymanager.memory_binary
-        bytes_array = bytes([0 if x is None else x for x in memory_binary])
-
-        # For each pattern
-        for pattern in find_code_snippets:
-            if pattern is None:
-                continue
-
-            # Find all matches
-            matches = re.finditer(pattern, bytes_array)
-
-            for match in matches:
-                # Mark as code
-                binary_addr = BinaryAddr(match.start())
-                runtime_addr = movemanager.b2r(binary_addr)
-                move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                trace.cpu.add_entry(binary_addr, runtime_addr, move_id, name=None)
-
-    def analyse_with_regex(self):
+    # Regex searching (shared between 6502 and 65C02)
+    def pre_trace_with_regex(self):
         # Make a byte array of memory
         memory_binary = memorymanager.memory_binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
@@ -1661,15 +1638,17 @@ class Cpu6502(cpu.Cpu):
         found_already = [False]*65536
 
         # for each snippet
-        for tup in mark_up_snippets:
+        for details in snippets:
+            if details.pre_trace_function is None:
+                continue
+
             # Find all matches
-            matches = re.finditer(tup[1].whole_pattern, bytes_array)
-            #utils.debug("Hello: {0}".format(tup[1].whole_pattern))
+            matches = re.finditer(details.pattern.whole_pattern, bytes_array)
 
             for match in matches:
                 binary_addr = match.start()
                 length = match.end() - match.start()
-
+    
                 # Check if any of the bytes are already commented on
                 if any(found_already[binary_addr:binary_addr+length]):
                     continue
@@ -1679,9 +1658,52 @@ class Cpu6502(cpu.Cpu):
 
                 # Mark these bytes as True, already commented on
                 found_already[binary_addr:binary_addr+length] = [True]*length
-                helper = SnippetHelper(memory_binary, binary_loc, match, tup[1].labels)
-                if isinstance(tup[0], str):
+                helper = SnippetHelper(memory_binary, binary_loc, match, details.pattern.labels)
+                if isinstance(details.pre_trace_function, str):
                     # A string means just add an inline string
-                    disassembly.comment_binary(helper.get_start_loc(), tup[0], align=Align.INLINE, auto_generated=True)
+                    disassembly.comment_binary(helper.get_start_loc(), details.pre_trace_function, align=Align.INLINE, auto_generated=True)
                 else:
-                    tup[0](helper)
+                    if details.pre_trace_parameter is None:
+                        details.pre_trace_function(helper)
+                    else:
+                        details.pre_trace_function(helper, details.pre_trace_parameter)
+
+    def post_trace_with_regex(self):
+        # Make a byte array of memory
+        memory_binary = memorymanager.memory_binary
+        bytes_array = bytes([0 if x is None else x for x in memory_binary])
+
+        # Remember which bytes are auto commented via a regex so we don't comment the same bytes again with a different regex.
+        found_already = [False]*65536
+
+        # for each snippet
+        for details in snippets:
+            if details.post_trace_function is None:
+                continue
+
+            # Find all matches
+            matches = re.finditer(details.pattern.whole_pattern, bytes_array)
+
+            for match in matches:
+                binary_addr = match.start()
+                length = match.end() - match.start()
+    
+                # Check if any of the bytes are already commented on
+                if any(found_already[binary_addr:binary_addr+length]):
+                    continue
+
+                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
+
+                # Mark these bytes as True, already commented on
+                found_already[binary_addr:binary_addr+length] = [True]*length
+                helper = SnippetHelper(memory_binary, binary_loc, match, details.pattern.labels)
+
+                if isinstance(details.post_trace_function, str):
+                    # A string means just add an inline string
+                    disassembly.comment_binary(helper.get_start_loc(), details.post_trace_function, align=Align.INLINE, auto_generated=True)
+                else:
+                    if details.post_trace_parameter is None:
+                        details.post_trace_function(helper)
+                    else:
+                        details.post_trace_function(helper, details.post_trace_parameter)

@@ -271,6 +271,7 @@ tube_data_register_2                            = &fee3
 tube_data_register_3                            = &fee5
 tube_status_register_4_and_cpu_control          = &fee6
 tube_data_register_4                            = &fee7
+handle_bytev                                    = &ff0f
 osrdsc                                          = &ffb9
 gsinit                                          = &ffc2
 gsread                                          = &ffc5
@@ -3827,7 +3828,7 @@ nmi_XXX5 = l0d1f+1
     tay                                                               ; 33c5: a8          .   :93c5[1]
     lda (l00b2),y                                                     ; 33c6: b1 b2       ..  :93c6[1]
     tax                                                               ; 33c8: aa          .   :93c8[1]
-    tya                                                               ; 33c9: 98          .   :93c9[1]       ; add 18 to Y
+    tya                                                               ; 33c9: 98          .   :93c9[1]   ; add 18 to Y
     clc                                                               ; 33ca: 18          .   :93ca[1]
     adc #&12                                                          ; 33cb: 69 12       i.  :93cb[1]
     tay                                                               ; 33cd: a8          .   :93cd[1]
@@ -7721,9 +7722,10 @@ nmi_XXX5 = l0d1f+1
     sta l10e4                                                         ; 4c93: 8d e4 10    ... :ac93[1]
     php                                                               ; 4c96: 08          .   :ac96[1]
     sei                                                               ; 4c97: 78          x   :ac97[1]
-    lda #&0f                                                          ; 4c98: a9 0f       ..  :ac98[1]
+    ; Set 'bytev' to 'handle_bytev'
+    lda #<handle_bytev                                                ; 4c98: a9 0f       ..  :ac98[1]
     sta bytev                                                         ; 4c9a: 8d 0a 02    ... :ac9a[1]
-    lda #&ff                                                          ; 4c9d: a9 ff       ..  :ac9d[1]
+    lda #>handle_bytev                                                ; 4c9d: a9 ff       ..  :ac9d[1]
     sta bytev+1                                                       ; 4c9f: 8d 0b 02    ... :ac9f[1]
     lda #&b2                                                          ; 4ca2: a9 b2       ..  :aca2[1]
     sta (l00b0),y                                                     ; 4ca4: 91 b0       ..  :aca4[1]
@@ -8147,10 +8149,12 @@ l0600 = sub_c05ff+1
 
 ; &4ef8 referenced 1 time by &aedb[1]
 .service_handler_tube_main_init
+    ; Set 'evntv' to 'tube_evntv_handler'
     lda #<tube_evntv_handler                                          ; 4ef8: a9 ad       ..  :aef8[1]
     sta evntv                                                         ; 4efa: 8d 20 02    . . :aefa[1]
     lda #>tube_evntv_handler                                          ; 4efd: a9 06       ..  :aefd[1]
     sta evntv+1                                                       ; 4eff: 8d 21 02    .!. :aeff[1]
+    ; Set 'brkv' to 'tube_brkv_handler'
     lda #<tube_brkv_handler                                           ; 4f02: a9 16       ..  :af02[1]
     sta brkv                                                          ; 4f04: 8d 02 02    ... :af04[1]
     lda #>tube_brkv_handler                                           ; 4f07: a9 00       ..  :af07[1]
@@ -8871,7 +8875,7 @@ jump_address_low = sub_c0050+1
 .cb3de
     lda #osbyte_read_himem                                            ; 53de: a9 84       ..  :b3de[1]
     jsr osbyte                                                        ; 53e0: 20 f4 ff     .. :b3e0[1]   ; Read top of user memory (HIMEM)
-    tya                                                               ; 53e3: 98          .   :b3e3[1]   ; X and Y contain the address of HIMEM (low, high); push Y,X onto the stack
+    tya                                                               ; 53e3: 98          .   :b3e3[1]   ; push Y,X onto the stack; X and Y contain the address of HIMEM (low, high)
     pha                                                               ; 53e4: 48          H   :b3e4[1]
     txa                                                               ; 53e5: 8a          .   :b3e5[1]
     pha                                                               ; 53e6: 48          H   :b3e6[1]
@@ -9508,27 +9512,9 @@ lb6ce = sub_cb6cd+1
 
 ; &5774 referenced 1 time by &b7be[1]
 .lb774
-    equb &85, &f4, &8d, &30, &fe                                      ; 5774: 85 f4 8d... ... :b774[1]
-
-; &5779 referenced 2 times by &b787[1], &b78a[1]
-.cb779
-    lda (l00b1),y                                                     ; 5779: b1 b1       ..  :b779[1]
-    sta (l00b3),y                                                     ; 577b: 91 b3       ..  :b77b[1]
-    iny                                                               ; 577d: c8          .   :b77d[1]
-    bne cb785                                                         ; 577e: d0 05       ..  :b77e[1]
-    inc l00b2                                                         ; 5780: e6 b2       ..  :b780[1]
-    inc l00b4                                                         ; 5782: e6 b4       ..  :b782[1]
-    dex                                                               ; 5784: ca          .   :b784[1]
-; &5785 referenced 1 time by &b77e[1]
-.cb785
-    cpy l00b5                                                         ; 5785: c4 b5       ..  :b785[1]
-    bne cb779                                                         ; 5787: d0 f0       ..  :b787[1]
-    txa                                                               ; 5789: 8a          .   :b789[1]
-    bne cb779                                                         ; 578a: d0 ed       ..  :b78a[1]
-    pla                                                               ; 578c: 68          h   :b78c[1]
-    sta romsel_copy                                                   ; 578d: 85 f4       ..  :b78d[1]
-    sta romsel                                                        ; 578f: 8d 30 fe    .0. :b78f[1]
-    jmp cb7d5                                                         ; 5792: 4c d5 b7    L.. :b792[1]
+    equb &85, &f4, &8d, &30, &fe, &b1, &b1, &91, &b3, &c8, &d0,   5   ; 5774: 85 f4 8d... ... :b774[1]
+    equb &e6, &b2, &e6, &b4, &ca, &c4, &b5, &d0, &f0, &8a, &d0, &ed   ; 5780: e6 b2 e6... ... :b780[1]
+    equb &68, &85, &f4, &8d, &30, &fe, &4c, &d5, &b7                  ; 578c: 68 85 f4... h.. :b78c[1]
 
 ; &5795 referenced 5 times by &b4ca[1], &b51d[1], &bd0b[1], &bdb0[1], &bded[1]
 .cb795
@@ -9578,8 +9564,6 @@ lb6ce = sub_cb6cd+1
     ldy #0                                                            ; 57d2: a0 00       ..  :b7d2[1]
     rts                                                               ; 57d4: 60          `   :b7d4[1]
 
-; &57d5 referenced 1 time by &b792[1]
-.cb7d5
     ldx #&21 ; '!'                                                    ; 57d5: a2 21       .!  :b7d5[1]
 ; &57d7 referenced 1 time by &b7d9[1]
 .loop_cb7d7
@@ -10964,131 +10948,133 @@ lb6ce = sub_cb6cd+1
 
 .pydis_end
 
-    assert <(c956d-1) == &6c
-    assert <(sub_c8238-1) == &37
-    assert <(sub_c8254-1) == &53
-    assert <(sub_c8750-1) == &4f
-    assert <(sub_c8782-1) == &81
-    assert <(sub_c8794-1) == &93
-    assert <(sub_c87ee-1) == &ed
-    assert <(sub_c893f-1) == &3e
-    assert <(sub_c8943-1) == &42
-    assert <(sub_c89b7-1) == &b6
-    assert <(sub_c89e6-1) == &e5
-    assert <(sub_c8b47-1) == &46
-    assert <(sub_c8bac-1) == &ab
-    assert <(sub_c9b59-1) == &58
-    assert <(sub_ca106-1) == &05
-    assert <(sub_ca137-1) == &36
-    assert <(sub_ca244-1) == &43
-    assert <(sub_ca417-1) == &16
-    assert <(sub_ca463-1) == &62
-    assert <(sub_ca5bb-1) == &ba
-    assert <(sub_ca5bf-1) == &be
-    assert <(sub_ca7f3-1) == &f2
-    assert <(sub_ca7f6-1) == &f5
-    assert <(sub_ca9d0-1) == &cf
-    assert <(sub_caafd-1) == &fc
-    assert <(sub_cab04-1) == &03
-    assert <(sub_cab46-1) == &45
-    assert <(sub_cabc5-1) == &c4
-    assert <(sub_cbb46-1) == &45
-    assert <(sub_cbb4a-1) == &49
-    assert <(sub_cbbd3-1) == &d2
-    assert <(sub_cbbd7-1) == &d6
-    assert <(sub_cbc37-1) == &36
-    assert <(sub_cbc81-1) == &80
-    assert <l0128 == &28
-    assert <l1000 == &00
-    assert <tube_brkv_handler == &16
-    assert <tube_evntv_handler == &ad
-    assert >(c956d-1) == &95
-    assert >(sub_c8238-1) == &82
-    assert >(sub_c8254-1) == &82
-    assert >(sub_c8750-1) == &87
-    assert >(sub_c8782-1) == &87
-    assert >(sub_c8794-1) == &87
-    assert >(sub_c87ee-1) == &87
-    assert >(sub_c893f-1) == &89
-    assert >(sub_c8943-1) == &89
-    assert >(sub_c89b7-1) == &89
-    assert >(sub_c89e6-1) == &89
-    assert >(sub_c8b47-1) == &8b
-    assert >(sub_c8bac-1) == &8b
-    assert >(sub_c9b59-1) == &9b
-    assert >(sub_ca106-1) == &a1
-    assert >(sub_ca137-1) == &a1
-    assert >(sub_ca244-1) == &a2
-    assert >(sub_ca417-1) == &a4
-    assert >(sub_ca463-1) == &a4
-    assert >(sub_ca5bb-1) == &a5
-    assert >(sub_ca5bf-1) == &a5
-    assert >(sub_ca7f3-1) == &a7
-    assert >(sub_ca7f6-1) == &a7
-    assert >(sub_ca9d0-1) == &a9
-    assert >(sub_caafd-1) == &aa
-    assert >(sub_cab04-1) == &ab
-    assert >(sub_cab46-1) == &ab
-    assert >(sub_cabc5-1) == &ab
-    assert >(sub_cbb46-1) == &bb
-    assert >(sub_cbb4a-1) == &bb
-    assert >(sub_cbbd3-1) == &bb
-    assert >(sub_cbbd7-1) == &bb
-    assert >(sub_cbc37-1) == &bc
-    assert >(sub_cbc81-1) == &bc
-    assert >l0128 == &01
-    assert >l1000 == &10
-    assert >tube_brkv_handler == &00
-    assert >tube_evntv_handler == &06
-    assert copyright - rom_header == &11
-    assert jump_address_low == &51
-    assert l00b3 - 9 == &aa
-    assert l00bc - 8 == &b4
-    assert nmi3_handler_rom_end-nmi3_handler_rom_start == &0e
-    assert nmi_XXX1-(nmi_beq+2) == &48
-    assert nmi_XXX10-(nmi_bcs+2) == &32
-    assert nmi_XXX11-(nmi_bcs+2) == &3b
-    assert nmi_XXX12-(nmi_bcs+2) == &3f
-    assert nmi_XXX13-(nmi_bcs+2) == &49
-    assert nmi_XXX14-(nmi_bcs+2) == &4d
-    assert nmi_XXX15-(nmi_bcs+2) == &55
-    assert nmi_XXX16-(nmi_bcs+2) == &5d
-    assert nmi_XXX17-(nmi_bcs+2) == &06
-    assert nmi_XXX18-(nmi_bcs+2) == &11
-    assert nmi_XXX19-(nmi_bcs+2) == &7b
-    assert nmi_XXX2-(nmi_beq+2) == &2f
-    assert nmi_XXX2-1 == &0d38
-    assert nmi_XXX20-(nmi_bcs+2) == &7f
-    assert nmi_XXX21-(nmi_bcs+2) == &26
-    assert nmi_XXX22-(nmi_bcs+2) == &77
-    assert nmi_XXX23-(nmi_bcs+2) == &24
-    assert nmi_XXX5-(nmi_cmp_imm_or_bcs+2) == &06
-    assert nmi_XXX7-(nmi_XXX6+2) == &06
-    assert nmi_XXX8-(nmi_beq+2) == &4d
-    assert nmi_handler2_rom_end-nmi_handler2_rom_start == &94
-    assert nmi_handler2_rom_start - 1 == &9066
-    assert nmi_handler_ram - 1 == &0cff
-    assert nmi_handler_rom_end - 1 == &902f
-    assert nmi_handler_rom_end-nmi_handler_rom_start-1 == &5d
-    assert sub_c0520 == &0520
-    assert sub_c052d == &052d
-    assert sub_c0537 == &0537
-    assert sub_c0542 == &0542
-    assert sub_c055e == &055e
-    assert sub_c0596 == &0596
-    assert sub_c05a9 == &05a9
-    assert sub_c05d1 == &05d1
-    assert sub_c05f2 == &05f2
-    assert sub_c0607 == &0607
-    assert sub_c0627 == &0627
-    assert sub_c9785 == &9785
-    assert sub_c97b6 == &97b6
-    assert sub_c97c9 == &97c9
-    assert sub_c9c0c == &9c0c
-    assert sub_c9d9b == &9d9b
-    assert sub_c9e94 == &9e94
-    assert sub_c9f82 == &9f82
-    assert tube_host_osword_0 == &0668
+    assert &6c == <(c956d-1)
+    assert &37 == <(sub_c8238-1)
+    assert &53 == <(sub_c8254-1)
+    assert &4f == <(sub_c8750-1)
+    assert &81 == <(sub_c8782-1)
+    assert &93 == <(sub_c8794-1)
+    assert &ed == <(sub_c87ee-1)
+    assert &3e == <(sub_c893f-1)
+    assert &42 == <(sub_c8943-1)
+    assert &b6 == <(sub_c89b7-1)
+    assert &e5 == <(sub_c89e6-1)
+    assert &46 == <(sub_c8b47-1)
+    assert &ab == <(sub_c8bac-1)
+    assert &58 == <(sub_c9b59-1)
+    assert &05 == <(sub_ca106-1)
+    assert &36 == <(sub_ca137-1)
+    assert &43 == <(sub_ca244-1)
+    assert &16 == <(sub_ca417-1)
+    assert &62 == <(sub_ca463-1)
+    assert &ba == <(sub_ca5bb-1)
+    assert &be == <(sub_ca5bf-1)
+    assert &f2 == <(sub_ca7f3-1)
+    assert &f5 == <(sub_ca7f6-1)
+    assert &cf == <(sub_ca9d0-1)
+    assert &fc == <(sub_caafd-1)
+    assert &03 == <(sub_cab04-1)
+    assert &45 == <(sub_cab46-1)
+    assert &c4 == <(sub_cabc5-1)
+    assert &45 == <(sub_cbb46-1)
+    assert &49 == <(sub_cbb4a-1)
+    assert &d2 == <(sub_cbbd3-1)
+    assert &d6 == <(sub_cbbd7-1)
+    assert &36 == <(sub_cbc37-1)
+    assert &80 == <(sub_cbc81-1)
+    assert &0f == <handle_bytev
+    assert &28 == <l0128
+    assert &00 == <l1000
+    assert &16 == <tube_brkv_handler
+    assert &ad == <tube_evntv_handler
+    assert &95 == >(c956d-1)
+    assert &82 == >(sub_c8238-1)
+    assert &82 == >(sub_c8254-1)
+    assert &87 == >(sub_c8750-1)
+    assert &87 == >(sub_c8782-1)
+    assert &87 == >(sub_c8794-1)
+    assert &87 == >(sub_c87ee-1)
+    assert &89 == >(sub_c893f-1)
+    assert &89 == >(sub_c8943-1)
+    assert &89 == >(sub_c89b7-1)
+    assert &89 == >(sub_c89e6-1)
+    assert &8b == >(sub_c8b47-1)
+    assert &8b == >(sub_c8bac-1)
+    assert &9b == >(sub_c9b59-1)
+    assert &a1 == >(sub_ca106-1)
+    assert &a1 == >(sub_ca137-1)
+    assert &a2 == >(sub_ca244-1)
+    assert &a4 == >(sub_ca417-1)
+    assert &a4 == >(sub_ca463-1)
+    assert &a5 == >(sub_ca5bb-1)
+    assert &a5 == >(sub_ca5bf-1)
+    assert &a7 == >(sub_ca7f3-1)
+    assert &a7 == >(sub_ca7f6-1)
+    assert &a9 == >(sub_ca9d0-1)
+    assert &aa == >(sub_caafd-1)
+    assert &ab == >(sub_cab04-1)
+    assert &ab == >(sub_cab46-1)
+    assert &ab == >(sub_cabc5-1)
+    assert &bb == >(sub_cbb46-1)
+    assert &bb == >(sub_cbb4a-1)
+    assert &bb == >(sub_cbbd3-1)
+    assert &bb == >(sub_cbbd7-1)
+    assert &bc == >(sub_cbc37-1)
+    assert &bc == >(sub_cbc81-1)
+    assert &ff == >handle_bytev
+    assert &01 == >l0128
+    assert &10 == >l1000
+    assert &00 == >tube_brkv_handler
+    assert &06 == >tube_evntv_handler
+    assert &11 == copyright - rom_header
+    assert &51 == jump_address_low
+    assert &aa == l00b3 - 9
+    assert &b4 == l00bc - 8
+    assert &0e == nmi3_handler_rom_end-nmi3_handler_rom_start
+    assert &48 == nmi_XXX1-(nmi_beq+2)
+    assert &32 == nmi_XXX10-(nmi_bcs+2)
+    assert &3b == nmi_XXX11-(nmi_bcs+2)
+    assert &3f == nmi_XXX12-(nmi_bcs+2)
+    assert &49 == nmi_XXX13-(nmi_bcs+2)
+    assert &4d == nmi_XXX14-(nmi_bcs+2)
+    assert &55 == nmi_XXX15-(nmi_bcs+2)
+    assert &5d == nmi_XXX16-(nmi_bcs+2)
+    assert &06 == nmi_XXX17-(nmi_bcs+2)
+    assert &11 == nmi_XXX18-(nmi_bcs+2)
+    assert &7b == nmi_XXX19-(nmi_bcs+2)
+    assert &2f == nmi_XXX2-(nmi_beq+2)
+    assert &0d38 == nmi_XXX2-1
+    assert &7f == nmi_XXX20-(nmi_bcs+2)
+    assert &26 == nmi_XXX21-(nmi_bcs+2)
+    assert &77 == nmi_XXX22-(nmi_bcs+2)
+    assert &24 == nmi_XXX23-(nmi_bcs+2)
+    assert &06 == nmi_XXX5-(nmi_cmp_imm_or_bcs+2)
+    assert &06 == nmi_XXX7-(nmi_XXX6+2)
+    assert &4d == nmi_XXX8-(nmi_beq+2)
+    assert &94 == nmi_handler2_rom_end-nmi_handler2_rom_start
+    assert &9066 == nmi_handler2_rom_start - 1
+    assert &0cff == nmi_handler_ram - 1
+    assert &902f == nmi_handler_rom_end - 1
+    assert &5d == nmi_handler_rom_end-nmi_handler_rom_start-1
+    assert &0520 == sub_c0520
+    assert &052d == sub_c052d
+    assert &0537 == sub_c0537
+    assert &0542 == sub_c0542
+    assert &055e == sub_c055e
+    assert &0596 == sub_c0596
+    assert &05a9 == sub_c05a9
+    assert &05d1 == sub_c05d1
+    assert &05f2 == sub_c05f2
+    assert &0607 == sub_c0607
+    assert &0627 == sub_c0627
+    assert &9785 == sub_c9785
+    assert &97b6 == sub_c97b6
+    assert &97c9 == sub_c97c9
+    assert &9c0c == sub_c9c0c
+    assert &9d9b == sub_c9d9b
+    assert &9e94 == sub_c9e94
+    assert &9f82 == sub_c9f82
+    assert &0668 == tube_host_osword_0
 
 save pydis_start, pydis_end
 
@@ -11102,24 +11088,24 @@ save pydis_start, pydis_end
 ;     l00be:                                             31
 ;     l00cd:                                             31
 ;     print_inline_l809f_top_bit_clear:                  31
-;     l00b1:                                             30
 ;     l00c2:                                             30
+;     l00b1:                                             29
 ;     sub_c83e3:                                         29
 ;     l00b9:                                             28
 ;     l00bb:                                             28
-;     l00b5:                                             27
-;     l00b4:                                             26
+;     l00b5:                                             26
 ;     l00bd:                                             26
-;     l00b3:                                             24
+;     l00b4:                                             25
+;     l00b3:                                             23
 ;     l00c1:                                             23
 ;     os_text_ptr:                                       23
 ;     osbyte:                                            22
-;     romsel_copy:                                       22
 ;     l0f0e:                                             21
 ;     read_tube_r2_data:                                 21
+;     romsel_copy:                                       21
 ;     c809f:                                             20
-;     l00b2:                                             20
 ;     l00c4:                                             20
+;     l00b2:                                             19
 ;     l10c2:                                             19
 ;     l0001:                                             18
 ;     l00a8:                                             18
@@ -11255,7 +11241,6 @@ save pydis_start, pydis_end
 ;     l1116:                                              5
 ;     nmi_XXX23:                                          5
 ;     osnewl:                                             5
-;     romsel:                                             5
 ;     sub_c80bb:                                          5
 ;     sub_c80ed:                                          5
 ;     sub_c80f3:                                          5
@@ -11323,6 +11308,7 @@ save pydis_start, pydis_end
 ;     osrdch:                                             4
 ;     return_14:                                          4
 ;     return_64:                                          4
+;     romsel:                                             4
 ;     sub_c80c8:                                          4
 ;     sub_c8174:                                          4
 ;     sub_c821d:                                          4
@@ -11508,7 +11494,6 @@ save pydis_start, pydis_end
 ;     cb45e:                                              2
 ;     cb655:                                              2
 ;     cb718:                                              2
-;     cb779:                                              2
 ;     cb7ed:                                              2
 ;     cb8e4:                                              2
 ;     cb9e8:                                              2
@@ -12015,10 +12000,8 @@ save pydis_start, pydis_end
 ;     cb6eb:                                              1
 ;     cb6f5:                                              1
 ;     cb736:                                              1
-;     cb785:                                              1
 ;     cb7ae:                                              1
 ;     cb7b2:                                              1
-;     cb7d5:                                              1
 ;     cb7e8:                                              1
 ;     cb898:                                              1
 ;     cb8e6:                                              1
@@ -13003,12 +12986,9 @@ save pydis_start, pydis_end
 ;     cb6f5
 ;     cb718
 ;     cb736
-;     cb779
-;     cb785
 ;     cb795
 ;     cb7ae
 ;     cb7b2
-;     cb7d5
 ;     cb7e8
 ;     cb7ed
 ;     cb82b
@@ -13917,11 +13897,11 @@ save pydis_start, pydis_end
 
 ; Stats:
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 14474 bytes (88%)
-;     Data                     = 1910 bytes (12%)
+;     Code                     = 14446 bytes (88%)
+;     Data                     = 1938 bytes (12%)
 ;
-;     Number of instructions   = 7011
-;     Number of data bytes     = 588 bytes
+;     Number of instructions   = 6996
+;     Number of data bytes     = 616 bytes
 ;     Number of data words     = 38 bytes
 ;     Number of string bytes   = 1284 bytes
 ;     Number of strings        = 150

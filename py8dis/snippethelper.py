@@ -3,7 +3,15 @@ import movemanager
 import trace
 import utils
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
-from memorymanager import BinaryLocation, BinaryAddr
+from memorymanager import BinaryLocation, BinaryAddr, RuntimeAddr
+
+class SnippetDetails:
+    def __init__(self, pre_trace_function, pre_trace_parameter, post_trace_function, post_trace_parameter, pattern):
+        self.pre_trace_function = pre_trace_function
+        self.pre_trace_parameter = pre_trace_parameter
+        self.post_trace_function = post_trace_function
+        self.post_trace_parameter = post_trace_parameter
+        self.pattern = pattern
 
 class SnippetHelper:
     def __init__(self, memory_binary, binary_loc, match, labels):
@@ -82,6 +90,7 @@ class SnippetHelper:
     def num_references(self, label_name):
         binary_loc = self.get_binary_location(label_name, prioritise_definition=True)
 
+        assert trace.references is not None, "trying to get the number of references before we've calculated it"
         if binary_loc in trace.references:
             references = trace.references[binary_loc]
             return len(references)
@@ -111,3 +120,21 @@ class SnippetHelper:
         if (label_runtime_addr + offset) > 0xffff:
             return make_and(make_hex(0xffff), make_subtract(source_label, offset))
         return make_subtract(source_label, offset)
+
+    def entry(self, runtime_addr = None):
+        if runtime_addr is not None:
+            assert isinstance(runtime_addr, RuntimeAddr)
+            binary_addr, move_id = movemanager.r2b(runtime_addr, None)
+        else:
+            binary_addr = self.get_start_loc().binary_addr
+            runtime_addr = movemanager.b2r(binary_addr)
+            move_id = self.get_start_loc().move_id
+            
+        if self.memory_binary[binary_addr] is not None:
+            # We add the entry point, but we don't call trace.cpu.add_entry() because this
+            # also adds a label (even if without a name) which we don't want since this causes 
+            # optimistic state tracking to restart at the label.
+            trace.cpu.entry_points.append(binary_addr)
+
+    def __repr__(self):
+        return "binary_addr = {0}, match={1}, labels={2}".format(self.binary_loc, self.match, self.labels)

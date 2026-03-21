@@ -271,6 +271,7 @@ tube_data_register_2                            = $fee3
 tube_data_register_3                            = $fee5
 tube_status_register_4_and_cpu_control          = $fee6
 tube_data_register_4                            = $fee7
+handle_bytev                                    = $ff0f
 osrdsc                                          = $ffb9
 gsinit                                          = $ffc2
 gsread                                          = $ffc5
@@ -3767,7 +3768,7 @@ sub_c93c5
     tay                                                               // 33c5: a8          .   :93c5[1]
     lda (l00b2),y                                                     // 33c6: b1 b2       ..  :93c6[1]
     tax                                                               // 33c8: aa          .   :93c8[1]
-    tya                                                               // 33c9: 98          .   :93c9[1]       // add 18 to Y
+    tya                                                               // 33c9: 98          .   :93c9[1]   // add 18 to Y
     clc                                                               // 33ca: 18          .   :93ca[1]
     adc #$12                                                          // 33cb: 69 12       i.  :93cb[1]
     tay                                                               // 33cd: a8          .   :93cd[1]
@@ -7661,9 +7662,10 @@ sub_cac72
     sta l10e4                                                         // 4c93: 8d e4 10    ... :ac93[1]
     php                                                               // 4c96: 08          .   :ac96[1]
     sei                                                               // 4c97: 78          x   :ac97[1]
-    lda #$0f                                                          // 4c98: a9 0f       ..  :ac98[1]
+    // Set 'bytev' to 'handle_bytev'
+    lda #<handle_bytev                                                // 4c98: a9 0f       ..  :ac98[1]
     sta bytev                                                         // 4c9a: 8d 0a 02    ... :ac9a[1]
-    lda #$ff                                                          // 4c9d: a9 ff       ..  :ac9d[1]
+    lda #>handle_bytev                                                // 4c9d: a9 ff       ..  :ac9d[1]
     sta bytev+1                                                       // 4c9f: 8d 0b 02    ... :ac9f[1]
     lda #$b2                                                          // 4ca2: a9 b2       ..  :aca2[1]
     sta (l00b0),y                                                     // 4ca4: 91 b0       ..  :aca4[1]
@@ -8063,10 +8065,12 @@ tube_banner_loop
 
 // $4ef8 referenced 1 time by $aedb[1]
 service_handler_tube_main_init
+    // Set 'evntv' to 'tube_evntv_handler'
     lda #<tube_evntv_handler                                          // 4ef8: a9 ad       ..  :aef8[1]
     sta evntv                                                         // 4efa: 8d 20 02    . . :aefa[1]
     lda #>tube_evntv_handler                                          // 4efd: a9 06       ..  :aefd[1]
     sta evntv+1                                                       // 4eff: 8d 21 02    .!. :aeff[1]
+    // Set 'brkv' to 'tube_brkv_handler'
     lda #<tube_brkv_handler                                           // 4f02: a9 16       ..  :af02[1]
     sta brkv                                                          // 4f04: 8d 02 02    ... :af04[1]
     lda #>tube_brkv_handler                                           // 4f07: a9 00       ..  :af07[1]
@@ -8751,7 +8755,7 @@ cb3ba
 cb3de
     lda #osbyte_read_himem                                            // 53de: a9 84       ..  :b3de[1]
     jsr osbyte                                                        // 53e0: 20 f4 ff     .. :b3e0[1]   // Read top of user memory (HIMEM)
-    tya                                                               // 53e3: 98          .   :b3e3[1]   // X and Y contain the address of HIMEM (low, high)// push Y,X onto the stack
+    tya                                                               // 53e3: 98          .   :b3e3[1]   // push Y,X onto the stack// X and Y contain the address of HIMEM (low, high)
     pha                                                               // 53e4: 48          H   :b3e4[1]
     txa                                                               // 53e5: 8a          .   :b3e5[1]
     pha                                                               // 53e6: 48          H   :b3e6[1]
@@ -9388,27 +9392,9 @@ sub_cb771
 
 // $5774 referenced 1 time by $b7be[1]
 lb774
-    .byt $85, $f4, $8d, $30, $fe                                      // 5774: 85 f4 8d... ... :b774[1]
-
-// $5779 referenced 2 times by $b787[1], $b78a[1]
-cb779
-    lda (l00b1),y                                                     // 5779: b1 b1       ..  :b779[1]
-    sta (l00b3),y                                                     // 577b: 91 b3       ..  :b77b[1]
-    iny                                                               // 577d: c8          .   :b77d[1]
-    bne cb785                                                         // 577e: d0 05       ..  :b77e[1]
-    inc l00b2                                                         // 5780: e6 b2       ..  :b780[1]
-    inc l00b4                                                         // 5782: e6 b4       ..  :b782[1]
-    dex                                                               // 5784: ca          .   :b784[1]
-// $5785 referenced 1 time by $b77e[1]
-cb785
-    cpy l00b5                                                         // 5785: c4 b5       ..  :b785[1]
-    bne cb779                                                         // 5787: d0 f0       ..  :b787[1]
-    txa                                                               // 5789: 8a          .   :b789[1]
-    bne cb779                                                         // 578a: d0 ed       ..  :b78a[1]
-    pla                                                               // 578c: 68          h   :b78c[1]
-    sta romsel_copy                                                   // 578d: 85 f4       ..  :b78d[1]
-    sta romsel                                                        // 578f: 8d 30 fe    .0. :b78f[1]
-    jmp cb7d5                                                         // 5792: 4c d5 b7    L.. :b792[1]
+    .byt $85, $f4, $8d, $30, $fe, $b1, $b1, $91, $b3, $c8, $d0,   5   // 5774: 85 f4 8d... ... :b774[1]
+    .byt $e6, $b2, $e6, $b4, $ca, $c4, $b5, $d0, $f0, $8a, $d0, $ed   // 5780: e6 b2 e6... ... :b780[1]
+    .byt $68, $85, $f4, $8d, $30, $fe, $4c, $d5, $b7                  // 578c: 68 85 f4... h.. :b78c[1]
 
 // $5795 referenced 5 times by $b4ca[1], $b51d[1], $bd0b[1], $bdb0[1], $bded[1]
 cb795
@@ -9458,8 +9444,6 @@ loop_cb7be
     ldy #0                                                            // 57d2: a0 00       ..  :b7d2[1]
     rts                                                               // 57d4: 60          `   :b7d4[1]
 
-// $57d5 referenced 1 time by $b792[1]
-cb7d5
     ldx #$21 // '!'                                                   // 57d5: a2 21       .!  :b7d5[1]
 // $57d7 referenced 1 time by $b7d9[1]
 loop_cb7d7
@@ -10843,24 +10827,24 @@ pydis_end
 //     l00be:                                             31
 //     l00cd:                                             31
 //     print_inline_l809f_top_bit_clear:                  31
-//     l00b1:                                             30
 //     l00c2:                                             30
+//     l00b1:                                             29
 //     sub_c83e3:                                         29
 //     l00b9:                                             28
 //     l00bb:                                             28
-//     l00b5:                                             27
-//     l00b4:                                             26
+//     l00b5:                                             26
 //     l00bd:                                             26
-//     l00b3:                                             24
+//     l00b4:                                             25
+//     l00b3:                                             23
 //     l00c1:                                             23
 //     os_text_ptr:                                       23
 //     osbyte:                                            22
-//     romsel_copy:                                       22
 //     l0f0e:                                             21
 //     read_tube_r2_data:                                 21
+//     romsel_copy:                                       21
 //     c809f:                                             20
-//     l00b2:                                             20
 //     l00c4:                                             20
+//     l00b2:                                             19
 //     l10c2:                                             19
 //     l0001:                                             18
 //     l00a8:                                             18
@@ -10996,7 +10980,6 @@ pydis_end
 //     l1116:                                              5
 //     nmi_XXX23:                                          5
 //     osnewl:                                             5
-//     romsel:                                             5
 //     sub_c80bb:                                          5
 //     sub_c80ed:                                          5
 //     sub_c80f3:                                          5
@@ -11064,6 +11047,7 @@ pydis_end
 //     osrdch:                                             4
 //     return_14:                                          4
 //     return_64:                                          4
+//     romsel:                                             4
 //     sub_c80c8:                                          4
 //     sub_c8174:                                          4
 //     sub_c821d:                                          4
@@ -11249,7 +11233,6 @@ pydis_end
 //     cb45e:                                              2
 //     cb655:                                              2
 //     cb718:                                              2
-//     cb779:                                              2
 //     cb7ed:                                              2
 //     cb8e4:                                              2
 //     cb9e8:                                              2
@@ -11756,10 +11739,8 @@ pydis_end
 //     cb6eb:                                              1
 //     cb6f5:                                              1
 //     cb736:                                              1
-//     cb785:                                              1
 //     cb7ae:                                              1
 //     cb7b2:                                              1
-//     cb7d5:                                              1
 //     cb7e8:                                              1
 //     cb898:                                              1
 //     cb8e6:                                              1
@@ -12744,12 +12725,9 @@ pydis_end
 //     cb6f5
 //     cb718
 //     cb736
-//     cb779
-//     cb785
 //     cb795
 //     cb7ae
 //     cb7b2
-//     cb7d5
 //     cb7e8
 //     cb7ed
 //     cb82b
@@ -13658,11 +13636,11 @@ pydis_end
 
 // Stats:
 //     Total size (Code + Data) = 16384 bytes
-//     Code                     = 14474 bytes (88%)
-//     Data                     = 1910 bytes (12%)
+//     Code                     = 14446 bytes (88%)
+//     Data                     = 1938 bytes (12%)
 //
-//     Number of instructions   = 7011
-//     Number of data bytes     = 588 bytes
+//     Number of instructions   = 6996
+//     Number of data bytes     = 616 bytes
 //     Number of data words     = 38 bytes
 //     Number of string bytes   = 1284 bytes
 //     Number of strings        = 150

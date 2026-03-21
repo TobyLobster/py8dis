@@ -13,7 +13,90 @@ import sys
 from memorymanager import BinaryAddr, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from classification import INSIDE_A_CLASSIFICATION
-from snippets6502 import register_mark_up_snippet, register_find_code_snippet, OPCODE_TXA, OPCODE_TYA
+from snippets6502 import register_snippet, register_code_snippet, register_data_snippet, OPCODE_TXA, OPCODE_TYA
+
+
+vectors = {
+    0x0200: "userv",
+    0x0202: "brkv" ,
+    0x0204: "irq1v",
+    0x0206: "irq2v",
+    0x0208: "cliv" ,
+    0x020a: "bytev",
+    0x020c: "wordv",
+    0x020e: "wrchv",
+    0x0210: "rdchv",
+    0x0212: "filev",
+    0x0214: "argsv",
+    0x0216: "bgetv",
+    0x0218: "bputv",
+    0x021a: "gbpbv",
+    0x021c: "findv",
+    0x021e: "fscv" ,
+    0x0220: "evntv",
+    0x0222: "uptv" ,
+    0x0224: "netv" ,
+    0x0226: "vduv" ,
+    0x0228: "keyv" ,
+    0x022a: "insv" ,
+    0x022c: "remv" ,
+    0x022e: "cnpv" ,
+    0x0230: "ind1v",
+    0x0232: "ind2v",
+    0x0234: "ind3v"
+}
+
+global vector_handler_count
+vector_handler_count = dict()
+
+# ************************************************************************************************
+def pre_trace_writing_to_vector(p):
+    p.entry()
+
+    addr1 = p.get_memory('first_store', 1) + 256*p.get_memory('first_store', 2)
+    addr2 = p.get_memory('second_store', 1) + 256*p.get_memory('second_store', 2)
+    nn1_addr = p.get_binary_address('nn1')
+    nn2_addr = p.get_binary_address('nn2')
+    nn1 = p.get_memory('nn1')
+    nn2 = p.get_memory('nn2')
+
+    global vector_handler_count
+
+    if addr1 == (addr2 + 1) and ((addr2 & 1) == 0):
+        # swap addr1 and addr2, so that addr1 is the lower
+        addr1, addr2 = addr2, addr1
+        nn1, nn2 = nn2, nn1
+        nn1_addr, nn2_addr = nn2_addr, nn1_addr
+
+    if addr2 == (addr1 + 1) and ((addr1 & 1) == 0):
+        if addr1 in vectors:
+            new_addr = nn1 + 256 * nn2
+            
+            # Get a label name if it already exists (just choose the first explicit name for lack of a better choice)
+            if new_addr in labelmanager.labels and labelmanager.labels[new_addr].explicit_names:
+                for move_id, name_list in labelmanager.labels[new_addr].explicit_names.items():
+                    label_name = name_list[0].text
+                    break
+            else:
+                # Create new label name
+                if addr1 not in vector_handler_count:
+                    label_name = "handle_{0}".format(vectors[addr1])
+                    vector_handler_count[addr1] = 2
+                else:
+                    label_name = "handle_{0}_{1}".format(vectors[addr1], vector_handler_count[addr1])
+                    vector_handler_count[addr1] += 1
+                label(new_addr, label_name)
+
+            p.entry(RuntimeAddr(new_addr))
+
+            disassembly.comment_binary(p.get_start_loc(), "Set '{0}' to '{1}'".format(vectors[addr1], label_name), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+
+            # Get addresses of nn1 and nn2
+            nn1_addr_runtime = movemanager.b2r(nn1_addr)
+            nn2_addr_runtime = movemanager.b2r(nn2_addr)
+        
+            expr(nn1_addr_runtime, make_lo(label_name))
+            expr(nn2_addr_runtime, make_hi(label_name))
 
 # ************************************************************************************************
 def comment_print_tab(p):
@@ -76,13 +159,13 @@ def comment_screen_addresses(p):
     for i in range(0,32):
         exp = make_add(config.get_assembler().hex(start), make_multiply(str(i), config.get_assembler().hex(offset)))
         if not is_word:
-            if not classification.get_classification(low_addr_runtime+i) and not classification.get_classification(high_addr_runtime+i):
+            if classification.get_classification(low_addr_runtime+i) is None and classification.get_classification(high_addr_runtime+i) is None:
                 byte(low_addr_runtime+i, 1)
                 byte(high_addr_runtime+i, 1)
                 expr(low_addr_runtime+i, make_lo(exp))
                 expr(high_addr_runtime+i, make_hi(exp))
         else:
-            if not classification.get_classification(low_addr_runtime+i*2):
+            if classification.get_classification(low_addr_runtime+i*2) is None:
                 word(low_addr_runtime+i*2, 1)
                 expr(low_addr_runtime+i*2, exp)
 
@@ -107,7 +190,7 @@ def comment_screen_offsets(p):
 # ************************************************************************************************
 # ************************************************************************************************
 def register_snippets():
-    register_mark_up_snippet(comment_print_tab, """
+    register_code_snippet(comment_print_tab, """
     lda #$1f
     jsr $ffee
 transfer1
@@ -118,7 +201,7 @@ transfer2
     jsr $ffee
 """)
 
-    register_mark_up_snippet(comment_print_message, """
+    register_code_snippet(comment_print_message, """
 ?   ldy #nn1 | ldy zp | ldy zp,x | ldy addr | ldy addr,x
 loop
     lda message,y | lda zp,y | lda (zp1),y
@@ -129,7 +212,7 @@ loop
     bne loop | bpl loop
 """)
 
-    register_mark_up_snippet(comment_print_message, """
+    register_code_snippet(comment_print_message, """
 ?   ldx #nn1 | ldx zp | ldx zp,y | ldx addr | ldx addr,y
 loop
     lda message,x | lda zp,x | lda (zp1),x
@@ -140,7 +223,7 @@ loop
     bne loop | bpl loop
 """)
 
-    register_mark_up_snippet(comment_print_repeated_character, """
+    register_code_snippet(comment_print_repeated_character, """
 loop1
 ?   lda #nn1 | lda addr | lda zp | ldx #nn | ldx addr | ldx zp
 ?   lda #nn1 | lda addr | lda zp | ldx #nn | ldx addr | ldx zp
@@ -175,23 +258,22 @@ loop2
 
                 #utils.debug("Snip:{0}".format(snip))
                 if start == 0:
-                    register_mark_up_snippet(comment_screen_offsets, snip)
+                    register_data_snippet(comment_screen_offsets, snip)
                 else:
-                    register_mark_up_snippet(comment_screen_addresses, snip)
+                    register_data_snippet(comment_screen_addresses, snip)
 
-
     # ********************************************************************************************
     # ********************************************************************************************
     # ********************************************************************************************
-    # PRINT TAB(nn1,nn2)
-    register_find_code_snippet("""
-    lda #$1f
-    jsr $ffee
-    lda #nn1 | txa | tya
-    jsr $ffee
-    lda #nn2 | txa | tya
-    jsr $ffee
+    register_snippet(pre_trace_writing_to_vector, None, """
+    lda #nn1
+first_store
+    sta $200 | sta $201 | sta $202 | sta $203 | sta $204 | sta $205 | sta $206 | sta $207 | sta $208 | sta $209 | sta $20a | sta $20b | sta $20c | sta $20d | sta $20e | sta $20f | sta $210 | sta $211 | sta $212 | sta $213 | sta $214 | sta $215 | sta $216 | sta $217 | sta $218 | sta $219 | sta $21a | sta $21b | sta $21c | sta $21d | sta $21e | sta $21f | sta $220 | sta $221 | sta $222 | sta $223 | sta $224 | sta $225 | sta $226 | sta $227 | sta $228 | sta $229 | sta $22a | sta $22b | sta $22c | sta $22d | sta $22e | sta $22f | sta $230 | sta $231 | sta $232 | sta $233 | sta $234 | sta $235
+    lda #nn2
+second_store
+    sta $200 | sta $201 | sta $202 | sta $203 | sta $204 | sta $205 | sta $206 | sta $207 | sta $208 | sta $209 | sta $20a | sta $20b | sta $20c | sta $20d | sta $20e | sta $20f | sta $210 | sta $211 | sta $212 | sta $213 | sta $214 | sta $215 | sta $216 | sta $217 | sta $218 | sta $219 | sta $21a | sta $21b | sta $21c | sta $21d | sta $21e | sta $21f | sta $220 | sta $221 | sta $222 | sta $223 | sta $224 | sta $225 | sta $226 | sta $227 | sta $228 | sta $229 | sta $22a | sta $22b | sta $22c | sta $22d | sta $22e | sta $22f | sta $230 | sta $231 | sta $232 | sta $233 | sta $234 | sta $235
 """)
+
 
 # ************************************************************************************************
 def xy_addr(x_addr, y_addr):
@@ -2845,33 +2927,8 @@ def mos_labels():
         optional_label(addr    , name)
         optional_label(addr + 1, "%s+1" % name, addr)
 
-    ol2(0x0200, "userv")
-    ol2(0x0202, "brkv")
-    ol2(0x0204, "irq1v")
-    ol2(0x0206, "irq2v")
-    ol2(0x0208, "cliv")
-    ol2(0x020a, "bytev")
-    ol2(0x020c, "wordv")
-    ol2(0x020e, "wrchv")
-    ol2(0x0210, "rdchv")
-    ol2(0x0212, "filev")
-    ol2(0x0214, "argsv")
-    ol2(0x0216, "bgetv")
-    ol2(0x0218, "bputv")
-    ol2(0x021a, "gbpbv")
-    ol2(0x021c, "findv")
-    ol2(0x021e, "fscv")
-    ol2(0x0220, "evntv")
-    ol2(0x0222, "uptv")
-    ol2(0x0224, "netv")
-    ol2(0x0226, "vduv")
-    ol2(0x0228, "keyv")
-    ol2(0x022a, "insv")
-    ol2(0x022c, "remv")
-    ol2(0x022e, "cnpv")
-    ol2(0x0230, "ind1v")
-    ol2(0x0232, "ind2v")
-    ol2(0x0234, "ind3v")
+    for vector in vectors:
+        ol2(vector, vectors[vector])
 
     optional_label(0xffc2, "gsinit")
     optional_label(0xffc5, "gsread")

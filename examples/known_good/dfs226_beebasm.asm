@@ -265,6 +265,7 @@ tube_data_register_2                            = &fee3
 tube_data_register_3                            = &fee5
 tube_status_register_4_and_cpu_control          = &fee6
 tube_data_register_4                            = &fee7
+handle_bytev                                    = &ff0f
 osrdsc                                          = &ffb9
 gsinit                                          = &ffc2
 gsread                                          = &ffc5
@@ -3797,7 +3798,7 @@ nmi_XXX5 = l0d1f+1
     tay                                                               ; 93c5: a8          .
     lda (l00b2),y                                                     ; 93c6: b1 b2       ..
     tax                                                               ; 93c8: aa          .
-    tya                                                               ; 93c9: 98          .                  ; add 18 to Y
+    tya                                                               ; 93c9: 98          .              ; add 18 to Y
     clc                                                               ; 93ca: 18          .
     adc #&12                                                          ; 93cb: 69 12       i.
     tay                                                               ; 93cd: a8          .
@@ -7691,9 +7692,10 @@ nmi_XXX5 = l0d1f+1
     sta l10e4                                                         ; ac93: 8d e4 10    ...
     php                                                               ; ac96: 08          .
     sei                                                               ; ac97: 78          x
-    lda #&0f                                                          ; ac98: a9 0f       ..
+    ; Set 'bytev' to 'handle_bytev'
+    lda #<handle_bytev                                                ; ac98: a9 0f       ..
     sta bytev                                                         ; ac9a: 8d 0a 02    ...
-    lda #&ff                                                          ; ac9d: a9 ff       ..
+    lda #>handle_bytev                                                ; ac9d: a9 ff       ..
     sta bytev+1                                                       ; ac9f: 8d 0b 02    ...
     lda #&b2                                                          ; aca2: a9 b2       ..
     sta (l00b0),y                                                     ; aca4: 91 b0       ..
@@ -8103,10 +8105,12 @@ l0600 = sub_c05ff+1
 
 ; &aef8 referenced 1 time by &aedb
 .service_handler_tube_main_init
+    ; Set 'evntv' to 'tube_evntv_handler'
     lda #<tube_evntv_handler                                          ; aef8: a9 ad       ..
     sta evntv                                                         ; aefa: 8d 20 02    . .
     lda #>tube_evntv_handler                                          ; aefd: a9 06       ..
     sta evntv+1                                                       ; aeff: 8d 21 02    .!.
+    ; Set 'brkv' to 'tube_brkv_handler'
     lda #<tube_brkv_handler                                           ; af02: a9 16       ..
     sta brkv                                                          ; af04: 8d 02 02    ...
     lda #>tube_brkv_handler                                           ; af07: a9 00       ..
@@ -8817,7 +8821,7 @@ jump_address_low = sub_c0050+1
 .cb3de
     lda #osbyte_read_himem                                            ; b3de: a9 84       ..
     jsr osbyte                                                        ; b3e0: 20 f4 ff     ..            ; Read top of user memory (HIMEM)
-    tya                                                               ; b3e3: 98          .              ; X and Y contain the address of HIMEM (low, high); push Y,X onto the stack
+    tya                                                               ; b3e3: 98          .              ; push Y,X onto the stack; X and Y contain the address of HIMEM (low, high)
     pha                                                               ; b3e4: 48          H
     txa                                                               ; b3e5: 8a          .
     pha                                                               ; b3e6: 48          H
@@ -10897,131 +10901,133 @@ lb6ce = sub_cb6cd+1
     equb &ff                                                          ; bfff: ff          .
 .pydis_end
 
-    assert <(c956d-1) == &6c
-    assert <(sub_c8238-1) == &37
-    assert <(sub_c8254-1) == &53
-    assert <(sub_c8750-1) == &4f
-    assert <(sub_c8782-1) == &81
-    assert <(sub_c8794-1) == &93
-    assert <(sub_c87ee-1) == &ed
-    assert <(sub_c893f-1) == &3e
-    assert <(sub_c8943-1) == &42
-    assert <(sub_c89b7-1) == &b6
-    assert <(sub_c89e6-1) == &e5
-    assert <(sub_c8b47-1) == &46
-    assert <(sub_c8bac-1) == &ab
-    assert <(sub_c9b59-1) == &58
-    assert <(sub_ca106-1) == &05
-    assert <(sub_ca137-1) == &36
-    assert <(sub_ca244-1) == &43
-    assert <(sub_ca417-1) == &16
-    assert <(sub_ca463-1) == &62
-    assert <(sub_ca5bb-1) == &ba
-    assert <(sub_ca5bf-1) == &be
-    assert <(sub_ca7f3-1) == &f2
-    assert <(sub_ca7f6-1) == &f5
-    assert <(sub_ca9d0-1) == &cf
-    assert <(sub_caafd-1) == &fc
-    assert <(sub_cab04-1) == &03
-    assert <(sub_cab46-1) == &45
-    assert <(sub_cabc5-1) == &c4
-    assert <(sub_cbb46-1) == &45
-    assert <(sub_cbb4a-1) == &49
-    assert <(sub_cbbd3-1) == &d2
-    assert <(sub_cbbd7-1) == &d6
-    assert <(sub_cbc37-1) == &36
-    assert <(sub_cbc81-1) == &80
-    assert <l0128 == &28
-    assert <l1000 == &00
-    assert <tube_brkv_handler == &16
-    assert <tube_evntv_handler == &ad
-    assert >(c956d-1) == &95
-    assert >(sub_c8238-1) == &82
-    assert >(sub_c8254-1) == &82
-    assert >(sub_c8750-1) == &87
-    assert >(sub_c8782-1) == &87
-    assert >(sub_c8794-1) == &87
-    assert >(sub_c87ee-1) == &87
-    assert >(sub_c893f-1) == &89
-    assert >(sub_c8943-1) == &89
-    assert >(sub_c89b7-1) == &89
-    assert >(sub_c89e6-1) == &89
-    assert >(sub_c8b47-1) == &8b
-    assert >(sub_c8bac-1) == &8b
-    assert >(sub_c9b59-1) == &9b
-    assert >(sub_ca106-1) == &a1
-    assert >(sub_ca137-1) == &a1
-    assert >(sub_ca244-1) == &a2
-    assert >(sub_ca417-1) == &a4
-    assert >(sub_ca463-1) == &a4
-    assert >(sub_ca5bb-1) == &a5
-    assert >(sub_ca5bf-1) == &a5
-    assert >(sub_ca7f3-1) == &a7
-    assert >(sub_ca7f6-1) == &a7
-    assert >(sub_ca9d0-1) == &a9
-    assert >(sub_caafd-1) == &aa
-    assert >(sub_cab04-1) == &ab
-    assert >(sub_cab46-1) == &ab
-    assert >(sub_cabc5-1) == &ab
-    assert >(sub_cbb46-1) == &bb
-    assert >(sub_cbb4a-1) == &bb
-    assert >(sub_cbbd3-1) == &bb
-    assert >(sub_cbbd7-1) == &bb
-    assert >(sub_cbc37-1) == &bc
-    assert >(sub_cbc81-1) == &bc
-    assert >l0128 == &01
-    assert >l1000 == &10
-    assert >tube_brkv_handler == &00
-    assert >tube_evntv_handler == &06
-    assert copyright - rom_header == &11
-    assert jump_address_low == &51
-    assert l00b3 - 9 == &aa
-    assert l00bc - 8 == &b4
-    assert nmi3_handler_rom_end-nmi3_handler_rom_start == &0e
-    assert nmi_XXX1-(nmi_beq+2) == &48
-    assert nmi_XXX10-(nmi_bcs+2) == &32
-    assert nmi_XXX11-(nmi_bcs+2) == &3b
-    assert nmi_XXX12-(nmi_bcs+2) == &3f
-    assert nmi_XXX13-(nmi_bcs+2) == &49
-    assert nmi_XXX14-(nmi_bcs+2) == &4d
-    assert nmi_XXX15-(nmi_bcs+2) == &55
-    assert nmi_XXX16-(nmi_bcs+2) == &5d
-    assert nmi_XXX17-(nmi_bcs+2) == &06
-    assert nmi_XXX18-(nmi_bcs+2) == &11
-    assert nmi_XXX19-(nmi_bcs+2) == &7b
-    assert nmi_XXX2 - 1 == &0d38
-    assert nmi_XXX2-(nmi_beq+2) == &2f
-    assert nmi_XXX20-(nmi_bcs+2) == &7f
-    assert nmi_XXX21-(nmi_bcs+2) == &26
-    assert nmi_XXX22-(nmi_bcs+2) == &77
-    assert nmi_XXX23-(nmi_bcs+2) == &24
-    assert nmi_XXX5-(nmi_cmp_imm_or_bcs+2) == &06
-    assert nmi_XXX7-(nmi_XXX6+2) == &06
-    assert nmi_XXX8-(nmi_beq+2) == &4d
-    assert nmi_handler2_rom_end-nmi_handler2_rom_start == &94
-    assert nmi_handler2_rom_start - 1 == &9066
-    assert nmi_handler_ram - 1 == &0cff
-    assert nmi_handler_rom_end - 1 == &902f
-    assert nmi_handler_rom_end-nmi_handler_rom_start-1 == &5d
-    assert sub_c0520 == &0520
-    assert sub_c052d == &052d
-    assert sub_c0537 == &0537
-    assert sub_c0542 == &0542
-    assert sub_c055e == &055e
-    assert sub_c0596 == &0596
-    assert sub_c05a9 == &05a9
-    assert sub_c05d1 == &05d1
-    assert sub_c05f2 == &05f2
-    assert sub_c0607 == &0607
-    assert sub_c0627 == &0627
-    assert sub_c9785 == &9785
-    assert sub_c97b6 == &97b6
-    assert sub_c97c9 == &97c9
-    assert sub_c9c0c == &9c0c
-    assert sub_c9d9b == &9d9b
-    assert sub_c9e94 == &9e94
-    assert sub_c9f82 == &9f82
-    assert tube_host_osword_0 == &0668
+    assert &6c == <(c956d-1)
+    assert &37 == <(sub_c8238-1)
+    assert &53 == <(sub_c8254-1)
+    assert &4f == <(sub_c8750-1)
+    assert &81 == <(sub_c8782-1)
+    assert &93 == <(sub_c8794-1)
+    assert &ed == <(sub_c87ee-1)
+    assert &3e == <(sub_c893f-1)
+    assert &42 == <(sub_c8943-1)
+    assert &b6 == <(sub_c89b7-1)
+    assert &e5 == <(sub_c89e6-1)
+    assert &46 == <(sub_c8b47-1)
+    assert &ab == <(sub_c8bac-1)
+    assert &58 == <(sub_c9b59-1)
+    assert &05 == <(sub_ca106-1)
+    assert &36 == <(sub_ca137-1)
+    assert &43 == <(sub_ca244-1)
+    assert &16 == <(sub_ca417-1)
+    assert &62 == <(sub_ca463-1)
+    assert &ba == <(sub_ca5bb-1)
+    assert &be == <(sub_ca5bf-1)
+    assert &f2 == <(sub_ca7f3-1)
+    assert &f5 == <(sub_ca7f6-1)
+    assert &cf == <(sub_ca9d0-1)
+    assert &fc == <(sub_caafd-1)
+    assert &03 == <(sub_cab04-1)
+    assert &45 == <(sub_cab46-1)
+    assert &c4 == <(sub_cabc5-1)
+    assert &45 == <(sub_cbb46-1)
+    assert &49 == <(sub_cbb4a-1)
+    assert &d2 == <(sub_cbbd3-1)
+    assert &d6 == <(sub_cbbd7-1)
+    assert &36 == <(sub_cbc37-1)
+    assert &80 == <(sub_cbc81-1)
+    assert &0f == <handle_bytev
+    assert &28 == <l0128
+    assert &00 == <l1000
+    assert &16 == <tube_brkv_handler
+    assert &ad == <tube_evntv_handler
+    assert &95 == >(c956d-1)
+    assert &82 == >(sub_c8238-1)
+    assert &82 == >(sub_c8254-1)
+    assert &87 == >(sub_c8750-1)
+    assert &87 == >(sub_c8782-1)
+    assert &87 == >(sub_c8794-1)
+    assert &87 == >(sub_c87ee-1)
+    assert &89 == >(sub_c893f-1)
+    assert &89 == >(sub_c8943-1)
+    assert &89 == >(sub_c89b7-1)
+    assert &89 == >(sub_c89e6-1)
+    assert &8b == >(sub_c8b47-1)
+    assert &8b == >(sub_c8bac-1)
+    assert &9b == >(sub_c9b59-1)
+    assert &a1 == >(sub_ca106-1)
+    assert &a1 == >(sub_ca137-1)
+    assert &a2 == >(sub_ca244-1)
+    assert &a4 == >(sub_ca417-1)
+    assert &a4 == >(sub_ca463-1)
+    assert &a5 == >(sub_ca5bb-1)
+    assert &a5 == >(sub_ca5bf-1)
+    assert &a7 == >(sub_ca7f3-1)
+    assert &a7 == >(sub_ca7f6-1)
+    assert &a9 == >(sub_ca9d0-1)
+    assert &aa == >(sub_caafd-1)
+    assert &ab == >(sub_cab04-1)
+    assert &ab == >(sub_cab46-1)
+    assert &ab == >(sub_cabc5-1)
+    assert &bb == >(sub_cbb46-1)
+    assert &bb == >(sub_cbb4a-1)
+    assert &bb == >(sub_cbbd3-1)
+    assert &bb == >(sub_cbbd7-1)
+    assert &bc == >(sub_cbc37-1)
+    assert &bc == >(sub_cbc81-1)
+    assert &ff == >handle_bytev
+    assert &01 == >l0128
+    assert &10 == >l1000
+    assert &00 == >tube_brkv_handler
+    assert &06 == >tube_evntv_handler
+    assert &11 == copyright - rom_header
+    assert &51 == jump_address_low
+    assert &aa == l00b3 - 9
+    assert &b4 == l00bc - 8
+    assert &0e == nmi3_handler_rom_end-nmi3_handler_rom_start
+    assert &48 == nmi_XXX1-(nmi_beq+2)
+    assert &32 == nmi_XXX10-(nmi_bcs+2)
+    assert &3b == nmi_XXX11-(nmi_bcs+2)
+    assert &3f == nmi_XXX12-(nmi_bcs+2)
+    assert &49 == nmi_XXX13-(nmi_bcs+2)
+    assert &4d == nmi_XXX14-(nmi_bcs+2)
+    assert &55 == nmi_XXX15-(nmi_bcs+2)
+    assert &5d == nmi_XXX16-(nmi_bcs+2)
+    assert &06 == nmi_XXX17-(nmi_bcs+2)
+    assert &11 == nmi_XXX18-(nmi_bcs+2)
+    assert &7b == nmi_XXX19-(nmi_bcs+2)
+    assert &0d38 == nmi_XXX2 - 1
+    assert &2f == nmi_XXX2-(nmi_beq+2)
+    assert &7f == nmi_XXX20-(nmi_bcs+2)
+    assert &26 == nmi_XXX21-(nmi_bcs+2)
+    assert &77 == nmi_XXX22-(nmi_bcs+2)
+    assert &24 == nmi_XXX23-(nmi_bcs+2)
+    assert &06 == nmi_XXX5-(nmi_cmp_imm_or_bcs+2)
+    assert &06 == nmi_XXX7-(nmi_XXX6+2)
+    assert &4d == nmi_XXX8-(nmi_beq+2)
+    assert &94 == nmi_handler2_rom_end-nmi_handler2_rom_start
+    assert &9066 == nmi_handler2_rom_start - 1
+    assert &0cff == nmi_handler_ram - 1
+    assert &902f == nmi_handler_rom_end - 1
+    assert &5d == nmi_handler_rom_end-nmi_handler_rom_start-1
+    assert &0520 == sub_c0520
+    assert &052d == sub_c052d
+    assert &0537 == sub_c0537
+    assert &0542 == sub_c0542
+    assert &055e == sub_c055e
+    assert &0596 == sub_c0596
+    assert &05a9 == sub_c05a9
+    assert &05d1 == sub_c05d1
+    assert &05f2 == sub_c05f2
+    assert &0607 == sub_c0607
+    assert &0627 == sub_c0627
+    assert &9785 == sub_c9785
+    assert &97b6 == sub_c97b6
+    assert &97c9 == sub_c97c9
+    assert &9c0c == sub_c9c0c
+    assert &9d9b == sub_c9d9b
+    assert &9e94 == sub_c9e94
+    assert &9f82 == sub_c9f82
+    assert &0668 == tube_host_osword_0
 
 save pydis_start, pydis_end
 

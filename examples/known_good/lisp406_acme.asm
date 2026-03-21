@@ -906,9 +906,10 @@ PINS
     ; routines
     ; ******************************
 INIT
-    lda #<ERROR                                    ; 84b5: a9 87       ..
+    ; Set 'brkv' to 'ERRORS'
+    lda #<ERRORS                                   ; 84b5: a9 87       ..
     sta brkv                                       ; 84b7: 8d 02 02    ...            ; Error handling
-    lda #>ERROR                                    ; 84ba: a9 9e       ..
+    lda #>ERRORS                                   ; 84ba: a9 9e       ..
     sta brkv+1                                     ; 84bc: 8d 03 02    ...
     lda #osbyte_read_himem                         ; 84bf: a9 84       ..             ; Find end of memory
     jsr osbyte                                     ; 84c1: 20 f4 ff     ..            ; Read top of user memory (HIMEM)
@@ -8129,8 +8130,8 @@ pydis_end
 !if (<DWARF) != $eb {
     !error "Assertion failed: <DWARF == $eb"
 }
-!if (<ERROR) != $87 {
-    !error "Assertion failed: <ERROR == $87"
+!if (<ERRORS) != $87 {
+    !error "Assertion failed: <ERRORS == $87"
 }
 !if (<GCTIME) != $20 {
     !error "Assertion failed: <GCTIME == $20"
@@ -8219,8 +8220,8 @@ pydis_end
 !if (>DWARF) != $9e {
     !error "Assertion failed: >DWARF == $9e"
 }
-!if (>ERROR) != $9e {
-    !error "Assertion failed: >ERROR == $9e"
+!if (>ERRORS) != $9e {
+    !error "Assertion failed: >ERRORS == $9e"
 }
 !if (>GCTIME) != $04 {
     !error "Assertion failed: >GCTIME == $04"

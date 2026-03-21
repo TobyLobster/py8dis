@@ -1249,7 +1249,7 @@ osbyte                                  = &fff4
     rts                                                               ; 2704: 60          `   :1604[1]
 
 .move_to_next_enemy
-    txa                                                               ; 2705: 8a          .   :1605[1]
+    txa                                                               ; 2705: 8a          .   :1605[1]   ; add 11 to X
     clc                                                               ; 2706: 18          .   :1606[1]
     adc #&0b                                                          ; 2707: 69 0b       i.  :1607[1]
     tax                                                               ; 2709: aa          .   :1609[1]
@@ -1370,7 +1370,7 @@ osbyte                                  = &fff4
     lda #1                                                            ; 27dc: a9 01       ..  :16dc[1]
 .set_enemy_ships_on_screen
     sta enemy_ships_on_screen,x                                       ; 27de: 9d 80 04    ... :16de[1]
-    txa                                                               ; 27e1: 8a          .   :16e1[1]
+    txa                                                               ; 27e1: 8a          .   :16e1[1]   ; add 11 to X
     clc                                                               ; 27e2: 18          .   :16e2[1]
     adc #&0b                                                          ; 27e3: 69 0b       i.  :16e3[1]
     tax                                                               ; 27e5: aa          .   :16e5[1]
@@ -1453,7 +1453,7 @@ osbyte                                  = &fff4
     sta enemy_ships_previous_x_screens,x                              ; 2885: 9d 03 04    ... :1785[1]
     lda enemy_ships_x_fraction,x                                      ; 2888: bd 81 04    ... :1788[1]
     sta enemy_ships_previous_x_fraction,x                             ; 288b: 9d 01 04    ... :178b[1]
-    txa                                                               ; 288e: 8a          .   :178e[1]
+    txa                                                               ; 288e: 8a          .   :178e[1]   ; add 11 to X
     clc                                                               ; 288f: 18          .   :178f[1]
     adc #&0b                                                          ; 2890: 69 0b       i.  :1790[1]
     tax                                                               ; 2892: aa          .   :1792[1]
@@ -2086,7 +2086,7 @@ osbyte                                  = &fff4
 .activate_shields_when_enemy_ship_enters_main_square_loop
     lda enemy_ships_on_screen,x                                       ; 2ca9: bd 80 04    ... :1ba9[1]
     beq enemy_ship_is_on_screen                                       ; 2cac: f0 12       ..  :1bac[1]
-    txa                                                               ; 2cae: 8a          .   :1bae[1]
+    txa                                                               ; 2cae: 8a          .   :1bae[1]   ; add 11 to X
     clc                                                               ; 2caf: 18          .   :1baf[1]
     adc #&0b                                                          ; 2cb0: 69 0b       i.  :1bb0[1]
     tax                                                               ; 2cb2: aa          .   :1bb2[1]
@@ -3724,7 +3724,7 @@ osbyte                                  = &fff4
     ora #4                                                            ; 37ba: 09 04       ..  :26ba[1]
     sta enemy_ships_type,x                                            ; 37bc: 9d 0a 04    ... :26bc[1]
 .handle_enemy_ships_cloaking_next
-    txa                                                               ; 37bf: 8a          .   :26bf[1]
+    txa                                                               ; 37bf: 8a          .   :26bf[1]   ; add 11 to X
     clc                                                               ; 37c0: 18          .   :26c0[1]
     adc #&0b                                                          ; 37c1: 69 0b       i.  :26c1[1]
     tax                                                               ; 37c3: aa          .   :26c3[1]
@@ -6046,7 +6046,7 @@ osbyte                                  = &fff4
     jsr initialise_enemy_ship                                         ; 471c: 20 d2 33     .3 :361c[1]
     lda #1                                                            ; 471f: a9 01       ..  :361f[1]
     sta enemy_ships_previous_on_screen,x                              ; 4721: 9d 00 04    ... :3621[1]
-    txa                                                               ; 4724: 8a          .   :3624[1]
+    txa                                                               ; 4724: 8a          .   :3624[1]   ; add 11 to X
     clc                                                               ; 4725: 18          .   :3625[1]
     adc #&0b                                                          ; 4726: 69 0b       i.  :3626[1]
     tax                                                               ; 4728: aa          .   :3628[1]
@@ -6177,7 +6177,7 @@ osbyte                                  = &fff4
     and #&f0                                                          ; 481b: 29 f0       ).  :371b[1]
 .skip_resetting_hit_count
     sta enemy_ships_temporary_behaviour_flags,x                       ; 481d: 9d 88 04    ... :371d[1]
-    txa                                                               ; 4820: 8a          .   :3720[1]
+    txa                                                               ; 4820: 8a          .   :3720[1]   ; add 11 to X
     clc                                                               ; 4821: 18          .   :3721[1]
     adc #&0b                                                          ; 4822: 69 0b       i.  :3722[1]
     tax                                                               ; 4824: aa          .   :3724[1]
@@ -7259,7 +7259,7 @@ osbyte                                  = &fff4
     cmp high_score_table + 2,x                                        ; 561a: dd 37 43    .7C :451a[1]
     bcs higher_score                                                  ; 561d: b0 0a       ..  :451d[1]
 .consider_next_record
-    txa                                                               ; 561f: 8a          .   :451f[1]
+    txa                                                               ; 561f: 8a          .   :451f[1]   ; add 16 to X
     clc                                                               ; 5620: 18          .   :4520[1]
     adc #&10                                                          ; 5621: 69 10       i.  :4521[1]
     tax                                                               ; 5623: aa          .   :4523[1]
@@ -7895,113 +7895,113 @@ osbyte                                  = &fff4
     equb 0, 0, 0, 0, 0, 0                                             ; 61f9: 00 00 00... ...
 .pydis_end
 
-    assert '0' == &30
-    assert '~' == &7e
-    assert <(enemy_explosion_tables + $0000) == &00
-    assert <(enemy_explosion_tables + $0040) == &40
-    assert <(enemy_explosion_tables + $0080) == &80
-    assert <(enemy_explosion_tables + $00c0) == &c0
-    assert <(enemy_explosion_tables + $0100) == &00
-    assert <(enemy_explosion_tables + $0140) == &40
-    assert <(enemy_explosion_tables + $0180) == &80
-    assert <(enemy_explosion_tables + $01c0) == &c0
-    assert <(enemy_explosion_tables + $0200) == &00
-    assert <(enemy_explosion_tables + $0240) == &40
-    assert <(enemy_explosion_tables + $0280) == &80
-    assert <(enemy_explosion_tables + $02c0) == &c0
-    assert <(enemy_explosion_tables + $0300) == &00
-    assert <(enemy_explosion_tables + $0340) == &40
-    assert <(enemy_explosion_tables + $0380) == &80
-    assert <(enemy_explosion_tables + $03c0) == &c0
-    assert <(starship_torpedoes_table+4) == &04
-    assert <enemy_ship_behaviour_routine0 == &49
-    assert <enemy_ship_behaviour_routine1 == &b1
-    assert <enemy_ship_behaviour_routine2 == &ee
-    assert <enemy_ship_behaviour_routine3 == &1e
-    assert <enemy_ship_behaviour_routine4 == &41
-    assert <enemy_ship_behaviour_routine5 == &6a
-    assert <enemy_ship_behaviour_routine6 == &2e
-    assert <enemy_ship_behaviour_routine7 == &61
-    assert <enemy_torpedo_type_instruction == &20
-    assert <enemy_torpedoes_table == &b4
-    assert <enter_your_name_string == &94
-    assert <envelope1 == &84
-    assert <envelope2 == &92
-    assert <envelope3 == &a0
-    assert <envelope4 == &ae
-    assert <input_osword_block == &e1
-    assert <instructions_string == &92
-    assert <keyboard_or_joystick == &d6
-    assert <sound_0 == &08
-    assert <sound_1 == &c8
-    assert <sound_10 == &f0
-    assert <sound_11 == &f8
-    assert <sound_2 == &d0
-    assert <sound_3 == &d8
-    assert <sound_4 == &e0
-    assert <sound_7 == &f8
-    assert <sound_8 == &00
-    assert <sound_9 == &08
-    assert <sound_enabled == &d7
-    assert <star_table == &00
-    assert <starfleet_records_string == &a5
-    assert <starship_explosion_table == &d0
-    assert <starship_torpedo_type == &5b
-    assert <starship_torpedoes_table == &00
-    assert <the_frontiers_string == &93
-    assert >(enemy_explosion_tables + $0000) == &4d
-    assert >(enemy_explosion_tables + $0040) == &4d
-    assert >(enemy_explosion_tables + $0080) == &4d
-    assert >(enemy_explosion_tables + $00c0) == &4d
-    assert >(enemy_explosion_tables + $0100) == &4e
-    assert >(enemy_explosion_tables + $0140) == &4e
-    assert >(enemy_explosion_tables + $0180) == &4e
-    assert >(enemy_explosion_tables + $01c0) == &4e
-    assert >(enemy_explosion_tables + $0200) == &4f
-    assert >(enemy_explosion_tables + $0240) == &4f
-    assert >(enemy_explosion_tables + $0280) == &4f
-    assert >(enemy_explosion_tables + $02c0) == &4f
-    assert >(enemy_explosion_tables + $0300) == &50
-    assert >(enemy_explosion_tables + $0340) == &50
-    assert >(enemy_explosion_tables + $0380) == &50
-    assert >(enemy_explosion_tables + $03c0) == &50
-    assert >(starship_torpedoes_table+4) == &4f
-    assert >enemy_ship_behaviour_routine0 == &32
-    assert >enemy_ship_behaviour_routine1 == &32
-    assert >enemy_ship_behaviour_routine2 == &32
-    assert >enemy_ship_behaviour_routine3 == &33
-    assert >enemy_ship_behaviour_routine4 == &33
-    assert >enemy_ship_behaviour_routine5 == &33
-    assert >enemy_ship_behaviour_routine6 == &37
-    assert >enemy_ship_behaviour_routine7 == &37
-    assert >enemy_torpedo_type_instruction == &16
-    assert >enemy_torpedoes_table == &4f
-    assert >enter_your_name_string == &44
-    assert >envelope1 == &21
-    assert >envelope2 == &21
-    assert >envelope3 == &21
-    assert >envelope4 == &21
-    assert >input_osword_block == &44
-    assert >instructions_string == &3d
-    assert >keyboard_or_joystick == &1c
-    assert >sound_0 == &20
-    assert >sound_1 == &21
-    assert >sound_10 == &49
-    assert >sound_11 == &49
-    assert >sound_2 == &21
-    assert >sound_3 == &21
-    assert >sound_4 == &21
-    assert >sound_7 == &21
-    assert >sound_8 == &22
-    assert >sound_9 == &22
-    assert >sound_enabled == &1c
-    assert >star_table == &4b
-    assert >starfleet_records_string == &42
-    assert >starship_explosion_table == &4b
-    assert >starship_torpedo_type == &26
-    assert >starship_torpedoes_table == &4f
-    assert >the_frontiers_string == &46
-    assert input_buffer == &44d3
+    assert &30 == '0'
+    assert &7e == '~'
+    assert &00 == <(enemy_explosion_tables + $0000)
+    assert &40 == <(enemy_explosion_tables + $0040)
+    assert &80 == <(enemy_explosion_tables + $0080)
+    assert &c0 == <(enemy_explosion_tables + $00c0)
+    assert &00 == <(enemy_explosion_tables + $0100)
+    assert &40 == <(enemy_explosion_tables + $0140)
+    assert &80 == <(enemy_explosion_tables + $0180)
+    assert &c0 == <(enemy_explosion_tables + $01c0)
+    assert &00 == <(enemy_explosion_tables + $0200)
+    assert &40 == <(enemy_explosion_tables + $0240)
+    assert &80 == <(enemy_explosion_tables + $0280)
+    assert &c0 == <(enemy_explosion_tables + $02c0)
+    assert &00 == <(enemy_explosion_tables + $0300)
+    assert &40 == <(enemy_explosion_tables + $0340)
+    assert &80 == <(enemy_explosion_tables + $0380)
+    assert &c0 == <(enemy_explosion_tables + $03c0)
+    assert &04 == <(starship_torpedoes_table+4)
+    assert &49 == <enemy_ship_behaviour_routine0
+    assert &b1 == <enemy_ship_behaviour_routine1
+    assert &ee == <enemy_ship_behaviour_routine2
+    assert &1e == <enemy_ship_behaviour_routine3
+    assert &41 == <enemy_ship_behaviour_routine4
+    assert &6a == <enemy_ship_behaviour_routine5
+    assert &2e == <enemy_ship_behaviour_routine6
+    assert &61 == <enemy_ship_behaviour_routine7
+    assert &20 == <enemy_torpedo_type_instruction
+    assert &b4 == <enemy_torpedoes_table
+    assert &94 == <enter_your_name_string
+    assert &84 == <envelope1
+    assert &92 == <envelope2
+    assert &a0 == <envelope3
+    assert &ae == <envelope4
+    assert &e1 == <input_osword_block
+    assert &92 == <instructions_string
+    assert &d6 == <keyboard_or_joystick
+    assert &08 == <sound_0
+    assert &c8 == <sound_1
+    assert &f0 == <sound_10
+    assert &f8 == <sound_11
+    assert &d0 == <sound_2
+    assert &d8 == <sound_3
+    assert &e0 == <sound_4
+    assert &f8 == <sound_7
+    assert &00 == <sound_8
+    assert &08 == <sound_9
+    assert &d7 == <sound_enabled
+    assert &00 == <star_table
+    assert &a5 == <starfleet_records_string
+    assert &d0 == <starship_explosion_table
+    assert &5b == <starship_torpedo_type
+    assert &00 == <starship_torpedoes_table
+    assert &93 == <the_frontiers_string
+    assert &4d == >(enemy_explosion_tables + $0000)
+    assert &4d == >(enemy_explosion_tables + $0040)
+    assert &4d == >(enemy_explosion_tables + $0080)
+    assert &4d == >(enemy_explosion_tables + $00c0)
+    assert &4e == >(enemy_explosion_tables + $0100)
+    assert &4e == >(enemy_explosion_tables + $0140)
+    assert &4e == >(enemy_explosion_tables + $0180)
+    assert &4e == >(enemy_explosion_tables + $01c0)
+    assert &4f == >(enemy_explosion_tables + $0200)
+    assert &4f == >(enemy_explosion_tables + $0240)
+    assert &4f == >(enemy_explosion_tables + $0280)
+    assert &4f == >(enemy_explosion_tables + $02c0)
+    assert &50 == >(enemy_explosion_tables + $0300)
+    assert &50 == >(enemy_explosion_tables + $0340)
+    assert &50 == >(enemy_explosion_tables + $0380)
+    assert &50 == >(enemy_explosion_tables + $03c0)
+    assert &4f == >(starship_torpedoes_table+4)
+    assert &32 == >enemy_ship_behaviour_routine0
+    assert &32 == >enemy_ship_behaviour_routine1
+    assert &32 == >enemy_ship_behaviour_routine2
+    assert &33 == >enemy_ship_behaviour_routine3
+    assert &33 == >enemy_ship_behaviour_routine4
+    assert &33 == >enemy_ship_behaviour_routine5
+    assert &37 == >enemy_ship_behaviour_routine6
+    assert &37 == >enemy_ship_behaviour_routine7
+    assert &16 == >enemy_torpedo_type_instruction
+    assert &4f == >enemy_torpedoes_table
+    assert &44 == >enter_your_name_string
+    assert &21 == >envelope1
+    assert &21 == >envelope2
+    assert &21 == >envelope3
+    assert &21 == >envelope4
+    assert &44 == >input_osword_block
+    assert &3d == >instructions_string
+    assert &1c == >keyboard_or_joystick
+    assert &20 == >sound_0
+    assert &21 == >sound_1
+    assert &49 == >sound_10
+    assert &49 == >sound_11
+    assert &21 == >sound_2
+    assert &21 == >sound_3
+    assert &21 == >sound_4
+    assert &21 == >sound_7
+    assert &22 == >sound_8
+    assert &22 == >sound_9
+    assert &1c == >sound_enabled
+    assert &4b == >star_table
+    assert &42 == >starfleet_records_string
+    assert &4b == >starship_explosion_table
+    assert &26 == >starship_torpedo_type
+    assert &4f == >starship_torpedoes_table
+    assert &46 == >the_frontiers_string
+    assert &44d3 == input_buffer
 
 save pydis_start, pydis_end
 

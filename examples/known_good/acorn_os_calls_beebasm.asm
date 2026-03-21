@@ -5847,54 +5847,54 @@ osbyte  = &fff4
     equs "!BOOT"                                                      ; 41c7: 21 42 4f... !BO
 .pydis_end
 
-    assert (255 - inkey_key_shift) EOR 128 == &80
-    assert 255 - inkey_key_ctrl == &01
-    assert 255 - inkey_key_f0 == &20
-    assert 255 - inkey_key_shift == &00
-    assert <input_buffer == &05
-    assert <osfile_block == &99
-    assert <osfind_block == &c7
-    assert <osgbpb8_block == &ba
-    assert <osgbpb_block == &ad
-    assert <osword0block == &00
-    assert <osword10block == &be
-    assert <osword11block == &c7
-    assert <osword12block == &cc
-    assert <osword13block == &d1
-    assert <osword14block == &d9
-    assert <osword15block == &f1
-    assert <osword1block == &85
-    assert <osword255block == &81
-    assert <osword2block == &8a
-    assert <osword3block == &8f
-    assert <osword4block == &94
-    assert <osword5block == &99
-    assert <osword6block == &9e
-    assert <osword7block == &a3
-    assert <osword8block == &ab
-    assert <osword9block == &b9
-    assert >input_buffer == &40
-    assert >osfile_block == &41
-    assert >osfind_block == &41
-    assert >osgbpb8_block == &41
-    assert >osgbpb_block == &41
-    assert >osword0block == &40
-    assert >osword10block == &40
-    assert >osword11block == &40
-    assert >osword12block == &40
-    assert >osword13block == &40
-    assert >osword14block == &40
-    assert >osword15block == &40
-    assert >osword1block == &40
-    assert >osword255block == &41
-    assert >osword2block == &40
-    assert >osword3block == &40
-    assert >osword4block == &40
-    assert >osword5block == &40
-    assert >osword6block == &40
-    assert >osword7block == &40
-    assert >osword8block == &40
-    assert >osword9block == &40
+    assert &80 == (255 - inkey_key_shift) EOR 128
+    assert &01 == 255 - inkey_key_ctrl
+    assert &20 == 255 - inkey_key_f0
+    assert &00 == 255 - inkey_key_shift
+    assert &05 == <input_buffer
+    assert &99 == <osfile_block
+    assert &c7 == <osfind_block
+    assert &ba == <osgbpb8_block
+    assert &ad == <osgbpb_block
+    assert &00 == <osword0block
+    assert &be == <osword10block
+    assert &c7 == <osword11block
+    assert &cc == <osword12block
+    assert &d1 == <osword13block
+    assert &d9 == <osword14block
+    assert &f1 == <osword15block
+    assert &85 == <osword1block
+    assert &81 == <osword255block
+    assert &8a == <osword2block
+    assert &8f == <osword3block
+    assert &94 == <osword4block
+    assert &99 == <osword5block
+    assert &9e == <osword6block
+    assert &a3 == <osword7block
+    assert &ab == <osword8block
+    assert &b9 == <osword9block
+    assert &40 == >input_buffer
+    assert &41 == >osfile_block
+    assert &41 == >osfind_block
+    assert &41 == >osgbpb8_block
+    assert &41 == >osgbpb_block
+    assert &40 == >osword0block
+    assert &40 == >osword10block
+    assert &40 == >osword11block
+    assert &40 == >osword12block
+    assert &40 == >osword13block
+    assert &40 == >osword14block
+    assert &40 == >osword15block
+    assert &40 == >osword1block
+    assert &41 == >osword255block
+    assert &40 == >osword2block
+    assert &40 == >osword3block
+    assert &40 == >osword4block
+    assert &40 == >osword5block
+    assert &40 == >osword6block
+    assert &40 == >osword7block
+    assert &40 == >osword8block
+    assert &40 == >osword9block
 
 save pydis_start, pydis_end
 

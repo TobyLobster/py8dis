@@ -133,9 +133,9 @@ class Cpu(object):
         # the following instruction (if there is one; it might be None).
 
         # We have a number of regular expressions that represent common segments
-        # of code. If we find one of these, then there's likely to be code there.
-        # We generate entry() points for these.
-        self.find_code_with_regex()
+        # of code and/or data. If we find a match, then because we are pre-trace
+        # we can mark code as an entry() point for tracing.
+        self.pre_trace_with_regex()
 
         # Work through each entry point
         while len(self.entry_points) > 0:
@@ -164,6 +164,11 @@ class Cpu(object):
 
         # Calculate the CPU states and analyse the code to add commentary
         self.analyse_code()
+        
+        # Now we have traced and analysed the code we can again look for regex matches
+        # and comment in more detail, knowing the cpu_cache for the state of registers 
+        # at each instruction can tell us for example how many times we execute a loop.
+        self.post_trace_with_regex()
 
         # We defer final label name generating (using LazyString) until tracing
         # is complete, since e.g. part way through tracing we may not have
@@ -255,7 +260,11 @@ class Cpu(object):
     #
     # Regex style analysis
     #
-    def find_code_with_regex(self):
+    def pre_trace_with_regex(self):
+        # Do nothing by default
+        pass
+
+    def post_trace_with_regex(self):
         # Do nothing by default
         pass
 

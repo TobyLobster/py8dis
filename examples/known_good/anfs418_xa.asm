@@ -31,7 +31,7 @@ l0012                                   = $0012
 l0013                                   = $0013
 l0014                                   = $0014
 l0015                                   = $0015
-l0016                                   = $0016
+handle_brkv                             = $0016
 l0032                                   = $0032
 l0036                                   = $0036
 l0051                                   = $0051
@@ -131,6 +131,7 @@ l0600                                   = $0600
 l0601                                   = $0601
 l0695                                   = $0695
 l069e                                   = $069e
+handle_evntv                            = $06ad
 l06bc                                   = $06bc
 l06c5                                   = $06c5
 l0700                                   = $0700
@@ -4191,7 +4192,7 @@ c983f
 c9846
     ldy #$60 // '`'                                                   // 9846: a0 60       .`
     pha                                                               // 9848: 48          H              // push A,Y onto the stack
-    tya                                                               // 9849: 98          .
+    tya                                                               // 9849: 98          .              // A=$60
     pha                                                               // 984a: 48          H
     ldx #0                                                            // 984b: a2 00       ..
     lda (l009a,x)                                                     // 984d: a1 9a       ..
@@ -10387,13 +10388,15 @@ cbe73
 
 // $be83 referenced 1 time by $be66
 cbe83
-    lda #$ad                                                          // be83: a9 ad       ..
+    // Set 'evntv' to 'handle_evntv'
+    lda #<handle_evntv                                                // be83: a9 ad       ..
     sta evntv                                                         // be85: 8d 20 02    . .
-    lda #6                                                            // be88: a9 06       ..
+    lda #>handle_evntv                                                // be88: a9 06       ..
     sta evntv+1                                                       // be8a: 8d 21 02    .!.
-    lda #$16                                                          // be8d: a9 16       ..
+    // Set 'brkv' to 'handle_brkv'
+    lda #<handle_brkv                                                 // be8d: a9 16       ..
     sta brkv                                                          // be8f: 8d 02 02    ...
-    lda #0                                                            // be92: a9 00       ..
+    lda #>handle_brkv                                                 // be92: a9 00       ..
     sta brkv+1                                                        // be94: 8d 03 02    ...
     lda #$8e                                                          // be97: a9 8e       ..
     sta tube_status_1_and_tube_control                                // be99: 8d e0 fe    ...
@@ -10413,7 +10416,7 @@ loop_cbe9e
 // $beb8 referenced 1 time by $bebe
 loop_cbeb8
     lda cbec3,x                                                       // beb8: bd c3 be    ...
-    sta l0016,x                                                       // bebb: 95 16       ..
+    sta handle_brkv,x                                                 // bebb: 95 16       ..
     dex                                                               // bebd: ca          .
     bpl loop_cbeb8                                                    // bebe: 10 f8       ..
 // $bec0 referenced 1 time by $be7b
@@ -11624,10 +11627,10 @@ pydis_end
 //     fdc_1770_data:                            1
 //     filev:                                    1
 //     fscv:                                     1
+//     handle_brkv:                              1
 //     jump_table_high:                          1
 //     jump_table_low:                           1
 //     l0013:                                    1
-//     l0016:                                    1
 //     l0032:                                    1
 //     l0051:                                    1
 //     l0063:                                    1
@@ -12689,7 +12692,6 @@ pydis_end
 //     l0013
 //     l0014
 //     l0015
-//     l0016
 //     l0032
 //     l0036
 //     l0051
