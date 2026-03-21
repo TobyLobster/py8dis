@@ -1577,6 +1577,11 @@ def oswrch_hook(runtime_addr, state, subroutine):
     a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
     if a_addr_pessimistic is not None:
         a = " " + str(memory_binary[a_addr_pessimistic])
+        
+        # If OSASCI with A=13, then OSNEWL is called instead
+        if subroutine.label_name == "osasci" and memory_binary[a_addr_pessimistic] == 13:
+            osnewl_hook(runtime_addr, state, subroutine)
+            return
     else:
         a = ""
     auto_comment(runtime_addr, "Write character%s" % a, align=Align.INLINE)

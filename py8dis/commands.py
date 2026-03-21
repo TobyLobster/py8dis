@@ -227,7 +227,7 @@ def substitute_constants(instruction, reg, constants_dict, define_all_constants=
 
     trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, constants_dict, define_all_constants is not None))
 
-def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=False, move_id=None, is_entry_point=True):
+def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True):
     """
     Define a subroutine.
 
@@ -245,7 +245,7 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
             optional_label(runtime_addr, name, move_id, definable_inline=True)
 
     # Use default hook function
-    if not hook and trace.cpu.default_subroutine_hook:
+    if hook is None and trace.cpu.default_subroutine_hook:
         hook = trace.cpu.default_subroutine_hook
 
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)

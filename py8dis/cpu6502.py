@@ -1519,7 +1519,7 @@ class Cpu6502(cpu.Cpu):
 
                     # check each subroutine
                     for subroutine in trace.subroutines_list:
-                        if not subroutine.hook_function:
+                        if subroutine.hook_function is None:
                             continue
 
                         found = False
