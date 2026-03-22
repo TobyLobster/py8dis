@@ -7041,7 +7041,7 @@ nmi_XXX5 = l0d1f+1
     lda l00c1                                                         ; a8d8: a5 c1       ..
     jsr sub_ca9c2                                                     ; a8da: 20 c2 a9     ..
     lda #&0d                                                          ; a8dd: a9 0d       ..
-    jsr osasci                                                        ; a8df: 20 e3 ff     ..            ; Write character 13
+    jsr osasci                                                        ; a8df: 20 e3 ff     ..            ; Write newline (characters 10 and 13)
 ; &a8e2 referenced 1 time by &a845
 .sub_ca8e2
     lda l0f06,y                                                       ; a8e2: b9 06 0f    ...
@@ -7692,11 +7692,13 @@ nmi_XXX5 = l0d1f+1
     sta l10e4                                                         ; ac93: 8d e4 10    ...
     php                                                               ; ac96: 08          .
     sei                                                               ; ac97: 78          x
-    ; Set 'bytev' to 'handle_bytev'
+
+    ; Set osbyte vector to 'handle_bytev'
     lda #<handle_bytev                                                ; ac98: a9 0f       ..
     sta bytev                                                         ; ac9a: 8d 0a 02    ...
     lda #>handle_bytev                                                ; ac9d: a9 ff       ..
     sta bytev+1                                                       ; ac9f: 8d 0b 02    ...
+
     lda #&b2                                                          ; aca2: a9 b2       ..
     sta (l00b0),y                                                     ; aca4: 91 b0       ..
     iny                                                               ; aca6: c8          .              ; Y=&10
@@ -8105,16 +8107,18 @@ l0600 = sub_c05ff+1
 
 ; &aef8 referenced 1 time by &aedb
 .service_handler_tube_main_init
-    ; Set 'evntv' to 'tube_evntv_handler'
+    ; Set event vector to 'tube_evntv_handler'
     lda #<tube_evntv_handler                                          ; aef8: a9 ad       ..
     sta evntv                                                         ; aefa: 8d 20 02    . .
     lda #>tube_evntv_handler                                          ; aefd: a9 06       ..
     sta evntv+1                                                       ; aeff: 8d 21 02    .!.
-    ; Set 'brkv' to 'tube_brkv_handler'
+
+    ; Set BRK vector to 'tube_brkv_handler'
     lda #<tube_brkv_handler                                           ; af02: a9 16       ..
     sta brkv                                                          ; af04: 8d 02 02    ...
     lda #>tube_brkv_handler                                           ; af07: a9 00       ..
     sta brkv+1                                                        ; af09: 8d 03 02    ...
+
     lda #&8e                                                          ; af0c: a9 8e       ..
     sta tube_status_1_and_tube_control                                ; af0e: 8d e0 fe    ...
     ldy #0                                                            ; af11: a0 00       ..

@@ -906,11 +906,12 @@ PINS
     ; routines
     ; ******************************
 INIT
-    ; Set 'brkv' to 'ERRORS'
+    ; Set BRK vector to 'ERRORS'
     lda #<ERRORS                                   ; 84b5: a9 87       ..
     sta brkv                                       ; 84b7: 8d 02 02    ...            ; Error handling
     lda #>ERRORS                                   ; 84ba: a9 9e       ..
     sta brkv+1                                     ; 84bc: 8d 03 02    ...
+
     lda #osbyte_read_himem                         ; 84bf: a9 84       ..             ; Find end of memory
     jsr osbyte                                     ; 84c1: 20 f4 ff     ..            ; Read top of user memory (HIMEM)
     sty ARETOP                                     ; 84c4: 84 79       .y             ; X and Y contain the address of HIMEM (low, high)
@@ -969,7 +970,7 @@ OUTSCR
 CROUT
     lda #$0d                                       ; 8519: a9 0d       ..
 NCR
-    jmp osasci                                     ; 851b: 4c e3 ff    L..            ; Print the char; Write character 13
+    jmp osasci                                     ; 851b: 4c e3 ff    L..            ; Print the char; Write newline (characters 10 and 13)
 
 
     ; ******************************

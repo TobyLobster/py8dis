@@ -377,11 +377,13 @@ c80ff
     stx l0400                                                         // 8124: 8e 00 04    ...
     dex                                                               // 8127: ca          .              // X=$09
     stx l0401                                                         // 8128: 8e 01 04    ...
-    // Set 'brkv' to 'handle_brkv'
+
+    // Set BRK vector to 'handle_brkv'
     lda #<handle_brkv                                                 // 812b: a9 b2       ..
     sta brkv                                                          // 812d: 8d 02 02    ...
     lda #>handle_brkv                                                 // 8130: a9 b2       ..
     sta brkv+1                                                        // 8132: 8d 03 02    ...
+
     cli                                                               // 8135: 58          X
     jmp c8ff2                                                         // 8136: 4c f2 8f    L..
 

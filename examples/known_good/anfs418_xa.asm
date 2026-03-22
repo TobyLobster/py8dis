@@ -7888,7 +7888,7 @@ caf5a
     lda #$0d                                                          // af5a: a9 0d       ..
 // $af5c referenced 1 time by $af45
 caf5c
-    jsr osasci                                                        // af5c: 20 e3 ff     ..            // Write character 13
+    jsr osasci                                                        // af5c: 20 e3 ff     ..            // Write newline (characters 10 and 13)
 // $af5f referenced 1 time by $af58
 caf5f
     inx                                                               // af5f: e8          .
@@ -10386,18 +10386,21 @@ cbe73
     jsr oswrch                                                        // be7d: 20 ee ff     ..            // Write character
     jmp cbe73                                                         // be80: 4c 73 be    Ls.
 
+
 // $be83 referenced 1 time by $be66
 cbe83
-    // Set 'evntv' to 'handle_evntv'
+    // Set event vector to 'handle_evntv'
     lda #<handle_evntv                                                // be83: a9 ad       ..
     sta evntv                                                         // be85: 8d 20 02    . .
     lda #>handle_evntv                                                // be88: a9 06       ..
     sta evntv+1                                                       // be8a: 8d 21 02    .!.
-    // Set 'brkv' to 'handle_brkv'
+
+    // Set BRK vector to 'handle_brkv'
     lda #<handle_brkv                                                 // be8d: a9 16       ..
     sta brkv                                                          // be8f: 8d 02 02    ...
     lda #>handle_brkv                                                 // be92: a9 00       ..
     sta brkv+1                                                        // be94: 8d 03 02    ...
+
     lda #$8e                                                          // be97: a9 8e       ..
     sta tube_status_1_and_tube_control                                // be99: 8d e0 fe    ...
     ldy #0                                                            // be9c: a0 00       ..

@@ -7016,7 +7016,7 @@ sub_ca8be
     lda l00c1                                                         ; 48d8: a5 c1       ..  :a8d8[1]
     jsr sub_ca9c2                                                     ; 48da: 20 c2 a9     .. :a8da[1]
     lda #$0d                                                          ; 48dd: a9 0d       ..  :a8dd[1]
-    jsr osasci                                                        ; 48df: 20 e3 ff     .. :a8df[1]   ; Write character 13
+    jsr osasci                                                        ; 48df: 20 e3 ff     .. :a8df[1]   ; Write newline (characters 10 and 13)
 ; $48e2 referenced 1 time by $a845[1]
 sub_ca8e2
     lda l0f06,y                                                       ; 48e2: b9 06 0f    ... :a8e2[1]
@@ -7667,11 +7667,13 @@ sub_cac72
     sta l10e4                                                         ; 4c93: 8d e4 10    ... :ac93[1]
     php                                                               ; 4c96: 08          .   :ac96[1]
     sei                                                               ; 4c97: 78          x   :ac97[1]
-    ; Set 'bytev' to 'handle_bytev'
+
+    ; Set osbyte vector to 'handle_bytev'
     lda #<handle_bytev                                                ; 4c98: a9 0f       ..  :ac98[1]
     sta bytev                                                         ; 4c9a: 8d 0a 02    ... :ac9a[1]
     lda #>handle_bytev                                                ; 4c9d: a9 ff       ..  :ac9d[1]
     sta bytev+1                                                       ; 4c9f: 8d 0b 02    ... :ac9f[1]
+
     lda #$b2                                                          ; 4ca2: a9 b2       ..  :aca2[1]
     sta (l00b0),y                                                     ; 4ca4: 91 b0       ..  :aca4[1]
     iny                                                               ; 4ca6: c8          .   :aca6[1]   ; Y=$10
@@ -8072,16 +8074,18 @@ tube_banner_loop
 
 ; $4ef8 referenced 1 time by $aedb[1]
 service_handler_tube_main_init
-    ; Set 'evntv' to 'tube_evntv_handler'
+    ; Set event vector to 'tube_evntv_handler'
     lda #<tube_evntv_handler                                          ; 4ef8: a9 ad       ..  :aef8[1]
     sta evntv                                                         ; 4efa: 8d 20 02    . . :aefa[1]
     lda #>tube_evntv_handler                                          ; 4efd: a9 06       ..  :aefd[1]
     sta evntv+1                                                       ; 4eff: 8d 21 02    .!. :aeff[1]
-    ; Set 'brkv' to 'tube_brkv_handler'
+
+    ; Set BRK vector to 'tube_brkv_handler'
     lda #<tube_brkv_handler                                           ; 4f02: a9 16       ..  :af02[1]
     sta brkv                                                          ; 4f04: 8d 02 02    ... :af04[1]
     lda #>tube_brkv_handler                                           ; 4f07: a9 00       ..  :af07[1]
     sta brkv+1                                                        ; 4f09: 8d 03 02    ... :af09[1]
+
     lda #$8e                                                          ; 4f0c: a9 8e       ..  :af0c[1]
     sta tube_status_1_and_tube_control                                ; 4f0e: 8d e0 fe    ... :af0e[1]
     ldy #0                                                            ; 4f11: a0 00       ..  :af11[1]

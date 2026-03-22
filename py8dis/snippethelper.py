@@ -2,6 +2,9 @@ import classification
 import movemanager
 import trace
 import utils
+import labelmanager
+from align import Align
+import disassembly
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from memorymanager import BinaryLocation, BinaryAddr, RuntimeAddr
 
@@ -136,5 +139,20 @@ class SnippetHelper:
             # optimistic state tracking to restart at the label.
             trace.cpu.entry_points.append(binary_addr)
 
+    def blank_once(self, binary_loc):
+        disassembly.annotate_binary(binary_loc, "", align=Align.BEFORE_LABEL, once_only=True)
+
+    def has_explicit_label(self, binary_loc):
+        binary_addr = self.get_start_loc().binary_addr
+        runtime_addr = movemanager.b2r(binary_addr)
+        move_id = self.get_start_loc().move_id
+
+        if runtime_addr in labelmanager.labels and labelmanager.labels[runtime_addr].explicit_names:
+            labels = labelmanager.labels[runtime_addr].explicit_names[move_id]
+            if labels:
+                return True
+            
+        return False
+    
     def __repr__(self):
         return "binary_addr = {0}, match={1}, labels={2}".format(self.binary_loc, self.match, self.labels)

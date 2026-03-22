@@ -46,6 +46,36 @@ vectors = {
     0x0234: "ind3v"
 }
 
+vector_descriptions = {
+    0x0200: "user vector",
+    0x0202: "BRK vector",
+    0x0204: "IRQ 1 vector",
+    0x0206: "IRQ 2 vector",
+    0x0208: "command line interpreter vector",
+    0x020a: "osbyte vector",
+    0x020c: "osword vector",
+    0x020e: "write character vector",
+    0x0210: "read character vector",
+    0x0212: "load/save file vector",
+    0x0214: "load/save file parameters vector",
+    0x0216: "get byte from file vector",
+    0x0218: "put byte to file vector",
+    0x021a: "multiple BPUT/BGET vector",
+    0x021c: "open/close file vector",
+    0x021e: "filing system control entry vector" ,
+    0x0220: "event vector",
+    0x0222: "user print vector",
+    0x0224: "econet vector",
+    0x0226: "unrecognised VDU command vector",
+    0x0228: "keyboard vector",
+    0x022a: "insert character vector",
+    0x022c: "remove character vector",
+    0x022e: "count/purge buffer vector",
+    0x0230: "spare vector 1",
+    0x0232: "spare vector 2",
+    0x0234: "spare vector 3"
+}
+
 global vector_handler_count
 vector_handler_count = dict()
 
@@ -59,6 +89,7 @@ def pre_trace_writing_to_vector(p):
     nn2_addr = p.get_binary_address('nn2')
     nn1 = p.get_memory('nn1')
     nn2 = p.get_memory('nn2')
+    end = p.get_binary_location('end')
 
     global vector_handler_count
 
@@ -89,7 +120,10 @@ def pre_trace_writing_to_vector(p):
 
             p.entry(RuntimeAddr(new_addr))
 
-            disassembly.comment_binary(p.get_start_loc(), "Set '{0}' to '{1}'".format(vectors[addr1], label_name), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+            if not p.has_explicit_label(p.get_start_loc()):
+                p.blank_once(p.get_start_loc())
+            disassembly.comment_binary(p.get_start_loc(), "Set {0} to '{1}'".format(vector_descriptions[addr1], label_name), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+            p.blank_once(end)
 
             # Get addresses of nn1 and nn2
             nn1_addr_runtime = movemanager.b2r(nn1_addr)
@@ -272,6 +306,17 @@ first_store
     lda #nn2
 second_store
     sta $200 | sta $201 | sta $202 | sta $203 | sta $204 | sta $205 | sta $206 | sta $207 | sta $208 | sta $209 | sta $20a | sta $20b | sta $20c | sta $20d | sta $20e | sta $20f | sta $210 | sta $211 | sta $212 | sta $213 | sta $214 | sta $215 | sta $216 | sta $217 | sta $218 | sta $219 | sta $21a | sta $21b | sta $21c | sta $21d | sta $21e | sta $21f | sta $220 | sta $221 | sta $222 | sta $223 | sta $224 | sta $225 | sta $226 | sta $227 | sta $228 | sta $229 | sta $22a | sta $22b | sta $22c | sta $22d | sta $22e | sta $22f | sta $230 | sta $231 | sta $232 | sta $233 | sta $234 | sta $235
+end
+""")
+
+    register_snippet(pre_trace_writing_to_vector, None, """
+    ldx #nn1
+    ldy #nn2
+first_store
+    stx $200 | stx $201 | stx $202 | stx $203 | stx $204 | stx $205 | stx $206 | stx $207 | stx $208 | stx $209 | stx $20a | stx $20b | stx $20c | stx $20d | stx $20e | stx $20f | stx $210 | stx $211 | stx $212 | stx $213 | stx $214 | stx $215 | stx $216 | stx $217 | stx $218 | stx $219 | stx $21a | stx $21b | stx $21c | stx $21d | stx $21e | stx $21f | stx $220 | stx $221 | stx $222 | stx $223 | stx $224 | stx $225 | stx $226 | stx $227 | stx $228 | stx $229 | stx $22a | stx $22b | stx $22c | stx $22d | stx $22e | stx $22f | stx $230 | stx $231 | stx $232 | stx $233 | stx $234 | stx $235
+second_store
+    sty $200 | sty $201 | sty $202 | sty $203 | sty $204 | sty $205 | sty $206 | sty $207 | sty $208 | sty $209 | sty $20a | sty $20b | sty $20c | sty $20d | sty $20e | sty $20f | sty $210 | sty $211 | sty $212 | sty $213 | sty $214 | sty $215 | sty $216 | sty $217 | sty $218 | sty $219 | sty $21a | sty $21b | sty $21c | sty $21d | sty $21e | sty $21f | sty $220 | sty $221 | sty $222 | sty $223 | sty $224 | sty $225 | sty $226 | sty $227 | sty $228 | sty $229 | sty $22a | sty $22b | sty $22c | sty $22d | sty $22e | sty $22f | sty $230 | sty $231 | sty $232 | sty $233 | sty $234 | sty $235
+end
 """)
 
 

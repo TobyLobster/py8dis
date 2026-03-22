@@ -12470,10 +12470,13 @@ screen_addr_high = opcode10+2
     lda #0                                                            ; 4cb6: a9 00       ..
     sta suppress_sound_flag                                           ; 4cb8: 85 41       .A
     sta music_index                                                   ; 4cba: 85 42       .B
+
+    ; Set event vector to 'event_routine'
     ldx #<event_routine                                               ; 4cbc: a2 9d       ..
     ldy #>event_routine                                               ; 4cbe: a0 51       .Q
     stx evntv                                                         ; 4cc0: 8e 20 02    . .
     sty evntv+1                                                       ; 4cc3: 8c 21 02    .!.
+
     lda #osbyte_enable_event                                          ; 4cc6: a9 0e       ..
     ldx #event_start_of_vertical_sync                                 ; 4cc8: a2 04       ..
     jsr osbyte                                                        ; 4cca: 20 f4 ff     ..            ; Enable 'Start of vertical sync' event (X=4)

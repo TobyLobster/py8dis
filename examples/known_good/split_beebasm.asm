@@ -31,7 +31,7 @@ osasci  = &ffe3
     dex                                                               ; 2009: ca          .
     bne loop_c2006                                                    ; 200a: d0 fa       ..
     lda #&0d                                                          ; 200c: a9 0d       ..
-    jmp osasci                                                        ; 200e: 4c e3 ff    L..            ; Write character 13
+    jmp osasci                                                        ; 200e: 4c e3 ff    L..            ; Write newline (characters 10 and 13)
 
 .pydis_end
 

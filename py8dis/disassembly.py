@@ -113,6 +113,17 @@ def add_raw_annotation(binary_loc, text, *, align=Align.BEFORE_LABEL, priority=N
     binary_loc = movemanager.make_binloc(binary_loc)
     annotations[binary_loc].append(Annotation(text, align, priority))
 
+def annotate_binary(binary_loc, s, *, align=Align.BEFORE_LABEL, priority=None, once_only=False):
+    """Add a raw string directly to the assembly code output at the
+    given address."""
+
+    # Check if it's already been added
+    if once_only:
+        match = next((True for a in annotations[binary_loc] if a.text == s), None)
+        if match is not None:
+            return
+    add_raw_annotation(binary_loc, s, align=align, priority=priority)
+
 def add_constant(value, name, comment=None, align=Align.INLINE, format=Format.DEFAULT):
     """Create a named constant value."""
 

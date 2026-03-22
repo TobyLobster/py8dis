@@ -341,16 +341,20 @@ def auto_comment(runtime_addr, text, inline=False, align=None, indent=0, show_bl
                 blank(runtime_addr)
             disassembly.comment(runtime_addr, text, word_wrap=word_wrap, indent=indent, align=align, auto_generated=True)
 
-def annotate(runtime_addr, s, *, align=Align.BEFORE_LABEL, priority=None):
+def annotate(runtime_addr, s, *, align=Align.BEFORE_LABEL, priority=None, once_only=False):
     """Add a raw string directly to the assembly code output at the
     given address."""
 
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    disassembly.add_raw_annotation(binary_loc, s, align=align, priority=priority)
+    
+    disassembly.annotate_binary(binary_loc, s, align=align, priority=priority, once_only=once_only)
 
 def blank(runtime_addr, *, align=Align.BEFORE_LABEL, priority=None):
     annotate(runtime_addr, "", align=align, priority=priority)
+
+def blank_once(runtime_addr, *, align=Align.BEFORE_LABEL, priority=None):
+    annotate(runtime_addr, "", align=align, priority=priority, once_only=True)
 
 def expr(runtime_addr, s, force=True):
     """Define a string expression for an address.
