@@ -1514,13 +1514,13 @@ getspritedata
     lsr                                                               ; 19f7: 4a          J
     lsr                                                               ; 19f8: 4a          J
     sta spritewidth                                                   ; 19f9: 85 7a       .z
-    iny                                                               ; 19fb: c8          .              ; Y=$01
+    iny                                                               ; 19fb: c8          .              ; Y=1
     lda (read),y                                                      ; 19fc: b1 76       .v
     sta spriteheight                                                  ; 19fe: 85 78       .x
-    iny                                                               ; 1a00: c8          .              ; Y=$02
+    iny                                                               ; 1a00: c8          .              ; Y=2
     lda (read),y                                                      ; 1a01: b1 76       .v
     tax                                                               ; 1a03: aa          .
-    iny                                                               ; 1a04: c8          .              ; Y=$03
+    iny                                                               ; 1a04: c8          .              ; Y=3
     lda (read),y                                                      ; 1a05: b1 76       .v
     stx read                                                          ; 1a07: 86 76       .v
     sta read + 1                                                      ; 1a09: 85 77       .w
@@ -1761,20 +1761,20 @@ initmap
     ldy #0                                                            ; 1b4a: a0 00       ..
     lda (mapdataptr),y                                                ; 1b4c: b1 51       .Q
     sta numplatforms                                                  ; 1b4e: 85 53       .S
-    iny                                                               ; 1b50: c8          .              ; Y=$01
+    iny                                                               ; 1b50: c8          .              ; Y=1
     lda (mapdataptr),y                                                ; 1b51: b1 51       .Q
     sta numladders                                                    ; 1b53: 85 54       .T
-    iny                                                               ; 1b55: c8          .              ; Y=$02
+    iny                                                               ; 1b55: c8          .              ; Y=2
     lda (mapdataptr),y                                                ; 1b56: b1 51       .Q
     sta liftflag                                                      ; 1b58: 85 55       .U
-    iny                                                               ; 1b5a: c8          .              ; Y=$03
+    iny                                                               ; 1b5a: c8          .              ; Y=3
     lda (mapdataptr),y                                                ; 1b5b: b1 51       .Q
     sta numseeds                                                      ; 1b5d: 85 56       .V
-    iny                                                               ; 1b5f: c8          .              ; Y=$04
+    iny                                                               ; 1b5f: c8          .              ; Y=4
     lda (mapdataptr),y                                                ; 1b60: b1 51       .Q
     sta numbirds                                                      ; 1b62: 85 57       .W
     lda #0                                                            ; 1b64: a9 00       ..
-    tax                                                               ; 1b66: aa          .              ; X=$00
+    tax                                                               ; 1b66: aa          .              ; X=0
 clearmaploop
     sta mapdata,x                                                     ; 1b67: 9d 00 06    ...
     sta mapdata + $0100,x                                             ; 1b6a: 9d 00 07    ...

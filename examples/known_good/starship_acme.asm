@@ -705,7 +705,7 @@ torpedo_still_alive
     sec                                                               ; 235d: 38          8   :125d[1]
     sbc (temp1_low),y                                                 ; 235e: f1 82       ..  :125e[1]
     sta output_pixels                                                 ; 2360: 85 72       .r  :1260[1]
-    iny                                                               ; 2362: c8          .   :1262[1]   ; Y=$02
+    iny                                                               ; 2362: c8          .   :1262[1]   ; Y=2
     lda (temp0_low),y                                                 ; 2363: b1 80       ..  :1263[1]
     sbc (temp1_low),y                                                 ; 2365: f1 82       ..  :1265[1]
     asl output_pixels                                                 ; 2367: 06 72       .r  :1267[1]
@@ -713,12 +713,12 @@ torpedo_still_alive
     asl output_pixels                                                 ; 236a: 06 72       .r  :126a[1]
     rol                                                               ; 236c: 2a          *   :126c[1]
     sta output_fraction                                               ; 236d: 85 73       .s  :126d[1]
-    iny                                                               ; 236f: c8          .   :126f[1]   ; Y=$03
+    iny                                                               ; 236f: c8          .   :126f[1]   ; Y=3
     lda (temp0_low),y                                                 ; 2370: b1 80       ..  :1270[1]
     sec                                                               ; 2372: 38          8   :1272[1]
     sbc (temp1_low),y                                                 ; 2373: f1 82       ..  :1273[1]
     sta temp9                                                         ; 2375: 85 76       .v  :1275[1]
-    iny                                                               ; 2377: c8          .   :1277[1]   ; Y=$04
+    iny                                                               ; 2377: c8          .   :1277[1]   ; Y=4
     lda (temp0_low),y                                                 ; 2378: b1 80       ..  :1278[1]
     sbc (temp1_low),y                                                 ; 237a: f1 82       ..  :127a[1]
     asl temp9                                                         ; 237c: 06 76       .v  :127c[1]
@@ -731,16 +731,16 @@ torpedo_still_alive
     clc                                                               ; 2388: 18          .   :1288[1]
     adc output_pixels                                                 ; 2389: 65 72       er  :1289[1]
     sta (temp0_low),y                                                 ; 238b: 91 80       ..  :128b[1]
-    iny                                                               ; 238d: c8          .   :128d[1]   ; Y=$02
+    iny                                                               ; 238d: c8          .   :128d[1]   ; Y=2
     lda (temp0_low),y                                                 ; 238e: b1 80       ..  :128e[1]
     adc output_fraction                                               ; 2390: 65 73       es  :1290[1]
     sta (temp0_low),y                                                 ; 2392: 91 80       ..  :1292[1]
-    iny                                                               ; 2394: c8          .   :1294[1]   ; Y=$03
+    iny                                                               ; 2394: c8          .   :1294[1]   ; Y=3
     lda (temp0_low),y                                                 ; 2395: b1 80       ..  :1295[1]
     clc                                                               ; 2397: 18          .   :1297[1]
     adc temp9                                                         ; 2398: 65 76       ev  :1298[1]
     sta (temp0_low),y                                                 ; 239a: 91 80       ..  :129a[1]
-    iny                                                               ; 239c: c8          .   :129c[1]   ; Y=$04
+    iny                                                               ; 239c: c8          .   :129c[1]   ; Y=4
     lda (temp0_low),y                                                 ; 239d: b1 80       ..  :129d[1]
     adc temp10                                                        ; 239f: 65 77       ew  :129f[1]
     sta (temp0_low),y                                                 ; 23a1: 91 80       ..  :12a1[1]
@@ -749,16 +749,16 @@ torpedo_still_alive
     clc                                                               ; 23a7: 18          .   :12a7[1]
     adc output_pixels                                                 ; 23a8: 65 72       er  :12a8[1]
     sta (temp1_low),y                                                 ; 23aa: 91 82       ..  :12aa[1]
-    iny                                                               ; 23ac: c8          .   :12ac[1]   ; Y=$02
+    iny                                                               ; 23ac: c8          .   :12ac[1]   ; Y=2
     lda (temp1_low),y                                                 ; 23ad: b1 82       ..  :12ad[1]
     adc output_fraction                                               ; 23af: 65 73       es  :12af[1]
     sta (temp1_low),y                                                 ; 23b1: 91 82       ..  :12b1[1]
-    iny                                                               ; 23b3: c8          .   :12b3[1]   ; Y=$03
+    iny                                                               ; 23b3: c8          .   :12b3[1]   ; Y=3
     lda (temp1_low),y                                                 ; 23b4: b1 82       ..  :12b4[1]
     clc                                                               ; 23b6: 18          .   :12b6[1]
     adc temp9                                                         ; 23b7: 65 76       ev  :12b7[1]
     sta (temp1_low),y                                                 ; 23b9: 91 82       ..  :12b9[1]
-    iny                                                               ; 23bb: c8          .   :12bb[1]   ; Y=$04
+    iny                                                               ; 23bb: c8          .   :12bb[1]   ; Y=4
     lda (temp1_low),y                                                 ; 23bc: b1 82       ..  :12bc[1]
     adc temp10                                                        ; 23be: 65 77       ew  :12be[1]
     sta (temp1_low),y                                                 ; 23c0: 91 82       ..  :12c0[1]
@@ -1022,16 +1022,16 @@ small_starship_torpedoes
     lda (temp0_low),y                                                 ; 2582: b1 80       ..  :1482[1]
     clc                                                               ; 2584: 18          .   :1484[1]
     adc (temp1_low),y                                                 ; 2585: 71 82       q.  :1485[1]
-    iny                                                               ; 2587: c8          .   :1487[1]   ; Y=$02
+    iny                                                               ; 2587: c8          .   :1487[1]   ; Y=2
     lda (temp0_low),y                                                 ; 2588: b1 80       ..  :1488[1]
     adc (temp1_low),y                                                 ; 258a: 71 82       q.  :148a[1]
     ror                                                               ; 258c: 6a          j   :148c[1]
     sta x_pixels                                                      ; 258d: 85 7a       .z  :148d[1]
-    iny                                                               ; 258f: c8          .   :148f[1]   ; Y=$03
+    iny                                                               ; 258f: c8          .   :148f[1]   ; Y=3
     lda (temp0_low),y                                                 ; 2590: b1 80       ..  :1490[1]
     clc                                                               ; 2592: 18          .   :1492[1]
     adc (temp1_low),y                                                 ; 2593: 71 82       q.  :1493[1]
-    iny                                                               ; 2595: c8          .   :1495[1]   ; Y=$04
+    iny                                                               ; 2595: c8          .   :1495[1]   ; Y=4
     lda (temp0_low),y                                                 ; 2596: b1 80       ..  :1496[1]
     adc (temp1_low),y                                                 ; 2598: 71 82       q.  :1498[1]
     ror                                                               ; 259a: 6a          j   :149a[1]
@@ -1112,7 +1112,7 @@ enemy_torpedo_still_alive
     lsr                                                               ; 2610: 4a          J   :1510[1]
     lsr                                                               ; 2611: 4a          J   :1511[1]
     tax                                                               ; 2612: aa          .   :1512[1]
-    dey                                                               ; 2613: 88          .   :1513[1]   ; Y=$04
+    dey                                                               ; 2613: 88          .   :1513[1]   ; Y=4
     lda cosine_table,x                                                ; 2614: bd 78 0e    .x. :1514[1]
     clc                                                               ; 2617: 18          .   :1517[1]
     adc (temp0_low),y                                                 ; 2618: 71 80       q.  :1518[1]
@@ -1138,7 +1138,7 @@ skip_uninversion2
     bcc consider_collisions                                           ; 263a: 90 08       ..  :153a[1]
 remove_torpedo
     lda #0                                                            ; 263c: a9 00       ..  :153c[1]
-    tay                                                               ; 263e: a8          .   :153e[1]   ; Y=$00
+    tay                                                               ; 263e: a8          .   :153e[1]   ; Y=0
     sta (temp0_low),y                                                 ; 263f: 91 80       ..  :153f[1]
     jmp move_to_next_enemy_torpedo                                    ; 2641: 4c 89 15    L.. :1541[1]
 
@@ -2471,11 +2471,11 @@ loop6
     and #7                                                            ; 2f0d: 29 07       ).  :1e0d[1]
     tax                                                               ; 2f0f: aa          .   :1e0f[1]
     lda starship_explosion_piece_ageing_table,x                       ; 2f10: bd 1c 1d    ... :1e10[1]
-    dey                                                               ; 2f13: 88          .   :1e13[1]   ; Y=$00
+    dey                                                               ; 2f13: 88          .   :1e13[1]   ; Y=0
     clc                                                               ; 2f14: 18          .   :1e14[1]
     adc (temp0_low),y                                                 ; 2f15: 71 80       q.  :1e15[1]
     bcc skip20                                                        ; 2f17: 90 05       ..  :1e17[1]
-    tya                                                               ; 2f19: 98          .   :1e19[1]   ; A=$00
+    tya                                                               ; 2f19: 98          .   :1e19[1]   ; A=0
     sta (temp0_low),y                                                 ; 2f1a: 91 80       ..  :1e1a[1]
     beq move_to_next_starship_explosion_piece                         ; 2f1c: f0 0d       ..  :1e1c[1]   ; ALWAYS branch
 
@@ -2648,7 +2648,7 @@ initialise_starship_explosion_piece
     lda rnd_1                                                         ; 3032: ad d1 1c    ... :1f32[1]
     and #7                                                            ; 3035: 29 07       ).  :1f35[1]
     sta (temp0_low),y                                                 ; 3037: 91 80       ..  :1f37[1]
-    dey                                                               ; 3039: 88          .   :1f39[1]   ; Y=$01
+    dey                                                               ; 3039: 88          .   :1f39[1]   ; Y=1
     lda rnd_2                                                         ; 303a: ad d2 1c    ... :1f3a[1]
     lsr                                                               ; 303d: 4a          J   :1f3d[1]
     sta (temp0_low),y                                                 ; 303e: 91 80       ..  :1f3e[1]
@@ -3438,7 +3438,7 @@ skip_explosion_or_firing_sound
     beq set_escape_capsule_sound_channel                              ; 358e: f0 06       ..  :248e[1]
     lda escape_capsule_destroyed                                      ; 3590: ad 90 28    ..( :2490[1]
     bne set_escape_capsule_sound_channel                              ; 3593: d0 01       ..  :2493[1]
-    iny                                                               ; 3595: c8          .   :2495[1]   ; Y=$01
+    iny                                                               ; 3595: c8          .   :2495[1]   ; Y=1
 set_escape_capsule_sound_channel
     sty escape_capsule_sound_channel                                  ; 3596: 8c db 1c    ... :2496[1]
     lda starship_has_exploded                                         ; 3599: ad c9 1c    ... :2499[1]
@@ -3870,10 +3870,10 @@ still_less_than
     dey                                                               ; 38a9: 88          .   :27a9[1]   ; Y=$0a
     cmp #$35                                                          ; 38aa: c9 35       .5  :27aa[1]
     bcc finished_calculating_partial_angle                            ; 38ac: 90 06       ..  :27ac[1]
-    dey                                                               ; 38ae: 88          .   :27ae[1]   ; Y=$09
+    dey                                                               ; 38ae: 88          .   :27ae[1]   ; Y=9
     cmp #$a3                                                          ; 38af: c9 a3       ..  :27af[1]
     bcc finished_calculating_partial_angle                            ; 38b1: 90 01       ..  :27b1[1]
-    dey                                                               ; 38b3: 88          .   :27b3[1]   ; Y=$08
+    dey                                                               ; 38b3: 88          .   :27b3[1]   ; Y=8
 finished_calculating_partial_angle
     tya                                                               ; 38b4: 98          .   :27b4[1]
 adjust_angle_for_inversions_and_swap
@@ -4222,7 +4222,7 @@ add_single_torpedo_to_enemy_torpedo_cluster
     ldy #4                                                            ; 3b20: a0 04       ..  :2a20[1]
     lda output_pixels                                                 ; 3b22: a5 72       .r  :2a22[1]
     sta (temp0_low),y                                                 ; 3b24: 91 80       ..  :2a24[1]
-    iny                                                               ; 3b26: c8          .   :2a26[1]   ; Y=$05
+    iny                                                               ; 3b26: c8          .   :2a26[1]   ; Y=5
     lda enemy_ships_angle,x                                           ; 3b27: bd 87 04    ... :2a27[1]
     sta (temp0_low),y                                                 ; 3b2a: 91 80       ..  :2a2a[1]
     inc enemy_ship_fired_torpedo                                      ; 3b2c: ee dc 1c    ... :2a2c[1]
@@ -5812,7 +5812,7 @@ clusters_unset
     lda probability_of_new_enemy_ship_being_large                     ; 455d: ad bd 33    ..3 :345d[1]
     cmp rnd_2                                                         ; 4560: cd d2 1c    ... :3460[1]
     bcc small_ship                                                    ; 4563: 90 01       ..  :3463[1]
-    iny                                                               ; 4565: c8          .   :3465[1]   ; Y=$01
+    iny                                                               ; 4565: c8          .   :3465[1]   ; Y=1
 small_ship
     tya                                                               ; 4566: 98          .   :3466[1]
     sta enemy_ships_type,x                                            ; 4567: 9d 0a 04    ... :3467[1]
@@ -7841,7 +7841,7 @@ unused108
 
 entry_point
     lda #0                                                            ; 61b1: a9 00       ..
-    tay                                                               ; 61b3: a8          .              ; Y=$00
+    tay                                                               ; 61b3: a8          .              ; Y=0
     sta temp0_low                                                     ; 61b4: 85 80       ..
     lda #$0e                                                          ; 61b6: a9 0e       ..
     sta temp0_high                                                    ; 61b8: 85 81       ..

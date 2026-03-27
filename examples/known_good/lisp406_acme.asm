@@ -588,7 +588,7 @@ EQUATE
     bne NO                                         ; 830f: d0 1c       ..
     cmp (ARGB),y                                   ; 8311: d1 3c       .<
     bne NO                                         ; 8313: d0 18       ..
-    iny                                            ; 8315: c8          .              ; Y=$01
+    iny                                            ; 8315: c8          .              ; Y=1
     lda (ARGA),y                                   ; 8316: b1 3a       .:
     cmp (ARGB),y                                   ; 8318: d1 3c       .<             ; Same length?
     bne NO                                         ; 831a: d0 11       ..
@@ -646,7 +646,7 @@ POPPLE
     sty POPPY                                      ; 8352: 84 8d       ..             ; Save Y
     ldy #2                                         ; 8354: a0 02       ..             ; Put value back
     sta (RETADD),y                                 ; 8356: 91 85       ..             ; into atom value
-    iny                                            ; 8358: c8          .              ; cell; Y=$03
+    iny                                            ; 8358: c8          .              ; cell; Y=3
     txa                                            ; 8359: 8a          .
     sta (RETADD),y                                 ; 835a: 91 85       ..
     ldy POPPY                                      ; 835c: a4 8d       ..             ; Fetch Y back
@@ -794,22 +794,22 @@ XROOM
     pha                                            ; 8419: 48          H
     lda WSD+1                                      ; 841a: a5 84       ..
     sta (SP),y                                     ; 841c: 91 7e       .~
-    dey                                            ; 841e: 88          .              ; Y=$03
+    dey                                            ; 841e: 88          .              ; Y=3
     lda WSD                                        ; 841f: a5 83       ..
     sta (SP),y                                     ; 8421: 91 7e       .~
     lda (WSD),y                                    ; 8423: b1 83       ..             ; Old value and atom
-    dey                                            ; 8425: 88          .              ; Y=$02
+    dey                                            ; 8425: 88          .              ; Y=2
     sta (SP),y                                     ; 8426: 91 7e       .~             ; on stack
     lda (WSD),y                                    ; 8428: b1 83       ..
-    dey                                            ; 842a: 88          .              ; Y=$01
+    dey                                            ; 842a: 88          .              ; Y=1
     sta (SP),y                                     ; 842b: 91 7e       .~
-    dey                                            ; 842d: 88          .              ; Y=$00
+    dey                                            ; 842d: 88          .              ; Y=0
     pla                                            ; 842e: 68          h
     sta (SP),y                                     ; 842f: 91 7e       .~             ; Bound var size
     ldy #2                                         ; 8431: a0 02       ..
     lda TVS,x                                      ; 8433: b5 30       .0             ; New value in atom
     sta (WSD),y                                    ; 8435: 91 83       ..
-    iny                                            ; 8437: c8          .              ; Y=$03
+    iny                                            ; 8437: c8          .              ; Y=3
     lda TVS+1,x                                    ; 8438: b5 31       .1
     sta (WSD),y                                    ; 843a: 91 83       ..
     rts                                            ; 843c: 60          `
@@ -883,7 +883,7 @@ ROOM
     ldy #2                                         ; 8497: a0 02       ..
     lda #<ZA                                       ; 8499: a9 02       ..             ; UNDEFINED
     sta (POINT),y                                  ; 849b: 91 7a       .z
-    iny                                            ; 849d: c8          .              ; Y=$03
+    iny                                            ; 849d: c8          .              ; Y=3
     lda IMBOT                                      ; 849e: ad 2c 04    .,.
     sta (POINT),y                                  ; 84a1: 91 7a       .z
 OBSCUR
@@ -1023,7 +1023,7 @@ EVAL1
     ldy #2                                         ; 8562: a0 02       ..
     lda (ARG),y                                    ; 8564: b1 30       .0
     tax                                            ; 8566: aa          .
-    iny                                            ; 8567: c8          .              ; Get value cell; Y=$03
+    iny                                            ; 8567: c8          .              ; Get value cell; Y=3
     lda (ARG),y                                    ; 8568: b1 30       .0
     stx ARG                                        ; 856a: 86 30       .0
     sta ARG+1                                      ; 856c: 85 31       .1
@@ -1034,13 +1034,13 @@ EVLIST
     ldy #4                                         ; 8572: a0 04       ..
     lda (ARG),y                                    ; 8574: b1 30       .0
     sta WSA+1                                      ; 8576: 85 35       .5
-    dey                                            ; 8578: 88          .              ; Y=$03
+    dey                                            ; 8578: 88          .              ; Y=3
     lda (ARG),y                                    ; 8579: b1 30       .0
     sta WSA                                        ; 857b: 85 34       .4
-    dey                                            ; 857d: 88          .              ; Y=$02
+    dey                                            ; 857d: 88          .              ; Y=2
     lda (ARG),y                                    ; 857e: b1 30       .0
     tax                                            ; 8580: aa          .
-    dey                                            ; 8581: 88          .              ; Y=$01
+    dey                                            ; 8581: 88          .              ; Y=1
     lda (ARG),y                                    ; 8582: b1 30       .0
     stx ARG+1                                      ; 8584: 86 31       .1
     sta ARG                                        ; 8586: 85 30       .0
@@ -1066,11 +1066,11 @@ FUN
     lda (ARG),y                                    ; 85b2: b1 30       .0
     beq EVARTS                                     ; 85b4: f0 f5       ..             ; Char atom
     bpl ENT                                        ; 85b6: 10 12       ..
-    iny                                            ; 85b8: c8          .              ; Lambda?; Y=$01
+    iny                                            ; 85b8: c8          .              ; Lambda?; Y=1
     lda (ARG),y                                    ; 85b9: b1 30       .0
     cmp #<LAMBDA                                   ; 85bb: c9 18       ..
     bne EVARTS                                     ; 85bd: d0 ec       ..
-    iny                                            ; 85bf: c8          .              ; Y=$02
+    iny                                            ; 85bf: c8          .              ; Y=2
     lda (ARG),y                                    ; 85c0: b1 30       .0
     cmp IMBOT                                      ; 85c2: cd 2c 04    .,.
     bne EVARTS                                     ; 85c5: d0 e4       ..
@@ -1129,7 +1129,7 @@ ISFSBR
     lda (WSC),y                                    ; 8629: b1 38       .8
     beq GOSUB                                      ; 862b: f0 2c       .,
     sta WSD+1                                      ; 862d: 85 84       ..
-    dey                                            ; 862f: 88          .              ; Y=$02
+    dey                                            ; 862f: 88          .              ; Y=2
     lda (WSC),y                                    ; 8630: b1 38       .8
     sta WSD                                        ; 8632: 85 83       ..             ; List in WSD
     jmp PLOP                                       ; 8634: 4c 40 86    L@.
@@ -1147,7 +1147,7 @@ PLOP
     ldy #1                                         ; 8644: a0 01       ..
     lda (WSD),y                                    ; 8646: b1 83       ..
     sta TVS,x                                      ; 8648: 95 30       .0
-    iny                                            ; 864a: c8          .              ; Y=$02
+    iny                                            ; 864a: c8          .              ; Y=2
     lda (WSD),y                                    ; 864b: b1 83       ..
     sta TVS+1,x                                    ; 864d: 95 31       .1
 SKIP
@@ -1161,7 +1161,7 @@ GOSUB
     ldy #4                                         ; 8659: a0 04       ..             ; Go and do it!
     lda (WSC),y                                    ; 865b: b1 38       .8
     sta RETADD                                     ; 865d: 85 85       ..
-    iny                                            ; 865f: c8          .              ; Y=$05
+    iny                                            ; 865f: c8          .              ; Y=5
     lda (WSC),y                                    ; 8660: b1 38       .8
     sta RETADD+1                                   ; 8662: 85 86       ..
     jmp (RETADD)                                   ; 8664: 6c 85 00    l..            ; End of subrs
@@ -1177,7 +1177,7 @@ LAMOK
     lda (ARG),y                                    ; 866b: b1 30       .0
     beq LAMERR                                     ; 866d: f0 34       .4             ; No parms or body
     sta WSD+1                                      ; 866f: 85 84       ..
-    dey                                            ; 8671: 88          .              ; Y=$03
+    dey                                            ; 8671: 88          .              ; Y=3
     lda (ARG),y                                    ; 8672: b1 30       .0
     sta WSD                                        ; 8674: 85 83       ..
     ldx #$0a                                       ; 8676: a2 0a       ..
@@ -1185,16 +1185,16 @@ LAMOK
     ldy #0                                         ; 867a: a0 00       ..
     lda (WSD),y                                    ; 867c: b1 83       ..
     bpl LAMERR                                     ; 867e: 10 23       .#
-    iny                                            ; 8680: c8          .              ; Y=$01
+    iny                                            ; 8680: c8          .              ; Y=1
     lda (WSD),y                                    ; 8681: b1 83       ..             ; Parm list
     sta WSB                                        ; 8683: 85 36       .6
-    iny                                            ; 8685: c8          .              ; Y=$02
+    iny                                            ; 8685: c8          .              ; Y=2
     lda (WSD),y                                    ; 8686: b1 83       ..
     sta WSB+1                                      ; 8688: 85 37       .7
-    iny                                            ; 868a: c8          .              ; Y=$03
+    iny                                            ; 868a: c8          .              ; Y=3
     lda (WSD),y                                    ; 868b: b1 83       ..             ; Body in WSC
     sta WSC                                        ; 868d: 85 38       .8
-    iny                                            ; 868f: c8          .              ; Y=$04
+    iny                                            ; 868f: c8          .              ; Y=4
     lda (WSD),y                                    ; 8690: b1 83       ..
     sta WSC+1                                      ; 8692: 85 39       .9
     lda WSB+1                                      ; 8694: a5 37       .7             ; NIL parms?
@@ -1241,10 +1241,10 @@ XENON
     lda (WSB),y                                    ; 86d6: b1 36       .6
     beq LAMERR                                     ; 86d8: f0 c9       ..
     sta WSD+1                                      ; 86da: 85 84       ..
-    dey                                            ; 86dc: 88          .              ; Y=$01
+    dey                                            ; 86dc: 88          .              ; Y=1
     lda (WSB),y                                    ; 86dd: b1 36       .6
     sta WSD                                        ; 86df: 85 83       ..
-    dey                                            ; 86e1: 88          .              ; Y=$00
+    dey                                            ; 86e1: 88          .              ; Y=0
     cpx TVSEXT                                     ; 86e2: e4 33       .3             ; Enough args?
     lda (WSD),y                                    ; 86e4: b1 83       ..
     beq DOBIND                                     ; 86e6: f0 24       .$
@@ -1253,7 +1253,7 @@ XENON
     ldy #3                                         ; 86ec: a0 03       ..
     lda (WSD),y                                    ; 86ee: b1 83       ..
     sta TVS,x                                      ; 86f0: 95 30       .0
-    iny                                            ; 86f2: c8          .              ; The default value?; Y=$04
+    iny                                            ; 86f2: c8          .              ; The default value?; Y=4
     lda (WSD),y                                    ; 86f3: b1 83       ..
     sta TVS+1,x                                    ; 86f5: 95 31       .1
     clc                                            ; 86f7: 18          .
@@ -1262,12 +1262,12 @@ NOD
     lda (WSD),y                                    ; 86fa: b1 83       ..
     beq LAMERR                                     ; 86fc: f0 a5       ..             ; Get the atom bind
     pha                                            ; 86fe: 48          H
-    dey                                            ; 86ff: 88          .              ; Y=$01
+    dey                                            ; 86ff: 88          .              ; Y=1
     lda (WSD),y                                    ; 8700: b1 83       ..
     sta WSD                                        ; 8702: 85 83       ..
     pla                                            ; 8704: 68          h
     sta WSD+1                                      ; 8705: 85 84       ..
-    dey                                            ; 8707: 88          .              ; Y=$00
+    dey                                            ; 8707: 88          .              ; Y=0
     lda (WSD),y                                    ; 8708: b1 83       ..
     bne LAMERR                                     ; 870a: d0 97       ..             ; Must be char atom
 DOBIND
@@ -1282,7 +1282,7 @@ GADARG
     lda (WSB),y                                    ; 8718: b1 36       .6
     beq XLAMB                                      ; 871a: f0 21       .!
     pha                                            ; 871c: 48          H
-    dey                                            ; 871d: 88          .              ; Y=$03
+    dey                                            ; 871d: 88          .              ; Y=3
     lda (WSB),y                                    ; 871e: b1 36       .6
     sta WSB                                        ; 8720: 85 36       .6
     pla                                            ; 8722: 68          h
@@ -1430,7 +1430,7 @@ ODDAT
     ldy #2                                         ; 87f8: a0 02       ..
     lda ARG+1                                      ; 87fa: a5 31       .1
     sta (POINT),y                                  ; 87fc: 91 7a       .z
-    dey                                            ; 87fe: 88          .              ; Y=$01
+    dey                                            ; 87fe: 88          .              ; Y=1
     lda ARG                                        ; 87ff: a5 30       .0
     sta (POINT),y                                  ; 8801: 91 7a       .z
     lda POINT+1                                    ; 8803: a5 7b       .{
@@ -1527,7 +1527,7 @@ LON
     ldy #4                                         ; 889f: a0 04       ..
     sta (WSB),y                                    ; 88a1: 91 36       .6
     txa                                            ; 88a3: 8a          .
-    dey                                            ; 88a4: 88          .              ; Y=$03
+    dey                                            ; 88a4: 88          .              ; Y=3
     sta (WSB),y                                    ; 88a5: 91 36       .6
     lda POINT+1                                    ; 88a7: a5 7b       .{
     bne ALLIST                                     ; 88a9: d0 04       ..             ; Always taken
@@ -1540,7 +1540,7 @@ ALLIST
     ldy #1                                         ; 88b3: a0 01       ..
     lda ARG                                        ; 88b5: a5 30       .0
     sta (WSB),y                                    ; 88b7: 91 36       .6
-    iny                                            ; 88b9: c8          .              ; Y=$02
+    iny                                            ; 88b9: c8          .              ; Y=2
     lda ARG+1                                      ; 88ba: a5 31       .1
     sta (WSB),y                                    ; 88bc: 91 36       .6
     jsr LCHAR                                      ; 88be: 20 11 89     ..
@@ -1551,7 +1551,7 @@ ALLIST
     ldy #4                                         ; 88cb: a0 04       ..
     lda ARG+1                                      ; 88cd: a5 31       .1
     sta (WSB),y                                    ; 88cf: 91 36       .6
-    dey                                            ; 88d1: 88          .              ; Y=$03
+    dey                                            ; 88d1: 88          .              ; Y=3
     lda ARG                                        ; 88d2: a5 30       .0
     sta (WSB),y                                    ; 88d4: 91 36       .6
     jsr LCHAR                                      ; 88d6: 20 11 89     ..            ; Shouldn't return
@@ -1584,16 +1584,16 @@ NXTARH
     ldy #0                                         ; 88f5: a0 00       ..
     lda (WSA),y                                    ; 88f7: b1 34       .4
     bpl ARGERR                                     ; 88f9: 10 f7       ..
-    iny                                            ; 88fb: c8          .              ; Y=$01
+    iny                                            ; 88fb: c8          .              ; Y=1
     lda (WSA),y                                    ; 88fc: b1 34       .4
     sta ARG                                        ; 88fe: 85 30       .0
-    iny                                            ; 8900: c8          .              ; Y=$02
+    iny                                            ; 8900: c8          .              ; Y=2
     lda (WSA),y                                    ; 8901: b1 34       .4
     sta ARG+1                                      ; 8903: 85 31       .1
-    iny                                            ; 8905: c8          .              ; Y=$03
+    iny                                            ; 8905: c8          .              ; Y=3
     lda (WSA),y                                    ; 8906: b1 34       .4
     tax                                            ; 8908: aa          .
-    iny                                            ; 8909: c8          .              ; Y=$04
+    iny                                            ; 8909: c8          .              ; Y=4
     lda (WSA),y                                    ; 890a: b1 34       .4
     stx WSA                                        ; 890c: 86 34       .4
     sta WSA+1                                      ; 890e: 85 35       .5
@@ -1650,7 +1650,7 @@ MAKNUM
     cmp #'-'                                       ; 8959: c9 2d       .-
     bne PLUSS                                      ; 895b: d0 09       ..
     sta SIGN                                       ; 895d: 85 78       .x
-    inx                                            ; 895f: e8          .              ; X=$01
+    inx                                            ; 895f: e8          .              ; X=1
     ldy END                                        ; 8960: a4 1d       ..
     cpy #0                                         ; 8962: c0 00       ..
     beq MKRTS                                      ; 8964: f0 6c       .l
@@ -1720,7 +1720,7 @@ NTOVFL
     ldy #3                                         ; 89c6: a0 03       ..
     lda ACL+1                                      ; 89c8: a5 73       .s
     sta (POINT),y                                  ; 89ca: 91 7a       .z
-    dey                                            ; 89cc: 88          .              ; Y=$02
+    dey                                            ; 89cc: 88          .              ; Y=2
     lda ACL                                        ; 89cd: a5 72       .r
     sta (POINT),y                                  ; 89cf: 91 7a       .z
     clc                                            ; 89d1: 18          .
@@ -1835,9 +1835,9 @@ NXCELL
     bmi SIX                                        ; 8a75: 30 0a       0.
     cmp #8                                         ; 8a77: c9 08       ..
     bcs SIX                                        ; 8a79: b0 06       ..
-    iny                                            ; 8a7b: c8          .              ; Y=$01
+    iny                                            ; 8a7b: c8          .              ; Y=1
     lda (CELL),y                                   ; 8a7c: b1 7c       .|
-    dey                                            ; 8a7e: 88          .              ; Y=$00
+    dey                                            ; 8a7e: 88          .              ; Y=0
     beq GOT                                        ; 8a7f: f0 02       ..             ; ALWAYS branch
 
 SIX
@@ -2116,7 +2116,7 @@ HASH
     ldy #5                                         ; 8c05: a0 05       ..
     lda (ARG),y                                    ; 8c07: b1 30       .0
     sta ACL+1                                      ; 8c09: 85 73       .s             ; Print entry addr.
-    dey                                            ; 8c0b: 88          .              ; Y=$04
+    dey                                            ; 8c0b: 88          .              ; Y=4
     lda (ARG),y                                    ; 8c0c: b1 30       .0
     sta ACL                                        ; 8c0e: 85 72       .r
     jmp PINT                                       ; 8c10: 4c 57 8c    LW.
@@ -2157,7 +2157,7 @@ PNUM
     ldy #2                                         ; 8c3e: a0 02       ..
     lda (ARG),y                                    ; 8c40: b1 30       .0
     sta ACL                                        ; 8c42: 85 72       .r
-    iny                                            ; 8c44: c8          .              ; Y=$03
+    iny                                            ; 8c44: c8          .              ; Y=3
     lda (ARG),y                                    ; 8c45: b1 30       .0
     sta ACL+1                                      ; 8c47: 85 73       .s
     bpl PINT                                       ; 8c49: 10 0c       ..
@@ -2208,7 +2208,7 @@ GENDS
     ldy #1                                         ; 8c8e: a0 01       ..             ; Char atom
     clc                                            ; 8c90: 18          .
     adc (ARG),y                                    ; 8c91: 71 30       q0             ; AA +1 TO AB -1
-    dey                                            ; 8c93: 88          .              ; Y=$00
+    dey                                            ; 8c93: 88          .              ; Y=0
     sta AB                                         ; 8c94: 85 20       .
     lda ARG+1                                      ; 8c96: a5 31       .1
     adc #0                                         ; 8c98: 69 00       i.
@@ -2286,13 +2286,13 @@ REMAIN
     ldy #4                                         ; 8cfe: a0 04       ..             ; Split:
     lda (ARG),y                                    ; 8d00: b1 30       .0             ; Condition - ARG
     sta WSB+1                                      ; 8d02: 85 37       .7             ; Actions   - WSB
-    dey                                            ; 8d04: 88          .              ; Rest      - WSA; Y=$03
+    dey                                            ; 8d04: 88          .              ; Rest      - WSA; Y=3
     lda (ARG),y                                    ; 8d05: b1 30       .0
     sta WSB                                        ; 8d07: 85 36       .6
-    dey                                            ; 8d09: 88          .              ; Y=$02
+    dey                                            ; 8d09: 88          .              ; Y=2
     lda (ARG),y                                    ; 8d0a: b1 30       .0
     tax                                            ; 8d0c: aa          .
-    dey                                            ; 8d0d: 88          .              ; Y=$01
+    dey                                            ; 8d0d: 88          .              ; Y=1
     lda (ARG),y                                    ; 8d0e: b1 30       .0
     stx ARG+1                                      ; 8d10: 86 31       .1
     sta ARG                                        ; 8d12: 85 30       .0
@@ -2531,7 +2531,7 @@ DOSET
     ldy #2                                         ; 8e4d: a0 02       ..             ; Alter value cell
     lda ARG                                        ; 8e4f: a5 30       .0
     sta (WSB),y                                    ; 8e51: 91 36       .6
-    iny                                            ; 8e53: c8          .              ; Y=$03
+    iny                                            ; 8e53: c8          .              ; Y=3
     lda ARG+1                                      ; 8e54: a5 31       .1
     sta (WSB),y                                    ; 8e56: 91 36       .6
     jmp POP                                        ; 8e58: 4c 3a 83    L:.
@@ -2558,15 +2558,15 @@ LL
     ldy #4                                         ; 8e7d: a0 04       ..
     lda ARG+1                                      ; 8e7f: a5 31       .1
     sta (POINT),y                                  ; 8e81: 91 7a       .z
-    dey                                            ; 8e83: 88          .              ; Y=$03
+    dey                                            ; 8e83: 88          .              ; Y=3
     lda ARG                                        ; 8e84: a5 30       .0
     sta (POINT),y                                  ; 8e86: 91 7a       .z
     dex                                            ; 8e88: ca          .
-    dey                                            ; 8e89: 88          .              ; Y=$02
+    dey                                            ; 8e89: 88          .              ; Y=2
     lda TVS,x                                      ; 8e8a: b5 30       .0
     sta (POINT),y                                  ; 8e8c: 91 7a       .z
     dex                                            ; 8e8e: ca          .
-    dey                                            ; 8e8f: 88          .              ; Y=$01
+    dey                                            ; 8e8f: 88          .              ; Y=1
     lda TVS,x                                      ; 8e90: b5 30       .0
     sta (POINT),y                                  ; 8e92: 91 7a       .z
     lda POINT                                      ; 8e94: a5 7a       .z
@@ -2664,7 +2664,7 @@ TSN
     ldy #2                                         ; 8efd: a0 02       ..
     txa                                            ; 8eff: 8a          .
     eor (ARG),y                                    ; 8f00: 51 30       Q0
-    iny                                            ; 8f02: c8          .              ; Y=$03
+    iny                                            ; 8f02: c8          .              ; Y=3
     ora (ARG),y                                    ; 8f03: 11 30       .0
     bne NNO                                        ; 8f05: d0 e1       ..
     jmp YES                                        ; 8f07: 4c 31 83    L1.
@@ -2767,7 +2767,7 @@ ANUM
     ldy #3                                         ; 8fbd: a0 03       ..
     lda (ARGA),y                                   ; 8fbf: b1 3a       .:
     sta ACL+1                                      ; 8fc1: 85 73       .s
-    dey                                            ; 8fc3: 88          .              ; Y=$02
+    dey                                            ; 8fc3: 88          .              ; Y=2
     lda (ARGA),y                                   ; 8fc4: b1 3a       .:
     sta ACL                                        ; 8fc6: 85 72       .r
     rts                                            ; 8fc8: 60          `
@@ -2827,14 +2827,14 @@ BOOM
     ldy #4                                         ; 9014: a0 04       ..
     lda ARG+1                                      ; 9016: a5 31       .1
     sta (POINT),y                                  ; 9018: 91 7a       .z
-    dey                                            ; 901a: 88          .              ; Y=$03
+    dey                                            ; 901a: 88          .              ; Y=3
     lda ARG                                        ; 901b: a5 30       .0
     sta (POINT),y                                  ; 901d: 91 7a       .z
-    dey                                            ; 901f: 88          .              ; Y=$02
+    dey                                            ; 901f: 88          .              ; Y=2
     lda WSA+1                                      ; 9020: a5 35       .5
     sta CELL+1                                     ; 9022: 85 7d       .}
     sta (POINT),y                                  ; 9024: 91 7a       .z
-    dey                                            ; 9026: 88          .              ; Y=$01
+    dey                                            ; 9026: 88          .              ; Y=1
     lda WSA                                        ; 9027: a5 34       .4
     sta CELL                                       ; 9029: 85 7c       .|
     sta (POINT),y                                  ; 902b: 91 7a       .z
@@ -2852,7 +2852,7 @@ USEFUL
     lda (CELL),y                                   ; 903f: b1 7c       .|             ; string rather than
     cmp #<ZA                                       ; 9041: c9 02       ..             ; OBLIST atoms
     bne USABLE                                     ; 9043: d0 0c       ..
-    iny                                            ; 9045: c8          .              ; Y=$03
+    iny                                            ; 9045: c8          .              ; Y=3
     lda (CELL),y                                   ; 9046: b1 7c       .|
     cmp IMBOT                                      ; 9048: cd 2c 04    .,.
     bne USABLE                                     ; 904b: d0 04       ..
@@ -2948,7 +2948,7 @@ UNREL
     ldy #0                                         ; 90da: a0 00       ..
     lda (RELBS),y                                  ; 90dc: b1 7a       .z             ; Set up slave
     sta AREVAL                                     ; 90de: 8d 2d 04    .-.
-    iny                                            ; 90e1: c8          .              ; Y=$01
+    iny                                            ; 90e1: c8          .              ; Y=1
     lda (RELBS),y                                  ; 90e2: b1 7a       .z             ; Length of IMAGE
     sec                                            ; 90e4: 38          8
     sbc RELOFF                                     ; 90e5: ed 33 04    .3.
@@ -3040,7 +3040,7 @@ RELAT
     ldy #0                                         ; 9166: a0 00       ..
     lda AREVAL                                     ; 9168: ad 2d 04    .-.
     sta (RELBS),y                                  ; 916b: 91 7a       .z
-    iny                                            ; 916d: c8          .              ; Y=$01
+    iny                                            ; 916d: c8          .              ; Y=1
     lda AREVAL+1                                   ; 916e: ad 2e 04    ...
     sta (RELBS),y                                  ; 9171: 91 7a       .z
     rts                                            ; 9173: 60          `
@@ -3073,7 +3073,7 @@ DODO
     sta ACL                                        ; 9192: 85 72       .r             ; workspace
     lda (ARGB),y                                   ; 9194: b1 3c       .<
     sta AUXL                                       ; 9196: 85 76       .v
-    iny                                            ; 9198: c8          .              ; Y=$03
+    iny                                            ; 9198: c8          .              ; Y=3
     ora (ARGB),y                                   ; 9199: 11 3c       .<
     beq OVFERR                                     ; 919b: f0 76       .v             ; Divide by zero!
     lda (ARGA),y                                   ; 919d: b1 3a       .:
@@ -3090,7 +3090,7 @@ POSV
     ldx XPR                                        ; 91b3: a6 89       ..
     lda GCNO,x                                     ; 91b5: b5 00       ..
     sta (POINT),y                                  ; 91b7: 91 7a       .z             ; Put in new cell
-    iny                                            ; 91b9: c8          .              ; Y=$03
+    iny                                            ; 91b9: c8          .              ; Y=3
     lda GCNO+1,x                                   ; 91ba: b5 01       ..
     sta (POINT),y                                  ; 91bc: 91 7a       .z
     jmp AMADE                                      ; 91be: 4c 67 88    Lg.            ; return POINT
@@ -3105,7 +3105,7 @@ DIFF
     sec                                            ; 91cb: 38          8
     sbc (ARGB),y                                   ; 91cc: f1 3c       .<
     sta (POINT),y                                  ; 91ce: 91 7a       .z
-    iny                                            ; 91d0: c8          .              ; Y=$03
+    iny                                            ; 91d0: c8          .              ; Y=3
     lda (ARGA),y                                   ; 91d1: b1 3a       .:
     sbc (ARGB),y                                   ; 91d3: f1 3c       .<
     bvs OVFERR                                     ; 91d5: 70 3c       p<
@@ -3121,7 +3121,7 @@ MINUS
     sec                                            ; 91e3: 38          8
     sbc (ARGA),y                                   ; 91e4: f1 3a       .:
     sta (POINT),y                                  ; 91e6: 91 7a       .z
-    iny                                            ; 91e8: c8          .              ; Y=$03
+    iny                                            ; 91e8: c8          .              ; Y=3
     lda #0                                         ; 91e9: a9 00       ..
     sbc (ARGA),y                                   ; 91eb: f1 3a       .:
 FINONE
@@ -3149,7 +3149,7 @@ WONE
     ldy #2                                         ; 9207: a0 02       ..
     adc (ARGA),y                                   ; 9209: 71 3a       q:
     sta (POINT),y                                  ; 920b: 91 7a       .z
-    iny                                            ; 920d: c8          .              ; Y=$03
+    iny                                            ; 920d: c8          .              ; Y=3
     pla                                            ; 920e: 68          h
     adc (ARGA),y                                   ; 920f: 71 3a       q:
     bvc FINONE                                     ; 9211: 50 da       P.
@@ -3168,7 +3168,7 @@ PLUS
     lda #0                                         ; 922f: a9 00       ..
     ldy #2                                         ; 9231: a0 02       ..
     sta (POINT),y                                  ; 9233: 91 7a       .z
-    iny                                            ; 9235: c8          .              ; Y=$03
+    iny                                            ; 9235: c8          .              ; Y=3
     ldx TVSEXT                                     ; 9236: a6 33       .3
     bne PEX                                        ; 9238: d0 18       ..
 MPLUS
@@ -3181,7 +3181,7 @@ MPLUS
     lda (POINT),y                                  ; 9245: b1 7a       .z
     adc (ARG),y                                    ; 9247: 71 30       q0
     sta (POINT),y                                  ; 9249: 91 7a       .z
-    iny                                            ; 924b: c8          .              ; Y=$03
+    iny                                            ; 924b: c8          .              ; Y=3
     lda (POINT),y                                  ; 924c: b1 7a       .z
     adc (ARG),y                                    ; 924e: 71 30       q0
     bvs OVFERR                                     ; 9250: 70 c1       p.
@@ -3199,7 +3199,7 @@ TIMES
     jsr ALLNUM                                     ; 925d: 20 87 94     ..
     ldx #1                                         ; 9260: a2 01       ..
     stx ACL                                        ; 9262: 86 72       .r
-    dex                                            ; 9264: ca          .              ; X=$00
+    dex                                            ; 9264: ca          .              ; X=0
     stx ACL+1                                      ; 9265: 86 73       .s
     ldx TVSEXT                                     ; 9267: a6 33       .3
     bne TREX                                       ; 9269: d0 33       .3
@@ -3214,7 +3214,7 @@ MTIMES
     ldy #2                                         ; 9279: a0 02       ..
     lda (ARG),y                                    ; 927b: b1 30       .0
     sta AUXL                                       ; 927d: 85 76       .v
-    iny                                            ; 927f: c8          .              ; Y=$03
+    iny                                            ; 927f: c8          .              ; Y=3
     lda (ARG),y                                    ; 9280: b1 30       .0
     sta AUXL+1                                     ; 9282: 85 77       .w
     stx XPR                                        ; 9284: 86 89       ..
@@ -3240,7 +3240,7 @@ ACLRET
     ldy #2                                         ; 92a7: a0 02       ..
     lda ACL                                        ; 92a9: a5 72       .r
     sta (POINT),y                                  ; 92ab: 91 7a       .z
-    iny                                            ; 92ad: c8          .              ; Y=$03
+    iny                                            ; 92ad: c8          .              ; Y=3
     lda ACL+1                                      ; 92ae: a5 73       .s
     sta (POINT),y                                  ; 92b0: 91 7a       .z
     jmp AMADE                                      ; 92b2: 4c 67 88    Lg.
@@ -3256,7 +3256,7 @@ CHARS
     lda (ARGA),y                                   ; 92c0: b1 3a       .:
     bmi XGOOD                                      ; 92c2: 30 0d       0.
     bne FIXTY                                      ; 92c4: d0 08       ..
-    iny                                            ; 92c6: c8          .              ; Y=$01
+    iny                                            ; 92c6: c8          .              ; Y=1
     lda (ARGA),y                                   ; 92c7: b1 3a       .:
     sec                                            ; 92c9: 38          8
     sbc #6                                         ; 92ca: e9 06       ..
@@ -3270,7 +3270,7 @@ XGOOD
 AGOT
     ldy #2                                         ; 92d4: a0 02       ..
     sta (POINT),y                                  ; 92d6: 91 7a       .z
-    iny                                            ; 92d8: c8          .              ; Y=$03
+    iny                                            ; 92d8: c8          .              ; Y=3
     lda #0                                         ; 92d9: a9 00       ..
     sta (POINT),y                                  ; 92db: 91 7a       .z
     jmp AMADE                                      ; 92dd: 4c 67 88    Lg.
@@ -3280,7 +3280,7 @@ GPLIST
     ldy #4                                         ; 92e3: a0 04       ..
     lda (ARGA),y                                   ; 92e5: b1 3a       .:
     sta ARG                                        ; 92e7: 85 30       .0
-    iny                                            ; 92e9: c8          .              ; Y=$05
+    iny                                            ; 92e9: c8          .              ; Y=5
     lda (ARGA),y                                   ; 92ea: b1 3a       .:
     jmp POPA                                       ; 92ec: 4c 38 83    L8.
 
@@ -3335,10 +3335,10 @@ GT
     cmp #$80                                       ; 933b: c9 80       ..
     eor (ARGA),y                                   ; 933d: 51 3a       Q:
     bmi DFSGN                                      ; 933f: 30 0f       0.
-    dey                                            ; 9341: 88          .              ; Y=$02
+    dey                                            ; 9341: 88          .              ; Y=2
     lda (ARGB),y                                   ; 9342: b1 3c       .<
     cmp (ARGA),y                                   ; 9344: d1 3a       .:
-    iny                                            ; 9346: c8          .              ; Y=$03
+    iny                                            ; 9346: c8          .              ; Y=3
     lda (ARGB),y                                   ; 9347: b1 3c       .<
     sbc (ARGA),y                                   ; 9349: f1 3a       .:
     bcs SMALLR                                     ; 934b: b0 05       ..
@@ -3354,7 +3354,7 @@ SOCK
     ldy #4                                         ; 9355: a0 04       ..
     lda (ARGA),y                                   ; 9357: b1 3a       .:
     sta WSB                                        ; 9359: 85 36       .6
-    iny                                            ; 935b: c8          .              ; Y=$05
+    iny                                            ; 935b: c8          .              ; Y=5
     lda (ARGA),y                                   ; 935c: b1 3a       .:
     sta WSB+1                                      ; 935e: 85 37       .7             ; A-list search
 SOCKA
@@ -3365,7 +3365,7 @@ ROCKON
     ldy #3                                         ; 9363: a0 03       ..
     lda (WSB),y                                    ; 9365: b1 36       .6
     tax                                            ; 9367: aa          .
-    iny                                            ; 9368: c8          .              ; Y=$04
+    iny                                            ; 9368: c8          .              ; Y=4
     lda (WSB),y                                    ; 9369: b1 36       .6
     bne LKH                                        ; 936b: d0 01       ..
     rts                                            ; 936d: 60          `
@@ -3380,7 +3380,7 @@ LKG
     bpl ALERR                                      ; 9378: 10 1d       ..
     lda (WSB),y                                    ; 937a: b1 36       .6
     sta WSD                                        ; 937c: 85 83       ..
-    iny                                            ; 937e: c8          .              ; Y=$02
+    iny                                            ; 937e: c8          .              ; Y=2
     lda (WSB),y                                    ; 937f: b1 36       .6
     sta WSD+1                                      ; 9381: 85 84       ..
     lda (WSD,x)                                    ; 9383: a1 83       ..
@@ -3388,7 +3388,7 @@ LKG
     lda ARGB+1                                     ; 9387: a5 3d       .=
     cmp (WSD),y                                    ; 9389: d1 83       ..
     bne ROCKON                                     ; 938b: d0 d6       ..
-    dey                                            ; 938d: 88          .              ; Y=$01
+    dey                                            ; 938d: 88          .              ; Y=1
     lda ARGB                                       ; 938e: a5 3c       .<
     cmp (WSD),y                                    ; 9390: d1 83       ..
     bne ROCKON                                     ; 9392: d0 cf       ..
@@ -3439,7 +3439,7 @@ GET
     ldy #3                                         ; 93de: a0 03       ..
     lda (WSD),y                                    ; 93e0: b1 83       ..
     sta ARG                                        ; 93e2: 85 30       .0
-    iny                                            ; 93e4: c8          .              ; Y=$04
+    iny                                            ; 93e4: c8          .              ; Y=4
     lda (WSD),y                                    ; 93e5: b1 83       ..
     sta ARG+1                                      ; 93e7: 85 31       .1
     jmp POP                                        ; 93e9: 4c 3a 83    L:.
@@ -3454,7 +3454,7 @@ PUT
     lda ARGC                                       ; 93f6: a5 3e       .>
     sta (WSD),y                                    ; 93f8: 91 83       ..
     sta ARG                                        ; 93fa: 85 30       .0
-    iny                                            ; 93fc: c8          .              ; Y=$04
+    iny                                            ; 93fc: c8          .              ; Y=4
     lda ARGC+1                                     ; 93fd: a5 3f       .?
     sta (WSD),y                                    ; 93ff: 91 83       ..
     jmp POPA                                       ; 9401: 4c 38 83    L8.
@@ -3468,23 +3468,23 @@ INSERP
     jsr ALPAIR                                     ; 940f: 20 53 84     S.
     ldy #5                                         ; 9412: a0 05       ..
     lda (ARGA),y                                   ; 9414: b1 3a       .:
-    dey                                            ; 9416: 88          .              ; Y=$04
+    dey                                            ; 9416: 88          .              ; Y=4
     sta (WSB),y                                    ; 9417: 91 36       .6
     lda ARGC+1                                     ; 9419: a5 3f       .?
     sta ARG+1                                      ; 941b: 85 31       .1
     sta (POINT),y                                  ; 941d: 91 7a       .z
     lda (ARGA),y                                   ; 941f: b1 3a       .:
-    dey                                            ; 9421: 88          .              ; Y=$03
+    dey                                            ; 9421: 88          .              ; Y=3
     sta (WSB),y                                    ; 9422: 91 36       .6
     lda ARGC                                       ; 9424: a5 3e       .>
     sta ARG                                        ; 9426: 85 30       .0
     sta (POINT),y                                  ; 9428: 91 7a       .z
-    dey                                            ; 942a: 88          .              ; Y=$02
+    dey                                            ; 942a: 88          .              ; Y=2
     lda ARGB+1                                     ; 942b: a5 3d       .=
     sta (POINT),y                                  ; 942d: 91 7a       .z
     lda POINT+1                                    ; 942f: a5 7b       .{
     sta (WSB),y                                    ; 9431: 91 36       .6
-    dey                                            ; 9433: 88          .              ; Y=$01
+    dey                                            ; 9433: 88          .              ; Y=1
     lda ARGB                                       ; 9434: a5 3c       .<
     sta (POINT),y                                  ; 9436: 91 7a       .z
     lda POINT                                      ; 9438: a5 7a       .z
@@ -3492,7 +3492,7 @@ INSERP
     ldy #5                                         ; 943c: a0 05       ..
     lda WSB+1                                      ; 943e: a5 37       .7
     sta (ARGA),y                                   ; 9440: 91 3a       .:
-    dey                                            ; 9442: 88          .              ; Y=$04
+    dey                                            ; 9442: 88          .              ; Y=4
     lda WSB                                        ; 9443: a5 36       .6
     sta (ARGA),y                                   ; 9445: 91 3a       .:
     jmp POP                                        ; 9447: 4c 3a 83    L:.
@@ -3506,7 +3506,7 @@ REMPR
     ldy #3                                         ; 9452: a0 03       ..
     lda (WSB),y                                    ; 9454: b1 36       .6
     sta WSC                                        ; 9456: 85 38       .8
-    iny                                            ; 9458: c8          .              ; Y=$04
+    iny                                            ; 9458: c8          .              ; Y=4
     lda (WSB),y                                    ; 9459: b1 36       .6
     sta WSC+1                                      ; 945b: 85 39       .9
     ldy #5                                         ; 945d: a0 05       ..
@@ -3607,17 +3607,17 @@ GEVIL
     ldy #0                                         ; 94f8: a0 00       ..
     lda (WSD),y                                    ; 94fa: b1 83       ..
     bpl APFERR                                     ; 94fc: 10 ce       ..
-    iny                                            ; 94fe: c8          .              ; Y=$01
+    iny                                            ; 94fe: c8          .              ; Y=1
     lda (WSD),y                                    ; 94ff: b1 83       ..             ; Parm list in WSB
     sta WSB                                        ; 9501: 85 36       .6
-    iny                                            ; 9503: c8          .              ; Y=$02
+    iny                                            ; 9503: c8          .              ; Y=2
     lda (WSD),y                                    ; 9504: b1 83       ..
     sta WSB+1                                      ; 9506: 85 37       .7
     beq APFERR                                     ; 9508: f0 c2       ..
-    iny                                            ; 950a: c8          .              ; Y=$03
+    iny                                            ; 950a: c8          .              ; Y=3
     lda (WSD),y                                    ; 950b: b1 83       ..
     sta WSC                                        ; 950d: 85 38       .8             ; Body in WSC
-    iny                                            ; 950f: c8          .              ; Y=$04
+    iny                                            ; 950f: c8          .              ; Y=4
     lda (WSD),y                                    ; 9510: b1 83       ..
     sta WSC+1                                      ; 9512: 85 39       .9
     ldy #0                                         ; 9514: a0 00       ..
@@ -3653,10 +3653,10 @@ APL
     ldy #0                                         ; 9545: a0 00       ..
     lda (WSA),y                                    ; 9547: b1 34       .4
     bpl APERR                                      ; 9549: 10 d9       ..
-    iny                                            ; 954b: c8          .              ; Y=$01
+    iny                                            ; 954b: c8          .              ; Y=1
     lda (WSA),y                                    ; 954c: b1 34       .4
     sta TVS,x                                      ; 954e: 95 30       .0
-    iny                                            ; 9550: c8          .              ; Y=$02
+    iny                                            ; 9550: c8          .              ; Y=2
     inx                                            ; 9551: e8          .
     lda (WSA),y                                    ; 9552: b1 34       .4
     sta TVS,x                                      ; 9554: 95 30       .0
@@ -3667,7 +3667,7 @@ APL
     lda (WSA),y                                    ; 955d: b1 34       .4
     beq APGO                                       ; 955f: f0 0b       ..
     pha                                            ; 9561: 48          H
-    dey                                            ; 9562: 88          .              ; Y=$03
+    dey                                            ; 9562: 88          .              ; Y=3
     lda (WSA),y                                    ; 9563: b1 34       .4
     sta WSA                                        ; 9565: 85 34       .4
     pla                                            ; 9567: 68          h
@@ -3728,7 +3728,7 @@ MAPCAR
     sta (POINT),y                                  ; 95b3: 91 7a       .z
     lda POINT                                      ; 95b5: a5 7a       .z
     sta WSA                                        ; 95b7: 85 34       .4
-    dey                                            ; 95b9: 88          .              ; Y=$03
+    dey                                            ; 95b9: 88          .              ; Y=3
     sta (POINT),y                                  ; 95ba: 91 7a       .z
 MAPCON
     jsr CARAP                                      ; 95bc: 20 45 96     E.
@@ -3739,26 +3739,26 @@ MAPCON
     lda POINT+1                                    ; 95c8: a5 7b       .{
     sta (WSA),y                                    ; 95ca: 91 34       .4
     lda POINT                                      ; 95cc: a5 7a       .z
-    dey                                            ; 95ce: 88          .              ; Y=$01
+    dey                                            ; 95ce: 88          .              ; Y=1
     sta (WSA),y                                    ; 95cf: 91 34       .4
 OLDMAP
     ldy #4                                         ; 95d1: a0 04       ..
     lda (WSA),y                                    ; 95d3: b1 34       .4
     sta WSD+1                                      ; 95d5: 85 84       ..
-    dey                                            ; 95d7: 88          .              ; Y=$03
+    dey                                            ; 95d7: 88          .              ; Y=3
     lda (WSA),y                                    ; 95d8: b1 34       .4
     sta WSD                                        ; 95da: 85 83       ..
     lda POINT                                      ; 95dc: a5 7a       .z
     sta (WSD),y                                    ; 95de: 91 83       ..
     sta (WSA),y                                    ; 95e0: 91 34       .4
-    iny                                            ; 95e2: c8          .              ; Y=$04
+    iny                                            ; 95e2: c8          .              ; Y=4
     lda POINT+1                                    ; 95e3: a5 7b       .{
     sta (WSD),y                                    ; 95e5: 91 83       ..
     sta (WSA),y                                    ; 95e7: 91 34       .4
     ldy #2                                         ; 95e9: a0 02       ..
     lda ARG+1                                      ; 95eb: a5 31       .1
     sta (POINT),y                                  ; 95ed: 91 7a       .z
-    dey                                            ; 95ef: 88          .              ; Y=$01
+    dey                                            ; 95ef: 88          .              ; Y=1
     lda ARG                                        ; 95f0: a5 30       .0
     sta (POINT),y                                  ; 95f2: 91 7a       .z
     jsr CDRALL                                     ; 95f4: 20 84 96     ..
@@ -3766,7 +3766,7 @@ OLDMAP
     ldy #1                                         ; 95f9: a0 01       ..
     lda (WSA),y                                    ; 95fb: b1 34       .4
     sta ARG                                        ; 95fd: 85 30       .0
-    iny                                            ; 95ff: c8          .              ; Y=$02
+    iny                                            ; 95ff: c8          .              ; Y=2
     lda (WSA),y                                    ; 9600: b1 34       .4
     jmp POPA                                       ; 9602: 4c 38 83    L8.
 
@@ -3828,10 +3828,10 @@ CARAVA
     ldy #0                                         ; 9657: a0 00       ..
     lda (WSD),y                                    ; 9659: b1 83       ..
     bpl MAPERR                                     ; 965b: 10 12       ..
-    iny                                            ; 965d: c8          .              ; Y=$01
+    iny                                            ; 965d: c8          .              ; Y=1
     lda (WSD),y                                    ; 965e: b1 83       ..
     sta TVS-1,x                                    ; 9660: 95 2f       ./
-    iny                                            ; 9662: c8          .              ; Y=$02
+    iny                                            ; 9662: c8          .              ; Y=2
     lda (WSD),y                                    ; 9663: b1 83       ..
     sta TVS,x                                      ; 9665: 95 30       .0
     dex                                            ; 9667: ca          .
@@ -3864,7 +3864,7 @@ CDRAVA
     beq CDREND                                     ; 969b: f0 0c       ..
     sta TVS,x                                      ; 969d: 95 30       .0
     dex                                            ; 969f: ca          .
-    dey                                            ; 96a0: 88          .              ; Y=$03
+    dey                                            ; 96a0: 88          .              ; Y=3
     lda (WSD),y                                    ; 96a1: b1 83       ..
     sta TVS,x                                      ; 96a3: 95 30       .0
 CDRAWL
@@ -3888,7 +3888,7 @@ THUMP
     ldy #4                                         ; 96ba: a0 04       ..
     lda ARG+1                                      ; 96bc: a5 31       .1
     sta (POINT),y                                  ; 96be: 91 7a       .z
-    dey                                            ; 96c0: 88          .              ; Y=$03
+    dey                                            ; 96c0: 88          .              ; Y=3
     lda ARG                                        ; 96c1: a5 30       .0
     sta (POINT),y                                  ; 96c3: 91 7a       .z
     lda POINT+1                                    ; 96c5: a5 7b       .{
@@ -3903,7 +3903,7 @@ THUMP
     ldy #2                                         ; 96d5: a0 02       ..
     lda POINT+1                                    ; 96d7: a5 7b       .{
     sta (ARG),y                                    ; 96d9: 91 30       .0
-    dey                                            ; 96db: 88          .              ; Y=$01
+    dey                                            ; 96db: 88          .              ; Y=1
     lda POINT                                      ; 96dc: a5 7a       .z
     sta (ARG),y                                    ; 96de: 91 30       .0
     pla                                            ; 96e0: 68          h
@@ -3962,7 +3962,7 @@ EMM
     ldy #4                                         ; 9737: a0 04       ..
     lda (ARGA),y                                   ; 9739: b1 3a       .:
     pha                                            ; 973b: 48          H
-    dey                                            ; 973c: 88          .              ; Y=$03
+    dey                                            ; 973c: 88          .              ; Y=3
     lda (ARGA),y                                   ; 973d: b1 3a       .:
     sta ARGA                                       ; 973f: 85 3a       .:
     pla                                            ; 9741: 68          h
@@ -4009,7 +4009,7 @@ MODE
     sta (POINT),y                                  ; 977c: 91 7a       .z
     ora #$80                                       ; 977e: 09 80       ..             ; Flag bit
     sta MODEF                                      ; 9780: 8d 2a 04    .*.
-    iny                                            ; 9783: c8          .              ; Y=$03
+    iny                                            ; 9783: c8          .              ; Y=3
     lda #0                                         ; 9784: a9 00       ..
     sta (POINT),y                                  ; 9786: 91 7a       .z
     jmp AMADE                                      ; 9788: 4c 67 88    Lg.
@@ -4058,7 +4058,7 @@ USR
     ldy #3                                         ; 97d5: a0 03       ..
     lda (ARGA),y                                   ; 97d7: b1 3a       .:
     sta POINT+1                                    ; 97d9: 85 7b       .{             ; Call addr
-    dey                                            ; 97db: 88          .              ; Y=$02
+    dey                                            ; 97db: 88          .              ; Y=2
     lda (ARGA),y                                   ; 97dc: b1 3a       .:
     sta POINT                                      ; 97de: 85 7a       .z
     lda (ARGE),y                                   ; 97e0: b1 42       .B             ; Get carry
@@ -4113,13 +4113,13 @@ BUILD2
     ldy #1                                         ; 9826: a0 01       ..
     lda WSB                                        ; 9828: a5 36       .6
     sta (POINT),y                                  ; 982a: 91 7a       .z
-    iny                                            ; 982c: c8          .              ; Y=$02
+    iny                                            ; 982c: c8          .              ; Y=2
     lda WSB+1                                      ; 982d: a5 37       .7
     sta (POINT),y                                  ; 982f: 91 7a       .z
-    iny                                            ; 9831: c8          .              ; Y=$03
+    iny                                            ; 9831: c8          .              ; Y=3
     lda WSA                                        ; 9832: a5 34       .4
     sta (POINT),y                                  ; 9834: 91 7a       .z
-    iny                                            ; 9836: c8          .              ; Y=$04
+    iny                                            ; 9836: c8          .              ; Y=4
     lda WSA+1                                      ; 9837: a5 35       .5
     sta (POINT),y                                  ; 9839: 91 7a       .z
     lda POINT                                      ; 983b: a5 7a       .z
@@ -4139,7 +4139,7 @@ SETNUM
     ldy #2                                         ; 984d: a0 02       ..
     sta (POINT),y                                  ; 984f: 91 7a       .z
     txa                                            ; 9851: 8a          .
-    iny                                            ; 9852: c8          .              ; Y=$03
+    iny                                            ; 9852: c8          .              ; Y=3
     sta (POINT),y                                  ; 9853: 91 7a       .z
     lda POINT                                      ; 9855: a5 7a       .z
     sta WSB                                        ; 9857: 85 36       .6
@@ -4275,13 +4275,13 @@ TIMPOP
     jsr ALNUM                                      ; 98fc: 20 3d 84     =.
     ldy #0                                         ; 98ff: a0 00       ..
     lda (WSC),y                                    ; 9901: b1 38       .8
-    iny                                            ; 9903: c8          .              ; Y=$01
-    iny                                            ; 9904: c8          .              ; Y=$02
+    iny                                            ; 9903: c8          .              ; Y=1
+    iny                                            ; 9904: c8          .              ; Y=2
     sta (POINT),y                                  ; 9905: 91 7a       .z
-    dey                                            ; 9907: 88          .              ; Y=$01
+    dey                                            ; 9907: 88          .              ; Y=1
     lda (WSC),y                                    ; 9908: b1 38       .8
-    iny                                            ; 990a: c8          .              ; Y=$02
-    iny                                            ; 990b: c8          .              ; Y=$03
+    iny                                            ; 990a: c8          .              ; Y=2
+    iny                                            ; 990b: c8          .              ; Y=3
     sta (POINT),y                                  ; 990c: 91 7a       .z
     jmp AMADE                                      ; 990e: 4c 67 88    Lg.
 
@@ -4332,7 +4332,7 @@ PVAL
     sta PWORD                                      ; 996d: 8d 1b 04    ...
     lda (ARGB),y                                   ; 9970: b1 3c       .<             ; Y msb
     sta PWORD+2                                    ; 9972: 8d 1d 04    ...
-    iny                                            ; 9975: c8          .              ; Y=$03
+    iny                                            ; 9975: c8          .              ; Y=3
     lda (ARGA),y                                   ; 9976: b1 3a       .:             ; X lsb
     sta PWORD+1                                    ; 9978: 8d 1c 04    ...
     lda (ARGB),y                                   ; 997b: b1 3c       .<             ; Y msb
@@ -4362,7 +4362,7 @@ ADVAL
     ldy #2                                         ; 99a5: a0 02       ..
     lda (ARGA),y                                   ; 99a7: b1 3a       .:
     tax                                            ; 99a9: aa          .
-    iny                                            ; 99aa: c8          .              ; Y=$03
+    iny                                            ; 99aa: c8          .              ; Y=3
     lda (ARGA),y                                   ; 99ab: b1 3a       .:
     tay                                            ; 99ad: a8          .
     lda #osbyte_read_adc_or_get_buffer_status      ; 99ae: a9 80       ..
@@ -4372,7 +4372,7 @@ ADVAL
     adc #$80                                       ; 99b5: 69 80       i.             ; Make range +/-2^15
     ldy #3                                         ; 99b7: a0 03       ..
     sta (POINT),y                                  ; 99b9: 91 7a       .z
-    dey                                            ; 99bb: 88          .              ; Y=$02
+    dey                                            ; 99bb: 88          .              ; Y=2
     txa                                            ; 99bc: 8a          .
     sta (POINT),y                                  ; 99bd: 91 7a       .z
     jmp AMADE                                      ; 99bf: 4c 67 88    Lg.
@@ -4388,7 +4388,7 @@ INKEY
     ldy #2                                         ; 99ce: a0 02       ..
     lda (ARGA),y                                   ; 99d0: b1 3a       .:
     tax                                            ; 99d2: aa          .
-    iny                                            ; 99d3: c8          .              ; Y=$03
+    iny                                            ; 99d3: c8          .              ; Y=3
     lda (ARGA),y                                   ; 99d4: b1 3a       .:
     tay                                            ; 99d6: a8          .
     lda #osbyte_inkey                              ; 99d7: a9 81       ..
@@ -4398,7 +4398,7 @@ INKEY
     txa                                            ; 99e0: 8a          .
     sta (POINT),y                                  ; 99e1: 91 7a       .z
     lda #0                                         ; 99e3: a9 00       ..
-    iny                                            ; 99e5: c8          .              ; Y=$03
+    iny                                            ; 99e5: c8          .              ; Y=3
     sta (POINT),y                                  ; 99e6: 91 7a       .z
     jmp AMADE                                      ; 99e8: 4c 67 88    Lg.
 
@@ -4450,7 +4450,7 @@ NOCAR
     lda (POINT),y                                  ; 9a2f: b1 7a       .z
     cmp #<ZA                                       ; 9a31: c9 02       ..             ; Is it UNDEFINED ?
     bne GENSYM                                     ; 9a33: d0 d5       ..
-    iny                                            ; 9a35: c8          .              ; Y=$03
+    iny                                            ; 9a35: c8          .              ; Y=3
     lda (POINT),y                                  ; 9a36: b1 7a       .z
     cmp IMBOT                                      ; 9a38: cd 2c 04    .,.
     bne GENSYM                                     ; 9a3b: d0 cd       ..
@@ -4471,7 +4471,7 @@ BNOT
     lda #$ff                                       ; 9a4e: a9 ff       ..
     eor (ARGA),y                                   ; 9a50: 51 3a       Q:
     sta (POINT),y                                  ; 9a52: 91 7a       .z
-    iny                                            ; 9a54: c8          .              ; Y=$03
+    iny                                            ; 9a54: c8          .              ; Y=3
     lda #$ff                                       ; 9a55: a9 ff       ..
     eor (ARGA),y                                   ; 9a57: 51 3a       Q:
     sta (POINT),y                                  ; 9a59: 91 7a       .z
@@ -4485,7 +4485,7 @@ BAND
     lda #$ff                                       ; 9a64: a9 ff       ..
     ldy #3                                         ; 9a66: a0 03       ..
     sta (POINT),y                                  ; 9a68: 91 7a       .z
-    dey                                            ; 9a6a: 88          .              ; Y=$02
+    dey                                            ; 9a6a: 88          .              ; Y=2
     sta (POINT),y                                  ; 9a6b: 91 7a       .z
     ldx TVSEXT                                     ; 9a6d: a6 33       .3
 MBAND
@@ -4515,7 +4515,7 @@ BOR
     lda #0                                         ; 9a94: a9 00       ..
     ldy #3                                         ; 9a96: a0 03       ..
     sta (POINT),y                                  ; 9a98: 91 7a       .z
-    dey                                            ; 9a9a: 88          .              ; Y=$02
+    dey                                            ; 9a9a: 88          .              ; Y=2
     sta (POINT),y                                  ; 9a9b: 91 7a       .z
     ldx TVSEXT                                     ; 9a9d: a6 33       .3
 MBOR
@@ -4580,7 +4580,7 @@ REGPIN
     rol                                            ; 9ae5: 2a          *
     sta (GCA,x)                                    ; 9ae6: 81 04       ..
     bmi LIN                                        ; 9ae8: 30 01       0.
-    iny                                            ; 9aea: c8          .              ; Y=$05
+    iny                                            ; 9aea: c8          .              ; Y=5
 LIN
     lda (GCA),y                                    ; 9aeb: b1 04       ..
     beq REGRTS                                     ; 9aed: f0 1c       ..
@@ -4619,7 +4619,7 @@ VIRGIN
     asl                                            ; 9b18: 0a          .
     sta (GCA,x)                                    ; 9b19: 81 04       ..
     bmi LINJ                                       ; 9b1b: 30 01       0.
-    iny                                            ; 9b1d: c8          .              ; Y=$03
+    iny                                            ; 9b1d: c8          .              ; Y=3
 LINJ
     lda (GCA),y                                    ; 9b1e: b1 04       ..
     beq REGCDR                                     ; 9b20: f0 b7       ..
@@ -4800,7 +4800,7 @@ DLOP
     ldy #2                                         ; 9c3d: a0 02       ..
     lda DISPM                                      ; 9c3f: a5 0b       ..
     sta (CELL),y                                   ; 9c41: 91 7c       .|
-    iny                                            ; 9c43: c8          .              ; Y=$03
+    iny                                            ; 9c43: c8          .              ; Y=3
     lda DISPM+1                                    ; 9c44: a5 0c       ..
     sta (CELL),y                                   ; 9c46: 91 7c       .|
     lda CELL                                       ; 9c48: a5 7c       .|
@@ -4922,7 +4922,7 @@ ADJUT
     ldy #4                                         ; 9cff: a0 04       ..
     asl                                            ; 9d01: 0a          .
     bmi LICE                                       ; 9d02: 30 09       0.
-    iny                                            ; 9d04: c8          .              ; Y=$05
+    iny                                            ; 9d04: c8          .              ; Y=5
     cmp #SUBRF                                     ; 9d05: c9 08       ..
     bcs LICE                                       ; 9d07: b0 04       ..
     cmp #NUMF                                      ; 9d09: c9 04       ..
@@ -5130,7 +5130,7 @@ ADDOUT
     sbc (SA),y                                     ; 9e4d: f1 07       ..
     tax                                            ; 9e4f: aa          .
     lda GCA+1                                      ; 9e50: a5 05       ..
-    iny                                            ; 9e52: c8          .              ; Y=$03
+    iny                                            ; 9e52: c8          .              ; Y=3
     sbc (SA),y                                     ; 9e53: f1 07       ..
     bcs CHUG                                       ; 9e55: b0 0c       ..             ; Always taken
 PAGDIQ
@@ -5211,7 +5211,7 @@ NEXCAT
 TRCOK
     ldx #$ff                                       ; 9eb7: a2 ff       ..
     txs                                            ; 9eb9: 9a          .              ; Reset stack
-    inx                                            ; 9eba: e8          .              ; X=$00
+    inx                                            ; 9eba: e8          .              ; X=0
     stx DEPTH                                      ; 9ebb: 86 8b       ..
     stx HANDLE                                     ; 9ebd: 86 13       ..
     lda #$0e                                       ; 9ebf: a9 0e       ..             ; Page mode
@@ -5323,7 +5323,7 @@ ERBIN
     ldy #3                                         ; 9f74: a0 03       ..             ; Get the value of the
     lda (ARG),y                                    ; 9f76: b1 30       .0             ; variable into ARG
     tax                                            ; 9f78: aa          .
-    dey                                            ; 9f79: 88          .              ; Y=$02
+    dey                                            ; 9f79: 88          .              ; Y=2
     lda (ARG),y                                    ; 9f7a: b1 30       .0
     sta ARG                                        ; 9f7c: 85 30       .0
     stx ARG+1                                      ; 9f7e: 86 31       .1
@@ -5384,7 +5384,7 @@ ELFIN
     ldy #2                                         ; 9fca: a0 02       ..
     lda ARG+1                                      ; 9fcc: a5 31       .1
     sta (POINT),y                                  ; 9fce: 91 7a       .z
-    dey                                            ; 9fd0: 88          .              ; Y=$01
+    dey                                            ; 9fd0: 88          .              ; Y=1
     lda ARG                                        ; 9fd1: a5 30       .0
     sta (POINT),y                                  ; 9fd3: 91 7a       .z
     jmp AMADE                                      ; 9fd5: 4c 67 88    Lg.

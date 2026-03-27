@@ -545,7 +545,7 @@ c8177
     beq c81ac                                                         ; 817b: f0 2f       ./
     cmp #$7f                                                          ; 817d: c9 7f       ..
     bne c819f                                                         ; 817f: d0 1e       ..
-    iny                                                               ; 8181: c8          .              ; Y=$01
+    iny                                                               ; 8181: c8          .              ; Y=1
     lda (l00a6),y                                                     ; 8182: b1 a6       ..
     beq c818b                                                         ; 8184: f0 05       ..
     cmp l0d31                                                         ; 8186: cd 31 0d    .1.
@@ -878,7 +878,7 @@ c83a5
 c83b3
     ldy #8                                                            ; 83b3: a0 08       ..
     sta (l00a6),y                                                     ; 83b5: 91 a6       ..
-    iny                                                               ; 83b7: c8          .              ; Y=$09
+    iny                                                               ; 83b7: c8          .              ; Y=9
     lda l00a5                                                         ; 83b8: a5 a5       ..
     sta (l00a6),y                                                     ; 83ba: 91 a6       ..
 ; $83bc referenced 1 time by $83a8
@@ -888,13 +888,13 @@ c83bc
     lda l0d2f                                                         ; 83c1: ad 2f 0d    ./.
     ldy #3                                                            ; 83c4: a0 03       ..
     sta (l00a6),y                                                     ; 83c6: 91 a6       ..
-    dey                                                               ; 83c8: 88          .              ; Y=$02
+    dey                                                               ; 83c8: 88          .              ; Y=2
     lda l0d2e                                                         ; 83c9: ad 2e 0d    ...
     sta (l00a6),y                                                     ; 83cc: 91 a6       ..
-    dey                                                               ; 83ce: 88          .              ; Y=$01
+    dey                                                               ; 83ce: 88          .              ; Y=1
     lda l0d31                                                         ; 83cf: ad 31 0d    .1.
     sta (l00a6),y                                                     ; 83d2: 91 a6       ..
-    dey                                                               ; 83d4: 88          .              ; Y=$00
+    dey                                                               ; 83d4: 88          .              ; Y=0
     lda l0d30                                                         ; 83d5: ad 30 0d    .0.
     ora #$80                                                          ; 83d8: 09 80       ..
     sta (l00a6),y                                                     ; 83da: 91 a6       ..
@@ -1168,7 +1168,7 @@ sub_c858c
     ldy #2                                                            ; 858e: a0 02       ..
     lda (l00a0),y                                                     ; 8590: b1 a0       ..
     sta l0d20                                                         ; 8592: 8d 20 0d    . .
-    iny                                                               ; 8595: c8          .              ; Y=$03
+    iny                                                               ; 8595: c8          .              ; Y=3
     lda (l00a0),y                                                     ; 8596: b1 a0       ..
     sta l0d21                                                         ; 8598: 8d 21 0d    .!.
     ldy #0                                                            ; 859b: a0 00       ..
@@ -1721,7 +1721,7 @@ sub_c88f2
     lda (l00a6),y                                                     ; 88f4: b1 a6       ..
     cmp #$ff                                                          ; 88f6: c9 ff       ..
     bne c8901                                                         ; 88f8: d0 07       ..
-    dey                                                               ; 88fa: 88          .              ; Y=$06
+    dey                                                               ; 88fa: 88          .              ; Y=6
     lda (l00a6),y                                                     ; 88fb: b1 a6       ..
     cmp #$fe                                                          ; 88fd: c9 fe       ..
     bcs c8945                                                         ; 88ff: b0 44       .D
@@ -2085,9 +2085,9 @@ sub_c8ad4
     lda (l009c),y                                                     ; 8ad6: b1 9c       ..
     beq c8afb                                                         ; 8ad8: f0 21       .!
     lda #0                                                            ; 8ada: a9 00       ..
-    tax                                                               ; 8adc: aa          .              ; X=$00
+    tax                                                               ; 8adc: aa          .              ; X=0
     sta (l009c),y                                                     ; 8add: 91 9c       ..
-    tay                                                               ; 8adf: a8          .              ; Y=$00
+    tay                                                               ; 8adf: a8          .              ; Y=0
     lda #osbyte_read_write_econet_keyboard_disable                    ; 8ae0: a9 c9       ..
     jsr osbyte                                                        ; 8ae2: 20 f4 ff     ..            ; Enable keyboard (for Econet)
     lda #$0a                                                          ; 8ae5: a9 0a       ..
@@ -2778,11 +2778,11 @@ loop_c8eee
     sta (l009c),y                                                     ; 8f03: 91 9c       ..
     lda #0                                                            ; 8f05: a9 00       ..
     sta l0e01                                                         ; 8f07: 8d 01 0e    ...
-    iny                                                               ; 8f0a: c8          .              ; Y=$03
+    iny                                                               ; 8f0a: c8          .              ; Y=3
     sta (l009c),y                                                     ; 8f0b: 91 9c       ..
     ldy #3                                                            ; 8f0d: a0 03       ..
     sta (l009e),y                                                     ; 8f0f: 91 9e       ..
-    dey                                                               ; 8f11: 88          .              ; Y=$02
+    dey                                                               ; 8f11: 88          .              ; Y=2
     lda #$eb                                                          ; 8f12: a9 eb       ..
     sta (l009e),y                                                     ; 8f14: 91 9e       ..
     ; Copy 3 bytes of memory from l8f49 to l0d6d
@@ -3388,7 +3388,7 @@ return_14
 ; $9349 referenced 2 times by $92eb, $9393
 sub_c9349
     lda #0                                                            ; 9349: a9 00       ..
-    tax                                                               ; 934b: aa          .              ; X=$00
+    tax                                                               ; 934b: aa          .              ; X=0
     sta l10d8                                                         ; 934c: 8d d8 10    ...
 ; $934f referenced 1 time by $9356
 loop_c934f
@@ -3536,7 +3536,7 @@ c943c
     ldx #1                                                            ; 9449: a2 01       ..
     stx l0f05                                                         ; 944b: 8e 05 0f    ...
     stx l0f06                                                         ; 944e: 8e 06 0f    ...
-    inx                                                               ; 9451: e8          .              ; X=$02
+    inx                                                               ; 9451: e8          .              ; X=2
     ldy l00b0                                                         ; 9452: a4 b0       ..
     jsr sub_caf06                                                     ; 9454: 20 06 af     ..
     ldy #6                                                            ; 9457: a0 06       ..
@@ -3826,7 +3826,7 @@ c95ee
     lda #0                                                            ; 95ee: a9 00       ..
     pha                                                               ; 95f0: 48          H
     pha                                                               ; 95f1: 48          H
-    tay                                                               ; 95f2: a8          .              ; Y=$00
+    tay                                                               ; 95f2: a8          .              ; Y=0
     tsx                                                               ; 95f3: ba          .
 ; $95f4 referenced 3 times by $95fb, $9600, $9605
 c95f4
@@ -5468,7 +5468,7 @@ c9f82
     beq c9f90                                                         ; 9f87: f0 07       ..
     cmp (l00bb),y                                                     ; 9f89: d1 bb       ..
     bne c9f90                                                         ; 9f8b: d0 03       ..
-    dey                                                               ; 9f8d: 88          .              ; Y=$03
+    dey                                                               ; 9f8d: 88          .              ; Y=3
     sbc (l00bb),y                                                     ; 9f8e: f1 bb       ..
 ; $9f90 referenced 2 times by $9f87, $9f8b
 c9f90
@@ -5567,7 +5567,7 @@ ca00f
     ldy #2                                                            ; a022: a0 02       ..
     sty l00b0                                                         ; a024: 84 b0       ..
     sty l0f05                                                         ; a026: 8c 05 0f    ...
-    iny                                                               ; a029: c8          .              ; Y=$03
+    iny                                                               ; a029: c8          .              ; Y=3
     jsr c94ad                                                         ; a02a: 20 ad 94     ..
     stx l00b1                                                         ; a02d: 86 b1       ..
     lda l0f06                                                         ; a02f: ad 06 0f    ...
@@ -5694,7 +5694,7 @@ sub_ca0ce
     cmp #$48 ; 'H'                                                    ; a0dc: c9 48       .H
     bcc return_20                                                     ; a0de: 90 03       ..
     ldy #0                                                            ; a0e0: a0 00       ..
-    tya                                                               ; a0e2: 98          .              ; A=$00
+    tya                                                               ; a0e2: 98          .              ; A=0
 ; $a0e3 referenced 1 time by $a0de
 return_20
     rts                                                               ; a0e3: 60          `
@@ -5740,7 +5740,7 @@ ca114
     ldy #$ff                                                          ; a117: a0 ff       ..
     sty l00ba                                                         ; a119: 84 ba       ..
     sty l0098                                                         ; a11b: 84 98       ..
-    iny                                                               ; a11d: c8          .              ; Y=$00
+    iny                                                               ; a11d: c8          .              ; Y=0
     ldx #$4a ; 'J'                                                    ; a11e: a2 4a       .J
     jsr sub_ca140                                                     ; a120: 20 40 a1     @.
     bcs ca133                                                         ; a123: b0 0e       ..
@@ -5908,7 +5908,7 @@ ca1ea
     ldx #1                                                            ; a1f0: a2 01       ..
     stx l0f05                                                         ; a1f2: 8e 05 0f    ...
     stx l0f06                                                         ; a1f5: 8e 06 0f    ...
-    inx                                                               ; a1f8: e8          .              ; X=$02
+    inx                                                               ; a1f8: e8          .              ; X=2
     jsr sub_caf04                                                     ; a1f9: 20 04 af     ..
     ldy #6                                                            ; a1fc: a0 06       ..
     jsr c94ad                                                         ; a1fe: 20 ad 94     ..
@@ -6581,7 +6581,7 @@ loop_ca73b
 ; $a749 referenced 1 time by $a737
 ca749
     lda #0                                                            ; a749: a9 00       ..
-    tay                                                               ; a74b: a8          .              ; Y=$00
+    tay                                                               ; a74b: a8          .              ; Y=0
     sta (l00ac),y                                                     ; a74c: 91 ac       ..
     rts                                                               ; a74e: 60          `
 
@@ -6601,7 +6601,7 @@ ca751
 ; $a761 referenced 3 times by $a755, $a759, $a76d
 ca761
     lda #0                                                            ; a761: a9 00       ..
-    tax                                                               ; a763: aa          .              ; X=$00
+    tax                                                               ; a763: aa          .              ; X=0
     sta (l00ac,x)                                                     ; a764: 81 ac       ..
     beq ca78e                                                         ; a766: f0 26       .&             ; ALWAYS branch
 
@@ -6704,7 +6704,7 @@ ca7de
     lda (l009c),y                                                     ; a7ef: b1 9c       ..
     ldy #1                                                            ; a7f1: a0 01       ..
     sta (l00ac),y                                                     ; a7f3: 91 ac       ..
-    iny                                                               ; a7f5: c8          .              ; Y=$02
+    iny                                                               ; a7f5: c8          .              ; Y=2
     lda #$80                                                          ; a7f6: a9 80       ..
     sta (l00ac),y                                                     ; a7f8: 91 ac       ..
     rts                                                               ; a7fa: 60          `
@@ -6746,9 +6746,9 @@ loop_ca81a
     lda l0d71                                                         ; a82a: ad 71 0d    .q.
     cmp #$ff                                                          ; a82d: c9 ff       ..
     bne ca837                                                         ; a82f: d0 06       ..
-    tya                                                               ; a831: 98          .              ; A=$00
+    tya                                                               ; a831: 98          .              ; A=0
     sta (l00ac),y                                                     ; a832: 91 ac       ..
-    iny                                                               ; a834: c8          .              ; Y=$01
+    iny                                                               ; a834: c8          .              ; Y=1
     bne ca84a                                                         ; a835: d0 13       ..             ; ALWAYS branch
 
 ; $a837 referenced 1 time by $a82f
@@ -6877,8 +6877,8 @@ ca8db
     lda #$90                                                          ; a8fb: a9 90       ..
     sta l0098                                                         ; a8fd: 85 98       ..
     sta (l00ac),y                                                     ; a8ff: 91 ac       ..
-    iny                                                               ; a901: c8          .              ; Y=$03
-    iny                                                               ; a902: c8          .              ; Y=$04
+    iny                                                               ; a901: c8          .              ; Y=3
+    iny                                                               ; a902: c8          .              ; Y=4
 ; $a903 referenced 1 time by $a90b
 loop_ca903
     lda l0dfe,y                                                       ; a903: b9 fe 0d    ...
@@ -6917,9 +6917,9 @@ ca935
     ldy #1                                                            ; a936: a0 01       ..
     lda (l00ac),y                                                     ; a938: b1 ac       ..
     tax                                                               ; a93a: aa          .
-    iny                                                               ; a93b: c8          .              ; Y=$02
+    iny                                                               ; a93b: c8          .              ; Y=2
     lda (l00ac),y                                                     ; a93c: b1 ac       ..
-    iny                                                               ; a93e: c8          .              ; Y=$03
+    iny                                                               ; a93e: c8          .              ; Y=3
     sty l00aa                                                         ; a93f: 84 aa       ..
     ldy #$72 ; 'r'                                                    ; a941: a0 72       .r
     sta (l009c),y                                                     ; a943: 91 9c       ..
@@ -7046,7 +7046,7 @@ ca9fb
     beq return_27                                                     ; a9fe: f0 35       .5
     php                                                               ; aa00: 08          .
     bpl caa04                                                         ; aa01: 10 01       ..
-    inx                                                               ; aa03: e8          .              ; X=$03
+    inx                                                               ; aa03: e8          .              ; X=3
 ; $aa04 referenced 1 time by $aa01
 caa04
     ldy #$dc                                                          ; aa04: a0 dc       ..
@@ -7239,7 +7239,7 @@ cab36
     lda l0d6b                                                         ; ab38: ad 6b 0d    .k.
     sta (l009e),y                                                     ; ab3b: 91 9e       ..
     lda l009d                                                         ; ab3d: a5 9d       ..
-    iny                                                               ; ab3f: c8          .              ; Y=$09
+    iny                                                               ; ab3f: c8          .              ; Y=9
     sta (l009e),y                                                     ; ab40: 91 9e       ..
     ldy #5                                                            ; ab42: a0 05       ..
     sta (l009e),y                                                     ; ab44: 91 9e       ..
@@ -7262,7 +7262,7 @@ cab36
     ldy #$21 ; '!'                                                    ; ab63: a0 21       .!
     sty l0d6b                                                         ; ab65: 8c 6b 0d    .k.
     lda #0                                                            ; ab68: a9 00       ..
-    tax                                                               ; ab6a: aa          .              ; X=$00
+    tax                                                               ; ab6a: aa          .              ; X=0
     ldy l009f                                                         ; ab6b: a4 9f       ..
     cli                                                               ; ab6d: 58          X
     jsr sub_cac24                                                     ; ab6e: 20 24 ac     $.
@@ -7296,7 +7296,7 @@ loop_cab89
     ldy #2                                                            ; ab94: a0 02       ..
     lda (l009e),y                                                     ; ab96: b1 9e       ..
     pha                                                               ; ab98: 48          H
-    iny                                                               ; ab99: c8          .              ; Y=$03
+    iny                                                               ; ab99: c8          .              ; Y=3
     lda (l009e),y                                                     ; ab9a: b1 9e       ..
     ldy #$24 ; '$'                                                    ; ab9c: a0 24       .$
     sta (l009c),y                                                     ; ab9e: 91 9c       ..
@@ -7408,7 +7408,7 @@ cac4a
     lda #$ff                                                          ; ac54: a9 ff       ..
     ldy #8                                                            ; ac56: a0 08       ..
     sta (l009a),y                                                     ; ac58: 91 9a       ..
-    iny                                                               ; ac5a: c8          .              ; Y=$09
+    iny                                                               ; ac5a: c8          .              ; Y=9
     sta (l009a),y                                                     ; ac5b: 91 9a       ..
     pla                                                               ; ac5d: 68          h
     tax                                                               ; ac5e: aa          .
@@ -7423,7 +7423,7 @@ cac67
     ldy #1                                                            ; ac68: a0 01       ..
     sta (l009a),y                                                     ; ac6a: 91 9a       ..
     txa                                                               ; ac6c: 8a          .
-    dey                                                               ; ac6d: 88          .              ; Y=$00
+    dey                                                               ; ac6d: 88          .              ; Y=0
     pha                                                               ; ac6e: 48          H
 ; $ac6f referenced 1 time by $ac7b
 loop_cac6f
@@ -7458,7 +7458,7 @@ sub_cac98
     inc l009e                                                         ; aca8: e6 9e       ..
     lda l0351                                                         ; acaa: ad 51 03    .Q.
     pha                                                               ; acad: 48          H
-    tya                                                               ; acae: 98          .              ; A=$00
+    tya                                                               ; acae: 98          .              ; A=0
 ; $acaf referenced 1 time by $acce
 loop_cacaf
     sta (l009e),y                                                     ; acaf: 91 9e       ..
@@ -7469,13 +7469,13 @@ loop_cacaf
     pla                                                               ; acba: 68          h
     ldy #0                                                            ; acbb: a0 00       ..
     sta (l009e),y                                                     ; acbd: 91 9e       ..
-    iny                                                               ; acbf: c8          .              ; Y=$01
+    iny                                                               ; acbf: c8          .              ; Y=1
     lda (l009e),y                                                     ; acc0: b1 9e       ..
     pha                                                               ; acc2: 48          H
     ldx l009e                                                         ; acc3: a6 9e       ..
     inc l009e                                                         ; acc5: e6 9e       ..
     inc l00aa                                                         ; acc7: e6 aa       ..
-    dey                                                               ; acc9: 88          .              ; Y=$00
+    dey                                                               ; acc9: 88          .              ; Y=0
     lda l00aa                                                         ; acca: a5 aa       ..
     cpx #$f9                                                          ; accc: e0 f9       ..
     bne loop_cacaf                                                    ; acce: d0 df       ..
@@ -8087,7 +8087,7 @@ cb058
     jsr sub_cb0f6                                                     ; b05e: 20 f6 b0     ..
     jsr sub_cb0ea                                                     ; b061: 20 ea b0     ..
     lda #0                                                            ; b064: a9 00       ..
-    tax                                                               ; b066: aa          .              ; X=$00
+    tax                                                               ; b066: aa          .              ; X=0
     ldy #$20 ; ' '                                                    ; b067: a0 20       .
     sta (l009c),y                                                     ; b069: 91 9c       ..
 ; $b06b referenced 1 time by $b097
@@ -8149,7 +8149,7 @@ cb0b9
     ldy #2                                                            ; b0b9: a0 02       ..
     lda l00b5                                                         ; b0bb: a5 b5       ..
     sta (l009e),y                                                     ; b0bd: 91 9e       ..
-    iny                                                               ; b0bf: c8          .              ; Y=$03
+    iny                                                               ; b0bf: c8          .              ; Y=3
     lda l00b6                                                         ; b0c0: a5 b6       ..
     sta (l009e),y                                                     ; b0c2: 91 9e       ..
     rts                                                               ; b0c4: 60          `
@@ -8181,7 +8181,7 @@ sub_cb0ea
     ldy #2                                                            ; b0ea: a0 02       ..
     lda (l009e),y                                                     ; b0ec: b1 9e       ..
     sta l00b5                                                         ; b0ee: 85 b5       ..
-    iny                                                               ; b0f0: c8          .              ; Y=$03
+    iny                                                               ; b0f0: c8          .              ; Y=3
     lda (l009e),y                                                     ; b0f1: b1 9e       ..
     sta l00b6                                                         ; b0f3: 85 b6       ..
     rts                                                               ; b0f5: 60          `
@@ -8756,7 +8756,7 @@ return_35
 ; $b449 referenced 1 time by $8b75
 sub_cb449
     lda #0                                                            ; b449: a9 00       ..
-    tay                                                               ; b44b: a8          .              ; Y=$00
+    tay                                                               ; b44b: a8          .              ; Y=0
 ; $b44c referenced 1 time by $b450
 loop_cb44c
     sta l1000,y                                                       ; b44c: 99 00 10    ...
@@ -8836,7 +8836,7 @@ cb4c1
     sta l0101                                                         ; b4c3: 8d 01 01    ...
     lda #0                                                            ; b4c6: a9 00       ..
     sta l0100                                                         ; b4c8: 8d 00 01    ...
-    tax                                                               ; b4cb: aa          .              ; X=$00
+    tax                                                               ; b4cb: aa          .              ; X=0
 ; $b4cc referenced 1 time by $b4d3
 loop_cb4cc
     inx                                                               ; b4cc: e8          .
@@ -9027,11 +9027,11 @@ cb5cd
 sub_cb5d8
     ldy #1                                                            ; b5d8: a0 01       ..
     sty l10d0                                                         ; b5da: 8c d0 10    ...
-    dey                                                               ; b5dd: 88          .              ; Y=$00
+    dey                                                               ; b5dd: 88          .              ; Y=0
     sty l10cb                                                         ; b5de: 8c cb 10    ...
     sty l10cf                                                         ; b5e1: 8c cf 10    ...
     sty l10d6                                                         ; b5e4: 8c d6 10    ...
-    tya                                                               ; b5e7: 98          .              ; A=$00
+    tya                                                               ; b5e7: 98          .              ; A=0
     ldx #2                                                            ; b5e8: a2 02       ..
 ; $b5ea referenced 1 time by $b5ee
 loop_cb5ea
@@ -9530,7 +9530,7 @@ sub_cb98f
 
 sub_cb994
     lda #osfind_close                                                 ; b994: a9 00       ..
-    tay                                                               ; b996: a8          .              ; Y=$00
+    tay                                                               ; b996: a8          .              ; Y=0
     jmp osfind                                                        ; b997: 4c ce ff    L..            ; Close all files (Y=0)
 
 sub_cb99a
@@ -9806,7 +9806,7 @@ sub_cbb0e
     tya                                                               ; bb0e: 98          .
     tax                                                               ; bb0f: aa          .
     lda #0                                                            ; bb10: a9 00       ..
-    tay                                                               ; bb12: a8          .              ; Y=$00
+    tay                                                               ; bb12: a8          .              ; Y=0
 ; $bb13 referenced 1 time by $bb18
 loop_cbb13
     sta (l00ae),y                                                     ; bb13: 91 ae       ..
@@ -9842,7 +9842,7 @@ cbb39
 ; $bb40 referenced 1 time by $bb56
 loop_cbb40
     ldy #0                                                            ; bb40: a0 00       ..
-    tya                                                               ; bb42: 98          .              ; A=$00
+    tya                                                               ; bb42: 98          .              ; A=0
 ; $bb43 referenced 1 time by $bb4f
 loop_cbb43
     pha                                                               ; bb43: 48          H

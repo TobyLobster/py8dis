@@ -10605,7 +10605,7 @@ sound7_pitch = sound7+4
     ldy #1                                                            ; 4153: a0 01       ..
     sty delta_x                                                       ; 4155: 84 05       ..
     sty room_decode_sprite                                            ; 4157: 84 07       ..
-    dey                                                               ; 4159: 88          .              ; Y=&00
+    dey                                                               ; 4159: 88          .              ; Y=0
     sty delta_y                                                       ; 415a: 84 06       ..
     sty number_of_enemies                                             ; 415c: 84 37       .7
     sty number_of_arrows_in_flight                                    ; 415e: 84 1f       ..
@@ -11897,10 +11897,10 @@ screen_addr_high = opcode10+2
     ldy #0                                                            ; 4912: a0 00       ..
     lda (temp_addr_low),y                                             ; 4914: b1 1d       ..
     bmi return_21                                                     ; 4916: 30 0c       0.
-    iny                                                               ; 4918: c8          .              ; Y=&01
+    iny                                                               ; 4918: c8          .              ; Y=1
     lda (temp_addr_low),y                                             ; 4919: b1 1d       ..
     bmi return_21                                                     ; 491b: 30 07       0.
-    iny                                                               ; 491d: c8          .              ; Y=&02
+    iny                                                               ; 491d: c8          .              ; Y=2
     lda (temp_addr_low),y                                             ; 491e: b1 1d       ..
     bmi return_21                                                     ; 4920: 30 02       0.
     dec player_y                                                      ; 4922: c6 1b       ..

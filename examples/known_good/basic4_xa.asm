@@ -375,7 +375,7 @@ c80ff
     stx l0023                                                         // 8120: 86 23       .#
     ldx #$0a                                                          // 8122: a2 0a       ..
     stx l0400                                                         // 8124: 8e 00 04    ...
-    dex                                                               // 8127: ca          .              // X=$09
+    dex                                                               // 8127: ca          .              // X=9
     stx l0401                                                         // 8128: 8e 01 04    ...
 
     // Set BRK vector to 'handle_brkv'
@@ -855,16 +855,16 @@ c83a6
 sub_c83aa
     sec                                                               // 83aa: 38          8
     ldy #0                                                            // 83ab: a0 00       ..
-    tya                                                               // 83ad: 98          .              // A=$00
+    tya                                                               // 83ad: 98          .              // A=0
     sbc l0034                                                         // 83ae: e5 34       .4
     sta l0034                                                         // 83b0: 85 34       .4
-    tya                                                               // 83b2: 98          .              // A=$00
+    tya                                                               // 83b2: 98          .              // A=0
     sbc l0033                                                         // 83b3: e5 33       .3
     sta l0033                                                         // 83b5: 85 33       .3
-    tya                                                               // 83b7: 98          .              // A=$00
+    tya                                                               // 83b7: 98          .              // A=0
     sbc l0032                                                         // 83b8: e5 32       .2
     sta l0032                                                         // 83ba: 85 32       .2
-    tya                                                               // 83bc: 98          .              // A=$00
+    tya                                                               // 83bc: 98          .              // A=0
     sbc l0031                                                         // 83bd: e5 31       .1
     sta l0031                                                         // 83bf: 85 31       .1
 // $83c1 referenced 1 time by $83a8
@@ -1893,7 +1893,7 @@ c8c5e
     ldx #$0f                                                          // 8c6d: a2 0f       ..
     lda #$64 // 'd'                                                   // 8c6f: a9 64       .d
     sta l0029                                                         // 8c71: 85 29       .)
-    dey                                                               // 8c73: 88          .              // Y=$02
+    dey                                                               // 8c73: 88          .              // Y=2
 // $8c74 referenced 1 time by $8c6b
 c8c74
     phy                                                               // 8c74: 5a          Z
@@ -2037,7 +2037,7 @@ c8d44
     and #$df                                                          // 8d4c: 29 df       ).
     cmp #$42 // 'B'                                                   // 8d4e: c9 42       .B
     beq c8d64                                                         // 8d50: f0 12       ..
-    inx                                                               // 8d52: e8          .              // X=$02
+    inx                                                               // 8d52: e8          .              // X=2
     cmp #$57 // 'W'                                                   // 8d53: c9 57       .W
     beq c8d64                                                         // 8d55: f0 0d       ..
     ldx #4                                                            // 8d57: a2 04       ..
@@ -2114,7 +2114,7 @@ sub_c8da8
     adc l0037                                                         // 8dac: 65 37       e7
     sta l0039                                                         // 8dae: 85 39       .9
     ldy #0                                                            // 8db0: a0 00       ..
-    tya                                                               // 8db2: 98          .              // A=$00
+    tya                                                               // 8db2: 98          .              // A=0
     adc l0038                                                         // 8db3: 65 38       e8
     sta l003a                                                         // 8db5: 85 3a       .:
 // $8db7 referenced 1 time by $8dbe
@@ -2654,7 +2654,7 @@ c9086
     ldx l0020                                                         // 9092: a6 20       .
     beq c90a0                                                         // 9094: f0 0a       ..
     sta l002b                                                         // 9096: 85 2b       .+
-    iny                                                               // 9098: c8          .              // Y=$02
+    iny                                                               // 9098: c8          .              // Y=2
     lda (l000b),y                                                     // 9099: b1 0b       ..
     sta l002a                                                         // 909b: 85 2a       .*
     jsr sub_c9d0f                                                     // 909d: 20 0f 9d     ..
@@ -2734,7 +2734,7 @@ c90ea
     ldx #5                                                            // 9101: a2 05       ..
     cpx l002c                                                         // 9103: e4 2c       .,
     bne c9108                                                         // 9105: d0 01       ..
-    inx                                                               // 9107: e8          .              // X=$06
+    inx                                                               // 9107: e8          .              // X=6
 // $9108 referenced 1 time by $9105
 c9108
     jsr sub_c9952                                                     // 9108: 20 52 99     R.
@@ -2864,7 +2864,7 @@ c91ad
     pla                                                               // 91c1: 68          h
     ldy #2                                                            // 91c2: a0 02       ..
     sta (l002a),y                                                     // 91c4: 91 2a       .*
-    dey                                                               // 91c6: 88          .              // Y=$01
+    dey                                                               // 91c6: 88          .              // Y=1
     lda l002d                                                         // 91c7: a5 2d       .-
     beq c91d1                                                         // 91c9: f0 06       ..
     sta (l002a),y                                                     // 91cb: 91 2a       .*
@@ -2881,7 +2881,7 @@ c91d1
     sta l002d                                                         // 91dd: 85 2d       .-
     lda (l002a)                                                       // 91df: b2 2a       .*
     sta l002c                                                         // 91e1: 85 2c       .,
-    dey                                                               // 91e3: 88          .              // Y=$00
+    dey                                                               // 91e3: 88          .              // Y=0
 // $91e4 referenced 1 time by $91ec
 loop_c91e4
     lda l0600,y                                                       // 91e4: b9 00 06    ...
@@ -4191,7 +4191,7 @@ sub_c997d
     ldx #5                                                            // 9987: a2 05       ..
     cpx l002c                                                         // 9989: e4 2c       .,
     bne c997a                                                         // 998b: d0 ed       ..
-    inx                                                               // 998d: e8          .              // X=$06
+    inx                                                               // 998d: e8          .              // X=6
     bra c997a                                                         // 998e: 80 ea       ..
 // $9990 referenced 1 time by $99da
 c9990
@@ -4783,7 +4783,7 @@ sub_c9ca2
     ldx l0020                                                         // 9ca8: a6 20       .
     beq c9cb6                                                         // 9caa: f0 0a       ..
     sta l002b                                                         // 9cac: 85 2b       .+
-    iny                                                               // 9cae: c8          .              // Y=$02
+    iny                                                               // 9cae: c8          .              // Y=2
     lda (l000b),y                                                     // 9caf: b1 0b       ..
     sta l002a                                                         // 9cb1: 85 2a       .*
     jsr sub_c9d0f                                                     // 9cb3: 20 0f 9d     ..
@@ -5249,11 +5249,11 @@ c9f13
     lda (l0004),y                                                     // 9f29: b1 04       ..
     adc l002b                                                         // 9f2b: 65 2b       e+
     sta l002b                                                         // 9f2d: 85 2b       .+
-    iny                                                               // 9f2f: c8          .              // Y=$02
+    iny                                                               // 9f2f: c8          .              // Y=2
     lda (l0004),y                                                     // 9f30: b1 04       ..
     adc l002c                                                         // 9f32: 65 2c       e,
     sta l002c                                                         // 9f34: 85 2c       .,
-    iny                                                               // 9f36: c8          .              // Y=$03
+    iny                                                               // 9f36: c8          .              // Y=3
     lda (l0004),y                                                     // 9f37: b1 04       ..
     adc l002d                                                         // 9f39: 65 2d       e-
 // $9f3b referenced 1 time by $9f98
@@ -5311,11 +5311,11 @@ c9f70
     lda (l0004),y                                                     // 9f86: b1 04       ..
     sbc l002b                                                         // 9f88: e5 2b       .+
     sta l002b                                                         // 9f8a: 85 2b       .+
-    iny                                                               // 9f8c: c8          .              // Y=$02
+    iny                                                               // 9f8c: c8          .              // Y=2
     lda (l0004),y                                                     // 9f8d: b1 04       ..
     sbc l002c                                                         // 9f8f: e5 2c       .,
     sta l002c                                                         // 9f91: 85 2c       .,
-    iny                                                               // 9f93: c8          .              // Y=$03
+    iny                                                               // 9f93: c8          .              // Y=3
     lda (l0004),y                                                     // 9f94: b1 04       ..
     sbc l002d                                                         // 9f96: e5 2d       .-
     bra c9f3b                                                         // 9f98: 80 a1       ..
@@ -6335,13 +6335,13 @@ sub_ca514
     ldy #4                                                            // a516: a0 04       ..
     lda (l004a),y                                                     // a518: b1 4a       .J
     sta l0040                                                         // a51a: 85 40       .@
-    dey                                                               // a51c: 88          .              // Y=$03
+    dey                                                               // a51c: 88          .              // Y=3
     lda (l004a),y                                                     // a51d: b1 4a       .J
     sta l003f                                                         // a51f: 85 3f       .?
-    dey                                                               // a521: 88          .              // Y=$02
+    dey                                                               // a521: 88          .              // Y=2
     lda (l004a),y                                                     // a522: b1 4a       .J
     sta l003e                                                         // a524: 85 3e       .>
-    dey                                                               // a526: 88          .              // Y=$01
+    dey                                                               // a526: 88          .              // Y=1
     lda (l004a),y                                                     // a527: b1 4a       .J
     sta l003b                                                         // a529: 85 3b       .;
     tay                                                               // a52b: a8          .
@@ -6385,13 +6385,13 @@ sub_ca54d
     eor l0031                                                         // a559: 45 31       E1
     sta (l004a),y                                                     // a55b: 91 4a       .J
     lda l0032                                                         // a55d: a5 32       .2
-    iny                                                               // a55f: c8          .              // Y=$02
+    iny                                                               // a55f: c8          .              // Y=2
     sta (l004a),y                                                     // a560: 91 4a       .J
     lda l0033                                                         // a562: a5 33       .3
-    iny                                                               // a564: c8          .              // Y=$03
+    iny                                                               // a564: c8          .              // Y=3
     sta (l004a),y                                                     // a565: 91 4a       .J
     lda l0034                                                         // a567: a5 34       .4
-    iny                                                               // a569: c8          .              // Y=$04
+    iny                                                               // a569: c8          .              // Y=4
     sta (l004a),y                                                     // a56a: 91 4a       .J
     rts                                                               // a56c: 60          `
 
@@ -6418,13 +6418,13 @@ ca57e
     ldy #4                                                            // a582: a0 04       ..
     lda (l004a),y                                                     // a584: b1 4a       .J
     sta l0034                                                         // a586: 85 34       .4
-    dey                                                               // a588: 88          .              // Y=$03
+    dey                                                               // a588: 88          .              // Y=3
     lda (l004a),y                                                     // a589: b1 4a       .J
     sta l0033                                                         // a58b: 85 33       .3
-    dey                                                               // a58d: 88          .              // Y=$02
+    dey                                                               // a58d: 88          .              // Y=2
     lda (l004a),y                                                     // a58e: b1 4a       .J
     sta l0032                                                         // a590: 85 32       .2
-    dey                                                               // a592: 88          .              // Y=$01
+    dey                                                               // a592: 88          .              // Y=1
     lda (l004a),y                                                     // a593: b1 4a       .J
     sta l002e                                                         // a595: 85 2e       ..
     tay                                                               // a597: a8          .
@@ -7808,16 +7808,16 @@ sub_cad1c
 cad20
     sec                                                               // ad20: 38          8
     lda #0                                                            // ad21: a9 00       ..
-    tay                                                               // ad23: a8          .              // Y=$00
+    tay                                                               // ad23: a8          .              // Y=0
     sbc l002a                                                         // ad24: e5 2a       .*
     sta l002a                                                         // ad26: 85 2a       .*
-    tya                                                               // ad28: 98          .              // A=$00
+    tya                                                               // ad28: 98          .              // A=0
     sbc l002b                                                         // ad29: e5 2b       .+
     sta l002b                                                         // ad2b: 85 2b       .+
-    tya                                                               // ad2d: 98          .              // A=$00
+    tya                                                               // ad2d: 98          .              // A=0
     sbc l002c                                                         // ad2e: e5 2c       .,
     sta l002c                                                         // ad30: 85 2c       .,
-    tya                                                               // ad32: 98          .              // A=$00
+    tya                                                               // ad32: 98          .              // A=0
     sbc l002d                                                         // ad33: e5 2d       .-
     sta l002d                                                         // ad35: 85 2d       .-
 // $ad37 referenced 1 time by $ad0b
@@ -8228,7 +8228,7 @@ sub_caf61
     ldy #$ff                                                          // af64: a0 ff       ..
     cmp #$7e // '~'                                                   // af66: c9 7e       .~
     beq caf6d                                                         // af68: f0 03       ..
-    iny                                                               // af6a: c8          .              // Y=$00
+    iny                                                               // af6a: c8          .              // Y=0
     dec l001b                                                         // af6b: c6 1b       ..
 // $af6d referenced 1 time by $af68
 caf6d
@@ -8376,7 +8376,7 @@ loop_cb019
     ldy #1                                                            // b03d: a0 01       ..
     lda l000c                                                         // b03f: a5 0c       ..
     sta (l0002),y                                                     // b041: 91 02       ..
-    iny                                                               // b043: c8          .              // Y=$02
+    iny                                                               // b043: c8          .              // Y=2
     jsr sub_c995a                                                     // b044: 20 5a 99     Z.
     jmp cb0b0                                                         // b047: 4c b0 b0    L..
 
@@ -8656,10 +8656,10 @@ cb1de
     ldy #3                                                            // b1e8: a0 03       ..
     lda (l002a),y                                                     // b1ea: b1 2a       .*
     sta l002d                                                         // b1ec: 85 2d       .-
-    dey                                                               // b1ee: 88          .              // Y=$02
+    dey                                                               // b1ee: 88          .              // Y=2
     lda (l002a),y                                                     // b1ef: b1 2a       .*
     sta l002c                                                         // b1f1: 85 2c       .,
-    dey                                                               // b1f3: 88          .              // Y=$01
+    dey                                                               // b1f3: 88          .              // Y=1
     lda (l002a),y                                                     // b1f4: b1 2a       .*
     tax                                                               // b1f6: aa          .
     lda (l002a)                                                       // b1f7: b2 2a       .*
@@ -8802,7 +8802,7 @@ handle_brkv
     ldx #$ff                                                          // b2b2: a2 ff       ..
     stx l0028                                                         // b2b4: 86 28       .(
     txs                                                               // b2b6: 9a          .
-    inx                                                               // b2b7: e8          .              // X=$00
+    inx                                                               // b2b7: e8          .              // X=0
     ldy #0                                                            // b2b8: a0 00       ..
     lda #osbyte_read_write_vdu_queue_size                             // b2ba: a9 da       ..
     jsr osbyte                                                        // b2bc: 20 f4 ff     ..            // Write VDU queue
@@ -8935,10 +8935,10 @@ cb380
     ldy #1                                                            // b38a: a0 01       ..
     sta (l0037),y                                                     // b38c: 91 37       .7
     lda l002c                                                         // b38e: a5 2c       .,
-    iny                                                               // b390: c8          .              // Y=$02
+    iny                                                               // b390: c8          .              // Y=2
     sta (l0037),y                                                     // b391: 91 37       .7
     lda l002d                                                         // b393: a5 2d       .-
-    iny                                                               // b395: c8          .              // Y=$03
+    iny                                                               // b395: c8          .              // Y=3
     sta (l0037),y                                                     // b396: 91 37       .7
 // $b398 referenced 1 time by $b386
 return_32
@@ -8958,13 +8958,13 @@ cb39e
     and #$80                                                          // b3a8: 29 80       ).
     eor l0031                                                         // b3aa: 45 31       E1
     sta (l0037),y                                                     // b3ac: 91 37       .7
-    iny                                                               // b3ae: c8          .              // Y=$02
+    iny                                                               // b3ae: c8          .              // Y=2
     lda l0032                                                         // b3af: a5 32       .2
     sta (l0037),y                                                     // b3b1: 91 37       .7
-    iny                                                               // b3b3: c8          .              // Y=$03
+    iny                                                               // b3b3: c8          .              // Y=3
     lda l0033                                                         // b3b4: a5 33       .3
     sta (l0037),y                                                     // b3b6: 91 37       .7
-    iny                                                               // b3b8: c8          .              // Y=$04
+    iny                                                               // b3b8: c8          .              // Y=4
     lda l0034                                                         // b3b9: a5 34       .4
     sta (l0037),y                                                     // b3bb: 91 37       .7
     rts                                                               // b3bd: 60          `
@@ -9267,12 +9267,12 @@ cb56a
     adc l051d,x                                                       // b588: 7d 1d 05    }..
     sta (l002a),y                                                     // b58b: 91 2a       .*
     sta l0038                                                         // b58d: 85 38       .8
-    iny                                                               // b58f: c8          .              // Y=$02
+    iny                                                               // b58f: c8          .              // Y=2
     lda (l002a),y                                                     // b590: b1 2a       .*
     adc l051e,x                                                       // b592: 7d 1e 05    }..
     sta (l002a),y                                                     // b595: 91 2a       .*
     sta l0039                                                         // b597: 85 39       .9
-    iny                                                               // b599: c8          .              // Y=$03
+    iny                                                               // b599: c8          .              // Y=3
     lda (l002a),y                                                     // b59a: b1 2a       .*
     adc l051f,x                                                       // b59c: 7d 1f 05    }..
     sta (l002a),y                                                     // b59f: 91 2a       .*
@@ -10090,9 +10090,9 @@ cbaa6
     sta l003a                                                         // bab0: 85 3a       .:
     ldy #$ff                                                          // bab2: a0 ff       ..
     sty l003b                                                         // bab4: 84 3b       .;
-    iny                                                               // bab6: c8          .              // Y=$00
+    iny                                                               // bab6: c8          .              // Y=0
     ldx #$37 // '7'                                                   // bab7: a2 37       .7
-    tya                                                               // bab9: 98          .              // A=$00
+    tya                                                               // bab9: 98          .              // A=0
     jsr osword                                                        // baba: 20 f1 ff     ..
     bcc cbac5                                                         // babd: 90 06       ..
     jmp c9c41                                                         // babf: 4c 41 9c    LA.
@@ -10272,14 +10272,14 @@ cbbaf
     ldy #1                                                            // bbb6: a0 01       ..
     lda l002b                                                         // bbb8: a5 2b       .+
     sta (l003d),y                                                     // bbba: 91 3d       .=
-    iny                                                               // bbbc: c8          .              // Y=$02
+    iny                                                               // bbbc: c8          .              // Y=2
     lda l002a                                                         // bbbd: a5 2a       .*
     sta (l003d),y                                                     // bbbf: 91 3d       .=
-    iny                                                               // bbc1: c8          .              // Y=$03
+    iny                                                               // bbc1: c8          .              // Y=3
     lda l003f                                                         // bbc2: a5 3f       .?
     sta (l003d),y                                                     // bbc4: 91 3d       .=
     sec                                                               // bbc6: 38          8
-    tya                                                               // bbc7: 98          .              // A=$03
+    tya                                                               // bbc7: 98          .              // A=3
     adc l003d                                                         // bbc8: 65 3d       e=
     sta l003d                                                         // bbca: 85 3d       .=
     bcc cbbd0                                                         // bbcc: 90 02       ..
@@ -10381,13 +10381,13 @@ cbc3a
     and #$80                                                          // bc4c: 29 80       ).
     eor l0031                                                         // bc4e: 45 31       E1
     sta (l0004),y                                                     // bc50: 91 04       ..
-    iny                                                               // bc52: c8          .              // Y=$02
+    iny                                                               // bc52: c8          .              // Y=2
     lda l0032                                                         // bc53: a5 32       .2
     sta (l0004),y                                                     // bc55: 91 04       ..
-    iny                                                               // bc57: c8          .              // Y=$03
+    iny                                                               // bc57: c8          .              // Y=3
     lda l0033                                                         // bc58: a5 33       .3
     sta (l0004),y                                                     // bc5a: 91 04       ..
-    iny                                                               // bc5c: c8          .              // Y=$04
+    iny                                                               // bc5c: c8          .              // Y=4
     lda l0034                                                         // bc5d: a5 34       .4
     sta (l0004),y                                                     // bc5f: 91 04       ..
     rts                                                               // bc61: 60          `
@@ -10405,10 +10405,10 @@ cbc66
     ldy #3                                                            // bc6e: a0 03       ..
     lda l002d                                                         // bc70: a5 2d       .-
     sta (l0004),y                                                     // bc72: 91 04       ..
-    dey                                                               // bc74: 88          .              // Y=$02
+    dey                                                               // bc74: 88          .              // Y=2
     lda l002c                                                         // bc75: a5 2c       .,
     sta (l0004),y                                                     // bc77: 91 04       ..
-    dey                                                               // bc79: 88          .              // Y=$01
+    dey                                                               // bc79: 88          .              // Y=1
     lda l002b                                                         // bc7a: a5 2b       .+
     sta (l0004),y                                                     // bc7c: 91 04       ..
     lda l002a                                                         // bc7e: a5 2a       .*
@@ -10511,18 +10511,18 @@ cbcea
     ldy #1                                                            // bcf4: a0 01       ..
     lda (l0004),y                                                     // bcf6: b1 04       ..
     sta (l0037),y                                                     // bcf8: 91 37       .7
-    iny                                                               // bcfa: c8          .              // Y=$02
+    iny                                                               // bcfa: c8          .              // Y=2
     lda (l0004),y                                                     // bcfb: b1 04       ..
     sta (l0037),y                                                     // bcfd: 91 37       .7
-    iny                                                               // bcff: c8          .              // Y=$03
+    iny                                                               // bcff: c8          .              // Y=3
     lda (l0004),y                                                     // bd00: b1 04       ..
     sta (l0037),y                                                     // bd02: 91 37       .7
-    iny                                                               // bd04: c8          .              // Y=$04
+    iny                                                               // bd04: c8          .              // Y=4
     cpy l0039                                                         // bd05: c4 39       .9
     bcs cbd0e                                                         // bd07: b0 05       ..
     lda (l0004),y                                                     // bd09: b1 04       ..
     sta (l0037),y                                                     // bd0b: 91 37       .7
-    iny                                                               // bd0d: c8          .              // Y=$05
+    iny                                                               // bd0d: c8          .              // Y=5
 // $bd0e referenced 2 times by $bcf2, $bd07
 cbd0e
     tya                                                               // bd0e: 98          .
@@ -10553,10 +10553,10 @@ sub_cbd26
     ldy #3                                                            // bd26: a0 03       ..
     lda (l0004),y                                                     // bd28: b1 04       ..
     sta l002d                                                         // bd2a: 85 2d       .-
-    dey                                                               // bd2c: 88          .              // Y=$02
+    dey                                                               // bd2c: 88          .              // Y=2
     lda (l0004),y                                                     // bd2d: b1 04       ..
     sta l002c                                                         // bd2f: 85 2c       .,
-    dey                                                               // bd31: 88          .              // Y=$01
+    dey                                                               // bd31: 88          .              // Y=1
     lda (l0004),y                                                     // bd32: b1 04       ..
     sta l002b                                                         // bd34: 85 2b       .+
     lda (l0004)                                                       // bd36: b2 04       ..
@@ -10583,10 +10583,10 @@ sub_cbd48
     ldy #3                                                            // bd48: a0 03       ..
     lda (l0004),y                                                     // bd4a: b1 04       ..
     sta l0003,x                                                       // bd4c: 95 03       ..
-    dey                                                               // bd4e: 88          .              // Y=$02
+    dey                                                               // bd4e: 88          .              // Y=2
     lda (l0004),y                                                     // bd4f: b1 04       ..
     sta l0002,x                                                       // bd51: 95 02       ..
-    dey                                                               // bd53: 88          .              // Y=$01
+    dey                                                               // bd53: 88          .              // Y=1
     lda (l0004),y                                                     // bd54: b1 04       ..
     sta l0001,x                                                       // bd56: 95 01       ..
     lda (l0004)                                                       // bd58: b2 04       ..
@@ -10868,7 +10868,7 @@ sub_cbe95
     ldx l0018                                                         // beb9: a6 18       ..
     stx l0042                                                         // bebb: 86 42       .B
     lda #osfile_save                                                  // bebd: a9 00       ..
-    tay                                                               // bebf: a8          .              // Y=$00
+    tay                                                               // bebf: a8          .              // Y=0
     ldx #<l0037                                                       // bec0: a2 37       .7
     jsr osfile                                                        // bec2: 20 dd ff     ..            // Save a block of memory (returning file length and attributes) (A=0)
     bra cbeeb                                                         // bec5: 80 24       .$
@@ -10972,7 +10972,7 @@ sub_cbf3e
     lda #$ff                                                          // bf4a: a9 ff       ..
     ldy #1                                                            // bf4c: a0 01       ..
     sta (l0012),y                                                     // bf4e: 91 12       ..
-    iny                                                               // bf50: c8          .              // Y=$02
+    iny                                                               // bf50: c8          .              // Y=2
     sty l0012                                                         // bf51: 84 12       ..
     rts                                                               // bf53: 60          `
 

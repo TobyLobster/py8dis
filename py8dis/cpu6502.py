@@ -1476,7 +1476,8 @@ class Cpu6502(cpu.Cpu):
                                 move_id = movemanager.move_id_for_binary_addr[binary_addr]
                                 binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                                 formatter = config.get_assembler()
-                                r = formatter.hex(r)
+                                if r > 9:
+                                    r = formatter.hex(r)
                                 disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
 
                 # Find "ALWAYS branch" instructions
@@ -1648,7 +1649,7 @@ class Cpu6502(cpu.Cpu):
             for match in matches:
                 binary_addr = match.start()
                 length = match.end() - match.start()
-    
+
                 # Check if any of the bytes are already commented on
                 if any(found_already[binary_addr:binary_addr+length]):
                     continue
@@ -1687,7 +1688,7 @@ class Cpu6502(cpu.Cpu):
             for match in matches:
                 binary_addr = match.start()
                 length = match.end() - match.start()
-    
+
                 # Check if any of the bytes are already commented on
                 if any(found_already[binary_addr:binary_addr+length]):
                     continue

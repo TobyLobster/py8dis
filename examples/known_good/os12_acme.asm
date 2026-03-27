@@ -2296,7 +2296,7 @@ loop_cc9c1
     sty l0309                                                         ; c9d6: 8c 09 03    ...
     ldy #3                                                            ; c9d9: a0 03       ..
     sty l0323                                                         ; c9db: 8c 23 03    .#.
-    iny                                                               ; c9de: c8          .              ; Y=$04
+    iny                                                               ; c9de: c8          .              ; Y=4
     sty l0321                                                         ; c9df: 8c 21 03    .!.
     dec l0322                                                         ; c9e2: ce 22 03    .".
     dec l0320                                                         ; c9e5: ce 20 03    . .
@@ -3362,7 +3362,7 @@ cd060
     beq cd080                                                         ; d070: f0 0e       ..
     lsr                                                               ; d072: 4a          J
     bcs cd078                                                         ; d073: b0 03       ..
-    dey                                                               ; d075: 88          .              ; Y=$04
+    dey                                                               ; d075: 88          .              ; Y=4
     bne cd080                                                         ; d076: d0 08       ..             ; ALWAYS branch
 
 ; $d078 referenced 1 time by $d073
@@ -4844,7 +4844,7 @@ osbyte133EntryPoint
     and #$3f ; '?'                                                    ; d937: 29 3f       )?
     cpy #4                                                            ; d939: c0 04       ..
     bcs cd93e                                                         ; d93b: b0 01       ..
-    txa                                                               ; d93d: 8a          .              ; A=$00
+    txa                                                               ; d93d: 8a          .              ; A=0
 ; $d93e referenced 2 times by $d935, $d93b
 cd93e
     tay                                                               ; d93e: a8          .
@@ -5158,7 +5158,7 @@ cdb87
 ; $dbb8 referenced 2 times by $dba2, $dc65
 cdbb8
     lda #0                                                            ; dbb8: a9 00       ..
-    tax                                                               ; dbba: aa          .              ; X=$00
+    tax                                                               ; dbba: aa          .              ; X=0
     jsr sub_cf137                                                     ; dbbb: 20 37 f1     7.
 ; $dbbe referenced 2 times by $db9f, $dbb6
 cdbbe
@@ -6858,8 +6858,8 @@ osbyte130EntryPoint
     ldx #$ff                                                          ; e729: a2 ff       ..
     ldy #$ff                                                          ; e72b: a0 ff       ..
     bcs return_34                                                     ; e72d: b0 02       ..
-    inx                                                               ; e72f: e8          .              ; X=$00
-    iny                                                               ; e730: c8          .              ; Y=$00
+    inx                                                               ; e72f: e8          .              ; X=0
+    iny                                                               ; e730: c8          .              ; Y=0
 ; $e731 referenced 1 time by $e72d
 return_34
     rts                                                               ; e731: 60          `
@@ -7415,7 +7415,7 @@ sub_ce9ea
     bcc ce9f5                                                         ; e9ea: 90 09       ..
     ldy #7                                                            ; e9ec: a0 07       ..
     sty system_via_register_b                                         ; e9ee: 8c 40 fe    .@.
-    dey                                                               ; e9f1: 88          .              ; Y=$06
+    dey                                                               ; e9f1: 88          .              ; Y=6
     sty system_via_register_b                                         ; e9f2: 8c 40 fe    .@.
 ; $e9f5 referenced 1 time by $e9ea
 ce9f5
@@ -7670,7 +7670,7 @@ ceb22
     ldy #$ff                                                          ; eb23: a0 ff       ..
     sty system_via_ddra                                               ; eb25: 8c 43 fe    .C.
     sta system_via_register_a_no_handshake                            ; eb28: 8d 4f fe    .O.
-    iny                                                               ; eb2b: c8          .              ; Y=$00
+    iny                                                               ; eb2b: c8          .              ; Y=0
     sty system_via_register_b                                         ; eb2c: 8c 40 fe    .@.
     ldy #2                                                            ; eb2f: a0 02       ..
 ; $eb31 referenced 1 time by $eb32
@@ -8136,7 +8136,7 @@ cee18
     bpl cee59                                                         ; ee1e: 10 39       .9
     ldx #0                                                            ; ee20: a2 00       ..
     stx l00f7                                                         ; ee22: 86 f7       ..
-    inx                                                               ; ee24: e8          .              ; X=$01
+    inx                                                               ; ee24: e8          .              ; X=1
     stx osrdsc_ptr                                                    ; ee25: 86 f6       ..
     jsr ceebb                                                         ; ee27: 20 bb ee     ..
     ldx #3                                                            ; ee2a: a2 03       ..
@@ -8284,7 +8284,7 @@ ceeda
     bne ceee8                                                         ; eee0: d0 06       ..
     lda #$81                                                          ; eee2: a9 81       ..
     sta system_via_ier                                                ; eee4: 8d 4e fe    .N.
-    inx                                                               ; eee7: e8          .              ; X=$00
+    inx                                                               ; eee7: e8          .              ; X=0
 ; $eee8 referenced 1 time by $eee0
 ceee8
     stx l0242                                                         ; eee8: 8e 42 02    .B.
@@ -8706,7 +8706,7 @@ cf14b
     ldx #6                                                            ; f151: a2 06       ..
     plp                                                               ; f153: 28          (
     beq cf157                                                         ; f154: f0 01       ..
-    dex                                                               ; f156: ca          .              ; X=$05
+    dex                                                               ; f156: ca          .              ; X=5
 ; $f157 referenced 1 time by $f154
 cf157
     stx l00c6                                                         ; f157: 86 c6       ..
@@ -8920,7 +8920,7 @@ cf277
     ldy #0                                                            ; f282: a0 00       ..
     lda (l00c8),y                                                     ; f284: b1 c8       ..
     tax                                                               ; f286: aa          .
-    iny                                                               ; f287: c8          .              ; Y=$01
+    iny                                                               ; f287: c8          .              ; Y=1
     lda (l00c8),y                                                     ; f288: b1 c8       ..
     tay                                                               ; f28a: a8          .
     jsr sub_cf25a                                                     ; f28b: 20 5a f2     Z.
@@ -9054,7 +9054,7 @@ cf359
     sta l00b5                                                         ; f364: 85 b5       ..
     ldx #$ff                                                          ; f366: a2 ff       ..
     stx l03df                                                         ; f368: 8e df 03    ...
-    inx                                                               ; f36b: e8          .              ; X=$00
+    inx                                                               ; f36b: e8          .              ; X=0
     stx l00ba                                                         ; f36c: 86 ba       ..
     beq cf376                                                         ; f36e: f0 06       ..             ; ALWAYS branch
 

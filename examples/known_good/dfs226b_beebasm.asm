@@ -1219,7 +1219,7 @@ l8004 = service_entry+1
     jsr c940c                                                         ; 2489: 20 0c 94     .. :8489[1]
     ldy #&ff                                                          ; 248c: a0 ff       ..  :848c[1]
     sty l00a8                                                         ; 248e: 84 a8       ..  :848e[1]
-    iny                                                               ; 2490: c8          .   :8490[1]   ; Y=&00
+    iny                                                               ; 2490: c8          .   :8490[1]   ; Y=0
     sty l00aa                                                         ; 2491: 84 aa       ..  :8491[1]
 ; &2493 referenced 1 time by &84a3[1]
 .loop_c8493
@@ -2444,7 +2444,7 @@ l8004 = service_entry+1
     ror l00a1                                                         ; 2c87: 66 a1       f.  :8c87[1]
     ldy #3                                                            ; 2c89: a0 03       ..  :8c89[1]
     lda (l00b0),y                                                     ; 2c8b: b1 b0       ..  :8c8b[1]
-    iny                                                               ; 2c8d: c8          .   :8c8d[1]   ; Y=&04
+    iny                                                               ; 2c8d: c8          .   :8c8d[1]   ; Y=4
     and (l00b0),y                                                     ; 2c8e: 31 b0       1.  :8c8e[1]
     cmp #&ff                                                          ; 2c90: c9 ff       ..  :8c90[1]
     clc                                                               ; 2c92: 18          .   :8c92[1]
@@ -3027,7 +3027,7 @@ l8004 = service_entry+1
     ldy #1                                                            ; 2fb9: a0 01       ..  :8fb9[1]
     lda (l00b0),y                                                     ; 2fbb: b1 b0       ..  :8fbb[1]
     sta nmi_lda_abs+1,x                                               ; 2fbd: 9d 3a 0d    .:. :8fbd[1]
-    iny                                                               ; 2fc0: c8          .   :8fc0[1]   ; Y=&02
+    iny                                                               ; 2fc0: c8          .   :8fc0[1]   ; Y=2
     lda (l00b0),y                                                     ; 2fc1: b1 b0       ..  :8fc1[1]
     sta nmi_lda_abs+2,x                                               ; 2fc3: 9d 3b 0d    .;. :8fc3[1]
     rts                                                               ; 2fc6: 60          `   :8fc6[1]
@@ -3579,8 +3579,8 @@ nmi_XXX5 = l0d1f+1
     beq c926a                                                         ; 3262: f0 06       ..  :9262[1]
     cpy #&18                                                          ; 3264: c0 18       ..  :9264[1]
     bne c9276                                                         ; 3266: d0 0e       ..  :9266[1]
-    inx                                                               ; 3268: e8          .   :9268[1]   ; X=&01
-    inx                                                               ; 3269: e8          .   :9269[1]   ; X=&02
+    inx                                                               ; 3268: e8          .   :9268[1]   ; X=1
+    inx                                                               ; 3269: e8          .   :9269[1]   ; X=2
 ; &326a referenced 1 time by &9262[1]
 .c926a
     lda l00c2                                                         ; 326a: a5 c2       ..  :926a[1]
@@ -3598,7 +3598,7 @@ nmi_XXX5 = l0d1f+1
     lda l00c1                                                         ; 327b: a5 c1       ..  :927b[1]
     cmp #&12                                                          ; 327d: c9 12       ..  :927d[1]
     beq return_21                                                     ; 327f: f0 08       ..  :927f[1]
-    inx                                                               ; 3281: e8          .   :9281[1]   ; X=&01
+    inx                                                               ; 3281: e8          .   :9281[1]   ; X=1
     cmp #&1a                                                          ; 3282: c9 1a       ..  :9282[1]
     beq return_21                                                     ; 3284: f0 03       ..  :9284[1]
     lda #&fe                                                          ; 3286: a9 fe       ..  :9286[1]
@@ -3713,7 +3713,7 @@ nmi_XXX5 = l0d1f+1
     lda l00c5                                                         ; 331f: a5 c5       ..  :931f[1]
     ldy #0                                                            ; 3321: a0 00       ..  :9321[1]
     sta (l00b2),y                                                     ; 3323: 91 b2       ..  :9323[1]
-    tya                                                               ; 3325: 98          .   :9325[1]   ; A=&00
+    tya                                                               ; 3325: 98          .   :9325[1]   ; A=0
     sta l00b8                                                         ; 3326: 85 b8       ..  :9326[1]
     jsr sub_c93d3                                                     ; 3328: 20 d3 93     .. :9328[1]
     jsr sub_c8f3f                                                     ; 332b: 20 3f 8f     ?. :932b[1]
@@ -3728,7 +3728,7 @@ nmi_XXX5 = l0d1f+1
     jsr sub_c8f6b                                                     ; 333e: 20 6b 8f     k. :933e[1]
     ldx #&bb                                                          ; 3341: a2 bb       ..  :9341[1]
     ldy #0                                                            ; 3343: a0 00       ..  :9343[1]
-    tya                                                               ; 3345: 98          .   :9345[1]   ; A=&00
+    tya                                                               ; 3345: 98          .   :9345[1]   ; A=0
     jsr tube_entry                                                    ; 3346: 20 06 04     .. :9346[1]
     ldx l00b5                                                         ; 3349: a6 b5       ..  :9349[1]
     dex                                                               ; 334b: ca          .   :934b[1]
@@ -4196,7 +4196,7 @@ nmi_XXX5 = l0d1f+1
     ldy #0                                                            ; 3610: a0 00       ..  :9610[1]
     sty l10c0                                                         ; 3612: 8c c0 10    ... :9612[1]
     ldx #3                                                            ; 3615: a2 03       ..  :9615[1]
-    tya                                                               ; 3617: 98          .   :9617[1]   ; A=&00
+    tya                                                               ; 3617: 98          .   :9617[1]   ; A=0
 ; &3618 referenced 1 time by &961c[1]
 .loop_c9618
     sta l10de,x                                                       ; 3618: 9d de 10    ... :9618[1]
@@ -4434,16 +4434,16 @@ nmi_XXX5 = l0d1f+1
 ; &376c referenced 1 time by &9762[1]
 .c976c
     lda #0                                                            ; 376c: a9 00       ..  :976c[1]
-    tay                                                               ; 376e: a8          .   :976e[1]   ; Y=&00
+    tay                                                               ; 376e: a8          .   :976e[1]   ; Y=0
     sta (l00c7),y                                                     ; 376f: 91 c7       ..  :976f[1]
-    iny                                                               ; 3771: c8          .   :9771[1]   ; Y=&01
+    iny                                                               ; 3771: c8          .   :9771[1]   ; Y=1
     lda l0f07                                                         ; 3772: ad 07 0f    ... :9772[1]
     sta (l00c7),y                                                     ; 3775: 91 c7       ..  :9775[1]
-    iny                                                               ; 3777: c8          .   :9777[1]   ; Y=&02
+    iny                                                               ; 3777: c8          .   :9777[1]   ; Y=2
     lda l0f06                                                         ; 3778: ad 06 0f    ... :9778[1]
     and #3                                                            ; 377b: 29 03       ).  :977b[1]
     sta (l00c7),y                                                     ; 377d: 91 c7       ..  :977d[1]
-    iny                                                               ; 377f: c8          .   :977f[1]   ; Y=&03
+    iny                                                               ; 377f: c8          .   :977f[1]   ; Y=3
     lda #0                                                            ; 3780: a9 00       ..  :9780[1]
     sta (l00c7),y                                                     ; 3782: 91 c7       ..  :9782[1]
     rts                                                               ; 3784: 60          `   :9784[1]
@@ -4848,10 +4848,10 @@ nmi_XXX5 = l0d1f+1
     ldy #2                                                            ; 39f6: a0 02       ..  :99f6[1]
     lda (l00b0),y                                                     ; 39f8: b1 b0       ..  :99f8[1]
     sta l0f08,x                                                       ; 39fa: 9d 08 0f    ... :99fa[1]
-    iny                                                               ; 39fd: c8          .   :99fd[1]   ; Y=&03
+    iny                                                               ; 39fd: c8          .   :99fd[1]   ; Y=3
     lda (l00b0),y                                                     ; 39fe: b1 b0       ..  :99fe[1]
     sta l0f09,x                                                       ; 3a00: 9d 09 0f    ... :9a00[1]
-    iny                                                               ; 3a03: c8          .   :9a03[1]   ; Y=&04
+    iny                                                               ; 3a03: c8          .   :9a03[1]   ; Y=4
     lda (l00b0),y                                                     ; 3a04: b1 b0       ..  :9a04[1]
     asl a                                                             ; 3a06: 0a          .   :9a06[1]
     asl a                                                             ; 3a07: 0a          .   :9a07[1]
@@ -4865,10 +4865,10 @@ nmi_XXX5 = l0d1f+1
     ldy #6                                                            ; 3a12: a0 06       ..  :9a12[1]
     lda (l00b0),y                                                     ; 3a14: b1 b0       ..  :9a14[1]
     sta l0f0a,x                                                       ; 3a16: 9d 0a 0f    ... :9a16[1]
-    iny                                                               ; 3a19: c8          .   :9a19[1]   ; Y=&07
+    iny                                                               ; 3a19: c8          .   :9a19[1]   ; Y=7
     lda (l00b0),y                                                     ; 3a1a: b1 b0       ..  :9a1a[1]
     sta l0f0b,x                                                       ; 3a1c: 9d 0b 0f    ... :9a1c[1]
-    iny                                                               ; 3a1f: c8          .   :9a1f[1]   ; Y=&08
+    iny                                                               ; 3a1f: c8          .   :9a1f[1]   ; Y=8
     lda (l00b0),y                                                     ; 3a20: b1 b0       ..  :9a20[1]
     ror a                                                             ; 3a22: 6a          j   :9a22[1]
     ror a                                                             ; 3a23: 6a          j   :9a23[1]
@@ -6838,7 +6838,7 @@ nmi_XXX5 = l0d1f+1
 ; &476c referenced 1 time by &a675[1]
 .sub_ca76c
     lda #0                                                            ; 476c: a9 00       ..  :a76c[1]
-    tay                                                               ; 476e: a8          .   :a76e[1]   ; Y=&00
+    tay                                                               ; 476e: a8          .   :a76e[1]   ; Y=0
 ; &476f referenced 1 time by &a776[1]
 .loop_ca76f
     sta l0e00,y                                                       ; 476f: 99 00 0e    ... :a76f[1]
@@ -7592,11 +7592,11 @@ nmi_XXX5 = l0d1f+1
     ldy #&ff                                                          ; 4bda: a0 ff       ..  :abda[1]
     sty l00ae                                                         ; 4bdc: 84 ae       ..  :abdc[1]
     sty l00b0                                                         ; 4bde: 84 b0       ..  :abde[1]
-    iny                                                               ; 4be0: c8          .   :abe0[1]   ; Y=&00
+    iny                                                               ; 4be0: c8          .   :abe0[1]   ; Y=0
     sty l00ac                                                         ; 4be1: 84 ac       ..  :abe1[1]
     lda #&20 ; ' '                                                    ; 4be3: a9 20       .   :abe3[1]
     sta l00af                                                         ; 4be5: 85 af       ..  :abe5[1]
-    tya                                                               ; 4be7: 98          .   :abe7[1]   ; A=&00
+    tya                                                               ; 4be7: 98          .   :abe7[1]   ; A=0
     jsr osword                                                        ; 4be8: 20 f1 ff     .. :abe8[1]
     php                                                               ; 4beb: 08          .   :abeb[1]
     sty l00aa                                                         ; 4bec: 84 aa       ..  :abec[1]
@@ -10675,7 +10675,7 @@ lb6ce = sub_cb6cd+1
     ldx #1                                                            ; 5e47: a2 01       ..  :be47[1]
     inc l00ba,x                                                       ; 5e49: f6 ba       ..  :be49[1]
     bne cbe52                                                         ; 5e4b: d0 05       ..  :be4b[1]
-    inx                                                               ; 5e4d: e8          .   :be4d[1]   ; X=&02
+    inx                                                               ; 5e4d: e8          .   :be4d[1]   ; X=2
     cpx #4                                                            ; 5e4e: e0 04       ..  :be4e[1]
     bcc cbe47                                                         ; 5e50: 90 f5       ..  :be50[1]
 ; &5e52 referenced 1 time by &be4b[1]
