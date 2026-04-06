@@ -3278,7 +3278,8 @@ ccfee
     ora l00d2                                                         ; cff9: 05 d2       ..
     eor l00d3                                                         ; cffb: 45 d3       E.
     sta (l00d8),y                                                     ; cffd: 91 d8       ..
-    tya                                                               ; cfff: 98          .              ; add 8 to Y
+    ; add 8 to Y
+    tya                                                               ; cfff: 98          .
     clc                                                               ; d000: 18          .
     adc #8                                                            ; d001: 69 08       i.
     tay                                                               ; d003: a8          .
@@ -5298,7 +5299,8 @@ return_24
 
     cld                                                               ; dc93: d8          .
     lda l00fc                                                         ; dc94: a5 fc       ..
-    pha                                                               ; dc96: 48          H              ; push A,X,Y onto the stack
+    ; push A,X,Y onto the stack
+    pha                                                               ; dc96: 48          H
     txa                                                               ; dc97: 8a          .
     pha                                                               ; dc98: 48          H
     tya                                                               ; dc99: 98          .
@@ -5376,7 +5378,8 @@ cdcf3
     beq return_25                                                     ; dcf8: f0 e3       ..
     pla                                                               ; dcfa: 68          h
     pla                                                               ; dcfb: 68          h
-    pla                                                               ; dcfc: 68          h              ; pull A,X,Y from the stack
+    ; pull A,X,Y from the stack
+    pla                                                               ; dcfc: 68          h
     tay                                                               ; dcfd: a8          .
     pla                                                               ; dcfe: 68          h
     tax                                                               ; dcff: aa          .
@@ -5624,7 +5627,8 @@ cde72
 cde7f
     jmp cdcf3                                                         ; de7f: 4c f3 dc    L..
 
-    pla                                                               ; de82: 68          h              ; pull A,X,Y from the stack
+    ; pull A,X,Y from the stack
+    pla                                                               ; de82: 68          h
     tay                                                               ; de83: a8          .
     pla                                                               ; de84: 68          h
     tax                                                               ; de85: aa          .
@@ -5684,7 +5688,8 @@ cdec5
 ; $dec7 referenced 1 time by $dec3
 cdec7
     sta l00e6                                                         ; dec7: 85 e6       ..
-    txa                                                               ; dec9: 8a          .              ; push X,Y onto the stack
+    ; push X,Y onto the stack
+    txa                                                               ; dec9: 8a          .
     pha                                                               ; deca: 48          H
     tya                                                               ; decb: 98          .
     pha                                                               ; decc: 48          H
@@ -5723,7 +5728,8 @@ cdf03
     sta l00e6                                                         ; df03: 85 e6       ..
 ; $df05 referenced 1 time by $defe
 cdf05
-    pla                                                               ; df05: 68          h              ; pull X,Y from the stack
+    ; pull X,Y from the stack
+    pla                                                               ; df05: 68          h
     tay                                                               ; df06: a8          .
     pla                                                               ; df07: 68          h
     tax                                                               ; df08: aa          .
@@ -5939,7 +5945,8 @@ sub_ce03a
 
 ; $e0a4 referenced 1 time by $ffcb
 ce0a4
-    pha                                                               ; e0a4: 48          H              ; push A,X,Y onto the stack
+    ; push A,X,Y onto the stack
+    pha                                                               ; e0a4: 48          H
     txa                                                               ; e0a5: 8a          .
     pha                                                               ; e0a6: 48          H
     tya                                                               ; e0a7: 98          .
@@ -6012,7 +6019,8 @@ ce0f7
 ; $e10d referenced 3 times by $e0b9, $e0fc, $e101
 ce10d
     pla                                                               ; e10d: 68          h
-    pla                                                               ; e10e: 68          h              ; pull A,X,Y from the stack
+    ; pull A,X,Y from the stack
+    pla                                                               ; e10e: 68          h
     tay                                                               ; e10f: a8          .
     pla                                                               ; e110: 68          h
     tax                                                               ; e111: aa          .
@@ -9122,7 +9130,8 @@ cf3c3
     bpl cf370                                                         ; f3c8: 10 a6       ..             ; ALWAYS branch
 
     sta l00bc                                                         ; f3ca: 85 bc       ..
-    txa                                                               ; f3cc: 8a          .              ; push X,Y onto the stack
+    ; push X,Y onto the stack
+    txa                                                               ; f3cc: 8a          .
     pha                                                               ; f3cd: 48          H
     tya                                                               ; f3ce: 98          .
     pha                                                               ; f3cf: 48          H
@@ -9228,7 +9237,8 @@ cf46f
     sta l00bc                                                         ; f46f: 85 bc       ..
 ; $f471 referenced 2 times by $f3ef, $f520
 cf471
-    pla                                                               ; f471: 68          h              ; pull X,Y from the stack
+    ; pull X,Y from the stack
+    pla                                                               ; f471: 68          h
     tay                                                               ; f472: a8          .
     pla                                                               ; f473: 68          h
     tax                                                               ; f474: aa          .
@@ -9282,7 +9292,8 @@ loop_cf49b
 return_49
     rts                                                               ; f4c8: 60          `
 
-    txa                                                               ; f4c9: 8a          .              ; push X,Y onto the stack
+    ; push X,Y onto the stack
+    txa                                                               ; f4c9: 8a          .
     pha                                                               ; f4ca: 48          H
     tya                                                               ; f4cb: 98          .
     pha                                                               ; f4cc: 48          H
@@ -9346,7 +9357,8 @@ cf523
     !byte 0                                                           ; f528: 00          .
 
     sta l00c4                                                         ; f529: 85 c4       ..
-    txa                                                               ; f52b: 8a          .              ; push X,Y onto the stack
+    ; push X,Y onto the stack
+    txa                                                               ; f52b: 8a          .
     pha                                                               ; f52c: 48          H
     tya                                                               ; f52d: 98          .
     pha                                                               ; f52e: 48          H
@@ -9486,7 +9498,8 @@ cf61b
 return_50
     rts                                                               ; f61d: 60          `
 
-    pha                                                               ; f61e: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; f61e: 48          H
     tya                                                               ; f61f: 98          .
     pha                                                               ; f620: 48          H
     txa                                                               ; f621: 8a          .
@@ -9496,7 +9509,8 @@ return_50
     lda l00e2                                                         ; f628: a5 e2       ..
     and #$40 ; '@'                                                    ; f62a: 29 40       )@
     tax                                                               ; f62c: aa          .
-    pla                                                               ; f62d: 68          h              ; pull A,Y from the stack
+    ; pull A,Y from the stack
+    pla                                                               ; f62d: 68          h
     tay                                                               ; f62e: a8          .
     pla                                                               ; f62f: 68          h
     rts                                                               ; f630: 60          `
@@ -9707,7 +9721,8 @@ cf790
 sub_cf797
     lda l0247                                                         ; f797: ad 47 02    .G.
     beq cf7ad                                                         ; f79a: f0 11       ..
-    txa                                                               ; f79c: 8a          .              ; push X,Y onto the stack
+    ; push X,Y onto the stack
+    txa                                                               ; f79c: 8a          .
     pha                                                               ; f79d: 48          H
     tya                                                               ; f79e: 98          .
     pha                                                               ; f79f: 48          H
@@ -9715,7 +9730,8 @@ sub_cf797
     sta l00bd                                                         ; f7a3: 85 bd       ..
     lda #$ff                                                          ; f7a5: a9 ff       ..
     sta l00c0                                                         ; f7a7: 85 c0       ..
-    pla                                                               ; f7a9: 68          h              ; pull X,Y from the stack
+    ; pull X,Y from the stack
+    pla                                                               ; f7a9: 68          h
     tay                                                               ; f7aa: a8          .
     pla                                                               ; f7ab: 68          h
     tax                                                               ; f7ac: aa          .
@@ -10113,13 +10129,15 @@ cf9f1
     lda #$fa                                                          ; f9f3: a9 fa       ..
 ; $f9f5 referenced 2 times by $f9d7, $f9e1
 cf9f5
-    pha                                                               ; f9f5: 48          H              ; push A,Y,X onto the stack
+    ; push A,Y,X onto the stack
+    pha                                                               ; f9f5: 48          H
     tya                                                               ; f9f6: 98          .
     pha                                                               ; f9f7: 48          H
     txa                                                               ; f9f8: 8a          .
     pha                                                               ; f9f9: 48          H
     jsr cf8b6                                                         ; f9fa: 20 b6 f8     ..
-    pla                                                               ; f9fd: 68          h              ; pull A,Y,X from the stack
+    ; pull A,Y,X from the stack
+    pla                                                               ; f9fd: 68          h
     tax                                                               ; f9fe: aa          .
     pla                                                               ; f9ff: 68          h
     tay                                                               ; fa00: a8          .
@@ -10170,7 +10188,8 @@ cfa3c
     adc #1                                                            ; fa41: 69 01       i.
 ; $fa43 referenced 1 time by $fa3e
 cfa43
-    pha                                                               ; fa43: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; fa43: 48          H
     tya                                                               ; fa44: 98          .
     pha                                                               ; fa45: 48          H
 ; $fa46 referenced 4 times by $f24e, $f641, $f947, $f9b7
@@ -10555,7 +10574,8 @@ return_59
     pha                                                               ; ff53: 48          H
     pha                                                               ; ff54: 48          H
     pha                                                               ; ff55: 48          H
-    php                                                               ; ff56: 08          .              ; push flags,A,X,Y onto the stack
+    ; push flags,A,X,Y onto the stack
+    php                                                               ; ff56: 08          .
     pha                                                               ; ff57: 48          H
     txa                                                               ; ff58: 8a          .
     pha                                                               ; ff59: 48          H
@@ -10576,14 +10596,16 @@ return_59
     lda l0d9f,y                                                       ; ff7b: b9 9f 0d    ...
     sta romsel_copy                                                   ; ff7e: 85 f4       ..
     sta romsel                                                        ; ff80: 8d 30 fe    .0.
-    pla                                                               ; ff83: 68          h              ; pull A,X,Y from the stack
+    ; pull A,X,Y from the stack
+    pla                                                               ; ff83: 68          h
     tay                                                               ; ff84: a8          .
     pla                                                               ; ff85: 68          h
     tax                                                               ; ff86: aa          .
     pla                                                               ; ff87: 68          h
     rti                                                               ; ff88: 40          @
 
-    php                                                               ; ff89: 08          .              ; push flags,A,X onto the stack
+    ; push flags,A,X onto the stack
+    php                                                               ; ff89: 08          .
     pha                                                               ; ff8a: 48          H
     txa                                                               ; ff8b: 8a          .
     pha                                                               ; ff8c: 48          H
@@ -10592,7 +10614,8 @@ return_59
     sta l0105,x                                                       ; ff91: 9d 05 01    ...
     lda l0103,x                                                       ; ff94: bd 03 01    ...
     sta l0106,x                                                       ; ff97: 9d 06 01    ...
-    pla                                                               ; ff9a: 68          h              ; pull A,X from the stack
+    ; pull A,X from the stack
+    pla                                                               ; ff9a: 68          h
     tax                                                               ; ff9b: aa          .
     pla                                                               ; ff9c: 68          h
     pla                                                               ; ff9d: 68          h

@@ -347,7 +347,8 @@ INITSE
     rts                                            ; 813c: 60          `
 
 HELP
-    pha                                            ; 813d: 48          H              ; push A,X,Y onto the stack
+    ; push A,X,Y onto the stack
+    pha                                            ; 813d: 48          H
     txa                                            ; 813e: 8a          .
     pha                                            ; 813f: 48          H
     tya                                            ; 8140: 98          .
@@ -358,7 +359,8 @@ HELP
     jsr MESSAH                                     ; 8147: 20 fc 84     ..
     pla                                            ; 814a: 68          h
     sta HANDLE                                     ; 814b: 85 13       ..
-    pla                                            ; 814d: 68          h              ; pull A,X,Y from the stack
+    ; pull A,X,Y from the stack
+    pla                                            ; 814d: 68          h
     tay                                            ; 814e: a8          .
     pla                                            ; 814f: 68          h
     tax                                            ; 8150: aa          .
@@ -366,7 +368,8 @@ HELP
     rts                                            ; 8152: 60          `
 
 OKCALL
-    pha                                            ; 8153: 48          H              ; push A,Y,X onto the stack
+    ; push A,Y,X onto the stack
+    pha                                            ; 8153: 48          H
     tya                                            ; 8154: 98          .
     pha                                            ; 8155: 48          H
     txa                                            ; 8156: 8a          .
@@ -405,7 +408,8 @@ STLISP
     jmp osbyte                                     ; 818f: 4c f4 ff    L..            ; Start up LISP; Enter language ROM X
 
 NOTLSP
-    pla                                            ; 8192: 68          h              ; pull A,Y,X from the stack
+    ; pull A,Y,X from the stack
+    pla                                            ; 8192: 68          h
     tax                                            ; 8193: aa          .
     pla                                            ; 8194: 68          h
     tay                                            ; 8195: a8          .
@@ -4084,7 +4088,8 @@ OUTL
     pla                                            ; 97fc: 68          h
     sta WSA                                        ; 97fd: 85 34       .4             ; Save status
     lda WSA+1                                      ; 97ff: a5 35       .5             ; Restore A
-    pha                                            ; 9801: 48          H              ; push A,X,Y onto the stack
+    ; push A,X,Y onto the stack
+    pha                                            ; 9801: 48          H
     txa                                            ; 9802: 8a          .
     pha                                            ; 9803: 48          H
     tya                                            ; 9804: 98          .
@@ -4129,11 +4134,13 @@ BUILD2
     rts                                            ; 9843: 60          `
 
 SETNUM
-    pha                                            ; 9844: 48          H              ; Num atom in WSB; push A,X onto the stack
+    ; push A,X onto the stack
+    pha                                            ; 9844: 48          H              ; Num atom in WSB
     txa                                            ; 9845: 8a          .
     pha                                            ; 9846: 48          H
     jsr ALNUM                                      ; 9847: 20 3d 84     =.
-    pla                                            ; 984a: 68          h              ; pull A,X from the stack
+    ; pull A,X from the stack
+    pla                                            ; 984a: 68          h
     tax                                            ; 984b: aa          .
     pla                                            ; 984c: 68          h
     ldy #2                                         ; 984d: a0 02       ..

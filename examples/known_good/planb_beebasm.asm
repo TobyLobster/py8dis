@@ -9806,7 +9806,8 @@ osbyte                          = &fff4
     dec temp_loop_counter                                             ; 3bc8: c6 21       .!
     beq return_1                                                      ; 3bca: f0 07       ..
 .next_enemy
-    tya                                                               ; 3bcc: 98          .              ; add 6 to Y
+    ; add 6 to Y
+    tya                                                               ; 3bcc: 98          .
     clc                                                               ; 3bcd: 18          .
     adc #6                                                            ; 3bce: 69 06       i.
     tay                                                               ; 3bd0: a8          .
@@ -10084,7 +10085,8 @@ osbyte                          = &fff4
 .update_enemies_loop
     lda enemies_state,y                                               ; 3d95: b9 00 0c    ...
     beq update_enemy                                                  ; 3d98: f0 07       ..
-    tya                                                               ; 3d9a: 98          .              ; add 6 to Y
+    ; add 6 to Y
+    tya                                                               ; 3d9a: 98          .
     clc                                                               ; 3d9b: 18          .
     adc #6                                                            ; 3d9c: 69 06       i.
     tay                                                               ; 3d9e: a8          .
@@ -10702,7 +10704,8 @@ routine_addr_high = opcode1+2
     adc #5                                                            ; 41d4: 69 05       i.
     bit current_room_door_info                                        ; 41d6: 24 15       $.
     bvc got_door_coordinates                                          ; 41d8: 50 07       P.             ; if door is horizontal then branch
-    tya                                                               ; 41da: 98          .              ; add 5 to Y
+    ; add 5 to Y
+    tya                                                               ; 41da: 98          .
     clc                                                               ; 41db: 18          .
     adc #5                                                            ; 41dc: 69 05       i.
     tay                                                               ; 41de: a8          .
@@ -11618,7 +11621,8 @@ screen_addr_high = opcode10+2
     bne check_for_collision_horizontal_loop                           ; 4740: d0 f6       ..
     dec sprite_cell_height                                            ; 4742: c6 03       ..
     beq finished_collision_check                                      ; 4744: f0 07       ..
-    tya                                                               ; 4746: 98          .              ; add 37 to Y
+    ; add 37 to Y
+    tya                                                               ; 4746: 98          .
     clc                                                               ; 4747: 18          .
     adc #&25                                                          ; 4748: 69 25       i%
     tay                                                               ; 474a: a8          .
@@ -12186,7 +12190,8 @@ screen_addr_high = opcode10+2
     jmp check_play_sound_a                                            ; 4af0: 4c 65 40    Le@
 
 .check_next_enemy_state
-    tya                                                               ; 4af3: 98          .              ; add 6 to Y
+    ; add 6 to Y
+    tya                                                               ; 4af3: 98          .
     clc                                                               ; 4af4: 18          .
     adc #6                                                            ; 4af5: 69 06       i.
     tay                                                               ; 4af7: a8          .

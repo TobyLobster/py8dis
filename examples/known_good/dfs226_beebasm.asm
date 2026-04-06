@@ -395,7 +395,8 @@ l8004 = service_entry+1
     pla                                                               ; 807c: 68          h
     sta l00af                                                         ; 807d: 85 af       ..
     lda l00b3                                                         ; 807f: a5 b3       ..
-    pha                                                               ; 8081: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; 8081: 48          H
     tya                                                               ; 8082: 98          .
     pha                                                               ; 8083: 48          H
     ldy #0                                                            ; 8084: a0 00       ..
@@ -409,7 +410,8 @@ l8004 = service_entry+1
 
 ; &8093 referenced 1 time by &808b
 .c8093
-    pla                                                               ; 8093: 68          h              ; pull A,Y from the stack
+    ; pull A,Y from the stack
+    pla                                                               ; 8093: 68          h
     tay                                                               ; 8094: a8          .
     pla                                                               ; 8095: 68          h
 ; &8096 referenced 1 time by &806d
@@ -433,7 +435,8 @@ l8004 = service_entry+1
     pha                                                               ; 80a9: 48          H
     ora #&10                                                          ; 80aa: 09 10       ..
     jsr sub_c9ad3                                                     ; 80ac: 20 d3 9a     ..
-    pla                                                               ; 80af: 68          h              ; pull A,X from the stack
+    ; pull A,X from the stack
+    pla                                                               ; 80af: 68          h
     tax                                                               ; 80b0: aa          .
     pla                                                               ; 80b1: 68          h
     jsr osasci                                                        ; 80b2: 20 e3 ff     ..            ; Write character
@@ -1059,7 +1062,8 @@ l8004 = service_entry+1
 
 ; &83e3 referenced 29 times by &809f, &8174, &82bb, &833a, &8380, &8386, &8951, &8a32, &96c3, &97cd, &993b, &99f3, &9a0f, &9a32, &9a63, &9ac8, &9ad8, &9b51, &9bf2, &9c10, &9d9b, &9f7c, &9f82, &a06c, &a190, &a1b4, &a379, &a384, &ac72
 .sub_c83e3
-    pha                                                               ; 83e3: 48          H              ; push A,X,Y onto the stack
+    ; push A,X,Y onto the stack
+    pha                                                               ; 83e3: 48          H
     txa                                                               ; 83e4: 8a          .
     pha                                                               ; 83e5: 48          H
     tya                                                               ; 83e6: 98          .
@@ -1090,7 +1094,8 @@ l8004 = service_entry+1
     pla                                                               ; 8405: 68          h
 ; &8406 referenced 1 time by &8418
 .loop_c8406
-    pla                                                               ; 8406: 68          h              ; pull A,X,Y from the stack
+    ; pull A,X,Y from the stack
+    pla                                                               ; 8406: 68          h
     tay                                                               ; 8407: a8          .
     pla                                                               ; 8408: 68          h
     tax                                                               ; 8409: aa          .
@@ -1099,7 +1104,8 @@ l8004 = service_entry+1
 
 ; &840c referenced 5 times by &841b, &9785, &9c16, &9e94, &aadd
 .sub_c840c
-    pha                                                               ; 840c: 48          H              ; push A,X,Y onto the stack
+    ; push A,X,Y onto the stack
+    pha                                                               ; 840c: 48          H
     txa                                                               ; 840d: 8a          .
     pha                                                               ; 840e: 48          H
     tya                                                               ; 840f: 98          .
@@ -3798,7 +3804,8 @@ nmi_XXX5 = l0d1f+1
     tay                                                               ; 93c5: a8          .
     lda (l00b2),y                                                     ; 93c6: b1 b2       ..
     tax                                                               ; 93c8: aa          .
-    tya                                                               ; 93c9: 98          .              ; add 18 to Y
+    ; add 18 to Y
+    tya                                                               ; 93c9: 98          .
     clc                                                               ; 93ca: 18          .
     adc #&12                                                          ; 93cb: 69 12       i.
     tay                                                               ; 93cd: a8          .
@@ -4243,7 +4250,8 @@ nmi_XXX5 = l0d1f+1
 .c9683
     cmp #service_claim_private_workspace                              ; 9683: c9 02       ..
     bne c96c3                                                         ; 9685: d0 3c       .<
-    pha                                                               ; 9687: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; 9687: 48          H
     tya                                                               ; 9688: 98          .
     pha                                                               ; 9689: 48          H
     sta l00b1                                                         ; 968a: 85 b1       ..
@@ -5395,13 +5403,15 @@ nmi_XXX5 = l0d1f+1
 
 ; &9d8e referenced 6 times by &956f, &9714, &97d0, &9d72, &9daa, &9db8
 .zero_stacked_XXX
-    pha                                                               ; 9d8e: 48          H              ; push A,X onto the stack
+    ; push A,X onto the stack
+    pha                                                               ; 9d8e: 48          H
     txa                                                               ; 9d8f: 8a          .
     pha                                                               ; 9d90: 48          H
     lda #0                                                            ; 9d91: a9 00       ..
     tsx                                                               ; 9d93: ba          .
     sta l0109,x                                                       ; 9d94: 9d 09 01    ...
-    pla                                                               ; 9d97: 68          h              ; pull A,X from the stack
+    ; pull A,X from the stack
+    pla                                                               ; 9d97: 68          h
     tax                                                               ; 9d98: aa          .
     pla                                                               ; 9d99: 68          h
     rts                                                               ; 9d9a: 60          `
@@ -5546,7 +5556,8 @@ nmi_XXX5 = l0d1f+1
 .return_40
     rts                                                               ; 9e5c: 60          `
 
-    pha                                                               ; 9e5d: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; 9e5d: 48          H
     tya                                                               ; 9e5e: 98          .
     pha                                                               ; 9e5f: 48          H
     txa                                                               ; 9e60: 8a          .
@@ -5563,7 +5574,8 @@ nmi_XXX5 = l0d1f+1
     ldx #0                                                            ; 9e6f: a2 00       ..
 ; &9e71 referenced 1 time by &9e6d
 .c9e71
-    pla                                                               ; 9e71: 68          h              ; pull A,Y from the stack
+    ; pull A,Y from the stack
+    pla                                                               ; 9e71: 68          h
     tay                                                               ; 9e72: a8          .
     pla                                                               ; 9e73: 68          h
 ; &9e74 referenced 1 time by &9e7b
@@ -7168,7 +7180,8 @@ nmi_XXX5 = l0d1f+1
     pla                                                               ; a9a1: 68          h
     sta l00af                                                         ; a9a2: 85 af       ..
     lda l00b3                                                         ; a9a4: a5 b3       ..
-    pha                                                               ; a9a6: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; a9a6: 48          H
     tya                                                               ; a9a7: 98          .
     pha                                                               ; a9a8: 48          H
     ldy #0                                                            ; a9a9: a0 00       ..
@@ -7182,7 +7195,8 @@ nmi_XXX5 = l0d1f+1
 
 ; &a9b8 referenced 1 time by &a9b0
 .ca9b8
-    pla                                                               ; a9b8: 68          h              ; pull A,Y from the stack
+    ; pull A,Y from the stack
+    pla                                                               ; a9b8: 68          h
     tay                                                               ; a9b9: a8          .
     pla                                                               ; a9ba: 68          h
     clc                                                               ; a9bb: 18          .
@@ -8454,7 +8468,8 @@ jump_address_low = sub_c0050+1
     lda l00b8                                                         ; b1b6: a5 b8       ..
     pha                                                               ; b1b8: 48          H
     lda l00b9                                                         ; b1b9: a5 b9       ..
-    pha                                                               ; b1bb: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; b1bb: 48          H
     tya                                                               ; b1bc: 98          .
     pha                                                               ; b1bd: 48          H
     txa                                                               ; b1be: 8a          .
@@ -8506,7 +8521,8 @@ jump_address_low = sub_c0050+1
     jsr sub_cb882                                                     ; b200: 20 82 b8     ..
 ; &b203 referenced 10 times by &b1c6, &b1db, &b1df, &b219, &b21e, &b228, &b22c, &b262, &b26a, &b280
 .cb203
-    pla                                                               ; b203: 68          h              ; pull A,Y from the stack
+    ; pull A,Y from the stack
+    pla                                                               ; b203: 68          h
     tay                                                               ; b204: a8          .
     pla                                                               ; b205: 68          h
     sta l00b9                                                         ; b206: 85 b9       ..
@@ -8825,7 +8841,8 @@ jump_address_low = sub_c0050+1
 .cb3de
     lda #osbyte_read_himem                                            ; b3de: a9 84       ..
     jsr osbyte                                                        ; b3e0: 20 f4 ff     ..            ; Read top of user memory (HIMEM)
-    tya                                                               ; b3e3: 98          .              ; push Y,X onto the stack; X and Y contain the address of HIMEM (low, high)
+    ; push Y,X onto the stack
+    tya                                                               ; b3e3: 98          .              ; X and Y contain the address of HIMEM (low, high)
     pha                                                               ; b3e4: 48          H
     txa                                                               ; b3e5: 8a          .
     pha                                                               ; b3e6: 48          H
@@ -9053,7 +9070,8 @@ jump_address_low = sub_c0050+1
     lda l00bb                                                         ; b548: a5 bb       ..
     iny                                                               ; b54a: c8          .              ; Y=&fc
     adc (l00b8),y                                                     ; b54b: 71 b8       q.
-    pha                                                               ; b54d: 48          H              ; push A,X onto the stack
+    ; push A,X onto the stack
+    pha                                                               ; b54d: 48          H
     txa                                                               ; b54e: 8a          .
     pha                                                               ; b54f: 48          H
     lda #&ff                                                          ; b550: a9 ff       ..
@@ -9426,7 +9444,8 @@ lb6ce = sub_cb6cd+1
 ; &b745 referenced 5 times by &b369, &b8b7, &b8d1, &bc78, &bc9e
 .sub_cb745
     sta l00bf                                                         ; b745: 85 bf       ..
-    txa                                                               ; b747: 8a          .              ; push X,Y onto the stack
+    ; push X,Y onto the stack
+    txa                                                               ; b747: 8a          .
     pha                                                               ; b748: 48          H
     tya                                                               ; b749: 98          .
     pha                                                               ; b74a: 48          H
@@ -9449,7 +9468,8 @@ lb6ce = sub_cb6cd+1
     tay                                                               ; b764: a8          .
     lda l00bf                                                         ; b765: a5 bf       ..
     jsr sub_cb771                                                     ; b767: 20 71 b7     q.
-    pla                                                               ; b76a: 68          h              ; pull X,Y from the stack
+    ; pull X,Y from the stack
+    pla                                                               ; b76a: 68          h
     tay                                                               ; b76b: a8          .
     pla                                                               ; b76c: 68          h
     tax                                                               ; b76d: aa          .
@@ -9524,7 +9544,8 @@ lb6ce = sub_cb6cd+1
     lda romsel_copy                                                   ; b7c6: a5 f4       ..
     pha                                                               ; b7c8: 48          H
     lda #1                                                            ; b7c9: a9 01       ..
-    pha                                                               ; b7cb: 48          H              ; push A,X onto the stack
+    ; push A,X onto the stack
+    pha                                                               ; b7cb: 48          H
     txa                                                               ; b7cc: 8a          .
     pha                                                               ; b7cd: 48          H
     lda l00b0                                                         ; b7ce: a5 b0       ..
@@ -9593,7 +9614,8 @@ lb6ce = sub_cb6cd+1
 
 ; &b82b referenced 16 times by &b1c1, &b2c8, &b2e7, &b32c, &b35a, &b3b0, &b3ec, &b429, &b4a3, &b573, &b5ca, &b5e8, &b604, &b611, &b86b, &beb5
 .cb82b
-    php                                                               ; b82b: 08          .              ; push flags,A,X onto the stack
+    ; push flags,A,X onto the stack
+    php                                                               ; b82b: 08          .
     pha                                                               ; b82c: 48          H
     txa                                                               ; b82d: 8a          .
     pha                                                               ; b82e: 48          H
@@ -9602,7 +9624,8 @@ lb6ce = sub_cb6cd+1
     ldx romsel_copy                                                   ; b833: a6 f4       ..
     lda l0df0,x                                                       ; b835: bd f0 0d    ...
     sta l00b9                                                         ; b838: 85 b9       ..
-    pla                                                               ; b83a: 68          h              ; pull flags,A,X from the stack
+    ; pull flags,A,X from the stack
+    pla                                                               ; b83a: 68          h
     tax                                                               ; b83b: aa          .
     pla                                                               ; b83c: 68          h
     plp                                                               ; b83d: 28          (
@@ -9640,13 +9663,15 @@ lb6ce = sub_cb6cd+1
 
 ; &b85d referenced 8 times by &b2f2, &b340, &b406, &b63f, &b66e, &b7a7, &be64, &be9d
 .sub_cb85d
-    pha                                                               ; b85d: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; b85d: 48          H
     tya                                                               ; b85e: 98          .
     pha                                                               ; b85f: 48          H
     ldy #&ee                                                          ; b860: a0 ee       ..
     lda (l00b8),y                                                     ; b862: b1 b8       ..
     sta l00b8                                                         ; b864: 85 b8       ..
-    pla                                                               ; b866: 68          h              ; pull A,Y from the stack
+    ; pull A,Y from the stack
+    pla                                                               ; b866: 68          h
     tay                                                               ; b867: a8          .
     pla                                                               ; b868: 68          h
     bit l00b8                                                         ; b869: 24 b8       $.
@@ -9780,7 +9805,8 @@ lb6ce = sub_cb6cd+1
 
 ; &b986 referenced 3 times by &b8d4, &bc49, &bcb2
 .sub_cb986
-    txa                                                               ; b986: 8a          .              ; push X,Y onto the stack
+    ; push X,Y onto the stack
+    txa                                                               ; b986: 8a          .
     pha                                                               ; b987: 48          H
     tya                                                               ; b988: 98          .
     pha                                                               ; b989: 48          H
@@ -9834,7 +9860,8 @@ lb6ce = sub_cb6cd+1
     clc                                                               ; b9d1: 18          .
 ; &b9d2 referenced 1 time by &b9f3
 .cb9d2
-    pla                                                               ; b9d2: 68          h              ; pull X,Y from the stack
+    ; pull X,Y from the stack
+    pla                                                               ; b9d2: 68          h
     tay                                                               ; b9d3: a8          .
     pla                                                               ; b9d4: 68          h
     tax                                                               ; b9d5: aa          .
@@ -10722,7 +10749,8 @@ lb6ce = sub_cb6cd+1
     jsr cb82b                                                         ; beb5: 20 2b b8     +.
     stx l00ba                                                         ; beb8: 86 ba       ..
     sty l00bb                                                         ; beba: 84 bb       ..
-    pla                                                               ; bebc: 68          h              ; pull A,Y from the stack
+    ; pull A,Y from the stack
+    pla                                                               ; bebc: 68          h
     tay                                                               ; bebd: a8          .
     pla                                                               ; bebe: 68          h
     sta (l00ba),y                                                     ; bebf: 91 ba       ..
@@ -10740,7 +10768,8 @@ lb6ce = sub_cb6cd+1
 .service_handler
     cmp #service_claim_absolute_workspace                             ; bec8: c9 01       ..
     bne cbee0                                                         ; beca: d0 14       ..
-    pha                                                               ; becc: 48          H              ; push A,Y onto the stack
+    ; push A,Y onto the stack
+    pha                                                               ; becc: 48          H
     tya                                                               ; becd: 98          .
     pha                                                               ; bece: 48          H
     lda #osbyte_issue_service_request                                 ; becf: a9 8f       ..

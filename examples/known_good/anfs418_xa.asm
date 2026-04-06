@@ -350,7 +350,8 @@ sub_c8028
 
 // $8032 referenced 1 time by $802d
 c8032
-    txa                                                               // 8032: 8a          .              // push X,Y onto the stack
+    // push X,Y onto the stack
+    txa                                                               // 8032: 8a          .
     pha                                                               // 8033: 48          H
     tya                                                               // 8034: 98          .
     pha                                                               // 8035: 48          H
@@ -1154,7 +1155,8 @@ return_4
 
 // $8585 referenced 1 time by $8057
 c8585
-    pla                                                               // 8585: 68          h              // pull X,Y from the stack
+    // pull X,Y from the stack
+    pla                                                               // 8585: 68          h
     tay                                                               // 8586: a8          .
     pla                                                               // 8587: 68          h
     tax                                                               // 8588: aa          .
@@ -1834,7 +1836,8 @@ c89a4
 // $89a6 referenced 1 time by $8096
 sub_c89a7
     bit station_id_disable_net_nmis                                   // 89a7: 2c 18 fe    ,..
-    pha                                                               // 89aa: 48          H              // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 89aa: 48          H
     tya                                                               // 89ab: 98          .
     pha                                                               // 89ac: 48          H
     lda #0                                                            // 89ad: a9 00       ..
@@ -1845,7 +1848,8 @@ sub_c89a7
     sta l0d0c                                                         // 89b8: 8d 0c 0d    ...
     lda romsel_copy                                                   // 89bb: a5 f4       ..
     sta romsel                                                        // 89bd: 8d 30 fe    .0.
-    pla                                                               // 89c0: 68          h              // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 89c0: 68          h
     tay                                                               // 89c1: a8          .
     pla                                                               // 89c2: 68          h
     bit video_ula_control                                             // 89c3: 2c 20 fe    , .
@@ -1968,7 +1972,8 @@ c8a33
 // $8a38 referenced 2 times by $8a25, $8a29
 c8a38
     ldx romsel_copy                                                   // 8a38: a6 f4       ..
-    pla                                                               // 8a3a: 68          h              // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 8a3a: 68          h
     tay                                                               // 8a3b: a8          .
 // $8a3c referenced 1 time by $8a18
 service_handler_common1
@@ -2209,12 +2214,14 @@ sub_c8b96
 // $8b98 referenced 2 times by $8b8f, $8b94
 c8b98
     bvc c8ba8                                                         // 8b98: 50 0e       P.
-    txa                                                               // 8b9a: 8a          .              // push X,Y onto the stack
+    // push X,Y onto the stack
+    txa                                                               // 8b9a: 8a          .
     pha                                                               // 8b9b: 48          H
     tya                                                               // 8b9c: 98          .
     pha                                                               // 8b9d: 48          H
     jsr sub_c8c9f                                                     // 8b9e: 20 9f 8c     ..
-    pla                                                               // 8ba1: 68          h              // pull X,Y from the stack
+    // pull X,Y from the stack
+    pla                                                               // 8ba1: 68          h
     tay                                                               // 8ba2: a8          .
     pla                                                               // 8ba3: 68          h
     tax                                                               // 8ba4: aa          .
@@ -2912,7 +2919,8 @@ return_11
 // $8fcb referenced 5 times by $9bbe, $9d4e, $9dee, $9e2f, $b5fb
 sub_c8fcb
     php                                                               // 8fcb: 08          .
-    pha                                                               // 8fcc: 48          H              // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 8fcc: 48          H
     tya                                                               // 8fcd: 98          .
     pha                                                               // 8fce: 48          H
     ldy #$76 // 'v'                                                   // 8fcf: a0 76       .v
@@ -2926,7 +2934,8 @@ loop_c8fd4
     ldy #$77 // 'w'                                                   // 8fd9: a0 77       .w
     cmp (l00cc),y                                                     // 8fdb: d1 cc       ..
     bne c8fe4                                                         // 8fdd: d0 05       ..
-    pla                                                               // 8fdf: 68          h              // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 8fdf: 68          h
     tay                                                               // 8fe0: a8          .
     pla                                                               // 8fe1: 68          h
     plp                                                               // 8fe2: 28          (
@@ -3281,7 +3290,8 @@ sub_c92b0
 
 // $92b5 referenced 2 times by $9c48, $9e8f
 sub_c92b5
-    php                                                               // 92b5: 08          .              // push flags,A,X onto the stack
+    // push flags,A,X onto the stack
+    php                                                               // 92b5: 08          .
     pha                                                               // 92b6: 48          H
     txa                                                               // 92b7: 8a          .
     pha                                                               // 92b8: 48          H
@@ -3295,7 +3305,8 @@ sub_c92b5
     bne c92e1                                                         // 92ca: d0 15       ..
 // $92cc referenced 2 times by $9ca9, $9e8a
 sub_c92cc
-    php                                                               // 92cc: 08          .              // push flags,A,X onto the stack
+    // push flags,A,X onto the stack
+    php                                                               // 92cc: 08          .
     pha                                                               // 92cd: 48          H
     txa                                                               // 92ce: 8a          .
     pha                                                               // 92cf: 48          H
@@ -3308,7 +3319,8 @@ sub_c92cc
     sta l1060,x                                                       // 92de: 9d 60 10    .`.
 // $92e1 referenced 3 times by $92c0, $92ca, $92d7
 c92e1
-    pla                                                               // 92e1: 68          h              // pull flags,A,X from the stack
+    // pull flags,A,X from the stack
+    pla                                                               // 92e1: 68          h
     tax                                                               // 92e2: aa          .
     pla                                                               // 92e3: 68          h
     plp                                                               // 92e4: 28          (
@@ -3466,7 +3478,8 @@ c93bc
     txa                                                               // 93cd: 8a          .
     pha                                                               // 93ce: 48          H
     jsr sub_cae97                                                     // 93cf: 20 97 ae     ..
-    pla                                                               // 93d2: 68          h              // pull A,X from the stack
+    // pull A,X from the stack
+    pla                                                               // 93d2: 68          h
     tax                                                               // 93d3: aa          .
     pla                                                               // 93d4: 68          h
     cmp l1071                                                         // 93d5: cd 71 10    .q.
@@ -4027,7 +4040,8 @@ c96fa
 // $96fd referenced 1 time by $96f3
 c96fd
     sta l0e08                                                         // 96fd: 8d 08 0e    ...
-    pha                                                               // 9700: 48          H              // push A,X onto the stack
+    // push A,X onto the stack
+    pha                                                               // 9700: 48          H
     txa                                                               // 9701: 8a          .
     pha                                                               // 9702: 48          H
     jsr sub_cb98a                                                     // 9703: 20 8a b9     ..
@@ -4191,7 +4205,8 @@ c983f
 // $9846 referenced 1 time by $9842
 c9846
     ldy #$60 // '`'                                                   // 9846: a0 60       .`
-    pha                                                               // 9848: 48          H              // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 9848: 48          H
     tya                                                               // 9849: 98          .              // A=$60
     pha                                                               // 984a: 48          H
     ldx #0                                                            // 984b: a2 00       ..
@@ -4206,7 +4221,8 @@ c984f
     asl                                                               // 9858: 0a          .
     beq c987e                                                         // 9859: f0 23       .#
     jsr sub_c9570                                                     // 985b: 20 70 95     p.
-    pla                                                               // 985e: 68          h              // pull A,Y,X from the stack
+    // pull A,Y,X from the stack
+    pla                                                               // 985e: 68          h
     tax                                                               // 985f: aa          .
     pla                                                               // 9860: 68          h
     tay                                                               // 9861: a8          .
@@ -4215,7 +4231,8 @@ c984f
 // $9865 referenced 1 time by $987c
 loop_c9865
     sbc #1                                                            // 9865: e9 01       ..
-    pha                                                               // 9867: 48          H              // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 9867: 48          H
     tya                                                               // 9868: 98          .
     pha                                                               // 9869: 48          H
     txa                                                               // 986a: 8a          .
@@ -4274,7 +4291,8 @@ c98ab
     dey                                                               // 98ab: 88          .
     bpl loop_c989e                                                    // 98ac: 10 f0       ..
     lda l0d6f                                                         // 98ae: ad 6f 0d    .o.
-    pha                                                               // 98b1: 48          H              // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 98b1: 48          H
     tya                                                               // 98b2: 98          .
     pha                                                               // 98b3: 48          H
     ldx #0                                                            // 98b4: a2 00       ..
@@ -4310,14 +4328,16 @@ loop_c98d9
 
 // $98de referenced 1 time by $98c2
 c98de
-    pla                                                               // 98de: 68          h              // pull A,Y,X from the stack
+    // pull A,Y,X from the stack
+    pla                                                               // 98de: 68          h
     tax                                                               // 98df: aa          .
     pla                                                               // 98e0: 68          h
     tay                                                               // 98e1: a8          .
     pla                                                               // 98e2: 68          h
     beq loop_c98c4                                                    // 98e3: f0 df       ..
     sbc #1                                                            // 98e5: e9 01       ..
-    pha                                                               // 98e7: 48          H              // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 98e7: 48          H
     tya                                                               // 98e8: 98          .
     pha                                                               // 98e9: 48          H
     txa                                                               // 98ea: 8a          .
@@ -4892,7 +4912,8 @@ c9bf8
 
 // $9c03 referenced 1 time by $9bfe
 c9c03
-    pha                                                               // 9c03: 48          H              // push A,X,Y onto the stack
+    // push A,X,Y onto the stack
+    pha                                                               // 9c03: 48          H
     txa                                                               // 9c04: 8a          .
     pha                                                               // 9c05: 48          H
     tya                                                               // 9c06: 98          .
@@ -4902,7 +4923,8 @@ c9c03
     jsr sub_cb98f                                                     // 9c0c: 20 8f b9     ..
     lda l1030,x                                                       // 9c0f: bd 30 10    .0.
     sta l0f05                                                         // 9c12: 8d 05 0f    ...
-    pla                                                               // 9c15: 68          h              // pull A,X from the stack
+    // pull A,X from the stack
+    pla                                                               // 9c15: 68          h
     tax                                                               // 9c16: aa          .
     pla                                                               // 9c17: 68          h
     lsr                                                               // 9c18: 4a          J
@@ -5220,7 +5242,8 @@ c9e09
     ldx #0                                                            // 9e09: a2 00       ..
 // $9e0b referenced 1 time by $9e07
 c9e0b
-    pla                                                               // 9e0b: 68          h              // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 9e0b: 68          h
     tay                                                               // 9e0c: a8          .
     pla                                                               // 9e0d: 68          h
     rts                                                               // 9e0e: 60          `
@@ -6964,7 +6987,8 @@ sub_ca976
     cli                                                               // a976: 58          X
     jmp c983f                                                         // a977: 4c 3f 98    L?.
 
-    php                                                               // a97a: 08          .              // push flags,A,X,Y onto the stack
+    // push flags,A,X,Y onto the stack
+    php                                                               // a97a: 08          .
     pha                                                               // a97b: 48          H
     txa                                                               // a97c: 8a          .
     pha                                                               // a97d: 48          H
@@ -6978,7 +7002,8 @@ sub_ca976
     jsr sub_ca993                                                     // a989: 20 93 a9     ..
 // $a98c referenced 1 time by $a986
 ca98c
-    pla                                                               // a98c: 68          h              // pull flags,A,X,Y from the stack
+    // pull flags,A,X,Y from the stack
+    pla                                                               // a98c: 68          h
     tay                                                               // a98d: a8          .
     pla                                                               // a98e: 68          h
     tax                                                               // a98f: aa          .
@@ -9281,7 +9306,8 @@ return_38
 
 // $b799 referenced 8 times by $8d87, $8fa0, $94a0, $9bdc, $9c21, $9cc4, $9d8a, $9e58
 sub_cb799
-    txa                                                               // b799: 8a          .              // push X,Y onto the stack
+    // push X,Y onto the stack
+    txa                                                               // b799: 8a          .
     pha                                                               // b79a: 48          H
     tya                                                               // b79b: 98          .
     pha                                                               // b79c: 48          H
@@ -9318,7 +9344,8 @@ loop_cb7c3
     sta l00b4,x                                                       // b7c4: 95 b4       ..
     dex                                                               // b7c6: ca          .
     bpl loop_cb7c3                                                    // b7c7: 10 fa       ..
-    pla                                                               // b7c9: 68          h              // pull X,Y from the stack
+    // pull X,Y from the stack
+    pla                                                               // b7c9: 68          h
     tay                                                               // b7ca: a8          .
     pla                                                               // b7cb: 68          h
     tax                                                               // b7cc: aa          .
@@ -9337,7 +9364,8 @@ loop_cb7c3
     .byt $b3, $a9,   0, $85, $b2, $68, $aa, $b1, $b2, $ac, $c9, $10   // b83f: b3 a9 00... ...
     .byt $18, $60, $8c, $c9, $10, $48, $a8                            // b84b: 18 60 8c... .`.
 
-    txa                                                               // b852: 8a          .              // push X,Y onto the stack
+    // push X,Y onto the stack
+    txa                                                               // b852: 8a          .
     pha                                                               // b853: 48          H
     tya                                                               // b854: 98          .
     pha                                                               // b855: 48          H
@@ -9400,7 +9428,8 @@ cb8cb
     jsr sub_cb78b                                                     // b8cb: 20 8b b7     ..
     lda #0                                                            // b8ce: a9 00       ..
     jsr sub_cb98f                                                     // b8d0: 20 8f b9     ..
-    pla                                                               // b8d3: 68          h              // pull A,X from the stack
+    // pull A,X from the stack
+    pla                                                               // b8d3: 68          h
     tax                                                               // b8d4: aa          .
     pla                                                               // b8d5: 68          h
     ldy l10c9                                                         // b8d6: ac c9 10    ...
@@ -9408,7 +9437,8 @@ cb8cb
 
 // $b8da referenced 1 time by $b6c3
 sub_cb8da
-    pha                                                               // b8da: 48          H              // push A,X,Y onto the stack
+    // push A,X,Y onto the stack
+    pha                                                               // b8da: 48          H
     txa                                                               // b8db: 8a          .
     pha                                                               // b8dc: 48          H
     tya                                                               // b8dd: 98          .
@@ -9417,7 +9447,8 @@ sub_cb8da
     bne cb8f3                                                         // b8e2: d0 0f       ..
 // $b8e4 referenced 1 time by $b895
 sub_cb8e4
-    pha                                                               // b8e4: 48          H              // push A,X,Y onto the stack
+    // push A,X,Y onto the stack
+    pha                                                               // b8e4: 48          H
     txa                                                               // b8e5: 8a          .
     pha                                                               // b8e6: 48          H
     tya                                                               // b8e7: 98          .
@@ -9433,7 +9464,8 @@ cb8f3
     tax                                                               // b8f6: aa          .
     pla                                                               // b8f7: 68          h
     tay                                                               // b8f8: a8          .
-    pha                                                               // b8f9: 48          H              // push A,X onto the stack
+    // push A,X onto the stack
+    pha                                                               // b8f9: 48          H
     txa                                                               // b8fa: 8a          .
     pha                                                               // b8fb: 48          H
     ldx #0                                                            // b8fc: a2 00       ..
@@ -9452,7 +9484,8 @@ cb8f3
     lda l10d7                                                         // b91c: ad d7 10    ...
     jsr sub_cb92b                                                     // b91f: 20 2b b9     +.
     jsr sub_cb721                                                     // b922: 20 21 b7     !.
-    pla                                                               // b925: 68          h              // pull A,X,Y from the stack
+    // pull A,X,Y from the stack
+    pla                                                               // b925: 68          h
     tay                                                               // b926: a8          .
     pla                                                               // b927: 68          h
     tax                                                               // b928: aa          .
@@ -9463,7 +9496,8 @@ cb8f3
 sub_cb92b
     sty l0fde                                                         // b92b: 8c de 0f    ...
     sta l0fdf                                                         // b92e: 8d df 0f    ...
-    tya                                                               // b931: 98          .              // push Y,X onto the stack
+    // push Y,X onto the stack
+    tya                                                               // b931: 98          .
     pha                                                               // b932: 48          H
     txa                                                               // b933: 8a          .
     pha                                                               // b934: 48          H
@@ -9505,7 +9539,8 @@ cb974
     lda l1040,x                                                       // b977: bd 40 10    .@.
     eor #1                                                            // b97a: 49 01       I.
     sta l1040,x                                                       // b97c: 9d 40 10    .@.
-    pla                                                               // b97f: 68          h              // pull Y,X from the stack
+    // pull Y,X from the stack
+    pla                                                               // b97f: 68          h
     tax                                                               // b980: aa          .
     pla                                                               // b981: 68          h
     tay                                                               // b982: a8          .
@@ -9835,7 +9870,8 @@ cbb1a
 // $bb39 referenced 1 time by $bb2d
 cbb39
     and #$0f                                                          // bb39: 29 0f       ).
-    pha                                                               // bb3b: 48          H              // push A,X onto the stack
+    // push A,X onto the stack
+    pha                                                               // bb3b: 48          H
     txa                                                               // bb3c: 8a          .
     pha                                                               // bb3d: 48          H
     ldx #4                                                            // bb3e: a2 04       ..
@@ -9860,7 +9896,8 @@ loop_cbb43
     bcs cbb64                                                         // bb53: b0 0f       ..
     dex                                                               // bb55: ca          .
     bne loop_cbb40                                                    // bb56: d0 e8       ..
-    pla                                                               // bb58: 68          h              // pull A,X from the stack
+    // pull A,X from the stack
+    pla                                                               // bb58: 68          h
     tax                                                               // bb59: aa          .
     pla                                                               // bb5a: 68          h
     ldy #0                                                            // bb5b: a0 00       ..

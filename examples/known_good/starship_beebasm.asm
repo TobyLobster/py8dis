@@ -1249,7 +1249,8 @@ osbyte                                  = &fff4
     rts                                                               ; 2704: 60          `   :1604[1]
 
 .move_to_next_enemy
-    txa                                                               ; 2705: 8a          .   :1605[1]   ; add 11 to X
+    ; add 11 to X
+    txa                                                               ; 2705: 8a          .   :1605[1]
     clc                                                               ; 2706: 18          .   :1606[1]
     adc #&0b                                                          ; 2707: 69 0b       i.  :1607[1]
     tax                                                               ; 2709: aa          .   :1609[1]
@@ -1370,7 +1371,8 @@ osbyte                                  = &fff4
     lda #1                                                            ; 27dc: a9 01       ..  :16dc[1]
 .set_enemy_ships_on_screen
     sta enemy_ships_on_screen,x                                       ; 27de: 9d 80 04    ... :16de[1]
-    txa                                                               ; 27e1: 8a          .   :16e1[1]   ; add 11 to X
+    ; add 11 to X
+    txa                                                               ; 27e1: 8a          .   :16e1[1]
     clc                                                               ; 27e2: 18          .   :16e2[1]
     adc #&0b                                                          ; 27e3: 69 0b       i.  :16e3[1]
     tax                                                               ; 27e5: aa          .   :16e5[1]
@@ -1453,7 +1455,8 @@ osbyte                                  = &fff4
     sta enemy_ships_previous_x_screens,x                              ; 2885: 9d 03 04    ... :1785[1]
     lda enemy_ships_x_fraction,x                                      ; 2888: bd 81 04    ... :1788[1]
     sta enemy_ships_previous_x_fraction,x                             ; 288b: 9d 01 04    ... :178b[1]
-    txa                                                               ; 288e: 8a          .   :178e[1]   ; add 11 to X
+    ; add 11 to X
+    txa                                                               ; 288e: 8a          .   :178e[1]
     clc                                                               ; 288f: 18          .   :178f[1]
     adc #&0b                                                          ; 2890: 69 0b       i.  :1790[1]
     tax                                                               ; 2892: aa          .   :1792[1]
@@ -2086,7 +2089,8 @@ osbyte                                  = &fff4
 .activate_shields_when_enemy_ship_enters_main_square_loop
     lda enemy_ships_on_screen,x                                       ; 2ca9: bd 80 04    ... :1ba9[1]
     beq enemy_ship_is_on_screen                                       ; 2cac: f0 12       ..  :1bac[1]
-    txa                                                               ; 2cae: 8a          .   :1bae[1]   ; add 11 to X
+    ; add 11 to X
+    txa                                                               ; 2cae: 8a          .   :1bae[1]
     clc                                                               ; 2caf: 18          .   :1baf[1]
     adc #&0b                                                          ; 2cb0: 69 0b       i.  :1bb0[1]
     tax                                                               ; 2cb2: aa          .   :1bb2[1]
@@ -3724,7 +3728,8 @@ osbyte                                  = &fff4
     ora #4                                                            ; 37ba: 09 04       ..  :26ba[1]
     sta enemy_ships_type,x                                            ; 37bc: 9d 0a 04    ... :26bc[1]
 .handle_enemy_ships_cloaking_next
-    txa                                                               ; 37bf: 8a          .   :26bf[1]   ; add 11 to X
+    ; add 11 to X
+    txa                                                               ; 37bf: 8a          .   :26bf[1]
     clc                                                               ; 37c0: 18          .   :26c0[1]
     adc #&0b                                                          ; 37c1: 69 0b       i.  :26c1[1]
     tax                                                               ; 37c3: aa          .   :26c3[1]
@@ -6046,7 +6051,8 @@ osbyte                                  = &fff4
     jsr initialise_enemy_ship                                         ; 471c: 20 d2 33     .3 :361c[1]
     lda #1                                                            ; 471f: a9 01       ..  :361f[1]
     sta enemy_ships_previous_on_screen,x                              ; 4721: 9d 00 04    ... :3621[1]
-    txa                                                               ; 4724: 8a          .   :3624[1]   ; add 11 to X
+    ; add 11 to X
+    txa                                                               ; 4724: 8a          .   :3624[1]
     clc                                                               ; 4725: 18          .   :3625[1]
     adc #&0b                                                          ; 4726: 69 0b       i.  :3626[1]
     tax                                                               ; 4728: aa          .   :3628[1]
@@ -6177,7 +6183,8 @@ osbyte                                  = &fff4
     and #&f0                                                          ; 481b: 29 f0       ).  :371b[1]
 .skip_resetting_hit_count
     sta enemy_ships_temporary_behaviour_flags,x                       ; 481d: 9d 88 04    ... :371d[1]
-    txa                                                               ; 4820: 8a          .   :3720[1]   ; add 11 to X
+    ; add 11 to X
+    txa                                                               ; 4820: 8a          .   :3720[1]
     clc                                                               ; 4821: 18          .   :3721[1]
     adc #&0b                                                          ; 4822: 69 0b       i.  :3722[1]
     tax                                                               ; 4824: aa          .   :3724[1]
@@ -7259,7 +7266,8 @@ osbyte                                  = &fff4
     cmp high_score_table + 2,x                                        ; 561a: dd 37 43    .7C :451a[1]
     bcs higher_score                                                  ; 561d: b0 0a       ..  :451d[1]
 .consider_next_record
-    txa                                                               ; 561f: 8a          .   :451f[1]   ; add 16 to X
+    ; add 16 to X
+    txa                                                               ; 561f: 8a          .   :451f[1]
     clc                                                               ; 5620: 18          .   :4520[1]
     adc #&10                                                          ; 5621: 69 10       i.  :4521[1]
     tax                                                               ; 5623: aa          .   :4523[1]

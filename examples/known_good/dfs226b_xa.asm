@@ -404,7 +404,8 @@ print_inline_l809f_top_bit_clear
     pla                                                               // 207c: 68          h   :807c[1]
     sta l00af                                                         // 207d: 85 af       ..  :807d[1]
     lda l00b3                                                         // 207f: a5 b3       ..  :807f[1]
-    pha                                                               // 2081: 48          H   :8081[1]   // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 2081: 48          H   :8081[1]
     tya                                                               // 2082: 98          .   :8082[1]
     pha                                                               // 2083: 48          H   :8083[1]
     ldy #0                                                            // 2084: a0 00       ..  :8084[1]
@@ -418,7 +419,8 @@ loop_c8086
 
 // $2093 referenced 1 time by $808b[1]
 c8093
-    pla                                                               // 2093: 68          h   :8093[1]   // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 2093: 68          h   :8093[1]
     tay                                                               // 2094: a8          .   :8094[1]
     pla                                                               // 2095: 68          h   :8095[1]
 // $2096 referenced 1 time by $806d[1]
@@ -442,7 +444,8 @@ c809f
     pha                                                               // 20a9: 48          H   :80a9[1]
     ora #$10                                                          // 20aa: 09 10       ..  :80aa[1]
     jsr sub_c9ad3                                                     // 20ac: 20 d3 9a     .. :80ac[1]
-    pla                                                               // 20af: 68          h   :80af[1]   // pull A,X from the stack
+    // pull A,X from the stack
+    pla                                                               // 20af: 68          h   :80af[1]
     tax                                                               // 20b0: aa          .   :80b0[1]
     pla                                                               // 20b1: 68          h   :80b1[1]
     jsr osasci                                                        // 20b2: 20 e3 ff     .. :80b2[1]   // Write character
@@ -1068,7 +1071,8 @@ return_6
 
 // $23e3 referenced 29 times by $809f[1], $8174[1], $82bb[1], $833a[1], $8380[1], $8386[1], $8951[1], $8a32[1], $96c3[1], $97cd[1], $993b[1], $99f3[1], $9a0f[1], $9a32[1], $9a63[1], $9ac8[1], $9ad8[1], $9b51[1], $9bf2[1], $9c10[1], $9d9b[1], $9f7c[1], $9f82[1], $a06c[1], $a190[1], $a1b4[1], $a379[1], $a384[1], $ac72[1]
 sub_c83e3
-    pha                                                               // 23e3: 48          H   :83e3[1]   // push A,X,Y onto the stack
+    // push A,X,Y onto the stack
+    pha                                                               // 23e3: 48          H   :83e3[1]
     txa                                                               // 23e4: 8a          .   :83e4[1]
     pha                                                               // 23e5: 48          H   :83e5[1]
     tya                                                               // 23e6: 98          .   :83e6[1]
@@ -1099,7 +1103,8 @@ loop_c83fa
     pla                                                               // 2405: 68          h   :8405[1]
 // $2406 referenced 1 time by $8418[1]
 loop_c8406
-    pla                                                               // 2406: 68          h   :8406[1]   // pull A,X,Y from the stack
+    // pull A,X,Y from the stack
+    pla                                                               // 2406: 68          h   :8406[1]
     tay                                                               // 2407: a8          .   :8407[1]
     pla                                                               // 2408: 68          h   :8408[1]
     tax                                                               // 2409: aa          .   :8409[1]
@@ -1108,7 +1113,8 @@ loop_c8406
 
 // $240c referenced 5 times by $841b[1], $9785[1], $9c16[1], $9e94[1], $aadd[1]
 sub_c840c
-    pha                                                               // 240c: 48          H   :840c[1]   // push A,X,Y onto the stack
+    // push A,X,Y onto the stack
+    pha                                                               // 240c: 48          H   :840c[1]
     txa                                                               // 240d: 8a          .   :840d[1]
     pha                                                               // 240e: 48          H   :840e[1]
     tya                                                               // 240f: 98          .   :840f[1]
@@ -3768,7 +3774,8 @@ sub_c93c5
     tay                                                               // 33c5: a8          .   :93c5[1]
     lda (l00b2),y                                                     // 33c6: b1 b2       ..  :93c6[1]
     tax                                                               // 33c8: aa          .   :93c8[1]
-    tya                                                               // 33c9: 98          .   :93c9[1]   // add 18 to Y
+    // add 18 to Y
+    tya                                                               // 33c9: 98          .   :93c9[1]
     clc                                                               // 33ca: 18          .   :93ca[1]
     adc #$12                                                          // 33cb: 69 12       i.  :93cb[1]
     tay                                                               // 33cd: a8          .   :93cd[1]
@@ -4213,7 +4220,8 @@ return_28
 c9683
     cmp #service_claim_private_workspace                              // 3683: c9 02       ..  :9683[1]
     bne c96c3                                                         // 3685: d0 3c       .<  :9685[1]
-    pha                                                               // 3687: 48          H   :9687[1]   // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 3687: 48          H   :9687[1]
     tya                                                               // 3688: 98          .   :9688[1]
     pha                                                               // 3689: 48          H   :9689[1]
     sta l00b1                                                         // 368a: 85 b1       ..  :968a[1]
@@ -5365,13 +5373,15 @@ c9d89
 
 // $3d8e referenced 6 times by $956f[1], $9714[1], $97d0[1], $9d72[1], $9daa[1], $9db8[1]
 zero_stacked_XXX
-    pha                                                               // 3d8e: 48          H   :9d8e[1]   // push A,X onto the stack
+    // push A,X onto the stack
+    pha                                                               // 3d8e: 48          H   :9d8e[1]
     txa                                                               // 3d8f: 8a          .   :9d8f[1]
     pha                                                               // 3d90: 48          H   :9d90[1]
     lda #0                                                            // 3d91: a9 00       ..  :9d91[1]
     tsx                                                               // 3d93: ba          .   :9d93[1]
     sta l0109,x                                                       // 3d94: 9d 09 01    ... :9d94[1]
-    pla                                                               // 3d97: 68          h   :9d97[1]   // pull A,X from the stack
+    // pull A,X from the stack
+    pla                                                               // 3d97: 68          h   :9d97[1]
     tax                                                               // 3d98: aa          .   :9d98[1]
     pla                                                               // 3d99: 68          h   :9d99[1]
     rts                                                               // 3d9a: 60          `   :9d9a[1]
@@ -5516,7 +5526,8 @@ sub_c9e54
 return_40
     rts                                                               // 3e5c: 60          `   :9e5c[1]
 
-    pha                                                               // 3e5d: 48          H   :9e5d[1]   // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 3e5d: 48          H   :9e5d[1]
     tya                                                               // 3e5e: 98          .   :9e5e[1]
     pha                                                               // 3e5f: 48          H   :9e5f[1]
     txa                                                               // 3e60: 8a          .   :9e60[1]
@@ -5533,7 +5544,8 @@ c9e6f
     ldx #0                                                            // 3e6f: a2 00       ..  :9e6f[1]
 // $3e71 referenced 1 time by $9e6d[1]
 c9e71
-    pla                                                               // 3e71: 68          h   :9e71[1]   // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 3e71: 68          h   :9e71[1]
     tay                                                               // 3e72: a8          .   :9e72[1]
     pla                                                               // 3e73: 68          h   :9e73[1]
 // $3e74 referenced 1 time by $9e7b[1]
@@ -7138,7 +7150,8 @@ print_inline_osasci_top_bit_clear
     pla                                                               // 49a1: 68          h   :a9a1[1]
     sta l00af                                                         // 49a2: 85 af       ..  :a9a2[1]
     lda l00b3                                                         // 49a4: a5 b3       ..  :a9a4[1]
-    pha                                                               // 49a6: 48          H   :a9a6[1]   // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 49a6: 48          H   :a9a6[1]
     tya                                                               // 49a7: 98          .   :a9a7[1]
     pha                                                               // 49a8: 48          H   :a9a8[1]
     ldy #0                                                            // 49a9: a0 00       ..  :a9a9[1]
@@ -7152,7 +7165,8 @@ loop_ca9ab
 
 // $49b8 referenced 1 time by $a9b0[1]
 ca9b8
-    pla                                                               // 49b8: 68          h   :a9b8[1]   // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 49b8: 68          h   :a9b8[1]
     tay                                                               // 49b9: a8          .   :a9b9[1]
     pla                                                               // 49ba: 68          h   :a9ba[1]
     clc                                                               // 49bb: 18          .   :a9bb[1]
@@ -8388,7 +8402,8 @@ general_service_handler
     lda l00b8                                                         // 51b6: a5 b8       ..  :b1b6[1]
     pha                                                               // 51b8: 48          H   :b1b8[1]
     lda l00b9                                                         // 51b9: a5 b9       ..  :b1b9[1]
-    pha                                                               // 51bb: 48          H   :b1bb[1]   // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 51bb: 48          H   :b1bb[1]
     tya                                                               // 51bc: 98          .   :b1bc[1]
     pha                                                               // 51bd: 48          H   :b1bd[1]
     txa                                                               // 51be: 8a          .   :b1be[1]
@@ -8440,7 +8455,8 @@ cb1fc
     jsr sub_cb882                                                     // 5200: 20 82 b8     .. :b200[1]
 // $5203 referenced 10 times by $b1c6[1], $b1db[1], $b1df[1], $b219[1], $b21e[1], $b228[1], $b22c[1], $b262[1], $b26a[1], $b280[1]
 cb203
-    pla                                                               // 5203: 68          h   :b203[1]   // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 5203: 68          h   :b203[1]
     tay                                                               // 5204: a8          .   :b204[1]
     pla                                                               // 5205: 68          h   :b205[1]
     sta l00b9                                                         // 5206: 85 b9       ..  :b206[1]
@@ -8759,7 +8775,8 @@ cb3ba
 cb3de
     lda #osbyte_read_himem                                            // 53de: a9 84       ..  :b3de[1]
     jsr osbyte                                                        // 53e0: 20 f4 ff     .. :b3e0[1]   // Read top of user memory (HIMEM)
-    tya                                                               // 53e3: 98          .   :b3e3[1]   // push Y,X onto the stack// X and Y contain the address of HIMEM (low, high)
+    // push Y,X onto the stack
+    tya                                                               // 53e3: 98          .   :b3e3[1]   // X and Y contain the address of HIMEM (low, high)
     pha                                                               // 53e4: 48          H   :b3e4[1]
     txa                                                               // 53e5: 8a          .   :b3e5[1]
     pha                                                               // 53e6: 48          H   :b3e6[1]
@@ -8987,7 +9004,8 @@ cb534
     lda l00bb                                                         // 5548: a5 bb       ..  :b548[1]
     iny                                                               // 554a: c8          .   :b54a[1]   // Y=$fc
     adc (l00b8),y                                                     // 554b: 71 b8       q.  :b54b[1]
-    pha                                                               // 554d: 48          H   :b54d[1]   // push A,X onto the stack
+    // push A,X onto the stack
+    pha                                                               // 554d: 48          H   :b54d[1]
     txa                                                               // 554e: 8a          .   :b54e[1]
     pha                                                               // 554f: 48          H   :b54f[1]
     lda #$ff                                                          // 5550: a9 ff       ..  :b550[1]
@@ -9360,7 +9378,8 @@ cb736
 // $5745 referenced 5 times by $b369[1], $b8b7[1], $b8d1[1], $bc78[1], $bc9e[1]
 sub_cb745
     sta l00bf                                                         // 5745: 85 bf       ..  :b745[1]
-    txa                                                               // 5747: 8a          .   :b747[1]   // push X,Y onto the stack
+    // push X,Y onto the stack
+    txa                                                               // 5747: 8a          .   :b747[1]
     pha                                                               // 5748: 48          H   :b748[1]
     tya                                                               // 5749: 98          .   :b749[1]
     pha                                                               // 574a: 48          H   :b74a[1]
@@ -9383,7 +9402,8 @@ loop_cb75a
     tay                                                               // 5764: a8          .   :b764[1]
     lda l00bf                                                         // 5765: a5 bf       ..  :b765[1]
     jsr sub_cb771                                                     // 5767: 20 71 b7     q. :b767[1]
-    pla                                                               // 576a: 68          h   :b76a[1]   // pull X,Y from the stack
+    // pull X,Y from the stack
+    pla                                                               // 576a: 68          h   :b76a[1]
     tay                                                               // 576b: a8          .   :b76b[1]
     pla                                                               // 576c: 68          h   :b76c[1]
     tax                                                               // 576d: aa          .   :b76d[1]
@@ -9440,7 +9460,8 @@ loop_cb7be
     lda romsel_copy                                                   // 57c6: a5 f4       ..  :b7c6[1]
     pha                                                               // 57c8: 48          H   :b7c8[1]
     lda #1                                                            // 57c9: a9 01       ..  :b7c9[1]
-    pha                                                               // 57cb: 48          H   :b7cb[1]   // push A,X onto the stack
+    // push A,X onto the stack
+    pha                                                               // 57cb: 48          H   :b7cb[1]
     txa                                                               // 57cc: 8a          .   :b7cc[1]
     pha                                                               // 57cd: 48          H   :b7cd[1]
     lda l00b0                                                         // 57ce: a5 b0       ..  :b7ce[1]
@@ -9507,7 +9528,8 @@ cb7ed
 
 // $582b referenced 16 times by $b1c1[1], $b2c8[1], $b2e7[1], $b32c[1], $b35a[1], $b3b0[1], $b3ec[1], $b429[1], $b4a3[1], $b573[1], $b5ca[1], $b5e8[1], $b604[1], $b611[1], $b86b[1], $beb5[1]
 cb82b
-    php                                                               // 582b: 08          .   :b82b[1]   // push flags,A,X onto the stack
+    // push flags,A,X onto the stack
+    php                                                               // 582b: 08          .   :b82b[1]
     pha                                                               // 582c: 48          H   :b82c[1]
     txa                                                               // 582d: 8a          .   :b82d[1]
     pha                                                               // 582e: 48          H   :b82e[1]
@@ -9516,7 +9538,8 @@ cb82b
     ldx romsel_copy                                                   // 5833: a6 f4       ..  :b833[1]
     lda l0df0,x                                                       // 5835: bd f0 0d    ... :b835[1]
     sta l00b9                                                         // 5838: 85 b9       ..  :b838[1]
-    pla                                                               // 583a: 68          h   :b83a[1]   // pull flags,A,X from the stack
+    // pull flags,A,X from the stack
+    pla                                                               // 583a: 68          h   :b83a[1]
     tax                                                               // 583b: aa          .   :b83b[1]
     pla                                                               // 583c: 68          h   :b83c[1]
     plp                                                               // 583d: 28          (   :b83d[1]
@@ -9554,13 +9577,15 @@ sub_cb850
 
 // $585d referenced 8 times by $b2f2[1], $b340[1], $b406[1], $b63f[1], $b66e[1], $b7a7[1], $be64[1], $be9d[1]
 sub_cb85d
-    pha                                                               // 585d: 48          H   :b85d[1]   // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 585d: 48          H   :b85d[1]
     tya                                                               // 585e: 98          .   :b85e[1]
     pha                                                               // 585f: 48          H   :b85f[1]
     ldy #$ee                                                          // 5860: a0 ee       ..  :b860[1]
     lda (l00b8),y                                                     // 5862: b1 b8       ..  :b862[1]
     sta l00b8                                                         // 5864: 85 b8       ..  :b864[1]
-    pla                                                               // 5866: 68          h   :b866[1]   // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 5866: 68          h   :b866[1]
     tay                                                               // 5867: a8          .   :b867[1]
     pla                                                               // 5868: 68          h   :b868[1]
     bit l00b8                                                         // 5869: 24 b8       $.  :b869[1]
@@ -9694,7 +9719,8 @@ lb980
 
 // $5986 referenced 3 times by $b8d4[1], $bc49[1], $bcb2[1]
 sub_cb986
-    txa                                                               // 5986: 8a          .   :b986[1]   // push X,Y onto the stack
+    // push X,Y onto the stack
+    txa                                                               // 5986: 8a          .   :b986[1]
     pha                                                               // 5987: 48          H   :b987[1]
     tya                                                               // 5988: 98          .   :b988[1]
     pha                                                               // 5989: 48          H   :b989[1]
@@ -9748,7 +9774,8 @@ loop_cb9d1
     clc                                                               // 59d1: 18          .   :b9d1[1]
 // $59d2 referenced 1 time by $b9f3[1]
 cb9d2
-    pla                                                               // 59d2: 68          h   :b9d2[1]   // pull X,Y from the stack
+    // pull X,Y from the stack
+    pla                                                               // 59d2: 68          h   :b9d2[1]
     tay                                                               // 59d3: a8          .   :b9d3[1]
     pla                                                               // 59d4: 68          h   :b9d4[1]
     tax                                                               // 59d5: aa          .   :b9d5[1]
@@ -10636,7 +10663,8 @@ loop_cbeab
     jsr cb82b                                                         // 5eb5: 20 2b b8     +. :beb5[1]
     stx l00ba                                                         // 5eb8: 86 ba       ..  :beb8[1]
     sty l00bb                                                         // 5eba: 84 bb       ..  :beba[1]
-    pla                                                               // 5ebc: 68          h   :bebc[1]   // pull A,Y from the stack
+    // pull A,Y from the stack
+    pla                                                               // 5ebc: 68          h   :bebc[1]
     tay                                                               // 5ebd: a8          .   :bebd[1]
     pla                                                               // 5ebe: 68          h   :bebe[1]
     sta (l00ba),y                                                     // 5ebf: 91 ba       ..  :bebf[1]
@@ -10654,7 +10682,8 @@ sub_cbec2
 service_handler
     cmp #service_claim_absolute_workspace                             // 5ec8: c9 01       ..  :bec8[1]
     bne cbee0                                                         // 5eca: d0 14       ..  :beca[1]
-    pha                                                               // 5ecc: 48          H   :becc[1]   // push A,Y onto the stack
+    // push A,Y onto the stack
+    pha                                                               // 5ecc: 48          H   :becc[1]
     tya                                                               // 5ecd: 98          .   :becd[1]
     pha                                                               // 5ece: 48          H   :bece[1]
     lda #osbyte_issue_service_request                                 // 5ecf: a9 8f       ..  :becf[1]

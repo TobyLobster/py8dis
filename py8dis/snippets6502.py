@@ -17,10 +17,10 @@ OPCODE_BNE                      = 0xd0      # bne loop
 OPCODE_TXA                      = 0x8a      # txa
 OPCODE_TYA                      = 0x98      # tya
 
-# The list of 'SnippetDetails' which contain a regex for binary data to find common code tropes, 
-# and two associated functions (for commenting, adding expressions etc). 
+# The list of 'SnippetDetails' which contain a regex for binary data to find common code tropes,
+# and two associated functions (for commenting, adding expressions etc).
 # One function is executed before the code is traced, allowing new entry points to be added for the trace.
-# The other happens after tracing which allows for more detailed comments to be added because we know the 
+# The other happens after tracing which allows for more detailed comments to be added because we know the
 # cpu_state of registers.
 snippets = []
 
@@ -30,7 +30,7 @@ def add_entry(p):
 
 def add_code_comment(p, comment):
     p.entry()
-    disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE, auto_generated=True)
+    disassembly.comment_binary(p.get_start_loc(), comment, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 def add_data_comment(p, comment):
     disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE, auto_generated=True)
@@ -246,11 +246,11 @@ def comment_memory_copy_increment(p):
 
 # ************************************************************************************************
 def comment_add_to_y(p):
-    disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=0, align=Align.INLINE, auto_generated=True)
+    disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_add_to_x(p):
-    disassembly.comment_binary(p.get_start_loc(), "add {0} to X".format(p.get_memory("nn")), indent=0, align=Align.INLINE, auto_generated=True)
+    disassembly.comment_binary(p.get_start_loc(), "add {0} to X".format(p.get_memory("nn")), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_set_memory_r_loop(p, reg, other_reg):
@@ -306,7 +306,7 @@ def comment_set_memory_r_loop(p, reg, other_reg):
             bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
         else:
             bytes_to_set_string = " {0} bytes of memory".format(reg.upper())
-        
+
         if to_value == 0:
             # "This loop clears 18 bytes of memory at l20e1+Y"
             return "Clear{0}{1}".format(bytes_to_set_string, dest_label)
