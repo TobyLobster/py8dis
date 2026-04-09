@@ -469,7 +469,7 @@ sub_c80c8
     and #$0f                                                          ; 20c8: 29 0f       ).  :80c8[1]
     cmp #$0a                                                          ; 20ca: c9 0a       ..  :80ca[1]
     bcc c80d0                                                         ; 20cc: 90 02       ..  :80cc[1]
-    adc #6                                                            ; 20ce: 69 06       i.  :80ce[1]
+    adc #6                                                            ; 20ce: 69 06       i.  :80ce[1]   ; Carry is set, so adding 7
 ; $20d0 referenced 1 time by $80cc[1]
 c80d0
     adc #$30 ; '0'                                                    ; 20d0: 69 30       i0  :80d0[1]
@@ -2911,7 +2911,7 @@ sub_c8f33
 sub_c8f37
     cmp l108b,x                                                       ; 2f37: dd 8b 10    ... :8f37[1]
     bcc return_19                                                     ; 2f3a: 90 02       ..  :8f3a[1]
-    adc #0                                                            ; 2f3c: 69 00       i.  :8f3c[1]
+    adc #0                                                            ; 2f3c: 69 00       i.  :8f3c[1]   ; Carry is set, so adding 1
 ; $2f3e referenced 2 times by $8f24[1], $8f3a[1]
 return_19
     rts                                                               ; 2f3e: 60          `   :8f3e[1]

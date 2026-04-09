@@ -3019,7 +3019,7 @@ l8e54 = sub_c8e52+2
     and #&0f                                                          ; 9138: 29 0f       ).
     cmp #&0a                                                          ; 913a: c9 0a       ..
     bcc c9140                                                         ; 913c: 90 02       ..
-    adc #6                                                            ; 913e: 69 06       i.
+    adc #6                                                            ; 913e: 69 06       i.             ; Carry is set, so adding 7
 ; &9140 referenced 1 time by &913c
 .c9140
     adc #&30 ; '0'                                                    ; 9140: 69 30       i0
@@ -3083,7 +3083,7 @@ l8e54 = sub_c8e52+2
     cmp #&3a ; ':'                                                    ; 918c: c9 3a       .:
     bcc c919a                                                         ; 918e: 90 0a       ..
     and #&5f ; '_'                                                    ; 9190: 29 5f       )_
-    adc #&b8                                                          ; 9192: 69 b8       i.
+    adc #&b8                                                          ; 9192: 69 b8       i.             ; Carry is set, so adding 185
     bcs c9208                                                         ; 9194: b0 72       .r
     cmp #&fa                                                          ; 9196: c9 fa       ..
 ; &9198 referenced 1 time by &918a
@@ -6363,7 +6363,7 @@ la3f2 = la3f0+2
 .sub_ca4ee
     clc                                                               ; a4ee: 18          .
     lda l00ef                                                         ; a4ef: a5 ef       ..
-    sbc #&0d                                                          ; a4f1: e9 0d       ..
+    sbc #&0d                                                          ; a4f1: e9 0d       ..             ; Carry is clear, so subtracting 14
     bmi return_22                                                     ; a4f3: 30 2d       0-
     cmp #7                                                            ; a4f5: c9 07       ..
     bcs return_22                                                     ; a4f7: b0 29       .)
@@ -6890,7 +6890,7 @@ la841 = sub_ca840+1
     sty l009a                                                         ; a8e3: 84 9a       ..
     ldy #&1c                                                          ; a8e5: a0 1c       ..
     lda l00ac                                                         ; a8e7: a5 ac       ..
-    adc #1                                                            ; a8e9: 69 01       i.
+    adc #1                                                            ; a8e9: 69 01       i.             ; Carry is set, so adding 2
     jsr sub_ca92b                                                     ; a8eb: 20 2b a9     +.
     ldy #1                                                            ; a8ee: a0 01       ..
     lda (l00ac),y                                                     ; a8f0: b1 ac       ..
@@ -9399,7 +9399,7 @@ lb487 = sub_cb485+2
 .cb898
     cmp l1098,x                                                       ; b898: dd 98 10    ...
     bcc cb8ac                                                         ; b89b: 90 0f       ..
-    adc #0                                                            ; b89d: 69 00       i.
+    adc #0                                                            ; b89d: 69 00       i.             ; Carry is set, so adding 1
     sta l1098,x                                                       ; b89f: 9d 98 10    ...
     bne cb8ac                                                         ; b8a2: d0 08       ..
     lda #&df                                                          ; b8a4: a9 df       ..
@@ -9821,7 +9821,7 @@ lb487 = sub_cb485+2
 .loop_cbaf2
     jsr sub_cbb03                                                     ; baf2: 20 03 bb     ..
     sec                                                               ; baf5: 38          8
-    adc #0                                                            ; baf6: 69 00       i.
+    adc #0                                                            ; baf6: 69 00       i.             ; Carry is set, so adding 1
     and #&0f                                                          ; baf8: 29 0f       ).
     dex                                                               ; bafa: ca          .
     bpl loop_cbaf2                                                    ; bafb: 10 f5       ..
@@ -9864,7 +9864,7 @@ lb487 = sub_cb485+2
     cmp #&3a ; ':'                                                    ; bb2b: c9 3a       .:
     bcc cbb39                                                         ; bb2d: 90 0a       ..
     and #&5f ; '_'                                                    ; bb2f: 29 5f       )_
-    adc #&b8                                                          ; bb31: 69 b8       i.
+    adc #&b8                                                          ; bb31: 69 b8       i.             ; Carry is set, so adding 185
     bcs cbb68                                                         ; bb33: b0 33       .3
     cmp #&fa                                                          ; bb35: c9 fa       ..
     bcc cbb68                                                         ; bb37: 90 2f       ./

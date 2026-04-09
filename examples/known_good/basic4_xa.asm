@@ -2826,7 +2826,7 @@ sub_c9171
     lda l0036                                                         // 9187: a5 36       .6
     cmp #8                                                            // 9189: c9 08       ..
     bcc c9193                                                         // 918b: 90 06       ..
-    adc #7                                                            // 918d: 69 07       i.
+    adc #7                                                            // 918d: 69 07       i.             // Carry is set, so adding 8
     bcc c9193                                                         // 918f: 90 02       ..
     lda #$ff                                                          // 9191: a9 ff       ..
 // $9193 referenced 2 times by $918b, $918f
@@ -5639,7 +5639,7 @@ ca158
     lda l003f,x                                                       // a158: b5 3f       .?
     cmp #$0a                                                          // a15a: c9 0a       ..
     bcc ca160                                                         // a15c: 90 02       ..
-    adc #6                                                            // a15e: 69 06       i.
+    adc #6                                                            // a15e: 69 06       i.             // Carry is set, so adding 7
 // $a160 referenced 1 time by $a15c
 ca160
     adc #$30 // '0'                                                   // a160: 69 30       i0
@@ -5935,7 +5935,7 @@ sub_ca2dd
     beq ca348                                                         // a2f1: f0 55       .U
     cmp #$3a // ':'                                                   // a2f3: c9 3a       .:
     bcs ca2d6                                                         // a2f5: b0 df       ..
-    sbc #$2f // '/'                                                   // a2f7: e9 2f       ./
+    sbc #$2f // '/'                                                   // a2f7: e9 2f       ./             // Carry is clear, so subtracting 48
     bmi ca2d6                                                         // a2f9: 30 db       0.
 // $a2fb referenced 4 times by $a31f, $a323, $a337, $a33c
 ca2fb
@@ -5951,7 +5951,7 @@ ca303
     lda (l0019),y                                                     // a304: b1 19       ..
     cmp #$3a // ':'                                                   // a306: c9 3a       .:
     bcs ca34c                                                         // a308: b0 42       .B
-    sbc #$2f // '/'                                                   // a30a: e9 2f       ./
+    sbc #$2f // '/'                                                   // a30a: e9 2f       ./             // Carry is clear, so subtracting 48
     bcc ca342                                                         // a30c: 90 34       .4
     sta l0042                                                         // a30e: 85 42       .B
     ldx l0049                                                         // a310: a6 49       .I
@@ -6090,14 +6090,14 @@ sub_ca3c0
 ca3c3
     cmp #$3a // ':'                                                   // a3c3: c9 3a       .:
     bcs ca3e9                                                         // a3c5: b0 22       ."
-    sbc #$2f // '/'                                                   // a3c7: e9 2f       ./
+    sbc #$2f // '/'                                                   // a3c7: e9 2f       ./             // Carry is clear, so subtracting 48
     bcc ca3e9                                                         // a3c9: 90 1e       ..
     sta l0049                                                         // a3cb: 85 49       .I
     iny                                                               // a3cd: c8          .
     lda (l0019),y                                                     // a3ce: b1 19       ..
     cmp #$3a // ':'                                                   // a3d0: c9 3a       .:
     bcs ca3e5                                                         // a3d2: b0 11       ..
-    sbc #$2f // '/'                                                   // a3d4: e9 2f       ./
+    sbc #$2f // '/'                                                   // a3d4: e9 2f       ./             // Carry is clear, so subtracting 48
     bcc ca3e5                                                         // a3d6: 90 0d       ..
     iny                                                               // a3d8: c8          .
     sta l0042                                                         // a3d9: 85 42       .B
@@ -6583,7 +6583,7 @@ ca640
     sta l002e                                                         // a644: 85 2e       ..
     sec                                                               // a646: 38          8
     lda l003c                                                         // a647: a5 3c       .<
-    adc #$81                                                          // a649: 69 81       i.
+    adc #$81                                                          // a649: 69 81       i.             // Carry is set, so adding 130
     rol l002f                                                         // a64b: 26 2f       &/
     sbc l0030                                                         // a64d: e5 30       .0
     bcs ca653                                                         // a64f: b0 02       ..
@@ -7731,7 +7731,7 @@ cacaf
     bcc cace8                                                         // acc5: 90 21       .!
     sbc l0036                                                         // acc7: e5 36       .6
     bcc cace8                                                         // acc9: 90 1d       ..
-    adc #0                                                            // accb: 69 00       i.
+    adc #0                                                            // accb: 69 00       i.             // Carry is set, so adding 1
     sta l002b                                                         // accd: 85 2b       .+
     jsr cbd21                                                         // accf: 20 21 bd     !.
 // $acd2 referenced 2 times by $acf7, $acfb
@@ -10674,7 +10674,7 @@ sub_cbdac
 sub_cbdb7
     cmp #$0a                                                          // bdb7: c9 0a       ..
     bcc cbdbd                                                         // bdb9: 90 02       ..
-    adc #6                                                            // bdbb: 69 06       i.
+    adc #6                                                            // bdbb: 69 06       i.             // Carry is set, so adding 7
 // $bdbd referenced 1 time by $bdb9
 cbdbd
     adc #$30 // '0'                                                   // bdbd: 69 30       i0

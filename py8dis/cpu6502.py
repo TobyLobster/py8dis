@@ -24,6 +24,9 @@ memory_binary = memorymanager.memory_binary
 OPCODE_JSR = 0x20
 OPCODE_JMP = 0x4c
 OPCODE_RTS = 0x60
+OPCODE_ADC_IMMEDIATE = 0x69
+OPCODE_SBC_IMMEDIATE = 0xe9
+
 
 class SubConst(object):
     """Data about a constant substitution.
@@ -1477,12 +1480,20 @@ class Cpu6502(cpu.Cpu):
     def show_register_knowledge(self):
         """Adds comments to show any known state of the processor"""
         binary_addr = 0
+        prev_state = self.EMPTY_STATE
         state = self.EMPTY_STATE
 
         while binary_addr < 0x10000:
             c = classification.get_classification(binary_addr)
             if c is not None:
+                prev_state = state
                 state = trace.cpu.cpu_states[binary_addr]
+
+                # If there's a label here, then clear our prev_state (i.e. be pessimistic for this state)
+                runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
+                if runtime_addr is not None:
+                    if runtime_addr in labelmanager.labels:
+                        prev_state = self.EMPTY_STATE
 
                 # Show the value of a register as an inline comment (if known) once they have been
                 # altered (e.g. for 'LDY #0:LDA (zp),Y:STA mem:INY' output '; Y=1' on the 'INY' line).
@@ -1502,6 +1513,20 @@ class Cpu6502(cpu.Cpu):
                                     r = formatter.hex(r)
                                 disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
 
+                # Check for ADC# or SBC# with carry in it's opposite to normal state: auto comment it
+                if isinstance(c, trace.cpu.Opcode):
+                    value = memorymanager.get_u8_binary(binary_addr)
+                    if value == OPCODE_ADC_IMMEDIATE and prev_state and prev_state.pessimistic['c'] == True:
+                        move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                        binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                        value = memorymanager.get_u8_binary(binary_addr+1)
+                        disassembly.comment_binary(binary_loc, "Carry is set, so adding {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
+                    elif value == OPCODE_SBC_IMMEDIATE and prev_state and prev_state.pessimistic['c'] == False:
+                        move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                        binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                        value = memorymanager.get_u8_binary(binary_addr+1)
+                        disassembly.comment_binary(binary_loc, "Carry is clear, so subtracting {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
+
                 # Find "ALWAYS branch" instructions
                 if isinstance(c, self.OpcodeConditionalBranch):
                     if state.always_branch:
@@ -1512,7 +1537,7 @@ class Cpu6502(cpu.Cpu):
                 binary_addr += c.length()
             else:
                 binary_addr += 1
-                state = self.EMPTY_STATE
+                prev_state = self.EMPTY_STATE
 
 
     def find_subroutine_calls(self):

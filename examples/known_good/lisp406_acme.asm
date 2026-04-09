@@ -1782,7 +1782,7 @@ CHKCLM
     cmp ACL+1                                      ; 8a18: c5 73       .s
     bne NXTCLL                                     ; 8a1a: d0 2f       ./
     lda CELL                                       ; 8a1c: a5 7c       .|
-    adc #5                                         ; 8a1e: 69 05       i.
+    adc #5                                         ; 8a1e: 69 05       i.             ; Carry is set, so adding 6
     sta AD                                         ; 8a20: 85 87       ..
     lda CELL+1                                     ; 8a22: a5 7d       .}
     adc #0                                         ; 8a24: 69 00       i.

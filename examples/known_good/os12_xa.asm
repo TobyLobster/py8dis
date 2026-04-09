@@ -1691,7 +1691,7 @@ cc636
     lda l0304,x                                                       // c641: bd 04 03    ...
     cpx #1                                                            // c644: e0 01       ..
     bcs cc64a                                                         // c646: b0 02       ..
-    sbc #6                                                            // c648: e9 06       ..
+    sbc #6                                                            // c648: e9 06       ..             // Carry is clear, so subtracting 7
 // $c64a referenced 1 time by $c646
 cc64a
     sta l0324,x                                                       // c64a: 9d 24 03    .$.
@@ -1784,7 +1784,7 @@ cc6cb
     lda l0300,x                                                       // c6d6: bd 00 03    ...
     cpx #1                                                            // c6d9: e0 01       ..
     bcc cc6df                                                         // c6db: 90 02       ..
-    adc #6                                                            // c6dd: 69 06       i.
+    adc #6                                                            // c6dd: 69 06       i.             // Carry is set, so adding 7
 // $c6df referenced 1 time by $c6db
 cc6df
     sta l0324,x                                                       // c6df: 9d 24 03    .$.
@@ -4657,7 +4657,7 @@ cd820
     lsr l00dc                                                         // d824: 46 dc       F.
     bcc loop_cd81b                                                    // d826: 90 f3       ..
     tya                                                               // d828: 98          .
-    adc #7                                                            // d829: 69 07       i.
+    adc #7                                                            // d829: 69 07       i.             // Carry is set, so adding 8
     tay                                                               // d82b: a8          .
     bcc loop_cd810                                                    // d82c: 90 e2       ..
 // $d82e referenced 1 time by $d822
@@ -6558,7 +6558,7 @@ ce551
     and #$0f                                                          // e554: 29 0f       ).
     cmp #$0b                                                          // e556: c9 0b       ..
     bcc ce519                                                         // e558: 90 bf       ..
-    adc #$7b // '{'                                                   // e55a: 69 7b       i{
+    adc #$7b // '{'                                                   // e55a: 69 7b       i{             // Carry is set, so adding 124
     pha                                                               // e55c: 48          H
     lda l027d                                                         // e55d: ad 7d 02    .}.
     bne ce515                                                         // e560: d0 b3       ..
@@ -10050,7 +10050,7 @@ sub_cf983
     adc #$30 // '0'                                                   // f986: 69 30       i0
     cmp #$3a // ':'                                                   // f988: c9 3a       .:
     bcc cf98e                                                         // f98a: 90 02       ..
-    adc #6                                                            // f98c: 69 06       i.
+    adc #6                                                            // f98c: 69 06       i.             // Carry is set, so adding 7
 // $f98e referenced 2 times by $f98a, $f993
 cf98e
     jmp oswrch                                                        // f98e: 4c ee ff    L..            // Write character

@@ -2108,7 +2108,7 @@ lessthanlevel100
 skip15
     eor #$ff                                                          // 1dca: 49 ff       I.
     sec                                                               // 1dcc: 38          8
-    adc #9                                                            // 1dcd: 69 09       i.
+    adc #9                                                            // 1dcd: 69 09       i.             // Carry is set, so adding 10
     sta time                                                          // 1dcf: 85 1d       ..
     ldx #$91                                                          // 1dd1: a2 91       ..
     ldy #$e7                                                          // 1dd3: a0 e7       ..
@@ -2407,7 +2407,7 @@ jumping
 skip16
     eor #$ff                                                          // 1f93: 49 ff       I.
     sec                                                               // 1f95: 38          8
-    adc #2                                                            // 1f96: 69 02       i.
+    adc #2                                                            // 1f96: 69 02       i.             // Carry is set, so adding 3
     sta movementy                                                     // 1f98: 85 47       .G
     inc jumpfalldist                                                  // 1f9a: e6 4a       .J
     lda playery                                                       // 1f9c: a5 41       .A

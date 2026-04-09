@@ -4439,7 +4439,7 @@ turn_enemy_ship_towards_desired_angle_accounting_for_starship_velocity
     cmp #$11                                                          ; 3c6c: c9 11       ..  :2b6c[1]
     bcc skip_inversion9                                               ; 3c6e: 90 05       ..  :2b6e[1]
     eor #$1f                                                          ; 3c70: 49 1f       I.  :2b70[1]
-    adc #0                                                            ; 3c72: 69 00       i.  :2b72[1]
+    adc #0                                                            ; 3c72: 69 00       i.  :2b72[1]   ; Carry is set, so adding 1
     sec                                                               ; 3c74: 38          8   :2b74[1]
 skip_inversion9
     ror temp8                                                         ; 3c75: 66 75       fu  :2b75[1]
@@ -4488,7 +4488,7 @@ finished_calculating_change_in_angle
     asl temp8                                                         ; 3cba: 06 75       .u  :2bba[1]
     bcc skip_uninversion3                                             ; 3cbc: 90 04       ..  :2bbc[1]
     eor #$1f                                                          ; 3cbe: 49 1f       I.  :2bbe[1]
-    adc #0                                                            ; 3cc0: 69 00       i.  :2bc0[1]
+    adc #0                                                            ; 3cc0: 69 00       i.  :2bc0[1]   ; Carry is set, so adding 1
 skip_uninversion3
     sta y_pixels                                                      ; 3cc2: 85 7b       .{  :2bc2[1]
     lda enemy_ship_desired_angle_divided_by_eight                     ; 3cc4: ad 55 26    .U& :2bc4[1]
