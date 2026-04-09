@@ -161,9 +161,11 @@ class CpuStateDisposition(object):
         self._d['a'].value = None
 
     def update_clear_nz_pending_c(self, binary_addr):
-        # This is used for comparison instructions. Note c is set to 'pending' so that after "CMP blah/BNE addr" we can set C
+        # This is used for comparison instructions.
+        # Note c is set to 'pending' so that after "CMP blah:BNE addr" we can set C
+        # Similarly z is set to 'pending' so that after "CMP blah:BCS addr" we can clear Z
         self._d['n'] = None
-        self._d['z'] = None
+        self._d['z'] = "pending"
         self._d['c'] = "pending"
 
     def update_rora(self, binary_addr):
@@ -328,7 +330,9 @@ class CpuStateDisposition(object):
         if flag == 'z' and flag_state == True and self['c'] == 'pending':
             # We have 'BNE addr' with c == 'pending' from a previous compare instruction
             self['c'] = True
-
+        if flag == 'c' and flag_state == False and self['z'] == 'pending':
+            # We have 'BCS addr' with z == 'pending' from a previous compare instruction
+            self['z'] = False
 
     def show(self):
         s = ""
