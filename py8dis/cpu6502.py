@@ -136,7 +136,7 @@ class CpuStateDisposition(object):
                 item = Cpu6502.RegState()
             assert isinstance(item, Cpu6502.RegState)
         else:
-            assert item is None or utils.is_integer_type(item)
+            assert item is None or item == 'pending' or utils.is_integer_type(item)
         self._d[key] = item
 
     def update_clear_nz(self, binary_addr):
@@ -159,6 +159,12 @@ class CpuStateDisposition(object):
         self._d['z'] = None
         self._d['c'] = None
         self._d['a'].value = None
+
+    def update_clear_nz_pending_c(self, binary_addr):
+        # This is used for comparison instructions. Note c is set to 'pending' so that after "CMP blah/BNE addr" we can set C
+        self._d['n'] = None
+        self._d['z'] = None
+        self._d['c'] = "pending"
 
     def update_rora(self, binary_addr):
         if self._d['a'].value is not None and self._d['c'] is not None:
@@ -316,8 +322,13 @@ class CpuStateDisposition(object):
             self['z'] = None
 
     def update_transfer(self, addr, flag, flag_state):
-        if self[flag] is None:
+        if self[flag] is None or self[flag] == 'pending':
             self[flag] = flag_state
+
+        if flag == 'z' and flag_state == True and self['c'] == 'pending':
+            # We have 'BNE addr' with c == 'pending' from a previous compare instruction
+            self['c'] = True
+
 
     def show(self):
         s = ""
@@ -332,6 +343,8 @@ class CpuStateDisposition(object):
             b = self._d[name]
             if b is None:
                 return "-"
+            if b == 'pending':
+                return "?"
             return name.upper() if b else name.lower()
         s += " %s%s%s%s%s%s" % (flag('n'), flag('v'), flag('d'), flag('i'), flag('z'), flag('c'))
         return s
@@ -537,34 +550,34 @@ class Cpu6502(cpu.Cpu):
             0xbc: self.OpcodeDataAbs(           "LDY addr,X", "-UO", cycles="4f", update=self.update_clear_nz),
             0xbd: self.OpcodeDataAbs(           "LDA addr,X", "OU-", cycles="4f", update=self.update_clear_nz),
             0xbe: self.OpcodeDataAbs(           "LDX addr,Y", "-OU", cycles="4f", update=self.update_clear_nz),
-            0xc0: self.OpcodeImmediate(         "CPY #imm",   "--U", cycles="2",  update=self.update_clear_nzc),
-            0xc1: self.OpcodeZp(                "CMP (zp,X)", "UU-", cycles="6",  has_abs_version=False, update=self.update_clear_nzc),
-            0xc4: self.OpcodeZp(                "CPY zp",     "--U", cycles="3",  update=self.update_clear_nzc),
-            0xc5: self.OpcodeZp(                "CMP zp",     "U--", cycles="3",  update=self.update_clear_nzc),
+            0xc0: self.OpcodeImmediate(         "CPY #imm",   "--U", cycles="2",  update=self.update_compare),
+            0xc1: self.OpcodeZp(                "CMP (zp,X)", "UU-", cycles="6",  has_abs_version=False, update=self.update_compare),
+            0xc4: self.OpcodeZp(                "CPY zp",     "--U", cycles="3",  update=self.update_compare),
+            0xc5: self.OpcodeZp(                "CMP zp",     "U--", cycles="3",  update=self.update_compare),
             0xc6: self.OpcodeZp(                "DEC zp",     "---", cycles="5",  update=self.update_clear_nz),
             0xc8: self.OpcodeImplied(           "INY",        "--A", cycles="2",  update=self.make_increment('y')),
-            0xc9: self.OpcodeImmediate(         "CMP #imm",   "U--", cycles="2",  update=self.update_clear_nzc),
+            0xc9: self.OpcodeImmediate(         "CMP #imm",   "U--", cycles="2",  update=self.update_compare),
             0xca: self.OpcodeImplied(           "DEX",        "-A-", cycles="2",  update=self.make_decrement('x')),
-            0xcc: self.OpcodeDataAbs(           "CPY addr",   "--U", cycles="4",  update=self.update_clear_nzc),
-            0xcd: self.OpcodeDataAbs(           "CMP addr",   "U--", cycles="4",  update=self.update_clear_nzc),
+            0xcc: self.OpcodeDataAbs(           "CPY addr",   "--U", cycles="4",  update=self.update_compare),
+            0xcd: self.OpcodeDataAbs(           "CMP addr",   "U--", cycles="4",  update=self.update_compare),
             0xce: self.OpcodeDataAbs(           "DEC addr",   "---", cycles="6",  update=self.update_clear_nz),
             0xd0: self.OpcodeConditionalBranch( "BNE offset", "---", cycles="2a", update=self.make_branch('z', True)),
-            0xd1: self.OpcodeZp(                "CMP (zp),Y", "U-U", cycles="5b", has_abs_version=False, update=self.update_clear_nzc),
-            0xd5: self.OpcodeZp(                "CMP zp,X",   "UU-", cycles="4",  update=self.update_clear_nzc),
+            0xd1: self.OpcodeZp(                "CMP (zp),Y", "U-U", cycles="5b", has_abs_version=False, update=self.update_compare),
+            0xd5: self.OpcodeZp(                "CMP zp,X",   "UU-", cycles="4",  update=self.update_compare),
             0xd6: self.OpcodeZp(                "DEC zp,X",   "-U-", cycles="6",  update=self.update_clear_nz),
             0xd8: self.OpcodeImplied(           "CLD",        "---", cycles="2",  update=self.make_update_flag('d', False)),
-            0xd9: self.OpcodeDataAbs(           "CMP addr,Y", "--U", cycles="4f", has_zp_version=False, update=self.update_clear_nzc),
-            0xdd: self.OpcodeDataAbs(           "CMP addr,X", "-U-", cycles="4f", update=self.update_clear_nzc),
+            0xd9: self.OpcodeDataAbs(           "CMP addr,Y", "--U", cycles="4f", has_zp_version=False, update=self.update_compare),
+            0xdd: self.OpcodeDataAbs(           "CMP addr,X", "-U-", cycles="4f", update=self.update_compare),
             0xde: self.OpcodeDataAbs(           "DEC addr,X", "-U-", cycles="7",  update=self.update_clear_nz),
-            0xe0: self.OpcodeImmediate(         "CPX #imm",   "-U-", cycles="2",  update=self.update_clear_nzc),
+            0xe0: self.OpcodeImmediate(         "CPX #imm",   "-U-", cycles="2",  update=self.update_compare),
             0xe1: self.OpcodeZp(                "SBC (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_adc_sbc),
-            0xe4: self.OpcodeZp(                "CPX zp",     "-U-", cycles="3",  update=self.update_clear_nzc),
+            0xe4: self.OpcodeZp(                "CPX zp",     "-U-", cycles="3",  update=self.update_compare),
             0xe5: self.OpcodeZp(                "SBC zp",     "A--", cycles="3",  update=self.update_adc_sbc),
             0xe6: self.OpcodeZp(                "INC zp",     "---", cycles="5",  update=self.update_clear_nz),
             0xe8: self.OpcodeImplied(           "INX",        "-A-", cycles="2",  update=self.make_increment('x')),
             0xe9: self.OpcodeImmediate(         "SBC #imm",   "A--", cycles="2",  update=self.update_adc_sbc),
             0xea: self.OpcodeImplied(           "NOP",        "---", cycles="2",  update=self.neutral),
-            0xec: self.OpcodeDataAbs(           "CPX addr",   "-U-", cycles="4",  update=self.update_clear_nzc),
+            0xec: self.OpcodeDataAbs(           "CPX addr",   "-U-", cycles="4",  update=self.update_compare),
             0xed: self.OpcodeDataAbs(           "SBC addr",   "A--", cycles="4",  update=self.update_adc_sbc),
             0xee: self.OpcodeDataAbs(           "INC addr",   "---", cycles="6",  update=self.update_clear_nz),
             0xf0: self.OpcodeConditionalBranch( "BEQ offset", "---", cycles="2a", update=self.make_branch('z', False)),
@@ -1319,6 +1332,11 @@ class Cpu6502(cpu.Cpu):
         assert binary_addr is not None
         state.optimistic.update_clear_nzca(binary_addr)
         state.pessimistic.update_clear_nzca(binary_addr)
+
+    def update_compare(self, binary_addr, state):
+        assert binary_addr is not None
+        state.optimistic.update_clear_nz_pending_c(binary_addr)
+        state.pessimistic.update_clear_nz_pending_c(binary_addr)
 
     def update_rora(self, binary_addr, state):
         assert binary_addr is not None

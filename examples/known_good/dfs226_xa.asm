@@ -1586,7 +1586,8 @@ loop_c8725
     cmp #$2e // '.'                                                   // 872d: c9 2e       ..
     bne c8705                                                         // 872f: d0 d4       ..
     iny                                                               // 8731: c8          .
-    bcs c873b                                                         // 8732: b0 07       ..
+    bcs c873b                                                         // 8732: b0 07       ..             // ALWAYS branch
+
 // $8734 referenced 1 time by $871c
 c8734
     lda (os_text_ptr),y                                               // 8734: b1 f2       ..
@@ -3918,7 +3919,8 @@ c948d
     lda #$ff                                                          // 949f: a9 ff       ..
     eor l108b                                                         // 94a1: 4d 8b 10    M..
     sta l108b                                                         // 94a4: 8d 8b 10    ...
-    bcs c94bc                                                         // 94a7: b0 13       ..
+    bcs c94bc                                                         // 94a7: b0 13       ..             // ALWAYS branch
+
 // $94a9 referenced 2 times by $9496, $949d
 c94a9
     ldx l00ce                                                         // 94a9: a6 ce       ..

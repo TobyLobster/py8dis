@@ -1595,7 +1595,8 @@ l8004 = service_entry+1
     cmp #&2e ; '.'                                                    ; 272d: c9 2e       ..  :872d[1]
     bne c8705                                                         ; 272f: d0 d4       ..  :872f[1]
     iny                                                               ; 2731: c8          .   :8731[1]
-    bcs c873b                                                         ; 2732: b0 07       ..  :8732[1]
+    bcs c873b                                                         ; 2732: b0 07       ..  :8732[1]   ; ALWAYS branch
+
 ; &2734 referenced 1 time by &871c[1]
 .c8734
     lda (os_text_ptr),y                                               ; 2734: b1 f2       ..  :8734[1]
@@ -3984,7 +3985,8 @@ nmi_XXX5 = l0d1f+1
     lda #&ff                                                          ; 349f: a9 ff       ..  :949f[1]
     eor l108b                                                         ; 34a1: 4d 8b 10    M.. :94a1[1]
     sta l108b                                                         ; 34a4: 8d 8b 10    ... :94a4[1]
-    bcs c94bc                                                         ; 34a7: b0 13       ..  :94a7[1]
+    bcs c94bc                                                         ; 34a7: b0 13       ..  :94a7[1]   ; ALWAYS branch
+
 ; &34a9 referenced 2 times by &9496[1], &949d[1]
 .c94a9
     ldx l00ce                                                         ; 34a9: a6 ce       ..  :94a9[1]

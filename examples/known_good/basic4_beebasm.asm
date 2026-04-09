@@ -2388,7 +2388,8 @@ l8993 = sub_c8992+1
     bpl c8f1a                                                         ; 8f1d: 10 fb       ..
     cmp #&fe                                                          ; 8f1f: c9 fe       ..
     bne c8f32                                                         ; 8f21: d0 0f       ..
-    bcs c8ee7                                                         ; 8f23: b0 c2       ..
+    bcs c8ee7                                                         ; 8f23: b0 c2       ..             ; ALWAYS branch
+
 ; &8f25 referenced 1 time by &8f18
 .c8f25
     iny                                                               ; 8f25: c8          .

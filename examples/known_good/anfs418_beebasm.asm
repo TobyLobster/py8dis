@@ -3066,7 +3066,8 @@ l8e54 = sub_c8e52+2
     bne c91ae                                                         ; 9176: d0 36       .6
     iny                                                               ; 9178: c8          .
     lda (l00be),y                                                     ; 9179: b1 be       ..
-    bcs c9188                                                         ; 917b: b0 0b       ..
+    bcs c9188                                                         ; 917b: b0 0b       ..             ; ALWAYS branch
+
 ; &917d referenced 1 time by &91ac
 .c917d
     iny                                                               ; 917d: c8          .
