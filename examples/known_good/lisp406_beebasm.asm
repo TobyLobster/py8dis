@@ -702,7 +702,7 @@ oscli   = &fff7
 .STACK
     lda SP                                         ; 8393: a5 7e       .~
     clc                                            ; 8395: 18          .
-    sbc TVSEXT                                     ; 8396: e5 33       .3             ; -1 because carry is set
+    sbc TVSEXT                                     ; 8396: e5 33       .3             ; -1 because carry is clear
     tax                                            ; 8398: aa          .
     bne EXTRAM                                     ; 8399: d0 01       ..
     clc                                            ; 839b: 18          .

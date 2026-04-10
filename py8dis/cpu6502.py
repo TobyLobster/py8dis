@@ -1547,7 +1547,7 @@ class Cpu6502(cpu.Cpu):
                             value = memorymanager.get_u8_binary(binary_addr+1)
                             disassembly.comment_binary(binary_loc, "Carry is clear, so subtracting {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
                         elif (value == OPCODE_SBC_INDEXED_INDIRECT) or (value == OPCODE_SBC_ZERO_PAGE) or (value == OPCODE_SBC_ABSOLUTE) or (value == OPCODE_SBC_INDIRECT_INDEXED) or (value == OPCODE_SBC_ZERO_PAGE_COMMA_X) or (value == OPCODE_SBC_ABSOLUTE_COMMA_Y) or (value == OPCODE_SBC_ABSOLUTE_COMMA_X):
-                            disassembly.comment_binary(binary_loc, "-1 because carry is set", align=Align.INLINE, auto_generated=True)
+                            disassembly.comment_binary(binary_loc, "-1 because carry is clear", align=Align.INLINE, auto_generated=True)
 
                 # Find "ALWAYS branch" instructions
                 if isinstance(c, self.OpcodeConditionalBranch):

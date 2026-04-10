@@ -1718,7 +1718,7 @@ l8993 = sub_c8992+1
     jsr sub_c9332                                                     ; 8b67: 20 32 93     2.
     clc                                                               ; 8b6a: 18          .
     lda l002a                                                         ; 8b6b: a5 2a       .*
-    sbc l0440                                                         ; 8b6d: ed 40 04    .@.            ; -1 because carry is set
+    sbc l0440                                                         ; 8b6d: ed 40 04    .@.            ; -1 because carry is clear
     tay                                                               ; 8b70: a8          .
     lda l002b                                                         ; 8b71: a5 2b       .+
     sbc l0441                                                         ; 8b73: ed 41 04    .A.
@@ -8197,7 +8197,7 @@ l8993 = sub_c8992+1
     tay                                                               ; af33: a8          .
     clc                                                               ; af34: 18          .
     beq caf3d                                                         ; af35: f0 06       ..
-    sbc l0036                                                         ; af37: e5 36       .6             ; -1 because carry is set
+    sbc l0036                                                         ; af37: e5 36       .6             ; -1 because carry is clear
     bcs caf03                                                         ; af39: b0 c8       ..
     dey                                                               ; af3b: 88          .
     tya                                                               ; af3c: 98          .
@@ -9069,7 +9069,7 @@ l8993 = sub_c8992+1
 .cb45d
     lda l002a                                                         ; b45d: a5 2a       .*
     clc                                                               ; b45f: 18          .
-    sbc l0031                                                         ; b460: e5 31       .1             ; -1 because carry is set
+    sbc l0031                                                         ; b460: e5 31       .1             ; -1 because carry is clear
     lda l002b                                                         ; b462: a5 2b       .+
     sbc l0032                                                         ; b464: e5 32       .2
     bcc cb46f                                                         ; b466: 90 07       ..
@@ -10436,7 +10436,7 @@ l8993 = sub_c8992+1
 .cbc91
     clc                                                               ; bc91: 18          .
     lda l0004                                                         ; bc92: a5 04       ..
-    sbc l0036                                                         ; bc94: e5 36       .6             ; -1 because carry is set
+    sbc l0036                                                         ; bc94: e5 36       .6             ; -1 because carry is clear
     jsr sub_cbd5e                                                     ; bc96: 20 5e bd     ^.
     ldy l0036                                                         ; bc99: a4 36       .6
     beq cbca5                                                         ; bc9b: f0 08       ..
