@@ -10041,7 +10041,7 @@ collision_map_check_rows_available_loop
     bne not_found                                                     // 3d60: d0 23       .#
     tya                                                               // 3d62: 98          .
     sec                                                               // 3d63: 38          8
-    adc delta_x                                                       // 3d64: 65 05       e.
+    adc delta_x                                                       // 3d64: 65 05       e.             // +1 because carry is set
     tay                                                               // 3d66: a8          .
     lda (temp_addr_low),y                                             // 3d67: b1 1d       ..
     and #$40                                                          // 3d69: 29 40       )@

@@ -1716,7 +1716,7 @@ c8b63
     jsr sub_c9332                                                     // 8b67: 20 32 93     2.
     clc                                                               // 8b6a: 18          .
     lda l002a                                                         // 8b6b: a5 2a       .*
-    sbc l0440                                                         // 8b6d: ed 40 04    .@.
+    sbc l0440                                                         // 8b6d: ed 40 04    .@.            // -1 because carry is set
     tay                                                               // 8b70: a8          .
     lda l002b                                                         // 8b71: a5 2b       .+
     sbc l0441                                                         // 8b73: ed 41 04    .A.
@@ -2404,7 +2404,7 @@ c8f32
     sec                                                               // 8f32: 38          8
     iny                                                               // 8f33: c8          .
     tya                                                               // 8f34: 98          .
-    adc l0039                                                         // 8f35: 65 39       e9
+    adc l0039                                                         // 8f35: 65 39       e9             // +1 because carry is set
     sta l0039                                                         // 8f37: 85 39       .9
     bcc c8f3d                                                         // 8f39: 90 02       ..
     inc l003a                                                         // 8f3b: e6 3a       .:
@@ -3310,7 +3310,7 @@ loop_c9455
     sta (l003b),y                                                     // 945d: 91 3b       .;
     sec                                                               // 945f: 38          8
     tya                                                               // 9460: 98          .
-    adc l003b                                                         // 9461: 65 3b       e;
+    adc l003b                                                         // 9461: 65 3b       e;             // +1 because carry is set
     sta l003b                                                         // 9463: 85 3b       .;
     bcc c9469                                                         // 9465: 90 02       ..
     inc l003c                                                         // 9467: e6 3c       .<
@@ -5731,7 +5731,7 @@ ca1d4
     ldx l0037                                                         // a1db: a6 37       .7
     cpx #2                                                            // a1dd: e0 02       ..
     bne ca1ef                                                         // a1df: d0 0e       ..
-    adc l0048                                                         // a1e1: 65 48       eH
+    adc l0048                                                         // a1e1: 65 48       eH             // +1 because carry is set
     bmi ca220                                                         // a1e3: 30 3b       0;
     cmp #$0b                                                          // a1e5: c9 0b       ..
     bcc ca1ed                                                         // a1e7: 90 04       ..
@@ -8195,7 +8195,7 @@ caf2f
     tay                                                               // af33: a8          .
     clc                                                               // af34: 18          .
     beq caf3d                                                         // af35: f0 06       ..
-    sbc l0036                                                         // af37: e5 36       .6
+    sbc l0036                                                         // af37: e5 36       .6             // -1 because carry is set
     bcs caf03                                                         // af39: b0 c8       ..
     dey                                                               // af3b: 88          .
     tya                                                               // af3c: 98          .
@@ -8505,7 +8505,7 @@ loop_cb0f2
     cpx #$ff                                                          // b0f9: e0 ff       ..
     bne loop_cb0f2                                                    // b0fb: d0 f5       ..
     tya                                                               // b0fd: 98          .
-    adc l0004                                                         // b0fe: 65 04       e.
+    adc l0004                                                         // b0fe: 65 04       e.             // +1 because carry is set
     sta l0004                                                         // b100: 85 04       ..
     bcc cb106                                                         // b102: 90 02       ..
     inc l0005                                                         // b104: e6 05       ..
@@ -9067,7 +9067,7 @@ cb454
 cb45d
     lda l002a                                                         // b45d: a5 2a       .*
     clc                                                               // b45f: 18          .
-    sbc l0031                                                         // b460: e5 31       .1
+    sbc l0031                                                         // b460: e5 31       .1             // -1 because carry is set
     lda l002b                                                         // b462: a5 2b       .+
     sbc l0032                                                         // b464: e5 32       .2
     bcc cb46f                                                         // b466: 90 07       ..
@@ -10281,7 +10281,7 @@ cbbaf
     sta (l003d),y                                                     // bbc4: 91 3d       .=
     sec                                                               // bbc6: 38          8
     tya                                                               // bbc7: 98          .              // A=3
-    adc l003d                                                         // bbc8: 65 3d       e=
+    adc l003d                                                         // bbc8: 65 3d       e=             // +1 because carry is set
     sta l003d                                                         // bbca: 85 3d       .=
     bcc cbbd0                                                         // bbcc: 90 02       ..
     inc l003e                                                         // bbce: e6 3e       .>
@@ -10434,7 +10434,7 @@ sub_cbc83
 cbc91
     clc                                                               // bc91: 18          .
     lda l0004                                                         // bc92: a5 04       ..
-    sbc l0036                                                         // bc94: e5 36       .6
+    sbc l0036                                                         // bc94: e5 36       .6             // -1 because carry is set
     jsr sub_cbd5e                                                     // bc96: 20 5e bd     ^.
     ldy l0036                                                         // bc99: a4 36       .6
     beq cbca5                                                         // bc9b: f0 08       ..
@@ -10640,7 +10640,7 @@ loop_cbd88
     iny                                                               // bd91: c8          .
     tya                                                               // bd92: 98          .
     sec                                                               // bd93: 38          8
-    adc l0038                                                         // bd94: 65 38       e8
+    adc l0038                                                         // bd94: 65 38       e8             // +1 because carry is set
     sta l0038                                                         // bd96: 85 38       .8
     bcc cbd86                                                         // bd98: 90 ec       ..
     inc l0039                                                         // bd9a: e6 39       .9

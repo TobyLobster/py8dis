@@ -24,9 +24,24 @@ memory_binary = memorymanager.memory_binary
 OPCODE_JSR = 0x20
 OPCODE_JMP = 0x4c
 OPCODE_RTS = 0x60
-OPCODE_ADC_IMMEDIATE = 0x69
-OPCODE_SBC_IMMEDIATE = 0xe9
 
+OPCODE_ADC_INDEXED_INDIRECT  = 0x61
+OPCODE_ADC_ZERO_PAGE         = 0x65
+OPCODE_ADC_IMMEDIATE         = 0x69
+OPCODE_ADC_ABSOLUTE          = 0x6d
+OPCODE_ADC_INDIRECT_INDEXED  = 0x71
+OPCODE_ADC_ZERO_PAGE_COMMA_X = 0x75
+OPCODE_ADC_ABSOLUTE_COMMA_Y  = 0x79
+OPCODE_ADC_ABSOLUTE_COMMA_X  = 0x7d
+
+OPCODE_SBC_INDEXED_INDIRECT  = 0xe1
+OPCODE_SBC_ZERO_PAGE         = 0xe5
+OPCODE_SBC_IMMEDIATE         = 0xe9
+OPCODE_SBC_ABSOLUTE          = 0xed
+OPCODE_SBC_INDIRECT_INDEXED  = 0xf1
+OPCODE_SBC_ZERO_PAGE_COMMA_X = 0xf5
+OPCODE_SBC_ABSOLUTE_COMMA_Y  = 0xf9
+OPCODE_SBC_ABSOLUTE_COMMA_X  = 0xfd
 
 class SubConst(object):
     """Data about a constant substitution.
@@ -1516,16 +1531,23 @@ class Cpu6502(cpu.Cpu):
                 # Check for ADC# or SBC# with carry in it's opposite to normal state: auto comment it
                 if isinstance(c, trace.cpu.Opcode):
                     value = memorymanager.get_u8_binary(binary_addr)
-                    if value == OPCODE_ADC_IMMEDIATE and prev_state and prev_state.pessimistic['c'] == True:
+                    if prev_state and prev_state.pessimistic['c'] == True:
                         move_id = movemanager.move_id_for_binary_addr[binary_addr]
                         binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
-                        value = memorymanager.get_u8_binary(binary_addr+1)
-                        disassembly.comment_binary(binary_loc, "Carry is set, so adding {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
-                    elif value == OPCODE_SBC_IMMEDIATE and prev_state and prev_state.pessimistic['c'] == False:
+                        if value == OPCODE_ADC_IMMEDIATE:
+                            value = memorymanager.get_u8_binary(binary_addr+1)
+                            disassembly.comment_binary(binary_loc, "Carry is set, so adding {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
+                        elif (value == OPCODE_ADC_INDEXED_INDIRECT) or (value == OPCODE_ADC_ZERO_PAGE) or (value == OPCODE_ADC_ABSOLUTE) or (value == OPCODE_ADC_INDIRECT_INDEXED) or (value == OPCODE_ADC_ZERO_PAGE_COMMA_X) or (value == OPCODE_ADC_ABSOLUTE_COMMA_Y) or (value == OPCODE_ADC_ABSOLUTE_COMMA_X):
+                            disassembly.comment_binary(binary_loc, "+1 because carry is set", align=Align.INLINE, auto_generated=True)
+
+                    elif prev_state and prev_state.pessimistic['c'] == False:
                         move_id = movemanager.move_id_for_binary_addr[binary_addr]
                         binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
-                        value = memorymanager.get_u8_binary(binary_addr+1)
-                        disassembly.comment_binary(binary_loc, "Carry is clear, so subtracting {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
+                        if value == OPCODE_SBC_IMMEDIATE:
+                            value = memorymanager.get_u8_binary(binary_addr+1)
+                            disassembly.comment_binary(binary_loc, "Carry is clear, so subtracting {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
+                        elif (value == OPCODE_SBC_INDEXED_INDIRECT) or (value == OPCODE_SBC_ZERO_PAGE) or (value == OPCODE_SBC_ABSOLUTE) or (value == OPCODE_SBC_INDIRECT_INDEXED) or (value == OPCODE_SBC_ZERO_PAGE_COMMA_X) or (value == OPCODE_SBC_ABSOLUTE_COMMA_Y) or (value == OPCODE_SBC_ABSOLUTE_COMMA_X):
+                            disassembly.comment_binary(binary_loc, "-1 because carry is set", align=Align.INLINE, auto_generated=True)
 
                 # Find "ALWAYS branch" instructions
                 if isinstance(c, self.OpcodeConditionalBranch):

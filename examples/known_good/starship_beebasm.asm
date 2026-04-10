@@ -2488,7 +2488,7 @@ osbyte                                  = &fff4
     txa                                                               ; 2f20: 8a          .   :1e20[1]
     ldy #2                                                            ; 2f21: a0 02       ..  :1e21[1]
     sec                                                               ; 2f23: 38          8   :1e23[1]
-    adc (temp0_low),y                                                 ; 2f24: 71 80       q.  :1e24[1]
+    adc (temp0_low),y                                                 ; 2f24: 71 80       q.  :1e24[1]   ; +1 because carry is set
     sta (temp0_low),y                                                 ; 2f26: 91 80       ..  :1e26[1]
     jsr plot_starship_explosion_piece                                 ; 2f28: 20 3d 1e     =. :1e28[1]
 .move_to_next_starship_explosion_piece

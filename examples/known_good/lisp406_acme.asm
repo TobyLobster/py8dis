@@ -680,7 +680,7 @@ MORSP
     bne MORSP                                      ; 837e: d0 f8       ..
     sec                                            ; 8380: 38          8              ; Add TVSEXT + 2 to stack
     lda SP                                         ; 8381: a5 7e       .~             ; pointer to POP the stack
-    adc TVSEXT                                     ; 8383: 65 33       e3
+    adc TVSEXT                                     ; 8383: 65 33       e3             ; +1 because carry is set
     bcs TVF                                        ; 8385: b0 05       ..
     adc #1                                         ; 8387: 69 01       i.
     bcc TVG                                        ; 8389: 90 05       ..
@@ -702,7 +702,7 @@ TVG
 STACK
     lda SP                                         ; 8393: a5 7e       .~
     clc                                            ; 8395: 18          .
-    sbc TVSEXT                                     ; 8396: e5 33       .3
+    sbc TVSEXT                                     ; 8396: e5 33       .3             ; -1 because carry is set
     tax                                            ; 8398: aa          .
     bne EXTRAM                                     ; 8399: d0 01       ..
     clc                                            ; 839b: 18          .
@@ -4727,7 +4727,7 @@ STCOLL
     lda (CELL),y                                   ; 9bc5: b1 7c       .|
 BOWDUN
     sec                                            ; 9bc7: 38          8
-    adc CELL                                       ; 9bc8: 65 7c       e|
+    adc CELL                                       ; 9bc8: 65 7c       e|             ; +1 because carry is set
     sta CELL                                       ; 9bca: 85 7c       .|
     bcc SPOCK                                      ; 9bcc: 90 02       ..
     inc CELL+1                                     ; 9bce: e6 7d       .}
@@ -4899,7 +4899,7 @@ ASP
     pla                                            ; 9ccc: 68          h
 NOLEAP
     sec                                            ; 9ccd: 38          8
-    adc CELL                                       ; 9cce: 65 7c       e|
+    adc CELL                                       ; 9cce: 65 7c       e|             ; +1 because carry is set
     sta CELL                                       ; 9cd0: 85 7c       .|
     bcc LUCK                                       ; 9cd2: 90 02       ..
     inc CELL+1                                     ; 9cd4: e6 7d       .}

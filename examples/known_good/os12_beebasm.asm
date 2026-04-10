@@ -2111,7 +2111,7 @@ tube_data_register_3                    = &fee5
     jsr sub_cea11                                                     ; c8cc: 20 11 ea     ..
     tya                                                               ; c8cf: 98          .
     sec                                                               ; c8d0: 38          8
-    adc l0360                                                         ; c8d1: 6d 60 03    m`.
+    adc l0360                                                         ; c8d1: 6d 60 03    m`.            ; +1 because carry is set
     tay                                                               ; c8d4: a8          .
     txa                                                               ; c8d5: 8a          .
     adc #&10                                                          ; c8d6: 69 10       i.
@@ -2222,7 +2222,7 @@ tube_data_register_3                    = &fee5
     cpy #7                                                            ; c95e: c0 07       ..
     bcc cc985                                                         ; c960: 90 23       .#
     bne cc967                                                         ; c962: d0 03       ..
-    adc l0290                                                         ; c964: 6d 90 02    m..
+    adc l0290                                                         ; c964: 6d 90 02    m..            ; +1 because carry is set
 ; &c967 referenced 1 time by &c962
 .cc967
     cpy #8                                                            ; c967: c0 08       ..
@@ -2473,7 +2473,7 @@ tube_data_register_3                    = &fee5
     lsr a                                                             ; caff: 4a          J
     lsr a                                                             ; cb00: 4a          J
     sec                                                               ; cb01: 38          8
-    adc l0269                                                         ; cb02: 6d 69 02    mi.
+    adc l0269                                                         ; cb02: 6d 69 02    mi.            ; +1 because carry is set
     adc l030b                                                         ; cb05: 6d 0b 03    m..
     cmp l0309                                                         ; cb08: cd 09 03    ...
     bcc ccb19                                                         ; cb0b: 90 0c       ..
@@ -4089,7 +4089,7 @@ tube_data_register_3                    = &fee5
     bne cd4f7                                                         ; d4e3: d0 12       ..
     sec                                                               ; d4e5: 38          8
     txa                                                               ; d4e6: 8a          .
-    adc l0361                                                         ; d4e7: 6d 61 03    ma.
+    adc l0361                                                         ; d4e7: 6d 61 03    ma.            ; +1 because carry is set
     bcc cd4f0                                                         ; d4ea: 90 04       ..
     inc l00db                                                         ; d4ec: e6 db       ..
     bpl cd4f7                                                         ; d4ee: 10 07       ..
@@ -4137,7 +4137,7 @@ tube_data_register_3                    = &fee5
     bne cd53d                                                         ; d529: d0 12       ..
     sec                                                               ; d52b: 38          8
     txa                                                               ; d52c: 8a          .
-    adc l0361                                                         ; d52d: 6d 61 03    ma.
+    adc l0361                                                         ; d52d: 6d 61 03    ma.            ; +1 because carry is set
     bcc cd536                                                         ; d530: 90 04       ..
     inc l00db                                                         ; d532: e6 db       ..
     bpl cd53d                                                         ; d534: 10 07       ..
