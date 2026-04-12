@@ -289,12 +289,13 @@ oscli                                           = $fff7
 ; $8000 referenced 1 time by $04e2[1]
 pydis_start
 rom_header
-language_entry
-l8001 = rom_header+1
-l8002 = rom_header+2
-    !byte 0, 0, 0                                                     ; 8000: 00 00 00    ...
+    !byte 0                                                           ; 8000: 00          .
 ; $8001 referenced 1 time by $04e7[1]
+l8001
+    !byte 0                                                           ; 8001: 00          .
 ; $8002 referenced 1 time by $04ec[1]
+l8002
+    !byte 0                                                           ; 8002: 00          .
 
 ; $8003 referenced 1 time by $04f1[1]
 service_entry
@@ -307,16 +308,16 @@ rom_type
     !byte $82                                                         ; 8006: 82          .
 ; $8007 referenced 1 time by $04de[1]
 copyright_offset
-    !byte copyright - rom_header                                      ; 8007: 11          .
+    !byte copyright - rom_header - 1                                  ; 8007: 11          .
 binary_version
     !byte $7b                                                         ; 8008: 7b          {
 title
     !text "DFS"                                                       ; 8009: 44 46 53    DFS
-version
     !byte 0                                                           ; 800c: 00          .
+version
     !text "2.26"                                                      ; 800d: 32 2e 32... 2.2
-copyright
     !byte 0                                                           ; 8011: 00          .
+copyright
     !text "(C)1985 Acorn", 0                                          ; 8012: 28 43 29... (C)
 
 ; $8020 referenced 1 time by $9575
@@ -4994,7 +4995,7 @@ l9aec
     !byte 0                                                           ; 9b0e: 00          .
 ; $9b0f referenced 1 time by $97c1
 l9b0f
-    !text "1", $5c, "o"                                               ; 9b0f: 31 5c 6f    1\o
+    !text "1\\o"                                                      ; 9b0f: 31 5c 6f    1\o
     !byte $fd, $6f, $82, $50, $4b, $9a                                ; 9b12: fd 6f 82... .o.
 ; $9b18 referenced 1 time by $97bd
 l9b18
@@ -11108,8 +11109,8 @@ pydis_end
 !if (>tube_evntv_handler) != $06 {
     !error "Assertion failed: >tube_evntv_handler == $06"
 }
-!if (copyright - rom_header) != $11 {
-    !error "Assertion failed: copyright - rom_header == $11"
+!if (copyright - rom_header - 1) != $11 {
+    !error "Assertion failed: copyright - rom_header - 1 == $11"
 }
 !if (l00b3 - 9) != $aa {
     !error "Assertion failed: l00b3 - 9 == $aa"
@@ -12307,7 +12308,6 @@ pydis_end
 ;     l9b31:                                              1
 ;     l9b3a:                                              1
 ;     l9b43:                                              1
-;     language_entry:                                     1
 ;     lb075:                                              1
 ;     lb175:                                              1
 ;     lb283:                                              1

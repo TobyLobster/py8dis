@@ -102,7 +102,7 @@ def pre_trace_writing_to_vector(p):
     if addr2 == (addr1 + 1) and ((addr1 & 1) == 0):
         if addr1 in vectors:
             new_addr = nn1 + 256 * nn2
-            
+
             # Get a label name if it already exists (just choose the first explicit name for lack of a better choice)
             if new_addr in labelmanager.labels and labelmanager.labels[new_addr].explicit_names:
                 for move_id, name_list in labelmanager.labels[new_addr].explicit_names.items():
@@ -128,7 +128,7 @@ def pre_trace_writing_to_vector(p):
             # Get addresses of nn1 and nn2
             nn1_addr_runtime = movemanager.b2r(nn1_addr)
             nn2_addr_runtime = movemanager.b2r(nn2_addr)
-        
+
             expr(nn1_addr_runtime, make_lo(label_name))
             expr(nn2_addr_runtime, make_hi(label_name))
 
@@ -1622,7 +1622,7 @@ def oswrch_hook(runtime_addr, state, subroutine):
     a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
     if a_addr_pessimistic is not None:
         a = " " + str(memory_binary[a_addr_pessimistic])
-        
+
         # If OSASCI with A=13, then OSNEWL is called instead
         if subroutine.label_name == "osasci" and memory_binary[a_addr_pessimistic] == 13:
             osnewl_hook(runtime_addr, state, subroutine)
@@ -3009,26 +3009,23 @@ def is_sideways_rom():
     def check_entry(runtime_addr, entry_type):
         runtime_addr = RuntimeAddr(runtime_addr)
         jmp_abs_opcode = 0x4c
-        label(runtime_addr, entry_type + "_entry")
         if memory[runtime_addr] == jmp_abs_opcode:
+            label(runtime_addr, entry_type + "_entry")
             entry(runtime_addr)
             label(memorymanager.get_u16_runtime(runtime_addr + 1), entry_type + "_handler")
-        else:
-            byte(runtime_addr, 3)
     check_entry(0x8000, "language")
     check_entry(0x8003, "service")
     label(0x8006, "rom_type")
     label(0x8007, "copyright_offset")
     copyright_offset = memory[0x8007]
-    auto_expr(0x8007, "copyright - rom_header")
+    auto_expr(0x8007, "copyright - rom_header - 1")
     label(0x8008, "binary_version")
     label(0x8009, "title")
-    nul_at_title_end = stringz(0x8009, True) - 1
-    if nul_at_title_end < (0x8000 + copyright_offset):
-        label(nul_at_title_end, "version")
-        stringz(nul_at_title_end + 1, True)
-    label(0x8000 + copyright_offset, "copyright")
-    
+    version_address = stringz(0x8009, True)
+    if version_address < (0x8000 + copyright_offset + 1):
+        label(version_address, "version")
+    label(0x8000 + copyright_offset + 1, "copyright")
+
     if not classification.is_classified(0x8000 + copyright_offset + 1):
         stringz(0x8000 + copyright_offset + 1)
     # ENHANCE: We could recognise tube transfer/relocation data in header

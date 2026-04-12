@@ -165,9 +165,7 @@ class Acme(assembler.Assembler):
         # from an integer, or None if not possible
         quote = "'"
         if n == ord('\\'):
-            return None
-        if n == ord('"'):
-            return None
+            return quote + "\\\\" + quote
         if n == ord('\''):
             return quote + "\\'" + quote
         if utils.isprint(n):
@@ -178,7 +176,7 @@ class Acme(assembler.Assembler):
         # When composing a literal string, this returns a character string
         # from an integer, or None if not possible
         if n == ord('\\'):
-            return None
+            return "\\\\"
         if n == ord('"'):
             return None
         if utils.isprint(n):

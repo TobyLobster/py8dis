@@ -289,12 +289,13 @@ oscli                                           = &fff7
 ; &8000 referenced 1 time by &04e2[1]
 .pydis_start
 .rom_header
-.language_entry
-l8001 = rom_header+1
-l8002 = rom_header+2
-    equb 0, 0, 0                                                      ; 8000: 00 00 00    ...
+    equb 0                                                            ; 8000: 00          .
 ; &8001 referenced 1 time by &04e7[1]
+.l8001
+    equb 0                                                            ; 8001: 00          .
 ; &8002 referenced 1 time by &04ec[1]
+.l8002
+    equb 0                                                            ; 8002: 00          .
 
 ; &8003 referenced 1 time by &04f1[1]
 .service_entry
@@ -307,16 +308,16 @@ l8004 = service_entry+1
     equb &82                                                          ; 8006: 82          .
 ; &8007 referenced 1 time by &04de[1]
 .copyright_offset
-    equb copyright - rom_header                                       ; 8007: 11          .
+    equb copyright - rom_header - 1                                   ; 8007: 11          .
 .binary_version
     equb &7b                                                          ; 8008: 7b          {
 .title
     equs "DFS"                                                        ; 8009: 44 46 53    DFS
-.version
     equb 0                                                            ; 800c: 00          .
+.version
     equs "2.26"                                                       ; 800d: 32 2e 32... 2.2
-.copyright
     equb 0                                                            ; 8011: 00          .
+.copyright
     equs "(C)1985 Acorn", 0                                           ; 8012: 28 43 29... (C)
 
 ; &8020 referenced 1 time by &9575
@@ -11014,7 +11015,7 @@ lb6ce = sub_cb6cd+1
     assert &10 == >l1000
     assert &00 == >tube_brkv_handler
     assert &06 == >tube_evntv_handler
-    assert &11 == copyright - rom_header
+    assert &11 == copyright - rom_header - 1
     assert &51 == jump_address_low
     assert &aa == l00b3 - 9
     assert &b4 == l00bc - 8
@@ -12120,7 +12121,6 @@ save pydis_start, pydis_end
 ;     l9b31:                                              1
 ;     l9b3a:                                              1
 ;     l9b43:                                              1
-;     language_entry:                                     1
 ;     lb075:                                              1
 ;     lb175:                                              1
 ;     lb283:                                              1

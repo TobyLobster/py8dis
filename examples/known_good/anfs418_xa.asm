@@ -312,12 +312,13 @@ oscli                                   = $fff7
 // $8000 referenced 1 time by $bfe6
 pydis_start
 rom_header
-language_entry
-l8001 = rom_header+1
-l8002 = rom_header+2
-    .byt 0, $42, $43                                                  // 8000: 00 42 43    .BC
+    .byt 0                                                            // 8000: 00          .
 // $8001 referenced 1 time by $bfeb
+l8001
+    .byt $42                                                          // 8001: 42          B
 // $8002 referenced 1 time by $bff0
+l8002
+    .byt $43                                                          // 8002: 43          C
 
 // $8003 referenced 1 time by $bff5
 service_entry
@@ -330,15 +331,15 @@ rom_type
     .byt $82                                                          // 8006: 82          .
 // $8007 referenced 1 time by $bfe2
 copyright_offset
-    .byt copyright - rom_header                                       // 8007: 19          .
+    .byt copyright - rom_header - 1                                   // 8007: 19          .
 binary_version
     .byt 4                                                            // 8008: 04          .
 title
     .asc "Acorn ANFS 4.18"                                            // 8009: 41 63 6f... Aco
-version
     .byt 0                                                            // 8018: 00          .
-copyright
+version
     .byt 0                                                            // 8019: 00          .
+copyright
     .asc "(C)1985 Acorn", 0                                           // 801a: 28 43 29... (C)
 
 sub_c8028
@@ -11751,7 +11752,6 @@ pydis_end
 //     lad43:                                    1
 //     laefb:                                    1
 //     laeff:                                    1
-//     language_entry:                           1
 //     lb13f:                                    1
 //     lb194:                                    1
 //     lbc94:                                    1

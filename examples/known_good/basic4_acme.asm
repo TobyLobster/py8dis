@@ -198,16 +198,16 @@ service_entry
 rom_type
     !byte $e2                                                         ; 8006: e2          .
 copyright_offset
-    !byte copyright - rom_header                                      ; 8007: 13          .
+    !byte copyright - rom_header - 1                                  ; 8007: 13          .
 binary_version
     !byte 7                                                           ; 8008: 07          .
 title
     !text "BASIC"                                                     ; 8009: 42 41 53... BAS
-version
     !byte 0                                                           ; 800e: 00          .
+version
     !text "4r32"                                                      ; 800f: 34 72 33... 4r3
-copyright
     !byte 0                                                           ; 8013: 00          .
+copyright
     !text "(C)1988 Acorn", $0a, $0d, 0                                ; 8014: 28 43 29... (C)
     !byte 0, $b8, $28, $80, 0, $c0, $82, 0                            ; 8024: 00 b8 28... ..(
 
@@ -11070,8 +11070,8 @@ pydis_end
 !if (cb9ad) != $b9ad {
     !error "Assertion failed: cb9ad == $b9ad"
 }
-!if (copyright - rom_header) != $13 {
-    !error "Assertion failed: copyright - rom_header == $13"
+!if (copyright - rom_header - 1) != $13 {
+    !error "Assertion failed: copyright - rom_header - 1 == $13"
 }
 !if (l0600 - 1) != $05ff {
     !error "Assertion failed: l0600 - 1 == $05ff"

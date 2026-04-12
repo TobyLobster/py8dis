@@ -289,12 +289,13 @@ oscli                                           = $fff7
 // $8000 referenced 1 time by $04e2[1]
 pydis_start
 rom_header
-language_entry
-l8001 = rom_header+1
-l8002 = rom_header+2
-    .byt 0, 0, 0                                                      // 8000: 00 00 00    ...
+    .byt 0                                                            // 8000: 00          .
 // $8001 referenced 1 time by $04e7[1]
+l8001
+    .byt 0                                                            // 8001: 00          .
 // $8002 referenced 1 time by $04ec[1]
+l8002
+    .byt 0                                                            // 8002: 00          .
 
 // $8003 referenced 1 time by $04f1[1]
 service_entry
@@ -307,16 +308,16 @@ rom_type
     .byt $82                                                          // 8006: 82          .
 // $8007 referenced 1 time by $04de[1]
 copyright_offset
-    .byt copyright - rom_header                                       // 8007: 11          .
+    .byt copyright - rom_header - 1                                   // 8007: 11          .
 binary_version
     .byt $7b                                                          // 8008: 7b          {
 title
     .asc "DFS"                                                        // 8009: 44 46 53    DFS
-version
     .byt 0                                                            // 800c: 00          .
+version
     .asc "2.26"                                                       // 800d: 32 2e 32... 2.2
-copyright
     .byt 0                                                            // 8011: 00          .
+copyright
     .asc "(C)1985 Acorn", 0                                           // 8012: 28 43 29... (C)
 
 // $8020 referenced 1 time by $9575
@@ -11919,7 +11920,6 @@ pydis_end
 //     l9b31:                                              1
 //     l9b3a:                                              1
 //     l9b43:                                              1
-//     language_entry:                                     1
 //     lb075:                                              1
 //     lb175:                                              1
 //     lb283:                                              1

@@ -196,16 +196,16 @@ service_entry
 rom_type
     .byt $e2                                                          // 8006: e2          .
 copyright_offset
-    .byt copyright - rom_header                                       // 8007: 13          .
+    .byt copyright - rom_header - 1                                   // 8007: 13          .
 binary_version
     .byt 7                                                            // 8008: 07          .
 title
     .asc "BASIC"                                                      // 8009: 42 41 53... BAS
-version
     .byt 0                                                            // 800e: 00          .
+version
     .asc "4r32"                                                       // 800f: 34 72 33... 4r3
-copyright
     .byt 0                                                            // 8013: 00          .
+copyright
     .asc "(C)1988 Acorn", $0a, $0d, 0                                 // 8014: 28 43 29... (C)
     .byt 0, $b8, $28, $80, 0, $c0, $82, 0                             // 8024: 00 b8 28... ..(
 

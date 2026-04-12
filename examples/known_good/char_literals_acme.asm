@@ -37,7 +37,7 @@ pydis_start
     lda #$1f                                                          ; 203e: a9 1f       ..
     lda #' '                                                          ; 2040: a9 20       .
     lda #'!'                                                          ; 2042: a9 21       .!
-    lda #$22                                                          ; 2044: a9 22       ."
+    lda #'"'                                                          ; 2044: a9 22       ."
     lda #'#'                                                          ; 2046: a9 23       .#
     lda #'$'                                                          ; 2048: a9 24       .$
     lda #'%'                                                          ; 204a: a9 25       .%
@@ -95,7 +95,7 @@ pydis_start
     lda #'Y'                                                          ; 20b2: a9 59       .Y
     lda #'Z'                                                          ; 20b4: a9 5a       .Z
     lda #'['                                                          ; 20b6: a9 5b       .[
-    lda #$5c                                                          ; 20b8: a9 5c       .\
+    lda #'\\'                                                         ; 20b8: a9 5c       .\
     lda #']'                                                          ; 20ba: a9 5d       .]
     lda #'^'                                                          ; 20bc: a9 5e       .^
     lda #'_'                                                          ; 20be: a9 5f       ._

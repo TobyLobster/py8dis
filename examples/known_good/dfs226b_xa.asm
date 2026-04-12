@@ -298,12 +298,13 @@ pydis_start
 // Sideways ROM header
 // $2000 referenced 1 time by $04e2[2]
 rom_header
-language_entry
-l8001 = rom_header+1
-l8002 = rom_header+2
-    .byt 0, 0, 0                                                      // 2000: 00 00 00    ... :8000[1]
+    .byt 0                                                            // 2000: 00          .   :8000[1]
 // $2001 referenced 1 time by $04e7[2]
+l8001
+    .byt 0                                                            // 2001: 00          .   :8001[1]
 // $2002 referenced 1 time by $04ec[2]
+l8002
+    .byt 0                                                            // 2002: 00          .   :8002[1]
 
 // $2003 referenced 1 time by $04f1[2]
 service_entry
@@ -316,16 +317,16 @@ rom_type
     .byt $82                                                          // 2006: 82          .   :8006[1]
 // $2007 referenced 1 time by $04de[2]
 copyright_offset
-    .byt copyright - rom_header                                       // 2007: 11          .   :8007[1]
+    .byt copyright - rom_header - 1                                   // 2007: 11          .   :8007[1]
 binary_version
     .byt $7b                                                          // 2008: 7b          {   :8008[1]
 title
     .asc "DFS"                                                        // 2009: 44 46 53    DFS :8009[1]
-version
     .byt 0                                                            // 200c: 00          .   :800c[1]
+version
     .asc "2.26"                                                       // 200d: 32 2e 32... 2.2 :800d[1]
-copyright
     .byt 0                                                            // 2011: 00          .   :8011[1]
+copyright
     .asc "(C)1985 Acorn", 0                                           // 2012: 28 43 29... (C) :8012[1]
 
 // $2020 referenced 1 time by $9575[1]
@@ -11902,7 +11903,6 @@ pydis_end
 //     l9b31:                                              1
 //     l9b3a:                                              1
 //     l9b43:                                              1
-//     language_entry:                                     1
 //     lb075:                                              1
 //     lb175:                                              1
 //     lb283:                                              1
