@@ -3080,11 +3080,11 @@ l8004 = service_entry+1
     beq nmi_XXX2                                                      ; 2fda: f0 2f       ./  :0d08[5]
 ; &2fdb referenced 4 times by &0d4d[5], &8e4a[1], &8eb4[1], &8ebb[1]
     and #&fc                                                          ; 2fdc: 29 fc       ).  :0d0a[5]
-    bne l0d12                                                         ; 2fde: d0 04       ..  :0d0c[5]
+    bne c0d12                                                         ; 2fde: d0 04       ..  :0d0c[5]
     dec l00a5                                                         ; 2fe0: c6 a5       ..  :0d0e[5]
     bne nmi_lda_zp                                                    ; 2fe2: d0 04       ..  :0d10[5]
 ; &2fe4 referenced 1 time by &0d0c[5]
-.l0d12
+.c0d12
     sta l00a2                                                         ; 2fe4: 85 a2       ..  :0d12[5]
     pla                                                               ; 2fe6: 68          h   :0d14[5]
     rti                                                               ; 2fe7: 40          @   :0d15[5]
@@ -3099,12 +3099,12 @@ l8004 = service_entry+1
 .nmi_cmp_imm_or_bcs
     cmp #1                                                            ; 2fea: c9 01       ..  :0d18[5]
 ; &2feb referenced 1 time by &905c[1]
-    bne l0d26                                                         ; 2fec: d0 0a       ..  :0d1a[5]
+    bne c0d26                                                         ; 2fec: d0 0a       ..  :0d1a[5]
     lda l00a1                                                         ; 2fee: a5 a1       ..  :0d1c[5]
     ror a                                                             ; 2ff0: 6a          j   :0d1e[5]
-.l0d1f
-nmi_XXX5 = l0d1f+1
-    bcc l0d26                                                         ; 2ff1: 90 05       ..  :0d1f[5]
+.sub_c0d1f
+nmi_XXX5 = sub_c0d1f+1
+    bcc c0d26                                                         ; 2ff1: 90 05       ..  :0d1f[5]
 ; One patched variant of the code transfers control to nmi_XXX5, which is the
 ;     second byte of the following bcc instruction. That is always &05, which is
 ;     ORA #. XXX: correct?
@@ -3115,14 +3115,14 @@ nmi_XXX5 = l0d1f+1
 ; &2ff4 referenced 2 times by &8d6e[1], &8fa7[1]
     sta nmi_lda_immXXX3+1                                             ; 2ff5: 8d 4c 0d    .L. :0d23[5]
 ; &2ff8 referenced 2 times by &0d1a[5], &0d1f[5]
-.l0d26
+.c0d26
     inc l00cf                                                         ; 2ff8: e6 cf       ..  :0d26[5]
     lda l00cf                                                         ; 2ffa: a5 cf       ..  :0d28[5]
 ; &2ffc referenced 1 time by &0d30[5]
-.l0d2a
+.loop_c0d2a
     sta fdc_1770_sector                                               ; 2ffc: 8d 86 fe    ... :0d2a[5]
     cmp fdc_1770_sector                                               ; 2fff: cd 86 fe    ... :0d2d[5]
-    bne l0d2a                                                         ; 3002: d0 f8       ..  :0d30[5]
+    bne loop_c0d2a                                                    ; 3002: d0 f8       ..  :0d30[5]
     lda l00a7                                                         ; 3004: a5 a7       ..  :0d32[5]
     sta fdc_8271_data_or_1770_command_or_status                       ; 3006: 8d 84 fe    ... :0d34[5]
     pla                                                               ; 3009: 68          h   :0d37[5]
@@ -3146,14 +3146,14 @@ nmi_XXX5 = l0d1f+1
 ; &3019 referenced 2 times by &0d42[5], &0d42[6]
 .nmi_XXX7
     dec l00a6                                                         ; 3019: c6 a6       ..  :0d47[5]
-    bne l0d50                                                         ; 301b: d0 05       ..  :0d49[5]
+    bne c0d50                                                         ; 301b: d0 05       ..  :0d49[5]
 ; The operand of this lda is modified at runtime.
 .nmi_lda_immXXX3
     lda #nmi_XXX2-(nmi_beq+2)                                         ; 301d: a9 2f       ./  :0d4b[5]
 ; &301e referenced 3 times by &0d23[5], &8d71[1], &8eb1[1]
     sta nmi_beq+1                                                     ; 301f: 8d 09 0d    ... :0d4d[5]
 ; &3022 referenced 1 time by &0d49[5]
-.l0d50
+.c0d50
     pla                                                               ; 3022: 68          h   :0d50[5]
     rti                                                               ; 3023: 40          @   :0d51[5]
 
@@ -3258,14 +3258,14 @@ nmi_XXX5 = l0d1f+1
     lda fdc_8271_data_or_1770_command_or_status                       ; 3068: ad 84 fe    ... :0d01[7]
     and #&1b                                                          ; 306b: 29 1b       ).  :0d04[7]
     cmp #3                                                            ; 306d: c9 03       ..  :0d06[7]
-    bne l0d0f                                                         ; 306f: d0 05       ..  :0d08[7]
+    bne c0d0f                                                         ; 306f: d0 05       ..  :0d08[7]
     lda fdc_1770_data                                                 ; 3071: ad 87 fe    ... :0d0a[7]
 ; The operand of this bcs is modified at runtime
 .nmi_bcs
     bcs nmi_XXX21                                                     ; 3074: b0 26       .&  :0d0d[7]
 ; &3075 referenced 1 time by &0d30[7]
 ; &3076 referenced 1 time by &0d08[7]
-.l0d0f
+.c0d0f
     and #&fc                                                          ; 3076: 29 fc       ).  :0d0f[7]
     sta l00a2                                                         ; 3078: 85 a2       ..  :0d11[7]
     pla                                                               ; 307a: 68          h   :0d13[7]
@@ -3285,10 +3285,10 @@ nmi_XXX5 = l0d1f+1
     bne nmi_XXX23                                                     ; 308d: d0 0b       ..  :0d26[7]
     lda #nmi_XXX22-(nmi_bcs+2)                                        ; 308f: a9 77       .w  :0d28[7]
     dec l00a5                                                         ; 3091: c6 a5       ..  :0d2a[7]
-    bne l0d30                                                         ; 3093: d0 02       ..  :0d2c[7]
+    bne c0d30                                                         ; 3093: d0 02       ..  :0d2c[7]
     lda #nmi_XXX23-(nmi_bcs+2)                                        ; 3095: a9 24       .$  :0d2e[7]
 ; &3097 referenced 13 times by &0d2c[7], &0d3f[7], &0d48[7], &0d4c[7], &0d56[7], &0d5a[7], &0d62[7], &0d6a[7], &0d7e[7], &0d84[7], &0d88[7], &0d8c[7], &0d92[7]
-.l0d30
+.c0d30
     sta nmi_bcs+1                                                     ; 3097: 8d 0e 0d    ... :0d30[7]
 ; &309a referenced 5 times by &0d22[7], &0d26[7], &0d3b[7], &0d72[7], &0d8e[7]
 .nmi_XXX23
@@ -3298,31 +3298,31 @@ nmi_XXX5 = l0d1f+1
 ; &309c referenced 1 time by &0d0d[7]
 .nmi_XXX21
     cmp #&fe                                                          ; 309c: c9 fe       ..  :0d35[7]
-    beq l0d3d                                                         ; 309e: f0 04       ..  :0d37[7]
+    beq sub_c0d3d                                                     ; 309e: f0 04       ..  :0d37[7]
     cmp #&ce                                                          ; 30a0: c9 ce       ..  :0d39[7]
     bne nmi_XXX23                                                     ; 30a2: d0 f6       ..  :0d3b[7]
-.l0d3d
+.sub_c0d3d
     lda #nmi_XXX10-(nmi_bcs+2)                                        ; 30a4: a9 32       .2  :0d3d[7]
-    bne l0d30                                                         ; 30a6: d0 ef       ..  :0d3f[7]
+    bne c0d30                                                         ; 30a6: d0 ef       ..  :0d3f[7]
 .nmi_XXX10
     sbc fdc_1770_data                                                 ; 30a8: ed 87 fe    ... :0d41[7]
     sta l00b5                                                         ; 30ab: 85 b5       ..  :0d44[7]
     lda #nmi_XXX11-(nmi_bcs+2)                                        ; 30ad: a9 3b       .;  :0d46[7]
-    bne l0d30                                                         ; 30af: d0 e6       ..  :0d48[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30af: d0 e6       ..  :0d48[7]   ; ALWAYS branch
 
 .nmi_XXX11
     lda #nmi_XXX12-(nmi_bcs+2)                                        ; 30b1: a9 3f       .?  :0d4a[7]
-    bne l0d30                                                         ; 30b3: d0 e2       ..  :0d4c[7]
+    bne c0d30                                                         ; 30b3: d0 e2       ..  :0d4c[7]
 .nmi_XXX12
     sbc l00cf                                                         ; 30b5: e5 cf       ..  :0d4e[7]
     ora l00b5                                                         ; 30b7: 05 b5       ..  :0d50[7]
     sta l00b5                                                         ; 30b9: 85 b5       ..  :0d52[7]
     lda #nmi_XXX13-(nmi_bcs+2)                                        ; 30bb: a9 49       .I  :0d54[7]
-    bne l0d30                                                         ; 30bd: d0 d8       ..  :0d56[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30bd: d0 d8       ..  :0d56[7]   ; ALWAYS branch
 
 .nmi_XXX13
     lda #nmi_XXX14-(nmi_bcs+2)                                        ; 30bf: a9 4d       .M  :0d58[7]
-    bne l0d30                                                         ; 30c1: d0 d4       ..  :0d5a[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30c1: d0 d4       ..  :0d5a[7]   ; ALWAYS branch
 
 .nmi_XXX14
     lda l00b3                                                         ; 30c3: a5 b3       ..  :0d5c[7]
@@ -3330,13 +3330,13 @@ nmi_XXX5 = l0d1f+1
 ; &30c7 referenced 2 times by &8dac[1], &8dbd[1]
 .c0d60
     lda #nmi_XXX15-(nmi_bcs+2)                                        ; 30c7: a9 55       .U  :0d60[7]
-    bne l0d30                                                         ; 30c9: d0 cc       ..  :0d62[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30c9: d0 cc       ..  :0d62[7]   ; ALWAYS branch
 
 .nmi_XXX15
     lda l00b4                                                         ; 30cb: a5 b4       ..  :0d64[7]
     sta l00a7                                                         ; 30cd: 85 a7       ..  :0d66[7]
     lda #nmi_XXX16-(nmi_bcs+2)                                        ; 30cf: a9 5d       .]  :0d68[7]
-    bne l0d30                                                         ; 30d1: d0 c4       ..  :0d6a[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30d1: d0 c4       ..  :0d6a[7]   ; ALWAYS branch
 
 .nmi_XXX16
     cmp #&fb                                                          ; 30d3: c9 fb       ..  :0d6c[7]
@@ -3350,26 +3350,26 @@ nmi_XXX5 = l0d1f+1
     bne c0d80                                                         ; 30df: d0 06       ..  :0d78[7]
     inc l00cf                                                         ; 30e1: e6 cf       ..  :0d7a[7]
     lda #nmi_XXX17-(nmi_bcs+2)                                        ; 30e3: a9 06       ..  :0d7c[7]
-    bne l0d30                                                         ; 30e5: d0 b0       ..  :0d7e[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30e5: d0 b0       ..  :0d7e[7]   ; ALWAYS branch
 
 ; &30e7 referenced 1 time by &0d78[7]
 .c0d80
     inc l00a5                                                         ; 30e7: e6 a5       ..  :0d80[7]
     lda #nmi_XXX18-(nmi_bcs+2)                                        ; 30e9: a9 11       ..  :0d82[7]
-    bne l0d30                                                         ; 30eb: d0 aa       ..  :0d84[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30eb: d0 aa       ..  :0d84[7]   ; ALWAYS branch
 
 .nmi_XXX22
     lda #nmi_XXX19-(nmi_bcs+2)                                        ; 30ed: a9 7b       .{  :0d86[7]
-    bne l0d30                                                         ; 30ef: d0 a6       ..  :0d88[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30ef: d0 a6       ..  :0d88[7]   ; ALWAYS branch
 
 .nmi_XXX19
     lda #nmi_XXX20-(nmi_bcs+2)                                        ; 30f1: a9 7f       ..  :0d8a[7]
-    bne l0d30                                                         ; 30f3: d0 a2       ..  :0d8c[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30f3: d0 a2       ..  :0d8c[7]   ; ALWAYS branch
 
 .nmi_XXX20
     bne nmi_XXX23                                                     ; 30f5: d0 a3       ..  :0d8e[7]
     lda #nmi_XXX21-(nmi_bcs+2)                                        ; 30f7: a9 26       .&  :0d90[7]
-    bne l0d30                                                         ; 30f9: d0 9c       ..  :0d92[7]   ; ALWAYS branch
+    bne c0d30                                                         ; 30f9: d0 9c       ..  :0d92[7]   ; ALWAYS branch
 
 
     ; Copy the newly assembled block of code back to it's proper place in the binary
@@ -11167,10 +11167,10 @@ save pydis_start, pydis_end
 ;     l1117:                                             14
 ;     tube_entry:                                        14
 ;     write_tube_r2_data:                                14
+;     c0d30:                                             13
 ;     l00a1:                                             13
 ;     l00a5:                                             13
 ;     l00c8:                                             13
-;     l0d30:                                             13
 ;     l0f07:                                             13
 ;     sub_ca14a:                                         13
 ;     tube_data_register_3:                              13
@@ -11399,7 +11399,6 @@ save pydis_start, pydis_end
 ;     l00ef:                                              3
 ;     l0107:                                              3
 ;     l0109:                                              3
-;     l0d3d:                                              3
 ;     l0ef8:                                              3
 ;     l1092:                                              3
 ;     l1093:                                              3
@@ -11429,6 +11428,7 @@ save pydis_start, pydis_end
 ;     return_45:                                          3
 ;     sram_table:                                         3
 ;     sub_c0582:                                          3
+;     sub_c0d3d:                                          3
 ;     sub_c81be:                                          3
 ;     sub_c833a:                                          3
 ;     sub_c836e:                                          3
@@ -11460,6 +11460,7 @@ save pydis_start, pydis_end
 ;     c053a:                                              2
 ;     c05fc:                                              2
 ;     c0636:                                              2
+;     c0d26:                                              2
 ;     c0d60:                                              2
 ;     c815d:                                              2
 ;     c822a:                                              2
@@ -11566,7 +11567,6 @@ save pydis_start, pydis_end
 ;     l0128:                                              2
 ;     l0500:                                              2
 ;     l0700:                                              2
-;     l0d26:                                              2
 ;     l0e07:                                              2
 ;     l0f0a:                                              2
 ;     l0f0b:                                              2
@@ -11717,6 +11717,9 @@ save pydis_start, pydis_end
 ;     c0645:                                              1
 ;     c0665:                                              1
 ;     c06a7:                                              1
+;     c0d0f:                                              1
+;     c0d12:                                              1
+;     c0d50:                                              1
 ;     c0d74:                                              1
 ;     c0d80:                                              1
 ;     c8040:                                              1
@@ -12114,10 +12117,6 @@ save pydis_start, pydis_end
 ;     l010e:                                              1
 ;     l028d:                                              1
 ;     l0600:                                              1
-;     l0d0f:                                              1
-;     l0d12:                                              1
-;     l0d2a:                                              1
-;     l0d50:                                              1
 ;     l0e0e:                                              1
 ;     l0e10:                                              1
 ;     l0f00:                                              1
@@ -12200,6 +12199,7 @@ save pydis_start, pydis_end
 ;     loop_c064c:                                         1
 ;     loop_c0657:                                         1
 ;     loop_c065a:                                         1
+;     loop_c0d2a:                                         1
 ;     loop_c8064:                                         1
 ;     loop_c8086:                                         1
 ;     loop_c813a:                                         1
@@ -12581,6 +12581,11 @@ save pydis_start, pydis_end
 ;     c0645
 ;     c0665
 ;     c06a7
+;     c0d0f
+;     c0d12
+;     c0d26
+;     c0d30
+;     c0d50
 ;     c0d60
 ;     c0d74
 ;     c0d80
@@ -13187,14 +13192,6 @@ save pydis_start, pydis_end
 ;     l0500
 ;     l0600
 ;     l0700
-;     l0d0f
-;     l0d12
-;     l0d1f
-;     l0d26
-;     l0d2a
-;     l0d30
-;     l0d3d
-;     l0d50
 ;     l0df0
 ;     l0e00
 ;     l0e07
@@ -13388,6 +13385,7 @@ save pydis_start, pydis_end
 ;     loop_c064c
 ;     loop_c0657
 ;     loop_c065a
+;     loop_c0d2a
 ;     loop_c8064
 ;     loop_c8086
 ;     loop_c813a
@@ -13641,6 +13639,8 @@ save pydis_start, pydis_end
 ;     sub_c05ff
 ;     sub_c0607
 ;     sub_c0627
+;     sub_c0d1f
+;     sub_c0d3d
 ;     sub_c8020
 ;     sub_c809a
 ;     sub_c809d

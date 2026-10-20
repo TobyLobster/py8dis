@@ -330,6 +330,7 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
                 for expression in label.expressions[candidate_move_id]:
                     lmd.name = expression
                     lmd.defined_in_move_id = candidate_move_id
+                    lmd.is_expression = True
                     return lmd
 
         if len(move_ids2) == 1:
@@ -376,21 +377,22 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
         lmd.is_expression = True
         return lmd
 
-    # Now do the same again, but with the BASE_MOVE_ID
+    # Now do the same again, but with the BASE_MOVE_ID (so any name found
+    # there is defined in the BASE_MOVE_ID)
     for local_label in label.local_labels[movemanager.BASE_MOVE_ID]:
         if local_label.start_addr <= binary_addr < local_label.end_addr:
             lmd.name = local_label.name
-            lmd.defined_in_move_id = move_id
+            lmd.defined_in_move_id = movemanager.BASE_MOVE_ID
             return lmd
 
     for name in label.explicit_names[movemanager.BASE_MOVE_ID]:
         lmd.name = name.text
-        lmd.defined_in_move_id = move_id
+        lmd.defined_in_move_id = movemanager.BASE_MOVE_ID
         return lmd
 
     for expression in label.expressions[movemanager.BASE_MOVE_ID]:
         lmd.name = expression
-        lmd.defined_in_move_id = move_id
+        lmd.defined_in_move_id = movemanager.BASE_MOVE_ID
         lmd.is_expression = True
         return lmd
 
@@ -413,8 +415,15 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
 
     # Make up a brand new label name.
     #
+    # Find where the label will be defined in the binary, in the move we have
+    # chosen. (Without the move ID this would fail where several moves cover
+    # the runtime address, and could find the wrong move.)
+    #
+    # Note that `binary_addr` (where the label is used or defined) is reused
+    # below to mean where the label will be defined.
+    binary_addr, _ = movemanager.r2b(runtime_addr, move_id)
+
     # if the binary address is not code, then call it "lXXXX"
-    binary_addr, _ = movemanager.r2b(runtime_addr)
     if binary_addr is None or not classification.is_code(binary_addr):
         label = utils.force_case("l%04x" % runtime_addr)
     else:

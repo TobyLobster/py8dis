@@ -17,16 +17,16 @@ pydis_start
 // $2010 referenced 3 times by $2008, $2022, $2025
 low_a
     ldx #$46 // 'F'                                                   // 2010: a2 46       .F  :0900[1]
-    jmp l0909                                                         // 2012: 4c 09 09    L.. :0902[1]
+    jmp c0909                                                         // 2012: 4c 09 09    L.. :0902[1]
 
 // $2015 referenced 1 time by $090a[1]
-l0905
+loop_c0905
     txa                                                               // 2015: 8a          .   :0905[1]
     jsr lffee                                                         // 2016: 20 ee ff     .. :0906[1]
 // $2019 referenced 1 time by $0902[1]
-l0909
+c0909
     dex                                                               // 2019: ca          .   :0909[1]
-    bne l0905                                                         // 201a: d0 f9       ..  :090a[1]
+    bne loop_c0905                                                    // 201a: d0 f9       ..  :090a[1]
     jsr sub_c2039                                                     // 201c: 20 39 20     9  :090c[1]
     jmp enter_low_b_baz                                               // 201f: 4c 0d 09    L.. :090f[1]
 
@@ -44,10 +44,10 @@ sub_c2022
 low_b
     ldx #6                                                            // 2029: a2 06       ..  :0901[2]
 // $202b referenced 2 times by $0907[2], $090f[2]
-l0903
+c0903
     lda l090a,x                                                       // 202b: bd 0a 09    ... :0903[2]
     dex                                                               // 202e: ca          .   :0906[2]
-    bne l0903                                                         // 202f: d0 fa       ..  :0907[2]
+    bne c0903                                                         // 202f: d0 fa       ..  :0907[2]
     rts                                                               // 2031: 60          `   :0909[2]
 
 // $2032 referenced 1 time by $0903[2]
@@ -58,7 +58,7 @@ l090a
 low_b_baz
 enter_low_b_baz
     ldx #2                                                            // 2035: a2 02       ..  :090d[2]
-    bne l0903                                                         // 2037: d0 f2       ..  :090f[2]   // ALWAYS branch
+    bne c0903                                                         // 2037: d0 f2       ..  :090f[2]   // ALWAYS branch
 
 * = $2039
 sub_c2039
@@ -73,22 +73,22 @@ pydis_end
 // Label references by decreasing frequency:
 //     lffee:             3
 //     low_a:             3
-//     l0903:             2
+//     c0903:             2
 //     low_b:             2
+//     c0909:             1
 //     enter_low_b_baz:   1
-//     l0905:             1
-//     l0909:             1
 //     l090a:             1
+//     loop_c0905:        1
 //     low_b_baz:         1
 //     sub_c2022:         1
 //     sub_c2039:         1
 
 // Automatically generated labels:
-//     l0903
-//     l0905
-//     l0909
+//     c0903
+//     c0909
 //     l090a
 //     lffee
+//     loop_c0905
 //     sub_c2022
 //     sub_c2039
 

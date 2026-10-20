@@ -3058,11 +3058,11 @@ nmi_beq
     beq nmi_XXX2                                                      ; 8fda: f0 2f       ./  :0d08[4]
 ; $8fdb referenced 4 times by $0d4d[4], $8e4a, $8eb4, $8ebb
     and #$fc                                                          ; 8fdc: 29 fc       ).  :0d0a[4]
-    bne l0d12                                                         ; 8fde: d0 04       ..  :0d0c[4]
+    bne c0d12                                                         ; 8fde: d0 04       ..  :0d0c[4]
     dec l00a5                                                         ; 8fe0: c6 a5       ..  :0d0e[4]
     bne nmi_lda_zp                                                    ; 8fe2: d0 04       ..  :0d10[4]
 ; $8fe4 referenced 1 time by $0d0c[4]
-l0d12
+c0d12
     sta l00a2                                                         ; 8fe4: 85 a2       ..  :0d12[4]
     pla                                                               ; 8fe6: 68          h   :0d14[4]
     rti                                                               ; 8fe7: 40          @   :0d15[4]
@@ -3077,12 +3077,12 @@ nmi_lda_zp
 nmi_cmp_imm_or_bcs
     cmp #1                                                            ; 8fea: c9 01       ..  :0d18[4]
 ; $8feb referenced 1 time by $905c
-    bne l0d26                                                         ; 8fec: d0 0a       ..  :0d1a[4]
+    bne c0d26                                                         ; 8fec: d0 0a       ..  :0d1a[4]
     lda l00a1                                                         ; 8fee: a5 a1       ..  :0d1c[4]
     ror                                                               ; 8ff0: 6a          j   :0d1e[4]
-l0d1f
-nmi_XXX5 = l0d1f+1
-    bcc l0d26                                                         ; 8ff1: 90 05       ..  :0d1f[4]
+sub_c0d1f
+nmi_XXX5 = sub_c0d1f+1
+    bcc c0d26                                                         ; 8ff1: 90 05       ..  :0d1f[4]
 ; One patched variant of the code transfers control to nmi_XXX5, which is the
 ; second byte of the following bcc instruction. That is always &05, which is
 ; ORA #. XXX: correct?
@@ -3093,14 +3093,14 @@ nmi_lda_immXXX4
 ; $8ff4 referenced 2 times by $8d6e, $8fa7
     sta nmi_lda_immXXX3+1                                             ; 8ff5: 8d 4c 0d    .L. :0d23[4]
 ; $8ff8 referenced 2 times by $0d1a[4], $0d1f[4]
-l0d26
+c0d26
     inc l00cf                                                         ; 8ff8: e6 cf       ..  :0d26[4]
     lda l00cf                                                         ; 8ffa: a5 cf       ..  :0d28[4]
 ; $8ffc referenced 1 time by $0d30[4]
-l0d2a
+loop_c0d2a
     sta fdc_1770_sector                                               ; 8ffc: 8d 86 fe    ... :0d2a[4]
     cmp fdc_1770_sector                                               ; 8fff: cd 86 fe    ... :0d2d[4]
-    bne l0d2a                                                         ; 9002: d0 f8       ..  :0d30[4]
+    bne loop_c0d2a                                                    ; 9002: d0 f8       ..  :0d30[4]
     lda l00a7                                                         ; 9004: a5 a7       ..  :0d32[4]
     sta fdc_8271_data_or_1770_command_or_status                       ; 9006: 8d 84 fe    ... :0d34[4]
     pla                                                               ; 9009: 68          h   :0d37[4]
@@ -3124,14 +3124,14 @@ nmi_XXX6
 ; $9019 referenced 2 times by $0d42[4], $0d42[5]
 nmi_XXX7
     dec l00a6                                                         ; 9019: c6 a6       ..  :0d47[4]
-    bne l0d50                                                         ; 901b: d0 05       ..  :0d49[4]
+    bne c0d50                                                         ; 901b: d0 05       ..  :0d49[4]
 ; The operand of this lda is modified at runtime.
 nmi_lda_immXXX3
     lda #nmi_XXX2-(nmi_beq+2)                                         ; 901d: a9 2f       ./  :0d4b[4]
 ; $901e referenced 3 times by $0d23[4], $8d71, $8eb1
     sta nmi_beq+1                                                     ; 901f: 8d 09 0d    ... :0d4d[4]
 ; $9022 referenced 1 time by $0d49[4]
-l0d50
+c0d50
     pla                                                               ; 9022: 68          h   :0d50[4]
     rti                                                               ; 9023: 40          @   :0d51[4]
 
@@ -3201,14 +3201,14 @@ nmi_handler2_rom_start
     lda fdc_8271_data_or_1770_command_or_status                       ; 9068: ad 84 fe    ... :0d01[6]
     and #$1b                                                          ; 906b: 29 1b       ).  :0d04[6]
     cmp #3                                                            ; 906d: c9 03       ..  :0d06[6]
-    bne l0d0f                                                         ; 906f: d0 05       ..  :0d08[6]
+    bne c0d0f                                                         ; 906f: d0 05       ..  :0d08[6]
     lda fdc_1770_data                                                 ; 9071: ad 87 fe    ... :0d0a[6]
 ; The operand of this bcs is modified at runtime
 nmi_bcs
     bcs nmi_XXX21                                                     ; 9074: b0 26       .&  :0d0d[6]
 ; $9075 referenced 1 time by $0d30[6]
 ; $9076 referenced 1 time by $0d08[6]
-l0d0f
+c0d0f
     and #$fc                                                          ; 9076: 29 fc       ).  :0d0f[6]
     sta l00a2                                                         ; 9078: 85 a2       ..  :0d11[6]
     pla                                                               ; 907a: 68          h   :0d13[6]
@@ -3228,10 +3228,10 @@ nmi_XXX18
     bne nmi_XXX23                                                     ; 908d: d0 0b       ..  :0d26[6]
     lda #nmi_XXX22-(nmi_bcs+2)                                        ; 908f: a9 77       .w  :0d28[6]
     dec l00a5                                                         ; 9091: c6 a5       ..  :0d2a[6]
-    bne l0d30                                                         ; 9093: d0 02       ..  :0d2c[6]
+    bne c0d30                                                         ; 9093: d0 02       ..  :0d2c[6]
     lda #nmi_XXX23-(nmi_bcs+2)                                        ; 9095: a9 24       .$  :0d2e[6]
 ; $9097 referenced 13 times by $0d2c[6], $0d3f[6], $0d48[6], $0d4c[6], $0d56[6], $0d5a[6], $0d62[6], $0d6a[6], $0d7e[6], $0d84[6], $0d88[6], $0d8c[6], $0d92[6]
-l0d30
+c0d30
     sta nmi_bcs+1                                                     ; 9097: 8d 0e 0d    ... :0d30[6]
 ; $909a referenced 5 times by $0d22[6], $0d26[6], $0d3b[6], $0d72[6], $0d8e[6]
 nmi_XXX23
@@ -3241,31 +3241,31 @@ nmi_XXX23
 ; $909c referenced 1 time by $0d0d[6]
 nmi_XXX21
     cmp #$fe                                                          ; 909c: c9 fe       ..  :0d35[6]
-    beq l0d3d                                                         ; 909e: f0 04       ..  :0d37[6]
+    beq sub_c0d3d                                                     ; 909e: f0 04       ..  :0d37[6]
     cmp #$ce                                                          ; 90a0: c9 ce       ..  :0d39[6]
     bne nmi_XXX23                                                     ; 90a2: d0 f6       ..  :0d3b[6]
-l0d3d
+sub_c0d3d
     lda #nmi_XXX10-(nmi_bcs+2)                                        ; 90a4: a9 32       .2  :0d3d[6]
-    bne l0d30                                                         ; 90a6: d0 ef       ..  :0d3f[6]
+    bne c0d30                                                         ; 90a6: d0 ef       ..  :0d3f[6]
 nmi_XXX10
     sbc fdc_1770_data                                                 ; 90a8: ed 87 fe    ... :0d41[6]
     sta l00b5                                                         ; 90ab: 85 b5       ..  :0d44[6]
     lda #nmi_XXX11-(nmi_bcs+2)                                        ; 90ad: a9 3b       .;  :0d46[6]
-    bne l0d30                                                         ; 90af: d0 e6       ..  :0d48[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90af: d0 e6       ..  :0d48[6]   ; ALWAYS branch
 
 nmi_XXX11
     lda #nmi_XXX12-(nmi_bcs+2)                                        ; 90b1: a9 3f       .?  :0d4a[6]
-    bne l0d30                                                         ; 90b3: d0 e2       ..  :0d4c[6]
+    bne c0d30                                                         ; 90b3: d0 e2       ..  :0d4c[6]
 nmi_XXX12
     sbc l00cf                                                         ; 90b5: e5 cf       ..  :0d4e[6]
     ora l00b5                                                         ; 90b7: 05 b5       ..  :0d50[6]
     sta l00b5                                                         ; 90b9: 85 b5       ..  :0d52[6]
     lda #nmi_XXX13-(nmi_bcs+2)                                        ; 90bb: a9 49       .I  :0d54[6]
-    bne l0d30                                                         ; 90bd: d0 d8       ..  :0d56[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90bd: d0 d8       ..  :0d56[6]   ; ALWAYS branch
 
 nmi_XXX13
     lda #nmi_XXX14-(nmi_bcs+2)                                        ; 90bf: a9 4d       .M  :0d58[6]
-    bne l0d30                                                         ; 90c1: d0 d4       ..  :0d5a[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90c1: d0 d4       ..  :0d5a[6]   ; ALWAYS branch
 
 nmi_XXX14
     lda l00b3                                                         ; 90c3: a5 b3       ..  :0d5c[6]
@@ -3273,13 +3273,13 @@ nmi_XXX14
 ; $90c7 referenced 2 times by $8dac, $8dbd
 c0d60
     lda #nmi_XXX15-(nmi_bcs+2)                                        ; 90c7: a9 55       .U  :0d60[6]
-    bne l0d30                                                         ; 90c9: d0 cc       ..  :0d62[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90c9: d0 cc       ..  :0d62[6]   ; ALWAYS branch
 
 nmi_XXX15
     lda l00b4                                                         ; 90cb: a5 b4       ..  :0d64[6]
     sta l00a7                                                         ; 90cd: 85 a7       ..  :0d66[6]
     lda #nmi_XXX16-(nmi_bcs+2)                                        ; 90cf: a9 5d       .]  :0d68[6]
-    bne l0d30                                                         ; 90d1: d0 c4       ..  :0d6a[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90d1: d0 c4       ..  :0d6a[6]   ; ALWAYS branch
 
 nmi_XXX16
     cmp #$fb                                                          ; 90d3: c9 fb       ..  :0d6c[6]
@@ -3293,26 +3293,26 @@ c0d74
     bne c0d80                                                         ; 90df: d0 06       ..  :0d78[6]
     inc l00cf                                                         ; 90e1: e6 cf       ..  :0d7a[6]
     lda #nmi_XXX17-(nmi_bcs+2)                                        ; 90e3: a9 06       ..  :0d7c[6]
-    bne l0d30                                                         ; 90e5: d0 b0       ..  :0d7e[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90e5: d0 b0       ..  :0d7e[6]   ; ALWAYS branch
 
 ; $90e7 referenced 1 time by $0d78[6]
 c0d80
     inc l00a5                                                         ; 90e7: e6 a5       ..  :0d80[6]
     lda #nmi_XXX18-(nmi_bcs+2)                                        ; 90e9: a9 11       ..  :0d82[6]
-    bne l0d30                                                         ; 90eb: d0 aa       ..  :0d84[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90eb: d0 aa       ..  :0d84[6]   ; ALWAYS branch
 
 nmi_XXX22
     lda #nmi_XXX19-(nmi_bcs+2)                                        ; 90ed: a9 7b       .{  :0d86[6]
-    bne l0d30                                                         ; 90ef: d0 a6       ..  :0d88[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90ef: d0 a6       ..  :0d88[6]   ; ALWAYS branch
 
 nmi_XXX19
     lda #nmi_XXX20-(nmi_bcs+2)                                        ; 90f1: a9 7f       ..  :0d8a[6]
-    bne l0d30                                                         ; 90f3: d0 a2       ..  :0d8c[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90f3: d0 a2       ..  :0d8c[6]   ; ALWAYS branch
 
 nmi_XXX20
     bne nmi_XXX23                                                     ; 90f5: d0 a3       ..  :0d8e[6]
     lda #nmi_XXX21-(nmi_bcs+2)                                        ; 90f7: a9 26       .&  :0d90[6]
-    bne l0d30                                                         ; 90f9: d0 9c       ..  :0d92[6]   ; ALWAYS branch
+    bne c0d30                                                         ; 90f9: d0 9c       ..  :0d92[6]   ; ALWAYS branch
 
 }
 
@@ -11307,10 +11307,10 @@ pydis_end
 ;     l1117:                                             14
 ;     tube_entry:                                        14
 ;     write_tube_r2_data:                                14
+;     c0d30:                                             13
 ;     l00a1:                                             13
 ;     l00a5:                                             13
 ;     l00c8:                                             13
-;     l0d30:                                             13
 ;     l0f07:                                             13
 ;     sub_ca14a:                                         13
 ;     tube_data_register_3:                              13
@@ -11539,7 +11539,6 @@ pydis_end
 ;     l00ef:                                              3
 ;     l0107:                                              3
 ;     l0109:                                              3
-;     l0d3d:                                              3
 ;     l0ef8:                                              3
 ;     l1092:                                              3
 ;     l1093:                                              3
@@ -11569,6 +11568,7 @@ pydis_end
 ;     return_45:                                          3
 ;     sram_table:                                         3
 ;     sub_c0582:                                          3
+;     sub_c0d3d:                                          3
 ;     sub_c81be:                                          3
 ;     sub_c833a:                                          3
 ;     sub_c836e:                                          3
@@ -11600,6 +11600,7 @@ pydis_end
 ;     c053a:                                              2
 ;     c05fc:                                              2
 ;     c0636:                                              2
+;     c0d26:                                              2
 ;     c0d60:                                              2
 ;     c815d:                                              2
 ;     c822a:                                              2
@@ -11707,7 +11708,6 @@ pydis_end
 ;     l0128:                                              2
 ;     l0500:                                              2
 ;     l0700:                                              2
-;     l0d26:                                              2
 ;     l0e07:                                              2
 ;     l0f0a:                                              2
 ;     l0f0b:                                              2
@@ -11858,6 +11858,9 @@ pydis_end
 ;     c0645:                                              1
 ;     c0665:                                              1
 ;     c06a7:                                              1
+;     c0d0f:                                              1
+;     c0d12:                                              1
+;     c0d50:                                              1
 ;     c0d74:                                              1
 ;     c0d80:                                              1
 ;     c8040:                                              1
@@ -12258,10 +12261,6 @@ pydis_end
 ;     l010e:                                              1
 ;     l028d:                                              1
 ;     l0600:                                              1
-;     l0d0f:                                              1
-;     l0d12:                                              1
-;     l0d2a:                                              1
-;     l0d50:                                              1
 ;     l0e0e:                                              1
 ;     l0e10:                                              1
 ;     l0f00:                                              1
@@ -12343,6 +12342,7 @@ pydis_end
 ;     loop_c064c:                                         1
 ;     loop_c0657:                                         1
 ;     loop_c065a:                                         1
+;     loop_c0d2a:                                         1
 ;     loop_c8064:                                         1
 ;     loop_c8086:                                         1
 ;     loop_c813a:                                         1
@@ -12724,6 +12724,11 @@ pydis_end
 ;     c0645
 ;     c0665
 ;     c06a7
+;     c0d0f
+;     c0d12
+;     c0d26
+;     c0d30
+;     c0d50
 ;     c0d60
 ;     c0d74
 ;     c0d80
@@ -13334,14 +13339,6 @@ pydis_end
 ;     l0500
 ;     l0600
 ;     l0700
-;     l0d0f
-;     l0d12
-;     l0d1f
-;     l0d26
-;     l0d2a
-;     l0d30
-;     l0d3d
-;     l0d50
 ;     l0df0
 ;     l0e00
 ;     l0e07
@@ -13534,6 +13531,7 @@ pydis_end
 ;     loop_c064c
 ;     loop_c0657
 ;     loop_c065a
+;     loop_c0d2a
 ;     loop_c8064
 ;     loop_c8086
 ;     loop_c813a
@@ -13787,6 +13785,8 @@ pydis_end
 ;     sub_c05ff
 ;     sub_c0607
 ;     sub_c0627
+;     sub_c0d1f
+;     sub_c0d3d
 ;     sub_c8020
 ;     sub_c809a
 ;     sub_c809d
