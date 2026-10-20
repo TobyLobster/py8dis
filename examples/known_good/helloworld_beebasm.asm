@@ -34,6 +34,7 @@ save pydis_start, pydis_end
 ;     loop_c2002
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 28 bytes
 ;     Code                     = 14 bytes (50%)
 ;     Data                     = 14 bytes (50%)

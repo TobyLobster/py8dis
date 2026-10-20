@@ -51,6 +51,7 @@ python3 go.py "move"            $OPT --assemblers acme beebasm xa       # a move
 python3 go.py "move2"           $OPT --assemblers acme beebasm xa       # another move() test
 python3 go.py "split"           $OPT --assemblers acme beebasm xa       # loads *two* binary files to disassemble
 python3 go.py "subroutine_test" $OPT --assemblers acme beebasm xa       # demonstrates the use of the subroutine() command
+python3 go.py "regression_tests" $OPT --assemblers acme beebasm xa      # regression tests for fixed bugs
 python3 go.py "acorn_os_calls"  $OPT --assemblers acme beebasm xa       # test all the os calls for acorn machines
 
 # ROMs

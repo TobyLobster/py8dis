@@ -2,6 +2,9 @@ set -e
 
 acme -o ../subroutine_test.orig subroutine_test.asm
 acme -o ../acorn_os_calls.orig acorn_os_calls.asm
+acme -o ../orig/regression_tests.orig regression_tests.asm
+dd if=../orig/regression_tests.orig of=../orig/regression_tests1.orig bs=128 count=1
+dd if=../orig/regression_tests.orig of=../orig/regression_tests2.orig bs=128 skip=1
 cd ..
 md5 *.orig
 ./go

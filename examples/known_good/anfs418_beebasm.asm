@@ -13656,6 +13656,7 @@ save pydis_start, pydis_end
 ;     sub_cbd93
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 16384 bytes
 ;     Code                     = 14113 bytes (86%)
 ;     Data                     = 2271 bytes (14%)

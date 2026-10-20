@@ -373,9 +373,9 @@ By default numerical values are formatted as decimals for single digits or hex o
 
 ### Commentary and blank lines
 
-:pencil:`subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=False, move_id=None, is_entry_point=True)`
+:pencil:`subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True)`
 
-Define a subroutine. All parameters except the address are optional. These are used to create a header comment above the definition of the subroutine. They are also used to decorate calling code with explanatory text. If this is not wanted specify `hook=None`. The subroutine is commented as below. The initial and final row of stars is configurable.
+Define a subroutine. All parameters except the address are optional. These are used to create a header comment above the definition of the subroutine. They are also used to decorate calling code with explanatory text. If this is not wanted specify `hook=False`. The subroutine is commented as below. The initial and final row of stars is configurable.
 
 ```
 ; ***************************************************************************************
@@ -395,7 +395,7 @@ The `on_entry` and `on_exit` optional parameters are dictionaries that specify a
 
 The `is_entry_point` parameter adds the address as an entry point for code.
 
-The `hook` parameter is a callback to allow for the decoration of the calling code.
+The `hook` parameter is a callback to allow for the decoration of the calling code. If `None` (the default) a standard hook is used, which comments where registers are set up before each call and used after it; `hook=False` turns decoration off.
 
 :pencil:`no_automatic_comment(runtime_addr)`
 

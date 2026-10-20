@@ -158,11 +158,11 @@ LISVAL
 ROMHDR
     jmp INITUR                                     ; 8000: 4c 3c 80    L<.
 
-    jmp INITSE                                     ; 8003: 4c 34 81    L4.            ; Service entry
+    jmp INITSE                                     ; 8003: 4c 34 81    L4. ; Service entry
 
-    !byte $e2                                      ; 8006: e2          .              ; Language, service & tube
+    !byte $e2                                      ; 8006: e2          .  ; Language, service & tube
     !byte CPYOFF-ROMHDR                            ; 8007: 12          .
-    !byte 1                                        ; 8008: 01          .              ; ROM version
+    !byte 1                                        ; 8008: 01          .  ; ROM version
 TITLE
     !text "LISP"                                   ; 8009: 4c 49 53... LIS
     !byte 0                                        ; 800d: 00          .
@@ -173,14 +173,14 @@ CPYOFF
     !text "(C)1983 Acornsoft/1979 Owl Computers"   ; 8013: 28 43 29... (C)
     !byte 0                                        ; 8037: 00          .
 TUBOFF
-    !byte 0, $80, 0, 0                             ; 8038: 00 80 00... ...            ; Tube load addr
+    !byte 0, $80, 0, 0                             ; 8038: 00 80 00... ... ; Tube load addr
 
 
     ; ******************************
     ; Initialisation routine
     ; ******************************
 INITUR
-    cmp #1                                         ; 803c: c9 01       ..             ; Satisfactory?
+    cmp #1                                         ; 803c: c9 01       .. ; Satisfactory?
     beq CRYON                                      ; 803e: f0 01       ..
     rts                                            ; 8040: 60          `
 
@@ -188,19 +188,19 @@ CRYON
     cli                                            ; 8041: 58          X
     cld                                            ; 8042: d8          .
     lda #osbyte_read_high_order_address            ; 8043: a9 82       ..
-    jsr osbyte                                     ; 8045: 20 f4 ff     ..            ; Find out if in tube; Read the filing system 'machine high order address'
-    stx TUBE                                       ; 8048: 8e 01 04    ...            ; X and Y contain the machine high order address (low, high)
+    jsr osbyte                                     ; 8045: 20 f4 ff     .. ; Find out if in tube ; Read the filing system 'machine high order address'
+    stx TUBE                                       ; 8048: 8e 01 04    ... ; X and Y contain the machine high order address (low, high)
     txa                                            ; 804b: 8a          .
     beq COLD                                       ; 804c: f0 03       ..
     jmp WRMCHK                                     ; 804e: 4c 7b 82    L{.
 
 COLD
-    lda #osbyte_read_oshwm                         ; 8051: a9 83       ..             ; Find PAGE
-    jsr osbyte                                     ; 8053: 20 f4 ff     ..            ; Read top of operating system RAM address (OSHWM)
-    sty VECBOT                                     ; 8056: 8c 2b 04    .+.            ; X and Y contain the address of OSHWM (low, high)
+    lda #osbyte_read_oshwm                         ; 8051: a9 83       .. ; Find PAGE
+    jsr osbyte                                     ; 8053: 20 f4 ff     .. ; Read top of operating system RAM address (OSHWM)
+    sty VECBOT                                     ; 8056: 8c 2b 04    .+. ; X and Y contain the address of OSHWM (low, high)
     cpx #0                                         ; 8059: e0 00       ..
     beq PBOUND                                     ; 805b: f0 03       ..
-    inc VECBOT                                     ; 805d: ee 2b 04    .+.            ; Put on page boundary
+    inc VECBOT                                     ; 805d: ee 2b 04    .+. ; Put on page boundary
 PBOUND
     ldy VECBOT                                     ; 8060: ac 2b 04    .+.
     iny                                            ; 8063: c8          .
@@ -224,10 +224,10 @@ PBOUND
     ; New initialisation routines
     ; ******************************
     lda #0                                         ; 807c: a9 00       ..
-    sta MEMINV                                     ; 807e: 8d 32 04    .2.            ; Memory OK
+    sta MEMINV                                     ; 807e: 8d 32 04    .2. ; Memory OK
     sta MODEF                                      ; 8081: 8d 2a 04    .*.
     lda #$f0                                       ; 8084: a9 f0       ..
-    sta LSBUFF                                     ; 8086: 85 8c       ..             ; Fudge first reads
+    sta LSBUFF                                     ; 8086: 85 8c       .. ; Fudge first reads
     lda #$0d                                       ; 8088: a9 0d       ..
     sta LSCHAR                                     ; 808a: 8d 30 04    .0.
     ldx #3                                         ; 808d: a2 03       ..
@@ -238,7 +238,7 @@ LOOP5
     bpl LOOP5                                      ; 8095: 10 fa       ..
     lda TUBE                                       ; 8097: ad 01 04    ...
     beq INTUBE                                     ; 809a: f0 08       ..
-    lda #WARMST                                    ; 809c: a9 2a       .*             ; No more to do if in I/O
+    lda #WARMST                                    ; 809c: a9 2a       .* ; No more to do if in I/O
     sta STATYP                                     ; 809e: 8d 31 04    .1.
     jmp INUREL                                     ; 80a1: 4c 68 8f    Lh.
 
@@ -277,14 +277,14 @@ LOOP3
     sta (RELBS),y                                  ; 80d6: 91 7a       .z
     lda RELBS                                      ; 80d8: a5 7a       .z
     clc                                            ; 80da: 18          .
-    adc #3                                         ; 80db: 69 03       i.             ; Next vector
+    adc #3                                         ; 80db: 69 03       i. ; Next vector
     sta RELBS                                      ; 80dd: 85 7a       .z
     lda RELBS+1                                    ; 80df: a5 7b       .{
     adc #0                                         ; 80e1: 69 00       i.
     sta RELBS+1                                    ; 80e3: 85 7b       .{
     cmp IMBOT                                      ; 80e5: cd 2c 04    .,.
     bne LOOP3                                      ; 80e8: d0 e7       ..
-    lda #0                                         ; 80ea: a9 00       ..             ; Prevent warm start offer
+    lda #0                                         ; 80ea: a9 00       .. ; Prevent warm start offer
     sta STATYP                                     ; 80ec: 8d 31 04    .1.
 
     ; Do a *GO WRMCHK (via HILISP)
@@ -340,9 +340,9 @@ CHRTS
     ; Claim as service
     ; ******************************
 INITSE
-    cmp #service_unrecognised_star_command         ; 8134: c9 04       ..             ; Reasonable?
+    cmp #service_unrecognised_star_command         ; 8134: c9 04       .. ; Reasonable?
     beq OKCALL                                     ; 8136: f0 1b       ..
-    cmp #service_star_help_command                 ; 8138: c9 09       ..             ; Help?
+    cmp #service_star_help_command                 ; 8138: c9 09       .. ; Help?
     beq HELP                                       ; 813a: f0 01       ..
     rts                                            ; 813c: 60          `
 
@@ -352,7 +352,7 @@ HELP
     txa                                            ; 813e: 8a          .
     pha                                            ; 813f: 48          H
     tya                                            ; 8140: 98          .
-    pha                                            ; 8141: 48          H              ; Mustn't corrupt zero page
+    pha                                            ; 8141: 48          H  ; Mustn't corrupt zero page
     lda HANDLE                                     ; 8142: a5 13       ..
     pha                                            ; 8144: 48          H
     ldx #HLPOFF                                    ; 8145: a2 8e       ..
@@ -396,16 +396,16 @@ OKCALL
     lda #osbyte_read_tube_presence                 ; 817a: a9 ea       ..
     ldx #0                                         ; 817c: a2 00       ..
     ldy #$ff                                       ; 817e: a0 ff       ..
-    jsr osbyte                                     ; 8180: 20 f4 ff     ..            ; Is there a tube?; Read Tube present flag
-    txa                                            ; 8183: 8a          .              ; X=value of Tube present flag
-    bne STLISP                                     ; 8184: d0 05       ..             ; If so don't flag
+    jsr osbyte                                     ; 8180: 20 f4 ff     .. ; Is there a tube? ; Read Tube present flag
+    txa                                            ; 8183: 8a          .  ; X=value of Tube present flag
+    bne STLISP                                     ; 8184: d0 05       .. ; If so don't flag
     lda #COLDST                                    ; 8186: a9 00       ..
     sta STATYP                                     ; 8188: 8d 31 04    .1.
 STLISP
     pla                                            ; 818b: 68          h
-    tax                                            ; 818c: aa          .              ; X=ROM number
+    tax                                            ; 818c: aa          .  ; X=ROM number
     lda #osbyte_enter_language                     ; 818d: a9 8e       ..
-    jmp osbyte                                     ; 818f: 4c f4 ff    L..            ; Start up LISP; Enter language ROM X
+    jmp osbyte                                     ; 818f: 4c f4 ff    L.. ; Start up LISP ; Enter language ROM X
 
 NOTLSP
     ; pull A,Y,X from the stack
@@ -459,10 +459,10 @@ LISTR
 
     ; **** Readline control block
 INCB
-    !word DOSBUF                                   ; 823e: 00 07       ..             ; Buffer address for input (2 bytes)
-    !byte $7f                                      ; 8240: 7f          .              ; Max line length; Maximum line length
-    !byte $20                                      ; 8241: 20                         ; Min. acceptable character value
-    !byte $7f                                      ; 8242: 7f          .              ; Max. acceptable character value
+    !word DOSBUF                                   ; 823e: 00 07       .. ; Buffer address for input (2 bytes)
+    !byte $7f                                      ; 8240: 7f          .  ; Max line length ; Maximum line length
+    !byte $20                                      ; 8241: 20             ; Min. acceptable character value
+    !byte $7f                                      ; 8242: 7f          .  ; Max. acceptable character value
 
     ; **** Terminators
 TERMS
@@ -496,13 +496,13 @@ WRMCHK
     lda STATYP                                     ; 827b: ad 31 04    .1.
     cmp #WARMST                                    ; 827e: c9 2a       .*
     bne NOTWRM                                     ; 8280: d0 03       ..
-    jmp WARM                                       ; 8282: 4c 95 82    L..            ; Offer warm start
+    jmp WARM                                       ; 8282: 4c 95 82    L.. ; Offer warm start
 
 NOTWRM
     lda TUBE                                       ; 8285: ad 01 04    ...
     bne COLD1                                      ; 8288: d0 08       ..
-    lda #WARMST                                    ; 828a: a9 2a       .*             ; We're in tube and
-    sta STATYP                                     ; 828c: 8d 31 04    .1.            ; it's first time through
+    lda #WARMST                                    ; 828a: a9 2a       .* ; We're in tube and
+    sta STATYP                                     ; 828c: 8d 31 04    .1. ; it's first time through
     jmp INUREL                                     ; 828f: 4c 68 8f    Lh.
 
 COLD1
@@ -513,21 +513,21 @@ WARM
     bne REBOOT                                     ; 8298: d0 1a       ..
     ldx #WRMOFF                                    ; 829a: a2 72       .r
     jsr MESSAH                                     ; 829c: 20 fc 84     ..
-    jsr osrdch                                     ; 829f: 20 e0 ff     ..            ; Read a character from the current input stream
+    jsr osrdch                                     ; 829f: 20 e0 ff     .. ; Read a character from the current input stream
     and #$7f                                       ; 82a2: 29 7f       ).
     cmp #'C'                                       ; 82a4: c9 43       .C
     beq REBOOT                                     ; 82a6: f0 0c       ..
     cmp #'c'                                       ; 82a8: c9 63       .c
     beq REBOOT                                     ; 82aa: f0 08       ..
     lda #'W'                                       ; 82ac: a9 57       .W
-    jsr oswrch                                     ; 82ae: 20 ee ff     ..            ; Write character 87
+    jsr oswrch                                     ; 82ae: 20 ee ff     .. ; Write character 87
     jmp INIT                                       ; 82b1: 4c b5 84    L..
 
 
     ; **** Reload from ROM
 REBOOT
     lda #'C'                                       ; 82b4: a9 43       .C
-    jsr oswrch                                     ; 82b6: 20 ee ff     ..            ; Write character 67
+    jsr oswrch                                     ; 82b6: 20 ee ff     .. ; Write character 67
     jsr CROUT                                      ; 82b9: 20 19 85     ..
     jsr CROUT                                      ; 82bc: 20 19 85     ..
     ldx #<LISTR                                    ; 82bf: a2 39       .9
@@ -541,24 +541,24 @@ REBOOT
     ; entered when LISP is called.
     ; ******************************
 SUPER
-    lda #0                                         ; 82c6: a9 00       ..             ; Reset stack
+    lda #0                                         ; 82c6: a9 00       .. ; Reset stack
     sta SP                                         ; 82c8: 85 7e       .~
     lda ARETOP                                     ; 82ca: a5 79       .y
     sta SP+1                                       ; 82cc: 85 7f       ..
-    ldx #$ff                                       ; 82ce: a2 ff       ..             ; Reset hardware stack
+    ldx #$ff                                       ; 82ce: a2 ff       .. ; Reset hardware stack
     txs                                            ; 82d0: 9a          .
-    lda MODEF                                      ; 82d1: ad 2a 04    .*.            ; Check mode flag
+    lda MODEF                                      ; 82d1: ad 2a 04    .*. ; Check mode flag
     bpl EVPR                                       ; 82d4: 10 03       ..
-    jsr MODCHN                                     ; 82d6: 20 8b 97     ..            ;  Change mode
+    jsr MODCHN                                     ; 82d6: 20 8b 97     .. ;  Change mode
 EVPR
     ldx #EVOFF                                     ; 82d9: a2 00       ..
-    jsr MESSAH                                     ; 82db: 20 fc 84     ..            ; Evaluate:
-    jsr RSREAD                                     ; 82de: 20 c3 87     ..            ; Read expression
-    jsr EVALU                                      ; 82e1: 20 39 85     9.            ; Evaluate it
-    ldx #VALOFF                                    ; 82e4: a2 0d       ..             ; Value is:
+    jsr MESSAH                                     ; 82db: 20 fc 84     .. ; Evaluate:
+    jsr RSREAD                                     ; 82de: 20 c3 87     .. ; Read expression
+    jsr EVALU                                      ; 82e1: 20 39 85     9. ; Evaluate it
+    ldx #VALOFF                                    ; 82e4: a2 0d       .. ; Value is:
     jsr MESSAH                                     ; 82e6: 20 fc 84     ..
-    jsr PRINA                                      ; 82e9: 20 81 8b     ..            ; and print it
-    jmp SUPER                                      ; 82ec: 4c c6 82    L..            ; Repeat ad infinitum
+    jsr PRINA                                      ; 82e9: 20 81 8b     .. ; and print it
+    jmp SUPER                                      ; 82ec: 4c c6 82    L.. ; Repeat ad infinitum
 
 
     ; ******************************
@@ -568,55 +568,55 @@ EVPR
     ; ******************************
     ; **** ATOM
 ATOM
-    lda ARGA+1                                     ; 82ef: a5 3b       .;             ; Is ARGA atom?
-    beq YES                                        ; 82f1: f0 3e       .>             ; NIL => yes
+    lda ARGA+1                                     ; 82ef: a5 3b       .; ; Is ARGA atom?
+    beq YES                                        ; 82f1: f0 3e       .> ; NIL => yes
     ldy #0                                         ; 82f3: a0 00       ..
-    lda (ARGA),y                                   ; 82f5: b1 3a       .:             ; check bit 7
+    lda (ARGA),y                                   ; 82f5: b1 3a       .: ; check bit 7
     bpl YES                                        ; 82f7: 10 38       .8
-    bmi NO                                         ; 82f9: 30 32       02             ; ALWAYS branch
+    bmi NO                                         ; 82f9: 30 32       02 ; ALWAYS branch
 
 
     ; **** EQ
 EQ
-    lda ARGB+1                                     ; 82fb: a5 3d       .=             ; ARGA = ARGB?
-    beq NULL                                       ; 82fd: f0 2a       .*             ; ARGB NIL => ARGA NIL
+    lda ARGB+1                                     ; 82fb: a5 3d       .= ; ARGA = ARGB?
+    beq NULL                                       ; 82fd: f0 2a       .* ; ARGB NIL => ARGA NIL
     cmp ARGA+1                                     ; 82ff: c5 3b       .;
-    bne EQUATE                                     ; 8301: d0 06       ..             ; But they are numeric
+    bne EQUATE                                     ; 8301: d0 06       .. ; But they are numeric
     lda ARGB                                       ; 8303: a5 3c       .<
     cmp ARGA                                       ; 8305: c5 3a       .:
     beq YES                                        ; 8307: f0 28       .(
 EQUATE
-    ldy #0                                         ; 8309: a0 00       ..             ; Fudge for nums
+    ldy #0                                         ; 8309: a0 00       .. ; Fudge for nums
     lda (ARGA),y                                   ; 830b: b1 3a       .:
-    cmp #NUMF                                      ; 830d: c9 04       ..             ; Both must be nums
+    cmp #NUMF                                      ; 830d: c9 04       .. ; Both must be nums
     bne NO                                         ; 830f: d0 1c       ..
     cmp (ARGB),y                                   ; 8311: d1 3c       .<
     bne NO                                         ; 8313: d0 18       ..
-    iny                                            ; 8315: c8          .              ; Y=1
+    iny                                            ; 8315: c8          .  ; Y=1
     lda (ARGA),y                                   ; 8316: b1 3a       .:
-    cmp (ARGB),y                                   ; 8318: d1 3c       .<             ; Same length?
+    cmp (ARGB),y                                   ; 8318: d1 3c       .< ; Same length?
     bne NO                                         ; 831a: d0 11       ..
     tay                                            ; 831c: a8          .
     dey                                            ; 831d: 88          .
 EQUINE
-    lda (ARGA),y                                   ; 831e: b1 3a       .:             ; Compare value
+    lda (ARGA),y                                   ; 831e: b1 3a       .: ; Compare value
     cmp (ARGB),y                                   ; 8320: d1 3c       .<
     bne NO                                         ; 8322: d0 09       ..
     dey                                            ; 8324: 88          .
     bne EQUINE                                     ; 8325: d0 f7       ..
-    beq YES                                        ; 8327: f0 08       ..             ; ALWAYS branch
+    beq YES                                        ; 8327: f0 08       .. ; ALWAYS branch
 
 
     ; **** NULL
 NULL
-    lda ARGA+1                                     ; 8329: a5 3b       .;             ; Is ARGA NIL?
+    lda ARGA+1                                     ; 8329: a5 3b       .; ; Is ARGA NIL?
     beq YES                                        ; 832b: f0 04       ..
 NO
-    lda #0                                         ; 832d: a9 00       ..             ; Returns NIL
-    beq POPA                                       ; 832f: f0 07       ..             ; ALWAYS branch
+    lda #0                                         ; 832d: a9 00       .. ; Returns NIL
+    beq POPA                                       ; 832f: f0 07       .. ; ALWAYS branch
 
 YES
-    lda #<CTRUE                                    ; 8331: a9 11       ..             ; Returns T
+    lda #<CTRUE                                    ; 8331: a9 11       .. ; Returns T
     sta ARG                                        ; 8333: 85 30       .0
     lda IMBOT                                      ; 8335: ad 2c 04    .,.
 POPA
@@ -631,42 +631,42 @@ POPA
     ; is unchanged.
     ; ******************************
 POP
-    ldy #0                                         ; 833a: a0 00       ..             ; Get binding size
+    ldy #0                                         ; 833a: a0 00       .. ; Get binding size
     lda (SP),y                                     ; 833c: b1 7e       .~
-    beq NOBOUN                                     ; 833e: f0 2b       .+             ; No bindings to do
+    beq NOBOUN                                     ; 833e: f0 2b       .+ ; No bindings to do
     tay                                            ; 8340: a8          .
 POPPLE
     lda (SP),y                                     ; 8341: b1 7e       .~
-    sta RETADD+1                                   ; 8343: 85 86       ..             ; Get atom
+    sta RETADD+1                                   ; 8343: 85 86       .. ; Get atom
     dey                                            ; 8345: 88          .
     lda (SP),y                                     ; 8346: b1 7e       .~
     sta RETADD                                     ; 8348: 85 85       ..
     dey                                            ; 834a: 88          .
-    lda (SP),y                                     ; 834b: b1 7e       .~             ; Get old value
-    tax                                            ; 834d: aa          .              ; into A,X
+    lda (SP),y                                     ; 834b: b1 7e       .~ ; Get old value
+    tax                                            ; 834d: aa          .  ; into A,X
     dey                                            ; 834e: 88          .
     lda (SP),y                                     ; 834f: b1 7e       .~
     dey                                            ; 8351: 88          .
-    sty POPPY                                      ; 8352: 84 8d       ..             ; Save Y
-    ldy #2                                         ; 8354: a0 02       ..             ; Put value back
-    sta (RETADD),y                                 ; 8356: 91 85       ..             ; into atom value
-    iny                                            ; 8358: c8          .              ; cell; Y=3
+    sty POPPY                                      ; 8352: 84 8d       .. ; Save Y
+    ldy #2                                         ; 8354: a0 02       .. ; Put value back
+    sta (RETADD),y                                 ; 8356: 91 85       .. ; into atom value
+    iny                                            ; 8358: c8          .  ; cell ; Y=3
     txa                                            ; 8359: 8a          .
     sta (RETADD),y                                 ; 835a: 91 85       ..
-    ldy POPPY                                      ; 835c: a4 8d       ..             ; Fetch Y back
-    bne POPPLE                                     ; 835e: d0 e1       ..             ; More bindings?
+    ldy POPPY                                      ; 835c: a4 8d       .. ; Fetch Y back
+    bne POPPLE                                     ; 835e: d0 e1       .. ; More bindings?
     lda (SP),y                                     ; 8360: b1 7e       .~
-    clc                                            ; 8362: 18          .              ; Set stack pointer
-    adc SP                                         ; 8363: 65 7e       e~             ; to bottom of work-
-    sta SP                                         ; 8365: 85 7e       .~             ; Space area as if
-    bcc NOBOUN                                     ; 8367: 90 02       ..             ; there were no binds
+    clc                                            ; 8362: 18          .  ; Set stack pointer
+    adc SP                                         ; 8363: 65 7e       e~ ; to bottom of work-
+    sta SP                                         ; 8365: 85 7e       .~ ; Space area as if
+    bcc NOBOUN                                     ; 8367: 90 02       .. ; there were no binds
     inc SP+1                                       ; 8369: e6 7f       ..
 NOBOUN
-    iny                                            ; 836b: c8          .              ; Now Y = 1
+    iny                                            ; 836b: c8          .  ; Now Y = 1
     lda (SP),y                                     ; 836c: b1 7e       .~
-    tay                                            ; 836e: a8          .              ; Index for top space
+    tay                                            ; 836e: a8          .  ; Index for top space
     dey                                            ; 836f: 88          .
-    lda (SP),y                                     ; 8370: b1 7e       .~             ; Push return addr
+    lda (SP),y                                     ; 8370: b1 7e       .~ ; Push return addr
     pha                                            ; 8372: 48          H
     dey                                            ; 8373: 88          .
     lda (SP),y                                     ; 8374: b1 7e       .~
@@ -674,13 +674,13 @@ NOBOUN
     dey                                            ; 8377: 88          .
 MORSP
     ; Copy Y bytes of memory to TVSEXT
-    lda (SP),y                                     ; 8378: b1 7e       .~             ; Copy back TVS
-    sta TVSEXT - 1,y                               ; 837a: 99 32 00    .2.            ; WSA, WSB and WSC
+    lda (SP),y                                     ; 8378: b1 7e       .~ ; Copy back TVS
+    sta TVSEXT - 1,y                               ; 837a: 99 32 00    .2. ; WSA, WSB and WSC
     dey                                            ; 837d: 88          .
     bne MORSP                                      ; 837e: d0 f8       ..
-    sec                                            ; 8380: 38          8              ; Add TVSEXT + 2 to stack
-    lda SP                                         ; 8381: a5 7e       .~             ; pointer to POP the stack
-    adc TVSEXT                                     ; 8383: 65 33       e3             ; +1 because carry is set
+    sec                                            ; 8380: 38          8  ; Add TVSEXT + 2 to stack
+    lda SP                                         ; 8381: a5 7e       .~ ; pointer to POP the stack
+    adc TVSEXT                                     ; 8383: 65 33       e3 ; +1 because carry is set
     bcs TVF                                        ; 8385: b0 05       ..
     adc #1                                         ; 8387: 69 01       i.
     bcc TVG                                        ; 8389: 90 05       ..
@@ -702,7 +702,7 @@ TVG
 STACK
     lda SP                                         ; 8393: a5 7e       .~
     clc                                            ; 8395: 18          .
-    sbc TVSEXT                                     ; 8396: e5 33       .3             ; -1 because carry is clear
+    sbc TVSEXT                                     ; 8396: e5 33       .3 ; -1 because carry is clear
     tax                                            ; 8398: aa          .
     bne EXTRAM                                     ; 8399: d0 01       ..
     clc                                            ; 839b: 18          .
@@ -719,7 +719,7 @@ SQUAT
     jsr RUBBSH                                     ; 83ad: 20 46 9b     F.
     bne STACK                                      ; 83b0: d0 e1       ..
 STIR
-    brk                                            ; 83b2: 00          .              ; None found
+    brk                                            ; 83b2: 00          .  ; None found
 
     !byte 0                                        ; 83b3: 00          .
     !text "No room"                                ; 83b4: 4e 6f 20... No
@@ -734,14 +734,14 @@ SROOM
     tax                                            ; 83c4: aa          .
     ldy TVSEXT                                     ; 83c5: a4 33       .3
     iny                                            ; 83c7: c8          .
-    lda ARG+1                                      ; 83c8: a5 31       .1             ; Store ARG
+    lda ARG+1                                      ; 83c8: a5 31       .1 ; Store ARG
     sta (SP),y                                     ; 83ca: 91 7e       .~
     dey                                            ; 83cc: 88          .
     lda ARG                                        ; 83cd: a5 30       .0
     sta (SP),y                                     ; 83cf: 91 7e       .~
     dey                                            ; 83d1: 88          .
     dey                                            ; 83d2: 88          .
-    pla                                            ; 83d3: 68          h              ; Store return addr
+    pla                                            ; 83d3: 68          h  ; Store return addr
     sta (SP),y                                     ; 83d4: 91 7e       .~
     iny                                            ; 83d6: c8          .
     pla                                            ; 83d7: 68          h
@@ -783,7 +783,7 @@ SQUASH
     jsr RUBBSH                                     ; 8400: 20 46 9b     F.
     bne BIND                                       ; 8403: d0 e5       ..
 BEAR
-    brk                                            ; 8405: 00          .              ; None found
+    brk                                            ; 8405: 00          .  ; None found
 
     !byte 1                                        ; 8406: 01          .
     !text "No room"                                ; 8407: 4e 6f 20... No
@@ -794,26 +794,26 @@ XROOM
     sty SP                                         ; 8411: 84 7e       .~
     ldy #4                                         ; 8413: a0 04       ..
     lda (SP),y                                     ; 8415: b1 7e       .~
-    adc #3                                         ; 8417: 69 03       i.             ; Carry is set
+    adc #3                                         ; 8417: 69 03       i. ; Carry is set
     pha                                            ; 8419: 48          H
     lda WSD+1                                      ; 841a: a5 84       ..
     sta (SP),y                                     ; 841c: 91 7e       .~
-    dey                                            ; 841e: 88          .              ; Y=3
+    dey                                            ; 841e: 88          .  ; Y=3
     lda WSD                                        ; 841f: a5 83       ..
     sta (SP),y                                     ; 8421: 91 7e       .~
-    lda (WSD),y                                    ; 8423: b1 83       ..             ; Old value and atom
-    dey                                            ; 8425: 88          .              ; Y=2
-    sta (SP),y                                     ; 8426: 91 7e       .~             ; on stack
+    lda (WSD),y                                    ; 8423: b1 83       .. ; Old value and atom
+    dey                                            ; 8425: 88          .  ; Y=2
+    sta (SP),y                                     ; 8426: 91 7e       .~ ; on stack
     lda (WSD),y                                    ; 8428: b1 83       ..
-    dey                                            ; 842a: 88          .              ; Y=1
+    dey                                            ; 842a: 88          .  ; Y=1
     sta (SP),y                                     ; 842b: 91 7e       .~
-    dey                                            ; 842d: 88          .              ; Y=0
+    dey                                            ; 842d: 88          .  ; Y=0
     pla                                            ; 842e: 68          h
-    sta (SP),y                                     ; 842f: 91 7e       .~             ; Bound var size
+    sta (SP),y                                     ; 842f: 91 7e       .~ ; Bound var size
     ldy #2                                         ; 8431: a0 02       ..
-    lda TVS,x                                      ; 8433: b5 30       .0             ; New value in atom
+    lda TVS,x                                      ; 8433: b5 30       .0 ; New value in atom
     sta (WSD),y                                    ; 8435: 91 83       ..
-    iny                                            ; 8437: c8          .              ; Y=3
+    iny                                            ; 8437: c8          .  ; Y=3
     lda TVS+1,x                                    ; 8438: b5 31       .1
     sta (WSD),y                                    ; 843a: 91 83       ..
     rts                                            ; 843c: 60          `
@@ -828,25 +828,25 @@ ALNUM
     lda #4                                         ; 843d: a9 04       ..
 ALVEC
     ldx #NUMF                                      ; 843f: a2 04       ..
-    bne SPACE                                      ; 8441: d0 14       ..             ; ALWAYS branch
+    bne SPACE                                      ; 8441: d0 14       .. ; ALWAYS branch
 
 ALCHAR
     ldx #CHARF                                     ; 8443: a2 00       ..
-    beq SPACE                                      ; 8445: f0 10       ..             ; ALWAYS branch
+    beq SPACE                                      ; 8445: f0 10       .. ; ALWAYS branch
 
 ALFSBR
     ldx #FSUBRF                                    ; 8447: a2 0c       ..
     lda #6                                         ; 8449: a9 06       ..
-    bne SPACE                                      ; 844b: d0 0a       ..             ; ALWAYS branch
+    bne SPACE                                      ; 844b: d0 0a       .. ; ALWAYS branch
 
 ALSUBR
     ldx #SUBRF                                     ; 844d: a2 08       ..
     lda #6                                         ; 844f: a9 06       ..
-    bne SPACE                                      ; 8451: d0 04       ..             ; ALWAYS branch
+    bne SPACE                                      ; 8451: d0 04       .. ; ALWAYS branch
 
 ALPAIR
     lda #5                                         ; 8453: a9 05       ..
-    ldx #$80                                       ; 8455: a2 80       ..             ; Pointer space
+    ldx #$80                                       ; 8455: a2 80       .. ; Pointer space
 SPACE
     sta SIZE                                       ; 8457: 85 82       ..
 SPACEB
@@ -867,7 +867,7 @@ SQUID
     jsr RUBBSH                                     ; 8473: 20 46 9b     F.
     bne SPACEB                                     ; 8476: d0 e1       ..
 ALLO
-    brk                                            ; 8478: 00          .              ; None found
+    brk                                            ; 8478: 00          .  ; None found
 
     !byte 2                                        ; 8479: 02          .
     !text "No room"                                ; 847a: 4e 6f 20... No
@@ -885,9 +885,9 @@ ROOM
     lda #0                                         ; 8493: a9 00       ..
     sta (POINT),y                                  ; 8495: 91 7a       .z
     ldy #2                                         ; 8497: a0 02       ..
-    lda #<ZA                                       ; 8499: a9 02       ..             ; UNDEFINED
+    lda #<ZA                                       ; 8499: a9 02       .. ; UNDEFINED
     sta (POINT),y                                  ; 849b: 91 7a       .z
-    iny                                            ; 849d: c8          .              ; Y=3
+    iny                                            ; 849d: c8          .  ; Y=3
     lda IMBOT                                      ; 849e: ad 2c 04    .,.
     sta (POINT),y                                  ; 84a1: 91 7a       .z
 OBSCUR
@@ -899,7 +899,7 @@ OBSCUR
 PINS
     lda #0                                         ; 84aa: a9 00       ..
     ldy #2                                         ; 84ac: a0 02       ..
-    sta (POINT),y                                  ; 84ae: 91 7a       .z             ; Initial NIL point
+    sta (POINT),y                                  ; 84ae: 91 7a       .z ; Initial NIL point
     ldy #4                                         ; 84b0: a0 04       ..
     sta (POINT),y                                  ; 84b2: 91 7a       .z
     rts                                            ; 84b4: 60          `
@@ -912,40 +912,40 @@ PINS
 INIT
     ; Set BRK vector to 'ERRORS'
     lda #<ERRORS                                   ; 84b5: a9 87       ..
-    sta brkv                                       ; 84b7: 8d 02 02    ...            ; Error handling
+    sta brkv                                       ; 84b7: 8d 02 02    ... ; Error handling
     lda #>ERRORS                                   ; 84ba: a9 9e       ..
     sta brkv+1                                     ; 84bc: 8d 03 02    ...
 
-    lda #osbyte_read_himem                         ; 84bf: a9 84       ..             ; Find end of memory
-    jsr osbyte                                     ; 84c1: 20 f4 ff     ..            ; Read top of user memory (HIMEM)
-    sty ARETOP                                     ; 84c4: 84 79       .y             ; X and Y contain the address of HIMEM (low, high)
+    lda #osbyte_read_himem                         ; 84bf: a9 84       .. ; Find end of memory
+    jsr osbyte                                     ; 84c1: 20 f4 ff     .. ; Read top of user memory (HIMEM)
+    sty ARETOP                                     ; 84c4: 84 79       .y ; X and Y contain the address of HIMEM (low, high)
 
     ; **** Set up various values
-    lda #$fc                                       ; 84c6: a9 fc       ..             ; Messages except GC
+    lda #$fc                                       ; 84c6: a9 fc       .. ; Messages except GC
     sta LEVEL                                      ; 84c8: 85 1a       ..
     ldx #0                                         ; 84ca: a2 00       ..
-    stx HANDLE                                     ; 84cc: 86 13       ..             ; Output to screen
-    stx GCNO                                       ; 84ce: 86 00       ..             ; Zero collections
+    stx HANDLE                                     ; 84cc: 86 13       .. ; Output to screen
+    stx GCNO                                       ; 84ce: 86 00       .. ; Zero collections
     stx GCNO+1                                     ; 84d0: 86 01       ..
-    stx ERRCNT                                     ; 84d2: 86 0d       ..             ; Zero error count
+    stx ERRCNT                                     ; 84d2: 86 0d       .. ; Zero error count
     stx ERRCNT+1                                   ; 84d4: 86 0e       ..
-    ldy #$10                                       ; 84d6: a0 10       ..             ; Clear TVS etc.
+    ldy #$10                                       ; 84d6: a0 10       .. ; Clear TVS etc.
 ZLP
     stx TVS,y                                      ; 84d8: 96 30       .0
     dey                                            ; 84da: 88          .
     bpl ZLP                                        ; 84db: 10 fb       ..
-    lda #$0a                                       ; 84dd: a9 0a       ..             ; Initially no args
+    lda #$0a                                       ; 84dd: a9 0a       .. ; Initially no args
     sta TVSEXT                                     ; 84df: 85 33       .3
-    jsr GCTIMZ                                     ; 84e1: 20 d6 98     ..            ; Zero GC time
-    jsr STCLK                                      ; 84e4: 20 c8 98     ..            ; Zero time
-    lda #<KBD                                      ; 84e7: a9 ff       ..             ; Set up Escape check
+    jsr GCTIMZ                                     ; 84e1: 20 d6 98     .. ; Zero GC time
+    jsr STCLK                                      ; 84e4: 20 c8 98     .. ; Zero time
+    lda #<KBD                                      ; 84e7: a9 ff       .. ; Set up Escape check
     sta IODCB                                      ; 84e9: 8d 16 04    ...
     lda #>KBD                                      ; 84ec: a9 00       ..
     sta IODCB+1                                    ; 84ee: 8d 17 04    ...
     lda #0                                         ; 84f1: a9 00       ..
     sta IODCB+2                                    ; 84f3: 8d 18 04    ...
     sta IODCB+3                                    ; 84f6: 8d 19 04    ...
-    jmp SUPER                                      ; 84f9: 4c c6 82    L..            ; Enter supervisor
+    jmp SUPER                                      ; 84f9: 4c c6 82    L.. ; Enter supervisor
 
 
     ; **** Message handler
@@ -954,19 +954,19 @@ MESSAH
 MESSAI
     sty HANDLE                                     ; 84fe: 84 13       ..
 MESSAG
-    lda TEXT,x                                     ; 8500: bd 98 81    ...            ; Print message
+    lda TEXT,x                                     ; 8500: bd 98 81    ... ; Print message
     php                                            ; 8503: 08          .
-    and #$7f                                       ; 8504: 29 7f       ).             ; Remove flag bit
+    and #$7f                                       ; 8504: 29 7f       ). ; Remove flag bit
     jsr OUT                                        ; 8506: 20 0e 85     ..
     inx                                            ; 8509: e8          .
-    plp                                            ; 850a: 28          (              ; Retrieve flag
-    bpl MESSAG                                     ; 850b: 10 f3       ..             ; Bit 7 not set
+    plp                                            ; 850a: 28          (  ; Retrieve flag
+    bpl MESSAG                                     ; 850b: 10 f3       .. ; Bit 7 not set
     rts                                            ; 850d: 60          `
 
 OUT
-    ldy HANDLE                                     ; 850e: a4 13       ..             ; to screen?; Y=file handle
+    ldy HANDLE                                     ; 850e: a4 13       .. ; to screen? ; Y=file handle
     beq OUTSCR                                     ; 8510: f0 03       ..
-    jmp osbput                                     ; 8512: 4c d4 ff    L..            ; Write a single byte A to an open file Y
+    jmp osbput                                     ; 8512: 4c d4 ff    L.. ; Write a single byte A to an open file Y
 
 OUTSCR
     cmp #$0d                                       ; 8515: c9 0d       ..
@@ -974,7 +974,7 @@ OUTSCR
 CROUT
     lda #$0d                                       ; 8519: a9 0d       ..
 NCR
-    jmp osasci                                     ; 851b: 4c e3 ff    L..            ; Print the char; Write newline (characters 10 and 13)
+    jmp osasci                                     ; 851b: 4c e3 ff    L.. ; Print the char ; Write newline (characters 10 and 13)
 
 
     ; ******************************
@@ -989,7 +989,7 @@ NXEVAL
     lda WSA+1                                      ; 851e: a5 35       .5
     bne NXEVAM                                     ; 8520: d0 14       ..
 FSARG
-    brk                                            ; 8522: 00          .              ; No more args
+    brk                                            ; 8522: 00          .  ; No more args
 
     !byte 3                                        ; 8523: 03          .
     !text "Too few arguments"                      ; 8524: 54 6f 6f... Too
@@ -1000,9 +1000,9 @@ NXEVAM
 
     ; **** Main evaluator
 EVALU
-    jsr KBCHK                                      ; 8539: 20 47 85     G.            ; Main entry
+    jsr KBCHK                                      ; 8539: 20 47 85     G. ; Main entry
     beq EVAL1                                      ; 853c: f0 18       ..
-    brk                                            ; 853e: 00          .              ; Escape
+    brk                                            ; 853e: 00          .  ; Escape
 
     !byte 4                                        ; 853f: 04          .
     !text "Escape"                                 ; 8540: 45 73 63... Esc
@@ -1012,22 +1012,22 @@ KBCHK
     ldx #<IODCB                                    ; 8547: a2 16       ..
     ldy #>IODCB                                    ; 8549: a0 04       ..
     lda #osword_read_io_memory                     ; 854b: a9 05       ..
-    jsr osword                                     ; 854d: 20 f1 ff     ..            ; Read byte of I/O processor memory
+    jsr osword                                     ; 854d: 20 f1 ff     .. ; Read byte of I/O processor memory
     lda #$80                                       ; 8550: a9 80       ..
     and IODCB+4                                    ; 8552: 2d 1a 04    -..
     rts                                            ; 8555: 60          `
 
 EVAL1
     lda ARG+1                                      ; 8556: a5 31       .1
-    beq EVARTS                                     ; 8558: f0 51       .Q             ; NIL?
+    beq EVARTS                                     ; 8558: f0 51       .Q ; NIL?
     ldy #0                                         ; 855a: a0 00       ..
-    lda (ARG),y                                    ; 855c: b1 30       .0             ; Check type
+    lda (ARG),y                                    ; 855c: b1 30       .0 ; Check type
     bmi EVLIST                                     ; 855e: 30 0f       0.
     bne EVARTS                                     ; 8560: d0 49       .I
     ldy #2                                         ; 8562: a0 02       ..
     lda (ARG),y                                    ; 8564: b1 30       .0
     tax                                            ; 8566: aa          .
-    iny                                            ; 8567: c8          .              ; Get value cell; Y=3
+    iny                                            ; 8567: c8          .  ; Get value cell ; Y=3
     lda (ARG),y                                    ; 8568: b1 30       .0
     stx ARG                                        ; 856a: 86 30       .0
     sta ARG+1                                      ; 856c: 85 31       .1
@@ -1038,13 +1038,13 @@ EVLIST
     ldy #4                                         ; 8572: a0 04       ..
     lda (ARG),y                                    ; 8574: b1 30       .0
     sta WSA+1                                      ; 8576: 85 35       .5
-    dey                                            ; 8578: 88          .              ; Y=3
+    dey                                            ; 8578: 88          .  ; Y=3
     lda (ARG),y                                    ; 8579: b1 30       .0
     sta WSA                                        ; 857b: 85 34       .4
-    dey                                            ; 857d: 88          .              ; Y=2
+    dey                                            ; 857d: 88          .  ; Y=2
     lda (ARG),y                                    ; 857e: b1 30       .0
     tax                                            ; 8580: aa          .
-    dey                                            ; 8581: 88          .              ; Y=1
+    dey                                            ; 8581: 88          .  ; Y=1
     lda (ARG),y                                    ; 8582: b1 30       .0
     stx ARG+1                                      ; 8584: 86 31       .1
     sta ARG                                        ; 8586: 85 30       .0
@@ -1054,7 +1054,7 @@ EVLIST
     jsr EVALU                                      ; 8591: 20 39 85     9.
     jsr FUN                                        ; 8594: 20 ac 85     ..
 FUNERR
-    brk                                            ; 8597: 00          .              ; Can't make function
+    brk                                            ; 8597: 00          .  ; Can't make function
 
     !byte 6                                        ; 8598: 06          .
     !text "Function expected"                      ; 8599: 46 75 6e... Fun
@@ -1068,24 +1068,24 @@ FUN
     beq FUNERR                                     ; 85ae: f0 e7       ..
     ldy #0                                         ; 85b0: a0 00       ..
     lda (ARG),y                                    ; 85b2: b1 30       .0
-    beq EVARTS                                     ; 85b4: f0 f5       ..             ; Char atom
+    beq EVARTS                                     ; 85b4: f0 f5       .. ; Char atom
     bpl ENT                                        ; 85b6: 10 12       ..
-    iny                                            ; 85b8: c8          .              ; Lambda?; Y=1
+    iny                                            ; 85b8: c8          .  ; Lambda? ; Y=1
     lda (ARG),y                                    ; 85b9: b1 30       .0
     cmp #<LAMBDA                                   ; 85bb: c9 18       ..
     bne EVARTS                                     ; 85bd: d0 ec       ..
-    iny                                            ; 85bf: c8          .              ; Y=2
+    iny                                            ; 85bf: c8          .  ; Y=2
     lda (ARG),y                                    ; 85c0: b1 30       .0
     cmp IMBOT                                      ; 85c2: cd 2c 04    .,.
     bne EVARTS                                     ; 85c5: d0 e4       ..
     jmp LAMOK                                      ; 85c7: 4c 67 86    Lg.
 
 ENT
-    tay                                            ; 85ca: a8          .              ; Probably entry
+    tay                                            ; 85ca: a8          .  ; Probably entry
     pla                                            ; 85cb: 68          h
     pla                                            ; 85cc: 68          h
     lda ARG                                        ; 85cd: a5 30       .0
-    sta WSC                                        ; 85cf: 85 38       .8             ; Keep fn safe
+    sta WSC                                        ; 85cf: 85 38       .8 ; Keep fn safe
     lda ARG+1                                      ; 85d1: a5 31       .1
     sta WSC+1                                      ; 85d3: 85 39       .9
     ldx #$0a                                       ; 85d5: a2 0a       ..
@@ -1094,14 +1094,14 @@ ENT
     beq ISFSBR                                     ; 85db: f0 4a       .J
     cpy #SUBRF                                     ; 85dd: c0 08       ..
     beq ISSUBR                                     ; 85df: f0 17       ..
-    bne FUNERR                                     ; 85e1: d0 b4       ..             ; Oops a number!; ALWAYS branch
+    bne FUNERR                                     ; 85e1: d0 b4       .. ; Oops a number! ; ALWAYS branch
 
 MORAG
     jsr NXEVAM                                     ; 85e3: 20 36 85     6.
     ldx TVSEXT                                     ; 85e6: a6 33       .3
     cpx #$42                                       ; 85e8: e0 42       .B
     bcs NARGER                                     ; 85ea: b0 1f       ..
-    lda ARG                                        ; 85ec: a5 30       .0             ; Args eval in TVS
+    lda ARG                                        ; 85ec: a5 30       .0 ; Args eval in TVS
     sta TVS,x                                      ; 85ee: 95 30       .0
     inx                                            ; 85f0: e8          .
     lda ARG+1                                      ; 85f1: a5 31       .1
@@ -1122,7 +1122,7 @@ INSUBR
     beq ISFSBR                                     ; 8607: f0 1e       ..
     bcc ISFSBR                                     ; 8609: 90 1c       ..
 NARGER
-    brk                                            ; 860b: 00          .              ; Wrong
+    brk                                            ; 860b: 00          .  ; Wrong
 
     !byte 6                                        ; 860c: 06          .
     !text "Wrong number of arguments"              ; 860d: 57 72 6f... Wro
@@ -1133,9 +1133,9 @@ ISFSBR
     lda (WSC),y                                    ; 8629: b1 38       .8
     beq GOSUB                                      ; 862b: f0 2c       .,
     sta WSD+1                                      ; 862d: 85 84       ..
-    dey                                            ; 862f: 88          .              ; Y=2
+    dey                                            ; 862f: 88          .  ; Y=2
     lda (WSC),y                                    ; 8630: b1 38       .8
-    sta WSD                                        ; 8632: 85 83       ..             ; List in WSD
+    sta WSD                                        ; 8632: 85 83       .. ; List in WSD
     jmp PLOP                                       ; 8634: 4c 40 86    L@.
 
 DEFLST
@@ -1146,12 +1146,12 @@ DEFLST
     pla                                            ; 863d: 68          h
     sta WSD+1                                      ; 863e: 85 84       ..
 PLOP
-    cpx TVSEXT                                     ; 8640: e4 33       .3             ; Default needed
+    cpx TVSEXT                                     ; 8640: e4 33       .3 ; Default needed
     bcc SKIP                                       ; 8642: 90 0b       ..
     ldy #1                                         ; 8644: a0 01       ..
     lda (WSD),y                                    ; 8646: b1 83       ..
     sta TVS,x                                      ; 8648: 95 30       .0
-    iny                                            ; 864a: c8          .              ; Y=2
+    iny                                            ; 864a: c8          .  ; Y=2
     lda (WSD),y                                    ; 864b: b1 83       ..
     sta TVS+1,x                                    ; 864d: 95 31       .1
 SKIP
@@ -1162,13 +1162,13 @@ SKIP
     bne DEFLST                                     ; 8655: d0 e0       ..
     stx TVSEXT                                     ; 8657: 86 33       .3
 GOSUB
-    ldy #4                                         ; 8659: a0 04       ..             ; Go and do it!
+    ldy #4                                         ; 8659: a0 04       .. ; Go and do it!
     lda (WSC),y                                    ; 865b: b1 38       .8
     sta RETADD                                     ; 865d: 85 85       ..
-    iny                                            ; 865f: c8          .              ; Y=5
+    iny                                            ; 865f: c8          .  ; Y=5
     lda (WSC),y                                    ; 8660: b1 38       .8
     sta RETADD+1                                   ; 8662: 85 86       ..
-    jmp (RETADD)                                   ; 8664: 6c 85 00    l..            ; End of subrs
+    jmp (RETADD)                                   ; 8664: 6c 85 00    l.. ; End of subrs
 
 
     ; ******************************
@@ -1179,9 +1179,9 @@ LAMOK
     pla                                            ; 8668: 68          h
     ldy #4                                         ; 8669: a0 04       ..
     lda (ARG),y                                    ; 866b: b1 30       .0
-    beq LAMERR                                     ; 866d: f0 34       .4             ; No parms or body
+    beq LAMERR                                     ; 866d: f0 34       .4 ; No parms or body
     sta WSD+1                                      ; 866f: 85 84       ..
-    dey                                            ; 8671: 88          .              ; Y=3
+    dey                                            ; 8671: 88          .  ; Y=3
     lda (ARG),y                                    ; 8672: b1 30       .0
     sta WSD                                        ; 8674: 85 83       ..
     ldx #$0a                                       ; 8676: a2 0a       ..
@@ -1189,19 +1189,19 @@ LAMOK
     ldy #0                                         ; 867a: a0 00       ..
     lda (WSD),y                                    ; 867c: b1 83       ..
     bpl LAMERR                                     ; 867e: 10 23       .#
-    iny                                            ; 8680: c8          .              ; Y=1
-    lda (WSD),y                                    ; 8681: b1 83       ..             ; Parm list
+    iny                                            ; 8680: c8          .  ; Y=1
+    lda (WSD),y                                    ; 8681: b1 83       .. ; Parm list
     sta WSB                                        ; 8683: 85 36       .6
-    iny                                            ; 8685: c8          .              ; Y=2
+    iny                                            ; 8685: c8          .  ; Y=2
     lda (WSD),y                                    ; 8686: b1 83       ..
     sta WSB+1                                      ; 8688: 85 37       .7
-    iny                                            ; 868a: c8          .              ; Y=3
-    lda (WSD),y                                    ; 868b: b1 83       ..             ; Body in WSC
+    iny                                            ; 868a: c8          .  ; Y=3
+    lda (WSD),y                                    ; 868b: b1 83       .. ; Body in WSC
     sta WSC                                        ; 868d: 85 38       .8
-    iny                                            ; 868f: c8          .              ; Y=4
+    iny                                            ; 868f: c8          .  ; Y=4
     lda (WSD),y                                    ; 8690: b1 83       ..
     sta WSC+1                                      ; 8692: 85 39       .9
-    lda WSB+1                                      ; 8694: a5 37       .7             ; NIL parms?
+    lda WSB+1                                      ; 8694: a5 37       .7 ; NIL parms?
     bne AVX                                        ; 8696: d0 03       ..
     jmp XLAM                                       ; 8698: 4c 3f 87    L?.
 
@@ -1209,9 +1209,9 @@ AVX
     ldy #0                                         ; 869b: a0 00       ..
     lda (WSB),y                                    ; 869d: b1 36       .6
     bmi ISEXPR                                     ; 869f: 30 2d       0-
-    beq ISFXP1                                     ; 86a1: f0 10       ..             ; NB spelling!
+    beq ISFXP1                                     ; 86a1: f0 10       .. ; NB spelling!
 LAMERR
-    brk                                            ; 86a3: 00          .              ; Syntax error
+    brk                                            ; 86a3: 00          .  ; Syntax error
 
     !byte 7                                        ; 86a4: 07          .
     !text "Lambda syntax"                          ; 86a5: 4c 61 6d... Lam
@@ -1222,7 +1222,7 @@ ISFXP1
 
 MORFAG
     jsr NXEVAM                                     ; 86b6: 20 36 85     6.
-    ldx TVSEXT                                     ; 86b9: a6 33       .3             ; Spread args for expr
+    ldx TVSEXT                                     ; 86b9: a6 33       .3 ; Spread args for expr
     cpx #$42                                       ; 86bb: e0 42       .B
     bcc GODARG                                     ; 86bd: 90 03       ..
     jmp NARGER                                     ; 86bf: 4c 0b 86    L..
@@ -1245,11 +1245,11 @@ XENON
     lda (WSB),y                                    ; 86d6: b1 36       .6
     beq LAMERR                                     ; 86d8: f0 c9       ..
     sta WSD+1                                      ; 86da: 85 84       ..
-    dey                                            ; 86dc: 88          .              ; Y=1
+    dey                                            ; 86dc: 88          .  ; Y=1
     lda (WSB),y                                    ; 86dd: b1 36       .6
     sta WSD                                        ; 86df: 85 83       ..
-    dey                                            ; 86e1: 88          .              ; Y=0
-    cpx TVSEXT                                     ; 86e2: e4 33       .3             ; Enough args?
+    dey                                            ; 86e1: 88          .  ; Y=0
+    cpx TVSEXT                                     ; 86e2: e4 33       .3 ; Enough args?
     lda (WSD),y                                    ; 86e4: b1 83       ..
     beq DOBIND                                     ; 86e6: f0 24       .$
     bpl LAMERR                                     ; 86e8: 10 b9       ..
@@ -1257,36 +1257,36 @@ XENON
     ldy #3                                         ; 86ec: a0 03       ..
     lda (WSD),y                                    ; 86ee: b1 83       ..
     sta TVS,x                                      ; 86f0: 95 30       .0
-    iny                                            ; 86f2: c8          .              ; The default value?; Y=4
+    iny                                            ; 86f2: c8          .  ; The default value? ; Y=4
     lda (WSD),y                                    ; 86f3: b1 83       ..
     sta TVS+1,x                                    ; 86f5: 95 31       .1
     clc                                            ; 86f7: 18          .
 NOD
     ldy #2                                         ; 86f8: a0 02       ..
     lda (WSD),y                                    ; 86fa: b1 83       ..
-    beq LAMERR                                     ; 86fc: f0 a5       ..             ; Get the atom bind
+    beq LAMERR                                     ; 86fc: f0 a5       .. ; Get the atom bind
     pha                                            ; 86fe: 48          H
-    dey                                            ; 86ff: 88          .              ; Y=1
+    dey                                            ; 86ff: 88          .  ; Y=1
     lda (WSD),y                                    ; 8700: b1 83       ..
     sta WSD                                        ; 8702: 85 83       ..
     pla                                            ; 8704: 68          h
     sta WSD+1                                      ; 8705: 85 84       ..
-    dey                                            ; 8707: 88          .              ; Y=0
+    dey                                            ; 8707: 88          .  ; Y=0
     lda (WSD),y                                    ; 8708: b1 83       ..
-    bne LAMERR                                     ; 870a: d0 97       ..             ; Must be char atom
+    bne LAMERR                                     ; 870a: d0 97       .. ; Must be char atom
 DOBIND
     bcc GADARG                                     ; 870c: 90 03       ..
     jmp NARGER                                     ; 870e: 4c 0b 86    L..
 
 GADARG
-    jsr BIND                                       ; 8711: 20 ea 83     ..            ; Bind takes atom
-    inx                                            ; 8714: e8          .              ; in WSD and value in TVS + X
+    jsr BIND                                       ; 8711: 20 ea 83     .. ; Bind takes atom
+    inx                                            ; 8714: e8          .  ; in WSD and value in TVS + X
     inx                                            ; 8715: e8          .
     ldy #4                                         ; 8716: a0 04       ..
     lda (WSB),y                                    ; 8718: b1 36       .6
     beq XLAMB                                      ; 871a: f0 21       .!
     pha                                            ; 871c: 48          H
-    dey                                            ; 871d: 88          .              ; Y=3
+    dey                                            ; 871d: 88          .  ; Y=3
     lda (WSB),y                                    ; 871e: b1 36       .6
     sta WSB                                        ; 8720: 85 36       .6
     pla                                            ; 8722: 68          h
@@ -1309,7 +1309,7 @@ XLAMB
 XLAM
     lda WSC+1                                      ; 873f: a5 39       .9
     bne XLAMC                                      ; 8741: d0 0a       ..
-    beq EVPOP                                      ; 8743: f0 24       .$             ; ALWAYS branch
+    beq EVPOP                                      ; 8743: f0 24       .$ ; ALWAYS branch
 
 XLAMD
     tax                                            ; 8745: aa          .
@@ -1342,61 +1342,61 @@ EVPOP
 GTCHAR
     ldy HANDLE                                     ; 876c: a4 13       ..
     beq KEYCH                                      ; 876e: f0 10       ..
-    lda LSCHAR                                     ; 8770: ad 30 04    .0.            ; From file
+    lda LSCHAR                                     ; 8770: ad 30 04    .0. ; From file
     bpl RENEW                                      ; 8773: 10 04       ..
     and #$7f                                       ; 8775: 29 7f       ).
-    bpl REOLD                                      ; 8777: 10 03       ..             ; ALWAYS branch
+    bpl REOLD                                      ; 8777: 10 03       .. ; ALWAYS branch
 
 RENEW
-    jsr osbget                                     ; 8779: 20 d7 ff     ..            ; Read a single byte from an open file Y
+    jsr osbget                                     ; 8779: 20 d7 ff     .. ; Read a single byte from an open file Y
 REOLD
     sta LSCHAR                                     ; 877c: 8d 30 04    .0.
     rts                                            ; 877f: 60          `
 
 KEYCH
-    txa                                            ; 8780: 8a          .              ; From screen
+    txa                                            ; 8780: 8a          .  ; From screen
     pha                                            ; 8781: 48          H
     ldx LSBUFF                                     ; 8782: a6 8c       ..
-    cpx #$f0                                       ; 8784: e0 f0       ..             ; => New line
+    cpx #$f0                                       ; 8784: e0 f0       .. ; => New line
     bne NNL                                        ; 8786: d0 29       .)
 
     ; **** Read a line
-    bit LEVEL                                      ; 8788: 24 1a       $.             ; Prompt masked?
+    bit LEVEL                                      ; 8788: 24 1a       $. ; Prompt masked?
     bpl READON                                     ; 878a: 10 0d       ..
     lda DEPTH                                      ; 878c: a5 8b       ..
     tax                                            ; 878e: aa          .
 PRDEPT
     beq READON                                     ; 878f: f0 08       ..
     lda #'['                                       ; 8791: a9 5b       .[
-    jsr oswrch                                     ; 8793: 20 ee ff     ..            ; Write character 91
+    jsr oswrch                                     ; 8793: 20 ee ff     .. ; Write character 91
     dex                                            ; 8796: ca          .
     bpl PRDEPT                                     ; 8797: 10 f6       ..
 READON
     ldx #<INCB                                     ; 8799: a2 3e       .>
     ldy #>INCB                                     ; 879b: a0 82       ..
     lda #osword_read_line                          ; 879d: a9 00       ..
-    jsr osword                                     ; 879f: 20 f1 ff     ..            ; Read line; Read line from input stream (exits with C=1 if ESCAPE pressed)
+    jsr osword                                     ; 879f: 20 f1 ff     .. ; Read line ; Read line from input stream (exits with C=1 if ESCAPE pressed)
     bcc OKLINE                                     ; 87a2: 90 09       ..
 RDCHER
-    brk                                            ; 87a4: 00          .              ; Escape
+    brk                                            ; 87a4: 00          .  ; Escape
 
     !byte $1a                                      ; 87a5: 1a          .
     !text "Escape"                                 ; 87a6: 45 73 63... Esc
     !byte 0                                        ; 87ac: 00          .
 
 OKLINE
-    lda #$ff                                       ; 87ad: a9 ff       ..             ; Zero => newline
+    lda #$ff                                       ; 87ad: a9 ff       .. ; Zero => newline
     sta LSBUFF                                     ; 87af: 85 8c       ..
 NNL
-    inc LSBUFF                                     ; 87b1: e6 8c       ..             ; Fetch char
+    inc LSBUFF                                     ; 87b1: e6 8c       .. ; Fetch char
     pla                                            ; 87b3: 68          h
-    tax                                            ; 87b4: aa          .              ; RESTORE X
+    tax                                            ; 87b4: aa          .  ; RESTORE X
     ldy LSBUFF                                     ; 87b5: a4 8c       ..
-    lda DOSBUF,y                                   ; 87b7: b9 00 07    ...            ; Get char form buffer
+    lda DOSBUF,y                                   ; 87b7: b9 00 07    ... ; Get char form buffer
     cmp #$0d                                       ; 87ba: c9 0d       ..
     bne XYZ                                        ; 87bc: d0 04       ..
     ldy #$f0                                       ; 87be: a0 f0       ..
-    sty LSBUFF                                     ; 87c0: 84 8c       ..             ; New line next time
+    sty LSBUFF                                     ; 87c0: 84 8c       .. ; New line next time
 XYZ
     rts                                            ; 87c2: 60          `
 
@@ -1405,13 +1405,13 @@ RSREAD
     stx DEPTH                                      ; 87c5: 86 8b       ..
     stx LINENO                                     ; 87c7: 86 25       .%
     stx HANDLE                                     ; 87c9: 86 13       ..
-    ldx #$f0                                       ; 87cb: a2 f0       ..             ; Flag for new line
+    ldx #$f0                                       ; 87cb: a2 f0       .. ; Flag for new line
     stx LSBUFF                                     ; 87cd: 86 8c       ..
 
     ; **** READ
 READ
     ldx #$ff                                       ; 87cf: a2 ff       ..
-    stx ARG+1                                      ; 87d1: 86 31       .1             ; Flag for rubbish
+    stx ARG+1                                      ; 87d1: 86 31       .1 ; Flag for rubbish
     jsr STACK                                      ; 87d3: 20 93 83     ..
 NXCHAR
     jsr GTCHAR                                     ; 87d6: 20 6c 87     l.
@@ -1424,17 +1424,17 @@ RPT
     beq NXCHAR                                     ; 87e3: f0 f1       ..
     cmp #'\''                                      ; 87e5: c9 27       .'
     bne PARQU                                      ; 87e7: d0 3d       .=
-    lda #<QUOTE                                    ; 87e9: a9 2d       .-             ; It's a quote
+    lda #<QUOTE                                    ; 87e9: a9 2d       .- ; It's a quote
     sta WSA                                        ; 87eb: 85 34       .4
     lda IMBOT                                      ; 87ed: ad 2c 04    .,.
     sta WSA+1                                      ; 87f0: 85 35       .5
 ODDAT
-    jsr READ                                       ; 87f2: 20 cf 87     ..            ; Entry for atoms
-    jsr ALPAIR                                     ; 87f5: 20 53 84     S.            ; Get list cell for it
+    jsr READ                                       ; 87f2: 20 cf 87     .. ; Entry for atoms
+    jsr ALPAIR                                     ; 87f5: 20 53 84     S. ; Get list cell for it
     ldy #2                                         ; 87f8: a0 02       ..
     lda ARG+1                                      ; 87fa: a5 31       .1
     sta (POINT),y                                  ; 87fc: 91 7a       .z
-    dey                                            ; 87fe: 88          .              ; Y=1
+    dey                                            ; 87fe: 88          .  ; Y=1
     lda ARG                                        ; 87ff: a5 30       .0
     sta (POINT),y                                  ; 8801: 91 7a       .z
     lda POINT+1                                    ; 8803: a5 7b       .{
@@ -1461,23 +1461,23 @@ RDLJMP
 PARQU
     cmp #'('                                       ; 8826: c9 28       .(
     beq RDLJMP                                     ; 8828: f0 f9       ..
-    ldx #$ff                                       ; 882a: a2 ff       ..             ; Some sort of atom
-    cmp #'!'                                       ; 882c: c9 21       .!             ; Escape
+    ldx #$ff                                       ; 882a: a2 ff       .. ; Some sort of atom
+    cmp #'!'                                       ; 882c: c9 21       .! ; Escape
     beq SPCATM                                     ; 882e: f0 15       ..
-    ldy #1                                         ; 8830: a0 01       ..             ; Ordinary char atom
+    ldy #1                                         ; 8830: a0 01       .. ; Ordinary char atom
     jsr TERMQ                                      ; 8832: 20 e5 88     ..
     bne NORMAL                                     ; 8835: d0 11       ..
 QUEER
-    brk                                            ; 8837: 00          .              ; Syntax error
+    brk                                            ; 8837: 00          .  ; Syntax error
 
     !byte 8                                        ; 8838: 08          .
     !text "Read syntax"                            ; 8839: 52 65 61... Rea
     !byte 0                                        ; 8844: 00          .
 
 SPCATM
-    jsr GTCHAR                                     ; 8845: 20 6c 87     l.            ; Escaped char
+    jsr GTCHAR                                     ; 8845: 20 6c 87     l. ; Escaped char
 NORMAL
-    inx                                            ; 8848: e8          .              ; Fetch chars
+    inx                                            ; 8848: e8          .  ; Fetch chars
     sta OSWBUF,x                                   ; 8849: 9d 00 06    ...
     jsr GTCHAR                                     ; 884c: 20 6c 87     l.
     cmp #'!'                                       ; 884f: c9 21       .!
@@ -1515,7 +1515,7 @@ RDLIST
     bne LON                                        ; 887f: d0 10       ..
     jsr GTCHAR                                     ; 8881: 20 6c 87     l.
 DOTTY
-    brk                                            ; 8884: 00          .              ; Dot syntax
+    brk                                            ; 8884: 00          .  ; Dot syntax
 
     !byte 9                                        ; 8885: 09          .
     !text "Dot syntax"                             ; 8886: 44 6f 74... Dot
@@ -1526,15 +1526,15 @@ LON
     jsr ALPAIR                                     ; 8894: 20 53 84     S.
     ldx POINT                                      ; 8897: a6 7a       .z
     lda POINT+1                                    ; 8899: a5 7b       .{
-    ldy WSB+1                                      ; 889b: a4 37       .7             ; First element?
+    ldy WSB+1                                      ; 889b: a4 37       .7 ; First element?
     beq NEWLST                                     ; 889d: f0 0c       ..
     ldy #4                                         ; 889f: a0 04       ..
     sta (WSB),y                                    ; 88a1: 91 36       .6
     txa                                            ; 88a3: 8a          .
-    dey                                            ; 88a4: 88          .              ; Y=3
+    dey                                            ; 88a4: 88          .  ; Y=3
     sta (WSB),y                                    ; 88a5: 91 36       .6
     lda POINT+1                                    ; 88a7: a5 7b       .{
-    bne ALLIST                                     ; 88a9: d0 04       ..             ; Always taken
+    bne ALLIST                                     ; 88a9: d0 04       .. ; Always taken
 NEWLST
     stx WSA                                        ; 88ab: 86 34       .4
     sta WSA+1                                      ; 88ad: 85 35       .5
@@ -1544,22 +1544,22 @@ ALLIST
     ldy #1                                         ; 88b3: a0 01       ..
     lda ARG                                        ; 88b5: a5 30       .0
     sta (WSB),y                                    ; 88b7: 91 36       .6
-    iny                                            ; 88b9: c8          .              ; Y=2
+    iny                                            ; 88b9: c8          .  ; Y=2
     lda ARG+1                                      ; 88ba: a5 31       .1
     sta (WSB),y                                    ; 88bc: 91 36       .6
     jsr LCHAR                                      ; 88be: 20 11 89     ..
     cmp #'.'                                       ; 88c1: c9 2e       ..
     bne LON                                        ; 88c3: d0 cc       ..
-    jsr GTCHAR                                     ; 88c5: 20 6c 87     l.            ; Dotted pair at end
+    jsr GTCHAR                                     ; 88c5: 20 6c 87     l. ; Dotted pair at end
     jsr READ                                       ; 88c8: 20 cf 87     ..
     ldy #4                                         ; 88cb: a0 04       ..
     lda ARG+1                                      ; 88cd: a5 31       .1
     sta (WSB),y                                    ; 88cf: 91 36       .6
-    dey                                            ; 88d1: 88          .              ; Y=3
+    dey                                            ; 88d1: 88          .  ; Y=3
     lda ARG                                        ; 88d2: a5 30       .0
     sta (WSB),y                                    ; 88d4: 91 36       .6
-    jsr LCHAR                                      ; 88d6: 20 11 89     ..            ; Shouldn't return
-    jmp DOTTY                                      ; 88d9: 4c 84 88    L..            ; Dot syntax error
+    jsr LCHAR                                      ; 88d6: 20 11 89     .. ; Shouldn't return
+    jmp DOTTY                                      ; 88d9: 4c 84 88    L.. ; Dot syntax error
 
 READX
     jsr FILGB                                      ; 88dc: 20 94 8a     ..
@@ -1588,16 +1588,16 @@ NXTARH
     ldy #0                                         ; 88f5: a0 00       ..
     lda (WSA),y                                    ; 88f7: b1 34       .4
     bpl ARGERR                                     ; 88f9: 10 f7       ..
-    iny                                            ; 88fb: c8          .              ; Y=1
+    iny                                            ; 88fb: c8          .  ; Y=1
     lda (WSA),y                                    ; 88fc: b1 34       .4
     sta ARG                                        ; 88fe: 85 30       .0
-    iny                                            ; 8900: c8          .              ; Y=2
+    iny                                            ; 8900: c8          .  ; Y=2
     lda (WSA),y                                    ; 8901: b1 34       .4
     sta ARG+1                                      ; 8903: 85 31       .1
-    iny                                            ; 8905: c8          .              ; Y=3
+    iny                                            ; 8905: c8          .  ; Y=3
     lda (WSA),y                                    ; 8906: b1 34       .4
     tax                                            ; 8908: aa          .
-    iny                                            ; 8909: c8          .              ; Y=4
+    iny                                            ; 8909: c8          .  ; Y=4
     lda (WSA),y                                    ; 890a: b1 34       .4
     stx WSA                                        ; 890c: 86 34       .4
     sta WSA+1                                      ; 890e: 85 35       .5
@@ -1614,10 +1614,10 @@ LCHAR
 PUTBCK
     pha                                            ; 8920: 48          H
     ldy HANDLE                                     ; 8921: a4 13       ..
-    bne EXFILE                                     ; 8923: d0 10       ..             ; Reverse file pointer
+    bne EXFILE                                     ; 8923: d0 10       .. ; Reverse file pointer
     ldy LSBUFF                                     ; 8925: a4 8c       ..
     bpl MIDBUF                                     ; 8927: 10 07       ..
-    lda #$0d                                       ; 8929: a9 0d       ..             ; Fudge CR into buffer
+    lda #$0d                                       ; 8929: a9 0d       .. ; Fudge CR into buffer
     sta DOSBUF                                     ; 892b: 8d 00 07    ...
     ldy #0                                         ; 892e: a0 00       ..
 MIDBUF
@@ -1627,7 +1627,7 @@ MIDBUF
     rts                                            ; 8934: 60          `
 
 EXFILE
-    lda LSCHAR                                     ; 8935: ad 30 04    .0.            ; COS version
+    lda LSCHAR                                     ; 8935: ad 30 04    .0. ; COS version
     ora #$80                                       ; 8938: 09 80       ..
     sta LSCHAR                                     ; 893a: 8d 30 04    .0.
     pla                                            ; 893d: 68          h
@@ -1646,7 +1646,7 @@ LISTND
 
     ; **** Make number in POINT
 MAKNUM
-    ldx #0                                         ; 894e: a2 00       ..             ; Text from IMBUF
+    ldx #0                                         ; 894e: a2 00       .. ; Text from IMBUF
     stx SIGN                                       ; 8950: 86 78       .x
     stx ACL                                        ; 8952: 86 72       .r
     stx ACL+1                                      ; 8954: 86 73       .s
@@ -1654,7 +1654,7 @@ MAKNUM
     cmp #'-'                                       ; 8959: c9 2d       .-
     bne PLUSS                                      ; 895b: d0 09       ..
     sta SIGN                                       ; 895d: 85 78       .x
-    inx                                            ; 895f: e8          .              ; X=1
+    inx                                            ; 895f: e8          .  ; X=1
     ldy END                                        ; 8960: a4 1d       ..
     cpy #0                                         ; 8962: c0 00       ..
     beq MKRTS                                      ; 8964: f0 6c       .l
@@ -1663,14 +1663,14 @@ PLUSS
     sec                                            ; 8969: 38          8
     sbc #$30                                       ; 896a: e9 30       .0
     cmp #$0a                                       ; 896c: c9 0a       ..
-    bcs MKRTS                                      ; 896e: b0 62       .b             ; Not a digit
+    bcs MKRTS                                      ; 896e: b0 62       .b ; Not a digit
     sta ACIN                                       ; 8970: 85 8f       ..
     ldy #0                                         ; 8972: a0 00       ..
-    lda ACL                                        ; 8974: a5 72       .r             ; *10 now
+    lda ACL                                        ; 8974: a5 72       .r ; *10 now
     asl                                            ; 8976: 0a          .
     sta ACL                                        ; 8977: 85 72       .r
-    rol ACL+1                                      ; 8979: 26 73       &s             ; That's * 2
-    bcs MKOVFL                                     ; 897b: b0 40       .@             ; Overflow
+    rol ACL+1                                      ; 8979: 26 73       &s ; That's * 2
+    bcs MKOVFL                                     ; 897b: b0 40       .@ ; Overflow
     asl                                            ; 897d: 0a          .
     bcc YIA                                        ; 897e: 90 02       ..
     ldy #2                                         ; 8980: a0 02       ..
@@ -1704,17 +1704,17 @@ YID
     sta ACL+1                                      ; 89a7: 85 73       .s
     cpx END                                        ; 89a9: e4 1d       ..
     inx                                            ; 89ab: e8          .
-    bcc PLUSS                                      ; 89ac: 90 b8       ..             ; Any more digits?
+    bcc PLUSS                                      ; 89ac: 90 b8       .. ; Any more digits?
     lda SIGN                                       ; 89ae: a5 78       .x
     beq PLUSSS                                     ; 89b0: f0 0d       ..
-    ldy #0                                         ; 89b2: a0 00       ..             ; Reverse sign if -ve
+    ldy #0                                         ; 89b2: a0 00       .. ; Reverse sign if -ve
     ldx #<ACL                                      ; 89b4: a2 72       .r
     jsr MD                                         ; 89b6: 20 34 a0     4.
     ldx ACL+1                                      ; 89b9: a6 73       .s
     bmi NTOVFL                                     ; 89bb: 30 06       0.
 MKOVFL
     sec                                            ; 89bd: 38          8
-    rts                                            ; 89be: 60          `              ; Not number
+    rts                                            ; 89be: 60          `  ; Not number
 
 PLUSSS
     ldx ACL+1                                      ; 89bf: a6 73       .s
@@ -1724,7 +1724,7 @@ NTOVFL
     ldy #3                                         ; 89c6: a0 03       ..
     lda ACL+1                                      ; 89c8: a5 73       .s
     sta (POINT),y                                  ; 89ca: 91 7a       .z
-    dey                                            ; 89cc: 88          .              ; Y=2
+    dey                                            ; 89cc: 88          .  ; Y=2
     lda ACL                                        ; 89cd: a5 72       .r
     sta (POINT),y                                  ; 89cf: 91 7a       .z
     clc                                            ; 89d1: 18          .
@@ -1766,7 +1766,7 @@ MATCH
     sta ACL+1                                      ; 89f9: 85 73       .s
     bcc CHKCLL                                     ; 89fb: 90 12       ..
 LONGER
-    brk                                            ; 89fd: 00          .              ; String too long
+    brk                                            ; 89fd: 00          .  ; String too long
 
     !byte $0a                                      ; 89fe: 0a          .
     !text "String too long"                        ; 89ff: 53 74 72... Str
@@ -1782,7 +1782,7 @@ CHKCLM
     cmp ACL+1                                      ; 8a18: c5 73       .s
     bne NXTCLL                                     ; 8a1a: d0 2f       ./
     lda CELL                                       ; 8a1c: a5 7c       .|
-    adc #5                                         ; 8a1e: 69 05       i.             ; Carry is set, so adding 6
+    adc #5                                         ; 8a1e: 69 05       i. ; Carry is set, so adding 6
     sta AD                                         ; 8a20: 85 87       ..
     lda CELL+1                                     ; 8a22: a5 7d       .}
     adc #0                                         ; 8a24: 69 00       i.
@@ -1791,14 +1791,14 @@ CHKCLM
     bpl TESTY                                      ; 8a2a: 10 09       ..
 MCOP
     dey                                            ; 8a2c: 88          .
-    lda OSWBUF,y                                   ; 8a2d: b9 00 06    ...            ; Chars the same?
+    lda OSWBUF,y                                   ; 8a2d: b9 00 06    ... ; Chars the same?
     cmp (AD),y                                     ; 8a30: d1 87       ..
     bne NXTCLL                                     ; 8a32: d0 17       ..
     tya                                            ; 8a34: 98          .
 TESTY
     bne MCOP                                       ; 8a35: d0 f5       ..
     lda CELL+1                                     ; 8a37: a5 7d       .}
-    ldx CELL                                       ; 8a39: a6 7c       .|             ; NIL?
+    ldx CELL                                       ; 8a39: a6 7c       .| ; NIL?
     stx POINT                                      ; 8a3b: 86 7a       .z
     cpx #<NIL                                      ; 8a3d: e0 24       .$
     bne BOX                                        ; 8a3f: d0 07       ..
@@ -1807,7 +1807,7 @@ TESTY
     lda CELL+1                                     ; 8a46: a5 7d       .}
 BOX
     sta POINT+1                                    ; 8a48: 85 7b       .{
-    rts                                            ; 8a4a: 60          `              ; It's found
+    rts                                            ; 8a4a: 60          `  ; It's found
 
 NXTCLL
     jsr NXCELL                                     ; 8a4b: 20 70 8a     p.
@@ -1830,19 +1830,19 @@ MCAP
     tya                                            ; 8a6c: 98          .
 TOSTIG
     bne MCAP                                       ; 8a6d: d0 f7       ..
-    rts                                            ; 8a6f: 60          `              ; New cell made
+    rts                                            ; 8a6f: 60          `  ; New cell made
 
 NXCELL
-    ldy #0                                         ; 8a70: a0 00       ..             ; Given pointer
-    lda (CELL),y                                   ; 8a72: b1 7c       .|             ; in CELL, finds next
-    clc                                            ; 8a74: 18          .              ; CELL
+    ldy #0                                         ; 8a70: a0 00       .. ; Given pointer
+    lda (CELL),y                                   ; 8a72: b1 7c       .| ; in CELL, finds next
+    clc                                            ; 8a74: 18          .  ; CELL
     bmi SIX                                        ; 8a75: 30 0a       0.
     cmp #8                                         ; 8a77: c9 08       ..
     bcs SIX                                        ; 8a79: b0 06       ..
-    iny                                            ; 8a7b: c8          .              ; Y=1
+    iny                                            ; 8a7b: c8          .  ; Y=1
     lda (CELL),y                                   ; 8a7c: b1 7c       .|
-    dey                                            ; 8a7e: 88          .              ; Y=0
-    beq GOT                                        ; 8a7f: f0 02       ..             ; ALWAYS branch
+    dey                                            ; 8a7e: 88          .  ; Y=0
+    beq GOT                                        ; 8a7f: f0 02       .. ; ALWAYS branch
 
 SIX
     lda #5                                         ; 8a81: a9 05       ..
@@ -1879,7 +1879,7 @@ MOLIN
     sta OSWBUF,x                                   ; 8aaf: 9d 00 06    ...
     cmp #$0d                                       ; 8ab2: c9 0d       ..
     bne MOLIN                                      ; 8ab4: d0 f5       ..
-    dex                                            ; 8ab6: ca          .              ; Don't want CR at end.
+    dex                                            ; 8ab6: ca          .  ; Don't want CR at end.
     stx END                                        ; 8ab7: 86 1d       ..
     jmp TRYCHR                                     ; 8ab9: 4c 64 88    Ld.
 
@@ -1890,7 +1890,7 @@ MOLIN
     ; ******************************
     ; **** Intercept return addr
 GETSSP
-    lda SP                                         ; 8abc: a5 7e       .~             ; Find SSP ret addr
+    lda SP                                         ; 8abc: a5 7e       .~ ; Find SSP ret addr
     sta POINT                                      ; 8abe: 85 7a       .z
     lda SP+1                                       ; 8ac0: a5 7f       ..
     sta POINT+1                                    ; 8ac2: 85 7b       .{
@@ -1911,7 +1911,7 @@ STINC
 
     ; **** WRITE
 WRIT
-    jsr GETSSP                                     ; 8ad7: 20 bc 8a     ..            ; Locate ret addr
+    jsr GETSSP                                     ; 8ad7: 20 bc 8a     .. ; Locate ret addr
     lda (POINT),y                                  ; 8ada: b1 7a       .z
     pha                                            ; 8adc: 48          H
     lda #>WRITGO                                   ; 8add: a9 8a       ..
@@ -1935,7 +1935,7 @@ WRTTZ
     lda #$ff                                       ; 8af5: a9 ff       ..
     sta ESCHF                                      ; 8af7: 8d 2f 04    ./.
     ldx #$0c                                       ; 8afa: a2 0c       ..
-    bne GENWRI                                     ; 8afc: d0 37       .7             ; ALWAYS branch
+    bne GENWRI                                     ; 8afc: d0 37       .7 ; ALWAYS branch
 
 
     ; **** Error entry
@@ -1946,14 +1946,14 @@ PRINTE
 
     ; **** PRINT
 PRINT
-    lda #$ff                                       ; 8b04: a9 ff       ..             ; Put in esc char
-    bmi PRINT1                                     ; 8b06: 30 06       0.             ; ALWAYS branch
+    lda #$ff                                       ; 8b04: a9 ff       .. ; Put in esc char
+    bmi PRINT1                                     ; 8b06: 30 06       0. ; ALWAYS branch
 
 
     ; **** PRIN
 PRINZ
     lda #$ff                                       ; 8b08: a9 ff       ..
-    bmi PRIN1                                      ; 8b0a: 30 20       0              ; ALWAYS branch
+    bmi PRIN1                                      ; 8b0a: 30 20       0  ; ALWAYS branch
 
 
     ; **** PRINTC
@@ -1989,7 +1989,7 @@ PRINOK
     ldx #$0a                                       ; 8b33: a2 0a       ..
 GENWRI
     lda #0                                         ; 8b35: a9 00       ..
-    cpx TVSEXT                                     ; 8b37: e4 33       .3             ; NO ARGS?
+    cpx TVSEXT                                     ; 8b37: e4 33       .3 ; NO ARGS?
     bcs NILFR                                      ; 8b39: b0 1b       ..
 PRON
     lda TVS,x                                      ; 8b3b: b5 30       .0
@@ -2027,14 +2027,14 @@ FILGER
     jmp NUER                                       ; 8b6c: 4c 9c 94    L..
 
 SAVAR
-    lda ARG                                        ; 8b6f: a5 30       .0             ; Saves ARG in WEB
+    lda ARG                                        ; 8b6f: a5 30       .0 ; Saves ARG in WEB
     sta WSB                                        ; 8b71: 85 36       .6
     lda ARG+1                                      ; 8b73: a5 31       .1
     sta WSB+1                                      ; 8b75: 85 37       .7
     rts                                            ; 8b77: 60          `
 
 CCPR
-    brk                                            ; 8b78: 00          .              ; Escape
+    brk                                            ; 8b78: 00          .  ; Escape
 
     !byte $0b                                      ; 8b79: 0b          .
     !text "Escape"                                 ; 8b7a: 45 73 63... Esc
@@ -2046,22 +2046,22 @@ PRINA
     lda #0                                         ; 8b81: a9 00       ..
     sta ESCHF                                      ; 8b83: 8d 2f 04    ./.
 PRINB
-    jsr KBCHK                                      ; 8b86: 20 47 85     G.            ; Check for escape
+    jsr KBCHK                                      ; 8b86: 20 47 85     G. ; Check for escape
     bne CCPR                                       ; 8b89: d0 ed       ..
     lda ARG+1                                      ; 8b8b: a5 31       .1
-    bne NPN                                        ; 8b8d: d0 05       ..             ; NIL?
+    bne NPN                                        ; 8b8d: d0 05       .. ; NIL?
     ldx #NILOFF                                    ; 8b8f: a2 19       ..
-    jmp MESSAG                                     ; 8b91: 4c 00 85    L..            ; 'NIL'
+    jmp MESSAG                                     ; 8b91: 4c 00 85    L.. ; 'NIL'
 
 
     ; **** Main printer
 NPN
     ldy #0                                         ; 8b94: a0 00       ..
     lda (ARG),y                                    ; 8b96: b1 30       .0
-    bpl PATOMB                                     ; 8b98: 10 53       .S             ; Atom or list?
+    bpl PATOMB                                     ; 8b98: 10 53       .S ; Atom or list?
     lda #'('                                       ; 8b9a: a9 28       .(
     jsr OUT                                        ; 8b9c: 20 0e 85     ..
-    jsr STACK                                      ; 8b9f: 20 93 83     ..            ; Since recursive
+    jsr STACK                                      ; 8b9f: 20 93 83     .. ; Since recursive
     lda ARG                                        ; 8ba2: a5 30       .0
     sta WSA                                        ; 8ba4: 85 34       .4
     lda ARG+1                                      ; 8ba6: a5 31       .1
@@ -2093,7 +2093,7 @@ RPP
     jmp POP                                        ; 8bd6: 4c 3a 83    L:.
 
 BADAT
-    brk                                            ; 8bd9: 00          .              ; Unknown atom type
+    brk                                            ; 8bd9: 00          .  ; Unknown atom type
 
     !byte $0c                                      ; 8bda: 0c          .
     !text "Bad atom type"                          ; 8bdb: 42 61 64... Bad
@@ -2105,22 +2105,22 @@ PATOM
     ldy #0                                         ; 8be9: a0 00       ..
     lda (ARG),y                                    ; 8beb: b1 30       .0
 PATOMB
-    beq OKP                                        ; 8bed: f0 24       .$             ; If char atom
+    beq OKP                                        ; 8bed: f0 24       .$ ; If char atom
     cmp #NUMF                                      ; 8bef: c9 04       ..
-    beq PNUM                                       ; 8bf1: f0 4b       .K             ; If number atom
+    beq PNUM                                       ; 8bf1: f0 4b       .K ; If number atom
     cmp #SUBRF                                     ; 8bf3: c9 08       ..
-    beq HASH                                       ; 8bf5: f0 09       ..             ; If subr atom
+    beq HASH                                       ; 8bf5: f0 09       .. ; If subr atom
     cmp #FSUBRF                                    ; 8bf7: c9 0c       ..
     bne BADAT                                      ; 8bf9: d0 de       ..
-    lda #'F'                                       ; 8bfb: a9 46       .F             ; Fsubr
+    lda #'F'                                       ; 8bfb: a9 46       .F ; Fsubr
     jsr OUT                                        ; 8bfd: 20 0e 85     ..
 HASH
     ldx #SUBOFF                                    ; 8c00: a2 58       .X
     jsr MESSAG                                     ; 8c02: 20 00 85     ..
     ldy #5                                         ; 8c05: a0 05       ..
     lda (ARG),y                                    ; 8c07: b1 30       .0
-    sta ACL+1                                      ; 8c09: 85 73       .s             ; Print entry addr.
-    dey                                            ; 8c0b: 88          .              ; Y=4
+    sta ACL+1                                      ; 8c09: 85 73       .s ; Print entry addr.
+    dey                                            ; 8c0b: 88          .  ; Y=4
     lda (ARG),y                                    ; 8c0c: b1 30       .0
     sta ACL                                        ; 8c0e: 85 72       .r
     jmp PINT                                       ; 8c10: 4c 57 8c    LW.
@@ -2130,7 +2130,7 @@ HASH
 OKP
     jsr GENDS                                      ; 8c13: 20 8c 8c     ..
     ldx #0                                         ; 8c16: a2 00       ..
-    beq INCHP                                      ; 8c18: f0 1e       ..             ; ALWAYS branch
+    beq INCHP                                      ; 8c18: f0 1e       .. ; ALWAYS branch
 
 FOOT
     lda (AA,x)                                     ; 8c1a: a1 1e       ..
@@ -2144,8 +2144,8 @@ ESCFT
     ldy #6                                         ; 8c27: a0 06       ..
     jsr TERMQ                                      ; 8c29: 20 e5 88     ..
     bne FTOUT                                      ; 8c2c: d0 f3       ..
-    pha                                            ; 8c2e: 48          H              ; Save character
-    lda #'!'                                       ; 8c2f: a9 21       .!             ; Escape in char
+    pha                                            ; 8c2e: 48          H  ; Save character
+    lda #'!'                                       ; 8c2f: a9 21       .! ; Escape in char
     jsr OUT                                        ; 8c31: 20 0e 85     ..
     pla                                            ; 8c34: 68          h
     jmp FTOUT                                      ; 8c35: 4c 21 8c    L!.
@@ -2161,7 +2161,7 @@ PNUM
     ldy #2                                         ; 8c3e: a0 02       ..
     lda (ARG),y                                    ; 8c40: b1 30       .0
     sta ACL                                        ; 8c42: 85 72       .r
-    iny                                            ; 8c44: c8          .              ; Y=3
+    iny                                            ; 8c44: c8          .  ; Y=3
     lda (ARG),y                                    ; 8c45: b1 30       .0
     sta ACL+1                                      ; 8c47: 85 73       .s
     bpl PINT                                       ; 8c49: 10 0c       ..
@@ -2209,10 +2209,10 @@ NDP
     ; **** Finds end of char atom
 GENDS
     lda ARG                                        ; 8c8c: a5 30       .0
-    ldy #1                                         ; 8c8e: a0 01       ..             ; Char atom
+    ldy #1                                         ; 8c8e: a0 01       .. ; Char atom
     clc                                            ; 8c90: 18          .
-    adc (ARG),y                                    ; 8c91: 71 30       q0             ; AA +1 TO AB -1
-    dey                                            ; 8c93: 88          .              ; Y=0
+    adc (ARG),y                                    ; 8c91: 71 30       q0 ; AA +1 TO AB -1
+    dey                                            ; 8c93: 88          .  ; Y=0
     sta AB                                         ; 8c94: 85 20       .
     lda ARG+1                                      ; 8c96: a5 31       .1
     adc #0                                         ; 8c98: 69 00       i.
@@ -2229,15 +2229,15 @@ GENDS
     ; *** EOF
 EOF
     jsr ALLNUM                                     ; 8ca9: 20 87 94     ..
-    ldy #2                                         ; 8cac: a0 02       ..             ; Get file handle
+    ldy #2                                         ; 8cac: a0 02       .. ; Get file handle
     lda (ARGA),y                                   ; 8cae: b1 3a       .:
-    tay                                            ; 8cb0: a8          .              ; Y=file handle
-    ldx #ACL                                       ; 8cb1: a2 72       .r             ; Put pointer into ACL; X=zero page address for result
+    tay                                            ; 8cb0: a8          .  ; Y=file handle
+    ldx #ACL                                       ; 8cb1: a2 72       .r ; Put pointer into ACL ; X=zero page address for result
     lda #0                                         ; 8cb3: a9 00       ..
-    jsr osargs                                     ; 8cb5: 20 da ff     ..            ; Get sequential file pointer into zero page address X (A=0)
-    ldx #ARGINF                                    ; 8cb8: a2 90       ..             ; File extent; X=zero page address for result
+    jsr osargs                                     ; 8cb5: 20 da ff     .. ; Get sequential file pointer into zero page address X (A=0)
+    ldx #ARGINF                                    ; 8cb8: a2 90       .. ; File extent ; X=zero page address for result
     lda #2                                         ; 8cba: a9 02       ..
-    jsr osargs                                     ; 8cbc: 20 da ff     ..            ; Get length of file into zero page address X (A=2)
+    jsr osargs                                     ; 8cbc: 20 da ff     .. ; Get length of file into zero page address X (A=2)
     ldx #2                                         ; 8cbf: a2 02       ..
 EOFCP
     lda ACL,x                                      ; 8cc1: b5 72       .r
@@ -2257,8 +2257,8 @@ CLOS
     ldy #2                                         ; 8cd3: a0 02       ..
     lda (ARGA),y                                   ; 8cd5: b1 3a       .:
     tay                                            ; 8cd7: a8          .
-    lda #osfind_close                              ; 8cd8: a9 00       ..             ; Close file (A lost)
-    jsr osfind                                     ; 8cda: 20 ce ff     ..            ; Close one or all files
+    lda #osfind_close                              ; 8cd8: a9 00       .. ; Close file (A lost)
+    jsr osfind                                     ; 8cda: 20 ce ff     .. ; Close one or all files
     jmp NO                                         ; 8cdd: 4c 2d 83    L-.
 
 
@@ -2269,7 +2269,7 @@ CLOS
     ; entry points.
     ; ******************************
 PARERR
-    brk                                            ; 8ce0: 00          .              ; COND syntax
+    brk                                            ; 8ce0: 00          .  ; COND syntax
 
     !byte $0d                                      ; 8ce1: 0d          .
     !text "COND syntax"                            ; 8ce2: 43 4f 4e... CON
@@ -2287,22 +2287,22 @@ REMAIN
     ldy #0                                         ; 8cf8: a0 00       ..
     lda (ARG),y                                    ; 8cfa: b1 30       .0
     bpl PARERR                                     ; 8cfc: 10 e2       ..
-    ldy #4                                         ; 8cfe: a0 04       ..             ; Split:
-    lda (ARG),y                                    ; 8d00: b1 30       .0             ; Condition - ARG
-    sta WSB+1                                      ; 8d02: 85 37       .7             ; Actions   - WSB
-    dey                                            ; 8d04: 88          .              ; Rest      - WSA; Y=3
+    ldy #4                                         ; 8cfe: a0 04       .. ; Split:
+    lda (ARG),y                                    ; 8d00: b1 30       .0 ; Condition - ARG
+    sta WSB+1                                      ; 8d02: 85 37       .7 ; Actions   - WSB
+    dey                                            ; 8d04: 88          .  ; Rest      - WSA ; Y=3
     lda (ARG),y                                    ; 8d05: b1 30       .0
     sta WSB                                        ; 8d07: 85 36       .6
-    dey                                            ; 8d09: 88          .              ; Y=2
+    dey                                            ; 8d09: 88          .  ; Y=2
     lda (ARG),y                                    ; 8d0a: b1 30       .0
     tax                                            ; 8d0c: aa          .
-    dey                                            ; 8d0d: 88          .              ; Y=1
+    dey                                            ; 8d0d: 88          .  ; Y=1
     lda (ARG),y                                    ; 8d0e: b1 30       .0
     stx ARG+1                                      ; 8d10: 86 31       .1
     sta ARG                                        ; 8d12: 85 30       .0
     jsr EVALU                                      ; 8d14: 20 39 85     9.
-    lda ARG+1                                      ; 8d17: a5 31       .1             ; Condition NIL?
-    beq COND                                       ; 8d19: f0 d3       ..             ; Next condition duo
+    lda ARG+1                                      ; 8d17: a5 31       .1 ; Condition NIL?
+    beq COND                                       ; 8d19: f0 d3       .. ; Next condition duo
     lda WSB+1                                      ; 8d1b: a5 37       .7
     beq PRGEND                                     ; 8d1d: f0 0d       ..
     sta WSA+1                                      ; 8d1f: 85 35       .5
@@ -2322,7 +2322,7 @@ UNTIL
     jsr NXEVAL                                     ; 8d2f: 20 1e 85     ..
     lda ARG+1                                      ; 8d32: a5 31       .1
     beq PRGEND                                     ; 8d34: f0 f6       ..
-    bne WILLY                                      ; 8d36: d0 0c       ..             ; ALWAYS branch
+    bne WILLY                                      ; 8d36: d0 0c       .. ; ALWAYS branch
 
 
     ; **** WHILE
@@ -2330,7 +2330,7 @@ WHILE
     jsr NXEVAL                                     ; 8d38: 20 1e 85     ..
     lda ARG+1                                      ; 8d3b: a5 31       .1
     bne PRGEND                                     ; 8d3d: d0 ed       ..
-    beq WILLY                                      ; 8d3f: f0 03       ..             ; ALWAYS branch
+    beq WILLY                                      ; 8d3f: f0 03       .. ; ALWAYS branch
 
 WILL
     jsr NXEVAM                                     ; 8d41: 20 36 85     6.
@@ -2351,7 +2351,7 @@ QUO
     ; Now the CAR - CDR complex
     ; ******************************
 PERR
-    brk                                            ; 8d53: 00          .              ; Atomic arg
+    brk                                            ; 8d53: 00          .  ; Atomic arg
 
     !byte $0e                                      ; 8d54: 0e          .
     !text "CAR/CDR of atom"                        ; 8d55: 43 41 52... CAR
@@ -2359,55 +2359,55 @@ PERR
 
 CDDDR
     ldx #$1f                                       ; 8d65: a2 1f       ..
-    bne CXR                                        ; 8d67: d0 32       .2             ; ALWAYS branch
+    bne CXR                                        ; 8d67: d0 32       .2 ; ALWAYS branch
 
 CADDR
     ldx #$1b                                       ; 8d69: a2 1b       ..
-    bne CXR                                        ; 8d6b: d0 2e       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d6b: d0 2e       .. ; ALWAYS branch
 
 CDADR
     ldx #$17                                       ; 8d6d: a2 17       ..
-    bne CXR                                        ; 8d6f: d0 2a       .*             ; ALWAYS branch
+    bne CXR                                        ; 8d6f: d0 2a       .* ; ALWAYS branch
 
 CAADR
     ldx #$13                                       ; 8d71: a2 13       ..
-    bne CXR                                        ; 8d73: d0 26       .&             ; ALWAYS branch
+    bne CXR                                        ; 8d73: d0 26       .& ; ALWAYS branch
 
 CDDAR
     ldx #$0f                                       ; 8d75: a2 0f       ..
-    bne CXR                                        ; 8d77: d0 22       ."             ; ALWAYS branch
+    bne CXR                                        ; 8d77: d0 22       ." ; ALWAYS branch
 
 CDDR
     ldx #$0e                                       ; 8d79: a2 0e       ..
-    bne CXR                                        ; 8d7b: d0 1e       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d7b: d0 1e       .. ; ALWAYS branch
 
 CADAR
     ldx #$0b                                       ; 8d7d: a2 0b       ..
-    bne CXR                                        ; 8d7f: d0 1a       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d7f: d0 1a       .. ; ALWAYS branch
 
 CADR
     ldx #$0a                                       ; 8d81: a2 0a       ..
-    bne CXR                                        ; 8d83: d0 16       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d83: d0 16       .. ; ALWAYS branch
 
 CDAAR
     ldx #7                                         ; 8d85: a2 07       ..
-    bne CXR                                        ; 8d87: d0 12       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d87: d0 12       .. ; ALWAYS branch
 
 CDAR
     ldx #6                                         ; 8d89: a2 06       ..
-    bne CXR                                        ; 8d8b: d0 0e       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d8b: d0 0e       .. ; ALWAYS branch
 
 CDR
     ldx #5                                         ; 8d8d: a2 05       ..
-    bne CXR                                        ; 8d8f: d0 0a       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d8f: d0 0a       .. ; ALWAYS branch
 
 CAAAR
     ldx #3                                         ; 8d91: a2 03       ..
-    bne CXR                                        ; 8d93: d0 06       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d93: d0 06       .. ; ALWAYS branch
 
 CAAR
     ldx #2                                         ; 8d95: a2 02       ..
-    bne CXR                                        ; 8d97: d0 02       ..             ; ALWAYS branch
+    bne CXR                                        ; 8d97: d0 02       .. ; ALWAYS branch
 
 CAR
     ldx #1                                         ; 8d99: a2 01       ..
@@ -2532,16 +2532,16 @@ DOSET
     bne SETERR                                     ; 8e45: d0 14       ..
     jsr SAVAR                                      ; 8e47: 20 6f 8b     o.
     jsr NXEVAL                                     ; 8e4a: 20 1e 85     ..
-    ldy #2                                         ; 8e4d: a0 02       ..             ; Alter value cell
+    ldy #2                                         ; 8e4d: a0 02       .. ; Alter value cell
     lda ARG                                        ; 8e4f: a5 30       .0
     sta (WSB),y                                    ; 8e51: 91 36       .6
-    iny                                            ; 8e53: c8          .              ; Y=3
+    iny                                            ; 8e53: c8          .  ; Y=3
     lda ARG+1                                      ; 8e54: a5 31       .1
     sta (WSB),y                                    ; 8e56: 91 36       .6
     jmp POP                                        ; 8e58: 4c 3a 83    L:.
 
 SETERR
-    brk                                            ; 8e5b: 00          .              ; SET non-atomic
+    brk                                            ; 8e5b: 00          .  ; SET non-atomic
 
     !byte $10                                      ; 8e5c: 10          .
     !text "Bad assignment"                         ; 8e5d: 42 61 64... Bad
@@ -2562,15 +2562,15 @@ LL
     ldy #4                                         ; 8e7d: a0 04       ..
     lda ARG+1                                      ; 8e7f: a5 31       .1
     sta (POINT),y                                  ; 8e81: 91 7a       .z
-    dey                                            ; 8e83: 88          .              ; Y=3
+    dey                                            ; 8e83: 88          .  ; Y=3
     lda ARG                                        ; 8e84: a5 30       .0
     sta (POINT),y                                  ; 8e86: 91 7a       .z
     dex                                            ; 8e88: ca          .
-    dey                                            ; 8e89: 88          .              ; Y=2
+    dey                                            ; 8e89: 88          .  ; Y=2
     lda TVS,x                                      ; 8e8a: b5 30       .0
     sta (POINT),y                                  ; 8e8c: 91 7a       .z
     dex                                            ; 8e8e: ca          .
-    dey                                            ; 8e8f: 88          .              ; Y=1
+    dey                                            ; 8e8f: 88          .  ; Y=1
     lda TVS,x                                      ; 8e90: b5 30       .0
     sta (POINT),y                                  ; 8e92: 91 7a       .z
     lda POINT                                      ; 8e94: a5 7a       .z
@@ -2593,13 +2593,13 @@ MVDU
     lda TVS+1,x                                    ; 8eac: b5 31       .1
     sta ARG+1                                      ; 8eae: 85 31       .1
     ldy #2                                         ; 8eb0: a0 02       ..
-    lda (ARG),y                                    ; 8eb2: b1 30       .0             ; LS byte of arg
-    jsr oswrch                                     ; 8eb4: 20 ee ff     ..            ; Write character
+    lda (ARG),y                                    ; 8eb2: b1 30       .0 ; LS byte of arg
+    jsr oswrch                                     ; 8eb4: 20 ee ff     .. ; Write character
     inx                                            ; 8eb7: e8          .
     inx                                            ; 8eb8: e8          .
     cpx TVSEXT                                     ; 8eb9: e4 33       .3
     bcc MVDU                                       ; 8ebb: 90 eb       ..
-    jmp POP                                        ; 8ebd: 4c 3a 83    L:.            ; Result is ARG
+    jmp POP                                        ; 8ebd: 4c 3a 83    L:. ; Result is ARG
 
 
     ; ******************************
@@ -2619,19 +2619,19 @@ YESNIL
     ; **** SUBRP
 SUBRP
     lda #SUBRF                                     ; 8ecd: a9 08       ..
-    bne TYPE                                       ; 8ecf: d0 0a       ..             ; ALWAYS branch
+    bne TYPE                                       ; 8ecf: d0 0a       .. ; ALWAYS branch
 
 
     ; **** FSUBRP
 FSUBRP
     lda #FSUBRF                                    ; 8ed1: a9 0c       ..
-    bne TYPE                                       ; 8ed3: d0 06       ..             ; ALWAYS branch
+    bne TYPE                                       ; 8ed3: d0 06       .. ; ALWAYS branch
 
 
     ; **** LISTP
 LISTP
     lda #LISTF                                     ; 8ed5: a9 80       ..
-    bne TYPE                                       ; 8ed7: d0 02       ..             ; ALWAYS branch
+    bne TYPE                                       ; 8ed7: d0 02       .. ; ALWAYS branch
 
 
     ; **** NUMBERP
@@ -2652,7 +2652,7 @@ NNO
     ; **** ZEROP
 ZEROP
     ldx #0                                         ; 8eeb: a2 00       ..
-    beq TSN                                        ; 8eed: f0 02       ..             ; ALWAYS branch
+    beq TSN                                        ; 8eed: f0 02       .. ; ALWAYS branch
 
 
     ; **** ONEP
@@ -2660,7 +2660,7 @@ ONEP
     ldx #1                                         ; 8eef: a2 01       ..
 TSN
     lda ARGA+1                                     ; 8ef1: a5 3b       .;
-    beq NNO                                        ; 8ef3: f0 f3       ..             ; CHECK IT IS NUM.
+    beq NNO                                        ; 8ef3: f0 f3       .. ; CHECK IT IS NUM.
     ldy #0                                         ; 8ef5: a0 00       ..
     lda (ARGA),y                                   ; 8ef7: b1 3a       .:
     cmp #NUMF                                      ; 8ef9: c9 04       ..
@@ -2668,7 +2668,7 @@ TSN
     ldy #2                                         ; 8efd: a0 02       ..
     txa                                            ; 8eff: 8a          .
     eor (ARG),y                                    ; 8f00: 51 30       Q0
-    iny                                            ; 8f02: c8          .              ; Y=3
+    iny                                            ; 8f02: c8          .  ; Y=3
     ora (ARG),y                                    ; 8f03: 11 30       .0
     bne NNO                                        ; 8f05: d0 e1       ..
     jmp YES                                        ; 8f07: 4c 31 83    L1.
@@ -2692,55 +2692,55 @@ MINUSP
     ; Set up DCB for file I/O
     ; ******************************
 SETDCB
-    jsr MKNAM                                      ; 8f1f: 20 52 90     R.            ; Pointer to name
-    lda #osbyte_read_high_order_address            ; 8f22: a9 82       ..             ; m/c higher order addr
-    jsr osbyte                                     ; 8f24: 20 f4 ff     ..            ; Read the filing system 'machine high order address'
+    jsr MKNAM                                      ; 8f1f: 20 52 90     R. ; Pointer to name
+    lda #osbyte_read_high_order_address            ; 8f22: a9 82       .. ; m/c higher order addr
+    jsr osbyte                                     ; 8f24: 20 f4 ff     .. ; Read the filing system 'machine high order address'
     lda #0                                         ; 8f27: a9 00       ..
     sta OSINFO+6                                   ; 8f29: 8d 3e 04    .>.
-    lda #AREEXT                                    ; 8f2c: a9 00       ..             ; Load & save addr
+    lda #AREEXT                                    ; 8f2c: a9 00       .. ; Load & save addr
     sta OSINFO+2                                   ; 8f2e: 8d 3a 04    .:.
     sta OSINFO+10                                  ; 8f31: 8d 42 04    .B.
     lda IMBOT                                      ; 8f34: ad 2c 04    .,.
     sta OSINFO+3                                   ; 8f37: 8d 3b 04    .;.
     sta OSINFO+11                                  ; 8f3a: 8d 43 04    .C.
-    stx OSINFO+4                                   ; 8f3d: 8e 3c 04    .<.            ; X and Y contain the machine high order address (low, high)
+    stx OSINFO+4                                   ; 8f3d: 8e 3c 04    .<. ; X and Y contain the machine high order address (low, high)
     stx OSINFO+12                                  ; 8f40: 8e 44 04    .D.
     sty OSINFO+5                                   ; 8f43: 8c 3d 04    .=.
     sty OSINFO+13                                  ; 8f46: 8c 45 04    .E.
-    lda AREVAL                                     ; 8f49: ad 2d 04    .-.            ; End addr
+    lda AREVAL                                     ; 8f49: ad 2d 04    .-. ; End addr
     sta OSINFO+14                                  ; 8f4c: 8d 46 04    .F.
     lda AREVAL+1                                   ; 8f4f: ad 2e 04    ...
     sta OSINFO+15                                  ; 8f52: 8d 47 04    .G.
     stx OSINFO+16                                  ; 8f55: 8e 48 04    .H.
     sty OSINFO+17                                  ; 8f58: 8c 49 04    .I.
-    rts                                            ; 8f5b: 60          `              ; DCB complete
+    rts                                            ; 8f5b: 60          `  ; DCB complete
 
 
     ; **** LOAD
 LOAD
     jsr SETDCB                                     ; 8f5c: 20 1f 8f     ..
-    lda #osfile_load                               ; 8f5f: a9 ff       ..             ; Load operation
+    lda #osfile_load                               ; 8f5f: a9 ff       .. ; Load operation
     ldx #<OSINFO                                   ; 8f61: a2 38       .8
     ldy #>OSINFO                                   ; 8f63: a0 04       ..
-    jsr osfile                                     ; 8f65: 20 dd ff     ..            ; Load named file (if XY+6 contains 0, use specified address) (A=255)
+    jsr osfile                                     ; 8f65: 20 dd ff     .. ; Load named file (if XY+6 contains 0, use specified address) (A=255)
 INUREL
-    lda #AREEXT                                    ; 8f68: a9 00       ..             ; Set up base
+    lda #AREEXT                                    ; 8f68: a9 00       .. ; Set up base
     sta RELBS                                      ; 8f6a: 85 7a       .z
     lda IMBOT                                      ; 8f6c: ad 2c 04    .,.
     sta RELBS+1                                    ; 8f6f: 85 7b       .{
     jsr UNREL                                      ; 8f71: 20 cf 90     ..
-    jmp INIT                                       ; 8f74: 4c b5 84    L..            ; Re-start LISP
+    jmp INIT                                       ; 8f74: 4c b5 84    L.. ; Re-start LISP
 
 
     ; **** DUMP
 DUMP
-    jsr RUBBSH                                     ; 8f77: 20 46 9b     F.            ; GC
-    jsr SETDCB                                     ; 8f7a: 20 1f 8f     ..            ; Set up before relat
-    jsr RELAT                                      ; 8f7d: 20 5d 91     ].            ; Make relocatable
-    lda #osfile_save                               ; 8f80: a9 00       ..             ; Save
+    jsr RUBBSH                                     ; 8f77: 20 46 9b     F. ; GC
+    jsr SETDCB                                     ; 8f7a: 20 1f 8f     .. ; Set up before relat
+    jsr RELAT                                      ; 8f7d: 20 5d 91     ]. ; Make relocatable
+    lda #osfile_save                               ; 8f80: a9 00       .. ; Save
     ldx #<OSINFO                                   ; 8f82: a2 38       .8
     ldy #>OSINFO                                   ; 8f84: a0 04       ..
-    jsr osfile                                     ; 8f86: 20 dd ff     ..            ; Save a block of memory (returning file length and attributes) (A=0)
+    jsr osfile                                     ; 8f86: 20 dd ff     .. ; Save a block of memory (returning file length and attributes) (A=0)
     jmp POP                                        ; 8f89: 4c 3a 83    L:.
 
 CHARQ
@@ -2753,7 +2753,7 @@ CHARQR
     rts                                            ; 8f96: 60          `
 
 FILERR
-    brk                                            ; 8f97: 00          .              ; Not char atom
+    brk                                            ; 8f97: 00          .  ; Not char atom
 
     !byte $11                                      ; 8f98: 11          .
     !text "Character atom expected"                ; 8f99: 43 68 61... Cha
@@ -2771,7 +2771,7 @@ ANUM
     ldy #3                                         ; 8fbd: a0 03       ..
     lda (ARGA),y                                   ; 8fbf: b1 3a       .:
     sta ACL+1                                      ; 8fc1: 85 73       .s
-    dey                                            ; 8fc3: 88          .              ; Y=2
+    dey                                            ; 8fc3: 88          .  ; Y=2
     lda (ARGA),y                                   ; 8fc4: b1 3a       .:
     sta ACL                                        ; 8fc6: 85 72       .r
     rts                                            ; 8fc8: 60          `
@@ -2781,11 +2781,11 @@ ANUM
 CALL
     jsr ANUM                                       ; 8fc9: 20 ba 8f     ..
     lda #>(BACALL+1)                               ; 8fcc: a9 8f       ..
-    pha                                            ; 8fce: 48          H              ; Set up return
-    lda #<(BACALL+1)                               ; 8fcf: a9 dd       ..             ; address
+    pha                                            ; 8fce: 48          H  ; Set up return
+    lda #<(BACALL+1)                               ; 8fcf: a9 dd       .. ; address
     pha                                            ; 8fd1: 48          H
-    lda (ARGB),y                                   ; 8fd2: b1 3c       .<             ; Get A
-    jmp (ACL)                                      ; 8fd4: 6c 72 00    lr.            ; and call
+    lda (ARGB),y                                   ; 8fd2: b1 3c       .< ; Get A
+    jmp (ACL)                                      ; 8fd4: 6c 72 00    lr. ; and call
 
 
     ; **** PEEK
@@ -2815,14 +2815,14 @@ POKE
 
     ; OBLIST
 OBLIST
-    jsr SETCEL                                     ; 8ff9: 20 be 9a     ..            ; Only want good
-    ldy #0                                         ; 8ffc: a0 00       ..             ; cells
+    jsr SETCEL                                     ; 8ff9: 20 be 9a     .. ; Only want good
+    ldy #0                                         ; 8ffc: a0 00       .. ; cells
     sty ARG+1                                      ; 8ffe: 84 31       .1
 BOOM
     lda (CELL),y                                   ; 9000: b1 7c       .|
     bne NEXOS                                      ; 9002: d0 31       .1
     jsr USEFUL                                     ; 9004: 20 3d 90     =.
-    beq NEXOS                                      ; 9007: f0 2c       .,             ; Value UNDEFINED?
+    beq NEXOS                                      ; 9007: f0 2c       ., ; Value UNDEFINED?
     lda CELL                                       ; 9009: a5 7c       .|
     sta WSA                                        ; 900b: 85 34       .4
     lda CELL+1                                     ; 900d: a5 7d       .}
@@ -2831,14 +2831,14 @@ BOOM
     ldy #4                                         ; 9014: a0 04       ..
     lda ARG+1                                      ; 9016: a5 31       .1
     sta (POINT),y                                  ; 9018: 91 7a       .z
-    dey                                            ; 901a: 88          .              ; Y=3
+    dey                                            ; 901a: 88          .  ; Y=3
     lda ARG                                        ; 901b: a5 30       .0
     sta (POINT),y                                  ; 901d: 91 7a       .z
-    dey                                            ; 901f: 88          .              ; Y=2
+    dey                                            ; 901f: 88          .  ; Y=2
     lda WSA+1                                      ; 9020: a5 35       .5
     sta CELL+1                                     ; 9022: 85 7d       .}
     sta (POINT),y                                  ; 9024: 91 7a       .z
-    dey                                            ; 9026: 88          .              ; Y=1
+    dey                                            ; 9026: 88          .  ; Y=1
     lda WSA                                        ; 9027: a5 34       .4
     sta CELL                                       ; 9029: 85 7c       .|
     sta (POINT),y                                  ; 902b: 91 7a       .z
@@ -2852,15 +2852,15 @@ NEXOS
     jmp POP                                        ; 903a: 4c 3a 83    L:.
 
 USEFUL
-    ldy #2                                         ; 903d: a0 02       ..             ; Checks for
-    lda (CELL),y                                   ; 903f: b1 7c       .|             ; string rather than
-    cmp #<ZA                                       ; 9041: c9 02       ..             ; OBLIST atoms
+    ldy #2                                         ; 903d: a0 02       .. ; Checks for
+    lda (CELL),y                                   ; 903f: b1 7c       .| ; string rather than
+    cmp #<ZA                                       ; 9041: c9 02       .. ; OBLIST atoms
     bne USABLE                                     ; 9043: d0 0c       ..
-    iny                                            ; 9045: c8          .              ; Y=3
+    iny                                            ; 9045: c8          .  ; Y=3
     lda (CELL),y                                   ; 9046: b1 7c       .|
     cmp IMBOT                                      ; 9048: cd 2c 04    .,.
     bne USABLE                                     ; 904b: d0 04       ..
-    ldy #5                                         ; 904d: a0 05       ..             ; NIL P-list
+    ldy #5                                         ; 904d: a0 05       .. ; NIL P-list
     lda (CELL),y                                   ; 904f: b1 7c       .|
 USABLE
     rts                                            ; 9051: 60          `
@@ -2868,22 +2868,22 @@ USABLE
 
     ; **** Make DOS name
 MKNAM
-    jsr CHARQ                                      ; 9052: 20 8c 8f     ..            ; FOR DOS
+    jsr CHARQ                                      ; 9052: 20 8c 8f     .. ; FOR DOS
     lda #<NAMBUF                                   ; 9055: a9 00       ..
     sta OSINFO                                     ; 9057: 8d 38 04    .8.
     lda #>NAMBUF                                   ; 905a: a9 06       ..
     sta OSINFO+1                                   ; 905c: 8d 39 04    .9.
     ldy #1                                         ; 905f: a0 01       ..
-    lda (ARGA),y                                   ; 9061: b1 3a       .:             ; Get name length
+    lda (ARGA),y                                   ; 9061: b1 3a       .: ; Get name length
     tay                                            ; 9063: a8          .
-    lda #$0d                                       ; 9064: a9 0d       ..             ; Terminator
+    lda #$0d                                       ; 9064: a9 0d       .. ; Terminator
 MORLET
     sta OSWBUF-6,y                                 ; 9066: 99 fa 05    ...
     dey                                            ; 9069: 88          .
     cpy #6                                         ; 906a: c0 06       ..
     bcc USABLE                                     ; 906c: 90 e3       ..
     lda (ARGA),y                                   ; 906e: b1 3a       .:
-    bcs MORLET                                     ; 9070: b0 f4       ..             ; Always taken; ALWAYS branch
+    bcs MORLET                                     ; 9070: b0 f4       .. ; Always taken ; ALWAYS branch
 
 
     ; **** *
@@ -2903,7 +2903,7 @@ MORLEZ
     cpy #6                                         ; 9086: c0 06       ..
     bcc STARRY                                     ; 9088: 90 04       ..
     lda (ARGA),y                                   ; 908a: b1 3a       .:
-    bcs MORLEZ                                     ; 908c: b0 f4       ..             ; ALWAYS branch
+    bcs MORLEZ                                     ; 908c: b0 f4       .. ; ALWAYS branch
 
 STARRY
     ldx #<DOSBUF                                   ; 908e: a2 00       ..
@@ -2918,24 +2918,24 @@ OPE
     lda ARGB+1                                     ; 909b: a5 3d       .=
     cmp #1                                         ; 909d: c9 01       ..
     bcc WOPEN                                      ; 909f: 90 05       ..
-    lda #$c0                                       ; 90a1: a9 c0       ..             ; OPEN FOR READ
+    lda #$c0                                       ; 90a1: a9 c0       .. ; OPEN FOR READ
     jmp ROPEN                                      ; 90a3: 4c a8 90    L..
 
 WOPEN
-    lda #osfind_open_output                        ; 90a6: a9 80       ..             ; OPEN FOR WRITE
+    lda #osfind_open_output                        ; 90a6: a9 80       .. ; OPEN FOR WRITE
 ROPEN
     ldx OSINFO                                     ; 90a8: ae 38 04    .8.
     ldy OSINFO+1                                   ; 90ab: ac 39 04    .9.
-    jsr osfind                                     ; 90ae: 20 ce ff     ..            ; Open or close file(s)
+    jsr osfind                                     ; 90ae: 20 ce ff     .. ; Open or close file(s)
     cmp #0                                         ; 90b1: c9 00       ..
     beq FNERR                                      ; 90b3: f0 09       ..
     sta ACL                                        ; 90b5: 85 72       .r
     lda #0                                         ; 90b7: a9 00       ..
     sta ACL+1                                      ; 90b9: 85 73       .s
-    jmp ACLRET                                     ; 90bb: 4c a4 92    L..            ; RESULT IN A
+    jmp ACLRET                                     ; 90bb: 4c a4 92    L.. ; RESULT IN A
 
 FNERR
-    brk                                            ; 90be: 00          .              ; File not found
+    brk                                            ; 90be: 00          .  ; File not found
 
     !byte $d6                                      ; 90bf: d6          .
     !text "File not found"                         ; 90c0: 46 69 6c... Fil
@@ -2945,25 +2945,25 @@ FNERR
     ; **** Unrelativise
 UNREL
     ldy #5                                         ; 90cf: a0 05       ..
-    lda (RELBS),y                                  ; 90d1: b1 7a       .z             ; Get old IMBOT value from UNDEFINED
+    lda (RELBS),y                                  ; 90d1: b1 7a       .z ; Get old IMBOT value from UNDEFINED
     sec                                            ; 90d3: 38          8
     sbc IMBOT                                      ; 90d4: ed 2c 04    .,.
-    sta RELOFF                                     ; 90d7: 8d 33 04    .3.            ; Relativisation constant
+    sta RELOFF                                     ; 90d7: 8d 33 04    .3. ; Relativisation constant
     ldy #0                                         ; 90da: a0 00       ..
-    lda (RELBS),y                                  ; 90dc: b1 7a       .z             ; Set up slave
+    lda (RELBS),y                                  ; 90dc: b1 7a       .z ; Set up slave
     sta AREVAL                                     ; 90de: 8d 2d 04    .-.
-    iny                                            ; 90e1: c8          .              ; Y=1
-    lda (RELBS),y                                  ; 90e2: b1 7a       .z             ; Length of IMAGE
+    iny                                            ; 90e1: c8          .  ; Y=1
+    lda (RELBS),y                                  ; 90e2: b1 7a       .z ; Length of IMAGE
     sec                                            ; 90e4: 38          8
     sbc RELOFF                                     ; 90e5: ed 33 04    .3.
     sta AREVAL+1                                   ; 90e8: 8d 2e 04    ...
-    sta (RELBS),y                                  ; 90eb: 91 7a       .z             ; Real end of IMAGE
-    lda #2                                         ; 90ed: a9 02       ..             ; Get first item
-    bpl NXITU                                      ; 90ef: 10 49       .I             ; ALWAYS branch
+    sta (RELBS),y                                  ; 90eb: 91 7a       .z ; Real end of IMAGE
+    lda #2                                         ; 90ed: a9 02       .. ; Get first item
+    bpl NXITU                                      ; 90ef: 10 49       .I ; ALWAYS branch
 
 NEXTU
     ldy #0                                         ; 90f1: a0 00       ..
-    lda (RELBS),y                                  ; 90f3: b1 7a       .z             ; Sort out type
+    lda (RELBS),y                                  ; 90f3: b1 7a       .z ; Sort out type
     cmp #CHARF                                     ; 90f5: c9 00       ..
     beq URC                                        ; 90f7: f0 1e       ..
     cmp #SUBRF                                     ; 90f9: c9 08       ..
@@ -2972,36 +2972,36 @@ NEXTU
     beq URS                                        ; 90ff: f0 20       .
     cmp #NUMF                                      ; 9101: c9 04       ..
     beq URN                                        ; 9103: f0 0e       ..
-    ldy #2                                         ; 9105: a0 02       ..             ; Must be dotted pair
+    ldy #2                                         ; 9105: a0 02       .. ; Must be dotted pair
     jsr ALTADU                                     ; 9107: 20 2f 91     /.
     ldy #4                                         ; 910a: a0 04       ..
     jsr ALTADU                                     ; 910c: 20 2f 91     /.
-    lda #5                                         ; 910f: a9 05       ..             ; Length
-    bpl NXITU                                      ; 9111: 10 27       .'             ; ALWAYS branch
+    lda #5                                         ; 910f: a9 05       .. ; Length
+    bpl NXITU                                      ; 9111: 10 27       .' ; ALWAYS branch
 
 URN
-    lda #4                                         ; 9113: a9 04       ..             ; Number
-    bpl NXITU                                      ; 9115: 10 23       .#             ; No alteration; ALWAYS branch
+    lda #4                                         ; 9113: a9 04       .. ; Number
+    bpl NXITU                                      ; 9115: 10 23       .# ; No alteration ; ALWAYS branch
 
 URC
-    jsr TWOADD                                     ; 9117: 20 28 91     (.            ; Character
+    jsr TWOADD                                     ; 9117: 20 28 91     (. ; Character
     ldy #1                                         ; 911a: a0 01       ..
     lda (RELBS),y                                  ; 911c: b1 7a       .z
     jmp NXITU                                      ; 911e: 4c 3a 91    L:.
 
 URS
 URF
-    jsr TWOADD                                     ; 9121: 20 28 91     (.            ; Subr/Fsubr
+    jsr TWOADD                                     ; 9121: 20 28 91     (. ; Subr/Fsubr
     lda #6                                         ; 9124: a9 06       ..
-    bpl NXITU                                      ; 9126: 10 12       ..             ; ALWAYS branch
+    bpl NXITU                                      ; 9126: 10 12       .. ; ALWAYS branch
 
 TWOADD
     ldy #3                                         ; 9128: a0 03       ..
     jsr ALTADU                                     ; 912a: 20 2f 91     /.
     ldy #5                                         ; 912d: a0 05       ..
 ALTADU
-    lda (RELBS),y                                  ; 912f: b1 7a       .z             ; Adjust addr
-    beq NOTU                                       ; 9131: f0 06       ..             ; NIL - needn't alter
+    lda (RELBS),y                                  ; 912f: b1 7a       .z ; Adjust addr
+    beq NOTU                                       ; 9131: f0 06       .. ; NIL - needn't alter
     sec                                            ; 9133: 38          8
     sbc RELOFF                                     ; 9134: ed 33 04    .3.
     sta (RELBS),y                                  ; 9137: 91 7a       .z
@@ -3014,13 +3014,13 @@ NXITU
     rts                                            ; 913f: 60          `
 
 NXIT
-    clc                                            ; 9140: 18          .              ; Step to next item
+    clc                                            ; 9140: 18          .  ; Step to next item
     adc RELBS                                      ; 9141: 65 7a       ez
     sta RELBS                                      ; 9143: 85 7a       .z
     lda #0                                         ; 9145: a9 00       ..
     adc RELBS+1                                    ; 9147: 65 7b       e{
     sta RELBS+1                                    ; 9149: 85 7b       .{
-    cmp AREVAL+1                                   ; 914b: cd 2e 04    ...            ; End of image
+    cmp AREVAL+1                                   ; 914b: cd 2e 04    ... ; End of image
     bcc OKOUT                                      ; 914e: 90 0b       ..
     bne NOTOK                                      ; 9150: d0 07       ..
     lda RELBS                                      ; 9152: a5 7a       .z
@@ -3028,23 +3028,23 @@ NXIT
     bcc OKOUT                                      ; 9157: 90 02       ..
 NOTOK
     sec                                            ; 9159: 38          8
-    rts                                            ; 915a: 60          `              ; End reached
+    rts                                            ; 915a: 60          `  ; End reached
 
 OKOUT
     clc                                            ; 915b: 18          .
-    rts                                            ; 915c: 60          `              ; End not reached
+    rts                                            ; 915c: 60          `  ; End not reached
 
 
     ; **** RELAT (somewhat reduced!)
 RELAT
     lda #AREEXT                                    ; 915d: a9 00       ..
-    sta RELBS                                      ; 915f: 85 7a       .z             ; Reset base
+    sta RELBS                                      ; 915f: 85 7a       .z ; Reset base
     lda IMBOT                                      ; 9161: ad 2c 04    .,.
     sta RELBS+1                                    ; 9164: 85 7b       .{
     ldy #0                                         ; 9166: a0 00       ..
     lda AREVAL                                     ; 9168: ad 2d 04    .-.
     sta (RELBS),y                                  ; 916b: 91 7a       .z
-    iny                                            ; 916d: c8          .              ; Y=1
+    iny                                            ; 916d: c8          .  ; Y=1
     lda AREVAL+1                                   ; 916e: ad 2e 04    ...
     sta (RELBS),y                                  ; 9171: 91 7a       .z
     rts                                            ; 9173: 60          `
@@ -3052,52 +3052,52 @@ RELAT
 
     ; **** RECLAIM
 RECLAM
-    jsr RUBBSH                                     ; 9174: 20 46 9b     F.            ; Force G.C.
+    jsr RUBBSH                                     ; 9174: 20 46 9b     F. ; Force G.C.
     jmp NO                                         ; 9177: 4c 2d 83    L-.
 
 
     ; **** QUOTIENT
 QUOT
     ldx #ACL                                       ; 917a: a2 72       .r
-    bne DODO                                       ; 917c: d0 02       ..             ; ALWAYS branch
+    bne DODO                                       ; 917c: d0 02       .. ; ALWAYS branch
 
 
     ; **** REMAINDER
 REM
     ldx #XTNDL                                     ; 917e: a2 74       .t
 DODO
-    stx XPR                                        ; 9180: 86 89       ..             ; Save index for
-    jsr ALLNUM                                     ; 9182: 20 87 94     ..            ; returned number
+    stx XPR                                        ; 9180: 86 89       .. ; Save index for
+    jsr ALLNUM                                     ; 9182: 20 87 94     .. ; returned number
     ldy #0                                         ; 9185: a0 00       ..
-    sty XTNDL                                      ; 9187: 84 74       .t             ; Zero initial rem.
+    sty XTNDL                                      ; 9187: 84 74       .t ; Zero initial rem.
     sty XTNDL+1                                    ; 9189: 84 75       .u
-    jsr ALNUM                                      ; 918b: 20 3d 84     =.            ; Have cell ready
+    jsr ALNUM                                      ; 918b: 20 3d 84     =. ; Have cell ready
     ldy #2                                         ; 918e: a0 02       ..
-    lda (ARGA),y                                   ; 9190: b1 3a       .:             ; Move ARG"s" to
-    sta ACL                                        ; 9192: 85 72       .r             ; workspace
+    lda (ARGA),y                                   ; 9190: b1 3a       .: ; Move ARG"s" to
+    sta ACL                                        ; 9192: 85 72       .r ; workspace
     lda (ARGB),y                                   ; 9194: b1 3c       .<
     sta AUXL                                       ; 9196: 85 76       .v
-    iny                                            ; 9198: c8          .              ; Y=3
+    iny                                            ; 9198: c8          .  ; Y=3
     ora (ARGB),y                                   ; 9199: 11 3c       .<
-    beq OVFERR                                     ; 919b: f0 76       .v             ; Divide by zero!
+    beq OVFERR                                     ; 919b: f0 76       .v ; Divide by zero!
     lda (ARGA),y                                   ; 919d: b1 3a       .:
     sta ACL+1                                      ; 919f: 85 73       .s
     lda (ARGB),y                                   ; 91a1: b1 3c       .<
     sta AUXL+1                                     ; 91a3: 85 77       .w
-    jsr DIVPM                                      ; 91a5: 20 02 a0     ..            ; Divide
-    lsr SIGN                                       ; 91a8: 46 78       Fx             ; Check sign
+    jsr DIVPM                                      ; 91a5: 20 02 a0     .. ; Divide
+    lsr SIGN                                       ; 91a8: 46 78       Fx ; Check sign
     bcc POSV                                       ; 91aa: 90 05       ..
-    ldx #ACL                                       ; 91ac: a2 72       .r             ; Change ACL sign
+    ldx #ACL                                       ; 91ac: a2 72       .r ; Change ACL sign
     jsr MD                                         ; 91ae: 20 34 a0     4.
 POSV
-    ldy #2                                         ; 91b1: a0 02       ..             ; RETREIVE RESULT
+    ldy #2                                         ; 91b1: a0 02       .. ; RETREIVE RESULT
     ldx XPR                                        ; 91b3: a6 89       ..
     lda GCNO,x                                     ; 91b5: b5 00       ..
-    sta (POINT),y                                  ; 91b7: 91 7a       .z             ; Put in new cell
-    iny                                            ; 91b9: c8          .              ; Y=3
+    sta (POINT),y                                  ; 91b7: 91 7a       .z ; Put in new cell
+    iny                                            ; 91b9: c8          .  ; Y=3
     lda GCNO+1,x                                   ; 91ba: b5 01       ..
     sta (POINT),y                                  ; 91bc: 91 7a       .z
-    jmp AMADE                                      ; 91be: 4c 67 88    Lg.            ; return POINT
+    jmp AMADE                                      ; 91be: 4c 67 88    Lg. ; return POINT
 
 
     ; **** DIFFERENCE
@@ -3109,11 +3109,11 @@ DIFF
     sec                                            ; 91cb: 38          8
     sbc (ARGB),y                                   ; 91cc: f1 3c       .<
     sta (POINT),y                                  ; 91ce: 91 7a       .z
-    iny                                            ; 91d0: c8          .              ; Y=3
+    iny                                            ; 91d0: c8          .  ; Y=3
     lda (ARGA),y                                   ; 91d1: b1 3a       .:
     sbc (ARGB),y                                   ; 91d3: f1 3c       .<
     bvs OVFERR                                     ; 91d5: 70 3c       p<
-    bvc FINONE                                     ; 91d7: 50 14       P.             ; ALWAYS branch
+    bvc FINONE                                     ; 91d7: 50 14       P. ; ALWAYS branch
 
 
     ; **** MINUS
@@ -3125,7 +3125,7 @@ MINUS
     sec                                            ; 91e3: 38          8
     sbc (ARGA),y                                   ; 91e4: f1 3a       .:
     sta (POINT),y                                  ; 91e6: 91 7a       .z
-    iny                                            ; 91e8: c8          .              ; Y=3
+    iny                                            ; 91e8: c8          .  ; Y=3
     lda #0                                         ; 91e9: a9 00       ..
     sbc (ARGA),y                                   ; 91eb: f1 3a       .:
 FINONE
@@ -3139,7 +3139,7 @@ SUBA
     jsr ALNUM                                      ; 91f5: 20 3d 84     =.
     lda #$ff                                       ; 91f8: a9 ff       ..
     clc                                            ; 91fa: 18          .
-    bcc WONE                                       ; 91fb: 90 09       ..             ; ALWAYS branch
+    bcc WONE                                       ; 91fb: 90 09       .. ; ALWAYS branch
 
 
     ; ADD1
@@ -3153,12 +3153,12 @@ WONE
     ldy #2                                         ; 9207: a0 02       ..
     adc (ARGA),y                                   ; 9209: 71 3a       q:
     sta (POINT),y                                  ; 920b: 91 7a       .z
-    iny                                            ; 920d: c8          .              ; Y=3
+    iny                                            ; 920d: c8          .  ; Y=3
     pla                                            ; 920e: 68          h
     adc (ARGA),y                                   ; 920f: 71 3a       q:
     bvc FINONE                                     ; 9211: 50 da       P.
 OVFERR
-    brk                                            ; 9213: 00          .              ; Overflow
+    brk                                            ; 9213: 00          .  ; Overflow
 
     !byte $12                                      ; 9214: 12          .
     !text "Arithmetic overflow"                    ; 9215: 41 72 69... Ari
@@ -3172,7 +3172,7 @@ PLUS
     lda #0                                         ; 922f: a9 00       ..
     ldy #2                                         ; 9231: a0 02       ..
     sta (POINT),y                                  ; 9233: 91 7a       .z
-    iny                                            ; 9235: c8          .              ; Y=3
+    iny                                            ; 9235: c8          .  ; Y=3
     ldx TVSEXT                                     ; 9236: a6 33       .3
     bne PEX                                        ; 9238: d0 18       ..
 MPLUS
@@ -3185,7 +3185,7 @@ MPLUS
     lda (POINT),y                                  ; 9245: b1 7a       .z
     adc (ARG),y                                    ; 9247: 71 30       q0
     sta (POINT),y                                  ; 9249: 91 7a       .z
-    iny                                            ; 924b: c8          .              ; Y=3
+    iny                                            ; 924b: c8          .  ; Y=3
     lda (POINT),y                                  ; 924c: b1 7a       .z
     adc (ARG),y                                    ; 924e: 71 30       q0
     bvs OVFERR                                     ; 9250: 70 c1       p.
@@ -3203,7 +3203,7 @@ TIMES
     jsr ALLNUM                                     ; 925d: 20 87 94     ..
     ldx #1                                         ; 9260: a2 01       ..
     stx ACL                                        ; 9262: 86 72       .r
-    dex                                            ; 9264: ca          .              ; X=0
+    dex                                            ; 9264: ca          .  ; X=0
     stx ACL+1                                      ; 9265: 86 73       .s
     ldx TVSEXT                                     ; 9267: a6 33       .3
     bne TREX                                       ; 9269: d0 33       .3
@@ -3218,7 +3218,7 @@ MTIMES
     ldy #2                                         ; 9279: a0 02       ..
     lda (ARG),y                                    ; 927b: b1 30       .0
     sta AUXL                                       ; 927d: 85 76       .v
-    iny                                            ; 927f: c8          .              ; Y=3
+    iny                                            ; 927f: c8          .  ; Y=3
     lda (ARG),y                                    ; 9280: b1 30       .0
     sta AUXL+1                                     ; 9282: 85 77       .w
     stx XPR                                        ; 9284: 86 89       ..
@@ -3244,7 +3244,7 @@ ACLRET
     ldy #2                                         ; 92a7: a0 02       ..
     lda ACL                                        ; 92a9: a5 72       .r
     sta (POINT),y                                  ; 92ab: 91 7a       .z
-    iny                                            ; 92ad: c8          .              ; Y=3
+    iny                                            ; 92ad: c8          .  ; Y=3
     lda ACL+1                                      ; 92ae: a5 73       .s
     sta (POINT),y                                  ; 92b0: 91 7a       .z
     jmp AMADE                                      ; 92b2: 4c 67 88    Lg.
@@ -3255,12 +3255,12 @@ CHARS
     jsr ALNUM                                      ; 92b5: 20 3d 84     =.
     ldx ARGA+1                                     ; 92b8: a6 3b       .;
     beq XGOOD                                      ; 92ba: f0 15       ..
-    ldx #4                                         ; 92bc: a2 04       ..             ; List index
+    ldx #4                                         ; 92bc: a2 04       .. ; List index
     ldy #0                                         ; 92be: a0 00       ..
     lda (ARGA),y                                   ; 92c0: b1 3a       .:
     bmi XGOOD                                      ; 92c2: 30 0d       0.
     bne FIXTY                                      ; 92c4: d0 08       ..
-    iny                                            ; 92c6: c8          .              ; Y=1
+    iny                                            ; 92c6: c8          .  ; Y=1
     lda (ARGA),y                                   ; 92c7: b1 3a       .:
     sec                                            ; 92c9: 38          8
     sbc #6                                         ; 92ca: e9 06       ..
@@ -3274,7 +3274,7 @@ XGOOD
 AGOT
     ldy #2                                         ; 92d4: a0 02       ..
     sta (POINT),y                                  ; 92d6: 91 7a       .z
-    iny                                            ; 92d8: c8          .              ; Y=3
+    iny                                            ; 92d8: c8          .  ; Y=3
     lda #0                                         ; 92d9: a9 00       ..
     sta (POINT),y                                  ; 92db: 91 7a       .z
     jmp AMADE                                      ; 92dd: 4c 67 88    Lg.
@@ -3284,7 +3284,7 @@ GPLIST
     ldy #4                                         ; 92e3: a0 04       ..
     lda (ARGA),y                                   ; 92e5: b1 3a       .:
     sta ARG                                        ; 92e7: 85 30       .0
-    iny                                            ; 92e9: c8          .              ; Y=5
+    iny                                            ; 92e9: c8          .  ; Y=5
     lda (ARGA),y                                   ; 92ea: b1 3a       .:
     jmp POPA                                       ; 92ec: 4c 38 83    L8.
 
@@ -3292,7 +3292,7 @@ GPLIST
     ; **** RPLACA
 RPLACA
     ldy #1                                         ; 92ef: a0 01       ..
-    bne PLAQ                                       ; 92f1: d0 02       ..             ; ALWAYS branch
+    bne PLAQ                                       ; 92f1: d0 02       .. ; ALWAYS branch
 
 
     ; **** RPLACD
@@ -3313,7 +3313,7 @@ PLAQ
     jmp POP                                        ; 930b: 4c 3a 83    L:.
 
 PLAQER
-    brk                                            ; 930e: 00          .              ; Wrong 1st arg
+    brk                                            ; 930e: 00          .  ; Wrong 1st arg
 
     !byte $13                                      ; 930f: 13          .
     !text "RPLACA/RPLACD argument"                 ; 9310: 52 50 4c... RPL
@@ -3339,10 +3339,10 @@ GT
     cmp #$80                                       ; 933b: c9 80       ..
     eor (ARGA),y                                   ; 933d: 51 3a       Q:
     bmi DFSGN                                      ; 933f: 30 0f       0.
-    dey                                            ; 9341: 88          .              ; Y=2
+    dey                                            ; 9341: 88          .  ; Y=2
     lda (ARGB),y                                   ; 9342: b1 3c       .<
     cmp (ARGA),y                                   ; 9344: d1 3a       .:
-    iny                                            ; 9346: c8          .              ; Y=3
+    iny                                            ; 9346: c8          .  ; Y=3
     lda (ARGB),y                                   ; 9347: b1 3c       .<
     sbc (ARGA),y                                   ; 9349: f1 3a       .:
     bcs SMALLR                                     ; 934b: b0 05       ..
@@ -3358,18 +3358,18 @@ SOCK
     ldy #4                                         ; 9355: a0 04       ..
     lda (ARGA),y                                   ; 9357: b1 3a       .:
     sta WSB                                        ; 9359: 85 36       .6
-    iny                                            ; 935b: c8          .              ; Y=5
+    iny                                            ; 935b: c8          .  ; Y=5
     lda (ARGA),y                                   ; 935c: b1 3a       .:
-    sta WSB+1                                      ; 935e: 85 37       .7             ; A-list search
+    sta WSB+1                                      ; 935e: 85 37       .7 ; A-list search
 SOCKA
-    bne LKG                                        ; 9360: d0 10       ..             ; routine
+    bne LKG                                        ; 9360: d0 10       .. ; routine
     rts                                            ; 9362: 60          `
 
 ROCKON
     ldy #3                                         ; 9363: a0 03       ..
     lda (WSB),y                                    ; 9365: b1 36       .6
     tax                                            ; 9367: aa          .
-    iny                                            ; 9368: c8          .              ; Y=4
+    iny                                            ; 9368: c8          .  ; Y=4
     lda (WSB),y                                    ; 9369: b1 36       .6
     bne LKH                                        ; 936b: d0 01       ..
     rts                                            ; 936d: 60          `
@@ -3384,7 +3384,7 @@ LKG
     bpl ALERR                                      ; 9378: 10 1d       ..
     lda (WSB),y                                    ; 937a: b1 36       .6
     sta WSD                                        ; 937c: 85 83       ..
-    iny                                            ; 937e: c8          .              ; Y=2
+    iny                                            ; 937e: c8          .  ; Y=2
     lda (WSB),y                                    ; 937f: b1 36       .6
     sta WSD+1                                      ; 9381: 85 84       ..
     lda (WSD,x)                                    ; 9383: a1 83       ..
@@ -3392,7 +3392,7 @@ LKG
     lda ARGB+1                                     ; 9387: a5 3d       .=
     cmp (WSD),y                                    ; 9389: d1 83       ..
     bne ROCKON                                     ; 938b: d0 d6       ..
-    dey                                            ; 938d: 88          .              ; Y=1
+    dey                                            ; 938d: 88          .  ; Y=1
     lda ARGB                                       ; 938e: a5 3c       .<
     cmp (WSD),y                                    ; 9390: d1 83       ..
     bne ROCKON                                     ; 9392: d0 cf       ..
@@ -3400,7 +3400,7 @@ LKG
     rts                                            ; 9396: 60          `
 
 ALERR
-    brk                                            ; 9397: 00          .              ; P-list error
+    brk                                            ; 9397: 00          .  ; P-list error
 
     !byte $14                                      ; 9398: 14          .
     !text "P-list structure"                       ; 9399: 50 2d 6c... P-l
@@ -3415,18 +3415,18 @@ ASSOC
     lda ARGB+1                                     ; 93af: a5 3d       .=
     pha                                            ; 93b1: 48          H
     sta WSB+1                                      ; 93b2: 85 37       .7
-    lda ARGA                                       ; 93b4: a5 3a       .:             ; Fudge arg order
+    lda ARGA                                       ; 93b4: a5 3a       .: ; Fudge arg order
     sta ARGB                                       ; 93b6: 85 3c       .<
     lda ARGA+1                                     ; 93b8: a5 3b       .;
     sta ARGB+1                                     ; 93ba: 85 3d       .=
     jsr SOCKA                                      ; 93bc: 20 60 93     `.
-    cmp #1                                         ; 93bf: c9 01       ..             ; Save ret code as carry
+    cmp #1                                         ; 93bf: c9 01       .. ; Save ret code as carry
     pla                                            ; 93c1: 68          h
     sta ARGB+1                                     ; 93c2: 85 3d       .=
     pla                                            ; 93c4: 68          h
     sta ARGB                                       ; 93c5: 85 3c       .<
     lda #0                                         ; 93c7: a9 00       ..
-    bcc HAUSE                                      ; 93c9: 90 06       ..             ; If SOCKA returned zero
+    bcc HAUSE                                      ; 93c9: 90 06       .. ; If SOCKA returned zero
     lda WSD                                        ; 93cb: a5 83       ..
     sta ARG                                        ; 93cd: 85 30       .0
     lda WSD+1                                      ; 93cf: a5 84       ..
@@ -3443,7 +3443,7 @@ GET
     ldy #3                                         ; 93de: a0 03       ..
     lda (WSD),y                                    ; 93e0: b1 83       ..
     sta ARG                                        ; 93e2: 85 30       .0
-    iny                                            ; 93e4: c8          .              ; Y=4
+    iny                                            ; 93e4: c8          .  ; Y=4
     lda (WSD),y                                    ; 93e5: b1 83       ..
     sta ARG+1                                      ; 93e7: 85 31       .1
     jmp POP                                        ; 93e9: 4c 3a 83    L:.
@@ -3458,7 +3458,7 @@ PUT
     lda ARGC                                       ; 93f6: a5 3e       .>
     sta (WSD),y                                    ; 93f8: 91 83       ..
     sta ARG                                        ; 93fa: 85 30       .0
-    iny                                            ; 93fc: c8          .              ; Y=4
+    iny                                            ; 93fc: c8          .  ; Y=4
     lda ARGC+1                                     ; 93fd: a5 3f       .?
     sta (WSD),y                                    ; 93ff: 91 83       ..
     jmp POPA                                       ; 9401: 4c 38 83    L8.
@@ -3472,23 +3472,23 @@ INSERP
     jsr ALPAIR                                     ; 940f: 20 53 84     S.
     ldy #5                                         ; 9412: a0 05       ..
     lda (ARGA),y                                   ; 9414: b1 3a       .:
-    dey                                            ; 9416: 88          .              ; Y=4
+    dey                                            ; 9416: 88          .  ; Y=4
     sta (WSB),y                                    ; 9417: 91 36       .6
     lda ARGC+1                                     ; 9419: a5 3f       .?
     sta ARG+1                                      ; 941b: 85 31       .1
     sta (POINT),y                                  ; 941d: 91 7a       .z
     lda (ARGA),y                                   ; 941f: b1 3a       .:
-    dey                                            ; 9421: 88          .              ; Y=3
+    dey                                            ; 9421: 88          .  ; Y=3
     sta (WSB),y                                    ; 9422: 91 36       .6
     lda ARGC                                       ; 9424: a5 3e       .>
     sta ARG                                        ; 9426: 85 30       .0
     sta (POINT),y                                  ; 9428: 91 7a       .z
-    dey                                            ; 942a: 88          .              ; Y=2
+    dey                                            ; 942a: 88          .  ; Y=2
     lda ARGB+1                                     ; 942b: a5 3d       .=
     sta (POINT),y                                  ; 942d: 91 7a       .z
     lda POINT+1                                    ; 942f: a5 7b       .{
     sta (WSB),y                                    ; 9431: 91 36       .6
-    dey                                            ; 9433: 88          .              ; Y=1
+    dey                                            ; 9433: 88          .  ; Y=1
     lda ARGB                                       ; 9434: a5 3c       .<
     sta (POINT),y                                  ; 9436: 91 7a       .z
     lda POINT                                      ; 9438: a5 7a       .z
@@ -3496,7 +3496,7 @@ INSERP
     ldy #5                                         ; 943c: a0 05       ..
     lda WSB+1                                      ; 943e: a5 37       .7
     sta (ARGA),y                                   ; 9440: 91 3a       .:
-    dey                                            ; 9442: 88          .              ; Y=4
+    dey                                            ; 9442: 88          .  ; Y=4
     lda WSB                                        ; 9443: a5 36       .6
     sta (ARGA),y                                   ; 9445: 91 3a       .:
     jmp POP                                        ; 9447: 4c 3a 83    L:.
@@ -3510,7 +3510,7 @@ REMPR
     ldy #3                                         ; 9452: a0 03       ..
     lda (WSB),y                                    ; 9454: b1 36       .6
     sta WSC                                        ; 9456: 85 38       .8
-    iny                                            ; 9458: c8          .              ; Y=4
+    iny                                            ; 9458: c8          .  ; Y=4
     lda (WSB),y                                    ; 9459: b1 36       .6
     sta WSC+1                                      ; 945b: 85 39       .9
     ldy #5                                         ; 945d: a0 05       ..
@@ -3537,7 +3537,7 @@ FRUTA
     stx ARGA+1                                     ; 947c: 86 3b       .;
     sta ARGA                                       ; 947e: 85 3a       .:
     ldy #4                                         ; 9480: a0 04       ..
-    bne FRUIT                                      ; 9482: d0 db       ..             ; ALWAYS branch
+    bne FRUIT                                      ; 9482: d0 db       .. ; ALWAYS branch
 
 HOUSE
     jmp NO                                         ; 9484: 4c 2d 83    L-.
@@ -3561,7 +3561,7 @@ COMPX
     rts                                            ; 949b: 60          `
 
 NUER
-    brk                                            ; 949c: 00          .              ; Non-numeric args
+    brk                                            ; 949c: 00          .  ; Non-numeric args
 
     !byte $15                                      ; 949d: 15          .
     !text "Non-numeric argument"                   ; 949e: 4e 6f 6e... Non
@@ -3584,7 +3584,7 @@ APFUN
     lda (ARGA),y                                   ; 94c4: b1 3a       .:
     bmi GEVIL                                      ; 94c6: 30 15       0.
     cmp #SUBRF                                     ; 94c8: c9 08       ..
-    beq GFRTS                                      ; 94ca: f0 4f       .O             ; It's a subr
+    beq GFRTS                                      ; 94ca: f0 4f       .O ; It's a subr
 APFERR
     brk                                            ; 94cc: 00          .
 
@@ -3593,7 +3593,7 @@ APFERR
     !byte 0                                        ; 94dc: 00          .
 
 GEVIL
-    iny                                            ; 94dd: c8          .              ; Expr?
+    iny                                            ; 94dd: c8          .  ; Expr?
     lda (ARGA),y                                   ; 94de: b1 3a       .:
     cmp #<LAMBDA                                   ; 94e0: c9 18       ..
     bne APFERR                                     ; 94e2: d0 e8       ..
@@ -3611,21 +3611,21 @@ GEVIL
     ldy #0                                         ; 94f8: a0 00       ..
     lda (WSD),y                                    ; 94fa: b1 83       ..
     bpl APFERR                                     ; 94fc: 10 ce       ..
-    iny                                            ; 94fe: c8          .              ; Y=1
-    lda (WSD),y                                    ; 94ff: b1 83       ..             ; Parm list in WSB
+    iny                                            ; 94fe: c8          .  ; Y=1
+    lda (WSD),y                                    ; 94ff: b1 83       .. ; Parm list in WSB
     sta WSB                                        ; 9501: 85 36       .6
-    iny                                            ; 9503: c8          .              ; Y=2
+    iny                                            ; 9503: c8          .  ; Y=2
     lda (WSD),y                                    ; 9504: b1 83       ..
     sta WSB+1                                      ; 9506: 85 37       .7
     beq APFERR                                     ; 9508: f0 c2       ..
-    iny                                            ; 950a: c8          .              ; Y=3
+    iny                                            ; 950a: c8          .  ; Y=3
     lda (WSD),y                                    ; 950b: b1 83       ..
-    sta WSC                                        ; 950d: 85 38       .8             ; Body in WSC
-    iny                                            ; 950f: c8          .              ; Y=4
+    sta WSC                                        ; 950d: 85 38       .8 ; Body in WSC
+    iny                                            ; 950f: c8          .  ; Y=4
     lda (WSD),y                                    ; 9510: b1 83       ..
     sta WSC+1                                      ; 9512: 85 39       .9
     ldy #0                                         ; 9514: a0 00       ..
-    lda (WSB),y                                    ; 9516: b1 36       .6             ; Fexpr?
+    lda (WSB),y                                    ; 9516: b1 36       .6 ; Fexpr?
     bpl APFERR                                     ; 9518: 10 b2       ..
     rts                                            ; 951a: 60          `
 
@@ -3637,7 +3637,7 @@ GFRTS
     rts                                            ; 9523: 60          `
 
 APERR
-    brk                                            ; 9524: 00          .              ; APPLY list
+    brk                                            ; 9524: 00          .  ; APPLY list
 
     !byte $17                                      ; 9525: 17          .
     !text "APPLY arguments"                        ; 9526: 41 50 50... APP
@@ -3657,39 +3657,39 @@ APL
     ldy #0                                         ; 9545: a0 00       ..
     lda (WSA),y                                    ; 9547: b1 34       .4
     bpl APERR                                      ; 9549: 10 d9       ..
-    iny                                            ; 954b: c8          .              ; Y=1
+    iny                                            ; 954b: c8          .  ; Y=1
     lda (WSA),y                                    ; 954c: b1 34       .4
     sta TVS,x                                      ; 954e: 95 30       .0
-    iny                                            ; 9550: c8          .              ; Y=2
+    iny                                            ; 9550: c8          .  ; Y=2
     inx                                            ; 9551: e8          .
     lda (WSA),y                                    ; 9552: b1 34       .4
     sta TVS,x                                      ; 9554: 95 30       .0
-    inx                                            ; 9556: e8          .              ; Spread args into TVS
+    inx                                            ; 9556: e8          .  ; Spread args into TVS
     cpx #$42                                       ; 9557: e0 42       .B
     bcs APERR                                      ; 9559: b0 c9       ..
     ldy #4                                         ; 955b: a0 04       ..
     lda (WSA),y                                    ; 955d: b1 34       .4
     beq APGO                                       ; 955f: f0 0b       ..
     pha                                            ; 9561: 48          H
-    dey                                            ; 9562: 88          .              ; Y=3
+    dey                                            ; 9562: 88          .  ; Y=3
     lda (WSA),y                                    ; 9563: b1 34       .4
     sta WSA                                        ; 9565: 85 34       .4
     pla                                            ; 9567: 68          h
     sta WSA+1                                      ; 9568: 85 35       .5
-    bne APL                                        ; 956a: d0 d9       ..             ; Always taken
+    bne APL                                        ; 956a: d0 d9       .. ; Always taken
 APGO
     stx TVSEXT                                     ; 956c: 86 33       .3
 APGOB
     lda WSB+1                                      ; 956e: a5 37       .7
     beq SUBAP                                      ; 9570: f0 03       ..
-    jmp RADON                                      ; 9572: 4c d2 86    L..            ; Expr entry
+    jmp RADON                                      ; 9572: 4c d2 86    L.. ; Expr entry
 
 SUBAP
-    jmp INSUBR                                     ; 9575: 4c fc 85    L..            ; Subr entry
+    jmp INSUBR                                     ; 9575: 4c fc 85    L.. ; Subr entry
 
 MAPSTR
-    jsr APFUN                                      ; 9578: 20 bc 94     ..            ; Prelims for
-    ldx #$0c                                       ; 957b: a2 0c       ..             ; MAP functions
+    jsr APFUN                                      ; 9578: 20 bc 94     .. ; Prelims for
+    ldx #$0c                                       ; 957b: a2 0c       .. ; MAP functions
 MAPMOV
     lda TVS,x                                      ; 957d: b5 30       .0
     sta TVS-2,x                                    ; 957f: 95 2e       ..
@@ -3732,7 +3732,7 @@ MAPCAR
     sta (POINT),y                                  ; 95b3: 91 7a       .z
     lda POINT                                      ; 95b5: a5 7a       .z
     sta WSA                                        ; 95b7: 85 34       .4
-    dey                                            ; 95b9: 88          .              ; Y=3
+    dey                                            ; 95b9: 88          .  ; Y=3
     sta (POINT),y                                  ; 95ba: 91 7a       .z
 MAPCON
     jsr CARAP                                      ; 95bc: 20 45 96     E.
@@ -3743,26 +3743,26 @@ MAPCON
     lda POINT+1                                    ; 95c8: a5 7b       .{
     sta (WSA),y                                    ; 95ca: 91 34       .4
     lda POINT                                      ; 95cc: a5 7a       .z
-    dey                                            ; 95ce: 88          .              ; Y=1
+    dey                                            ; 95ce: 88          .  ; Y=1
     sta (WSA),y                                    ; 95cf: 91 34       .4
 OLDMAP
     ldy #4                                         ; 95d1: a0 04       ..
     lda (WSA),y                                    ; 95d3: b1 34       .4
     sta WSD+1                                      ; 95d5: 85 84       ..
-    dey                                            ; 95d7: 88          .              ; Y=3
+    dey                                            ; 95d7: 88          .  ; Y=3
     lda (WSA),y                                    ; 95d8: b1 34       .4
     sta WSD                                        ; 95da: 85 83       ..
     lda POINT                                      ; 95dc: a5 7a       .z
     sta (WSD),y                                    ; 95de: 91 83       ..
     sta (WSA),y                                    ; 95e0: 91 34       .4
-    iny                                            ; 95e2: c8          .              ; Y=4
+    iny                                            ; 95e2: c8          .  ; Y=4
     lda POINT+1                                    ; 95e3: a5 7b       .{
     sta (WSD),y                                    ; 95e5: 91 83       ..
     sta (WSA),y                                    ; 95e7: 91 34       .4
     ldy #2                                         ; 95e9: a0 02       ..
     lda ARG+1                                      ; 95eb: a5 31       .1
     sta (POINT),y                                  ; 95ed: 91 7a       .z
-    dey                                            ; 95ef: 88          .              ; Y=1
+    dey                                            ; 95ef: 88          .  ; Y=1
     lda ARG                                        ; 95f0: a5 30       .0
     sta (POINT),y                                  ; 95f2: 91 7a       .z
     jsr CDRALL                                     ; 95f4: 20 84 96     ..
@@ -3770,14 +3770,14 @@ OLDMAP
     ldy #1                                         ; 95f9: a0 01       ..
     lda (WSA),y                                    ; 95fb: b1 34       .4
     sta ARG                                        ; 95fd: 85 30       .0
-    iny                                            ; 95ff: c8          .              ; Y=2
+    iny                                            ; 95ff: c8          .  ; Y=2
     lda (WSA),y                                    ; 9600: b1 34       .4
     jmp POPA                                       ; 9602: 4c 38 83    L8.
 
 
     ; **** GETCHAR
 GETCHA
-    ldx TVSEXT                                     ; 9605: a6 33       .3             ; File arg?
+    ldx TVSEXT                                     ; 9605: a6 33       .3 ; File arg?
     cpx #$0c                                       ; 9607: e0 0c       ..
     bcc GETDIR                                     ; 9609: 90 09       ..
     jsr FILGC                                      ; 960b: 20 9c 8a     ..
@@ -3785,7 +3785,7 @@ GETCHA
     jmp POST                                       ; 9611: 4c 29 96    L).
 
 GETDIR
-    jsr osrdch                                     ; 9614: 20 e0 ff     ..            ; Read a character from the current input stream
+    jsr osrdch                                     ; 9614: 20 e0 ff     .. ; Read a character from the current input stream
     bcc POST                                       ; 9617: 90 10       ..
     brk                                            ; 9619: 00          .
 
@@ -3800,7 +3800,7 @@ ASCII
     ldy #2                                         ; 9625: a0 02       ..
     lda (ARGA),y                                   ; 9627: b1 3a       .:
 POST
-    jsr LETTER                                     ; 9629: 20 e8 89     ..            ; Finds char atom
+    jsr LETTER                                     ; 9629: 20 e8 89     .. ; Finds char atom
     jmp AMADE                                      ; 962c: 4c 67 88    Lg.
 
 
@@ -3832,10 +3832,10 @@ CARAVA
     ldy #0                                         ; 9657: a0 00       ..
     lda (WSD),y                                    ; 9659: b1 83       ..
     bpl MAPERR                                     ; 965b: 10 12       ..
-    iny                                            ; 965d: c8          .              ; Y=1
+    iny                                            ; 965d: c8          .  ; Y=1
     lda (WSD),y                                    ; 965e: b1 83       ..
     sta TVS-1,x                                    ; 9660: 95 2f       ./
-    iny                                            ; 9662: c8          .              ; Y=2
+    iny                                            ; 9662: c8          .  ; Y=2
     lda (WSD),y                                    ; 9663: b1 83       ..
     sta TVS,x                                      ; 9665: 95 30       .0
     dex                                            ; 9667: ca          .
@@ -3845,7 +3845,7 @@ CARAFE
     jmp APGOB                                      ; 966c: 4c 6e 95    Ln.
 
 MAPERR
-    brk                                            ; 966f: 00          .              ; MAP args
+    brk                                            ; 966f: 00          .  ; MAP args
 
     !byte $18                                      ; 9670: 18          .
     !text "MAP/MAPC arguments"                     ; 9671: 4d 41 50... MAP
@@ -3868,7 +3868,7 @@ CDRAVA
     beq CDREND                                     ; 969b: f0 0c       ..
     sta TVS,x                                      ; 969d: 95 30       .0
     dex                                            ; 969f: ca          .
-    dey                                            ; 96a0: 88          .              ; Y=3
+    dey                                            ; 96a0: 88          .  ; Y=3
     lda (WSD),y                                    ; 96a1: b1 83       ..
     sta TVS,x                                      ; 96a3: 95 30       .0
 CDRAWL
@@ -3892,7 +3892,7 @@ THUMP
     ldy #4                                         ; 96ba: a0 04       ..
     lda ARG+1                                      ; 96bc: a5 31       .1
     sta (POINT),y                                  ; 96be: 91 7a       .z
-    dey                                            ; 96c0: 88          .              ; Y=3
+    dey                                            ; 96c0: 88          .  ; Y=3
     lda ARG                                        ; 96c1: a5 30       .0
     sta (POINT),y                                  ; 96c3: 91 7a       .z
     lda POINT+1                                    ; 96c5: a5 7b       .{
@@ -3907,7 +3907,7 @@ THUMP
     ldy #2                                         ; 96d5: a0 02       ..
     lda POINT+1                                    ; 96d7: a5 7b       .{
     sta (ARG),y                                    ; 96d9: 91 30       .0
-    dey                                            ; 96db: 88          .              ; Y=1
+    dey                                            ; 96db: 88          .  ; Y=1
     lda POINT                                      ; 96dc: a5 7a       .z
     sta (ARG),y                                    ; 96de: 91 30       .0
     pla                                            ; 96e0: 68          h
@@ -3917,7 +3917,7 @@ BANG
     jmp POP                                        ; 96e5: 4c 3a 83    L:.
 
 IMPERR
-    brk                                            ; 96e8: 00          .              ; No space
+    brk                                            ; 96e8: 00          .  ; No space
 
     !byte $19                                      ; 96e9: 19          .
     !text "No room for IMPLODE"                    ; 96ea: 4e 6f 20... No
@@ -3945,14 +3945,14 @@ NODNIL
     ldy #0                                         ; 9718: a0 00       ..
     lda (WSB),y                                    ; 971a: b1 36       .6
     beq ISCH                                       ; 971c: f0 03       ..
-    jmp FILERR                                     ; 971e: 4c 97 8f    L..            ; Not char err
+    jmp FILERR                                     ; 971e: 4c 97 8f    L.. ; Not char err
 
 ISCH
     iny                                            ; 9721: c8          .
     lda (WSB),y                                    ; 9722: b1 36       .6
     sta YSAV                                       ; 9724: 85 22       ."
     ldy #6                                         ; 9726: a0 06       ..
-    bne EMM                                        ; 9728: d0 09       ..             ; ALWAYS branch
+    bne EMM                                        ; 9728: d0 09       .. ; ALWAYS branch
 
 SPLOT
     lda (WSB),y                                    ; 972a: b1 36       .6
@@ -3966,7 +3966,7 @@ EMM
     ldy #4                                         ; 9737: a0 04       ..
     lda (ARGA),y                                   ; 9739: b1 3a       .:
     pha                                            ; 973b: 48          H
-    dey                                            ; 973c: 88          .              ; Y=3
+    dey                                            ; 973c: 88          .  ; Y=3
     lda (ARGA),y                                   ; 973d: b1 3a       .:
     sta ARGA                                       ; 973f: 85 3a       .:
     pla                                            ; 9741: 68          h
@@ -3977,7 +3977,7 @@ WSBTST
     lda (ARGA),y                                   ; 9748: b1 3a       .:
     bmi SQUISH                                     ; 974a: 30 b9       0.
 IMPRET
-    dex                                            ; 974c: ca          .              ; Show string length
+    dex                                            ; 974c: ca          .  ; Show string length
     stx END                                        ; 974d: 86 1d       ..
     jmp TRYCHR                                     ; 974f: 4c 64 88    Ld.
 
@@ -4008,12 +4008,12 @@ MODE
     jsr ALLNUM                                     ; 9770: 20 87 94     ..
     jsr ALNUM                                      ; 9773: 20 3d 84     =.
     ldy #2                                         ; 9776: a0 02       ..
-    lda (ARGA),y                                   ; 9778: b1 3a       .:             ; Get mode
-    and #7                                         ; 977a: 29 07       ).             ; Mod 8
+    lda (ARGA),y                                   ; 9778: b1 3a       .: ; Get mode
+    and #7                                         ; 977a: 29 07       ). ; Mod 8
     sta (POINT),y                                  ; 977c: 91 7a       .z
-    ora #$80                                       ; 977e: 09 80       ..             ; Flag bit
+    ora #$80                                       ; 977e: 09 80       .. ; Flag bit
     sta MODEF                                      ; 9780: 8d 2a 04    .*.
-    iny                                            ; 9783: c8          .              ; Y=3
+    iny                                            ; 9783: c8          .  ; Y=3
     lda #0                                         ; 9784: a9 00       ..
     sta (POINT),y                                  ; 9786: 91 7a       .z
     jmp AMADE                                      ; 9788: 4c 67 88    Lg.
@@ -4023,37 +4023,37 @@ MODE
 MODCHN
     lda MODEF                                      ; 978b: ad 2a 04    .*.
     and #7                                         ; 978e: 29 07       ).
-    sta MODEF                                      ; 9790: 8d 2a 04    .*.            ; Clear flag bit
+    sta MODEF                                      ; 9790: 8d 2a 04    .*. ; Clear flag bit
     pha                                            ; 9793: 48          H
     lda #osbyte_read_high_order_address            ; 9794: a9 82       ..
-    jsr osbyte                                     ; 9796: 20 f4 ff     ..            ; M/c HO addr.; Read the filing system 'machine high order address'
-    cpy #$ff                                       ; 9799: c0 ff       ..             ; X and Y contain the machine high order address (low, high)
-    bne CHANGE                                     ; 979b: d0 2c       .,             ; In 2nd processor?
+    jsr osbyte                                     ; 9796: 20 f4 ff     .. ; M/c HO addr. ; Read the filing system 'machine high order address'
+    cpy #$ff                                       ; 9799: c0 ff       .. ; X and Y contain the machine high order address (low, high)
+    bne CHANGE                                     ; 979b: d0 2c       ., ; In 2nd processor?
     pla                                            ; 979d: 68          h
     pha                                            ; 979e: 48          H
-    tax                                            ; 979f: aa          .              ; X=MODE number
+    tax                                            ; 979f: aa          .  ; X=MODE number
     lda #osbyte_read_himem_for_mode                ; 97a0: a9 85       ..
-    jsr osbyte                                     ; 97a2: 20 f4 ff     ..            ; Read top of user memory for a given screen mode X
-    cpy AREVAL+1                                   ; 97a5: cc 2e 04    ...            ; Room for OBLIST?; X and Y contain the address (low, high)
+    jsr osbyte                                     ; 97a2: 20 f4 ff     .. ; Read top of user memory for a given screen mode X
+    cpy AREVAL+1                                   ; 97a5: cc 2e 04    ... ; Room for OBLIST? ; X and Y contain the address (low, high)
     bcc MODERR                                     ; 97a8: 90 07       ..
     bne CHARE                                      ; 97aa: d0 19       ..
     cpx AREVAL                                     ; 97ac: ec 2d 04    .-.
     bcs CHARE                                      ; 97af: b0 14       ..
 MODERR
-    brk                                            ; 97b1: 00          .              ; No room
+    brk                                            ; 97b1: 00          .  ; No room
 
     !byte $1b                                      ; 97b2: 1b          .
     !text "No room for MODE "                      ; 97b3: 4e 6f 20... No
     !byte 0                                        ; 97c4: 00          .
 
 CHARE
-    sty ARETOP                                     ; 97c5: 84 79       .y             ; New ARETOP
-    sty SP+1                                       ; 97c7: 84 7f       ..             ; Reset software stack
+    sty ARETOP                                     ; 97c5: 84 79       .y ; New ARETOP
+    sty SP+1                                       ; 97c7: 84 7f       .. ; Reset software stack
 CHANGE
-    lda #$16                                       ; 97c9: a9 16       ..             ; Change mode
-    jsr oswrch                                     ; 97cb: 20 ee ff     ..            ; Write character 22
+    lda #$16                                       ; 97c9: a9 16       .. ; Change mode
+    jsr oswrch                                     ; 97cb: 20 ee ff     .. ; Write character 22
     pla                                            ; 97ce: 68          h
-    jmp oswrch                                     ; 97cf: 4c ee ff    L..            ; Write character
+    jmp oswrch                                     ; 97cf: 4c ee ff    L.. ; Write character
 
 
     ; **** USR
@@ -4061,18 +4061,18 @@ USR
     jsr ALLNUM                                     ; 97d2: 20 87 94     ..
     ldy #3                                         ; 97d5: a0 03       ..
     lda (ARGA),y                                   ; 97d7: b1 3a       .:
-    sta POINT+1                                    ; 97d9: 85 7b       .{             ; Call addr
-    dey                                            ; 97db: 88          .              ; Y=2
+    sta POINT+1                                    ; 97d9: 85 7b       .{ ; Call addr
+    dey                                            ; 97db: 88          .  ; Y=2
     lda (ARGA),y                                   ; 97dc: b1 3a       .:
     sta POINT                                      ; 97de: 85 7a       .z
-    lda (ARGE),y                                   ; 97e0: b1 42       .B             ; Get carry
-    cmp #1                                         ; 97e2: c9 01       ..             ; And adjust flag
+    lda (ARGE),y                                   ; 97e0: b1 42       .B ; Get carry
+    cmp #1                                         ; 97e2: c9 01       .. ; And adjust flag
     php                                            ; 97e4: 08          .
-    lda (ARGB),y                                   ; 97e5: b1 3c       .<             ; Get A
+    lda (ARGB),y                                   ; 97e5: b1 3c       .< ; Get A
     pha                                            ; 97e7: 48          H
-    lda (ARGC),y                                   ; 97e8: b1 3e       .>             ; Get X
+    lda (ARGC),y                                   ; 97e8: b1 3e       .> ; Get X
     tax                                            ; 97ea: aa          .
-    lda (ARGD),y                                   ; 97eb: b1 40       .@             ; Get Y
+    lda (ARGD),y                                   ; 97eb: b1 40       .@ ; Get Y
     tay                                            ; 97ed: a8          .
     pla                                            ; 97ee: 68          h
     plp                                            ; 97ef: 28          (
@@ -4080,14 +4080,14 @@ USR
     jmp OUTL                                       ; 97f3: 4c f9 97    L..
 
 JUMPAD
-    jmp (POINT)                                    ; 97f6: 6c 7a 00    lz.            ; Enter routine
+    jmp (POINT)                                    ; 97f6: 6c 7a 00    lz. ; Enter routine
 
 OUTL
-    php                                            ; 97f9: 08          .              ; Build up result list
+    php                                            ; 97f9: 08          .  ; Build up result list
     sta WSA+1                                      ; 97fa: 85 35       .5
     pla                                            ; 97fc: 68          h
-    sta WSA                                        ; 97fd: 85 34       .4             ; Save status
-    lda WSA+1                                      ; 97ff: a5 35       .5             ; Restore A
+    sta WSA                                        ; 97fd: 85 34       .4 ; Save status
+    lda WSA+1                                      ; 97ff: a5 35       .5 ; Restore A
     ; push A,X,Y onto the stack
     pha                                            ; 9801: 48          H
     txa                                            ; 9802: 8a          .
@@ -4095,16 +4095,16 @@ OUTL
     tya                                            ; 9804: 98          .
     pha                                            ; 9805: 48          H
     lda #0                                         ; 9806: a9 00       ..
-    sta WSA+1                                      ; 9808: 85 35       .5             ; NIL
-    lda WSA                                        ; 980a: a5 34       .4             ; Get status
-    jsr BUILD1                                     ; 980c: 20 1e 98     ..            ; status
+    sta WSA+1                                      ; 9808: 85 35       .5 ; NIL
+    lda WSA                                        ; 980a: a5 34       .4 ; Get status
+    jsr BUILD1                                     ; 980c: 20 1e 98     .. ; status
     pla                                            ; 980f: 68          h
-    jsr BUILD1                                     ; 9810: 20 1e 98     ..            ; Y
+    jsr BUILD1                                     ; 9810: 20 1e 98     .. ; Y
     pla                                            ; 9813: 68          h
-    jsr BUILD1                                     ; 9814: 20 1e 98     ..            ; X
+    jsr BUILD1                                     ; 9814: 20 1e 98     .. ; X
     pla                                            ; 9817: 68          h
-    jsr BUILD1                                     ; 9818: 20 1e 98     ..            ; A
-    jmp AMADE                                      ; 981b: 4c 67 88    Lg.            ; Return list
+    jsr BUILD1                                     ; 9818: 20 1e 98     .. ; A
+    jmp AMADE                                      ; 981b: 4c 67 88    Lg. ; Return list
 
 
     ; **** Put A on list in WSA
@@ -4113,18 +4113,18 @@ BUILD1
 
     ; **** Put A & X (msb) on WSA
 BUILD2
-    jsr SETNUM                                     ; 9820: 20 44 98     D.            ; WSB has val
+    jsr SETNUM                                     ; 9820: 20 44 98     D. ; WSB has val
     jsr ALPAIR                                     ; 9823: 20 53 84     S.
     ldy #1                                         ; 9826: a0 01       ..
     lda WSB                                        ; 9828: a5 36       .6
     sta (POINT),y                                  ; 982a: 91 7a       .z
-    iny                                            ; 982c: c8          .              ; Y=2
+    iny                                            ; 982c: c8          .  ; Y=2
     lda WSB+1                                      ; 982d: a5 37       .7
     sta (POINT),y                                  ; 982f: 91 7a       .z
-    iny                                            ; 9831: c8          .              ; Y=3
+    iny                                            ; 9831: c8          .  ; Y=3
     lda WSA                                        ; 9832: a5 34       .4
     sta (POINT),y                                  ; 9834: 91 7a       .z
-    iny                                            ; 9836: c8          .              ; Y=4
+    iny                                            ; 9836: c8          .  ; Y=4
     lda WSA+1                                      ; 9837: a5 35       .5
     sta (POINT),y                                  ; 9839: 91 7a       .z
     lda POINT                                      ; 983b: a5 7a       .z
@@ -4135,7 +4135,7 @@ BUILD2
 
 SETNUM
     ; push A,X onto the stack
-    pha                                            ; 9844: 48          H              ; Num atom in WSB
+    pha                                            ; 9844: 48          H  ; Num atom in WSB
     txa                                            ; 9845: 8a          .
     pha                                            ; 9846: 48          H
     jsr ALNUM                                      ; 9847: 20 3d 84     =.
@@ -4146,7 +4146,7 @@ SETNUM
     ldy #2                                         ; 984d: a0 02       ..
     sta (POINT),y                                  ; 984f: 91 7a       .z
     txa                                            ; 9851: 8a          .
-    iny                                            ; 9852: c8          .              ; Y=3
+    iny                                            ; 9852: c8          .  ; Y=3
     sta (POINT),y                                  ; 9853: 91 7a       .z
     lda POINT                                      ; 9855: a5 7a       .z
     sta WSB                                        ; 9857: 85 36       .6
@@ -4193,7 +4193,7 @@ MORENV
     sta ARG                                        ; 9894: 85 30       .0
     lda TVS+1,x                                    ; 9896: b5 31       .1
     sta ARG+1                                      ; 9898: 85 31       .1
-    txa                                            ; 989a: 8a          .              ; Prepare index
+    txa                                            ; 989a: 8a          .  ; Prepare index
     lsr                                            ; 989b: 4a          J
     tax                                            ; 989c: aa          .
     lda (ARG),y                                    ; 989d: b1 30       .0
@@ -4206,11 +4206,11 @@ MORENV
     cpx #$26                                       ; 98a7: e0 26       .&
     bne MORENV                                     ; 98a9: d0 e7       ..
     lda #8                                         ; 98ab: a9 08       ..
-    bne ENTOSW                                     ; 98ad: d0 d2       ..             ; ALWAYS branch
+    bne ENTOSW                                     ; 98ad: d0 d2       .. ; ALWAYS branch
 
     bne MORENV                                     ; 98af: d0 e1       ..
     lda #8                                         ; 98b1: a9 08       ..
-    bne ENTOSW                                     ; 98b3: d0 cc       ..             ; ALWAYS branch
+    bne ENTOSW                                     ; 98b3: d0 cc       .. ; ALWAYS branch
 
 
     ; **** Get an argument
@@ -4229,17 +4229,17 @@ GTARG
 RESET
     jsr STCLK                                      ; 98bf: 20 c8 98     ..
     jsr GCTIMZ                                     ; 98c2: 20 d6 98     ..
-    jmp YES                                        ; 98c5: 4c 31 83    L1.            ; Value is T
+    jmp YES                                        ; 98c5: 4c 31 83    L1. ; Value is T
 
 
     ; **** Zero the clock
 STCLK
-    lda #osword_write_clock                        ; 98c8: a9 02       ..             ; Write clock
+    lda #osword_write_clock                        ; 98c8: a9 02       .. ; Write clock
 ZERTIM
     ldy #>TIMZER                                   ; 98ca: a0 82       ..
     ldx #<TIMZER                                   ; 98cc: a2 76       .v
     jsr osword                                     ; 98ce: 20 f1 ff     ..
-    ldx #$76                                       ; 98d1: a2 76       .v             ; Restore pointer
+    ldx #$76                                       ; 98d1: a2 76       .v ; Restore pointer
     ldy #$82                                       ; 98d3: a0 82       ..
     rts                                            ; 98d5: 60          `
 
@@ -4258,8 +4258,8 @@ TIMER
     lda #osword_read_clock                         ; 98e0: a9 01       ..
     ldx #<TIMEW                                    ; 98e2: a2 25       .%
     ldy #>TIMEW                                    ; 98e4: a0 04       ..
-    jsr osword                                     ; 98e6: 20 f1 ff     ..            ; Read system clock
-    ldx #<TIMEW                                    ; 98e9: a2 25       .%             ; Restore pointer
+    jsr osword                                     ; 98e6: 20 f1 ff     .. ; Read system clock
+    ldx #<TIMEW                                    ; 98e9: a2 25       .% ; Restore pointer
     ldy #>TIMEW                                    ; 98eb: a0 04       ..
     rts                                            ; 98ed: 60          `
 
@@ -4282,50 +4282,50 @@ TIMPOP
     jsr ALNUM                                      ; 98fc: 20 3d 84     =.
     ldy #0                                         ; 98ff: a0 00       ..
     lda (WSC),y                                    ; 9901: b1 38       .8
-    iny                                            ; 9903: c8          .              ; Y=1
-    iny                                            ; 9904: c8          .              ; Y=2
+    iny                                            ; 9903: c8          .  ; Y=1
+    iny                                            ; 9904: c8          .  ; Y=2
     sta (POINT),y                                  ; 9905: 91 7a       .z
-    dey                                            ; 9907: 88          .              ; Y=1
+    dey                                            ; 9907: 88          .  ; Y=1
     lda (WSC),y                                    ; 9908: b1 38       .8
-    iny                                            ; 990a: c8          .              ; Y=2
-    iny                                            ; 990b: c8          .              ; Y=3
+    iny                                            ; 990a: c8          .  ; Y=2
+    iny                                            ; 990b: c8          .  ; Y=3
     sta (POINT),y                                  ; 990c: 91 7a       .z
     jmp AMADE                                      ; 990e: 4c 67 88    Lg.
 
 
     ; **** CLOCK
 CLOCK
-    jsr TIMER                                      ; 9911: 20 e0 98     ..            ; Time in TIMEW
+    jsr TIMER                                      ; 9911: 20 e0 98     .. ; Time in TIMEW
     ldx #5                                         ; 9914: a2 05       ..
     ldy #0                                         ; 9916: a0 00       ..
 MCLK1
     tya                                            ; 9918: 98          .
-    sta REM40,x                                    ; 9919: 9d 07 04    ...            ; Zero remainder
-    sta AUX40,x                                    ; 991c: 9d 0c 04    ...            ; Zero divisor
-    lda TIMEW,x                                    ; 991f: bd 25 04    .%.            ; Dividend
+    sta REM40,x                                    ; 9919: 9d 07 04    ... ; Zero remainder
+    sta AUX40,x                                    ; 991c: 9d 0c 04    ... ; Zero divisor
+    lda TIMEW,x                                    ; 991f: bd 25 04    .%. ; Dividend
     sta ACL40,x                                    ; 9922: 9d 02 04    ...
     dex                                            ; 9925: ca          .
     bpl MCLK1                                      ; 9926: 10 f0       ..
-    lda #$64                                       ; 9928: a9 64       .d             ; Throw away cs
+    lda #$64                                       ; 9928: a9 64       .d ; Throw away cs
     sta AUX40                                      ; 992a: 8d 0c 04    ...
     jsr DIV40                                      ; 992d: 20 42 a0     B.
     lda #0                                         ; 9930: a9 00       ..
     sta REM40                                      ; 9932: 8d 07 04    ...
-    lda #$3c                                       ; 9935: a9 3c       .<             ; Get the seconds
+    lda #$3c                                       ; 9935: a9 3c       .< ; Get the seconds
     sta AUX40                                      ; 9937: 8d 0c 04    ...
     jsr DIV40                                      ; 993a: 20 42 a0     B.
     lda #0                                         ; 993d: a9 00       ..
-    sta WSA+1                                      ; 993f: 85 35       .5             ; NIL
+    sta WSA+1                                      ; 993f: 85 35       .5 ; NIL
     lda REM40                                      ; 9941: ad 07 04    ...
     jsr BUILD1                                     ; 9944: 20 1e 98     ..
     lda #0                                         ; 9947: a9 00       ..
     sta REM40                                      ; 9949: 8d 07 04    ...
-    lda #$3c                                       ; 994c: a9 3c       .<             ; Get the minutes
+    lda #$3c                                       ; 994c: a9 3c       .< ; Get the minutes
     sta AUX40                                      ; 994e: 8d 0c 04    ...
     jsr DIV40                                      ; 9951: 20 42 a0     B.
     lda REM40                                      ; 9954: ad 07 04    ...
     jsr BUILD1                                     ; 9957: 20 1e 98     ..
-    lda ACL40                                      ; 995a: ad 02 04    ...            ; Get the hours
+    lda ACL40                                      ; 995a: ad 02 04    ... ; Get the hours
     ldx ACL40+1                                    ; 995d: ae 03 04    ...
     jsr BUILD2                                     ; 9960: 20 20 98      .
     jmp AMADE                                      ; 9963: 4c 67 88    Lg.
@@ -4335,25 +4335,25 @@ MCLK1
 PVAL
     jsr ALLNUM                                     ; 9966: 20 87 94     ..
     ldy #2                                         ; 9969: a0 02       ..
-    lda (ARGA),y                                   ; 996b: b1 3a       .:             ; X lsb
+    lda (ARGA),y                                   ; 996b: b1 3a       .: ; X lsb
     sta PWORD                                      ; 996d: 8d 1b 04    ...
-    lda (ARGB),y                                   ; 9970: b1 3c       .<             ; Y msb
+    lda (ARGB),y                                   ; 9970: b1 3c       .< ; Y msb
     sta PWORD+2                                    ; 9972: 8d 1d 04    ...
-    iny                                            ; 9975: c8          .              ; Y=3
-    lda (ARGA),y                                   ; 9976: b1 3a       .:             ; X lsb
+    iny                                            ; 9975: c8          .  ; Y=3
+    lda (ARGA),y                                   ; 9976: b1 3a       .: ; X lsb
     sta PWORD+1                                    ; 9978: 8d 1c 04    ...
-    lda (ARGB),y                                   ; 997b: b1 3c       .<             ; Y msb
+    lda (ARGB),y                                   ; 997b: b1 3c       .< ; Y msb
     sta PWORD+3                                    ; 997d: 8d 1e 04    ...
     lda #osword_read_pixel                         ; 9980: a9 09       ..
     ldx #<PWORD                                    ; 9982: a2 1b       ..
     ldy #>PWORD                                    ; 9984: a0 04       ..
-    jsr osword                                     ; 9986: 20 f1 ff     ..            ; Read pixel value
+    jsr osword                                     ; 9986: 20 f1 ff     .. ; Read pixel value
     jsr ALNUM                                      ; 9989: 20 3d 84     =.
     ldy #2                                         ; 998c: a0 02       ..
     ldx #0                                         ; 998e: a2 00       ..
     lda PWORD+4                                    ; 9990: ad 1f 04    ...
-    bpl PEXIST                                     ; 9993: 10 01       ..             ; Point on screen
-    dex                                            ; 9995: ca          .              ; X=$ff
+    bpl PEXIST                                     ; 9993: 10 01       .. ; Point on screen
+    dex                                            ; 9995: ca          .  ; X=$ff
 PEXIST
     sta (POINT),y                                  ; 9996: 91 7a       .z
     iny                                            ; 9998: c8          .
@@ -4369,17 +4369,17 @@ ADVAL
     ldy #2                                         ; 99a5: a0 02       ..
     lda (ARGA),y                                   ; 99a7: b1 3a       .:
     tax                                            ; 99a9: aa          .
-    iny                                            ; 99aa: c8          .              ; Y=3
+    iny                                            ; 99aa: c8          .  ; Y=3
     lda (ARGA),y                                   ; 99ab: b1 3a       .:
     tay                                            ; 99ad: a8          .
     lda #osbyte_read_adc_or_get_buffer_status      ; 99ae: a9 80       ..
-    jsr osbyte                                     ; 99b0: 20 f4 ff     ..            ; Read buffer status or ADC channel
+    jsr osbyte                                     ; 99b0: 20 f4 ff     .. ; Read buffer status or ADC channel
     tya                                            ; 99b3: 98          .
     clc                                            ; 99b4: 18          .
-    adc #$80                                       ; 99b5: 69 80       i.             ; Make range +/-2^15
+    adc #$80                                       ; 99b5: 69 80       i. ; Make range +/-2^15
     ldy #3                                         ; 99b7: a0 03       ..
     sta (POINT),y                                  ; 99b9: 91 7a       .z
-    dey                                            ; 99bb: 88          .              ; Y=2
+    dey                                            ; 99bb: 88          .  ; Y=2
     txa                                            ; 99bc: 8a          .
     sta (POINT),y                                  ; 99bd: 91 7a       .z
     jmp AMADE                                      ; 99bf: 4c 67 88    Lg.
@@ -4395,17 +4395,17 @@ INKEY
     ldy #2                                         ; 99ce: a0 02       ..
     lda (ARGA),y                                   ; 99d0: b1 3a       .:
     tax                                            ; 99d2: aa          .
-    iny                                            ; 99d3: c8          .              ; Y=3
+    iny                                            ; 99d3: c8          .  ; Y=3
     lda (ARGA),y                                   ; 99d4: b1 3a       .:
     tay                                            ; 99d6: a8          .
     lda #osbyte_inkey                              ; 99d7: a9 81       ..
-    jsr osbyte                                     ; 99d9: 20 f4 ff     ..            ; Read key within time limit, or read a specific key, or read machine type
+    jsr osbyte                                     ; 99d9: 20 f4 ff     .. ; Read key within time limit, or read a specific key, or read machine type
     ldy #2                                         ; 99dc: a0 02       ..
     bcs INKER                                      ; 99de: b0 0b       ..
     txa                                            ; 99e0: 8a          .
     sta (POINT),y                                  ; 99e1: 91 7a       .z
     lda #0                                         ; 99e3: a9 00       ..
-    iny                                            ; 99e5: c8          .              ; Y=3
+    iny                                            ; 99e5: c8          .  ; Y=3
     sta (POINT),y                                  ; 99e6: 91 7a       .z
     jmp AMADE                                      ; 99e8: 4c 67 88    Lg.
 
@@ -4417,14 +4417,14 @@ INKER
     jmp AMADE                                      ; 99f2: 4c 67 88    Lg.
 
 INKEY2
-    pha                                            ; 99f5: 48          H              ; Scan keyboard
+    pha                                            ; 99f5: 48          H  ; Scan keyboard
     dey                                            ; 99f6: 88          .
     lda (ARGA),y                                   ; 99f7: b1 3a       .:
     tax                                            ; 99f9: aa          .
     pla                                            ; 99fa: 68          h
     tay                                            ; 99fb: a8          .
     lda #osbyte_inkey                              ; 99fc: a9 81       ..
-    jsr osbyte                                     ; 99fe: 20 f4 ff     ..            ; Read key within time limit, or read a specific key, or read machine type
+    jsr osbyte                                     ; 99fe: 20 f4 ff     .. ; Read key within time limit, or read a specific key, or read machine type
     tya                                            ; 9a01: 98          .
     bmi INKYES                                     ; 9a02: 30 03       0.
     jmp NO                                         ; 9a04: 4c 2d 83    L-.
@@ -4452,17 +4452,17 @@ NOCAR
     bpl NXDIGT                                     ; 9a24: 10 ec       ..
     ldy #4                                         ; 9a26: a0 04       ..
     sty END                                        ; 9a28: 84 1d       ..
-    jsr MATCH                                      ; 9a2a: 20 ef 89     ..            ; Look up Gxxxx
+    jsr MATCH                                      ; 9a2a: 20 ef 89     .. ; Look up Gxxxx
     ldy #2                                         ; 9a2d: a0 02       ..
     lda (POINT),y                                  ; 9a2f: b1 7a       .z
-    cmp #<ZA                                       ; 9a31: c9 02       ..             ; Is it UNDEFINED ?
+    cmp #<ZA                                       ; 9a31: c9 02       .. ; Is it UNDEFINED ?
     bne GENSYM                                     ; 9a33: d0 d5       ..
-    iny                                            ; 9a35: c8          .              ; Y=3
+    iny                                            ; 9a35: c8          .  ; Y=3
     lda (POINT),y                                  ; 9a36: b1 7a       .z
     cmp IMBOT                                      ; 9a38: cd 2c 04    .,.
     bne GENSYM                                     ; 9a3b: d0 cd       ..
     ldy #5                                         ; 9a3d: a0 05       ..
-    lda (POINT),y                                  ; 9a3f: b1 7a       .z             ; No properties ?
+    lda (POINT),y                                  ; 9a3f: b1 7a       .z ; No properties ?
     bne GENSYM                                     ; 9a41: d0 c7       ..
     jmp AMADE                                      ; 9a43: 4c 67 88    Lg.
 
@@ -4478,7 +4478,7 @@ BNOT
     lda #$ff                                       ; 9a4e: a9 ff       ..
     eor (ARGA),y                                   ; 9a50: 51 3a       Q:
     sta (POINT),y                                  ; 9a52: 91 7a       .z
-    iny                                            ; 9a54: c8          .              ; Y=3
+    iny                                            ; 9a54: c8          .  ; Y=3
     lda #$ff                                       ; 9a55: a9 ff       ..
     eor (ARGA),y                                   ; 9a57: 51 3a       Q:
     sta (POINT),y                                  ; 9a59: 91 7a       .z
@@ -4492,7 +4492,7 @@ BAND
     lda #$ff                                       ; 9a64: a9 ff       ..
     ldy #3                                         ; 9a66: a0 03       ..
     sta (POINT),y                                  ; 9a68: 91 7a       .z
-    dey                                            ; 9a6a: 88          .              ; Y=2
+    dey                                            ; 9a6a: 88          .  ; Y=2
     sta (POINT),y                                  ; 9a6b: 91 7a       .z
     ldx TVSEXT                                     ; 9a6d: a6 33       .3
 MBAND
@@ -4522,7 +4522,7 @@ BOR
     lda #0                                         ; 9a94: a9 00       ..
     ldy #3                                         ; 9a96: a0 03       ..
     sta (POINT),y                                  ; 9a98: 91 7a       .z
-    dey                                            ; 9a9a: 88          .              ; Y=2
+    dey                                            ; 9a9a: 88          .  ; Y=2
     sta (POINT),y                                  ; 9a9b: 91 7a       .z
     ldx TVSEXT                                     ; 9a9d: a6 33       .3
 MBOR
@@ -4587,7 +4587,7 @@ REGPIN
     rol                                            ; 9ae5: 2a          *
     sta (GCA,x)                                    ; 9ae6: 81 04       ..
     bmi LIN                                        ; 9ae8: 30 01       0.
-    iny                                            ; 9aea: c8          .              ; Y=5
+    iny                                            ; 9aea: c8          .  ; Y=5
 LIN
     lda (GCA),y                                    ; 9aeb: b1 04       ..
     beq REGRTS                                     ; 9aed: f0 1c       ..
@@ -4613,10 +4613,10 @@ REGRTS
     rts                                            ; 9b0b: 60          `
 
 REGIST
-    lda GCA+1                                      ; 9b0c: a5 05       ..             ; This code added by RMT
-    cmp ARETOP                                     ; 9b0e: c5 79       .y             ; 12/9/83 to prevent bug
-    bcc REGIS1                                     ; 9b10: 90 e5       ..             ; probably caused by ARG
-    rts                                            ; 9b12: 60          `              ; being &FFxx
+    lda GCA+1                                      ; 9b0c: a5 05       .. ; This code added by RMT
+    cmp ARETOP                                     ; 9b0e: c5 79       .y ; 12/9/83 to prevent bug
+    bcc REGIS1                                     ; 9b10: 90 e5       .. ; probably caused by ARG
+    rts                                            ; 9b12: 60          `  ; being &FFxx
 
 VIRGIN
     clv                                            ; 9b13: b8          .
@@ -4626,7 +4626,7 @@ VIRGIN
     asl                                            ; 9b18: 0a          .
     sta (GCA,x)                                    ; 9b19: 81 04       ..
     bmi LINJ                                       ; 9b1b: 30 01       0.
-    iny                                            ; 9b1d: c8          .              ; Y=3
+    iny                                            ; 9b1d: c8          .  ; Y=3
 LINJ
     lda (GCA),y                                    ; 9b1e: b1 04       ..
     beq REGCDR                                     ; 9b20: f0 b7       ..
@@ -4635,7 +4635,7 @@ LINJ
     dec l0009                                      ; 9b24: c6 09       ..
     bpl STOCK                                      ; 9b26: 10 04       ..
     inc l0009                                      ; 9b28: e6 09       ..
-    beq BOT                                        ; 9b2a: f0 c5       ..             ; Always taken
+    beq BOT                                        ; 9b2a: f0 c5       .. ; Always taken
 STOCK
     lda GCA+1                                      ; 9b2c: a5 05       ..
     pha                                            ; 9b2e: 48          H
@@ -4657,10 +4657,10 @@ STOCK
 RUBBSH
     stx GARX                                       ; 9b46: 86 02       ..
     sty GARRY                                      ; 9b48: 84 03       ..
-    lda #$ff                                       ; 9b4a: a9 ff       ..             ; Mark memory invalid
+    lda #$ff                                       ; 9b4a: a9 ff       .. ; Mark memory invalid
     sta MEMINV                                     ; 9b4c: 8d 32 04    .2.
-    lda #4                                         ; 9b4f: a9 04       ..             ; Start timing
-    jsr ZERTIM                                     ; 9b51: 20 ca 98     ..            ; Zero timer
+    lda #4                                         ; 9b4f: a9 04       .. ; Start timing
+    jsr ZERTIM                                     ; 9b51: 20 ca 98     .. ; Zero timer
     lda AREVAL                                     ; 9b54: ad 2d 04    .-.
     sta OLDEXT                                     ; 9b57: 85 1b       ..
     lda AREVAL+1                                   ; 9b59: ad 2e 04    ...
@@ -4673,11 +4673,11 @@ HGCA
     and #2                                         ; 9b66: 29 02       ).
     beq NOMESA                                     ; 9b68: f0 16       ..
     lda HANDLE                                     ; 9b6a: a5 13       ..
-    pha                                            ; 9b6c: 48          H              ; Save I/O file handle
-    ldx #GCOFF                                     ; 9b6d: a2 33       .3             ; 'G.C. no.'
+    pha                                            ; 9b6c: 48          H  ; Save I/O file handle
+    ldx #GCOFF                                     ; 9b6d: a2 33       .3 ; 'G.C. no.'
     jsr MESSAH                                     ; 9b6f: 20 fc 84     ..
     lda GCNO                                       ; 9b72: a5 00       ..
-    sta ACL                                        ; 9b74: 85 72       .r             ; Print no. of G.C.'s
+    sta ACL                                        ; 9b74: 85 72       .r ; Print no. of G.C.'s
     lda GCNO+1                                     ; 9b76: a5 01       ..
     sta ACL+1                                      ; 9b78: 85 73       .s
     jsr PINT                                       ; 9b7a: 20 57 8c     W.
@@ -4686,11 +4686,11 @@ HGCA
 NOMESA
     jsr CLEARF                                     ; 9b80: 20 c8 9a     ..
     lda #$20                                       ; 9b83: a9 20       .
-    sta l0009                                      ; 9b85: 85 09       ..             ; Stack limit
+    sta l0009                                      ; 9b85: 85 09       .. ; Stack limit
     ldx TVSEXT                                     ; 9b87: a6 33       .3
 COLLEC
     lda TVS-1,x                                    ; 9b89: b5 2f       ./
-    beq SREG                                       ; 9b8b: f0 0d       ..             ; Register off WSA etc.
+    beq SREG                                       ; 9b8b: f0 0d       .. ; Register off WSA etc.
 CREG
     sta GCA+1                                      ; 9b8d: 85 05       ..
     lda TVS-2,x                                    ; 9b8f: b5 2e       ..
@@ -4710,7 +4710,7 @@ SREG
     sta GCA                                        ; 9ba8: 85 04       ..
     jsr REGIST                                     ; 9baa: 20 0c 9b     ..
 STRETH
-    lda SP                                         ; 9bad: a5 7e       .~             ; Register off stack
+    lda SP                                         ; 9bad: a5 7e       .~ ; Register off stack
     sta CELL                                       ; 9baf: 85 7c       .|
     lda SP+1                                       ; 9bb1: a5 7f       ..
     sta CELL+1                                     ; 9bb3: 85 7d       .}
@@ -4727,7 +4727,7 @@ STCOLL
     lda (CELL),y                                   ; 9bc5: b1 7c       .|
 BOWDUN
     sec                                            ; 9bc7: 38          8
-    adc CELL                                       ; 9bc8: 65 7c       e|             ; +1 because carry is set
+    adc CELL                                       ; 9bc8: 65 7c       e| ; +1 because carry is set
     sta CELL                                       ; 9bca: 85 7c       .|
     bcc SPOCK                                      ; 9bcc: 90 02       ..
     inc CELL+1                                     ; 9bce: e6 7d       .}
@@ -4735,7 +4735,7 @@ SPOCK
     lda (CELL),y                                   ; 9bd0: b1 7c       .|
     tay                                            ; 9bd2: a8          .
     jsr SPREG                                      ; 9bd3: 20 72 9e     r.
-    dey                                            ; 9bd6: 88          .              ; Avoid the return addr
+    dey                                            ; 9bd6: 88          .  ; Avoid the return addr
     dey                                            ; 9bd7: 88          .
 STCOL
     jsr SPREG                                      ; 9bd8: 20 72 9e     r.
@@ -4752,8 +4752,8 @@ CXHB
     cmp ARETOP                                     ; 9bea: c5 79       .y
     bcc STUP                                       ; 9bec: 90 cb       ..
 LOOKW
-    jsr SETCEL                                     ; 9bee: 20 be 9a     ..            ; Now off whole
-    bit CXH                                        ; 9bf1: 2c e0 9b    ,..            ; Set overflow
+    jsr SETCEL                                     ; 9bee: 20 be 9a     .. ; Now off whole
+    bit CXH                                        ; 9bf1: 2c e0 9b    ,.. ; Set overflow
     php                                            ; 9bf4: 08          .
 MORWS
     ldx #0                                         ; 9bf5: a2 00       ..
@@ -4761,13 +4761,13 @@ MORWS
     cmp #$82                                       ; 9bf9: c9 82       ..
     beq DOREG                                      ; 9bfb: f0 0d       ..
     cmp #2                                         ; 9bfd: c9 02       ..
-    beq DOREG                                      ; 9bff: f0 09       ..             ; Register if half
-    bcs NOREG                                      ; 9c01: b0 14       ..             ; finished,
+    beq DOREG                                      ; 9bff: f0 09       .. ; Register if half
+    bcs NOREG                                      ; 9c01: b0 14       .. ; finished,
     jsr USEFUL                                     ; 9c03: 20 3d 90     =.
     beq NOREG                                      ; 9c06: f0 0f       ..
     lda (CELL,x)                                   ; 9c08: a1 7c       .|
 DOREG
-    ldy CELL                                       ; 9c0a: a4 7c       .|             ; or if char atom
+    ldy CELL                                       ; 9c0a: a4 7c       .| ; or if char atom
     sty GCA                                        ; 9c0c: 84 04       ..
     ldy CELL+1                                     ; 9c0e: a4 7d       .}
     sty GCA+1                                      ; 9c10: 84 05       ..
@@ -4778,7 +4778,7 @@ NOREG
     jsr NXCELL                                     ; 9c17: 20 70 8a     p.
     bcc MORWS                                      ; 9c1a: 90 d9       ..
     plp                                            ; 9c1c: 28          (
-    bvc LOOKW                                      ; 9c1d: 50 cf       P.             ; There's more
+    bvc LOOKW                                      ; 9c1d: 50 cf       P. ; There's more
 
     ; ******************************
     ; Having registered the cells,
@@ -4802,12 +4802,12 @@ SETMIN
     lda CELL+1                                     ; 9c35: a5 7d       .}
     sta AD+1                                       ; 9c37: 85 88       ..
     lda CELL                                       ; 9c39: a5 7c       .|
-    sta AD                                         ; 9c3b: 85 87       ..             ; Top of static
+    sta AD                                         ; 9c3b: 85 87       .. ; Top of static
 DLOP
     ldy #2                                         ; 9c3d: a0 02       ..
     lda DISPM                                      ; 9c3f: a5 0b       ..
     sta (CELL),y                                   ; 9c41: 91 7c       .|
-    iny                                            ; 9c43: c8          .              ; Y=3
+    iny                                            ; 9c43: c8          .  ; Y=3
     lda DISPM+1                                    ; 9c44: a5 0c       ..
     sta (CELL),y                                   ; 9c46: 91 7c       .|
     lda CELL                                       ; 9c48: a5 7c       .|
@@ -4847,7 +4847,7 @@ STUSE
     iny                                            ; 9c80: c8          .
     lda (CELL),y                                   ; 9c81: b1 7c       .|
     dey                                            ; 9c83: 88          .
-    bcc ADDIN                                      ; 9c84: 90 02       ..             ; ALWAYS branch
+    bcc ADDIN                                      ; 9c84: 90 02       .. ; ALWAYS branch
 
 SIXG
     lda #5                                         ; 9c86: a9 05       ..
@@ -4870,7 +4870,7 @@ NHCIQ
     lda (CELL),y                                   ; 9ca8: b1 7c       .|
     lsr                                            ; 9caa: 4a          J
     bcs STUSE                                      ; 9cab: b0 cb       ..
-    bcc DLOP                                       ; 9cad: 90 8e       ..             ; ALWAYS branch
+    bcc DLOP                                       ; 9cad: 90 8e       .. ; ALWAYS branch
 
 TADJ
     lda DISPM                                      ; 9caf: a5 0b       ..
@@ -4884,7 +4884,7 @@ TADJ
     ; the pointers
     ; ******************************
 ADJUSS
-    lda SP                                         ; 9cb7: a5 7e       .~             ; Adjust stack
+    lda SP                                         ; 9cb7: a5 7e       .~ ; Adjust stack
     sta CELL                                       ; 9cb9: 85 7c       .|
     lda SP+1                                       ; 9cbb: a5 7f       ..
     sta CELL+1                                     ; 9cbd: 85 7d       .}
@@ -4899,7 +4899,7 @@ ASP
     pla                                            ; 9ccc: 68          h
 NOLEAP
     sec                                            ; 9ccd: 38          8
-    adc CELL                                       ; 9cce: 65 7c       e|             ; +1 because carry is set
+    adc CELL                                       ; 9cce: 65 7c       e| ; +1 because carry is set
     sta CELL                                       ; 9cd0: 85 7c       .|
     bcc LUCK                                       ; 9cd2: 90 02       ..
     inc CELL+1                                     ; 9cd4: e6 7d       .}
@@ -4907,7 +4907,7 @@ LUCK
     lda CELL+1                                     ; 9cd6: a5 7d       .}
     cmp ARETOP                                     ; 9cd8: c5 79       .y
     bcc ASP                                        ; 9cda: 90 e3       ..
-    lda #BINDER                                    ; 9cdc: a9 32       .2             ; Adjust workspace
+    lda #BINDER                                    ; 9cdc: a9 32       .2 ; Adjust workspace
     sta CELL                                       ; 9cde: 85 7c       .|
     lda #0                                         ; 9ce0: a9 00       ..
     sta CELL+1                                     ; 9ce2: 85 7d       .}
@@ -4921,15 +4921,15 @@ LUCK
     ldy #2                                         ; 9cf0: a0 02       ..
     jsr AJCELL                                     ; 9cf2: 20 f5 9d     ..
     jsr SETCEL                                     ; 9cf5: 20 be 9a     ..
-    ldy #0                                         ; 9cf8: a0 00       ..             ; Revises pointer over
+    ldy #0                                         ; 9cf8: a0 00       .. ; Revises pointer over
 ADJUT
-    lda (CELL),y                                   ; 9cfa: b1 7c       .|             ; whole of
+    lda (CELL),y                                   ; 9cfa: b1 7c       .| ; whole of
     lsr                                            ; 9cfc: 4a          J
     bcc NXADJ                                      ; 9cfd: 90 11       ..
     ldy #4                                         ; 9cff: a0 04       ..
     asl                                            ; 9d01: 0a          .
     bmi LICE                                       ; 9d02: 30 09       0.
-    iny                                            ; 9d04: c8          .              ; Y=5
+    iny                                            ; 9d04: c8          .  ; Y=5
     cmp #SUBRF                                     ; 9d05: c9 08       ..
     bcs LICE                                       ; 9d07: b0 04       ..
     cmp #NUMF                                      ; 9d09: c9 04       ..
@@ -4943,8 +4943,8 @@ NXADJ
     ; ******************************
     ; Now move the blocks about
     ; ******************************
-    lda AD                                         ; 9d15: a5 87       ..             ; AD has top of static
-    sta CELL                                       ; 9d17: 85 7c       .|             ; space
+    lda AD                                         ; 9d15: a5 87       .. ; AD has top of static
+    sta CELL                                       ; 9d17: 85 7c       .| ; space
     lda AD+1                                       ; 9d19: a5 88       ..
     sta CELL+1                                     ; 9d1b: 85 7d       .}
 SAL
@@ -4968,7 +4968,7 @@ ABGO
     sta AB                                         ; 9d3b: 85 20       .
     sec                                            ; 9d3d: 38          8
     sbc AA                                         ; 9d3e: e5 1e       ..
-    sta GCA                                        ; 9d40: 85 04       ..             ; PUT LENGTH IN GCA
+    sta GCA                                        ; 9d40: 85 04       .. ; PUT LENGTH IN GCA
     lda CELL+1                                     ; 9d42: a5 7d       .}
     sta AB+1                                       ; 9d44: 85 21       .!
 
@@ -4994,7 +4994,7 @@ BITMOV
     iny                                            ; 9d61: c8          .
     cpy GCA                                        ; 9d62: c4 04       ..
     bcc BITMOV                                     ; 9d64: 90 f7       ..
-    bne SAL                                        ; 9d66: d0 b5       ..             ; If GCA is zero loop
+    bne SAL                                        ; 9d66: d0 b5       .. ; If GCA is zero loop
     tya                                            ; 9d68: 98          .
     clc                                            ; 9d69: 18          .
     adc AD                                         ; 9d6a: 65 87       e.
@@ -5028,7 +5028,7 @@ CLUPB
     lda LEVEL                                      ; 9d95: a5 1a       ..
     and #1                                         ; 9d97: 29 01       ).
     beq NOMESC                                     ; 9d99: f0 31       .1
-    lda HANDLE                                     ; 9d9b: a5 13       ..             ; Save file handle
+    lda HANDLE                                     ; 9d9b: a5 13       .. ; Save file handle
     pha                                            ; 9d9d: 48          H
     lda #0                                         ; 9d9e: a9 00       ..
     sta HANDLE                                     ; 9da0: 85 13       ..
@@ -5037,7 +5037,7 @@ CLUPB
     jsr OUT                                        ; 9da7: 20 0e 85     ..
     jsr PINT                                       ; 9daa: 20 57 8c     W.
     ldx #COLOFF                                    ; 9dad: a2 3a       .:
-    jsr MESSAG                                     ; 9daf: 20 00 85     ..            ; ' Bytes collected '
+    jsr MESSAG                                     ; 9daf: 20 00 85     .. ; ' Bytes collected '
     sec                                            ; 9db2: 38          8
     lda SP                                         ; 9db3: a5 7e       .~
     sbc AREVAL                                     ; 9db5: ed 2d 04    .-.
@@ -5047,14 +5047,14 @@ CLUPB
     sta ACL+1                                      ; 9dbf: 85 73       .s
     jsr PINT                                       ; 9dc1: 20 57 8c     W.
     ldx #FROFF                                     ; 9dc4: a2 4c       .L
-    jsr MESSAG                                     ; 9dc6: 20 00 85     ..            ; ' Bytes free<CR>'
+    jsr MESSAG                                     ; 9dc6: 20 00 85     .. ; ' Bytes free<CR>'
     pla                                            ; 9dc9: 68          h
-    sta HANDLE                                     ; 9dca: 85 13       ..             ; Restore file handle
+    sta HANDLE                                     ; 9dca: 85 13       .. ; Restore file handle
 NOMESC
     lda #osword_read_interval_timer                ; 9dcc: a9 03       ..
     ldx #<TIMEW                                    ; 9dce: a2 25       .%
     ldy #>TIMEW                                    ; 9dd0: a0 04       ..
-    jsr osword                                     ; 9dd2: 20 f1 ff     ..            ; Read interval timer
+    jsr osword                                     ; 9dd2: 20 f1 ff     .. ; Read interval timer
     clc                                            ; 9dd5: 18          .
     ldy #0                                         ; 9dd6: a0 00       ..
     ldx #5                                         ; 9dd8: a2 05       ..
@@ -5080,7 +5080,7 @@ AJCELL
     bcc NXPR                                       ; 9dfa: 90 70       .p
     cmp ARETOP                                     ; 9dfc: c5 79       .y
     bcs NXPR                                       ; 9dfe: b0 6c       .l
-    cmp AB+1                                       ; 9e00: c5 21       .!             ; Bottom of top block
+    cmp AB+1                                       ; 9e00: c5 21       .! ; Bottom of top block
     bcc ONW                                        ; 9e02: 90 19       ..
     sta GCA+1                                      ; 9e04: 85 05       ..
     bne SPECS                                      ; 9e06: d0 0a       ..
@@ -5088,7 +5088,7 @@ AJCELL
     lda (CELL),y                                   ; 9e0a: b1 7c       .|
     cmp AB                                         ; 9e0c: c5 20       .
     bcc ONX                                        ; 9e0e: 90 13       ..
-    bcs SPECTR                                     ; 9e10: b0 02       ..             ; ALWAYS branch
+    bcs SPECTR                                     ; 9e10: b0 02       .. ; ALWAYS branch
 
 SPECS
     lda (CELL),y                                   ; 9e12: b1 7c       .|
@@ -5119,7 +5119,7 @@ GCAON
     beq PAGDIQ                                     ; 9e34: f0 21       .!
     adc (GCA),y                                    ; 9e36: 71 04       q.
     bcs PAGDIP                                     ; 9e38: b0 1e       ..
-    bcc ADDOUT                                     ; 9e3a: 90 05       ..             ; ALWAYS branch
+    bcc ADDOUT                                     ; 9e3a: 90 05       .. ; ALWAYS branch
 
 SIXP
     tya                                            ; 9e3c: 98          .
@@ -5137,9 +5137,9 @@ ADDOUT
     sbc (SA),y                                     ; 9e4d: f1 07       ..
     tax                                            ; 9e4f: aa          .
     lda GCA+1                                      ; 9e50: a5 05       ..
-    iny                                            ; 9e52: c8          .              ; Y=3
+    iny                                            ; 9e52: c8          .  ; Y=3
     sbc (SA),y                                     ; 9e53: f1 07       ..
-    bcs CHUG                                       ; 9e55: b0 0c       ..             ; Always taken
+    bcs CHUG                                       ; 9e55: b0 0c       .. ; Always taken
 PAGDIQ
     sec                                            ; 9e57: 38          8
 PAGDIP
@@ -5164,7 +5164,7 @@ NXPR
     rts                                            ; 9e71: 60          `
 
 SPREG
-    lda (CELL),y                                   ; 9e72: b1 7c       .|             ; Stack register
+    lda (CELL),y                                   ; 9e72: b1 7c       .| ; Stack register
     beq NULBOW                                     ; 9e74: f0 0e       ..
     sta GCA+1                                      ; 9e76: 85 05       ..
     sty GABBY                                      ; 9e78: 84 06       ..
@@ -5188,19 +5188,19 @@ NULBOW
     ; **** Main error entry
 ERRORS
 ERROR
-    lda #osbyte_acknowledge_escape                 ; 9e87: a9 7e       .~             ; Ack escape
-    jsr osbyte                                     ; 9e89: 20 f4 ff     ..            ; Clear escape condition and perform escape effects
-    clc                                            ; 9e8c: 18          .              ; Increment error count
+    lda #osbyte_acknowledge_escape                 ; 9e87: a9 7e       .~ ; Ack escape
+    jsr osbyte                                     ; 9e89: 20 f4 ff     .. ; Clear escape condition and perform escape effects
+    clc                                            ; 9e8c: 18          .  ; Increment error count
     lda ERRCNT                                     ; 9e8d: a5 0d       ..
     adc #1                                         ; 9e8f: 69 01       i.
     sta ERRCNT                                     ; 9e91: 85 0d       ..
     lda ERRCNT+1                                   ; 9e93: a5 0e       ..
     adc #0                                         ; 9e95: 69 00       i.
     sta ERRCNT+1                                   ; 9e97: 85 0e       ..
-    lda LEVEL                                      ; 9e99: a5 1a       ..             ; Save LEVEL
+    lda LEVEL                                      ; 9e99: a5 1a       .. ; Save LEVEL
     sta OLDLEV                                     ; 9e9b: 85 97       ..
     ldy #0                                         ; 9e9d: a0 00       ..
-    lda (BRKAD),y                                  ; 9e9f: b1 fd       ..             ; Get errno.
+    lda (BRKAD),y                                  ; 9e9f: b1 fd       .. ; Get errno.
     sta ERRNO                                      ; 9ea1: 85 11       ..
     sta ACL                                        ; 9ea3: 85 72       .r
 
@@ -5209,133 +5209,133 @@ ERROR
 NEXCAT
     inx                                            ; 9ea7: e8          .
     lda CATTAB,x                                   ; 9ea8: bd 70 82    .p.
-    bmi TRCOK                                      ; 9eab: 30 0a       0.             ; Allow trackback
+    bmi TRCOK                                      ; 9eab: 30 0a       0. ; Allow trackback
     cmp ERRNO                                      ; 9ead: c5 11       ..
     bne NEXCAT                                     ; 9eaf: d0 f6       ..
-    lda LEVEL                                      ; 9eb1: a5 1a       ..             ; Match
+    lda LEVEL                                      ; 9eb1: a5 1a       .. ; Match
     and #$e7                                       ; 9eb3: 29 e7       ).
-    sta LEVEL                                      ; 9eb5: 85 1a       ..             ; No traceback
+    sta LEVEL                                      ; 9eb5: 85 1a       .. ; No traceback
 TRCOK
     ldx #$ff                                       ; 9eb7: a2 ff       ..
-    txs                                            ; 9eb9: 9a          .              ; Reset stack
-    inx                                            ; 9eba: e8          .              ; X=0
+    txs                                            ; 9eb9: 9a          .  ; Reset stack
+    inx                                            ; 9eba: e8          .  ; X=0
     stx DEPTH                                      ; 9ebb: 86 8b       ..
     stx HANDLE                                     ; 9ebd: 86 13       ..
-    lda #$0e                                       ; 9ebf: a9 0e       ..             ; Page mode
-    jsr oswrch                                     ; 9ec1: 20 ee ff     ..            ; Write character 14
-    lda #$18                                       ; 9ec4: a9 18       ..             ; Mask for LEVEL
+    lda #$0e                                       ; 9ebf: a9 0e       .. ; Page mode
+    jsr oswrch                                     ; 9ec1: 20 ee ff     .. ; Write character 14
+    lda #$18                                       ; 9ec4: a9 18       .. ; Mask for LEVEL
     sta TOPBIN                                     ; 9ec6: 85 0f       ..
-    lda #4                                         ; 9ec8: a9 04       ..             ; Error
+    lda #4                                         ; 9ec8: a9 04       .. ; Error
     and LEVEL                                      ; 9eca: 25 1a       %.
     beq NERRA                                      ; 9ecc: f0 0c       ..
-    ldx #ERROFF                                    ; 9ece: a2 5d       .]             ; "^Error number "
+    ldx #ERROFF                                    ; 9ece: a2 5d       .] ; "^Error number "
     jsr MESSAH                                     ; 9ed0: 20 fc 84     ..
     lda #0                                         ; 9ed3: a9 00       ..
     sta ACL+1                                      ; 9ed5: 85 73       .s
-    jsr PINT                                       ; 9ed7: 20 57 8c     W.            ; Print err no.
+    jsr PINT                                       ; 9ed7: 20 57 8c     W. ; Print err no.
 NERRA
     lda #$ff                                       ; 9eda: a9 ff       ..
-    bit LEVEL                                      ; 9edc: 24 1a       $.             ; Err mess mask
+    bit LEVEL                                      ; 9edc: 24 1a       $. ; Err mess mask
     beq NERRB                                      ; 9ede: f0 03       ..
-    jsr PSTRNG                                     ; 9ee0: 20 a5 9f     ..            ; Print err mess
+    jsr PSTRNG                                     ; 9ee0: 20 a5 9f     .. ; Print err mess
 NERRB
-    lda #8                                         ; 9ee3: a9 08       ..             ; Top args mask
+    lda #8                                         ; 9ee3: a9 08       .. ; Top args mask
     and LEVEL                                      ; 9ee5: 25 1a       %.
     beq NERRC                                      ; 9ee7: f0 03       ..
-    jsr PARG                                       ; 9ee9: 20 b6 9f     ..            ; Print ARG
+    jsr PARG                                       ; 9ee9: 20 b6 9f     .. ; Print ARG
 NERRC
     lda SP+1                                       ; 9eec: a5 7f       ..
 DWARF=NERRC-1
-    cmp ARETOP                                     ; 9eee: c5 79       .y             ; Pop return
-    bcc WINDER                                     ; 9ef0: 90 0c       ..             ; stack completely
+    cmp ARETOP                                     ; 9eee: c5 79       .y ; Pop return
+    bcc WINDER                                     ; 9ef0: 90 0c       .. ; stack completely
     lda #$0f                                       ; 9ef2: a9 0f       ..
-    jsr oswrch                                     ; 9ef4: 20 ee ff     ..            ; Page mode off; Write character 15
+    jsr oswrch                                     ; 9ef4: 20 ee ff     .. ; Page mode off ; Write character 15
     lda OLDLEV                                     ; 9ef7: a5 97       ..
-    sta LEVEL                                      ; 9ef9: 85 1a       ..             ; Old LEVEL
-    jmp SUPER                                      ; 9efb: 4c c6 82    L..            ; Restart
+    sta LEVEL                                      ; 9ef9: 85 1a       .. ; Old LEVEL
+    jmp SUPER                                      ; 9efb: 4c c6 82    L.. ; Restart
 
 
     ; **** Collapse the stack
 WINDER
     ldx #0                                         ; 9efe: a2 00       ..
     stx ACL+1                                      ; 9f00: 86 73       .s
-    stx WSC+1                                      ; 9f02: 86 39       .9             ; Used bind count
-    lda (SP,x)                                     ; 9f04: a1 7e       .~             ; Get binding state
+    stx WSC+1                                      ; 9f02: 86 39       .9 ; Used bind count
+    lda (SP,x)                                     ; 9f04: a1 7e       .~ ; Get binding state
     tay                                            ; 9f06: a8          .
     iny                                            ; 9f07: c8          .
     clc                                            ; 9f08: 18          .
-    adc (SP),y                                     ; 9f09: 71 7e       q~             ; Add work space
+    adc (SP),y                                     ; 9f09: 71 7e       q~ ; Add work space
     tay                                            ; 9f0b: a8          .
     iny                                            ; 9f0c: c8          .
-    lda (SP),y                                     ; 9f0d: b1 7e       .~             ; To get ARG
+    lda (SP),y                                     ; 9f0d: b1 7e       .~ ; To get ARG
     sta WSB+1                                      ; 9f0f: 85 37       .7
-    dey                                            ; 9f11: 88          .              ; Put ARG in WSB
+    dey                                            ; 9f11: 88          .  ; Put ARG in WSB
     lda (SP),y                                     ; 9f12: b1 7e       .~
     sta WSB                                        ; 9f14: 85 36       .6
     dey                                            ; 9f16: 88          .
-    lda (SP),y                                     ; 9f17: b1 7e       .~             ; Check ret addr for
-    dey                                            ; 9f19: 88          .              ;  ERRORSET
+    lda (SP),y                                     ; 9f17: b1 7e       .~ ; Check ret addr for
+    dey                                            ; 9f19: 88          .  ;  ERRORSET
     cmp #>(ELFIN-1)                                ; 9f1a: c9 9f       ..
     bne SLIP                                       ; 9f1c: d0 1e       ..
-    lda (SP),y                                     ; 9f1e: b1 7e       .~             ; and low byte
+    lda (SP),y                                     ; 9f1e: b1 7e       .~ ; and low byte
     cmp #<(ELFIN-1)                                ; 9f20: c9 c6       ..
-    bne SLIP                                       ; 9f22: d0 18       ..             ; Not ERRORSET
+    bne SLIP                                       ; 9f22: d0 18       .. ; Not ERRORSET
     tya                                            ; 9f24: 98          .
     clc                                            ; 9f25: 18          .
-    adc #4                                         ; 9f26: 69 04       i.             ; Remove ERRORSET
-    adc SP                                         ; 9f28: 65 7e       e~             ; stack entry
+    adc #4                                         ; 9f26: 69 04       i. ; Remove ERRORSET
+    adc SP                                         ; 9f28: 65 7e       e~ ; stack entry
     sta SP                                         ; 9f2a: 85 7e       .~
     bcc QZQ                                        ; 9f2c: 90 02       ..
     inc SP+1                                       ; 9f2e: e6 7f       ..
 QZQ
-    lda ERRNO                                      ; 9f30: a5 11       ..             ; Return err no.
+    lda ERRNO                                      ; 9f30: a5 11       .. ; Return err no.
     sta ACL                                        ; 9f32: 85 72       .r
     lda #$0f                                       ; 9f34: a9 0f       ..
-    jsr oswrch                                     ; 9f36: 20 ee ff     ..            ; Page mode off; Write character 15
-    jmp ACLRET                                     ; 9f39: 4c a4 92    L..            ; POP via ACLRET
+    jsr oswrch                                     ; 9f36: 20 ee ff     .. ; Page mode off ; Write character 15
+    jmp ACLRET                                     ; 9f39: 4c a4 92    L.. ; POP via ACLRET
 
 SLIP
     lda #<DWARF                                    ; 9f3c: a9 eb       ..
-    sta (SP),y                                     ; 9f3e: 91 7e       .~             ; Set up return for POP
+    sta (SP),y                                     ; 9f3e: 91 7e       .~ ; Set up return for POP
     iny                                            ; 9f40: c8          .
     lda #>DWARF                                    ; 9f41: a9 9e       ..
     sta (SP),y                                     ; 9f43: 91 7e       .~
-    lda LEVEL                                      ; 9f45: a5 1a       ..             ; Check trace print
-    and TOPBIN                                     ; 9f47: 25 0f       %.             ; is this second arg
-    beq NOPE                                       ; 9f49: f0 47       .G             ; Skip rint
-    and #$10                                       ; 9f4b: 29 10       ).             ; Clear top arg flag
+    lda LEVEL                                      ; 9f45: a5 1a       .. ; Check trace print
+    and TOPBIN                                     ; 9f47: 25 0f       %. ; is this second arg
+    beq NOPE                                       ; 9f49: f0 47       .G ; Skip rint
+    and #$10                                       ; 9f4b: 29 10       ). ; Clear top arg flag
     sta TOPBIN                                     ; 9f4d: 85 0f       ..
     beq BINS                                       ; 9f4f: f0 36       .6
-    lda (SP,x)                                     ; 9f51: a1 7e       .~             ; Any bound vars?
+    lda (SP,x)                                     ; 9f51: a1 7e       .~ ; Any bound vars?
     beq BINS                                       ; 9f53: f0 32       .2
 
     ; **** Do bound var pairs
     tay                                            ; 9f55: a8          .
 ERBIN
-    lda (SP),y                                     ; 9f56: b1 7e       .~             ; Get var name into
-    sta ARG+1                                      ; 9f58: 85 31       .1             ; ARG
+    lda (SP),y                                     ; 9f56: b1 7e       .~ ; Get var name into
+    sta ARG+1                                      ; 9f58: 85 31       .1 ; ARG
     dey                                            ; 9f5a: 88          .
     lda (SP),y                                     ; 9f5b: b1 7e       .~
     sta ARG                                        ; 9f5d: 85 30       .0
     dey                                            ; 9f5f: 88          .
     dey                                            ; 9f60: 88          .
     dey                                            ; 9f61: 88          .
-    sty WSC                                        ; 9f62: 84 38       .8             ; NB. WSC +&01 is &00
+    sty WSC                                        ; 9f62: 84 38       .8 ; NB. WSC +&01 is &00
     jsr CROUT                                      ; 9f64: 20 19 85     ..
-    jsr PRINA                                      ; 9f67: 20 81 8b     ..            ; Print var name
+    jsr PRINA                                      ; 9f67: 20 81 8b     .. ; Print var name
     lda #'='                                       ; 9f6a: a9 3d       .=
     jsr OUT                                        ; 9f6c: 20 0e 85     ..
-    lda #' '                                       ; 9f6f: a9 20       .              ; Print a space
+    lda #' '                                       ; 9f6f: a9 20       .  ; Print a space
     jsr OUT                                        ; 9f71: 20 0e 85     ..
-    ldy #3                                         ; 9f74: a0 03       ..             ; Get the value of the
-    lda (ARG),y                                    ; 9f76: b1 30       .0             ; variable into ARG
+    ldy #3                                         ; 9f74: a0 03       .. ; Get the value of the
+    lda (ARG),y                                    ; 9f76: b1 30       .0 ; variable into ARG
     tax                                            ; 9f78: aa          .
-    dey                                            ; 9f79: 88          .              ; Y=2
+    dey                                            ; 9f79: 88          .  ; Y=2
     lda (ARG),y                                    ; 9f7a: b1 30       .0
     sta ARG                                        ; 9f7c: 85 30       .0
     stx ARG+1                                      ; 9f7e: 86 31       .1
-    jsr PRINA                                      ; 9f80: 20 81 8b     ..            ; Print it
-    ldy WSC                                        ; 9f83: a4 38       .8             ; Repeat if more
+    jsr PRINA                                      ; 9f80: 20 81 8b     .. ; Print it
+    ldy WSC                                        ; 9f83: a4 38       .8 ; Repeat if more
     bne ERBIN                                      ; 9f85: d0 cf       ..
 
     ; **** Remove rest of stack
@@ -5346,7 +5346,7 @@ BINS
     sta ARG+1                                      ; 9f8d: 85 31       .1
     jsr PARG                                       ; 9f8f: 20 b6 9f     ..
 NOPE
-    jmp POP                                        ; 9f92: 4c 3a 83    L:.            ; And back to NERRC
+    jmp POP                                        ; 9f92: 4c 3a 83    L:. ; And back to NERRC
 
 ERCN
     ldy #0                                         ; 9f95: a0 00       ..
@@ -5360,7 +5360,7 @@ ERCND
     jmp ACLRET                                     ; 9fa2: 4c a4 92    L..
 
 PSTRNG
-    ldx #0                                         ; 9fa5: a2 00       ..             ; Print err mess
+    ldx #0                                         ; 9fa5: a2 00       .. ; Print err mess
     lda #$0d                                       ; 9fa7: a9 0d       ..
 NXOUT
     jsr OUT                                        ; 9fa9: 20 0e 85     ..
@@ -5372,11 +5372,11 @@ NXOUT
     jmp CROUT                                      ; 9fb3: 4c 19 85    L..
 
 PARG
-    ldx ARG+1                                      ; 9fb6: a6 31       .1             ; Look for flag
+    ldx ARG+1                                      ; 9fb6: a6 31       .1 ; Look for flag
     inx                                            ; 9fb8: e8          .
     beq ARGRTS                                     ; 9fb9: f0 08       ..
-    ldx #ARGOFF                                    ; 9fbb: a2 6b       .k             ; Print ARG
-    jsr MESSAH                                     ; 9fbd: 20 fc 84     ..            ; 'Arg :'
+    ldx #ARGOFF                                    ; 9fbb: a2 6b       .k ; Print ARG
+    jsr MESSAH                                     ; 9fbd: 20 fc 84     .. ; 'Arg :'
     jmp PRINA                                      ; 9fc0: 4c 81 8b    L..
 
 ARGRTS
@@ -5391,13 +5391,13 @@ ELFIN
     ldy #2                                         ; 9fca: a0 02       ..
     lda ARG+1                                      ; 9fcc: a5 31       .1
     sta (POINT),y                                  ; 9fce: 91 7a       .z
-    dey                                            ; 9fd0: 88          .              ; Y=1
+    dey                                            ; 9fd0: 88          .  ; Y=1
     lda ARG                                        ; 9fd1: a5 30       .0
     sta (POINT),y                                  ; 9fd3: 91 7a       .z
     jmp AMADE                                      ; 9fd5: 4c 67 88    Lg.
 
 STEVAL
-    jsr STACK                                      ; 9fd8: 20 93 83     ..            ; ELFIN on stack
+    jsr STACK                                      ; 9fd8: 20 93 83     .. ; ELFIN on stack
     jsr NXEVAL                                     ; 9fdb: 20 1e 85     ..
     jmp POP                                        ; 9fde: 4c 3a 83    L:.
 
@@ -5409,7 +5409,7 @@ STEVAL
 MULPM
     jsr MDA                                        ; 9fe1: 20 25 a0     %.
 MUL
-    ldy #$10                                       ; 9fe4: a0 10       ..             ; Index for 16 bits
+    ldy #$10                                       ; 9fe4: a0 10       .. ; Index for 16 bits
 MULB
     lda ACL                                        ; 9fe6: a5 72       .r
     lsr                                            ; 9fe8: 4a          J
@@ -5462,10 +5462,10 @@ DIVC
     ; **** Negation routines
 MDA
     ldy #0                                         ; a025: a0 00       ..
-    sty SIGN                                       ; a027: 84 78       .x             ; Abs value of
-    ldx #AUXL                                      ; a029: a2 76       .v             ; AUXL with sign in
+    sty SIGN                                       ; a027: 84 78       .x ; Abs value of
+    ldx #AUXL                                      ; a029: a2 76       .v ; AUXL with sign in
     jsr MDB                                        ; a02b: 20 30 a0     0.
-    ldx #ACL                                       ; a02e: a2 72       .r             ; ls bit of SIGN
+    ldx #ACL                                       ; a02e: a2 72       .r ; ls bit of SIGN
 MDB
     lda GCNO+1,x                                   ; a030: b5 01       ..
     bpl MDRTS                                      ; a032: 10 0d       ..
@@ -6768,7 +6768,7 @@ ZGG
     !byte CHARF, $0d                               ; ab8a: 00 0d       ..
     !word $1048                                    ; ab8c: 48 10       H.
     !word     0                                    ; ab8e: 00 00       ..
-    !text "GETCHAR"                                ; ab90: 47 45 54... GET            ; N.B. ZMQ IS USED
+    !text "GETCHAR"                                ; ab90: 47 45 54... GET ; N.B. ZMQ IS USED
 
     !byte CHARF, $0e                               ; ab97: 00 0e       ..
     !word $105a                                    ; ab99: 5a 10       Z.
@@ -9682,6 +9682,7 @@ pydis_end
 }
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 16384 bytes
 ;     Code                     = 7881 bytes (48%)
 ;     Data                     = 8503 bytes (52%)

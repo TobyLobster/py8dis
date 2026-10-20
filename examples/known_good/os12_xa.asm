@@ -1316,7 +1316,7 @@ lc406
     .byt 1, $aa, $55, $88, $44, $22, $11                              // c406: 01 aa 55... ..U
 // $c40d referenced 2 times by $c8ff, $d04c
 lc40d
-    .byt $80, $40, $20, $10, 8, 4, 2                                  // c40d: 80 40 20... .@             // bitmask
+    .byt $80, $40, $20, $10, 8, 4, 2                                  // c40d: 80 40 20... .@ // bitmask
 // $c414 referenced 1 time by $cb40
 lc414
     .byt 1, 3, $0f, 1, 1, 3, 1                                        // c414: 01 03 0f... ...
@@ -1573,7 +1573,7 @@ vdu14EntryPoint
     ldy #0                                                            // c58d: a0 00       ..
     sty l0269                                                         // c58f: 8c 69 02    .i.
     lda #4                                                            // c592: a9 04       ..
-    bne cc59d                                                         // c594: d0 07       ..             // ALWAYS branch
+    bne cc59d                                                         // c594: d0 07       .. // ALWAYS branch
 
 vdu2EntryPoint
     jsr sub_ce1a2                                                     // c596: 20 a2 e1     ..
@@ -1604,7 +1604,7 @@ vdu4EntryPoint
     beq return_2                                                      // c5b0: f0 fa       ..
     jsr sub_cc951                                                     // c5b2: 20 51 c9     Q.
     lda #$df                                                          // c5b5: a9 df       ..
-    bne cc5a8                                                         // c5b7: d0 ef       ..             // ALWAYS branch
+    bne cc5a8                                                         // c5b7: d0 ef       .. // ALWAYS branch
 
 vdu5EntryPoint
     lda l0361                                                         // c5b9: ad 61 03    .a.
@@ -1691,7 +1691,7 @@ cc636
     lda l0304,x                                                       // c641: bd 04 03    ...
     cpx #1                                                            // c644: e0 01       ..
     bcs cc64a                                                         // c646: b0 02       ..
-    sbc #6                                                            // c648: e9 06       ..             // Carry is clear, so subtracting 7
+    sbc #6                                                            // c648: e9 06       .. // Carry is clear, so subtracting 7
 // $c64a referenced 1 time by $c646
 cc64a
     sta l0324,x                                                       // c64a: 9d 24 03    .$.
@@ -1710,7 +1710,7 @@ vdu11EntryPoint
 // $c660 referenced 1 time by $c656
 cc660
     ldx #2                                                            // c660: a2 02       ..
-    bne cc6b6                                                         // c662: d0 52       .R             // ALWAYS branch
+    bne cc6b6                                                         // c662: d0 52       .R // ALWAYS branch
 
 // $c664 referenced 2 times by $c4e7, $d913
 vdu9EntryPoint
@@ -1740,7 +1740,7 @@ cc68a
     cpx l0309                                                         // c691: ec 09 03    ...
     bcs cc69b                                                         // c694: b0 05       ..
     inc l0319                                                         // c696: ee 19 03    ...
-    bcc cc6af                                                         // c699: 90 14       ..             // ALWAYS branch
+    bcc cc6af                                                         // c699: 90 14       .. // ALWAYS branch
 
 // $c69b referenced 1 time by $c694
 cc69b
@@ -1784,7 +1784,7 @@ cc6cb
     lda l0300,x                                                       // c6d6: bd 00 03    ...
     cpx #1                                                            // c6d9: e0 01       ..
     bcc cc6df                                                         // c6db: 90 02       ..
-    adc #6                                                            // c6dd: 69 06       i.             // Carry is set, so adding 7
+    adc #6                                                            // c6dd: 69 06       i. // Carry is set, so adding 7
 // $c6df referenced 1 time by $c6db
 cc6df
     sta l0324,x                                                       // c6df: 9d 24 03    .$.
@@ -1848,7 +1848,7 @@ loop_cc737
     lda #$28 // '('                                                   // c73f: a9 28       .(
     jsr sub_cd839                                                     // c741: 20 39 d8     9.
     ldy #4                                                            // c744: a0 04       ..
-    bne cc750                                                         // c746: d0 08       ..             // ALWAYS branch
+    bne cc750                                                         // c746: d0 08       .. // ALWAYS branch
 
 osword11EntryPoint
     and l0360                                                         // c748: 2d 60 03    -`.
@@ -1963,7 +1963,7 @@ return_4
 
 vdu17EntryPoint
     ldy #0                                                            // c7f9: a0 00       ..
-    beq cc7ff                                                         // c7fb: f0 02       ..             // ALWAYS branch
+    beq cc7ff                                                         // c7fb: f0 02       .. // ALWAYS branch
 
 vdu18EntryPoint
     ldy #2                                                            // c7fd: a0 02       ..
@@ -2111,7 +2111,7 @@ cc8cc
     jsr sub_cea11                                                     // c8cc: 20 11 ea     ..
     tya                                                               // c8cf: 98          .
     sec                                                               // c8d0: 38          8
-    adc l0360                                                         // c8d1: 6d 60 03    m`.            // +1 because carry is set
+    adc l0360                                                         // c8d1: 6d 60 03    m`. // +1 because carry is set
     tay                                                               // c8d4: a8          .
     txa                                                               // c8d5: 8a          .
     adc #$10                                                          // c8d6: 69 10       i.
@@ -2211,7 +2211,7 @@ sub_cc951
 // $c954 referenced 3 times by $c5c0, $c94f, $d8e3
 cc954
     ldy #$0a                                                          // c954: a0 0a       ..
-    bne cc985                                                         // c956: d0 2d       .-             // ALWAYS branch
+    bne cc985                                                         // c956: d0 2d       .- // ALWAYS branch
 
 // $c958 referenced 1 time by $c941
 cc958
@@ -2222,7 +2222,7 @@ sub_cc95e
     cpy #7                                                            // c95e: c0 07       ..
     bcc cc985                                                         // c960: 90 23       .#
     bne cc967                                                         // c962: d0 03       ..
-    adc l0290                                                         // c964: 6d 90 02    m..            // +1 because carry is set
+    adc l0290                                                         // c964: 6d 90 02    m.. // +1 because carry is set
 // $c967 referenced 1 time by $c962
 cc967
     cpy #8                                                            // c967: c0 08       ..
@@ -2277,7 +2277,7 @@ cc9b3
     sta l0351                                                         // c9b3: 8d 51 03    .Q.
     stx l0350                                                         // c9b6: 8e 50 03    .P.
     ldy #$0c                                                          // c9b9: a0 0c       ..
-    bne cca0e                                                         // c9bb: d0 51       .Q             // ALWAYS branch
+    bne cca0e                                                         // c9bb: d0 51       .Q // ALWAYS branch
 
 // $c9bd referenced 1 time by $cbbe
 vdu26EntryPoint
@@ -2296,7 +2296,7 @@ loop_cc9c1
     sty l0309                                                         // c9d6: 8c 09 03    ...
     ldy #3                                                            // c9d9: a0 03       ..
     sty l0323                                                         // c9db: 8c 23 03    .#.
-    iny                                                               // c9de: c8          .              // Y=4
+    iny                                                               // c9de: c8          .  // Y=4
     sty l0321                                                         // c9df: 8c 21 03    .!.
     dec l0322                                                         // c9e2: ce 22 03    .".
     dec l0320                                                         // c9e5: ce 20 03    . .
@@ -2473,7 +2473,7 @@ ccaea
     lsr                                                               // caff: 4a          J
     lsr                                                               // cb00: 4a          J
     sec                                                               // cb01: 38          8
-    adc l0269                                                         // cb02: 6d 69 02    mi.            // +1 because carry is set
+    adc l0269                                                         // cb02: 6d 69 02    mi. // +1 because carry is set
     adc l030b                                                         // cb05: 6d 0b 03    m..
     cmp l0309                                                         // cb08: cd 09 03    ...
     bcc ccb19                                                         // cb0b: 90 0c       ..
@@ -2837,7 +2837,7 @@ loop_ccd99
     sta (l00d8),y                                                     // cd9d: 91 d8       ..
     dey                                                               // cd9f: 88          .
     bpl loop_ccd99                                                    // cda0: 10 f7       ..
-    bmi ccd77                                                         // cda2: 30 d3       0.             // ALWAYS branch
+    bmi ccd77                                                         // cda2: 30 d3       0. // ALWAYS branch
 
 // $cda4 referenced 1 time by $c619
 sub_ccda4
@@ -2881,7 +2881,7 @@ ccdda
 // $cdde referenced 3 times by $c56e, $c7ac, $d434
 ccdde
     lda #2                                                            // cdde: a9 02       ..
-    bne ccde8                                                         // cde0: d0 06       ..             // ALWAYS branch
+    bne ccde8                                                         // cde0: d0 06       .. // ALWAYS branch
 
 // $cde2 referenced 4 times by $d0d9, $d5d6, $d615, $d61c
 sub_ccde2
@@ -2945,7 +2945,7 @@ cce2a
     stx l00d8                                                         // ce30: 86 d8       ..
     dec l00de                                                         // ce32: c6 de       ..
     bne cce0b                                                         // ce34: d0 d5       ..
-    beq ccdda                                                         // ce36: f0 a2       ..             // ALWAYS branch
+    beq ccdda                                                         // ce36: f0 a2       .. // ALWAYS branch
 
 // $ce38 referenced 2 times by $cdcb, $ce27
 sub_cce38
@@ -3363,8 +3363,8 @@ cd060
     beq cd080                                                         // d070: f0 0e       ..
     lsr                                                               // d072: 4a          J
     bcs cd078                                                         // d073: b0 03       ..
-    dey                                                               // d075: 88          .              // Y=4
-    bne cd080                                                         // d076: d0 08       ..             // ALWAYS branch
+    dey                                                               // d075: 88          .  // Y=4
+    bne cd080                                                         // d076: d0 08       .. // ALWAYS branch
 
 // $d078 referenced 1 time by $d073
 cd078
@@ -3526,7 +3526,7 @@ return_16
 // $d149 referenced 3 times by $ca4a, $ca4f, $d83b
 sub_cd149
     lda #$ff                                                          // d149: a9 ff       ..
-    bne cd150                                                         // d14b: d0 03       ..             // ALWAYS branch
+    bne cd150                                                         // d14b: d0 03       .. // ALWAYS branch
 
 // $d14d referenced 1 time by $d062
 sub_cd14d
@@ -3564,7 +3564,7 @@ sub_cd176
     lda l0302,x                                                       // d17d: bd 02 03    ...
     pha                                                               // d180: 48          H
     lda l0303,x                                                       // d181: bd 03 03    ...
-    bcc cd194                                                         // d184: 90 0e       ..             // ALWAYS branch
+    bcc cd194                                                         // d184: 90 0e       .. // ALWAYS branch
 
 // $d186 referenced 1 time by $d17b
 cd186
@@ -3664,7 +3664,7 @@ cd21e
     lda l0329,x                                                       // d22c: bd 29 03    .).
     bpl cd235                                                         // d22f: 10 04       ..
     ldx #$24 // '$'                                                   // d231: a2 24       .$
-    bne cd237                                                         // d233: d0 02       ..             // ALWAYS branch
+    bne cd237                                                         // d233: d0 02       .. // ALWAYS branch
 
 // $d235 referenced 1 time by $d22f
 cd235
@@ -4001,7 +4001,7 @@ return_18
 // $d47c referenced 4 times by $c7d2, $ca7e, $d5ee, $d62c
 sub_cd47c
     lda #8                                                            // d47c: a9 08       ..
-    bne cd48c                                                         // d47e: d0 0c       ..             // ALWAYS branch
+    bne cd48c                                                         // d47e: d0 0c       .. // ALWAYS branch
 
 // $d480 referenced 2 times by $d247, $d27b
 sub_cd480
@@ -4009,7 +4009,7 @@ sub_cd480
 // $d482 referenced 5 times by $cf8a, $cfaa, $cfb1, $d6d5, $d8ea
 sub_cd482
     lda #2                                                            // d482: a9 02       ..
-    bne cd48c                                                         // d484: d0 06       ..             // ALWAYS branch
+    bne cd48c                                                         // d484: d0 06       .. // ALWAYS branch
 
 // $d486 referenced 1 time by $cf66
 sub_cd486
@@ -4089,7 +4089,7 @@ cd4d9
     bne cd4f7                                                         // d4e3: d0 12       ..
     sec                                                               // d4e5: 38          8
     txa                                                               // d4e6: 8a          .
-    adc l0361                                                         // d4e7: 6d 61 03    ma.            // +1 because carry is set
+    adc l0361                                                         // d4e7: 6d 61 03    ma. // +1 because carry is set
     bcc cd4f0                                                         // d4ea: 90 04       ..
     inc l00db                                                         // d4ec: e6 db       ..
     bpl cd4f7                                                         // d4ee: 10 07       ..
@@ -4098,7 +4098,7 @@ cd4f0
     tax                                                               // d4f0: aa          .
     jsr sub_cd104                                                     // d4f1: 20 04 d1     ..
     sec                                                               // d4f4: 38          8
-    bcs cd4d9                                                         // d4f5: b0 e2       ..             // ALWAYS branch
+    bcs cd4d9                                                         // d4f5: b0 e2       .. // ALWAYS branch
 
 // $d4f7 referenced 2 times by $d4e3, $d4ee
 cd4f7
@@ -4137,7 +4137,7 @@ cd519
     bne cd53d                                                         // d529: d0 12       ..
     sec                                                               // d52b: 38          8
     txa                                                               // d52c: 8a          .
-    adc l0361                                                         // d52d: 6d 61 03    ma.            // +1 because carry is set
+    adc l0361                                                         // d52d: 6d 61 03    ma. // +1 because carry is set
     bcc cd536                                                         // d530: 90 04       ..
     inc l00db                                                         // d532: e6 db       ..
     bpl cd53d                                                         // d534: 10 07       ..
@@ -4146,7 +4146,7 @@ cd536
     tax                                                               // d536: aa          .
     jsr sub_cd104                                                     // d537: 20 04 d1     ..
     sec                                                               // d53a: 38          8
-    bcs cd519                                                         // d53b: b0 dc       ..             // ALWAYS branch
+    bcs cd519                                                         // d53b: b0 dc       .. // ALWAYS branch
 
 // $d53d referenced 2 times by $d529, $d534
 cd53d
@@ -4165,7 +4165,7 @@ sub_cd54b
     lda l00d1                                                         // d54b: a5 d1       ..
     pha                                                               // d54d: 48          H
     clc                                                               // d54e: 18          .
-    bcc cd560                                                         // d54f: 90 0f       ..             // ALWAYS branch
+    bcc cd560                                                         // d54f: 90 0f       .. // ALWAYS branch
 
 // $d551 referenced 1 time by $d56a
 loop_cd551
@@ -4201,7 +4201,7 @@ cd56f
 sub_cd574
     lda #0                                                            // d574: a9 00       ..
     clc                                                               // d576: 18          .
-    bcc cd583                                                         // d577: 90 0a       ..             // ALWAYS branch
+    bcc cd583                                                         // d577: 90 0a       .. // ALWAYS branch
 
 // $d579 referenced 1 time by $d587
 loop_cd579
@@ -4225,7 +4225,7 @@ cd583
 cd58e
     ror                                                               // d58e: 6a          j
     sec                                                               // d58f: 38          8
-    bcs cd56f                                                         // d590: b0 dd       ..             // ALWAYS branch
+    bcs cd56f                                                         // d590: b0 dd       .. // ALWAYS branch
 
 // $d592 referenced 2 times by $d4c8, $d50b
 sub_cd592
@@ -4628,7 +4628,7 @@ cd7f9
     bne loop_cd7e8                                                    // d801: d0 e5       ..
     txa                                                               // d803: 8a          .
     bne cd7e1                                                         // d804: d0 db       ..
-    beq cd7d7                                                         // d806: f0 cf       ..             // ALWAYS branch
+    beq cd7d7                                                         // d806: f0 cf       .. // ALWAYS branch
 
 // $d808 referenced 1 time by $d7dc
 sub_cd808
@@ -4657,7 +4657,7 @@ cd820
     lsr l00dc                                                         // d824: 46 dc       F.
     bcc loop_cd81b                                                    // d826: 90 f3       ..
     tya                                                               // d828: 98          .
-    adc #7                                                            // d829: 69 07       i.             // Carry is set, so adding 8
+    adc #7                                                            // d829: 69 07       i. // Carry is set, so adding 8
     tay                                                               // d82b: a8          .
     bcc loop_cd810                                                    // d82c: 90 e2       ..
 // $d82e referenced 1 time by $d822
@@ -4845,7 +4845,7 @@ osbyte133EntryPoint
     and #$3f // '?'                                                   // d937: 29 3f       )?
     cpy #4                                                            // d939: c0 04       ..
     bcs cd93e                                                         // d93b: b0 01       ..
-    txa                                                               // d93d: 8a          .              // A=0
+    txa                                                               // d93d: 8a          .  // A=0
 // $d93e referenced 2 times by $d935, $d93b
 cd93e
     tay                                                               // d93e: a8          .
@@ -5159,7 +5159,7 @@ cdb87
 // $dbb8 referenced 2 times by $dba2, $dc65
 cdbb8
     lda #0                                                            // dbb8: a9 00       ..
-    tax                                                               // dbba: aa          .              // X=0
+    tax                                                               // dbba: aa          .  // X=0
     jsr sub_cf137                                                     // dbbb: 20 37 f1     7.
 // $dbbe referenced 2 times by $db9f, $dbb6
 cdbbe
@@ -5197,8 +5197,8 @@ osbyte142EntryPoint
     ldy #8                                                            // dbf0: a0 08       ..
     jsr sub_cdeab                                                     // dbf2: 20 ab de     ..
     sty l00fd                                                         // dbf5: 84 fd       ..
-    jsr osnewl                                                        // dbf7: 20 e7 ff     ..            // Write newline (characters 10 and 13)
-    jsr osnewl                                                        // dbfa: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr osnewl                                                        // dbf7: 20 e7 ff     .. // Write newline (characters 10 and 13)
+    jsr osnewl                                                        // dbfa: 20 e7 ff     .. // Write newline (characters 10 and 13)
     plp                                                               // dbfd: 28          (
     lda #1                                                            // dbfe: a9 01       ..
     bit l027a                                                         // dc00: 2c 7a 02    ,z.
@@ -5262,8 +5262,8 @@ cdc27
 // $dc5d referenced 1 time by $dc5d
 loop_cdc5d
     bcs loop_cdc5d                                                    // dc5d: b0 fe       ..
-    jsr osnewl                                                        // dc5f: 20 e7 ff     ..            // Write newline (characters 10 and 13)
-    jsr osnewl                                                        // dc62: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr osnewl                                                        // dc5f: 20 e7 ff     .. // Write newline (characters 10 and 13)
+    jsr osnewl                                                        // dc62: 20 e7 ff     .. // Write newline (characters 10 and 13)
     jmp cdbb8                                                         // dc65: 4c b8 db    L..
 
 // $dc68 referenced 2 times by $dccb, $dcd4
@@ -5621,7 +5621,7 @@ cde72
     bpl cde7f                                                         // de76: 10 07       ..
     jsr sub_cf065                                                     // de78: 20 65 f0     e.
     lda #1                                                            // de7b: a9 01       ..
-    bne cde6e                                                         // de7d: d0 ef       ..             // ALWAYS branch
+    bne cde6e                                                         // de7d: d0 ef       .. // ALWAYS branch
 
 // $de7f referenced 1 time by $de76
 cde7f
@@ -5670,7 +5670,7 @@ sub_cdeab
 cdeb1
     iny                                                               // deb1: c8          .
     lda (l00fd),y                                                     // deb2: b1 fd       ..
-    jsr osasci                                                        // deb4: 20 e3 ff     ..            // Write character
+    jsr osasci                                                        // deb4: 20 e3 ff     .. // Write character
     tax                                                               // deb7: aa          .
     bne cdeb1                                                         // deb8: d0 f7       ..
     rts                                                               // deba: 60          `
@@ -5680,7 +5680,7 @@ sub_cdebb
     stx l02b1                                                         // debb: 8e b1 02    ...
     sty l02b2                                                         // debe: 8c b2 02    ...
     lda #$ff                                                          // dec1: a9 ff       ..
-    bne cdec7                                                         // dec3: d0 02       ..             // ALWAYS branch
+    bne cdec7                                                         // dec3: d0 02       .. // ALWAYS branch
 
 // $dec5 referenced 1 time by $ffc8
 cdec5
@@ -5693,18 +5693,18 @@ cdec7
     pha                                                               // deca: 48          H
     tya                                                               // decb: 98          .
     pha                                                               // decc: 48          H
-    ldy l0256                                                         // decd: ac 56 02    .V.            // Y=file handle
+    ldy l0256                                                         // decd: ac 56 02    .V. // Y=file handle
     beq cdee6                                                         // ded0: f0 14       ..
     sec                                                               // ded2: 38          8
     ror l00eb                                                         // ded3: 66 eb       f.
-    jsr osbget                                                        // ded5: 20 d7 ff     ..            // Read a single byte from an open file Y
+    jsr osbget                                                        // ded5: 20 d7 ff     .. // Read a single byte from an open file Y
     php                                                               // ded8: 08          .
     lsr l00eb                                                         // ded9: 46 eb       F.
     plp                                                               // dedb: 28          (
     bcc cdf03                                                         // dedc: 90 25       .%
     lda #osfind_close                                                 // dede: a9 00       ..
     sta l0256                                                         // dee0: 8d 56 02    .V.
-    jsr osfind                                                        // dee3: 20 ce ff     ..            // Close one or all files
+    jsr osfind                                                        // dee3: 20 ce ff     .. // Close one or all files
 // $dee6 referenced 3 times by $ded0, $def4, $defc
 cdee6
     bit l00ff                                                         // dee6: 24 ff       $.
@@ -5717,7 +5717,7 @@ cdee6
     lda l02b1                                                         // def6: ad b1 02    ...
     ora l02b2                                                         // def9: 0d b2 02    ...
     bne cdee6                                                         // defc: d0 e8       ..
-    bcs cdf05                                                         // defe: b0 05       ..             // ALWAYS branch
+    bcs cdf05                                                         // defe: b0 05       .. // ALWAYS branch
 
 // $df00 referenced 1 time by $dee8
 cdf00
@@ -5814,13 +5814,13 @@ loop_cdfa0
     iny                                                               // dfb6: c8          .
     jsr sub_ce009                                                     // dfb7: 20 09 e0     ..
     lda #2                                                            // dfba: a9 02       ..
-    bne ce031                                                         // dfbc: d0 73       .s             // ALWAYS branch
+    bne ce031                                                         // dfbc: d0 73       .s // ALWAYS branch
 
 // $dfbe referenced 1 time by $dfb4
 cdfbe
     sty l00e6                                                         // dfbe: 84 e6       ..
     ldx #0                                                            // dfc0: a2 00       ..
-    beq cdfd7                                                         // dfc2: f0 13       ..             // ALWAYS branch
+    beq cdfd7                                                         // dfc2: f0 13       .. // ALWAYS branch
 
 // $dfc4 referenced 1 time by $dfd5
 loop_cdfc4
@@ -5858,7 +5858,7 @@ loop_cdfe8
     lda ldf0e,x                                                       // dfe9: bd 0e df    ...
     beq ce021                                                         // dfec: f0 33       .3
     bpl loop_cdfe8                                                    // dfee: 10 f8       ..
-    bmi cdfcd                                                         // dff0: 30 db       0.             // ALWAYS branch
+    bmi cdfcd                                                         // dff0: 30 db       0. // ALWAYS branch
 
 // $dff2 referenced 1 time by $dfda
 cdff2
@@ -5917,7 +5917,7 @@ osbyte139EntryPoint
     asl                                                               // e034: 0a          .
 osbyte127EntryPoint
     and #1                                                            // e035: 29 01       ).
-    bpl ce031                                                         // e037: 10 f8       ..             // ALWAYS branch
+    bpl ce031                                                         // e037: 10 f8       .. // ALWAYS branch
 
 // $e039 referenced 2 times by $dfa0, $e03e
 ce039
@@ -6008,13 +6008,13 @@ ce0f7
     lda #$10                                                          // e0f7: a9 10       ..
     bit l027c                                                         // e0f9: 2c 7c 02    ,|.
     bne ce10d                                                         // e0fc: d0 0f       ..
-    ldy l0257                                                         // e0fe: ac 57 02    .W.            // Y=file handle
+    ldy l0257                                                         // e0fe: ac 57 02    .W. // Y=file handle
     beq ce10d                                                         // e101: f0 0a       ..
     pla                                                               // e103: 68          h
     pha                                                               // e104: 48          H
     sec                                                               // e105: 38          8
     ror l00eb                                                         // e106: 66 eb       f.
-    jsr osbput                                                        // e108: 20 d4 ff     ..            // Write a single byte A to an open file Y
+    jsr osbput                                                        // e108: 20 d4 ff     .. // Write a single byte A to an open file Y
     lsr l00eb                                                         // e10b: 46 eb       F.
 // $e10d referenced 3 times by $e0b9, $e0fc, $e101
 ce10d
@@ -6073,7 +6073,7 @@ ce13a
     sta user_via_pcr                                                  // e15a: 8d 6c fe    .l.
     ora #$0e                                                          // e15d: 09 0e       ..
     sta user_via_pcr                                                  // e15f: 8d 6c fe    .l.
-    bne return_29                                                     // e162: d0 2c       .,             // ALWAYS branch
+    bne return_29                                                     // e162: d0 2c       ., // ALWAYS branch
 
 // $e164 referenced 1 time by $e141
 ce164
@@ -6242,15 +6242,15 @@ osbyte119EntryPoint
     ldy l0257                                                         // e284: ac 57 02    .W.
     sta l0257                                                         // e287: 8d 57 02    .W.
     beq ce28f                                                         // e28a: f0 03       ..
-    jsr osfind                                                        // e28c: 20 ce ff     ..            // Close one or all files
+    jsr osfind                                                        // e28c: 20 ce ff     .. // Close one or all files
 // $e28f referenced 1 time by $e28a
 ce28f
     ldy l00e6                                                         // e28f: a4 e6       ..
     plp                                                               // e291: 28          (
     beq return_32                                                     // e292: f0 0b       ..
     lda #osfind_open_output                                           // e294: a9 80       ..
-    jsr osfind                                                        // e296: 20 ce ff     ..            // Open file for output (A=128)
-    tay                                                               // e299: a8          .              // A=file handle (or zero on failure)
+    jsr osfind                                                        // e296: 20 ce ff     .. // Open file for output (A=128)
+    tay                                                               // e299: a8          .  // A=file handle (or zero on failure)
     beq ce310                                                         // e29a: f0 74       .t
     sta l0257                                                         // e29c: 8d 57 02    .W.
 // $e29f referenced 2 times by $e27a, $e292
@@ -6558,7 +6558,7 @@ ce551
     and #$0f                                                          // e554: 29 0f       ).
     cmp #$0b                                                          // e556: c9 0b       ..
     bcc ce519                                                         // e558: 90 bf       ..
-    adc #$7b // '{'                                                   // e55a: 69 7b       i{             // Carry is set, so adding 124
+    adc #$7b // '{'                                                   // e55a: 69 7b       i{ // Carry is set, so adding 124
     pha                                                               // e55c: 48          H
     lda l027d                                                         // e55d: ad 7d 02    .}.
     bne ce515                                                         // e560: d0 b3       ..
@@ -6866,8 +6866,8 @@ osbyte130EntryPoint
     ldx #$ff                                                          // e729: a2 ff       ..
     ldy #$ff                                                          // e72b: a0 ff       ..
     bcs return_34                                                     // e72d: b0 02       ..
-    inx                                                               // e72f: e8          .              // X=0
-    iny                                                               // e730: c8          .              // Y=0
+    inx                                                               // e72f: e8          .  // X=0
+    iny                                                               // e730: c8          .  // Y=0
 // $e731 referenced 1 time by $e72d
 return_34
     rts                                                               // e731: 60          `
@@ -6881,7 +6881,7 @@ loop_ce732
 // $e738 referenced 1 time by $e744
 sub_ce738
     clv                                                               // e738: b8          .
-    bvc ce73e                                                         // e739: 50 03       P.             // ALWAYS branch
+    bvc ce73e                                                         // e739: 50 03       P. // ALWAYS branch
 
 // $e73b referenced 1 time by $e1cb
 sub_ce73b
@@ -7195,7 +7195,7 @@ sub_ce8c9
 
 osword3EntryPoint
     ldx #$0f                                                          // e8d1: a2 0f       ..
-    bne ce8d8                                                         // e8d3: d0 03       ..             // ALWAYS branch
+    bne ce8d8                                                         // e8d3: d0 03       .. // ALWAYS branch
 
 osword1EntryPoint
     ldx l0283                                                         // e8d5: ae 83 02    ...
@@ -7215,7 +7215,7 @@ return_37
 
 osword4EntryPoint
     lda #$0f                                                          // e8e4: a9 0f       ..
-    bne ce8ee                                                         // e8e6: d0 06       ..             // ALWAYS branch
+    bne ce8ee                                                         // e8e6: d0 06       .. // ALWAYS branch
 
 osword2EntryPoint
     lda l0283                                                         // e8e8: ad 83 02    ...
@@ -7255,7 +7255,7 @@ loop_ce904
     lda (l00f0),y                                                     // e916: b1 f0       ..
     sta l00e8                                                         // e918: 85 e8       ..
     cli                                                               // e91a: 58          X
-    bcc ce924                                                         // e91b: 90 07       ..             // ALWAYS branch
+    bcc ce924                                                         // e91b: 90 07       .. // ALWAYS branch
 
 // $e91d referenced 1 time by $e95c
 ce91d
@@ -7268,12 +7268,12 @@ ce920
     iny                                                               // e920: c8          .
 // $e921 referenced 2 times by $e935, $e940
 ce921
-    jsr oswrch                                                        // e921: 20 ee ff     ..            // Write character
+    jsr oswrch                                                        // e921: 20 ee ff     .. // Write character
 // $e924 referenced 4 times by $e91b, $e93d, $e947, $e951
 ce924
-    jsr osrdch                                                        // e924: 20 e0 ff     ..            // Read a character from the current input stream
+    jsr osrdch                                                        // e924: 20 e0 ff     .. // Read a character from the current input stream
     bcs ce972                                                         // e927: b0 49       .I
-    tax                                                               // e929: aa          .              // A=character read
+    tax                                                               // e929: aa          .  // A=character read
     lda l027c                                                         // e92a: ad 7c 02    .|.
     ror                                                               // e92d: 6a          j
     ror                                                               // e92e: 6a          j
@@ -7298,10 +7298,10 @@ ce942
     lda #$7f                                                          // e949: a9 7f       ..
 // $e94b referenced 1 time by $e94f
 loop_ce94b
-    jsr oswrch                                                        // e94b: 20 ee ff     ..            // Write character 127
+    jsr oswrch                                                        // e94b: 20 ee ff     .. // Write character 127
     dey                                                               // e94e: 88          .
     bne loop_ce94b                                                    // e94f: d0 fa       ..
-    beq ce924                                                         // e951: f0 d1       ..             // ALWAYS branch
+    beq ce924                                                         // e951: f0 d1       .. // ALWAYS branch
 
 // $e953 referenced 1 time by $e944
 ce953
@@ -7315,11 +7315,11 @@ ce953
     cmp l02b5                                                         // e963: cd b5 02    ...
     beq ce920                                                         // e966: f0 b8       ..
     bcc ce920                                                         // e968: 90 b6       ..
-    bcs ce91f                                                         // e96a: b0 b3       ..             // ALWAYS branch
+    bcs ce91f                                                         // e96a: b0 b3       .. // ALWAYS branch
 
 // $e96c referenced 1 time by $e957
 ce96c
-    jsr osnewl                                                        // e96c: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr osnewl                                                        // e96c: 20 e7 ff     .. // Write newline (characters 10 and 13)
     jsr sub_ce57e                                                     // e96f: 20 7e e5     ~.
 // $e972 referenced 1 time by $e927
 ce972
@@ -7341,7 +7341,7 @@ osbyte5EntryPoint
 osbyte1EntryPoint
 osbyte6EntryPoint
     ora #$f0                                                          // e988: 09 f0       ..
-    bne ce99a                                                         // e98a: d0 0e       ..             // ALWAYS branch
+    bne ce99a                                                         // e98a: d0 0e       .. // ALWAYS branch
 
 osbyte12EntryPoint
     bne osbyte11EntryPoint                                            // e98c: d0 07       ..
@@ -7423,7 +7423,7 @@ sub_ce9ea
     bcc ce9f5                                                         // e9ea: 90 09       ..
     ldy #7                                                            // e9ec: a0 07       ..
     sty system_via_register_b                                         // e9ee: 8c 40 fe    .@.
-    dey                                                               // e9f1: 88          .              // Y=6
+    dey                                                               // e9f1: 88          .  // Y=6
     sty system_via_register_b                                         // e9f2: 8c 40 fe    .@.
 // $e9f5 referenced 1 time by $e9ea
 ce9f5
@@ -7490,7 +7490,7 @@ cea31
     bne cea3f                                                         // ea37: d0 06       ..
     bit l00e4                                                         // ea39: 24 e4       $.
     bmi cea8f                                                         // ea3b: 30 52       0R
-    bpl cea5a                                                         // ea3d: 10 1b       ..             // ALWAYS branch
+    bpl cea5a                                                         // ea3d: 10 1b       .. // ALWAYS branch
 
 // $ea3f referenced 1 time by $ea37
 cea3f
@@ -7530,7 +7530,7 @@ cea5f
     bne cea77                                                         // ea70: d0 05       ..
     iny                                                               // ea72: c8          .
     lda #$80                                                          // ea73: a9 80       ..
-    bne cea31                                                         // ea75: d0 ba       ..             // ALWAYS branch
+    bne cea31                                                         // ea75: d0 ba       .. // ALWAYS branch
 
 // $ea77 referenced 1 time by $ea70
 cea77
@@ -7678,7 +7678,7 @@ ceb22
     ldy #$ff                                                          // eb23: a0 ff       ..
     sty system_via_ddra                                               // eb25: 8c 43 fe    .C.
     sta system_via_register_a_no_handshake                            // eb28: 8d 4f fe    .O.
-    iny                                                               // eb2b: c8          .              // Y=0
+    iny                                                               // eb2b: c8          .  // Y=0
     sty system_via_register_b                                         // eb2c: 8c 40 fe    .@.
     ldy #2                                                            // eb2f: a0 02       ..
 // $eb31 referenced 1 time by $eb32
@@ -7915,7 +7915,7 @@ loop_cecb1
     dey                                                               // ecb4: 88          .
     bpl loop_cecb1                                                    // ecb5: 10 fa       ..
     sty l0838                                                         // ecb7: 8c 38 08    .8.
-    bmi ced06                                                         // ecba: 30 4a       0J             // ALWAYS branch
+    bmi ced06                                                         // ecba: 30 4a       0J // ALWAYS branch
 
 // $ecbc referenced 1 time by $ecde
 cecbc
@@ -7955,7 +7955,7 @@ cecdb
     jsr osbyte152EntryPoint                                           // ecf1: 20 5b e4     [.
     and #3                                                            // ecf4: 29 03       ).
     sta l0838                                                         // ecf6: 8d 38 08    .8.
-    bpl cecfe                                                         // ecf9: 10 03       ..             // ALWAYS branch
+    bpl cecfe                                                         // ecf9: 10 03       .. // ALWAYS branch
 
 // $ecfb referenced 1 time by $ecef
 cecfb
@@ -8144,7 +8144,7 @@ cee18
     bpl cee59                                                         // ee1e: 10 39       .9
     ldx #0                                                            // ee20: a2 00       ..
     stx l00f7                                                         // ee22: 86 f7       ..
-    inx                                                               // ee24: e8          .              // X=1
+    inx                                                               // ee24: e8          .  // X=1
     stx osrdsc_ptr                                                    // ee25: 86 f6       ..
     jsr ceebb                                                         // ee27: 20 bb ee     ..
     ldx #3                                                            // ee2a: a2 03       ..
@@ -8174,7 +8174,7 @@ loop_cee45
     inx                                                               // ee4b: e8          .
     beq loop_cee40                                                    // ee4c: f0 f2       ..
     clc                                                               // ee4e: 18          .
-    bcc ceebb                                                         // ee4f: 90 6a       .j             // ALWAYS branch
+    bcc ceebb                                                         // ee4f: 90 6a       .j // ALWAYS branch
 
 // $ee51 referenced 3 times by $f58f, $f780, $f7a0
 sub_cee51
@@ -8198,12 +8198,12 @@ cee62
     ldy #$10                                                          // ee64: a0 10       ..
     jsr osbyte159EntryPoint                                           // ee66: 20 7f ee     ..
     ldy #0                                                            // ee69: a0 00       ..
-    beq cee84                                                         // ee6b: f0 17       ..             // ALWAYS branch
+    beq cee84                                                         // ee6b: f0 17       .. // ALWAYS branch
 
 // $ee6d referenced 2 times by $dd88, $de1f
 osbyte158EntryPoint
     ldy #0                                                            // ee6d: a0 00       ..
-    beq cee82                                                         // ee6f: f0 11       ..             // ALWAYS branch
+    beq cee82                                                         // ee6f: f0 11       .. // ALWAYS branch
 
 // $ee71 referenced 2 times by $eebf, $eed0
 sub_cee71
@@ -8292,7 +8292,7 @@ ceeda
     bne ceee8                                                         // eee0: d0 06       ..
     lda #$81                                                          // eee2: a9 81       ..
     sta system_via_ier                                                // eee4: 8d 4e fe    .N.
-    inx                                                               // eee7: e8          .              // X=0
+    inx                                                               // eee7: e8          .  // X=0
 // $eee8 referenced 1 time by $eee0
 ceee8
     stx l0242                                                         // eee8: 8e 42 02    .B.
@@ -8499,7 +8499,7 @@ cf012
     ldy #$ed                                                          // f016: a0 ed       ..
     jsr sub_cf0cc                                                     // f018: 20 cc f0     ..
     bmi cf00c                                                         // f01b: 30 ef       0.
-    bpl loop_cf007                                                    // f01d: 10 e8       ..             // ALWAYS branch
+    bpl loop_cf007                                                    // f01d: 10 e8       .. // ALWAYS branch
 
 // $f01f referenced 2 times by $ef4a, $f009
 sub_cf01f
@@ -8714,7 +8714,7 @@ cf14b
     ldx #6                                                            // f151: a2 06       ..
     plp                                                               // f153: 28          (
     beq cf157                                                         // f154: f0 01       ..
-    dex                                                               // f156: ca          .              // X=5
+    dex                                                               // f156: ca          .  // X=5
 // $f157 referenced 1 time by $f154
 cf157
     stx l00c6                                                         // f157: 86 c6       ..
@@ -8867,13 +8867,13 @@ cf232
     ldy #$0a                                                          // f232: a0 0a       ..
     lda l00cc                                                         // f234: a5 cc       ..
     sta (l00c8),y                                                     // f236: 91 c8       ..
-    iny                                                               // f238: c8          .              // Y=$0b
+    iny                                                               // f238: c8          .  // Y=$0b
     lda l00cd                                                         // f239: a5 cd       ..
     sta (l00c8),y                                                     // f23b: 91 c8       ..
     lda #0                                                            // f23d: a9 00       ..
-    iny                                                               // f23f: c8          .              // Y=$0c
+    iny                                                               // f23f: c8          .  // Y=$0c
     sta (l00c8),y                                                     // f240: 91 c8       ..
-    iny                                                               // f242: c8          .              // Y=$0d
+    iny                                                               // f242: c8          .  // Y=$0d
     sta (l00c8),y                                                     // f243: 91 c8       ..
     plp                                                               // f245: 28          (
 // $f246 referenced 1 time by $f870
@@ -8928,7 +8928,7 @@ cf277
     ldy #0                                                            // f282: a0 00       ..
     lda (l00c8),y                                                     // f284: b1 c8       ..
     tax                                                               // f286: aa          .
-    iny                                                               // f287: c8          .              // Y=1
+    iny                                                               // f287: c8          .  // Y=1
     lda (l00c8),y                                                     // f288: b1 c8       ..
     tay                                                               // f28a: a8          .
     jsr sub_cf25a                                                     // f28b: 20 5a f2     Z.
@@ -8983,7 +8983,7 @@ loop_cf2cb
     sbc l03c9                                                         // f2df: ed c9 03    ...
     bcc cf2e8                                                         // f2e2: 90 04       ..
     ldx #$80                                                          // f2e4: a2 80       ..
-    bne cf2f0                                                         // f2e6: d0 08       ..             // ALWAYS branch
+    bne cf2f0                                                         // f2e6: d0 08       .. // ALWAYS branch
 
 // $f2e8 referenced 2 times by $f2d8, $f2e2
 cf2e8
@@ -9051,7 +9051,7 @@ sub_cf344
     jsr cee18                                                         // f351: 20 18 ee     ..
     bcc cf359                                                         // f354: 90 03       ..
     clv                                                               // f356: b8          .
-    bvc cf39a                                                         // f357: 50 41       PA             // ALWAYS branch
+    bvc cf39a                                                         // f357: 50 41       PA // ALWAYS branch
 
 // $f359 referenced 2 times by $f34c, $f354
 cf359
@@ -9062,9 +9062,9 @@ cf359
     sta l00b5                                                         // f364: 85 b5       ..
     ldx #$ff                                                          // f366: a2 ff       ..
     stx l03df                                                         // f368: 8e df 03    ...
-    inx                                                               // f36b: e8          .              // X=0
+    inx                                                               // f36b: e8          .  // X=0
     stx l00ba                                                         // f36c: 86 ba       ..
-    beq cf376                                                         // f36e: f0 06       ..             // ALWAYS branch
+    beq cf376                                                         // f36e: f0 06       .. // ALWAYS branch
 
 // $f370 referenced 2 times by $f3ac, $f3c8
 cf370
@@ -9108,7 +9108,7 @@ cf3a4
     lda #$ff                                                          // f3a4: a9 ff       ..
     sta l03c6                                                         // f3a6: 8d c6 03    ...
     sta l03c7                                                         // f3a9: 8d c7 03    ...
-    bne cf370                                                         // f3ac: d0 c2       ..             // ALWAYS branch
+    bne cf370                                                         // f3ac: d0 c2       .. // ALWAYS branch
 
 // $f3ae referenced 2 times by $f37f, $f39f
 cf3ae
@@ -9127,7 +9127,7 @@ cf3b5
 cf3c3
     bit l03ca                                                         // f3c3: 2c ca 03    ,..
     bmi cf3a4                                                         // f3c6: 30 dc       0.
-    bpl cf370                                                         // f3c8: 10 a6       ..             // ALWAYS branch
+    bpl cf370                                                         // f3c8: 10 a6       .. // ALWAYS branch
 
     sta l00bc                                                         // f3ca: 85 bc       ..
     // push X,Y onto the stack
@@ -9391,7 +9391,7 @@ cf588
     jsr sub_cee51                                                     // f58f: 20 51 ee     Q.
     tay                                                               // f592: a8          .
     clc                                                               // f593: 18          .
-    bcc cf5b0                                                         // f594: 90 1a       ..             // ALWAYS branch
+    bcc cf5b0                                                         // f594: 90 1a       .. // ALWAYS branch
 
 // $f596 referenced 1 time by $f58d
 cf596
@@ -9421,7 +9421,7 @@ cf5b0
     bne cf5bd                                                         // f5b5: d0 06       ..
     bcc return_50                                                     // f5b7: 90 64       .d
     ldy #2                                                            // f5b9: a0 02       ..
-    bne cf61b                                                         // f5bb: d0 5e       .^             // ALWAYS branch
+    bne cf61b                                                         // f5bb: d0 5e       .^ // ALWAYS branch
 
 // $f5bd referenced 1 time by $f5b5
 cf5bd
@@ -9435,7 +9435,7 @@ cf5bd
     beq cf61b                                                         // f5ca: f0 4f       .O
     jsr sub_cfb50                                                     // f5cc: 20 50 fb     P.
     ldy #1                                                            // f5cf: a0 01       ..
-    bne cf61b                                                         // f5d1: d0 48       .H             // ALWAYS branch
+    bne cf61b                                                         // f5d1: d0 48       .H // ALWAYS branch
 
 // $f5d3 referenced 1 time by $f5be
 cf5d3
@@ -9443,13 +9443,13 @@ cf5d3
     bne cf5e2                                                         // f5d4: d0 0c       ..
     bcs cf5dc                                                         // f5d6: b0 04       ..
     sty l00bd                                                         // f5d8: 84 bd       ..
-    beq return_50                                                     // f5da: f0 41       .A             // ALWAYS branch
+    beq return_50                                                     // f5da: f0 41       .A // ALWAYS branch
 
 // $f5dc referenced 1 time by $f5d6
 cf5dc
     lda #$80                                                          // f5dc: a9 80       ..
     sta l00c0                                                         // f5de: 85 c0       ..
-    bne return_50                                                     // f5e0: d0 3b       .;             // ALWAYS branch
+    bne return_50                                                     // f5e0: d0 3b       .; // ALWAYS branch
 
 // $f5e2 referenced 1 time by $f5d4
 cf5e2
@@ -9465,7 +9465,7 @@ cf5e2
     jsr sub_cfbd3                                                     // f5f3: 20 d3 fb     ..
     beq cf5fd                                                         // f5f6: f0 05       ..
     stx tube_data_register_3                                          // f5f8: 8e e5 fe    ...
-    bne cf600                                                         // f5fb: d0 03       ..             // ALWAYS branch
+    bne cf600                                                         // f5fb: d0 03       .. // ALWAYS branch
 
 // $f5fd referenced 1 time by $f5f6
 cf5fd
@@ -9479,7 +9479,7 @@ cf600
     lda #1                                                            // f606: a9 01       ..
     sta l00bc                                                         // f608: 85 bc       ..
     ldy #5                                                            // f60a: a0 05       ..
-    bne cf61b                                                         // f60c: d0 0d       ..             // ALWAYS branch
+    bne cf61b                                                         // f60c: d0 0d       .. // ALWAYS branch
 
 // $f60e referenced 1 time by $f5e3
 cf60e
@@ -9553,15 +9553,15 @@ sub_cf68d
     ldy l0256                                                         // f690: ac 56 02    .V.
     sta l0256                                                         // f693: 8d 56 02    .V.
     beq cf69b                                                         // f696: f0 03       ..
-    jsr osfind                                                        // f698: 20 ce ff     ..            // Open or close file(s)
+    jsr osfind                                                        // f698: 20 ce ff     .. // Open or close file(s)
 // $f69b referenced 1 time by $f696
 cf69b
     ldy l00e6                                                         // f69b: a4 e6       ..
     plp                                                               // f69d: 28          (
     beq return_51                                                     // f69e: f0 0b       ..
     lda #osfind_open_input                                            // f6a0: a9 40       .@
-    jsr osfind                                                        // f6a2: 20 ce ff     ..            // Open file for input (A=64)
-    tay                                                               // f6a5: a8          .              // A=file handle (or zero on failure)
+    jsr osfind                                                        // f6a2: 20 ce ff     .. // Open file for input (A=64)
+    tay                                                               // f6a5: a8          .  // A=file handle (or zero on failure)
     beq cf674                                                         // f6a6: f0 cc       ..
     sta l0256                                                         // f6a8: 8d 56 02    .V.
 // $f6ab referenced 1 time by $f69e
@@ -9894,7 +9894,7 @@ cf884
 // $f892 referenced 2 times by $f7ff, $f86d
 sub_cf892
     lda #$32 // '2'                                                   // f892: a9 32       .2
-    bne cf898                                                         // f894: d0 02       ..             // ALWAYS branch
+    bne cf898                                                         // f894: d0 02       .. // ALWAYS branch
 
 // $f896 referenced 1 time by $f804
 sub_cf896
@@ -9933,7 +9933,7 @@ cf8b9
     jsr sub_ce7dc                                                     // f8c3: 20 dc e7     ..
     beq return_54                                                     // f8c6: f0 6b       .k
     lda #$0d                                                          // f8c8: a9 0d       ..
-    jsr oswrch                                                        // f8ca: 20 ee ff     ..            // Write character 13
+    jsr oswrch                                                        // f8ca: 20 ee ff     .. // Write character 13
 // $f8cd referenced 1 time by $f8e0
 loop_cf8cd
     lda l03b2,y                                                       // f8cd: b9 b2 03    ...
@@ -9947,7 +9947,7 @@ cf8da
     lda #$3f // '?'                                                   // f8da: a9 3f       .?
 // $f8dc referenced 1 time by $f8d8
 cf8dc
-    jsr oswrch                                                        // f8dc: 20 ee ff     ..            // Write character 63
+    jsr oswrch                                                        // f8dc: 20 ee ff     .. // Write character 63
     iny                                                               // f8df: c8          .
     bne loop_cf8cd                                                    // f8e0: d0 eb       ..
 // $f8e2 referenced 2 times by $f8d0, $f8f1
@@ -10050,15 +10050,15 @@ sub_cf983
     adc #$30 // '0'                                                   // f986: 69 30       i0
     cmp #$3a // ':'                                                   // f988: c9 3a       .:
     bcc cf98e                                                         // f98a: 90 02       ..
-    adc #6                                                            // f98c: 69 06       i.             // Carry is set, so adding 7
+    adc #6                                                            // f98c: 69 06       i. // Carry is set, so adding 7
 // $f98e referenced 2 times by $f98a, $f993
 cf98e
-    jmp oswrch                                                        // f98e: 4c ee ff    L..            // Write character
+    jmp oswrch                                                        // f98e: 4c ee ff    L.. // Write character
 
 // $f991 referenced 4 times by $f8eb, $f917, $f922, $f976
 sub_cf991
     lda #$20 // ' '                                                   // f991: a9 20       .
-    bne cf98e                                                         // f993: d0 f9       ..             // ALWAYS branch
+    bne cf98e                                                         // f993: d0 f9       .. // ALWAYS branch
 
 // $f995 referenced 5 times by $f739, $f884, $f89d, $fada, $fbef
 sub_cf995
@@ -10077,7 +10077,7 @@ cf9a0
     jsr sub_cf33b                                                     // f9a0: 20 3b f3     ;.
     jsr cfaf2                                                         // f9a3: 20 f2 fa     ..
     lda #osbyte_acknowledge_escape                                    // f9a6: a9 7e       .~
-    jsr osbyte                                                        // f9a8: 20 f4 ff     ..            // Clear escape condition and perform escape effects
+    jsr osbyte                                                        // f9a8: 20 f4 ff     .. // Clear escape condition and perform escape effects
     brk                                                               // f9ab: 00          .
 
     .byt $11                                                          // f9ac: 11          .
@@ -10113,7 +10113,7 @@ cf9d9
     lda l00c1                                                         // f9db: a5 c1       ..
     beq cf9e3                                                         // f9dd: f0 04       ..
     lda #$fa                                                          // f9df: a9 fa       ..
-    bne cf9f5                                                         // f9e1: d0 12       ..             // ALWAYS branch
+    bne cf9f5                                                         // f9e1: d0 12       .. // ALWAYS branch
 
 // $f9e3 referenced 1 time by $f9dd
 cf9e3
@@ -10215,7 +10215,7 @@ cfa58
     plp                                                               // fa5e: 28          (
     php                                                               // fa5f: 08          .
     beq cfa52                                                         // fa60: f0 f0       ..
-    jsr osasci                                                        // fa62: 20 e3 ff     ..            // Write character
+    jsr osasci                                                        // fa62: 20 e3 ff     .. // Write character
     jmp cfa52                                                         // fa65: 4c 52 fa    LR.
 
 // $fa68 referenced 1 time by $fa5c
@@ -10288,7 +10288,7 @@ sub_cfae8
     jsr sub_ce7dc                                                     // fae8: 20 dc e7     ..
     beq cfaf2                                                         // faeb: f0 05       ..
     lda #7                                                            // faed: a9 07       ..
-    jsr oswrch                                                        // faef: 20 ee ff     ..            // Write character 7
+    jsr oswrch                                                        // faef: 20 ee ff     .. // Write character 7
 // $faf2 referenced 6 times by $f1f6, $f465, $f542, $f6ff, $f9a3, $faeb
 cfaf2
     lda #$80                                                          // faf2: a9 80       ..
@@ -10301,7 +10301,7 @@ cfaf2
     sta serial_ula_set_baud_cassette_and_motor                        // fb01: 8d 10 fe    ...
     lda #0                                                            // fb04: a9 00       ..
     sta l00ea                                                         // fb06: 85 ea       ..
-    beq cfb0b                                                         // fb08: f0 01       ..             // ALWAYS branch
+    beq cfb0b                                                         // fb08: f0 01       .. // ALWAYS branch
 
 // $fb0a referenced 1 time by $da68
 sub_cfb0a
@@ -10356,13 +10356,13 @@ cfb31
 // $fb46 referenced 5 times by $f616, $f85b, $fb0b, $fb41, $fbe7
 sub_cfb46
     lda #3                                                            // fb46: a9 03       ..
-    bne cfb65                                                         // fb48: d0 1b       ..             // ALWAYS branch
+    bne cfb65                                                         // fb48: d0 1b       .. // ALWAYS branch
 
 // $fb4a referenced 1 time by $f80e
 sub_cfb4a
     lda #$30 // '0'                                                   // fb4a: a9 30       .0
     sta l00ca                                                         // fb4c: 85 ca       ..
-    bne cfb63                                                         // fb4e: d0 13       ..             // ALWAYS branch
+    bne cfb63                                                         // fb4e: d0 13       .. // ALWAYS branch
 
 // $fb50 referenced 2 times by $f5cc, $f736
 sub_cfb50
@@ -10432,7 +10432,7 @@ sub_cfb90
 sub_cfb95
     lda #osbyte_motor                                                 // fb95: a9 89       ..
     ldy l00c3                                                         // fb97: a4 c3       ..
-    jmp osbyte                                                        // fb99: 4c f4 ff    L..            // Switch cassette motor relay on or off, based on X
+    jmp osbyte                                                        // fb99: 4c f4 ff    L.. // Switch cassette motor relay on or off, based on X
 
 // $fb9c referenced 3 times by $f4cf, $f531, $f625
 sub_cfb9c
@@ -10628,7 +10628,7 @@ return_59
 
 osbyte157EntryPoint
     txa                                                               // ffa7: 8a          .
-    bcs osbput                                                        // ffa8: b0 2a       .*             // Write a single byte A to an open file Y
+    bcs osbput                                                        // ffa8: b0 2a       .* // Write a single byte A to an open file Y
 osbyte146EntryPoint
     ldy fred,x                                                        // ffaa: bc 00 fc    ...
     rts                                                               // ffad: 60          `
@@ -10650,48 +10650,48 @@ lffb7
 
 // ***************************************************************************************
 osrdsc
-    jmp cdc0b                                                         // ffb9: 4c 0b dc    L..            // Read byte from ROM Y or screen
+    jmp cdc0b                                                         // ffb9: 4c 0b dc    L.. // Read byte from ROM Y or screen
 
 // ***************************************************************************************
 vduchr
-    jmp cc4c0                                                         // ffbc: 4c c0 c4    L..            // Write character
+    jmp cc4c0                                                         // ffbc: 4c c0 c4    L.. // Write character
 
 // ***************************************************************************************
 oseven
-    jmp ce494                                                         // ffbf: 4c 94 e4    L..            // Generate event Y
+    jmp ce494                                                         // ffbf: 4c 94 e4    L.. // Generate event Y
 
     .byt $4c, $1e, $ea, $4c, $2f, $ea                                 // ffc2: 4c 1e ea... L..
 
 // ***************************************************************************************
 nvrdch
-    jmp cdec5                                                         // ffc8: 4c c5 de    L..            // Read a character from the current input stream
+    jmp cdec5                                                         // ffc8: 4c c5 de    L.. // Read a character from the current input stream
 
 // ***************************************************************************************
 nvwrch
-    jmp ce0a4                                                         // ffcb: 4c a4 e0    L..            // Write character
+    jmp ce0a4                                                         // ffcb: 4c a4 e0    L.. // Write character
 
 // ***************************************************************************************
 // $ffce referenced 5 times by $dee3, $e28c, $e296, $f698, $f6a2
 osfind
-    jmp (findv)                                                       // ffce: 6c 1c 02    l..            // Open or close file(s)
+    jmp (findv)                                                       // ffce: 6c 1c 02    l.. // Open or close file(s)
 
 // ***************************************************************************************
 osgbpb
-    jmp (gbpbv)                                                       // ffd1: 6c 1a 02    l..            // Read or write multiple bytes to an open file
+    jmp (gbpbv)                                                       // ffd1: 6c 1a 02    l.. // Read or write multiple bytes to an open file
 
 // ***************************************************************************************
 // $ffd4 referenced 2 times by $e108, $ffa8
 osbput
-    jmp (bputv)                                                       // ffd4: 6c 18 02    l..            // Write a single byte A to an open file Y
+    jmp (bputv)                                                       // ffd4: 6c 18 02    l.. // Write a single byte A to an open file Y
 
 // ***************************************************************************************
 // $ffd7 referenced 1 time by $ded5
 osbget
-    jmp (bgetv)                                                       // ffd7: 6c 16 02    l..            // Read a single byte from an open file Y
+    jmp (bgetv)                                                       // ffd7: 6c 16 02    l.. // Read a single byte from an open file Y
 
 // ***************************************************************************************
 osargs
-    jmp (argsv)                                                       // ffda: 6c 14 02    l..            // Read or write a file's attributes
+    jmp (argsv)                                                       // ffda: 6c 14 02    l.. // Read or write a file's attributes
 
 // ***************************************************************************************
 osfile
@@ -10700,25 +10700,25 @@ osfile
 // ***************************************************************************************
 // $ffe0 referenced 1 time by $e924
 osrdch
-    jmp (rdchv)                                                       // ffe0: 6c 10 02    l..            // Read a character from the current input stream
+    jmp (rdchv)                                                       // ffe0: 6c 10 02    l.. // Read a character from the current input stream
 
 // ***************************************************************************************
 // $ffe3 referenced 2 times by $deb4, $fa62
 osasci
-    cmp #$0d                                                          // ffe3: c9 0d       ..             // Write character
-    bne oswrch                                                        // ffe5: d0 07       ..             // Write character
+    cmp #$0d                                                          // ffe3: c9 0d       .. // Write character
+    bne oswrch                                                        // ffe5: d0 07       .. // Write character
 // ***************************************************************************************
 // $ffe7 referenced 5 times by $dbf7, $dbfa, $dc5f, $dc62, $e96c
 osnewl
-    lda #$0a                                                          // ffe7: a9 0a       ..             // Write newline (characters 10 and 13)
-    jsr oswrch                                                        // ffe9: 20 ee ff     ..            // Write character 10
+    lda #$0a                                                          // ffe7: a9 0a       .. // Write newline (characters 10 and 13)
+    jsr oswrch                                                        // ffe9: 20 ee ff     .. // Write character 10
 // ***************************************************************************************
 oswrcr
-    lda #$0d                                                          // ffec: a9 0d       ..             // Write carriage return (character 13)
+    lda #$0d                                                          // ffec: a9 0d       .. // Write carriage return (character 13)
 // ***************************************************************************************
 // $ffee referenced 8 times by $e921, $e94b, $f8ca, $f8dc, $f98e, $faef, $ffe5, $ffe9
 oswrch
-    jmp (wrchv)                                                       // ffee: 6c 0e 02    l..            // Write character 13
+    jmp (wrchv)                                                       // ffee: 6c 0e 02    l.. // Write character 13
 
 // ***************************************************************************************
 osword
@@ -13885,6 +13885,7 @@ pydis_end
 //     sub_cfbe2
 
 // Stats:
+//
 //     Total size (Code + Data) = 16384 bytes
 //     Code                     = 12716 bytes (78%)
 //     Data                     = 3668 bytes (22%)

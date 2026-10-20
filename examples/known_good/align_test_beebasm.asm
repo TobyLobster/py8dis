@@ -13,9 +13,9 @@ osasci  = &ffe3
 .print_loop
 ; *** AFTER LABEL ***
     ; *** BEFORE LINE ***
-    lda hello_world_string,x                                          ; 2002: bd 0e 20    ..             ; *** INLINE ***
+    lda hello_world_string,x                                          ; 2002: bd 0e 20    .. ; *** INLINE ***
     ; *** AFTER LINE ***
-    jsr osasci                                                        ; 2005: 20 e3 ff     ..            ; Write character
+    jsr osasci                                                        ; 2005: 20 e3 ff     .. ; Write character
     inx                                                               ; 2008: e8          .
     cpx #&0e                                                          ; 2009: e0 0e       ..
     bne print_loop                                                    ; 200b: d0 f5       ..
@@ -30,6 +30,7 @@ osasci  = &ffe3
 save pydis_start, pydis_end
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 28 bytes
 ;     Code                     = 14 bytes (50%)
 ;     Data                     = 14 bytes (50%)

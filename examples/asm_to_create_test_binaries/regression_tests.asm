@@ -1,0 +1,63 @@
+; Regression tests for py8dis bugs fixed in October 2026.
+;
+; The binary is split into two files at $2080 (see 'go') so that the control
+; file can test calling entry() before a second load().
+
+* = $2000
+
+start
+    ; subroutine() decoration: on_entry 'y' is private "(ignored)" so 'ldy #3'
+    ; should get no comment. on_exit has no entry for X, which used to crash
+    ; with a KeyError when X is used after the call.
+    ldy #3
+    lda #7
+    jsr store_value
+    stx $71
+    sty $72
+
+    ; subroutine(..., hook=False) should not decorate this call
+    jsr quiet_routine
+
+    ; AND (zp,X) changes A but not the carry
+    lda #5
+    sec
+    and ($70,x)
+    tay                     ; must not be commented 'Y=5'
+    adc #1                  ; carry is still set
+
+    ; AND #$ff with A unknown leaves Z unknown (not set by the LDX)
+    lda $70
+    ldx #0
+    and #$ff
+    beq +                   ; must not be 'ALWAYS branch'
+
+    ; ORA #1 with A unknown leaves N unknown (not set by the LDX)
+    lda $70
+    ldx #$80
+    ora #1
+    bmi +                   ; must not be 'ALWAYS branch'
+
+    ; Carry is 'pending' (unknown) after a compare, so ROR A gives an unknown result
+    lda #5
+    cmp #7
+    ror
+    tax                     ; must not be commented 'X=&82'
++
+    jmp part2
+
+store_value
+    sta $70
+    ldx #0
+    ldy #1
+    rts
+
+quiet_routine
+    rts
+
+    !fill $2080 - *, $ea
+
+; ---------------------------------------------------------------------------
+; Second file, loaded separately at $2080
+part2
+    jsr store_value
+    rts

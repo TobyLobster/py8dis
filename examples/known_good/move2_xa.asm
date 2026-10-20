@@ -96,6 +96,7 @@ pydis_end
 //     sub_c2039
 
 // Stats:
+//
 //     Total size (Code + Data) = 64 bytes
 //     Code                     = 61 bytes (95%)
 //     Data                     = 3 bytes (5%)

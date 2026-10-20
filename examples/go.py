@@ -186,11 +186,8 @@ def call_xa(basename: Path,
             cmd.extend(['-l', str(f.symbols_file), '-P', str(f.report_file)])
         subprocess.run(cmd, text=True, check=True)
 
-        if not check_identical(f.binary_output_file, f.binary_original_file):
-            return False
-
-        if make_known_good:
-            shutil.copy2(f.binary_output_file, f.known_good_file)
+        # (Like the other assemblers, single_test() checks the binary matches
+        # the original and makes the known good asm file.)
         return None
     except subprocess.CalledProcessError as e:
         return "{0}\nstderr: {1}".format(e, e.stderr)

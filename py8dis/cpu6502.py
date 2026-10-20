@@ -187,7 +187,8 @@ class CpuStateDisposition(object):
         self._d['c'] = "pending"
 
     def update_rora(self, binary_addr):
-        if self._d['a'].value is not None and self._d['c'] is not None:
+        # Note carry may be 'pending' (after a compare), which counts as unknown here.
+        if self._d['a'].value is not None and self._d['c'] in (True, False):
             # We know that state of A and carry, so we can calculate the new value of A
             oldv = self._d['a'].value
             newc = oldv & 1
@@ -239,18 +240,17 @@ class CpuStateDisposition(object):
             # Update the flags based on new value of A
             self._d['n'] = ((v & 0x80) == 0x80)
             self._d['z'] = (v == 0)
-        elif v < 0xff:
-            if v == 0:
-                # AND #0 sets the Z flag, and A=0
-                self._d['z'] = 1
-                self._d['a'].value = 0
-            else:
-                # AND with value $01-$fe leaves the Z flag unknown
-                self._d['z'] = None
+        elif v == 0:
+            # AND #0 sets the Z flag, and A=0
+            self._d['a'].value = 0
+            self._d['n'] = 0
+            self._d['z'] = 1
+        else:
+            # A is unknown, so the result (and therefore Z) is unknown
+            self._d['z'] = None
 
-            # AND with value $00-$7f leaves the N flag clear
-            if v < 0x80:
-                self._d['n'] = 0
+            # AND with value $01-$7f leaves the N flag clear, otherwise it is unknown
+            self._d['n'] = 0 if v < 0x80 else None
 
     def update_ORA_immediate(self, binary_addr):
         assert binary_addr is not None
@@ -263,12 +263,21 @@ class CpuStateDisposition(object):
             # Update the flags based on new value of A
             self._d['n'] = ((v & 0x80) == 0x80)
             self._d['z'] = (v == 0)
+        elif v == 0xff:
+            # ORA #$ff sets A=$ff
+            self._d['a'].value = 0xff
+            self._d['n'] = 1
+            self._d['z'] = 0
         elif v > 0:
             # ORA with non-zero value means Z is clear
             self._d['z'] = 0
-            if v >= 0x80:
-                # ORA with a value $80-$ff, so set N flag
-                self._d['n'] = 1
+
+            # ORA with a value $80-$ff sets the N flag, otherwise it is unknown
+            self._d['n'] = 1 if v >= 0x80 else None
+        else:
+            # ORA #0 leaves A unchanged (but unknown), so N and Z are unknown
+            self._d['n'] = None
+            self._d['z'] = None
 
     def decrement(self, addr, reg):
         v = self[reg].value
@@ -423,7 +432,7 @@ class Cpu6502(cpu.Cpu):
                 self.optimistic.clear()
 
     def __new__(cls):
-        if not hasattr(cls, 'instance'):
+        if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
             cls.instance = super(Cpu6502, cls).__new__(cls)
         return cls.instance
 
@@ -477,8 +486,8 @@ class Cpu6502(cpu.Cpu):
             0x1d: self.OpcodeDataAbs(           "ORA addr,X", "AU-", cycles="4f", update=self.update_clear_nza),
             0x1e: self.OpcodeDataAbs(           "ASL addr,X", "-U-", cycles="7",  update=self.update_clear_nzc),
             0x20: self.OpcodeJsr(               "JSR addr",   "---", cycles="6"),
-            0x21: self.OpcodeZp(                "AND (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_clear_nzc),
-            0x24: self.OpcodeZp(                "BIT zp",     "---", cycles="3",  update=self.update_bit),
+            0x21: self.OpcodeZp(                "AND (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_clear_nza),
+            0x24: self.OpcodeZp(                "BIT zp",     "U--", cycles="3",  update=self.update_bit),
             0x25: self.OpcodeZp(                "AND zp",     "A--", cycles="3",  update=self.update_clear_nza),
             0x26: self.OpcodeZp(                "ROL zp",     "---", cycles="5",  update=self.update_clear_nzc),
             0x28: self.OpcodeImplied(           "PLP",        "---", cycles="4",  update=self.update_all_flags),
@@ -588,8 +597,8 @@ class Cpu6502(cpu.Cpu):
             0xd5: self.OpcodeZp(                "CMP zp,X",   "UU-", cycles="4",  update=self.update_compare),
             0xd6: self.OpcodeZp(                "DEC zp,X",   "-U-", cycles="6",  update=self.update_clear_nz),
             0xd8: self.OpcodeImplied(           "CLD",        "---", cycles="2",  update=self.make_update_flag('d', False)),
-            0xd9: self.OpcodeDataAbs(           "CMP addr,Y", "--U", cycles="4f", has_zp_version=False, update=self.update_compare),
-            0xdd: self.OpcodeDataAbs(           "CMP addr,X", "-U-", cycles="4f", update=self.update_compare),
+            0xd9: self.OpcodeDataAbs(           "CMP addr,Y", "U-U", cycles="4f", has_zp_version=False, update=self.update_compare),
+            0xdd: self.OpcodeDataAbs(           "CMP addr,X", "UU-", cycles="4f", update=self.update_compare),
             0xde: self.OpcodeDataAbs(           "DEC addr,X", "-U-", cycles="7",  update=self.update_clear_nz),
             0xe0: self.OpcodeImmediate(         "CPX #imm",   "-U-", cycles="2",  update=self.update_compare),
             0xe1: self.OpcodeZp(                "SBC (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_adc_sbc),
@@ -605,7 +614,7 @@ class Cpu6502(cpu.Cpu):
             0xf0: self.OpcodeConditionalBranch( "BEQ offset", "---", cycles="2a", update=self.make_branch('z', False)),
             0xf1: self.OpcodeZp(                "SBC (zp),Y", "A-U", cycles="5b", has_abs_version=False, update=self.update_adc_sbc),
             0xf5: self.OpcodeZp(                "SBC zp,X",   "AU-", cycles="4",  update=self.update_adc_sbc),
-            0xf6: self.OpcodeZp(                "INC zp,X",   "---", cycles="6",  update=self.update_clear_nz),
+            0xf6: self.OpcodeZp(                "INC zp,X",   "-U-", cycles="6",  update=self.update_clear_nz),
             0xf8: self.OpcodeImplied(           "SED",        "---", cycles="2",  update=self.make_update_flag('d', True)),
             0xf9: self.OpcodeDataAbs(           "SBC addr,Y", "A-U", cycles="4f", has_zp_version=False, update=self.update_adc_sbc),
             0xfd: self.OpcodeDataAbs(           "SBC addr,X", "AU-", cycles="4f", update=self.update_adc_sbc),
@@ -763,16 +772,20 @@ class Cpu6502(cpu.Cpu):
         self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name)
         self.subroutine_hooks[runtime_addr] = hook
 
-    def default_subroutine_hook(self, runtime_addr, state, subroutine):
-        _, move_id = movemanager.r2b(runtime_addr)
-        runtime_loc = memorymanager.RuntimeLocation(runtime_addr, move_id)
+    @staticmethod
+    def is_private_register_description(description):
+        """A register description in brackets, e.g. '(preserved)', is shown in
+        the subroutine header but is not used to decorate calling code."""
+        return description.startswith("(") and description.endswith(")")
 
+    def default_subroutine_hook(self, runtime_addr, state, subroutine):
         # Look for where we set up registers before the subroutine call
         for reg in ('a', 'x', 'y'):
             reg_addr = state.optimistic[reg].previous_adjust
             if reg_addr is not None:
-                if reg in subroutine.on_entry:
-                    disassembly.comment_binary(reg_addr, reg.upper() + "=" + subroutine.on_entry[reg], align=Align.INLINE, word_wrap=False, auto_generated=True)
+                com = subroutine.on_entry.get(reg)
+                if com and not self.is_private_register_description(com):
+                    disassembly.comment_binary(reg_addr, reg.upper() + "=" + com, align=Align.INLINE, word_wrap=False, auto_generated=True)
 
         # Add subroutine title comment
         if subroutine.title and subroutine.runtime_addr != runtime_addr:
@@ -782,15 +795,15 @@ class Cpu6502(cpu.Cpu):
         if subroutine.on_exit:
             if subroutine.runtime_addr != runtime_addr:
                 for reg in ('a', 'x', 'y'):
+                    # The register may be used after the call without the
+                    # subroutine saying anything about it on exit.
+                    com = subroutine.on_exit.get(reg)
+                    if not com or self.is_private_register_description(com):
+                        continue
                     next_use = state.next_use[reg]
-                    if next_use:
-                        reg_runtime_addr = None if next_use is None else movemanager.b2r(next_use)
-                        if reg_runtime_addr:
-                            com = subroutine.on_exit[reg]
-                            if com:
-                                is_private_comment = com.startswith("()") and com.endswith(")")
-                                if not is_private_comment:
-                                    disassembly.comment(reg_runtime_addr, reg.upper() + "=" + subroutine.on_exit[reg], align=Align.INLINE)
+                    if next_use is not None:
+                        reg_runtime_addr = movemanager.b2r(next_use)
+                        disassembly.comment(reg_runtime_addr, reg.upper() + "=" + com, align=Align.INLINE)
 
 
 

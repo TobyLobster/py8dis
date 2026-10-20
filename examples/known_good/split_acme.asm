@@ -14,7 +14,7 @@ print_and_inc_zp
 
 ; $0908 referenced 1 time by $0902
 sub_c0908
-    jsr osasci                                                        ; 0908: 20 e3 ff     ..            ; Write character
+    jsr osasci                                                        ; 0908: 20 e3 ff     .. ; Write character
     clc                                                               ; 090b: 18          .
     adc #1                                                            ; 090c: 69 01       i.
     rts                                                               ; 090e: 60          `
@@ -31,7 +31,7 @@ loop_c2006
     dex                                                               ; 2009: ca          .
     bne loop_c2006                                                    ; 200a: d0 fa       ..
     lda #$0d                                                          ; 200c: a9 0d       ..
-    jmp osasci                                                        ; 200e: 4c e3 ff    L..            ; Write newline (characters 10 and 13)
+    jmp osasci                                                        ; 200e: 4c e3 ff    L.. ; Write newline (characters 10 and 13)
 
 pydis_end
 
@@ -50,6 +50,7 @@ pydis_end
 ;     sub_c0908
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 32 bytes
 ;     Code                     = 32 bytes (100%)
 ;     Data                     = 0 bytes (0%)

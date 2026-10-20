@@ -21,7 +21,7 @@ class Cpu8080(cpu.Cpu):
     """Singleton class representing an 8080 CPU"""
 
     def __new__(cls):
-        if not hasattr(cls, 'instance'):
+        if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
             cls.instance = super(Cpu8080, cls).__new__(cls)
 
             #TODO: self.code_analysis_fns.append(subroutine_argument_finder)

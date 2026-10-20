@@ -91,7 +91,13 @@ def add_inline_comment_including_hexdump(binary_loc, length, cycles_description,
         for i in range(0, length):
             for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
                 if annotation.align == Align.INLINE:
-                    s += annotation.as_string(binary_loc.binary_addr)
+                    text = annotation.as_string(binary_loc.binary_addr)
+                    # Make sure the comment is separated from what comes before
+                    # (e.g. a full width ASCII dump column, now that there is
+                    # no padding for move commentary when there are no moves).
+                    if text and not s.endswith(" "):
+                        s += " "
+                    s += text
             binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + 1, binary_loc.move_id)
     return s.rstrip()
 

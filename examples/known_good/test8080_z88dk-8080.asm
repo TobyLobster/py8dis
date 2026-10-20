@@ -10,7 +10,7 @@ stack   EQU $07ad
     ORG $0100
 
 pydis_start:
-    jmp cpu                                                           ; 0100: c3 ab 01    ...            ; jump to 8080 CPU diagnostic
+    jmp cpu                                                           ; 0100: c3 ab 01    ... ; jump to 8080 CPU diagnostic
 
     db "MICROCOSM ASSOCIATES 8080/8085 CPU DIAGNOSTIC VERSION 1.0 (C" ; 0103: 4d 49 43... MIC
     db ") 1980"                                                       ; 013f: 29 20 31... ) 1
@@ -67,19 +67,19 @@ cpu_error_message:
 cpu:
     lxi sp, $07ad                                                     ; 01ab: 31 ad 07    1..
     ani 0                                                             ; 01ae: e6 00       ..
-    jz j010                                                           ; 01b0: ca b6 01    ...            ; test "jz"
+    jz j010                                                           ; 01b0: ca b6 01    ... ; test "jz"
     call cpuer                                                        ; 01b3: cd 89 06    ...
 j010:
-    jnc j020                                                          ; 01b6: d2 bc 01    ...            ; test "jnc"
+    jnc j020                                                          ; 01b6: d2 bc 01    ... ; test "jnc"
     call cpuer                                                        ; 01b9: cd 89 06    ...
 j020:
-    jpe j030                                                          ; 01bc: ea c2 01    ...            ; test "jpe"
+    jpe j030                                                          ; 01bc: ea c2 01    ... ; test "jpe"
     call cpuer                                                        ; 01bf: cd 89 06    ...
 j030:
-    jp p, j040                                                        ; 01c2: f2 c8 01    ...            ; test "jp"
+    jp p, j040                                                        ; 01c2: f2 c8 01    ... ; test "jp"
     call cpuer                                                        ; 01c5: cd 89 06    ...
 j040:
-    jnz j050                                                          ; 01c8: c2 d7 01    ...            ; test "jnz"
+    jnz j050                                                          ; 01c8: c2 d7 01    ... ; test "jnz"
     jc j050                                                           ; 01cb: da d7 01    ...
     jpo j050                                                          ; 01ce: e2 d7 01    ...
     jm j050                                                           ; 01d1: fa d7 01    ...
@@ -809,6 +809,7 @@ pydis_end:
 ; ASSERT ((temp0) == $06a6)
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 1453 bytes
 ;     Code                     = 1323 bytes (91%)
 ;     Data                     = 130 bytes (9%)

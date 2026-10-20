@@ -87,9 +87,9 @@ import cpu65C02
 import cpu6502
 import cpu8080
 
-cpu_names = { "6502"  : lambda : cpu6502.Cpu6502(),
-              "65c02" : lambda : cpu65C02.Cpu65C02(),
-              "8080"  : lambda : cpu8080.Cpu8080(),
+cpu_names = { "6502"  : cpu6502.Cpu6502,
+              "65c02" : cpu65C02.Cpu65C02,
+              "8080"  : cpu8080.Cpu8080,
             }
 
 memory_binary = memorymanager.memory_binary
@@ -119,10 +119,15 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
             utils.die("Cpu '%s' is not supported by the chosen assembler. See call to load()" % (cpu_name))
 
         # Set the CPU
-        if cpu_name in cpu_names.keys():
-            trace.cpu = cpu_names[cpu_name]()
-        else:
+        if cpu_name not in cpu_names:
             utils.die("Unknown CPU or missing CPU parameter '%s' specified for load()." % (cpu_name))
+        cpu_class = cpu_names[cpu_name]
+        if trace.cpu is None:
+            trace.cpu = cpu_class()
+        elif type(trace.cpu) is not cpu_class:
+            # Only create the CPU once: creating it again would discard any
+            # entry points, hooks etc already added after an earlier load().
+            utils.die("All calls to load() must use the same CPU (already using '%s', now asked for '%s')." % (type(trace.cpu).__name__, cpu_name))
 
     # Load the file
     memorymanager.load(filename, binary_load_addr, md5sum)
@@ -235,18 +240,26 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
     create a header comment above the definition of the subroutine.
 
     They are also used to decorate calling code with explanatory text.
-    This is done by the default hook function. If this is not wanted
-    specify hook=None.
+    This is done by the default hook function when hook=None (the
+    default). If this is not wanted specify hook=False.
     """
     if name is not None and len(name)>0:
         if is_entry_point:
             entry(runtime_addr, name)
         else:
-            optional_label(runtime_addr, name, move_id, definable_inline=True)
+            optional_label(runtime_addr, name, definable_inline=True)
 
-    # Use default hook function
-    if hook is None and trace.cpu.default_subroutine_hook:
-        hook = trace.cpu.default_subroutine_hook
+    if hook is False:
+        # No decoration of calling code wanted
+        hook = None
+    elif hook is None:
+        # Use the CPU's default hook function, if it has one. This is looked
+        # up when the hook is called, since subroutine() may be called before
+        # load() has chosen the CPU.
+        def hook(runtime_addr, state, subroutine):
+            default_hook = getattr(trace.cpu, "default_subroutine_hook", None)
+            if default_hook is not None:
+                default_hook(runtime_addr, state, subroutine)
 
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)

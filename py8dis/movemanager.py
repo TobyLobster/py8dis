@@ -223,7 +223,7 @@ def r2b_checked(runtime_addr):
     return BinaryLocation(binary_addr, move_id)
 
 def has_any_moves():
-    return bool(active_move_ids)
+    return len(move_definitions) > 1
 
 # Unit testing for moves
 if __name__ == "__main__":

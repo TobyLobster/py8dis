@@ -9862,7 +9862,7 @@ lb6ce = sub_cb6cd+1
     tay                                                               ; 599d: a8          .   :b99d[1]   ; Y=ROM number
     jsr osrdsc                                                        ; 599e: 20 b9 ff     .. :b99e[1]   ; Read byte from ROM Y or screen
     ldx l00bf                                                         ; 59a1: a6 bf       ..  :b9a1[1]
-    cmp lb87e,x                                                       ; 59a3: dd 7e b8    .~. :b9a3[1]
+    cmp lb87e,x                                                       ; 59a3: dd 7e b8    .~. :b9a3[1]   ; A=byte read
     bne cb9ee                                                         ; 59a6: d0 46       .F  :b9a6[1]
     inc osrdsc_ptr                                                    ; 59a8: e6 f6       ..  :b9a8[1]
     bne cb9ae                                                         ; 59aa: d0 02       ..  :b9aa[1]
@@ -9885,7 +9885,7 @@ lb6ce = sub_cb6cd+1
     tay                                                               ; 59c1: a8          .   :b9c1[1]   ; Y=ROM number
     jsr osrdsc                                                        ; 59c2: 20 b9 ff     .. :b9c2[1]   ; Read byte from ROM Y or screen
     ldx osrdsc_ptr                                                    ; 59c5: a6 f6       ..  :b9c5[1]
-    cmp lb872,x                                                       ; 59c7: dd 72 b8    .r. :b9c7[1]
+    cmp lb872,x                                                       ; 59c7: dd 72 b8    .r. :b9c7[1]   ; A=byte read
     bne cb9d9                                                         ; 59ca: d0 0d       ..  :b9ca[1]
 ; &59cc referenced 1 time by &b9e5[1]
 .loop_cb9cc
@@ -13931,6 +13931,7 @@ save pydis_start, pydis_end
 ;     sub_cbf84
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 16384 bytes
 ;     Code                     = 14446 bytes (88%)
 ;     Data                     = 1938 bytes (12%)

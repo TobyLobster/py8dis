@@ -6381,6 +6381,7 @@ osbyte                  = &fff4
 save pydis_start, pydis_end
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 9984 bytes
 ;     Code                     = 6148 bytes (62%)
 ;     Data                     = 3836 bytes (38%)

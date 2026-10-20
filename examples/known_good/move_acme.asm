@@ -73,6 +73,7 @@ pydis_end
 ;     sub_c0908
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 45 bytes
 ;     Code                     = 45 bytes (100%)
 ;     Data                     = 0 bytes (0%)

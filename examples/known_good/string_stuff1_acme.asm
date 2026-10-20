@@ -12,6 +12,7 @@ pydis_end
 
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 5 bytes
 ;     Code                     = 0 bytes (0%)
 ;     Data                     = 5 bytes (100%)

@@ -2778,10 +2778,10 @@ osbyte                                  = &fff4
 ; ----------------------------------------------------------------------------------
 .sound_0
 .unused34
-    equb &ea, &ea, &ea, &ea                                           ; 3108: ea ea ea... ... :2008[1]   ; Channel (2 bytes); Amplitude (2 bytes)
+    equb &ea, &ea, &ea, &ea                                           ; 3108: ea ea ea... ... :2008[1]   ; Channel (2 bytes) ; Amplitude (2 bytes)
 
 .plot_enemy_ship_explosion
-    jsr plot_enemy_ship_or_explosion_segments                         ; 310c: 20 a4 20     .  :200c[1]   ; Pitch (2 bytes); Duration (2 bytes)
+    jsr plot_enemy_ship_or_explosion_segments                         ; 310c: 20 a4 20     .  :200c[1]   ; Pitch (2 bytes) ; Duration (2 bytes)
     ldy number_of_bytes_per_enemy_explosion                           ; 310f: ac cf 1c    ... :200f[1]
 .plot_enemy_ship_explosion_loop
     dey                                                               ; 3112: 88          .   :2012[1]
@@ -3008,9 +3008,9 @@ osbyte                                  = &fff4
 ; Exploding starship 1
 ; ----------------------------------------------------------------------------------
 .sound_1
-    equb &11, 0, 0, 0                                                 ; 32c8: 11 00 00... ... :21c8[1]   ; Channel (2 bytes); Amplitude (2 bytes)
+    equb &11, 0, 0, 0                                                 ; 32c8: 11 00 00... ... :21c8[1]   ; Channel (2 bytes) ; Amplitude (2 bytes)
 .sound_1_pitch
-    equb 0, 0, 8, 0                                                   ; 32cc: 00 00 08... ... :21cc[1]   ; Pitch (2 bytes); Duration (2 bytes)
+    equb 0, 0, 8, 0                                                   ; 32cc: 00 00 08... ... :21cc[1]   ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 ; Exploding starship 2
 ; ----------------------------------------------------------------------------------
@@ -3019,17 +3019,17 @@ osbyte                                  = &fff4
 .sound_1_volume_low
     equb 0                                                            ; 32d2: 00          .   :21d2[1]   ; Amplitude (2 bytes)
 .sound_1_volume_high
-    equb 0, 7, 0, 8, 0                                                ; 32d3: 00 07 00... ... :21d3[1]   ; Pitch (2 bytes); Duration (2 bytes)
+    equb 0, 7, 0, 8, 0                                                ; 32d3: 00 07 00... ... :21d3[1]   ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 ; Starship fired torpedo
 ; ----------------------------------------------------------------------------------
 .sound_3
-    equb &13, 0, 1, 0, &80, 0, 4, 0                                   ; 32d8: 13 00 01... ... :21d8[1]   ; Channel (2 bytes); Amplitude (2 bytes); Pitch (2 bytes); Duration (2 bytes)
+    equb &13, 0, 1, 0, &80, 0, 4, 0                                   ; 32d8: 13 00 01... ... :21d8[1]   ; Channel (2 bytes) ; Amplitude (2 bytes) ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 ; Enemy ship fired torpedo
 ; ----------------------------------------------------------------------------------
 .sound_4
-    equb &12, 0, 2, 0, &c0, 0, &1f, 0                                 ; 32e0: 12 00 02... ... :21e0[1]   ; Channel (2 bytes); Amplitude (2 bytes); Pitch (2 bytes); Duration (2 bytes)
+    equb &12, 0, 2, 0, &c0, 0, &1f, 0                                 ; 32e0: 12 00 02... ... :21e0[1]   ; Channel (2 bytes) ; Amplitude (2 bytes) ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 ; Enemy ship hit by torpedo
 ; ----------------------------------------------------------------------------------
@@ -3044,7 +3044,7 @@ osbyte                                  = &fff4
 ; Enemy ships collided with each other
 ; ----------------------------------------------------------------------------------
 .sound_7
-    equb &13, 0, 2, 0, &6c, 0, 8, 0                                   ; 32f8: 13 00 02... ... :21f8[1]   ; Channel (2 bytes); Amplitude (2 bytes); Pitch (2 bytes); Duration (2 bytes)
+    equb &13, 0, 2, 0, &6c, 0, 8, 0                                   ; 32f8: 13 00 02... ... :21f8[1]   ; Channel (2 bytes) ; Amplitude (2 bytes) ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 ; Escape capsule launched
 ; ----------------------------------------------------------------------------------
@@ -3053,12 +3053,12 @@ osbyte                                  = &fff4
 .sound_8_volume_low
     equb 0                                                            ; 3302: 00          .   :2202[1]   ; Amplitude (2 bytes)
 .sound_8_volume_high
-    equb 0, &64, 0, 4, 0                                              ; 3303: 00 64 00... .d. :2203[1]   ; Pitch (2 bytes); Duration (2 bytes)
+    equb 0, &64, 0, 4, 0                                              ; 3303: 00 64 00... .d. :2203[1]   ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 ; Low energy warning
 ; ----------------------------------------------------------------------------------
 .sound_9
-    equb &11, 0, &f1, &ff, &c8, 0, 4, 0                               ; 3308: 11 00 f1... ... :2208[1]   ; Channel (2 bytes); Amplitude (2 bytes); Pitch (2 bytes); Duration (2 bytes)
+    equb &11, 0, &f1, &ff, &c8, 0, 4, 0                               ; 3308: 11 00 f1... ... :2208[1]   ; Channel (2 bytes) ; Amplitude (2 bytes) ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
 .set_foreground_colour_to_white_string
     equb 0, 0, 0, 7, 1, &13                                           ; 3310: 00 00 00... ... :2210[1]
@@ -7236,7 +7236,7 @@ osbyte                                  = &fff4
     equb &88, &0d                                                     ; 55df: 88 0d       ..  :44df[1]
 .input_osword_block
     equw input_buffer                                                 ; 55e1: d3 44       .D  :44e1[1]   ; Buffer address for input (2 bytes)
-    equb &0d, &20, &ff                                                ; 55e3: 0d 20 ff    . . :44e3[1]   ; Maximum line length; Min. acceptable character value; Max. acceptable character value
+    equb &0d, &20, &ff                                                ; 55e3: 0d 20 ff    . . :44e3[1]   ; Maximum line length ; Min. acceptable character value ; Max. acceptable character value
 .unused3
     equb 0, &ea                                                       ; 55e6: 00 ea       ..  :44e6[1]
 
@@ -7665,9 +7665,9 @@ osbyte                                  = &fff4
 .sound_10_volume_high
     equb 0                                                            ; 5af3: 00          .   :49f3[1]
 .sound_10_pitch
-    equb 0, 0, 4, 0                                                   ; 5af4: 00 00 04... ... :49f4[1]   ; Pitch (2 bytes); Duration (2 bytes)
+    equb 0, 0, 4, 0                                                   ; 5af4: 00 00 04... ... :49f4[1]   ; Pitch (2 bytes) ; Duration (2 bytes)
 .sound_11
-    equb &10, 0, 3, 0, 7, 0, &1e, 0                                   ; 5af8: 10 00 03... ... :49f8[1]   ; Channel (2 bytes); Amplitude (2 bytes); Pitch (2 bytes); Duration (2 bytes)
+    equb &10, 0, 3, 0, 7, 0, &1e, 0                                   ; 5af8: 10 00 03... ... :49f8[1]   ; Channel (2 bytes) ; Amplitude (2 bytes) ; Pitch (2 bytes) ; Duration (2 bytes)
 .initial_star_positions
     equb &d5, &82, &d5, &7b, &d5, &88, &d5, &75, &d3, &8f, &d3, &6e   ; 5b00: d5 82 d5... ... :4a00[1]
     equb &d3, &84, &d3, &79, &d2, &8d, &d2, &70, &d1, &95, &d1, &68   ; 5b0c: d3 84 d3... ... :4a0c[1]
@@ -8014,6 +8014,7 @@ osbyte                                  = &fff4
 save pydis_start, pydis_end
 
 ; Stats:
+;
 ;     Total size (Code + Data) = 17151 bytes
 ;     Code                     = 11046 bytes (64%)
 ;     Data                     = 6105 bytes (36%)
