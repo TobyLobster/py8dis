@@ -59,9 +59,10 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
     # Add move commentary, as a fixed width string
     runtime_addr = movemanager.b2r(binary_addr)
     dump_move = ""
-    if runtime_addr != binary_addr:
-        dump_move = " :%s[%d]" % (utils.plainhex4(runtime_addr), movemanager.move_id_for_binary_addr[binary_addr])
-    dump_move = utils.tab_to(dump_move, 12)
+    if movemanager.has_any_moves():
+        if runtime_addr != binary_addr:
+            dump_move = " :%s[%d]" % (utils.plainhex4(runtime_addr), movemanager.move_id_for_binary_addr[binary_addr])
+        dump_move = utils.tab_to(dump_move, 12)
 
     # Join them all together: address, hex bytes, characters, cpu state, move details
     s += utils.plainhex4(binary_addr) + ": " + dump_hex + dump_chars + cycles_description + dump_cpu_state + dump_move

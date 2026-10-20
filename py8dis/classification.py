@@ -261,7 +261,7 @@ def check_expr(expr, value, message):
 
     config.get_assembler().assert_expr(expr, value)
 
-def get_expression(binary_addr, expected_value):
+def get_expression(binary_addr, expected_value, is_address=False):
     """Get the previously supplied expression for the given address."""
 
     expression = expressions[binary_addr]
@@ -480,7 +480,7 @@ def include_binary_file(binary_addr, relative_filepath):
     # Check the contents of the file matches the file we are disassembling
     i = 0
     for b in contents:
-        assert (memory_binary[binary_addr + i] == contents[i])
+        assert (memory_binary[binary_addr + i] == contents[i]), f"Mismatch at offset {i} in file {relative_filepath}"
         i += 1
 
     add_classification(binary_addr, Byte(length))
@@ -522,7 +522,7 @@ def get_address8(binary_addr, offset=0):
     operand = (memorymanager.get_u8_binary(binary_addr) + offset) & 255
     if binary_addr not in expressions:
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-    return get_expression(binary_addr, operand)
+    return get_expression(binary_addr, operand, is_address=True)
 
 def get_address16(binary_addr, offset=0):
     """Get a string representing the 16 bit address at binary_addr.
@@ -537,7 +537,7 @@ def get_address16(binary_addr, offset=0):
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
 
     assert isinstance(get_classification(binary_addr), Word) or (isinstance(get_classification(binary_addr - 1), trace.cpu.Opcode) and get_classification(binary_addr - 1).length() == 3), "Address: %s" % hex(binary_addr)
-    return get_expression(binary_addr, operand)
+    return get_expression(binary_addr, operand, is_address=True)
 
 
 def get_stats():

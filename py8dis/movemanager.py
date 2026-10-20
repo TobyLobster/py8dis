@@ -222,6 +222,9 @@ def r2b_checked(runtime_addr):
     assert move_id is not None
     return BinaryLocation(binary_addr, move_id)
 
+def has_any_moves():
+    return bool(active_move_ids)
+
 # Unit testing for moves
 if __name__ == "__main__":
     def add_move_test(runtime_addr, binary_addr, length):

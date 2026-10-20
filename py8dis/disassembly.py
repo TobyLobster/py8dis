@@ -819,6 +819,7 @@ def emit(print_output=True):
         code_percent = round((100 * stats.num_code_bytes) / total)
         data_percent = 100-code_percent
         output.append("{0} Stats:".format(comment_prefix))
+        output.append("{0}".format(comment_prefix))
         output.append("{0}     Total size (Code + Data) = {1} bytes".format(comment_prefix, total))
         output.append("{0}     Code                     = {1} bytes ({2}%)".format(comment_prefix, stats.num_code_bytes, code_percent))
         output.append("{0}     Data                     = {1} bytes ({2}%)".format(comment_prefix, stats.total_data(), data_percent))
