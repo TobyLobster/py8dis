@@ -21,4 +21,9 @@ subroutine(0x202f, "store_value", "Store a value",
 # hook=False turns off decoration of calling code
 subroutine(0x2036, "quiet_routine", "Quiet routine", hook=False)
 
+# make_op1() used to crash for operators the assembler translates (e.g. NOT).
+# 'ldx #&80' at &2020 becomes 'ldx #NOT(low_seven_bits) AND &ff' (or equivalent).
+constant(0x7f, "low_seven_bits")
+expr(0x2021, make_and(make_op1('NOT', 'low_seven_bits'), make_hex(0xff)))
+
 go()

@@ -33,6 +33,7 @@ echo "Options: $OPT"
 # 8080 code
 python3 go.py "example8080"     $OPT --assemblers z88dk-8080            # hello world example for the 8080 instruction set
 python3 go.py "test8080"        $OPT --assemblers z88dk-8080            # testing the whole 8080 instruction set
+python3 go.py "regression_tests_8080" $OPT --assemblers z88dk-8080       # regression tests for z88dk expression operators
 
 # 6502 code
 # Tests

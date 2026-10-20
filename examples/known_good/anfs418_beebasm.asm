@@ -10690,7 +10690,7 @@ lbd94 = sub_cbd93+1
 
 .pydis_end
 
-    assert &81 == (255 - inkey_key_ctrl) EOR 128
+    assert &81 == ((255 - inkey_key_ctrl) EOR 128)
     assert &e2 == <(c86e3 - 1)
     assert &13 == <(ca114-1)
     assert &c0 == <(ca1c1-1)

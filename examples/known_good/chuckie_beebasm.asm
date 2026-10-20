@@ -6188,8 +6188,8 @@ osbyte                  = &fff4
     assert &06 == ((map7ladder_end - map7ladder_start) / 3)
     assert &0f == ((map7platform_end - map7platform_start) / 3)
     assert &10 == ((map7seed_end - map7seed_start) / 2)
-    assert &81 == (255 - inkey_key_ctrl) EOR 128
-    assert &80 == (255 - inkey_key_shift) EOR 128
+    assert &81 == ((255 - inkey_key_ctrl) EOR 128)
+    assert &80 == ((255 - inkey_key_shift) EOR 128)
     assert &0c == (MapId_Egg OR MapId_Seed)
     assert &54 == 255 - inkey_key_h
     assert &98 == <blipsoundblock

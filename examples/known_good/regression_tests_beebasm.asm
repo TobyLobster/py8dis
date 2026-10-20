@@ -1,3 +1,6 @@
+; Constants
+low_seven_bits  = 127
+
 ; Memory locations
 l0070   = &0070
 l0071   = &0071
@@ -23,7 +26,7 @@ l0072   = &0072
     and #&ff                                                          ; 201a: 29 ff       ).
     beq c202c                                                         ; 201c: f0 0e       ..
     lda l0070                                                         ; 201e: a5 70       .p
-    ldx #&80                                                          ; 2020: a2 80       ..
+    ldx #NOT(low_seven_bits) AND &ff                                  ; 2020: a2 80       ..
     ora #1                                                            ; 2022: 09 01       ..
     bmi c202c                                                         ; 2024: 30 06       0.
     lda #5                                                            ; 2026: a9 05       ..
@@ -74,6 +77,7 @@ l0072   = &0072
 
 .pydis_end
 
+    assert &80 == (NOT(low_seven_bits) AND &ff)
 
 save pydis_start, pydis_end
 

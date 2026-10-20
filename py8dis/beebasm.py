@@ -3,6 +3,7 @@ Beebasm assembler
 """
 
 from __future__ import print_function
+import re
 import sys
 
 import assembler
@@ -13,6 +14,23 @@ import memorymanager
 import movemanager
 import utils
 from binaryaddrtype import BinaryAddrType
+
+def is_fully_bracketed(s):
+    """Is the whole expression enclosed in one matching pair of brackets?
+    e.g. '(a OR b)' is, but '(a) OR (b)' is not."""
+
+    if not (s.startswith("(") and s.endswith(")")):
+        return False
+    depth = 0
+    for i, c in enumerate(s):
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0 and i != len(s) - 1:
+                # The first bracket closed before the end of the expression
+                return False
+    return depth == 0
 
 class Beebasm(assembler.Assembler):
     """This class encapsulates beebasm-specific syntax and features."""
@@ -65,8 +83,8 @@ class Beebasm(assembler.Assembler):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
-        return { 'NOT': 'NOT',
-                   '!': 'NOT',
+        return { 'NOT': 'NOT(%s)',      # beebasm needs the brackets, 'NOTx' or 'NOT x' is an error
+                   '!': 'NOT(%s)',
         }
 
     def inline_label(self, name):
@@ -243,7 +261,12 @@ class Beebasm(assembler.Assembler):
             old = ("", 0)
             for expr, value in spa:
                 if (expr != old[0]) or (value != old[1]):
-                    result.append(utils.make_indent(1) + utils.force_case("assert ") + "%s == %s" % (value, expr))
+                    # In beebasm '==' binds more tightly than AND/OR/EOR, so bracket
+                    # expressions using those (otherwise the assert is meaningless).
+                    assert_expr = expr
+                    if re.search(r"\b(AND|OR|EOR)\b", expr, re.IGNORECASE) and not is_fully_bracketed(expr):
+                        assert_expr = "(%s)" % expr
+                    result.append(utils.make_indent(1) + utils.force_case("assert ") + "%s == %s" % (value, assert_expr))
                 old = (expr, value)
 
         result.append("")

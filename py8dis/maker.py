@@ -2,8 +2,16 @@ import config
 import disassembly
 import utils
 
+class _AtomicExpression(str):
+    """A string expression that never needs brackets round it when used as
+    part of a larger expression (see make_op1())."""
+    pass
+
 def bracket(expr):
     """Add brackets to an expression if it's not a simple label name or number"""
+
+    if getattr(expr, "is_atomic", False) or isinstance(expr, _AtomicExpression):
+        return expr
 
     if isinstance(expr, utils.LazyString):
         def late_formatter():
@@ -24,8 +32,8 @@ def assembler_op_name(s):
     trans = config.get_assembler().translate_binary_operator_names()
     if s in trans:
         result = trans[s]
-        if result == None:
-            utils.error("Assembler can't handle operator " + s)
+        if result is None:
+            utils.die("Assembler can't handle operator " + s)
         return result
     return s
 
@@ -36,15 +44,30 @@ def make_op1(op, expr):
     if (op == None) or (expr == None):
         return None
 
+    # In all the supported assemblers NOT binds more tightly than any binary
+    # operator (or brings its own brackets), so the result never needs
+    # bracketing. This is not true of '<' and '>' (e.g. in acme).
+    is_atomic = op in ('NOT', '!')
+
     trans = config.get_assembler().translate_unary_operator_names()
     if op in trans:
+        if trans[op] is None:
+            utils.die("Assembler can't handle operator " + op)
         op = trans[op]
-        if result == None:
-            utils.error("Assembler can't handle operator " + op)
+
+    # The assembler specific operator can be a template containing '%s' for
+    # where the operand goes (e.g. 'NOT(%s)'), otherwise it's a prefix.
+    template = op if "%s" in op else op + "%s"
+
+    # No need for extra brackets if the template already provides them
+    operand = expr if "(%s)" in template else bracket(expr)
 
     if isinstance(expr, utils.LazyString):
-        return utils.LazyString("%s%s", op, bracket(expr))
-    return op + bracket(expr)
+        result = utils.LazyString(template, operand)
+        result.is_atomic = is_atomic
+        return result
+    result = template % operand
+    return _AtomicExpression(result) if is_atomic else result
 
 # Binary operators
 def make_op2(expr1, op, expr2):

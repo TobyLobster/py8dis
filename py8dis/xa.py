@@ -60,8 +60,11 @@ class Xa(assembler.Assembler):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
-        return { 'NOT': '!',
-                   '!': '!',
+        # xa has no bitwise NOT operator ('!' at the start of an operand forces
+        # absolute addressing instead), so use the two's complement identity
+        # NOT x == -1-x
+        return { 'NOT': '(-1-%s)',
+                   '!': '(-1-%s)',
         }
 
     def inline_label(self, name):

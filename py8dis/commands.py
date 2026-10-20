@@ -67,7 +67,7 @@ from memorymanager import get_u8_binary, get_u16_binary, get_u16_be_binary, get_
 from align import Align
 from format import Format
 from binaryaddrtype import BinaryAddrType
-from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
+from maker import make_op1, make_op2, make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 
 # These modules are used to implement things in this file and aren't so directly
 # exposed to the user. The user can still access them using the qualified names

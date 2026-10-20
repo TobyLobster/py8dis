@@ -47,26 +47,28 @@ class Z88DK(assembler.Assembler):
         """Returns a dictionary that translates generic binary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
-        return { 'OR': None,
-                  '|': None,
-                'AND': None,
-                  '&': None,
-                'EOR': None,
-                'XOR': None,
-                  '^': None,
-                'DIV': None,
-                  '/': None,
-                'MOD': None,
-                  '%': None,
-                 '!=': None,
+        # (Checked against z88dk-z80asm: C-style operators, '!=' gives 1 if true)
+        return { 'OR': '|',
+                  '|': '|',
+                'AND': '&',
+                  '&': '&',
+                'EOR': '^',
+                'XOR': '^',
+                  '^': '^',
+                'DIV': '/',
+                  '/': '/',
+                'MOD': '%',
+                  '%': '%',
+                 '!=': '!=',
         }
 
     def translate_unary_operator_names(self):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
-        return { 'NOT': '!',
-                   '!': '!',
+        # Note: in z88dk-z80asm '!' is logical NOT, '~' is bitwise NOT
+        return { 'NOT': '~',
+                   '!': '~',
         }
 
     def inline_label(self, name):

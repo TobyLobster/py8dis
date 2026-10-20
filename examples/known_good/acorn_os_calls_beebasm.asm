@@ -5847,7 +5847,7 @@ osbyte  = &fff4
     equs "!BOOT"                                                      ; 41c7: 21 42 4f... !BO
 .pydis_end
 
-    assert &80 == (255 - inkey_key_shift) EOR 128
+    assert &80 == ((255 - inkey_key_shift) EOR 128)
     assert &01 == 255 - inkey_key_ctrl
     assert &20 == 255 - inkey_key_f0
     assert &00 == 255 - inkey_key_shift
