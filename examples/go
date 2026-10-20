@@ -50,6 +50,7 @@ python3 go.py "helloworld"      $OPT --assemblers acme beebasm xa       # the ba
 python3 go.py "local_labels"    $OPT --assemblers acme beebasm xa       # labels defined as local to one move region
 python3 go.py "move"            $OPT --assemblers acme beebasm xa       # a move() test
 python3 go.py "move2"           $OPT --assemblers acme beebasm xa       # another move() test
+python3 go.py "move2_legacy_label_maker" $OPT --assemblers acme beebasm xa  # move2 with a legacy label maker hook choosing a move
 python3 go.py "move_from_top_of_memory" $OPT --assemblers acme beebasm xa  # a move() whose source ends at &10000
 python3 go.py "move_to_top_of_memory"   $OPT --assemblers acme beebasm xa  # a move() whose destination ends at &10000
 python3 go.py "split"           $OPT --assemblers acme beebasm xa       # loads *two* binary files to disassemble
