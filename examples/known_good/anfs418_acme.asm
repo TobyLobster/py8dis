@@ -1245,8 +1245,8 @@ c85fb
     lda #4                                                            ; 85fb: a9 04       ..
     php                                                               ; 85fd: 08          .
     sei                                                               ; 85fe: 78          x
-sub_c85ff
-l8600 = sub_c85ff+1
+c85ff
+l8600 = c85ff+1
     bit station_id_disable_net_nmis                                   ; 85ff: 2c 18 fe    ,..
 ; $8600 referenced 1 time by $867c
     bit station_id_disable_net_nmis                                   ; 8602: 2c 18 fe    ,..
@@ -1619,8 +1619,8 @@ c8852
     bne c8868                                                         ; 885a: d0 0c       ..
     inc l00a3                                                         ; 885c: e6 a3       ..
     bne c8868                                                         ; 885e: d0 08       ..
-sub_c8860
-l8861 = sub_c8860+1
+c8860
+l8861 = c8860+1
     inc l00a4                                                         ; 8860: e6 a4       ..
 ; $8861 referenced 1 time by $8673
     bne c8868                                                         ; 8862: d0 04       ..
@@ -2676,8 +2676,8 @@ jump_table_dispatch_x_plus_y
     tay                                                               ; 8e4d: a8          .
     lda jump_table_high,x                                             ; 8e4e: bd ef 89    ...
     pha                                                               ; 8e51: 48          H
-sub_c8e52
-l8e54 = sub_c8e52+2
+c8e52
+l8e54 = c8e52+2
     lda jump_table_low,x                                              ; 8e52: bd ca 89    ...
 ; $8e54 referenced 2 times by $8f70, $8f76
     pha                                                               ; 8e55: 48          H
@@ -3979,8 +3979,8 @@ c96af
     beq c96f0                                                         ; 96af: f0 3f       .?
     iny                                                               ; 96b1: c8          .
     inx                                                               ; 96b2: e8          .
-sub_c96b3
-error_template_minus_1 = sub_c96b3+1
+c96b3
+error_template_minus_1 = c96b3+1
     bne loop_c96a9                                                    ; 96b3: d0 f4       ..
 ; $96b4 referenced 1 time by $96c5
     !text "Bad"                                                       ; 96b5: 42 61 64    Bad
@@ -6784,8 +6784,8 @@ ca837
     iny                                                               ; a83b: c8          .
     lda (l00ac),y                                                     ; a83c: b1 ac       ..
     beq ca847                                                         ; a83e: f0 07       ..
-sub_ca840
-la841 = sub_ca840+1
+ca840
+la841 = ca840+1
     eor l0d71                                                         ; a840: 4d 71 0d    Mq.
 ; $a841 referenced 1 time by $a875
     bne return_24                                                     ; a843: d0 07       ..
@@ -7580,8 +7580,8 @@ cad2f
     ldx #1                                                            ; ad3a: a2 01       ..
     jsr sub_caf04                                                     ; ad3c: 20 04 af     ..
     ldy #$1b                                                          ; ad3f: a0 1b       ..
-sub_cad41
-lad43 = sub_cad41+2
+cad41
+lad43 = cad41+2
     jmp c94ad                                                         ; ad41: 4c ad 94    L..
 
 ; $ad43 referenced 1 time by $ad2a
@@ -8262,8 +8262,8 @@ cb11c
     jsr sub_cb15e                                                     ; b137: 20 5e b1     ^.
     lda l00ac                                                         ; b13a: a5 ac       ..
     sta (l009e),y                                                     ; b13c: 91 9e       ..
-sub_cb13e
-lb13f = sub_cb13e+1
+cb13e
+lb13f = cb13e+1
     jsr sub_cb15e                                                     ; b13e: 20 5e b1     ^.
 ; $b13f referenced 1 time by $b2e2
     jmp cb118                                                         ; b141: 4c 18 b1    L..
@@ -8835,8 +8835,8 @@ cb482
 ; $b483 referenced 1 time by $b4b5
 cb483
     lda #$de                                                          ; b483: a9 de       ..
-sub_cb485
-lb487 = sub_cb485+2
+cb485
+lb487 = cb485+2
     jsr generate_error_inline3                                        ; b485: 20 d1 96     ..
 ; $b487 referenced 2 times by $b4cd, $b4e1
     !text "Net channel", 0                                            ; b488: 4e 65 74... Net
@@ -10267,8 +10267,8 @@ loop_cbd7a
 ; $bd90 referenced 2 times by $bd93, $bdb9
 cbd90
     bit tube_status_register_2                                        ; bd90: 2c e2 fe    ,..
-sub_cbd93
-lbd94 = sub_cbd93+1
+cbd93
+lbd94 = cbd93+1
     bvc cbd90                                                         ; bd93: 50 fb       P.
 ; $bd94 referenced 1 time by $beaa
     stx tube_data_register_2                                          ; bd95: 8e e3 fe    ...
@@ -12557,6 +12557,7 @@ pydis_end
 ;     c85cf
 ;     c85e3
 ;     c85fb
+;     c85ff
 ;     c8619
 ;     c862f
 ;     c8633
@@ -12588,6 +12589,7 @@ pydis_end
 ;     c882e
 ;     c883a
 ;     c8852
+;     c8860
 ;     c8868
 ;     c8870
 ;     c8878
@@ -12647,6 +12649,7 @@ pydis_end
 ;     c8e15
 ;     c8e20
 ;     c8e24
+;     c8e52
 ;     c8eb3
 ;     c8f3d
 ;     c8f40
@@ -12730,6 +12733,7 @@ pydis_end
 ;     c9698
 ;     c969a
 ;     c96af
+;     c96b3
 ;     c96dd
 ;     c96f0
 ;     c96fa
@@ -12911,6 +12915,7 @@ pydis_end
 ;     ca7de
 ;     ca7fe
 ;     ca837
+;     ca840
 ;     ca847
 ;     ca84a
 ;     ca889
@@ -12949,6 +12954,7 @@ pydis_end
 ;     cacdd
 ;     cad20
 ;     cad2f
+;     cad41
 ;     cad6f
 ;     cad89
 ;     cad96
@@ -12989,6 +12995,7 @@ pydis_end
 ;     cb0da
 ;     cb118
 ;     cb11c
+;     cb13e
 ;     cb144
 ;     cb153
 ;     cb1a8
@@ -13024,6 +13031,7 @@ pydis_end
 ;     cb477
 ;     cb482
 ;     cb483
+;     cb485
 ;     cb4ad
 ;     cb4c1
 ;     cb51a
@@ -13097,6 +13105,7 @@ pydis_end
 ;     cbd27
 ;     cbd3a
 ;     cbd90
+;     cbd93
 ;     cbdca
 ;     cbdd9
 ;     cbdf9
@@ -13681,12 +13690,10 @@ pydis_end
 ;     sub_c8449
 ;     sub_c852f
 ;     sub_c858c
-;     sub_c85ff
 ;     sub_c8689
 ;     sub_c868d
 ;     sub_c8691
 ;     sub_c86d3
-;     sub_c8860
 ;     sub_c88f2
 ;     sub_c8969
 ;     sub_c8983
@@ -13711,7 +13718,6 @@ pydis_end
 ;     sub_c8d17
 ;     sub_c8d79
 ;     sub_c8e09
-;     sub_c8e52
 ;     sub_c8e83
 ;     sub_c8e85
 ;     sub_c8e8c
@@ -13751,7 +13757,6 @@ pydis_end
 ;     sub_c95ae
 ;     sub_c95be
 ;     sub_c95ce
-;     sub_c96b3
 ;     sub_c974d
 ;     sub_c9771
 ;     sub_c977c
@@ -13801,7 +13806,6 @@ pydis_end
 ;     sub_ca4ee
 ;     sub_ca516
 ;     sub_ca7bf
-;     sub_ca840
 ;     sub_ca865
 ;     sub_ca92b
 ;     sub_ca976
@@ -13817,7 +13821,6 @@ pydis_end
 ;     sub_cacf7
 ;     sub_cacf9
 ;     sub_cad10
-;     sub_cad41
 ;     sub_cad5f
 ;     sub_cad65
 ;     sub_cad6b
@@ -13846,7 +13849,6 @@ pydis_end
 ;     sub_cb0cf
 ;     sub_cb0ea
 ;     sub_cb0f6
-;     sub_cb13e
 ;     sub_cb15e
 ;     sub_cb165
 ;     sub_cb16d
@@ -13861,7 +13863,6 @@ pydis_end
 ;     sub_cb449
 ;     sub_cb46b
 ;     sub_cb47a
-;     sub_cb485
 ;     sub_cb4ec
 ;     sub_cb4f2
 ;     sub_cb509
@@ -13896,7 +13897,6 @@ pydis_end
 ;     sub_cbc86
 ;     sub_cbc89
 ;     sub_cbc8c
-;     sub_cbd93
 
 ; Stats:
 ;

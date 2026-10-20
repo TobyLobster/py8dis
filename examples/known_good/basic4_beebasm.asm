@@ -1395,8 +1395,8 @@ l8909 = l8826+227
     rol a                                                             ; 898c: 2a          *
     bmi c89bf                                                         ; 898d: 30 30       00
     lsr l4e4e                                                         ; 898f: 4e 4e 4e    NNN
-.sub_c8992
-l8993 = sub_c8992+1
+.c8992
+l8993 = c8992+1
     equb &3e, <(l0016), >(l0016) ; rol+2 l0016,x                      ; 8992: 3e 16 00    >..
 ; &8993 referenced 1 time by &8b10
     clc                                                               ; 8995: 18          .
@@ -10878,8 +10878,8 @@ l8993 = sub_c8992+1
 .sub_cbec7
     jsr sub_cbe76                                                     ; bec7: 20 76 be     v.
     ldx #<l0600                                                       ; beca: a2 00       ..
-.sub_cbecc
-lbecd = sub_cbecc+1
+.cbecc
+lbecd = cbecc+1
     ldy #>l0600                                                       ; becc: a0 06       ..
 ; overlapping: asl l0020                                              ; becd: 06 20       .
 ; &becd referenced 1 time by &be59
@@ -12650,6 +12650,7 @@ save pydis_start, pydis_end
 ;     c84ad
 ;     c84ce
 ;     c84f4
+;     c8992
 ;     c89bf
 ;     c89dd
 ;     c89f4
@@ -13408,6 +13409,7 @@ save pydis_start, pydis_end
 ;     cbe45
 ;     cbe4e
 ;     cbe51
+;     cbecc
 ;     cbed3
 ;     cbed9
 ;     cbeeb
@@ -13807,7 +13809,6 @@ save pydis_start, pydis_end
 ;     sub_c83d3
 ;     sub_c8429
 ;     sub_c8984
-;     sub_c8992
 ;     sub_c8aa8
 ;     sub_c8d86
 ;     sub_c8d89
@@ -14108,7 +14109,6 @@ save pydis_start, pydis_end
 ;     sub_cbe8b
 ;     sub_cbe95
 ;     sub_cbec7
-;     sub_cbecc
 ;     sub_cbed7
 ;     sub_cbeee
 ;     sub_cbefd

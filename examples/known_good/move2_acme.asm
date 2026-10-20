@@ -27,8 +27,8 @@ loop_c0905
 c0909
     dex                                                               ; 2019: ca          .   :0909[1]
     bne loop_c0905                                                    ; 201a: d0 f9       ..  :090a[1]
-sub_c090c
-l090d = sub_c090c+1
+c090c
+l090d = c090c+1
     jsr sub_c2039                                                     ; 201c: 20 39 20     9  :090c[1]
     jmp l090d                                                         ; 201f: 4c 0d 09    L.. :090f[1]
 
@@ -89,11 +89,11 @@ pydis_end
 ; Automatically generated labels:
 ;     c0903
 ;     c0909
+;     c090c
 ;     l090a
 ;     l090d
 ;     lffee
 ;     loop_c0905
-;     sub_c090c
 ;     sub_c2022
 ;     sub_c2039
 

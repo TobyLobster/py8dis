@@ -468,7 +468,7 @@ def entry(runtime_addr, label=None, warn=True):
 
     memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, 1, warn)
 
-    trace.cpu.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, label)
+    trace.cpu.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, label, explicit=True)
 
     result = disassembly.get_label(runtime_addr, binary_loc.binary_addr, move_id=binary_loc.move_id, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
 

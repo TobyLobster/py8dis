@@ -769,7 +769,7 @@ class Cpu6502(cpu.Cpu):
         runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
         binary_loc = movemanager.r2b_checked(runtime_addr)
         memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, 1, warn)
-        self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name)
+        self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name, explicit=True)
         self.subroutine_hooks[runtime_addr] = hook
 
     @staticmethod

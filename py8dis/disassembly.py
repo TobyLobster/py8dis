@@ -440,7 +440,17 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
 
         binary_loc_refs = trace.references.get(movemanager.BinaryLocation(binary_addr, move_id), [])
 
-        if all(trace.cpu.is_subroutine_call(ref_binary_loc.binary_addr) for ref_binary_loc in binary_loc_refs):
+        if binary_loc_refs:
+            is_subroutine = all(trace.cpu.is_subroutine_call(ref_binary_loc.binary_addr) for ref_binary_loc in binary_loc_refs)
+        else:
+            # There are no references recorded. Code given as an entry point
+            # (e.g. by entry(), or a jump table via code_ptr() or wordentry(),
+            # whose references from data aren't recorded) is named as a
+            # subroutine. Other code (e.g. a label only used to define a
+            # nearby label like 'x = label+1') is not.
+            is_subroutine = binary_addr in trace.cpu.explicit_entry_points
+
+        if is_subroutine:
             # Found a subroutine, label is "sub_XXXX"
             label = "sub_" + label
         else:

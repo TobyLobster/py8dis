@@ -3080,8 +3080,8 @@ l8004 = service_entry+1
     bne c0d26                                                         ; 8fec: d0 0a       ..  :0d1a[4]
     lda l00a1                                                         ; 8fee: a5 a1       ..  :0d1c[4]
     ror a                                                             ; 8ff0: 6a          j   :0d1e[4]
-.sub_c0d1f
-nmi_XXX5 = sub_c0d1f+1
+.c0d1f
+nmi_XXX5 = c0d1f+1
     bcc c0d26                                                         ; 8ff1: 90 05       ..  :0d1f[4]
 ; One patched variant of the code transfers control to nmi_XXX5, which is the
 ; second byte of the following bcc instruction. That is always &05, which is
@@ -3263,10 +3263,10 @@ nmi_XXX5 = sub_c0d1f+1
 ; &909c referenced 1 time by &0d0d[6]
 .nmi_XXX21
     cmp #&fe                                                          ; 909c: c9 fe       ..  :0d35[6]
-    beq sub_c0d3d                                                     ; 909e: f0 04       ..  :0d37[6]
+    beq c0d3d                                                         ; 909e: f0 04       ..  :0d37[6]
     cmp #&ce                                                          ; 90a0: c9 ce       ..  :0d39[6]
     bne nmi_XXX23                                                     ; 90a2: d0 f6       ..  :0d3b[6]
-.sub_c0d3d
+.c0d3d
     lda #nmi_XXX10-(nmi_bcs+2)                                        ; 90a4: a9 32       .2  :0d3d[6]
     bne c0d30                                                         ; 90a6: d0 ef       ..  :0d3f[6]
 .nmi_XXX10
@@ -7918,8 +7918,8 @@ nmi_XXX5 = sub_c0d1f+1
 ; &add7 referenced 2 times by &05ff[2], &0625[2]
 .c05fc
     bit tube_status_register_2                                        ; add7: 2c e2 fe    ,.. :05fc[2]
-.sub_c05ff
-l0600 = sub_c05ff+1
+.c05ff
+l0600 = c05ff+1
     bvc c05fc                                                         ; adda: 50 fb       P.  :05ff[2]
 ; &addb referenced 1 time by &af22
     stx tube_data_register_2                                          ; addc: 8e e3 fe    ... :0601[2]
@@ -8211,8 +8211,8 @@ l0600 = sub_c05ff+1
 ; Extra comment after a blank line
 ; manually-created comment
     stx jump_address_low                                              ; af70: 86 51       .Q  :004e[3]
-.sub_c0050
-jump_address_low = sub_c0050+1
+.c0050
+jump_address_low = c0050+1
     jmp (l0500)                                                       ; af72: 6c 00 05    l.. :0050[3]
 
 ; &af73 referenced 1 time by &004e[3]
@@ -9348,8 +9348,8 @@ jump_address_low = sub_c0050+1
 .cb6c2
     iny                                                               ; b6c2: c8          .
     cpy #&14                                                          ; b6c3: c0 14       ..
-.sub_cb6c5
-lb6c6 = sub_cb6c5+1
+.cb6c5
+lb6c6 = cb6c5+1
     bcc loop_cb6b3                                                    ; b6c5: 90 ec       ..
 ; &b6c6 referenced 1 time by &b6bc
     jmp cb446                                                         ; b6c7: 4c 46 b4    LF.
@@ -9359,8 +9359,8 @@ lb6c6 = sub_cb6c5+1
     pha                                                               ; b6ca: 48          H
     txa                                                               ; b6cb: 8a          .
     clc                                                               ; b6cc: 18          .
-.sub_cb6cd
-lb6ce = sub_cb6cd+1
+.cb6cd
+lb6ce = cb6cd+1
     adc lb6ce,y                                                       ; b6cd: 79 ce b6    y..
 ; &b6ce referenced 1 time by &b6cd
     tax                                                               ; b6d0: aa          .
@@ -11318,6 +11318,7 @@ save pydis_start, pydis_end
 ;     sub_cbb00:                                          4
 ;     bytev:                                              3
 ;     c059c:                                              3
+;     c0d3d:                                              3
 ;     c8103:                                              3
 ;     c8290:                                              3
 ;     c82e6:                                              3
@@ -11381,7 +11382,6 @@ save pydis_start, pydis_end
 ;     return_45:                                          3
 ;     sram_table:                                         3
 ;     sub_c0582:                                          3
-;     sub_c0d3d:                                          3
 ;     sub_c81be:                                          3
 ;     sub_c833a:                                          3
 ;     sub_c836e:                                          3
@@ -12515,6 +12515,7 @@ save pydis_start, pydis_end
 ;     c0032
 ;     c0036
 ;     c0041
+;     c0050
 ;     c0400
 ;     c0432
 ;     c0463
@@ -12533,14 +12534,17 @@ save pydis_start, pydis_end
 ;     c059e
 ;     c05a6
 ;     c05fc
+;     c05ff
 ;     c0636
 ;     c0645
 ;     c0665
 ;     c06a7
 ;     c0d0f
 ;     c0d12
+;     c0d1f
 ;     c0d26
 ;     c0d30
+;     c0d3d
 ;     c0d50
 ;     c0d60
 ;     c0d74
@@ -12976,7 +12980,9 @@ save pydis_start, pydis_end
 ;     cb68c
 ;     cb6a6
 ;     cb6c2
+;     cb6c5
 ;     cb6ca
+;     cb6cd
 ;     cb6d2
 ;     cb6eb
 ;     cb6f5
@@ -13580,7 +13586,6 @@ save pydis_start, pydis_end
 ;     return_7
 ;     return_8
 ;     return_9
-;     sub_c0050
 ;     sub_c0414
 ;     sub_c0421
 ;     sub_c04c7
@@ -13595,11 +13600,8 @@ save pydis_start, pydis_end
 ;     sub_c05a9
 ;     sub_c05d1
 ;     sub_c05f2
-;     sub_c05ff
 ;     sub_c0607
 ;     sub_c0627
-;     sub_c0d1f
-;     sub_c0d3d
 ;     sub_c8020
 ;     sub_c809a
 ;     sub_c809d
@@ -13852,8 +13854,6 @@ save pydis_start, pydis_end
 ;     sub_cb65f
 ;     sub_cb68f
 ;     sub_cb6b1
-;     sub_cb6c5
-;     sub_cb6cd
 ;     sub_cb6e6
 ;     sub_cb6fe
 ;     sub_cb745
