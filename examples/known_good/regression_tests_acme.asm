@@ -2,6 +2,7 @@
 low_seven_bits  = 127
 
 ; Memory locations
+l0000   = $00
 l0070   = $70
 l0071   = $71
 l0072   = $72
@@ -77,11 +78,23 @@ part2
 
     !byte l2085 - l2085                                               ; 2084: 00          .
 l2085
-    !text "END"                                                       ; 2085: 45 4e 44    END
+    !word (l0000-1) & $ffff                                           ; 2085: ff ff       ..
+    !byte >(l0000-1)                                                  ; 2087: ff          .
+    !byte <(l0000-1)                                                  ; 2088: ff          .
+    !text "END"                                                       ; 2089: 45 4e 44    END
 pydis_end
 
 !if (!low_seven_bits & $ff) != $80 {
     !error "Assertion failed: !low_seven_bits & $ff == $80"
+}
+!if ((l0000-1) & $ffff) != $ffff {
+    !error "Assertion failed: (l0000-1) & $ffff == $ffff"
+}
+!if (<(l0000-1)) != $ff {
+    !error "Assertion failed: <(l0000-1) == $ff"
+}
+!if (>(l0000-1)) != $ff {
+    !error "Assertion failed: >(l0000-1) == $ff"
 }
 !if (l2085 - l2085) != $00 {
     !error "Assertion failed: l2085 - l2085 == $00"
@@ -98,6 +111,7 @@ pydis_end
 
 ; Automatically generated labels:
 ;     c202c
+;     l0000
 ;     l0070
 ;     l0071
 ;     l0072
@@ -105,13 +119,13 @@ pydis_end
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 136 bytes
-;     Code                     = 59 bytes (43%)
-;     Data                     = 77 bytes (57%)
+;     Total size (Code + Data) = 140 bytes
+;     Code                     = 59 bytes (42%)
+;     Data                     = 81 bytes (58%)
 ;
 ;     Number of instructions   = 31
-;     Number of data bytes     = 74 bytes
-;     Number of data words     = 0 bytes
+;     Number of data bytes     = 76 bytes
+;     Number of data words     = 2 bytes
 ;     Number of string bytes   = 3 bytes
 ;     Number of strings        = 1
 

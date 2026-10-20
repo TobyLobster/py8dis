@@ -8,7 +8,7 @@ load(0x2000, "orig/regression_tests1.orig", "6502", "ddb58b6e5436655daa93ae6f3c0
 # An entry point added *before* a second load() must not be forgotten
 entry(0x2000, "start")
 
-load(0x2080, "orig/regression_tests2.orig", "6502", "30d53765138bbf791d908969c3dbd5b0")
+load(0x2080, "orig/regression_tests2.orig", "6502", "e823b88a32f8d8f427743572b92694f0")
 
 entry(0x2080, "part2")
 
@@ -29,6 +29,10 @@ expr(0x2021, make_and(make_op1('NOT', 'low_seven_bits'), make_hex(0xff)))
 # A zero length stringn() used to fail, and a stringhi() that reaches the end
 # of the loaded data without finding a top-bit-set terminator used to crash.
 stringn(0x2084)
-stringhi(0x2085)
+stringhi(0x2089)
+
+# rts_code_ptr() of &ffff means the code is at &0000. This used to fail.
+rts_code_ptr(0x2085)
+rts_code_ptr(0x2088, 0x2087)        # low byte at &2088, high byte at &2087
 
 go()

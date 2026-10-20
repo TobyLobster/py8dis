@@ -563,27 +563,38 @@ def code_ptr(runtime_addr, runtime_addr_high=None, offset=0, label_name=None):
         runtime_addr_high = runtime_addr + 1
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     runtime_addr_high = memorymanager.RuntimeAddr(runtime_addr_high)
-    binary_addr, _ = movemanager.r2b(runtime_addr)
-    binary_addr_high, _ = movemanager.r2b(runtime_addr_high)
-    assert memorymanager.is_data_loaded_at_binary_addr(binary_addr)
-    assert memorymanager.is_data_loaded_at_binary_addr(binary_addr_high)
-    code_at_runtime_addr = ((memory_binary[binary_addr_high] << 8) | memory_binary[binary_addr]) + offset
+    binary_addr = movemanager.r2b_checked(runtime_addr).binary_addr
+    binary_addr_high = movemanager.r2b_checked(runtime_addr_high).binary_addr
+    for (r, b) in ((runtime_addr, binary_addr), (runtime_addr_high, binary_addr_high)):
+        if not memorymanager.is_data_loaded_at_binary_addr(b):
+            utils.die("code_ptr(): no data is loaded at {0}".format(config.get_assembler().hex(r)))
+
+    # The address of the code, wrapping round at the top of memory (e.g. an
+    # 'rts' jump table entry of &ffff means the code is at &0000)
+    stored_value = (memory_binary[binary_addr_high] << 8) | memory_binary[binary_addr]
+    code_at_runtime_addr = (stored_value + offset) & 0xffff
+    wraps_round = (code_at_runtime_addr != stored_value + offset)
+
     # Label and trace the code at code_at
     label = entry(code_at_runtime_addr, label=label_name, warn=False)
     # Reference that label at addr/addr_high.
     offset_string = "" if offset == 0 else ("%+d" % -offset)
+    stored_expr = utils.LazyString("%s%s", label, offset_string)
     if binary_addr_high == binary_addr + 1:
         # The general code in the "else" branch would work for this case as
         # well, but since the assembler has support for emitting a little-endian
         # 16-bit word it's nice to use it when we can.
         assert runtime_addr_high == runtime_addr + 1
+        if wraps_round:
+            # Bring e.g. 'l0000-1' back into the range of a 16-bit word
+            stored_expr = make_and(stored_expr, make_hex(0xffff))
         word(runtime_addr)
-        expr(runtime_addr, utils.LazyString("%s%s", label, offset_string))
+        expr(runtime_addr, stored_expr)
     else:
         byte(runtime_addr)
-        expr(runtime_addr, make_lo(utils.LazyString("%s%s", label, offset_string)))
+        expr(runtime_addr, make_lo(stored_expr))
         byte(runtime_addr_high)
-        expr(runtime_addr_high, make_hi(utils.LazyString("%s%s", label, offset_string)))
+        expr(runtime_addr_high, make_hi(stored_expr))
     if abs(runtime_addr_high - runtime_addr) == 1:
         return max(runtime_addr, runtime_addr_high) + 1
     return None

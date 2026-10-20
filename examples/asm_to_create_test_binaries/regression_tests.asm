@@ -64,5 +64,11 @@ part2
 
 empty_string        ; stringn() with a zero length used to fail
     !byte 0
+rts_table           ; rts_code_ptr() with &ffff (i.e. code at &0000) used to fail
+    !word $ffff
+rts_table_high      ; ...and with the low and high bytes stored separately (high first)
+    !byte $ff
+rts_table_low
+    !byte $ff
 unterminated        ; stringhi() reaching the end of the data without a terminator used to crash
     !text "END"
