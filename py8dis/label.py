@@ -261,21 +261,22 @@ class Label(object):
         assert movemanager.is_valid_move_id(binary_loc.move_id)
 
         # Emit any definitions for this move_id.
-        result = self.gather_inline_label_definitions_for_move_id(emit_addr, binary_loc)
+        result = self.gather_inline_label_definitions_for_move_id(emit_addr, binary_loc, binary_loc.move_id)
 
         # Definitions for move IDs which will never get an opportunity
-        # to be emitted inline in their preferred move ID are emitted
-        # in the lowest-numbered move ID they can be emitted inline for.
+        # to be emitted inline in their preferred move ID (because that
+        # move doesn't cover this label's address) are emitted in the
+        # lowest-numbered move ID they can be emitted inline for.
         if (len(self.emit_opportunities) > 0) and (binary_loc.move_id == min(self.emit_opportunities)):
             leftover_move_ids = set(self.explicit_names.keys()) - self.emit_opportunities
-            # TODO: This loop looks wrong. Why is move_id not used inside the loop? And why are we looping through move_ids that are *not* emit opportunities?
-            for move_id in leftover_move_ids:
+            for move_id in sorted(leftover_move_ids):
                 assert movemanager.is_valid_move_id(move_id)
-                result.extend(self.gather_inline_label_definitions_for_move_id(emit_addr, binary_loc))
+                result.extend(self.gather_inline_label_definitions_for_move_id(emit_addr, binary_loc, move_id))
         return result
 
-    def gather_inline_label_definitions_for_move_id(self, emit_addr, binary_loc):
-        """Get a list of the inline label definitions in a move_id as a list of strings."""
+    def gather_inline_label_definitions_for_move_id(self, emit_addr, binary_loc, names_move_id):
+        """Get a list of the inline label definitions for the names in
+        `names_move_id` as a list of strings, for output at `binary_loc`."""
         assembler = config.get_assembler()
         result = []
         assert emit_addr <= self.runtime_addr
@@ -285,7 +286,7 @@ class Label(object):
             return result
 
         filtered_and_sorted = sorted(
-            [item for item in self.explicit_names[binary_loc.move_id] if not item.emitted],
+            [item for item in self.explicit_names[names_move_id] if not item.emitted],
             key=lambda x: float('inf') if x.priority is None else x.priority)
 
         for name in filtered_and_sorted:

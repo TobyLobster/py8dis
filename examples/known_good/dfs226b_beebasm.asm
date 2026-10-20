@@ -254,9 +254,6 @@ l111c                                           = &111c
 l111d                                           = &111d
 nmi3_handler_rom_start                          = &9030
 nmi_handler_rom_end                             = &9030
-nmi_handler2_rom_start                          = &9067
-tube_host_code2                                 = &acdb
-tube_host_code3                                 = &af38
 tube_host_code1                                 = &af79
 romsel                                          = &fe30
 fdc_8271_command_or_status_or_1770_drive_control = &fe80
@@ -3238,6 +3235,7 @@ nmi_XXX5 = sub_c0d1f+1
 ; &3066 referenced 1 time by &9047[1]
     rts                                                               ; 3066: 60          `   :9066[1]
 
+.nmi_handler2_rom_start
 
     ; Copy the newly assembled block of code back to it's proper place in the binary
     ; file.
@@ -3246,7 +3244,7 @@ nmi_XXX5 = sub_c0d1f+1
 
     ; Clear the area of memory we just temporarily used to assemble the new block,
     ; allowing us to assemble there again if needed
-    clear nmi3_handler_rom_end, &9067
+    clear nmi3_handler_rom_end, nmi_handler2_rom_start
 
     ; Set the program counter to the next position in the binary file.
     org &303e + (* - nmi3_handler_rom_end)
@@ -7785,6 +7783,7 @@ nmi_XXX5 = sub_c0d1f+1
     plp                                                               ; 4cd9: 28          (   :acd9[1]
     rts                                                               ; 4cda: 60          `   :acda[1]
 
+.tube_host_code2
 
     ; Copy the newly assembled block of code back to it's proper place in the binary
     ; file.
@@ -7793,7 +7792,7 @@ nmi_XXX5 = sub_c0d1f+1
 
     ; Clear the area of memory we just temporarily used to assemble the new block,
     ; allowing us to assemble there again if needed
-    clear nmi_handler2_rom_end, &acdb
+    clear nmi_handler2_rom_end, tube_host_code2
 
     ; Set the program counter to the next position in the binary file.
     org &30fb + (* - nmi_handler2_rom_end)
@@ -8208,6 +8207,7 @@ l0600 = sub_c05ff+1
 .just_rts
     rts                                                               ; 4f37: 60          `   :af37[1]
 
+.tube_host_code3
 
     ; Copy the newly assembled block of code back to it's proper place in the binary
     ; file.
@@ -8216,7 +8216,7 @@ l0600 = sub_c05ff+1
 
     ; Clear the area of memory we just temporarily used to assemble the new block,
     ; allowing us to assemble there again if needed
-    clear service_handler_help_and_tube, &af38
+    clear service_handler_help_and_tube, tube_host_code3
 
     ; Set the program counter to the next position in the binary file.
     org &4ea9 + (* - service_handler_help_and_tube)

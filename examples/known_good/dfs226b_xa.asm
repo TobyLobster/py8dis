@@ -254,9 +254,6 @@ l111c                                           = $111c
 l111d                                           = $111d
 nmi3_handler_rom_start                          = $9030
 nmi_handler_rom_end                             = $9030
-nmi_handler2_rom_start                          = $9067
-tube_host_code2                                 = $acdb
-tube_host_code3                                 = $af38
 tube_host_code1                                 = $af79
 romsel                                          = $fe30
 fdc_8271_command_or_status_or_1770_drive_control = $fe80
@@ -3202,6 +3199,7 @@ c9060
 // $3066 referenced 1 time by $9047[1]
     rts                                                               // 3066: 60          `   :9066[1]
 
+nmi_handler2_rom_start
 * = $3067
 
 // Move 7: $3067 to $0d00 for length 148
@@ -7725,6 +7723,7 @@ cacc7
     plp                                                               // 4cd9: 28          (   :acd9[1]
     rts                                                               // 4cda: 60          `   :acda[1]
 
+tube_host_code2
 * = $4cdb
 
 // Move 3: $4cdb to $0500 for length 462
@@ -8124,6 +8123,7 @@ lda_0_rts
 just_rts
     rts                                                               // 4f37: 60          `   :af37[1]
 
+tube_host_code3
 * = $4f38
 
 // Move 4: $4f38 to $16 for length 65
