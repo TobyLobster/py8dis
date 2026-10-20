@@ -194,21 +194,58 @@ class Cpu(object):
 
         trace.references = collections.defaultdict(list)
 
-        for runtime_addr, label in self.labels.items():
-            if label.references:
-                label_move_id = label.relevant_active_move_ids[0] if label.relevant_active_move_ids else None
+        def reached_in_move(runtime_addr, ref_binary_loc):
+            """If the runtime address is in the same move as the referring
+            instruction, and the binary data there is loaded and belongs to
+            that move, return the binary address, otherwise None."""
 
-                binary_addr, move_id = movemanager.r2b(runtime_addr, label_move_id)
-                if binary_addr is None:
-                    # get the first of the possible move_ids suggested by the references and try that
-                    best_guess_move_id = next(iter(sorted([ref_binary_loc.move_id for ref_binary_loc in label.references])), None)
-                    binary_addr, move_id = movemanager.r2b(runtime_addr, best_guess_move_id)
-                    if binary_addr is None:
-                        binary_addr, move_id = movemanager.r2b(runtime_addr, None)
+            move_id = ref_binary_loc.move_id
+            md = movemanager.move_definitions[move_id]
+            if not md.is_in_move_dest(runtime_addr, include_end_address=False):
+                return None
+            binary_addr = md.convert_runtime_to_binary_addr(runtime_addr)
+            if memorymanager.memory_binary[binary_addr] is None:
+                return None
+            if movemanager.move_id_for_binary_addr[binary_addr] != move_id:
+                return None
+
+            # A jump, call or branch into the middle of an instruction in its
+            # own move is more likely to be reaching a different move's code
+            # at that address (unlike a data reference, e.g. self modifying
+            # code changing an operand).
+            if classification.get_classification(binary_addr) == classification.INSIDE_A_CLASSIFICATION:
+                ref = classification.get_classification(ref_binary_loc.binary_addr)
+                if getattr(ref, "could_be_call_to_subroutine", lambda: False)():
+                    return None
+            return binary_addr
+
+        for runtime_addr, label in self.labels.items():
+            if not label.references:
+                continue
+
+            # The location to use when a reference doesn't tell us where it goes
+            label_move_id = label.relevant_active_move_ids[0] if label.relevant_active_move_ids else None
+            default_binary_addr, default_move_id = movemanager.r2b(runtime_addr, label_move_id)
+            if default_binary_addr is None:
+                # get the first of the possible move_ids suggested by the references and try that
+                best_guess_move_id = next(iter(sorted([ref_binary_loc.move_id for ref_binary_loc in label.references])), None)
+                default_binary_addr, default_move_id = movemanager.r2b(runtime_addr, best_guess_move_id)
+                if default_binary_addr is None:
+                    default_binary_addr, default_move_id = movemanager.r2b(runtime_addr, None)
+
+            for ref_binary_loc in label.references:
+                # Code refers to the copy of the runtime address in its own
+                # move, if there is one (e.g. where several moves put code at
+                # the same runtime address, a branch goes to the code in the
+                # same move as the branch).
+                binary_addr = reached_in_move(runtime_addr, ref_binary_loc)
+                if binary_addr is not None:
+                    move_id = ref_binary_loc.move_id
+                else:
+                    binary_addr, move_id = default_binary_addr, default_move_id
 
                 if binary_addr is not None:
-                    binary_loc = BinaryLocation(binary_addr, move_id)
-                    trace.references[binary_loc].extend(label.references)
+                    trace.references[BinaryLocation(binary_addr, move_id)].append(ref_binary_loc)
 
         # DEBUG
         #for runtime_addr, label in self.labels.items():

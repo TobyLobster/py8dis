@@ -3087,10 +3087,10 @@ l8004 = service_entry+1
     rti                                                               ; 2fe7: 40          @   :0d15[5]
 
 ; The operand of this lda is modified at runtime.
-; &2fe8 referenced 3 times by &0d10[5], &0d18[7], &9060[1]
+; &2fe8 referenced 2 times by &0d10[5], &9060[1]
 .nmi_lda_zp
     lda l00a5                                                         ; 2fe8: a5 a5       ..  :0d16[5]
-; &2fe9 referenced 2 times by &0d1d[7], &9063[1]
+; &2fe9 referenced 1 time by &9063[1]
 ; This instruction is patched at runtime to toggle between cmp #/bcs.
 ; &2fea referenced 1 time by &9057[1]
 .nmi_cmp_imm_or_bcs
@@ -3105,7 +3105,6 @@ nmi_XXX5 = c0d1f+1
 ; One patched variant of the code transfers control to nmi_XXX5, which is the
 ;     second byte of the following bcc instruction. That is always &05, which is
 ;     ORA #. XXX: correct?
-; &2ff2 referenced 1 time by &0d1b[7]
 ; The operand of this lda is modified at runtime.
 .nmi_lda_immXXX4
     lda #nmi_XXX1-(nmi_beq+2)                                         ; 2ff3: a9 48       .H  :0d21[5]
@@ -3131,7 +3130,7 @@ nmi_XXX5 = c0d1f+1
 ; The operand of this sta is modified at runtime.
 .nmi_sta_abs
     sta tube_data_register_3                                          ; 300e: 8d e5 fe    ... :0d3c[5]
-; &300f referenced 3 times by &0d37[7], &0d3f[5], &903e[1]
+; &300f referenced 2 times by &0d3f[5], &903e[1]
 ; &3010 referenced 2 times by &0d44[5], &9041[1]
 ; The first two bytes of the following instruction may be patched at runtime.
 ; &3011 referenced 1 time by &8fc9[1]
@@ -3273,9 +3272,12 @@ nmi_XXX5 = c0d1f+1
 .nmi_XXX17
 .nmi_sta_abs2
     sta tube_data_register_3                                          ; 307c: 8d e5 fe    ... :0d15[7]
+; &307d referenced 1 time by &0d18[7]
+; &307e referenced 1 time by &0d1d[7]
     inc nmi_sta_abs2+1                                                ; 307f: ee 16 0d    ... :0d18[7]
     bne nmi_XXX18                                                     ; 3082: d0 03       ..  :0d1b[7]
     inc nmi_sta_abs2+2                                                ; 3084: ee 17 0d    ... :0d1d[7]
+; &3087 referenced 1 time by &0d1b[7]
 .nmi_XXX18
     dec l00a6                                                         ; 3087: c6 a6       ..  :0d20[7]
     bne nmi_XXX23                                                     ; 3089: d0 0f       ..  :0d22[7]
@@ -3299,6 +3301,7 @@ nmi_XXX5 = c0d1f+1
     beq c0d3d                                                         ; 309e: f0 04       ..  :0d37[7]
     cmp #&ce                                                          ; 30a0: c9 ce       ..  :0d39[7]
     bne nmi_XXX23                                                     ; 30a2: d0 f6       ..  :0d3b[7]
+; &30a4 referenced 1 time by &0d37[7]
 .c0d3d
     lda #nmi_XXX10-(nmi_bcs+2)                                        ; 30a4: a9 32       .2  :0d3d[7]
     bne c0d30                                                         ; 30a6: d0 ef       ..  :0d3f[7]
