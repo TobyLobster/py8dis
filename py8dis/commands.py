@@ -227,6 +227,8 @@ def optional_label(runtime_addr, name, base_runtime_addr=None, *, definable_inli
 
 def local_label(runtime_addr, name, start_addr, end_addr, move_id=None):
     """Define a label name for a runtime address but only within a given memory range"""
+
+    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     disassembly.add_local_label(runtime_addr, name, start_addr, end_addr, move_id)
 
 def substitute_constants(instruction, reg, constants_dict, define_all_constants=None):
@@ -813,6 +815,9 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
 
     # Trace where code lives
     trace.cpu.trace()
+
+    # Make sure local label names don't clash (before label names are finalised)
+    labelmanager.assign_local_label_output_names()
 
     # Fix up the final label names (evaluating LazyStrings into actual strings)
     disassembly.fix_label_names()

@@ -23,9 +23,14 @@ class Label(object):
             return self.__str__()
 
     class LocalLabelName(object):
-        """Class for a local label's name. Records the range of addresses where it can be output."""
+        """Class for a local label's name. Records the range of addresses where it can be output.
+
+        `output_name` is the name actually used in the output. It is the
+        same as `name` unless that name is also used for a different
+        address (see labelmanager.assign_local_label_output_names())."""
         def __init__(self, name, start_addr, end_addr):
             self.name = name
+            self.output_name = name
             self.start_addr = start_addr
             self.end_addr = end_addr
 
@@ -78,7 +83,7 @@ class Label(object):
         # Add all local names
         for move_id, local_labels in self.local_labels.items():
             for local_label in local_labels:
-                result[move_id].add(local_label.name)
+                result[move_id].add(local_label.output_name)
 
         # TODO: For performance, we could maintain this set in
         # add_explicit_name() and any other "add" functions rather
@@ -102,6 +107,7 @@ class Label(object):
         for local_labels in self.local_labels.values():
             for local_label in local_labels:
                 result.add(local_label.name)
+                result.add(local_label.output_name)
 
         for name_list in self.explicit_names.values():
             for name in name_list:
@@ -132,7 +138,7 @@ class Label(object):
         # Add all local names
         for local_labels in self.local_labels.values():
             for local_label in local_labels:
-                result += local_label.name + " (local), "
+                result += local_label.output_name + " (local), "
 
         for name_list in self.explicit_names.values():
             for name in name_list:
@@ -236,10 +242,11 @@ class Label(object):
         assembler = config.get_assembler()
 
         # Gather the names and sort them.
-        gathered_names = []
+        # (A local label used in several ranges is only defined once.)
+        gathered_names = set()
         for local_labels in self.local_labels.values():
             for local_label in local_labels:
-                gathered_names.append(local_label.name)
+                gathered_names.add(local_label.output_name)
         gathered_names = sorted(gathered_names)
 
         result = []

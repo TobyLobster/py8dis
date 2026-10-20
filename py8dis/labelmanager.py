@@ -96,6 +96,37 @@ def addr(label_name):
                     return addr
     return None
 
+def assign_local_label_output_names():
+    """Make sure each local label name is only defined for one address.
+
+    Local labels are defined in the output with explicit 'name = value'
+    lines, so a name can only have one value. If a local label's name is
+    already used for a different address (by a label() name or an earlier
+    local label) then it is given a numbered name instead, e.g. 'temp_2'.
+
+    This is called after tracing, before label names are finalised."""
+
+    # Names already in use, and the address they are used for
+    taken = {}
+    for runtime_addr, label in labels.items():
+        for name_list in label.explicit_names.values():
+            for name in name_list:
+                taken.setdefault(name.text, runtime_addr)
+
+    for runtime_addr, label in sorted(labels.items()):
+        for move_id in sorted(label.local_labels):
+            for local_label in label.local_labels[move_id]:
+                output_name = local_label.name
+                suffix = 2
+                while taken.get(output_name, runtime_addr) != runtime_addr:
+                    output_name = "{0}_{1}".format(local_label.name, suffix)
+                    suffix += 1
+                if output_name != local_label.name:
+                    utils.warn("local label '{0}' for {1} is output as '{2}', since '{0}' is already used for {3}".format(
+                        local_label.name, config.get_assembler().hex(runtime_addr), output_name, config.get_assembler().hex(taken[local_label.name])))
+                local_label.output_name = output_name
+                taken[output_name] = runtime_addr
+
 def find_max_explicit_name_length():
     """Get the length of the longest explicit label.
 

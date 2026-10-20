@@ -4,8 +4,9 @@ low_seven_bits  = 127
 ; Memory locations
 l0000   = $00
 l0070   = $70
-l0071   = $71
-l0072   = $72
+value   = $70
+temp    = $71
+temp_2  = $72
 
     * = $2000
 
@@ -14,19 +15,19 @@ start
     ldy #3                                                            ; 2000: a0 03       ..
     lda #7                                                            ; 2002: a9 07       .. ; A=value to store
     jsr store_value                                                   ; 2004: 20 2f 20     / ; Store a value
-    stx l0071                                                         ; 2007: 86 71       .q
-    sty l0072                                                         ; 2009: 84 72       .r ; Y=count
+    stx temp                                                          ; 2007: 86 71       .q
+    sty temp_2                                                        ; 2009: 84 72       .r ; Y=count
     jsr quiet_routine                                                 ; 200b: 20 36 20     6
     lda #5                                                            ; 200e: a9 05       ..
     sec                                                               ; 2010: 38          8
     and (l0070,x)                                                     ; 2011: 21 70       !p
     tay                                                               ; 2013: a8          .
     adc #1                                                            ; 2014: 69 01       i. ; Carry is set, so adding 2
-    lda l0070                                                         ; 2016: a5 70       .p
+    lda value                                                         ; 2016: a5 70       .p
     ldx #0                                                            ; 2018: a2 00       ..
     and #$ff                                                          ; 201a: 29 ff       ).
     beq c202c                                                         ; 201c: f0 0e       ..
-    lda l0070                                                         ; 201e: a5 70       .p
+    lda value                                                         ; 201e: a5 70       .p
     ldx #!low_seven_bits & $ff                                        ; 2020: a2 80       ..
     ora #1                                                            ; 2022: 09 01       ..
     bmi c202c                                                         ; 2024: 30 06       0.
@@ -102,19 +103,18 @@ pydis_end
 
 ; Label references by decreasing frequency:
 ;     l0070:           4
+;     value:           4
 ;     c202c:           2
 ;     store_value:     2
-;     l0071:           1
-;     l0072:           1
 ;     part2:           1
 ;     quiet_routine:   1
+;     temp:            1
+;     temp_2:          1
 
 ; Automatically generated labels:
 ;     c202c
 ;     l0000
 ;     l0070
-;     l0071
-;     l0072
 ;     l2085
 
 ; Stats:

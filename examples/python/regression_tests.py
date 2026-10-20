@@ -35,4 +35,14 @@ stringhi(0x2089)
 rts_code_ptr(0x2085)
 rts_code_ptr(0x2088, 0x2087)        # low byte at &2088, high byte at &2087
 
+# Local labels: the same name for two different addresses used to give a
+# 'Symbol already defined' error from the assembler (the second becomes
+# 'temp_2', with a warning), and the same name and address in two ranges used
+# to be defined twice. Also, local_label() used to crash if it was the first
+# label for an address.
+local_label(0x71, "temp", 0x2007, 0x2009)       # stx &71
+local_label(0x72, "temp", 0x2009, 0x200b)       # sty &72
+local_label(0x70, "value", 0x2016, 0x2018)      # lda &70
+local_label(0x70, "value", 0x201e, 0x2020)      # lda &70
+
 go()

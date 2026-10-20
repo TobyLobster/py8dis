@@ -314,7 +314,7 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
             if candidate_move_id in label.local_labels:
                 for local_label in label.local_labels[candidate_move_id]:
                     if local_label.start_addr <= binary_addr < local_label.end_addr:
-                        lmd.name = local_label.name
+                        lmd.name = local_label.output_name
                         lmd.defined_in_move_id = candidate_move_id
                         return lmd
 
@@ -360,7 +360,7 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
     # current move_id, or failing that in the BASE_MOVE_ID.
     for local_label in label.local_labels[move_id]:
         if local_label.start_addr <= binary_addr < local_label.end_addr:
-            lmd.name = local_label.name
+            lmd.name = local_label.output_name
             lmd.defined_in_move_id = move_id
             return lmd
 
@@ -381,7 +381,7 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
     # there is defined in the BASE_MOVE_ID)
     for local_label in label.local_labels[movemanager.BASE_MOVE_ID]:
         if local_label.start_addr <= binary_addr < local_label.end_addr:
-            lmd.name = local_label.name
+            lmd.name = local_label.output_name
             lmd.defined_in_move_id = movemanager.BASE_MOVE_ID
             return lmd
 
