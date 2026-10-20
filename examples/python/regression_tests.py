@@ -8,7 +8,7 @@ load(0x2000, "orig/regression_tests1.orig", "6502", "ddb58b6e5436655daa93ae6f3c0
 # An entry point added *before* a second load() must not be forgotten
 entry(0x2000, "start")
 
-load(0x2080, "orig/regression_tests2.orig", "6502", "943531ce6ffc8d0a80a6de8b06d62839")
+load(0x2080, "orig/regression_tests2.orig", "6502", "30d53765138bbf791d908969c3dbd5b0")
 
 entry(0x2080, "part2")
 
@@ -25,5 +25,10 @@ subroutine(0x2036, "quiet_routine", "Quiet routine", hook=False)
 # 'ldx #&80' at &2020 becomes 'ldx #NOT(low_seven_bits) AND &ff' (or equivalent).
 constant(0x7f, "low_seven_bits")
 expr(0x2021, make_and(make_op1('NOT', 'low_seven_bits'), make_hex(0xff)))
+
+# A zero length stringn() used to fail, and a stringhi() that reaches the end
+# of the loaded data without finding a top-bit-set terminator used to crash.
+stringn(0x2084)
+stringhi(0x2085)
 
 go()

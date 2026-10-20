@@ -75,6 +75,9 @@ part2
     jsr store_value                                                   // 2080: 20 2f 20     / // Store a value
     rts                                                               // 2083: 60          `
 
+    .byt l2085 - l2085                                                // 2084: 00          .
+l2085
+    .asc "END"                                                        // 2085: 45 4e 44    END
 pydis_end
 
 
@@ -92,16 +95,17 @@ pydis_end
 //     l0070
 //     l0071
 //     l0072
+//     l2085
 
 // Stats:
 //
-//     Total size (Code + Data) = 132 bytes
-//     Code                     = 59 bytes (45%)
-//     Data                     = 73 bytes (55%)
+//     Total size (Code + Data) = 136 bytes
+//     Code                     = 59 bytes (43%)
+//     Data                     = 77 bytes (57%)
 //
 //     Number of instructions   = 31
-//     Number of data bytes     = 73 bytes
+//     Number of data bytes     = 74 bytes
 //     Number of data words     = 0 bytes
-//     Number of string bytes   = 0 bytes
-//     Number of strings        = 0
+//     Number of string bytes   = 3 bytes
+//     Number of strings        = 1
 

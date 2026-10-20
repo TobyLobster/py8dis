@@ -61,3 +61,8 @@ quiet_routine
 part2
     jsr store_value
     rts
+
+empty_string        ; stringn() with a zero length used to fail
+    !byte 0
+unterminated        ; stringhi() reaching the end of the data without a terminator used to crash
+    !text "END"

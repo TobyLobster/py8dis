@@ -355,47 +355,118 @@ def classify_leftovers():
             add_classification(binary_addr, Byte(i))
         binary_addr += max(1, i)
 
-# TODO: I've made this work with runtime_addr without paying any attention to the needs of hook fns etc
+def _is_loaded(binary_addr):
+    """Is there loaded data at the binary address? (Safe at the top of memory.)"""
+    return binary_addr < len(memory_binary) and memory_binary[binary_addr] is not None
+
+def _runtime_addr_after(binary_addr):
+    """Return the runtime address for `binary_addr`, the address just after
+    a string, allowing for a string that ends at the very top of memory."""
+
+    if binary_addr >= len(memory_binary):
+        return movemanager.b2r(BinaryAddr(len(memory_binary) - 1)) + 1
+    return movemanager.b2r(BinaryAddr(binary_addr))
+
+def _string_error(binary_addr, message):
+    """Stop with an error about a string at the given binary address."""
+
+    runtime_addr = movemanager.b2r(BinaryAddr(binary_addr))
+    utils.die("String at {0}: {1}".format(assembler().hex(runtime_addr), message))
+
+def _check_string_start(binary_addr):
+    """Check there is unclassified data at the start of a string."""
+
+    if not _is_loaded(binary_addr):
+        _string_error(binary_addr, "no data is loaded there")
+    if is_classified(binary_addr):
+        _string_error(binary_addr, "it is already classified as {0}".format(describe_classification_at(binary_addr)))
+
+def _check_string_bytes(binary_addr, length, *, report_addr=None):
+    """Check `length` bytes from `binary_addr` are loaded and unclassified.
+    Any error is reported at `report_addr` (default `binary_addr`)."""
+
+    if report_addr is None:
+        report_addr = binary_addr
+    for i in range(length):
+        if not _is_loaded(binary_addr + i):
+            _string_error(report_addr, "the string is {0} bytes long but the loaded data ends after {1} bytes".format(length, i))
+        if is_classified(binary_addr + i):
+            _string_error(report_addr, "the string is {0} bytes long but byte {1} of it is already classified as {2}".format(length, i, describe_classification_at(binary_addr + i)))
+
+def describe_classification_at(binary_addr):
+    """A short description of the classification covering the binary address, for messages."""
+
+    while classifications[binary_addr] == INSIDE_A_CLASSIFICATION and binary_addr > 0:
+        binary_addr -= 1
+    c = classifications[binary_addr]
+    if isinstance(c, Byte):
+        return "byte data"
+    if isinstance(c, Word):
+        return "word data"
+    if isinstance(c, String):
+        return "a string"
+    if trace.cpu is not None and isinstance(c, trace.cpu.Opcode):
+        return "code"
+    return "something else"
+
 def stringterm_binary(binary_addr, terminator, exclude_terminator=False):
     """Classifies part of the binary as a string followed by a given
     terminator byte.
 
     Returns the next available memory address after the string."""
 
+    _check_string_start(binary_addr)
     initial_addr = binary_addr
-    while memory_binary[binary_addr] != terminator:
+    while True:
+        if not _is_loaded(binary_addr):
+            _string_error(initial_addr, "no terminator ({0}) found before the end of the loaded data".format(assembler().hex2(terminator)))
+        is_terminator = (memory_binary[binary_addr] == terminator)
+        is_part_of_string = not (is_terminator and exclude_terminator)
+        if is_part_of_string and is_classified(binary_addr):
+            _string_error(initial_addr, "no terminator ({0}) found before reaching {1}, which is already classified as {2}".format(
+                assembler().hex2(terminator), assembler().hex(movemanager.b2r(binary_addr)), describe_classification_at(binary_addr)))
+        if is_terminator:
+            break
         binary_addr += 1
     string_length = (binary_addr + 1) - initial_addr
     if exclude_terminator:
         string_length -= 1
     if string_length > 0:
         add_classification(initial_addr, String(string_length))
-    return movemanager.b2r(binary_addr + 1)
+    return _runtime_addr_after(binary_addr + 1)
 
 def string_binary(binary_addr, n):
+    """Classifies part of the binary as a string of length `n`, or if `n`
+    is None up to the next non-printable character (or the end of the
+    loaded data, or something already classified).
+
+    Returns the next available memory address after the string."""
+
     if n is None:
-        assert not is_classified(binary_addr), "Address " + hex(binary_addr) + " already classified"
+        _check_string_start(binary_addr)
         n = 0
-        while not is_classified(binary_addr + n) and utils.isprint(memory_binary[binary_addr + n]):
+        while _is_loaded(binary_addr + n) and not is_classified(binary_addr + n) and utils.isprint(memory_binary[binary_addr + n]):
             n += 1
-        assert not is_classified(binary_addr, n)
+    else:
+        _check_string_bytes(binary_addr, n)
 
     if n > 0:
         add_classification(binary_addr, String(n))
-    return movemanager.b2r(binary_addr + n)
+    return _runtime_addr_after(binary_addr + n)
 
 def stringhi_binary(binary_addr, include_terminator_fn=None):
     """Classifies a part of the binary as a string up to the next bit 7 set character.
 
     The string may or may not include the terminator character without
-    the top bit.
+    the top bit. The string also ends if it reaches something already
+    classified or the end of the loaded data.
 
     Returns the next available memory address after the string."""
 
-    assert not is_classified(binary_addr, 1)
+    _check_string_start(binary_addr)
     initial_addr = binary_addr
     while True:
-        if is_classified(binary_addr, 1):
+        if not _is_loaded(binary_addr) or is_classified(binary_addr, 1):
             break
         if memory_binary[binary_addr] & 0x80 != 0:
             if include_terminator_fn is not None and include_terminator_fn(memory_binary[binary_addr]):
@@ -409,16 +480,18 @@ def stringhi_binary(binary_addr, include_terminator_fn=None):
         binary_addr += 1
     if binary_addr > initial_addr:
         add_classification(initial_addr, String(binary_addr - initial_addr))
-    return movemanager.b2r(binary_addr)
+    return _runtime_addr_after(binary_addr)
 
 # Behaviour with include_terminator_fn=None should be beebdis-compatible.
 def stringhiz_binary(binary_addr, include_terminator_fn=None):
-    """Classifies a part of the binary as a string up to the next bit 7 set character or zero character."""
+    """Classifies a part of the binary as a string up to the next bit 7 set
+    character or zero character. The string also ends if it reaches
+    something already classified or the end of the loaded data."""
 
-    assert not is_classified(binary_addr, 1)
+    _check_string_start(binary_addr)
     initial_addr = binary_addr
     while True:
-        if is_classified(binary_addr, 1):
+        if not _is_loaded(binary_addr) or is_classified(binary_addr, 1):
             break
         if memory_binary[binary_addr] == 0 or (memory_binary[binary_addr] & 0x80) != 0:
             if include_terminator_fn is not None and include_terminator_fn(memory_binary[binary_addr]):
@@ -427,7 +500,7 @@ def stringhiz_binary(binary_addr, include_terminator_fn=None):
         binary_addr += 1
     if binary_addr > initial_addr:
         add_classification(initial_addr, String(binary_addr - initial_addr))
-    return movemanager.b2r(binary_addr)
+    return _runtime_addr_after(binary_addr)
 
 def stringn_binary(runtime_addr, binary_addr):
     """Classifies a part of the binary as a string with the first byte
@@ -435,12 +508,16 @@ def stringn_binary(runtime_addr, binary_addr):
 
     Returns the next available memory address after the string."""
 
-    add_classification(binary_addr, Byte(1))
+    _check_string_start(binary_addr)
     length = memory_binary[binary_addr]
+    _check_string_bytes(binary_addr + 1, length, report_addr=binary_addr)
+
+    add_classification(binary_addr, Byte(1))
     label_start = disassembly.get_label(runtime_addr + 1, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     label_end   = disassembly.get_label(runtime_addr + 1 + length, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     add_expression(binary_addr, utils.LazyString("%s - %s", label_end, label_start))
-    add_classification(binary_addr + 1, String(length))
+    if length > 0:
+        add_classification(binary_addr + 1, String(length))
     return RuntimeAddr(runtime_addr + 1 + length)
 
 def autostring(min_length=3):
