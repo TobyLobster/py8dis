@@ -919,14 +919,21 @@ class Cpu6502(cpu.Cpu):
             # d: +1 if branch target is to a different page
             # e: +1 cycle if in decimal mode
 
+            def branch_is_to_same_page():
+                # A taken branch costs an extra cycle if the target is in a
+                # different page to the *next* instruction (where the program
+                # counter is when the branch is taken). Both are runtime
+                # addresses, so this works for move()d code too.
+                next_instruction_runtime_addr = movemanager.b2r(binary_addr) + 2
+                return (self.target(binary_addr) // 256) == (next_instruction_runtime_addr // 256)
+
             letter = self.cycles[-1]
             if letter == "a":
                 # A branch instruction
                 result = int(self.cycles[:-1])
 
                 # Check the target address to see if it is in the same page
-                target = self.target(binary_addr)
-                same_page = (target // 256) == (binary_addr // 256)
+                same_page = branch_is_to_same_page()
 
                 if same_page:
                     return str(result) + "/" + str(result+1)
@@ -957,8 +964,7 @@ class Cpu6502(cpu.Cpu):
                 result = int(self.cycles[:-1])
 
                 # Check the target address to see if it is in the same page
-                target = self.target(binary_addr)
-                same_page = (target // 256) == (binary_addr // 256)
+                same_page = branch_is_to_same_page()
 
                 if same_page:
                     return str(result)
