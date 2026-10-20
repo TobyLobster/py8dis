@@ -251,6 +251,9 @@ def get_emitted_label(runtime_addr):
             return emitted_name
 
     # No label name found, output the address as a hex literal
+    if runtime_addr > 0xffff:
+        # e.g. the end of a move at the very top of memory
+        return config.get_assembler().hex(runtime_addr)
     return mainformatter.uint_formatter(runtime_addr, 16)
 
 def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: BinaryAddrType):

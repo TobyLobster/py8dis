@@ -48,7 +48,7 @@ def is_valid_binary_addr(binary_addr, allow_final_address = False):
 
     assert not isinstance(binary_addr, RuntimeAddr)
     if allow_final_address:
-        return 0 <= runtime_addr <= 0x10000
+        return 0 <= binary_addr <= 0x10000
     return 0 <= binary_addr < 0x10000
 
 

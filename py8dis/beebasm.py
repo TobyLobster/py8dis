@@ -205,10 +205,16 @@ class Beebasm(assembler.Assembler):
         result.append(self.format_comment(comment_prefix + "Copy the newly assembled block of code back to it's proper place in the binary file."))
         result.append(self.format_comment("(Note the parameter order: 'copyblock <start>,<end>,<dest>')"))
 
+        # beebasm's COPYBLOCK and ORG commands can't use the address &10000. If
+        # the block reaches the top of memory (at its source or destination)
+        # we copy all but its last byte, and output that byte separately below.
+        at_top_of_memory = (dest + length > 0xffff) or (int(source) + length > 0xffff)
+
         # Output COPYBLOCK command
-        result.append("%s%s %s, *, %s" % (utils.make_indent(1),
+        result.append("%s%s %s, %s, %s" % (utils.make_indent(1),
             utils.force_case("copyblock"),
             disassembly.get_emitted_label(dest),
+            "*-1" if at_top_of_memory else "*",
             disassembly.get_emitted_label(int(source))))
 
         # Output CLEAR command
@@ -243,10 +249,21 @@ class Beebasm(assembler.Assembler):
         else:
             comment_prefix = ""
         result.append(self.format_comment(comment_prefix + "Set the program counter to the next position in the binary file."))
-        result.append("%s%s %s + (* - %s)" % (utils.make_indent(1),
-            utils.force_case("org"),
-            disassembly.get_emitted_label(int(source)),
-            disassembly.get_emitted_label(dest)))
+        if at_top_of_memory:
+            # Output the last byte of the block directly, which also leaves the
+            # program counter at the next position in the binary file.
+            last_byte_binary_addr = int(source) + length - 1
+            result.append("%s%s %s" % (utils.make_indent(1), utils.force_case("org"), self.hex(last_byte_binary_addr)))
+            result.append("%s%s%s%s The last byte of the block (not copied above, as the block reaches the top of memory)" % (
+                utils.make_indent(1),
+                self.byte_prefix(),
+                utils.tab_to(self.hex2(memorymanager.memory_binary[last_byte_binary_addr]), 8),
+                self.comment_prefix()))
+        else:
+            result.append("%s%s %s + (* - %s)" % (utils.make_indent(1),
+                utils.force_case("org"),
+                disassembly.get_emitted_label(int(source)),
+                disassembly.get_emitted_label(dest)))
 
         result.append("")
         return result

@@ -73,8 +73,9 @@ def add_move(dest_runtime_addr, src_binary_addr, length):
     assert isinstance(src_binary_addr, BinaryAddr)
     assert memorymanager.is_valid_runtime_addr(dest_runtime_addr)
     assert memorymanager.is_valid_binary_addr(src_binary_addr)
-    assert memorymanager.is_valid_runtime_addr(dest_runtime_addr + length)
-    assert memorymanager.is_valid_binary_addr(src_binary_addr + length)
+    # A move can end right at the top of memory
+    assert memorymanager.is_valid_runtime_addr(dest_runtime_addr + length, allow_final_address=True)
+    assert memorymanager.is_valid_binary_addr(src_binary_addr + length, allow_final_address=True)
     assert dest_runtime_addr != src_binary_addr # not fundamentally necessary, but seems sensible
     assert length > 0
 

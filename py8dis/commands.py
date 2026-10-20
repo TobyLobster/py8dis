@@ -153,11 +153,26 @@ def move(dest_runtime_addr, src_binary_addr, length):
     load().
     """
 
-    dest_runtime_addr = memorymanager.RuntimeAddr(dest_runtime_addr)
-    src_binary_addr = memorymanager.BinaryAddr(src_binary_addr)
+    def describe():
+        h = config.get_assembler().hex
+        return "move({0}, {1}, {2})".format(h(dest_runtime_addr), h(src_binary_addr), length)
+
+    if length <= 0:
+        utils.die("{0}: the length must be greater than zero".format(describe()))
+    if not (0 <= dest_runtime_addr and dest_runtime_addr + length <= 0x10000):
+        utils.die("{0}: the destination runs past the top of memory".format(describe()))
+    if not (0 <= src_binary_addr and src_binary_addr + length <= 0x10000):
+        utils.die("{0}: the source runs past the top of memory".format(describe()))
+    if dest_runtime_addr == src_binary_addr:
+        utils.die("{0}: the source and destination are the same".format(describe()))
 
     # You can't move from a region that hasn't been populated with data.
-    assert all(memory_binary[i] is not None for i in range(src_binary_addr, src_binary_addr+length))
+    for i in range(src_binary_addr, src_binary_addr + length):
+        if memory_binary[i] is None:
+            utils.die("{0}: no data is loaded at {1}".format(describe(), config.get_assembler().hex(i)))
+
+    dest_runtime_addr = memorymanager.RuntimeAddr(dest_runtime_addr)
+    src_binary_addr = memorymanager.BinaryAddr(src_binary_addr)
     return movemanager.add_move(dest_runtime_addr, src_binary_addr, length)
 
 def constant(value, name, comment=None, *, align=Align.INLINE, format=Format.DEFAULT):

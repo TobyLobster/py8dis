@@ -3,6 +3,8 @@ set -e
 acme -o ../subroutine_test.orig subroutine_test.asm
 acme -o ../acorn_os_calls.orig acorn_os_calls.asm
 acme -o ../orig/regression_tests.orig regression_tests.asm
+acme -o ../orig/move_from_top_of_memory.orig move_from_top_of_memory.asm
+acme -o ../orig/move_to_top_of_memory.orig move_to_top_of_memory.asm
 dd if=../orig/regression_tests.orig of=../orig/regression_tests1.orig bs=128 count=1
 dd if=../orig/regression_tests.orig of=../orig/regression_tests2.orig bs=128 skip=1
 z88dk-z80asm -m8080 -b -o../orig/regression_tests_8080.orig regression_tests_8080.asm
