@@ -316,10 +316,9 @@ class Cpu8080(cpu.Cpu):
             0xff: self.OpcodeReset("RST 7"),
         }
 
-    def hook_subroutine(self, runtime_addr, name, hook, warn=True):
+    def hook_subroutine(self, runtime_addr, name, hook):
         runtime_addr = RuntimeAddr(runtime_addr)
         binary_loc = movemanager.r2b_checked(runtime_addr)
-        memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, 1, warn)
         self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name, explicit=True)
         self.subroutine_hooks[runtime_addr] = hook
 

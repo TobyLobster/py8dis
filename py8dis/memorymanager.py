@@ -194,9 +194,3 @@ def is_data_loaded_at_binary_addr(binary_addr, n=1):
     assert all(is_valid_binary_addr(x) for x in range(binary_addr, binary_addr+n))
     return all(memory_binary[binary_addr + i] is not None for i in range(n))
 
-def check_data_loaded_at_binary_addr(binary_addr, n, do_warn):
-    """Check we have data loaded where we expect, optionally warning if not."""
-
-    if is_data_loaded_at_binary_addr(binary_addr, n):
-        return True
-    return False

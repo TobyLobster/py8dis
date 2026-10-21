@@ -312,10 +312,10 @@ with move(0x8000, 0x2000, 0x4000):
     entry(0x9e5d) # XXX: how is this code reached?
     entry(0xac3b) # XXX: how is this code reached?
     entry(0xacb2) # XXX: how is this code reached?
-    entry(0xaf38) # XXX: how is this code reached?
+    #entry(0xaf38) # XXX: how is this code reached?
     #entry(0xaf79) # XXX: how is this code reached?
     #entry(0xaf7c) # XXX: how is this code reached?
-    entry(0xaf7f) # XXX: how is this code reached?
+    #entry(0xaf7f) # XXX: how is this code reached?
     #entry(0xaffd) # XXX: how is this code reached?
     #entry(0xb047) # XXX: how is this code reached?
     entry(0xb736) # XXX: how is this code reached?

@@ -212,9 +212,6 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
     # Load the file
     memorymanager.load(filename, binary_load_addr, md5sum)
 
-    # Clear the no-automatic comments, for lack of a better place to clear them
-    trace.no_auto_comment_set = set()
-
 def move(dest_runtime_addr, src_binary_addr, length):
     """Indicates that a block of memory is copied at runtime.
 
@@ -539,6 +536,15 @@ def auto_expr(runtime_addr, s):
         if memorymanager.is_data_loaded_at_binary_addr(binary_loc.binary_addr):
             expr(runtime_addr, s, force=False)
 
+def _is_loaded_else_warn(command, runtime_addr, binary_addr, n, consequence, warn=True):
+    """Returns True if data is loaded at all n bytes from binary_addr. If not,
+    and 'warn' is True, warns the user with the given consequence."""
+    if memorymanager.is_data_loaded_at_binary_addr(binary_addr, n):
+        return True
+    if warn:
+        utils.warn("{0}({1}): no data is loaded at this address, so {2}".format(command, _hex(runtime_addr), consequence))
+    return False
+
 def _check_not_classified(command, runtime_addr, binary_addr, length):
     """Stop with an error if any of the bytes are already classified (e.g. as a string)."""
     for i in range(length):
@@ -554,7 +560,7 @@ def byte(runtime_addr, n=1, cols=None):
         _check_count("byte", runtime_addr, cols, "cols")
     binary_loc = movemanager.r2b_checked(runtime_addr)
     _check_in_memory("byte", runtime_addr, binary_loc.binary_addr, n)
-    if not memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, n, True):
+    if not _is_loaded_else_warn("byte", runtime_addr, binary_loc.binary_addr, n, "this is ignored"):
         return
     _check_not_classified("byte", runtime_addr, binary_loc.binary_addr, n)
     classification.add_classification(binary_loc.binary_addr, classification.Byte(n, cols=cols))
@@ -575,7 +581,7 @@ def word(runtime_addr, n=1, cols=None):
         _check_count("word", runtime_addr, cols, "cols")
     binary_loc = movemanager.r2b_checked(runtime_addr)
     _check_in_memory("word", runtime_addr, binary_loc.binary_addr, n * 2, count=n)
-    if not memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, n * 2, True):
+    if not _is_loaded_else_warn("word", runtime_addr, binary_loc.binary_addr, n * 2, "this is ignored"):
         return
     _check_not_classified("word", runtime_addr, binary_loc.binary_addr, n * 2)
     classification.add_classification(binary_loc.binary_addr, classification.Word(n * 2, cols=cols))
@@ -594,7 +600,7 @@ def entry(runtime_addr, label=None, warn=True):
         _check_name("entry", runtime_addr, label)
     binary_loc = movemanager.r2b_checked(runtime_addr)
 
-    memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, 1, warn)
+    _is_loaded_else_warn("entry", runtime_addr, binary_loc.binary_addr, 1, "there is no code here to trace", warn)
 
     trace.cpu.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, label, explicit=True)
 
@@ -662,7 +668,9 @@ def hook_subroutine(runtime_addr, name, hook, warn=True):
 
     runtime_addr = _check_addr("hook_subroutine", runtime_addr)
     _check_name("hook_subroutine", runtime_addr, name)
-    trace.cpu.hook_subroutine(runtime_addr, name, hook, warn)
+    _is_loaded_else_warn("hook_subroutine", runtime_addr, movemanager.r2b_checked(runtime_addr).binary_addr, 1,
+        "there is no code here to trace (use warn=False for a subroutine outside the binary)", warn)
+    trace.cpu.hook_subroutine(runtime_addr, name, hook)
 
 def stringhi_hook(target, addr):
     return stringhi(addr + 3)
@@ -942,6 +950,8 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # to binary addresses confusing things.
     if len(movemanager.active_move_ids) != 0:
         utils.die("go() can't be called inside a 'with move(...):' block")
+    if not memorymanager.load_ranges:
+        utils.die("go(): nothing has been loaded to disassemble (use load() first)")
     if not utils.is_integer_type(autostring_min_length) or autostring_min_length < 2:
         utils.die("go(): autostring_min_length must be at least 2, not {0!r}".format(autostring_min_length))
 
