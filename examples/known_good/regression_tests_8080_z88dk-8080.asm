@@ -1,4 +1,5 @@
 ; Constants
+addr_val        EQU 4660
 low_seven_bits  EQU 127
 x_val           EQU 240
 y_val           EQU 60
@@ -14,10 +15,18 @@ pydis_start:
     xri x_val ^ y_val                                                 ; 1006: ee cc       ..
     mvi b, x_val / 16                                                 ; 1008: 06 0f       ..
     mvi c, x_val % 7                                                  ; 100a: 0e 02       ..
-    ret                                                               ; 100c: c9          .
+    mvi d, addr_val & $ff                                             ; 100c: 16 34       .4
+    mvi e, addr_val >> 8                                              ; 100e: 1e 12       ..
+    mvi h, +(addr_val + 1) & $ff                                      ; 1010: 26 35       &5
+    lxi bc, +(addr_val + 1)                                           ; 1012: 01 35 12    .5.
+    ret                                                               ; 1015: c9          .
 
 pydis_end:
 
+; ASSERT (((addr_val + 1)) == $1235)
+; ASSERT (((addr_val + 1) & $ff) == $35)
+; ASSERT ((addr_val & $ff) == $34)
+; ASSERT ((addr_val >> 8) == $12)
 ; ASSERT ((x_val % 7) == $02)
 ; ASSERT ((x_val & y_val) == $30)
 ; ASSERT ((x_val / 16) == $0f)
@@ -27,11 +36,11 @@ pydis_end:
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 13 bytes
-;     Code                     = 13 bytes (100%)
+;     Total size (Code + Data) = 22 bytes
+;     Code                     = 22 bytes (100%)
 ;     Data                     = 0 bytes (0%)
 ;
-;     Number of instructions   = 7
+;     Number of instructions   = 11
 ;     Number of data bytes     = 0 bytes
 ;     Number of data words     = 0 bytes
 ;     Number of string bytes   = 0 bytes

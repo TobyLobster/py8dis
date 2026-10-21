@@ -11,4 +11,12 @@
     xri $cc         ; x_val ^ y_val
     mvi b, $0f      ; x_val / 16
     mvi c, $02      ; x_val % 7
+
+    ; Low and high bytes ('<' and '>' are syntax errors in z88dk-z80asm), and
+    ; operands starting with a bracket (z88dk-z80asm warns 'interpreting
+    ; indirect value as immediate' for a bracketed operand)
+    mvi d, $34      ; <addr_val
+    mvi e, $12      ; >addr_val
+    mvi h, $35      ; <(addr_val + 1)
+    lxi b, $1235    ; (addr_val + 1)
     ret

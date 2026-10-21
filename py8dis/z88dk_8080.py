@@ -66,9 +66,25 @@ class Z88DK(assembler.Assembler):
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
         # Note: in z88dk-z80asm '!' is logical NOT, '~' is bitwise NOT
+        #
+        # z88dk-z80asm has no '<' and '>' (low and high byte) operators, so
+        # these use templates, where '%s' is replaced by the operand.
         return { 'NOT': '~',
                    '!': '~',
+                   '<': '%s & ' + self.hex(0xff),
+                   '>': '%s >> 8',
         }
+
+    def instruction_operand(self, operand):
+        """z88dk-z80asm treats an operand that is in brackets as an indirect
+        (Z80 style) value, warning 'interpreting indirect value as immediate'
+        before assembling it correctly anyway. So an operand that starts with a
+        bracket gets a unary plus, e.g. 'mvi a, +(x + 1) & $ff', which
+        assembles to the same thing without the warning."""
+        def late_formatter():
+            s = str(operand)
+            return "+" + s if s.startswith("(") else s
+        return utils.LazyString("%s", late_formatter)
 
     def inline_label(self, name):
         """Returns the string for defining a label in the first column."""

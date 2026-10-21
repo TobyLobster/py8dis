@@ -367,6 +367,14 @@ class Cpu8080(cpu.Cpu):
         def as_string(self, binary_addr):
             return "%s%s" % (utils.make_indent(1), utils.force_case(self.mnemonic))
 
+        def address_operand(self, binary_addr):
+            """The 16 bit address operand (following the opcode at binary_addr) as a string."""
+            operand = classification.get_address16(binary_addr + 1)
+            if self.prefix:
+                # Already in brackets, e.g. an indirect address
+                return operand
+            return config.get_assembler().instruction_operand(operand)
+
         def as_string_list(self, binary_loc, annotations):
             result = [mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length(), "", annotations, utils.LazyString(utils.make_indent(trace.cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr)))]
             if self.is_block_end() and config.get_blank_line_at_block_end():
@@ -390,7 +398,7 @@ class Cpu8080(cpu.Cpu):
             return [binary_loc.binary_addr + 2]
 
         def as_string(self, binary_addr):
-            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), classification.get_constant8(binary_addr + 1))
+            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), config.get_assembler().instruction_operand(classification.get_constant8(binary_addr + 1)))
             if (binary_addr + 1) not in classification.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
@@ -406,7 +414,7 @@ class Cpu8080(cpu.Cpu):
             return [binary_loc.binary_addr + 3]
 
         def as_string(self, binary_addr):
-            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), classification.get_constant16(binary_addr + 1))
+            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), config.get_assembler().instruction_operand(classification.get_constant16(binary_addr + 1)))
             if (binary_addr + 1) not in classification.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
@@ -422,7 +430,7 @@ class Cpu8080(cpu.Cpu):
 
         def as_string(self, binary_addr):
             result1 = utils.force_case(self.mnemonic)
-            result2 = utils.LazyString("%s%s%s", self.prefix, classification.get_address16(binary_addr + 1), utils.force_case(self.suffix))
+            result2 = utils.LazyString("%s%s%s", self.prefix, self.address_operand(binary_addr), utils.force_case(self.suffix))
             return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
 
         def update_references(self, binary_loc):
@@ -443,7 +451,7 @@ class Cpu8080(cpu.Cpu):
 
         def as_string(self, binary_addr):
             result1 = utils.force_case(self.mnemonic)
-            result2 = utils.LazyString("%s%s%s", self.prefix, classification.get_address16(binary_addr + 1), utils.force_case(self.suffix))
+            result2 = utils.LazyString("%s%s%s", self.prefix, self.address_operand(binary_addr), utils.force_case(self.suffix))
             return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
 
         def update_references(self, binary_loc):
@@ -552,7 +560,7 @@ class Cpu8080(cpu.Cpu):
 
         def as_string(self, binary_addr):
             result1 = utils.force_case(self.mnemonic)
-            result2 = utils.LazyString("%s%s%s", self.prefix, classification.get_address16(binary_addr + 1), utils.force_case(self.suffix))
+            result2 = utils.LazyString("%s%s%s", self.prefix, self.address_operand(binary_addr), utils.force_case(self.suffix))
             return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
 
     class OpcodeReturn(Opcode):

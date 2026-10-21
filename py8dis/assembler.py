@@ -27,6 +27,11 @@ class Assembler:
     def __init__(self):
         self.pending_assertions = {}
 
+    def instruction_operand(self, operand):
+        """Returns the operand of an instruction as it should be output. Some
+        assemblers (e.g. z88dk) need some operands adjusting."""
+        return operand
+
     def set_output_filename(self, filename):
         self.output_filename = filename
 
