@@ -120,7 +120,8 @@ class Cpu(object):
             if c is not None:
                 if c.is_code(binary_addr):
                     c.update_cpu_state(binary_addr, state)
-                    self.cpu_states[binary_addr] = copy.deepcopy(state)
+                    # (Use the state's own copy() if it has one, since copy.deepcopy() is slow)
+                    self.cpu_states[binary_addr] = state.copy() if hasattr(state, "copy") else copy.deepcopy(state)
                 else:
                     state = self.CpuState()
                 binary_addr += c.length()

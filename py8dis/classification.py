@@ -345,15 +345,17 @@ def split_classification(binary_addr, *, warn):
 def classify_leftovers():
     """Classify everything not already classified, as bytes."""
 
-    binary_addr = BinaryAddr(0)
-    while binary_addr < len(memory_binary):
+    # (For speed, this loop over all of memory uses plain integer addresses.)
+    memory_size = len(memory_binary)
+    binary_addr = 0
+    while binary_addr < memory_size:
         i = 0
-        while (binary_addr + i) < len(memory_binary) and memory_binary[binary_addr + i] is not None and not is_classified(binary_addr + i, 1):
+        while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None:
             i += 1
-            if (binary_addr + i) >= len(memory_binary) or movemanager.b2r(binary_addr + i) in labelmanager.labels:
+            if (binary_addr + i) >= memory_size or movemanager.b2r(BinaryAddr(binary_addr + i)) in labelmanager.labels:
                 break
         if i > 0:
-            add_classification(binary_addr, Byte(i))
+            add_classification(BinaryAddr(binary_addr), Byte(i))
         binary_addr += max(1, i)
 
 def _is_loaded(binary_addr):
@@ -525,12 +527,15 @@ def autostring(min_length=3):
     """Attempt to automatically find and classify strings through the entire binary."""
 
     assert min_length >= 2
-    binary_addr = BinaryAddr(0)
-    while binary_addr < len(memory_binary):
+
+    # (For speed, this loop over all of memory uses plain integer addresses.)
+    memory_size = len(memory_binary)
+    binary_addr = 0
+    while binary_addr < memory_size:
         i = 0
-        while (binary_addr + i) < len(memory_binary) and memory_binary[binary_addr + i] is not None and not is_classified(binary_addr + i, 1) and utils.isprint(memory_binary[binary_addr + i]):
+        while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None and utils.isprint(memory_binary[binary_addr + i]):
             i += 1
-            runtime_addr = movemanager.b2r(binary_addr + i)
+            runtime_addr = movemanager.b2r(BinaryAddr(binary_addr + i))
 
             # We end the classification here if there is a label (that is not an expression)
             if runtime_addr in labelmanager.labels:
@@ -539,9 +544,8 @@ def autostring(min_length=3):
 
         # if a string is found with at least the minimum length, classify it as a string
         if i >= min_length:
-            runtime_addr = movemanager.b2r(binary_addr)
             assert not is_classified(binary_addr, i)
-            string_binary(binary_addr, i)
+            string_binary(BinaryAddr(binary_addr), i)
         binary_addr += max(1, i)
 
 def include_binary_file(binary_addr, relative_filepath):
@@ -620,12 +624,12 @@ def get_address16(binary_addr, offset=0):
 
 def get_stats():
     result = stats.Stats()
-    binary_addr = BinaryAddr(0)
     oldc = None
-    while binary_addr < len(memory_binary):
-        if is_classified(binary_addr, 1):
+    # (For speed, this loop over all of memory uses plain integer addresses.)
+    for binary_addr in range(len(memory_binary)):
+        c = classifications[binary_addr]
+        if c is not None:
             result.num_total_bytes += 1
-            c = get_classification(binary_addr)
             if isinstance(c, Byte):
                 result.num_data_bytes += 1
             elif isinstance(c, Word):
@@ -649,7 +653,6 @@ def get_stats():
             if c != INSIDE_A_CLASSIFICATION:
                 oldc = c
 
-        binary_addr += 1
     return result
 
 def get_classification_map():

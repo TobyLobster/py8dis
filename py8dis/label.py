@@ -7,6 +7,8 @@ import utils
 from memorymanager import BinaryAddr, RuntimeAddr
 from binaryaddrtype import BinaryAddrType
 
+_empty_set = frozenset()
+
 class Label(object):
     class ExplicitName(object):
         """Class for a label's name. Records whether it has been emitted yet."""
@@ -61,8 +63,6 @@ class Label(object):
         # Non-simple names go in a different list
         self.expressions = collections.defaultdict(list)
 
-        # Set of move_id's that apply at this label's address
-        self.emit_opportunities = set()
 
         # By default, allow label to be defined inline
         self.definable_inline = True
@@ -243,12 +243,16 @@ class Label(object):
 
         return result
 
-    def notify_emit_opportunity(self, move_id):
-        """Record that the move_id is used at this label's address'."""
+    @property
+    def emit_opportunities(self):
+        """The set of move_ids that are output at this label's address.
 
-        assert movemanager.is_valid_move_id(move_id)
-        if move_id not in self.emit_opportunities:
-            self.emit_opportunities.add(move_id)
+        (These are recorded in labelmanager.emit_opportunities for every
+        address, rather than in each Label, so that there's no need to create
+        a Label object for every address in the binary.)"""
+
+        import labelmanager
+        return labelmanager.emit_opportunities.get(self.runtime_addr, _empty_set)
 
     def gather_inline_label_definitions(self, emit_addr, binary_loc):
         """Get a list of the labels in a move_id as a list of strings."""

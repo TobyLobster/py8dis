@@ -120,6 +120,9 @@ def b2r(binary_addr):
 
     # Gather information about the move
     move_id = move_id_for_binary_addr[binary_addr]
+    if move_id == BASE_MOVE_ID:
+        # (A quick path for the common case: the base move doesn't move anything)
+        return RuntimeAddr(int(binary_addr))
     md = move_definitions[move_id]
     return md.convert_binary_to_runtime_addr(binary_addr)
 

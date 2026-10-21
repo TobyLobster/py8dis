@@ -79,6 +79,16 @@ from label import Label
 # as required).
 labels = utils.keydefaultdict(Label)
 
+# For each runtime address, the set of move_ids that are output at that
+# address. See disassembly.emit().
+emit_opportunities = collections.defaultdict(set)
+
+def notify_emit_opportunity(runtime_addr, move_id):
+    """Record that the move_id is output at the runtime address."""
+
+    assert movemanager.is_valid_move_id(move_id)
+    emit_opportunities[runtime_addr].add(move_id)
+
 def addr(label_name):
     # TODO: Ultra-inefficient implementation, optimise!
     for addr, label in sorted(labels.items()):

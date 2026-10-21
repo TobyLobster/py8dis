@@ -105,6 +105,12 @@ class RegState(object):
         self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
         self.previous_use       = None      # The address of the previous 'read only use of a register' instruction if present
 
+    def copy(self):
+        """A fast copy (all the attributes are immutable values)."""
+        result = RegState.__new__(RegState)
+        result.__dict__.update(self.__dict__)
+        return result
+
     def get_previous_load_imm_operand(self):
         if self.previous_load_imm is not None:
             return self.previous_load_imm+1
@@ -131,6 +137,12 @@ class CpuStateDisposition(object):
             "z": None,
             "c": None,
         }
+
+    def copy(self):
+        """A fast copy (much faster than copy.deepcopy())."""
+        result = CpuStateDisposition.__new__(CpuStateDisposition)
+        result._d = {key: (value.copy() if isinstance(value, RegState) else value) for key, value in self._d.items()}
+        return result
 
     def clear(self):
         self._d["a"].clear()
@@ -423,6 +435,14 @@ class Cpu6502(cpu.Cpu):
             self.pessimistic = CpuStateDisposition()
             self.always_branch = False
             self.next_instruction = None
+
+        def copy(self):
+            """A fast copy (much faster than copy.deepcopy()). Any attribute
+            with a copy() method (e.g. the dispositions, or a dict) is copied
+            with it, others are immutable values."""
+            result = type(self).__new__(type(self))
+            result.__dict__ = {key: (value.copy() if hasattr(value, "copy") else value) for key, value in self.__dict__.items()}
+            return result
 
         def clear(self, *, pessimistic_only):
             self.pessimistic.clear()
@@ -1595,6 +1615,10 @@ class Cpu6502(cpu.Cpu):
         binary_addr = 0
         state = None
 
+        # The binary address of each subroutine, by runtime address (cached,
+        # since otherwise it's worked out for every instruction)
+        sub_binary_addrs = {}
+
         while binary_addr < 0x10000:
             c = classification.get_classification(binary_addr)
             if c is not None:
@@ -1615,7 +1639,9 @@ class Cpu6502(cpu.Cpu):
                         fall_through = False
 
                         # convert to binary address
-                        sub_binary_addr, _ = movemanager.r2b(subroutine.runtime_addr)
+                        if subroutine.runtime_addr not in sub_binary_addrs:
+                            sub_binary_addrs[subroutine.runtime_addr], _ = movemanager.r2b(subroutine.runtime_addr)
+                        sub_binary_addr = sub_binary_addrs[subroutine.runtime_addr]
                         if binary_addr == sub_binary_addr:
                             # We are at the subroutine address itself.
                             # We might have fallen through from above

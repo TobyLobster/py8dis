@@ -14,25 +14,30 @@ import utils
 # We make one class to hold a runtime address, and another for a binary address.
 # They are just integers underneath, but storing them in classes means we can
 # check they are of the correct type.
+#
+# (These are created very often, so they are written to be quick: no
+# per-instance __dict__, and no super() calls.)
 class BinaryAddr(int):
     """Address of data at load time"""
-    def __new__(cls, value, *args, **kwargs):
+    __slots__ = ()
+
+    def __new__(cls, value):
         assert not isinstance(value, RuntimeAddr)
-        return super(BinaryAddr, cls).__new__(cls, value)
+        return int.__new__(cls, value)
 
     def __add__(self, other):
-        res = super(BinaryAddr, self).__add__(other)
-        return self.__class__(res)
+        return BinaryAddr(int.__add__(self, other))
 
 class RuntimeAddr(int):
     """Address of data at execution time"""
-    def __new__(cls, value, *args, **kwargs):
+    __slots__ = ()
+
+    def __new__(cls, value):
         assert not isinstance(value, BinaryAddr)
-        return super(RuntimeAddr, cls).__new__(cls, value)
+        return int.__new__(cls, value)
 
     def __add__(self, other):
-        res = super(RuntimeAddr, self).__add__(other)
-        return self.__class__(res)
+        return RuntimeAddr(int.__add__(self, other))
 
 # Address validation
 def is_valid_runtime_addr(runtime_addr, allow_final_address = False):
@@ -122,7 +127,7 @@ class BinaryLocation:
 
     def __hash__(self):
         """Overrides the default implementation"""
-        return hash(tuple(sorted(self.__dict__.items())))
+        return hash((self.binary_addr, self.move_id))
 
 class MemoryRuntime(object):
     """Class for reading runtime memory with address validation"""

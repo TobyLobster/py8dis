@@ -733,7 +733,7 @@ def emit(print_output=True):
     def record_emit_point(binary_addr, move_id):
         md = movemanager.move_definitions[move_id]
         runtime_addr = md.convert_binary_to_runtime_addr(binary_addr)
-        labelmanager.labels[runtime_addr].notify_emit_opportunity(move_id)
+        labelmanager.notify_emit_opportunity(runtime_addr, move_id)
 
     # Calculate the move_ids that will emit output?
     for start_addr, end_addr in move_ranges:
