@@ -174,16 +174,39 @@ class Xa(assembler.Assembler):
         # pseudopc_start()) I am struggling to make anything else work.
         return [utils.LazyString("* = %s", self.hex(source + length))]
 
+    def preprocessor_expr(self, expr):
+        """Convert an expression into one that xa's preprocessor can evaluate.
+
+        The preprocessor's '#if' doesn't understand the '<' and '>' (low and
+        high byte) operators, or the '`' (force zero page) operator. In xa
+        these can only appear at the start of an operand, where they apply to
+        the whole of the rest of the operand, so rewrite them using '&' and
+        '>>'."""
+        if expr.startswith("<") or expr.startswith("`"):
+            return "((%s) & $ff)" % expr[1:]
+        if expr.startswith(">"):
+            return "(((%s) >> 8) & $ff)" % expr[1:]
+        return "(%s)" % expr
+
     def disassembly_end(self):
         """Output assertions at the end of the disassembly"""
         result = []
 
-        # Note: XA doesn't support assertions, so disabled
-        if False: # config.get_include_assertions():
-            spa = sorted((str(expr), self.hex(value)) for expr, value in self.pending_assertions.items())
+        # xa has no assert directive, so we use its preprocessor instead:
+        #
+        #     #if (expr) <> value
+        #     #error Assertion failed: expr == value
+        #     #endif
+        #
+        # At the end of the file all the labels have been defined, so the
+        # preprocessor can evaluate expressions that use them.
+        #
+        # (xa doesn't support string constants, so string values are not checked.)
+        if config.get_include_assertions():
+            spa = sorted((str(expr), value) for expr, value in self.pending_assertions.items() if utils.is_integer_type(value))
             for expr, value in spa:
-                result.append("%s %s <> %s" % (utils.force_case("#if"), expr, value))
-                result.append("    #echo TODO") # result.append(utils.make_indent(1) + '%s Assertion failed: %s == %s' % (utils.force_case("#echo"), expr, value))
+                result.append("%s %s <> %s" % (utils.force_case("#if"), self.preprocessor_expr(expr), self.hex(value)))
+                result.append("%s Assertion failed: %s == %s" % (utils.force_case("#error"), expr, self.hex(value)))
                 result.append(utils.force_case("#endif"))
 
         return result

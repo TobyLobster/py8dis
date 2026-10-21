@@ -10737,6 +10737,297 @@ oscli
     .byt 0, $0d, $cd, $d9, $1c, $dc                                   // fffa: 00 0d cd... ...
 pydis_end
 
+#if ((lead2) & $ff) <> $d2
+#error Assertion failed: <lead2 == $d2
+#endif
+#if ((plotLine0) & $ff) <> $6a
+#error Assertion failed: <plotLine0 == $6a
+#endif
+#if ((plotLine1) & $ff) <> $74
+#error Assertion failed: <plotLine1 == $74
+#endif
+#if ((plotLine2) & $ff) <> $42
+#error Assertion failed: <plotLine2 == $42
+#endif
+#if ((plotLine3) & $ff) <> $4b
+#error Assertion failed: <plotLine3 == $4b
+#endif
+#if (((lead2) >> 8) & $ff) <> $ea
+#error Assertion failed: >lead2 == $ea
+#endif
+#if (((plotLine0) >> 8) & $ff) <> $d3
+#error Assertion failed: >plotLine0 == $d3
+#endif
+#if (((plotLine1) >> 8) & $ff) <> $d3
+#error Assertion failed: >plotLine1 == $d3
+#endif
+#if (((plotLine2) >> 8) & $ff) <> $d3
+#error Assertion failed: >plotLine2 == $d3
+#endif
+#if (((plotLine3) >> 8) & $ff) <> $d3
+#error Assertion failed: >plotLine3 == $d3
+#endif
+#if (filev - 1) <> $0211
+#error Assertion failed: filev - 1 == $0211
+#endif
+#if (l02b3 - 2) <> $02b1
+#error Assertion failed: l02b3 - 2 == $02b1
+#endif
+#if (ld940 - 1) <> $d93f
+#error Assertion failed: ld940 - 1 == $d93f
+#endif
+#if (ld952 - 1) <> $d951
+#error Assertion failed: ld952 - 1 == $d951
+#endif
+#if (osbyte0EntryPoint) <> $e821
+#error Assertion failed: osbyte0EntryPoint == $e821
+#endif
+#if (osbyte10EntryPoint) <> $e6b2
+#error Assertion failed: osbyte10EntryPoint == $e6b2
+#endif
+#if (osbyte117EntryPoint) <> $e86c
+#error Assertion failed: osbyte117EntryPoint == $e86c
+#endif
+#if (osbyte118EntryPoint) <> $e9d9
+#error Assertion failed: osbyte118EntryPoint == $e9d9
+#endif
+#if (osbyte119EntryPoint) <> $e275
+#error Assertion failed: osbyte119EntryPoint == $e275
+#endif
+#if (osbyte11EntryPoint) <> $e995
+#error Assertion failed: osbyte11EntryPoint == $e995
+#endif
+#if (osbyte120EntryPoint) <> $f045
+#error Assertion failed: osbyte120EntryPoint == $f045
+#endif
+#if (osbyte121EntryPoint) <> $f0cf
+#error Assertion failed: osbyte121EntryPoint == $f0cf
+#endif
+#if (osbyte122EntryPoint) <> $f0cd
+#error Assertion failed: osbyte122EntryPoint == $f0cd
+#endif
+#if (osbyte123EntryPoint) <> $e197
+#error Assertion failed: osbyte123EntryPoint == $e197
+#endif
+#if (osbyte124EntryPoint) <> $e673
+#error Assertion failed: osbyte124EntryPoint == $e673
+#endif
+#if (osbyte125EntryPoint) <> $e674
+#error Assertion failed: osbyte125EntryPoint == $e674
+#endif
+#if (osbyte126EntryPoint) <> $e65c
+#error Assertion failed: osbyte126EntryPoint == $e65c
+#endif
+#if (osbyte127EntryPoint) <> $e035
+#error Assertion failed: osbyte127EntryPoint == $e035
+#endif
+#if (osbyte128EntryPoint) <> $e74f
+#error Assertion failed: osbyte128EntryPoint == $e74f
+#endif
+#if (osbyte129EntryPoint) <> $e713
+#error Assertion failed: osbyte129EntryPoint == $e713
+#endif
+#if (osbyte12EntryPoint) <> $e98c
+#error Assertion failed: osbyte12EntryPoint == $e98c
+#endif
+#if (osbyte130EntryPoint) <> $e729
+#error Assertion failed: osbyte130EntryPoint == $e729
+#endif
+#if (osbyte131EntryPoint) <> $f085
+#error Assertion failed: osbyte131EntryPoint == $f085
+#endif
+#if (osbyte132EntryPoint) <> $d923
+#error Assertion failed: osbyte132EntryPoint == $d923
+#endif
+#if (osbyte133EntryPoint) <> $d926
+#error Assertion failed: osbyte133EntryPoint == $d926
+#endif
+#if (osbyte134EntryPoint) <> $d647
+#error Assertion failed: osbyte134EntryPoint == $d647
+#endif
+#if (osbyte135EntryPoint) <> $d7c2
+#error Assertion failed: osbyte135EntryPoint == $d7c2
+#endif
+#if (osbyte136EntryPoint) <> $e657
+#error Assertion failed: osbyte136EntryPoint == $e657
+#endif
+#if (osbyte137EntryPoint) <> $e67f
+#error Assertion failed: osbyte137EntryPoint == $e67f
+#endif
+#if (osbyte138EntryPoint) <> $e4af
+#error Assertion failed: osbyte138EntryPoint == $e4af
+#endif
+#if (osbyte139EntryPoint) <> $e034
+#error Assertion failed: osbyte139EntryPoint == $e034
+#endif
+#if (osbyte13EntryPoint) <> $e6f9
+#error Assertion failed: osbyte13EntryPoint == $e6f9
+#endif
+#if (osbyte140EntryPoint) <> $f135
+#error Assertion failed: osbyte140EntryPoint == $f135
+#endif
+#if (osbyte141EntryPoint) <> $f135
+#error Assertion failed: osbyte141EntryPoint == $f135
+#endif
+#if (osbyte142EntryPoint) <> $dbe7
+#error Assertion failed: osbyte142EntryPoint == $dbe7
+#endif
+#if (osbyte143EntryPoint) <> $f168
+#error Assertion failed: osbyte143EntryPoint == $f168
+#endif
+#if (osbyte144EntryPoint) <> $eae3
+#error Assertion failed: osbyte144EntryPoint == $eae3
+#endif
+#if (osbyte145EntryPoint) <> $e460
+#error Assertion failed: osbyte145EntryPoint == $e460
+#endif
+#if (osbyte146EntryPoint) <> $ffaa
+#error Assertion failed: osbyte146EntryPoint == $ffaa
+#endif
+#if (osbyte147EntryPoint) <> $eaf4
+#error Assertion failed: osbyte147EntryPoint == $eaf4
+#endif
+#if (osbyte148EntryPoint) <> $ffae
+#error Assertion failed: osbyte148EntryPoint == $ffae
+#endif
+#if (osbyte149EntryPoint) <> $eaf9
+#error Assertion failed: osbyte149EntryPoint == $eaf9
+#endif
+#if (osbyte14EntryPoint) <> $e6fa
+#error Assertion failed: osbyte14EntryPoint == $e6fa
+#endif
+#if (osbyte150EntryPoint) <> $ffb2
+#error Assertion failed: osbyte150EntryPoint == $ffb2
+#endif
+#if (osbyte151EntryPoint) <> $eafe
+#error Assertion failed: osbyte151EntryPoint == $eafe
+#endif
+#if (osbyte152EntryPoint) <> $e45b
+#error Assertion failed: osbyte152EntryPoint == $e45b
+#endif
+#if (osbyte153EntryPoint) <> $e4f3
+#error Assertion failed: osbyte153EntryPoint == $e4f3
+#endif
+#if (osbyte154EntryPoint) <> $e9ff
+#error Assertion failed: osbyte154EntryPoint == $e9ff
+#endif
+#if (osbyte155EntryPoint) <> $ea10
+#error Assertion failed: osbyte155EntryPoint == $ea10
+#endif
+#if (osbyte156EntryPoint) <> $e17c
+#error Assertion failed: osbyte156EntryPoint == $e17c
+#endif
+#if (osbyte157EntryPoint) <> $ffa7
+#error Assertion failed: osbyte157EntryPoint == $ffa7
+#endif
+#if (osbyte158EntryPoint) <> $ee6d
+#error Assertion failed: osbyte158EntryPoint == $ee6d
+#endif
+#if (osbyte159EntryPoint) <> $ee7f
+#error Assertion failed: osbyte159EntryPoint == $ee7f
+#endif
+#if (osbyte15EntryPoint) <> $f0a8
+#error Assertion failed: osbyte15EntryPoint == $f0a8
+#endif
+#if (osbyte160EntryPoint) <> $e9c0
+#error Assertion failed: osbyte160EntryPoint == $e9c0
+#endif
+#if (osbyte166to255EntryPoint) <> $e99c
+#error Assertion failed: osbyte166to255EntryPoint == $e99c
+#endif
+#if (osbyte16EntryPoint) <> $e706
+#error Assertion failed: osbyte16EntryPoint == $e706
+#endif
+#if (osbyte17EntryPoint) <> $de8c
+#error Assertion failed: osbyte17EntryPoint == $de8c
+#endif
+#if (osbyte18EntryPoint) <> $e9c8
+#error Assertion failed: osbyte18EntryPoint == $e9c8
+#endif
+#if (osbyte19EntryPoint) <> $e9b6
+#error Assertion failed: osbyte19EntryPoint == $e9b6
+#endif
+#if (osbyte1EntryPoint) <> $e988
+#error Assertion failed: osbyte1EntryPoint == $e988
+#endif
+#if (osbyte20EntryPoint) <> $cd07
+#error Assertion failed: osbyte20EntryPoint == $cd07
+#endif
+#if (osbyte21EntryPoint) <> $f0b4
+#error Assertion failed: osbyte21EntryPoint == $f0b4
+#endif
+#if (osbyte2EntryPoint) <> $e6d3
+#error Assertion failed: osbyte2EntryPoint == $e6d3
+#endif
+#if (osbyte3EntryPoint) <> $e997
+#error Assertion failed: osbyte3EntryPoint == $e997
+#endif
+#if (osbyte4EntryPoint) <> $e997
+#error Assertion failed: osbyte4EntryPoint == $e997
+#endif
+#if (osbyte5EntryPoint) <> $e976
+#error Assertion failed: osbyte5EntryPoint == $e976
+#endif
+#if (osbyte6EntryPoint) <> $e988
+#error Assertion failed: osbyte6EntryPoint == $e988
+#endif
+#if (osbyte7EntryPoint) <> $e68b
+#error Assertion failed: osbyte7EntryPoint == $e68b
+#endif
+#if (osbyte8EntryPoint) <> $e689
+#error Assertion failed: osbyte8EntryPoint == $e689
+#endif
+#if (osbyte9EntryPoint) <> $e6b0
+#error Assertion failed: osbyte9EntryPoint == $e6b0
+#endif
+#if (osword0EntryPoint) <> $e902
+#error Assertion failed: osword0EntryPoint == $e902
+#endif
+#if (osword10EntryPoint) <> $cbf3
+#error Assertion failed: osword10EntryPoint == $cbf3
+#endif
+#if (osword11EntryPoint) <> $c748
+#error Assertion failed: osword11EntryPoint == $c748
+#endif
+#if (osword12EntryPoint) <> $c8e0
+#error Assertion failed: osword12EntryPoint == $c8e0
+#endif
+#if (osword13EntryPoint) <> $d5ce
+#error Assertion failed: osword13EntryPoint == $d5ce
+#endif
+#if (osword1EntryPoint) <> $e8d5
+#error Assertion failed: osword1EntryPoint == $e8d5
+#endif
+#if (osword2EntryPoint) <> $e8e8
+#error Assertion failed: osword2EntryPoint == $e8e8
+#endif
+#if (osword3EntryPoint) <> $e8d1
+#error Assertion failed: osword3EntryPoint == $e8d1
+#endif
+#if (osword4EntryPoint) <> $e8e4
+#error Assertion failed: osword4EntryPoint == $e8e4
+#endif
+#if (osword5EntryPoint) <> $e803
+#error Assertion failed: osword5EntryPoint == $e803
+#endif
+#if (osword6EntryPoint) <> $e80b
+#error Assertion failed: osword6EntryPoint == $e80b
+#endif
+#if (osword7EntryPoint) <> $e82d
+#error Assertion failed: osword7EntryPoint == $e82d
+#endif
+#if (osword8EntryPoint) <> $e8ae
+#error Assertion failed: osword8EntryPoint == $e8ae
+#endif
+#if (osword9EntryPoint) <> $c735
+#error Assertion failed: osword9EntryPoint == $c735
+#endif
+#if (userv - 1) <> $01ff
+#error Assertion failed: userv - 1 == $01ff
+#endif
+#if (uservJumper) <> $e659
+#error Assertion failed: uservJumper == $e659
+#endif
 
 // Label references by decreasing frequency:
 //     l00da:                                   63

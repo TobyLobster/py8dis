@@ -6152,6 +6152,657 @@ unused3
 * = $3800
 pydis_end
 
+#if (((map0ladder_end - map0ladder_start) / 3)) <> $04
+#error Assertion failed: ((map0ladder_end - map0ladder_start) / 3) == $04
+#endif
+#if (((map0platform_end - map0platform_start) / 3)) <> $0d
+#error Assertion failed: ((map0platform_end - map0platform_start) / 3) == $0d
+#endif
+#if (((map0seed_end - map0seed_start) / 2)) <> $0a
+#error Assertion failed: ((map0seed_end - map0seed_start) / 2) == $0a
+#endif
+#if (((map1ladder_end - map1ladder_start) / 3)) <> $08
+#error Assertion failed: ((map1ladder_end - map1ladder_start) / 3) == $08
+#endif
+#if (((map1platform_end - map1platform_start) / 3)) <> $0d
+#error Assertion failed: ((map1platform_end - map1platform_start) / 3) == $0d
+#endif
+#if (((map1seed_end - map1seed_start) / 2)) <> $07
+#error Assertion failed: ((map1seed_end - map1seed_start) / 2) == $07
+#endif
+#if (((map2ladder_end - map2ladder_start) / 3)) <> $07
+#error Assertion failed: ((map2ladder_end - map2ladder_start) / 3) == $07
+#endif
+#if (((map2platform_end - map2platform_start) / 3)) <> $18
+#error Assertion failed: ((map2platform_end - map2platform_start) / 3) == $18
+#endif
+#if (((map2seed_end - map2seed_start) / 2)) <> $0a
+#error Assertion failed: ((map2seed_end - map2seed_start) / 2) == $0a
+#endif
+#if (((map3ladder_end - map3ladder_start) / 3)) <> $05
+#error Assertion failed: ((map3ladder_end - map3ladder_start) / 3) == $05
+#endif
+#if (((map3platform_end - map3platform_start) / 3)) <> $1a
+#error Assertion failed: ((map3platform_end - map3platform_start) / 3) == $1a
+#endif
+#if (((map3seed_end - map3seed_start) / 2)) <> $06
+#error Assertion failed: ((map3seed_end - map3seed_start) / 2) == $06
+#endif
+#if (((map4ladder_end - map4ladder_start) / 3)) <> $09
+#error Assertion failed: ((map4ladder_end - map4ladder_start) / 3) == $09
+#endif
+#if (((map4platform_end - map4platform_start) / 3)) <> $11
+#error Assertion failed: ((map4platform_end - map4platform_start) / 3) == $11
+#endif
+#if (((map4seed_end - map4seed_start) / 2)) <> $0d
+#error Assertion failed: ((map4seed_end - map4seed_start) / 2) == $0d
+#endif
+#if (((map5ladder_end - map5ladder_start) / 3)) <> $06
+#error Assertion failed: ((map5ladder_end - map5ladder_start) / 3) == $06
+#endif
+#if (((map5platform_end - map5platform_start) / 3)) <> $10
+#error Assertion failed: ((map5platform_end - map5platform_start) / 3) == $10
+#endif
+#if (((map5seed_end - map5seed_start) / 2)) <> $09
+#error Assertion failed: ((map5seed_end - map5seed_start) / 2) == $09
+#endif
+#if (((map6ladder_end - map6ladder_start) / 3)) <> $07
+#error Assertion failed: ((map6ladder_end - map6ladder_start) / 3) == $07
+#endif
+#if (((map6platform_end - map6platform_start) / 3)) <> $17
+#error Assertion failed: ((map6platform_end - map6platform_start) / 3) == $17
+#endif
+#if (((map6seed_end - map6seed_start) / 2)) <> $04
+#error Assertion failed: ((map6seed_end - map6seed_start) / 2) == $04
+#endif
+#if (((map7ladder_end - map7ladder_start) / 3)) <> $06
+#error Assertion failed: ((map7ladder_end - map7ladder_start) / 3) == $06
+#endif
+#if (((map7platform_end - map7platform_start) / 3)) <> $0f
+#error Assertion failed: ((map7platform_end - map7platform_start) / 3) == $0f
+#endif
+#if (((map7seed_end - map7seed_start) / 2)) <> $10
+#error Assertion failed: ((map7seed_end - map7seed_start) / 2) == $10
+#endif
+#if ((255 - inkey_key_ctrl) ^ 128) <> $81
+#error Assertion failed: (255 - inkey_key_ctrl) ^ 128 == $81
+#endif
+#if ((255 - inkey_key_shift) ^ 128) <> $80
+#error Assertion failed: (255 - inkey_key_shift) ^ 128 == $80
+#endif
+#if ((MapId_Egg | MapId_Seed)) <> $0c
+#error Assertion failed: (MapId_Egg | MapId_Seed) == $0c
+#endif
+#if (255 - inkey_key_h) <> $54
+#error Assertion failed: 255 - inkey_key_h == $54
+#endif
+#if ((blipsoundblock) & $ff) <> $98
+#error Assertion failed: <blipsoundblock == $98
+#endif
+#if ((bonussoundblock) & $ff) <> $b0
+#error Assertion failed: <bonussoundblock == $b0
+#endif
+#if ((deathsoundblock) & $ff) <> $a0
+#error Assertion failed: <deathsoundblock == $a0
+#endif
+#if ((deathtune_end) & $ff) <> $d1
+#error Assertion failed: <deathtune_end == $d1
+#endif
+#if ((deathtunedata) & $ff) <> $b0
+#error Assertion failed: <deathtunedata == $b0
+#endif
+#if ((eggsoundblock) & $ff) <> $a8
+#error Assertion failed: <eggsoundblock == $a8
+#endif
+#if ((eggsoundblock) & $ff) <> $a8
+#error Assertion failed: <eggsoundblock == $a8
+#endif
+#if ((envelope2) & $ff) <> $df
+#error Assertion failed: <envelope2 == $df
+#endif
+#if ((envelope3) & $ff) <> $ed
+#error Assertion failed: <envelope3 == $ed
+#endif
+#if ((hiscoretab) & $ff) <> $30
+#error Assertion failed: <hiscoretab == $30
+#endif
+#if ((intervaltimerblock) & $ff) <> $00
+#error Assertion failed: <intervaltimerblock == $00
+#endif
+#if ((intervaltimerblock) & $ff) <> $00
+#error Assertion failed: <intervaltimerblock == $00
+#endif
+#if ((osword0block) & $ff) <> $9d
+#error Assertion failed: <osword0block == $9d
+#endif
+#if ((spritetable) & $ff) <> $00
+#error Assertion failed: <spritetable == $00
+#endif
+#if ((string_capslock) & $ff) <> $2a
+#error Assertion failed: <string_capslock == $2a
+#endif
+#if ((string_control) & $ff) <> $90
+#error Assertion failed: <string_control == $90
+#endif
+#if ((string_copy) & $ff) <> $5a
+#error Assertion failed: <string_copy == $5a
+#endif
+#if ((string_delete) & $ff) <> $4c
+#error Assertion failed: <string_delete == $4c
+#endif
+#if ((string_down) & $ff) <> $e9
+#error Assertion failed: <string_down == $e9
+#endif
+#if ((string_downarrow) & $ff) <> $76
+#error Assertion failed: <string_downarrow == $76
+#endif
+#if ((string_enteryourname) & $ff) <> $69
+#error Assertion failed: <string_enteryourname == $69
+#endif
+#if ((string_escape) & $ff) <> $3f
+#error Assertion failed: <string_escape == $3f
+#endif
+#if ((string_gameover) & $ff) <> $94
+#error Assertion failed: <string_gameover == $94
+#endif
+#if ((string_getready) & $ff) <> $b2
+#error Assertion failed: <string_getready == $b2
+#endif
+#if ((string_highscores) & $ff) <> $3f
+#error Assertion failed: <string_highscores == $3f
+#endif
+#if ((string_hiscorepos) & $ff) <> $57
+#error Assertion failed: <string_hiscorepos == $57
+#endif
+#if ((string_hiscoreprompt) & $ff) <> $5e
+#error Assertion failed: <string_hiscoreprompt == $5e
+#endif
+#if ((string_holdabort) & $ff) <> $09
+#error Assertion failed: <string_holdabort == $09
+#endif
+#if ((string_howmanyplayers) & $ff) <> $44
+#error Assertion failed: <string_howmanyplayers == $44
+#endif
+#if ((string_jump) & $ff) <> $17
+#error Assertion failed: <string_jump == $17
+#endif
+#if ((string_keyhelp) & $ff) <> $4c
+#error Assertion failed: <string_keyhelp == $4c
+#endif
+#if ((string_keys) & $ff) <> $f8
+#error Assertion failed: <string_keys == $f8
+#endif
+#if ((string_keyselection) & $ff) <> $b2
+#error Assertion failed: <string_keyselection == $b2
+#endif
+#if ((string_left) & $ff) <> $f8
+#error Assertion failed: <string_left == $f8
+#endif
+#if ((string_leftarrow) & $ff) <> $5f
+#error Assertion failed: <string_leftarrow == $5f
+#endif
+#if ((string_playerN) & $ff) <> $c9
+#error Assertion failed: <string_playerN == $c9
+#endif
+#if ((string_return) & $ff) <> $53
+#error Assertion failed: <string_return == $53
+#endif
+#if ((string_right) & $ff) <> $07
+#error Assertion failed: <string_right == $07
+#endif
+#if ((string_rightarrow) & $ff) <> $6a
+#error Assertion failed: <string_rightarrow == $6a
+#endif
+#if ((string_shift) & $ff) <> $8a
+#error Assertion failed: <string_shift == $8a
+#endif
+#if ((string_shiftlock) & $ff) <> $34
+#error Assertion failed: <string_shiftlock == $34
+#endif
+#if ((string_space) & $ff) <> $46
+#error Assertion failed: <string_space == $46
+#endif
+#if ((string_tab) & $ff) <> $26
+#error Assertion failed: <string_tab == $26
+#endif
+#if ((string_up) & $ff) <> $dc
+#error Assertion failed: <string_up == $dc
+#endif
+#if ((string_uparrow) & $ff) <> $81
+#error Assertion failed: <string_uparrow == $81
+#endif
+#if ((string_vdu19) & $ff) <> $76
+#error Assertion failed: <string_vdu19 == $76
+#endif
+#if (((blipsoundblock) >> 8) & $ff) <> $0c
+#error Assertion failed: >blipsoundblock == $0c
+#endif
+#if (((bonussoundblock) >> 8) & $ff) <> $0c
+#error Assertion failed: >bonussoundblock == $0c
+#endif
+#if (((deathsoundblock) >> 8) & $ff) <> $0c
+#error Assertion failed: >deathsoundblock == $0c
+#endif
+#if (((deathtune_end) >> 8) & $ff) <> $2f
+#error Assertion failed: >deathtune_end == $2f
+#endif
+#if (((deathtunedata) >> 8) & $ff) <> $2f
+#error Assertion failed: >deathtunedata == $2f
+#endif
+#if (((eggsoundblock) >> 8) & $ff) <> $0c
+#error Assertion failed: >eggsoundblock == $0c
+#endif
+#if (((eggsoundblock) >> 8) & $ff) <> $0c
+#error Assertion failed: >eggsoundblock == $0c
+#endif
+#if (((envelope2) >> 8) & $ff) <> $2f
+#error Assertion failed: >envelope2 == $2f
+#endif
+#if (((envelope3) >> 8) & $ff) <> $2f
+#error Assertion failed: >envelope3 == $2f
+#endif
+#if (((hiscoretab) >> 8) & $ff) <> $04
+#error Assertion failed: >hiscoretab == $04
+#endif
+#if (((intervaltimerblock) >> 8) & $ff) <> $00
+#error Assertion failed: >intervaltimerblock == $00
+#endif
+#if (((intervaltimerblock) >> 8) & $ff) <> $00
+#error Assertion failed: >intervaltimerblock == $00
+#endif
+#if (((osword0block) >> 8) & $ff) <> $29
+#error Assertion failed: >osword0block == $29
+#endif
+#if (((spritetable) >> 8) & $ff) <> $11
+#error Assertion failed: >spritetable == $11
+#endif
+#if (((string_capslock) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_capslock == $0b
+#endif
+#if (((string_control) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_control == $0b
+#endif
+#if (((string_copy) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_copy == $0b
+#endif
+#if (((string_delete) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_delete == $0b
+#endif
+#if (((string_down) >> 8) & $ff) <> $0a
+#error Assertion failed: >string_down == $0a
+#endif
+#if (((string_downarrow) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_downarrow == $0b
+#endif
+#if (((string_enteryourname) >> 8) & $ff) <> $29
+#error Assertion failed: >string_enteryourname == $29
+#endif
+#if (((string_escape) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_escape == $0b
+#endif
+#if (((string_gameover) >> 8) & $ff) <> $2a
+#error Assertion failed: >string_gameover == $2a
+#endif
+#if (((string_getready) >> 8) & $ff) <> $2a
+#error Assertion failed: >string_getready == $2a
+#endif
+#if (((string_highscores) >> 8) & $ff) <> $29
+#error Assertion failed: >string_highscores == $29
+#endif
+#if (((string_hiscorepos) >> 8) & $ff) <> $29
+#error Assertion failed: >string_hiscorepos == $29
+#endif
+#if (((string_hiscoreprompt) >> 8) & $ff) <> $29
+#error Assertion failed: >string_hiscoreprompt == $29
+#endif
+#if (((string_holdabort) >> 8) & $ff) <> $0c
+#error Assertion failed: >string_holdabort == $0c
+#endif
+#if (((string_howmanyplayers) >> 8) & $ff) <> $2c
+#error Assertion failed: >string_howmanyplayers == $2c
+#endif
+#if (((string_jump) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_jump == $0b
+#endif
+#if (((string_keyhelp) >> 8) & $ff) <> $2d
+#error Assertion failed: >string_keyhelp == $2d
+#endif
+#if (((string_keys) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_keys == $0b
+#endif
+#if (((string_keyselection) >> 8) & $ff) <> $0a
+#error Assertion failed: >string_keyselection == $0a
+#endif
+#if (((string_left) >> 8) & $ff) <> $0a
+#error Assertion failed: >string_left == $0a
+#endif
+#if (((string_leftarrow) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_leftarrow == $0b
+#endif
+#if (((string_playerN) >> 8) & $ff) <> $2a
+#error Assertion failed: >string_playerN == $2a
+#endif
+#if (((string_return) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_return == $0b
+#endif
+#if (((string_right) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_right == $0b
+#endif
+#if (((string_rightarrow) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_rightarrow == $0b
+#endif
+#if (((string_shift) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_shift == $0b
+#endif
+#if (((string_shiftlock) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_shiftlock == $0b
+#endif
+#if (((string_space) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_space == $0b
+#endif
+#if (((string_tab) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_tab == $0b
+#endif
+#if (((string_up) >> 8) & $ff) <> $0a
+#error Assertion failed: >string_up == $0a
+#endif
+#if (((string_uparrow) >> 8) & $ff) <> $0b
+#error Assertion failed: >string_uparrow == $0b
+#endif
+#if (((string_vdu19) >> 8) & $ff) <> $2b
+#error Assertion failed: >string_vdu19 == $2b
+#endif
+#if (SpriteId_BirdEatRight1 - SpriteId_BirdRight1) <> $06
+#error Assertion failed: SpriteId_BirdEatRight1 - SpriteId_BirdRight1 == $06
+#endif
+#if (SpriteId_BirdLeft1 - SpriteId_BirdRight1) <> $02
+#error Assertion failed: SpriteId_BirdLeft1 - SpriteId_BirdRight1 == $02
+#endif
+#if (SpriteId_BirdRight1 - SpriteId_BirdRight1) <> $00
+#error Assertion failed: SpriteId_BirdRight1 - SpriteId_BirdRight1 == $00
+#endif
+#if (SpriteId_BirdUpDown1 - SpriteId_BirdRight1) <> $04
+#error Assertion failed: SpriteId_BirdUpDown1 - SpriteId_BirdRight1 == $04
+#endif
+#if (codemain_end+1792) <> $3700
+#error Assertion failed: codemain_end+1792 == $3700
+#endif
+#if (hiscorenamebuffer) <> $29a2
+#error Assertion failed: hiscorenamebuffer == $29a2
+#endif
+#if (hiscorenamebuffer_end - hiscorenamebuffer - 1) <> $08
+#error Assertion failed: hiscorenamebuffer_end - hiscorenamebuffer - 1 == $08
+#endif
+#if (map0data) <> $0cd0
+#error Assertion failed: map0data == $0cd0
+#endif
+#if (map1data) <> $0d3e
+#error Assertion failed: map1data == $0d3e
+#endif
+#if (map2data) <> $0db2
+#error Assertion failed: map2data == $0db2
+#endif
+#if (map3data) <> $0e4b
+#error Assertion failed: map3data == $0e4b
+#endif
+#if (map4data) <> $0edc
+#error Assertion failed: map4data == $0edc
+#endif
+#if (map5data) <> $0f6c
+#error Assertion failed: map5data == $0f6c
+#endif
+#if (map6data) <> $0fe8
+#error Assertion failed: map6data == $0fe8
+#endif
+#if (map7data) <> $1072
+#error Assertion failed: map7data == $1072
+#endif
+#if (showkeys+$0700) <> $1000
+#error Assertion failed: showkeys+$0700 == $1000
+#endif
+#if (sprite_bigbirdleft1) <> $131c
+#error Assertion failed: sprite_bigbirdleft1 == $131c
+#endif
+#if (sprite_bigbirdleft2) <> $134c
+#error Assertion failed: sprite_bigbirdleft2 == $134c
+#endif
+#if (sprite_bigbirdright1) <> $12bc
+#error Assertion failed: sprite_bigbirdright1 == $12bc
+#endif
+#if (sprite_bigbirdright2) <> $12ec
+#error Assertion failed: sprite_bigbirdright2 == $12ec
+#endif
+#if (sprite_bigc) <> $16f2
+#error Assertion failed: sprite_bigc == $16f2
+#endif
+#if (sprite_bige) <> $181e
+#error Assertion failed: sprite_bige == $181e
+#endif
+#if (sprite_bigg) <> $185a
+#error Assertion failed: sprite_bigg == $185a
+#endif
+#if (sprite_bigh) <> $172e
+#error Assertion failed: sprite_bigh == $172e
+#endif
+#if (sprite_bigi) <> $17e2
+#error Assertion failed: sprite_bigi == $17e2
+#endif
+#if (sprite_bigk) <> $17a6
+#error Assertion failed: sprite_bigk == $17a6
+#endif
+#if (sprite_bigu) <> $176a
+#error Assertion failed: sprite_bigu == $176a
+#endif
+#if (sprite_birdeatleft1) <> $1566
+#error Assertion failed: sprite_birdeatleft1 == $1566
+#endif
+#if (sprite_birdeatleft2) <> $158e
+#error Assertion failed: sprite_birdeatleft2 == $158e
+#endif
+#if (sprite_birdeatright1) <> $1516
+#error Assertion failed: sprite_birdeatright1 == $1516
+#endif
+#if (sprite_birdeatright2) <> $153e
+#error Assertion failed: sprite_birdeatright2 == $153e
+#endif
+#if (sprite_birdleft1) <> $14c4
+#error Assertion failed: sprite_birdleft1 == $14c4
+#endif
+#if (sprite_birdleft2) <> $14d8
+#error Assertion failed: sprite_birdleft2 == $14d8
+#endif
+#if (sprite_birdright1) <> $149c
+#error Assertion failed: sprite_birdright1 == $149c
+#endif
+#if (sprite_birdright2) <> $14b0
+#error Assertion failed: sprite_birdright2 == $14b0
+#endif
+#if (sprite_birdupdown1) <> $14ec
+#error Assertion failed: sprite_birdupdown1 == $14ec
+#endif
+#if (sprite_birdupdown2) <> $1500
+#error Assertion failed: sprite_birdupdown2 == $1500
+#endif
+#if (sprite_bonus) <> $168c
+#error Assertion failed: sprite_bonus == $168c
+#endif
+#if (sprite_cage) <> $140c
+#error Assertion failed: sprite_cage == $140c
+#endif
+#if (sprite_cagewithhole) <> $137c
+#error Assertion failed: sprite_cagewithhole == $137c
+#endif
+#if (sprite_digit0) <> $15b6
+#error Assertion failed: sprite_digit0 == $15b6
+#endif
+#if (sprite_digit1) <> $15bd
+#error Assertion failed: sprite_digit1 == $15bd
+#endif
+#if (sprite_digit2) <> $15c4
+#error Assertion failed: sprite_digit2 == $15c4
+#endif
+#if (sprite_digit3) <> $15cb
+#error Assertion failed: sprite_digit3 == $15cb
+#endif
+#if (sprite_digit4) <> $15d2
+#error Assertion failed: sprite_digit4 == $15d2
+#endif
+#if (sprite_digit5) <> $15d9
+#error Assertion failed: sprite_digit5 == $15d9
+#endif
+#if (sprite_digit6) <> $15e0
+#error Assertion failed: sprite_digit6 == $15e0
+#endif
+#if (sprite_digit7) <> $15e7
+#error Assertion failed: sprite_digit7 == $15e7
+#endif
+#if (sprite_digit8) <> $15ee
+#error Assertion failed: sprite_digit8 == $15ee
+#endif
+#if (sprite_digit9) <> $15f5
+#error Assertion failed: sprite_digit9 == $15f5
+#endif
+#if (sprite_egg) <> $1210
+#error Assertion failed: sprite_egg == $1210
+#endif
+#if (sprite_highlightbox) <> $1617
+#error Assertion failed: sprite_highlightbox == $1617
+#endif
+#if (sprite_ladder) <> $1208
+#error Assertion failed: sprite_ladder == $1208
+#endif
+#if (sprite_level) <> $165f
+#error Assertion failed: sprite_level == $165f
+#endif
+#if (sprite_life) <> $16ef
+#error Assertion failed: sprite_life == $16ef
+#endif
+#if (sprite_lift) <> $1220
+#error Assertion failed: sprite_lift == $1220
+#endif
+#if (sprite_manleft1) <> $1258
+#error Assertion failed: sprite_manleft1 == $1258
+#endif
+#if (sprite_manleft2) <> $1268
+#error Assertion failed: sprite_manleft2 == $1268
+#endif
+#if (sprite_manleft3) <> $1278
+#error Assertion failed: sprite_manleft3 == $1278
+#endif
+#if (sprite_manright1) <> $1228
+#error Assertion failed: sprite_manright1 == $1228
+#endif
+#if (sprite_manright2) <> $1238
+#error Assertion failed: sprite_manright2 == $1238
+#endif
+#if (sprite_manright3) <> $1248
+#error Assertion failed: sprite_manright3 == $1248
+#endif
+#if (sprite_manupdown1) <> $1288
+#error Assertion failed: sprite_manupdown1 == $1288
+#endif
+#if (sprite_manupdown2) <> $1298
+#error Assertion failed: sprite_manupdown2 == $1298
+#endif
+#if (sprite_manupdown3) <> $12aa
+#error Assertion failed: sprite_manupdown3 == $12aa
+#endif
+#if (sprite_platform) <> $1200
+#error Assertion failed: sprite_platform == $1200
+#endif
+#if (sprite_player) <> $163b
+#error Assertion failed: sprite_player == $163b
+#endif
+#if (sprite_score) <> $15fc
+#error Assertion failed: sprite_score == $15fc
+#endif
+#if (sprite_seed) <> $1218
+#error Assertion failed: sprite_seed == $1218
+#endif
+#if (sprite_time) <> $16c2
+#error Assertion failed: sprite_time == $16c2
+#endif
+#if (string_capslock_end - string_capslock_start) <> $09
+#error Assertion failed: string_capslock_end - string_capslock_start == $09
+#endif
+#if (string_control_end - string_control_start) <> $07
+#error Assertion failed: string_control_end - string_control_start == $07
+#endif
+#if (string_copy_end - string_copy_start) <> $04
+#error Assertion failed: string_copy_end - string_copy_start == $04
+#endif
+#if (string_delete_end - string_delete_start) <> $06
+#error Assertion failed: string_delete_end - string_delete_start == $06
+#endif
+#if (string_down_end - string_down_start) <> $0e
+#error Assertion failed: string_down_end - string_down_start == $0e
+#endif
+#if (string_downarrow_end - string_downarrow_start) <> $0a
+#error Assertion failed: string_downarrow_end - string_downarrow_start == $0a
+#endif
+#if (string_enteryourname_end - string_enteryourname_start) <> $33
+#error Assertion failed: string_enteryourname_end - string_enteryourname_start == $33
+#endif
+#if (string_escape_end - string_escape_start) <> $06
+#error Assertion failed: string_escape_end - string_escape_start == $06
+#endif
+#if (string_highscores_end - string_highscores_start) <> $17
+#error Assertion failed: string_highscores_end - string_highscores_start == $17
+#endif
+#if (string_hiscorepos_end - string_hiscorepos_start) <> $06
+#error Assertion failed: string_hiscorepos_end - string_hiscorepos_start == $06
+#endif
+#if (string_hiscoreprompt_end - string_hiscoreprompt_start) <> $0a
+#error Assertion failed: string_hiscoreprompt_end - string_hiscoreprompt_start == $0a
+#endif
+#if (string_holdabort_end - string_holdabort_start) <> $2e
+#error Assertion failed: string_holdabort_end - string_holdabort_start == $2e
+#endif
+#if (string_jump_end - string_jump_start) <> $0e
+#error Assertion failed: string_jump_end - string_jump_start == $0e
+#endif
+#if (string_keyhelp_end - string_keyhelp_start) <> $3b
+#error Assertion failed: string_keyhelp_end - string_keyhelp_start == $3b
+#endif
+#if (string_keys_end - string_keys_start) <> $10
+#error Assertion failed: string_keys_end - string_keys_start == $10
+#endif
+#if (string_keyselection_end - string_keyselection_start) <> $29
+#error Assertion failed: string_keyselection_end - string_keyselection_start == $29
+#endif
+#if (string_left_end - string_left_start) <> $0e
+#error Assertion failed: string_left_end - string_left_start == $0e
+#endif
+#if (string_leftarrow_end - string_leftarrow_start) <> $0a
+#error Assertion failed: string_leftarrow_end - string_leftarrow_start == $0a
+#endif
+#if (string_return_end - string_return_start) <> $06
+#error Assertion failed: string_return_end - string_return_start == $06
+#endif
+#if (string_right_end - string_right_start) <> $0f
+#error Assertion failed: string_right_end - string_right_start == $0f
+#endif
+#if (string_rightarrow_end - string_rightarrow_start) <> $0b
+#error Assertion failed: string_rightarrow_end - string_rightarrow_start == $0b
+#endif
+#if (string_shift_end - string_shift_start) <> $05
+#error Assertion failed: string_shift_end - string_shift_start == $05
+#endif
+#if (string_shiftlock_end - string_shiftlock_start) <> $0a
+#error Assertion failed: string_shiftlock_end - string_shiftlock_start == $0a
+#endif
+#if (string_space_end - string_space_start) <> $05
+#error Assertion failed: string_space_end - string_space_start == $05
+#endif
+#if (string_tab_end - string_tab_start) <> $03
+#error Assertion failed: string_tab_end - string_tab_start == $03
+#endif
+#if (string_up_end - string_up_start) <> $0c
+#error Assertion failed: string_up_end - string_up_start == $0c
+#endif
+#if (string_uparrow_end - string_uparrow_start) <> $08
+#error Assertion failed: string_uparrow_end - string_uparrow_start == $08
+#endif
 
 // Stats:
 //

@@ -10855,6 +10855,393 @@ lbfff
 * = $6000
 pydis_end
 
+#if (((c956d-1)) & $ff) <> $6c
+#error Assertion failed: <(c956d-1) == $6c
+#endif
+#if (((c956d-1)) & $ff) <> $6c
+#error Assertion failed: <(c956d-1) == $6c
+#endif
+#if (((sub_c8238-1)) & $ff) <> $37
+#error Assertion failed: <(sub_c8238-1) == $37
+#endif
+#if (((sub_c8254-1)) & $ff) <> $53
+#error Assertion failed: <(sub_c8254-1) == $53
+#endif
+#if (((sub_c8750-1)) & $ff) <> $4f
+#error Assertion failed: <(sub_c8750-1) == $4f
+#endif
+#if (((sub_c8782-1)) & $ff) <> $81
+#error Assertion failed: <(sub_c8782-1) == $81
+#endif
+#if (((sub_c8794-1)) & $ff) <> $93
+#error Assertion failed: <(sub_c8794-1) == $93
+#endif
+#if (((sub_c87ee-1)) & $ff) <> $ed
+#error Assertion failed: <(sub_c87ee-1) == $ed
+#endif
+#if (((sub_c893f-1)) & $ff) <> $3e
+#error Assertion failed: <(sub_c893f-1) == $3e
+#endif
+#if (((sub_c8943-1)) & $ff) <> $42
+#error Assertion failed: <(sub_c8943-1) == $42
+#endif
+#if (((sub_c89b7-1)) & $ff) <> $b6
+#error Assertion failed: <(sub_c89b7-1) == $b6
+#endif
+#if (((sub_c89e6-1)) & $ff) <> $e5
+#error Assertion failed: <(sub_c89e6-1) == $e5
+#endif
+#if (((sub_c8b47-1)) & $ff) <> $46
+#error Assertion failed: <(sub_c8b47-1) == $46
+#endif
+#if (((sub_c8bac-1)) & $ff) <> $ab
+#error Assertion failed: <(sub_c8bac-1) == $ab
+#endif
+#if (((sub_c9b59-1)) & $ff) <> $58
+#error Assertion failed: <(sub_c9b59-1) == $58
+#endif
+#if (((sub_ca106-1)) & $ff) <> $05
+#error Assertion failed: <(sub_ca106-1) == $05
+#endif
+#if (((sub_ca137-1)) & $ff) <> $36
+#error Assertion failed: <(sub_ca137-1) == $36
+#endif
+#if (((sub_ca244-1)) & $ff) <> $43
+#error Assertion failed: <(sub_ca244-1) == $43
+#endif
+#if (((sub_ca417-1)) & $ff) <> $16
+#error Assertion failed: <(sub_ca417-1) == $16
+#endif
+#if (((sub_ca463-1)) & $ff) <> $62
+#error Assertion failed: <(sub_ca463-1) == $62
+#endif
+#if (((sub_ca5bb-1)) & $ff) <> $ba
+#error Assertion failed: <(sub_ca5bb-1) == $ba
+#endif
+#if (((sub_ca5bf-1)) & $ff) <> $be
+#error Assertion failed: <(sub_ca5bf-1) == $be
+#endif
+#if (((sub_ca7f3-1)) & $ff) <> $f2
+#error Assertion failed: <(sub_ca7f3-1) == $f2
+#endif
+#if (((sub_ca7f6-1)) & $ff) <> $f5
+#error Assertion failed: <(sub_ca7f6-1) == $f5
+#endif
+#if (((sub_ca9d0-1)) & $ff) <> $cf
+#error Assertion failed: <(sub_ca9d0-1) == $cf
+#endif
+#if (((sub_caafd-1)) & $ff) <> $fc
+#error Assertion failed: <(sub_caafd-1) == $fc
+#endif
+#if (((sub_cab04-1)) & $ff) <> $03
+#error Assertion failed: <(sub_cab04-1) == $03
+#endif
+#if (((sub_cab46-1)) & $ff) <> $45
+#error Assertion failed: <(sub_cab46-1) == $45
+#endif
+#if (((sub_cabc5-1)) & $ff) <> $c4
+#error Assertion failed: <(sub_cabc5-1) == $c4
+#endif
+#if (((sub_cbb46-1)) & $ff) <> $45
+#error Assertion failed: <(sub_cbb46-1) == $45
+#endif
+#if (((sub_cbb4a-1)) & $ff) <> $49
+#error Assertion failed: <(sub_cbb4a-1) == $49
+#endif
+#if (((sub_cbbd3-1)) & $ff) <> $d2
+#error Assertion failed: <(sub_cbbd3-1) == $d2
+#endif
+#if (((sub_cbbd7-1)) & $ff) <> $d6
+#error Assertion failed: <(sub_cbbd7-1) == $d6
+#endif
+#if (((sub_cbc37-1)) & $ff) <> $36
+#error Assertion failed: <(sub_cbc37-1) == $36
+#endif
+#if (((sub_cbc81-1)) & $ff) <> $80
+#error Assertion failed: <(sub_cbc81-1) == $80
+#endif
+#if ((handle_bytev) & $ff) <> $0f
+#error Assertion failed: <handle_bytev == $0f
+#endif
+#if ((l0128) & $ff) <> $28
+#error Assertion failed: <l0128 == $28
+#endif
+#if ((l1000) & $ff) <> $00
+#error Assertion failed: <l1000 == $00
+#endif
+#if ((tube_brkv_handler) & $ff) <> $16
+#error Assertion failed: <tube_brkv_handler == $16
+#endif
+#if ((tube_evntv_handler) & $ff) <> $ad
+#error Assertion failed: <tube_evntv_handler == $ad
+#endif
+#if ((((c956d-1)) >> 8) & $ff) <> $95
+#error Assertion failed: >(c956d-1) == $95
+#endif
+#if ((((c956d-1)) >> 8) & $ff) <> $95
+#error Assertion failed: >(c956d-1) == $95
+#endif
+#if ((((sub_c8238-1)) >> 8) & $ff) <> $82
+#error Assertion failed: >(sub_c8238-1) == $82
+#endif
+#if ((((sub_c8254-1)) >> 8) & $ff) <> $82
+#error Assertion failed: >(sub_c8254-1) == $82
+#endif
+#if ((((sub_c8750-1)) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c8750-1) == $87
+#endif
+#if ((((sub_c8782-1)) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c8782-1) == $87
+#endif
+#if ((((sub_c8794-1)) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c8794-1) == $87
+#endif
+#if ((((sub_c87ee-1)) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c87ee-1) == $87
+#endif
+#if ((((sub_c893f-1)) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c893f-1) == $89
+#endif
+#if ((((sub_c8943-1)) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c8943-1) == $89
+#endif
+#if ((((sub_c89b7-1)) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c89b7-1) == $89
+#endif
+#if ((((sub_c89e6-1)) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c89e6-1) == $89
+#endif
+#if ((((sub_c8b47-1)) >> 8) & $ff) <> $8b
+#error Assertion failed: >(sub_c8b47-1) == $8b
+#endif
+#if ((((sub_c8bac-1)) >> 8) & $ff) <> $8b
+#error Assertion failed: >(sub_c8bac-1) == $8b
+#endif
+#if ((((sub_c9b59-1)) >> 8) & $ff) <> $9b
+#error Assertion failed: >(sub_c9b59-1) == $9b
+#endif
+#if ((((sub_ca106-1)) >> 8) & $ff) <> $a1
+#error Assertion failed: >(sub_ca106-1) == $a1
+#endif
+#if ((((sub_ca137-1)) >> 8) & $ff) <> $a1
+#error Assertion failed: >(sub_ca137-1) == $a1
+#endif
+#if ((((sub_ca244-1)) >> 8) & $ff) <> $a2
+#error Assertion failed: >(sub_ca244-1) == $a2
+#endif
+#if ((((sub_ca417-1)) >> 8) & $ff) <> $a4
+#error Assertion failed: >(sub_ca417-1) == $a4
+#endif
+#if ((((sub_ca463-1)) >> 8) & $ff) <> $a4
+#error Assertion failed: >(sub_ca463-1) == $a4
+#endif
+#if ((((sub_ca5bb-1)) >> 8) & $ff) <> $a5
+#error Assertion failed: >(sub_ca5bb-1) == $a5
+#endif
+#if ((((sub_ca5bf-1)) >> 8) & $ff) <> $a5
+#error Assertion failed: >(sub_ca5bf-1) == $a5
+#endif
+#if ((((sub_ca7f3-1)) >> 8) & $ff) <> $a7
+#error Assertion failed: >(sub_ca7f3-1) == $a7
+#endif
+#if ((((sub_ca7f6-1)) >> 8) & $ff) <> $a7
+#error Assertion failed: >(sub_ca7f6-1) == $a7
+#endif
+#if ((((sub_ca9d0-1)) >> 8) & $ff) <> $a9
+#error Assertion failed: >(sub_ca9d0-1) == $a9
+#endif
+#if ((((sub_caafd-1)) >> 8) & $ff) <> $aa
+#error Assertion failed: >(sub_caafd-1) == $aa
+#endif
+#if ((((sub_cab04-1)) >> 8) & $ff) <> $ab
+#error Assertion failed: >(sub_cab04-1) == $ab
+#endif
+#if ((((sub_cab46-1)) >> 8) & $ff) <> $ab
+#error Assertion failed: >(sub_cab46-1) == $ab
+#endif
+#if ((((sub_cabc5-1)) >> 8) & $ff) <> $ab
+#error Assertion failed: >(sub_cabc5-1) == $ab
+#endif
+#if ((((sub_cbb46-1)) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbb46-1) == $bb
+#endif
+#if ((((sub_cbb4a-1)) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbb4a-1) == $bb
+#endif
+#if ((((sub_cbbd3-1)) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbbd3-1) == $bb
+#endif
+#if ((((sub_cbbd7-1)) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbbd7-1) == $bb
+#endif
+#if ((((sub_cbc37-1)) >> 8) & $ff) <> $bc
+#error Assertion failed: >(sub_cbc37-1) == $bc
+#endif
+#if ((((sub_cbc81-1)) >> 8) & $ff) <> $bc
+#error Assertion failed: >(sub_cbc81-1) == $bc
+#endif
+#if (((handle_bytev) >> 8) & $ff) <> $ff
+#error Assertion failed: >handle_bytev == $ff
+#endif
+#if (((l0128) >> 8) & $ff) <> $01
+#error Assertion failed: >l0128 == $01
+#endif
+#if (((l1000) >> 8) & $ff) <> $10
+#error Assertion failed: >l1000 == $10
+#endif
+#if (((tube_brkv_handler) >> 8) & $ff) <> $00
+#error Assertion failed: >tube_brkv_handler == $00
+#endif
+#if (((tube_evntv_handler) >> 8) & $ff) <> $06
+#error Assertion failed: >tube_evntv_handler == $06
+#endif
+#if ((jump_address_low) & $ff) <> $51
+#error Assertion failed: `jump_address_low == $51
+#endif
+#if (copyright - rom_header - 1) <> $11
+#error Assertion failed: copyright - rom_header - 1 == $11
+#endif
+#if (l00b3 - 9) <> $aa
+#error Assertion failed: l00b3 - 9 == $aa
+#endif
+#if (l00bc - 8) <> $b4
+#error Assertion failed: l00bc - 8 == $b4
+#endif
+#if (nmi3_handler_rom_end-nmi3_handler_rom_start) <> $0e
+#error Assertion failed: nmi3_handler_rom_end-nmi3_handler_rom_start == $0e
+#endif
+#if (nmi_XXX1-(nmi_beq+2)) <> $48
+#error Assertion failed: nmi_XXX1-(nmi_beq+2) == $48
+#endif
+#if (nmi_XXX10-(nmi_bcs+2)) <> $32
+#error Assertion failed: nmi_XXX10-(nmi_bcs+2) == $32
+#endif
+#if (nmi_XXX11-(nmi_bcs+2)) <> $3b
+#error Assertion failed: nmi_XXX11-(nmi_bcs+2) == $3b
+#endif
+#if (nmi_XXX12-(nmi_bcs+2)) <> $3f
+#error Assertion failed: nmi_XXX12-(nmi_bcs+2) == $3f
+#endif
+#if (nmi_XXX13-(nmi_bcs+2)) <> $49
+#error Assertion failed: nmi_XXX13-(nmi_bcs+2) == $49
+#endif
+#if (nmi_XXX14-(nmi_bcs+2)) <> $4d
+#error Assertion failed: nmi_XXX14-(nmi_bcs+2) == $4d
+#endif
+#if (nmi_XXX15-(nmi_bcs+2)) <> $55
+#error Assertion failed: nmi_XXX15-(nmi_bcs+2) == $55
+#endif
+#if (nmi_XXX16-(nmi_bcs+2)) <> $5d
+#error Assertion failed: nmi_XXX16-(nmi_bcs+2) == $5d
+#endif
+#if (nmi_XXX17-(nmi_bcs+2)) <> $06
+#error Assertion failed: nmi_XXX17-(nmi_bcs+2) == $06
+#endif
+#if (nmi_XXX18-(nmi_bcs+2)) <> $11
+#error Assertion failed: nmi_XXX18-(nmi_bcs+2) == $11
+#endif
+#if (nmi_XXX19-(nmi_bcs+2)) <> $7b
+#error Assertion failed: nmi_XXX19-(nmi_bcs+2) == $7b
+#endif
+#if (nmi_XXX2-(nmi_beq+2)) <> $2f
+#error Assertion failed: nmi_XXX2-(nmi_beq+2) == $2f
+#endif
+#if (nmi_XXX2-1) <> $0d38
+#error Assertion failed: nmi_XXX2-1 == $0d38
+#endif
+#if (nmi_XXX20-(nmi_bcs+2)) <> $7f
+#error Assertion failed: nmi_XXX20-(nmi_bcs+2) == $7f
+#endif
+#if (nmi_XXX21-(nmi_bcs+2)) <> $26
+#error Assertion failed: nmi_XXX21-(nmi_bcs+2) == $26
+#endif
+#if (nmi_XXX22-(nmi_bcs+2)) <> $77
+#error Assertion failed: nmi_XXX22-(nmi_bcs+2) == $77
+#endif
+#if (nmi_XXX23-(nmi_bcs+2)) <> $24
+#error Assertion failed: nmi_XXX23-(nmi_bcs+2) == $24
+#endif
+#if (nmi_XXX5-(nmi_cmp_imm_or_bcs+2)) <> $06
+#error Assertion failed: nmi_XXX5-(nmi_cmp_imm_or_bcs+2) == $06
+#endif
+#if (nmi_XXX7-(nmi_XXX6+2)) <> $06
+#error Assertion failed: nmi_XXX7-(nmi_XXX6+2) == $06
+#endif
+#if (nmi_XXX8-(nmi_beq+2)) <> $4d
+#error Assertion failed: nmi_XXX8-(nmi_beq+2) == $4d
+#endif
+#if (nmi_handler2_rom_end-nmi_handler2_rom_start) <> $94
+#error Assertion failed: nmi_handler2_rom_end-nmi_handler2_rom_start == $94
+#endif
+#if (nmi_handler2_rom_start - 1) <> $9066
+#error Assertion failed: nmi_handler2_rom_start - 1 == $9066
+#endif
+#if (nmi_handler_ram - 1) <> $0cff
+#error Assertion failed: nmi_handler_ram - 1 == $0cff
+#endif
+#if (nmi_handler_rom_end - 1) <> $902f
+#error Assertion failed: nmi_handler_rom_end - 1 == $902f
+#endif
+#if (nmi_handler_rom_end-nmi_handler_rom_start-1) <> $5d
+#error Assertion failed: nmi_handler_rom_end-nmi_handler_rom_start-1 == $5d
+#endif
+#if (sub_c0520) <> $0520
+#error Assertion failed: sub_c0520 == $0520
+#endif
+#if (sub_c052d) <> $052d
+#error Assertion failed: sub_c052d == $052d
+#endif
+#if (sub_c0537) <> $0537
+#error Assertion failed: sub_c0537 == $0537
+#endif
+#if (sub_c0542) <> $0542
+#error Assertion failed: sub_c0542 == $0542
+#endif
+#if (sub_c055e) <> $055e
+#error Assertion failed: sub_c055e == $055e
+#endif
+#if (sub_c0596) <> $0596
+#error Assertion failed: sub_c0596 == $0596
+#endif
+#if (sub_c05a9) <> $05a9
+#error Assertion failed: sub_c05a9 == $05a9
+#endif
+#if (sub_c05d1) <> $05d1
+#error Assertion failed: sub_c05d1 == $05d1
+#endif
+#if (sub_c05f2) <> $05f2
+#error Assertion failed: sub_c05f2 == $05f2
+#endif
+#if (sub_c0607) <> $0607
+#error Assertion failed: sub_c0607 == $0607
+#endif
+#if (sub_c0627) <> $0627
+#error Assertion failed: sub_c0627 == $0627
+#endif
+#if (sub_c9785) <> $9785
+#error Assertion failed: sub_c9785 == $9785
+#endif
+#if (sub_c97b6) <> $97b6
+#error Assertion failed: sub_c97b6 == $97b6
+#endif
+#if (sub_c97c9) <> $97c9
+#error Assertion failed: sub_c97c9 == $97c9
+#endif
+#if (sub_c9c0c) <> $9c0c
+#error Assertion failed: sub_c9c0c == $9c0c
+#endif
+#if (sub_c9d9b) <> $9d9b
+#error Assertion failed: sub_c9d9b == $9d9b
+#endif
+#if (sub_c9e94) <> $9e94
+#error Assertion failed: sub_c9e94 == $9e94
+#endif
+#if (sub_c9f82) <> $9f82
+#error Assertion failed: sub_c9f82 == $9f82
+#endif
+#if (tube_host_osword_0) <> $0668
+#error Assertion failed: tube_host_osword_0 == $0668
+#endif
 
 // Label references by decreasing frequency:
 //     l00b8:                                            125

@@ -12,6 +12,12 @@ l0e07
     .asc "wo", $0d, "ld"                                              // 0e07: 77 6f 0d... wo.
 pydis_end
 
+#if (l0e06 - l0e01) <> $05
+#error Assertion failed: l0e06 - l0e01 == $05
+#endif
+#if (pydis_end - l0e07) <> $05
+#error Assertion failed: pydis_end - l0e07 == $05
+#endif
 
 // Stats:
 //

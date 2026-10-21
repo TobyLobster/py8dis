@@ -5847,6 +5847,1704 @@ osfind_block
     .asc "!BOOT"                                                      // 41c7: 21 42 4f... !BO
 pydis_end
 
+#if ((255 - inkey_key_shift) ^ 128) <> $80
+#error Assertion failed: (255 - inkey_key_shift) ^ 128 == $80
+#endif
+#if (255 - inkey_key_ctrl) <> $01
+#error Assertion failed: 255 - inkey_key_ctrl == $01
+#endif
+#if (255 - inkey_key_f0) <> $20
+#error Assertion failed: 255 - inkey_key_f0 == $20
+#endif
+#if (255 - inkey_key_shift) <> $00
+#error Assertion failed: 255 - inkey_key_shift == $00
+#endif
+#if ((input_buffer) & $ff) <> $05
+#error Assertion failed: <input_buffer == $05
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfile_block) & $ff) <> $99
+#error Assertion failed: <osfile_block == $99
+#endif
+#if ((osfind_block) & $ff) <> $c7
+#error Assertion failed: <osfind_block == $c7
+#endif
+#if ((osfind_block) & $ff) <> $c7
+#error Assertion failed: <osfind_block == $c7
+#endif
+#if ((osfind_block) & $ff) <> $c7
+#error Assertion failed: <osfind_block == $c7
+#endif
+#if ((osfind_block) & $ff) <> $c7
+#error Assertion failed: <osfind_block == $c7
+#endif
+#if ((osgbpb8_block) & $ff) <> $ba
+#error Assertion failed: <osgbpb8_block == $ba
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osgbpb_block) & $ff) <> $ad
+#error Assertion failed: <osgbpb_block == $ad
+#endif
+#if ((osword0block) & $ff) <> $00
+#error Assertion failed: <osword0block == $00
+#endif
+#if ((osword10block) & $ff) <> $be
+#error Assertion failed: <osword10block == $be
+#endif
+#if ((osword11block) & $ff) <> $c7
+#error Assertion failed: <osword11block == $c7
+#endif
+#if ((osword12block) & $ff) <> $cc
+#error Assertion failed: <osword12block == $cc
+#endif
+#if ((osword13block) & $ff) <> $d1
+#error Assertion failed: <osword13block == $d1
+#endif
+#if ((osword14block) & $ff) <> $d9
+#error Assertion failed: <osword14block == $d9
+#endif
+#if ((osword15block) & $ff) <> $f1
+#error Assertion failed: <osword15block == $f1
+#endif
+#if ((osword1block) & $ff) <> $85
+#error Assertion failed: <osword1block == $85
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword255block) & $ff) <> $81
+#error Assertion failed: <osword255block == $81
+#endif
+#if ((osword2block) & $ff) <> $8a
+#error Assertion failed: <osword2block == $8a
+#endif
+#if ((osword3block) & $ff) <> $8f
+#error Assertion failed: <osword3block == $8f
+#endif
+#if ((osword4block) & $ff) <> $94
+#error Assertion failed: <osword4block == $94
+#endif
+#if ((osword5block) & $ff) <> $99
+#error Assertion failed: <osword5block == $99
+#endif
+#if ((osword6block) & $ff) <> $9e
+#error Assertion failed: <osword6block == $9e
+#endif
+#if ((osword7block) & $ff) <> $a3
+#error Assertion failed: <osword7block == $a3
+#endif
+#if ((osword8block) & $ff) <> $ab
+#error Assertion failed: <osword8block == $ab
+#endif
+#if ((osword9block) & $ff) <> $b9
+#error Assertion failed: <osword9block == $b9
+#endif
+#if (((input_buffer) >> 8) & $ff) <> $40
+#error Assertion failed: >input_buffer == $40
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfile_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfile_block == $41
+#endif
+#if (((osfind_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfind_block == $41
+#endif
+#if (((osfind_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfind_block == $41
+#endif
+#if (((osfind_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfind_block == $41
+#endif
+#if (((osfind_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osfind_block == $41
+#endif
+#if (((osgbpb8_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb8_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osgbpb_block) >> 8) & $ff) <> $41
+#error Assertion failed: >osgbpb_block == $41
+#endif
+#if (((osword0block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword0block == $40
+#endif
+#if (((osword10block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword10block == $40
+#endif
+#if (((osword11block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword11block == $40
+#endif
+#if (((osword12block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword12block == $40
+#endif
+#if (((osword13block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword13block == $40
+#endif
+#if (((osword14block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword14block == $40
+#endif
+#if (((osword15block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword15block == $40
+#endif
+#if (((osword1block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword1block == $40
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword255block) >> 8) & $ff) <> $41
+#error Assertion failed: >osword255block == $41
+#endif
+#if (((osword2block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword2block == $40
+#endif
+#if (((osword3block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword3block == $40
+#endif
+#if (((osword4block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword4block == $40
+#endif
+#if (((osword5block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword5block == $40
+#endif
+#if (((osword6block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword6block == $40
+#endif
+#if (((osword7block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword7block == $40
+#endif
+#if (((osword8block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword8block == $40
+#endif
+#if (((osword9block) >> 8) & $ff) <> $40
+#error Assertion failed: >osword9block == $40
+#endif
 
 // Label references by decreasing frequency:
 //     osbyte:       803

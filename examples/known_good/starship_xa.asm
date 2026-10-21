@@ -7891,6 +7891,375 @@ c61f6
     .byt 0, 0, 0, 0, 0, 0                                             // 61f9: 00 00 00... ...
 pydis_end
 
+#if ('0') <> $30
+#error Assertion failed: '0' == $30
+#endif
+#if ('~') <> $7e
+#error Assertion failed: '~' == $7e
+#endif
+#if (((enemy_explosion_tables + $0000)) & $ff) <> $00
+#error Assertion failed: <(enemy_explosion_tables + $0000) == $00
+#endif
+#if (((enemy_explosion_tables + $0040)) & $ff) <> $40
+#error Assertion failed: <(enemy_explosion_tables + $0040) == $40
+#endif
+#if (((enemy_explosion_tables + $0080)) & $ff) <> $80
+#error Assertion failed: <(enemy_explosion_tables + $0080) == $80
+#endif
+#if (((enemy_explosion_tables + $00c0)) & $ff) <> $c0
+#error Assertion failed: <(enemy_explosion_tables + $00c0) == $c0
+#endif
+#if (((enemy_explosion_tables + $0100)) & $ff) <> $00
+#error Assertion failed: <(enemy_explosion_tables + $0100) == $00
+#endif
+#if (((enemy_explosion_tables + $0140)) & $ff) <> $40
+#error Assertion failed: <(enemy_explosion_tables + $0140) == $40
+#endif
+#if (((enemy_explosion_tables + $0180)) & $ff) <> $80
+#error Assertion failed: <(enemy_explosion_tables + $0180) == $80
+#endif
+#if (((enemy_explosion_tables + $01c0)) & $ff) <> $c0
+#error Assertion failed: <(enemy_explosion_tables + $01c0) == $c0
+#endif
+#if (((enemy_explosion_tables + $0200)) & $ff) <> $00
+#error Assertion failed: <(enemy_explosion_tables + $0200) == $00
+#endif
+#if (((enemy_explosion_tables + $0240)) & $ff) <> $40
+#error Assertion failed: <(enemy_explosion_tables + $0240) == $40
+#endif
+#if (((enemy_explosion_tables + $0280)) & $ff) <> $80
+#error Assertion failed: <(enemy_explosion_tables + $0280) == $80
+#endif
+#if (((enemy_explosion_tables + $02c0)) & $ff) <> $c0
+#error Assertion failed: <(enemy_explosion_tables + $02c0) == $c0
+#endif
+#if (((enemy_explosion_tables + $0300)) & $ff) <> $00
+#error Assertion failed: <(enemy_explosion_tables + $0300) == $00
+#endif
+#if (((enemy_explosion_tables + $0340)) & $ff) <> $40
+#error Assertion failed: <(enemy_explosion_tables + $0340) == $40
+#endif
+#if (((enemy_explosion_tables + $0380)) & $ff) <> $80
+#error Assertion failed: <(enemy_explosion_tables + $0380) == $80
+#endif
+#if (((enemy_explosion_tables + $03c0)) & $ff) <> $c0
+#error Assertion failed: <(enemy_explosion_tables + $03c0) == $c0
+#endif
+#if (((starship_torpedoes_table+4)) & $ff) <> $04
+#error Assertion failed: <(starship_torpedoes_table+4) == $04
+#endif
+#if ((enemy_ship_behaviour_routine0) & $ff) <> $49
+#error Assertion failed: <enemy_ship_behaviour_routine0 == $49
+#endif
+#if ((enemy_ship_behaviour_routine0) & $ff) <> $49
+#error Assertion failed: <enemy_ship_behaviour_routine0 == $49
+#endif
+#if ((enemy_ship_behaviour_routine1) & $ff) <> $b1
+#error Assertion failed: <enemy_ship_behaviour_routine1 == $b1
+#endif
+#if ((enemy_ship_behaviour_routine1) & $ff) <> $b1
+#error Assertion failed: <enemy_ship_behaviour_routine1 == $b1
+#endif
+#if ((enemy_ship_behaviour_routine2) & $ff) <> $ee
+#error Assertion failed: <enemy_ship_behaviour_routine2 == $ee
+#endif
+#if ((enemy_ship_behaviour_routine2) & $ff) <> $ee
+#error Assertion failed: <enemy_ship_behaviour_routine2 == $ee
+#endif
+#if ((enemy_ship_behaviour_routine3) & $ff) <> $1e
+#error Assertion failed: <enemy_ship_behaviour_routine3 == $1e
+#endif
+#if ((enemy_ship_behaviour_routine3) & $ff) <> $1e
+#error Assertion failed: <enemy_ship_behaviour_routine3 == $1e
+#endif
+#if ((enemy_ship_behaviour_routine4) & $ff) <> $41
+#error Assertion failed: <enemy_ship_behaviour_routine4 == $41
+#endif
+#if ((enemy_ship_behaviour_routine4) & $ff) <> $41
+#error Assertion failed: <enemy_ship_behaviour_routine4 == $41
+#endif
+#if ((enemy_ship_behaviour_routine5) & $ff) <> $6a
+#error Assertion failed: <enemy_ship_behaviour_routine5 == $6a
+#endif
+#if ((enemy_ship_behaviour_routine5) & $ff) <> $6a
+#error Assertion failed: <enemy_ship_behaviour_routine5 == $6a
+#endif
+#if ((enemy_ship_behaviour_routine6) & $ff) <> $2e
+#error Assertion failed: <enemy_ship_behaviour_routine6 == $2e
+#endif
+#if ((enemy_ship_behaviour_routine6) & $ff) <> $2e
+#error Assertion failed: <enemy_ship_behaviour_routine6 == $2e
+#endif
+#if ((enemy_ship_behaviour_routine7) & $ff) <> $61
+#error Assertion failed: <enemy_ship_behaviour_routine7 == $61
+#endif
+#if ((enemy_ship_behaviour_routine7) & $ff) <> $61
+#error Assertion failed: <enemy_ship_behaviour_routine7 == $61
+#endif
+#if ((enemy_torpedo_type_instruction) & $ff) <> $20
+#error Assertion failed: <enemy_torpedo_type_instruction == $20
+#endif
+#if ((enemy_torpedoes_table) & $ff) <> $b4
+#error Assertion failed: <enemy_torpedoes_table == $b4
+#endif
+#if ((enter_your_name_string) & $ff) <> $94
+#error Assertion failed: <enter_your_name_string == $94
+#endif
+#if ((envelope1) & $ff) <> $84
+#error Assertion failed: <envelope1 == $84
+#endif
+#if ((envelope2) & $ff) <> $92
+#error Assertion failed: <envelope2 == $92
+#endif
+#if ((envelope3) & $ff) <> $a0
+#error Assertion failed: <envelope3 == $a0
+#endif
+#if ((envelope4) & $ff) <> $ae
+#error Assertion failed: <envelope4 == $ae
+#endif
+#if ((input_osword_block) & $ff) <> $e1
+#error Assertion failed: <input_osword_block == $e1
+#endif
+#if ((instructions_string) & $ff) <> $92
+#error Assertion failed: <instructions_string == $92
+#endif
+#if ((keyboard_or_joystick) & $ff) <> $d6
+#error Assertion failed: <keyboard_or_joystick == $d6
+#endif
+#if ((sound_0) & $ff) <> $08
+#error Assertion failed: <sound_0 == $08
+#endif
+#if ((sound_1) & $ff) <> $c8
+#error Assertion failed: <sound_1 == $c8
+#endif
+#if ((sound_10) & $ff) <> $f0
+#error Assertion failed: <sound_10 == $f0
+#endif
+#if ((sound_11) & $ff) <> $f8
+#error Assertion failed: <sound_11 == $f8
+#endif
+#if ((sound_2) & $ff) <> $d0
+#error Assertion failed: <sound_2 == $d0
+#endif
+#if ((sound_3) & $ff) <> $d8
+#error Assertion failed: <sound_3 == $d8
+#endif
+#if ((sound_4) & $ff) <> $e0
+#error Assertion failed: <sound_4 == $e0
+#endif
+#if ((sound_7) & $ff) <> $f8
+#error Assertion failed: <sound_7 == $f8
+#endif
+#if ((sound_8) & $ff) <> $00
+#error Assertion failed: <sound_8 == $00
+#endif
+#if ((sound_9) & $ff) <> $08
+#error Assertion failed: <sound_9 == $08
+#endif
+#if ((sound_enabled) & $ff) <> $d7
+#error Assertion failed: <sound_enabled == $d7
+#endif
+#if ((star_table) & $ff) <> $00
+#error Assertion failed: <star_table == $00
+#endif
+#if ((starfleet_records_string) & $ff) <> $a5
+#error Assertion failed: <starfleet_records_string == $a5
+#endif
+#if ((starship_explosion_table) & $ff) <> $d0
+#error Assertion failed: <starship_explosion_table == $d0
+#endif
+#if ((starship_torpedo_type) & $ff) <> $5b
+#error Assertion failed: <starship_torpedo_type == $5b
+#endif
+#if ((starship_torpedoes_table) & $ff) <> $00
+#error Assertion failed: <starship_torpedoes_table == $00
+#endif
+#if ((the_frontiers_string) & $ff) <> $93
+#error Assertion failed: <the_frontiers_string == $93
+#endif
+#if ((((enemy_explosion_tables + $0000)) >> 8) & $ff) <> $4d
+#error Assertion failed: >(enemy_explosion_tables + $0000) == $4d
+#endif
+#if ((((enemy_explosion_tables + $0040)) >> 8) & $ff) <> $4d
+#error Assertion failed: >(enemy_explosion_tables + $0040) == $4d
+#endif
+#if ((((enemy_explosion_tables + $0080)) >> 8) & $ff) <> $4d
+#error Assertion failed: >(enemy_explosion_tables + $0080) == $4d
+#endif
+#if ((((enemy_explosion_tables + $00c0)) >> 8) & $ff) <> $4d
+#error Assertion failed: >(enemy_explosion_tables + $00c0) == $4d
+#endif
+#if ((((enemy_explosion_tables + $0100)) >> 8) & $ff) <> $4e
+#error Assertion failed: >(enemy_explosion_tables + $0100) == $4e
+#endif
+#if ((((enemy_explosion_tables + $0140)) >> 8) & $ff) <> $4e
+#error Assertion failed: >(enemy_explosion_tables + $0140) == $4e
+#endif
+#if ((((enemy_explosion_tables + $0180)) >> 8) & $ff) <> $4e
+#error Assertion failed: >(enemy_explosion_tables + $0180) == $4e
+#endif
+#if ((((enemy_explosion_tables + $01c0)) >> 8) & $ff) <> $4e
+#error Assertion failed: >(enemy_explosion_tables + $01c0) == $4e
+#endif
+#if ((((enemy_explosion_tables + $0200)) >> 8) & $ff) <> $4f
+#error Assertion failed: >(enemy_explosion_tables + $0200) == $4f
+#endif
+#if ((((enemy_explosion_tables + $0240)) >> 8) & $ff) <> $4f
+#error Assertion failed: >(enemy_explosion_tables + $0240) == $4f
+#endif
+#if ((((enemy_explosion_tables + $0280)) >> 8) & $ff) <> $4f
+#error Assertion failed: >(enemy_explosion_tables + $0280) == $4f
+#endif
+#if ((((enemy_explosion_tables + $02c0)) >> 8) & $ff) <> $4f
+#error Assertion failed: >(enemy_explosion_tables + $02c0) == $4f
+#endif
+#if ((((enemy_explosion_tables + $0300)) >> 8) & $ff) <> $50
+#error Assertion failed: >(enemy_explosion_tables + $0300) == $50
+#endif
+#if ((((enemy_explosion_tables + $0340)) >> 8) & $ff) <> $50
+#error Assertion failed: >(enemy_explosion_tables + $0340) == $50
+#endif
+#if ((((enemy_explosion_tables + $0380)) >> 8) & $ff) <> $50
+#error Assertion failed: >(enemy_explosion_tables + $0380) == $50
+#endif
+#if ((((enemy_explosion_tables + $03c0)) >> 8) & $ff) <> $50
+#error Assertion failed: >(enemy_explosion_tables + $03c0) == $50
+#endif
+#if ((((starship_torpedoes_table+4)) >> 8) & $ff) <> $4f
+#error Assertion failed: >(starship_torpedoes_table+4) == $4f
+#endif
+#if (((enemy_ship_behaviour_routine0) >> 8) & $ff) <> $32
+#error Assertion failed: >enemy_ship_behaviour_routine0 == $32
+#endif
+#if (((enemy_ship_behaviour_routine0) >> 8) & $ff) <> $32
+#error Assertion failed: >enemy_ship_behaviour_routine0 == $32
+#endif
+#if (((enemy_ship_behaviour_routine1) >> 8) & $ff) <> $32
+#error Assertion failed: >enemy_ship_behaviour_routine1 == $32
+#endif
+#if (((enemy_ship_behaviour_routine1) >> 8) & $ff) <> $32
+#error Assertion failed: >enemy_ship_behaviour_routine1 == $32
+#endif
+#if (((enemy_ship_behaviour_routine2) >> 8) & $ff) <> $32
+#error Assertion failed: >enemy_ship_behaviour_routine2 == $32
+#endif
+#if (((enemy_ship_behaviour_routine2) >> 8) & $ff) <> $32
+#error Assertion failed: >enemy_ship_behaviour_routine2 == $32
+#endif
+#if (((enemy_ship_behaviour_routine3) >> 8) & $ff) <> $33
+#error Assertion failed: >enemy_ship_behaviour_routine3 == $33
+#endif
+#if (((enemy_ship_behaviour_routine3) >> 8) & $ff) <> $33
+#error Assertion failed: >enemy_ship_behaviour_routine3 == $33
+#endif
+#if (((enemy_ship_behaviour_routine4) >> 8) & $ff) <> $33
+#error Assertion failed: >enemy_ship_behaviour_routine4 == $33
+#endif
+#if (((enemy_ship_behaviour_routine4) >> 8) & $ff) <> $33
+#error Assertion failed: >enemy_ship_behaviour_routine4 == $33
+#endif
+#if (((enemy_ship_behaviour_routine5) >> 8) & $ff) <> $33
+#error Assertion failed: >enemy_ship_behaviour_routine5 == $33
+#endif
+#if (((enemy_ship_behaviour_routine5) >> 8) & $ff) <> $33
+#error Assertion failed: >enemy_ship_behaviour_routine5 == $33
+#endif
+#if (((enemy_ship_behaviour_routine6) >> 8) & $ff) <> $37
+#error Assertion failed: >enemy_ship_behaviour_routine6 == $37
+#endif
+#if (((enemy_ship_behaviour_routine6) >> 8) & $ff) <> $37
+#error Assertion failed: >enemy_ship_behaviour_routine6 == $37
+#endif
+#if (((enemy_ship_behaviour_routine7) >> 8) & $ff) <> $37
+#error Assertion failed: >enemy_ship_behaviour_routine7 == $37
+#endif
+#if (((enemy_ship_behaviour_routine7) >> 8) & $ff) <> $37
+#error Assertion failed: >enemy_ship_behaviour_routine7 == $37
+#endif
+#if (((enemy_torpedo_type_instruction) >> 8) & $ff) <> $16
+#error Assertion failed: >enemy_torpedo_type_instruction == $16
+#endif
+#if (((enemy_torpedoes_table) >> 8) & $ff) <> $4f
+#error Assertion failed: >enemy_torpedoes_table == $4f
+#endif
+#if (((enter_your_name_string) >> 8) & $ff) <> $44
+#error Assertion failed: >enter_your_name_string == $44
+#endif
+#if (((envelope1) >> 8) & $ff) <> $21
+#error Assertion failed: >envelope1 == $21
+#endif
+#if (((envelope2) >> 8) & $ff) <> $21
+#error Assertion failed: >envelope2 == $21
+#endif
+#if (((envelope3) >> 8) & $ff) <> $21
+#error Assertion failed: >envelope3 == $21
+#endif
+#if (((envelope4) >> 8) & $ff) <> $21
+#error Assertion failed: >envelope4 == $21
+#endif
+#if (((input_osword_block) >> 8) & $ff) <> $44
+#error Assertion failed: >input_osword_block == $44
+#endif
+#if (((instructions_string) >> 8) & $ff) <> $3d
+#error Assertion failed: >instructions_string == $3d
+#endif
+#if (((keyboard_or_joystick) >> 8) & $ff) <> $1c
+#error Assertion failed: >keyboard_or_joystick == $1c
+#endif
+#if (((sound_0) >> 8) & $ff) <> $20
+#error Assertion failed: >sound_0 == $20
+#endif
+#if (((sound_1) >> 8) & $ff) <> $21
+#error Assertion failed: >sound_1 == $21
+#endif
+#if (((sound_10) >> 8) & $ff) <> $49
+#error Assertion failed: >sound_10 == $49
+#endif
+#if (((sound_11) >> 8) & $ff) <> $49
+#error Assertion failed: >sound_11 == $49
+#endif
+#if (((sound_2) >> 8) & $ff) <> $21
+#error Assertion failed: >sound_2 == $21
+#endif
+#if (((sound_3) >> 8) & $ff) <> $21
+#error Assertion failed: >sound_3 == $21
+#endif
+#if (((sound_4) >> 8) & $ff) <> $21
+#error Assertion failed: >sound_4 == $21
+#endif
+#if (((sound_7) >> 8) & $ff) <> $21
+#error Assertion failed: >sound_7 == $21
+#endif
+#if (((sound_8) >> 8) & $ff) <> $22
+#error Assertion failed: >sound_8 == $22
+#endif
+#if (((sound_9) >> 8) & $ff) <> $22
+#error Assertion failed: >sound_9 == $22
+#endif
+#if (((sound_enabled) >> 8) & $ff) <> $1c
+#error Assertion failed: >sound_enabled == $1c
+#endif
+#if (((star_table) >> 8) & $ff) <> $4b
+#error Assertion failed: >star_table == $4b
+#endif
+#if (((starfleet_records_string) >> 8) & $ff) <> $42
+#error Assertion failed: >starfleet_records_string == $42
+#endif
+#if (((starship_explosion_table) >> 8) & $ff) <> $4b
+#error Assertion failed: >starship_explosion_table == $4b
+#endif
+#if (((starship_torpedo_type) >> 8) & $ff) <> $26
+#error Assertion failed: >starship_torpedo_type == $26
+#endif
+#if (((starship_torpedoes_table) >> 8) & $ff) <> $4f
+#error Assertion failed: >starship_torpedoes_table == $4f
+#endif
+#if (((the_frontiers_string) >> 8) & $ff) <> $46
+#error Assertion failed: >the_frontiers_string == $46
+#endif
+#if (input_buffer) <> $44d3
+#error Assertion failed: input_buffer == $44d3
+#endif
 
 // Stats:
 //

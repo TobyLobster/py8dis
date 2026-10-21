@@ -47,6 +47,12 @@ sub_c0908
 * = $202d
 pydis_end
 
+#if (c201e) <> $201e
+#error Assertion failed: c201e == $201e
+#endif
+#if (print_and_inc_zp) <> $0900
+#error Assertion failed: print_and_inc_zp == $0900
+#endif
 
 // Label references by decreasing frequency:
 //     l0070:              3

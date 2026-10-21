@@ -13132,6 +13132,831 @@ initial_highscore_table
     .asc "0000000"                                                    // 5550: 30 30 30... 000
 pydis_end
 
+#if ($80+$00) <> $80
+#error Assertion failed: $80+$00 == $80
+#endif
+#if ($80+$03) <> $83
+#error Assertion failed: $80+$03 == $83
+#endif
+#if ($80+$05) <> $85
+#error Assertion failed: $80+$05 == $85
+#endif
+#if ($80+$0b) <> $8b
+#error Assertion failed: $80+$0b == $8b
+#endif
+#if ($80+$0d) <> $8d
+#error Assertion failed: $80+$0d == $8d
+#endif
+#if ($80+$11) <> $91
+#error Assertion failed: $80+$11 == $91
+#endif
+#if ($80+' ') <> $a0
+#error Assertion failed: $80+' ' == $a0
+#endif
+#if ($80+'1') <> $b1
+#error Assertion failed: $80+'1' == $b1
+#endif
+#if ($80+'2') <> $b2
+#error Assertion failed: $80+'2' == $b2
+#endif
+#if ($80+':') <> $ba
+#error Assertion failed: $80+':' == $ba
+#endif
+#if ($80+'B') <> $c2
+#error Assertion failed: $80+'B' == $c2
+#endif
+#if ($80+'P') <> $d0
+#error Assertion failed: $80+'P' == $d0
+#endif
+#if ($80+'S') <> $d3
+#error Assertion failed: $80+'S' == $d3
+#endif
+#if ($80+'c') <> $e3
+#error Assertion failed: $80+'c' == $e3
+#endif
+#if ($80+'d') <> $e4
+#error Assertion failed: $80+'d' == $e4
+#endif
+#if ($80+'e') <> $e5
+#error Assertion failed: $80+'e' == $e5
+#endif
+#if ($80+'f') <> $e6
+#error Assertion failed: $80+'f' == $e6
+#endif
+#if ($80+'h') <> $e8
+#error Assertion failed: $80+'h' == $e8
+#endif
+#if ($80+'l') <> $ec
+#error Assertion failed: $80+'l' == $ec
+#endif
+#if ($80+'m') <> $ed
+#error Assertion failed: $80+'m' == $ed
+#endif
+#if ($80+'n') <> $ee
+#error Assertion failed: $80+'n' == $ee
+#endif
+#if ($80+'r') <> $f2
+#error Assertion failed: $80+'r' == $f2
+#endif
+#if ($80+'s') <> $f3
+#error Assertion failed: $80+'s' == $f3
+#endif
+#if ($80+'t') <> $f4
+#error Assertion failed: $80+'t' == $f4
+#endif
+#if ($80+'y') <> $f9
+#error Assertion failed: $80+'y' == $f9
+#endif
+#if ('0') <> $30
+#error Assertion failed: '0' == $30
+#endif
+#if (100) <> $64
+#error Assertion failed: 100 == $64
+#endif
+#if ((($5800 + (0 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (0 * $0140)) == $00
+#endif
+#if ((($5800 + (1 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (1 * $0140)) == $40
+#endif
+#if ((($5800 + (10 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (10 * $0140)) == $80
+#endif
+#if ((($5800 + (11 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (11 * $0140)) == $c0
+#endif
+#if ((($5800 + (12 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (12 * $0140)) == $00
+#endif
+#if ((($5800 + (13 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (13 * $0140)) == $40
+#endif
+#if ((($5800 + (14 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (14 * $0140)) == $80
+#endif
+#if ((($5800 + (15 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (15 * $0140)) == $c0
+#endif
+#if ((($5800 + (16 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (16 * $0140)) == $00
+#endif
+#if ((($5800 + (17 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (17 * $0140)) == $40
+#endif
+#if ((($5800 + (18 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (18 * $0140)) == $80
+#endif
+#if ((($5800 + (19 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (19 * $0140)) == $c0
+#endif
+#if ((($5800 + (2 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (2 * $0140)) == $80
+#endif
+#if ((($5800 + (20 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (20 * $0140)) == $00
+#endif
+#if ((($5800 + (21 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (21 * $0140)) == $40
+#endif
+#if ((($5800 + (22 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (22 * $0140)) == $80
+#endif
+#if ((($5800 + (23 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (23 * $0140)) == $c0
+#endif
+#if ((($5800 + (24 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (24 * $0140)) == $00
+#endif
+#if ((($5800 + (25 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (25 * $0140)) == $40
+#endif
+#if ((($5800 + (26 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (26 * $0140)) == $80
+#endif
+#if ((($5800 + (27 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (27 * $0140)) == $c0
+#endif
+#if ((($5800 + (28 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (28 * $0140)) == $00
+#endif
+#if ((($5800 + (29 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (29 * $0140)) == $40
+#endif
+#if ((($5800 + (3 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (3 * $0140)) == $c0
+#endif
+#if ((($5800 + (30 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (30 * $0140)) == $80
+#endif
+#if ((($5800 + (31 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (31 * $0140)) == $c0
+#endif
+#if ((($5800 + (4 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (4 * $0140)) == $00
+#endif
+#if ((($5800 + (5 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (5 * $0140)) == $40
+#endif
+#if ((($5800 + (6 * $0140))) & $ff) <> $80
+#error Assertion failed: <($5800 + (6 * $0140)) == $80
+#endif
+#if ((($5800 + (7 * $0140))) & $ff) <> $c0
+#error Assertion failed: <($5800 + (7 * $0140)) == $c0
+#endif
+#if ((($5800 + (8 * $0140))) & $ff) <> $00
+#error Assertion failed: <($5800 + (8 * $0140)) == $00
+#endif
+#if ((($5800 + (9 * $0140))) & $ff) <> $40
+#error Assertion failed: <($5800 + (9 * $0140)) == $40
+#endif
+#if ((ammo_bar_screen_address) & $ff) <> $10
+#error Assertion failed: <ammo_bar_screen_address == $10
+#endif
+#if ((clock) & $ff) <> $00
+#error Assertion failed: <clock == $00
+#endif
+#if ((computer_bar_screen_address) & $ff) <> $50
+#error Assertion failed: <computer_bar_screen_address == $50
+#endif
+#if ((energy_bar_screen_address) & $ff) <> $d0
+#error Assertion failed: <energy_bar_screen_address == $d0
+#endif
+#if ((envelope1) & $ff) <> $e8
+#error Assertion failed: <envelope1 == $e8
+#endif
+#if ((envelope2) & $ff) <> $f6
+#error Assertion failed: <envelope2 == $f6
+#endif
+#if ((envelope3) & $ff) <> $04
+#error Assertion failed: <envelope3 == $04
+#endif
+#if ((envelope4) & $ff) <> $12
+#error Assertion failed: <envelope4 == $12
+#endif
+#if ((event_routine) & $ff) <> $9d
+#error Assertion failed: <event_routine == $9d
+#endif
+#if ((room_0_definition) & $ff) <> $3c
+#error Assertion failed: <room_0_definition == $3c
+#endif
+#if ((room_10_definition) & $ff) <> $19
+#error Assertion failed: <room_10_definition == $19
+#endif
+#if ((room_11_definition) & $ff) <> $a0
+#error Assertion failed: <room_11_definition == $a0
+#endif
+#if ((room_12_definition) & $ff) <> $19
+#error Assertion failed: <room_12_definition == $19
+#endif
+#if ((room_13_definition) & $ff) <> $b0
+#error Assertion failed: <room_13_definition == $b0
+#endif
+#if ((room_14_definition) & $ff) <> $28
+#error Assertion failed: <room_14_definition == $28
+#endif
+#if ((room_15_definition) & $ff) <> $8e
+#error Assertion failed: <room_15_definition == $8e
+#endif
+#if ((room_16_definition) & $ff) <> $0c
+#error Assertion failed: <room_16_definition == $0c
+#endif
+#if ((room_17_definition) & $ff) <> $69
+#error Assertion failed: <room_17_definition == $69
+#endif
+#if ((room_18_definition) & $ff) <> $fb
+#error Assertion failed: <room_18_definition == $fb
+#endif
+#if ((room_19_definition) & $ff) <> $83
+#error Assertion failed: <room_19_definition == $83
+#endif
+#if ((room_1_definition) & $ff) <> $99
+#error Assertion failed: <room_1_definition == $99
+#endif
+#if ((room_20_definition) & $ff) <> $f3
+#error Assertion failed: <room_20_definition == $f3
+#endif
+#if ((room_21_definition) & $ff) <> $6d
+#error Assertion failed: <room_21_definition == $6d
+#endif
+#if ((room_22_definition) & $ff) <> $c6
+#error Assertion failed: <room_22_definition == $c6
+#endif
+#if ((room_23_definition) & $ff) <> $3a
+#error Assertion failed: <room_23_definition == $3a
+#endif
+#if ((room_24_definition) & $ff) <> $b5
+#error Assertion failed: <room_24_definition == $b5
+#endif
+#if ((room_25_definition) & $ff) <> $33
+#error Assertion failed: <room_25_definition == $33
+#endif
+#if ((room_26_definition) & $ff) <> $93
+#error Assertion failed: <room_26_definition == $93
+#endif
+#if ((room_27_definition) & $ff) <> $f3
+#error Assertion failed: <room_27_definition == $f3
+#endif
+#if ((room_28_definition) & $ff) <> $87
+#error Assertion failed: <room_28_definition == $87
+#endif
+#if ((room_29_definition) & $ff) <> $1b
+#error Assertion failed: <room_29_definition == $1b
+#endif
+#if ((room_2_definition) & $ff) <> $e0
+#error Assertion failed: <room_2_definition == $e0
+#endif
+#if ((room_30_definition) & $ff) <> $a8
+#error Assertion failed: <room_30_definition == $a8
+#endif
+#if ((room_31_definition) & $ff) <> $08
+#error Assertion failed: <room_31_definition == $08
+#endif
+#if ((room_32_definition) & $ff) <> $6c
+#error Assertion failed: <room_32_definition == $6c
+#endif
+#if ((room_33_definition) & $ff) <> $f3
+#error Assertion failed: <room_33_definition == $f3
+#endif
+#if ((room_34_definition) & $ff) <> $59
+#error Assertion failed: <room_34_definition == $59
+#endif
+#if ((room_35_definition) & $ff) <> $b7
+#error Assertion failed: <room_35_definition == $b7
+#endif
+#if ((room_36_definition) & $ff) <> $5b
+#error Assertion failed: <room_36_definition == $5b
+#endif
+#if ((room_37_definition) & $ff) <> $fe
+#error Assertion failed: <room_37_definition == $fe
+#endif
+#if ((room_38_definition) & $ff) <> $85
+#error Assertion failed: <room_38_definition == $85
+#endif
+#if ((room_39_definition) & $ff) <> $04
+#error Assertion failed: <room_39_definition == $04
+#endif
+#if ((room_3_definition) & $ff) <> $60
+#error Assertion failed: <room_3_definition == $60
+#endif
+#if ((room_40_definition) & $ff) <> $b6
+#error Assertion failed: <room_40_definition == $b6
+#endif
+#if ((room_41_definition) & $ff) <> $50
+#error Assertion failed: <room_41_definition == $50
+#endif
+#if ((room_42_definition) & $ff) <> $e4
+#error Assertion failed: <room_42_definition == $e4
+#endif
+#if ((room_43_definition) & $ff) <> $92
+#error Assertion failed: <room_43_definition == $92
+#endif
+#if ((room_44_definition) & $ff) <> $0b
+#error Assertion failed: <room_44_definition == $0b
+#endif
+#if ((room_45_definition) & $ff) <> $8a
+#error Assertion failed: <room_45_definition == $8a
+#endif
+#if ((room_46_definition) & $ff) <> $d7
+#error Assertion failed: <room_46_definition == $d7
+#endif
+#if ((room_47_definition) & $ff) <> $86
+#error Assertion failed: <room_47_definition == $86
+#endif
+#if ((room_48_definition) & $ff) <> $d3
+#error Assertion failed: <room_48_definition == $d3
+#endif
+#if ((room_49_definition) & $ff) <> $6d
+#error Assertion failed: <room_49_definition == $6d
+#endif
+#if ((room_4_definition) & $ff) <> $d1
+#error Assertion failed: <room_4_definition == $d1
+#endif
+#if ((room_50_definition) & $ff) <> $e8
+#error Assertion failed: <room_50_definition == $e8
+#endif
+#if ((room_51_definition) & $ff) <> $b9
+#error Assertion failed: <room_51_definition == $b9
+#endif
+#if ((room_52_definition) & $ff) <> $2c
+#error Assertion failed: <room_52_definition == $2c
+#endif
+#if ((room_53_definition) & $ff) <> $c8
+#error Assertion failed: <room_53_definition == $c8
+#endif
+#if ((room_54_definition) & $ff) <> $20
+#error Assertion failed: <room_54_definition == $20
+#endif
+#if ((room_5_definition) & $ff) <> $19
+#error Assertion failed: <room_5_definition == $19
+#endif
+#if ((room_6_definition) & $ff) <> $4a
+#error Assertion failed: <room_6_definition == $4a
+#endif
+#if ((room_7_definition) & $ff) <> $ee
+#error Assertion failed: <room_7_definition == $ee
+#endif
+#if ((room_8_definition) & $ff) <> $2c
+#error Assertion failed: <room_8_definition == $2c
+#endif
+#if ((room_9_definition) & $ff) <> $8c
+#error Assertion failed: <room_9_definition == $8c
+#endif
+#if ((room_decode_draw_rect) & $ff) <> $19
+#error Assertion failed: <room_decode_draw_rect == $19
+#endif
+#if ((room_decode_move_in_delta_direction) & $ff) <> $88
+#error Assertion failed: <room_decode_move_in_delta_direction == $88
+#endif
+#if ((room_decode_plot_strip) & $ff) <> $61
+#error Assertion failed: <room_decode_plot_strip == $61
+#endif
+#if ((room_decode_set_cellxy) & $ff) <> $ef
+#error Assertion failed: <room_decode_set_cellxy == $ef
+#endif
+#if ((room_decode_set_deltax_or_y) & $ff) <> $c5
+#error Assertion failed: <room_decode_set_deltax_or_y == $c5
+#endif
+#if ((room_decode_set_sprite) & $ff) <> $ff
+#error Assertion failed: <room_decode_set_sprite == $ff
+#endif
+#if ((sound0) & $ff) <> $9a
+#error Assertion failed: <sound0 == $9a
+#endif
+#if ((sound1) & $ff) <> $a2
+#error Assertion failed: <sound1 == $a2
+#endif
+#if ((sound2) & $ff) <> $aa
+#error Assertion failed: <sound2 == $aa
+#endif
+#if ((sound3) & $ff) <> $b2
+#error Assertion failed: <sound3 == $b2
+#endif
+#if ((sound4) & $ff) <> $ba
+#error Assertion failed: <sound4 == $ba
+#endif
+#if ((sound5) & $ff) <> $c2
+#error Assertion failed: <sound5 == $c2
+#endif
+#if ((sound6) & $ff) <> $ca
+#error Assertion failed: <sound6 == $ca
+#endif
+#if ((sound7) & $ff) <> $d2
+#error Assertion failed: <sound7 == $d2
+#endif
+#if ((sound8) & $ff) <> $da
+#error Assertion failed: <sound8 == $da
+#endif
+#if ((sprite0) & $ff) <> $10
+#error Assertion failed: <sprite0 == $10
+#endif
+#if ((wait_clock_read_value) & $ff) <> $17
+#error Assertion failed: <wait_clock_read_value == $17
+#endif
+#if ((wait_clock_write_value) & $ff) <> $1c
+#error Assertion failed: <wait_clock_write_value == $1c
+#endif
+#if (((($5800 + (0 * $0140))) >> 8) & $ff) <> $58
+#error Assertion failed: >($5800 + (0 * $0140)) == $58
+#endif
+#if (((($5800 + (1 * $0140))) >> 8) & $ff) <> $59
+#error Assertion failed: >($5800 + (1 * $0140)) == $59
+#endif
+#if (((($5800 + (10 * $0140))) >> 8) & $ff) <> $64
+#error Assertion failed: >($5800 + (10 * $0140)) == $64
+#endif
+#if (((($5800 + (11 * $0140))) >> 8) & $ff) <> $65
+#error Assertion failed: >($5800 + (11 * $0140)) == $65
+#endif
+#if (((($5800 + (12 * $0140))) >> 8) & $ff) <> $67
+#error Assertion failed: >($5800 + (12 * $0140)) == $67
+#endif
+#if (((($5800 + (13 * $0140))) >> 8) & $ff) <> $68
+#error Assertion failed: >($5800 + (13 * $0140)) == $68
+#endif
+#if (((($5800 + (14 * $0140))) >> 8) & $ff) <> $69
+#error Assertion failed: >($5800 + (14 * $0140)) == $69
+#endif
+#if (((($5800 + (15 * $0140))) >> 8) & $ff) <> $6a
+#error Assertion failed: >($5800 + (15 * $0140)) == $6a
+#endif
+#if (((($5800 + (16 * $0140))) >> 8) & $ff) <> $6c
+#error Assertion failed: >($5800 + (16 * $0140)) == $6c
+#endif
+#if (((($5800 + (17 * $0140))) >> 8) & $ff) <> $6d
+#error Assertion failed: >($5800 + (17 * $0140)) == $6d
+#endif
+#if (((($5800 + (18 * $0140))) >> 8) & $ff) <> $6e
+#error Assertion failed: >($5800 + (18 * $0140)) == $6e
+#endif
+#if (((($5800 + (19 * $0140))) >> 8) & $ff) <> $6f
+#error Assertion failed: >($5800 + (19 * $0140)) == $6f
+#endif
+#if (((($5800 + (2 * $0140))) >> 8) & $ff) <> $5a
+#error Assertion failed: >($5800 + (2 * $0140)) == $5a
+#endif
+#if (((($5800 + (20 * $0140))) >> 8) & $ff) <> $71
+#error Assertion failed: >($5800 + (20 * $0140)) == $71
+#endif
+#if (((($5800 + (21 * $0140))) >> 8) & $ff) <> $72
+#error Assertion failed: >($5800 + (21 * $0140)) == $72
+#endif
+#if (((($5800 + (22 * $0140))) >> 8) & $ff) <> $73
+#error Assertion failed: >($5800 + (22 * $0140)) == $73
+#endif
+#if (((($5800 + (23 * $0140))) >> 8) & $ff) <> $74
+#error Assertion failed: >($5800 + (23 * $0140)) == $74
+#endif
+#if (((($5800 + (24 * $0140))) >> 8) & $ff) <> $76
+#error Assertion failed: >($5800 + (24 * $0140)) == $76
+#endif
+#if (((($5800 + (25 * $0140))) >> 8) & $ff) <> $77
+#error Assertion failed: >($5800 + (25 * $0140)) == $77
+#endif
+#if (((($5800 + (26 * $0140))) >> 8) & $ff) <> $78
+#error Assertion failed: >($5800 + (26 * $0140)) == $78
+#endif
+#if (((($5800 + (27 * $0140))) >> 8) & $ff) <> $79
+#error Assertion failed: >($5800 + (27 * $0140)) == $79
+#endif
+#if (((($5800 + (28 * $0140))) >> 8) & $ff) <> $7b
+#error Assertion failed: >($5800 + (28 * $0140)) == $7b
+#endif
+#if (((($5800 + (29 * $0140))) >> 8) & $ff) <> $7c
+#error Assertion failed: >($5800 + (29 * $0140)) == $7c
+#endif
+#if (((($5800 + (3 * $0140))) >> 8) & $ff) <> $5b
+#error Assertion failed: >($5800 + (3 * $0140)) == $5b
+#endif
+#if (((($5800 + (30 * $0140))) >> 8) & $ff) <> $7d
+#error Assertion failed: >($5800 + (30 * $0140)) == $7d
+#endif
+#if (((($5800 + (31 * $0140))) >> 8) & $ff) <> $7e
+#error Assertion failed: >($5800 + (31 * $0140)) == $7e
+#endif
+#if (((($5800 + (4 * $0140))) >> 8) & $ff) <> $5d
+#error Assertion failed: >($5800 + (4 * $0140)) == $5d
+#endif
+#if (((($5800 + (5 * $0140))) >> 8) & $ff) <> $5e
+#error Assertion failed: >($5800 + (5 * $0140)) == $5e
+#endif
+#if (((($5800 + (6 * $0140))) >> 8) & $ff) <> $5f
+#error Assertion failed: >($5800 + (6 * $0140)) == $5f
+#endif
+#if (((($5800 + (7 * $0140))) >> 8) & $ff) <> $60
+#error Assertion failed: >($5800 + (7 * $0140)) == $60
+#endif
+#if (((($5800 + (8 * $0140))) >> 8) & $ff) <> $62
+#error Assertion failed: >($5800 + (8 * $0140)) == $62
+#endif
+#if (((($5800 + (9 * $0140))) >> 8) & $ff) <> $63
+#error Assertion failed: >($5800 + (9 * $0140)) == $63
+#endif
+#if (((ammo_bar_screen_address) >> 8) & $ff) <> $5a
+#error Assertion failed: >ammo_bar_screen_address == $5a
+#endif
+#if (((clock) >> 8) & $ff) <> $0e
+#error Assertion failed: >clock == $0e
+#endif
+#if (((computer_bar_screen_address) >> 8) & $ff) <> $5b
+#error Assertion failed: >computer_bar_screen_address == $5b
+#endif
+#if (((energy_bar_screen_address) >> 8) & $ff) <> $58
+#error Assertion failed: >energy_bar_screen_address == $58
+#endif
+#if (((envelope1) >> 8) & $ff) <> $50
+#error Assertion failed: >envelope1 == $50
+#endif
+#if (((envelope2) >> 8) & $ff) <> $50
+#error Assertion failed: >envelope2 == $50
+#endif
+#if (((envelope3) >> 8) & $ff) <> $51
+#error Assertion failed: >envelope3 == $51
+#endif
+#if (((envelope4) >> 8) & $ff) <> $51
+#error Assertion failed: >envelope4 == $51
+#endif
+#if (((event_routine) >> 8) & $ff) <> $51
+#error Assertion failed: >event_routine == $51
+#endif
+#if (((room_0_definition) >> 8) & $ff) <> $21
+#error Assertion failed: >room_0_definition == $21
+#endif
+#if (((room_10_definition) >> 8) & $ff) <> $25
+#error Assertion failed: >room_10_definition == $25
+#endif
+#if (((room_11_definition) >> 8) & $ff) <> $25
+#error Assertion failed: >room_11_definition == $25
+#endif
+#if (((room_12_definition) >> 8) & $ff) <> $26
+#error Assertion failed: >room_12_definition == $26
+#endif
+#if (((room_13_definition) >> 8) & $ff) <> $26
+#error Assertion failed: >room_13_definition == $26
+#endif
+#if (((room_14_definition) >> 8) & $ff) <> $27
+#error Assertion failed: >room_14_definition == $27
+#endif
+#if (((room_15_definition) >> 8) & $ff) <> $27
+#error Assertion failed: >room_15_definition == $27
+#endif
+#if (((room_16_definition) >> 8) & $ff) <> $28
+#error Assertion failed: >room_16_definition == $28
+#endif
+#if (((room_17_definition) >> 8) & $ff) <> $28
+#error Assertion failed: >room_17_definition == $28
+#endif
+#if (((room_18_definition) >> 8) & $ff) <> $28
+#error Assertion failed: >room_18_definition == $28
+#endif
+#if (((room_19_definition) >> 8) & $ff) <> $29
+#error Assertion failed: >room_19_definition == $29
+#endif
+#if (((room_1_definition) >> 8) & $ff) <> $21
+#error Assertion failed: >room_1_definition == $21
+#endif
+#if (((room_20_definition) >> 8) & $ff) <> $29
+#error Assertion failed: >room_20_definition == $29
+#endif
+#if (((room_21_definition) >> 8) & $ff) <> $2a
+#error Assertion failed: >room_21_definition == $2a
+#endif
+#if (((room_22_definition) >> 8) & $ff) <> $2a
+#error Assertion failed: >room_22_definition == $2a
+#endif
+#if (((room_23_definition) >> 8) & $ff) <> $2b
+#error Assertion failed: >room_23_definition == $2b
+#endif
+#if (((room_24_definition) >> 8) & $ff) <> $2b
+#error Assertion failed: >room_24_definition == $2b
+#endif
+#if (((room_25_definition) >> 8) & $ff) <> $2c
+#error Assertion failed: >room_25_definition == $2c
+#endif
+#if (((room_26_definition) >> 8) & $ff) <> $2c
+#error Assertion failed: >room_26_definition == $2c
+#endif
+#if (((room_27_definition) >> 8) & $ff) <> $2c
+#error Assertion failed: >room_27_definition == $2c
+#endif
+#if (((room_28_definition) >> 8) & $ff) <> $2d
+#error Assertion failed: >room_28_definition == $2d
+#endif
+#if (((room_29_definition) >> 8) & $ff) <> $2e
+#error Assertion failed: >room_29_definition == $2e
+#endif
+#if (((room_2_definition) >> 8) & $ff) <> $21
+#error Assertion failed: >room_2_definition == $21
+#endif
+#if (((room_30_definition) >> 8) & $ff) <> $2e
+#error Assertion failed: >room_30_definition == $2e
+#endif
+#if (((room_31_definition) >> 8) & $ff) <> $2f
+#error Assertion failed: >room_31_definition == $2f
+#endif
+#if (((room_32_definition) >> 8) & $ff) <> $2f
+#error Assertion failed: >room_32_definition == $2f
+#endif
+#if (((room_33_definition) >> 8) & $ff) <> $2f
+#error Assertion failed: >room_33_definition == $2f
+#endif
+#if (((room_34_definition) >> 8) & $ff) <> $30
+#error Assertion failed: >room_34_definition == $30
+#endif
+#if (((room_35_definition) >> 8) & $ff) <> $30
+#error Assertion failed: >room_35_definition == $30
+#endif
+#if (((room_36_definition) >> 8) & $ff) <> $31
+#error Assertion failed: >room_36_definition == $31
+#endif
+#if (((room_37_definition) >> 8) & $ff) <> $31
+#error Assertion failed: >room_37_definition == $31
+#endif
+#if (((room_38_definition) >> 8) & $ff) <> $32
+#error Assertion failed: >room_38_definition == $32
+#endif
+#if (((room_39_definition) >> 8) & $ff) <> $33
+#error Assertion failed: >room_39_definition == $33
+#endif
+#if (((room_3_definition) >> 8) & $ff) <> $22
+#error Assertion failed: >room_3_definition == $22
+#endif
+#if (((room_40_definition) >> 8) & $ff) <> $33
+#error Assertion failed: >room_40_definition == $33
+#endif
+#if (((room_41_definition) >> 8) & $ff) <> $34
+#error Assertion failed: >room_41_definition == $34
+#endif
+#if (((room_42_definition) >> 8) & $ff) <> $34
+#error Assertion failed: >room_42_definition == $34
+#endif
+#if (((room_43_definition) >> 8) & $ff) <> $35
+#error Assertion failed: >room_43_definition == $35
+#endif
+#if (((room_44_definition) >> 8) & $ff) <> $36
+#error Assertion failed: >room_44_definition == $36
+#endif
+#if (((room_45_definition) >> 8) & $ff) <> $36
+#error Assertion failed: >room_45_definition == $36
+#endif
+#if (((room_46_definition) >> 8) & $ff) <> $36
+#error Assertion failed: >room_46_definition == $36
+#endif
+#if (((room_47_definition) >> 8) & $ff) <> $37
+#error Assertion failed: >room_47_definition == $37
+#endif
+#if (((room_48_definition) >> 8) & $ff) <> $37
+#error Assertion failed: >room_48_definition == $37
+#endif
+#if (((room_49_definition) >> 8) & $ff) <> $38
+#error Assertion failed: >room_49_definition == $38
+#endif
+#if (((room_4_definition) >> 8) & $ff) <> $22
+#error Assertion failed: >room_4_definition == $22
+#endif
+#if (((room_50_definition) >> 8) & $ff) <> $38
+#error Assertion failed: >room_50_definition == $38
+#endif
+#if (((room_51_definition) >> 8) & $ff) <> $39
+#error Assertion failed: >room_51_definition == $39
+#endif
+#if (((room_52_definition) >> 8) & $ff) <> $3a
+#error Assertion failed: >room_52_definition == $3a
+#endif
+#if (((room_53_definition) >> 8) & $ff) <> $3a
+#error Assertion failed: >room_53_definition == $3a
+#endif
+#if (((room_54_definition) >> 8) & $ff) <> $3b
+#error Assertion failed: >room_54_definition == $3b
+#endif
+#if (((room_5_definition) >> 8) & $ff) <> $23
+#error Assertion failed: >room_5_definition == $23
+#endif
+#if (((room_6_definition) >> 8) & $ff) <> $23
+#error Assertion failed: >room_6_definition == $23
+#endif
+#if (((room_7_definition) >> 8) & $ff) <> $23
+#error Assertion failed: >room_7_definition == $23
+#endif
+#if (((room_8_definition) >> 8) & $ff) <> $24
+#error Assertion failed: >room_8_definition == $24
+#endif
+#if (((room_9_definition) >> 8) & $ff) <> $24
+#error Assertion failed: >room_9_definition == $24
+#endif
+#if (((room_decode_draw_rect) >> 8) & $ff) <> $43
+#error Assertion failed: >room_decode_draw_rect == $43
+#endif
+#if (((room_decode_move_in_delta_direction) >> 8) & $ff) <> $43
+#error Assertion failed: >room_decode_move_in_delta_direction == $43
+#endif
+#if (((room_decode_plot_strip) >> 8) & $ff) <> $43
+#error Assertion failed: >room_decode_plot_strip == $43
+#endif
+#if (((room_decode_set_cellxy) >> 8) & $ff) <> $42
+#error Assertion failed: >room_decode_set_cellxy == $42
+#endif
+#if (((room_decode_set_deltax_or_y) >> 8) & $ff) <> $42
+#error Assertion failed: >room_decode_set_deltax_or_y == $42
+#endif
+#if (((room_decode_set_sprite) >> 8) & $ff) <> $42
+#error Assertion failed: >room_decode_set_sprite == $42
+#endif
+#if (((sound0) >> 8) & $ff) <> $40
+#error Assertion failed: >sound0 == $40
+#endif
+#if (((sound1) >> 8) & $ff) <> $40
+#error Assertion failed: >sound1 == $40
+#endif
+#if (((sound2) >> 8) & $ff) <> $40
+#error Assertion failed: >sound2 == $40
+#endif
+#if (((sound3) >> 8) & $ff) <> $40
+#error Assertion failed: >sound3 == $40
+#endif
+#if (((sound4) >> 8) & $ff) <> $40
+#error Assertion failed: >sound4 == $40
+#endif
+#if (((sound5) >> 8) & $ff) <> $40
+#error Assertion failed: >sound5 == $40
+#endif
+#if (((sound6) >> 8) & $ff) <> $40
+#error Assertion failed: >sound6 == $40
+#endif
+#if (((sound7) >> 8) & $ff) <> $40
+#error Assertion failed: >sound7 == $40
+#endif
+#if (((sound8) >> 8) & $ff) <> $40
+#error Assertion failed: >sound8 == $40
+#endif
+#if (((sprite0) >> 8) & $ff) <> $12
+#error Assertion failed: >sprite0 == $12
+#endif
+#if (((wait_clock_read_value) >> 8) & $ff) <> $40
+#error Assertion failed: >wait_clock_read_value == $40
+#endif
+#if (((wait_clock_write_value) >> 8) & $ff) <> $40
+#error Assertion failed: >wait_clock_write_value == $40
+#endif
+#if (bar_pixels_set_table + 1) <> $3f5c
+#error Assertion failed: bar_pixels_set_table + 1 == $3f5c
+#endif
+#if (clock + 1) <> $0e01
+#error Assertion failed: clock + 1 == $0e01
+#endif
+#if (collision_map_addr_high - 5) <> $40f8
+#error Assertion failed: collision_map_addr_high - 5 == $40f8
+#endif
+#if (collision_map_addr_low - 5) <> $40dd
+#error Assertion failed: collision_map_addr_low - 5 == $40dd
+#endif
+#if (current_room_cache + 1) <> $0401
+#error Assertion failed: current_room_cache + 1 == $0401
+#endif
+#if (current_room_cache + 2) <> $0402
+#error Assertion failed: current_room_cache + 2 == $0402
+#endif
+#if (current_room_cache + 3) <> $0403
+#error Assertion failed: current_room_cache + 3 == $0403
+#endif
+#if (current_room_cache + 4) <> $0404
+#error Assertion failed: current_room_cache + 4 == $0404
+#endif
+#if (current_room_cache + 5) <> $0405
+#error Assertion failed: current_room_cache + 5 == $0405
+#endif
+#if (current_room_cache - 1) <> $03ff
+#error Assertion failed: current_room_cache - 1 == $03ff
+#endif
+#if (current_room_cache - 5) <> $03fb
+#error Assertion failed: current_room_cache - 5 == $03fb
+#endif
+#if (highscore_table_names + 25) <> $0619
+#error Assertion failed: highscore_table_names + 25 == $0619
+#endif
+#if (highscore_table_names - $70) <> $0590
+#error Assertion failed: highscore_table_names - $70 == $0590
+#endif
+#if (highscore_table_names - 1) <> $05ff
+#error Assertion failed: highscore_table_names - 1 == $05ff
+#endif
+#if (highscore_table_scores - 7) <> $06f3
+#error Assertion failed: highscore_table_scores - 7 == $06f3
+#endif
+#if (initial_highscore_table - $70) <> $53a7
+#error Assertion failed: initial_highscore_table - $70 == $53a7
+#endif
+#if (l0401 - 1) <> $0400
+#error Assertion failed: l0401 - 1 == $0400
+#endif
+#if (l0401 - 1) <> $0400
+#error Assertion failed: l0401 - 1 == $0400
+#endif
+#if (l0401 - 1) <> $0400
+#error Assertion failed: l0401 - 1 == $0400
+#endif
+#if (score_digits_0 - 1) <> $27
+#error Assertion failed: score_digits_0 - 1 == $27
+#endif
 
 // Automatically generated labels:
 //     l0401

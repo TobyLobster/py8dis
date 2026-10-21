@@ -85,6 +85,21 @@ l2085
     .asc "END"                                                        // 2089: 45 4e 44    END
 pydis_end
 
+#if ((-1-low_seven_bits) & $ff) <> $80
+#error Assertion failed: (-1-low_seven_bits) & $ff == $80
+#endif
+#if ((l0000-1) & $ffff) <> $ffff
+#error Assertion failed: (l0000-1) & $ffff == $ffff
+#endif
+#if (((l0000-1)) & $ff) <> $ff
+#error Assertion failed: <(l0000-1) == $ff
+#endif
+#if ((((l0000-1)) >> 8) & $ff) <> $ff
+#error Assertion failed: >(l0000-1) == $ff
+#endif
+#if (l2085 - l2085) <> $00
+#error Assertion failed: l2085 - l2085 == $00
+#endif
 
 // Label references by decreasing frequency:
 //     l0070:           4
