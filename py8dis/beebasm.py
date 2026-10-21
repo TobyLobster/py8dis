@@ -2,7 +2,6 @@
 Beebasm assembler
 """
 
-from __future__ import print_function
 import re
 import sys
 
@@ -36,7 +35,7 @@ class Beebasm(assembler.Assembler):
     """This class encapsulates beebasm-specific syntax and features."""
 
     def __init__(self):
-        super(assembler.Assembler, self).__init__()
+        super().__init__()
 
         self.explicit_a = True          # e.g. Output 'ROR A', not just 'ROR'
 

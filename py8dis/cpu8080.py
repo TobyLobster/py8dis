@@ -22,7 +22,7 @@ class Cpu8080(cpu.Cpu):
 
     def __new__(cls):
         if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
-            cls.instance = super(Cpu8080, cls).__new__(cls)
+            cls.instance = super().__new__(cls)
 
             #TODO: self.code_analysis_fns.append(subroutine_argument_finder)
         return cls.instance
@@ -30,7 +30,7 @@ class Cpu8080(cpu.Cpu):
     def __init__(self):
         if self.already_initialised():
             return
-        super(Cpu8080, self).__init__()
+        super().__init__()
 
         # For labelling ret instructions numerically
         self.return_index = 0
@@ -338,7 +338,7 @@ class Cpu8080(cpu.Cpu):
                 return []
         return [binary_addr]
 
-    class Opcode(object):
+    class Opcode:
         def __init__(self, mnemonic, operand_length, suffix = None, update=None):
             self.mnemonic = mnemonic
             self.suffix = suffix if suffix is not None else ""
@@ -376,7 +376,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeImplied(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeImplied, self).__init__(mnemonic, 0, update=update)
+            super().__init__(mnemonic, 0, update=update)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 1]
@@ -384,7 +384,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeImmediate(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeImmediate, self).__init__(mnemonic, 1, update=update)
+            super().__init__(mnemonic, 1, update=update)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 2]
@@ -400,7 +400,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeImmediate16(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeImmediate16, self).__init__(mnemonic, 2, update=update)
+            super().__init__(mnemonic, 2, update=update)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 3]
@@ -415,7 +415,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeAddr16(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeAddr16, self).__init__(mnemonic, 2, update=update)
+            super().__init__(mnemonic, 2, update=update)
 
         def abs_operand(self, binary_addr):
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
@@ -433,7 +433,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeJmp(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeJmp, self).__init__(mnemonic, 2, update=update)
+            super().__init__(mnemonic, 2, update=update)
 
         def _target(self, binary_addr):
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
@@ -461,7 +461,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeJmpInd(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeJmpInd, self).__init__(mnemonic, 0, update=update)
+            super().__init__(mnemonic, 0, update=update)
 
         def is_block_end(self):
             return True
@@ -472,7 +472,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeConditionalBranch(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeConditionalBranch, self).__init__(mnemonic, 2, update=update)
+            super().__init__(mnemonic, 2, update=update)
 
         def _target(self, binary_addr):
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
@@ -496,7 +496,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeCall(Opcode):
         def __init__(self, mnemonic, update=None):
-            super(Cpu8080.OpcodeCall, self).__init__(mnemonic, 2, update=update)
+            super().__init__(mnemonic, 2, update=update)
 
         def _target(self, binary_addr):
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
@@ -557,7 +557,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeReturn(Opcode):
         def __init__(self, mnemonic):
-            super(Cpu8080.OpcodeReturn, self).__init__(mnemonic, 0)
+            super().__init__(mnemonic, 0)
 
         def disassemble(self, binary_loc):
             return [None]
@@ -567,7 +567,7 @@ class Cpu8080(cpu.Cpu):
 
     class OpcodeReset(Opcode):
         def __init__(self, mnemonic):
-            super(Cpu8080.OpcodeReset, self).__init__(mnemonic, 0)
+            super().__init__(mnemonic, 0)
 
         def disassemble(self, binary_loc):
             return [None]
@@ -575,7 +575,7 @@ class Cpu8080(cpu.Cpu):
         def is_block_end(self):
             return True
 
-    class CpuState(object):
+    class CpuState:
         def __init__(self):
             self.clear(pessimistic_only=False)
 

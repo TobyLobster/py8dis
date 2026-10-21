@@ -1,4 +1,4 @@
-class Subroutine(object):
+class Subroutine:
     """Data describing a subroutine."""
 
     def __init__(self, runtime_addr, label_name, title, description, on_entry, on_exit, hook_function, move_id):

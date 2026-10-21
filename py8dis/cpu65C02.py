@@ -6,7 +6,7 @@ class Cpu65C02(Cpu6502):
 
     def __new__(cls):
         if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
-            cls.instance = super(Cpu65C02, cls).__new__(cls)
+            cls.instance = super().__new__(cls)
 
             config.set_cmos(True)
         return cls.instance
@@ -14,7 +14,7 @@ class Cpu65C02(Cpu6502):
     def __init__(self):
         if self.already_initialised():
             return
-        super(Cpu65C02, self).__init__()
+        super().__init__()
 
         # On a 65C02 undefined opcodes are guaranteed to be NOPs of
         # varying lengths. These are *not* implemented here, since most
@@ -92,7 +92,7 @@ class Cpu65C02(Cpu6502):
 
     class OpcodeUnconditionalBranch(Cpu6502.Opcode):
         def __init__(self, instruction_template, reg_change, cycles="???"):
-            super(Cpu65C02.OpcodeUnconditionalBranch, self).__init__(instruction_template, reg_change, cycles=cycles)
+            super().__init__(instruction_template, reg_change, cycles=cycles)
 
         def target(self, binary_addr):
             base = movemanager.b2r(binary_addr)
@@ -120,7 +120,7 @@ class Cpu65C02(Cpu6502):
 
     class OpcodeJmpAbsX(Cpu6502.OpcodeAbs):
         def __init__(self, instruction_template, reg_change, cycles="???"):
-            super(Cpu65C02.OpcodeJmpAbsX, self).__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
+            super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
             trace.cpu.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)

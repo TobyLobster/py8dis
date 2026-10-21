@@ -47,7 +47,7 @@ class MoveId(int):
 
     def __new__(cls, value, *args, **kwargs):
         assert is_valid_move_id(value)
-        return super(MoveId, cls).__new__(cls, value)
+        return super().__new__(cls, value)
 
     # We define the '__enter__' and '__exit__' methods for the 'with' command
     def __enter__(self):

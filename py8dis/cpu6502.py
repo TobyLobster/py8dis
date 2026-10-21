@@ -43,7 +43,7 @@ OPCODE_SBC_ZERO_PAGE_COMMA_X = 0xf5
 OPCODE_SBC_ABSOLUTE_COMMA_Y  = 0xf9
 OPCODE_SBC_ABSOLUTE_COMMA_X  = 0xfd
 
-class SubConst(object):
+class SubConst:
     """Data about a constant substitution.
 
     These are stored in substitute_constant_list"""
@@ -94,7 +94,7 @@ class SubConst(object):
         return int(result, 16)
 
 
-class RegState(object):
+class RegState:
     def __init__(self):
         self.clear()
 
@@ -122,7 +122,7 @@ class RegState(object):
     def __str__(self):
         return self.__repl__()
 
-class CpuStateDisposition(object):
+class CpuStateDisposition:
     def __init__(self):
         self._d = {
             # For A/X/Y, value is RegState.
@@ -429,7 +429,7 @@ class Cpu6502(cpu.Cpu):
     indirect_pattern            = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+\((.*)\)$", re.IGNORECASE)
     zp_or_addr_pattern          = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+(.+)$", re.IGNORECASE)
 
-    class CpuState(object):
+    class CpuState:
         def __init__(self):
             self.optimistic  = CpuStateDisposition()
             self.pessimistic = CpuStateDisposition()
@@ -453,13 +453,13 @@ class Cpu6502(cpu.Cpu):
 
     def __new__(cls):
         if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
-            cls.instance = super(Cpu6502, cls).__new__(cls)
+            cls.instance = super().__new__(cls)
         return cls.instance
 
     def __init__(self):
         if self.already_initialised():
             return
-        super(Cpu6502, self).__init__()
+        super().__init__()
 
         self.EMPTY_STATE = self.CpuState()
 
@@ -828,7 +828,7 @@ class Cpu6502(cpu.Cpu):
 
 
 
-    class Opcode(object):
+    class Opcode:
         def __init__(self, instruction_template, reg_change, update=None, cycles="???"):
 
             self.instruction_template = instruction_template
@@ -1022,7 +1022,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeReturn(Opcode):
         def __init__(self, instruction_template, reg_change, cycles="???"):
-            super(Cpu6502.OpcodeReturn, self).__init__(instruction_template, reg_change, cycles=cycles)
+            super().__init__(instruction_template, reg_change, cycles=cycles)
 
         def update_references(self, binary_loc):
             pass
@@ -1039,7 +1039,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeImplied(Opcode):
         def __init__(self, instruction_template, reg_change, cycles="???", update=None):
-            super(Cpu6502.OpcodeImplied, self).__init__(instruction_template, reg_change, cycles=cycles, update=update)
+            super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
 
         def update_references(self, binary_loc):
             pass
@@ -1056,7 +1056,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeImmediate(Opcode):
         def __init__(self, instruction_template, reg_change, cycles="???", update=None):
-            super(Cpu6502.OpcodeImmediate, self).__init__(instruction_template, reg_change, cycles=cycles, update=update)
+            super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
 
         def update_references(self, binary_loc):
             pass
@@ -1075,7 +1075,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeZp(Opcode):
         def __init__(self, instruction_template, reg_change, has_abs_version=True, cycles="???", update=None):
-            super(Cpu6502.OpcodeZp, self).__init__(instruction_template, reg_change, update=update, cycles=cycles)
+            super().__init__(instruction_template, reg_change, update=update, cycles=cycles)
             self._has_abs_version = has_abs_version
 
         def abs_operand(self, binary_addr):
@@ -1108,7 +1108,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeAbs(Opcode):
         def __init__(self, instruction_template, reg_change, has_zp_version=True, cycles="???", update=None):
-            super(Cpu6502.OpcodeAbs, self).__init__(instruction_template, reg_change, cycles=cycles, update=update)
+            super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
             self._has_zp_version = has_zp_version
 
         def abs_operand(self, binary_addr):
@@ -1153,7 +1153,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeDataAbs(OpcodeAbs):
         def __init__(self, instruction_template, reg_change, has_zp_version=True, cycles="???", update=None):
-            super(Cpu6502.OpcodeDataAbs, self).__init__(instruction_template, reg_change, has_zp_version, cycles=cycles, update=update)
+            super().__init__(instruction_template, reg_change, has_zp_version, cycles=cycles, update=update)
 
         def update_references(self, binary_loc):
             ref = self.abs_operand(binary_loc.binary_addr)
@@ -1165,7 +1165,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeJmpAbs(OpcodeAbs):
         def __init__(self, instruction_template, reg_change, cycles="???"):
-            super(Cpu6502.OpcodeJmpAbs, self).__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
+            super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
             trace.cpu.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
@@ -1186,7 +1186,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeJmpInd(OpcodeAbs):
         def __init__(self, instruction_template, reg_change, cycles="???"):
-            super(Cpu6502.OpcodeJmpInd, self).__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
+            super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def abs_operand(self, binary_addr):
             return memorymanager.RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
@@ -1206,7 +1206,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeJsr(OpcodeAbs):
         def __init__(self, instruction_template, reg_change, cycles="???"):
-            super(Cpu6502.OpcodeJsr, self).__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
+            super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
             trace.cpu.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
@@ -1264,7 +1264,7 @@ class Cpu6502(cpu.Cpu):
 
     class OpcodeConditionalBranch(Opcode):
         def __init__(self, instruction_template, reg_change, cycles="???", update=None):
-            super(Cpu6502.OpcodeConditionalBranch, self).__init__(instruction_template, reg_change, cycles=cycles, update=update)
+            super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
 
         def target(self, binary_addr):
             base = movemanager.b2r(binary_addr)

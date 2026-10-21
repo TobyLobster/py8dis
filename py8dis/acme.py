@@ -2,7 +2,6 @@
 Acme assembler
 """
 
-from __future__ import print_function
 import sys
 
 import config
@@ -14,7 +13,7 @@ class Acme(assembler.Assembler):
     """This class encapsulates acme-specific syntax and features."""
 
     def __init__(self):
-        super(assembler.Assembler, self).__init__()
+        super().__init__()
 
     def get_name(self):
         return "acme"

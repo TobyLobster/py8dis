@@ -3,7 +3,7 @@ import config
 import mainformatter
 from align import Align
 
-class Annotation(object):
+class Annotation:
     """A raw string to add to the output."""
 
     def __init__(self, text, align=Align.INLINE, priority=None, auto_generated=False):

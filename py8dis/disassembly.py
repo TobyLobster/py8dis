@@ -11,7 +11,6 @@ the end of disassembly there will be exactly one for all addresses in
 the target range, because we'll classify anything left over as data.
 """
 
-from __future__ import print_function
 import classification
 import collections
 import config

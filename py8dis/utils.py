@@ -117,7 +117,7 @@ def natural_sort(l):
 # we've decided if an address is code or data, since otherwise we
 # have all the information we need straight away. This means that we
 # *don't* need to use LazyString anywhere "outside" the tracing code.
-class LazyString(object):
+class LazyString:
     """Defers string formatting until needed"""
 
     def __init__(self, fmt, *args):

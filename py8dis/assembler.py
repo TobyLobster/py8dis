@@ -2,7 +2,7 @@
 Assembler base class
 """
 
-class Assembler(object):
+class Assembler:
     """The base assembler class. Classes representing particular assemblers such
     as acme, beebasm etc are derived from this class."""
 

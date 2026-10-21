@@ -36,7 +36,6 @@ instruction 'LDA #initial_lives + 1'. The address supplied for the
 expression must be of the operand, not the opcode.
 """
 
-from __future__ import print_function
 import collections
 import config
 import copy
@@ -83,7 +82,7 @@ INSIDE_A_CLASSIFICATION = _InsideAClassification()
 # memory and we might just crash (probably with an out-of-bounds error) if
 # disassembling right up to the top of memory.
 
-class Byte(object):
+class Byte:
     """Object used to mark part of the binary data as bytes."""
 
     def __init__(self, length, cols=None):
@@ -106,7 +105,7 @@ class Byte(object):
         return mainformatter.format_data_block(binary_loc, self._length, self._cols, 1, annotations)
 
 
-class Word(object):
+class Word:
     """Object used to mark part of the binary data as words (16 bit)."""
 
     def __init__(self, length, cols=None):
@@ -129,7 +128,7 @@ class Word(object):
         return mainformatter.format_data_block(binary_loc, self._length, self._cols, 2, annotations)
 
 
-class String(object):
+class String:
     """Object used to mark part of the binary data as a string."""
 
     def __init__(self, length):

@@ -18,7 +18,7 @@ from memorymanager import BinaryAddr, RuntimeAddr
 
 
 
-class Cpu(object):
+class Cpu:
     """Abstract base class representing a CPU"""
 
     def __init__(self):

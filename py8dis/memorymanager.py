@@ -129,7 +129,7 @@ class BinaryLocation:
         """Overrides the default implementation"""
         return hash((self.binary_addr, self.move_id))
 
-class MemoryRuntime(object):
+class MemoryRuntime:
     """Class for reading runtime memory with address validation"""
 
     def __getitem__(self, runtime_addr):

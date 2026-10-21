@@ -2,7 +2,6 @@
 z88dk assembler (for 8080)
 """
 
-from __future__ import print_function
 import sys
 
 import config
@@ -13,7 +12,7 @@ class Z88DK(assembler.Assembler):
     """This class encapsulates z88dk-specific syntax and features."""
 
     def __init__(self):
-        super(assembler.Assembler, self).__init__()
+        super().__init__()
 
     def get_name(self):
         return "z88dk"

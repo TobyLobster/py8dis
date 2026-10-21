@@ -2,7 +2,6 @@
 XA assembler
 """
 
-from __future__ import print_function
 import sys
 
 import config
@@ -15,7 +14,7 @@ class Xa(assembler.Assembler):
     """This class encapsulates xa-specific syntax and features."""
 
     def __init__(self):
-        super(assembler.Assembler, self).__init__()
+        super().__init__()
         self.pseudopc_index=0
 
     def get_name(self):
