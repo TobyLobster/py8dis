@@ -28,6 +28,8 @@ class Cpu8080(cpu.Cpu):
         return cls.instance
 
     def __init__(self):
+        if self.already_initialised():
+            return
         super(Cpu8080, self).__init__()
 
         # For labelling ret instructions numerically

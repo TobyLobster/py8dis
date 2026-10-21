@@ -457,6 +457,8 @@ class Cpu6502(cpu.Cpu):
         return cls.instance
 
     def __init__(self):
+        if self.already_initialised():
+            return
         super(Cpu6502, self).__init__()
 
         self.EMPTY_STATE = self.CpuState()

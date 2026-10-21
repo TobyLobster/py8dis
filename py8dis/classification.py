@@ -67,12 +67,17 @@ include_binary_files = dict()
 # Remember the addresses where a split_classification is requested
 split_classifications = set()
 
-# `INSIDE_A_CLASSIFICATION` is an arbitrary constant value.
+# `INSIDE_A_CLASSIFICATION` is a unique marker object.
 #
 # We assign this value to the second and subsequent bytes of a multi-byte
-# classification (e.g. the operands of an instruction). Its actual value doesn't
-# matter, as long as it's not None so we know these bytes have been classified.
-INSIDE_A_CLASSIFICATION = 0
+# classification (e.g. the operands of an instruction), so we know these bytes
+# have been classified. Compare with it using 'is'. (Being a unique object, it
+# can't be confused with 0, False or None.)
+class _InsideAClassification:
+    def __repr__(self):
+        return "INSIDE_A_CLASSIFICATION"
+
+INSIDE_A_CLASSIFICATION = _InsideAClassification()
 
 # ENHANCE: At the moment there's no support for wrapping round at the top of
 # memory and we might just crash (probably with an out-of-bounds error) if
@@ -323,7 +328,7 @@ def is_code(binary_addr):
     """Is the given `binary_addr` classified as an instruction opcode?"""
 
     c = classifications[binary_addr]
-    if c is None or c == INSIDE_A_CLASSIFICATION:
+    if c is None or c is INSIDE_A_CLASSIFICATION:
         return False
     return c.is_code(binary_addr)
 
@@ -336,14 +341,14 @@ def split_classification(binary_addr, *, warn):
     # Remember the split addresses for later, so that we can avoid adding a string across the split.
     split_classifications.add(binary_addr)
 
-    if classifications[binary_addr] != INSIDE_A_CLASSIFICATION:
+    if classifications[binary_addr] is not INSIDE_A_CLASSIFICATION:
         return
 
     # TODO: Do we need to check and not warn if this is just an automatic string/byte classification?
     if warn:
         utils.warn("move boundary at binary address {0} splits a classification".format(config.get_assembler().hex(binary_addr)))
     split_addr = binary_addr
-    while classifications[binary_addr] == INSIDE_A_CLASSIFICATION:
+    while classifications[binary_addr] is INSIDE_A_CLASSIFICATION:
         binary_addr -= 1
 
     # classify as bytes
@@ -408,7 +413,7 @@ def _check_string_bytes(binary_addr, length, *, report_addr=None):
 def describe_classification_at(binary_addr):
     """A short description of the classification covering the binary address, for messages."""
 
-    while classifications[binary_addr] == INSIDE_A_CLASSIFICATION and binary_addr > 0:
+    while classifications[binary_addr] is INSIDE_A_CLASSIFICATION and binary_addr > 0:
         binary_addr -= 1
     c = classifications[binary_addr]
     if isinstance(c, Byte):
@@ -663,7 +668,7 @@ def get_stats():
             elif isinstance(c, trace.cpu.Opcode):
                 result.num_instructions += 1
                 result.num_code_bytes += 1
-            elif c == INSIDE_A_CLASSIFICATION:
+            elif c is INSIDE_A_CLASSIFICATION:
                 if isinstance(oldc, Byte):
                     result.num_data_bytes += 1
                 elif isinstance(oldc, Word):
@@ -673,7 +678,7 @@ def get_stats():
                 elif isinstance(oldc, trace.cpu.Opcode):
                     result.num_code_bytes += 1
 
-            if c != INSIDE_A_CLASSIFICATION:
+            if c is not INSIDE_A_CLASSIFICATION:
                 oldc = c
 
     return result
@@ -704,7 +709,7 @@ def get_classification_map():
                 result += 'S'
             elif isinstance(c, trace.cpu.Opcode):
                 result += 'I'
-            elif c == INSIDE_A_CLASSIFICATION:
+            elif c is INSIDE_A_CLASSIFICATION:
                 if isinstance(oldc, Byte):
                     result += 'b'
                 elif isinstance(oldc, Word):
@@ -716,7 +721,7 @@ def get_classification_map():
             else:
                 result += '.'
 
-            if c != INSIDE_A_CLASSIFICATION:
+            if c is not INSIDE_A_CLASSIFICATION:
                 oldc = c
         result += "\n"
     return result

@@ -12,7 +12,6 @@ import machinetype
 import sys
 from memorymanager import BinaryAddr, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
-from classification import INSIDE_A_CLASSIFICATION
 from snippets6502 import register_snippet, register_code_snippet, register_data_snippet, OPCODE_TXA, OPCODE_TYA
 
 
@@ -339,9 +338,9 @@ def xy_addr(x_addr, y_addr):
             auto_expr(x_runtime_addr, label)
         else:
             # If memory is classified as a byte or 'INSIDE_A_CLASSIFICATION' (e.g. an operand of an instruction) then code them as individual bytes
-            if isinstance(classification.get_classification(x_addr), classification.Byte) or (classification.get_classification(x_addr) == INSIDE_A_CLASSIFICATION):
+            if isinstance(classification.get_classification(x_addr), classification.Byte) or (classification.get_classification(x_addr) is INSIDE_A_CLASSIFICATION):
                 auto_expr(x_runtime_addr, make_lo(label))
-            if isinstance(classification.get_classification(y_addr), classification.Byte) or (classification.get_classification(y_addr) == INSIDE_A_CLASSIFICATION):
+            if isinstance(classification.get_classification(y_addr), classification.Byte) or (classification.get_classification(y_addr) is INSIDE_A_CLASSIFICATION):
                 auto_expr(y_runtime_addr, make_hi(label))
 
         return RuntimeAddr((memory_binary[y_addr] << 8) | memory_binary[x_addr])

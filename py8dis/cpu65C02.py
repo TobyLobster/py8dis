@@ -12,6 +12,8 @@ class Cpu65C02(Cpu6502):
         return cls.instance
 
     def __init__(self):
+        if self.already_initialised():
+            return
         super(Cpu65C02, self).__init__()
 
         # On a 65C02 undefined opcodes are guaranteed to be NOPs of

@@ -22,6 +22,13 @@ class Cpu(object):
     """Abstract base class representing a CPU"""
 
     def __init__(self):
+        # Each CPU class is a singleton (see the __new__ methods), but Python
+        # calls __init__ every time the class is called, e.g. 'Cpu6502()'.
+        # Each subclass's __init__ checks this flag first so that calling
+        # the class again doesn't reset the CPU's state (entry points, hooks
+        # etc). See already_initialised().
+        self._initialised = True
+
         self.labels = labelmanager.labels
 
         self.subroutine_hooks = {}
@@ -39,6 +46,11 @@ class Cpu(object):
         # that constant a proper symbol name.
         self.cpu_states = [None] * 64*1024
 
+
+    def already_initialised(self):
+        """True if this CPU singleton has already been initialised (so __init__
+        should do nothing)."""
+        return self.__dict__.get("_initialised", False)
 
     def disassemble_instruction(self, binary_addr):
         """
@@ -214,7 +226,7 @@ class Cpu(object):
             # own move is more likely to be reaching a different move's code
             # at that address (unlike a data reference, e.g. self modifying
             # code changing an operand).
-            if classification.get_classification(binary_addr) == classification.INSIDE_A_CLASSIFICATION:
+            if classification.get_classification(binary_addr) is classification.INSIDE_A_CLASSIFICATION:
                 ref = classification.get_classification(ref_binary_loc.binary_addr)
                 if getattr(ref, "could_be_call_to_subroutine", lambda: False)():
                     return None
