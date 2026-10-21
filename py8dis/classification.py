@@ -273,13 +273,8 @@ def get_expression(binary_addr, expected_value, is_address=False):
     expression = expressions[binary_addr]
     c = get_classification(binary_addr)
     if isinstance(c, String):
-        length = c.length()
-        string_at_binary = ""
-        for i in range(length):
-            string_at_binary += chr(memory_binary[binary_addr])
-            binary_addr += 1
-        expected_value = string_at_binary
-    check_expr(expression, expected_value, "at {0}".format(hex(binary_addr)))
+        expected_value = "".join(chr(memory_binary[binary_addr + i]) for i in range(c.length()))
+    check_expr(expression, expected_value, "at {0}".format(assembler().hex(movemanager.b2r(binary_addr))))
 
     return expression
 
