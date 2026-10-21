@@ -151,8 +151,8 @@ class CpuStateDisposition(object):
         assert key in "axynvdizc"
         if key in "axy":
             if item is None:
-                item = Cpu6502.RegState()
-            assert isinstance(item, Cpu6502.RegState)
+                item = RegState()
+            assert isinstance(item, RegState)
         else:
             assert item is None or item == 'pending' or utils.is_integer_type(item)
         self._d[key] = item

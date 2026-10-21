@@ -196,18 +196,6 @@ class Label(object):
         if force or (s not in self.all_names()):
             self.expressions[move_id].append(s)
 
-    def find_max_explicit_name_length(self):
-        """Find the length of the longest explicit name not emitted.
-
-        Used to help formatting the list of label definitions."""
-
-        max_name_length = 0
-        for name_list in self.explicit_names.values():
-            for name in name_list:
-                if not name.emitted:
-                    max_name_length = max(max_name_length, name.text)
-        return max_name_length
-
     def explicit_definition_string_list(self, align_value_column):
         """Return a list of the explicit `label = value` output strings."""
 

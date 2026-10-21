@@ -96,29 +96,6 @@ def get_u16_be_runtime(runtime_addr):
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return get_u16_be_binary(binary_loc.binary_addr)
 
-class RuntimeLocation:
-    """RuntimeLocation holds a runtime address and move id"""
-
-    def __init__(self, runtime_addr, move_id):
-        self.runtime_addr = runtime_addr
-        self.move_id = move_id
-
-    def __str__(self) -> str:
-        result = hex(self.runtime_addr)
-        if self.move_id != 0:
-            result += ":" + str(self.move_id)
-        return result
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, BinaryLocation):
-            return (self.binary_addr == other.binary_addr) and (self.move_id == other.move_id)
-        return NotImplemented
-
-    def __hash__(self):
-        """Overrides the default implementation"""
-        return hash(tuple(sorted(self.__dict__.items())))
-
 class BinaryLocation:
     """BinaryLocation holds a binary address and move id"""
 

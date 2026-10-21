@@ -24,7 +24,7 @@ import config
 import utils
 import memorymanager
 from movedefinition import MoveDefinition
-from memorymanager import BinaryLocation, RuntimeLocation, RuntimeAddr, BinaryAddr
+from memorymanager import BinaryLocation, RuntimeAddr, BinaryAddr
 
 # active_move_ids is a list of MoveId objects. It is managed by the
 # MoveId class itself.
@@ -155,13 +155,6 @@ def make_binloc(binary_loc):
         return BinaryLocation(BinaryAddr(binary_loc), last_move_id)
     assert isinstance(binary_loc, BinaryLocation)
     return binary_loc
-
-def make_runloc(runtime_loc):
-    if utils.is_integer_type(runtime_loc):
-        last_move_id = active_move_ids[-1] if active_move_ids else BASE_MOVE_ID
-        return RuntimeLocation(RuntimeAddr(binary_loc), last_move_id)
-    assert isinstance(runtime_loc, RuntimeLocation)
-    return runtime_loc
 
 def r2b(runtime_addr, specific_move_id=None, debug=False):
     """

@@ -653,7 +653,7 @@ def get_stats():
 
 def get_classification_map():
     result = ""
-    old_c = None
+    oldc = None
 
     digits = "0123456789abcdef"
     result += "   "

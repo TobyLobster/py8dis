@@ -355,26 +355,6 @@ order_dict = {mode: index for index, mode in enumerate(reference_order)}
 for mnem in addr_modes_for_mnemonics:
     addr_modes_for_mnemonics[mnem] = sorted(addr_modes_for_mnemonics[mnem], key=lambda mode: order_dict.get(mode, float('inf')))
 
-def parse_integer_string(current_string):
-    if not current_string:
-        None
-
-    is_decimal = current_string and (current_string[0] in ['+-0123456789'])
-    is_hex     = current_string and (current_string[0] in ['&$'])
-    is_binary  = current_string and (current_string[0] in ['%'])
-
-    if is_decimal:
-        return int(current_string)
-    elif is_hex:
-        return int(current_string[1:], 16)
-    elif is_binary:
-        return int(current_string[1:], 2)
-    return None
-
-def check_integer_matches_memory(current_string, expected_int):
-    current_int = parse_integer_string()
-    return current_int == expected_int
-
 def int_to_hex2(two_digit_int):
     return f"\\x{two_digit_int:02x}"
 
