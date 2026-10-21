@@ -16,6 +16,7 @@ import collections
 import config
 import constant
 import copy
+import expression
 import inspect
 import labelmanager
 import labelmakingdata
@@ -151,6 +152,9 @@ def is_simple_name(s):
     Must be a single letter or underscore followed by any number of
     alphanumerics or underscores"""
 
+    # (An expression made by e.g. make_add() is never a simple name)
+    if isinstance(s, expression.Expr):
+        return False
     assert utils.is_string_type(s)
     assert len(s) > 0
 

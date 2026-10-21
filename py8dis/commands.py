@@ -67,6 +67,7 @@ from disassembly import get_label
 from align import Align
 from format import Format
 from binaryaddrtype import BinaryAddrType
+from expression import Expr
 from maker import make_op1, make_op2, make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 
 # These modules are used to implement things in this file and aren't so directly
@@ -131,6 +132,14 @@ def _check_name(command, runtime_addr, name, allow_expression=True):
         utils.die("{0}({1}, {2!r}): the name must be a non-empty string".format(command, _show(runtime_addr), name))
     if not allow_expression and not disassembly.is_simple_name(name):
         utils.die("{0}({1}, {2!r}): this isn't a valid label name (a letter or underscore followed by letters, digits or underscores)".format(command, _show(runtime_addr), name))
+
+def _as_text(name):
+    """A label name or expression can be given as an expression made by e.g.
+    make_add(). If so, it's converted to text (unless it refers to a label that
+    isn't named yet)."""
+    if isinstance(name, Expr) and not name.is_lazy():
+        return str(name)
+    return name
 
 def _check_move_id(command, runtime_addr, move_id):
     """Check a move_id given by the user (None is allowed)."""
@@ -275,6 +284,7 @@ def label(runtime_addr, name, move_id=None):
 
 def _label(command, runtime_addr, name, move_id=None):
     runtime_addr = _check_addr(command, runtime_addr, allow_end=True) # &10000 is valid for labels
+    name = _as_text(name)
     _check_name(command, runtime_addr, name)
     _check_move_id(command, runtime_addr, move_id)
     if move_id is None:
@@ -308,6 +318,7 @@ def optional_label(runtime_addr, name, base_runtime_addr=None, *, definable_inli
     When two consecutive bytes share a label (e.g. `userv` and `userv+1`) then `base_runtime_addr` points to the first byte."""
 
     runtime_addr = _check_addr("optional_label", runtime_addr)
+    name = _as_text(name)
     # (With a base address the name can be an expression, e.g. 'userv+1')
     _check_name("optional_label", runtime_addr, name, allow_expression=base_runtime_addr is not None)
     if base_runtime_addr is not None:
