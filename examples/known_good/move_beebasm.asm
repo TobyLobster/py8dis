@@ -45,7 +45,7 @@ lffe3   = &ffe3
     rts                                                               ; 202c: 60          `   :090e[1]
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock print_and_inc_zp, *, c201e

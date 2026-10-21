@@ -134,12 +134,21 @@ class Beebasm(assembler.Assembler):
                 overlap_start  = max(dest, pydis_start)
                 overlap_length = source - overlap_start
 
-                # Find an area of the memory map that is not used by the binary file. Try the high end of memory first
+                # Find an area of the memory map to temporarily hold the overlapping
+                # code/data. It mustn't overlap the binary assembled so far, or the
+                # destination. Try the high end of memory first.
+                #
+                # (The area ends at &ffff rather than &10000 because it is copied
+                # back with 'copyblock <start>, <end>, <dest>', and beebasm only
+                # accepts an end address up to &ffff.)
                 temp_start = 0xffff - overlap_length
                 if temp_start < (source + length):
-                    # not enough room high in memory, so try low instead
+                    # not enough room high in memory, so try low instead (below
+                    # both the binary and the destination)
                     temp_start = 0
-                    assert (temp_start + length) <= pydis_start, "Not enough memory to assemble in beebasm!"
+                    if temp_start + overlap_length > min(dest, pydis_start):
+                        utils.die("move({0}, {1}, {2}): there isn't enough free memory for beebasm to temporarily hold the {3} bytes of existing code/data the move's destination overlaps. Use acme or xa instead.".format(
+                            self.hex(dest), self.hex(source), length, overlap_length))
 
             area_to_clear_start = dest
             area_to_clear_end   = min(dest + length, source)
@@ -158,7 +167,7 @@ class Beebasm(assembler.Assembler):
         # Find a temporary memory range we can use to move existing code out of the way (if needed)
         temp_start, overlap_start, overlap_length, area_to_clear_start, area_to_clear_end = self.find_temporary_area(dest, source, length)
         if overlap_length > 0:
-            result.append(self.format_comment("1. We want to move to a lower memory address to assemble the next block of code at it's runtime address. First we temporarily copy the existing code/data that overlaps out of the way while we do so."))
+            result.append(self.format_comment("1. We want to move to a lower memory address to assemble the next block of code at its runtime address. First we temporarily copy the existing code/data that overlaps out of the way while we do so."))
             result.append(self.format_comment("(Note the parameter order: 'copyblock <start>,<end>,<dest>')"))
             result.append(utils.make_indent(1) + "%s %s, %s, %s" % (utils.force_case('copyblock'), disassembly.get_emitted_label(overlap_start), disassembly.get_emitted_label(overlap_start + overlap_length), disassembly.get_emitted_label(temp_start)))
 
@@ -167,7 +176,7 @@ class Beebasm(assembler.Assembler):
             result.append(utils.make_indent(1) + "%s %s, %s" % (utils.force_case('clear'), disassembly.get_emitted_label(overlap_start), disassembly.get_emitted_label(overlap_start + overlap_length)))
 
             result.append("")
-            result.append(self.format_comment("3. Assemble the new block at it's runtime address."))
+            result.append(self.format_comment("3. Assemble the new block at its runtime address."))
 
         result.append(utils.make_indent(1) + "{0} {1}".format(utils.force_case("org"), self.hex(dest)))
         # We will need some labels in pseudopc_end() but by then
@@ -202,7 +211,7 @@ class Beebasm(assembler.Assembler):
             comment_prefix = "4. "
         else:
             comment_prefix = ""
-        result.append(self.format_comment(comment_prefix + "Copy the newly assembled block of code back to it's proper place in the binary file."))
+        result.append(self.format_comment(comment_prefix + "Copy the newly assembled block of code back to its proper place in the binary file."))
         result.append(self.format_comment("(Note the parameter order: 'copyblock <start>,<end>,<dest>')"))
 
         # beebasm's COPYBLOCK and ORG commands can't use the address &10000. If
@@ -228,7 +237,7 @@ class Beebasm(assembler.Assembler):
         if overlap_length > 0:
             # Output COPYBLOCK command
             result.append("")
-            result.append(self.format_comment("5. Copy the previous existing code back to it's proper place in the binary file."))
+            result.append(self.format_comment("5. Copy the previous existing code back to its proper place in the binary file."))
             result.append(self.format_comment("(Note the parameter order: 'copyblock <start>,<end>,<dest>')"))
             result.append("%s%s %s, %s, %s" % (utils.make_indent(1),
                 utils.force_case("copyblock"),
@@ -353,6 +362,6 @@ class Beebasm(assembler.Assembler):
         return True
 
     def include_binary_file(self, binary_filepath):
-        return utils.make_indent(1) + 'INCBIN "' + binary_filepath + '"'
+        return utils.make_indent(1) + utils.force_case("incbin") + ' "' + binary_filepath + '"'
 
 config.set_assembler(Beebasm())

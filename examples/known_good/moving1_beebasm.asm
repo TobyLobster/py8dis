@@ -7,7 +7,7 @@
 
 ; Move 1: &3002 to &3001 for length 255
     ; 1. We want to move to a lower memory address to assemble the next block of code
-    ; at it's runtime address. First we temporarily copy the existing code/data that
+    ; at its runtime address. First we temporarily copy the existing code/data that
     ; overlaps out of the way while we do so.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock &3001, &3002, &fffe
@@ -15,7 +15,7 @@
     ; 2. Clear the existing code area so that we are allowed to assemble there again.
     clear &3001, &3002
 
-    ; 3. Assemble the new block at it's runtime address.
+    ; 3. Assemble the new block at its runtime address.
     org &3001
     equb   2,   3,   4,   5,   6,   7,   8,   9, &0a, &0b, &0c, &0d   ; 3002: 02 03 04... ... :3001[1]
     equb &0e, &0f, &10, &11, &12, &13, &14, &15, &16, &17, &18, &19   ; 300e: 0e 0f 10... ... :300d[1]
@@ -34,7 +34,7 @@
     equb &eb, &ec, &ed, &ee, &ef, &f0, &f1, &f2, &f3, &f4, &f5, &f6   ; 30eb: eb ec ed... ... :30ea[1]
     equb &f7, &f8, &f9, &fa, &fb, &fc, &fd, &fe, &ff,   0             ; 30f7: f7 f8 f9... ... :30f6[1]
 
-    ; 4. Copy the newly assembled block of code back to it's proper place in the binary
+    ; 4. Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock &3001, *, &3002
@@ -43,7 +43,7 @@
     ; allowing us to assemble there again if needed
     clear &3001, &3002
 
-    ; 5. Copy the previous existing code back to it's proper place in the binary file.
+    ; 5. Copy the previous existing code back to its proper place in the binary file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock &fffe, &ffff, &3001
 

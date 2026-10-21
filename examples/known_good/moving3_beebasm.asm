@@ -7,7 +7,7 @@
 
 ; Move 1: &3001 to &2f01 for length 256
     ; 1. We want to move to a lower memory address to assemble the next block of code
-    ; at it's runtime address. First we temporarily copy the existing code/data that
+    ; at its runtime address. First we temporarily copy the existing code/data that
     ; overlaps out of the way while we do so.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock pydis_start, &3001, &fffe
@@ -15,7 +15,7 @@
     ; 2. Clear the existing code area so that we are allowed to assemble there again.
     clear pydis_start, &3001
 
-    ; 3. Assemble the new block at it's runtime address.
+    ; 3. Assemble the new block at its runtime address.
     org &2f01
     equb   1,   2,   3,   4,   5,   6,   7,   8,   9, &0a, &0b, &0c   ; 3001: 01 02 03... ... :2f01[1]
     equb &0d, &0e, &0f, &10, &11, &12, &13, &14, &15, &16, &17, &18   ; 300d: 0d 0e 0f... ... :2f0d[1]
@@ -35,7 +35,7 @@
     equb &f7, &f8, &f9, &fa, &fb, &fc, &fd, &fe, &ff                  ; 30f7: f7 f8 f9... ... :2ff7[1]
     equb 0                                                            ; 3100: 00          .   :3000[1]
 
-    ; 4. Copy the newly assembled block of code back to it's proper place in the binary
+    ; 4. Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock &2f01, *, &3001
@@ -44,7 +44,7 @@
     ; allowing us to assemble there again if needed
     clear &2f01, &3001
 
-    ; 5. Copy the previous existing code back to it's proper place in the binary file.
+    ; 5. Copy the previous existing code back to its proper place in the binary file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock &fffe, &ffff, pydis_start
 

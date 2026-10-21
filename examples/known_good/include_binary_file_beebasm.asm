@@ -4,7 +4,7 @@
 
 .pydis_start
     equs "Hello"                                                      ; 0e00: 48 65 6c... Hel
-    INCBIN "orig/include_binary_data.bin"
+    incbin "orig/include_binary_data.bin"
     equs " world"                                                     ; 0e0d: 20 77 6f...  wo
 .pydis_end
 

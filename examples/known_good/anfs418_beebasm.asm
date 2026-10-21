@@ -10610,7 +10610,7 @@ lbd94 = cbd93+1
 
     equb &58, &b0, &0a, &d0, 3, &4c, &9c, 5, &ae, &8d, 2, &f0, &e0    ; bf88: 58 b0 0a... X.. :0484[1]
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock l0400, *, lbf04

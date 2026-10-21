@@ -7846,7 +7846,7 @@ osbyte                                  = &fff4
     equb &ff, &ff, &ff, &ff, &ff, &ff, &ff, &ff, &ff, &ff, &ff, &ff   ; 61a4: ff ff ff... ... :50a4[1]
     equb   0                                                          ; 61b0: 00          .   :50b0[1]
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock unused_copyright_string1, *, pydis_start

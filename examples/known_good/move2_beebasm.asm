@@ -33,7 +33,7 @@ l090d = c090c+1
     jmp l090d                                                         ; 201f: 4c 0d 09    L.. :090f[1]
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock low_a, *, &2010
@@ -74,7 +74,7 @@ l090d = c090c+1
     bne c0903                                                         ; 2037: d0 f2       ..  :090f[2]   ; ALWAYS branch
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock low_b, *, &2029

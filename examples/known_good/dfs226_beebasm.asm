@@ -3146,7 +3146,7 @@ nmi_XXX5 = c0d1f+1
     rti                                                               ; 902f: 40          @   :0d5d[4]
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock nmi_handler_ram, *, nmi_handler_rom_start
@@ -3173,7 +3173,7 @@ nmi_XXX5 = c0d1f+1
     bne nmi_XXX7                                                      ; 9039: d0 03       ..  :0d42[5]
     inc nmi_lda_abs+2                                                 ; 903b: ee 3b 0d    .;. :0d44[5]
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock nmi_XXX2, *, nmi_handler_rom_end
@@ -3340,7 +3340,7 @@ nmi_XXX5 = c0d1f+1
     bne c0d30                                                         ; 90f9: d0 9c       ..  :0d92[6]   ; ALWAYS branch
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock nmi_handler_ram, *, nmi_handler2_rom_start
@@ -8071,7 +8071,7 @@ l0600 = c05ff+1
     rts                                                               ; aea8: 60          `   :06cd[2]
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock l0500, *, tube_host_code2
@@ -8232,7 +8232,7 @@ jump_address_low = c0050+1
 .l0056
     equb 0                                                            ; af78: 00          .   :0056[3]
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock tube_brkv_handler, *, tube_host_code3
@@ -8431,7 +8431,7 @@ jump_address_low = c0050+1
     rts                                                               ; b074: 60          `   :04fb[1]
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock c0400, *, tube_host_code1

@@ -38,7 +38,7 @@
     rts                                                               ; 2109: 60          `   6 cycles      :3102[1]
 
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock sub_c30fe, *, &2105

@@ -25,7 +25,7 @@
     equb &f7, &f8, &f9, &fa, &fb, &fc, &fd, &fe, &ff                  ; 30f7: f7 f8 f9... ... :30f8[1]
     equb 0                                                            ; 3100: 00          .   :3101[1]
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock &3002, *, &3001

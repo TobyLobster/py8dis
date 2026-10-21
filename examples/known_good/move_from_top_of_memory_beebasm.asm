@@ -20,7 +20,7 @@ l0070   = &0070
 
     equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea             ; fff6: ea ea ea... ... :0906[1]
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock start, *-1, &fff0

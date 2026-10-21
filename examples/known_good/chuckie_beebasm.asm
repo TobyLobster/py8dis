@@ -6150,7 +6150,7 @@ osbyte                  = &fff4
 .unused3
     equs "UB(4): E"                                                   ; 37f8: 55 42 28... UB( :10f8[1]
 
-    ; Copy the newly assembled block of code back to it's proper place in the binary
+    ; Copy the newly assembled block of code back to its proper place in the binary
     ; file.
     ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
     copyblock showkeys, *, codemain_end
