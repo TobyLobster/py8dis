@@ -7,7 +7,7 @@ This means the tree can be rendered differently for each assembler.
 
 The tree is made of:
 
-    Num(value, format)          a number, e.g. a value from make_hex()
+    Num(value, format)          a number, shown in decimal, hex or as a character
     Name(name)                  a simple name, e.g. a constant or label name
     Raw(text)                   any other string, passed through as it is
     LazyLeaf(lazy_string)       a LazyString, e.g. a label that isn't named yet
@@ -58,10 +58,17 @@ class Expr:
     def __format__(self, format_spec):
         return format(self.render(), format_spec)
 
+    # Joining an expression to a string gives a string, as it did when
+    # expressions were strings. (Unless the expression contains a LazyString,
+    # which gives a LazyString as before.)
     def __add__(self, other):
+        if not self.is_lazy() and isinstance(other, str):
+            return self.render() + other
         return utils.LazyString("%s%s", self, other)
 
     def __radd__(self, other):
+        if not self.is_lazy() and isinstance(other, str):
+            return other + self.render()
         return utils.LazyString("%s%s", other, self)
 
     # As before, an expression containing a LazyString compares equal only to
@@ -93,8 +100,13 @@ class Expr:
 
 
 class Num(Expr):
-    """A number. 'format' is how to show it: 'hex' (in the assembler's hex
-    syntax) or 'decimal'."""
+    """A number. 'format' is how to show it:
+
+        'decimal'
+        'hex'       in the assembler's hex syntax, with 2 or 4 digits as needed
+        'hex2'      in the assembler's hex syntax, with 2 digits
+        'char'      as a quoted character, e.g. 'A'
+    """
 
     def __init__(self, value, format="decimal"):
         self.value = value
@@ -103,6 +115,10 @@ class Num(Expr):
     def render(self):
         if self.format == "hex":
             return config.get_assembler().hex(self.value)
+        if self.format == "hex2":
+            return config.get_assembler().hex2(self.value)
+        if self.format == "char":
+            return "'%s'" % chr(self.value)
         return str(self.value)
 
 
@@ -171,12 +187,16 @@ class Unary(Expr):
 
 
 class Binary(Expr):
-    """A binary operator, e.g. '+', 'AND' or 'DIV'."""
+    """A binary operator, e.g. '+', 'AND' or 'DIV'.
 
-    def __init__(self, left, op, right):
+    'spaced' says whether there are spaces round the operator. (For now some
+    expressions are written without them, e.g. 'label-1', as before.)"""
+
+    def __init__(self, left, op, right, spaced=True):
         self.left = left
         self.op = op
         self.right = right
+        self.spaced = spaced
         self._op_name()         # (Stop now if the assembler can't handle the operator)
 
     def _op_name(self):
@@ -188,7 +208,8 @@ class Binary(Expr):
         return self.op
 
     def render(self):
-        return _bracketed(self.left) + " " + self._op_name() + " " + _bracketed(self.right)
+        space = " " if self.spaced else ""
+        return _bracketed(self.left) + space + self._op_name() + space + _bracketed(self.right)
 
     def is_lazy(self):
         return self.left.is_lazy() or self.right.is_lazy()
@@ -197,7 +218,7 @@ class Binary(Expr):
 def to_expr(value):
     """Convert a value (an int, a string, a LazyString or an Expr) to an Expr."""
 
-    if isinstance(value, Expr):
+    if value is None or isinstance(value, Expr):
         return value
     if isinstance(value, utils.LazyString):
         return LazyLeaf(value)

@@ -189,7 +189,7 @@ def comment_screen_addresses(p):
     high_addr_runtime = movemanager.b2r(high_addr)
 
     for i in range(0,32):
-        exp = make_add(config.get_assembler().hex(start), make_multiply(str(i), config.get_assembler().hex(offset)))
+        exp = make_add(make_hex(start), make_multiply(i, make_hex(offset)))
         if not is_word:
             if classification.get_classification(low_addr_runtime+i) is None and classification.get_classification(high_addr_runtime+i) is None:
                 byte(low_addr_runtime+i, 1)

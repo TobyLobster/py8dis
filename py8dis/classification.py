@@ -40,6 +40,7 @@ import collections
 import config
 import copy
 import disassembly
+import expression
 import labelmanager
 import mainformatter
 import memorymanager
@@ -244,6 +245,7 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     (because an auto_generated expression wasn't added)."""
 
     assert not isinstance(s, labelmanager.Label) # TODO!?
+    s = expression.to_expr(s)
     # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
     has_existing_expr = binary_addr in expressions
     suppressed = auto_generated and (binary_addr in trace.no_auto_comment_set)
@@ -490,10 +492,12 @@ def stringhi_binary(binary_addr, include_terminator_fn=None):
         if memory_binary[binary_addr] & 0x80 != 0:
             if include_terminator_fn is not None and include_terminator_fn(memory_binary[binary_addr]):
                 c = memory_binary[binary_addr] & 0x7f
+                # The terminator is shown as e.g. &80+'A'
                 if utils.isprint(c) and c != ord('"') and c != ord('\''):
-                    add_expression(binary_addr, "%s+'%s'" % (assembler().hex2(0x80), chr(c)))
+                    char = expression.Num(c, "char")
                 else:
-                    add_expression(binary_addr, "%s+%s" % (assembler().hex2(0x80), assembler().hex2(c)))
+                    char = expression.Num(c, "hex2")
+                add_expression(binary_addr, expression.Binary(expression.Num(0x80, "hex2"), "+", char, spaced=False))
                 binary_addr += 1
             break
         binary_addr += 1
@@ -534,7 +538,7 @@ def stringn_binary(runtime_addr, binary_addr):
     add_classification(binary_addr, Byte(1))
     label_start = disassembly.get_label(runtime_addr + 1, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     label_end   = disassembly.get_label(runtime_addr + 1 + length, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
-    add_expression(binary_addr, utils.LazyString("%s - %s", label_end, label_start))
+    add_expression(binary_addr, expression.Binary(expression.to_expr(label_end), "-", expression.to_expr(label_start)))
     if length > 0:
         add_classification(binary_addr + 1, String(length))
     return RuntimeAddr(runtime_addr + 1 + length)

@@ -67,7 +67,6 @@ from disassembly import get_label
 from align import Align
 from format import Format
 from binaryaddrtype import BinaryAddrType
-from expression import Expr
 from maker import make_op1, make_op2, make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 
 # These modules are used to implement things in this file and aren't so directly
@@ -75,6 +74,7 @@ from maker import make_op1, make_op2, make_hex, make_lo, make_hi, make_or, make_
 # if they wish, since a control file will usually do import * from this module.
 import classification
 import config
+import expression
 import disassembly
 import labelmanager
 import movemanager
@@ -137,7 +137,7 @@ def _as_text(name):
     """A label name or expression can be given as an expression made by e.g.
     make_add(). If so, it's converted to text (unless it refers to a label that
     isn't named yet)."""
-    if isinstance(name, Expr) and not name.is_lazy():
+    if isinstance(name, expression.Expr) and not name.is_lazy():
         return str(name)
     return name
 
@@ -732,8 +732,11 @@ def code_ptr(runtime_addr, runtime_addr_high=None, offset=0, label_name=None):
     # Label and trace the code at code_at
     label = entry(code_at_runtime_addr, label=label_name, warn=False)
     # Reference that label at addr/addr_high.
-    offset_string = "" if offset == 0 else ("%+d" % -offset)
-    stored_expr = utils.LazyString("%s%s", label, offset_string)
+    if offset == 0:
+        stored_expr = label
+    else:
+        # e.g. 'label-1' (for an rts jump table)
+        stored_expr = expression.Binary(expression.to_expr(label), "-" if offset > 0 else "+", expression.Num(abs(offset)), spaced=False)
     if binary_addr_high == binary_addr + 1 and runtime_addr_high == runtime_addr + 1:
         # The general code in the "else" branch would work for this case as
         # well, but since the assembler has support for emitting a little-endian
