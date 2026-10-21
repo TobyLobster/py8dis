@@ -227,17 +227,26 @@ def init():
     include_binary_files.clear()
     expressions.clear()
 
-def add_expression(binary_addr, s, *, force=True):
-    """Add an expression for the given binary address."""
+def add_expression(binary_addr, s, *, force=True, auto_generated=True):
+    """Add an expression for the given binary address.
+
+    If `force` is False, an existing expression at the address is kept.
+
+    An `auto_generated` expression (i.e. one py8dis makes, rather than one the
+    user asks for with expr()) is not added at an address marked with
+    no_automatic_comment().
+
+    Returns the expression now at the address, or None if there isn't one
+    (because an auto_generated expression wasn't added)."""
 
     assert not isinstance(s, labelmanager.Label) # TODO!?
     # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
     has_existing_expr = binary_addr in expressions
-    if (force or not has_existing_expr) and not (binary_addr in trace.no_auto_comment_set):
+    suppressed = auto_generated and (binary_addr in trace.no_auto_comment_set)
+    if (force or not has_existing_expr) and not suppressed:
         expressions[binary_addr] = s
 
-    # Returns the current expression
-    return expressions[binary_addr]
+    return expressions.get(binary_addr)
 
 def check_expr(expr, value, message):
     """Add an assert to the output based on an expression."""

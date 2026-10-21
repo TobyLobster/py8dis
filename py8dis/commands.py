@@ -520,9 +520,11 @@ def expr(runtime_addr, s, force=True):
         val = get_u8_binary(binary_loc.binary_addr)
         if val not in s:
             utils.die("expr({0}, ...): the dictionary has no entry for the value {1} found at this address".format(_hex(runtime_addr), _hex(val)))
-        classification.add_expression(binary_loc.binary_addr, s[val], force=force)
-    else:
-        classification.add_expression(binary_loc.binary_addr, s, force=force)
+        s = s[val]
+
+    # (This isn't auto_generated even when called from auto_expr(), since
+    # auto_expr() itself checks for no_automatic_comment())
+    classification.add_expression(binary_loc.binary_addr, s, force=force, auto_generated=False)
 
 def auto_expr(runtime_addr, s):
     """For internal use only. Called internally in order to generate an expression, such as 'end_address - start_address' etc."""

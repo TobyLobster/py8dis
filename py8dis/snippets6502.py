@@ -80,7 +80,7 @@ def comment_memory_copy_loop(p):
             source_binary_addr = p.get_binary_address('load')+1
             proposed_expression = p.make_subtract_wrapped(source_label, 'addr', offset)
             new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
-            if new_expression != proposed_expression:
+            if new_expression is not None and new_expression != proposed_expression:
                 source_label = make_add(new_expression, 1)
         source_label = utils.LazyString(" from %s", source_label)
         #if bytes_to_copy is None:
@@ -93,7 +93,7 @@ def comment_memory_copy_loop(p):
             dest_binary_addr = p.get_binary_address('store')+1
             proposed_expression = p.make_subtract_wrapped(dest_label, 'other', offset)
             new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
-            if new_expression != proposed_expression:
+            if new_expression is not None and new_expression != proposed_expression:
                 dest_label = make_add(new_expression, 1)
         dest_label = utils.LazyString(" to %s", dest_label)
         #if bytes_to_copy is None:
@@ -159,7 +159,7 @@ def comment_memory_copy_with_limited_end_loop(p):
             source_binary_addr = p.get_binary_address('load')+1
             proposed_expression = p.make_subtract_wrapped(source_label,'addr',end_count)
             new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
-            if new_expression != proposed_expression:
+            if new_expression is not None and new_expression != proposed_expression:
                 source_label = make_add(new_expression, 1)
         source_label = utils.LazyString(" from %s", source_label)
         #if bytes_to_copy is None:
@@ -172,7 +172,7 @@ def comment_memory_copy_with_limited_end_loop(p):
             dest_binary_addr = p.get_binary_address('store')+1
             proposed_expression = p.make_subtract_wrapped(dest_label, 'other', end_count)
             new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
-            if new_expression != proposed_expression:
+            if new_expression is not None and new_expression != proposed_expression:
                 dest_label = make_add(new_expression, 1)
         dest_label = utils.LazyString(" to %s", dest_label)
         #if bytes_to_copy is None:
@@ -221,7 +221,7 @@ def comment_memory_copy_increment(p):
         source_binary_addr = p.get_binary_address('load')+1
         proposed_expression = p.make_subtract_wrapped(source_label, 'addr', start_count)
         new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
-        if new_expression != proposed_expression:
+        if new_expression is not None and new_expression != proposed_expression:
             source_label = p.make_subtract_wrapped(new_expression, 'addr', start_count)
         source_label = utils.LazyString(" from %s", source_label)
 
@@ -231,7 +231,7 @@ def comment_memory_copy_increment(p):
         dest_binary_addr = p.get_binary_address('store')+1
         proposed_expression = p.make_subtract_wrapped(dest_label, 'other', start_count)
         new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
-        if new_expression != proposed_expression:
+        if new_expression is not None and new_expression != proposed_expression:
             dest_label = p.make_subtract_wrapped(new_expression, 'other', start_count)
         dest_label = utils.LazyString(" to %s", dest_label)
 
