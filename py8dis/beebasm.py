@@ -7,29 +7,13 @@ import sys
 
 import assembler
 import config
+import expression
 import disassembly
 import mainformatter
 import memorymanager
 import movemanager
 import utils
 from binaryaddrtype import BinaryAddrType
-
-def is_fully_bracketed(s):
-    """Is the whole expression enclosed in one matching pair of brackets?
-    e.g. '(a OR b)' is, but '(a) OR (b)' is not."""
-
-    if not (s.startswith("(") and s.endswith(")")):
-        return False
-    depth = 0
-    for i, c in enumerate(s):
-        if c == "(":
-            depth += 1
-        elif c == ")":
-            depth -= 1
-            if depth == 0 and i != len(s) - 1:
-                # The first bracket closed before the end of the expression
-                return False
-    return depth == 0
 
 class Beebasm(assembler.Assembler):
     """This class encapsulates beebasm-specific syntax and features."""
@@ -60,7 +44,7 @@ class Beebasm(assembler.Assembler):
         else:
             return self.hex4(n)
 
-    def translate_binary_operator_names(self):
+    def binary_operators(self):
         """Returns a dictionary that translates generic binary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
@@ -78,7 +62,15 @@ class Beebasm(assembler.Assembler):
                  '!=': '!=',
         }
 
-    def translate_unary_operator_names(self):
+    def expression_in_context(self, expr, text, context):
+        if context == expression.ASSERTION:
+            # In beebasm '==' binds more tightly than AND/OR/EOR, so bracket
+            # expressions using those (otherwise the assert is meaningless).
+            if re.search(r"\b(AND|OR|EOR)\b", text, re.IGNORECASE) and not expression.is_fully_bracketed(text):
+                return "(%s)" % text
+        return text
+
+    def unary_operators(self):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
@@ -281,18 +273,13 @@ class Beebasm(assembler.Assembler):
         result = []
 
         if config.get_include_assertions():
-            spa = sorted((str(expr), self.hex(value) if type(value) == int else '"' + value + '"') for expr, value in self.pending_assertions.items())
+            spa = sorted(((str(expr), self.hex(value) if type(value) == int else '"' + value + '"', expr) for expr, value in self.pending_assertions.items()), key=lambda x: x[:2])
 
             old = ("", 0)
-            for expr, value in spa:
-                if (expr != old[0]) or (value != old[1]):
-                    # In beebasm '==' binds more tightly than AND/OR/EOR, so bracket
-                    # expressions using those (otherwise the assert is meaningless).
-                    assert_expr = expr
-                    if re.search(r"\b(AND|OR|EOR)\b", expr, re.IGNORECASE) and not is_fully_bracketed(expr):
-                        assert_expr = "(%s)" % expr
-                    result.append(utils.make_indent(1) + utils.force_case("assert ") + "%s == %s" % (value, assert_expr))
-                old = (expr, value)
+            for expr_text, value, expr in spa:
+                if (expr_text != old[0]) or (value != old[1]):
+                    result.append(utils.make_indent(1) + utils.force_case("assert ") + "%s == %s" % (value, expression.render(expr, expression.ASSERTION)))
+                old = (expr_text, value)
 
         result.append("")
         s = utils.force_case("save")

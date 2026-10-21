@@ -45,7 +45,7 @@ class Acme(assembler.Assembler):
         # we only use four digits when necessary.
         return self.hex(n)
 
-    def translate_binary_operator_names(self):
+    def binary_operators(self):
         """Returns a dictionary that translates generic binary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
@@ -63,7 +63,7 @@ class Acme(assembler.Assembler):
                  '!=': '!=' ,
         }
 
-    def translate_unary_operator_names(self):
+    def unary_operators(self):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'

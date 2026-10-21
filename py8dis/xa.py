@@ -5,6 +5,7 @@ XA assembler
 import sys
 
 import config
+import expression
 import disassembly
 import movemanager
 import utils
@@ -38,7 +39,7 @@ class Xa(assembler.Assembler):
         else:
             return self.hex4(n)
 
-    def translate_binary_operator_names(self):
+    def binary_operators(self):
         """Returns a dictionary that translates generic binary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
@@ -55,7 +56,7 @@ class Xa(assembler.Assembler):
                   '%': None,
                  '!=': '<>',
         }
-    def translate_unary_operator_names(self):
+    def unary_operators(self):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
@@ -173,19 +174,20 @@ class Xa(assembler.Assembler):
         # pseudopc_start()) I am struggling to make anything else work.
         return [utils.LazyString("* = %s", self.hex(source + length))]
 
-    def preprocessor_expr(self, expr):
-        """Convert an expression into one that xa's preprocessor can evaluate.
-
-        The preprocessor's '#if' doesn't understand the '<' and '>' (low and
-        high byte) operators, or the '`' (force zero page) operator. In xa
-        these can only appear at the start of an operand, where they apply to
-        the whole of the rest of the operand, so rewrite them using '&' and
-        '>>'."""
-        if expr.startswith("<") or expr.startswith("`"):
-            return "((%s) & $ff)" % expr[1:]
-        if expr.startswith(">"):
-            return "(((%s) >> 8) & $ff)" % expr[1:]
-        return "(%s)" % expr
+    def expression_in_context(self, expr, text, context):
+        if context == expression.PREPROCESSOR:
+            # The preprocessor's '#if' doesn't understand the '<' and '>' (low
+            # and high byte) operators, or the '`' (force zero page) operator.
+            # In xa these can only appear at the start of an operand, where
+            # they apply to the whole of the rest of the operand, so rewrite
+            # them using '&' and '>>'. (This is done on the text, since a
+            # user's expression string can start with these too.)
+            if text.startswith("<") or text.startswith("`"):
+                return "((%s) & $ff)" % text[1:]
+            if text.startswith(">"):
+                return "(((%s) >> 8) & $ff)" % text[1:]
+            return "(%s)" % text
+        return text
 
     def disassembly_end(self):
         """Output assertions at the end of the disassembly"""
@@ -202,10 +204,10 @@ class Xa(assembler.Assembler):
         #
         # (xa doesn't support string constants, so string values are not checked.)
         if config.get_include_assertions():
-            spa = sorted((str(expr), value) for expr, value in self.pending_assertions.items() if utils.is_integer_type(value))
-            for expr, value in spa:
-                result.append("%s %s <> %s" % (utils.force_case("#if"), self.preprocessor_expr(expr), self.hex(value)))
-                result.append("%s Assertion failed: %s == %s" % (utils.force_case("#error"), expr, self.hex(value)))
+            spa = sorted(((str(expr), value, expr) for expr, value in self.pending_assertions.items() if utils.is_integer_type(value)), key=lambda x: x[:2])
+            for expr_text, value, expr in spa:
+                result.append("%s %s <> %s" % (utils.force_case("#if"), expression.render(expr, expression.PREPROCESSOR), self.hex(value)))
+                result.append("%s Assertion failed: %s == %s" % (utils.force_case("#error"), expr_text, self.hex(value)))
                 result.append(utils.force_case("#endif"))
 
         return result

@@ -27,10 +27,26 @@ class Assembler:
     def __init__(self):
         self.pending_assertions = {}
 
-    def instruction_operand(self, operand):
-        """Returns the operand of an instruction as it should be output. Some
-        assemblers (e.g. z88dk) need some operands adjusting."""
-        return operand
+    # Expressions (see expression.py)
+
+    def binary_operators(self):
+        """A dictionary translating generic binary operator names (e.g. 'AND')
+        into this assembler's syntax. None means it's not supported. Names not
+        in the dictionary are used as they are (e.g. '+')."""
+        return {}
+
+    def unary_operators(self):
+        """A dictionary translating generic unary operator names (e.g. 'NOT')
+        into this assembler's syntax: either a prefix, or a template where
+        '%s' is replaced by the operand (e.g. 'NOT(%s)'). None means it's not
+        supported. Names not in the dictionary are used as prefixes."""
+        return {}
+
+    def expression_in_context(self, expr, text, context):
+        """Returns how the expression 'expr' (whose text is 'text') should be
+        written in the given context (see expression.py), for assemblers that
+        need something different in some contexts."""
+        return text
 
     def set_output_filename(self, filename):
         self.output_filename = filename

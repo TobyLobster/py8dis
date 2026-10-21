@@ -16,7 +16,12 @@ The tree is made of:
 
 Operator names are generic (e.g. 'AND', 'DIV', 'NOT', '<') and are translated
 into the assembler's own syntax when rendered, using the assembler's
-translate_binary_operator_names() and translate_unary_operator_names().
+binary_operators() and unary_operators().
+
+Where an expression is used can also change how it's written, e.g. in an
+assertion, or as an instruction operand. Use render(expr, context) for these.
+Each assembler adjusts the text for a context (if it needs to) in its
+expression_in_context() method.
 
 Note: This is the first stage of moving to expression trees. The trees are
 rendered exactly as maker.py used to build its strings, so the output is
@@ -29,6 +34,12 @@ compares equal only to itself (see Expr.__eq__()), both as before.
 import config
 import disassembly
 import utils
+
+# The contexts an expression can be rendered for (see render())
+DEFAULT      = "default"        # e.g. data, or a 6502 instruction operand
+OPERAND      = "operand"        # an instruction operand (used for the 8080)
+ASSERTION    = "assertion"      # an assertion that the expression has a given value
+PREPROCESSOR = "preprocessor"   # a preprocessor condition (used for xa's '#if')
 
 
 class Expr:
@@ -166,7 +177,7 @@ class Unary(Expr):
 
     def _template(self):
         op = self.op
-        trans = config.get_assembler().translate_unary_operator_names()
+        trans = config.get_assembler().unary_operators()
         if op in trans:
             if trans[op] is None:
                 utils.die("Assembler can't handle operator " + op)
@@ -200,7 +211,7 @@ class Binary(Expr):
         self._op_name()         # (Stop now if the assembler can't handle the operator)
 
     def _op_name(self):
-        trans = config.get_assembler().translate_binary_operator_names()
+        trans = config.get_assembler().binary_operators()
         if self.op in trans:
             if trans[self.op] is None:
                 utils.die("Assembler can't handle operator " + self.op)
@@ -214,6 +225,34 @@ class Binary(Expr):
     def is_lazy(self):
         return self.left.is_lazy() or self.right.is_lazy()
 
+
+def render(value, context=DEFAULT):
+    """Render an expression (or a string, int or LazyString) for the current
+    assembler, for use in the given context."""
+    expr = to_expr(value)
+    return config.get_assembler().expression_in_context(expr, expr.render(), context)
+
+def in_context(value, context):
+    """A LazyString that renders the expression for the given context when
+    it's output."""
+    return utils.LazyString("%s", lambda: render(value, context))
+
+def is_fully_bracketed(text):
+    """Is the whole text enclosed in one matching pair of brackets?
+    e.g. '(a OR b)' is, but '(a) OR (b)' is not."""
+
+    if not (text.startswith("(") and text.endswith(")")):
+        return False
+    depth = 0
+    for i, c in enumerate(text):
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0 and i != len(text) - 1:
+                # The first bracket closed before the end
+                return False
+    return depth == 0
 
 def to_expr(value):
     """Convert a value (an int, a string, a LazyString or an Expr) to an Expr."""

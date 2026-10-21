@@ -5,6 +5,7 @@ z88dk assembler (for 8080)
 import sys
 
 import config
+import expression
 import utils
 import assembler
 
@@ -42,7 +43,7 @@ class Z88DK(assembler.Assembler):
         # To avoid the issue we only use four digits when necessary.
         return self.hex(n)
 
-    def translate_binary_operator_names(self):
+    def binary_operators(self):
         """Returns a dictionary that translates generic binary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
@@ -61,7 +62,7 @@ class Z88DK(assembler.Assembler):
                  '!=': '!=',
         }
 
-    def translate_unary_operator_names(self):
+    def unary_operators(self):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
@@ -75,16 +76,17 @@ class Z88DK(assembler.Assembler):
                    '>': '%s >> 8',
         }
 
-    def instruction_operand(self, operand):
-        """z88dk-z80asm treats an operand that is in brackets as an indirect
-        (Z80 style) value, warning 'interpreting indirect value as immediate'
-        before assembling it correctly anyway. So an operand that starts with a
-        bracket gets a unary plus, e.g. 'mvi a, +(x + 1) & $ff', which
-        assembles to the same thing without the warning."""
-        def late_formatter():
-            s = str(operand)
-            return "+" + s if s.startswith("(") else s
-        return utils.LazyString("%s", late_formatter)
+    def expression_in_context(self, expr, text, context):
+        if context == expression.OPERAND:
+            # z88dk-z80asm treats an operand that is in brackets as an
+            # indirect (Z80 style) value, warning 'interpreting indirect value
+            # as immediate' before assembling it correctly anyway. So an
+            # operand that starts with a bracket gets a unary plus, e.g.
+            # 'mvi a, +(x + 1) & $ff', which assembles to the same thing
+            # without the warning.
+            if text.startswith("("):
+                return "+" + text
+        return text
 
     def inline_label(self, name):
         """Returns the string for defining a label in the first column."""

@@ -1,6 +1,7 @@
 import collections
 
 import config
+import expression
 import classification
 import config
 import disassembly
@@ -373,7 +374,7 @@ class Cpu8080(cpu.Cpu):
             if self.prefix:
                 # Already in brackets, e.g. an indirect address
                 return operand
-            return config.get_assembler().instruction_operand(operand)
+            return expression.in_context(operand, expression.OPERAND)
 
         def as_string_list(self, binary_loc, annotations):
             result = [mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length(), "", annotations, utils.LazyString(utils.make_indent(trace.cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr)))]
@@ -398,7 +399,7 @@ class Cpu8080(cpu.Cpu):
             return [binary_loc.binary_addr + 2]
 
         def as_string(self, binary_addr):
-            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), config.get_assembler().instruction_operand(classification.get_constant8(binary_addr + 1)))
+            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant8(binary_addr + 1), expression.OPERAND))
             if (binary_addr + 1) not in classification.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
@@ -414,7 +415,7 @@ class Cpu8080(cpu.Cpu):
             return [binary_loc.binary_addr + 3]
 
         def as_string(self, binary_addr):
-            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), config.get_assembler().instruction_operand(classification.get_constant16(binary_addr + 1)))
+            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant16(binary_addr + 1), expression.OPERAND))
             if (binary_addr + 1) not in classification.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
