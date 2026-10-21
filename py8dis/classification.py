@@ -551,19 +551,33 @@ def autostring(min_length=3):
 def include_binary_file(binary_addr, relative_filepath):
     """Add an 'include binary' command in the assembly output. The contents are
     verified to be identical to our current file contents."""
+    h = config.get_assembler().hex
+    def die(problem):
+        utils.die("include_binary_file({0}, {1!r}): {2}".format(h(binary_addr), relative_filepath, problem))
+
     # Add to the list of files to include
     include_binary_files[binary_addr] = relative_filepath
 
     # Read the binary file
-    with open(relative_filepath, "rb") as fh:
-        contents = fh.read()
+    try:
+        with open(relative_filepath, "rb") as fh:
+            contents = fh.read()
+    except OSError as e:
+        die("can't read the file ({0})".format(e.strerror))
     length = len(contents)
+    if length == 0:
+        die("the file is empty")
+    if binary_addr + length > 0x10000:
+        die("the file ({0} bytes) runs past the top of memory".format(length))
 
     # Check the contents of the file matches the file we are disassembling
-    i = 0
-    for b in contents:
-        assert (memory_binary[binary_addr + i] == contents[i]), f"Mismatch at offset {i} in file {relative_filepath}"
-        i += 1
+    for i in range(length):
+        if memory_binary[binary_addr + i] is None:
+            die("no data is loaded at {0} (offset {1} in the file)".format(h(binary_addr + i), i))
+        if memory_binary[binary_addr + i] != contents[i]:
+            die("the file doesn't match the loaded data at {0} (offset {1} in the file)".format(h(binary_addr + i), i))
+    if is_classified(binary_addr, length):
+        die("some of this data has already been classified (e.g. by an earlier byte(), word() or string command)")
 
     add_classification(binary_addr, Byte(length))
 

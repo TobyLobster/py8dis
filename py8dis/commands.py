@@ -63,7 +63,6 @@ import memorymanager
 
 # These functions are directly exposed to the user.
 from disassembly import get_label
-from memorymanager import get_u8_binary, get_u16_binary, get_u16_be_binary, get_u16_be_runtime
 from align import Align
 from format import Format
 from binaryaddrtype import BinaryAddrType
@@ -100,6 +99,42 @@ memory        = memorymanager.memory
 def _hex(value):
     return config.get_assembler().hex(value)
 
+def _show(value):
+    """Format a value for an error message: in hex if it could be an address."""
+    if utils.is_integer_type(value) and value >= 0:
+        return _hex(value)
+    return repr(value)
+
+def _check_address_range(command, addr, allow_end=False):
+    """Stop with an error unless addr is an integer address in memory. If
+    allow_end is True then &10000 (just past the end of memory) is allowed."""
+    top = 0x10000 if allow_end else 0xffff
+    if not utils.is_integer_type(addr) or not (0 <= addr <= top):
+        utils.die("{0}({1}): the address must be between {2} and {3}".format(command, _show(addr), config.get_assembler().hex4(0), _hex(top)))
+
+def _check_addr(command, runtime_addr, allow_end=False):
+    """Check a runtime address given by the user, returning it as a RuntimeAddr."""
+    _check_address_range(command, runtime_addr, allow_end)
+    return memorymanager.RuntimeAddr(runtime_addr)
+
+def _check_count(command, runtime_addr, n, arg_name="n"):
+    """Check that n (a number of bytes, words etc) is a positive integer."""
+    if not utils.is_integer_type(n) or n <= 0:
+        utils.die("{0}({1}, ...): {2} must be a positive integer, not {3!r}".format(command, _show(runtime_addr), arg_name, n))
+
+def _check_name(command, runtime_addr, name, allow_expression=True):
+    """Check a label name given by the user. Unless allow_expression is False,
+    the name can be an expression (e.g. 'table+1') rather than a simple name."""
+    if not isinstance(name, str) or name == "":
+        utils.die("{0}({1}, {2!r}): the name must be a non-empty string".format(command, _show(runtime_addr), name))
+    if not allow_expression and not disassembly.is_simple_name(name):
+        utils.die("{0}({1}, {2!r}): this isn't a valid label name (a letter or underscore followed by letters, digits or underscores)".format(command, _show(runtime_addr), name))
+
+def _check_move_id(command, runtime_addr, move_id):
+    """Check a move_id given by the user (None is allowed)."""
+    if move_id is not None and not (utils.is_integer_type(move_id) and movemanager.is_valid_move_id(move_id)):
+        utils.die("{0}({1}, ...): move_id must be a value returned by move(), not {2!r}".format(command, _show(runtime_addr), move_id))
+
 def _check_in_memory(command, runtime_addr, binary_addr, n=1, count=None):
     """Stop with an error if the n bytes from binary_addr run past the top of
     memory. 'count' is the count the user gave, if different from n."""
@@ -112,6 +147,33 @@ def _check_data_loaded(command, runtime_addr, binary_addr, n=1):
     if not memorymanager.is_data_loaded_at_binary_addr(binary_addr, n):
         utils.die("{0}({1}): no data is loaded at this address".format(command, _hex(runtime_addr)))
 
+# Reading the binary. (These check the user's address, then use the
+# memorymanager functions of the same name.)
+def get_u8_binary(binary_addr):
+    """Read a single byte of data from the specified binary address."""
+    _check_address_range("get_u8_binary", binary_addr)
+    _check_data_loaded("get_u8_binary", binary_addr, binary_addr, 1)
+    return memorymanager.get_u8_binary(memorymanager.BinaryAddr(binary_addr))
+
+def get_u16_binary(binary_addr):
+    """Read a 16 bit value (little endian) from the specified binary address."""
+    _check_address_range("get_u16_binary", binary_addr)
+    _check_data_loaded("get_u16_binary", binary_addr, binary_addr, 2)
+    return memorymanager.get_u16_binary(memorymanager.BinaryAddr(binary_addr))
+
+def get_u16_be_binary(binary_addr):
+    """Read a 16 bit value (big endian) from the specified binary address."""
+    _check_address_range("get_u16_be_binary", binary_addr)
+    _check_data_loaded("get_u16_be_binary", binary_addr, binary_addr, 2)
+    return memorymanager.get_u16_be_binary(memorymanager.BinaryAddr(binary_addr))
+
+def get_u16_be_runtime(runtime_addr):
+    """Read a 16 bit value (big endian) from the specified runtime address."""
+    runtime_addr = _check_addr("get_u16_be_runtime", runtime_addr)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    _check_data_loaded("get_u16_be_runtime", runtime_addr, binary_loc.binary_addr, 2)
+    return memorymanager.get_u16_be_binary(binary_loc.binary_addr)
+
 def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
     """Loads a binary file to analyse at the given address.
 
@@ -119,6 +181,7 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
 
     # Check we have a valid CPU for the chosen assembler and select the
     # trace.cpu accordingly
+    _check_address_range("load", binary_load_addr)
     if cpu_name is None:
         utils.die("No CPU type selected in call to load().")
 
@@ -197,19 +260,24 @@ def constant(value, name, comment=None, *, align=Align.INLINE, format=Format.DEF
 
     These names can then be used in subsequent calls to expr().
     """
-    if not (comment is None or isinstance(comment, str)):
-        utils.die("constant({0}, {1!r}): the comment must be a string, not {2!r}".format(value, name, comment))
+    def check(ok, problem):
+        if not ok:
+            utils.die("constant({0}, {1!r}): {2}".format(value, name, problem))
+    check(isinstance(name, str) and name != "" and disassembly.is_simple_name(name), "the name must be a valid label name (a letter or underscore followed by letters, digits or underscores)")
+    check(comment is None or isinstance(comment, str), "the comment must be a string, not {0!r}".format(comment))
+    check(isinstance(align, Align), "align must be an Align value (e.g. Align.INLINE), not {0!r}".format(align))
+    check(isinstance(format, Format), "format must be a Format value (e.g. Format.HEX), not {0!r}".format(format))
 
     disassembly.add_constant(value, name, comment, align, format)
 
 def label(runtime_addr, name, move_id=None):
     """Define a label name for a runtime address."""
+    _label("label", runtime_addr, name, move_id)
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
-    if not isinstance(name, str):
-        utils.die("label({0}, {1!r}): the name must be a string".format(_hex(runtime_addr), name))
-    if not (move_id is None or isinstance(move_id, int)):
-        utils.die("label({0}, {1!r}): the move_id must be an integer (as returned by move()), not {2!r}".format(_hex(runtime_addr), name, move_id))
+def _label(command, runtime_addr, name, move_id=None):
+    runtime_addr = _check_addr(command, runtime_addr, allow_end=True) # &10000 is valid for labels
+    _check_name(command, runtime_addr, name)
+    _check_move_id(command, runtime_addr, move_id)
     if move_id is None:
         # Look up the associated binary address, just to get the best move_id
         _, move_id = movemanager.r2b(runtime_addr)
@@ -233,22 +301,28 @@ def expr_label(runtime_addr, s):
     Assembler assertions output at the end of the assembly code ensure
     that the expressions evaluate to the expected constants."""
 
-    return label(runtime_addr, s)
+    return _label("expr_label", runtime_addr, s)
 
 def optional_label(runtime_addr, name, base_runtime_addr=None, *, definable_inline=True):
     """Set a label at a runtime address, but only output if used.
 
     When two consecutive bytes share a label (e.g. `userv` and `userv+1`) then `base_runtime_addr` points to the first byte."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("optional_label", runtime_addr)
+    # (With a base address the name can be an expression, e.g. 'userv+1')
+    _check_name("optional_label", runtime_addr, name, allow_expression=base_runtime_addr is not None)
     if base_runtime_addr is not None:
-        base_runtime_addr = memorymanager.RuntimeAddr(base_runtime_addr)
+        base_runtime_addr = _check_addr("optional_label", base_runtime_addr)
     disassembly.add_optional_label(runtime_addr, name, base_addr=base_runtime_addr, definable_inline=definable_inline)
 
 def local_label(runtime_addr, name, start_addr, end_addr, move_id=None):
     """Define a label name for a runtime address but only within a given memory range"""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("local_label", runtime_addr, allow_end=True)
+    _check_name("local_label", runtime_addr, name, allow_expression=False)
+    _check_address_range("local_label", start_addr, allow_end=True)
+    _check_address_range("local_label", end_addr, allow_end=True)
+    _check_move_id("local_label", runtime_addr, move_id)
     disassembly.add_local_label(runtime_addr, name, start_addr, end_addr, move_id)
 
 def substitute_constants(instruction, reg, constants_dict, define_all_constants=None):
@@ -280,6 +354,11 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
     This is done by the default hook function when hook=None (the
     default). If this is not wanted specify hook=False.
     """
+    runtime_addr = _check_addr("subroutine", runtime_addr)
+    _check_move_id("subroutine", runtime_addr, move_id)
+    for (arg, value) in (("on_entry", on_entry), ("on_exit", on_exit)):
+        if value is not None and not isinstance(value, dict):
+            utils.die("subroutine({0}, ...): {1} must be a dictionary (e.g. {{'a': 'the value'}}), not {2!r}".format(_hex(runtime_addr), arg, value))
     if name is not None and len(name)>0:
         if is_entry_point:
             entry(runtime_addr, name)
@@ -350,6 +429,8 @@ def comment(runtime_addr, text, inline=False, indent=0, word_wrap=True, *, align
     to the end of the line), or standalone (a separate line of output).
     The comment is word wrapped by default.
     """
+    runtime_addr = _check_addr("comment", runtime_addr)
+    _check_data_loaded("comment", runtime_addr, movemanager.r2b_checked(runtime_addr).binary_addr)
     def check(ok, problem):
         if not ok:
             utils.die("comment({0}, ...): {1}".format(_hex(runtime_addr), problem))
@@ -364,6 +445,8 @@ def comment(runtime_addr, text, inline=False, indent=0, word_wrap=True, *, align
 
 def formatted_comment(runtime_addr, text, inline=False, align=None, indent=0):
     """Add a comment without word wrapping."""
+    runtime_addr = _check_addr("formatted_comment", runtime_addr)
+    _check_data_loaded("formatted_comment", runtime_addr, movemanager.r2b_checked(runtime_addr).binary_addr)
 
     # Convert the old True/False values into the modern 'Align' type as needed
     align = _convert_inline_to_align_internal(inline, align, "formatted_comment")
@@ -372,7 +455,7 @@ def formatted_comment(runtime_addr, text, inline=False, align=None, indent=0):
 
 def no_automatic_comment(runtime_addr):
     """Inhibits the output of any automatically generated comment at the given address"""
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("no_automatic_comment", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     trace.no_auto_comment_set.add(binary_loc.binary_addr)
 
@@ -398,9 +481,9 @@ def annotate(runtime_addr, s, *, align=Align.BEFORE_LABEL, priority=None, once_o
     """Add a raw string directly to the assembly code output at the
     given address."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("annotate", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    
+
     disassembly.annotate_binary(binary_loc, s, align=align, priority=priority, once_only=once_only)
 
 def blank(runtime_addr, *, align=Align.BEFORE_LABEL, priority=None):
@@ -427,7 +510,7 @@ def expr(runtime_addr, s, force=True):
     and is replaced with the expression string value.
     """
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("expr", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     _check_data_loaded("expr", runtime_addr, binary_loc.binary_addr)
 
@@ -454,14 +537,24 @@ def auto_expr(runtime_addr, s):
         if memorymanager.is_data_loaded_at_binary_addr(binary_loc.binary_addr):
             expr(runtime_addr, s, force=False)
 
+def _check_not_classified(command, runtime_addr, binary_addr, length):
+    """Stop with an error if any of the bytes are already classified (e.g. as a string)."""
+    for i in range(length):
+        if classification.is_classified(binary_addr + i, 1):
+            utils.die("{0}({1}, ...): {2} has already been classified (e.g. by an earlier byte(), word() or string command)".format(command, _hex(runtime_addr), _hex(runtime_addr + i)))
+
 def byte(runtime_addr, n=1, cols=None):
     """Categorise a number of bytes at the given address as byte data."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("byte", runtime_addr)
+    _check_count("byte", runtime_addr, n)
+    if cols is not None:
+        _check_count("byte", runtime_addr, cols, "cols")
     binary_loc = movemanager.r2b_checked(runtime_addr)
     _check_in_memory("byte", runtime_addr, binary_loc.binary_addr, n)
     if not memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, n, True):
         return
+    _check_not_classified("byte", runtime_addr, binary_loc.binary_addr, n)
     classification.add_classification(binary_loc.binary_addr, classification.Byte(n, cols=cols))
 
 # TODO: byte()/word() should probably optionally (via an optional arg or a variant function)
@@ -474,11 +567,15 @@ def byte(runtime_addr, n=1, cols=None):
 def word(runtime_addr, n=1, cols=None):
     """Categorise a number of 16 bit words at the given address as word data."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("word", runtime_addr)
+    _check_count("word", runtime_addr, n)
+    if cols is not None:
+        _check_count("word", runtime_addr, cols, "cols")
     binary_loc = movemanager.r2b_checked(runtime_addr)
     _check_in_memory("word", runtime_addr, binary_loc.binary_addr, n * 2, count=n)
     if not memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, n * 2, True):
         return
+    _check_not_classified("word", runtime_addr, binary_loc.binary_addr, n * 2)
     classification.add_classification(binary_loc.binary_addr, classification.Word(n * 2, cols=cols))
 
 def entry(runtime_addr, label=None, warn=True):
@@ -490,7 +587,9 @@ def entry(runtime_addr, label=None, warn=True):
     categorised as code, and therefore output as instructions.
     """
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("entry", runtime_addr)
+    if label is not None:
+        _check_name("entry", runtime_addr, label)
     binary_loc = movemanager.r2b_checked(runtime_addr)
 
     memorymanager.check_data_loaded_at_binary_addr(binary_loc.binary_addr, 1, warn)
@@ -512,7 +611,7 @@ def nonentry(runtime_addr):
     rare.
     """
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("nonentry", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     _check_data_loaded("nonentry", runtime_addr, binary_loc.binary_addr)
 
@@ -527,7 +626,8 @@ def wordentry(runtime_addr, n=1):
     as appropriate.
     """
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("wordentry", runtime_addr)
+    _check_count("wordentry", runtime_addr, n)
     word(runtime_addr, n)
     for i in range(n):
         binary_loc = movemanager.r2b_checked(runtime_addr)
@@ -558,6 +658,8 @@ def hook_subroutine(runtime_addr, name, hook, warn=True):
     'hook' parameter, to determine the end of the string.
     """
 
+    runtime_addr = _check_addr("hook_subroutine", runtime_addr)
+    _check_name("hook_subroutine", runtime_addr, name)
     trace.cpu.hook_subroutine(runtime_addr, name, hook, warn)
 
 def stringhi_hook(target, addr):
@@ -588,10 +690,10 @@ def code_ptr(runtime_addr, runtime_addr_high=None, offset=0, label_name=None):
     Code tracing, see entry(), is applied to the subroutine.
     """
 
+    runtime_addr = _check_addr("code_ptr", runtime_addr)
     if runtime_addr_high is None:
         runtime_addr_high = runtime_addr + 1
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
-    runtime_addr_high = memorymanager.RuntimeAddr(runtime_addr_high)
+    runtime_addr_high = _check_addr("code_ptr", runtime_addr_high)
     binary_addr = movemanager.r2b_checked(runtime_addr).binary_addr
     binary_addr_high = movemanager.r2b_checked(runtime_addr_high).binary_addr
     for (r, b) in ((runtime_addr, binary_addr), (runtime_addr_high, binary_addr_high)):
@@ -649,6 +751,8 @@ def set_label_maker_hook(hook):
     subroutine can be labelled uniformly as 'return1', 'return2' etc.
     """
 
+    if disassembly.user_label_maker_hook is not None:
+        utils.die("set_label_maker_hook() can only be called once")
     disassembly.set_user_label_maker_hook(hook)
 
 def addr(label_name):
@@ -669,9 +773,12 @@ def set_formatter(runtime_addr, n, formatter):
     This function is used by the following formatting functions.
     """
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
-    if n <= 0:
-        utils.die("set_formatter({0}, {1}, ...): the number of bytes must be greater than zero".format(_hex(runtime_addr), n))
+    _set_formatter("set_formatter", runtime_addr, n, formatter)
+
+def _set_formatter(command, runtime_addr, n, formatter):
+    runtime_addr = _check_addr(command, runtime_addr)
+    _check_count(command, runtime_addr, n)
+    _check_address_range(command, runtime_addr + n - 1)
     for i in range(n):
         binary_loc = movemanager.r2b_checked(runtime_addr + i)
         disassembly.format_hint[binary_loc.binary_addr] = formatter
@@ -679,7 +786,7 @@ def set_formatter(runtime_addr, n, formatter):
 def uhex(runtime_addr, n=1):
     """Specifies unsigned hex formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.uhex_formatter)
+    _set_formatter("uhex", runtime_addr, n, mainformatter.uhex_formatter)
 
 def uint(runtime_addr, n=1):
     """Specifies unsigned decimal/hex formatting for data in the given block"""
@@ -687,48 +794,48 @@ def uint(runtime_addr, n=1):
     # This is nearly the default behaviour, but by specifying a formatter explicitly the
     # automatic addition of a comment showing the corresponding ASCII character for
     # immediate constants will be disabled for this address.
-    set_formatter(runtime_addr, n, mainformatter.uint_formatter)
+    _set_formatter("uint", runtime_addr, n, mainformatter.uint_formatter)
 
 def uint_no_hex(runtime_addr, n=1):
     """Specifies unsigned decimal integer formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.uint_no_hex_formatter)
+    _set_formatter("uint_no_hex", runtime_addr, n, mainformatter.uint_no_hex_formatter)
 
 def sint(runtime_addr, n=1):
     """Specifies signed decimal formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.sint_formatter)
+    _set_formatter("sint", runtime_addr, n, mainformatter.sint_formatter)
 
 def padded_uint(runtime_addr, n=1):
     """Specifies padded uint formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, lambda n, bits: mainformatter.uint_formatter(n, bits, pad=True))
+    _set_formatter("padded_uint", runtime_addr, n, lambda n, bits: mainformatter.uint_formatter(n, bits, pad=True))
 
 def char(runtime_addr, n=1):
     """Specifies quoted character formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.char_formatter)
+    _set_formatter("char", runtime_addr, n, mainformatter.char_formatter)
 
 def binary(runtime_addr, n=1):
     """Specifies binary formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.binary_formatter)
+    _set_formatter("binary", runtime_addr, n, mainformatter.binary_formatter)
 
 def picture_binary(runtime_addr, n=1):
     """Specifies picture binary formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.picture_binary_formatter)
+    _set_formatter("picture_binary", runtime_addr, n, mainformatter.picture_binary_formatter)
 
 def decimal(runtime_addr, n=1):
     """Specifies decimal formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.decimal_formatter)
+    _set_formatter("decimal", runtime_addr, n, mainformatter.decimal_formatter)
 
 # "hex" is a Python built-in function so we can't use that.
 def hexadecimal(runtime_addr, n=1):
     """Specifies hex formatting for data in the given block"""
 
-    set_formatter(runtime_addr, n, mainformatter.hexadecimal_formatter)
+    _set_formatter("hexadecimal", runtime_addr, n, mainformatter.hexadecimal_formatter)
 
 def is_assembler(s):
     if config.get_assembler().get_name().lower() == s.lower():
@@ -744,7 +851,7 @@ def string(runtime_addr, n=None):
 
     Returns the next available memory address after the string."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("string", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
 
     return classification.string_binary(binary_loc.binary_addr, n=n)
@@ -755,7 +862,7 @@ def stringterm(runtime_addr, terminator, exclude_terminator=False):
 
     Returns the next available memory address after the string."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("stringterm", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return classification.stringterm_binary(binary_loc.binary_addr, terminator=terminator, exclude_terminator=exclude_terminator)
 
@@ -781,14 +888,14 @@ def stringhi(runtime_addr, include_terminator_fn=None):
 
     Returns the next available memory address after the string."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("stringhi", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return classification.stringhi_binary(binary_loc.binary_addr, include_terminator_fn=include_terminator_fn)
 
 def stringhiz(runtime_addr, include_terminator_fn=None):
     """Classifies a part of the binary as a string up to the next bit 7 set character or zero character."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("stringhiz", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return classification.stringhiz_binary(binary_loc.binary_addr, include_terminator_fn=include_terminator_fn)
 
@@ -798,7 +905,7 @@ def stringn(runtime_addr):
 
     Returns the next available memory address after the string."""
 
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("stringn", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return classification.stringn_binary(runtime_addr, binary_loc.binary_addr)
 
@@ -808,18 +915,18 @@ def stringn(runtime_addr):
 
 def is_simple_name(s):
     """Check for a string being a single identifier (like 'start_of_table') vs a more complex expression like 'end_address - start_address'"""
-    return disassembly.is_simple_name(s)
+    return isinstance(s, str) and s != "" and disassembly.is_simple_name(s)
 
 def split_classification(runtime_addr):
     """Split a single classification into two at the given address. Allows partial strings to be shown on different lines of the output."""
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("split_classification", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     classification.split_classification(binary_loc.binary_addr, warn=False)
 
 def include_binary_file(runtime_addr, relative_filepath):
     """Add an 'include binary' command in the assembly output. The contents are
     verified to be identical to our current file contents."""
-    runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
+    runtime_addr = _check_addr("include_binary_file", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return classification.include_binary_file(binary_loc.binary_addr, relative_filepath)
 
@@ -833,6 +940,8 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # to binary addresses confusing things.
     if len(movemanager.active_move_ids) != 0:
         utils.die("go() can't be called inside a 'with move(...):' block")
+    if not utils.is_integer_type(autostring_min_length) or autostring_min_length < 2:
+        utils.die("go(): autostring_min_length must be at least 2, not {0!r}".format(autostring_min_length))
 
     # Find entire binary range
     pydis_start, pydis_end = memorymanager.get_entire_load_range()

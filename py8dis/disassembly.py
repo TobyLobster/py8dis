@@ -135,12 +135,13 @@ def annotate_binary(binary_loc, s, *, align=Align.BEFORE_LABEL, priority=None, o
 def add_constant(value, name, comment=None, align=Align.INLINE, format=Format.DEFAULT):
     """Create a named constant value."""
 
-    # Make sure we don't add the same constant twice. Assert if trying to
-    # redefine a constant with a different value.
+    # Make sure we don't add the same constant twice. Stop with an error if
+    # trying to redefine a constant with a different value.
     # TODO: inefficient linear search!
     for c in constants:
         if c.name == name:
-            assert c.value == value
+            if c.value != value:
+                utils.die("constant({0}, {1!r}): '{1}' is already defined as {2}".format(value, name, c.value))
             return
 
     constants.append(constant.Constant(value, name, comment, align, format))
@@ -186,23 +187,30 @@ def add_optional_label(runtime_addr, s, *, base_addr=None, definable_inline=True
     When two consecutive bytes share a base label name (e.g. `userv`
     and `userv+1`) then `base_runtime_addr` points to the first byte."""
 
+    h = config.get_assembler().hex
+    def check(ok, problem):
+        if not ok:
+            base_str = "" if base_addr is None else ", " + h(base_addr)
+            utils.die("optional_label({0}, {1!r}{2}): {3}".format(h(runtime_addr), s, base_str, problem))
+
     assert 0 <= runtime_addr <= 0xffff
 
     new_label = optionallabel.OptionalLabel(s, base_addr, definable_inline)
 
     # Check if already present
     if runtime_addr in optional_labels:
-        assert optional_labels[runtime_addr] == new_label, "Optional label at {0} redefined, was {1}".format(hex(runtime_addr), optional_labels[runtime_addr].name)
+        old_label = optional_labels[runtime_addr]
+        check(old_label == new_label, "there is already a different optional label '{0}' here".format(old_label.name))
         return
 
     # Check base_addr is valid
     if base_addr is not None:
-        assert runtime_addr != base_addr
         assert 0 <= base_addr <= 0xffff
-        assert base_addr in optional_labels
-        assert optional_labels[base_addr].base_address is None
+        check(runtime_addr != base_addr, "the base address must be a different address")
+        check(base_addr in optional_labels, "the base address needs an optional label defined first")
+        check(optional_labels[base_addr].base_address is None, "the base address's optional label must not itself have a base address")
     else:
-        assert is_simple_name(s), "This is not a simple label name: {0}".format(s)
+        check(is_simple_name(s), "this isn't a valid label name (a letter or underscore followed by letters, digits or underscores)")
     optional_labels[runtime_addr] = new_label
 
 def add_local_label(runtime_addr, name, start_addr, end_addr, move_id=None):

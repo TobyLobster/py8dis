@@ -134,7 +134,10 @@ class MemoryRuntime(object):
 
     def __getitem__(self, runtime_addr):
         import movemanager
-        assert is_valid_runtime_addr(runtime_addr)
+        if not (isinstance(runtime_addr, int) and is_valid_runtime_addr(runtime_addr)):
+            import config
+            h = config.get_assembler().hex
+            utils.die("memory[{0}]: the address must be between {1} and {2}".format(h(runtime_addr) if isinstance(runtime_addr, int) and runtime_addr >= 0 else repr(runtime_addr), config.get_assembler().hex4(0), h(0xffff)))
         runtime_addr = RuntimeAddr(runtime_addr)
         binary_loc = movemanager.r2b_checked(runtime_addr)
         return memory_binary[binary_loc.binary_addr]
