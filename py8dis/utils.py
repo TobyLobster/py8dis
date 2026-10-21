@@ -2,7 +2,6 @@
 Utility functions
 """
 
-from __future__ import print_function
 import collections
 import inspect
 import os
@@ -94,19 +93,11 @@ def count_with_units(n, unit_name_singular, unit_name_plural):
     else:
         return "%s %s" % (n, unit_name_plural)
 
-# Create string types and integer types depending on python version
-if sys.version_info[0] == 2:
-    _integer_types = (long, int)
-    _string_types  = (basestring,)
-else:
-    _integer_types = (int,)
-    _string_types  = (str,)
-
 def is_string_type(item):
-    return isinstance(item, _string_types)
+    return isinstance(item, str)
 
 def is_integer_type(item):
-    return isinstance(item, _integer_types)
+    return isinstance(item, int)
 
 def is_integer_string(s):
     assert s is not None
@@ -189,13 +180,13 @@ def round_up(n: int, multiple: int = 4) -> int:
         int: The next multiple of the specified number greater than or equal to the input
 
     Examples:
-        >>> round_up_to_multiple(5)  # default multiple of 4
+        >>> round_up(5)  # default multiple of 4
         8
-        >>> round_up_to_multiple(5, multiple=3)
+        >>> round_up(5, multiple=3)
         6
-        >>> round_up_to_multiple(7, multiple=5)
+        >>> round_up(7, multiple=5)
         10
-        >>> round_up_to_multiple(10, multiple=2)
+        >>> round_up(10, multiple=2)
         10
     """
     return ((n + (multiple - 1)) // multiple) * multiple
@@ -234,13 +225,19 @@ def format_strings_in_a_table(strings, max_width, items_per_line_already_known, 
         # Loop once only at the specified number of items
         items_per_line_range = range(items_per_line_already_known, items_per_line_already_known-1, -1)
     else:
-        # Loop through all possible items per line
-        items_per_line_range = range(len(strings), 0, -1)
+        # Loop through the possible numbers of items per line, most first.
+        #
+        # Each item is at least as long as the shortest one, and is followed by
+        # ", " (except the last on a line), so no more than this many items
+        # can fit on a line. Starting here rather than at len(strings) means a
+        # long list (e.g. a large block of data bytes) doesn't take quadratic
+        # time.
+        shortest = min(len(str(s)) for s in strings)
+        most_that_could_fit = max(1, (max_width + 2) // (shortest + 2))
+        items_per_line_range = range(min(len(strings), most_that_could_fit), 0, -1)
 
     # Try different numbers of items per line
     for items_per_line in items_per_line_range:
-        line_count = len(strings) // items_per_line
-
         # Check if this arrangement fits within max_width
         # Calculate column widths for this arrangement
         column_widths = get_column_widths(strings, items_per_line)
@@ -263,8 +260,9 @@ def format_strings_in_a_table(strings, max_width, items_per_line_already_known, 
                 result.append(formatter_for_line(", ".join(formatted_items), i, min(i+items_per_line, len(strings))))
             return result
 
-    # If no arrangement works, format one item per line. Should never happen.
-    return formatter_for_line(strings[0], 0, 1)
+    # If no arrangement works, format one item per line. (This doesn't happen,
+    # since one item per line is always accepted above.)
+    return [formatter_for_line(str(item), i, i + 1) for i, item in enumerate(strings)]
 
 class StackEntry:
     def __init__(self, index, function, filename, lineno, code, positions):
