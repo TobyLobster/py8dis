@@ -62,11 +62,31 @@ class Beebasm(assembler.Assembler):
                  '!=': '!=',
         }
 
-    def expression_in_context(self, expr, text, context):
+    def binary_precedence(self):
+        # Measured by assembling test expressions with beebasm. (Note that the
+        # shifts bind as tightly as '*'.)
+        return { '*': 6, 'DIV': 6, 'MOD': 6, '<<': 6, '>>': 6,
+                 '+': 5, '-': 5,
+                 '==': 4,
+                 'AND': 3,
+                 'OR': 2, 'EOR': 2,
+        }
+
+    def unary_precedence(self):
+        # '<' and '>' (low and high byte) bind more tightly than any binary
+        # operator, so '<x + 1' is '(<x) + 1'. (NOT is 'NOT(...)', see below.)
+        return { '<': 90, '>': 90 }
+
+    def expression_in_context(self, expr, text, level, context):
         if context == expression.ASSERTION:
-            # In beebasm '==' binds more tightly than AND/OR/EOR, so bracket
-            # expressions using those (otherwise the assert is meaningless).
-            if re.search(r"\b(AND|OR|EOR)\b", text, re.IGNORECASE) and not expression.is_fully_bracketed(text):
+            # An assertion is 'assert value == expr', so the expression needs
+            # brackets if it binds no more tightly than '==' (e.g. AND).
+            if level is None:
+                # (The structure isn't known, e.g. an expression string from
+                # the user, so look for operators that bind less tightly.)
+                if re.search(r"\b(AND|OR|EOR)\b", text, re.IGNORECASE):
+                    return "(%s)" % text
+            elif level <= self.binary_precedence()['==']:
                 return "(%s)" % text
         return text
 

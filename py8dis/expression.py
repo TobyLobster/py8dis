@@ -14,21 +14,39 @@ The tree is made of:
     Unary(op, operand)          e.g. NOT, '<' (low byte) or '>' (high byte)
     Binary(left, op, right)     e.g. '+', 'AND', 'DIV'
 
-Operator names are generic (e.g. 'AND', 'DIV', 'NOT', '<') and are translated
-into the assembler's own syntax when rendered, using the assembler's
-binary_operators() and unary_operators().
+Operator names are generic (e.g. 'AND', 'DIV', 'NOT', '<'). Each assembler
+says how to write them (see the Assembler class):
+
+    binary_operators()      how to spell each binary operator
+    binary_precedence()     how tightly each binary operator binds
+    unary_operators()       how to spell each unary operator
+    unary_precedence()      how tightly each unary (prefix) operator binds
+    unary_rewrite()         another way to write a unary operator, e.g. as a
+                            binary operator for an assembler that doesn't have it
+
+Brackets are added where they are needed: round a part of the expression
+that binds less tightly than the operator it's used with. A part whose
+precedence isn't known (e.g. an expression string written by the user, or an
+operator the assembler doesn't say anything about) is bracketed unless it's a
+simple name or number, or is already in brackets.
+
+For clarity, brackets are also added where they aren't strictly needed, in
+places where the supported assemblers disagree about precedence:
+
+    - round a compound operand of a unary operator, e.g. '<(table + 1)'
+    - round a low or high byte used in a larger expression, e.g. '(>table) + 1'
+    - where a bitwise or shift operator (AND, OR, EOR, '<<', '>>') is mixed
+      with a different operator, e.g. '(x + 1) AND $ff' or '(x >> 8) AND $ff'
+
+So e.g. 'a + b + c' and 'x * 2 + 1' have no brackets.
 
 Where an expression is used can also change how it's written, e.g. in an
 assertion, or as an instruction operand. Use render(expr, context) for these.
 Each assembler adjusts the text for a context (if it needs to) in its
 expression_in_context() method.
 
-Note: This is the first stage of moving to expression trees. The trees are
-rendered exactly as maker.py used to build its strings, so the output is
-unchanged: anything that isn't a simple name or number is put in brackets when
-it's part of a larger expression. In particular, an expression containing a
-LazyString is bracketed using a slightly different rule (see _bracketed()) and
-compares equal only to itself (see Expr.__eq__()), both as before.
+Note: An expression containing a LazyString compares equal only to itself (see
+Expr.__eq__()).
 """
 
 import config
@@ -41,17 +59,47 @@ OPERAND      = "operand"        # an instruction operand (used for the 8080)
 ASSERTION    = "assertion"      # an assertion that the expression has a given value
 PREPROCESSOR = "preprocessor"   # a preprocessor condition (used for xa's '#if')
 
+# Precedence levels: a higher level binds more tightly. ATOM is for something
+# that never needs brackets (e.g. a name or number). None means 'not known'.
+ATOM = 1000
+
+# Generic operator names with more than one spelling
+BINARY_ALIASES = { '|': 'OR', '&': 'AND', '^': 'EOR', 'XOR': 'EOR', '/': 'DIV', '%': 'MOD' }
+UNARY_ALIASES  = { '!': 'NOT' }
+
+# Operators where 'a op (b op c)' is the same as '(a op b) op c'
+ASSOCIATIVE = { '+', '*', 'AND', 'OR', 'EOR' }
+
+NO_CHAIN = frozenset()
+
+# Arithmetic operators. All the supported assemblers agree on how these bind
+# relative to each other ('*', DIV and MOD more tightly than '+' and '-'), but
+# they disagree about the bitwise and shift operators. So for clarity, brackets
+# are added where a bitwise or shift operator is mixed with a different
+# operator, even if they aren't needed (see _operand_text()).
+ARITHMETIC = { '+', '-', '*', 'DIV', 'MOD' }
+
+# The low and high byte operators. Assemblers disagree about how tightly these
+# bind, so for clarity they are bracketed when used in a larger expression.
+LOW_HIGH = { '<', '>' }
+
 
 class Expr:
     """Base class of all the parts of an expression tree."""
 
-    # An 'atomic' expression is never bracketed when used as part of a larger
-    # expression. e.g. NOT binds more tightly than any binary operator in all
-    # the supported assemblers (or brings its own brackets).
-    is_atomic = False
-
     def render(self):
         """The expression as text, for the current assembler."""
+        return _render(self, nested=False)[0]
+
+    def _render(self, nested):
+        """Returns (text, level, chain): the text, how tightly it binds, and
+        the set of generic operators in its 'chain' (see below). 'nested'
+        says whether it's part of a larger expression.
+
+        The chain is the operators at the top level of the text that aren't in
+        brackets. e.g. for 'a - b + c' it's {'-', '+'}. An assembler works these
+        out from left to right, which matters when the expression is the right
+        hand operand of another operator."""
         raise NotImplementedError
 
     def is_lazy(self):
@@ -123,7 +171,10 @@ class Num(Expr):
         self.value = value
         self.format = format
 
-    def render(self):
+    def _render(self, nested):
+        return (self._text(), ATOM, NO_CHAIN)
+
+    def _text(self):
         if self.format == "hex":
             return config.get_assembler().hex(self.value)
         if self.format == "hex2":
@@ -139,8 +190,8 @@ class Name(Expr):
     def __init__(self, name):
         self.name = name
 
-    def render(self):
-        return self.name
+    def _render(self, nested):
+        return (self.name, ATOM, NO_CHAIN)
 
 
 class Raw(Expr):
@@ -149,8 +200,8 @@ class Raw(Expr):
     def __init__(self, text):
         self.text = text
 
-    def render(self):
-        return self.text
+    def _render(self, nested):
+        return (self.text, _text_level(self.text), NO_CHAIN)
 
 
 class LazyLeaf(Expr):
@@ -159,8 +210,9 @@ class LazyLeaf(Expr):
     def __init__(self, lazy_string):
         self.lazy_string = lazy_string
 
-    def render(self):
-        return str(self.lazy_string)
+    def _render(self, nested):
+        text = str(self.lazy_string)
+        return (text, _text_level(text), NO_CHAIN)
 
     def is_lazy(self):
         return True
@@ -172,45 +224,61 @@ class Unary(Expr):
     def __init__(self, op, operand):
         self.op = op
         self.operand = operand
-        self.is_atomic = op in ('NOT', '!')
-        self._template()        # (Stop now if the assembler can't handle the operator)
+        self._spelling()        # (Stop now if the assembler can't handle the operator)
 
-    def _template(self):
-        op = self.op
+    def generic_op(self):
+        return UNARY_ALIASES.get(self.op, self.op)
+
+    def _spelling(self):
         trans = config.get_assembler().unary_operators()
-        if op in trans:
-            if trans[op] is None:
-                utils.die("Assembler can't handle operator " + op)
-            op = trans[op]
+        if self.op in trans:
+            if trans[self.op] is None:
+                utils.die("Assembler can't handle operator " + self.op)
+            return trans[self.op]
+        return self.op
+
+    def _render(self, nested):
+        assembler = config.get_assembler()
+        op = self.generic_op()
+
+        # Does the assembler write this another way? (e.g. as a binary operator)
+        rewritten = assembler.unary_rewrite(op, self.operand, nested)
+        if rewritten is not None:
+            return _render(rewritten, nested)
 
         # The assembler specific operator can be a template containing '%s'
         # for where the operand goes (e.g. 'NOT(%s)'), otherwise it's a prefix.
-        return op if "%s" in op else op + "%s"
+        spelling = self._spelling()
+        if "(%s)" in spelling:
+            # e.g. 'NOT(%s)': it brings its own brackets
+            return (spelling % _render(self.operand, nested=True)[0], ATOM, NO_CHAIN)
+        if "%s" in spelling:
+            # Some other template: bracket the operand unless it's simple
+            return (spelling % _operand_text(self.operand, None, strict=True, unary=True)[0], None, NO_CHAIN)
 
-    def render(self):
-        template = self._template()
-        # No need for extra brackets if the template already provides them
-        operand = self.operand.render() if "(%s)" in template else _bracketed(self.operand)
-        return template % operand
+        # A prefix operator
+        level = assembler.unary_precedence().get(op)
+        # (The chain records a low or high byte operator, see _operand_text())
+        chain = frozenset({op}) if op in LOW_HIGH else NO_CHAIN
+        return (spelling + _operand_text(self.operand, level, strict=True, unary=True)[0], level, chain)
 
     def is_lazy(self):
         return self.operand.is_lazy()
 
 
 class Binary(Expr):
-    """A binary operator, e.g. '+', 'AND' or 'DIV'.
+    """A binary operator, e.g. '+', 'AND' or 'DIV'."""
 
-    'spaced' says whether there are spaces round the operator. (For now some
-    expressions are written without them, e.g. 'label-1', as before.)"""
-
-    def __init__(self, left, op, right, spaced=True):
+    def __init__(self, left, op, right):
         self.left = left
         self.op = op
         self.right = right
-        self.spaced = spaced
-        self._op_name()         # (Stop now if the assembler can't handle the operator)
+        self._spelling()        # (Stop now if the assembler can't handle the operator)
 
-    def _op_name(self):
+    def generic_op(self):
+        return BINARY_ALIASES.get(self.op, self.op)
+
+    def _spelling(self):
         trans = config.get_assembler().binary_operators()
         if self.op in trans:
             if trans[self.op] is None:
@@ -218,9 +286,18 @@ class Binary(Expr):
             return trans[self.op]
         return self.op
 
-    def render(self):
-        space = " " if self.spaced else ""
-        return _bracketed(self.left) + space + self._op_name() + space + _bracketed(self.right)
+    def _render(self, nested):
+        op = self.generic_op()
+        level = config.get_assembler().binary_precedence().get(op)
+
+        # Operators of the same level are worked out left to right, so the
+        # left operand only needs brackets if it binds less tightly, but the
+        # right operand also needs them if it binds equally tightly (unless
+        # its chain is just the same associative operator, e.g. 'a + (b + c)'
+        # is written 'a + b + c', but 'a | (b ^ c | d)' keeps its brackets).
+        left, left_chain = _operand_text(self.left, level, strict=False, parent_op=op)
+        right, right_chain = _operand_text(self.right, level, strict=True, parent_op=op, same_op_ok=op if op in ASSOCIATIVE else None)
+        return (left + " " + self._spelling() + " " + right, level, frozenset({op}) | left_chain | right_chain)
 
     def is_lazy(self):
         return self.left.is_lazy() or self.right.is_lazy()
@@ -230,7 +307,8 @@ def render(value, context=DEFAULT):
     """Render an expression (or a string, int or LazyString) for the current
     assembler, for use in the given context."""
     expr = to_expr(value)
-    return config.get_assembler().expression_in_context(expr, expr.render(), context)
+    text, level, _ = _render(expr, nested=False)
+    return config.get_assembler().expression_in_context(expr, text, level, context)
 
 def in_context(value, context):
     """A LazyString that renders the expression for the given context when
@@ -268,19 +346,51 @@ def to_expr(value):
     return Raw(value)
 
 
-def _bracketed(expr):
-    """Render 'expr' for use as part of a larger expression, adding brackets
-    unless it's a simple name or number."""
+def _render(expr, nested):
+    return to_expr(expr)._render(nested)
 
-    if expr.is_atomic or isinstance(expr, (Num, Name)):
-        return expr.render()
+def _text_level(text):
+    """The precedence level of some text whose structure isn't known (e.g. an
+    expression string written by the user): ATOM if it never needs brackets,
+    otherwise None (not known)."""
 
-    text = expr.render()
-    if text.isdigit() or disassembly.is_simple_name(text):
-        return text
+    if text.isdigit() or disassembly.is_simple_name(text) or utils.is_integer_string(text) or is_fully_bracketed(text):
+        return ATOM
+    return None
 
-    # As before: an expression containing a LazyString doesn't check for an
-    # integer string (e.g. '&ff'), but other expressions do
-    if not expr.is_lazy() and utils.is_integer_string(text):
-        return text
-    return "(" + text + ")"
+def _operand_text(expr, parent_level, strict, parent_op=None, same_op_ok=None, unary=False):
+    """Render 'expr' as an operand of an operator of precedence level
+    'parent_level', adding brackets if they are needed. Returns (text, chain),
+    where chain is the part of the expression's chain (see Expr._render())
+    that's at 'parent_level' and not in brackets.
+
+    If 'strict' is True, brackets are also needed if 'expr' binds exactly as
+    tightly as the operator (e.g. for the right hand operand of '-'), unless
+    its chain is just the operator 'same_op_ok'.
+
+    'parent_op' is the (generic) binary operator, or 'unary' is True for a
+    unary operator. These are used to add brackets for clarity (see the
+    module docstring)."""
+
+    text, level, chain = _render(expr, nested=True)
+    if level == ATOM:
+        return text, NO_CHAIN
+    bracketed = "(" + text + ")", NO_CHAIN
+
+    # Needed brackets
+    if level is None or parent_level is None or level < parent_level:
+        return bracketed
+    if level == parent_level and strict and not (same_op_ok is not None and chain == {same_op_ok}):
+        return bracketed
+
+    # Brackets for clarity
+    if unary:
+        return bracketed
+    if parent_op is not None and (chain & LOW_HIGH):
+        return bracketed
+    if parent_op is not None and chain:
+        involves_bitwise = not (parent_op in ARITHMETIC and chain <= ARITHMETIC)
+        if involves_bitwise and chain != {parent_op}:
+            return bracketed
+
+    return (text, chain) if level == parent_level else (text, NO_CHAIN)

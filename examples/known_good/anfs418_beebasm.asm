@@ -1860,81 +1860,81 @@ l8869 = c8868+1
 ; &89ca referenced 1 time by &8e52
 .jump_table_low
     equb 4                                                            ; 89ca: 04          .
-    equb <(just_rts-1)                                                ; 89cb: 57          W
-    equb <(service_handler_claim_absolute_workspace-1)                ; 89cc: a4          .
-    equb <(service_handler_claim_private_workspace-1)                 ; 89cd: b7          .
-    equb <(sub_c8cca-1)                                               ; 89ce: c9          .
-    equb <(sub_c8c4e-1)                                               ; 89cf: 4d          M
-    equb <(sub_c8028-1)                                               ; 89d0: 27          '
-    equb <(just_rts-1)                                                ; 89d1: 57          W
-    equb <(sub_c8e92-1)                                               ; 89d2: 91          .
-    equb <(sub_ca4ee-1)                                               ; 89d3: ed          .
-    equb <(sub_c8c5d-1)                                               ; 89d4: 5c          \
-    equb <(just_rts-1)                                                ; 89d5: 57          W
-    equb <(sub_c8090-1)                                               ; 89d6: 8f          .
-    equb <(sub_c8983-1)                                               ; 89d7: 82          .
-    equb <(sub_c8b0d-1)                                               ; 89d8: 0c          .
-    equb <(sub_c95ce-1)                                               ; 89d9: cd          .
-    equb <(sub_c9580-1)                                               ; 89da: 7f          .
-    equb <(sub_cac98-1)                                               ; 89db: 97          .
-    equb <(sub_c95ae-1)                                               ; 89dc: ad          .
-    equb <(sub_c95be-1)                                               ; 89dd: bd          .
-    equb <(sub_c9dc8-1)                                               ; 89de: c7          .
-    equb <(sub_c9dee-1)                                               ; 89df: ed          .
-    equb <(ca1c1-1)                                                   ; 89e0: c0          .
-    equb <(ca114-1)                                                   ; 89e1: 13          .
-    equb <(ca1c1-1)                                                   ; 89e2: c0          .
-    equb <(sub_cad80-1)                                               ; 89e3: 7f          .
-    equb <(sub_c8f99-1)                                               ; 89e4: 98          .
-    equb <(sub_c92b0-1)                                               ; 89e5: af          .
-    equb <(sub_caf3e-1)                                               ; 89e6: 3d          =
-    equb <(sub_ca391-1)                                               ; 89e7: 90          .
-    equb <(sub_ca39b-1)                                               ; 89e8: 9a          .
-    equb <(ca2f4-1)                                                   ; 89e9: f3          .
-    equb <(ca1c1-1)                                                   ; 89ea: c0          .
-    equb <(sub_ca2fa-1)                                               ; 89eb: f9          .
-    equb <(sub_ca0e4-1)                                               ; 89ec: e3          .
-    equb <(sub_ca0ea-1)                                               ; 89ed: e9          .
-    equb <(sub_ca0fa-1)                                               ; 89ee: f9          .
+    equb <(just_rts - 1)                                              ; 89cb: 57          W
+    equb <(service_handler_claim_absolute_workspace - 1)              ; 89cc: a4          .
+    equb <(service_handler_claim_private_workspace - 1)               ; 89cd: b7          .
+    equb <(sub_c8cca - 1)                                             ; 89ce: c9          .
+    equb <(sub_c8c4e - 1)                                             ; 89cf: 4d          M
+    equb <(sub_c8028 - 1)                                             ; 89d0: 27          '
+    equb <(just_rts - 1)                                              ; 89d1: 57          W
+    equb <(sub_c8e92 - 1)                                             ; 89d2: 91          .
+    equb <(sub_ca4ee - 1)                                             ; 89d3: ed          .
+    equb <(sub_c8c5d - 1)                                             ; 89d4: 5c          \
+    equb <(just_rts - 1)                                              ; 89d5: 57          W
+    equb <(sub_c8090 - 1)                                             ; 89d6: 8f          .
+    equb <(sub_c8983 - 1)                                             ; 89d7: 82          .
+    equb <(sub_c8b0d - 1)                                             ; 89d8: 0c          .
+    equb <(sub_c95ce - 1)                                             ; 89d9: cd          .
+    equb <(sub_c9580 - 1)                                             ; 89da: 7f          .
+    equb <(sub_cac98 - 1)                                             ; 89db: 97          .
+    equb <(sub_c95ae - 1)                                             ; 89dc: ad          .
+    equb <(sub_c95be - 1)                                             ; 89dd: bd          .
+    equb <(sub_c9dc8 - 1)                                             ; 89de: c7          .
+    equb <(sub_c9dee - 1)                                             ; 89df: ed          .
+    equb <(ca1c1 - 1)                                                 ; 89e0: c0          .
+    equb <(ca114 - 1)                                                 ; 89e1: 13          .
+    equb <(ca1c1 - 1)                                                 ; 89e2: c0          .
+    equb <(sub_cad80 - 1)                                             ; 89e3: 7f          .
+    equb <(sub_c8f99 - 1)                                             ; 89e4: 98          .
+    equb <(sub_c92b0 - 1)                                             ; 89e5: af          .
+    equb <(sub_caf3e - 1)                                             ; 89e6: 3d          =
+    equb <(sub_ca391 - 1)                                             ; 89e7: 90          .
+    equb <(sub_ca39b - 1)                                             ; 89e8: 9a          .
+    equb <(ca2f4 - 1)                                                 ; 89e9: f3          .
+    equb <(ca1c1 - 1)                                                 ; 89ea: c0          .
+    equb <(sub_ca2fa - 1)                                             ; 89eb: f9          .
+    equb <(sub_ca0e4 - 1)                                             ; 89ec: e3          .
+    equb <(sub_ca0ea - 1)                                             ; 89ed: e9          .
+    equb <(sub_ca0fa - 1)                                             ; 89ee: f9          .
 ; &89ef referenced 1 time by &8e4e
 .jump_table_high
     equb &d3                                                          ; 89ef: d3          .
-    equb >(just_rts-1)                                                ; 89f0: 8e          .
-    equb >(service_handler_claim_absolute_workspace-1)                ; 89f1: 8e          .
-    equb >(service_handler_claim_private_workspace-1)                 ; 89f2: 8e          .
-    equb >(sub_c8cca-1)                                               ; 89f3: 8c          .
-    equb >(sub_c8c4e-1)                                               ; 89f4: 8c          .
-    equb >(sub_c8028-1)                                               ; 89f5: 80          .
-    equb >(just_rts-1)                                                ; 89f6: 8e          .
-    equb >(sub_c8e92-1)                                               ; 89f7: 8e          .
-    equb >(sub_ca4ee-1)                                               ; 89f8: a4          .
-    equb >(sub_c8c5d-1)                                               ; 89f9: 8c          .
-    equb >(just_rts-1)                                                ; 89fa: 8e          .
-    equb >(sub_c8090-1)                                               ; 89fb: 80          .
-    equb >(sub_c8983-1)                                               ; 89fc: 89          .
-    equb >(sub_c8b0d-1)                                               ; 89fd: 8b          .
-    equb >(sub_c95ce-1)                                               ; 89fe: 95          .
-    equb >(sub_c9580-1)                                               ; 89ff: 95          .
-    equb >(sub_cac98-1)                                               ; 8a00: ac          .
-    equb >(sub_c95ae-1)                                               ; 8a01: 95          .
-    equb >(sub_c95be-1)                                               ; 8a02: 95          .
-    equb >(sub_c9dc8-1)                                               ; 8a03: 9d          .
-    equb >(sub_c9dee-1)                                               ; 8a04: 9d          .
-    equb >(ca1c1-1)                                                   ; 8a05: a1          .
-    equb >(ca114-1)                                                   ; 8a06: a1          .
-    equb >(ca1c1-1)                                                   ; 8a07: a1          .
-    equb >(sub_cad80-1)                                               ; 8a08: ad          .
-    equb >(sub_c8f99-1)                                               ; 8a09: 8f          .
-    equb >(sub_c92b0-1)                                               ; 8a0a: 92          .
-    equb >(sub_caf3e-1)                                               ; 8a0b: af          .
-    equb >(sub_ca391-1)                                               ; 8a0c: a3          .
-    equb >(sub_ca39b-1)                                               ; 8a0d: a3          .
-    equb >(ca2f4-1)                                                   ; 8a0e: a2          .
-    equb >(ca1c1-1)                                                   ; 8a0f: a1          .
-    equb >(sub_ca2fa-1)                                               ; 8a10: a2          .
-    equb >(sub_ca0e4-1)                                               ; 8a11: a0          .
-    equb >(sub_ca0ea-1)                                               ; 8a12: a0          .
-    equb >(sub_ca0fa-1)                                               ; 8a13: a0          .
+    equb >(just_rts - 1)                                              ; 89f0: 8e          .
+    equb >(service_handler_claim_absolute_workspace - 1)              ; 89f1: 8e          .
+    equb >(service_handler_claim_private_workspace - 1)               ; 89f2: 8e          .
+    equb >(sub_c8cca - 1)                                             ; 89f3: 8c          .
+    equb >(sub_c8c4e - 1)                                             ; 89f4: 8c          .
+    equb >(sub_c8028 - 1)                                             ; 89f5: 80          .
+    equb >(just_rts - 1)                                              ; 89f6: 8e          .
+    equb >(sub_c8e92 - 1)                                             ; 89f7: 8e          .
+    equb >(sub_ca4ee - 1)                                             ; 89f8: a4          .
+    equb >(sub_c8c5d - 1)                                             ; 89f9: 8c          .
+    equb >(just_rts - 1)                                              ; 89fa: 8e          .
+    equb >(sub_c8090 - 1)                                             ; 89fb: 80          .
+    equb >(sub_c8983 - 1)                                             ; 89fc: 89          .
+    equb >(sub_c8b0d - 1)                                             ; 89fd: 8b          .
+    equb >(sub_c95ce - 1)                                             ; 89fe: 95          .
+    equb >(sub_c9580 - 1)                                             ; 89ff: 95          .
+    equb >(sub_cac98 - 1)                                             ; 8a00: ac          .
+    equb >(sub_c95ae - 1)                                             ; 8a01: 95          .
+    equb >(sub_c95be - 1)                                             ; 8a02: 95          .
+    equb >(sub_c9dc8 - 1)                                             ; 8a03: 9d          .
+    equb >(sub_c9dee - 1)                                             ; 8a04: 9d          .
+    equb >(ca1c1 - 1)                                                 ; 8a05: a1          .
+    equb >(ca114 - 1)                                                 ; 8a06: a1          .
+    equb >(ca1c1 - 1)                                                 ; 8a07: a1          .
+    equb >(sub_cad80 - 1)                                             ; 8a08: ad          .
+    equb >(sub_c8f99 - 1)                                             ; 8a09: 8f          .
+    equb >(sub_c92b0 - 1)                                             ; 8a0a: 92          .
+    equb >(sub_caf3e - 1)                                             ; 8a0b: af          .
+    equb >(sub_ca391 - 1)                                             ; 8a0c: a3          .
+    equb >(sub_ca39b - 1)                                             ; 8a0d: a3          .
+    equb >(ca2f4 - 1)                                                 ; 8a0e: a2          .
+    equb >(ca1c1 - 1)                                                 ; 8a0f: a1          .
+    equb >(sub_ca2fa - 1)                                             ; 8a10: a2          .
+    equb >(sub_ca0e4 - 1)                                             ; 8a11: a0          .
+    equb >(sub_ca0ea - 1)                                             ; 8a12: a0          .
+    equb >(sub_ca0fa - 1)                                             ; 8a13: a0          .
     equb &8a                                                          ; 8a14: 8a          .
 
 ; &8a15 referenced 1 time by &8003
@@ -6257,96 +6257,96 @@ la3f2 = la3f0+2
 ; &a3f1 referenced 3 times by &8c93, &a13b, &b326
 ; &a3f2 referenced 3 times by &8c8f, &a137, &b353
     equb &80                                                          ; a3f5: 80          .
-    equw sub_cb994-1                                                  ; a3f6: 93 b9       ..
+    equw sub_cb994 - 1                                                ; a3f6: 93 b9       ..
     equs "Dump"                                                       ; a3f8: 44 75 6d... Dum
     equb &c4                                                          ; a3fc: c4          .
-    equw sub_cba1b-1                                                  ; a3fd: 1a ba       ..
+    equw sub_cba1b - 1                                                ; a3fd: 1a ba       ..
     equs "Net"                                                        ; a3ff: 4e 65 74    Net
     equb &80                                                          ; a402: 80          .
-    equw sub_c8b1a-1                                                  ; a403: 19 8b       ..
+    equw sub_c8b1a - 1                                                ; a403: 19 8b       ..
     equs "Pollps"                                                     ; a405: 50 6f 6c... Pol
     equb &88                                                          ; a40b: 88          .
-    equw sub_cb1c3-1                                                  ; a40c: c2 b1       ..
+    equw sub_cb1c3 - 1                                                ; a40c: c2 b1       ..
     equs "Print"                                                      ; a40e: 50 72 69... Pri
     equb &cc                                                          ; a413: cc          .
-    equw sub_cb99d-1                                                  ; a414: 9c b9       ..
+    equw sub_cb99d - 1                                                ; a414: 9c b9       ..
     equs "Prot"                                                       ; a416: 50 72 6f... Pro
     equb &8e                                                          ; a41a: 8e          .
-    equw sub_cb30c-1                                                  ; a41b: 0b b3       ..
+    equw sub_cb30c - 1                                                ; a41b: 0b b3       ..
     equs "PS"                                                         ; a41d: 50 53       PS
     equb &88                                                          ; a41f: 88          .
-    equw sub_cafee-1                                                  ; a420: ed af       ..
+    equw sub_cafee - 1                                                ; a420: ed af       ..
     equs "Roff"                                                       ; a422: 52 6f 66... Rof
     equb &80                                                          ; a426: 80          .
-    equw sub_c8ad4-1                                                  ; a427: d3 8a       ..
+    equw sub_c8ad4 - 1                                                ; a427: d3 8a       ..
     equs "Type"                                                       ; a429: 54 79 70... Typ
     equb &cc                                                          ; a42d: cc          .
-    equw sub_cb99a-1                                                  ; a42e: 99 b9       ..
+    equw sub_cb99a - 1                                                ; a42e: 99 b9       ..
     equs "Unprot"                                                     ; a430: 55 6e 70... Unp
     equb &8e                                                          ; a436: 8e          .
-    equw sub_cb33d-1                                                  ; a437: 3c b3       <.
+    equw sub_cb33d - 1                                                ; a437: 3c b3       <.
     equb &80                                                          ; a439: 80          .
     equs "Access"                                                     ; a43a: 41 63 63... Acc
     equb &c9                                                          ; a440: c9          .
-    equw sub_c92e6-1                                                  ; a441: e5 92       ..
+    equw sub_c92e6 - 1                                                ; a441: e5 92       ..
     equs "Bye"                                                        ; a443: 42 79 65    Bye
     equb &80                                                          ; a446: 80          .
-    equw sub_c949e-1                                                  ; a447: 9d 94       ..
+    equw sub_c949e - 1                                                ; a447: 9d 94       ..
     equs "Cdir"                                                       ; a449: 43 64 69... Cdi
     equb &c6                                                          ; a44d: c6          .
-    equw sub_cad10-1                                                  ; a44e: 0f ad       ..
+    equw sub_cad10 - 1                                                ; a44e: 0f ad       ..
     equs "Delete"                                                     ; a450: 44 65 6c... Del
     equb &c3                                                          ; a456: c3          .
-    equw sub_c92e6-1                                                  ; a457: e5 92       ..
+    equw sub_c92e6 - 1                                                ; a457: e5 92       ..
     equs "Dir"                                                        ; a459: 44 69 72    Dir
     equb &81                                                          ; a45c: 81          .
-    equw sub_c93dd-1                                                  ; a45d: dc 93       ..
+    equw sub_c93dd - 1                                                ; a45d: dc 93       ..
     equs "Ex"                                                         ; a45f: 45 78       Ex
     equb &81                                                          ; a461: 81          .
-    equw sub_cad6b-1                                                  ; a462: 6a ad       j.
+    equw sub_cad6b - 1                                                ; a462: 6a ad       j.
     equs "Flip"                                                       ; a464: 46 6c 69... Fli
     equb &80                                                          ; a468: 80          .
-    equw sub_ca356-1                                                  ; a469: 55 a3       U.
+    equw sub_ca356 - 1                                                ; a469: 55 a3       U.
     equs "FS"                                                         ; a46b: 46 53       FS
     equb &8b                                                          ; a46d: 8b          .
-    equw sub_ca07b-1                                                  ; a46e: 7a a0       z.
+    equw sub_ca07b - 1                                                ; a46e: 7a a0       z.
     equs "Info"                                                       ; a470: 49 6e 66... Inf
     equb &c3                                                          ; a474: c3          .
-    equw sub_c92e6-1                                                  ; a475: e5 92       ..
+    equw sub_c92e6 - 1                                                ; a475: e5 92       ..
 ; &a477 referenced 1 time by &8daf
 .la477
     equs "I am"                                                       ; a477: 49 20 61... I a
     equb &c2                                                          ; a47b: c2          .
-    equw sub_c8d79-1                                                  ; a47c: 78 8d       x.
+    equw sub_c8d79 - 1                                                ; a47c: 78 8d       x.
     equs "Lcat"                                                       ; a47e: 4c 63 61... Lca
     equb &81                                                          ; a482: 81          .
-    equw sub_cad5f-1                                                  ; a483: 5e ad       ^.
+    equw sub_cad5f - 1                                                ; a483: 5e ad       ^.
     equs "Lex"                                                        ; a485: 4c 65 78    Lex
     equb &81                                                          ; a488: 81          .
-    equw sub_cad65-1                                                  ; a489: 64 ad       d.
+    equw sub_cad65 - 1                                                ; a489: 64 ad       d.
     equs "Lib"                                                        ; a48b: 4c 69 62    Lib
     equb &c5                                                          ; a48e: c5          .
-    equw sub_c92e6-1                                                  ; a48f: e5 92       ..
+    equw sub_c92e6 - 1                                                ; a48f: e5 92       ..
     equs "Pass"                                                       ; a491: 50 61 73... Pas
     equb &c7                                                          ; a495: c7          .
-    equw c8dbc-1                                                      ; a496: bb 8d       ..
+    equw c8dbc - 1                                                    ; a496: bb 8d       ..
     equs "Remove"                                                     ; a498: 52 65 6d... Rem
     equb &c3                                                          ; a49e: c3          .
-    equw sub_caf66-1                                                  ; a49f: 65 af       e.
+    equw sub_caf66 - 1                                                ; a49f: 65 af       e.
     equs "Rename"                                                     ; a4a1: 52 65 6e... Ren
     equb &ca                                                          ; a4a7: ca          .
-    equw sub_c938b-1                                                  ; a4a8: 8a 93       ..
+    equw sub_c938b - 1                                                ; a4a8: 8a 93       ..
     equs "Wipe"                                                       ; a4aa: 57 69 70... Wip
     equb &81                                                          ; a4ae: 81          .
-    equw sub_cb359-1                                                  ; a4af: 58 b3       X.
+    equw sub_cb359 - 1                                                ; a4af: 58 b3       X.
     equb &80                                                          ; a4b1: 80          .
-    equw c8e15-1                                                      ; a4b2: 14 8e       ..
+    equw c8e15 - 1                                                    ; a4b2: 14 8e       ..
     equs "Net"                                                        ; a4b4: 4e 65 74    Net
     equb &80                                                          ; a4b7: 80          .
-    equw sub_c8b96-1                                                  ; a4b8: 95 8b       ..
+    equw sub_c8b96 - 1                                                ; a4b8: 95 8b       ..
     equs "Utils"                                                      ; a4ba: 55 74 69... Uti
     equb &80                                                          ; a4bf: 80          .
-    equw sub_c8b92-1                                                  ; a4c0: 91 8b       ..
+    equw sub_c8b92 - 1                                                ; a4c0: 91 8b       ..
     equb &80                                                          ; a4c2: 80          .
     equs "Halt"                                                       ; a4c3: 48 61 6c... Hal
     equb &fc, &20, &df                                                ; a4c7: fc 20 df    . .
@@ -10692,42 +10692,42 @@ lbd94 = cbd93+1
 
     assert &81 == ((255 - inkey_key_ctrl) EOR 128)
     assert &e2 == <(c86e3 - 1)
-    assert &13 == <(ca114-1)
-    assert &c0 == <(ca1c1-1)
-    assert &f3 == <(ca2f4-1)
-    assert &57 == <(just_rts-1)
-    assert &a4 == <(service_handler_claim_absolute_workspace-1)
-    assert &b7 == <(service_handler_claim_private_workspace-1)
-    assert &27 == <(sub_c8028-1)
-    assert &8f == <(sub_c8090-1)
+    assert &13 == <(ca114 - 1)
+    assert &c0 == <(ca1c1 - 1)
+    assert &f3 == <(ca2f4 - 1)
+    assert &57 == <(just_rts - 1)
+    assert &a4 == <(service_handler_claim_absolute_workspace - 1)
+    assert &b7 == <(service_handler_claim_private_workspace - 1)
+    assert &27 == <(sub_c8028 - 1)
+    assert &8f == <(sub_c8090 - 1)
     assert &88 == <(sub_c8689 - 1)
     assert &8c == <(sub_c868d - 1)
     assert &90 == <(sub_c8691 - 1)
     assert &d2 == <(sub_c86d3 - 1)
-    assert &82 == <(sub_c8983-1)
-    assert &0c == <(sub_c8b0d-1)
-    assert &4d == <(sub_c8c4e-1)
-    assert &5c == <(sub_c8c5d-1)
-    assert &c9 == <(sub_c8cca-1)
-    assert &91 == <(sub_c8e92-1)
-    assert &98 == <(sub_c8f99-1)
-    assert &af == <(sub_c92b0-1)
-    assert &7f == <(sub_c9580-1)
-    assert &ad == <(sub_c95ae-1)
-    assert &bd == <(sub_c95be-1)
-    assert &cd == <(sub_c95ce-1)
-    assert &c7 == <(sub_c9dc8-1)
-    assert &ed == <(sub_c9dee-1)
-    assert &e3 == <(sub_ca0e4-1)
-    assert &e9 == <(sub_ca0ea-1)
-    assert &f9 == <(sub_ca0fa-1)
-    assert &f9 == <(sub_ca2fa-1)
-    assert &90 == <(sub_ca391-1)
-    assert &9a == <(sub_ca39b-1)
-    assert &ed == <(sub_ca4ee-1)
-    assert &97 == <(sub_cac98-1)
-    assert &7f == <(sub_cad80-1)
-    assert &3d == <(sub_caf3e-1)
+    assert &82 == <(sub_c8983 - 1)
+    assert &0c == <(sub_c8b0d - 1)
+    assert &4d == <(sub_c8c4e - 1)
+    assert &5c == <(sub_c8c5d - 1)
+    assert &c9 == <(sub_c8cca - 1)
+    assert &91 == <(sub_c8e92 - 1)
+    assert &98 == <(sub_c8f99 - 1)
+    assert &af == <(sub_c92b0 - 1)
+    assert &7f == <(sub_c9580 - 1)
+    assert &ad == <(sub_c95ae - 1)
+    assert &bd == <(sub_c95be - 1)
+    assert &cd == <(sub_c95ce - 1)
+    assert &c7 == <(sub_c9dc8 - 1)
+    assert &ed == <(sub_c9dee - 1)
+    assert &e3 == <(sub_ca0e4 - 1)
+    assert &e9 == <(sub_ca0ea - 1)
+    assert &f9 == <(sub_ca0fa - 1)
+    assert &f9 == <(sub_ca2fa - 1)
+    assert &90 == <(sub_ca391 - 1)
+    assert &9a == <(sub_ca39b - 1)
+    assert &ed == <(sub_ca4ee - 1)
+    assert &97 == <(sub_cac98 - 1)
+    assert &7f == <(sub_cad80 - 1)
+    assert &3d == <(sub_caf3e - 1)
     assert &16 == <handle_brkv
     assert &ad == <handle_evntv
     assert &b4 == <l00b4
@@ -10737,38 +10737,38 @@ lbd94 = cbd93+1
     assert &81 == <l0a81
     assert &00 == <l0e00
     assert &81 == <l0e81
-    assert &a1 == >(ca114-1)
-    assert &a1 == >(ca1c1-1)
-    assert &a2 == >(ca2f4-1)
-    assert &8e == >(just_rts-1)
-    assert &8e == >(service_handler_claim_absolute_workspace-1)
-    assert &8e == >(service_handler_claim_private_workspace-1)
-    assert &80 == >(sub_c8028-1)
-    assert &80 == >(sub_c8090-1)
-    assert &89 == >(sub_c8983-1)
-    assert &8b == >(sub_c8b0d-1)
-    assert &8c == >(sub_c8c4e-1)
-    assert &8c == >(sub_c8c5d-1)
-    assert &8c == >(sub_c8cca-1)
-    assert &8e == >(sub_c8e92-1)
-    assert &8f == >(sub_c8f99-1)
-    assert &92 == >(sub_c92b0-1)
-    assert &95 == >(sub_c9580-1)
-    assert &95 == >(sub_c95ae-1)
-    assert &95 == >(sub_c95be-1)
-    assert &95 == >(sub_c95ce-1)
-    assert &9d == >(sub_c9dc8-1)
-    assert &9d == >(sub_c9dee-1)
-    assert &a0 == >(sub_ca0e4-1)
-    assert &a0 == >(sub_ca0ea-1)
-    assert &a0 == >(sub_ca0fa-1)
-    assert &a2 == >(sub_ca2fa-1)
-    assert &a3 == >(sub_ca391-1)
-    assert &a3 == >(sub_ca39b-1)
-    assert &a4 == >(sub_ca4ee-1)
-    assert &ac == >(sub_cac98-1)
-    assert &ad == >(sub_cad80-1)
-    assert &af == >(sub_caf3e-1)
+    assert &a1 == >(ca114 - 1)
+    assert &a1 == >(ca1c1 - 1)
+    assert &a2 == >(ca2f4 - 1)
+    assert &8e == >(just_rts - 1)
+    assert &8e == >(service_handler_claim_absolute_workspace - 1)
+    assert &8e == >(service_handler_claim_private_workspace - 1)
+    assert &80 == >(sub_c8028 - 1)
+    assert &80 == >(sub_c8090 - 1)
+    assert &89 == >(sub_c8983 - 1)
+    assert &8b == >(sub_c8b0d - 1)
+    assert &8c == >(sub_c8c4e - 1)
+    assert &8c == >(sub_c8c5d - 1)
+    assert &8c == >(sub_c8cca - 1)
+    assert &8e == >(sub_c8e92 - 1)
+    assert &8f == >(sub_c8f99 - 1)
+    assert &92 == >(sub_c92b0 - 1)
+    assert &95 == >(sub_c9580 - 1)
+    assert &95 == >(sub_c95ae - 1)
+    assert &95 == >(sub_c95be - 1)
+    assert &95 == >(sub_c95ce - 1)
+    assert &9d == >(sub_c9dc8 - 1)
+    assert &9d == >(sub_c9dee - 1)
+    assert &a0 == >(sub_ca0e4 - 1)
+    assert &a0 == >(sub_ca0ea - 1)
+    assert &a0 == >(sub_ca0fa - 1)
+    assert &a2 == >(sub_ca2fa - 1)
+    assert &a3 == >(sub_ca391 - 1)
+    assert &a3 == >(sub_ca39b - 1)
+    assert &a4 == >(sub_ca4ee - 1)
+    assert &ac == >(sub_cac98 - 1)
+    assert &ad == >(sub_cad80 - 1)
+    assert &af == >(sub_caf3e - 1)
     assert &00 == >handle_brkv
     assert &06 == >handle_evntv
     assert &00 == >l00b4
@@ -10778,8 +10778,8 @@ lbd94 = cbd93+1
     assert &0a == >l0a81
     assert &0e == >l0e00
     assert &0e == >l0e81
-    assert &8dbb == c8dbc-1
-    assert &8e14 == c8e15-1
+    assert &8dbb == c8dbc - 1
+    assert &8e14 == c8e15 - 1
     assert &19 == copyright - rom_header - 1
     assert &ae == l00b0 - 2
     assert &bd == l00be - 1
@@ -10793,31 +10793,31 @@ lbd94 = cbd93+1
     assert &8f48 == l8f49 - 1
     assert &8d61 == print - &f8
     assert &89a6 == sub_c89a7 - 1
-    assert &8ad3 == sub_c8ad4-1
-    assert &8b19 == sub_c8b1a-1
-    assert &8b91 == sub_c8b92-1
-    assert &8b95 == sub_c8b96-1
-    assert &8d78 == sub_c8d79-1
-    assert &92e5 == sub_c92e6-1
-    assert &938a == sub_c938b-1
-    assert &93dc == sub_c93dd-1
-    assert &949d == sub_c949e-1
-    assert &a07a == sub_ca07b-1
-    assert &a355 == sub_ca356-1
-    assert &ad0f == sub_cad10-1
-    assert &ad5e == sub_cad5f-1
-    assert &ad64 == sub_cad65-1
-    assert &ad6a == sub_cad6b-1
-    assert &af65 == sub_caf66-1
-    assert &afed == sub_cafee-1
-    assert &b1c2 == sub_cb1c3-1
-    assert &b30b == sub_cb30c-1
-    assert &b33c == sub_cb33d-1
-    assert &b358 == sub_cb359-1
-    assert &b993 == sub_cb994-1
-    assert &b999 == sub_cb99a-1
-    assert &b99c == sub_cb99d-1
-    assert &ba1a == sub_cba1b-1
+    assert &8ad3 == sub_c8ad4 - 1
+    assert &8b19 == sub_c8b1a - 1
+    assert &8b91 == sub_c8b92 - 1
+    assert &8b95 == sub_c8b96 - 1
+    assert &8d78 == sub_c8d79 - 1
+    assert &92e5 == sub_c92e6 - 1
+    assert &938a == sub_c938b - 1
+    assert &93dc == sub_c93dd - 1
+    assert &949d == sub_c949e - 1
+    assert &a07a == sub_ca07b - 1
+    assert &a355 == sub_ca356 - 1
+    assert &ad0f == sub_cad10 - 1
+    assert &ad5e == sub_cad5f - 1
+    assert &ad64 == sub_cad65 - 1
+    assert &ad6a == sub_cad6b - 1
+    assert &af65 == sub_caf66 - 1
+    assert &afed == sub_cafee - 1
+    assert &b1c2 == sub_cb1c3 - 1
+    assert &b30b == sub_cb30c - 1
+    assert &b33c == sub_cb33d - 1
+    assert &b358 == sub_cb359 - 1
+    assert &b993 == sub_cb994 - 1
+    assert &b999 == sub_cb99a - 1
+    assert &b99c == sub_cb99d - 1
+    assert &ba1a == sub_cba1b - 1
 
 save pydis_start, pydis_end
 

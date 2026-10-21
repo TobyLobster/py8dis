@@ -1438,120 +1438,120 @@ l8004 = service_entry+1
 .command_table
     equs "ACCESS"                                                     ; 261c: 41 43 43... ACC :861c[1]
 ; &261d referenced 1 time by &8740[1]
-    equb >(sub_c89e6-1)                                               ; 2622: 89          .   :8622[1]
-    equb <(sub_c89e6-1)                                               ; 2623: e5          .   :8623[1]
+    equb >(sub_c89e6 - 1)                                             ; 2622: 89          .   :8622[1]
+    equb <(sub_c89e6 - 1)                                             ; 2623: e5          .   :8623[1]
     equb &32                                                          ; 2624: 32          2   :8624[1]
     equs "BACKUP"                                                     ; 2625: 42 41 43... BAC :8625[1]
-    equb >(sub_ca417-1)                                               ; 262b: a4          .   :862b[1]
-    equb <(sub_ca417-1)                                               ; 262c: 16          .   :862c[1]
+    equb >(sub_ca417 - 1)                                             ; 262b: a4          .   :862b[1]
+    equb <(sub_ca417 - 1)                                             ; 262c: 16          .   :862c[1]
     equb 4                                                            ; 262d: 04          .   :862d[1]
     equs "CLOSE"                                                      ; 262e: 43 4c 4f... CLO :862e[1]
-    equb >(sub_c9b59-1)                                               ; 2633: 9b          .   :8633[1]
-    equb <(sub_c9b59-1)                                               ; 2634: 58          X   :8634[1]
+    equb >(sub_c9b59 - 1)                                             ; 2633: 9b          .   :8633[1]
+    equb <(sub_c9b59 - 1)                                             ; 2634: 58          X   :8634[1]
     equb 0                                                            ; 2635: 00          .   :8635[1]
     equs "COMPACT"                                                    ; 2636: 43 4f 4d... COM :8636[1]
-    equb >(sub_ca244-1)                                               ; 263d: a2          .   :863d[1]
-    equb <(sub_ca244-1)                                               ; 263e: 43          C   :863e[1]
+    equb >(sub_ca244 - 1)                                             ; 263d: a2          .   :863d[1]
+    equb <(sub_ca244 - 1)                                             ; 263e: 43          C   :863e[1]
     equb 7                                                            ; 263f: 07          .   :863f[1]
     equs "COPY"                                                       ; 2640: 43 4f 50... COP :8640[1]
-    equb >(sub_ca463-1)                                               ; 2644: a4          .   :8644[1]
-    equb <(sub_ca463-1)                                               ; 2645: 62          b   :8645[1]
+    equb >(sub_ca463 - 1)                                             ; 2644: a4          .   :8644[1]
+    equb <(sub_ca463 - 1)                                             ; 2645: 62          b   :8645[1]
     equb &24                                                          ; 2646: 24          $   :8646[1]
     equs "DELETE"                                                     ; 2647: 44 45 4c... DEL :8647[1]
-    equb >(sub_c8782-1)                                               ; 264d: 87          .   :864d[1]
-    equb <(sub_c8782-1)                                               ; 264e: 81          .   :864e[1]
+    equb >(sub_c8782 - 1)                                             ; 264d: 87          .   :864d[1]
+    equb <(sub_c8782 - 1)                                             ; 264e: 81          .   :864e[1]
     equb 1                                                            ; 264f: 01          .   :864f[1]
     equs "DESTROY"                                                    ; 2650: 44 45 53... DES :8650[1]
-    equb >(sub_c8794-1)                                               ; 2657: 87          .   :8657[1]
-    equb <(sub_c8794-1)                                               ; 2658: 93          .   :8658[1]
+    equb >(sub_c8794 - 1)                                             ; 2657: 87          .   :8657[1]
+    equb <(sub_c8794 - 1)                                             ; 2658: 93          .   :8658[1]
     equb 2                                                            ; 2659: 02          .   :8659[1]
     equs "DIR"                                                        ; 265a: 44 49 52    DIR :865a[1]
-    equb >(sub_c893f-1)                                               ; 265d: 89          .   :865d[1]
-    equb <(sub_c893f-1)                                               ; 265e: 3e          >   :865e[1]
+    equb >(sub_c893f - 1)                                             ; 265d: 89          .   :865d[1]
+    equb <(sub_c893f - 1)                                             ; 265e: 3e          >   :865e[1]
     equb 6                                                            ; 265f: 06          .   :865f[1]
     equs "DRIVE"                                                      ; 2660: 44 52 49... DRI :8660[1]
-    equb >(sub_c87ee-1)                                               ; 2665: 87          .   :8665[1]
-    equb <(sub_c87ee-1)                                               ; 2666: ed          .   :8666[1]
+    equb >(sub_c87ee - 1)                                             ; 2665: 87          .   :8665[1]
+    equb <(sub_c87ee - 1)                                             ; 2666: ed          .   :8666[1]
     equb 9                                                            ; 2667: 09          .   :8667[1]
     equs "ENABLE"                                                     ; 2668: 45 4e 41... ENA :8668[1]
-    equb >(sub_c8b47-1)                                               ; 266e: 8b          .   :866e[1]
-    equb <(sub_c8b47-1)                                               ; 266f: 46          F   :866f[1]
+    equb >(sub_c8b47 - 1)                                             ; 266e: 8b          .   :866e[1]
+    equb <(sub_c8b47 - 1)                                             ; 266f: 46          F   :866f[1]
     equb 0                                                            ; 2670: 00          .   :8670[1]
     equs "EX"                                                         ; 2671: 45 58       EX  :8671[1]
-    equb >(sub_c8238-1)                                               ; 2673: 82          .   :8673[1]
-    equb <(sub_c8238-1)                                               ; 2674: 37          7   :8674[1]
+    equb >(sub_c8238 - 1)                                             ; 2673: 82          .   :8673[1]
+    equb <(sub_c8238 - 1)                                             ; 2674: 37          7   :8674[1]
     equb 6                                                            ; 2675: 06          .   :8675[1]
     equs "FORM"                                                       ; 2676: 46 4f 52... FOR :8676[1]
-    equb >(sub_ca5bf-1)                                               ; 267a: a5          .   :867a[1]
-    equb <(sub_ca5bf-1)                                               ; 267b: be          .   :867b[1]
+    equb >(sub_ca5bf - 1)                                             ; 267a: a5          .   :867a[1]
+    equb <(sub_ca5bf - 1)                                             ; 267b: be          .   :867b[1]
     equb &ba                                                          ; 267c: ba          .   :867c[1]
     equs "FREE"                                                       ; 267d: 46 52 45... FRE :867d[1]
-    equb >(sub_ca7f3-1)                                               ; 2681: a7          .   :8681[1]
-    equb <(sub_ca7f3-1)                                               ; 2682: f2          .   :8682[1]
+    equb >(sub_ca7f3 - 1)                                             ; 2681: a7          .   :8681[1]
+    equb <(sub_ca7f3 - 1)                                             ; 2682: f2          .   :8682[1]
     equb 7                                                            ; 2683: 07          .   :8683[1]
     equs "INFO"                                                       ; 2684: 49 4e 46... INF :8684[1]
-    equb >(sub_c8254-1)                                               ; 2688: 82          .   :8688[1]
-    equb <(sub_c8254-1)                                               ; 2689: 53          S   :8689[1]
+    equb >(sub_c8254 - 1)                                             ; 2688: 82          .   :8688[1]
+    equb <(sub_c8254 - 1)                                             ; 2689: 53          S   :8689[1]
     equb 2                                                            ; 268a: 02          .   :868a[1]
     equs "LIB"                                                        ; 268b: 4c 49 42    LIB :868b[1]
-    equb >(sub_c8943-1)                                               ; 268e: 89          .   :868e[1]
-    equb <(sub_c8943-1)                                               ; 268f: 42          B   :868f[1]
+    equb >(sub_c8943 - 1)                                             ; 268e: 89          .   :868e[1]
+    equb <(sub_c8943 - 1)                                             ; 268f: 42          B   :868f[1]
     equb 6                                                            ; 2690: 06          .   :8690[1]
     equs "MAP"                                                        ; 2691: 4d 41 50    MAP :8691[1]
-    equb >(sub_ca7f6-1)                                               ; 2694: a7          .   :8694[1]
-    equb <(sub_ca7f6-1)                                               ; 2695: f5          .   :8695[1]
+    equb >(sub_ca7f6 - 1)                                             ; 2694: a7          .   :8694[1]
+    equb <(sub_ca7f6 - 1)                                             ; 2695: f5          .   :8695[1]
     equb 7                                                            ; 2696: 07          .   :8696[1]
     equs "RENAME"                                                     ; 2697: 52 45 4e... REN :8697[1]
-    equb >(sub_c8bac-1)                                               ; 269d: 8b          .   :869d[1]
-    equb <(sub_c8bac-1)                                               ; 269e: ab          .   :869e[1]
+    equb >(sub_c8bac - 1)                                             ; 269d: 8b          .   :869d[1]
+    equb <(sub_c8bac - 1)                                             ; 269e: ab          .   :869e[1]
     equb 5                                                            ; 269f: 05          .   :869f[1]
     equs "TITLE"                                                      ; 26a0: 54 49 54... TIT :86a0[1]
-    equb >(sub_c89b7-1)                                               ; 26a5: 89          .   :86a5[1]
-    equb <(sub_c89b7-1)                                               ; 26a6: b6          .   :86a6[1]
+    equb >(sub_c89b7 - 1)                                             ; 26a5: 89          .   :86a5[1]
+    equb <(sub_c89b7 - 1)                                             ; 26a6: b6          .   :86a6[1]
     equb 8                                                            ; 26a7: 08          .   :86a7[1]
     equs "VERIFY"                                                     ; 26a8: 56 45 52... VER :86a8[1]
-    equb >(sub_ca5bb-1)                                               ; 26ae: a5          .   :86ae[1]
-    equb <(sub_ca5bb-1)                                               ; 26af: ba          .   :86af[1]
+    equb >(sub_ca5bb - 1)                                             ; 26ae: a5          .   :86ae[1]
+    equb <(sub_ca5bb - 1)                                             ; 26af: ba          .   :86af[1]
     equb &0b                                                          ; 26b0: 0b          .   :86b0[1]
     equs "WIPE"                                                       ; 26b1: 57 49 50... WIP :86b1[1]
-    equb >(sub_c8750-1)                                               ; 26b5: 87          .   :86b5[1]
-    equb <(sub_c8750-1)                                               ; 26b6: 4f          O   :86b6[1]
+    equb >(sub_c8750 - 1)                                             ; 26b5: 87          .   :86b5[1]
+    equb <(sub_c8750 - 1)                                             ; 26b6: 4f          O   :86b6[1]
     equb 2, &88, &72                                                  ; 26b7: 02 88 72    ..r :86b7[1]
     equs "BUILD"                                                      ; 26ba: 42 55 49... BUI :86ba[1]
-    equb >(sub_cabc5-1)                                               ; 26bf: ab          .   :86bf[1]
-    equb <(sub_cabc5-1)                                               ; 26c0: c4          .   :86c0[1]
+    equb >(sub_cabc5 - 1)                                             ; 26bf: ab          .   :86bf[1]
+    equb <(sub_cabc5 - 1)                                             ; 26c0: c4          .   :86c0[1]
     equb 1                                                            ; 26c1: 01          .   :86c1[1]
     equs "DISC"                                                       ; 26c2: 44 49 53... DIS :86c2[1]
-    equb >(c956d-1)                                                   ; 26c6: 95          .   :86c6[1]
-    equb <(c956d-1)                                                   ; 26c7: 6c          l   :86c7[1]
+    equb >(c956d - 1)                                                 ; 26c6: 95          .   :86c6[1]
+    equb <(c956d - 1)                                                 ; 26c7: 6c          l   :86c7[1]
     equb 0                                                            ; 26c8: 00          .   :86c8[1]
     equs "DUMP"                                                       ; 26c9: 44 55 4d... DUM :86c9[1]
-    equb >(sub_cab46-1)                                               ; 26cd: ab          .   :86cd[1]
-    equb <(sub_cab46-1)                                               ; 26ce: 45          E   :86ce[1]
+    equb >(sub_cab46 - 1)                                             ; 26cd: ab          .   :86cd[1]
+    equb <(sub_cab46 - 1)                                             ; 26ce: 45          E   :86ce[1]
     equb 1                                                            ; 26cf: 01          .   :86cf[1]
     equs "LIST"                                                       ; 26d0: 4c 49 53... LIS :86d0[1]
-    equb >(sub_cab04-1)                                               ; 26d4: ab          .   :86d4[1]
-    equb <(sub_cab04-1)                                               ; 26d5: 03          .   :86d5[1]
+    equb >(sub_cab04 - 1)                                             ; 26d4: ab          .   :86d4[1]
+    equb <(sub_cab04 - 1)                                             ; 26d5: 03          .   :86d5[1]
     equb 1                                                            ; 26d6: 01          .   :86d6[1]
     equs "ROMS"                                                       ; 26d7: 52 4f 4d... ROM :86d7[1]
-    equb >(sub_ca9d0-1)                                               ; 26db: a9          .   :86db[1]
-    equb <(sub_ca9d0-1)                                               ; 26dc: cf          .   :86dc[1]
+    equb >(sub_ca9d0 - 1)                                             ; 26db: a9          .   :86db[1]
+    equb <(sub_ca9d0 - 1)                                             ; 26dc: cf          .   :86dc[1]
     equb &0c                                                          ; 26dd: 0c          .   :86dd[1]
     equs "TYPE"                                                       ; 26de: 54 59 50... TYP :86de[1]
-    equb >(sub_caafd-1)                                               ; 26e2: aa          .   :86e2[1]
-    equb <(sub_caafd-1)                                               ; 26e3: fc          .   :86e3[1]
+    equb >(sub_caafd - 1)                                             ; 26e2: aa          .   :86e2[1]
+    equb <(sub_caafd - 1)                                             ; 26e3: fc          .   :86e3[1]
     equb 1                                                            ; 26e4: 01          .   :86e4[1]
     equs "DISK"                                                       ; 26e5: 44 49 53... DIS :86e5[1]
-    equb >(c956d-1)                                                   ; 26e9: 95          .   :86e9[1]
-    equb <(c956d-1)                                                   ; 26ea: 6c          l   :86ea[1]
+    equb >(c956d - 1)                                                 ; 26e9: 95          .   :86e9[1]
+    equb <(c956d - 1)                                                 ; 26ea: 6c          l   :86ea[1]
     equb 0, &86, &1a                                                  ; 26eb: 00 86 1a    ... :86eb[1]
     equs "DFS"                                                        ; 26ee: 44 46 53    DFS :86ee[1]
-    equb >(sub_ca106-1)                                               ; 26f1: a1          .   :86f1[1]
-    equb <(sub_ca106-1)                                               ; 26f2: 05          .   :86f2[1]
+    equb >(sub_ca106 - 1)                                             ; 26f1: a1          .   :86f1[1]
+    equb <(sub_ca106 - 1)                                             ; 26f2: 05          .   :86f2[1]
     equb 0                                                            ; 26f3: 00          .   :86f3[1]
     equs "UTILS"                                                      ; 26f4: 55 54 49... UTI :86f4[1]
-    equb >(sub_ca137-1)                                               ; 26f9: a1          .   :86f9[1]
-    equb <(sub_ca137-1)                                               ; 26fa: 36          6   :86fa[1]
+    equb >(sub_ca137 - 1)                                             ; 26f9: a1          .   :86f9[1]
+    equb <(sub_ca137 - 1)                                             ; 26fa: 36          6   :86fa[1]
     equb 0, &a1                                                       ; 26fb: 00 a1       ..  :86fb[1]
     equs "= E"                                                        ; 26fd: 3d 20 45    = E :86fd[1]
     equb &87, &a2, &fd                                                ; 2700: 87 a2 fd    ... :8700[1]
@@ -9998,23 +9998,23 @@ lb6ce = cb6cd+1
 ; &5a31 referenced 1 time by &b238[1]
     equb &ff, &ff                                                     ; 5a34: ff ff       ..  :ba34[1]
     equs "SRLOAD"                                                     ; 5a36: 53 52 4c... SRL :ba36[1]
-    equb >(sub_cbb46-1)                                               ; 5a3c: bb          .   :ba3c[1]
-    equb <(sub_cbb46-1)                                               ; 5a3d: 45          E   :ba3d[1]
+    equb >(sub_cbb46 - 1)                                             ; 5a3c: bb          .   :ba3c[1]
+    equb <(sub_cbb46 - 1)                                             ; 5a3d: 45          E   :ba3d[1]
     equs "SRSAVE"                                                     ; 5a3e: 53 52 53... SRS :ba3e[1]
-    equb >(sub_cbb4a-1)                                               ; 5a44: bb          .   :ba44[1]
-    equb <(sub_cbb4a-1)                                               ; 5a45: 49          I   :ba45[1]
+    equb >(sub_cbb4a - 1)                                             ; 5a44: bb          .   :ba44[1]
+    equb <(sub_cbb4a - 1)                                             ; 5a45: 49          I   :ba45[1]
     equs "SRWRITE"                                                    ; 5a46: 53 52 57... SRW :ba46[1]
-    equb >(sub_cbbd3-1)                                               ; 5a4d: bb          .   :ba4d[1]
-    equb <(sub_cbbd3-1)                                               ; 5a4e: d2          .   :ba4e[1]
+    equb >(sub_cbbd3 - 1)                                             ; 5a4d: bb          .   :ba4d[1]
+    equb <(sub_cbbd3 - 1)                                             ; 5a4e: d2          .   :ba4e[1]
     equs "SRREAD"                                                     ; 5a4f: 53 52 52... SRR :ba4f[1]
-    equb >(sub_cbbd7-1)                                               ; 5a55: bb          .   :ba55[1]
-    equb <(sub_cbbd7-1)                                               ; 5a56: d6          .   :ba56[1]
+    equb >(sub_cbbd7 - 1)                                             ; 5a55: bb          .   :ba55[1]
+    equb <(sub_cbbd7 - 1)                                             ; 5a56: d6          .   :ba56[1]
     equs "SRDATA"                                                     ; 5a57: 53 52 44... SRD :ba57[1]
-    equb >(sub_cbc37-1)                                               ; 5a5d: bc          .   :ba5d[1]
-    equb <(sub_cbc37-1)                                               ; 5a5e: 36          6   :ba5e[1]
+    equb >(sub_cbc37 - 1)                                             ; 5a5d: bc          .   :ba5d[1]
+    equb <(sub_cbc37 - 1)                                             ; 5a5e: 36          6   :ba5e[1]
     equs "SRROM"                                                      ; 5a5f: 53 52 52... SRR :ba5f[1]
-    equb >(sub_cbc81-1)                                               ; 5a64: bc          .   :ba64[1]
-    equb <(sub_cbc81-1)                                               ; 5a65: 80          .   :ba65[1]
+    equb >(sub_cbc81 - 1)                                             ; 5a64: bc          .   :ba64[1]
+    equb <(sub_cbc81 - 1)                                             ; 5a65: 80          .   :ba65[1]
     equb 0                                                            ; 5a66: 00          .   :ba66[1]
 
 ; &5a67 referenced 5 times by &bb51[1], &bb6c[1], &bbdd[1], &bbf3[1], &bc1c[1]
@@ -10987,79 +10987,79 @@ lb6ce = cb6cd+1
 
 .pydis_end
 
-    assert &6c == <(c956d-1)
-    assert &37 == <(sub_c8238-1)
-    assert &53 == <(sub_c8254-1)
-    assert &4f == <(sub_c8750-1)
-    assert &81 == <(sub_c8782-1)
-    assert &93 == <(sub_c8794-1)
-    assert &ed == <(sub_c87ee-1)
-    assert &3e == <(sub_c893f-1)
-    assert &42 == <(sub_c8943-1)
-    assert &b6 == <(sub_c89b7-1)
-    assert &e5 == <(sub_c89e6-1)
-    assert &46 == <(sub_c8b47-1)
-    assert &ab == <(sub_c8bac-1)
-    assert &58 == <(sub_c9b59-1)
-    assert &05 == <(sub_ca106-1)
-    assert &36 == <(sub_ca137-1)
-    assert &43 == <(sub_ca244-1)
-    assert &16 == <(sub_ca417-1)
-    assert &62 == <(sub_ca463-1)
-    assert &ba == <(sub_ca5bb-1)
-    assert &be == <(sub_ca5bf-1)
-    assert &f2 == <(sub_ca7f3-1)
-    assert &f5 == <(sub_ca7f6-1)
-    assert &cf == <(sub_ca9d0-1)
-    assert &fc == <(sub_caafd-1)
-    assert &03 == <(sub_cab04-1)
-    assert &45 == <(sub_cab46-1)
-    assert &c4 == <(sub_cabc5-1)
-    assert &45 == <(sub_cbb46-1)
-    assert &49 == <(sub_cbb4a-1)
-    assert &d2 == <(sub_cbbd3-1)
-    assert &d6 == <(sub_cbbd7-1)
-    assert &36 == <(sub_cbc37-1)
-    assert &80 == <(sub_cbc81-1)
+    assert &6c == <(c956d - 1)
+    assert &37 == <(sub_c8238 - 1)
+    assert &53 == <(sub_c8254 - 1)
+    assert &4f == <(sub_c8750 - 1)
+    assert &81 == <(sub_c8782 - 1)
+    assert &93 == <(sub_c8794 - 1)
+    assert &ed == <(sub_c87ee - 1)
+    assert &3e == <(sub_c893f - 1)
+    assert &42 == <(sub_c8943 - 1)
+    assert &b6 == <(sub_c89b7 - 1)
+    assert &e5 == <(sub_c89e6 - 1)
+    assert &46 == <(sub_c8b47 - 1)
+    assert &ab == <(sub_c8bac - 1)
+    assert &58 == <(sub_c9b59 - 1)
+    assert &05 == <(sub_ca106 - 1)
+    assert &36 == <(sub_ca137 - 1)
+    assert &43 == <(sub_ca244 - 1)
+    assert &16 == <(sub_ca417 - 1)
+    assert &62 == <(sub_ca463 - 1)
+    assert &ba == <(sub_ca5bb - 1)
+    assert &be == <(sub_ca5bf - 1)
+    assert &f2 == <(sub_ca7f3 - 1)
+    assert &f5 == <(sub_ca7f6 - 1)
+    assert &cf == <(sub_ca9d0 - 1)
+    assert &fc == <(sub_caafd - 1)
+    assert &03 == <(sub_cab04 - 1)
+    assert &45 == <(sub_cab46 - 1)
+    assert &c4 == <(sub_cabc5 - 1)
+    assert &45 == <(sub_cbb46 - 1)
+    assert &49 == <(sub_cbb4a - 1)
+    assert &d2 == <(sub_cbbd3 - 1)
+    assert &d6 == <(sub_cbbd7 - 1)
+    assert &36 == <(sub_cbc37 - 1)
+    assert &80 == <(sub_cbc81 - 1)
     assert &0f == <handle_bytev
     assert &28 == <l0128
     assert &00 == <l1000
     assert &16 == <tube_brkv_handler
     assert &ad == <tube_evntv_handler
-    assert &95 == >(c956d-1)
-    assert &82 == >(sub_c8238-1)
-    assert &82 == >(sub_c8254-1)
-    assert &87 == >(sub_c8750-1)
-    assert &87 == >(sub_c8782-1)
-    assert &87 == >(sub_c8794-1)
-    assert &87 == >(sub_c87ee-1)
-    assert &89 == >(sub_c893f-1)
-    assert &89 == >(sub_c8943-1)
-    assert &89 == >(sub_c89b7-1)
-    assert &89 == >(sub_c89e6-1)
-    assert &8b == >(sub_c8b47-1)
-    assert &8b == >(sub_c8bac-1)
-    assert &9b == >(sub_c9b59-1)
-    assert &a1 == >(sub_ca106-1)
-    assert &a1 == >(sub_ca137-1)
-    assert &a2 == >(sub_ca244-1)
-    assert &a4 == >(sub_ca417-1)
-    assert &a4 == >(sub_ca463-1)
-    assert &a5 == >(sub_ca5bb-1)
-    assert &a5 == >(sub_ca5bf-1)
-    assert &a7 == >(sub_ca7f3-1)
-    assert &a7 == >(sub_ca7f6-1)
-    assert &a9 == >(sub_ca9d0-1)
-    assert &aa == >(sub_caafd-1)
-    assert &ab == >(sub_cab04-1)
-    assert &ab == >(sub_cab46-1)
-    assert &ab == >(sub_cabc5-1)
-    assert &bb == >(sub_cbb46-1)
-    assert &bb == >(sub_cbb4a-1)
-    assert &bb == >(sub_cbbd3-1)
-    assert &bb == >(sub_cbbd7-1)
-    assert &bc == >(sub_cbc37-1)
-    assert &bc == >(sub_cbc81-1)
+    assert &95 == >(c956d - 1)
+    assert &82 == >(sub_c8238 - 1)
+    assert &82 == >(sub_c8254 - 1)
+    assert &87 == >(sub_c8750 - 1)
+    assert &87 == >(sub_c8782 - 1)
+    assert &87 == >(sub_c8794 - 1)
+    assert &87 == >(sub_c87ee - 1)
+    assert &89 == >(sub_c893f - 1)
+    assert &89 == >(sub_c8943 - 1)
+    assert &89 == >(sub_c89b7 - 1)
+    assert &89 == >(sub_c89e6 - 1)
+    assert &8b == >(sub_c8b47 - 1)
+    assert &8b == >(sub_c8bac - 1)
+    assert &9b == >(sub_c9b59 - 1)
+    assert &a1 == >(sub_ca106 - 1)
+    assert &a1 == >(sub_ca137 - 1)
+    assert &a2 == >(sub_ca244 - 1)
+    assert &a4 == >(sub_ca417 - 1)
+    assert &a4 == >(sub_ca463 - 1)
+    assert &a5 == >(sub_ca5bb - 1)
+    assert &a5 == >(sub_ca5bf - 1)
+    assert &a7 == >(sub_ca7f3 - 1)
+    assert &a7 == >(sub_ca7f6 - 1)
+    assert &a9 == >(sub_ca9d0 - 1)
+    assert &aa == >(sub_caafd - 1)
+    assert &ab == >(sub_cab04 - 1)
+    assert &ab == >(sub_cab46 - 1)
+    assert &ab == >(sub_cabc5 - 1)
+    assert &bb == >(sub_cbb46 - 1)
+    assert &bb == >(sub_cbb4a - 1)
+    assert &bb == >(sub_cbbd3 - 1)
+    assert &bb == >(sub_cbbd7 - 1)
+    assert &bc == >(sub_cbc37 - 1)
+    assert &bc == >(sub_cbc81 - 1)
     assert &ff == >handle_bytev
     assert &01 == >l0128
     assert &10 == >l1000

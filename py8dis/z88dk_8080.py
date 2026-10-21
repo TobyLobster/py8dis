@@ -67,16 +67,33 @@ class Z88DK(assembler.Assembler):
         into the assembler specific versions"""
         # 'generic name: assembler specific name'
         # Note: in z88dk-z80asm '!' is logical NOT, '~' is bitwise NOT
-        #
-        # z88dk-z80asm has no '<' and '>' (low and high byte) operators, so
-        # these use templates, where '%s' is replaced by the operand.
         return { 'NOT': '~',
                    '!': '~',
-                   '<': '%s & ' + self.hex(0xff),
-                   '>': '%s >> 8',
         }
 
-    def expression_in_context(self, expr, text, context):
+    def binary_precedence(self):
+        # Measured by assembling test expressions with z88dk-z80asm (v2.4 and
+        # the development version of 21 Oct 2026). Note that '|' and '^' bind
+        # equally tightly, unlike in C.
+        return { '*': 7, 'DIV': 7, 'MOD': 7,
+                 '+': 6, '-': 6,
+                 '<<': 5, '>>': 5,
+                 'AND': 4,
+                 'OR': 3, 'EOR': 3,
+        }
+
+    def unary_precedence(self):
+        return { 'NOT': 90 }
+
+    def unary_rewrite(self, op, operand, nested):
+        # z88dk-z80asm has no '<' and '>' (low and high byte) operators
+        if op == '<':
+            return expression.Binary(operand, 'AND', expression.Num(0xff, "hex"))
+        if op == '>':
+            return expression.Binary(operand, '>>', expression.Num(8))
+        return None
+
+    def expression_in_context(self, expr, text, level, context):
         if context == expression.OPERAND:
             # z88dk-z80asm treats an operand that is in brackets as an
             # indirect (Z80 style) value, warning 'interpreting indirect value

@@ -736,7 +736,7 @@ def code_ptr(runtime_addr, runtime_addr_high=None, offset=0, label_name=None):
         stored_expr = label
     else:
         # e.g. 'label-1' (for an rts jump table)
-        stored_expr = expression.Binary(expression.to_expr(label), "-" if offset > 0 else "+", expression.Num(abs(offset)), spaced=False)
+        stored_expr = expression.Binary(expression.to_expr(label), "-" if offset > 0 else "+", expression.Num(abs(offset)))
     if binary_addr_high == binary_addr + 1 and runtime_addr_high == runtime_addr + 1:
         # The general code in the "else" branch would work for this case as
         # well, but since the assembler has support for emitting a little-endian

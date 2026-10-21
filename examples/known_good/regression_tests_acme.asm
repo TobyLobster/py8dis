@@ -78,23 +78,23 @@ part2
 
     !byte l2085 - l2085                                               ; 2084: 00          .
 l2085
-    !word (l0000-1) & $ffff                                           ; 2085: ff ff       ..
-    !byte >(l0000-1)                                                  ; 2087: ff          .
-    !byte <(l0000-1)                                                  ; 2088: ff          .
+    !word (l0000 - 1) & $ffff                                         ; 2085: ff ff       ..
+    !byte >(l0000 - 1)                                                ; 2087: ff          .
+    !byte <(l0000 - 1)                                                ; 2088: ff          .
     !text "END"                                                       ; 2089: 45 4e 44    END
 pydis_end
 
 !if (!low_seven_bits & $ff) != $80 {
     !error "Assertion failed: !low_seven_bits & $ff == $80"
 }
-!if ((l0000-1) & $ffff) != $ffff {
-    !error "Assertion failed: (l0000-1) & $ffff == $ffff"
+!if ((l0000 - 1) & $ffff) != $ffff {
+    !error "Assertion failed: (l0000 - 1) & $ffff == $ffff"
 }
-!if (<(l0000-1)) != $ff {
-    !error "Assertion failed: <(l0000-1) == $ff"
+!if (<(l0000 - 1)) != $ff {
+    !error "Assertion failed: <(l0000 - 1) == $ff"
 }
-!if (>(l0000-1)) != $ff {
-    !error "Assertion failed: >(l0000-1) == $ff"
+!if (>(l0000 - 1)) != $ff {
+    !error "Assertion failed: >(l0000 - 1) == $ff"
 }
 !if (l2085 - l2085) != $00 {
     !error "Assertion failed: l2085 - l2085 == $00"

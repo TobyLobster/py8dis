@@ -28,7 +28,7 @@ start
     and #$ff                                                          // 201a: 29 ff       ).
     beq c202c                                                         // 201c: f0 0e       ..
     lda value                                                         // 201e: a5 70       .p
-    ldx #(-1-low_seven_bits) & $ff                                    // 2020: a2 80       ..
+    ldx #(-1 - low_seven_bits) & $ff                                  // 2020: a2 80       ..
     ora #1                                                            // 2022: 09 01       ..
     bmi c202c                                                         // 2024: 30 06       0.
     lda #5                                                            // 2026: a9 05       ..
@@ -78,23 +78,23 @@ part2
 
     .byt l2085 - l2085                                                // 2084: 00          .
 l2085
-    .word (l0000-1) & $ffff                                           // 2085: ff ff       ..
-    .byt >(l0000-1)                                                   // 2087: ff          .
-    .byt <(l0000-1)                                                   // 2088: ff          .
+    .word (l0000 - 1) & $ffff                                         // 2085: ff ff       ..
+    .byt >(l0000 - 1)                                                 // 2087: ff          .
+    .byt <(l0000 - 1)                                                 // 2088: ff          .
     .asc "END"                                                        // 2089: 45 4e 44    END
 pydis_end
 
-#if ((-1-low_seven_bits) & $ff) <> $80
-#error Assertion failed: (-1-low_seven_bits) & $ff == $80
+#if ((-1 - low_seven_bits) & $ff) <> $80
+#error Assertion failed: (-1 - low_seven_bits) & $ff == $80
 #endif
-#if ((l0000-1) & $ffff) <> $ffff
-#error Assertion failed: (l0000-1) & $ffff == $ffff
+#if ((l0000 - 1) & $ffff) <> $ffff
+#error Assertion failed: (l0000 - 1) & $ffff == $ffff
 #endif
-#if (((l0000-1)) & $ff) <> $ff
-#error Assertion failed: <(l0000-1) == $ff
+#if ((l0000 - 1) & $ff) <> $ff
+#error Assertion failed: <(l0000 - 1) == $ff
 #endif
-#if ((((l0000-1)) >> 8) & $ff) <> $ff
-#error Assertion failed: >(l0000-1) == $ff
+#if (((l0000 - 1) >> 8) & $ff) <> $ff
+#error Assertion failed: >(l0000 - 1) == $ff
 #endif
 #if (l2085 - l2085) <> $00
 #error Assertion failed: l2085 - l2085 == $00

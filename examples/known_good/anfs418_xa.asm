@@ -1860,81 +1860,81 @@ sub_c89a7
 // $89ca referenced 1 time by $8e52
 jump_table_low
     .byt 4                                                            // 89ca: 04          .
-    .byt <(just_rts-1)                                                // 89cb: 57          W
-    .byt <(service_handler_claim_absolute_workspace-1)                // 89cc: a4          .
-    .byt <(service_handler_claim_private_workspace-1)                 // 89cd: b7          .
-    .byt <(sub_c8cca-1)                                               // 89ce: c9          .
-    .byt <(sub_c8c4e-1)                                               // 89cf: 4d          M
-    .byt <(sub_c8028-1)                                               // 89d0: 27          '
-    .byt <(just_rts-1)                                                // 89d1: 57          W
-    .byt <(sub_c8e92-1)                                               // 89d2: 91          .
-    .byt <(sub_ca4ee-1)                                               // 89d3: ed          .
-    .byt <(sub_c8c5d-1)                                               // 89d4: 5c          \ 
-    .byt <(just_rts-1)                                                // 89d5: 57          W
-    .byt <(sub_c8090-1)                                               // 89d6: 8f          .
-    .byt <(sub_c8983-1)                                               // 89d7: 82          .
-    .byt <(sub_c8b0d-1)                                               // 89d8: 0c          .
-    .byt <(sub_c95ce-1)                                               // 89d9: cd          .
-    .byt <(sub_c9580-1)                                               // 89da: 7f          .
-    .byt <(sub_cac98-1)                                               // 89db: 97          .
-    .byt <(sub_c95ae-1)                                               // 89dc: ad          .
-    .byt <(sub_c95be-1)                                               // 89dd: bd          .
-    .byt <(sub_c9dc8-1)                                               // 89de: c7          .
-    .byt <(sub_c9dee-1)                                               // 89df: ed          .
-    .byt <(ca1c1-1)                                                   // 89e0: c0          .
-    .byt <(ca114-1)                                                   // 89e1: 13          .
-    .byt <(ca1c1-1)                                                   // 89e2: c0          .
-    .byt <(sub_cad80-1)                                               // 89e3: 7f          .
-    .byt <(sub_c8f99-1)                                               // 89e4: 98          .
-    .byt <(sub_c92b0-1)                                               // 89e5: af          .
-    .byt <(sub_caf3e-1)                                               // 89e6: 3d          =
-    .byt <(sub_ca391-1)                                               // 89e7: 90          .
-    .byt <(sub_ca39b-1)                                               // 89e8: 9a          .
-    .byt <(ca2f4-1)                                                   // 89e9: f3          .
-    .byt <(ca1c1-1)                                                   // 89ea: c0          .
-    .byt <(sub_ca2fa-1)                                               // 89eb: f9          .
-    .byt <(sub_ca0e4-1)                                               // 89ec: e3          .
-    .byt <(sub_ca0ea-1)                                               // 89ed: e9          .
-    .byt <(sub_ca0fa-1)                                               // 89ee: f9          .
+    .byt <(just_rts - 1)                                              // 89cb: 57          W
+    .byt <(service_handler_claim_absolute_workspace - 1)              // 89cc: a4          .
+    .byt <(service_handler_claim_private_workspace - 1)               // 89cd: b7          .
+    .byt <(sub_c8cca - 1)                                             // 89ce: c9          .
+    .byt <(sub_c8c4e - 1)                                             // 89cf: 4d          M
+    .byt <(sub_c8028 - 1)                                             // 89d0: 27          '
+    .byt <(just_rts - 1)                                              // 89d1: 57          W
+    .byt <(sub_c8e92 - 1)                                             // 89d2: 91          .
+    .byt <(sub_ca4ee - 1)                                             // 89d3: ed          .
+    .byt <(sub_c8c5d - 1)                                             // 89d4: 5c          \ 
+    .byt <(just_rts - 1)                                              // 89d5: 57          W
+    .byt <(sub_c8090 - 1)                                             // 89d6: 8f          .
+    .byt <(sub_c8983 - 1)                                             // 89d7: 82          .
+    .byt <(sub_c8b0d - 1)                                             // 89d8: 0c          .
+    .byt <(sub_c95ce - 1)                                             // 89d9: cd          .
+    .byt <(sub_c9580 - 1)                                             // 89da: 7f          .
+    .byt <(sub_cac98 - 1)                                             // 89db: 97          .
+    .byt <(sub_c95ae - 1)                                             // 89dc: ad          .
+    .byt <(sub_c95be - 1)                                             // 89dd: bd          .
+    .byt <(sub_c9dc8 - 1)                                             // 89de: c7          .
+    .byt <(sub_c9dee - 1)                                             // 89df: ed          .
+    .byt <(ca1c1 - 1)                                                 // 89e0: c0          .
+    .byt <(ca114 - 1)                                                 // 89e1: 13          .
+    .byt <(ca1c1 - 1)                                                 // 89e2: c0          .
+    .byt <(sub_cad80 - 1)                                             // 89e3: 7f          .
+    .byt <(sub_c8f99 - 1)                                             // 89e4: 98          .
+    .byt <(sub_c92b0 - 1)                                             // 89e5: af          .
+    .byt <(sub_caf3e - 1)                                             // 89e6: 3d          =
+    .byt <(sub_ca391 - 1)                                             // 89e7: 90          .
+    .byt <(sub_ca39b - 1)                                             // 89e8: 9a          .
+    .byt <(ca2f4 - 1)                                                 // 89e9: f3          .
+    .byt <(ca1c1 - 1)                                                 // 89ea: c0          .
+    .byt <(sub_ca2fa - 1)                                             // 89eb: f9          .
+    .byt <(sub_ca0e4 - 1)                                             // 89ec: e3          .
+    .byt <(sub_ca0ea - 1)                                             // 89ed: e9          .
+    .byt <(sub_ca0fa - 1)                                             // 89ee: f9          .
 // $89ef referenced 1 time by $8e4e
 jump_table_high
     .byt $d3                                                          // 89ef: d3          .
-    .byt >(just_rts-1)                                                // 89f0: 8e          .
-    .byt >(service_handler_claim_absolute_workspace-1)                // 89f1: 8e          .
-    .byt >(service_handler_claim_private_workspace-1)                 // 89f2: 8e          .
-    .byt >(sub_c8cca-1)                                               // 89f3: 8c          .
-    .byt >(sub_c8c4e-1)                                               // 89f4: 8c          .
-    .byt >(sub_c8028-1)                                               // 89f5: 80          .
-    .byt >(just_rts-1)                                                // 89f6: 8e          .
-    .byt >(sub_c8e92-1)                                               // 89f7: 8e          .
-    .byt >(sub_ca4ee-1)                                               // 89f8: a4          .
-    .byt >(sub_c8c5d-1)                                               // 89f9: 8c          .
-    .byt >(just_rts-1)                                                // 89fa: 8e          .
-    .byt >(sub_c8090-1)                                               // 89fb: 80          .
-    .byt >(sub_c8983-1)                                               // 89fc: 89          .
-    .byt >(sub_c8b0d-1)                                               // 89fd: 8b          .
-    .byt >(sub_c95ce-1)                                               // 89fe: 95          .
-    .byt >(sub_c9580-1)                                               // 89ff: 95          .
-    .byt >(sub_cac98-1)                                               // 8a00: ac          .
-    .byt >(sub_c95ae-1)                                               // 8a01: 95          .
-    .byt >(sub_c95be-1)                                               // 8a02: 95          .
-    .byt >(sub_c9dc8-1)                                               // 8a03: 9d          .
-    .byt >(sub_c9dee-1)                                               // 8a04: 9d          .
-    .byt >(ca1c1-1)                                                   // 8a05: a1          .
-    .byt >(ca114-1)                                                   // 8a06: a1          .
-    .byt >(ca1c1-1)                                                   // 8a07: a1          .
-    .byt >(sub_cad80-1)                                               // 8a08: ad          .
-    .byt >(sub_c8f99-1)                                               // 8a09: 8f          .
-    .byt >(sub_c92b0-1)                                               // 8a0a: 92          .
-    .byt >(sub_caf3e-1)                                               // 8a0b: af          .
-    .byt >(sub_ca391-1)                                               // 8a0c: a3          .
-    .byt >(sub_ca39b-1)                                               // 8a0d: a3          .
-    .byt >(ca2f4-1)                                                   // 8a0e: a2          .
-    .byt >(ca1c1-1)                                                   // 8a0f: a1          .
-    .byt >(sub_ca2fa-1)                                               // 8a10: a2          .
-    .byt >(sub_ca0e4-1)                                               // 8a11: a0          .
-    .byt >(sub_ca0ea-1)                                               // 8a12: a0          .
-    .byt >(sub_ca0fa-1)                                               // 8a13: a0          .
+    .byt >(just_rts - 1)                                              // 89f0: 8e          .
+    .byt >(service_handler_claim_absolute_workspace - 1)              // 89f1: 8e          .
+    .byt >(service_handler_claim_private_workspace - 1)               // 89f2: 8e          .
+    .byt >(sub_c8cca - 1)                                             // 89f3: 8c          .
+    .byt >(sub_c8c4e - 1)                                             // 89f4: 8c          .
+    .byt >(sub_c8028 - 1)                                             // 89f5: 80          .
+    .byt >(just_rts - 1)                                              // 89f6: 8e          .
+    .byt >(sub_c8e92 - 1)                                             // 89f7: 8e          .
+    .byt >(sub_ca4ee - 1)                                             // 89f8: a4          .
+    .byt >(sub_c8c5d - 1)                                             // 89f9: 8c          .
+    .byt >(just_rts - 1)                                              // 89fa: 8e          .
+    .byt >(sub_c8090 - 1)                                             // 89fb: 80          .
+    .byt >(sub_c8983 - 1)                                             // 89fc: 89          .
+    .byt >(sub_c8b0d - 1)                                             // 89fd: 8b          .
+    .byt >(sub_c95ce - 1)                                             // 89fe: 95          .
+    .byt >(sub_c9580 - 1)                                             // 89ff: 95          .
+    .byt >(sub_cac98 - 1)                                             // 8a00: ac          .
+    .byt >(sub_c95ae - 1)                                             // 8a01: 95          .
+    .byt >(sub_c95be - 1)                                             // 8a02: 95          .
+    .byt >(sub_c9dc8 - 1)                                             // 8a03: 9d          .
+    .byt >(sub_c9dee - 1)                                             // 8a04: 9d          .
+    .byt >(ca1c1 - 1)                                                 // 8a05: a1          .
+    .byt >(ca114 - 1)                                                 // 8a06: a1          .
+    .byt >(ca1c1 - 1)                                                 // 8a07: a1          .
+    .byt >(sub_cad80 - 1)                                             // 8a08: ad          .
+    .byt >(sub_c8f99 - 1)                                             // 8a09: 8f          .
+    .byt >(sub_c92b0 - 1)                                             // 8a0a: 92          .
+    .byt >(sub_caf3e - 1)                                             // 8a0b: af          .
+    .byt >(sub_ca391 - 1)                                             // 8a0c: a3          .
+    .byt >(sub_ca39b - 1)                                             // 8a0d: a3          .
+    .byt >(ca2f4 - 1)                                                 // 8a0e: a2          .
+    .byt >(ca1c1 - 1)                                                 // 8a0f: a1          .
+    .byt >(sub_ca2fa - 1)                                             // 8a10: a2          .
+    .byt >(sub_ca0e4 - 1)                                             // 8a11: a0          .
+    .byt >(sub_ca0ea - 1)                                             // 8a12: a0          .
+    .byt >(sub_ca0fa - 1)                                             // 8a13: a0          .
     .byt $8a                                                          // 8a14: 8a          .
 
 // $8a15 referenced 1 time by $8003
@@ -6257,96 +6257,96 @@ la3f2 = la3f0+2
 // $a3f1 referenced 3 times by $8c93, $a13b, $b326
 // $a3f2 referenced 3 times by $8c8f, $a137, $b353
     .byt $80                                                          // a3f5: 80          .
-    .word sub_cb994-1                                                 // a3f6: 93 b9       ..
+    .word sub_cb994 - 1                                               // a3f6: 93 b9       ..
     .asc "Dump"                                                       // a3f8: 44 75 6d... Dum
     .byt $c4                                                          // a3fc: c4          .
-    .word sub_cba1b-1                                                 // a3fd: 1a ba       ..
+    .word sub_cba1b - 1                                               // a3fd: 1a ba       ..
     .asc "Net"                                                        // a3ff: 4e 65 74    Net
     .byt $80                                                          // a402: 80          .
-    .word sub_c8b1a-1                                                 // a403: 19 8b       ..
+    .word sub_c8b1a - 1                                               // a403: 19 8b       ..
     .asc "Pollps"                                                     // a405: 50 6f 6c... Pol
     .byt $88                                                          // a40b: 88          .
-    .word sub_cb1c3-1                                                 // a40c: c2 b1       ..
+    .word sub_cb1c3 - 1                                               // a40c: c2 b1       ..
     .asc "Print"                                                      // a40e: 50 72 69... Pri
     .byt $cc                                                          // a413: cc          .
-    .word sub_cb99d-1                                                 // a414: 9c b9       ..
+    .word sub_cb99d - 1                                               // a414: 9c b9       ..
     .asc "Prot"                                                       // a416: 50 72 6f... Pro
     .byt $8e                                                          // a41a: 8e          .
-    .word sub_cb30c-1                                                 // a41b: 0b b3       ..
+    .word sub_cb30c - 1                                               // a41b: 0b b3       ..
     .asc "PS"                                                         // a41d: 50 53       PS
     .byt $88                                                          // a41f: 88          .
-    .word sub_cafee-1                                                 // a420: ed af       ..
+    .word sub_cafee - 1                                               // a420: ed af       ..
     .asc "Roff"                                                       // a422: 52 6f 66... Rof
     .byt $80                                                          // a426: 80          .
-    .word sub_c8ad4-1                                                 // a427: d3 8a       ..
+    .word sub_c8ad4 - 1                                               // a427: d3 8a       ..
     .asc "Type"                                                       // a429: 54 79 70... Typ
     .byt $cc                                                          // a42d: cc          .
-    .word sub_cb99a-1                                                 // a42e: 99 b9       ..
+    .word sub_cb99a - 1                                               // a42e: 99 b9       ..
     .asc "Unprot"                                                     // a430: 55 6e 70... Unp
     .byt $8e                                                          // a436: 8e          .
-    .word sub_cb33d-1                                                 // a437: 3c b3       <.
+    .word sub_cb33d - 1                                               // a437: 3c b3       <.
     .byt $80                                                          // a439: 80          .
     .asc "Access"                                                     // a43a: 41 63 63... Acc
     .byt $c9                                                          // a440: c9          .
-    .word sub_c92e6-1                                                 // a441: e5 92       ..
+    .word sub_c92e6 - 1                                               // a441: e5 92       ..
     .asc "Bye"                                                        // a443: 42 79 65    Bye
     .byt $80                                                          // a446: 80          .
-    .word sub_c949e-1                                                 // a447: 9d 94       ..
+    .word sub_c949e - 1                                               // a447: 9d 94       ..
     .asc "Cdir"                                                       // a449: 43 64 69... Cdi
     .byt $c6                                                          // a44d: c6          .
-    .word sub_cad10-1                                                 // a44e: 0f ad       ..
+    .word sub_cad10 - 1                                               // a44e: 0f ad       ..
     .asc "Delete"                                                     // a450: 44 65 6c... Del
     .byt $c3                                                          // a456: c3          .
-    .word sub_c92e6-1                                                 // a457: e5 92       ..
+    .word sub_c92e6 - 1                                               // a457: e5 92       ..
     .asc "Dir"                                                        // a459: 44 69 72    Dir
     .byt $81                                                          // a45c: 81          .
-    .word sub_c93dd-1                                                 // a45d: dc 93       ..
+    .word sub_c93dd - 1                                               // a45d: dc 93       ..
     .asc "Ex"                                                         // a45f: 45 78       Ex
     .byt $81                                                          // a461: 81          .
-    .word sub_cad6b-1                                                 // a462: 6a ad       j.
+    .word sub_cad6b - 1                                               // a462: 6a ad       j.
     .asc "Flip"                                                       // a464: 46 6c 69... Fli
     .byt $80                                                          // a468: 80          .
-    .word sub_ca356-1                                                 // a469: 55 a3       U.
+    .word sub_ca356 - 1                                               // a469: 55 a3       U.
     .asc "FS"                                                         // a46b: 46 53       FS
     .byt $8b                                                          // a46d: 8b          .
-    .word sub_ca07b-1                                                 // a46e: 7a a0       z.
+    .word sub_ca07b - 1                                               // a46e: 7a a0       z.
     .asc "Info"                                                       // a470: 49 6e 66... Inf
     .byt $c3                                                          // a474: c3          .
-    .word sub_c92e6-1                                                 // a475: e5 92       ..
+    .word sub_c92e6 - 1                                               // a475: e5 92       ..
 // $a477 referenced 1 time by $8daf
 la477
     .asc "I am"                                                       // a477: 49 20 61... I a
     .byt $c2                                                          // a47b: c2          .
-    .word sub_c8d79-1                                                 // a47c: 78 8d       x.
+    .word sub_c8d79 - 1                                               // a47c: 78 8d       x.
     .asc "Lcat"                                                       // a47e: 4c 63 61... Lca
     .byt $81                                                          // a482: 81          .
-    .word sub_cad5f-1                                                 // a483: 5e ad       ^.
+    .word sub_cad5f - 1                                               // a483: 5e ad       ^.
     .asc "Lex"                                                        // a485: 4c 65 78    Lex
     .byt $81                                                          // a488: 81          .
-    .word sub_cad65-1                                                 // a489: 64 ad       d.
+    .word sub_cad65 - 1                                               // a489: 64 ad       d.
     .asc "Lib"                                                        // a48b: 4c 69 62    Lib
     .byt $c5                                                          // a48e: c5          .
-    .word sub_c92e6-1                                                 // a48f: e5 92       ..
+    .word sub_c92e6 - 1                                               // a48f: e5 92       ..
     .asc "Pass"                                                       // a491: 50 61 73... Pas
     .byt $c7                                                          // a495: c7          .
-    .word c8dbc-1                                                     // a496: bb 8d       ..
+    .word c8dbc - 1                                                   // a496: bb 8d       ..
     .asc "Remove"                                                     // a498: 52 65 6d... Rem
     .byt $c3                                                          // a49e: c3          .
-    .word sub_caf66-1                                                 // a49f: 65 af       e.
+    .word sub_caf66 - 1                                               // a49f: 65 af       e.
     .asc "Rename"                                                     // a4a1: 52 65 6e... Ren
     .byt $ca                                                          // a4a7: ca          .
-    .word sub_c938b-1                                                 // a4a8: 8a 93       ..
+    .word sub_c938b - 1                                               // a4a8: 8a 93       ..
     .asc "Wipe"                                                       // a4aa: 57 69 70... Wip
     .byt $81                                                          // a4ae: 81          .
-    .word sub_cb359-1                                                 // a4af: 58 b3       X.
+    .word sub_cb359 - 1                                               // a4af: 58 b3       X.
     .byt $80                                                          // a4b1: 80          .
-    .word c8e15-1                                                     // a4b2: 14 8e       ..
+    .word c8e15 - 1                                                   // a4b2: 14 8e       ..
     .asc "Net"                                                        // a4b4: 4e 65 74    Net
     .byt $80                                                          // a4b7: 80          .
-    .word sub_c8b96-1                                                 // a4b8: 95 8b       ..
+    .word sub_c8b96 - 1                                               // a4b8: 95 8b       ..
     .asc "Utils"                                                      // a4ba: 55 74 69... Uti
     .byt $80                                                          // a4bf: 80          .
-    .word sub_c8b92-1                                                 // a4c0: 91 8b       ..
+    .word sub_c8b92 - 1                                               // a4c0: 91 8b       ..
     .byt $80                                                          // a4c2: 80          .
     .asc "Halt"                                                       // a4c3: 48 61 6c... Hal
     .byt $fc, $20, $df                                                // a4c7: fc 20 df    . .
@@ -10681,137 +10681,137 @@ pydis_end
 #if ((255 - inkey_key_ctrl) ^ 128) <> $81
 #error Assertion failed: (255 - inkey_key_ctrl) ^ 128 == $81
 #endif
-#if (((c86e3 - 1)) & $ff) <> $e2
+#if ((c86e3 - 1) & $ff) <> $e2
 #error Assertion failed: <(c86e3 - 1) == $e2
 #endif
-#if (((c86e3 - 1)) & $ff) <> $e2
+#if ((c86e3 - 1) & $ff) <> $e2
 #error Assertion failed: <(c86e3 - 1) == $e2
 #endif
-#if (((ca114-1)) & $ff) <> $13
-#error Assertion failed: <(ca114-1) == $13
+#if ((ca114 - 1) & $ff) <> $13
+#error Assertion failed: <(ca114 - 1) == $13
 #endif
-#if (((ca1c1-1)) & $ff) <> $c0
-#error Assertion failed: <(ca1c1-1) == $c0
+#if ((ca1c1 - 1) & $ff) <> $c0
+#error Assertion failed: <(ca1c1 - 1) == $c0
 #endif
-#if (((ca1c1-1)) & $ff) <> $c0
-#error Assertion failed: <(ca1c1-1) == $c0
+#if ((ca1c1 - 1) & $ff) <> $c0
+#error Assertion failed: <(ca1c1 - 1) == $c0
 #endif
-#if (((ca1c1-1)) & $ff) <> $c0
-#error Assertion failed: <(ca1c1-1) == $c0
+#if ((ca1c1 - 1) & $ff) <> $c0
+#error Assertion failed: <(ca1c1 - 1) == $c0
 #endif
-#if (((ca2f4-1)) & $ff) <> $f3
-#error Assertion failed: <(ca2f4-1) == $f3
+#if ((ca2f4 - 1) & $ff) <> $f3
+#error Assertion failed: <(ca2f4 - 1) == $f3
 #endif
-#if (((just_rts-1)) & $ff) <> $57
-#error Assertion failed: <(just_rts-1) == $57
+#if ((just_rts - 1) & $ff) <> $57
+#error Assertion failed: <(just_rts - 1) == $57
 #endif
-#if (((just_rts-1)) & $ff) <> $57
-#error Assertion failed: <(just_rts-1) == $57
+#if ((just_rts - 1) & $ff) <> $57
+#error Assertion failed: <(just_rts - 1) == $57
 #endif
-#if (((just_rts-1)) & $ff) <> $57
-#error Assertion failed: <(just_rts-1) == $57
+#if ((just_rts - 1) & $ff) <> $57
+#error Assertion failed: <(just_rts - 1) == $57
 #endif
-#if (((service_handler_claim_absolute_workspace-1)) & $ff) <> $a4
-#error Assertion failed: <(service_handler_claim_absolute_workspace-1) == $a4
+#if ((service_handler_claim_absolute_workspace - 1) & $ff) <> $a4
+#error Assertion failed: <(service_handler_claim_absolute_workspace - 1) == $a4
 #endif
-#if (((service_handler_claim_private_workspace-1)) & $ff) <> $b7
-#error Assertion failed: <(service_handler_claim_private_workspace-1) == $b7
+#if ((service_handler_claim_private_workspace - 1) & $ff) <> $b7
+#error Assertion failed: <(service_handler_claim_private_workspace - 1) == $b7
 #endif
-#if (((sub_c8028-1)) & $ff) <> $27
-#error Assertion failed: <(sub_c8028-1) == $27
+#if ((sub_c8028 - 1) & $ff) <> $27
+#error Assertion failed: <(sub_c8028 - 1) == $27
 #endif
-#if (((sub_c8090-1)) & $ff) <> $8f
-#error Assertion failed: <(sub_c8090-1) == $8f
+#if ((sub_c8090 - 1) & $ff) <> $8f
+#error Assertion failed: <(sub_c8090 - 1) == $8f
 #endif
-#if (((sub_c8689 - 1)) & $ff) <> $88
+#if ((sub_c8689 - 1) & $ff) <> $88
 #error Assertion failed: <(sub_c8689 - 1) == $88
 #endif
-#if (((sub_c868d - 1)) & $ff) <> $8c
+#if ((sub_c868d - 1) & $ff) <> $8c
 #error Assertion failed: <(sub_c868d - 1) == $8c
 #endif
-#if (((sub_c8691 - 1)) & $ff) <> $90
+#if ((sub_c8691 - 1) & $ff) <> $90
 #error Assertion failed: <(sub_c8691 - 1) == $90
 #endif
-#if (((sub_c86d3 - 1)) & $ff) <> $d2
+#if ((sub_c86d3 - 1) & $ff) <> $d2
 #error Assertion failed: <(sub_c86d3 - 1) == $d2
 #endif
-#if (((sub_c86d3 - 1)) & $ff) <> $d2
+#if ((sub_c86d3 - 1) & $ff) <> $d2
 #error Assertion failed: <(sub_c86d3 - 1) == $d2
 #endif
-#if (((sub_c86d3 - 1)) & $ff) <> $d2
+#if ((sub_c86d3 - 1) & $ff) <> $d2
 #error Assertion failed: <(sub_c86d3 - 1) == $d2
 #endif
-#if (((sub_c8983-1)) & $ff) <> $82
-#error Assertion failed: <(sub_c8983-1) == $82
+#if ((sub_c8983 - 1) & $ff) <> $82
+#error Assertion failed: <(sub_c8983 - 1) == $82
 #endif
-#if (((sub_c8b0d-1)) & $ff) <> $0c
-#error Assertion failed: <(sub_c8b0d-1) == $0c
+#if ((sub_c8b0d - 1) & $ff) <> $0c
+#error Assertion failed: <(sub_c8b0d - 1) == $0c
 #endif
-#if (((sub_c8c4e-1)) & $ff) <> $4d
-#error Assertion failed: <(sub_c8c4e-1) == $4d
+#if ((sub_c8c4e - 1) & $ff) <> $4d
+#error Assertion failed: <(sub_c8c4e - 1) == $4d
 #endif
-#if (((sub_c8c5d-1)) & $ff) <> $5c
-#error Assertion failed: <(sub_c8c5d-1) == $5c
+#if ((sub_c8c5d - 1) & $ff) <> $5c
+#error Assertion failed: <(sub_c8c5d - 1) == $5c
 #endif
-#if (((sub_c8cca-1)) & $ff) <> $c9
-#error Assertion failed: <(sub_c8cca-1) == $c9
+#if ((sub_c8cca - 1) & $ff) <> $c9
+#error Assertion failed: <(sub_c8cca - 1) == $c9
 #endif
-#if (((sub_c8e92-1)) & $ff) <> $91
-#error Assertion failed: <(sub_c8e92-1) == $91
+#if ((sub_c8e92 - 1) & $ff) <> $91
+#error Assertion failed: <(sub_c8e92 - 1) == $91
 #endif
-#if (((sub_c8f99-1)) & $ff) <> $98
-#error Assertion failed: <(sub_c8f99-1) == $98
+#if ((sub_c8f99 - 1) & $ff) <> $98
+#error Assertion failed: <(sub_c8f99 - 1) == $98
 #endif
-#if (((sub_c92b0-1)) & $ff) <> $af
-#error Assertion failed: <(sub_c92b0-1) == $af
+#if ((sub_c92b0 - 1) & $ff) <> $af
+#error Assertion failed: <(sub_c92b0 - 1) == $af
 #endif
-#if (((sub_c9580-1)) & $ff) <> $7f
-#error Assertion failed: <(sub_c9580-1) == $7f
+#if ((sub_c9580 - 1) & $ff) <> $7f
+#error Assertion failed: <(sub_c9580 - 1) == $7f
 #endif
-#if (((sub_c95ae-1)) & $ff) <> $ad
-#error Assertion failed: <(sub_c95ae-1) == $ad
+#if ((sub_c95ae - 1) & $ff) <> $ad
+#error Assertion failed: <(sub_c95ae - 1) == $ad
 #endif
-#if (((sub_c95be-1)) & $ff) <> $bd
-#error Assertion failed: <(sub_c95be-1) == $bd
+#if ((sub_c95be - 1) & $ff) <> $bd
+#error Assertion failed: <(sub_c95be - 1) == $bd
 #endif
-#if (((sub_c95ce-1)) & $ff) <> $cd
-#error Assertion failed: <(sub_c95ce-1) == $cd
+#if ((sub_c95ce - 1) & $ff) <> $cd
+#error Assertion failed: <(sub_c95ce - 1) == $cd
 #endif
-#if (((sub_c9dc8-1)) & $ff) <> $c7
-#error Assertion failed: <(sub_c9dc8-1) == $c7
+#if ((sub_c9dc8 - 1) & $ff) <> $c7
+#error Assertion failed: <(sub_c9dc8 - 1) == $c7
 #endif
-#if (((sub_c9dee-1)) & $ff) <> $ed
-#error Assertion failed: <(sub_c9dee-1) == $ed
+#if ((sub_c9dee - 1) & $ff) <> $ed
+#error Assertion failed: <(sub_c9dee - 1) == $ed
 #endif
-#if (((sub_ca0e4-1)) & $ff) <> $e3
-#error Assertion failed: <(sub_ca0e4-1) == $e3
+#if ((sub_ca0e4 - 1) & $ff) <> $e3
+#error Assertion failed: <(sub_ca0e4 - 1) == $e3
 #endif
-#if (((sub_ca0ea-1)) & $ff) <> $e9
-#error Assertion failed: <(sub_ca0ea-1) == $e9
+#if ((sub_ca0ea - 1) & $ff) <> $e9
+#error Assertion failed: <(sub_ca0ea - 1) == $e9
 #endif
-#if (((sub_ca0fa-1)) & $ff) <> $f9
-#error Assertion failed: <(sub_ca0fa-1) == $f9
+#if ((sub_ca0fa - 1) & $ff) <> $f9
+#error Assertion failed: <(sub_ca0fa - 1) == $f9
 #endif
-#if (((sub_ca2fa-1)) & $ff) <> $f9
-#error Assertion failed: <(sub_ca2fa-1) == $f9
+#if ((sub_ca2fa - 1) & $ff) <> $f9
+#error Assertion failed: <(sub_ca2fa - 1) == $f9
 #endif
-#if (((sub_ca391-1)) & $ff) <> $90
-#error Assertion failed: <(sub_ca391-1) == $90
+#if ((sub_ca391 - 1) & $ff) <> $90
+#error Assertion failed: <(sub_ca391 - 1) == $90
 #endif
-#if (((sub_ca39b-1)) & $ff) <> $9a
-#error Assertion failed: <(sub_ca39b-1) == $9a
+#if ((sub_ca39b - 1) & $ff) <> $9a
+#error Assertion failed: <(sub_ca39b - 1) == $9a
 #endif
-#if (((sub_ca4ee-1)) & $ff) <> $ed
-#error Assertion failed: <(sub_ca4ee-1) == $ed
+#if ((sub_ca4ee - 1) & $ff) <> $ed
+#error Assertion failed: <(sub_ca4ee - 1) == $ed
 #endif
-#if (((sub_cac98-1)) & $ff) <> $97
-#error Assertion failed: <(sub_cac98-1) == $97
+#if ((sub_cac98 - 1) & $ff) <> $97
+#error Assertion failed: <(sub_cac98 - 1) == $97
 #endif
-#if (((sub_cad80-1)) & $ff) <> $7f
-#error Assertion failed: <(sub_cad80-1) == $7f
+#if ((sub_cad80 - 1) & $ff) <> $7f
+#error Assertion failed: <(sub_cad80 - 1) == $7f
 #endif
-#if (((sub_caf3e-1)) & $ff) <> $3d
-#error Assertion failed: <(sub_caf3e-1) == $3d
+#if ((sub_caf3e - 1) & $ff) <> $3d
+#error Assertion failed: <(sub_caf3e - 1) == $3d
 #endif
 #if ((handle_brkv) & $ff) <> $16
 #error Assertion failed: <handle_brkv == $16
@@ -10849,113 +10849,113 @@ pydis_end
 #if ((l0e81) & $ff) <> $81
 #error Assertion failed: <l0e81 == $81
 #endif
-#if ((((ca114-1)) >> 8) & $ff) <> $a1
-#error Assertion failed: >(ca114-1) == $a1
+#if (((ca114 - 1) >> 8) & $ff) <> $a1
+#error Assertion failed: >(ca114 - 1) == $a1
 #endif
-#if ((((ca1c1-1)) >> 8) & $ff) <> $a1
-#error Assertion failed: >(ca1c1-1) == $a1
+#if (((ca1c1 - 1) >> 8) & $ff) <> $a1
+#error Assertion failed: >(ca1c1 - 1) == $a1
 #endif
-#if ((((ca1c1-1)) >> 8) & $ff) <> $a1
-#error Assertion failed: >(ca1c1-1) == $a1
+#if (((ca1c1 - 1) >> 8) & $ff) <> $a1
+#error Assertion failed: >(ca1c1 - 1) == $a1
 #endif
-#if ((((ca1c1-1)) >> 8) & $ff) <> $a1
-#error Assertion failed: >(ca1c1-1) == $a1
+#if (((ca1c1 - 1) >> 8) & $ff) <> $a1
+#error Assertion failed: >(ca1c1 - 1) == $a1
 #endif
-#if ((((ca2f4-1)) >> 8) & $ff) <> $a2
-#error Assertion failed: >(ca2f4-1) == $a2
+#if (((ca2f4 - 1) >> 8) & $ff) <> $a2
+#error Assertion failed: >(ca2f4 - 1) == $a2
 #endif
-#if ((((just_rts-1)) >> 8) & $ff) <> $8e
-#error Assertion failed: >(just_rts-1) == $8e
+#if (((just_rts - 1) >> 8) & $ff) <> $8e
+#error Assertion failed: >(just_rts - 1) == $8e
 #endif
-#if ((((just_rts-1)) >> 8) & $ff) <> $8e
-#error Assertion failed: >(just_rts-1) == $8e
+#if (((just_rts - 1) >> 8) & $ff) <> $8e
+#error Assertion failed: >(just_rts - 1) == $8e
 #endif
-#if ((((just_rts-1)) >> 8) & $ff) <> $8e
-#error Assertion failed: >(just_rts-1) == $8e
+#if (((just_rts - 1) >> 8) & $ff) <> $8e
+#error Assertion failed: >(just_rts - 1) == $8e
 #endif
-#if ((((service_handler_claim_absolute_workspace-1)) >> 8) & $ff) <> $8e
-#error Assertion failed: >(service_handler_claim_absolute_workspace-1) == $8e
+#if (((service_handler_claim_absolute_workspace - 1) >> 8) & $ff) <> $8e
+#error Assertion failed: >(service_handler_claim_absolute_workspace - 1) == $8e
 #endif
-#if ((((service_handler_claim_private_workspace-1)) >> 8) & $ff) <> $8e
-#error Assertion failed: >(service_handler_claim_private_workspace-1) == $8e
+#if (((service_handler_claim_private_workspace - 1) >> 8) & $ff) <> $8e
+#error Assertion failed: >(service_handler_claim_private_workspace - 1) == $8e
 #endif
-#if ((((sub_c8028-1)) >> 8) & $ff) <> $80
-#error Assertion failed: >(sub_c8028-1) == $80
+#if (((sub_c8028 - 1) >> 8) & $ff) <> $80
+#error Assertion failed: >(sub_c8028 - 1) == $80
 #endif
-#if ((((sub_c8090-1)) >> 8) & $ff) <> $80
-#error Assertion failed: >(sub_c8090-1) == $80
+#if (((sub_c8090 - 1) >> 8) & $ff) <> $80
+#error Assertion failed: >(sub_c8090 - 1) == $80
 #endif
-#if ((((sub_c8983-1)) >> 8) & $ff) <> $89
-#error Assertion failed: >(sub_c8983-1) == $89
+#if (((sub_c8983 - 1) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c8983 - 1) == $89
 #endif
-#if ((((sub_c8b0d-1)) >> 8) & $ff) <> $8b
-#error Assertion failed: >(sub_c8b0d-1) == $8b
+#if (((sub_c8b0d - 1) >> 8) & $ff) <> $8b
+#error Assertion failed: >(sub_c8b0d - 1) == $8b
 #endif
-#if ((((sub_c8c4e-1)) >> 8) & $ff) <> $8c
-#error Assertion failed: >(sub_c8c4e-1) == $8c
+#if (((sub_c8c4e - 1) >> 8) & $ff) <> $8c
+#error Assertion failed: >(sub_c8c4e - 1) == $8c
 #endif
-#if ((((sub_c8c5d-1)) >> 8) & $ff) <> $8c
-#error Assertion failed: >(sub_c8c5d-1) == $8c
+#if (((sub_c8c5d - 1) >> 8) & $ff) <> $8c
+#error Assertion failed: >(sub_c8c5d - 1) == $8c
 #endif
-#if ((((sub_c8cca-1)) >> 8) & $ff) <> $8c
-#error Assertion failed: >(sub_c8cca-1) == $8c
+#if (((sub_c8cca - 1) >> 8) & $ff) <> $8c
+#error Assertion failed: >(sub_c8cca - 1) == $8c
 #endif
-#if ((((sub_c8e92-1)) >> 8) & $ff) <> $8e
-#error Assertion failed: >(sub_c8e92-1) == $8e
+#if (((sub_c8e92 - 1) >> 8) & $ff) <> $8e
+#error Assertion failed: >(sub_c8e92 - 1) == $8e
 #endif
-#if ((((sub_c8f99-1)) >> 8) & $ff) <> $8f
-#error Assertion failed: >(sub_c8f99-1) == $8f
+#if (((sub_c8f99 - 1) >> 8) & $ff) <> $8f
+#error Assertion failed: >(sub_c8f99 - 1) == $8f
 #endif
-#if ((((sub_c92b0-1)) >> 8) & $ff) <> $92
-#error Assertion failed: >(sub_c92b0-1) == $92
+#if (((sub_c92b0 - 1) >> 8) & $ff) <> $92
+#error Assertion failed: >(sub_c92b0 - 1) == $92
 #endif
-#if ((((sub_c9580-1)) >> 8) & $ff) <> $95
-#error Assertion failed: >(sub_c9580-1) == $95
+#if (((sub_c9580 - 1) >> 8) & $ff) <> $95
+#error Assertion failed: >(sub_c9580 - 1) == $95
 #endif
-#if ((((sub_c95ae-1)) >> 8) & $ff) <> $95
-#error Assertion failed: >(sub_c95ae-1) == $95
+#if (((sub_c95ae - 1) >> 8) & $ff) <> $95
+#error Assertion failed: >(sub_c95ae - 1) == $95
 #endif
-#if ((((sub_c95be-1)) >> 8) & $ff) <> $95
-#error Assertion failed: >(sub_c95be-1) == $95
+#if (((sub_c95be - 1) >> 8) & $ff) <> $95
+#error Assertion failed: >(sub_c95be - 1) == $95
 #endif
-#if ((((sub_c95ce-1)) >> 8) & $ff) <> $95
-#error Assertion failed: >(sub_c95ce-1) == $95
+#if (((sub_c95ce - 1) >> 8) & $ff) <> $95
+#error Assertion failed: >(sub_c95ce - 1) == $95
 #endif
-#if ((((sub_c9dc8-1)) >> 8) & $ff) <> $9d
-#error Assertion failed: >(sub_c9dc8-1) == $9d
+#if (((sub_c9dc8 - 1) >> 8) & $ff) <> $9d
+#error Assertion failed: >(sub_c9dc8 - 1) == $9d
 #endif
-#if ((((sub_c9dee-1)) >> 8) & $ff) <> $9d
-#error Assertion failed: >(sub_c9dee-1) == $9d
+#if (((sub_c9dee - 1) >> 8) & $ff) <> $9d
+#error Assertion failed: >(sub_c9dee - 1) == $9d
 #endif
-#if ((((sub_ca0e4-1)) >> 8) & $ff) <> $a0
-#error Assertion failed: >(sub_ca0e4-1) == $a0
+#if (((sub_ca0e4 - 1) >> 8) & $ff) <> $a0
+#error Assertion failed: >(sub_ca0e4 - 1) == $a0
 #endif
-#if ((((sub_ca0ea-1)) >> 8) & $ff) <> $a0
-#error Assertion failed: >(sub_ca0ea-1) == $a0
+#if (((sub_ca0ea - 1) >> 8) & $ff) <> $a0
+#error Assertion failed: >(sub_ca0ea - 1) == $a0
 #endif
-#if ((((sub_ca0fa-1)) >> 8) & $ff) <> $a0
-#error Assertion failed: >(sub_ca0fa-1) == $a0
+#if (((sub_ca0fa - 1) >> 8) & $ff) <> $a0
+#error Assertion failed: >(sub_ca0fa - 1) == $a0
 #endif
-#if ((((sub_ca2fa-1)) >> 8) & $ff) <> $a2
-#error Assertion failed: >(sub_ca2fa-1) == $a2
+#if (((sub_ca2fa - 1) >> 8) & $ff) <> $a2
+#error Assertion failed: >(sub_ca2fa - 1) == $a2
 #endif
-#if ((((sub_ca391-1)) >> 8) & $ff) <> $a3
-#error Assertion failed: >(sub_ca391-1) == $a3
+#if (((sub_ca391 - 1) >> 8) & $ff) <> $a3
+#error Assertion failed: >(sub_ca391 - 1) == $a3
 #endif
-#if ((((sub_ca39b-1)) >> 8) & $ff) <> $a3
-#error Assertion failed: >(sub_ca39b-1) == $a3
+#if (((sub_ca39b - 1) >> 8) & $ff) <> $a3
+#error Assertion failed: >(sub_ca39b - 1) == $a3
 #endif
-#if ((((sub_ca4ee-1)) >> 8) & $ff) <> $a4
-#error Assertion failed: >(sub_ca4ee-1) == $a4
+#if (((sub_ca4ee - 1) >> 8) & $ff) <> $a4
+#error Assertion failed: >(sub_ca4ee - 1) == $a4
 #endif
-#if ((((sub_cac98-1)) >> 8) & $ff) <> $ac
-#error Assertion failed: >(sub_cac98-1) == $ac
+#if (((sub_cac98 - 1) >> 8) & $ff) <> $ac
+#error Assertion failed: >(sub_cac98 - 1) == $ac
 #endif
-#if ((((sub_cad80-1)) >> 8) & $ff) <> $ad
-#error Assertion failed: >(sub_cad80-1) == $ad
+#if (((sub_cad80 - 1) >> 8) & $ff) <> $ad
+#error Assertion failed: >(sub_cad80 - 1) == $ad
 #endif
-#if ((((sub_caf3e-1)) >> 8) & $ff) <> $af
-#error Assertion failed: >(sub_caf3e-1) == $af
+#if (((sub_caf3e - 1) >> 8) & $ff) <> $af
+#error Assertion failed: >(sub_caf3e - 1) == $af
 #endif
 #if (((handle_brkv) >> 8) & $ff) <> $00
 #error Assertion failed: >handle_brkv == $00
@@ -10993,11 +10993,11 @@ pydis_end
 #if (((l0e81) >> 8) & $ff) <> $0e
 #error Assertion failed: >l0e81 == $0e
 #endif
-#if (c8dbc-1) <> $8dbb
-#error Assertion failed: c8dbc-1 == $8dbb
+#if (c8dbc - 1) <> $8dbb
+#error Assertion failed: c8dbc - 1 == $8dbb
 #endif
-#if (c8e15-1) <> $8e14
-#error Assertion failed: c8e15-1 == $8e14
+#if (c8e15 - 1) <> $8e14
+#error Assertion failed: c8e15 - 1 == $8e14
 #endif
 #if (copyright - rom_header - 1) <> $19
 #error Assertion failed: copyright - rom_header - 1 == $19
@@ -11041,89 +11041,89 @@ pydis_end
 #if (sub_c89a7 - 1) <> $89a6
 #error Assertion failed: sub_c89a7 - 1 == $89a6
 #endif
-#if (sub_c8ad4-1) <> $8ad3
-#error Assertion failed: sub_c8ad4-1 == $8ad3
+#if (sub_c8ad4 - 1) <> $8ad3
+#error Assertion failed: sub_c8ad4 - 1 == $8ad3
 #endif
-#if (sub_c8b1a-1) <> $8b19
-#error Assertion failed: sub_c8b1a-1 == $8b19
+#if (sub_c8b1a - 1) <> $8b19
+#error Assertion failed: sub_c8b1a - 1 == $8b19
 #endif
-#if (sub_c8b92-1) <> $8b91
-#error Assertion failed: sub_c8b92-1 == $8b91
+#if (sub_c8b92 - 1) <> $8b91
+#error Assertion failed: sub_c8b92 - 1 == $8b91
 #endif
-#if (sub_c8b96-1) <> $8b95
-#error Assertion failed: sub_c8b96-1 == $8b95
+#if (sub_c8b96 - 1) <> $8b95
+#error Assertion failed: sub_c8b96 - 1 == $8b95
 #endif
-#if (sub_c8d79-1) <> $8d78
-#error Assertion failed: sub_c8d79-1 == $8d78
+#if (sub_c8d79 - 1) <> $8d78
+#error Assertion failed: sub_c8d79 - 1 == $8d78
 #endif
-#if (sub_c92e6-1) <> $92e5
-#error Assertion failed: sub_c92e6-1 == $92e5
+#if (sub_c92e6 - 1) <> $92e5
+#error Assertion failed: sub_c92e6 - 1 == $92e5
 #endif
-#if (sub_c92e6-1) <> $92e5
-#error Assertion failed: sub_c92e6-1 == $92e5
+#if (sub_c92e6 - 1) <> $92e5
+#error Assertion failed: sub_c92e6 - 1 == $92e5
 #endif
-#if (sub_c92e6-1) <> $92e5
-#error Assertion failed: sub_c92e6-1 == $92e5
+#if (sub_c92e6 - 1) <> $92e5
+#error Assertion failed: sub_c92e6 - 1 == $92e5
 #endif
-#if (sub_c92e6-1) <> $92e5
-#error Assertion failed: sub_c92e6-1 == $92e5
+#if (sub_c92e6 - 1) <> $92e5
+#error Assertion failed: sub_c92e6 - 1 == $92e5
 #endif
-#if (sub_c938b-1) <> $938a
-#error Assertion failed: sub_c938b-1 == $938a
+#if (sub_c938b - 1) <> $938a
+#error Assertion failed: sub_c938b - 1 == $938a
 #endif
-#if (sub_c93dd-1) <> $93dc
-#error Assertion failed: sub_c93dd-1 == $93dc
+#if (sub_c93dd - 1) <> $93dc
+#error Assertion failed: sub_c93dd - 1 == $93dc
 #endif
-#if (sub_c949e-1) <> $949d
-#error Assertion failed: sub_c949e-1 == $949d
+#if (sub_c949e - 1) <> $949d
+#error Assertion failed: sub_c949e - 1 == $949d
 #endif
-#if (sub_ca07b-1) <> $a07a
-#error Assertion failed: sub_ca07b-1 == $a07a
+#if (sub_ca07b - 1) <> $a07a
+#error Assertion failed: sub_ca07b - 1 == $a07a
 #endif
-#if (sub_ca356-1) <> $a355
-#error Assertion failed: sub_ca356-1 == $a355
+#if (sub_ca356 - 1) <> $a355
+#error Assertion failed: sub_ca356 - 1 == $a355
 #endif
-#if (sub_cad10-1) <> $ad0f
-#error Assertion failed: sub_cad10-1 == $ad0f
+#if (sub_cad10 - 1) <> $ad0f
+#error Assertion failed: sub_cad10 - 1 == $ad0f
 #endif
-#if (sub_cad5f-1) <> $ad5e
-#error Assertion failed: sub_cad5f-1 == $ad5e
+#if (sub_cad5f - 1) <> $ad5e
+#error Assertion failed: sub_cad5f - 1 == $ad5e
 #endif
-#if (sub_cad65-1) <> $ad64
-#error Assertion failed: sub_cad65-1 == $ad64
+#if (sub_cad65 - 1) <> $ad64
+#error Assertion failed: sub_cad65 - 1 == $ad64
 #endif
-#if (sub_cad6b-1) <> $ad6a
-#error Assertion failed: sub_cad6b-1 == $ad6a
+#if (sub_cad6b - 1) <> $ad6a
+#error Assertion failed: sub_cad6b - 1 == $ad6a
 #endif
-#if (sub_caf66-1) <> $af65
-#error Assertion failed: sub_caf66-1 == $af65
+#if (sub_caf66 - 1) <> $af65
+#error Assertion failed: sub_caf66 - 1 == $af65
 #endif
-#if (sub_cafee-1) <> $afed
-#error Assertion failed: sub_cafee-1 == $afed
+#if (sub_cafee - 1) <> $afed
+#error Assertion failed: sub_cafee - 1 == $afed
 #endif
-#if (sub_cb1c3-1) <> $b1c2
-#error Assertion failed: sub_cb1c3-1 == $b1c2
+#if (sub_cb1c3 - 1) <> $b1c2
+#error Assertion failed: sub_cb1c3 - 1 == $b1c2
 #endif
-#if (sub_cb30c-1) <> $b30b
-#error Assertion failed: sub_cb30c-1 == $b30b
+#if (sub_cb30c - 1) <> $b30b
+#error Assertion failed: sub_cb30c - 1 == $b30b
 #endif
-#if (sub_cb33d-1) <> $b33c
-#error Assertion failed: sub_cb33d-1 == $b33c
+#if (sub_cb33d - 1) <> $b33c
+#error Assertion failed: sub_cb33d - 1 == $b33c
 #endif
-#if (sub_cb359-1) <> $b358
-#error Assertion failed: sub_cb359-1 == $b358
+#if (sub_cb359 - 1) <> $b358
+#error Assertion failed: sub_cb359 - 1 == $b358
 #endif
-#if (sub_cb994-1) <> $b993
-#error Assertion failed: sub_cb994-1 == $b993
+#if (sub_cb994 - 1) <> $b993
+#error Assertion failed: sub_cb994 - 1 == $b993
 #endif
-#if (sub_cb99a-1) <> $b999
-#error Assertion failed: sub_cb99a-1 == $b999
+#if (sub_cb99a - 1) <> $b999
+#error Assertion failed: sub_cb99a - 1 == $b999
 #endif
-#if (sub_cb99d-1) <> $b99c
-#error Assertion failed: sub_cb99d-1 == $b99c
+#if (sub_cb99d - 1) <> $b99c
+#error Assertion failed: sub_cb99d - 1 == $b99c
 #endif
-#if (sub_cba1b-1) <> $ba1a
-#error Assertion failed: sub_cba1b-1 == $ba1a
+#if (sub_cba1b - 1) <> $ba1a
+#error Assertion failed: sub_cba1b - 1 == $ba1a
 #endif
 
 // Label references by decreasing frequency:

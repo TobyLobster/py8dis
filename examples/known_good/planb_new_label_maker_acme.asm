@@ -4664,7 +4664,7 @@ room_0_definition
     !byte $c3, 2, $12                                                 ; 218c: c3 02 12    ... ; collectible at 2,18
     !byte $c2, 2, $17                                                 ; 218f: c2 02 17    ... ; collectible at 2,23
     !byte 0                                                           ; 2192: 00          .  ; terminator for collectibles
-    !text "PLAN ", $80+'B'                                            ; 2193: 50 4c 41... PLA ; "PLAN B"
+    !text "PLAN ", $80 + 'B'                                          ; 2193: 50 4c 41... PLA ; "PLAN B"
 
 ;               Crossroads
 ; *****************......*****************
@@ -4722,7 +4722,7 @@ room_1_definition
     !byte 0                                                           ; 21d3: 00          .  ; terminator for keys
     !byte 0                                                           ; 21d4: 00          .  ; terminator for computers
     !byte 0                                                           ; 21d5: 00          .  ; terminator for collectibles
-    !text "Crossroad", $80+'s'                                        ; 21d6: 43 72 6f... Cro ; "Crossroads"
+    !text "Crossroad", $80 + 's'                                      ; 21d6: 43 72 6f... Cro ; "Crossroads"
 
 ;              The Storeroom
 ; ****************************************
@@ -4823,7 +4823,7 @@ room_2_definition
     !byte $c3, 4, $1c                                                 ; 224c: c3 04 1c    ... ; collectible at 4,28
     !byte $c3, $22, $17                                               ; 224f: c3 22 17    .". ; collectible at 34,23
     !byte 0                                                           ; 2252: 00          .  ; terminator for collectibles
-    !text "The Storeroo", $80+'m'                                     ; 2253: 54 68 65... The ; "The Storeroom"
+    !text "The Storeroo", $80 + 'm'                                   ; 2253: 54 68 65... The ; "The Storeroom"
 
 ;              The Basement
 ; **....**************************....****
@@ -4912,7 +4912,7 @@ room_3_definition
     !byte $c3, 3, $17                                                 ; 22be: c3 03 17    ... ; collectible at 3,23
     !byte $c3, 6, $17                                                 ; 22c1: c3 06 17    ... ; collectible at 6,23
     !byte 0                                                           ; 22c4: 00          .  ; terminator for collectibles
-    !text "The Basemen", $80+'t'                                      ; 22c5: 54 68 65... The ; "The Basement"
+    !text "The Basemen", $80 + 't'                                    ; 22c5: 54 68 65... The ; "The Basement"
 
 ;               The Cellar
 ; ****************************************
@@ -4973,7 +4973,7 @@ room_4_definition
     !byte $c3, 4, $0a                                                 ; 2308: c3 04 0a    ... ; collectible at 4,10
     !byte $c1, 6, $0a                                                 ; 230b: c1 06 0a    ... ; collectible at 6,10
     !byte 0                                                           ; 230e: 00          .  ; terminator for collectibles
-    !text "The Cella", $80+'r'                                        ; 230f: 54 68 65... The ; "The Cellar"
+    !text "The Cella", $80 + 'r'                                      ; 230f: 54 68 65... The ; "The Cellar"
 
 ;          Descent To The Depths
 ; ************************....************
@@ -5017,7 +5017,7 @@ room_5_definition
     !byte 0                                                           ; 2332: 00          .  ; terminator for keys
     !byte 0                                                           ; 2333: 00          .  ; terminator for computers
     !byte 0                                                           ; 2334: 00          .  ; terminator for collectibles
-    !text "Descent To The Depth", $80+'s'                             ; 2335: 44 65 73... Des ; "Descent To The Depths"
+    !text "Descent To The Depth", $80 + 's'                           ; 2335: 44 65 73... Des ; "Descent To The Depths"
 
 ;      The Underground Computer Room
 ; ************************....************
@@ -5130,7 +5130,7 @@ room_6_definition
     !byte 0                                                           ; 23cc: 00          .  ; terminator for computers
     !byte $c1, $24, $0b                                               ; 23cd: c1 24 0b    .$. ; collectible at 36,11
     !byte 0                                                           ; 23d0: 00          .  ; terminator for collectibles
-    !text "The Underground Computer Roo", $80+'m'                     ; 23d1: 54 68 65... The ; "The Underground Computer Room"
+    !text "The Underground Computer Roo", $80 + 'm'                   ; 23d1: 54 68 65... The ; "The Underground Computer Room"
 
 ;                    
 ; ****************************************
@@ -5266,7 +5266,7 @@ room_8_definition
     !byte 0                                                           ; 2473: 00          .  ; terminator for computers
     !byte $c3, $22, 8                                                 ; 2474: c3 22 08    .". ; collectible at 34,8
     !byte 0                                                           ; 2477: 00          .  ; terminator for collectibles
-    !text "The Underground Poo", $80+'l'                              ; 2478: 54 68 65... The ; "The Underground Pool"
+    !text "The Underground Poo", $80 + 'l'                            ; 2478: 54 68 65... The ; "The Underground Pool"
 
 ;          The Processing Plant
 ; ****************************************
@@ -5373,7 +5373,7 @@ room_9_definition
     !byte $c3, $10, $1b                                               ; 2500: c3 10 1b    ... ; computer type 3 at 16,27
     !byte 0                                                           ; 2503: 00          .  ; terminator for computers
     !byte 0                                                           ; 2504: 00          .  ; terminator for collectibles
-    !text "The Processing Plan", $80+'t'                              ; 2505: 54 68 65... The ; "The Processing Plant"
+    !text "The Processing Plan", $80 + 't'                            ; 2505: 54 68 65... The ; "The Processing Plant"
 
 ;         Strange Things, Part 1
 ; *********************....***************
@@ -5465,7 +5465,7 @@ room_10_definition
     !byte $c2, 6, $12                                                 ; 2583: c2 06 12    ... ; collectible at 6,18
     !byte $c3, $12, $0a                                               ; 2586: c3 12 0a    ... ; collectible at 18,10
     !byte 0                                                           ; 2589: 00          .  ; terminator for collectibles
-    !text "Strange Things, Part ", $80+'1'                            ; 258a: 53 74 72... Str ; "Strange Things, Part 1"
+    !text "Strange Things, Part ", $80 + '1'                          ; 258a: 53 74 72... Str ; "Strange Things, Part 1"
 
 ;               Not The End
 ; .***************************************
@@ -5567,7 +5567,7 @@ room_11_definition
     !byte $c3, 9, $1a                                                 ; 2609: c3 09 1a    ... ; computer type 3 at 9,26
     !byte 0                                                           ; 260c: 00          .  ; terminator for computers
     !byte 0                                                           ; 260d: 00          .  ; terminator for collectibles
-    !text "Not The En", $80+'d'                                       ; 260e: 4e 6f 74... Not ; "Not The End"
+    !text "Not The En", $80 + 'd'                                     ; 260e: 4e 6f 74... Not ; "Not The End"
 
 ;                    
 ; *****....*******************************
@@ -5783,7 +5783,7 @@ room_13_definition
     !byte 0                                                           ; 2716: 00          .  ; terminator for computers
     !byte $c3, 2, $15                                                 ; 2717: c3 02 15    ... ; collectible at 2,21
     !byte 0                                                           ; 271a: 00          .  ; terminator for collectibles
-    !text "Down The Min", $80+'e'                                     ; 271b: 44 6f 77... Dow ; "Down The Mine"
+    !text "Down The Min", $80 + 'e'                                   ; 271b: 44 6f 77... Dow ; "Down The Mine"
 
 ;               More Mines
 ; ******....******************************
@@ -5860,7 +5860,7 @@ room_14_definition
     !byte $c3, $1e, $15                                               ; 277d: c3 1e 15    ... ; collectible at 30,21
     !byte $c3, $20, $15                                               ; 2780: c3 20 15    . . ; collectible at 32,21
     !byte 0                                                           ; 2783: 00          .  ; terminator for collectibles
-    !text "More Mine", $80+'s'                                        ; 2784: 4d 6f 72... Mor ; "More Mines"
+    !text "More Mine", $80 + 's'                                      ; 2784: 4d 6f 72... Mor ; "More Mines"
 
 ;         Strange Things, part 2
 ; *****2DDDD2*****************************
@@ -5944,7 +5944,7 @@ room_15_definition
     !byte 0                                                           ; 27f1: 00          .  ; terminator for computers
     !byte $c3, 3, $0d                                                 ; 27f2: c3 03 0d    ... ; collectible at 3,13
     !byte 0                                                           ; 27f5: 00          .  ; terminator for collectibles
-    !text "Strange Things, part ", $80+'2'                            ; 27f6: 53 74 72... Str ; "Strange Things, part 2"
+    !text "Strange Things, part ", $80 + '2'                          ; 27f6: 53 74 72... Str ; "Strange Things, part 2"
 
 ;              Back Up Again
 ; ******....******************************
@@ -6019,7 +6019,7 @@ room_16_definition
     !byte 0                                                           ; 2859: 00          .  ; terminator for keys
     !byte 0                                                           ; 285a: 00          .  ; terminator for computers
     !byte 0                                                           ; 285b: 00          .  ; terminator for collectibles
-    !text "Back Up Agai", $80+'n'                                     ; 285c: 42 61 63... Bac ; "Back Up Again"
+    !text "Back Up Agai", $80 + 'n'                                   ; 285c: 42 61 63... Bac ; "Back Up Again"
 
 ;        Computers In The Basement
 ; ****************************************
@@ -6110,7 +6110,7 @@ room_17_definition
     !byte $c0, $0a, $12                                               ; 28dd: c0 0a 12    ... ; computer type 0 at 10,18
     !byte 0                                                           ; 28e0: 00          .  ; terminator for computers
     !byte 0                                                           ; 28e1: 00          .  ; terminator for collectibles
-    !text "Computers In The Basemen", $80+'t'                         ; 28e2: 43 6f 6d... Com ; "Computers In The Basement"
+    !text "Computers In The Basemen", $80 + 't'                       ; 28e2: 43 6f 6d... Com ; "Computers In The Basement"
 
 ;             Into The Garden
 ; ****************************************
@@ -6205,7 +6205,7 @@ room_18_definition
     !byte $c1, $0a, $18                                               ; 296d: c1 0a 18    ... ; collectible at 10,24
     !byte $c2, $1f, $15                                               ; 2970: c2 1f 15    ... ; collectible at 31,21
     !byte 0                                                           ; 2973: 00          .  ; terminator for collectibles
-    !text "Into The Garde", $80+'n'                                   ; 2974: 49 6e 74... Int ; "Into The Garden"
+    !text "Into The Garde", $80 + 'n'                                 ; 2974: 49 6e 74... Int ; "Into The Garden"
 
 ;            The Return Route
 ; ****************************************
@@ -6282,7 +6282,7 @@ room_19_definition
     !byte $c1, $1e, $15                                               ; 29dc: c1 1e 15    ... ; collectible at 30,21
     !byte $c2, 7, $1b                                                 ; 29df: c2 07 1b    ... ; collectible at 7,27
     !byte 0                                                           ; 29e2: 00          .  ; terminator for collectibles
-    !text "The Return Rout", $80+'e'                                  ; 29e3: 54 68 65... The ; "The Return Route"
+    !text "The Return Rout", $80 + 'e'                                ; 29e3: 54 68 65... The ; "The Return Route"
 
 ;                    
 ; *......*********************************
@@ -6441,7 +6441,7 @@ room_21_definition
     !byte 0                                                           ; 2ab6: 00          .  ; terminator for keys
     !byte 0                                                           ; 2ab7: 00          .  ; terminator for computers
     !byte 0                                                           ; 2ab8: 00          .  ; terminator for collectibles
-    !text "The Long Das", $80+'h'                                     ; 2ab9: 54 68 65... The ; "The Long Dash"
+    !text "The Long Das", $80 + 'h'                                   ; 2ab9: 54 68 65... The ; "The Long Dash"
 
 ;                    
 ; ****************************************
@@ -6794,7 +6794,7 @@ room_25_definition
     !byte $c3, 4, $1b                                                 ; 2c7b: c3 04 1b    ... ; collectible at 4,27
     !byte $c3, $22, $1b                                               ; 2c7e: c3 22 1b    .". ; collectible at 34,27
     !byte 0                                                           ; 2c81: 00          .  ; terminator for collectibles
-    !text "The Terminal Roo", $80+'m'                                 ; 2c82: 54 68 65... The ; "The Terminal Room"
+    !text "The Terminal Roo", $80 + 'm'                               ; 2c82: 54 68 65... The ; "The Terminal Room"
 
 ;                    
 ; ***==***********==....==***********==***
@@ -6989,7 +6989,7 @@ room_27_definition
     !byte 0                                                           ; 2d79: 00          .  ; terminator for keys
     !byte 0                                                           ; 2d7a: 00          .  ; terminator for computers
     !byte 0                                                           ; 2d7b: 00          .  ; terminator for collectibles
-    !text "The Way Ou", $80+'t'                                       ; 2d7c: 54 68 65... The ; "The Way Out"
+    !text "The Way Ou", $80 + 't'                                     ; 2d7c: 54 68 65... The ; "The Way Out"
 
 ;              High Security
 ; ****************************************
@@ -7106,7 +7106,7 @@ room_28_definition
     !byte $c3, $1e, $0a                                               ; 2e07: c3 1e 0a    ... ; collectible at 30,10
     !byte $c3, $1e, $19                                               ; 2e0a: c3 1e 19    ... ; collectible at 30,25
     !byte 0                                                           ; 2e0d: 00          .  ; terminator for collectibles
-    !text "High Securit", $80+'y'                                     ; 2e0e: 48 69 67... Hig ; "High Security"
+    !text "High Securit", $80 + 'y'                                   ; 2e0e: 48 69 67... Hig ; "High Security"
 
 ;                    
 ; ******************....******************
@@ -7786,7 +7786,7 @@ room_35_definition
     !byte $c1, $1a, $12                                               ; 3146: c1 1a 12    ... ; collectible at 26,18
     !byte $c1, $1c, $12                                               ; 3149: c1 1c 12    ... ; collectible at 28,18
     !byte 0                                                           ; 314c: 00          .  ; terminator for collectibles
-    !text "Up In The Roo", $80+'f'                                    ; 314d: 55 70 20... Up ; "Up In The Roof"
+    !text "Up In The Roo", $80 + 'f'                                  ; 314d: 55 70 20... Up ; "Up In The Roof"
 
 ;              The Dark Room
 ; .......................................*
@@ -7930,7 +7930,7 @@ room_36_definition
     !byte 0                                                           ; 31ee: 00          .  ; terminator for keys
     !byte 0                                                           ; 31ef: 00          .  ; terminator for computers
     !byte 0                                                           ; 31f0: 00          .  ; terminator for collectibles
-    !text "The Dark Roo", $80+'m'                                     ; 31f1: 54 68 65... The ; "The Dark Room"
+    !text "The Dark Roo", $80 + 'm'                                   ; 31f1: 54 68 65... The ; "The Dark Room"
 
 ;             The Secret Room
 ; ****************************************
@@ -8014,7 +8014,7 @@ room_37_definition
     !byte $c2, 2, $10                                                 ; 326f: c2 02 10    ... ; collectible at 2,16
     !byte $c3, 2, $13                                                 ; 3272: c3 02 13    ... ; collectible at 2,19
     !byte 0                                                           ; 3275: 00          .  ; terminator for collectibles
-    !text "The Secret Roo", $80+'m'                                   ; 3276: 54 68 65... The ; "The Secret Room"
+    !text "The Secret Roo", $80 + 'm'                                 ; 3276: 54 68 65... The ; "The Secret Room"
 
 ;               The Cesspit
 ; *....******......***....********......**
@@ -8117,7 +8117,7 @@ room_38_definition
     !byte 0                                                           ; 32f6: 00          .  ; terminator for keys
     !byte 0                                                           ; 32f7: 00          .  ; terminator for computers
     !byte 0                                                           ; 32f8: 00          .  ; terminator for collectibles
-    !text "The Cesspi", $80+'t'                                       ; 32f9: 54 68 65... The ; "The Cesspit"
+    !text "The Cesspi", $80 + 't'                                     ; 32f9: 54 68 65... The ; "The Cesspit"
 
 ;                    
 ; ***..................................***
@@ -8823,7 +8823,7 @@ room_44_definition
     !byte 0                                                           ; 367a: 00          .  ; terminator for keys
     !byte 0                                                           ; 367b: 00          .  ; terminator for computers
     !byte 0                                                           ; 367c: 00          .  ; terminator for collectibles
-    !text "Onto The Roo", $80+'f'                                     ; 367d: 4f 6e 74... Ont ; "Onto The Roof"
+    !text "Onto The Roo", $80 + 'f'                                   ; 367d: 4f 6e 74... Ont ; "Onto The Roof"
 
 ;                    
 ; ........................................
@@ -8996,7 +8996,7 @@ room_46_definition
     !byte $c3, $15, $14                                               ; 3776: c3 15 14    ... ; collectible at 21,20
     !byte $c2, $17, $14                                               ; 3779: c2 17 14    ... ; collectible at 23,20
     !byte 0                                                           ; 377c: 00          .  ; terminator for collectibles
-    !text "The Atti", $80+'c'                                         ; 377d: 54 68 65... The ; "The Attic"
+    !text "The Atti", $80 + 'c'                                       ; 377d: 54 68 65... The ; "The Attic"
 
 ;                    
 ; ........................................
@@ -9243,7 +9243,7 @@ room_49_definition
     !byte 0                                                           ; 38d8: 00          .  ; terminator for keys
     !byte 0                                                           ; 38d9: 00          .  ; terminator for computers
     !byte 0                                                           ; 38da: 00          .  ; terminator for collectibles
-    !text "Onto The Roo", $80+'f'                                     ; 38db: 4f 6e 74... Ont ; "Onto The Roof"
+    !text "Onto The Roo", $80 + 'f'                                   ; 38db: 4f 6e 74... Ont ; "Onto The Roof"
 
 ;              In the Tower
 ; ***==***********=1DDDD1=***********==***
@@ -9322,7 +9322,7 @@ room_50_definition
     !byte 0                                                           ; 393c: 00          .  ; terminator for keys
     !byte 0                                                           ; 393d: 00          .  ; terminator for computers
     !byte 0                                                           ; 393e: 00          .  ; terminator for collectibles
-    !text "In the Towe", $80+'r'                                      ; 393f: 49 6e 20... In ; "In the Tower"
+    !text "In the Towe", $80 + 'r'                                    ; 393f: 49 6e 20... In ; "In the Tower"
 room_definition_low
     !byte <room_0_definition                                          ; 394b: 3c          <
     !byte <room_1_definition                                          ; 394c: 99          .
@@ -9524,7 +9524,7 @@ room_51_definition
     !byte $c1, 7, $1b                                                 ; 3a15: c1 07 1b    ... ; collectible at 7,27
     !byte $c1, $0c, $1b                                               ; 3a18: c1 0c 1b    ... ; collectible at 12,27
     !byte 0                                                           ; 3a1b: 00          .  ; terminator for collectibles
-    !text "Top of the Towe", $80+'r'                                  ; 3a1c: 54 6f 70... Top ; "Top of the Tower"
+    !text "Top of the Towe", $80 + 'r'                                ; 3a1c: 54 6f 70... Top ; "Top of the Tower"
 
 ;           The Helicopter Pad
 ; ***==**.................................
@@ -9624,7 +9624,7 @@ room_52_definition
     !byte $c2, $1c, $15                                               ; 3ab1: c2 1c 15    ... ; computer type 2 at 28,21
     !byte 0                                                           ; 3ab4: 00          .  ; terminator for computers
     !byte 0                                                           ; 3ab5: 00          .  ; terminator for collectibles
-    !text "The Helicopter Pa", $80+'d'                                ; 3ab6: 54 68 65... The ; "The Helicopter Pad"
+    !text "The Helicopter Pa", $80 + 'd'                              ; 3ab6: 54 68 65... The ; "The Helicopter Pad"
 
 ;            West Of The Tower
 ; ........................................
@@ -9682,7 +9682,7 @@ room_53_definition
     !byte 0                                                           ; 3b0c: 00          .  ; terminator for keys
     !byte 0                                                           ; 3b0d: 00          .  ; terminator for computers
     !byte 0                                                           ; 3b0e: 00          .  ; terminator for collectibles
-    !text "West Of The Towe", $80+'r'                                 ; 3b0f: 57 65 73... Wes ; "West Of The Tower"
+    !text "West Of The Towe", $80 + 'r'                               ; 3b0f: 57 65 73... Wes ; "West Of The Tower"
 
 ;            East Of The Tower
 ; ........................................
@@ -9739,7 +9739,7 @@ room_54_definition
     !byte 0                                                           ; 3b62: 00          .  ; terminator for keys
     !byte 0                                                           ; 3b63: 00          .  ; terminator for computers
     !byte 0                                                           ; 3b64: 00          .  ; terminator for collectibles
-    !text "East Of The Towe", $80+'r'                                 ; 3b65: 45 61 73... Eas ; "East Of The Tower"
+    !text "East Of The Towe", $80 + 'r'                               ; 3b65: 45 61 73... Eas ; "East Of The Tower"
 
 ; ***************************************************************************************
 ; read the next byte from ROM, preserving X and Y
@@ -10483,7 +10483,7 @@ check_paws
     bcc return_7                                                      ; 4039: 90 f8       ..
     jsr set_inverse_colours                                           ; 403b: 20 a3 50     .P
     jsr print_following_string                                        ; 403e: 20 4e 3e     N>
-    !text $1f, " ", 3, "  PAWS ", $80+' '                             ; 4041: 1f 20 03... . .
+    !text $1f, " ", 3, "  PAWS ", $80 + ' '                           ; 4041: 1f 20 03... . .
 
 paws_loop
     ldx #inkey_key_p                                                  ; 404c: a2 c8       ..
@@ -10491,7 +10491,7 @@ paws_loop
     bcc paws_loop                                                     ; 4051: 90 f9       ..
     jsr reset_current_text_colours                                    ; 4053: 20 98 50     .P
     jsr print_following_string                                        ; 4056: 20 4e 3e     N>
-    !text $1f, " ", 3, "       ", $80+' '                             ; 4059: 1f 20 03... . .
+    !text $1f, " ", 3, "       ", $80 + ' '                           ; 4059: 1f 20 03... . .
 
     rts                                                               ; 4064: 60          `
 
@@ -10812,7 +10812,7 @@ plot_room_title
     iny                                                               ; 4276: c8          .
     sty title_offset                                                  ; 4277: 84 44       .D
     jsr print_following_string                                        ; 4279: 20 4e 3e     N>
-    !text $1f, 0, $80+$05                                             ; 427c: 1f 00 85    ...
+    !text $1f, 0, $80 + $05                                           ; 427c: 1f 00 85    ...
 
     ldy title_offset                                                  ; 427f: a4 44       .D
     ldx #0                                                            ; 4281: a2 00       ..
@@ -11109,72 +11109,72 @@ return_10
 ; ***************************************************************************************
 screen_address_table_low
     ; table of screen addresses for each character row (low bytes)
-    !byte <($5800 + (0 * $0140))                                      ; 4431: 00          .
-    !byte <($5800 + (1 * $0140))                                      ; 4432: 40          @
-    !byte <($5800 + (2 * $0140))                                      ; 4433: 80          .
-    !byte <($5800 + (3 * $0140))                                      ; 4434: c0          .
-    !byte <($5800 + (4 * $0140))                                      ; 4435: 00          .
-    !byte <($5800 + (5 * $0140))                                      ; 4436: 40          @
-    !byte <($5800 + (6 * $0140))                                      ; 4437: 80          .
-    !byte <($5800 + (7 * $0140))                                      ; 4438: c0          .
-    !byte <($5800 + (8 * $0140))                                      ; 4439: 00          .
-    !byte <($5800 + (9 * $0140))                                      ; 443a: 40          @
-    !byte <($5800 + (10 * $0140))                                     ; 443b: 80          .
-    !byte <($5800 + (11 * $0140))                                     ; 443c: c0          .
-    !byte <($5800 + (12 * $0140))                                     ; 443d: 00          .
-    !byte <($5800 + (13 * $0140))                                     ; 443e: 40          @
-    !byte <($5800 + (14 * $0140))                                     ; 443f: 80          .
-    !byte <($5800 + (15 * $0140))                                     ; 4440: c0          .
-    !byte <($5800 + (16 * $0140))                                     ; 4441: 00          .
-    !byte <($5800 + (17 * $0140))                                     ; 4442: 40          @
-    !byte <($5800 + (18 * $0140))                                     ; 4443: 80          .
-    !byte <($5800 + (19 * $0140))                                     ; 4444: c0          .
-    !byte <($5800 + (20 * $0140))                                     ; 4445: 00          .
-    !byte <($5800 + (21 * $0140))                                     ; 4446: 40          @
-    !byte <($5800 + (22 * $0140))                                     ; 4447: 80          .
-    !byte <($5800 + (23 * $0140))                                     ; 4448: c0          .
-    !byte <($5800 + (24 * $0140))                                     ; 4449: 00          .
-    !byte <($5800 + (25 * $0140))                                     ; 444a: 40          @
-    !byte <($5800 + (26 * $0140))                                     ; 444b: 80          .
-    !byte <($5800 + (27 * $0140))                                     ; 444c: c0          .
-    !byte <($5800 + (28 * $0140))                                     ; 444d: 00          .
-    !byte <($5800 + (29 * $0140))                                     ; 444e: 40          @
-    !byte <($5800 + (30 * $0140))                                     ; 444f: 80          .
-    !byte <($5800 + (31 * $0140))                                     ; 4450: c0          .
+    !byte <($5800 + 0 * $0140)                                        ; 4431: 00          .
+    !byte <($5800 + 1 * $0140)                                        ; 4432: 40          @
+    !byte <($5800 + 2 * $0140)                                        ; 4433: 80          .
+    !byte <($5800 + 3 * $0140)                                        ; 4434: c0          .
+    !byte <($5800 + 4 * $0140)                                        ; 4435: 00          .
+    !byte <($5800 + 5 * $0140)                                        ; 4436: 40          @
+    !byte <($5800 + 6 * $0140)                                        ; 4437: 80          .
+    !byte <($5800 + 7 * $0140)                                        ; 4438: c0          .
+    !byte <($5800 + 8 * $0140)                                        ; 4439: 00          .
+    !byte <($5800 + 9 * $0140)                                        ; 443a: 40          @
+    !byte <($5800 + 10 * $0140)                                       ; 443b: 80          .
+    !byte <($5800 + 11 * $0140)                                       ; 443c: c0          .
+    !byte <($5800 + 12 * $0140)                                       ; 443d: 00          .
+    !byte <($5800 + 13 * $0140)                                       ; 443e: 40          @
+    !byte <($5800 + 14 * $0140)                                       ; 443f: 80          .
+    !byte <($5800 + 15 * $0140)                                       ; 4440: c0          .
+    !byte <($5800 + 16 * $0140)                                       ; 4441: 00          .
+    !byte <($5800 + 17 * $0140)                                       ; 4442: 40          @
+    !byte <($5800 + 18 * $0140)                                       ; 4443: 80          .
+    !byte <($5800 + 19 * $0140)                                       ; 4444: c0          .
+    !byte <($5800 + 20 * $0140)                                       ; 4445: 00          .
+    !byte <($5800 + 21 * $0140)                                       ; 4446: 40          @
+    !byte <($5800 + 22 * $0140)                                       ; 4447: 80          .
+    !byte <($5800 + 23 * $0140)                                       ; 4448: c0          .
+    !byte <($5800 + 24 * $0140)                                       ; 4449: 00          .
+    !byte <($5800 + 25 * $0140)                                       ; 444a: 40          @
+    !byte <($5800 + 26 * $0140)                                       ; 444b: 80          .
+    !byte <($5800 + 27 * $0140)                                       ; 444c: c0          .
+    !byte <($5800 + 28 * $0140)                                       ; 444d: 00          .
+    !byte <($5800 + 29 * $0140)                                       ; 444e: 40          @
+    !byte <($5800 + 30 * $0140)                                       ; 444f: 80          .
+    !byte <($5800 + 31 * $0140)                                       ; 4450: c0          .
 screen_address_table_high
     ; table of screen addresses for each character row (high bytes)
-    !byte >($5800 + (0 * $0140))                                      ; 4451: 58          X
-    !byte >($5800 + (1 * $0140))                                      ; 4452: 59          Y
-    !byte >($5800 + (2 * $0140))                                      ; 4453: 5a          Z
-    !byte >($5800 + (3 * $0140))                                      ; 4454: 5b          [
-    !byte >($5800 + (4 * $0140))                                      ; 4455: 5d          ]
-    !byte >($5800 + (5 * $0140))                                      ; 4456: 5e          ^
-    !byte >($5800 + (6 * $0140))                                      ; 4457: 5f          _
-    !byte >($5800 + (7 * $0140))                                      ; 4458: 60          `
-    !byte >($5800 + (8 * $0140))                                      ; 4459: 62          b
-    !byte >($5800 + (9 * $0140))                                      ; 445a: 63          c
-    !byte >($5800 + (10 * $0140))                                     ; 445b: 64          d
-    !byte >($5800 + (11 * $0140))                                     ; 445c: 65          e
-    !byte >($5800 + (12 * $0140))                                     ; 445d: 67          g
-    !byte >($5800 + (13 * $0140))                                     ; 445e: 68          h
-    !byte >($5800 + (14 * $0140))                                     ; 445f: 69          i
-    !byte >($5800 + (15 * $0140))                                     ; 4460: 6a          j
-    !byte >($5800 + (16 * $0140))                                     ; 4461: 6c          l
-    !byte >($5800 + (17 * $0140))                                     ; 4462: 6d          m
-    !byte >($5800 + (18 * $0140))                                     ; 4463: 6e          n
-    !byte >($5800 + (19 * $0140))                                     ; 4464: 6f          o
-    !byte >($5800 + (20 * $0140))                                     ; 4465: 71          q
-    !byte >($5800 + (21 * $0140))                                     ; 4466: 72          r
-    !byte >($5800 + (22 * $0140))                                     ; 4467: 73          s
-    !byte >($5800 + (23 * $0140))                                     ; 4468: 74          t
-    !byte >($5800 + (24 * $0140))                                     ; 4469: 76          v
-    !byte >($5800 + (25 * $0140))                                     ; 446a: 77          w
-    !byte >($5800 + (26 * $0140))                                     ; 446b: 78          x
-    !byte >($5800 + (27 * $0140))                                     ; 446c: 79          y
-    !byte >($5800 + (28 * $0140))                                     ; 446d: 7b          {
-    !byte >($5800 + (29 * $0140))                                     ; 446e: 7c          |
-    !byte >($5800 + (30 * $0140))                                     ; 446f: 7d          }
-    !byte >($5800 + (31 * $0140))                                     ; 4470: 7e          ~
+    !byte >($5800 + 0 * $0140)                                        ; 4451: 58          X
+    !byte >($5800 + 1 * $0140)                                        ; 4452: 59          Y
+    !byte >($5800 + 2 * $0140)                                        ; 4453: 5a          Z
+    !byte >($5800 + 3 * $0140)                                        ; 4454: 5b          [
+    !byte >($5800 + 4 * $0140)                                        ; 4455: 5d          ]
+    !byte >($5800 + 5 * $0140)                                        ; 4456: 5e          ^
+    !byte >($5800 + 6 * $0140)                                        ; 4457: 5f          _
+    !byte >($5800 + 7 * $0140)                                        ; 4458: 60          `
+    !byte >($5800 + 8 * $0140)                                        ; 4459: 62          b
+    !byte >($5800 + 9 * $0140)                                        ; 445a: 63          c
+    !byte >($5800 + 10 * $0140)                                       ; 445b: 64          d
+    !byte >($5800 + 11 * $0140)                                       ; 445c: 65          e
+    !byte >($5800 + 12 * $0140)                                       ; 445d: 67          g
+    !byte >($5800 + 13 * $0140)                                       ; 445e: 68          h
+    !byte >($5800 + 14 * $0140)                                       ; 445f: 69          i
+    !byte >($5800 + 15 * $0140)                                       ; 4460: 6a          j
+    !byte >($5800 + 16 * $0140)                                       ; 4461: 6c          l
+    !byte >($5800 + 17 * $0140)                                       ; 4462: 6d          m
+    !byte >($5800 + 18 * $0140)                                       ; 4463: 6e          n
+    !byte >($5800 + 19 * $0140)                                       ; 4464: 6f          o
+    !byte >($5800 + 20 * $0140)                                       ; 4465: 71          q
+    !byte >($5800 + 21 * $0140)                                       ; 4466: 72          r
+    !byte >($5800 + 22 * $0140)                                       ; 4467: 73          s
+    !byte >($5800 + 23 * $0140)                                       ; 4468: 74          t
+    !byte >($5800 + 24 * $0140)                                       ; 4469: 76          v
+    !byte >($5800 + 25 * $0140)                                       ; 446a: 77          w
+    !byte >($5800 + 26 * $0140)                                       ; 446b: 78          x
+    !byte >($5800 + 27 * $0140)                                       ; 446c: 79          y
+    !byte >($5800 + 28 * $0140)                                       ; 446d: 7b          {
+    !byte >($5800 + 29 * $0140)                                       ; 446e: 7c          |
+    !byte >($5800 + 30 * $0140)                                       ; 446f: 7d          }
+    !byte >($5800 + 31 * $0140)                                       ; 4470: 7e          ~
 
 ; ***************************************************************************************
 get_sprite_a_address
@@ -12526,7 +12526,7 @@ attract_loop
     !text $0b, $13, "Shift.....Up", $1f, $0b, $15, "Space.....Fire"   ; 4d71: 0b 13 53... ..S
     !text $1f, $0a, $17, "Return.....Open door", $1f, 6, $1a, "Q..en" ; 4d90: 1f 0a 17... ...
     !text "able  Sound  disable..W", $1f, 6, $1c, "O..stop    Pause " ; 4daf: 61 62 6c... abl
-    !text "   start..", $80+'P'                                       ; 4dda: 20 20 20...
+    !text "   start..", $80 + 'P'                                     ; 4dda: 20 20 20...
 
 
     jsr press_space                                                   ; 4de5: 20 17 4e     .N
@@ -12534,7 +12534,7 @@ attract_loop
     lda #0                                                            ; 4deb: a9 00       ..
     sta delta_x                                                       ; 4ded: 85 05       ..
     jsr print_following_string                                        ; 4def: 20 4e 3e     N>
-    !text $1f, 7, 8, "T O P  T E N  S C O R E ", $80+'S'              ; 4df2: 1f 07 08... ...
+    !text $1f, 7, 8, "T O P  T E N  S C O R E ", $80 + 'S'            ; 4df2: 1f 07 08... ...
 
     jsr show_highscore_table                                          ; 4e0e: 20 b2 53     .S
     jsr press_space                                                   ; 4e11: 20 17 4e     .N
@@ -12543,7 +12543,7 @@ attract_loop
 ; ***************************************************************************************
 press_space
     jsr print_following_string                                        ; 4e17: 20 4e 3e     N>
-    !text $1f, $0a, $1f, "Press space to star", $80+'t'               ; 4e1a: 1f 0a 1f... ...
+    !text $1f, $0a, $1f, "Press space to star", $80 + 't'             ; 4e1a: 1f 0a 1f... ...
 
     ldy #$64                                                          ; 4e31: a0 64       .d
     sty temp_byte                                                     ; 4e33: 84 0b       ..
@@ -12575,7 +12575,7 @@ wait_for_key
     jsr check_for_key                                                 ; 4e5a: 20 78 4e     xN
     bcc wait_for_key                                                  ; 4e5d: 90 f6       ..
     jsr print_following_string                                        ; 4e5f: 20 4e 3e     N>
-    !text $1f, $0e, $1f, "Press a ke", $80+'y'                        ; 4e62: 1f 0e 1f... ...
+    !text $1f, $0e, $1f, "Press a ke", $80 + 'y'                      ; 4e62: 1f 0e 1f... ...
 
 wait_for_key_loop
     jsr check_for_key                                                 ; 4e70: 20 78 4e     xN
@@ -12657,7 +12657,7 @@ end_of_game
     jsr clear_play_area                                               ; 4f0b: 20 e8 43     .C
     jsr print_following_string                                        ; 4f0e: 20 4e 3e     N>
     !text $1f, 5, $0e, "You appear to have snuffed it", $1f, 9, $10   ; 4f11: 1f 05 0e... ...
-    !text "Oh well, such is lif", $80+'e'                             ; 4f34: 4f 68 20... Oh
+    !text "Oh well, such is lif", $80 + 'e'                           ; 4f34: 4f 68 20... Oh
 
     rts                                                               ; 4f49: 60          `
 
@@ -12681,20 +12681,20 @@ wait_for_sounds_to_finish_loop
     bne wait_for_sounds_to_finish_loop                                ; 4f68: d0 f9       ..
     jsr clear_play_area                                               ; 4f6a: 20 e8 43     .C
     jsr print_following_string                                        ; 4f6d: 20 4e 3e     N>
-    !text $1f, 5, $0e, "You have escaped the compute", $80+'r'        ; 4f70: 1f 05 0e... ...
+    !text $1f, 5, $0e, "You have escaped the compute", $80 + 'r'      ; 4f70: 1f 05 0e... ...
 
     lda computer_bar_level                                            ; 4f90: a5 40       .@
     beq destroyed_computer                                            ; 4f92: f0 3e       .>
     jsr print_following_string                                        ; 4f94: 20 4e 3e     N>
     !text $1f, 6, $10, "but you haven't destroyed it", $1f, 8, $13    ; 4f97: 1f 06 10... ...
-    !text "You'll have to try agai", $80+'n'                          ; 4fb9: 59 6f 75... You
+    !text "You'll have to try agai", $80 + 'n'                        ; 4fb9: 59 6f 75... You
 
     rts                                                               ; 4fd1: 60          `
 
 destroyed_computer
     jsr print_following_string                                        ; 4fd2: 20 4e 3e     N>
     !text $1f, 8, $10, "and rendered it useless", $1f, $0b, $13, "Bo" ; 4fd5: 1f 08 10... ...
-    !text "nus 5,000 point", $80+'s'                                  ; 4ff4: 6e 75 73... nus
+    !text "nus 5,000 point", $80 + 's'                                ; 4ff4: 6e 75 73... nus
 
 ; add 5000 to score
     lda #5                                                            ; 5004: a9 05       ..
@@ -12785,21 +12785,21 @@ return_29
 ; ***************************************************************************************
 set_colour_one_white
     jsr print_following_string                                        ; 5084: 20 4e 3e     N>
-    !text $13, 1, 7, 0, 0, $80+$00                                    ; 5087: 13 01 07... ...
+    !text $13, 1, 7, 0, 0, $80 + $00                                  ; 5087: 13 01 07... ...
 
     rts                                                               ; 508d: 60          `
 
 ; ***************************************************************************************
 set_colour_one_black
     jsr print_following_string                                        ; 508e: 20 4e 3e     N>
-    !text $13, 1, 0, 0, 0, $80+$00                                    ; 5091: 13 01 00... ...
+    !text $13, 1, 0, 0, 0, $80 + $00                                  ; 5091: 13 01 00... ...
 
     rts                                                               ; 5097: 60          `
 
 ; ***************************************************************************************
 reset_current_text_colours
     jsr print_following_string                                        ; 5098: 20 4e 3e     N>
-    !text $11, 1, $80+$11                                             ; 509b: 11 01 91    ...
+    !text $11, 1, $80 + $11                                           ; 509b: 11 01 91    ...
 
     lda #$80                                                          ; 509e: a9 80       ..
     jmp oswrch                                                        ; 50a0: 4c ee ff    L.. ; Write character 128
@@ -12807,7 +12807,7 @@ reset_current_text_colours
 ; ***************************************************************************************
 set_inverse_colours
     jsr print_following_string                                        ; 50a3: 20 4e 3e     N>
-    !text $11, 0, $80+$11                                             ; 50a6: 11 00 91    ...
+    !text $11, 0, $80 + $11                                           ; 50a6: 11 00 91    ...
 
     lda #$81                                                          ; 50a9: a9 81       ..
     jmp oswrch                                                        ; 50ab: 4c ee ff    L.. ; Write character 129
@@ -12906,7 +12906,7 @@ reset_music
 no_highscore
     jsr print_following_string                                        ; 522a: 20 4e 3e     N>
     !text $1f, 3, 6, "Your feeble attempt didn't even make", $1f, 7   ; 522d: 1f 03 06... ...
-    !text 8, "it into the top ten score", $80+'s'                     ; 5256: 08 69 74... .it
+    !text 8, "it into the top ten score", $80 + 's'                   ; 5256: 08 69 74... .it
 
     jmp wait_for_key                                                  ; 5271: 4c 55 4e    LUN
 
@@ -12965,12 +12965,12 @@ made_space_in_highscore_table
     beq no_highscore_local                                            ; 52ce: f0 a4       ..
     jsr print_following_string                                        ; 52d0: 20 4e 3e     N>
     !text $1f, 2, 6, "Your score is good enough to go into", $1f, 2   ; 52d3: 1f 02 06... ...
-    !text 8, "the top ten, please enter your name", $80+':'           ; 52fc: 08 74 68... .th
+    !text 8, "the top ten, please enter your name", $80 + ':'         ; 52fc: 08 74 68... .th
 
     jsr set_inverse_colours                                           ; 5321: 20 a3 50     .P
 ; show cursor and start to position the cursor
     jsr print_following_string                                        ; 5324: 20 4e 3e     N>
-    !text $17, 1, 1, 0, 0, 0, 0, 0, 0, 0, $1f, $80+$03                ; 5327: 17 01 01... ...
+    !text $17, 1, 1, 0, 0, 0, 0, 0, 0, 0, $1f, $80 + $03              ; 5327: 17 01 01... ...
 
     lda #$0a                                                          ; 5333: a9 0a       ..
     sec                                                               ; 5335: 38          8
@@ -12995,7 +12995,7 @@ input_name_loop
 ; hide cursor
 return_key_pressed
     jsr print_following_string                                        ; 5357: 20 4e 3e     N>
-    !text $17, 1, 0, 0, 0, 0, 0, 0, 0, $80+$00                        ; 535a: 17 01 00... ...
+    !text $17, 1, 0, 0, 0, 0, 0, 0, 0, $80 + $00                      ; 535a: 17 01 00... ...
 
     jmp reset_current_text_colours                                    ; 5364: 4c 98 50    L.P
 
@@ -13054,7 +13054,7 @@ show_highscore_table
     ldy #$0a                                                          ; 53ba: a0 0a       ..
     sty delta_y                                                       ; 53bc: 84 06       ..
     jsr print_following_string                                        ; 53be: 20 4e 3e     N>
-    !text $1f, 0, $80+$0b                                             ; 53c1: 1f 00 8b    ...
+    !text $1f, 0, $80 + $0b                                           ; 53c1: 1f 00 8b    ...
 
 show_highscores_loop
     lda delta_y                                                       ; 53c4: a5 06       ..
@@ -13069,12 +13069,12 @@ skip_invert_colours
     cmp #$0a                                                          ; 53d4: c9 0a       ..
     beq skip_leading_space                                            ; 53d6: f0 04       ..
     jsr print_following_string                                        ; 53d8: 20 4e 3e     N>
-    !text $80+' '                                                     ; 53db: a0          .
+    !text $80 + ' '                                                   ; 53db: a0          .
 
 skip_leading_space
     jsr print_decimal_number                                          ; 53dc: 20 71 3e     q>
     jsr print_following_string                                        ; 53df: 20 4e 3e     N>
-    !text $80+' '                                                     ; 53e2: a0          .
+    !text $80 + ' '                                                   ; 53e2: a0          .
 
     ldy sprite_pixel_width_minus_one                                  ; 53e3: a4 02       ..
     ldx #$19                                                          ; 53e5: a2 19       ..
@@ -13086,7 +13086,7 @@ write_highscore_name_loop
     bne write_highscore_name_loop                                     ; 53ef: d0 f6       ..
     sty sprite_pixel_width_minus_one                                  ; 53f1: 84 02       ..
     jsr print_following_string                                        ; 53f3: 20 4e 3e     N>
-    !text " ", $80+' '                                                ; 53f6: 20 a0        .
+    !text " ", $80 + ' '                                              ; 53f6: 20 a0        .
 
     ldy sprite_cell_height                                            ; 53f8: a4 03       ..
     ldx #7                                                            ; 53fa: a2 07       ..
@@ -13098,7 +13098,7 @@ write_highscore_loop
     bne write_highscore_loop                                          ; 5404: d0 f6       ..
     sty sprite_cell_height                                            ; 5406: 84 03       ..
     jsr print_following_string                                        ; 5408: 20 4e 3e     N>
-    !text "   ", $80+$0d                                              ; 540b: 20 20 20...
+    !text "   ", $80 + $0d                                            ; 540b: 20 20 20...
 
     jsr reset_current_text_colours                                    ; 540f: 20 98 50     .P
     dec delta_y                                                       ; 5412: c6 06       ..
@@ -13131,80 +13131,80 @@ initial_highscore_table
     !text "0000000"                                                   ; 5550: 30 30 30... 000
 pydis_end
 
-!if ($80+$00) != $80 {
-    !error "Assertion failed: $80+$00 == $80"
+!if ($80 + $00) != $80 {
+    !error "Assertion failed: $80 + $00 == $80"
 }
-!if ($80+$03) != $83 {
-    !error "Assertion failed: $80+$03 == $83"
+!if ($80 + $03) != $83 {
+    !error "Assertion failed: $80 + $03 == $83"
 }
-!if ($80+$05) != $85 {
-    !error "Assertion failed: $80+$05 == $85"
+!if ($80 + $05) != $85 {
+    !error "Assertion failed: $80 + $05 == $85"
 }
-!if ($80+$0b) != $8b {
-    !error "Assertion failed: $80+$0b == $8b"
+!if ($80 + $0b) != $8b {
+    !error "Assertion failed: $80 + $0b == $8b"
 }
-!if ($80+$0d) != $8d {
-    !error "Assertion failed: $80+$0d == $8d"
+!if ($80 + $0d) != $8d {
+    !error "Assertion failed: $80 + $0d == $8d"
 }
-!if ($80+$11) != $91 {
-    !error "Assertion failed: $80+$11 == $91"
+!if ($80 + $11) != $91 {
+    !error "Assertion failed: $80 + $11 == $91"
 }
-!if ($80+' ') != $a0 {
-    !error "Assertion failed: $80+' ' == $a0"
+!if ($80 + ' ') != $a0 {
+    !error "Assertion failed: $80 + ' ' == $a0"
 }
-!if ($80+'1') != $b1 {
-    !error "Assertion failed: $80+'1' == $b1"
+!if ($80 + '1') != $b1 {
+    !error "Assertion failed: $80 + '1' == $b1"
 }
-!if ($80+'2') != $b2 {
-    !error "Assertion failed: $80+'2' == $b2"
+!if ($80 + '2') != $b2 {
+    !error "Assertion failed: $80 + '2' == $b2"
 }
-!if ($80+':') != $ba {
-    !error "Assertion failed: $80+':' == $ba"
+!if ($80 + ':') != $ba {
+    !error "Assertion failed: $80 + ':' == $ba"
 }
-!if ($80+'B') != $c2 {
-    !error "Assertion failed: $80+'B' == $c2"
+!if ($80 + 'B') != $c2 {
+    !error "Assertion failed: $80 + 'B' == $c2"
 }
-!if ($80+'P') != $d0 {
-    !error "Assertion failed: $80+'P' == $d0"
+!if ($80 + 'P') != $d0 {
+    !error "Assertion failed: $80 + 'P' == $d0"
 }
-!if ($80+'S') != $d3 {
-    !error "Assertion failed: $80+'S' == $d3"
+!if ($80 + 'S') != $d3 {
+    !error "Assertion failed: $80 + 'S' == $d3"
 }
-!if ($80+'c') != $e3 {
-    !error "Assertion failed: $80+'c' == $e3"
+!if ($80 + 'c') != $e3 {
+    !error "Assertion failed: $80 + 'c' == $e3"
 }
-!if ($80+'d') != $e4 {
-    !error "Assertion failed: $80+'d' == $e4"
+!if ($80 + 'd') != $e4 {
+    !error "Assertion failed: $80 + 'd' == $e4"
 }
-!if ($80+'e') != $e5 {
-    !error "Assertion failed: $80+'e' == $e5"
+!if ($80 + 'e') != $e5 {
+    !error "Assertion failed: $80 + 'e' == $e5"
 }
-!if ($80+'f') != $e6 {
-    !error "Assertion failed: $80+'f' == $e6"
+!if ($80 + 'f') != $e6 {
+    !error "Assertion failed: $80 + 'f' == $e6"
 }
-!if ($80+'h') != $e8 {
-    !error "Assertion failed: $80+'h' == $e8"
+!if ($80 + 'h') != $e8 {
+    !error "Assertion failed: $80 + 'h' == $e8"
 }
-!if ($80+'l') != $ec {
-    !error "Assertion failed: $80+'l' == $ec"
+!if ($80 + 'l') != $ec {
+    !error "Assertion failed: $80 + 'l' == $ec"
 }
-!if ($80+'m') != $ed {
-    !error "Assertion failed: $80+'m' == $ed"
+!if ($80 + 'm') != $ed {
+    !error "Assertion failed: $80 + 'm' == $ed"
 }
-!if ($80+'n') != $ee {
-    !error "Assertion failed: $80+'n' == $ee"
+!if ($80 + 'n') != $ee {
+    !error "Assertion failed: $80 + 'n' == $ee"
 }
-!if ($80+'r') != $f2 {
-    !error "Assertion failed: $80+'r' == $f2"
+!if ($80 + 'r') != $f2 {
+    !error "Assertion failed: $80 + 'r' == $f2"
 }
-!if ($80+'s') != $f3 {
-    !error "Assertion failed: $80+'s' == $f3"
+!if ($80 + 's') != $f3 {
+    !error "Assertion failed: $80 + 's' == $f3"
 }
-!if ($80+'t') != $f4 {
-    !error "Assertion failed: $80+'t' == $f4"
+!if ($80 + 't') != $f4 {
+    !error "Assertion failed: $80 + 't' == $f4"
 }
-!if ($80+'y') != $f9 {
-    !error "Assertion failed: $80+'y' == $f9"
+!if ($80 + 'y') != $f9 {
+    !error "Assertion failed: $80 + 'y' == $f9"
 }
 !if ('0') != $30 {
     !error "Assertion failed: '0' == $30"
@@ -13212,101 +13212,101 @@ pydis_end
 !if (100) != $64 {
     !error "Assertion failed: 100 == $64"
 }
-!if (<($5800 + (0 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (0 * $0140)) == $00"
+!if (<($5800 + 0 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 0 * $0140) == $00"
 }
-!if (<($5800 + (1 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (1 * $0140)) == $40"
+!if (<($5800 + 1 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 1 * $0140) == $40"
 }
-!if (<($5800 + (10 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (10 * $0140)) == $80"
+!if (<($5800 + 10 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 10 * $0140) == $80"
 }
-!if (<($5800 + (11 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (11 * $0140)) == $c0"
+!if (<($5800 + 11 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 11 * $0140) == $c0"
 }
-!if (<($5800 + (12 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (12 * $0140)) == $00"
+!if (<($5800 + 12 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 12 * $0140) == $00"
 }
-!if (<($5800 + (13 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (13 * $0140)) == $40"
+!if (<($5800 + 13 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 13 * $0140) == $40"
 }
-!if (<($5800 + (14 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (14 * $0140)) == $80"
+!if (<($5800 + 14 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 14 * $0140) == $80"
 }
-!if (<($5800 + (15 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (15 * $0140)) == $c0"
+!if (<($5800 + 15 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 15 * $0140) == $c0"
 }
-!if (<($5800 + (16 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (16 * $0140)) == $00"
+!if (<($5800 + 16 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 16 * $0140) == $00"
 }
-!if (<($5800 + (17 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (17 * $0140)) == $40"
+!if (<($5800 + 17 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 17 * $0140) == $40"
 }
-!if (<($5800 + (18 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (18 * $0140)) == $80"
+!if (<($5800 + 18 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 18 * $0140) == $80"
 }
-!if (<($5800 + (19 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (19 * $0140)) == $c0"
+!if (<($5800 + 19 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 19 * $0140) == $c0"
 }
-!if (<($5800 + (2 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (2 * $0140)) == $80"
+!if (<($5800 + 2 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 2 * $0140) == $80"
 }
-!if (<($5800 + (20 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (20 * $0140)) == $00"
+!if (<($5800 + 20 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 20 * $0140) == $00"
 }
-!if (<($5800 + (21 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (21 * $0140)) == $40"
+!if (<($5800 + 21 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 21 * $0140) == $40"
 }
-!if (<($5800 + (22 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (22 * $0140)) == $80"
+!if (<($5800 + 22 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 22 * $0140) == $80"
 }
-!if (<($5800 + (23 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (23 * $0140)) == $c0"
+!if (<($5800 + 23 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 23 * $0140) == $c0"
 }
-!if (<($5800 + (24 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (24 * $0140)) == $00"
+!if (<($5800 + 24 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 24 * $0140) == $00"
 }
-!if (<($5800 + (25 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (25 * $0140)) == $40"
+!if (<($5800 + 25 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 25 * $0140) == $40"
 }
-!if (<($5800 + (26 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (26 * $0140)) == $80"
+!if (<($5800 + 26 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 26 * $0140) == $80"
 }
-!if (<($5800 + (27 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (27 * $0140)) == $c0"
+!if (<($5800 + 27 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 27 * $0140) == $c0"
 }
-!if (<($5800 + (28 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (28 * $0140)) == $00"
+!if (<($5800 + 28 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 28 * $0140) == $00"
 }
-!if (<($5800 + (29 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (29 * $0140)) == $40"
+!if (<($5800 + 29 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 29 * $0140) == $40"
 }
-!if (<($5800 + (3 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (3 * $0140)) == $c0"
+!if (<($5800 + 3 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 3 * $0140) == $c0"
 }
-!if (<($5800 + (30 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (30 * $0140)) == $80"
+!if (<($5800 + 30 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 30 * $0140) == $80"
 }
-!if (<($5800 + (31 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (31 * $0140)) == $c0"
+!if (<($5800 + 31 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 31 * $0140) == $c0"
 }
-!if (<($5800 + (4 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (4 * $0140)) == $00"
+!if (<($5800 + 4 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 4 * $0140) == $00"
 }
-!if (<($5800 + (5 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (5 * $0140)) == $40"
+!if (<($5800 + 5 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 5 * $0140) == $40"
 }
-!if (<($5800 + (6 * $0140))) != $80 {
-    !error "Assertion failed: <($5800 + (6 * $0140)) == $80"
+!if (<($5800 + 6 * $0140)) != $80 {
+    !error "Assertion failed: <($5800 + 6 * $0140) == $80"
 }
-!if (<($5800 + (7 * $0140))) != $c0 {
-    !error "Assertion failed: <($5800 + (7 * $0140)) == $c0"
+!if (<($5800 + 7 * $0140)) != $c0 {
+    !error "Assertion failed: <($5800 + 7 * $0140) == $c0"
 }
-!if (<($5800 + (8 * $0140))) != $00 {
-    !error "Assertion failed: <($5800 + (8 * $0140)) == $00"
+!if (<($5800 + 8 * $0140)) != $00 {
+    !error "Assertion failed: <($5800 + 8 * $0140) == $00"
 }
-!if (<($5800 + (9 * $0140))) != $40 {
-    !error "Assertion failed: <($5800 + (9 * $0140)) == $40"
+!if (<($5800 + 9 * $0140)) != $40 {
+    !error "Assertion failed: <($5800 + 9 * $0140) == $40"
 }
 !if (<ammo_bar_screen_address) != $10 {
     !error "Assertion failed: <ammo_bar_screen_address == $10"
@@ -13554,101 +13554,101 @@ pydis_end
 !if (<wait_clock_write_value) != $1c {
     !error "Assertion failed: <wait_clock_write_value == $1c"
 }
-!if (>($5800 + (0 * $0140))) != $58 {
-    !error "Assertion failed: >($5800 + (0 * $0140)) == $58"
+!if (>($5800 + 0 * $0140)) != $58 {
+    !error "Assertion failed: >($5800 + 0 * $0140) == $58"
 }
-!if (>($5800 + (1 * $0140))) != $59 {
-    !error "Assertion failed: >($5800 + (1 * $0140)) == $59"
+!if (>($5800 + 1 * $0140)) != $59 {
+    !error "Assertion failed: >($5800 + 1 * $0140) == $59"
 }
-!if (>($5800 + (10 * $0140))) != $64 {
-    !error "Assertion failed: >($5800 + (10 * $0140)) == $64"
+!if (>($5800 + 10 * $0140)) != $64 {
+    !error "Assertion failed: >($5800 + 10 * $0140) == $64"
 }
-!if (>($5800 + (11 * $0140))) != $65 {
-    !error "Assertion failed: >($5800 + (11 * $0140)) == $65"
+!if (>($5800 + 11 * $0140)) != $65 {
+    !error "Assertion failed: >($5800 + 11 * $0140) == $65"
 }
-!if (>($5800 + (12 * $0140))) != $67 {
-    !error "Assertion failed: >($5800 + (12 * $0140)) == $67"
+!if (>($5800 + 12 * $0140)) != $67 {
+    !error "Assertion failed: >($5800 + 12 * $0140) == $67"
 }
-!if (>($5800 + (13 * $0140))) != $68 {
-    !error "Assertion failed: >($5800 + (13 * $0140)) == $68"
+!if (>($5800 + 13 * $0140)) != $68 {
+    !error "Assertion failed: >($5800 + 13 * $0140) == $68"
 }
-!if (>($5800 + (14 * $0140))) != $69 {
-    !error "Assertion failed: >($5800 + (14 * $0140)) == $69"
+!if (>($5800 + 14 * $0140)) != $69 {
+    !error "Assertion failed: >($5800 + 14 * $0140) == $69"
 }
-!if (>($5800 + (15 * $0140))) != $6a {
-    !error "Assertion failed: >($5800 + (15 * $0140)) == $6a"
+!if (>($5800 + 15 * $0140)) != $6a {
+    !error "Assertion failed: >($5800 + 15 * $0140) == $6a"
 }
-!if (>($5800 + (16 * $0140))) != $6c {
-    !error "Assertion failed: >($5800 + (16 * $0140)) == $6c"
+!if (>($5800 + 16 * $0140)) != $6c {
+    !error "Assertion failed: >($5800 + 16 * $0140) == $6c"
 }
-!if (>($5800 + (17 * $0140))) != $6d {
-    !error "Assertion failed: >($5800 + (17 * $0140)) == $6d"
+!if (>($5800 + 17 * $0140)) != $6d {
+    !error "Assertion failed: >($5800 + 17 * $0140) == $6d"
 }
-!if (>($5800 + (18 * $0140))) != $6e {
-    !error "Assertion failed: >($5800 + (18 * $0140)) == $6e"
+!if (>($5800 + 18 * $0140)) != $6e {
+    !error "Assertion failed: >($5800 + 18 * $0140) == $6e"
 }
-!if (>($5800 + (19 * $0140))) != $6f {
-    !error "Assertion failed: >($5800 + (19 * $0140)) == $6f"
+!if (>($5800 + 19 * $0140)) != $6f {
+    !error "Assertion failed: >($5800 + 19 * $0140) == $6f"
 }
-!if (>($5800 + (2 * $0140))) != $5a {
-    !error "Assertion failed: >($5800 + (2 * $0140)) == $5a"
+!if (>($5800 + 2 * $0140)) != $5a {
+    !error "Assertion failed: >($5800 + 2 * $0140) == $5a"
 }
-!if (>($5800 + (20 * $0140))) != $71 {
-    !error "Assertion failed: >($5800 + (20 * $0140)) == $71"
+!if (>($5800 + 20 * $0140)) != $71 {
+    !error "Assertion failed: >($5800 + 20 * $0140) == $71"
 }
-!if (>($5800 + (21 * $0140))) != $72 {
-    !error "Assertion failed: >($5800 + (21 * $0140)) == $72"
+!if (>($5800 + 21 * $0140)) != $72 {
+    !error "Assertion failed: >($5800 + 21 * $0140) == $72"
 }
-!if (>($5800 + (22 * $0140))) != $73 {
-    !error "Assertion failed: >($5800 + (22 * $0140)) == $73"
+!if (>($5800 + 22 * $0140)) != $73 {
+    !error "Assertion failed: >($5800 + 22 * $0140) == $73"
 }
-!if (>($5800 + (23 * $0140))) != $74 {
-    !error "Assertion failed: >($5800 + (23 * $0140)) == $74"
+!if (>($5800 + 23 * $0140)) != $74 {
+    !error "Assertion failed: >($5800 + 23 * $0140) == $74"
 }
-!if (>($5800 + (24 * $0140))) != $76 {
-    !error "Assertion failed: >($5800 + (24 * $0140)) == $76"
+!if (>($5800 + 24 * $0140)) != $76 {
+    !error "Assertion failed: >($5800 + 24 * $0140) == $76"
 }
-!if (>($5800 + (25 * $0140))) != $77 {
-    !error "Assertion failed: >($5800 + (25 * $0140)) == $77"
+!if (>($5800 + 25 * $0140)) != $77 {
+    !error "Assertion failed: >($5800 + 25 * $0140) == $77"
 }
-!if (>($5800 + (26 * $0140))) != $78 {
-    !error "Assertion failed: >($5800 + (26 * $0140)) == $78"
+!if (>($5800 + 26 * $0140)) != $78 {
+    !error "Assertion failed: >($5800 + 26 * $0140) == $78"
 }
-!if (>($5800 + (27 * $0140))) != $79 {
-    !error "Assertion failed: >($5800 + (27 * $0140)) == $79"
+!if (>($5800 + 27 * $0140)) != $79 {
+    !error "Assertion failed: >($5800 + 27 * $0140) == $79"
 }
-!if (>($5800 + (28 * $0140))) != $7b {
-    !error "Assertion failed: >($5800 + (28 * $0140)) == $7b"
+!if (>($5800 + 28 * $0140)) != $7b {
+    !error "Assertion failed: >($5800 + 28 * $0140) == $7b"
 }
-!if (>($5800 + (29 * $0140))) != $7c {
-    !error "Assertion failed: >($5800 + (29 * $0140)) == $7c"
+!if (>($5800 + 29 * $0140)) != $7c {
+    !error "Assertion failed: >($5800 + 29 * $0140) == $7c"
 }
-!if (>($5800 + (3 * $0140))) != $5b {
-    !error "Assertion failed: >($5800 + (3 * $0140)) == $5b"
+!if (>($5800 + 3 * $0140)) != $5b {
+    !error "Assertion failed: >($5800 + 3 * $0140) == $5b"
 }
-!if (>($5800 + (30 * $0140))) != $7d {
-    !error "Assertion failed: >($5800 + (30 * $0140)) == $7d"
+!if (>($5800 + 30 * $0140)) != $7d {
+    !error "Assertion failed: >($5800 + 30 * $0140) == $7d"
 }
-!if (>($5800 + (31 * $0140))) != $7e {
-    !error "Assertion failed: >($5800 + (31 * $0140)) == $7e"
+!if (>($5800 + 31 * $0140)) != $7e {
+    !error "Assertion failed: >($5800 + 31 * $0140) == $7e"
 }
-!if (>($5800 + (4 * $0140))) != $5d {
-    !error "Assertion failed: >($5800 + (4 * $0140)) == $5d"
+!if (>($5800 + 4 * $0140)) != $5d {
+    !error "Assertion failed: >($5800 + 4 * $0140) == $5d"
 }
-!if (>($5800 + (5 * $0140))) != $5e {
-    !error "Assertion failed: >($5800 + (5 * $0140)) == $5e"
+!if (>($5800 + 5 * $0140)) != $5e {
+    !error "Assertion failed: >($5800 + 5 * $0140) == $5e"
 }
-!if (>($5800 + (6 * $0140))) != $5f {
-    !error "Assertion failed: >($5800 + (6 * $0140)) == $5f"
+!if (>($5800 + 6 * $0140)) != $5f {
+    !error "Assertion failed: >($5800 + 6 * $0140) == $5f"
 }
-!if (>($5800 + (7 * $0140))) != $60 {
-    !error "Assertion failed: >($5800 + (7 * $0140)) == $60"
+!if (>($5800 + 7 * $0140)) != $60 {
+    !error "Assertion failed: >($5800 + 7 * $0140) == $60"
 }
-!if (>($5800 + (8 * $0140))) != $62 {
-    !error "Assertion failed: >($5800 + (8 * $0140)) == $62"
+!if (>($5800 + 8 * $0140)) != $62 {
+    !error "Assertion failed: >($5800 + 8 * $0140) == $62"
 }
-!if (>($5800 + (9 * $0140))) != $63 {
-    !error "Assertion failed: >($5800 + (9 * $0140)) == $63"
+!if (>($5800 + 9 * $0140)) != $63 {
+    !error "Assertion failed: >($5800 + 9 * $0140) == $63"
 }
 !if (>ammo_bar_screen_address) != $5a {
     !error "Assertion failed: >ammo_bar_screen_address == $5a"

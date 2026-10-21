@@ -58,6 +58,7 @@ TESTS = [
     ("split",                    ["acme", "beebasm", "xa"],    "loads *two* binary files to disassemble"),
     ("subroutine_test",          ["acme", "beebasm", "xa"],    "demonstrates the use of the subroutine() command"),
     ("regression_tests",         ["acme", "beebasm", "xa"],    "regression tests for fixed bugs"),
+    ("expressions",              ["acme", "beebasm", "xa"],    "how expressions are bracketed for each assembler"),
     ("acorn_os_calls",           ["acme", "beebasm", "xa"],    "test all the os calls for acorn machines"),
 
     # 6502 code: real programs

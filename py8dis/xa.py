@@ -56,16 +56,36 @@ class Xa(assembler.Assembler):
                   '%': None,
                  '!=': '<>',
         }
-    def unary_operators(self):
-        """Returns a dictionary that translates generic unary operator names
-        into the assembler specific versions"""
-        # 'generic name: assembler specific name'
+    def binary_precedence(self):
+        # Measured by assembling test expressions with xa 2.4.0
+        return { '*': 7, 'DIV': 7,
+                 '+': 6, '-': 6,
+                 '<<': 5, '>>': 5,
+                 'AND': 4,
+                 'EOR': 3,
+                 'OR': 2,
+        }
+
+    def unary_precedence(self):
+        # In xa '<' and '>' (low and high byte) can only appear at the start of
+        # an operand, where they apply to the whole of the rest of it, i.e. they
+        # bind less tightly than anything else. (See unary_rewrite() for when
+        # they are part of a larger expression.)
+        return { '<': 0, '>': 0 }
+
+    def unary_rewrite(self, op, operand, nested):
         # xa has no bitwise NOT operator ('!' at the start of an operand forces
         # absolute addressing instead), so use the two's complement identity
-        # NOT x == -1-x
-        return { 'NOT': '(-1-%s)',
-                   '!': '(-1-%s)',
-        }
+        # NOT x == -1 - x
+        if op == 'NOT':
+            return expression.Binary(expression.Num(-1), '-', operand)
+        # '<' and '>' can't be used in the middle of an expression (not even in
+        # brackets), so there use AND and '>>' instead
+        if nested and op == '<':
+            return expression.Binary(operand, 'AND', expression.Num(0xff, "hex"))
+        if nested and op == '>':
+            return expression.Binary(operand, '>>', expression.Num(8))
+        return None
 
     def inline_label(self, name):
         """Returns the string for defining a label in the first column."""
@@ -174,7 +194,7 @@ class Xa(assembler.Assembler):
         # pseudopc_start()) I am struggling to make anything else work.
         return [utils.LazyString("* = %s", self.hex(source + length))]
 
-    def expression_in_context(self, expr, text, context):
+    def expression_in_context(self, expr, text, level, context):
         if context == expression.PREPROCESSOR:
             # The preprocessor's '#if' doesn't understand the '<' and '>' (low
             # and high byte) operators, or the '`' (force zero page) operator.
@@ -182,11 +202,13 @@ class Xa(assembler.Assembler):
             # they apply to the whole of the rest of the operand, so rewrite
             # them using '&' and '>>'. (This is done on the text, since a
             # user's expression string can start with these too.)
+            def bracketed(t):
+                return t if expression.is_fully_bracketed(t) else "(%s)" % t
             if text.startswith("<") or text.startswith("`"):
-                return "((%s) & $ff)" % text[1:]
+                return "(%s & $ff)" % bracketed(text[1:])
             if text.startswith(">"):
-                return "(((%s) >> 8) & $ff)" % text[1:]
-            return "(%s)" % text
+                return "((%s >> 8) & $ff)" % bracketed(text[1:])
+            return bracketed(text)
         return text
 
     def disassembly_end(self):

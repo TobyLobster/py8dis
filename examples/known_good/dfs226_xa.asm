@@ -1432,120 +1432,120 @@ sub_c8602
 command_table
     .asc "ACCESS"                                                     // 861c: 41 43 43... ACC
 // $861d referenced 1 time by $8740
-    .byt >(sub_c89e6-1)                                               // 8622: 89          .
-    .byt <(sub_c89e6-1)                                               // 8623: e5          .
+    .byt >(sub_c89e6 - 1)                                             // 8622: 89          .
+    .byt <(sub_c89e6 - 1)                                             // 8623: e5          .
     .byt $32                                                          // 8624: 32          2
     .asc "BACKUP"                                                     // 8625: 42 41 43... BAC
-    .byt >(sub_ca417-1)                                               // 862b: a4          .
-    .byt <(sub_ca417-1)                                               // 862c: 16          .
+    .byt >(sub_ca417 - 1)                                             // 862b: a4          .
+    .byt <(sub_ca417 - 1)                                             // 862c: 16          .
     .byt 4                                                            // 862d: 04          .
     .asc "CLOSE"                                                      // 862e: 43 4c 4f... CLO
-    .byt >(sub_c9b59-1)                                               // 8633: 9b          .
-    .byt <(sub_c9b59-1)                                               // 8634: 58          X
+    .byt >(sub_c9b59 - 1)                                             // 8633: 9b          .
+    .byt <(sub_c9b59 - 1)                                             // 8634: 58          X
     .byt 0                                                            // 8635: 00          .
     .asc "COMPACT"                                                    // 8636: 43 4f 4d... COM
-    .byt >(sub_ca244-1)                                               // 863d: a2          .
-    .byt <(sub_ca244-1)                                               // 863e: 43          C
+    .byt >(sub_ca244 - 1)                                             // 863d: a2          .
+    .byt <(sub_ca244 - 1)                                             // 863e: 43          C
     .byt 7                                                            // 863f: 07          .
     .asc "COPY"                                                       // 8640: 43 4f 50... COP
-    .byt >(sub_ca463-1)                                               // 8644: a4          .
-    .byt <(sub_ca463-1)                                               // 8645: 62          b
+    .byt >(sub_ca463 - 1)                                             // 8644: a4          .
+    .byt <(sub_ca463 - 1)                                             // 8645: 62          b
     .byt $24                                                          // 8646: 24          $
     .asc "DELETE"                                                     // 8647: 44 45 4c... DEL
-    .byt >(sub_c8782-1)                                               // 864d: 87          .
-    .byt <(sub_c8782-1)                                               // 864e: 81          .
+    .byt >(sub_c8782 - 1)                                             // 864d: 87          .
+    .byt <(sub_c8782 - 1)                                             // 864e: 81          .
     .byt 1                                                            // 864f: 01          .
     .asc "DESTROY"                                                    // 8650: 44 45 53... DES
-    .byt >(sub_c8794-1)                                               // 8657: 87          .
-    .byt <(sub_c8794-1)                                               // 8658: 93          .
+    .byt >(sub_c8794 - 1)                                             // 8657: 87          .
+    .byt <(sub_c8794 - 1)                                             // 8658: 93          .
     .byt 2                                                            // 8659: 02          .
     .asc "DIR"                                                        // 865a: 44 49 52    DIR
-    .byt >(sub_c893f-1)                                               // 865d: 89          .
-    .byt <(sub_c893f-1)                                               // 865e: 3e          >
+    .byt >(sub_c893f - 1)                                             // 865d: 89          .
+    .byt <(sub_c893f - 1)                                             // 865e: 3e          >
     .byt 6                                                            // 865f: 06          .
     .asc "DRIVE"                                                      // 8660: 44 52 49... DRI
-    .byt >(sub_c87ee-1)                                               // 8665: 87          .
-    .byt <(sub_c87ee-1)                                               // 8666: ed          .
+    .byt >(sub_c87ee - 1)                                             // 8665: 87          .
+    .byt <(sub_c87ee - 1)                                             // 8666: ed          .
     .byt 9                                                            // 8667: 09          .
     .asc "ENABLE"                                                     // 8668: 45 4e 41... ENA
-    .byt >(sub_c8b47-1)                                               // 866e: 8b          .
-    .byt <(sub_c8b47-1)                                               // 866f: 46          F
+    .byt >(sub_c8b47 - 1)                                             // 866e: 8b          .
+    .byt <(sub_c8b47 - 1)                                             // 866f: 46          F
     .byt 0                                                            // 8670: 00          .
     .asc "EX"                                                         // 8671: 45 58       EX
-    .byt >(sub_c8238-1)                                               // 8673: 82          .
-    .byt <(sub_c8238-1)                                               // 8674: 37          7
+    .byt >(sub_c8238 - 1)                                             // 8673: 82          .
+    .byt <(sub_c8238 - 1)                                             // 8674: 37          7
     .byt 6                                                            // 8675: 06          .
     .asc "FORM"                                                       // 8676: 46 4f 52... FOR
-    .byt >(sub_ca5bf-1)                                               // 867a: a5          .
-    .byt <(sub_ca5bf-1)                                               // 867b: be          .
+    .byt >(sub_ca5bf - 1)                                             // 867a: a5          .
+    .byt <(sub_ca5bf - 1)                                             // 867b: be          .
     .byt $ba                                                          // 867c: ba          .
     .asc "FREE"                                                       // 867d: 46 52 45... FRE
-    .byt >(sub_ca7f3-1)                                               // 8681: a7          .
-    .byt <(sub_ca7f3-1)                                               // 8682: f2          .
+    .byt >(sub_ca7f3 - 1)                                             // 8681: a7          .
+    .byt <(sub_ca7f3 - 1)                                             // 8682: f2          .
     .byt 7                                                            // 8683: 07          .
     .asc "INFO"                                                       // 8684: 49 4e 46... INF
-    .byt >(sub_c8254-1)                                               // 8688: 82          .
-    .byt <(sub_c8254-1)                                               // 8689: 53          S
+    .byt >(sub_c8254 - 1)                                             // 8688: 82          .
+    .byt <(sub_c8254 - 1)                                             // 8689: 53          S
     .byt 2                                                            // 868a: 02          .
     .asc "LIB"                                                        // 868b: 4c 49 42    LIB
-    .byt >(sub_c8943-1)                                               // 868e: 89          .
-    .byt <(sub_c8943-1)                                               // 868f: 42          B
+    .byt >(sub_c8943 - 1)                                             // 868e: 89          .
+    .byt <(sub_c8943 - 1)                                             // 868f: 42          B
     .byt 6                                                            // 8690: 06          .
     .asc "MAP"                                                        // 8691: 4d 41 50    MAP
-    .byt >(sub_ca7f6-1)                                               // 8694: a7          .
-    .byt <(sub_ca7f6-1)                                               // 8695: f5          .
+    .byt >(sub_ca7f6 - 1)                                             // 8694: a7          .
+    .byt <(sub_ca7f6 - 1)                                             // 8695: f5          .
     .byt 7                                                            // 8696: 07          .
     .asc "RENAME"                                                     // 8697: 52 45 4e... REN
-    .byt >(sub_c8bac-1)                                               // 869d: 8b          .
-    .byt <(sub_c8bac-1)                                               // 869e: ab          .
+    .byt >(sub_c8bac - 1)                                             // 869d: 8b          .
+    .byt <(sub_c8bac - 1)                                             // 869e: ab          .
     .byt 5                                                            // 869f: 05          .
     .asc "TITLE"                                                      // 86a0: 54 49 54... TIT
-    .byt >(sub_c89b7-1)                                               // 86a5: 89          .
-    .byt <(sub_c89b7-1)                                               // 86a6: b6          .
+    .byt >(sub_c89b7 - 1)                                             // 86a5: 89          .
+    .byt <(sub_c89b7 - 1)                                             // 86a6: b6          .
     .byt 8                                                            // 86a7: 08          .
     .asc "VERIFY"                                                     // 86a8: 56 45 52... VER
-    .byt >(sub_ca5bb-1)                                               // 86ae: a5          .
-    .byt <(sub_ca5bb-1)                                               // 86af: ba          .
+    .byt >(sub_ca5bb - 1)                                             // 86ae: a5          .
+    .byt <(sub_ca5bb - 1)                                             // 86af: ba          .
     .byt $0b                                                          // 86b0: 0b          .
     .asc "WIPE"                                                       // 86b1: 57 49 50... WIP
-    .byt >(sub_c8750-1)                                               // 86b5: 87          .
-    .byt <(sub_c8750-1)                                               // 86b6: 4f          O
+    .byt >(sub_c8750 - 1)                                             // 86b5: 87          .
+    .byt <(sub_c8750 - 1)                                             // 86b6: 4f          O
     .byt 2, $88, $72                                                  // 86b7: 02 88 72    ..r
     .asc "BUILD"                                                      // 86ba: 42 55 49... BUI
-    .byt >(sub_cabc5-1)                                               // 86bf: ab          .
-    .byt <(sub_cabc5-1)                                               // 86c0: c4          .
+    .byt >(sub_cabc5 - 1)                                             // 86bf: ab          .
+    .byt <(sub_cabc5 - 1)                                             // 86c0: c4          .
     .byt 1                                                            // 86c1: 01          .
     .asc "DISC"                                                       // 86c2: 44 49 53... DIS
-    .byt >(c956d-1)                                                   // 86c6: 95          .
-    .byt <(c956d-1)                                                   // 86c7: 6c          l
+    .byt >(c956d - 1)                                                 // 86c6: 95          .
+    .byt <(c956d - 1)                                                 // 86c7: 6c          l
     .byt 0                                                            // 86c8: 00          .
     .asc "DUMP"                                                       // 86c9: 44 55 4d... DUM
-    .byt >(sub_cab46-1)                                               // 86cd: ab          .
-    .byt <(sub_cab46-1)                                               // 86ce: 45          E
+    .byt >(sub_cab46 - 1)                                             // 86cd: ab          .
+    .byt <(sub_cab46 - 1)                                             // 86ce: 45          E
     .byt 1                                                            // 86cf: 01          .
     .asc "LIST"                                                       // 86d0: 4c 49 53... LIS
-    .byt >(sub_cab04-1)                                               // 86d4: ab          .
-    .byt <(sub_cab04-1)                                               // 86d5: 03          .
+    .byt >(sub_cab04 - 1)                                             // 86d4: ab          .
+    .byt <(sub_cab04 - 1)                                             // 86d5: 03          .
     .byt 1                                                            // 86d6: 01          .
     .asc "ROMS"                                                       // 86d7: 52 4f 4d... ROM
-    .byt >(sub_ca9d0-1)                                               // 86db: a9          .
-    .byt <(sub_ca9d0-1)                                               // 86dc: cf          .
+    .byt >(sub_ca9d0 - 1)                                             // 86db: a9          .
+    .byt <(sub_ca9d0 - 1)                                             // 86dc: cf          .
     .byt $0c                                                          // 86dd: 0c          .
     .asc "TYPE"                                                       // 86de: 54 59 50... TYP
-    .byt >(sub_caafd-1)                                               // 86e2: aa          .
-    .byt <(sub_caafd-1)                                               // 86e3: fc          .
+    .byt >(sub_caafd - 1)                                             // 86e2: aa          .
+    .byt <(sub_caafd - 1)                                             // 86e3: fc          .
     .byt 1                                                            // 86e4: 01          .
     .asc "DISK"                                                       // 86e5: 44 49 53... DIS
-    .byt >(c956d-1)                                                   // 86e9: 95          .
-    .byt <(c956d-1)                                                   // 86ea: 6c          l
+    .byt >(c956d - 1)                                                 // 86e9: 95          .
+    .byt <(c956d - 1)                                                 // 86ea: 6c          l
     .byt 0, $86, $1a                                                  // 86eb: 00 86 1a    ...
     .asc "DFS"                                                        // 86ee: 44 46 53    DFS
-    .byt >(sub_ca106-1)                                               // 86f1: a1          .
-    .byt <(sub_ca106-1)                                               // 86f2: 05          .
+    .byt >(sub_ca106 - 1)                                             // 86f1: a1          .
+    .byt <(sub_ca106 - 1)                                             // 86f2: 05          .
     .byt 0                                                            // 86f3: 00          .
     .asc "UTILS"                                                      // 86f4: 55 54 49... UTI
-    .byt >(sub_ca137-1)                                               // 86f9: a1          .
-    .byt <(sub_ca137-1)                                               // 86fa: 36          6
+    .byt >(sub_ca137 - 1)                                             // 86f9: a1          .
+    .byt <(sub_ca137 - 1)                                             // 86fa: 36          6
     .byt 0, $a1                                                       // 86fb: 00 a1       ..
     .asc "= E"                                                        // 86fd: 3d 20 45    = E
     .byt $87, $a2, $fd                                                // 8700: 87 a2 fd    ...
@@ -9892,23 +9892,23 @@ sram_table
 // $ba31 referenced 1 time by $b238
     .byt $ff, $ff                                                     // ba34: ff ff       ..
     .asc "SRLOAD"                                                     // ba36: 53 52 4c... SRL
-    .byt >(sub_cbb46-1)                                               // ba3c: bb          .
-    .byt <(sub_cbb46-1)                                               // ba3d: 45          E
+    .byt >(sub_cbb46 - 1)                                             // ba3c: bb          .
+    .byt <(sub_cbb46 - 1)                                             // ba3d: 45          E
     .asc "SRSAVE"                                                     // ba3e: 53 52 53... SRS
-    .byt >(sub_cbb4a-1)                                               // ba44: bb          .
-    .byt <(sub_cbb4a-1)                                               // ba45: 49          I
+    .byt >(sub_cbb4a - 1)                                             // ba44: bb          .
+    .byt <(sub_cbb4a - 1)                                             // ba45: 49          I
     .asc "SRWRITE"                                                    // ba46: 53 52 57... SRW
-    .byt >(sub_cbbd3-1)                                               // ba4d: bb          .
-    .byt <(sub_cbbd3-1)                                               // ba4e: d2          .
+    .byt >(sub_cbbd3 - 1)                                             // ba4d: bb          .
+    .byt <(sub_cbbd3 - 1)                                             // ba4e: d2          .
     .asc "SRREAD"                                                     // ba4f: 53 52 52... SRR
-    .byt >(sub_cbbd7-1)                                               // ba55: bb          .
-    .byt <(sub_cbbd7-1)                                               // ba56: d6          .
+    .byt >(sub_cbbd7 - 1)                                             // ba55: bb          .
+    .byt <(sub_cbbd7 - 1)                                             // ba56: d6          .
     .asc "SRDATA"                                                     // ba57: 53 52 44... SRD
-    .byt >(sub_cbc37-1)                                               // ba5d: bc          .
-    .byt <(sub_cbc37-1)                                               // ba5e: 36          6
+    .byt >(sub_cbc37 - 1)                                             // ba5d: bc          .
+    .byt <(sub_cbc37 - 1)                                             // ba5e: 36          6
     .asc "SRROM"                                                      // ba5f: 53 52 52... SRR
-    .byt >(sub_cbc81-1)                                               // ba64: bc          .
-    .byt <(sub_cbc81-1)                                               // ba65: 80          .
+    .byt >(sub_cbc81 - 1)                                             // ba64: bc          .
+    .byt <(sub_cbc81 - 1)                                             // ba65: 80          .
     .byt 0                                                            // ba66: 00          .
 
 // $ba67 referenced 5 times by $bb51, $bb6c, $bbdd, $bbf3, $bc1c
@@ -10868,110 +10868,110 @@ lbfff
     .byt $ff                                                          // bfff: ff          .
 pydis_end
 
-#if (((c956d-1)) & $ff) <> $6c
-#error Assertion failed: <(c956d-1) == $6c
+#if ((c956d - 1) & $ff) <> $6c
+#error Assertion failed: <(c956d - 1) == $6c
 #endif
-#if (((c956d-1)) & $ff) <> $6c
-#error Assertion failed: <(c956d-1) == $6c
+#if ((c956d - 1) & $ff) <> $6c
+#error Assertion failed: <(c956d - 1) == $6c
 #endif
-#if (((sub_c8238-1)) & $ff) <> $37
-#error Assertion failed: <(sub_c8238-1) == $37
+#if ((sub_c8238 - 1) & $ff) <> $37
+#error Assertion failed: <(sub_c8238 - 1) == $37
 #endif
-#if (((sub_c8254-1)) & $ff) <> $53
-#error Assertion failed: <(sub_c8254-1) == $53
+#if ((sub_c8254 - 1) & $ff) <> $53
+#error Assertion failed: <(sub_c8254 - 1) == $53
 #endif
-#if (((sub_c8750-1)) & $ff) <> $4f
-#error Assertion failed: <(sub_c8750-1) == $4f
+#if ((sub_c8750 - 1) & $ff) <> $4f
+#error Assertion failed: <(sub_c8750 - 1) == $4f
 #endif
-#if (((sub_c8782-1)) & $ff) <> $81
-#error Assertion failed: <(sub_c8782-1) == $81
+#if ((sub_c8782 - 1) & $ff) <> $81
+#error Assertion failed: <(sub_c8782 - 1) == $81
 #endif
-#if (((sub_c8794-1)) & $ff) <> $93
-#error Assertion failed: <(sub_c8794-1) == $93
+#if ((sub_c8794 - 1) & $ff) <> $93
+#error Assertion failed: <(sub_c8794 - 1) == $93
 #endif
-#if (((sub_c87ee-1)) & $ff) <> $ed
-#error Assertion failed: <(sub_c87ee-1) == $ed
+#if ((sub_c87ee - 1) & $ff) <> $ed
+#error Assertion failed: <(sub_c87ee - 1) == $ed
 #endif
-#if (((sub_c893f-1)) & $ff) <> $3e
-#error Assertion failed: <(sub_c893f-1) == $3e
+#if ((sub_c893f - 1) & $ff) <> $3e
+#error Assertion failed: <(sub_c893f - 1) == $3e
 #endif
-#if (((sub_c8943-1)) & $ff) <> $42
-#error Assertion failed: <(sub_c8943-1) == $42
+#if ((sub_c8943 - 1) & $ff) <> $42
+#error Assertion failed: <(sub_c8943 - 1) == $42
 #endif
-#if (((sub_c89b7-1)) & $ff) <> $b6
-#error Assertion failed: <(sub_c89b7-1) == $b6
+#if ((sub_c89b7 - 1) & $ff) <> $b6
+#error Assertion failed: <(sub_c89b7 - 1) == $b6
 #endif
-#if (((sub_c89e6-1)) & $ff) <> $e5
-#error Assertion failed: <(sub_c89e6-1) == $e5
+#if ((sub_c89e6 - 1) & $ff) <> $e5
+#error Assertion failed: <(sub_c89e6 - 1) == $e5
 #endif
-#if (((sub_c8b47-1)) & $ff) <> $46
-#error Assertion failed: <(sub_c8b47-1) == $46
+#if ((sub_c8b47 - 1) & $ff) <> $46
+#error Assertion failed: <(sub_c8b47 - 1) == $46
 #endif
-#if (((sub_c8bac-1)) & $ff) <> $ab
-#error Assertion failed: <(sub_c8bac-1) == $ab
+#if ((sub_c8bac - 1) & $ff) <> $ab
+#error Assertion failed: <(sub_c8bac - 1) == $ab
 #endif
-#if (((sub_c9b59-1)) & $ff) <> $58
-#error Assertion failed: <(sub_c9b59-1) == $58
+#if ((sub_c9b59 - 1) & $ff) <> $58
+#error Assertion failed: <(sub_c9b59 - 1) == $58
 #endif
-#if (((sub_ca106-1)) & $ff) <> $05
-#error Assertion failed: <(sub_ca106-1) == $05
+#if ((sub_ca106 - 1) & $ff) <> $05
+#error Assertion failed: <(sub_ca106 - 1) == $05
 #endif
-#if (((sub_ca137-1)) & $ff) <> $36
-#error Assertion failed: <(sub_ca137-1) == $36
+#if ((sub_ca137 - 1) & $ff) <> $36
+#error Assertion failed: <(sub_ca137 - 1) == $36
 #endif
-#if (((sub_ca244-1)) & $ff) <> $43
-#error Assertion failed: <(sub_ca244-1) == $43
+#if ((sub_ca244 - 1) & $ff) <> $43
+#error Assertion failed: <(sub_ca244 - 1) == $43
 #endif
-#if (((sub_ca417-1)) & $ff) <> $16
-#error Assertion failed: <(sub_ca417-1) == $16
+#if ((sub_ca417 - 1) & $ff) <> $16
+#error Assertion failed: <(sub_ca417 - 1) == $16
 #endif
-#if (((sub_ca463-1)) & $ff) <> $62
-#error Assertion failed: <(sub_ca463-1) == $62
+#if ((sub_ca463 - 1) & $ff) <> $62
+#error Assertion failed: <(sub_ca463 - 1) == $62
 #endif
-#if (((sub_ca5bb-1)) & $ff) <> $ba
-#error Assertion failed: <(sub_ca5bb-1) == $ba
+#if ((sub_ca5bb - 1) & $ff) <> $ba
+#error Assertion failed: <(sub_ca5bb - 1) == $ba
 #endif
-#if (((sub_ca5bf-1)) & $ff) <> $be
-#error Assertion failed: <(sub_ca5bf-1) == $be
+#if ((sub_ca5bf - 1) & $ff) <> $be
+#error Assertion failed: <(sub_ca5bf - 1) == $be
 #endif
-#if (((sub_ca7f3-1)) & $ff) <> $f2
-#error Assertion failed: <(sub_ca7f3-1) == $f2
+#if ((sub_ca7f3 - 1) & $ff) <> $f2
+#error Assertion failed: <(sub_ca7f3 - 1) == $f2
 #endif
-#if (((sub_ca7f6-1)) & $ff) <> $f5
-#error Assertion failed: <(sub_ca7f6-1) == $f5
+#if ((sub_ca7f6 - 1) & $ff) <> $f5
+#error Assertion failed: <(sub_ca7f6 - 1) == $f5
 #endif
-#if (((sub_ca9d0-1)) & $ff) <> $cf
-#error Assertion failed: <(sub_ca9d0-1) == $cf
+#if ((sub_ca9d0 - 1) & $ff) <> $cf
+#error Assertion failed: <(sub_ca9d0 - 1) == $cf
 #endif
-#if (((sub_caafd-1)) & $ff) <> $fc
-#error Assertion failed: <(sub_caafd-1) == $fc
+#if ((sub_caafd - 1) & $ff) <> $fc
+#error Assertion failed: <(sub_caafd - 1) == $fc
 #endif
-#if (((sub_cab04-1)) & $ff) <> $03
-#error Assertion failed: <(sub_cab04-1) == $03
+#if ((sub_cab04 - 1) & $ff) <> $03
+#error Assertion failed: <(sub_cab04 - 1) == $03
 #endif
-#if (((sub_cab46-1)) & $ff) <> $45
-#error Assertion failed: <(sub_cab46-1) == $45
+#if ((sub_cab46 - 1) & $ff) <> $45
+#error Assertion failed: <(sub_cab46 - 1) == $45
 #endif
-#if (((sub_cabc5-1)) & $ff) <> $c4
-#error Assertion failed: <(sub_cabc5-1) == $c4
+#if ((sub_cabc5 - 1) & $ff) <> $c4
+#error Assertion failed: <(sub_cabc5 - 1) == $c4
 #endif
-#if (((sub_cbb46-1)) & $ff) <> $45
-#error Assertion failed: <(sub_cbb46-1) == $45
+#if ((sub_cbb46 - 1) & $ff) <> $45
+#error Assertion failed: <(sub_cbb46 - 1) == $45
 #endif
-#if (((sub_cbb4a-1)) & $ff) <> $49
-#error Assertion failed: <(sub_cbb4a-1) == $49
+#if ((sub_cbb4a - 1) & $ff) <> $49
+#error Assertion failed: <(sub_cbb4a - 1) == $49
 #endif
-#if (((sub_cbbd3-1)) & $ff) <> $d2
-#error Assertion failed: <(sub_cbbd3-1) == $d2
+#if ((sub_cbbd3 - 1) & $ff) <> $d2
+#error Assertion failed: <(sub_cbbd3 - 1) == $d2
 #endif
-#if (((sub_cbbd7-1)) & $ff) <> $d6
-#error Assertion failed: <(sub_cbbd7-1) == $d6
+#if ((sub_cbbd7 - 1) & $ff) <> $d6
+#error Assertion failed: <(sub_cbbd7 - 1) == $d6
 #endif
-#if (((sub_cbc37-1)) & $ff) <> $36
-#error Assertion failed: <(sub_cbc37-1) == $36
+#if ((sub_cbc37 - 1) & $ff) <> $36
+#error Assertion failed: <(sub_cbc37 - 1) == $36
 #endif
-#if (((sub_cbc81-1)) & $ff) <> $80
-#error Assertion failed: <(sub_cbc81-1) == $80
+#if ((sub_cbc81 - 1) & $ff) <> $80
+#error Assertion failed: <(sub_cbc81 - 1) == $80
 #endif
 #if ((handle_bytev) & $ff) <> $0f
 #error Assertion failed: <handle_bytev == $0f
@@ -10988,110 +10988,110 @@ pydis_end
 #if ((tube_evntv_handler) & $ff) <> $ad
 #error Assertion failed: <tube_evntv_handler == $ad
 #endif
-#if ((((c956d-1)) >> 8) & $ff) <> $95
-#error Assertion failed: >(c956d-1) == $95
+#if (((c956d - 1) >> 8) & $ff) <> $95
+#error Assertion failed: >(c956d - 1) == $95
 #endif
-#if ((((c956d-1)) >> 8) & $ff) <> $95
-#error Assertion failed: >(c956d-1) == $95
+#if (((c956d - 1) >> 8) & $ff) <> $95
+#error Assertion failed: >(c956d - 1) == $95
 #endif
-#if ((((sub_c8238-1)) >> 8) & $ff) <> $82
-#error Assertion failed: >(sub_c8238-1) == $82
+#if (((sub_c8238 - 1) >> 8) & $ff) <> $82
+#error Assertion failed: >(sub_c8238 - 1) == $82
 #endif
-#if ((((sub_c8254-1)) >> 8) & $ff) <> $82
-#error Assertion failed: >(sub_c8254-1) == $82
+#if (((sub_c8254 - 1) >> 8) & $ff) <> $82
+#error Assertion failed: >(sub_c8254 - 1) == $82
 #endif
-#if ((((sub_c8750-1)) >> 8) & $ff) <> $87
-#error Assertion failed: >(sub_c8750-1) == $87
+#if (((sub_c8750 - 1) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c8750 - 1) == $87
 #endif
-#if ((((sub_c8782-1)) >> 8) & $ff) <> $87
-#error Assertion failed: >(sub_c8782-1) == $87
+#if (((sub_c8782 - 1) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c8782 - 1) == $87
 #endif
-#if ((((sub_c8794-1)) >> 8) & $ff) <> $87
-#error Assertion failed: >(sub_c8794-1) == $87
+#if (((sub_c8794 - 1) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c8794 - 1) == $87
 #endif
-#if ((((sub_c87ee-1)) >> 8) & $ff) <> $87
-#error Assertion failed: >(sub_c87ee-1) == $87
+#if (((sub_c87ee - 1) >> 8) & $ff) <> $87
+#error Assertion failed: >(sub_c87ee - 1) == $87
 #endif
-#if ((((sub_c893f-1)) >> 8) & $ff) <> $89
-#error Assertion failed: >(sub_c893f-1) == $89
+#if (((sub_c893f - 1) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c893f - 1) == $89
 #endif
-#if ((((sub_c8943-1)) >> 8) & $ff) <> $89
-#error Assertion failed: >(sub_c8943-1) == $89
+#if (((sub_c8943 - 1) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c8943 - 1) == $89
 #endif
-#if ((((sub_c89b7-1)) >> 8) & $ff) <> $89
-#error Assertion failed: >(sub_c89b7-1) == $89
+#if (((sub_c89b7 - 1) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c89b7 - 1) == $89
 #endif
-#if ((((sub_c89e6-1)) >> 8) & $ff) <> $89
-#error Assertion failed: >(sub_c89e6-1) == $89
+#if (((sub_c89e6 - 1) >> 8) & $ff) <> $89
+#error Assertion failed: >(sub_c89e6 - 1) == $89
 #endif
-#if ((((sub_c8b47-1)) >> 8) & $ff) <> $8b
-#error Assertion failed: >(sub_c8b47-1) == $8b
+#if (((sub_c8b47 - 1) >> 8) & $ff) <> $8b
+#error Assertion failed: >(sub_c8b47 - 1) == $8b
 #endif
-#if ((((sub_c8bac-1)) >> 8) & $ff) <> $8b
-#error Assertion failed: >(sub_c8bac-1) == $8b
+#if (((sub_c8bac - 1) >> 8) & $ff) <> $8b
+#error Assertion failed: >(sub_c8bac - 1) == $8b
 #endif
-#if ((((sub_c9b59-1)) >> 8) & $ff) <> $9b
-#error Assertion failed: >(sub_c9b59-1) == $9b
+#if (((sub_c9b59 - 1) >> 8) & $ff) <> $9b
+#error Assertion failed: >(sub_c9b59 - 1) == $9b
 #endif
-#if ((((sub_ca106-1)) >> 8) & $ff) <> $a1
-#error Assertion failed: >(sub_ca106-1) == $a1
+#if (((sub_ca106 - 1) >> 8) & $ff) <> $a1
+#error Assertion failed: >(sub_ca106 - 1) == $a1
 #endif
-#if ((((sub_ca137-1)) >> 8) & $ff) <> $a1
-#error Assertion failed: >(sub_ca137-1) == $a1
+#if (((sub_ca137 - 1) >> 8) & $ff) <> $a1
+#error Assertion failed: >(sub_ca137 - 1) == $a1
 #endif
-#if ((((sub_ca244-1)) >> 8) & $ff) <> $a2
-#error Assertion failed: >(sub_ca244-1) == $a2
+#if (((sub_ca244 - 1) >> 8) & $ff) <> $a2
+#error Assertion failed: >(sub_ca244 - 1) == $a2
 #endif
-#if ((((sub_ca417-1)) >> 8) & $ff) <> $a4
-#error Assertion failed: >(sub_ca417-1) == $a4
+#if (((sub_ca417 - 1) >> 8) & $ff) <> $a4
+#error Assertion failed: >(sub_ca417 - 1) == $a4
 #endif
-#if ((((sub_ca463-1)) >> 8) & $ff) <> $a4
-#error Assertion failed: >(sub_ca463-1) == $a4
+#if (((sub_ca463 - 1) >> 8) & $ff) <> $a4
+#error Assertion failed: >(sub_ca463 - 1) == $a4
 #endif
-#if ((((sub_ca5bb-1)) >> 8) & $ff) <> $a5
-#error Assertion failed: >(sub_ca5bb-1) == $a5
+#if (((sub_ca5bb - 1) >> 8) & $ff) <> $a5
+#error Assertion failed: >(sub_ca5bb - 1) == $a5
 #endif
-#if ((((sub_ca5bf-1)) >> 8) & $ff) <> $a5
-#error Assertion failed: >(sub_ca5bf-1) == $a5
+#if (((sub_ca5bf - 1) >> 8) & $ff) <> $a5
+#error Assertion failed: >(sub_ca5bf - 1) == $a5
 #endif
-#if ((((sub_ca7f3-1)) >> 8) & $ff) <> $a7
-#error Assertion failed: >(sub_ca7f3-1) == $a7
+#if (((sub_ca7f3 - 1) >> 8) & $ff) <> $a7
+#error Assertion failed: >(sub_ca7f3 - 1) == $a7
 #endif
-#if ((((sub_ca7f6-1)) >> 8) & $ff) <> $a7
-#error Assertion failed: >(sub_ca7f6-1) == $a7
+#if (((sub_ca7f6 - 1) >> 8) & $ff) <> $a7
+#error Assertion failed: >(sub_ca7f6 - 1) == $a7
 #endif
-#if ((((sub_ca9d0-1)) >> 8) & $ff) <> $a9
-#error Assertion failed: >(sub_ca9d0-1) == $a9
+#if (((sub_ca9d0 - 1) >> 8) & $ff) <> $a9
+#error Assertion failed: >(sub_ca9d0 - 1) == $a9
 #endif
-#if ((((sub_caafd-1)) >> 8) & $ff) <> $aa
-#error Assertion failed: >(sub_caafd-1) == $aa
+#if (((sub_caafd - 1) >> 8) & $ff) <> $aa
+#error Assertion failed: >(sub_caafd - 1) == $aa
 #endif
-#if ((((sub_cab04-1)) >> 8) & $ff) <> $ab
-#error Assertion failed: >(sub_cab04-1) == $ab
+#if (((sub_cab04 - 1) >> 8) & $ff) <> $ab
+#error Assertion failed: >(sub_cab04 - 1) == $ab
 #endif
-#if ((((sub_cab46-1)) >> 8) & $ff) <> $ab
-#error Assertion failed: >(sub_cab46-1) == $ab
+#if (((sub_cab46 - 1) >> 8) & $ff) <> $ab
+#error Assertion failed: >(sub_cab46 - 1) == $ab
 #endif
-#if ((((sub_cabc5-1)) >> 8) & $ff) <> $ab
-#error Assertion failed: >(sub_cabc5-1) == $ab
+#if (((sub_cabc5 - 1) >> 8) & $ff) <> $ab
+#error Assertion failed: >(sub_cabc5 - 1) == $ab
 #endif
-#if ((((sub_cbb46-1)) >> 8) & $ff) <> $bb
-#error Assertion failed: >(sub_cbb46-1) == $bb
+#if (((sub_cbb46 - 1) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbb46 - 1) == $bb
 #endif
-#if ((((sub_cbb4a-1)) >> 8) & $ff) <> $bb
-#error Assertion failed: >(sub_cbb4a-1) == $bb
+#if (((sub_cbb4a - 1) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbb4a - 1) == $bb
 #endif
-#if ((((sub_cbbd3-1)) >> 8) & $ff) <> $bb
-#error Assertion failed: >(sub_cbbd3-1) == $bb
+#if (((sub_cbbd3 - 1) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbbd3 - 1) == $bb
 #endif
-#if ((((sub_cbbd7-1)) >> 8) & $ff) <> $bb
-#error Assertion failed: >(sub_cbbd7-1) == $bb
+#if (((sub_cbbd7 - 1) >> 8) & $ff) <> $bb
+#error Assertion failed: >(sub_cbbd7 - 1) == $bb
 #endif
-#if ((((sub_cbc37-1)) >> 8) & $ff) <> $bc
-#error Assertion failed: >(sub_cbc37-1) == $bc
+#if (((sub_cbc37 - 1) >> 8) & $ff) <> $bc
+#error Assertion failed: >(sub_cbc37 - 1) == $bc
 #endif
-#if ((((sub_cbc81-1)) >> 8) & $ff) <> $bc
-#error Assertion failed: >(sub_cbc81-1) == $bc
+#if (((sub_cbc81 - 1) >> 8) & $ff) <> $bc
+#error Assertion failed: >(sub_cbc81 - 1) == $bc
 #endif
 #if (((handle_bytev) >> 8) & $ff) <> $ff
 #error Assertion failed: >handle_bytev == $ff

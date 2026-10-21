@@ -78,15 +78,15 @@ temp_2  = &0072
 
     equb l2085 - l2085                                                ; 2084: 00          .
 .l2085
-    equw (l0000-1) AND &ffff                                          ; 2085: ff ff       ..
-    equb >(l0000-1)                                                   ; 2087: ff          .
-    equb <(l0000-1)                                                   ; 2088: ff          .
+    equw (l0000 - 1) AND &ffff                                        ; 2085: ff ff       ..
+    equb >(l0000 - 1)                                                 ; 2087: ff          .
+    equb <(l0000 - 1)                                                 ; 2088: ff          .
     equs "END"                                                        ; 2089: 45 4e 44    END
 .pydis_end
 
-    assert &ffff == ((l0000-1) AND &ffff)
-    assert &ff == <(l0000-1)
-    assert &ff == >(l0000-1)
+    assert &ffff == ((l0000 - 1) AND &ffff)
+    assert &ff == <(l0000 - 1)
+    assert &ff == >(l0000 - 1)
     assert &80 == (NOT(low_seven_bits) AND &ff)
     assert &00 == l2085 - l2085
 

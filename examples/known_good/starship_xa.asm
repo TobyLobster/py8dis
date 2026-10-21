@@ -7897,55 +7897,55 @@ pydis_end
 #if ('~') <> $7e
 #error Assertion failed: '~' == $7e
 #endif
-#if (((enemy_explosion_tables + $0000)) & $ff) <> $00
+#if ((enemy_explosion_tables + $0000) & $ff) <> $00
 #error Assertion failed: <(enemy_explosion_tables + $0000) == $00
 #endif
-#if (((enemy_explosion_tables + $0040)) & $ff) <> $40
+#if ((enemy_explosion_tables + $0040) & $ff) <> $40
 #error Assertion failed: <(enemy_explosion_tables + $0040) == $40
 #endif
-#if (((enemy_explosion_tables + $0080)) & $ff) <> $80
+#if ((enemy_explosion_tables + $0080) & $ff) <> $80
 #error Assertion failed: <(enemy_explosion_tables + $0080) == $80
 #endif
-#if (((enemy_explosion_tables + $00c0)) & $ff) <> $c0
+#if ((enemy_explosion_tables + $00c0) & $ff) <> $c0
 #error Assertion failed: <(enemy_explosion_tables + $00c0) == $c0
 #endif
-#if (((enemy_explosion_tables + $0100)) & $ff) <> $00
+#if ((enemy_explosion_tables + $0100) & $ff) <> $00
 #error Assertion failed: <(enemy_explosion_tables + $0100) == $00
 #endif
-#if (((enemy_explosion_tables + $0140)) & $ff) <> $40
+#if ((enemy_explosion_tables + $0140) & $ff) <> $40
 #error Assertion failed: <(enemy_explosion_tables + $0140) == $40
 #endif
-#if (((enemy_explosion_tables + $0180)) & $ff) <> $80
+#if ((enemy_explosion_tables + $0180) & $ff) <> $80
 #error Assertion failed: <(enemy_explosion_tables + $0180) == $80
 #endif
-#if (((enemy_explosion_tables + $01c0)) & $ff) <> $c0
+#if ((enemy_explosion_tables + $01c0) & $ff) <> $c0
 #error Assertion failed: <(enemy_explosion_tables + $01c0) == $c0
 #endif
-#if (((enemy_explosion_tables + $0200)) & $ff) <> $00
+#if ((enemy_explosion_tables + $0200) & $ff) <> $00
 #error Assertion failed: <(enemy_explosion_tables + $0200) == $00
 #endif
-#if (((enemy_explosion_tables + $0240)) & $ff) <> $40
+#if ((enemy_explosion_tables + $0240) & $ff) <> $40
 #error Assertion failed: <(enemy_explosion_tables + $0240) == $40
 #endif
-#if (((enemy_explosion_tables + $0280)) & $ff) <> $80
+#if ((enemy_explosion_tables + $0280) & $ff) <> $80
 #error Assertion failed: <(enemy_explosion_tables + $0280) == $80
 #endif
-#if (((enemy_explosion_tables + $02c0)) & $ff) <> $c0
+#if ((enemy_explosion_tables + $02c0) & $ff) <> $c0
 #error Assertion failed: <(enemy_explosion_tables + $02c0) == $c0
 #endif
-#if (((enemy_explosion_tables + $0300)) & $ff) <> $00
+#if ((enemy_explosion_tables + $0300) & $ff) <> $00
 #error Assertion failed: <(enemy_explosion_tables + $0300) == $00
 #endif
-#if (((enemy_explosion_tables + $0340)) & $ff) <> $40
+#if ((enemy_explosion_tables + $0340) & $ff) <> $40
 #error Assertion failed: <(enemy_explosion_tables + $0340) == $40
 #endif
-#if (((enemy_explosion_tables + $0380)) & $ff) <> $80
+#if ((enemy_explosion_tables + $0380) & $ff) <> $80
 #error Assertion failed: <(enemy_explosion_tables + $0380) == $80
 #endif
-#if (((enemy_explosion_tables + $03c0)) & $ff) <> $c0
+#if ((enemy_explosion_tables + $03c0) & $ff) <> $c0
 #error Assertion failed: <(enemy_explosion_tables + $03c0) == $c0
 #endif
-#if (((starship_torpedoes_table+4)) & $ff) <> $04
+#if ((starship_torpedoes_table+4) & $ff) <> $04
 #error Assertion failed: <(starship_torpedoes_table+4) == $04
 #endif
 #if ((enemy_ship_behaviour_routine0) & $ff) <> $49
@@ -8077,55 +8077,55 @@ pydis_end
 #if ((the_frontiers_string) & $ff) <> $93
 #error Assertion failed: <the_frontiers_string == $93
 #endif
-#if ((((enemy_explosion_tables + $0000)) >> 8) & $ff) <> $4d
+#if (((enemy_explosion_tables + $0000) >> 8) & $ff) <> $4d
 #error Assertion failed: >(enemy_explosion_tables + $0000) == $4d
 #endif
-#if ((((enemy_explosion_tables + $0040)) >> 8) & $ff) <> $4d
+#if (((enemy_explosion_tables + $0040) >> 8) & $ff) <> $4d
 #error Assertion failed: >(enemy_explosion_tables + $0040) == $4d
 #endif
-#if ((((enemy_explosion_tables + $0080)) >> 8) & $ff) <> $4d
+#if (((enemy_explosion_tables + $0080) >> 8) & $ff) <> $4d
 #error Assertion failed: >(enemy_explosion_tables + $0080) == $4d
 #endif
-#if ((((enemy_explosion_tables + $00c0)) >> 8) & $ff) <> $4d
+#if (((enemy_explosion_tables + $00c0) >> 8) & $ff) <> $4d
 #error Assertion failed: >(enemy_explosion_tables + $00c0) == $4d
 #endif
-#if ((((enemy_explosion_tables + $0100)) >> 8) & $ff) <> $4e
+#if (((enemy_explosion_tables + $0100) >> 8) & $ff) <> $4e
 #error Assertion failed: >(enemy_explosion_tables + $0100) == $4e
 #endif
-#if ((((enemy_explosion_tables + $0140)) >> 8) & $ff) <> $4e
+#if (((enemy_explosion_tables + $0140) >> 8) & $ff) <> $4e
 #error Assertion failed: >(enemy_explosion_tables + $0140) == $4e
 #endif
-#if ((((enemy_explosion_tables + $0180)) >> 8) & $ff) <> $4e
+#if (((enemy_explosion_tables + $0180) >> 8) & $ff) <> $4e
 #error Assertion failed: >(enemy_explosion_tables + $0180) == $4e
 #endif
-#if ((((enemy_explosion_tables + $01c0)) >> 8) & $ff) <> $4e
+#if (((enemy_explosion_tables + $01c0) >> 8) & $ff) <> $4e
 #error Assertion failed: >(enemy_explosion_tables + $01c0) == $4e
 #endif
-#if ((((enemy_explosion_tables + $0200)) >> 8) & $ff) <> $4f
+#if (((enemy_explosion_tables + $0200) >> 8) & $ff) <> $4f
 #error Assertion failed: >(enemy_explosion_tables + $0200) == $4f
 #endif
-#if ((((enemy_explosion_tables + $0240)) >> 8) & $ff) <> $4f
+#if (((enemy_explosion_tables + $0240) >> 8) & $ff) <> $4f
 #error Assertion failed: >(enemy_explosion_tables + $0240) == $4f
 #endif
-#if ((((enemy_explosion_tables + $0280)) >> 8) & $ff) <> $4f
+#if (((enemy_explosion_tables + $0280) >> 8) & $ff) <> $4f
 #error Assertion failed: >(enemy_explosion_tables + $0280) == $4f
 #endif
-#if ((((enemy_explosion_tables + $02c0)) >> 8) & $ff) <> $4f
+#if (((enemy_explosion_tables + $02c0) >> 8) & $ff) <> $4f
 #error Assertion failed: >(enemy_explosion_tables + $02c0) == $4f
 #endif
-#if ((((enemy_explosion_tables + $0300)) >> 8) & $ff) <> $50
+#if (((enemy_explosion_tables + $0300) >> 8) & $ff) <> $50
 #error Assertion failed: >(enemy_explosion_tables + $0300) == $50
 #endif
-#if ((((enemy_explosion_tables + $0340)) >> 8) & $ff) <> $50
+#if (((enemy_explosion_tables + $0340) >> 8) & $ff) <> $50
 #error Assertion failed: >(enemy_explosion_tables + $0340) == $50
 #endif
-#if ((((enemy_explosion_tables + $0380)) >> 8) & $ff) <> $50
+#if (((enemy_explosion_tables + $0380) >> 8) & $ff) <> $50
 #error Assertion failed: >(enemy_explosion_tables + $0380) == $50
 #endif
-#if ((((enemy_explosion_tables + $03c0)) >> 8) & $ff) <> $50
+#if (((enemy_explosion_tables + $03c0) >> 8) & $ff) <> $50
 #error Assertion failed: >(enemy_explosion_tables + $03c0) == $50
 #endif
-#if ((((starship_torpedoes_table+4)) >> 8) & $ff) <> $4f
+#if (((starship_torpedoes_table+4) >> 8) & $ff) <> $4f
 #error Assertion failed: >(starship_torpedoes_table+4) == $4f
 #endif
 #if (((enemy_ship_behaviour_routine0) >> 8) & $ff) <> $32

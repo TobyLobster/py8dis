@@ -35,6 +35,12 @@ class Assembler:
         in the dictionary are used as they are (e.g. '+')."""
         return {}
 
+    def binary_precedence(self):
+        """A dictionary giving how tightly each generic binary operator binds
+        (a higher number binds more tightly). Operators not in the dictionary
+        are always bracketed when used in a larger expression."""
+        return {}
+
     def unary_operators(self):
         """A dictionary translating generic unary operator names (e.g. 'NOT')
         into this assembler's syntax: either a prefix, or a template where
@@ -42,10 +48,23 @@ class Assembler:
         supported. Names not in the dictionary are used as prefixes."""
         return {}
 
-    def expression_in_context(self, expr, text, context):
-        """Returns how the expression 'expr' (whose text is 'text') should be
-        written in the given context (see expression.py), for assemblers that
-        need something different in some contexts."""
+    def unary_precedence(self):
+        """A dictionary giving how tightly each generic unary (prefix) operator
+        binds, on the same scale as binary_precedence()."""
+        return {}
+
+    def unary_rewrite(self, op, operand, nested):
+        """For an assembler that writes a generic unary operator another way
+        (e.g. the low byte as 'x & $ff'), returns the expression to use
+        instead, otherwise None. 'nested' says whether it's part of a larger
+        expression."""
+        return None
+
+    def expression_in_context(self, expr, text, level, context):
+        """Returns how the expression 'expr' (whose text is 'text', and whose
+        precedence level is 'level') should be written in the given context
+        (see expression.py), for assemblers that need something different in
+        some contexts."""
         return text
 
     def set_output_filename(self, filename):

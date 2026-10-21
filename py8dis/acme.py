@@ -63,6 +63,24 @@ class Acme(assembler.Assembler):
                  '!=': '!=' ,
         }
 
+    def binary_precedence(self):
+        # Measured by assembling test expressions with acme 0.97
+        return { '*': 7, 'DIV': 7, 'MOD': 7,
+                 '+': 6, '-': 6,
+                 '<<': 5, '>>': 5,
+                 'AND': 3,
+                 'EOR': 2,
+                 'OR': 1,
+        }
+
+    def unary_precedence(self):
+        # Measured by assembling test expressions with acme 0.97. Note that '<'
+        # and '>' (low and high byte) bind less tightly than '+', so '<x + 1'
+        # is the low byte of 'x + 1', but more tightly than AND.
+        return { 'NOT': 90,
+                 '<': 4, '>': 4,
+        }
+
     def unary_operators(self):
         """Returns a dictionary that translates generic unary operator names
         into the assembler specific versions"""

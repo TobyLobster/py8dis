@@ -422,32 +422,32 @@ NOTLSP
     ; ******************************
     ; **** The text messages
 TEXT
-    !text $0d, $0d, "Evaluate :", $80+' '          ; 8198: 0d 0d 45... ..E
+    !text $0d, $0d, "Evaluate :", $80 + ' '        ; 8198: 0d 0d 45... ..E
 VALTXT
-    !text $0d, "Value is :", $80+' '               ; 81a5: 0d 56 61... .Va
+    !text $0d, "Value is :", $80 + ' '             ; 81a5: 0d 56 61... .Va
 NILTXT
-    !text "NI", $80+'L'                            ; 81b1: 4e 49 cc    NI.
+    !text "NI", $80 + 'L'                          ; 81b1: 4e 49 cc    NI.
 DOTTXT
-    !text " .", $80+' '                            ; 81b4: 20 2e a0     ..
+    !text " .", $80 + ' '                          ; 81b4: 20 2e a0     ..
 INSTXT
-    !text $0d, "Insufficient memor", $80+'y'       ; 81b7: 0d 49 6e... .In
+    !text $0d, "Insufficient memor", $80 + 'y'     ; 81b7: 0d 49 6e... .In
 GCTXT
-    !text $0d, "G.C. ", $80+'#'                    ; 81cb: 0d 47 2e... .G.
+    !text $0d, "G.C. ", $80 + '#'                  ; 81cb: 0d 47 2e... .G.
 COLTXT
-    !text " Bytes collected,", $80+' '             ; 81d2: 20 42 79...  By
+    !text " Bytes collected,", $80 + ' '           ; 81d2: 20 42 79...  By
 FRTXT
-    !text " Bytes free", $80+$0d                   ; 81e4: 20 42 79...  By
+    !text " Bytes free", $80 + $0d                 ; 81e4: 20 42 79...  By
 SUBTXT
-    !text "Subr", $80+'#'                          ; 81f0: 53 75 62... Sub
+    !text "Subr", $80 + '#'                        ; 81f0: 53 75 62... Sub
 ERRTXT
-    !text $0d, "Error number", $80+' '             ; 81f5: 0d 45 72... .Er
+    !text $0d, "Error number", $80 + ' '           ; 81f5: 0d 45 72... .Er
 ARGTXT
-    !text $0d, "Arg :", $80+' '                    ; 8203: 0d 41 72... .Ar
+    !text $0d, "Arg :", $80 + ' '                  ; 8203: 0d 41 72... .Ar
 WRMTXT
     !text $0d, "Warm or cold start (W/C) ?"        ; 820a: 0d 57 61... .Wa
-    !text $80+' '                                  ; 8225: a0          .
+    !text $80 + ' '                                ; 8225: a0          .
 HLPTXT
-    !text $0d, "LISP 4.06", $80+$0d                ; 8226: 0d 4c 49... .LI
+    !text $0d, "LISP 4.06", $80 + $0d              ; 8226: 0d 4c 49... .LI
 
     ; **** Command lines
 GOSTR
@@ -8045,20 +8045,20 @@ unused4
 ROMTOP
 pydis_end
 
-!if ($80+$0d) != $8d {
-    !error "Assertion failed: $80+$0d == $8d"
+!if ($80 + $0d) != $8d {
+    !error "Assertion failed: $80 + $0d == $8d"
 }
-!if ($80+' ') != $a0 {
-    !error "Assertion failed: $80+' ' == $a0"
+!if ($80 + ' ') != $a0 {
+    !error "Assertion failed: $80 + ' ' == $a0"
 }
-!if ($80+'#') != $a3 {
-    !error "Assertion failed: $80+'#' == $a3"
+!if ($80 + '#') != $a3 {
+    !error "Assertion failed: $80 + '#' == $a3"
 }
-!if ($80+'L') != $cc {
-    !error "Assertion failed: $80+'L' == $cc"
+!if ($80 + 'L') != $cc {
+    !error "Assertion failed: $80 + 'L' == $cc"
 }
-!if ($80+'y') != $f9 {
-    !error "Assertion failed: $80+'y' == $f9"
+!if ($80 + 'y') != $f9 {
+    !error "Assertion failed: $80 + 'y' == $f9"
 }
 !if (' ') != $20 {
     !error "Assertion failed: ' ' == $20"

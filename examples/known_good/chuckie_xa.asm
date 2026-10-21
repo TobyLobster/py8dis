@@ -6152,76 +6152,76 @@ unused3
 * = $3800
 pydis_end
 
-#if (((map0ladder_end - map0ladder_start) / 3)) <> $04
+#if ((map0ladder_end - map0ladder_start) / 3) <> $04
 #error Assertion failed: ((map0ladder_end - map0ladder_start) / 3) == $04
 #endif
-#if (((map0platform_end - map0platform_start) / 3)) <> $0d
+#if ((map0platform_end - map0platform_start) / 3) <> $0d
 #error Assertion failed: ((map0platform_end - map0platform_start) / 3) == $0d
 #endif
-#if (((map0seed_end - map0seed_start) / 2)) <> $0a
+#if ((map0seed_end - map0seed_start) / 2) <> $0a
 #error Assertion failed: ((map0seed_end - map0seed_start) / 2) == $0a
 #endif
-#if (((map1ladder_end - map1ladder_start) / 3)) <> $08
+#if ((map1ladder_end - map1ladder_start) / 3) <> $08
 #error Assertion failed: ((map1ladder_end - map1ladder_start) / 3) == $08
 #endif
-#if (((map1platform_end - map1platform_start) / 3)) <> $0d
+#if ((map1platform_end - map1platform_start) / 3) <> $0d
 #error Assertion failed: ((map1platform_end - map1platform_start) / 3) == $0d
 #endif
-#if (((map1seed_end - map1seed_start) / 2)) <> $07
+#if ((map1seed_end - map1seed_start) / 2) <> $07
 #error Assertion failed: ((map1seed_end - map1seed_start) / 2) == $07
 #endif
-#if (((map2ladder_end - map2ladder_start) / 3)) <> $07
+#if ((map2ladder_end - map2ladder_start) / 3) <> $07
 #error Assertion failed: ((map2ladder_end - map2ladder_start) / 3) == $07
 #endif
-#if (((map2platform_end - map2platform_start) / 3)) <> $18
+#if ((map2platform_end - map2platform_start) / 3) <> $18
 #error Assertion failed: ((map2platform_end - map2platform_start) / 3) == $18
 #endif
-#if (((map2seed_end - map2seed_start) / 2)) <> $0a
+#if ((map2seed_end - map2seed_start) / 2) <> $0a
 #error Assertion failed: ((map2seed_end - map2seed_start) / 2) == $0a
 #endif
-#if (((map3ladder_end - map3ladder_start) / 3)) <> $05
+#if ((map3ladder_end - map3ladder_start) / 3) <> $05
 #error Assertion failed: ((map3ladder_end - map3ladder_start) / 3) == $05
 #endif
-#if (((map3platform_end - map3platform_start) / 3)) <> $1a
+#if ((map3platform_end - map3platform_start) / 3) <> $1a
 #error Assertion failed: ((map3platform_end - map3platform_start) / 3) == $1a
 #endif
-#if (((map3seed_end - map3seed_start) / 2)) <> $06
+#if ((map3seed_end - map3seed_start) / 2) <> $06
 #error Assertion failed: ((map3seed_end - map3seed_start) / 2) == $06
 #endif
-#if (((map4ladder_end - map4ladder_start) / 3)) <> $09
+#if ((map4ladder_end - map4ladder_start) / 3) <> $09
 #error Assertion failed: ((map4ladder_end - map4ladder_start) / 3) == $09
 #endif
-#if (((map4platform_end - map4platform_start) / 3)) <> $11
+#if ((map4platform_end - map4platform_start) / 3) <> $11
 #error Assertion failed: ((map4platform_end - map4platform_start) / 3) == $11
 #endif
-#if (((map4seed_end - map4seed_start) / 2)) <> $0d
+#if ((map4seed_end - map4seed_start) / 2) <> $0d
 #error Assertion failed: ((map4seed_end - map4seed_start) / 2) == $0d
 #endif
-#if (((map5ladder_end - map5ladder_start) / 3)) <> $06
+#if ((map5ladder_end - map5ladder_start) / 3) <> $06
 #error Assertion failed: ((map5ladder_end - map5ladder_start) / 3) == $06
 #endif
-#if (((map5platform_end - map5platform_start) / 3)) <> $10
+#if ((map5platform_end - map5platform_start) / 3) <> $10
 #error Assertion failed: ((map5platform_end - map5platform_start) / 3) == $10
 #endif
-#if (((map5seed_end - map5seed_start) / 2)) <> $09
+#if ((map5seed_end - map5seed_start) / 2) <> $09
 #error Assertion failed: ((map5seed_end - map5seed_start) / 2) == $09
 #endif
-#if (((map6ladder_end - map6ladder_start) / 3)) <> $07
+#if ((map6ladder_end - map6ladder_start) / 3) <> $07
 #error Assertion failed: ((map6ladder_end - map6ladder_start) / 3) == $07
 #endif
-#if (((map6platform_end - map6platform_start) / 3)) <> $17
+#if ((map6platform_end - map6platform_start) / 3) <> $17
 #error Assertion failed: ((map6platform_end - map6platform_start) / 3) == $17
 #endif
-#if (((map6seed_end - map6seed_start) / 2)) <> $04
+#if ((map6seed_end - map6seed_start) / 2) <> $04
 #error Assertion failed: ((map6seed_end - map6seed_start) / 2) == $04
 #endif
-#if (((map7ladder_end - map7ladder_start) / 3)) <> $06
+#if ((map7ladder_end - map7ladder_start) / 3) <> $06
 #error Assertion failed: ((map7ladder_end - map7ladder_start) / 3) == $06
 #endif
-#if (((map7platform_end - map7platform_start) / 3)) <> $0f
+#if ((map7platform_end - map7platform_start) / 3) <> $0f
 #error Assertion failed: ((map7platform_end - map7platform_start) / 3) == $0f
 #endif
-#if (((map7seed_end - map7seed_start) / 2)) <> $10
+#if ((map7seed_end - map7seed_start) / 2) <> $10
 #error Assertion failed: ((map7seed_end - map7seed_start) / 2) == $10
 #endif
 #if ((255 - inkey_key_ctrl) ^ 128) <> $81
@@ -6230,7 +6230,7 @@ pydis_end
 #if ((255 - inkey_key_shift) ^ 128) <> $80
 #error Assertion failed: (255 - inkey_key_shift) ^ 128 == $80
 #endif
-#if ((MapId_Egg | MapId_Seed)) <> $0c
+#if (MapId_Egg | MapId_Seed) <> $0c
 #error Assertion failed: (MapId_Egg | MapId_Seed) == $0c
 #endif
 #if (255 - inkey_key_h) <> $54

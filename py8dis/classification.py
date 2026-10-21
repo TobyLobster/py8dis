@@ -497,7 +497,7 @@ def stringhi_binary(binary_addr, include_terminator_fn=None):
                     char = expression.Num(c, "char")
                 else:
                     char = expression.Num(c, "hex2")
-                add_expression(binary_addr, expression.Binary(expression.Num(0x80, "hex2"), "+", char, spaced=False))
+                add_expression(binary_addr, expression.Binary(expression.Num(0x80, "hex2"), "+", char))
                 binary_addr += 1
             break
         binary_addr += 1
