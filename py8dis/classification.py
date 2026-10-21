@@ -217,9 +217,15 @@ class String(object):
         return self.__str__()
 
 def init():
-    classifications = [None] * 64*1024
-    split_classifications = set()
-    include_binary_files = dict()
+    """Reset this module's state.
+
+    The collections are cleared in place rather than replaced, so any
+    references to them elsewhere stay valid."""
+
+    classifications[:] = [None] * len(classifications)
+    split_classifications.clear()
+    include_binary_files.clear()
+    expressions.clear()
 
 def add_expression(binary_addr, s, *, force=True):
     """Add an expression for the given binary address."""
