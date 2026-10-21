@@ -72,9 +72,8 @@ quiet_routine
     .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 2073: ea ea ea... ...
     .byt $ea                                                          // 207f: ea          .
 
-// $2080 referenced 1 time by $202c
 part2
-    jsr store_value                                                   // 2080: 20 2f 20     / // Store a value
+    jsr store_value                                                   // 2080: 20 2f 20     /
     rts                                                               // 2083: 60          `
 
     .byt l2085 - l2085                                                // 2084: 00          .

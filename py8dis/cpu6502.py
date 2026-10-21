@@ -808,7 +808,7 @@ class Cpu6502(cpu.Cpu):
 
         # Add subroutine title comment
         if subroutine.title and subroutine.runtime_addr != runtime_addr:
-            disassembly.comment(runtime_addr, subroutine.title, align=Align.INLINE, word_wrap=False)
+            disassembly.comment(runtime_addr, subroutine.title, align=Align.INLINE, word_wrap=False, auto_generated=True)
 
         # After the subroutine, check for results in registers being used
         if subroutine.on_exit:
@@ -822,7 +822,7 @@ class Cpu6502(cpu.Cpu):
                     next_use = state.next_use[reg]
                     if next_use is not None:
                         reg_runtime_addr = movemanager.b2r(next_use)
-                        disassembly.comment(reg_runtime_addr, reg.upper() + "=" + com, align=Align.INLINE)
+                        disassembly.comment(reg_runtime_addr, reg.upper() + "=" + com, align=Align.INLINE, auto_generated=True)
 
 
 

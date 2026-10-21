@@ -18,6 +18,10 @@ subroutine(0x202f, "store_value", "Store a value",
     on_entry={'a': "value to store", 'y': "(ignored)"},
     on_exit={'a': "(corrupted)", 'y': "count"})
 
+# no_automatic_comment() suppresses the decoration of calling code, which it
+# used not to (the call at &2004 still gets the 'Store a value' comment)
+no_automatic_comment(0x2080)
+
 # hook=False turns off decoration of calling code
 subroutine(0x2036, "quiet_routine", "Quiet routine", hook=False)
 
