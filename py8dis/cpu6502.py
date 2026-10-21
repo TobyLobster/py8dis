@@ -1459,26 +1459,29 @@ class Cpu6502(cpu.Cpu):
 
         binary_addr = 0
         state = None
-        while binary_addr < 0x10000:
-            c = classification.get_classification(binary_addr)
-            if c is not None:
-                if state is None:
-                    state = self.EMPTY_STATE
+        # (Only the loaded data can be classified, so just loop over that)
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = max(binary_addr, range_start)
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is not None:
+                    if state is None:
+                        state = self.EMPTY_STATE
 
-                if isinstance(c, trace.cpu.Opcode):
-                    opcode = memory_binary[binary_addr]
-                    if opcode in (OPCODE_JSR, OPCODE_JMP):
-                        target = memorymanager.get_u16_binary(binary_addr + 1)
-                        for hook in trace.subroutine_argument_finder_hooks:
-                            if hook(memorymanager.RuntimeAddr(target),
-                                state.optimistic['a'].get_previous_load_imm_operand(),
-                                state.optimistic['x'].get_previous_load_imm_operand(),
-                                state.optimistic['y'].get_previous_load_imm_operand()) is not None:
-                                break
-                state = trace.cpu.cpu_states[binary_addr]
-                binary_addr += c.length()
-            else:
-                binary_addr += 1
+                    if isinstance(c, trace.cpu.Opcode):
+                        opcode = memory_binary[binary_addr]
+                        if opcode in (OPCODE_JSR, OPCODE_JMP):
+                            target = memorymanager.get_u16_binary(binary_addr + 1)
+                            for hook in trace.subroutine_argument_finder_hooks:
+                                if hook(memorymanager.RuntimeAddr(target),
+                                    state.optimistic['a'].get_previous_load_imm_operand(),
+                                    state.optimistic['x'].get_previous_load_imm_operand(),
+                                    state.optimistic['y'].get_previous_load_imm_operand()) is not None:
+                                    break
+                    state = trace.cpu.cpu_states[binary_addr]
+                    binary_addr += c.length()
+                else:
+                    binary_addr += 1
 
     def scan_ahead_for_post_exit_state(self, binary_addr, state):
         assert binary_addr is not None
@@ -1538,68 +1541,71 @@ class Cpu6502(cpu.Cpu):
         prev_state = self.EMPTY_STATE
         state = self.EMPTY_STATE
 
-        while binary_addr < 0x10000:
-            c = classification.get_classification(binary_addr)
-            if c is not None:
-                prev_state = state
-                state = trace.cpu.cpu_states[binary_addr]
+        # (Only the loaded data can be classified, so just loop over that)
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = max(binary_addr, range_start)
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is not None:
+                    prev_state = state
+                    state = trace.cpu.cpu_states[binary_addr]
 
-                # If there's a label here, then clear our prev_state (i.e. be pessimistic for this state)
-                runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
-                if runtime_addr is not None:
-                    if runtime_addr in labelmanager.labels:
-                        prev_state = self.EMPTY_STATE
+                    # If there's a label here, then clear our prev_state (i.e. be pessimistic for this state)
+                    runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
+                    if runtime_addr is not None:
+                        if runtime_addr in labelmanager.labels:
+                            prev_state = self.EMPTY_STATE
 
-                # Show the value of a register as an inline comment (if known) once they have been
-                # altered (e.g. for 'LDY #0:LDA (zp),Y:STA mem:INY' output '; Y=1' on the 'INY' line).
+                    # Show the value of a register as an inline comment (if known) once they have been
+                    # altered (e.g. for 'LDY #0:LDA (zp),Y:STA mem:INY' output '; Y=1' on the 'INY' line).
 
-                for reg in ['a', 'x', 'y']:
-                    # If we know about the state of the register 'reg'
-                    if state and state.pessimistic[reg]:
-                        # If this instruction alters the register 'reg'
-                        if c.reg_changes and ((c.reg_changes[reg] == 'A') or (c.reg_changes[reg] == 'T')):
-                            # Get the value of the register
-                            r = state.pessimistic[reg].value
-                            if r is not None:
-                                move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                                binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
-                                formatter = config.get_assembler()
-                                if r > 9:
-                                    r = formatter.hex(r)
-                                disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
+                    for reg in ['a', 'x', 'y']:
+                        # If we know about the state of the register 'reg'
+                        if state and state.pessimistic[reg]:
+                            # If this instruction alters the register 'reg'
+                            if c.reg_changes and ((c.reg_changes[reg] == 'A') or (c.reg_changes[reg] == 'T')):
+                                # Get the value of the register
+                                r = state.pessimistic[reg].value
+                                if r is not None:
+                                    move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                                    binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                                    formatter = config.get_assembler()
+                                    if r > 9:
+                                        r = formatter.hex(r)
+                                    disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
 
-                # Check for ADC# or SBC# with carry in it's opposite to normal state: auto comment it
-                if isinstance(c, trace.cpu.Opcode):
-                    value = memorymanager.get_u8_binary(binary_addr)
-                    if prev_state and prev_state.pessimistic['c'] == True:
-                        move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                        binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
-                        if value == OPCODE_ADC_IMMEDIATE:
-                            value = memorymanager.get_u8_binary(binary_addr+1)
-                            disassembly.comment_binary(binary_loc, "Carry is set, so adding {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
-                        elif (value == OPCODE_ADC_INDEXED_INDIRECT) or (value == OPCODE_ADC_ZERO_PAGE) or (value == OPCODE_ADC_ABSOLUTE) or (value == OPCODE_ADC_INDIRECT_INDEXED) or (value == OPCODE_ADC_ZERO_PAGE_COMMA_X) or (value == OPCODE_ADC_ABSOLUTE_COMMA_Y) or (value == OPCODE_ADC_ABSOLUTE_COMMA_X):
-                            disassembly.comment_binary(binary_loc, "+1 because carry is set", align=Align.INLINE, auto_generated=True)
+                    # Check for ADC# or SBC# with carry in it's opposite to normal state: auto comment it
+                    if isinstance(c, trace.cpu.Opcode):
+                        value = memorymanager.get_u8_binary(binary_addr)
+                        if prev_state and prev_state.pessimistic['c'] == True:
+                            move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                            binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                            if value == OPCODE_ADC_IMMEDIATE:
+                                value = memorymanager.get_u8_binary(binary_addr+1)
+                                disassembly.comment_binary(binary_loc, "Carry is set, so adding {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
+                            elif (value == OPCODE_ADC_INDEXED_INDIRECT) or (value == OPCODE_ADC_ZERO_PAGE) or (value == OPCODE_ADC_ABSOLUTE) or (value == OPCODE_ADC_INDIRECT_INDEXED) or (value == OPCODE_ADC_ZERO_PAGE_COMMA_X) or (value == OPCODE_ADC_ABSOLUTE_COMMA_Y) or (value == OPCODE_ADC_ABSOLUTE_COMMA_X):
+                                disassembly.comment_binary(binary_loc, "+1 because carry is set", align=Align.INLINE, auto_generated=True)
 
-                    elif prev_state and prev_state.pessimistic['c'] == False:
-                        move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                        binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
-                        if value == OPCODE_SBC_IMMEDIATE:
-                            value = memorymanager.get_u8_binary(binary_addr+1)
-                            disassembly.comment_binary(binary_loc, "Carry is clear, so subtracting {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
-                        elif (value == OPCODE_SBC_INDEXED_INDIRECT) or (value == OPCODE_SBC_ZERO_PAGE) or (value == OPCODE_SBC_ABSOLUTE) or (value == OPCODE_SBC_INDIRECT_INDEXED) or (value == OPCODE_SBC_ZERO_PAGE_COMMA_X) or (value == OPCODE_SBC_ABSOLUTE_COMMA_Y) or (value == OPCODE_SBC_ABSOLUTE_COMMA_X):
-                            disassembly.comment_binary(binary_loc, "-1 because carry is clear", align=Align.INLINE, auto_generated=True)
+                        elif prev_state and prev_state.pessimistic['c'] == False:
+                            move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                            binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                            if value == OPCODE_SBC_IMMEDIATE:
+                                value = memorymanager.get_u8_binary(binary_addr+1)
+                                disassembly.comment_binary(binary_loc, "Carry is clear, so subtracting {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
+                            elif (value == OPCODE_SBC_INDEXED_INDIRECT) or (value == OPCODE_SBC_ZERO_PAGE) or (value == OPCODE_SBC_ABSOLUTE) or (value == OPCODE_SBC_INDIRECT_INDEXED) or (value == OPCODE_SBC_ZERO_PAGE_COMMA_X) or (value == OPCODE_SBC_ABSOLUTE_COMMA_Y) or (value == OPCODE_SBC_ABSOLUTE_COMMA_X):
+                                disassembly.comment_binary(binary_loc, "-1 because carry is clear", align=Align.INLINE, auto_generated=True)
 
-                # Find "ALWAYS branch" instructions
-                if isinstance(c, self.OpcodeConditionalBranch):
-                    if state.always_branch:
-                        move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                        binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
-                        disassembly.comment_binary(binary_loc, "ALWAYS branch", align=Align.INLINE, auto_generated=True)
-                        disassembly.add_raw_annotation(binary_loc, "", align=Align.AFTER_LINE)  # add a blank line after ALWAYS branch
-                binary_addr += c.length()
-            else:
-                binary_addr += 1
-                prev_state = self.EMPTY_STATE
+                    # Find "ALWAYS branch" instructions
+                    if isinstance(c, self.OpcodeConditionalBranch):
+                        if state.always_branch:
+                            move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                            binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                            disassembly.comment_binary(binary_loc, "ALWAYS branch", align=Align.INLINE, auto_generated=True)
+                            disassembly.add_raw_annotation(binary_loc, "", align=Align.AFTER_LINE)  # add a blank line after ALWAYS branch
+                    binary_addr += c.length()
+                else:
+                    binary_addr += 1
+                    prev_state = self.EMPTY_STATE
 
 
     def find_subroutine_calls(self):
@@ -1620,55 +1626,58 @@ class Cpu6502(cpu.Cpu):
         # since otherwise it's worked out for every instruction)
         sub_binary_addrs = {}
 
-        while binary_addr < 0x10000:
-            c = classification.get_classification(binary_addr)
-            if c is not None:
-                if state is None:
+        # (Only the loaded data can be classified, so just loop over that)
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = max(binary_addr, range_start)
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is not None:
+                    if state is None:
+                        state = self.EMPTY_STATE
+
+                    if isinstance(c, trace.cpu.Opcode):
+                        could_be_call_to_subroutine = c.could_be_call_to_subroutine()
+                        binary_addr = memorymanager.BinaryAddr(binary_addr)
+                        target = c.target(binary_addr)
+
+                        # check each subroutine
+                        for subroutine in trace.subroutines_list:
+                            if subroutine.hook_function is None:
+                                continue
+
+                            found = False
+                            fall_through = False
+
+                            # convert to binary address
+                            if subroutine.runtime_addr not in sub_binary_addrs:
+                                sub_binary_addrs[subroutine.runtime_addr], _ = movemanager.r2b(subroutine.runtime_addr)
+                            sub_binary_addr = sub_binary_addrs[subroutine.runtime_addr]
+                            if binary_addr == sub_binary_addr:
+                                # We are at the subroutine address itself.
+                                # We might have fallen through from above
+                                # and so we count this as a match.
+                                found = True
+                                fall_through = True
+                            elif could_be_call_to_subroutine and (target == subroutine.runtime_addr):
+                                # If our instruction is a call to the
+                                # address of the subroutine, then we have
+                                # found a match.
+                                found = True
+
+                            if found:
+                                state.next_instruction = None
+                                state.next_use = {'a': None, 'x': None, 'y': None }
+
+                                runtime_addr = movemanager.b2r(binary_addr)
+                                if not fall_through and isinstance(c, trace.cpu.OpcodeJsr):
+                                    self.scan_ahead_for_post_exit_state(binary_addr, state)
+                                subroutine.hook_function(runtime_addr, state, subroutine)
+
+                    state = trace.cpu.cpu_states[binary_addr]
+                    binary_addr += c.length()
+                else:
+                    binary_addr += 1
                     state = self.EMPTY_STATE
-
-                if isinstance(c, trace.cpu.Opcode):
-                    could_be_call_to_subroutine = c.could_be_call_to_subroutine()
-                    binary_addr = memorymanager.BinaryAddr(binary_addr)
-                    target = c.target(binary_addr)
-
-                    # check each subroutine
-                    for subroutine in trace.subroutines_list:
-                        if subroutine.hook_function is None:
-                            continue
-
-                        found = False
-                        fall_through = False
-
-                        # convert to binary address
-                        if subroutine.runtime_addr not in sub_binary_addrs:
-                            sub_binary_addrs[subroutine.runtime_addr], _ = movemanager.r2b(subroutine.runtime_addr)
-                        sub_binary_addr = sub_binary_addrs[subroutine.runtime_addr]
-                        if binary_addr == sub_binary_addr:
-                            # We are at the subroutine address itself.
-                            # We might have fallen through from above
-                            # and so we count this as a match.
-                            found = True
-                            fall_through = True
-                        elif could_be_call_to_subroutine and (target == subroutine.runtime_addr):
-                            # If our instruction is a call to the
-                            # address of the subroutine, then we have
-                            # found a match.
-                            found = True
-
-                        if found:
-                            state.next_instruction = None
-                            state.next_use = {'a': None, 'x': None, 'y': None }
-
-                            runtime_addr = movemanager.b2r(binary_addr)
-                            if not fall_through and isinstance(c, trace.cpu.OpcodeJsr):
-                                self.scan_ahead_for_post_exit_state(binary_addr, state)
-                            subroutine.hook_function(runtime_addr, state, subroutine)
-
-                state = trace.cpu.cpu_states[binary_addr]
-                binary_addr += c.length()
-            else:
-                binary_addr += 1
-                state = self.EMPTY_STATE
 
     def substitute_constants(self):
         if len(trace.substitute_constant_list) == 0:
@@ -1677,55 +1686,58 @@ class Cpu6502(cpu.Cpu):
         binary_addr = 0
         state = None
 
-        while binary_addr < 0x10000:
-            c = classification.get_classification(binary_addr)
-            if c is None:
-                binary_addr += 1
-                continue
+        # (Only the loaded data can be classified, so just loop over that)
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = max(binary_addr, range_start)
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is None:
+                    binary_addr += 1
+                    continue
 
-            if state is None:
-                state = self.EMPTY_STATE
+                if state is None:
+                    state = self.EMPTY_STATE
 
-            if isinstance(c, trace.cpu.Opcode):
-                opcode = memory_binary[binary_addr]
+                if isinstance(c, trace.cpu.Opcode):
+                    opcode = memory_binary[binary_addr]
 
-                # for each const_sub
-                for const_sub in trace.substitute_constant_list:
-                    # check we have the right opcode
-                    if opcode != const_sub.get_opcode(self.opcodes):
-                        continue
+                    # for each const_sub
+                    for const_sub in trace.substitute_constant_list:
+                        # check we have the right opcode
+                        if opcode != const_sub.get_opcode(self.opcodes):
+                            continue
 
-                    # make sure we know the current value of the appropriate register
-                    reg_value = state.optimistic[const_sub.reg].value
-                    if reg_value is None:
-                        continue
+                        # make sure we know the current value of the appropriate register
+                        reg_value = state.optimistic[const_sub.reg].value
+                        if reg_value is None:
+                            continue
 
-                    # check that we know where the register was set
-                    where_reg_set = state.optimistic[const_sub.reg].get_previous_load_imm_operand()
-                    if where_reg_set is None:
-                        continue
+                        # check that we know where the register was set
+                        where_reg_set = state.optimistic[const_sub.reg].get_previous_load_imm_operand()
+                        if where_reg_set is None:
+                            continue
 
-                    # if we have an operand, make sure it matches too
-                    if const_sub.operand and (const_sub.get_operand_value() != c.target(binary_addr)):
-                        continue
+                        # if we have an operand, make sure it matches too
+                        if const_sub.operand and (const_sub.get_operand_value() != c.target(binary_addr)):
+                            continue
 
-                    # check the const_sub dictionary has the current value as a key
-                    if not reg_value in const_sub.constants_dict:
-                        continue
+                        # check the const_sub dictionary has the current value as a key
+                        if not reg_value in const_sub.constants_dict:
+                            continue
 
-                    # set the constant or expression at this address
-                    const_or_expression = const_sub.constants_dict[reg_value]
-                    classification.add_expression(where_reg_set, const_or_expression)
+                        # set the constant or expression at this address
+                        const_or_expression = const_sub.constants_dict[reg_value]
+                        classification.add_expression(where_reg_set, const_or_expression)
 
-                    # define the constant, if desired
-                    if const_sub.define_constant:
-                        # is this a constant?
-                        if disassembly.is_simple_name(const_or_expression):
-                            # define the constant
-                            disassembly.add_constant(reg_value, const_or_expression)
+                        # define the constant, if desired
+                        if const_sub.define_constant:
+                            # is this a constant?
+                            if disassembly.is_simple_name(const_or_expression):
+                                # define the constant
+                                disassembly.add_constant(reg_value, const_or_expression)
 
-            state = trace.cpu.cpu_states[binary_addr]
-            binary_addr += c.length()
+                state = trace.cpu.cpu_states[binary_addr]
+                binary_addr += c.length()
 
     def label_maker(self, lmd):
         # Label return1, return2 etc
@@ -1749,6 +1761,7 @@ class Cpu6502(cpu.Cpu):
         # Make a byte array of memory
         memory_binary = memorymanager.memory_binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
+        loaded = memorymanager.loaded_ranges()
 
         # Remember which bytes are auto commented via a regex so we don't comment the same bytes again with a different regex.
         found_already = [False]*65536
@@ -1758,10 +1771,8 @@ class Cpu6502(cpu.Cpu):
             if details.pre_trace_function is None:
                 continue
 
-            # Find all matches
-            matches = re.finditer(details.pattern.whole_pattern, bytes_array)
-
-            for match in matches:
+            # Find all matches (just in the loaded data)
+            for match in (m for start, end in loaded for m in details.pattern.whole_pattern.finditer(bytes_array, start, end)):
                 binary_addr = match.start()
                 length = match.end() - match.start()
 
@@ -1788,6 +1799,7 @@ class Cpu6502(cpu.Cpu):
         # Make a byte array of memory
         memory_binary = memorymanager.memory_binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
+        loaded = memorymanager.loaded_ranges()
 
         # Remember which bytes are auto commented via a regex so we don't comment the same bytes again with a different regex.
         found_already = [False]*65536
@@ -1797,10 +1809,8 @@ class Cpu6502(cpu.Cpu):
             if details.post_trace_function is None:
                 continue
 
-            # Find all matches
-            matches = re.finditer(details.pattern.whole_pattern, bytes_array)
-
-            for match in matches:
+            # Find all matches (just in the loaded data)
+            for match in (m for start, end in loaded for m in details.pattern.whole_pattern.finditer(bytes_array, start, end)):
                 binary_addr = match.start()
                 length = match.end() - match.start()
 

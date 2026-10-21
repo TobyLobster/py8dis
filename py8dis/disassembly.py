@@ -585,16 +585,21 @@ def fix_label_names():
     """
 
     assert trace.cpu.trace_done
-    binary_addr = BinaryAddr(0)
-    while binary_addr < len(classification.classifications):
-        c = classification.get_classification(binary_addr)
-        if c is not None:
-            if not (binary_addr in classification.include_binary_files):
-                move_id = movemanager.move_id_for_binary_addr[binary_addr]
-                dummy = [str(x) for x in c.as_string_list(movemanager.BinaryLocation(binary_addr, move_id), None)]
-            binary_addr += c.length()
-        else:
-            binary_addr += 1
+
+    # (Only the loaded data can be classified, so just loop over that. Plain
+    # integer addresses are used for speed.)
+    binary_addr = 0
+    for range_start, range_end in memorymanager.loaded_ranges():
+        binary_addr = max(binary_addr, range_start)
+        while binary_addr < range_end:
+            c = classification.get_classification(binary_addr)
+            if c is not None:
+                if not (binary_addr in classification.include_binary_files):
+                    move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                    dummy = [str(x) for x in c.as_string_list(movemanager.BinaryLocation(BinaryAddr(binary_addr), move_id), None)]
+                binary_addr += c.length()
+            else:
+                binary_addr += 1
 
 
 def calculate_move_ranges():

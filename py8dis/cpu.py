@@ -139,18 +139,21 @@ class Cpu:
         # Calculate the CPU state at each instruction
         binary_addr = 0
         state = self.CpuState()
-        while binary_addr < 0x10000:
-            c = classification.get_classification(binary_addr)
-            if c is not None:
-                if c.is_code(binary_addr):
-                    c.update_cpu_state(binary_addr, state)
-                    # (Use the state's own copy() if it has one, since copy.deepcopy() is slow)
-                    self.cpu_states[binary_addr] = state.copy() if hasattr(state, "copy") else copy.deepcopy(state)
+        # (Only the loaded data can be classified, so just loop over that)
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = max(binary_addr, range_start)
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is not None:
+                    if c.is_code(binary_addr):
+                        c.update_cpu_state(binary_addr, state)
+                        # (Use the state's own copy() if it has one, since copy.deepcopy() is slow)
+                        self.cpu_states[binary_addr] = state.copy() if hasattr(state, "copy") else copy.deepcopy(state)
+                    else:
+                        state = self.CpuState()
+                    binary_addr += c.length()
                 else:
-                    state = self.CpuState()
-                binary_addr += c.length()
-            else:
-                binary_addr += 1
+                    binary_addr += 1
 
         # Call each of the code analysis functions
         for f in self.code_analysis_fns:

@@ -358,18 +358,21 @@ def split_classification(binary_addr, *, warn):
 def classify_leftovers():
     """Classify everything not already classified, as bytes."""
 
-    # (For speed, this loop over all of memory uses plain integer addresses.)
+    # (For speed, this loop uses plain integer addresses.)
     memory_size = len(memory_binary)
     binary_addr = 0
-    while binary_addr < memory_size:
-        i = 0
-        while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None:
-            i += 1
-            if (binary_addr + i) >= memory_size or movemanager.b2r(BinaryAddr(binary_addr + i)) in labelmanager.labels:
-                break
-        if i > 0:
-            add_classification(BinaryAddr(binary_addr), Byte(i))
-        binary_addr += max(1, i)
+    # (Only the loaded data can be classified, so just loop over that)
+    for range_start, range_end in memorymanager.loaded_ranges():
+        binary_addr = max(binary_addr, range_start)
+        while binary_addr < range_end:
+            i = 0
+            while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None:
+                i += 1
+                if (binary_addr + i) >= memory_size or movemanager.b2r(BinaryAddr(binary_addr + i)) in labelmanager.labels:
+                    break
+            if i > 0:
+                add_classification(BinaryAddr(binary_addr), Byte(i))
+            binary_addr += max(1, i)
 
 def _is_loaded(binary_addr):
     """Is there loaded data at the binary address? (Safe at the top of memory.)"""
@@ -541,25 +544,28 @@ def autostring(min_length=3):
 
     assert min_length >= 2
 
-    # (For speed, this loop over all of memory uses plain integer addresses.)
+    # (For speed, this loop uses plain integer addresses.)
     memory_size = len(memory_binary)
     binary_addr = 0
-    while binary_addr < memory_size:
-        i = 0
-        while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None and utils.isprint(memory_binary[binary_addr + i]):
-            i += 1
-            runtime_addr = movemanager.b2r(BinaryAddr(binary_addr + i))
+    # (Only the loaded data can be classified, so just loop over that)
+    for range_start, range_end in memorymanager.loaded_ranges():
+        binary_addr = max(binary_addr, range_start)
+        while binary_addr < range_end:
+            i = 0
+            while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None and utils.isprint(memory_binary[binary_addr + i]):
+                i += 1
+                runtime_addr = movemanager.b2r(BinaryAddr(binary_addr + i))
 
-            # We end the classification here if there is a label (that is not an expression)
-            if runtime_addr in labelmanager.labels:
-                if not labelmanager.labels[runtime_addr].is_only_an_expression():
-                    break
+                # We end the classification here if there is a label (that is not an expression)
+                if runtime_addr in labelmanager.labels:
+                    if not labelmanager.labels[runtime_addr].is_only_an_expression():
+                        break
 
-        # if a string is found with at least the minimum length, classify it as a string
-        if i >= min_length:
-            assert not is_classified(binary_addr, i)
-            string_binary(BinaryAddr(binary_addr), i)
-        binary_addr += max(1, i)
+            # if a string is found with at least the minimum length, classify it as a string
+            if i >= min_length:
+                assert not is_classified(binary_addr, i)
+                string_binary(BinaryAddr(binary_addr), i)
+            binary_addr += max(1, i)
 
 def include_binary_file(binary_addr, relative_filepath):
     """Add an 'include binary' command in the assembly output. The contents are
@@ -652,7 +658,7 @@ def get_address16(binary_addr, offset=0):
 def get_stats():
     result = stats.Stats()
     oldc = None
-    # (For speed, this loop over all of memory uses plain integer addresses.)
+    # (For speed, this loop uses plain integer addresses.)
     for binary_addr in range(len(memory_binary)):
         c = classifications[binary_addr]
         if c is not None:

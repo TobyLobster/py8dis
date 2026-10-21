@@ -158,6 +158,20 @@ memory = MemoryRuntime()
 # Stores a (start_binary_addr, end_binary_addr) pair for each load()
 load_ranges = []
 
+def loaded_ranges():
+    """The binary address ranges holding loaded data, as a sorted list of
+    (start, end) pairs of ints, with overlapping or adjacent ranges merged.
+
+    Used to avoid looping over all 64K of memory when only part of it holds
+    the binary being disassembled."""
+    result = []
+    for start, end in sorted((int(s), int(e)) for s, e in load_ranges):
+        if result and start <= result[-1][1]:
+            result[-1] = (result[-1][0], max(result[-1][1], end))
+        else:
+            result.append((start, end))
+    return result
+
 def init():
     """Reset this module's state, forgetting any loaded data.
 

@@ -3,7 +3,7 @@ Utility functions
 """
 
 import collections
-import inspect
+import linecache
 import os
 import re
 import sys
@@ -265,12 +265,17 @@ def format_strings_in_a_table(strings, max_width, items_per_line_already_known, 
     return [formatter_for_line(str(item), i, i + 1) for i, item in enumerate(strings)]
 
 class StackEntry:
-    def __init__(self, index, function, filename, lineno, code, positions):
+    def __init__(self, index, function, filename, lineno):
         self.index = index
         self.function = function
         self.filename = filename
         self.lineno = lineno
-        self.code = code
+
+    @property
+    def code(self):
+        """The line of source code (looked up only when needed, since it's slow)."""
+        line = linecache.getline(self.filename, self.lineno).strip()
+        return line if line else None
 
     def __str__(self):
         return "{0}({1}): In function {2}(): line '{3}'".format(self.filename, self.lineno, self.function, self.code)
@@ -280,20 +285,23 @@ class StackEntry:
 
 def get_callstack():
     """
-    Gathers the current callstack, up to an optional maximum depth.
-
-    Args:
-        depth: Maximum depth to analyze, None for full stack
+    Gathers the current callstack.
 
     Returns:
-        list of call stack information where each entry is a 'StackEntry' object
+        list of call stack information where each entry is a 'StackEntry' object,
+        starting with this function's own frame
     """
-    frames = inspect.stack()
-    library_frames = []
 
-    for i, frame_info in enumerate(frames):
-        code = frame_info.code_context[0].strip() if frame_info.code_context else None
-        library_frames.append(StackEntry(i, frame_info.function, frame_info.filename, frame_info.lineno, code, frame_info.lineno))
+    # (This walks the frames directly rather than using inspect.stack(), which
+    # is much slower since it reads the source code of every frame.)
+    library_frames = []
+    frame = sys._getframe(0)
+    i = 0
+    while frame is not None:
+        code = frame.f_code
+        library_frames.append(StackEntry(i, code.co_name, code.co_filename, frame.f_lineno))
+        frame = frame.f_back
+        i += 1
 
     return library_frames
 
