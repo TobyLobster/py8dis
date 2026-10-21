@@ -325,7 +325,7 @@ addressing_mode_patterns = {
     'immediate':                Details(re.compile(r'^#(' + expr + r')$'), 2),                # e.g. #$10, #-20, or #label_name_name
     'zeropagex':                Details(re.compile(r'^(' + zp + r'),[Xx]$'), 2),              # e.g. $FF,X (zero-page) or zp1,X
     'zeropagey':                Details(re.compile(r'^(' + zp + r'),[Yy]$'), 2),              # e.g. $FF,y (zero-page) or zp1,y
-    'zeropageindexedindirectx': Details(re.compile(r'^\((' + zp + r')\),[Xx]$'), 2),          # e.g. (zp1),X
+    'zeropageindexedindirectx': Details(re.compile(r'^\((' + zp + r'),[Xx]\)$'), 2),          # e.g. (zp1,X)
     'zeropageindexedindirecty': Details(re.compile(r'^\((' + zp + r')\),[Yy]$'),2),           # e.g. (zp1),Y
     'zeropageindirect':         Details(re.compile(r'^\((' + zp + r')\)$'), 2),               # e.g. (zp1)
     'zeropage':                 Details(re.compile(r'^(' + zp + r')$'), 2),                   # e.g. $FF (zero-page) or zp1

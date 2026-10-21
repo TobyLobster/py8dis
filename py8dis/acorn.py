@@ -249,7 +249,7 @@ loop
     register_code_snippet(comment_print_message, """
 ?   ldx #nn1 | ldx zp | ldx zp,y | ldx addr | ldx addr,y
 loop
-    lda message,x | lda zp,x | lda (zp1),x
+    lda message,x | lda zp,x | lda (zp1,x)
 ?   bmi other | beq other
     jsr $ffee
     inx | dex

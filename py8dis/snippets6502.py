@@ -150,7 +150,19 @@ def comment_memory_copy_with_limited_end_loop(p):
     start_count         = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
     if start_count is None:
         start_count = p.get_memory("start_count")
-    bytes_to_copy       = start_count - end_count + 1  if start_count else None
+
+    # 'cpx #0' always sets the carry, so with an end_count of zero the loop never
+    # ends. That's not a memory copy.
+    if end_count == 0:
+        return
+
+    # The loop counts down from start_count to end_count inclusive, wrapping
+    # round from 0 to 255 if start_count is lower than end_count. (A
+    # start_count of zero is valid.)
+    if start_count is not None:
+        bytes_to_copy = ((start_count - end_count) & 0xff) + 1
+    else:
+        bytes_to_copy = None
 
     if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=end_count)
@@ -178,7 +190,9 @@ def comment_memory_copy_with_limited_end_loop(p):
         #if bytes_to_copy is None:
         #    dest_label = utils.LazyString("%s+%s", dest_label, reg.upper())
 
-    offset_string = str(end_count)
+    # If start_count isn't known, the number of bytes is the initial value of
+    # the register minus (end_count - 1)
+    offset_string = "" if end_count == 1 else "-%d" % (end_count - 1)
 
     def late_formatter():
         if bytes_to_copy is not None:
@@ -334,9 +348,9 @@ comment
 ?   ldx #start_count
 loop
 load
-    lda addr,x | lda (zp1),x
+    lda addr,x | lda (zp1,x)
 store
-    sta other,x | sta (zp2),x
+    sta other,x | sta (zp2,x)
 update
     dex
 branch
@@ -384,9 +398,9 @@ comment
 ?   ldx #start_count
 loop
 load
-    lda addr,x | lda (zp1),x
+    lda addr,x | lda (zp1,x)
 store
-    sta other,x | sta (zp2),x
+    sta other,x | sta (zp2,x)
 update
     dex
     cpx #end_count
@@ -400,9 +414,9 @@ comment
 ?    ldx #start_count
 loop
 load
-    lda addr,x | lda (zp1),x
+    lda addr,x | lda (zp1,x)
 store
-    sta other,x | sta (zp2),x
+    sta other,x | sta (zp2,x)
 update
     inx
     cpx #end_count
@@ -631,7 +645,7 @@ load2
 load3
 ?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
 loop
-    sta addr,x | sta (zp),x
+    sta addr,x | sta (zp,x)
     inx
     dey
 branch
