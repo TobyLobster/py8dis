@@ -83,6 +83,11 @@ labels = utils.keydefaultdict(Label)
 # address. See disassembly.emit().
 emit_opportunities = collections.defaultdict(set)
 
+def init():
+    """Reset this module's state, forgetting all labels."""
+    labels.clear()
+    emit_opportunities.clear()
+
 def notify_emit_opportunity(runtime_addr, move_id):
     """Record that the move_id is output at the runtime address."""
 

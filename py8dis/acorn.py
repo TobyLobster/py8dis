@@ -75,7 +75,6 @@ vector_descriptions = {
     0x0234: "spare vector 3"
 }
 
-global vector_handler_count
 vector_handler_count = dict()
 
 # ************************************************************************************************
@@ -3568,4 +3567,10 @@ def master():
     add_oswrsc()
     hardware_master()
 
+def _reset():
+    """Called by commands.reset()"""
+    vector_handler_count.clear()
+    register_snippets()
+
 register_snippets()
+add_reset_hook(_reset)

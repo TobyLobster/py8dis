@@ -674,3 +674,11 @@ register_comment_data_snippet("bitmask", """
     !byte 1
 """)
 
+
+# The snippets above are built in. init() removes any added later (e.g. by
+# acorn.py, which adds them again when py8dis is reset, see commands.reset()).
+_builtin_snippet_count = len(snippets)
+
+def init():
+    """Forget any snippets added after the built in ones."""
+    del snippets[_builtin_snippet_count:]

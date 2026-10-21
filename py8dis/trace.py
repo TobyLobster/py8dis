@@ -18,5 +18,15 @@ subroutines_list                 = []       # List of Subroutine() objects
 no_auto_comment_set              = set()    # binary locations not to be auto-commented
 references                       = None     # dictionary of references keyed by binary location
 
+def init():
+    """Reset this module's state, including forgetting the CPU."""
+    global cpu, references
+    cpu = None
+    subroutine_argument_finder_hooks.clear()
+    substitute_constant_list.clear()
+    subroutines_list.clear()
+    no_auto_comment_set.clear()
+    references = None
+
 def add_subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id):
     subroutines_list.append(subroutine.Subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id))

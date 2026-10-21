@@ -451,6 +451,23 @@ As a simple rule, put any `move()` commands just after `load()`.
 
 Classifies the binary into code and data, calculates all label names and (optionally) emits the final assembly. The output is also returned as a string. `post_trace_steps` allows the user to supply a function to find strings in the binary, overriding the default function.
 
+:pencil:`reset()`
+
+Forgets everything (loaded data, moves, labels, constants, comments, entry points, subroutines, hooks and settings), ready to disassemble something else in the same Python script. The command line is read again to choose the assembler and the case of the output. For example:
+
+```python
+from commands import *
+
+load(0x8000, "rom1.bin", "6502")
+...
+rom1_asm = go(print_output=False)
+
+reset()
+load(0x8000, "rom2.bin", "6502")
+...
+rom2_asm = go(print_output=False)
+```
+
 ## Getting help
 
 If you have problems or suggestions for improvement, you can raise an issue or submit a pull request in github. Alternatively you may like to post in the [py8dis thread](https://stardot.org.uk/forums/viewtopic.php?f=55&t=23335) on the [stardot](https://stardot.org.uk) forums.

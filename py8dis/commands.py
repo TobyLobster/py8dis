@@ -56,6 +56,7 @@ set_formatter()         Specifies a function used to format data.
 include_binary_file()   Include a binary file into the assembly.
 
 go()                    Classifies code and data and emits assembly.
+reset()                 Forget everything, ready to disassemble something else.
 """
 
 import argparse
@@ -82,6 +83,7 @@ import trace
 import utils
 
 import cpu
+import snippets6502
 import cpu65C02
 import cpu6502
 import cpu8080
@@ -1001,6 +1003,46 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Return assembly code as a string
     return result
 
+def reset():
+    """
+    Reset py8dis to its initial state, ready to disassemble something else.
+
+    Everything from earlier commands is forgotten: loaded data, moves, labels,
+    constants, comments, classifications, entry points, subroutines, hooks
+    and settings. The command line is read again to choose the assembler and
+    the case of the output.
+    """
+
+    memorymanager.init()
+    movemanager.init()
+    disassembly.init()          # (this also resets the classification module)
+    labelmanager.init()
+    trace.init()
+    cpu.Cpu.forget_instances()
+    snippets6502.init()
+    config.init()
+    _apply_command_line()
+
+    # Let other modules (e.g. acorn.py) reset themselves
+    for hook in _reset_hooks:
+        hook()
+
+_reset_hooks = []
+
+def add_reset_hook(hook):
+    """
+    Register a function to be called by reset().
+
+    For use by modules like acorn.py that keep their own state, or that
+    set things up when first imported (e.g. register snippets).
+    """
+    _reset_hooks.append(hook)
+
+def set_output_filename(filename):
+    """Set the filename for the assembler to save the assembled binary to
+    (for assemblers that support this, e.g. beebasm and acme)."""
+    config.get_assembler().set_output_filename(filename)
+
 # Command line parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--beebasm", action="store_true", help="generate beebasm-style output (default)")
@@ -1010,26 +1052,32 @@ parser.add_argument("-8", "--z88dk-8080", action="store_true", help="generate z8
 parser.add_argument("-l", "--lower", action="store_true", help="generate lower-case output (default)")
 parser.add_argument("-u", "--upper", action="store_true", help="generate upper-case output")
 parser.add_argument("-o", "--output", help="output asm file")
-args = parser.parse_known_args()[0]
 
-assembler_count = sum(1 for x in (args.beebasm, args.acme, args.xa, args.z88dk_8080) if x)
-if assembler_count > 1:
-    utils.die("--beebasm, --acme, --xa and --z88dk-8080 arguments are incompatible")
-if args.lower and args.upper:
-    utils.die("--lower and --upper arguments are incompatible")
+def _apply_command_line():
+    """Read the command line, then choose the assembler and the case of the output."""
+    global args
+    args = parser.parse_known_args()[0]
 
-if args.acme:
-    import acme
-elif args.xa:
-    import xa
-elif args.z88dk_8080:
-    import z88dk_8080
-else:
-    import beebasm
+    assembler_count = sum(1 for x in (args.beebasm, args.acme, args.xa, args.z88dk_8080) if x)
+    if assembler_count > 1:
+        utils.die("--beebasm, --acme, --xa and --z88dk-8080 arguments are incompatible")
+    if args.lower and args.upper:
+        utils.die("--lower and --upper arguments are incompatible")
 
-set_output_filename = config.get_assembler().set_output_filename
+    # Make a new assembler object (so nothing is left over from any earlier use)
+    if args.acme:
+        import acme
+        config.set_assembler(acme.Acme())
+    elif args.xa:
+        import xa
+        config.set_assembler(xa.Xa())
+    elif args.z88dk_8080:
+        import z88dk_8080
+        config.set_assembler(z88dk_8080.Z88DK())
+    else:
+        import beebasm
+        config.set_assembler(beebasm.Beebasm())
 
-if args.upper:
-    config.set_lower_case(False)
-else:
-    config.set_lower_case(True)
+    config.set_lower_case(not args.upper)
+
+_apply_command_line()

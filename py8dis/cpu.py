@@ -47,6 +47,18 @@ class Cpu:
         self.cpu_states = [None] * 64*1024
 
 
+    @staticmethod
+    def forget_instances():
+        """Forget the singleton instance of each CPU class, so the next one
+        created starts afresh. Used when resetting py8dis."""
+        def all_subclasses(cls):
+            for sub in cls.__subclasses__():
+                yield sub
+                yield from all_subclasses(sub)
+        for cls in all_subclasses(Cpu):
+            if 'instance' in cls.__dict__:
+                delattr(cls, 'instance')
+
     def already_initialised(self):
         """True if this CPU singleton has already been initialised (so __init__
         should do nothing)."""

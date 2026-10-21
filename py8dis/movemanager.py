@@ -132,6 +132,18 @@ cache = None
 # `cache_move_definitions_len` is used to check if any more move()s have been made and need to be cached.
 cache_move_definitions_len = None
 
+def init():
+    """Reset this module's state, forgetting any moves.
+
+    The collections are cleared in place rather than replaced, so any
+    references to them elsewhere stay valid."""
+    global cache, cache_move_definitions_len
+    active_move_ids.clear()
+    move_definitions[:] = [MoveDefinition(RuntimeAddr(0), BinaryAddr(0), 0x10000)]
+    move_id_for_binary_addr[:] = [MoveId(BASE_MOVE_ID)] * 0x10000
+    cache = None
+    cache_move_definitions_len = None
+
 def move_ids_for_runtime_addr(runtime_addr):
     """
     Return the list of move_ids for a given runtime_address.

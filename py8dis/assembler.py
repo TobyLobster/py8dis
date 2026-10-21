@@ -18,12 +18,14 @@ class Assembler:
     # with the original binary.
     #
     # 'pending_assertions' is a dictionary holding the assertions as key-value
-    # pairs.
-    pending_assertions = {}
+    # pairs. (It's created in __init__, so each assembler object has its own.)
 
     # 'output_filename': Some assemblers (e.g. beebasm and acme) can save the
     # resulting binary to a specific filepath if specified.
     output_filename = None
+
+    def __init__(self):
+        self.pending_assertions = {}
 
     def set_output_filename(self, filename):
         self.output_filename = filename

@@ -158,6 +158,15 @@ memory = MemoryRuntime()
 # Stores a (start_binary_addr, end_binary_addr) pair for each load()
 load_ranges = []
 
+def init():
+    """Reset this module's state, forgetting any loaded data.
+
+    The collections are cleared in place rather than replaced, so any
+    references to them elsewhere (e.g. 'memory_binary' in other modules) stay
+    valid."""
+    memory_binary[:] = [None] * len(memory_binary)
+    load_ranges.clear()
+
 def get_entire_load_range():
     """Get the whole binary address range for any loaded data"""
 

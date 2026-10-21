@@ -214,3 +214,10 @@ def set_cmos(b):
     global _cmos
     _cmos = b
 
+
+# The initial values of all the settings above, so init() can restore them
+_defaults = {name: value for name, value in globals().items() if name.startswith('_') and not name.startswith('__')}
+
+def init():
+    """Reset all settings to their initial values (and forget the assembler)."""
+    globals().update(_defaults)
