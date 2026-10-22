@@ -6,6 +6,7 @@ import classification
 import config
 import disassembly
 import mainformatter
+import output
 import memorymanager
 import movemanager
 import session
@@ -358,8 +359,13 @@ class Cpu8080(cpu.Cpu):
         def is_block_end(self):
             return False
 
+        def instruction(self, binary_addr):
+            """The instruction (see output.Instruction)."""
+            return output.Instruction(self.mnemonic)
+
         def as_string(self, binary_addr):
-            return "%s%s" % (utils.make_indent(1), utils.force_case(self.mnemonic))
+            """The instruction's text (see output.Instruction.text())."""
+            return self.instruction(binary_addr).text()
 
         def address_operand(self, binary_addr):
             """The 16 bit address operand (following the opcode at binary_addr) as a string."""
@@ -369,10 +375,13 @@ class Cpu8080(cpu.Cpu):
                 return operand
             return expression.in_context(operand, expression.OPERAND)
 
-        def as_string_list(self, binary_loc, annotations):
-            result = [mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length(), "", annotations, utils.LazyString(utils.make_indent(session.current().cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr)))]
+        def as_lines(self, binary_loc, annotations):
+            """The output for the instruction at binary_loc, as a list of
+            line objects (see output.py)."""
+            binary_addr = binary_loc.binary_addr
+            result = [self.instruction(binary_addr).placed(binary_loc, self.length(), session.current().cpu.indent_level_dict.get(binary_addr, 0), "", annotations)]
             if self.is_block_end() and config.get_blank_line_at_block_end():
-                result.append("")
+                result.append(output.Blank())
             return result
 
 
@@ -391,14 +400,15 @@ class Cpu8080(cpu.Cpu):
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 2]
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             memory_binary = session.current().memory.binary
-            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant8(binary_addr + 1), expression.OPERAND))
+            operand = expression.in_context(classification.get_constant8(binary_addr + 1), expression.OPERAND)
+            char_literal = None
             if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
-                    s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
-            return s
+                    char_literal = "'%s'" % chr(c)
+            return output.Instruction(self.mnemonic, operand, char_literal=char_literal)
 
 
     class OpcodeImmediate16(Opcode):
@@ -408,14 +418,15 @@ class Cpu8080(cpu.Cpu):
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 3]
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             memory_binary = session.current().memory.binary
-            s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant16(binary_addr + 1), expression.OPERAND))
+            operand = expression.in_context(classification.get_constant16(binary_addr + 1), expression.OPERAND)
+            char_literal = None
             if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
-                    s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
-            return s
+                    char_literal = "'%s'" % chr(c)
+            return output.Instruction(self.mnemonic, operand, char_literal=char_literal)
 
     class OpcodeAddr16(Opcode):
         def __init__(self, mnemonic, update=None):
@@ -424,10 +435,8 @@ class Cpu8080(cpu.Cpu):
         def abs_operand(self, binary_addr):
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
-        def as_string(self, binary_addr):
-            result1 = utils.force_case(self.mnemonic)
-            result2 = utils.LazyString("%s%s%s", self.prefix, self.address_operand(binary_addr), utils.force_case(self.suffix))
-            return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
+        def instruction(self, binary_addr):
+            return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)
 
         def update_references(self, binary_loc):
             session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
@@ -445,10 +454,8 @@ class Cpu8080(cpu.Cpu):
         def abs_operand(self, binary_addr):
             return self._target(binary_addr)
 
-        def as_string(self, binary_addr):
-            result1 = utils.force_case(self.mnemonic)
-            result2 = utils.LazyString("%s%s%s", self.prefix, self.address_operand(binary_addr), utils.force_case(self.suffix))
-            return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
+        def instruction(self, binary_addr):
+            return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)
 
         def update_references(self, binary_loc):
             session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
@@ -494,9 +501,9 @@ class Cpu8080(cpu.Cpu):
             # TODO: No state being tracked for 8080 code, yet
             state.clear(pessimistic_only=False)
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             label = disassembly.get_label(self._target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-            return utils.LazyString("%s%s %s", utils.make_indent(1), utils.force_case(self.mnemonic), label)
+            return output.Instruction(self.mnemonic, label)
 
     class OpcodeCall(Opcode):
         def __init__(self, mnemonic, update=None):
@@ -554,10 +561,8 @@ class Cpu8080(cpu.Cpu):
             result += [target_binary_addr]
             return result
 
-        def as_string(self, binary_addr):
-            result1 = utils.force_case(self.mnemonic)
-            result2 = utils.LazyString("%s%s%s", self.prefix, self.address_operand(binary_addr), utils.force_case(self.suffix))
-            return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
+        def instruction(self, binary_addr):
+            return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)
 
     class OpcodeReturn(Opcode):
         def __init__(self, mnemonic):

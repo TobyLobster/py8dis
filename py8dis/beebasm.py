@@ -313,6 +313,10 @@ class Beebasm(assembler.Assembler):
         result.append(s)
         return result
 
+    def can_force_absolute(self):
+        # Sadly beebasm doesn't currently have a way to do this.
+        return False
+
     def force_abs_instruction(self, instruction, prefix, operand, suffix):
         # Ensure the instruction uses an absolute address rather than a zero page address.
         # e.g. 'lda+2 addr'

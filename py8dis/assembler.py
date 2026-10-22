@@ -63,5 +63,11 @@ class Assembler:
         some contexts."""
         return text
 
+    def can_force_absolute(self):
+        """Can the assembler be told to use absolute addressing for an
+        instruction whose operand is a zero page address? (See
+        force_abs_instruction().)"""
+        return True
+
     def assert_expr(self, expr, value):
         self.pending_assertions[expr] = value

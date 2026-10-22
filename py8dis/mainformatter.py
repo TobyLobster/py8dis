@@ -103,45 +103,6 @@ def add_inline_comment_including_hexdump(binary_loc, length, cycles_description,
             binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + 1, binary_loc.move_id)
     return s.rstrip()
 
-def format_data_block_line(binary_loc, text, start_index, end_index, element_size, annotations, data_prefix):
-    result = data_prefix + text
-
-    current_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_index*element_size, binary_loc.move_id)
-    result = add_inline_comment_including_hexdump(current_binary_loc, (end_index - start_index)*element_size, "", annotations, result)
-    return result
-
-def format_data_block(binary_loc, length, cols, element_size, annotations):
-    """Format a block of data.
-
-    Formats an array of bytes or words, returning a string for each
-    line of output.
-    """
-    # TODO: We should also support "just emit with no padding or
-    # attempt to align columns but not spilling past data_width
-    # unless a single item forces it", a pseudo "word wrapping"
-    # style
-
-    assert isinstance(binary_loc.binary_addr, BinaryAddr)
-    assert memorymanager.is_valid_binary_addr(binary_loc.binary_addr)
-    assert length >= 1
-    assert element_size in (1, 2)
-    assert length % element_size == 0
-
-    # Read the data as a list of bytes or words
-    if element_size == 1:
-        data = list(classification.get_constant8(binary_loc.binary_addr + i) for i in range(length))
-        data_prefix = config.get_assembler().byte_prefix()
-    else:
-        data = list(classification.get_constant16(binary_loc.binary_addr + i) for i in range(0, length, 2))
-        data_prefix = config.get_assembler().word_prefix()
-
-    prefix = utils.make_indent(1) + data_prefix         # (e.g. prefix="    !byte" for example)
-    data_width = config.get_inline_comment_column() - len(prefix) - 1
-
-    result = utils.format_strings_in_a_table(data, data_width, cols, lambda text, start_index, end_index:
-        format_data_block_line(binary_loc, text, start_index, end_index, element_size, annotations, prefix))
-    return result
-
 def uhex_formatter(n, bits, pad=False):
     """Format an 8 or 16 bit number as hex.
     """

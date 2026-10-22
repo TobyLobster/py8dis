@@ -45,6 +45,7 @@ import labelmanager
 import mainformatter
 import memorymanager
 import movemanager
+import output
 import session
 import pprint
 import stats
@@ -113,8 +114,8 @@ class Byte:
     def is_code(self, binary_addr):
         return False
 
-    def as_string_list(self, binary_loc, annotations):
-        return mainformatter.format_data_block(binary_loc, self._length, self._cols, 1, annotations)
+    def as_lines(self, binary_loc, annotations):
+        return [output.DataBlock(binary_loc, self._length, self._cols, 1, annotations)]
 
 
 class Word:
@@ -136,8 +137,8 @@ class Word:
     def is_code(self, binary_addr):
         return False
 
-    def as_string_list(self, binary_loc, annotations):
-        return mainformatter.format_data_block(binary_loc, self._length, self._cols, 2, annotations)
+    def as_lines(self, binary_loc, annotations):
+        return [output.DataBlock(binary_loc, self._length, self._cols, 2, annotations)]
 
 
 class String:
@@ -158,19 +159,8 @@ class String:
     def is_code(self, binary_addr):
         return False
 
-    def as_string_list(self, binary_loc, annotations):
-        expressions = session.current().classifications.expressions
-        memory_binary = session.current().memory.binary
-        result = []
-        prefix = utils.make_indent(1) + assembler().string_prefix()
-        s = prefix
-        state = 0       # 0=not started first string yet, 1=within string, 2=finished string
-        start_line_i = 0
-
-        if binary_loc.binary_addr in expressions:
-            s = get_expression(binary_loc.binary_addr, memory_binary[binary_loc.binary_addr])
-            result.append(mainformatter.add_inline_comment_including_hexdump(binary_loc, self._length, "", annotations, prefix + s))
-            return result
+    def as_lines(self, binary_loc, annotations):
+        return [output.StringData(binary_loc, self._length, annotations)]
 
         i = 0
         while(i < self._length):

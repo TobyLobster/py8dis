@@ -25,6 +25,7 @@ import memorymanager
 import movemanager
 import session
 import optionallabel
+import output
 import re
 import trace
 import utils
@@ -600,7 +601,7 @@ def fix_label_names():
             if c is not None:
                 if not (binary_addr in session.current().classifications.include_binary_files):
                     move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                    dummy = [str(x) for x in c.as_string_list(movemanager.BinaryLocation(BinaryAddr(binary_addr), move_id), None)]
+                    dummy = [str(x) for x in output.render_lines(c.as_lines(movemanager.BinaryLocation(BinaryAddr(binary_addr), move_id), None))]
                 binary_addr += c.length()
             else:
                 binary_addr += 1
@@ -957,7 +958,7 @@ def emit_addr(binary_loc):
             result.append(annotation.as_string(binary_loc.binary_addr))
 
     # Emit the classification itself.
-    result.extend(classification.get_classification(binary_loc.binary_addr).as_string_list(binary_loc, annotations))
+    result.extend(output.render_lines(classification.get_classification(binary_loc.binary_addr).as_lines(binary_loc, annotations)))
 
     # Emit any annotations before outputting the line itself
     for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):

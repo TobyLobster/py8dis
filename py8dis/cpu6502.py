@@ -5,6 +5,7 @@ import disassembly
 import labelmanager
 import optionallabel
 import mainformatter
+import output
 import memorymanager
 import movemanager
 import session
@@ -998,11 +999,18 @@ class Cpu6502(cpu.Cpu):
         def is_unconditional_branch(self):
             return False
 
-        def as_string_list(self, binary_loc, annotations):
-            lazy_string = utils.LazyString(utils.make_indent(session.current().cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr))
-            result = [mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length(), self.cycles_description(binary_loc.binary_addr), annotations, lazy_string)]
+        def as_string(self, binary_addr):
+            """The instruction's text (see output.Instruction.text())."""
+            return self.instruction(binary_addr).text()
+
+        def as_lines(self, binary_loc, annotations):
+            """The output for the instruction at binary_loc, as a list of
+            line objects (see output.py)."""
+            binary_addr = binary_loc.binary_addr
+            result = [self.instruction(binary_addr).placed(binary_loc, self.length(), session.current().cpu.indent_level_dict.get(binary_addr, 0),
+                                                           self.cycles_description(binary_addr), annotations)]
             if self.is_block_end() and config.get_blank_line_at_block_end():
-                result.append("")
+                result.append(output.Blank())
             return result
 
         def __repr__(self):
@@ -1027,8 +1035,8 @@ class Cpu6502(cpu.Cpu):
         def is_block_end(self):
             return True
 
-        def as_string(self, binary_addr):
-            return "%s%s" % (utils.make_indent(1), utils.force_case(self.mnemonic))
+        def instruction(self, binary_addr):
+            return output.Instruction(self.mnemonic)
 
 
     class OpcodeImplied(Opcode):
@@ -1041,11 +1049,11 @@ class Cpu6502(cpu.Cpu):
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 1]
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             mnemonic = self.mnemonic
             if config.get_assembler().explicit_a and (self.addr_mode == Cpu6502.mode_accumulator):
                 mnemonic += " A"
-            return "%s%s" % (utils.make_indent(1), utils.force_case(mnemonic))
+            return output.Instruction(mnemonic)
 
 
     class OpcodeImmediate(Opcode):
@@ -1058,14 +1066,15 @@ class Cpu6502(cpu.Cpu):
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 2]
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             memory_binary = session.current().memory.binary
-            s = "%s%s #%s" % (utils.make_indent(1), utils.force_case(self.mnemonic), classification.get_constant8(binary_addr + 1))
+            operand = classification.get_constant8(binary_addr + 1)
+            char_literal = None
             if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
-                    s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
-            return s
+                    char_literal = "'%s'" % chr(c)
+            return output.Instruction(self.mnemonic, operand, prefix="#", char_literal=char_literal)
 
 
     class OpcodeZp(Opcode):
@@ -1086,7 +1095,7 @@ class Cpu6502(cpu.Cpu):
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 2]
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             address_string = classification.get_address8(binary_addr + 1)
             # TODO: We should avoid misassembly of a zp instruction by mistakenly
             # using a label with an absolute address. But we don't have the
@@ -1095,11 +1104,7 @@ class Cpu6502(cpu.Cpu):
             # then it's a forward reference, but we can't tell which label name
             # is to be used until the LazyStrings have been evaluated to the final
             # label name.
-            return utils.LazyString("%s%s %s%s%s", utils.make_indent(1),
-                utils.force_case(self.mnemonic),
-                self.prefix,
-                address_string,
-                utils.force_case(self.suffix))
+            return output.Instruction(self.mnemonic, address_string, prefix=self.prefix, suffix=self.suffix)
 
 
     class OpcodeAbs(Opcode):
@@ -1116,7 +1121,7 @@ class Cpu6502(cpu.Cpu):
         def has_zp_version(self):
             return self._has_zp_version
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             # We need to avoid misassembly of absolute instructions with zero-page
             # operands. (These are relatively rare in real code, but apart from the
             # fact we should still handle them even if they're rare, they can also
@@ -1128,23 +1133,20 @@ class Cpu6502(cpu.Cpu):
             # (unlikely) we don't fail at disassembly time when we spot the
             # mismatch, we should force absolute addressing if the expression is a
             # zero page value and the value in the input is not.
-            result1 = utils.force_case(self.mnemonic)
-            result2 = utils.LazyString("%s%s%s", self.prefix, classification.get_address16(binary_addr + 1), utils.force_case(self.suffix))
+            operand = classification.get_address16(binary_addr + 1)
             if not self.has_zp_version() or memorymanager.get_u16_binary(binary_addr + 1) >= 0x100:
-                return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
+                return output.Instruction(self.mnemonic, operand, prefix=self.prefix, suffix=self.suffix)
 
             # This is an absolute instruction with a zero-page operand which could
             # be misassembled. If the assembler has a way to explicitly request
             # absolute addressing, we use that.
-            force_abs_instruction = config.get_assembler().force_abs_instruction(result1, self.prefix, classification.get_address16(binary_addr + 1), utils.force_case(self.suffix))
-            if force_abs_instruction is not None:
-                return force_abs_instruction
+            if config.get_assembler().can_force_absolute():
+                return output.Instruction(self.mnemonic, operand, prefix=self.prefix, suffix=self.suffix, form=output.Instruction.FORCE_ABSOLUTE)
 
             # This assembler has no way to force absolute addressing, so emit the
-            # instruction as data with a comment showing what it is; the comment
-            # includes an acme-style "+2" suffix to help indicate what's going on.
-            operand = classification.get_address16(binary_addr + 1)
-            return utils.LazyString("%s%s%s, <(%s), >(%s) ; %s+2 %s", utils.make_indent(1), config.get_assembler().byte_prefix(), classification.get_constant8(binary_addr), operand, operand, result1, result2)
+            # instruction as data with a comment showing what it is.
+            return output.Instruction(self.mnemonic, operand, prefix=self.prefix, suffix=self.suffix, form=output.Instruction.AS_DATA,
+                                      data_byte=classification.get_constant8(binary_addr), listing_operand=operand)
 
 
     class OpcodeDataAbs(OpcodeAbs):
@@ -1315,9 +1317,9 @@ class Cpu6502(cpu.Cpu):
                 else:
                     state.clear(pessimistic_only=False)
 
-        def as_string(self, binary_addr):
+        def instruction(self, binary_addr):
             label = disassembly.get_label(self.target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-            return utils.LazyString("%s%s %s", utils.make_indent(1), utils.force_case(self.mnemonic), label)
+            return output.Instruction(self.mnemonic, label)
 
 
     def make_update_flag(self, flag, b):
