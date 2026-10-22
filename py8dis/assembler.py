@@ -20,10 +20,6 @@ class Assembler:
     # 'pending_assertions' is a dictionary holding the assertions as key-value
     # pairs. (It's created in __init__, so each assembler object has its own.)
 
-    # 'output_filename': Some assemblers (e.g. beebasm and acme) can save the
-    # resulting binary to a specific filepath if specified.
-    output_filename = None
-
     def __init__(self):
         self.pending_assertions = {}
 
@@ -66,9 +62,6 @@ class Assembler:
         (see expression.py), for assemblers that need something different in
         some contexts."""
         return text
-
-    def set_output_filename(self, filename):
-        self.output_filename = filename
 
     def assert_expr(self, expr, value):
         self.pending_assertions[expr] = value

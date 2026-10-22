@@ -57,9 +57,9 @@ include_binary_file()   Include a binary file into the assembly.
 
 go()                    Classifies code and data and emits assembly.
 reset()                 Forget everything, ready to disassemble something else.
+use_command_line()      Turn off (or on) reading options such as --acme from the command line.
 """
 
-import argparse
 import memorymanager
 
 # These functions are directly exposed to the user.
@@ -67,6 +67,7 @@ from disassembly import get_label
 from align import Align
 from format import Format
 from binaryaddrtype import BinaryAddrType
+from session import use_command_line
 from maker import make_op1, make_op2, make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 
 # These modules are used to implement things in this file and aren't so directly
@@ -80,6 +81,7 @@ import labelmanager
 import movemanager
 import mainformatter
 import align
+import session
 import trace
 import utils
 
@@ -1004,12 +1006,11 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Get the final assembly as a string
     result = disassembly.emit()
 
-    # Output assembly code if wanted
-    global args
-
-    # Write to a file if specified
-    if args.output:
-        with open(args.output, 'w') as file:
+    # Write to a file if specified (with -o on the command line), otherwise
+    # print it if wanted
+    asm_filename = session.current().asm_filename
+    if asm_filename:
+        with open(asm_filename, 'w') as file:
             file.write(result)
     elif print_output:
         print(result)
@@ -1024,8 +1025,11 @@ def reset():
     Everything from earlier commands is forgotten: loaded data, moves, labels,
     constants, comments, classifications, entry points, subroutines, hooks
     and settings. The command line is read again to choose the assembler and
-    the case of the output.
+    the case of the output (unless use_command_line(False) has been called).
     """
+
+    # A new session, with new settings and a new assembler object
+    session.new_session()
 
     memorymanager.init()
     movemanager.init()
@@ -1034,8 +1038,6 @@ def reset():
     trace.init()
     cpu.Cpu.forget_instances()
     snippets6502.init()
-    config.init()
-    _apply_command_line()
 
     # Let other modules (e.g. acorn.py) reset themselves
     for hook in _reset_hooks:
@@ -1055,43 +1057,4 @@ def add_reset_hook(hook):
 def set_output_filename(filename):
     """Set the filename for the assembler to save the assembled binary to
     (for assemblers that support this, e.g. beebasm and acme)."""
-    config.get_assembler().set_output_filename(filename)
-
-# Command line parsing
-parser = argparse.ArgumentParser()
-parser.add_argument("-b", "--beebasm", action="store_true", help="generate beebasm-style output (default)")
-parser.add_argument("-a", "--acme", action="store_true", help="generate acme-style output")
-parser.add_argument("-x", "--xa", action="store_true", help="generate xa-style output")
-parser.add_argument("-8", "--z88dk-8080", action="store_true", help="generate z88dk style output for the 8080 processor")
-parser.add_argument("-l", "--lower", action="store_true", help="generate lower-case output (default)")
-parser.add_argument("-u", "--upper", action="store_true", help="generate upper-case output")
-parser.add_argument("-o", "--output", help="output asm file")
-
-def _apply_command_line():
-    """Read the command line, then choose the assembler and the case of the output."""
-    global args
-    args = parser.parse_known_args()[0]
-
-    assembler_count = sum(1 for x in (args.beebasm, args.acme, args.xa, args.z88dk_8080) if x)
-    if assembler_count > 1:
-        utils.die("--beebasm, --acme, --xa and --z88dk-8080 arguments are incompatible")
-    if args.lower and args.upper:
-        utils.die("--lower and --upper arguments are incompatible")
-
-    # Make a new assembler object (so nothing is left over from any earlier use)
-    if args.acme:
-        import acme
-        config.set_assembler(acme.Acme())
-    elif args.xa:
-        import xa
-        config.set_assembler(xa.Xa())
-    elif args.z88dk_8080:
-        import z88dk_8080
-        config.set_assembler(z88dk_8080.Z88DK())
-    else:
-        import beebasm
-        config.set_assembler(beebasm.Beebasm())
-
-    config.set_lower_case(not args.upper)
-
-_apply_command_line()
+    session.current().output_filename = filename

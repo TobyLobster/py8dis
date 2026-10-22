@@ -12,6 +12,7 @@ import disassembly
 import mainformatter
 import memorymanager
 import movemanager
+import session
 import utils
 from binaryaddrtype import BinaryAddrType
 
@@ -303,10 +304,11 @@ class Beebasm(assembler.Assembler):
 
         result.append("")
         s = utils.force_case("save")
-        if self.output_filename is None:
+        output_filename = session.current().output_filename
+        if output_filename is None:
             s += " pydis_start, pydis_end"
         else:
-            s += ' "%s", pydis_start, pydis_end' % self.output_filename
+            s += ' "%s", pydis_start, pydis_end' % output_filename
         result.append(s)
         return result
 
@@ -369,5 +371,3 @@ class Beebasm(assembler.Assembler):
 
     def include_binary_file(self, binary_filepath):
         return utils.make_indent(1) + utils.force_case("incbin") + ' "' + binary_filepath + '"'
-
-config.set_assembler(Beebasm())

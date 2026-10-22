@@ -5,6 +5,7 @@ Acme assembler
 import sys
 
 import config
+import session
 import utils
 import assembler
 import traceback
@@ -135,8 +136,9 @@ class Acme(assembler.Assembler):
         result = []
 
         # Write the output file if specified
-        if self.output_filename:
-            result.extend(["!to \"%s\", plain" % (self.output_filename)])
+        output_filename = session.current().output_filename
+        if output_filename:
+            result.extend(["!to \"%s\", plain" % (output_filename)])
 
         # At the end of the assembly, we output assertions.
         if config.get_include_assertions():
@@ -217,5 +219,3 @@ class Acme(assembler.Assembler):
 
     def include_binary_file(self, binary_filepath):
         return utils.make_indent(1) + '!binary "' + binary_filepath + '"'
-
-config.set_assembler(Acme())

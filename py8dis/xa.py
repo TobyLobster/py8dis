@@ -333,5 +333,3 @@ class Xa(assembler.Assembler):
 
     def include_binary_file(self, binary_filepath):
         return utils.make_indent(1) + '.bin 0,0,"' + binary_filepath + '"'
-
-config.set_assembler(Xa())

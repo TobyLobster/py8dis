@@ -207,5 +207,3 @@ class Z88DK(assembler.Assembler):
 
     def include_binary_file(self, binary_filepath):
         return  "; TODO:"
-
-config.set_assembler(Z88DK())
