@@ -60,12 +60,6 @@ def make_subtract(expr1, expr2):
     if isinstance(expr2, int):
         if expr2 == 0:
             return expr1
-    # TODO: This is wrong: 0 - x is not x. To be fixed when expressions are
-    # evaluated (see claude/architecture-notes-2026-10-21.md). It's kept for
-    # now so the output doesn't change.
-    if isinstance(expr1, int):
-        if expr1 == 0:
-            return expr2
     return make_op2(expr1, '-', expr2)
 
 def make_multiply(expr1, expr2):

@@ -102,6 +102,11 @@ class Expr:
         hand operand of another operator."""
         raise NotImplementedError
 
+    def evaluate(self, names):
+        """The value of the expression, or None if it can't be worked out.
+        'names' is a function giving the value of a name (or None)."""
+        return None
+
     def is_lazy(self):
         """Does the expression contain a LazyString (e.g. a label that isn't
         named yet)? If so its text may change until all labels are named."""
@@ -174,6 +179,9 @@ class Num(Expr):
     def _render(self, nested):
         return (self._text(), ATOM, NO_CHAIN)
 
+    def evaluate(self, names):
+        return self.value
+
     def _text(self):
         if self.format == "hex":
             return config.get_assembler().hex(self.value)
@@ -192,6 +200,9 @@ class Name(Expr):
 
     def _render(self, nested):
         return (self.name, ATOM, NO_CHAIN)
+
+    def evaluate(self, names):
+        return names(self.name)
 
 
 class Raw(Expr):
@@ -213,6 +224,13 @@ class LazyLeaf(Expr):
     def _render(self, nested):
         text = str(self.lazy_string)
         return (text, _text_level(text), NO_CHAIN)
+
+    def evaluate(self, names):
+        # A label from disassembly.get_label() knows its runtime address
+        runtime_addr = getattr(self.lazy_string, "runtime_addr", None)
+        if runtime_addr is not None:
+            return runtime_addr
+        return names(str(self.lazy_string))
 
     def is_lazy(self):
         return True
@@ -262,6 +280,21 @@ class Unary(Expr):
         chain = frozenset({op}) if op in LOW_HIGH else NO_CHAIN
         return (spelling + _operand_text(self.operand, level, strict=True, unary=True)[0], level, chain)
 
+    def evaluate(self, names):
+        value = self.operand.evaluate(names)
+        if value is None:
+            return None
+        op = self.generic_op()
+        if op == 'NOT':
+            return ~value
+        if value < 0:
+            return None
+        if op == '<':
+            return value & 0xff
+        if op == '>':
+            return (value >> 8) & 0xff
+        return None
+
     def is_lazy(self):
         return self.operand.is_lazy()
 
@@ -299,9 +332,48 @@ class Binary(Expr):
         right, right_chain = _operand_text(self.right, level, strict=True, parent_op=op, same_op_ok=op if op in ASSOCIATIVE else None)
         return (left + " " + self._spelling() + " " + right, level, frozenset({op}) | left_chain | right_chain)
 
+    def evaluate(self, names):
+        left = self.left.evaluate(names)
+        right = self.right.evaluate(names)
+        if left is None or right is None:
+            return None
+        op = self.generic_op()
+        if op in _SIMPLE_OPERATORS:
+            return _SIMPLE_OPERATORS[op](left, right)
+        # Assemblers can differ for negative numbers here, so don't guess
+        if left < 0 or right < 0:
+            return None
+        if op == 'DIV':
+            return left // right if right != 0 else None
+        if op == 'MOD':
+            return left % right if right != 0 else None
+        if op == '<<':
+            return left << right if right < 32 else None
+        if op == '>>':
+            return left >> right
+        return None
+
     def is_lazy(self):
         return self.left.is_lazy() or self.right.is_lazy()
 
+
+# Operators that work the same in all assemblers, even for negative numbers
+_SIMPLE_OPERATORS = {
+    '+':   lambda a, b: a + b,
+    '-':   lambda a, b: a - b,
+    '*':   lambda a, b: a * b,
+    'AND': lambda a, b: a & b,
+    'OR':  lambda a, b: a | b,
+    'EOR': lambda a, b: a ^ b,
+}
+
+def evaluate(value, names):
+    """The value of an expression (or a string, int or LazyString), or None
+    if it can't be worked out. Expression strings written by the user are
+    never evaluated. 'names' is a function giving the value of a name (or None
+    if it's not known)."""
+    expr = to_expr(value)
+    return None if expr is None else expr.evaluate(names)
 
 def render(value, context=DEFAULT):
     """Render an expression (or a string, int or LazyString) for the current

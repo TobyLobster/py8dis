@@ -227,10 +227,12 @@ def init():
     The collections are cleared in place rather than replaced, so any
     references to them elsewhere stay valid."""
 
+    global _name_values
     classifications[:] = [None] * len(classifications)
     split_classifications.clear()
     include_binary_files.clear()
     expressions.clear()
+    _name_values = None
 
 def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     """Add an expression for the given binary address.
@@ -254,20 +256,48 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
 
     return expressions.get(binary_addr)
 
-def check_expr(expr, value, message):
-    """Add an assert to the output based on an expression."""
+# The values of names (constants and labels), for evaluating expressions. This
+# is set up by prepare_expression_checks() once all the labels are named.
+_name_values = None
 
-    # ENHANCE: It would be good to at least try to evaluate "expression" and generate
-    # an error if it doesn't match expected_value. In reality most expressions will
-    # be fairly simple combinations of labels and basic integer arithmetic, mixed with
-    # the < and > operators to get the low and high bytes of a 16-bit word.
+def prepare_expression_checks():
+    """Get ready to check expressions by evaluating them (see check_expr()).
+    Called once all the labels are named, just before the output is emitted."""
 
-    # ENHANCE: It would be good if this could (probably optionally) evaluate
-    # 'expr' itself in the content of the current set of labels and constants.
-    # However, the "assert at assembly time" approach should be absolutely
-    # reliable (it's just not as early a detection as we'd like) so should
-    # probably be retained even if expression evaluation is supported directly
-    # in py8dis.
+    global _name_values
+    values = {}
+    ambiguous = set()
+    def add(name, value):
+        if name in values and values[name] != value:
+            ambiguous.add(name)
+        values[name] = value
+
+    for c in disassembly.constants:
+        if utils.is_integer_type(c.value):
+            add(c.name, c.value)
+    for runtime_addr, label in labelmanager.labels.items():
+        for name_list in label.explicit_names.values():
+            for name in name_list:
+                add(name.text, int(runtime_addr))
+        for local_labels in label.local_labels.values():
+            for local_label in local_labels:
+                add(local_label.output_name, int(runtime_addr))
+    for runtime_addr, optional_label in disassembly.optional_labels.items():
+        if optional_label.base_address is None:
+            add(optional_label.name, int(runtime_addr))
+
+    # A name with more than one value can't be used to evaluate an expression
+    for name in ambiguous:
+        del values[name]
+    _name_values = values
+
+def check_expr(expr, value, message, width=None):
+    """Add an assert to the output based on an expression.
+
+    (py8dis also checks the value itself where it can, see
+    _evaluate_and_check(). The assertions are kept as well, since the
+    assembler can check every expression, including the ones py8dis can't
+    evaluate, e.g. expression strings written by the user.)"""
 
     # Don't clutter the output with pedantic 'constant = value' assertions
     for constant in disassembly.constants:
@@ -282,16 +312,49 @@ def check_expr(expr, value, message):
 
     config.get_assembler().assert_expr(expr, value)
 
-def get_expression(binary_addr, expected_value, is_address=False):
-    """Get the previously supplied expression for the given address."""
+def _evaluate_and_check(binary_addr, expr, expected_value, width):
+    """Check an expression's value, if py8dis can work it out (i.e. it doesn't
+    use an expression string written by the user, or an unknown name).
 
-    expression = expressions[binary_addr]
+    Stops with an error if the value is wrong. If the value is right except
+    that it's outside the range of a 'width' bit number (e.g. NOT gives a
+    negative number), returns the expression with a mask added (e.g.
+    'expr AND $ff'). Otherwise returns the expression unchanged."""
+
+    value = expression.evaluate(expr, _name_values.get)
+    if value is None or value == expected_value:
+        return expr
+
+    mask = (1 << width) - 1
+    if (value & mask) == expected_value:
+        # Right, apart from the range. The expression may have been rendered
+        # (and an assertion added for it) before the names were known (see
+        # disassembly.fix_label_names()), so remove that assertion, which
+        # would fail.
+        pending = assembler().pending_assertions
+        if pending.get(expr) == expected_value:
+            del pending[expr]
+        return expression.Binary(expr, 'AND', expression.Num(mask, "hex"))
+
+    h = assembler().hex
+    def show(v):
+        return h(v) if 0 <= v <= 0xffff else str(v)
+    utils.die("expr() at {0}: '{1}' is {2}, but the {3} there is {4}".format(
+        h(movemanager.b2r(binary_addr)), expr, show(value), "byte" if width == 8 else "word", h(expected_value)))
+
+def get_expression(binary_addr, expected_value, is_address=False, width=8):
+    """Get the previously supplied expression for the given address, whose
+    value should be 'expected_value', a 'width' bit number."""
+
+    expr = expressions[binary_addr]
     c = get_classification(binary_addr)
     if isinstance(c, String):
         expected_value = "".join(chr(memory_binary[binary_addr + i]) for i in range(c.length()))
-    check_expr(expression, expected_value, "at {0}".format(assembler().hex(movemanager.b2r(binary_addr))))
+    elif _name_values is not None:
+        expr = _evaluate_and_check(binary_addr, expr, expected_value, width)
+    check_expr(expr, expected_value, "at {0}".format(assembler().hex(movemanager.b2r(binary_addr))), width)
 
-    return expression
+    return expr
 
 def add_classification(binary_addr, c):
     """Sets the classification for the given address.
@@ -627,7 +690,7 @@ def get_constant16(binary_addr):
     """
 
     if binary_addr in expressions:
-        return get_expression(binary_addr, memorymanager.get_u16_binary(binary_addr))
+        return get_expression(binary_addr, memorymanager.get_u16_binary(binary_addr), width=16)
     return mainformatter.constant16(binary_addr)
 
 def get_address8(binary_addr, offset=0):
@@ -656,7 +719,7 @@ def get_address16(binary_addr, offset=0):
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
 
     assert isinstance(get_classification(binary_addr), Word) or (isinstance(get_classification(binary_addr - 1), trace.cpu.Opcode) and get_classification(binary_addr - 1).length() == 3), "Address: %s" % hex(binary_addr)
-    return get_expression(binary_addr, operand, is_address=True)
+    return get_expression(binary_addr, operand, is_address=True, width=16)
 
 
 def get_stats():

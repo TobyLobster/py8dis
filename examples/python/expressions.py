@@ -7,7 +7,7 @@
 
 from commands import *
 
-load(0x2000, "orig/expressions.orig", "6502", "278e97a27064c7fefc22c8aee3a3d0bf")
+load(0x2000, "orig/expressions.orig", "6502", "3cae9c43d5d489f353999570645c6285")
 
 constant(0x1234, "table")
 constant(0x7f, "k")
@@ -46,5 +46,13 @@ test(0x2011, make_add(make_op2(1, "<<", 3), 1))                     # (1 << 3) +
 test(0x2012, make_divide("x", 2))                                   # x DIV 2
 word(0x2013)
 expr(0x2013, make_subtract("table", 1))                             # table - 1
+
+# py8dis evaluates expressions where it can. A value that's right apart from
+# being outside the range of a byte or word (e.g. from NOT, or a negative
+# number) gets 'AND $ff' or 'AND $ffff' added.
+test(0x2015, make_op1("NOT", "m"))                                  # NOT(m) AND $ff
+test(0x2016, make_subtract(0, "k"))                                 # (0 - k) AND $ff
+word(0x2017)
+expr(0x2017, make_op1("NOT", "table"))                              # NOT(table) AND $ffff
 
 go()

@@ -248,7 +248,11 @@ def get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, mo
     # Ensure the label exists (with the appropriate active/relevant move ids)
     labelmanager.labels[runtime_addr]
 
-    return utils.LazyString("%s", lambda: get_final_label(runtime_addr, binary_addr, move_id, binary_addr_type=binary_addr_type))
+    result = utils.LazyString("%s", lambda: get_final_label(runtime_addr, binary_addr, move_id, binary_addr_type=binary_addr_type))
+    # (Whatever name is chosen, its value is the runtime address. This is used
+    # when evaluating expressions, see expression.py.)
+    result.runtime_addr = int(runtime_addr)
+    return result
 
 def get_emitted_label(runtime_addr):
     """Get the name of an existing, emitted label name for the given runtime address, or just
@@ -715,6 +719,9 @@ def emit(print_output=True):
 
     formatter = config.get_assembler()
     output = []
+
+    # All the labels are named now, so expressions can be evaluated
+    classification.prepare_expression_checks()
 
     # Output any prologue
     output.extend(formatter.disassembly_start())

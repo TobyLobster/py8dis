@@ -25,3 +25,6 @@
     !byte $09       ; (1 << 3) + 1
     !byte $02       ; x DIV 2
     !word $1233     ; table - 1
+    !byte $f0       ; NOT(m)                   (py8dis adds AND $ff)
+    !byte $81       ; 0 - k                    (py8dis adds AND $ff)
+    !word $edcb     ; NOT(table)               (py8dis adds AND $ffff)

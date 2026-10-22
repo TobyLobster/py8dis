@@ -36,10 +36,19 @@ pydis_start
     !byte (1 << 3) + 1                                                ; 2011: 09          .
     !byte x DIV 2                                                     ; 2012: 02          .
     !word table - 1                                                   ; 2013: 33 12       3.
+    !byte !m & $ff                                                    ; 2015: f0          .
+    !byte (0 - k) & $ff                                               ; 2016: 81          .
+    !word !table & $ffff                                              ; 2017: cb ed       ..
 pydis_end
 
 !if (!m & $ff) != $f0 {
     !error "Assertion failed: !m & $ff == $f0"
+}
+!if (!table & $ffff) != $edcb {
+    !error "Assertion failed: !table & $ffff == $edcb"
+}
+!if ((0 - k) & $ff) != $81 {
+    !error "Assertion failed: (0 - k) & $ff == $81"
 }
 !if ((1 << 3) + 1) != $09 {
     !error "Assertion failed: (1 << 3) + 1 == $09"
@@ -98,13 +107,13 @@ pydis_end
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 21 bytes
+;     Total size (Code + Data) = 25 bytes
 ;     Code                     = 0 bytes (0%)
-;     Data                     = 21 bytes (100%)
+;     Data                     = 25 bytes (100%)
 ;
 ;     Number of instructions   = 0
-;     Number of data bytes     = 19 bytes
-;     Number of data words     = 2 bytes
+;     Number of data bytes     = 21 bytes
+;     Number of data words     = 4 bytes
 ;     Number of string bytes   = 0 bytes
 ;     Number of strings        = 0
 

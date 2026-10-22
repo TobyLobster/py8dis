@@ -36,8 +36,12 @@ x       = 5
     equb (1 << 3) + 1                                                 ; 2011: 09          .
     equb x DIV 2                                                      ; 2012: 02          .
     equw table - 1                                                    ; 2013: 33 12       3.
+    equb NOT(m) AND &ff                                               ; 2015: f0          .
+    equb (0 - k) AND &ff                                              ; 2016: 81          .
+    equw NOT(table) AND &ffff                                         ; 2017: cb ed       ..
 .pydis_end
 
+    assert &81 == ((0 - k) AND &ff)
     assert &09 == (1 << 3) + 1
     assert &00 == ((255 - k) EOR 128)
     assert &34 == ((<table) AND &7f)
@@ -48,6 +52,7 @@ x       = 5
     assert &35 == <(table + 1)
     assert &13 == >(table + &0100)
     assert &f0 == (NOT(m) AND &ff)
+    assert &edcb == (NOT(table) AND &ffff)
     assert &06 == a + b + c
     assert &03 == (p EOR q EOR r)
     assert &3f == (p OR (q AND r))
@@ -62,13 +67,13 @@ save pydis_start, pydis_end
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 21 bytes
+;     Total size (Code + Data) = 25 bytes
 ;     Code                     = 0 bytes (0%)
-;     Data                     = 21 bytes (100%)
+;     Data                     = 25 bytes (100%)
 ;
 ;     Number of instructions   = 0
-;     Number of data bytes     = 19 bytes
-;     Number of data words     = 2 bytes
+;     Number of data bytes     = 21 bytes
+;     Number of data words     = 4 bytes
 ;     Number of string bytes   = 0 bytes
 ;     Number of strings        = 0
 
