@@ -76,8 +76,6 @@ vector_descriptions = {
     0x0234: "spare vector 3"
 }
 
-vector_handler_count = dict()
-
 # ************************************************************************************************
 def pre_trace_writing_to_vector(p):
     p.entry()
@@ -90,7 +88,8 @@ def pre_trace_writing_to_vector(p):
     nn2 = p.get_memory('nn2')
     end = p.get_binary_location('end')
 
-    global vector_handler_count
+    # The number of handlers found so far for each vector, for naming them
+    vector_handler_count = session.current().extras.setdefault("acorn.vector_handler_count", {})
 
     if addr1 == (addr2 + 1) and ((addr2 & 1) == 0):
         # swap addr1 and addr2, so that addr1 is the lower
@@ -223,6 +222,13 @@ def comment_screen_offsets(p):
 # ************************************************************************************************
 # ************************************************************************************************
 def register_snippets():
+    """Register acorn's snippets with the current session (called by
+    mos_labels(), once per session)."""
+    extras = session.current().extras
+    if extras.get("acorn.snippets_registered"):
+        return
+    extras["acorn.snippets_registered"] = True
+
     register_code_snippet(comment_print_tab, """
     lda #$1f
     jsr $ffee
@@ -2968,6 +2974,9 @@ def oscli_hook(runtime_addr, state, subroutine):
 
 # ENHANCE: Split this up somehow into "tube or host" and "just host"?
 def mos_labels():
+    # (bbc(), electron(), b_plus() and master() all call this)
+    register_snippets()
+
     optional_label(0x00f2, "os_text_ptr")
     optional_label(0x00f4, "romsel_copy")
     optional_label(0x00f6, "osrdsc_ptr")
@@ -3567,11 +3576,3 @@ def master():
     mos_labels()
     add_oswrsc()
     hardware_master()
-
-def _reset():
-    """Called by commands.reset()"""
-    vector_handler_count.clear()
-    register_snippets()
-
-register_snippets()
-add_reset_hook(_reset)

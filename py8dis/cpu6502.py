@@ -17,7 +17,6 @@ import sys
 from align import Align
 from binaryaddrtype import BinaryAddrType
 from memorymanager import RuntimeAddr, BinaryAddr, BinaryLocation
-from snippets6502 import snippets
 from snippethelper import *
 
 
@@ -1768,7 +1767,7 @@ class Cpu6502(cpu.Cpu):
         found_already = [False]*65536
 
         # for each snippet
-        for details in snippets:
+        for details in session.current().snippets:
             if details.pre_trace_function is None:
                 continue
 
@@ -1806,7 +1805,7 @@ class Cpu6502(cpu.Cpu):
         found_already = [False]*65536
 
         # for each snippet
-        for details in snippets:
+        for details in session.current().snippets:
             if details.post_trace_function is None:
                 continue
 

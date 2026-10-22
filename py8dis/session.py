@@ -9,12 +9,8 @@ a new session.
 Nothing should keep a reference to the session's state (e.g. its settings)
 from one call to the next, since it will be out of date after a reset.
 
-(This is being introduced in steps: so far the session holds the settings,
-the assembler, the output filenames, the memory, the moves, the
-classifications, the labels, disassembly.py's state (constants, annotations
-etc.), the CPU and the trace state. The snippets and acorn.py's state are still
-held by their modules. See claude/architecture-notes-2026-10-21.md in the
-project.)
+(See "One state object instead of module-level globals" in
+claude/architecture-notes-2026-10-21.md in the project.)
 """
 
 import argparse
@@ -41,6 +37,7 @@ class Session:
         import labelmanager
         import memorymanager
         import movemanager
+        import snippets6502
         import trace
 
         self.settings = config.Settings()
@@ -63,6 +60,14 @@ class Session:
 
         # The CPU (an object of class Cpu), which is set by load()
         self.cpu = None
+
+        # The snippets in use (see snippets6502.py): the built in ones, then
+        # any registered by the control file or e.g. acorn.py.
+        self.snippets = list(snippets6502.BUILTIN_SNIPPETS)
+
+        # State kept by other modules, e.g. acorn.py, keyed by a name
+        # starting with the module name (e.g. "acorn.vector_handler_count").
+        self.extras = {}
 
 def make_assembler(name):
     """Make a new assembler object, given the assembler's name."""

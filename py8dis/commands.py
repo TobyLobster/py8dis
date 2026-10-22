@@ -1043,8 +1043,6 @@ def reset():
     # A new session, with new settings and a new assembler object
     session.new_session()
 
-    snippets6502.init()
-
     # Let other modules (e.g. acorn.py) reset themselves
     for hook in _reset_hooks:
         hook()
@@ -1055,8 +1053,9 @@ def add_reset_hook(hook):
     """
     Register a function to be called by reset().
 
-    For use by modules like acorn.py that keep their own state, or that
-    set things up when first imported (e.g. register snippets).
+    For a module that keeps its own state outside the session. (A module
+    can instead keep its state in the session's 'extras', as acorn.py does,
+    which needs no hook.)
     """
     _reset_hooks.append(hook)
 

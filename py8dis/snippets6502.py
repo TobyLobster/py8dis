@@ -3,6 +3,7 @@ import disassembly
 import snippet6502
 import utils
 import labelmanager
+import session
 import sys
 from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
@@ -17,12 +18,26 @@ OPCODE_BNE                      = 0xd0      # bne loop
 OPCODE_TXA                      = 0x8a      # txa
 OPCODE_TYA                      = 0x98      # tya
 
-# The list of 'SnippetDetails' which contain a regex for binary data to find common code tropes,
+# Snippets are 'SnippetDetails' which contain a regex for binary data to find common code tropes,
 # and two associated functions (for commenting, adding expressions etc).
 # One function is executed before the code is traced, allowing new entry points to be added for the trace.
 # The other happens after tracing which allows for more detailed comments to be added because we know the
 # cpu_state of registers.
-snippets = []
+#
+# The snippets in use are the session's 'snippets' list (see session.py), which
+# starts as a copy of the built in snippets below. The register_*() functions
+# add to it.
+BUILTIN_SNIPPETS = []
+
+# True while this module is registering the built in snippets, when it's first
+# imported
+_registering_builtins = True
+
+def _add(details):
+    if _registering_builtins:
+        BUILTIN_SNIPPETS.append(details)
+    else:
+        session.current().snippets.append(details)
 
 # ************************************************************************************************
 def add_entry(p):
@@ -37,19 +52,19 @@ def add_data_comment(p, comment):
 
 
 def register_snippet(pre_trace_fn, post_trace_fn, snippet):
-    snippets.append(SnippetDetails(pre_trace_fn, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(pre_trace_fn, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
 
 def register_code_snippet(post_trace_fn, snippet):
-    snippets.append(SnippetDetails(add_entry, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(add_entry, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
 
 def register_data_snippet(post_trace_fn, snippet):
-    snippets.append(SnippetDetails(None, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(None, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
 
 def register_comment_code_snippet(comment, snippet):
-    snippets.append(SnippetDetails(add_code_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(add_code_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
 
 def register_comment_data_snippet(comment, snippet):
-    snippets.append(SnippetDetails(add_data_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(add_data_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
 
 # ************************************************************************************************
 def comment_memory_copy_loop(p):
@@ -675,10 +690,6 @@ register_comment_data_snippet("bitmask", """
 """)
 
 
-# The snippets above are built in. init() removes any added later (e.g. by
-# acorn.py, which adds them again when py8dis is reset, see commands.reset()).
-_builtin_snippet_count = len(snippets)
-
-def init():
-    """Forget any snippets added after the built in ones."""
-    del snippets[_builtin_snippet_count:]
+# The snippets above are built in. Any registered from now on (e.g. by a
+# control file, or acorn.py) belong to the current session.
+_registering_builtins = False
