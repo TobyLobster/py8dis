@@ -1033,7 +1033,7 @@ def reset():
     # A new session, with new settings and a new assembler object
     session.new_session()
 
-    disassembly.init()          # (this also resets the classification module)
+    disassembly.init()
     labelmanager.init()
     trace.init()
     cpu.Cpu.forget_instances()

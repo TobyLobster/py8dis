@@ -55,17 +55,28 @@ from memorymanager import BinaryAddr, RuntimeAddr
 from format import Format
 from binaryaddrtype import BinaryAddrType
 
-expressions   = {}
 assembler     = config.get_assembler
 
-# `classifications` stores classifications indexed by binary address.
-classifications = [None] * 64*1024
+class Classifications:
+    """The classifications (and expressions) of one session (see session.py)."""
 
-# Dictionary of binary files to include in the output, keyed by binary address
-include_binary_files = dict()
+    def __init__(self):
+        # `classifications` stores classifications indexed by binary address.
+        self.classifications = [None] * 64*1024
 
-# Remember the addresses where a split_classification is requested
-split_classifications = set()
+        # The expression for each binary address that has one
+        self.expressions = {}
+
+        # Dictionary of binary files to include in the output, keyed by binary address
+        self.include_binary_files = dict()
+
+        # Remember the addresses where a split_classification is requested
+        self.split_classifications = set()
+
+        # The values of names (constants and labels), for evaluating
+        # expressions. This is set up by prepare_expression_checks() once all
+        # the labels are named.
+        self.name_values = None
 
 # `INSIDE_A_CLASSIFICATION` is a unique marker object.
 #
@@ -148,6 +159,7 @@ class String:
         return False
 
     def as_string_list(self, binary_loc, annotations):
+        expressions = session.current().classifications.expressions
         memory_binary = session.current().memory.binary
         result = []
         prefix = utils.make_indent(1) + assembler().string_prefix()
@@ -222,19 +234,6 @@ class String:
     def __repr__(self) -> str:
         return self.__str__()
 
-def init():
-    """Reset this module's state.
-
-    The collections are cleared in place rather than replaced, so any
-    references to them elsewhere stay valid."""
-
-    global _name_values
-    classifications[:] = [None] * len(classifications)
-    split_classifications.clear()
-    include_binary_files.clear()
-    expressions.clear()
-    _name_values = None
-
 def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     """Add an expression for the given binary address.
 
@@ -247,6 +246,7 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     Returns the expression now at the address, or None if there isn't one
     (because an auto_generated expression wasn't added)."""
 
+    expressions = session.current().classifications.expressions
     assert not isinstance(s, labelmanager.Label) # TODO!?
     s = expression.to_expr(s)
     # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
@@ -257,15 +257,10 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
 
     return expressions.get(binary_addr)
 
-# The values of names (constants and labels), for evaluating expressions. This
-# is set up by prepare_expression_checks() once all the labels are named.
-_name_values = None
-
 def prepare_expression_checks():
     """Get ready to check expressions by evaluating them (see check_expr()).
     Called once all the labels are named, just before the output is emitted."""
 
-    global _name_values
     values = {}
     ambiguous = set()
     def add(name, value):
@@ -290,7 +285,7 @@ def prepare_expression_checks():
     # A name with more than one value can't be used to evaluate an expression
     for name in ambiguous:
         del values[name]
-    _name_values = values
+    session.current().classifications.name_values = values
 
 def check_expr(expr, value, message, width=None):
     """Add an assert to the output based on an expression.
@@ -322,7 +317,7 @@ def _evaluate_and_check(binary_addr, expr, expected_value, width):
     negative number), returns the expression with a mask added (e.g.
     'expr AND $ff'). Otherwise returns the expression unchanged."""
 
-    value = expression.evaluate(expr, _name_values.get)
+    value = expression.evaluate(expr, session.current().classifications.name_values.get)
     if value is None or value == expected_value:
         return expr
 
@@ -347,12 +342,13 @@ def get_expression(binary_addr, expected_value, is_address=False, width=8):
     """Get the previously supplied expression for the given address, whose
     value should be 'expected_value', a 'width' bit number."""
 
+    expressions = session.current().classifications.expressions
     memory_binary = session.current().memory.binary
     expr = expressions[binary_addr]
     c = get_classification(binary_addr)
     if isinstance(c, String):
         expected_value = "".join(chr(memory_binary[binary_addr + i]) for i in range(c.length()))
-    elif _name_values is not None:
+    elif session.current().classifications.name_values is not None:
         expr = _evaluate_and_check(binary_addr, expr, expected_value, width)
     check_expr(expr, expected_value, "at {0}".format(assembler().hex(movemanager.b2r(binary_addr))), width)
 
@@ -366,6 +362,8 @@ def add_classification(binary_addr, c):
     are marked with `INSIDE_A_CLASSIFICATION`.
     """
 
+    split_classifications = session.current().classifications.split_classifications
+    classifications = session.current().classifications.classifications
     binary_addr = BinaryAddr(binary_addr)
     assert c is not None
     assert not is_classified(binary_addr, c.length()), "Binary address {0} is already classified as {1}".format(hex(binary_addr), get_classification(binary_addr))
@@ -383,16 +381,19 @@ def add_classification(binary_addr, c):
             classifications[current_addr] = INSIDE_A_CLASSIFICATION
 
 def get_classification(binary_addr):
+    classifications = session.current().classifications.classifications
     return classifications[binary_addr]
 
 def is_classified(binary_addr, length=1):
     """Is any address in the given range classified?"""
 
+    classifications = session.current().classifications.classifications
     return any(x is not None for x in classifications[binary_addr:binary_addr+length])
 
 def is_code(binary_addr):
     """Is the given `binary_addr` classified as an instruction opcode?"""
 
+    classifications = session.current().classifications.classifications
     c = classifications[binary_addr]
     if c is None or c is INSIDE_A_CLASSIFICATION:
         return False
@@ -401,6 +402,8 @@ def is_code(binary_addr):
 def split_classification(binary_addr, *, warn):
     """If e.g. a move boundary is in the middle of an instruction, then split the classification."""
 
+    split_classifications = session.current().classifications.split_classifications
+    classifications = session.current().classifications.classifications
     if binary_addr >= 0x10000:
         return
 
@@ -426,6 +429,7 @@ def classify_leftovers():
     """Classify everything not already classified, as bytes."""
 
     # (For speed, this loop uses plain integer addresses.)
+    classifications = session.current().classifications.classifications
     memory_binary = session.current().memory.binary
     memory_size = len(memory_binary)
     binary_addr = 0
@@ -485,6 +489,7 @@ def _check_string_bytes(binary_addr, length, *, report_addr=None):
 def describe_classification_at(binary_addr):
     """A short description of the classification covering the binary address, for messages."""
 
+    classifications = session.current().classifications.classifications
     while classifications[binary_addr] is INSIDE_A_CLASSIFICATION and binary_addr > 0:
         binary_addr -= 1
     c = classifications[binary_addr]
@@ -619,6 +624,7 @@ def stringn_binary(runtime_addr, binary_addr):
 def autostring(min_length=3):
     """Attempt to automatically find and classify strings through the entire binary."""
 
+    classifications = session.current().classifications.classifications
     memory_binary = session.current().memory.binary
     assert min_length >= 2
 
@@ -648,6 +654,7 @@ def autostring(min_length=3):
 def include_binary_file(binary_addr, relative_filepath):
     """Add an 'include binary' command in the assembly output. The contents are
     verified to be identical to our current file contents."""
+    include_binary_files = session.current().classifications.include_binary_files
     memory_binary = session.current().memory.binary
     h = config.get_assembler().hex
     def die(problem):
@@ -688,6 +695,7 @@ def get_constant8(binary_addr):
     output, e.g. for converting 'LDA #3' into 'LDA #num_lives'
     """
 
+    expressions = session.current().classifications.expressions
     memory_binary = session.current().memory.binary
     if binary_addr in expressions:
         return get_expression(binary_addr, memory_binary[binary_addr])
@@ -702,6 +710,7 @@ def get_constant16(binary_addr):
     'LXI BC,my_special_constant'.
     """
 
+    expressions = session.current().classifications.expressions
     if binary_addr in expressions:
         return get_expression(binary_addr, memorymanager.get_u16_binary(binary_addr), width=16)
     return mainformatter.constant16(binary_addr)
@@ -714,6 +723,7 @@ def get_address8(binary_addr, offset=0):
     e.g. for converting 'LDA $12' into 'LDA num_lives'.
     """
 
+    expressions = session.current().classifications.expressions
     operand = (memorymanager.get_u8_binary(binary_addr) + offset) & 255
     if binary_addr not in expressions:
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
@@ -727,6 +737,7 @@ def get_address16(binary_addr, offset=0):
     for converting 'JSR $1234' into 'JSR my_label'.
     """
 
+    expressions = session.current().classifications.expressions
     operand = (memorymanager.get_u16_binary(binary_addr) + offset) & 65535
     if binary_addr not in expressions or (offset != 0):
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
@@ -736,6 +747,7 @@ def get_address16(binary_addr, offset=0):
 
 
 def get_stats():
+    classifications = session.current().classifications.classifications
     memory_binary = session.current().memory.binary
     result = stats.Stats()
     oldc = None

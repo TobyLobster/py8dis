@@ -10,9 +10,9 @@ Nothing should keep a reference to the session's state (e.g. its settings)
 from one call to the next, since it will be out of date after a reset.
 
 (This is being introduced in steps: so far the session holds the settings,
-the assembler, the output filenames, the memory and the moves. The rest of the state is still held
-by the individual modules. See claude/architecture-notes-2026-10-21.md in the
-project.)
+the assembler, the output filenames, the memory, the moves and the
+classifications. The rest of the state is still held by the individual
+modules. See claude/architecture-notes-2026-10-21.md in the project.)
 """
 
 import argparse
@@ -34,6 +34,7 @@ class Session:
 
         # (These modules are imported here rather than at the top of this
         # file, since they import this module themselves.)
+        import classification
         import memorymanager
         import movemanager
 
@@ -50,6 +51,7 @@ class Session:
 
         self.memory = memorymanager.Memory()
         self.moves  = movemanager.Moves()
+        self.classifications = classification.Classifications()
 
 def make_assembler(name):
     """Make a new assembler object, given the assembler's name."""

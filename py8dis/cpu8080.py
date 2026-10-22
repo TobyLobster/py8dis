@@ -401,7 +401,7 @@ class Cpu8080(cpu.Cpu):
         def as_string(self, binary_addr):
             memory_binary = session.current().memory.binary
             s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant8(binary_addr + 1), expression.OPERAND))
-            if (binary_addr + 1) not in classification.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
+            if (binary_addr + 1) not in session.current().classifications.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
                     s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
@@ -418,7 +418,7 @@ class Cpu8080(cpu.Cpu):
         def as_string(self, binary_addr):
             memory_binary = session.current().memory.binary
             s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant16(binary_addr + 1), expression.OPERAND))
-            if (binary_addr + 1) not in classification.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
+            if (binary_addr + 1) not in session.current().classifications.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
                     s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
