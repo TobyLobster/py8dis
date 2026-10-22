@@ -73,7 +73,7 @@ import session
 import memorymanager
 import utils
 from memorymanager import BinaryAddr, RuntimeAddr
-from label import Label
+import label as label_module       # (not 'from label import Label', since label imports this module, indirectly)
 
 class Labels:
     """The labels of one session (see session.py)."""
@@ -82,7 +82,7 @@ class Labels:
         # A runtime address is the key of this dictionary whose value is
         # a single Label (which can hold multiple label names and expressions
         # as required).
-        self.labels = utils.keydefaultdict(Label)
+        self.labels = utils.keydefaultdict(label_module.Label)
 
         # For each runtime address, the set of move_ids that are output at
         # that address. See disassembly.emit().

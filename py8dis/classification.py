@@ -247,7 +247,7 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     (because an auto_generated expression wasn't added)."""
 
     expressions = session.current().classifications.expressions
-    assert not isinstance(s, labelmanager.Label) # TODO!?
+    assert not isinstance(s, labelmanager.label_module.Label) # TODO!?
     s = expression.to_expr(s)
     # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
     has_existing_expr = binary_addr in expressions

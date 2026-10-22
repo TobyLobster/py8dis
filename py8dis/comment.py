@@ -1,6 +1,5 @@
 import utils
 import config
-import mainformatter
 from align import Align
 
 class Annotation:
@@ -31,6 +30,10 @@ class Comment(Annotation):
     def __init__(self, text, word_wrap=True, indent=0, align=Align.BEFORE_LABEL, priority=None, auto_generated=True):
 
         def late_formatter():
+            # (Imported here, since mainformatter imports (indirectly) the
+            # disassembly module, which imports this one.)
+            import mainformatter
+
             strtext = str(text)
             if word_wrap:
                 if align != Align.INLINE:

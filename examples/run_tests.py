@@ -11,6 +11,10 @@ For each test and assembler:
      without any assemblers installed).
   4. With -m, copy the asm to known_good (only once the binary has been checked)
 
+With -c, when all the tests are run, session_tests.py is run as well (several
+disassemblies in one process: see that file). It's started first and reported
+first.
+
 Tests run in parallel. Examples:
 
   ./run_tests.py -c                     # run and check all tests
@@ -219,8 +223,28 @@ def main():
     start = time.time()
     failures = 0
     width = max((len(f"{n}_{a}") for n, a in jobs), default=0) + 2
+    # The session tests (several disassemblies in one process), when checking
+    # all the tests. These start first since they take longest.
+    run_session_tests = options.check_disassembly and not options.tests and not options.assemblers
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, options.jobs)) as executor:
+        if run_session_tests:
+            session_future = executor.submit(subprocess.run, [sys.executable, "session_tests.py"], capture_output=True, text=True, env=env)
         futures = [executor.submit(run_test, name, assembler, options, env) for name, assembler in jobs]
+        # The session tests first, since they were started first
+        if run_session_tests:
+            jobs.append(("session_tests", None))
+            proc = session_future.result()
+            label = "session_tests:".ljust(width)
+            if proc.returncode != 0:
+                failures += 1
+                print(f"{label}FAILED:")
+                for line in (proc.stdout + proc.stderr).splitlines():
+                    if not line.startswith("warning:") and not line.startswith("  passed:"):
+                        print("    " + line)
+            else:
+                print(f"{label}passed")
+            sys.stdout.flush()
+
         # Report in test order (each result waits for its own test to finish)
         for future in futures:
             r = future.result()

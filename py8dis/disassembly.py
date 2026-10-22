@@ -28,7 +28,6 @@ import optionallabel
 import re
 import trace
 import utils
-from classification import INSIDE_A_CLASSIFICATION
 from binaryaddrtype import BinaryAddrType
 from comment import Annotation, Comment
 from align import Align

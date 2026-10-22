@@ -18,6 +18,10 @@ class Xa(assembler.Assembler):
         super().__init__()
         self.pseudopc_index=0
 
+        # Numbers the labels that mark the end of each code block, see
+        # code_start()
+        self._code_index = 1
+
     def get_name(self):
         return "xa"
 
@@ -112,15 +116,13 @@ class Xa(assembler.Assembler):
     def code_start(self, start_addr, end_addr, first):
         """At the start of the code we provide the address at which to
         assemble."""
-        global _code_index
-
         # The first code block is just a "* = $xxxx" style line
         if first:
-            _code_index = 1
+            self._code_index = 1
             return ["", "%s* = %s" % (utils.make_indent(1), self.hex4(start_addr)), ""]
 
-        end_label = "end_of_part_" + str(_code_index)
-        _code_index += 1
+        end_label = "end_of_part_" + str(self._code_index)
+        self._code_index += 1
 
         # Subsequent blocks need weird code to pad with a '.dsb' command
 

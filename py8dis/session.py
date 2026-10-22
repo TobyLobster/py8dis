@@ -51,6 +51,10 @@ class Session:
         # assemblers that support it (see commands.set_output_filename())
         self.output_filename = None
 
+        # Was this session made using the options on the command line? (See
+        # new_session().)
+        self.made_from_command_line = False
+
         self.memory = memorymanager.Memory()
         self.moves  = movemanager.Moves()
         self.classifications = classification.Classifications()
@@ -126,7 +130,6 @@ def options_from_command_line():
 # The current session
 
 _current = None
-_current_used_command_line = False     # Was the current session made using the command line?
 _use_command_line = True               # See use_command_line()
 
 def current():
@@ -142,12 +145,30 @@ def new_session(**options):
     The options are as for Session(). If none are given, they come from the
     command line (unless use_command_line(False) has been called)."""
 
-    global _current, _current_used_command_line
-    _current_used_command_line = (not options) and _use_command_line
-    if _current_used_command_line:
+    global _current
+    from_command_line = (not options) and _use_command_line
+    if from_command_line:
         options = options_from_command_line()
     _current = Session(**options)
+    _current.made_from_command_line = from_command_line
     return _current
+
+def set_current(s):
+    """Make an existing session the current one, e.g. to work on two
+    disassemblies side by side:
+
+        a = session.new_session(assembler="acme")
+        load(...)                       # (commands act on 'a')
+        b = session.new_session(assembler="acme")
+        load(...)                       # (commands act on 'b')
+        session.set_current(a)
+        go()                            # disassembles 'a'
+    """
+
+    global _current
+    if not isinstance(s, Session):
+        utils.die("set_current() needs a session (from new_session()), not {0!r}".format(s))
+    _current = s
 
 def use_command_line(enabled=True):
     """Choose whether new sessions use the options on the command line (e.g.
@@ -156,6 +177,6 @@ def use_command_line(enabled=True):
     any other command."""
 
     global _use_command_line
-    if not enabled and _current is not None and _current_used_command_line:
+    if not enabled and _current is not None and _current.made_from_command_line:
         utils.die("use_command_line(False) must be called before any other command (the command line has already been read)")
     _use_command_line = enabled
