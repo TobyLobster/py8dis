@@ -1,5 +1,6 @@
 from cpu6502 import *
 from memorymanager import BinaryAddr, RuntimeAddr
+import session
 
 class Cpu65C02(Cpu6502):
     """Singleton class representing a 65C02 CPU"""
@@ -102,7 +103,7 @@ class Cpu65C02(Cpu6502):
             return self.target(binary_addr)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def could_be_call_to_subroutine(self):
             return True
@@ -123,7 +124,7 @@ class Cpu65C02(Cpu6502):
             super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def is_block_end(self):
             return True

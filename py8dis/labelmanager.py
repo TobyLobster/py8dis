@@ -69,33 +69,35 @@ import collections
 import config
 import disassembly
 import movemanager
+import session
 import memorymanager
 import utils
 from memorymanager import BinaryAddr, RuntimeAddr
 from label import Label
 
-# A runtime address is the key of this dictionary whose value is
-# a single Label (which can hold multiple label names and expressions
-# as required).
-labels = utils.keydefaultdict(Label)
+class Labels:
+    """The labels of one session (see session.py)."""
 
-# For each runtime address, the set of move_ids that are output at that
-# address. See disassembly.emit().
-emit_opportunities = collections.defaultdict(set)
+    def __init__(self):
+        # A runtime address is the key of this dictionary whose value is
+        # a single Label (which can hold multiple label names and expressions
+        # as required).
+        self.labels = utils.keydefaultdict(Label)
 
-def init():
-    """Reset this module's state, forgetting all labels."""
-    labels.clear()
-    emit_opportunities.clear()
+        # For each runtime address, the set of move_ids that are output at
+        # that address. See disassembly.emit().
+        self.emit_opportunities = collections.defaultdict(set)
 
 def notify_emit_opportunity(runtime_addr, move_id):
     """Record that the move_id is output at the runtime address."""
 
+    emit_opportunities = session.current().labels.emit_opportunities
     assert movemanager.is_valid_move_id(move_id)
     emit_opportunities[runtime_addr].add(move_id)
 
 def addr(label_name):
     # TODO: Ultra-inefficient implementation, optimise!
+    labels = session.current().labels.labels
     for addr, label in sorted(labels.items()):
         # Check explicit label names
         for name_list in label.explicit_names.values():
@@ -122,6 +124,7 @@ def assign_local_label_output_names():
     This is called after tracing, before label names are finalised."""
 
     # Names already in use, and the address they are used for
+    labels = session.current().labels.labels
     taken = {}
     for runtime_addr, label in labels.items():
         for name_list in label.explicit_names.values():
@@ -148,6 +151,7 @@ def find_max_explicit_name_length():
     This is used to align the equals signs on the list of memory
     locations at the top of the output."""
 
+    labels = session.current().labels.labels
     max_name_length = 0
     for label in labels.values():
         for name_list in label.explicit_names.values():
@@ -164,6 +168,7 @@ def all_labels_as_comments():
     py8dis itself, though it might also be helpful for debugging user
     label hooks or similar."""
 
+    labels = session.current().labels.labels
     formatter = config.get_assembler()
     c = formatter.comment_prefix()
     result = ["%s All labels by address and move ID" % c, "%s" % c]

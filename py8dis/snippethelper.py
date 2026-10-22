@@ -148,8 +148,8 @@ class SnippetHelper:
         runtime_addr = movemanager.b2r(binary_addr)
         move_id = self.get_start_loc().move_id
 
-        if runtime_addr in labelmanager.labels and labelmanager.labels[runtime_addr].explicit_names:
-            labels = labelmanager.labels[runtime_addr].explicit_names[move_id]
+        if runtime_addr in session.current().labels.labels and session.current().labels.labels[runtime_addr].explicit_names:
+            labels = session.current().labels.labels[runtime_addr].explicit_names[move_id]
             if labels:
                 return True
             

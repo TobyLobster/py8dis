@@ -781,7 +781,7 @@ def set_label_maker_hook(hook):
     subroutine can be labelled uniformly as 'return1', 'return2' etc.
     """
 
-    if disassembly.user_label_maker_hook is not None:
+    if session.current().disassembly.user_label_maker_hook is not None:
         utils.die("set_label_maker_hook() can only be called once")
     disassembly.set_user_label_maker_hook(hook)
 
@@ -811,7 +811,7 @@ def _set_formatter(command, runtime_addr, n, formatter):
     _check_address_range(command, runtime_addr + n - 1)
     for i in range(n):
         binary_loc = movemanager.r2b_checked(runtime_addr + i)
-        disassembly.format_hint[binary_loc.binary_addr] = formatter
+        session.current().disassembly.format_hint[binary_loc.binary_addr] = formatter
 
 def uhex(runtime_addr, n=1):
     """Specifies unsigned hex formatting for data in the given block"""
@@ -1033,8 +1033,6 @@ def reset():
     # A new session, with new settings and a new assembler object
     session.new_session()
 
-    disassembly.init()
-    labelmanager.init()
     trace.init()
     cpu.Cpu.forget_instances()
     snippets6502.init()

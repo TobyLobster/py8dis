@@ -401,7 +401,7 @@ class Cpu8080(cpu.Cpu):
         def as_string(self, binary_addr):
             memory_binary = session.current().memory.binary
             s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant8(binary_addr + 1), expression.OPERAND))
-            if (binary_addr + 1) not in session.current().classifications.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
+            if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
                     s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
@@ -418,7 +418,7 @@ class Cpu8080(cpu.Cpu):
         def as_string(self, binary_addr):
             memory_binary = session.current().memory.binary
             s = "%s%s %s" % (utils.make_indent(1), utils.force_case(self.mnemonic), expression.in_context(classification.get_constant16(binary_addr + 1), expression.OPERAND))
-            if (binary_addr + 1) not in session.current().classifications.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
+            if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
                     s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
@@ -437,7 +437,7 @@ class Cpu8080(cpu.Cpu):
             return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 3]
@@ -458,7 +458,7 @@ class Cpu8080(cpu.Cpu):
             return utils.LazyString("%s%s %s", utils.make_indent(1), result1, result2)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def is_block_end(self):
             return True
@@ -492,7 +492,7 @@ class Cpu8080(cpu.Cpu):
             return self._target(binary_addr)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 3] + trace.cpu.get_target_binary_addr_preferring_given_move_id(self._target(binary_loc.binary_addr), binary_loc.move_id)
@@ -516,7 +516,7 @@ class Cpu8080(cpu.Cpu):
             return self._target(binary_addr)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
             assert isinstance(binary_loc.binary_addr, BinaryAddr)

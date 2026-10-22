@@ -83,8 +83,8 @@ class SubConst:
             return result
 
         # TODO: Optimise!
-        for addr in disassembly.optional_labels:
-            if disassembly.optional_labels[addr].name == self.operand:
+        for addr in session.current().disassembly.optional_labels:
+            if session.current().disassembly.optional_labels[addr].name == self.operand:
                 return addr
 
         # Assume hex of some kind. Remove common prefixes.
@@ -909,7 +909,7 @@ class Cpu6502(cpu.Cpu):
             # This is because somewhere will be jumping to the label with unknown state.
             runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
             if runtime_addr is not None:
-                if runtime_addr in labelmanager.labels:
+                if runtime_addr in session.current().labels.labels:
                     state.clear(pessimistic_only=True)
 
         def update_cpu_state(self, binary_addr, state):
@@ -1069,7 +1069,7 @@ class Cpu6502(cpu.Cpu):
         def as_string(self, binary_addr):
             memory_binary = session.current().memory.binary
             s = "%s%s #%s" % (utils.make_indent(1), utils.force_case(self.mnemonic), classification.get_constant8(binary_addr + 1))
-            if (binary_addr + 1) not in session.current().classifications.expressions and disassembly.format_hint.get(binary_addr + 1) is None:
+            if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
                 if config.get_show_char_literals() and utils.isprint(c):
                     s += " %s '%s'" % (config.get_assembler().comment_prefix(), chr(c))
@@ -1089,7 +1089,7 @@ class Cpu6502(cpu.Cpu):
             return memorymanager.RuntimeAddr(self.abs_operand(binary_addr))
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 2]
@@ -1161,7 +1161,7 @@ class Cpu6502(cpu.Cpu):
 
         def update_references(self, binary_loc):
             ref = self.abs_operand(binary_loc.binary_addr)
-            trace.cpu.labels[ref].add_reference(binary_loc)
+            session.current().labels.labels[ref].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 3]
@@ -1172,7 +1172,7 @@ class Cpu6502(cpu.Cpu):
             super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def is_block_end(self):
             return True
@@ -1196,7 +1196,7 @@ class Cpu6502(cpu.Cpu):
             return memorymanager.RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def is_block_end(self):
             return True
@@ -1213,7 +1213,7 @@ class Cpu6502(cpu.Cpu):
             super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def could_be_call_to_subroutine(self):
             return True
@@ -1278,7 +1278,7 @@ class Cpu6502(cpu.Cpu):
             return self.target(binary_addr)
 
         def update_references(self, binary_loc):
-            trace.cpu.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
+            session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 2] + trace.cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
@@ -1559,7 +1559,7 @@ class Cpu6502(cpu.Cpu):
                     # If there's a label here, then clear our prev_state (i.e. be pessimistic for this state)
                     runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
                     if runtime_addr is not None:
-                        if runtime_addr in labelmanager.labels:
+                        if runtime_addr in session.current().labels.labels:
                             prev_state = self.EMPTY_STATE
 
                     # Show the value of a register as an inline comment (if known) once they have been

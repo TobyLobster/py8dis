@@ -30,8 +30,6 @@ class Cpu:
         # etc). See already_initialised().
         self._initialised = True
 
-        self.labels = labelmanager.labels
-
         self.subroutine_hooks = {}
         self.opcodes = {}
         self.entry_points = []
@@ -219,7 +217,7 @@ class Cpu:
         A label holds the binary_address of each location that references the label."""
 
         # DEBUG
-        #for runtime_addr, label in self.labels.items():
+        #for runtime_addr, label in session.current().labels.labels.items():
         #    utils.debug("label {0} at runtime_addr: {1} has references: {2}".format(label.all_names(), hex(runtime_addr), [hex(x.binary_addr) for x in label.references]))
 
         memory_binary = session.current().memory.binary
@@ -250,7 +248,7 @@ class Cpu:
                     return None
             return binary_addr
 
-        for runtime_addr, label in self.labels.items():
+        for runtime_addr, label in session.current().labels.labels.items():
             if not label.references:
                 continue
 
@@ -279,7 +277,7 @@ class Cpu:
                     trace.references[BinaryLocation(binary_addr, move_id)].append(ref_binary_loc)
 
         # DEBUG
-        #for runtime_addr, label in self.labels.items():
+        #for runtime_addr, label in session.current().labels.labels.items():
         #    utils.debug("label {0} at runtime_addr: {1} has references: {2}".format(label.all_names(), hex(runtime_addr), [hex(x.binary_addr) for x in label.references]))
 
     def format_runtime_location(self, runtime_addr, move_id):
@@ -314,7 +312,7 @@ class Cpu:
         frequency_table = collections.defaultdict(int)
 
         longest_label_length = 0
-        for runtime_addr, label in labelmanager.labels.items():
+        for runtime_addr, label in session.current().labels.labels.items():
             if label.references:
                 for move_id, names in label.all_names_by_move_id().items():
                     for name in names:

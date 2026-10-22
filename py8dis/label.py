@@ -248,12 +248,12 @@ class Label:
     def emit_opportunities(self):
         """The set of move_ids that are output at this label's address.
 
-        (These are recorded in labelmanager.emit_opportunities for every
+        (These are recorded in the session's labels.emit_opportunities for every
         address, rather than in each Label, so that there's no need to create
         a Label object for every address in the binary.)"""
 
         import labelmanager
-        return labelmanager.emit_opportunities.get(self.runtime_addr, _empty_set)
+        return session.current().labels.emit_opportunities.get(self.runtime_addr, _empty_set)
 
     def gather_inline_label_definitions(self, emit_addr, binary_loc):
         """Get a list of the labels in a move_id as a list of strings."""

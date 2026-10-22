@@ -243,7 +243,7 @@ def hexadecimal_formatter(n, bits):
 def constant(binary_addr, n, bits):
     """Format a constant value, using whatever formatter is hinted"""
 
-    format_hint = disassembly.format_hint.get(binary_addr, uint_formatter)
+    format_hint = session.current().disassembly.format_hint.get(binary_addr, uint_formatter)
     return format_hint(n, bits)
 
 def constant8(binary_addr):

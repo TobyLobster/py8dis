@@ -268,17 +268,17 @@ def prepare_expression_checks():
             ambiguous.add(name)
         values[name] = value
 
-    for c in disassembly.constants:
+    for c in session.current().disassembly.constants:
         if utils.is_integer_type(c.value):
             add(c.name, c.value)
-    for runtime_addr, label in labelmanager.labels.items():
+    for runtime_addr, label in session.current().labels.labels.items():
         for name_list in label.explicit_names.values():
             for name in name_list:
                 add(name.text, int(runtime_addr))
         for local_labels in label.local_labels.values():
             for local_label in local_labels:
                 add(local_label.output_name, int(runtime_addr))
-    for runtime_addr, optional_label in disassembly.optional_labels.items():
+    for runtime_addr, optional_label in session.current().disassembly.optional_labels.items():
         if optional_label.base_address is None:
             add(optional_label.name, int(runtime_addr))
 
@@ -296,7 +296,7 @@ def check_expr(expr, value, message, width=None):
     evaluate, e.g. expression strings written by the user.)"""
 
     # Don't clutter the output with pedantic 'constant = value' assertions
-    for constant in disassembly.constants:
+    for constant in session.current().disassembly.constants:
         if expr == constant.name:
             if constant.format == Format.CHAR:
                 return
@@ -433,6 +433,7 @@ def classify_leftovers():
     memory_binary = session.current().memory.binary
     memory_size = len(memory_binary)
     binary_addr = 0
+    labels = session.current().labels.labels
     # (Only the loaded data can be classified, so just loop over that)
     for range_start, range_end in memorymanager.loaded_ranges():
         binary_addr = max(binary_addr, range_start)
@@ -440,7 +441,7 @@ def classify_leftovers():
             i = 0
             while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None:
                 i += 1
-                if (binary_addr + i) >= memory_size or movemanager.b2r(BinaryAddr(binary_addr + i)) in labelmanager.labels:
+                if (binary_addr + i) >= memory_size or movemanager.b2r(BinaryAddr(binary_addr + i)) in labels:
                     break
             if i > 0:
                 add_classification(BinaryAddr(binary_addr), Byte(i))
@@ -641,8 +642,8 @@ def autostring(min_length=3):
                 runtime_addr = movemanager.b2r(BinaryAddr(binary_addr + i))
 
                 # We end the classification here if there is a label (that is not an expression)
-                if runtime_addr in labelmanager.labels:
-                    if not labelmanager.labels[runtime_addr].is_only_an_expression():
+                if runtime_addr in session.current().labels.labels:
+                    if not session.current().labels.labels[runtime_addr].is_only_an_expression():
                         break
 
             # if a string is found with at least the minimum length, classify it as a string

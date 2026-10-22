@@ -5,6 +5,7 @@ Acorn specific functions.
 from commands import *
 from classification import INSIDE_A_CLASSIFICATION
 import config
+import session
 import trace
 import utils
 import classification
@@ -102,8 +103,8 @@ def pre_trace_writing_to_vector(p):
             new_addr = nn1 + 256 * nn2
 
             # Get a label name if it already exists (just choose the first explicit name for lack of a better choice)
-            if new_addr in labelmanager.labels and labelmanager.labels[new_addr].explicit_names:
-                for move_id, name_list in labelmanager.labels[new_addr].explicit_names.items():
+            if new_addr in session.current().labels.labels and session.current().labels.labels[new_addr].explicit_names:
+                for move_id, name_list in session.current().labels.labels[new_addr].explicit_names.items():
                     label_name = name_list[0].text
                     break
             else:
