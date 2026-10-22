@@ -3398,9 +3398,9 @@ def hardware(machine):
         optional_label(0xfe0f, "electron_palette_7", definable_inline=False)
     else:
         optional_label(0xfe00, "crtc_address_register", definable_inline=False)
-        trace.substitute_constant_list.append(cpu6502.SubConst("sta crtc_address_register", 'a', crtc_registers_enum, True))
-        trace.substitute_constant_list.append(cpu6502.SubConst("stx crtc_address_register", 'x', crtc_registers_enum, True))
-        trace.substitute_constant_list.append(cpu6502.SubConst("sty crtc_address_register", 'y', crtc_registers_enum, True))
+        session.current().trace.substitute_constant_list.append(cpu6502.SubConst("sta crtc_address_register", 'a', crtc_registers_enum, True))
+        session.current().trace.substitute_constant_list.append(cpu6502.SubConst("stx crtc_address_register", 'x', crtc_registers_enum, True))
+        session.current().trace.substitute_constant_list.append(cpu6502.SubConst("sty crtc_address_register", 'y', crtc_registers_enum, True))
 
         optional_label(0xfe01, "crtc_register_data", definable_inline=False)
 

@@ -400,7 +400,7 @@ class CpuStateDisposition:
         return self.__repl__()
 
 class Cpu6502(cpu.Cpu):
-    """Singleton class representing a 6502 CPU"""
+    """Class representing a 6502 CPU"""
 
     # Addressing modes
     mode_implied           = 0
@@ -453,14 +453,7 @@ class Cpu6502(cpu.Cpu):
             if not pessimistic_only:
                 self.optimistic.clear()
 
-    def __new__(cls):
-        if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
-            cls.instance = super().__new__(cls)
-        return cls.instance
-
     def __init__(self):
-        if self.already_initialised():
-            return
         super().__init__()
 
         self.EMPTY_STATE = self.CpuState()
@@ -862,7 +855,7 @@ class Cpu6502(cpu.Cpu):
             return True
 
         def indent(self, binary_addr):
-            trace.cpu.indent_level_dict[binary_addr] += 1
+            session.current().cpu.indent_level_dict[binary_addr] += 1
 
         def regular_update(self, binary_addr, state):
             """
@@ -1007,7 +1000,7 @@ class Cpu6502(cpu.Cpu):
             return False
 
         def as_string_list(self, binary_loc, annotations):
-            lazy_string = utils.LazyString(utils.make_indent(trace.cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr))
+            lazy_string = utils.LazyString(utils.make_indent(session.current().cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr))
             result = [mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length(), self.cycles_description(binary_loc.binary_addr), annotations, lazy_string)]
             if self.is_block_end() and config.get_blank_line_at_block_end():
                 result.append("")
@@ -1241,7 +1234,7 @@ class Cpu6502(cpu.Cpu):
 
                 return caller_runtime_addr + 3
 
-            subroutine_hook = trace.cpu.subroutine_hooks.get(target_runtime_addr, simple_subroutine_hook)
+            subroutine_hook = session.current().cpu.subroutine_hooks.get(target_runtime_addr, simple_subroutine_hook)
             caller_runtime_addr = movemanager.b2r(binary_loc.binary_addr)
 
             with session.current().moves.move_id_for_binary_addr[binary_loc.binary_addr]:
@@ -1249,7 +1242,7 @@ class Cpu6502(cpu.Cpu):
 
             if return_runtime_addr is not None:
                 return_runtime_addr = memorymanager.RuntimeAddr(return_runtime_addr)
-                result = trace.cpu.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id)
+                result = session.current().cpu.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id)
                 if len(result) == 0:
                     # The return runtime address could not be unambiguously converted into a binary
                     # address. It's highly likely the JSR is returning to the immediately following
@@ -1281,7 +1274,7 @@ class Cpu6502(cpu.Cpu):
             session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
-            return [binary_loc.binary_addr + 2] + trace.cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
+            return [binary_loc.binary_addr + 2] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
 
         def could_be_call_to_subroutine(self):
             return True
@@ -1438,7 +1431,7 @@ class Cpu6502(cpu.Cpu):
     def is_subroutine_call(self, binary_addr):
         assert binary_addr is not None
         c = classification.get_classification(binary_addr)
-        result = isinstance(c, trace.cpu.Opcode) and c.mnemonic == "JSR"
+        result = isinstance(c, self.Opcode) and c.mnemonic == "JSR"
         return result
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
@@ -1460,7 +1453,7 @@ class Cpu6502(cpu.Cpu):
     # label doesn't invalidate that inference.
     def subroutine_argument_finder(self):
         memory_binary = session.current().memory.binary
-        if len(trace.subroutine_argument_finder_hooks) == 0:
+        if len(session.current().trace.subroutine_argument_finder_hooks) == 0:
             return
 
         binary_addr = 0
@@ -1474,17 +1467,17 @@ class Cpu6502(cpu.Cpu):
                     if state is None:
                         state = self.EMPTY_STATE
 
-                    if isinstance(c, trace.cpu.Opcode):
+                    if isinstance(c, self.Opcode):
                         opcode = memory_binary[binary_addr]
                         if opcode in (OPCODE_JSR, OPCODE_JMP):
                             target = memorymanager.get_u16_binary(binary_addr + 1)
-                            for hook in trace.subroutine_argument_finder_hooks:
+                            for hook in session.current().trace.subroutine_argument_finder_hooks:
                                 if hook(memorymanager.RuntimeAddr(target),
                                     state.optimistic['a'].get_previous_load_imm_operand(),
                                     state.optimistic['x'].get_previous_load_imm_operand(),
                                     state.optimistic['y'].get_previous_load_imm_operand()) is not None:
                                     break
-                    state = trace.cpu.cpu_states[binary_addr]
+                    state = self.cpu_states[binary_addr]
                     binary_addr += c.length()
                 else:
                     binary_addr += 1
@@ -1496,7 +1489,7 @@ class Cpu6502(cpu.Cpu):
         state.next_instruction = None
         state.next_use = {'a': None, 'x': None, 'y': None }
 
-        newstate = trace.cpu.cpu_states[binary_addr]    # State after instruction following JSR
+        newstate = self.cpu_states[binary_addr]    # State after instruction following JSR
 
         while binary_addr < 0x10000:
             c = classification.get_classification(binary_addr)
@@ -1518,7 +1511,7 @@ class Cpu6502(cpu.Cpu):
                 return
 
             # Must be an opcode
-            if not isinstance(c, trace.cpu.Opcode):
+            if not isinstance(c, self.Opcode):
                 return
 
             if state.next_instruction is not None:
@@ -1539,7 +1532,7 @@ class Cpu6502(cpu.Cpu):
             binary_addr += c.length()                               # Move to next instruction
             if state.next_instruction is None:
                 state.next_instruction = binary_addr                # Set to the instruction address following the JSR
-            newstate = trace.cpu.cpu_states[binary_addr]            # State after instruction at addr has executed
+            newstate = self.cpu_states[binary_addr]            # State after instruction at addr has executed
 
     def show_register_knowledge(self):
         """Adds comments to show any known state of the processor"""
@@ -1554,7 +1547,7 @@ class Cpu6502(cpu.Cpu):
                 c = classification.get_classification(binary_addr)
                 if c is not None:
                     prev_state = state
-                    state = trace.cpu.cpu_states[binary_addr]
+                    state = self.cpu_states[binary_addr]
 
                     # If there's a label here, then clear our prev_state (i.e. be pessimistic for this state)
                     runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
@@ -1581,7 +1574,7 @@ class Cpu6502(cpu.Cpu):
                                     disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
 
                     # Check for ADC# or SBC# with carry in it's opposite to normal state: auto comment it
-                    if isinstance(c, trace.cpu.Opcode):
+                    if isinstance(c, self.Opcode):
                         value = memorymanager.get_u8_binary(binary_addr)
                         if prev_state and prev_state.pessimistic['c'] == True:
                             move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
@@ -1641,13 +1634,13 @@ class Cpu6502(cpu.Cpu):
                     if state is None:
                         state = self.EMPTY_STATE
 
-                    if isinstance(c, trace.cpu.Opcode):
+                    if isinstance(c, self.Opcode):
                         could_be_call_to_subroutine = c.could_be_call_to_subroutine()
                         binary_addr = memorymanager.BinaryAddr(binary_addr)
                         target = c.target(binary_addr)
 
                         # check each subroutine
-                        for subroutine in trace.subroutines_list:
+                        for subroutine in session.current().trace.subroutines_list:
                             if subroutine.hook_function is None:
                                 continue
 
@@ -1675,11 +1668,11 @@ class Cpu6502(cpu.Cpu):
                                 state.next_use = {'a': None, 'x': None, 'y': None }
 
                                 runtime_addr = movemanager.b2r(binary_addr)
-                                if not fall_through and isinstance(c, trace.cpu.OpcodeJsr):
+                                if not fall_through and isinstance(c, self.OpcodeJsr):
                                     self.scan_ahead_for_post_exit_state(binary_addr, state)
                                 subroutine.hook_function(runtime_addr, state, subroutine)
 
-                    state = trace.cpu.cpu_states[binary_addr]
+                    state = self.cpu_states[binary_addr]
                     binary_addr += c.length()
                 else:
                     binary_addr += 1
@@ -1687,7 +1680,7 @@ class Cpu6502(cpu.Cpu):
 
     def substitute_constants(self):
         memory_binary = session.current().memory.binary
-        if len(trace.substitute_constant_list) == 0:
+        if len(session.current().trace.substitute_constant_list) == 0:
             return
 
         binary_addr = 0
@@ -1705,11 +1698,11 @@ class Cpu6502(cpu.Cpu):
                 if state is None:
                     state = self.EMPTY_STATE
 
-                if isinstance(c, trace.cpu.Opcode):
+                if isinstance(c, self.Opcode):
                     opcode = memory_binary[binary_addr]
 
                     # for each const_sub
-                    for const_sub in trace.substitute_constant_list:
+                    for const_sub in session.current().trace.substitute_constant_list:
                         # check we have the right opcode
                         if opcode != const_sub.get_opcode(self.opcodes):
                             continue
@@ -1743,7 +1736,7 @@ class Cpu6502(cpu.Cpu):
                                 # define the constant
                                 disassembly.add_constant(reg_value, const_or_expression)
 
-                state = trace.cpu.cpu_states[binary_addr]
+                state = self.cpu_states[binary_addr]
                 binary_addr += c.length()
 
     def label_maker(self, lmd):
@@ -1755,7 +1748,7 @@ class Cpu6502(cpu.Cpu):
                 defined_at_binary_addr, _ = movemanager.r2b(lmd.defined_as_runtime_addr, lmd.defined_in_move_id)
                 c = classification.get_classification(defined_at_binary_addr)
                 if c is not None:
-                    if isinstance(c, trace.cpu.Opcode):
+                    if isinstance(c, self.Opcode):
                         by = memory_binary[defined_at_binary_addr]
                         if by == OPCODE_RTS:
                             if not defined_at_binary_addr in self.return_array:

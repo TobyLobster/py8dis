@@ -193,14 +193,19 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
     Load a binary file and optionally verify the checksum of the data."""
 
     # Check we have a valid CPU for the chosen assembler and select the
-    # trace.cpu accordingly
+    # session's CPU accordingly
     _check_address_range("load", binary_load_addr)
     if cpu_name is None:
         utils.die("No CPU type selected in call to load().")
 
     if isinstance(cpu_name, cpu.Cpu):
-        # Set the CPU
-        trace.cpu = cpu_name
+        # Set the CPU (or keep the one from an earlier load(), if it's the
+        # same type of CPU, as with a CPU given by name below)
+        current_cpu = session.current().cpu
+        if current_cpu is None:
+            session.current().cpu = cpu_name
+        elif type(current_cpu) is not type(cpu_name):
+            utils.die("All calls to load() must use the same CPU (already using '%s', now asked for '%s')." % (type(current_cpu).__name__, type(cpu_name).__name__))
     else:
         cpu_name = cpu_name.lower()
 
@@ -215,12 +220,17 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
         if cpu_name not in cpu_names:
             utils.die("Unknown CPU or missing CPU parameter '%s' specified for load()." % (cpu_name))
         cpu_class = cpu_names[cpu_name]
-        if trace.cpu is None:
-            trace.cpu = cpu_class()
-        elif type(trace.cpu) is not cpu_class:
+        if session.current().cpu is None:
+            session.current().cpu = cpu_class()
+        elif type(session.current().cpu) is not cpu_class:
             # Only create the CPU once: creating it again would discard any
             # entry points, hooks etc already added after an earlier load().
-            utils.die("All calls to load() must use the same CPU (already using '%s', now asked for '%s')." % (type(trace.cpu).__name__, cpu_name))
+            utils.die("All calls to load() must use the same CPU (already using '%s', now asked for '%s')." % (type(session.current().cpu).__name__, cpu_name))
+
+    # The 65C02 has extra instructions, which some assemblers need to be told
+    # about (see get_cmos())
+    if isinstance(session.current().cpu, cpu65C02.Cpu65C02):
+        config.set_cmos(True)
 
     # Load the file
     memorymanager.load(filename, binary_load_addr, md5sum)
@@ -354,7 +364,7 @@ def substitute_constants(instruction, reg, constants_dict, define_all_constants=
             if disassembly.is_simple_name(constants_dict[entry]):
                 constant(entry, constants_dict[entry])
 
-    trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, constants_dict, define_all_constants is not None))
+    session.current().trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, constants_dict, define_all_constants is not None))
 
 def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True):
     """
@@ -386,7 +396,7 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
         # up when the hook is called, since subroutine() may be called before
         # load() has chosen the CPU.
         def hook(runtime_addr, state, subroutine):
-            default_hook = getattr(trace.cpu, "default_subroutine_hook", None)
+            default_hook = getattr(session.current().cpu, "default_subroutine_hook", None)
             if default_hook is not None:
                 default_hook(runtime_addr, state, subroutine)
 
@@ -470,7 +480,7 @@ def no_automatic_comment(runtime_addr):
     """Inhibits the output of any automatically generated comment at the given address"""
     runtime_addr = _check_addr("no_automatic_comment", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    trace.no_auto_comment_set.add(binary_loc.binary_addr)
+    session.current().trace.no_auto_comment_set.add(binary_loc.binary_addr)
 
 def auto_comment(runtime_addr, text, inline=False, align=None, indent=0, show_blank=False, word_wrap=True):
     """For internal use only. Generates a comment if not inhibited."""
@@ -548,7 +558,7 @@ def auto_expr(runtime_addr, s):
     # Make sure we are within the binary
     runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    if not (binary_loc.binary_addr in trace.no_auto_comment_set):
+    if not (binary_loc.binary_addr in session.current().trace.no_auto_comment_set):
         if memorymanager.is_data_loaded_at_binary_addr(binary_loc.binary_addr):
             expr(runtime_addr, s, force=False)
 
@@ -618,7 +628,7 @@ def entry(runtime_addr, label=None, warn=True):
 
     _is_loaded_else_warn("entry", runtime_addr, binary_loc.binary_addr, 1, "there is no code here to trace", warn)
 
-    trace.cpu.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, label, explicit=True)
+    session.current().cpu.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, label, explicit=True)
 
     result = disassembly.get_label(runtime_addr, binary_loc.binary_addr, move_id=binary_loc.move_id, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
 
@@ -639,7 +649,7 @@ def nonentry(runtime_addr):
     binary_loc = movemanager.r2b_checked(runtime_addr)
     _check_data_loaded("nonentry", runtime_addr, binary_loc.binary_addr)
 
-    trace.cpu.traced_entry_points.add(binary_loc.binary_addr)
+    session.current().cpu.traced_entry_points.add(binary_loc.binary_addr)
 
 def wordentry(runtime_addr, n=1):
     """
@@ -686,7 +696,7 @@ def hook_subroutine(runtime_addr, name, hook, warn=True):
     _check_name("hook_subroutine", runtime_addr, name)
     _is_loaded_else_warn("hook_subroutine", runtime_addr, movemanager.r2b_checked(runtime_addr).binary_addr, 1,
         "there is no code here to trace (use warn=False for a subroutine outside the binary)", warn)
-    trace.cpu.hook_subroutine(runtime_addr, name, hook)
+    session.current().cpu.hook_subroutine(runtime_addr, name, hook)
 
 def stringhi_hook(target, addr):
     return stringhi(addr + 3)
@@ -983,7 +993,7 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     disassembly.add_label(memorymanager.RuntimeAddr(int(pydis_end)), "pydis_end", is_autogenerated=True, move_id=movemanager.BASE_MOVE_ID)
 
     # Trace where code lives
-    trace.cpu.trace()
+    session.current().cpu.trace()
 
     # Make sure local label names don't clash (before label names are finalised)
     labelmanager.assign_local_label_output_names()
@@ -993,7 +1003,7 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
 
     # Output all the references
     if config.get_label_references():
-        trace.cpu.add_references_comments()
+        session.current().cpu.add_references_comments()
 
     # Scan the binary for strings (or allow a user function to do it)
     # We do this after tracing so we have the classifications.
@@ -1033,8 +1043,6 @@ def reset():
     # A new session, with new settings and a new assembler object
     session.new_session()
 
-    trace.init()
-    cpu.Cpu.forget_instances()
     snippets6502.init()
 
     # Let other modules (e.g. acorn.py) reset themselves

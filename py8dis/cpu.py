@@ -23,13 +23,9 @@ class Cpu:
     """Abstract base class representing a CPU"""
 
     def __init__(self):
-        # Each CPU class is a singleton (see the __new__ methods), but Python
-        # calls __init__ every time the class is called, e.g. 'Cpu6502()'.
-        # Each subclass's __init__ checks this flag first so that calling
-        # the class again doesn't reset the CPU's state (entry points, hooks
-        # etc). See already_initialised().
-        self._initialised = True
-
+        # (The CPU belongs to the session: see session.py and load(). It must
+        # not read the session here, since it may be made before load() is
+        # called.)
         self.subroutine_hooks = {}
         self.opcodes = {}
         self.entry_points = []
@@ -45,23 +41,6 @@ class Cpu:
         # that constant a proper symbol name.
         self.cpu_states = [None] * 64*1024
 
-
-    @staticmethod
-    def forget_instances():
-        """Forget the singleton instance of each CPU class, so the next one
-        created starts afresh. Used when resetting py8dis."""
-        def all_subclasses(cls):
-            for sub in cls.__subclasses__():
-                yield sub
-                yield from all_subclasses(sub)
-        for cls in all_subclasses(Cpu):
-            if 'instance' in cls.__dict__:
-                delattr(cls, 'instance')
-
-    def already_initialised(self):
-        """True if this CPU singleton has already been initialised (so __init__
-        should do nothing)."""
-        return self.__dict__.get("_initialised", False)
 
     def disassemble_instruction(self, binary_addr):
         """
@@ -221,7 +200,7 @@ class Cpu:
         #    utils.debug("label {0} at runtime_addr: {1} has references: {2}".format(label.all_names(), hex(runtime_addr), [hex(x.binary_addr) for x in label.references]))
 
         memory_binary = session.current().memory.binary
-        trace.references = collections.defaultdict(list)
+        session.current().trace.references = collections.defaultdict(list)
 
         def reached_in_move(runtime_addr, ref_binary_loc):
             """If the runtime address is in the same move as the referring
@@ -274,7 +253,7 @@ class Cpu:
                     binary_addr, move_id = default_binary_addr, default_move_id
 
                 if binary_addr is not None:
-                    trace.references[BinaryLocation(binary_addr, move_id)].append(ref_binary_loc)
+                    session.current().trace.references[BinaryLocation(binary_addr, move_id)].append(ref_binary_loc)
 
         # DEBUG
         #for runtime_addr, label in session.current().labels.labels.items():
@@ -292,7 +271,7 @@ class Cpu:
     def add_references_comments(self):
         """Add comments showing the references"""
 
-        for binary_loc, ref_binary_locs in trace.references.items():
+        for binary_loc, ref_binary_locs in session.current().trace.references.items():
             count = utils.count_with_units(len(ref_binary_locs), "time", "times")
             address_list = ", ".join(sorted(self.format_runtime_location(movemanager.b2r(ref_binary_loc.binary_addr), ref_binary_loc.move_id) for ref_binary_loc in ref_binary_locs))
             comment = "{0} referenced {1} by {2}".format(self.format_binary_location(binary_loc), count, address_list)
@@ -302,7 +281,7 @@ class Cpu:
     def add_reference_frequency_table(self):
         """Output a frequency table of label references."""
 
-        if len(trace.references) == 0:
+        if len(session.current().trace.references) == 0:
             return []
         result = [""]
 

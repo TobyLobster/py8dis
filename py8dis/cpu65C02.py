@@ -3,18 +3,9 @@ from memorymanager import BinaryAddr, RuntimeAddr
 import session
 
 class Cpu65C02(Cpu6502):
-    """Singleton class representing a 65C02 CPU"""
-
-    def __new__(cls):
-        if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
-            cls.instance = super().__new__(cls)
-
-            config.set_cmos(True)
-        return cls.instance
+    """Class representing a 65C02 CPU"""
 
     def __init__(self):
-        if self.already_initialised():
-            return
         super().__init__()
 
         # On a 65C02 undefined opcodes are guaranteed to be NOPs of
@@ -112,7 +103,7 @@ class Cpu65C02(Cpu6502):
             return True
 
         def disassemble(self, binary_loc):
-            return [None] + trace.cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
+            return [None] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
 
         def as_string(self, binary_addr):
             label = disassembly.get_label(self.target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)

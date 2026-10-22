@@ -251,7 +251,7 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     s = expression.to_expr(s)
     # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
     has_existing_expr = binary_addr in expressions
-    suppressed = auto_generated and (binary_addr in trace.no_auto_comment_set)
+    suppressed = auto_generated and (binary_addr in session.current().trace.no_auto_comment_set)
     if (force or not has_existing_expr) and not suppressed:
         expressions[binary_addr] = s
 
@@ -500,7 +500,7 @@ def describe_classification_at(binary_addr):
         return "word data"
     if isinstance(c, String):
         return "a string"
-    if trace.cpu is not None and isinstance(c, trace.cpu.Opcode):
+    if session.current().cpu is not None and isinstance(c, session.current().cpu.Opcode):
         return "code"
     return "something else"
 
@@ -743,7 +743,7 @@ def get_address16(binary_addr, offset=0):
     if binary_addr not in expressions or (offset != 0):
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
 
-    assert isinstance(get_classification(binary_addr), Word) or (isinstance(get_classification(binary_addr - 1), trace.cpu.Opcode) and get_classification(binary_addr - 1).length() == 3), "Address: %s" % hex(binary_addr)
+    assert isinstance(get_classification(binary_addr), Word) or (isinstance(get_classification(binary_addr - 1), session.current().cpu.Opcode) and get_classification(binary_addr - 1).length() == 3), "Address: %s" % hex(binary_addr)
     return get_expression(binary_addr, operand, is_address=True, width=16)
 
 
@@ -764,7 +764,7 @@ def get_stats():
             elif isinstance(c, String):
                 result.num_strings += 1
                 result.num_string_bytes += 1
-            elif isinstance(c, trace.cpu.Opcode):
+            elif isinstance(c, session.current().cpu.Opcode):
                 result.num_instructions += 1
                 result.num_code_bytes += 1
             elif c is INSIDE_A_CLASSIFICATION:
@@ -774,7 +774,7 @@ def get_stats():
                     result.num_data_words += 1
                 elif isinstance(oldc, String):
                     result.num_string_bytes += 1
-                elif isinstance(oldc, trace.cpu.Opcode):
+                elif isinstance(oldc, session.current().cpu.Opcode):
                     result.num_code_bytes += 1
 
             if c is not INSIDE_A_CLASSIFICATION:
@@ -806,7 +806,7 @@ def get_classification_map():
                 result += 'W'
             elif isinstance(c, String):
                 result += 'S'
-            elif isinstance(c, trace.cpu.Opcode):
+            elif isinstance(c, session.current().cpu.Opcode):
                 result += 'I'
             elif c is INSIDE_A_CLASSIFICATION:
                 if isinstance(oldc, Byte):
@@ -815,7 +815,7 @@ def get_classification_map():
                     result += 'w'
                 elif isinstance(oldc, String):
                     result += 's'
-                elif isinstance(oldc, trace.cpu.Opcode):
+                elif isinstance(oldc, session.current().cpu.Opcode):
                     result += 'i'
             else:
                 result += '.'

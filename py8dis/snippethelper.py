@@ -89,14 +89,14 @@ class SnippetHelper:
         if binary_addr is not None:
             binary_addr += offset
             assert 0 <= binary_addr < 0x10000
-            return(trace.cpu.cpu_states[binary_addr])
+            return(session.current().cpu.cpu_states[binary_addr])
 
     def num_references(self, label_name):
         binary_loc = self.get_binary_location(label_name, prioritise_definition=True)
 
-        assert trace.references is not None, "trying to get the number of references before we've calculated it"
-        if binary_loc in trace.references:
-            references = trace.references[binary_loc]
+        assert session.current().trace.references is not None, "trying to get the number of references before we've calculated it"
+        if binary_loc in session.current().trace.references:
+            references = session.current().trace.references[binary_loc]
             return len(references)
         return 0
 
@@ -138,7 +138,7 @@ class SnippetHelper:
             # We add the entry point, but we don't call trace.cpu.add_entry() because this
             # also adds a label (even if without a name) which we don't want since this causes 
             # optimistic state tracking to restart at the label.
-            trace.cpu.entry_points.append(binary_addr)
+            session.current().cpu.entry_points.append(binary_addr)
 
     def blank_once(self, binary_loc):
         disassembly.annotate_binary(binary_loc, "", align=Align.BEFORE_LABEL, once_only=True)

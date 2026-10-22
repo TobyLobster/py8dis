@@ -11,9 +11,10 @@ from one call to the next, since it will be out of date after a reset.
 
 (This is being introduced in steps: so far the session holds the settings,
 the assembler, the output filenames, the memory, the moves, the
-classifications, the labels and disassembly.py's state (constants,
-annotations etc.). The rest of the state is still held by the individual
-modules. See claude/architecture-notes-2026-10-21.md in the project.)
+classifications, the labels, disassembly.py's state (constants, annotations
+etc.), the CPU and the trace state. The snippets and acorn.py's state are still
+held by their modules. See claude/architecture-notes-2026-10-21.md in the
+project.)
 """
 
 import argparse
@@ -40,6 +41,7 @@ class Session:
         import labelmanager
         import memorymanager
         import movemanager
+        import trace
 
         self.settings = config.Settings()
         self.settings.lower_case = lower_case
@@ -57,6 +59,10 @@ class Session:
         self.classifications = classification.Classifications()
         self.labels = labelmanager.Labels()
         self.disassembly = disassembly.DisassemblyState()     # constants, annotations, optional labels etc.
+        self.trace = trace.TraceState()     # references, subroutines, hooks etc.
+
+        # The CPU (an object of class Cpu), which is set by load()
+        self.cpu = None
 
 def make_assembler(name):
     """Make a new assembler object, given the assembler's name."""

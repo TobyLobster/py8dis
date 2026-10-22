@@ -19,19 +19,12 @@ from binaryaddrtype import BinaryAddrType
 OPCODE_RET = 0xc9
 
 class Cpu8080(cpu.Cpu):
-    """Singleton class representing an 8080 CPU"""
-
-    def __new__(cls):
-        if 'instance' not in cls.__dict__:     # (not hasattr(), which would also see a parent class's instance)
-            cls.instance = super().__new__(cls)
-
-            #TODO: self.code_analysis_fns.append(subroutine_argument_finder)
-        return cls.instance
+    """Class representing an 8080 CPU"""
 
     def __init__(self):
-        if self.already_initialised():
-            return
         super().__init__()
+
+        #TODO: self.code_analysis_fns.append(subroutine_argument_finder)
 
         # For labelling ret instructions numerically
         self.return_index = 0
@@ -377,7 +370,7 @@ class Cpu8080(cpu.Cpu):
             return expression.in_context(operand, expression.OPERAND)
 
         def as_string_list(self, binary_loc, annotations):
-            result = [mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length(), "", annotations, utils.LazyString(utils.make_indent(trace.cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr)))]
+            result = [mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length(), "", annotations, utils.LazyString(utils.make_indent(session.current().cpu.indent_level_dict.get(binary_loc.binary_addr, 0)) + "%s", self.as_string(binary_loc.binary_addr)))]
             if self.is_block_end() and config.get_blank_line_at_block_end():
                 result.append("")
             return result
@@ -495,7 +488,7 @@ class Cpu8080(cpu.Cpu):
             session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
-            return [binary_loc.binary_addr + 3] + trace.cpu.get_target_binary_addr_preferring_given_move_id(self._target(binary_loc.binary_addr), binary_loc.move_id)
+            return [binary_loc.binary_addr + 3] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self._target(binary_loc.binary_addr), binary_loc.move_id)
 
         def update_cpu_state(self, binary_addr, state):
             # TODO: No state being tracked for 8080 code, yet
@@ -538,14 +531,14 @@ class Cpu8080(cpu.Cpu):
 
                 return caller_runtime_addr + 3
 
-            call_hook = trace.cpu.subroutine_hooks.get(target_runtime_addr, simple_call_hook)
+            call_hook = session.current().cpu.subroutine_hooks.get(target_runtime_addr, simple_call_hook)
             caller_runtime_addr = movemanager.b2r(binary_loc.binary_addr)
             with session.current().moves.move_id_for_binary_addr[binary_loc.binary_addr]:
                 return_runtime_addr = call_hook(target_runtime_addr, caller_runtime_addr)
 
             if return_runtime_addr is not None:
                 return_runtime_addr = RuntimeAddr(return_runtime_addr)
-                result = trace.cpu.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id)
+                result = session.current().cpu.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id)
                 if len(result) == 0:
                     # The return runtime address could not be unambiguously converted into a binary
                     # address. It's highly likely the 'CALL' is returning to the immediately following
@@ -661,7 +654,7 @@ class Cpu8080(cpu.Cpu):
                 defined_at_binary_addr, _ = movemanager.r2b(lmd.defined_as_runtime_addr, lmd.defined_in_move_id)
                 c = classification.get_classification(defined_at_binary_addr)
                 if c is not None:
-                    if isinstance(c, trace.cpu.Opcode):
+                    if isinstance(c, self.Opcode):
                         by = memory_binary[defined_at_binary_addr]
                         if by == OPCODE_RET:
                             if not defined_at_binary_addr in self.return_array:
