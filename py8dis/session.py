@@ -10,7 +10,7 @@ Nothing should keep a reference to the session's state (e.g. its settings)
 from one call to the next, since it will be out of date after a reset.
 
 (This is being introduced in steps: so far the session holds the settings,
-the assembler and the output filenames. The rest of the state is still held
+the assembler, the output filenames and the memory. The rest of the state is still held
 by the individual modules. See claude/architecture-notes-2026-10-21.md in the
 project.)
 """
@@ -18,6 +18,7 @@ project.)
 import argparse
 
 import config
+import memorymanager
 import utils
 
 class Session:
@@ -42,6 +43,8 @@ class Session:
         # The filename the assembler saves the assembled binary to, for
         # assemblers that support it (see commands.set_output_filename())
         self.output_filename = None
+
+        self.memory = memorymanager.Memory()
 
 def make_assembler(name):
     """Make a new assembler object, given the assembler's name."""

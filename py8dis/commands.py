@@ -243,6 +243,7 @@ def move(dest_runtime_addr, src_binary_addr, length):
     load().
     """
 
+    memory_binary = session.current().memory.binary
     def describe():
         h = config.get_assembler().hex
         return "move({0}, {1}, {2})".format(h(dest_runtime_addr), h(src_binary_addr), length)
@@ -715,6 +716,7 @@ def code_ptr(runtime_addr, runtime_addr_high=None, offset=0, label_name=None):
     Code tracing, see entry(), is applied to the subroutine.
     """
 
+    memory_binary = session.current().memory.binary
     runtime_addr = _check_addr("code_ptr", runtime_addr)
     if runtime_addr_high is None:
         runtime_addr_high = runtime_addr + 1
@@ -968,7 +970,7 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # to binary addresses confusing things.
     if len(movemanager.active_move_ids) != 0:
         utils.die("go() can't be called inside a 'with move(...):' block")
-    if not memorymanager.load_ranges:
+    if not session.current().memory.load_ranges:
         utils.die("go(): nothing has been loaded to disassemble (use load() first)")
     if not utils.is_integer_type(autostring_min_length) or autostring_min_length < 2:
         utils.die("go(): autostring_min_length must be at least 2, not {0!r}".format(autostring_min_length))
@@ -1031,7 +1033,6 @@ def reset():
     # A new session, with new settings and a new assembler object
     session.new_session()
 
-    memorymanager.init()
     movemanager.init()
     disassembly.init()          # (this also resets the classification module)
     labelmanager.init()

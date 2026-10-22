@@ -45,6 +45,7 @@ import labelmanager
 import mainformatter
 import memorymanager
 import movemanager
+import session
 import pprint
 import stats
 import trace
@@ -55,7 +56,6 @@ from format import Format
 from binaryaddrtype import BinaryAddrType
 
 expressions   = {}
-memory_binary = memorymanager.memory_binary
 assembler     = config.get_assembler
 
 # `classifications` stores classifications indexed by binary address.
@@ -148,6 +148,7 @@ class String:
         return False
 
     def as_string_list(self, binary_loc, annotations):
+        memory_binary = session.current().memory.binary
         result = []
         prefix = utils.make_indent(1) + assembler().string_prefix()
         s = prefix
@@ -346,6 +347,7 @@ def get_expression(binary_addr, expected_value, is_address=False, width=8):
     """Get the previously supplied expression for the given address, whose
     value should be 'expected_value', a 'width' bit number."""
 
+    memory_binary = session.current().memory.binary
     expr = expressions[binary_addr]
     c = get_classification(binary_addr)
     if isinstance(c, String):
@@ -424,6 +426,7 @@ def classify_leftovers():
     """Classify everything not already classified, as bytes."""
 
     # (For speed, this loop uses plain integer addresses.)
+    memory_binary = session.current().memory.binary
     memory_size = len(memory_binary)
     binary_addr = 0
     # (Only the loaded data can be classified, so just loop over that)
@@ -441,12 +444,14 @@ def classify_leftovers():
 
 def _is_loaded(binary_addr):
     """Is there loaded data at the binary address? (Safe at the top of memory.)"""
+    memory_binary = session.current().memory.binary
     return binary_addr < len(memory_binary) and memory_binary[binary_addr] is not None
 
 def _runtime_addr_after(binary_addr):
     """Return the runtime address for `binary_addr`, the address just after
     a string, allowing for a string that ends at the very top of memory."""
 
+    memory_binary = session.current().memory.binary
     if binary_addr >= len(memory_binary):
         return movemanager.b2r(BinaryAddr(len(memory_binary) - 1)) + 1
     return movemanager.b2r(BinaryAddr(binary_addr))
@@ -499,6 +504,7 @@ def stringterm_binary(binary_addr, terminator, exclude_terminator=False):
 
     Returns the next available memory address after the string."""
 
+    memory_binary = session.current().memory.binary
     _check_string_start(binary_addr)
     initial_addr = binary_addr
     while True:
@@ -526,6 +532,7 @@ def string_binary(binary_addr, n):
 
     Returns the next available memory address after the string."""
 
+    memory_binary = session.current().memory.binary
     if n is None:
         _check_string_start(binary_addr)
         n = 0
@@ -547,6 +554,7 @@ def stringhi_binary(binary_addr, include_terminator_fn=None):
 
     Returns the next available memory address after the string."""
 
+    memory_binary = session.current().memory.binary
     _check_string_start(binary_addr)
     initial_addr = binary_addr
     while True:
@@ -574,6 +582,7 @@ def stringhiz_binary(binary_addr, include_terminator_fn=None):
     character or zero character. The string also ends if it reaches
     something already classified or the end of the loaded data."""
 
+    memory_binary = session.current().memory.binary
     _check_string_start(binary_addr)
     initial_addr = binary_addr
     while True:
@@ -594,6 +603,7 @@ def stringn_binary(runtime_addr, binary_addr):
 
     Returns the next available memory address after the string."""
 
+    memory_binary = session.current().memory.binary
     _check_string_start(binary_addr)
     length = memory_binary[binary_addr]
     _check_string_bytes(binary_addr + 1, length, report_addr=binary_addr)
@@ -609,6 +619,7 @@ def stringn_binary(runtime_addr, binary_addr):
 def autostring(min_length=3):
     """Attempt to automatically find and classify strings through the entire binary."""
 
+    memory_binary = session.current().memory.binary
     assert min_length >= 2
 
     # (For speed, this loop uses plain integer addresses.)
@@ -637,6 +648,7 @@ def autostring(min_length=3):
 def include_binary_file(binary_addr, relative_filepath):
     """Add an 'include binary' command in the assembly output. The contents are
     verified to be identical to our current file contents."""
+    memory_binary = session.current().memory.binary
     h = config.get_assembler().hex
     def die(problem):
         utils.die("include_binary_file({0}, {1!r}): {2}".format(h(binary_addr), relative_filepath, problem))
@@ -676,6 +688,7 @@ def get_constant8(binary_addr):
     output, e.g. for converting 'LDA #3' into 'LDA #num_lives'
     """
 
+    memory_binary = session.current().memory.binary
     if binary_addr in expressions:
         return get_expression(binary_addr, memory_binary[binary_addr])
     return mainformatter.constant8(binary_addr)
@@ -723,6 +736,7 @@ def get_address16(binary_addr, offset=0):
 
 
 def get_stats():
+    memory_binary = session.current().memory.binary
     result = stats.Stats()
     oldc = None
     # (For speed, this loop uses plain integer addresses.)

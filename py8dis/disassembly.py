@@ -23,6 +23,7 @@ import labelmakingdata
 import mainformatter
 import memorymanager
 import movemanager
+import session
 import optionallabel
 import re
 import trace
@@ -616,7 +617,7 @@ def calculate_move_ranges():
     move_ranges = []
     current_range_start = None
     current_range_move_id = None
-    for start_addr, end_addr in sorted(memorymanager.load_ranges):
+    for start_addr, end_addr in sorted(session.current().memory.load_ranges):
         binary_addr = start_addr
         while binary_addr < end_addr:
             if current_range_start is not None:

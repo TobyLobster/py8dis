@@ -12,6 +12,7 @@ import textwrap
 import trace
 import utils
 import memorymanager
+import session
 from memorymanager import BinaryAddr, RuntimeAddr
 from align import Align
 
@@ -23,6 +24,7 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
     fixed width.
     """
 
+    memory_binary = session.current().memory.binary
     assert isinstance(binary_addr, BinaryAddr)
     if not config.get_hex_dump():
         return s
@@ -30,7 +32,7 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
     s += config.get_assembler().comment_prefix() + " "
 
     # Add hex characters as a fixed width string
-    data = memorymanager.memory_binary[binary_addr:binary_addr + min(length, config.get_hex_dump_max_bytes())]
+    data = memory_binary[binary_addr:binary_addr + min(length, config.get_hex_dump_max_bytes())]
     dump_hex = " ".join(utils.plainhex2(x) for x in data)
     if length > config.get_hex_dump_max_bytes():
         dump_hex += "... "
@@ -247,8 +249,9 @@ def constant(binary_addr, n, bits):
 def constant8(binary_addr):
     """Format a constant value, using whatever formatter is hinted"""
 
+    memory_binary = session.current().memory.binary
     assert memorymanager.is_valid_binary_addr(binary_addr)
-    n = memorymanager.memory_binary[binary_addr]
+    n = memory_binary[binary_addr]
     return constant(binary_addr, n, 8)
 
 def constant16(binary_addr):

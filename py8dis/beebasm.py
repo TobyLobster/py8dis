@@ -211,6 +211,7 @@ class Beebasm(assembler.Assembler):
     # need to set it at the end of distinct non-adjoining ranges (I
     # think)
     def pseudopc_end(self, dest, source, length, move_id):
+        memory_binary = session.current().memory.binary
         assert isinstance(dest, memorymanager.RuntimeAddr)
         assert isinstance(source, memorymanager.BinaryAddr)
 
@@ -278,7 +279,7 @@ class Beebasm(assembler.Assembler):
             result.append("%s%s%s%s The last byte of the block (not copied above, as the block reaches the top of memory)" % (
                 utils.make_indent(1),
                 self.byte_prefix(),
-                utils.tab_to(self.hex2(memorymanager.memory_binary[last_byte_binary_addr]), 8),
+                utils.tab_to(self.hex2(memory_binary[last_byte_binary_addr]), 8),
                 self.comment_prefix()))
         else:
             result.append("%s%s %s + (* - %s)" % (utils.make_indent(1),

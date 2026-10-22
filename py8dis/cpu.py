@@ -8,6 +8,7 @@ import labelmanager
 import mainformatter
 import memorymanager
 import movemanager
+import session
 import re
 import trace
 import utils
@@ -76,8 +77,9 @@ class Cpu:
         entry being the destination of a jump or branch instruction.
         """
 
+        memory_binary = session.current().memory.binary
         assert isinstance(binary_addr, memorymanager.BinaryAddr)
-        opcode_value = memorymanager.memory_binary[binary_addr]
+        opcode_value = memory_binary[binary_addr]
         if opcode_value not in self.opcodes:
             return [None]
         opcode = self.opcodes[opcode_value]
@@ -102,7 +104,7 @@ class Cpu:
                 if not memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1 + opcode.operand_length):
                     # Mark the final partial instruction as being data, not code
                     for i in range(1, 1 + opcode.operand_length):
-                        if memorymanager.memory_binary[binary_addr + i] is not None:
+                        if memory_binary[binary_addr + i] is not None:
                             classification.add_classification(binary_addr, classification.Byte(1))
                         else:
                             break
@@ -220,6 +222,7 @@ class Cpu:
         #for runtime_addr, label in self.labels.items():
         #    utils.debug("label {0} at runtime_addr: {1} has references: {2}".format(label.all_names(), hex(runtime_addr), [hex(x.binary_addr) for x in label.references]))
 
+        memory_binary = session.current().memory.binary
         trace.references = collections.defaultdict(list)
 
         def reached_in_move(runtime_addr, ref_binary_loc):
@@ -232,7 +235,7 @@ class Cpu:
             if not md.is_in_move_dest(runtime_addr, include_end_address=False):
                 return None
             binary_addr = md.convert_runtime_to_binary_addr(runtime_addr)
-            if memorymanager.memory_binary[binary_addr] is None:
+            if memory_binary[binary_addr] is None:
                 return None
             if movemanager.move_id_for_binary_addr[binary_addr] != move_id:
                 return None
