@@ -321,7 +321,7 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
 
     # Rule 1
     if move_id is None:
-        move_id = movemanager.move_id_for_binary_addr[binary_addr]
+        move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
     move_ids2 = movemanager.move_ids_for_runtime_addr(runtime_addr)
 
     # Rule 2
@@ -604,7 +604,7 @@ def fix_label_names():
             c = classification.get_classification(binary_addr)
             if c is not None:
                 if not (binary_addr in classification.include_binary_files):
-                    move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                    move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                     dummy = [str(x) for x in c.as_string_list(movemanager.BinaryLocation(BinaryAddr(binary_addr), move_id), None)]
                 binary_addr += c.length()
             else:
@@ -617,11 +617,12 @@ def calculate_move_ranges():
     move_ranges = []
     current_range_start = None
     current_range_move_id = None
+    move_id_for_binary_addr = session.current().moves.move_id_for_binary_addr
     for start_addr, end_addr in sorted(session.current().memory.load_ranges):
         binary_addr = start_addr
         while binary_addr < end_addr:
             if current_range_start is not None:
-                if (binary_addr == current_range_end and movemanager.move_id_for_binary_addr[binary_addr] == current_range_move_id):
+                if (binary_addr == current_range_end and move_id_for_binary_addr[binary_addr] == current_range_move_id):
                     current_range_end = binary_addr + 1
                 else:
                     move_ranges.append((current_range_start, current_range_end))
@@ -629,7 +630,7 @@ def calculate_move_ranges():
             if current_range_start is None:
                 current_range_start = binary_addr
                 current_range_end = binary_addr + 1
-                current_range_move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                current_range_move_id = move_id_for_binary_addr[binary_addr]
             binary_addr += 1
 
     if current_range_start != current_range_end:
@@ -755,13 +756,13 @@ def emit(print_output=True):
     d = []
 
     def record_emit_point(binary_addr, move_id):
-        md = movemanager.move_definitions[move_id]
+        md = session.current().moves.move_definitions[move_id]
         runtime_addr = md.convert_binary_to_runtime_addr(binary_addr)
         labelmanager.notify_emit_opportunity(runtime_addr, move_id)
 
     # Calculate the move_ids that will emit output?
     for start_addr, end_addr in move_ranges:
-        move_id = movemanager.move_id_for_binary_addr[start_addr]
+        move_id = session.current().moves.move_id_for_binary_addr[start_addr]
         if move_id != movemanager.BASE_MOVE_ID:
             record_emit_point(start_addr, movemanager.BASE_MOVE_ID)
 
@@ -783,7 +784,7 @@ def emit(print_output=True):
             d.extend(formatter.code_start(start_addr, end_addr, True))
             old_end_addr = start_addr
 
-        move_id = movemanager.move_id_for_binary_addr[start_addr]
+        move_id = session.current().moves.move_id_for_binary_addr[start_addr]
 
         # Handle start of a new !pseudopc block
         if move_id != movemanager.BASE_MOVE_ID:
@@ -912,7 +913,7 @@ def emit_labels(binary_loc, output_annotations):
     binary_loc = movemanager.make_binloc(binary_loc)
 
     result = []
-    md = movemanager.move_definitions[binary_loc.move_id]
+    md = session.current().moves.move_definitions[binary_loc.move_id]
     runtime_addr = md.convert_binary_to_runtime_addr(binary_loc.binary_addr)
 
     if output_annotations:

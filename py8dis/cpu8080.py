@@ -540,7 +540,7 @@ class Cpu8080(cpu.Cpu):
 
             call_hook = trace.cpu.subroutine_hooks.get(target_runtime_addr, simple_call_hook)
             caller_runtime_addr = movemanager.b2r(binary_loc.binary_addr)
-            with movemanager.move_id_for_binary_addr[binary_loc.binary_addr]:
+            with session.current().moves.move_id_for_binary_addr[binary_loc.binary_addr]:
                 return_runtime_addr = call_hook(target_runtime_addr, caller_runtime_addr)
 
             if return_runtime_addr is not None:

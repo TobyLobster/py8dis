@@ -1,6 +1,7 @@
 import collections
 import memorymanager
 import movemanager
+import session
 import disassembly
 import config
 import utils
@@ -48,7 +49,7 @@ class Label:
         # Remember the relevant active_move_ids in operation at this point of label creation.
         # These are used to later 'best guess' in which move the label should be output.
         relevant_move_ids = movemanager.move_ids_for_runtime_addr(self.runtime_addr)
-        self.relevant_active_move_ids = [x for x in movemanager.active_move_ids[:] if x in relevant_move_ids]
+        self.relevant_active_move_ids = [x for x in session.current().moves.active_move_ids[:] if x in relevant_move_ids]
 
         self.references = []         # Holds the binary locations that reference this label
 

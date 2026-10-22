@@ -84,7 +84,7 @@ class Cpu:
             return [None]
         opcode = self.opcodes[opcode_value]
 
-        with movemanager.move_id_for_binary_addr[binary_addr] as move_id:
+        with session.current().moves.move_id_for_binary_addr[binary_addr] as move_id:
             binary_loc = BinaryLocation(binary_addr, move_id)
 
             # If we hit something that's already classified, we can't/don't
@@ -191,7 +191,7 @@ class Cpu:
                     self.entry_points.append(implied_entry_point)
 
                 for new_entry_point in new_entry_points:
-                    move_id = movemanager.move_id_for_binary_addr[new_entry_point]
+                    move_id = session.current().moves.move_id_for_binary_addr[new_entry_point]
                     runtime_addr = movemanager.b2r(new_entry_point)
                     self.add_entry(new_entry_point, runtime_addr, move_id=move_id, name=None)
 
@@ -231,13 +231,13 @@ class Cpu:
             that move, return the binary address, otherwise None."""
 
             move_id = ref_binary_loc.move_id
-            md = movemanager.move_definitions[move_id]
+            md = session.current().moves.move_definitions[move_id]
             if not md.is_in_move_dest(runtime_addr, include_end_address=False):
                 return None
             binary_addr = md.convert_runtime_to_binary_addr(runtime_addr)
             if memory_binary[binary_addr] is None:
                 return None
-            if movemanager.move_id_for_binary_addr[binary_addr] != move_id:
+            if session.current().moves.move_id_for_binary_addr[binary_addr] != move_id:
                 return None
 
             # A jump, call or branch into the middle of an instruction in its

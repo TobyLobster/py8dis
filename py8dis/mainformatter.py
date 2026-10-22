@@ -63,7 +63,7 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
     dump_move = ""
     if movemanager.has_any_moves():
         if runtime_addr != binary_addr:
-            dump_move = " :%s[%d]" % (utils.plainhex4(runtime_addr), movemanager.move_id_for_binary_addr[binary_addr])
+            dump_move = " :%s[%d]" % (utils.plainhex4(runtime_addr), session.current().moves.move_id_for_binary_addr[binary_addr])
         dump_move = utils.tab_to(dump_move, 12)
 
     # Join them all together: address, hex bytes, characters, cpu state, move details

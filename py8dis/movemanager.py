@@ -23,23 +23,16 @@ import contextlib
 import config
 import utils
 import memorymanager
+import session
 from movedefinition import MoveDefinition
 from memorymanager import BinaryLocation, RuntimeAddr, BinaryAddr
 
-# active_move_ids is a list of MoveId objects. It is managed by the
-# MoveId class itself.
 BASE_MOVE_ID    = 0     # Integer value for the first move id.
-active_move_ids = []
-
-# move_definitions is a list of moves, each of the form (dest, source, len)
-# It starts as a single move encompassing the entire memory map. Later
-# moves "steal" binary addresses from earlier moves.
-move_definitions = [MoveDefinition(RuntimeAddr(0), BinaryAddr(0), 0x10000)]
 
 def is_valid_move_id(move_id):
     """Sanity check that the move_id is within the expected range"""
 
-    return move_id == BASE_MOVE_ID or 0 <= move_id < len(move_definitions)
+    return move_id == BASE_MOVE_ID or 0 <= move_id < len(session.current().moves.move_definitions)
 
 class MoveId(int):
     """Class for a move id, that via scope manages a list of active
@@ -51,15 +44,38 @@ class MoveId(int):
 
     # We define the '__enter__' and '__exit__' methods for the 'with' command
     def __enter__(self):
-        active_move_ids.append(self)
+        session.current().moves.active_move_ids.append(self)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
+        active_move_ids = session.current().moves.active_move_ids
         assert active_move_ids[-1] == self
         active_move_ids.pop()
 
-# Create array of 65536 instances of one initial MoveId object
-move_id_for_binary_addr = [MoveId(BASE_MOVE_ID)] * 0x10000
+class Moves:
+    """The moves of one session (see session.py)."""
+
+    def __init__(self):
+        # active_move_ids is a list of MoveId objects. It is managed by the
+        # MoveId class itself.
+        self.active_move_ids = []
+
+        # move_definitions is a list of moves, each of the form (dest, source,
+        # len). It starts as a single move encompassing the entire memory map.
+        # Later moves "steal" binary addresses from earlier moves.
+        self.move_definitions = [MoveDefinition(RuntimeAddr(0), BinaryAddr(0), 0x10000)]
+
+        # The move id for each binary address: an array of 65536 instances of
+        # one initial MoveId object. (Making the base MoveId doesn't look at
+        # the session, which is still being made.)
+        self.move_id_for_binary_addr = [MoveId(BASE_MOVE_ID)] * 0x10000
+
+        # `cache` holds a list of move_ids for each runtime address.
+        self.cache = None
+
+        # `cache_move_definitions_len` is used to check if any more move()s
+        # have been made and need to be cached.
+        self.cache_move_definitions_len = None
 
 def add_move(dest_runtime_addr, src_binary_addr, length):
     """Register the existence of a 'move' at runtime that relocates memory
@@ -80,6 +96,9 @@ def add_move(dest_runtime_addr, src_binary_addr, length):
     assert length > 0
 
     # Create a new move
+    moves = session.current().moves
+    move_definitions = moves.move_definitions
+    move_id_for_binary_addr = moves.move_id_for_binary_addr
     move_definitions.append(MoveDefinition(dest_runtime_addr, src_binary_addr, length))
 
     # Create a new move id
@@ -100,7 +119,7 @@ def is_valid_runtime_addr_for_move_id(runtime_addr, move_id):
     assert is_valid_move_id(move_id)
 
     # Find the move definition
-    md = move_definitions[move_id]
+    md = session.current().moves.move_definitions[move_id]
 
     # We *include* the end address here; this accounts for the fact that a label can be
     # defined after the last classification in a move.
@@ -119,30 +138,13 @@ def b2r(binary_addr):
     assert memorymanager.is_valid_binary_addr(binary_addr)
 
     # Gather information about the move
-    move_id = move_id_for_binary_addr[binary_addr]
+    moves = session.current().moves
+    move_id = moves.move_id_for_binary_addr[binary_addr]
     if move_id == BASE_MOVE_ID:
         # (A quick path for the common case: the base move doesn't move anything)
         return RuntimeAddr(int(binary_addr))
-    md = move_definitions[move_id]
+    md = moves.move_definitions[move_id]
     return md.convert_binary_to_runtime_addr(binary_addr)
-
-# `cache` holds a list of move_ids for each runtime address.
-cache = None
-
-# `cache_move_definitions_len` is used to check if any more move()s have been made and need to be cached.
-cache_move_definitions_len = None
-
-def init():
-    """Reset this module's state, forgetting any moves.
-
-    The collections are cleared in place rather than replaced, so any
-    references to them elsewhere stay valid."""
-    global cache, cache_move_definitions_len
-    active_move_ids.clear()
-    move_definitions[:] = [MoveDefinition(RuntimeAddr(0), BinaryAddr(0), 0x10000)]
-    move_id_for_binary_addr[:] = [MoveId(BASE_MOVE_ID)] * 0x10000
-    cache = None
-    cache_move_definitions_len = None
 
 def move_ids_for_runtime_addr(runtime_addr):
     """
@@ -151,21 +153,22 @@ def move_ids_for_runtime_addr(runtime_addr):
     Used by r2b(). These results are stored in a cache for speed.
     """
 
-    global cache_move_definitions_len, cache
     assert isinstance(runtime_addr, RuntimeAddr)
 
     assert memorymanager.is_valid_runtime_addr(runtime_addr, True) # 0x10000 is valid for labels
 
-    if cache_move_definitions_len is None or len(move_definitions) != cache_move_definitions_len:
-        cache = collections.defaultdict(set)
-        for binary_addr, move_id in enumerate(move_id_for_binary_addr):
+    moves = session.current().moves
+    if moves.cache_move_definitions_len is None or len(moves.move_definitions) != moves.cache_move_definitions_len:
+        moves.cache = collections.defaultdict(set)
+        for binary_addr, move_id in enumerate(moves.move_id_for_binary_addr):
             if move_id != BASE_MOVE_ID: # TODO: special case feels a bit awkward
-                cache[b2r(BinaryAddr(binary_addr))].add(move_id)
-        cache_move_definitions_len = len(move_definitions)
-    return cache[runtime_addr]
+                moves.cache[b2r(BinaryAddr(binary_addr))].add(move_id)
+        moves.cache_move_definitions_len = len(moves.move_definitions)
+    return moves.cache[runtime_addr]
 
 def make_binloc(binary_loc):
     if utils.is_integer_type(binary_loc):
+        active_move_ids = session.current().moves.active_move_ids
         last_move_id = active_move_ids[-1] if active_move_ids else BASE_MOVE_ID
         return BinaryLocation(BinaryAddr(binary_loc), last_move_id)
     assert isinstance(binary_loc, BinaryLocation)
@@ -184,6 +187,8 @@ def r2b(runtime_addr, specific_move_id=None, debug=False):
 
     assert isinstance(runtime_addr, RuntimeAddr)
 
+    moves = session.current().moves
+    active_move_ids = moves.active_move_ids
     if specific_move_id is None:
         # Get a list of move_ids for the runtime address
         relevant_move_ids = move_ids_for_runtime_addr(runtime_addr)
@@ -211,7 +216,7 @@ def r2b(runtime_addr, specific_move_id=None, debug=False):
             return (None, None)
 
     # Return the binary address for the runtime address and the selected move id.
-    md = move_definitions[specific_move_id]
+    md = moves.move_definitions[specific_move_id]
     if md.is_in_move_dest(runtime_addr, include_end_address=True):
         return (md.convert_runtime_to_binary_addr(runtime_addr), specific_move_id)
     return (None, None)
@@ -232,7 +237,7 @@ def r2b_checked(runtime_addr):
     return BinaryLocation(binary_addr, move_id)
 
 def has_any_moves():
-    return len(move_definitions) > 1
+    return len(session.current().moves.move_definitions) > 1
 
 # Unit testing for moves
 if __name__ == "__main__":
@@ -242,6 +247,10 @@ if __name__ == "__main__":
     id1 = add_move_test(0x70, 0x1900, 10)
     id2 = add_move_test(0x70, 0x2000, 8)
     id3 = add_move_test(0x900, 0x2100, 256)
+
+    moves = session.current().moves
+    move_id_for_binary_addr = moves.move_id_for_binary_addr
+    active_move_ids = moves.active_move_ids
 
     assert move_id_for_binary_addr[0x70] == BASE_MOVE_ID
     assert move_id_for_binary_addr[0x1900] == id1

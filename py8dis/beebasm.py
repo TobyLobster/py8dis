@@ -216,7 +216,7 @@ class Beebasm(assembler.Assembler):
         assert isinstance(source, memorymanager.BinaryAddr)
 
         result = [""]
-        move_id = movemanager.move_id_for_binary_addr[source]
+        move_id = session.current().moves.move_id_for_binary_addr[source]
 
         # Find a temporary memory range we can use to move existing code out of the way (if needed)
         temp_start, overlap_start, overlap_length, area_to_clear_start, area_to_clear_end = self.find_temporary_area(dest, source, length)

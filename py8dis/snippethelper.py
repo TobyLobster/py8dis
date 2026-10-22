@@ -1,5 +1,6 @@
 import classification
 import movemanager
+import session
 import trace
 import utils
 import labelmanager
@@ -47,7 +48,7 @@ class SnippetHelper:
 
     def get_binary_location(self, label_name, prioritise_definition=True):
         binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=prioritise_definition)
-        move_id = movemanager.move_id_for_binary_addr[binary_addr]
+        move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
         return BinaryLocation(binary_addr, move_id)
 
     def get_memory(self, label_name, offset=0):

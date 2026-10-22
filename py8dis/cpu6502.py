@@ -1244,7 +1244,7 @@ class Cpu6502(cpu.Cpu):
             subroutine_hook = trace.cpu.subroutine_hooks.get(target_runtime_addr, simple_subroutine_hook)
             caller_runtime_addr = movemanager.b2r(binary_loc.binary_addr)
 
-            with movemanager.move_id_for_binary_addr[binary_loc.binary_addr]:
+            with session.current().moves.move_id_for_binary_addr[binary_loc.binary_addr]:
                 return_runtime_addr = subroutine_hook(target_runtime_addr, caller_runtime_addr)
 
             if return_runtime_addr is not None:
@@ -1573,7 +1573,7 @@ class Cpu6502(cpu.Cpu):
                                 # Get the value of the register
                                 r = state.pessimistic[reg].value
                                 if r is not None:
-                                    move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                                    move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                                     binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                                     formatter = config.get_assembler()
                                     if r > 9:
@@ -1584,7 +1584,7 @@ class Cpu6502(cpu.Cpu):
                     if isinstance(c, trace.cpu.Opcode):
                         value = memorymanager.get_u8_binary(binary_addr)
                         if prev_state and prev_state.pessimistic['c'] == True:
-                            move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                             binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                             if value == OPCODE_ADC_IMMEDIATE:
                                 value = memorymanager.get_u8_binary(binary_addr+1)
@@ -1593,7 +1593,7 @@ class Cpu6502(cpu.Cpu):
                                 disassembly.comment_binary(binary_loc, "+1 because carry is set", align=Align.INLINE, auto_generated=True)
 
                         elif prev_state and prev_state.pessimistic['c'] == False:
-                            move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                             binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                             if value == OPCODE_SBC_IMMEDIATE:
                                 value = memorymanager.get_u8_binary(binary_addr+1)
@@ -1604,7 +1604,7 @@ class Cpu6502(cpu.Cpu):
                     # Find "ALWAYS branch" instructions
                     if isinstance(c, self.OpcodeConditionalBranch):
                         if state.always_branch:
-                            move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                             binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                             disassembly.comment_binary(binary_loc, "ALWAYS branch", align=Align.INLINE, auto_generated=True)
                             disassembly.add_raw_annotation(binary_loc, "", align=Align.AFTER_LINE)  # add a blank line after ALWAYS branch
@@ -1788,7 +1788,7 @@ class Cpu6502(cpu.Cpu):
                 if any(found_already[binary_addr:binary_addr+length]):
                     continue
 
-                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                 binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
 
                 # Mark these bytes as True, already commented on
@@ -1826,7 +1826,7 @@ class Cpu6502(cpu.Cpu):
                 if any(found_already[binary_addr:binary_addr+length]):
                     continue
 
-                move_id = movemanager.move_id_for_binary_addr[binary_addr]
+                move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                 binary_loc = memorymanager.BinaryLocation(binary_addr, move_id)
 
                 # Mark these bytes as True, already commented on

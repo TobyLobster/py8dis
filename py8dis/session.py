@@ -10,7 +10,7 @@ Nothing should keep a reference to the session's state (e.g. its settings)
 from one call to the next, since it will be out of date after a reset.
 
 (This is being introduced in steps: so far the session holds the settings,
-the assembler, the output filenames and the memory. The rest of the state is still held
+the assembler, the output filenames, the memory and the moves. The rest of the state is still held
 by the individual modules. See claude/architecture-notes-2026-10-21.md in the
 project.)
 """
@@ -18,7 +18,6 @@ project.)
 import argparse
 
 import config
-import memorymanager
 import utils
 
 class Session:
@@ -33,6 +32,11 @@ class Session:
         'asm_filename' is the file to write the disassembly to, or None to
         print it."""
 
+        # (These modules are imported here rather than at the top of this
+        # file, since they import this module themselves.)
+        import memorymanager
+        import movemanager
+
         self.settings = config.Settings()
         self.settings.lower_case = lower_case
         self.assembler = make_assembler(assembler) if utils.is_string_type(assembler) else assembler
@@ -45,6 +49,7 @@ class Session:
         self.output_filename = None
 
         self.memory = memorymanager.Memory()
+        self.moves  = movemanager.Moves()
 
 def make_assembler(name):
     """Make a new assembler object, given the assembler's name."""

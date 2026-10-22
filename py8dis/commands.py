@@ -968,7 +968,7 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Once we start tracing, we're taking a "static" view of the code and we
     # don't want any leftover user hints about how to convert runtime addresses
     # to binary addresses confusing things.
-    if len(movemanager.active_move_ids) != 0:
+    if len(session.current().moves.active_move_ids) != 0:
         utils.die("go() can't be called inside a 'with move(...):' block")
     if not session.current().memory.load_ranges:
         utils.die("go(): nothing has been loaded to disassemble (use load() first)")
@@ -1033,7 +1033,6 @@ def reset():
     # A new session, with new settings and a new assembler object
     session.new_session()
 
-    movemanager.init()
     disassembly.init()          # (this also resets the classification module)
     labelmanager.init()
     trace.init()
