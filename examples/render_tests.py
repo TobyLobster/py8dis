@@ -1,0 +1,391 @@
+#!/usr/bin/env python3
+"""
+Tests for rendering output lines (see py8dis/output.py), run by run_tests.py -c.
+
+Each test makes one line object (an instruction, a block of data, a comment,
+a directive...) and checks the text it renders for each assembler, without
+running a disassembly. A few bytes of memory are set up for the hex dumps
+and the data; label operands are plain names, since naming labels isn't
+part of rendering.
+
+Usage: ./render_tests.py          check every test (exits with 1 if any fail)
+       ./render_tests.py --print  print what each test renders now, in the
+                                  form used in EXPECTED below
+"""
+
+import os
+import sys
+from pathlib import Path
+
+EXAMPLES_DIR = Path(__file__).resolve().parent
+PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
+
+ASSEMBLERS_6502 = ["acme", "beebasm", "xa"]
+
+# The bytes at &2000 onwards: 'lda #&41' (with 'A' as a character), 'lda
+# (&70),y', 'lda &0070' (absolute, with a zero page operand), 'rts', some
+# data (including a byte that isn't printable), and the string "Hi!" then 13
+MEMORY = [0xa9, 0x41, 0xb1, 0x70, 0xad, 0x70, 0x00, 0x60,
+          0x01, 0x02, 0x03, 0xff, 0x34, 0x12, 0x78, 0x56,
+          0x48, 0x69, 0x21, 0x0d]
+
+def binary_loc(addr):
+    import movemanager
+    import memorymanager
+    return movemanager.BinaryLocation(memorymanager.BinaryAddr(addr), movemanager.BASE_MOVE_ID)
+
+def instruction(addr, length, *args, **kwargs):
+    """An output.Instruction placed at addr (with no extra indent, cycle count
+    or inline comments)."""
+    import output
+    return output.Instruction(*args, **kwargs).placed(binary_loc(addr), length, 0, "", None)
+
+def make_tests():
+    """The tests: a list of (name, assemblers, function making the line).
+
+    Tests whose name ends with '*' are also checked with upper case output."""
+    import expression
+    import output
+    Instruction = output.Instruction
+    Name = expression.Name
+    Num = expression.Num
+
+    return [
+        ("implied *",
+         ASSEMBLERS_6502, lambda: instruction(0x2007, 1, "rts")),
+        ("immediate with a character",
+         ASSEMBLERS_6502, lambda: instruction(0x2000, 2, "lda", Num(0x41, "hex"), prefix="#", char_literal="'A'")),
+        ("operand prefix and suffix *",
+         ASSEMBLERS_6502, lambda: instruction(0x2002, 2, "lda", Name("ptr"), prefix="(", suffix="),y")),
+        ("operand expression",
+         ASSEMBLERS_6502, lambda: instruction(0x2002, 2, "lda", expression.Binary(Name("ptr"), "+", Num(1)))),
+        ("force absolute addressing",
+         ["acme", "xa"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), form=Instruction.FORCE_ABSOLUTE)),
+        ("force absolute addressing, indexed *",
+         ["acme", "xa"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
+        ("absolute addressing as data *",
+         ["beebasm"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.AS_DATA,
+                                          data_byte=Num(0xad, "hex"), listing_operand=Name("zp_value"))),
+        ("8080 instruction",
+         ["z88dk-8080"], lambda: instruction(0x2000, 2, "mvi a,", Num(0x41, "hex"), char_literal="'A'")),
+        ("byte data *",
+         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x2008), 4, None, 1, None)),
+        ("byte data, two per line",
+         ASSEMBLERS_6502, lambda: output.DataBlock(binary_loc(0x2008), 4, 2, 1, None)),
+        ("word data",
+         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x200c), 4, None, 2, None)),
+        ("string *",
+         ASSEMBLERS_6502, lambda: output.StringData(binary_loc(0x2010), 4, None)),
+        ("blank",
+         ASSEMBLERS_6502, lambda: output.Blank()),
+        ("one line comment",
+         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.CommentLine("Memory locations")),
+        ("empty one line comment",
+         ASSEMBLERS_6502, lambda: output.CommentLine("")),
+        ("word wrapped comment",
+         ASSEMBLERS_6502, lambda: output.Comment("This is a long comment which is word wrapped, since it is much too long to fit on one line of the output.", 1)),
+        ("constant definition",
+         ASSEMBLERS_6502, lambda: output.ConstantDefinition("lives", "3", 12, "Starting number of lives", 24)),
+        ("code start *",
+         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
+        ("include binary file *",
+         ASSEMBLERS_6502, lambda: output.Directive("include_binary_file", "data.bin")),
+    ]
+
+# What each test should render, for each assembler (one string per line of
+# output). Made with --print, and checked by hand.
+EXPECTED = {
+    'implied, acme': [
+        '    rts                                                               ; 2007: 60          `',
+    ],
+    'implied, acme, upper case': [
+        '    RTS                                                               ; 2007: 60          `',
+    ],
+    'implied, beebasm': [
+        '    rts                                                               ; 2007: 60          `',
+    ],
+    'implied, beebasm, upper case': [
+        '    RTS                                                               ; 2007: 60          `',
+    ],
+    'implied, xa': [
+        '    rts                                                               // 2007: 60          `',
+    ],
+    'implied, xa, upper case': [
+        '    RTS                                                               // 2007: 60          `',
+    ],
+    'immediate with a character, acme': [
+        "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
+    ],
+    'immediate with a character, beebasm': [
+        "    lda #&41 ; 'A'                                                    ; 2000: a9 41       .A",
+    ],
+    'immediate with a character, xa': [
+        "    lda #$41 // 'A'                                                   // 2000: a9 41       .A",
+    ],
+    'operand prefix and suffix, acme': [
+        '    lda (ptr),y                                                       ; 2002: b1 70       .p',
+    ],
+    'operand prefix and suffix, acme, upper case': [
+        '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
+    ],
+    'operand prefix and suffix, beebasm': [
+        '    lda (ptr),y                                                       ; 2002: b1 70       .p',
+    ],
+    'operand prefix and suffix, beebasm, upper case': [
+        '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
+    ],
+    'operand prefix and suffix, xa': [
+        '    lda (ptr),y                                                       // 2002: b1 70       .p',
+    ],
+    'operand prefix and suffix, xa, upper case': [
+        '    LDA (ptr),Y                                                       // 2002: B1 70       .p',
+    ],
+    'operand expression, acme': [
+        '    lda ptr + 1                                                       ; 2002: b1 70       .p',
+    ],
+    'operand expression, beebasm': [
+        '    lda ptr + 1                                                       ; 2002: b1 70       .p',
+    ],
+    'operand expression, xa': [
+        '    lda ptr + 1                                                       // 2002: b1 70       .p',
+    ],
+    'force absolute addressing, acme': [
+        '    lda+2 zp_value                                                    ; 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, xa': [
+        '    lda !zp_value                                                     // 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, acme': [
+        '    lda+2 zp_value,x                                                  ; 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, acme, upper case': [
+        '    LDA+2 zp_value,X                                                  ; 2004: AD 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, xa': [
+        '    lda !zp_value,x                                                   // 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, xa, upper case': [
+        '    LDA !zp_value,X                                                   // 2004: AD 70 00    .p.',
+    ],
+    'absolute addressing as data, beebasm': [
+        '    equb &ad, <(zp_value), >(zp_value) ; lda+2 zp_value,x             ; 2004: ad 70 00    .p.',
+    ],
+    'absolute addressing as data, beebasm, upper case': [
+        '    EQUB &AD, <(zp_value), >(zp_value) ; LDA+2 zp_value,X             ; 2004: AD 70 00    .p.',
+    ],
+    '8080 instruction, z88dk-8080': [
+        "    mvi a, $41 ; 'A'                                                  ; 2000: a9 41       .A",
+    ],
+    'byte data, acme': [
+        '    !byte 1, 2, 3, $ff                                                ; 2008: 01 02 03... ...',
+    ],
+    'byte data, acme, upper case': [
+        '    !BYTE 1, 2, 3, $FF                                                ; 2008: 01 02 03... ...',
+    ],
+    'byte data, beebasm': [
+        '    equb 1, 2, 3, &ff                                                 ; 2008: 01 02 03... ...',
+    ],
+    'byte data, beebasm, upper case': [
+        '    EQUB 1, 2, 3, &FF                                                 ; 2008: 01 02 03... ...',
+    ],
+    'byte data, xa': [
+        '    .byt 1, 2, 3, $ff                                                 // 2008: 01 02 03... ...',
+    ],
+    'byte data, xa, upper case': [
+        '    .BYT 1, 2, 3, $FF                                                 // 2008: 01 02 03... ...',
+    ],
+    'byte data, z88dk-8080': [
+        '    db 1, 2, 3, $ff                                                   ; 2008: 01 02 03... ...',
+    ],
+    'byte data, z88dk-8080, upper case': [
+        '    DB 1, 2, 3, $FF                                                   ; 2008: 01 02 03... ...',
+    ],
+    'byte data, two per line, acme': [
+        '    !byte 1,   2                                                      ; 2008: 01 02       ..',
+        '    !byte 3, $ff                                                      ; 200a: 03 ff       ..',
+    ],
+    'byte data, two per line, beebasm': [
+        '    equb 1,   2                                                       ; 2008: 01 02       ..',
+        '    equb 3, &ff                                                       ; 200a: 03 ff       ..',
+    ],
+    'byte data, two per line, xa': [
+        '    .byt 1,   2                                                       // 2008: 01 02       ..',
+        '    .byt 3, $ff                                                       // 200a: 03 ff       ..',
+    ],
+    'word data, acme': [
+        '    !word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
+    ],
+    'word data, beebasm': [
+        '    equw &1234, &5678                                                 ; 200c: 34 12 78... 4.x',
+    ],
+    'word data, xa': [
+        '    .word $1234, $5678                                                // 200c: 34 12 78... 4.x',
+    ],
+    'word data, z88dk-8080': [
+        '    dw $1234, $5678                                                   ; 200c: 34 12 78... 4.x',
+    ],
+    'string, acme': [
+        '    !text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
+    ],
+    'string, acme, upper case': [
+        '    !TEXT "Hi!", $0D                                                  ; 2010: 48 69 21... Hi!',
+    ],
+    'string, beebasm': [
+        '    equs "Hi!", &0d                                                   ; 2010: 48 69 21... Hi!',
+    ],
+    'string, beebasm, upper case': [
+        '    EQUS "Hi!", &0D                                                   ; 2010: 48 69 21... Hi!',
+    ],
+    'string, xa': [
+        '    .asc "Hi!", $0d                                                   // 2010: 48 69 21... Hi!',
+    ],
+    'string, xa, upper case': [
+        '    .ASC "Hi!", $0D                                                   // 2010: 48 69 21... Hi!',
+    ],
+    'blank, acme': [
+        '',
+    ],
+    'blank, beebasm': [
+        '',
+    ],
+    'blank, xa': [
+        '',
+    ],
+    'one line comment, acme': [
+        '; Memory locations',
+    ],
+    'one line comment, beebasm': [
+        '; Memory locations',
+    ],
+    'one line comment, xa': [
+        '// Memory locations',
+    ],
+    'one line comment, z88dk-8080': [
+        '; Memory locations',
+    ],
+    'empty one line comment, acme': [
+        ';',
+    ],
+    'empty one line comment, beebasm': [
+        ';',
+    ],
+    'empty one line comment, xa': [
+        '//',
+    ],
+    'word wrapped comment, acme': [
+        '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
+    ],
+    'word wrapped comment, beebasm': [
+        '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
+    ],
+    'word wrapped comment, xa': [
+        '    // This is a long comment which is word wrapped, since it is much too long to fit\n    // on one line of the output.',
+    ],
+    'constant definition, acme': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, beebasm': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, xa': [
+        'lives       = 3         // Starting number of lives',
+    ],
+    'code start, acme': [
+        '',
+        '    * = $2000',
+        '',
+    ],
+    'code start, acme, upper case': [
+        '',
+        '    * = $2000',
+        '',
+    ],
+    'code start, beebasm': [
+        '',
+        '    org &2000',
+        '',
+    ],
+    'code start, beebasm, upper case': [
+        '',
+        '    ORG &2000',
+        '',
+    ],
+    'code start, xa': [
+        '',
+        '    * = $2000',
+        '',
+    ],
+    'code start, xa, upper case': [
+        '',
+        '    * = $2000',
+        '',
+    ],
+    'code start, z88dk-8080': [
+        '',
+        '    ORG $2000',
+        '',
+    ],
+    'code start, z88dk-8080, upper case': [
+        '',
+        '    ORG $2000',
+        '',
+    ],
+    'include binary file, acme': [
+        '    !binary "data.bin"',
+    ],
+    'include binary file, acme, upper case': [
+        '    !binary "data.bin"',
+    ],
+    'include binary file, beebasm': [
+        '    incbin "data.bin"',
+    ],
+    'include binary file, beebasm, upper case': [
+        '    INCBIN "data.bin"',
+    ],
+    'include binary file, xa': [
+        '    .bin 0,0,"data.bin"',
+    ],
+    'include binary file, xa, upper case': [
+        '    .bin 0,0,"data.bin"',
+    ],
+}
+
+def render(make_line, assembler, upper_case=False):
+    """The text of the line made by make_line(), for the given assembler."""
+    import session
+    s = session.new_session(assembler=assembler, lower_case=not upper_case)
+    s.memory.binary[0x2000:0x2000 + len(MEMORY)] = MEMORY
+    line = make_line()
+    return [str(text) for text in line.render()]
+
+def main():
+    sys.path.insert(0, str(PY8DIS_DIR))
+    sys.argv = sys.argv[:1] + [a for a in sys.argv[1:] if a == "--print"]
+    printing = "--print" in sys.argv
+    import commands
+    commands.use_command_line(False)
+
+    failures = 0
+    count = 0
+    for name, assemblers, make_line in make_tests():
+        for assembler in assemblers:
+            for upper_case in ((False, True) if name.endswith(" *") else (False,)):
+                key = "%s, %s%s" % (name.rstrip(" *"), assembler, ", upper case" if upper_case else "")
+                got = render(make_line, assembler, upper_case)
+                count += 1
+                if printing:
+                    print("    %r: [" % key)
+                    for text in got:
+                        print("        %r," % text)
+                    print("    ],")
+                elif EXPECTED.get(key) != got:
+                    failures += 1
+                    print("FAILED: %s" % key)
+                    print("    expected: %r" % (EXPECTED.get(key),))
+                    print("    got:      %r" % (got,))
+    if not printing:
+        print("render tests: %d passed, %d failed" % (count - failures, failures))
+    return 1 if failures else 0
+
+if __name__ == "__main__":
+    sys.exit(main())

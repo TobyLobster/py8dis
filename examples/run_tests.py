@@ -11,9 +11,9 @@ For each test and assembler:
      without any assemblers installed).
   4. With -m, copy the asm to known_good (only once the binary has been checked)
 
-With -c, when all the tests are run, session_tests.py is run as well (several
-disassemblies in one process: see that file). It's started first and reported
-first.
+With -c, when all the tests are run, session_tests.py (several disassemblies in
+one process) and render_tests.py (rendering output lines for each assembler)
+are run as well: see those files. They're started first and reported first.
 
 Tests run in parallel. Examples:
 
@@ -85,6 +85,9 @@ ASSEMBLER_PROGRAMS = {
     "xa":         "xa",
     "z88dk-8080": "z88dk-z80asm",
 }
+
+# Test scripts run as well by -c, when all the tests are run
+OTHER_TEST_SCRIPTS = ["session_tests.py", "render_tests.py"]
 
 EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
@@ -223,18 +226,18 @@ def main():
     start = time.time()
     failures = 0
     width = max((len(f"{n}_{a}") for n, a in jobs), default=0) + 2
-    # The session tests (several disassemblies in one process), when checking
-    # all the tests. These start first since they take longest.
-    run_session_tests = options.check_disassembly and not options.tests and not options.assemblers
+    # The other test scripts, when checking all the tests. These start first
+    # since the session tests take longest.
+    other_scripts = OTHER_TEST_SCRIPTS if (options.check_disassembly and not options.tests and not options.assemblers) else []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, options.jobs)) as executor:
-        if run_session_tests:
-            session_future = executor.submit(subprocess.run, [sys.executable, "session_tests.py"], capture_output=True, text=True, env=env)
+        other_futures = [executor.submit(subprocess.run, [sys.executable, script], capture_output=True, text=True, env=env)
+                         for script in other_scripts]
         futures = [executor.submit(run_test, name, assembler, options, env) for name, assembler in jobs]
-        # The session tests first, since they were started first
-        if run_session_tests:
-            jobs.append(("session_tests", None))
-            proc = session_future.result()
-            label = "session_tests:".ljust(width)
+        # The other test scripts first, since they were started first
+        for script, other_future in zip(other_scripts, other_futures):
+            jobs.append((script, None))
+            proc = other_future.result()
+            label = (Path(script).stem + ":").ljust(width)
             if proc.returncode != 0:
                 failures += 1
                 print(f"{label}FAILED:")
