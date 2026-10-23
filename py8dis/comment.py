@@ -16,6 +16,11 @@ class Annotation:
     def as_string(self, binary_addr):
         return str(self.text)
 
+    def name_labels(self):
+        """Name the labels the annotation refers to (see output.label_refs())."""
+        import output       # (see Comment.as_string())
+        output.name_labels_in(self.text)
+
     def __str__(self):
         return str(self.text)
 
@@ -64,6 +69,9 @@ class OverlappingInstruction(Annotation):
         self.binary_loc = binary_loc
         self.length = length
         self._formatted = None
+
+    def name_labels(self):
+        self.text.name_labels()
 
     def as_string(self, binary_addr):
         if self._formatted is None:

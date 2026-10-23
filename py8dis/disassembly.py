@@ -617,7 +617,7 @@ def get_final_label(runtime_addr, binary_addr, move_id, *, binary_addr_type: Bin
 
     return lmd.name
 
-def fix_label_names():
+def fix_label_names(*, include_annotations=False):
     """Choose the names for the labels used by the classifications so far
     (instructions and data), in address order.
 
@@ -625,11 +625,30 @@ def fix_label_names():
     names until we've finished the tracing process. This names each label
     referred to by an instruction or data item (in the order they would be
     output), so that we have a full set of label definitions ready to emit.
-    Labels referred to only by other things (e.g. comments) are named when
-    the output is made (see emit()).
+
+    This is done twice (see go()): first after tracing, and then again once
+    everything is classified, with include_annotations, to name the labels
+    used by data classified since (e.g. strings) and by comments and other
+    annotations. (Labels named the first time keep their names.)
+
+    After that, making the output only has to decide where label definitions
+    go (see emit()). The one kind of label still named then is one that a
+    definition is placed relative to: a label inside a multi-byte
+    classification (e.g. at an instruction's operand) is defined as e.g.
+    'l1235 = c1234+1', relative to a label at the start of the
+    classification, which may need a name. Whether that's needed depends on
+    which move the definition is output in, and on whether it has already
+    been output, which are only known while the output is made.
     """
 
     assert session.current().cpu.trace_done
+
+    # The annotations at each binary address
+    annotations_at = collections.defaultdict(list)
+    if include_annotations:
+        annotations = session.current().disassembly.annotations
+        for binary_loc in sorted(annotations, key=lambda loc: (loc.binary_addr, loc.move_id)):
+            annotations_at[int(binary_loc.binary_addr)].extend(annotations[binary_loc])
 
     # (Only the loaded data can be classified, so just loop over that. Plain
     # integer addresses are used for speed.)
@@ -639,8 +658,12 @@ def fix_label_names():
         while binary_addr < range_end:
             c = classification.get_classification(binary_addr)
             if c is not None:
+                move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
+                if include_annotations:
+                    for i in range(c.length()):
+                        for annotation in annotations_at.get(binary_addr + i, ()):
+                            annotation.name_labels()
                 if not (binary_addr in session.current().classifications.include_binary_files):
-                    move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                     for line in c.as_lines(movemanager.BinaryLocation(BinaryAddr(binary_addr), move_id), None):
                         line.name_labels()
                 binary_addr += c.length()

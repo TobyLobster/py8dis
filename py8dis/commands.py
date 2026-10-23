@@ -1015,6 +1015,10 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Mark everything remaining as bytes
     classification.classify_leftovers()
 
+    # Choose the names of the labels used by the data classified since the
+    # names were first chosen above (e.g. strings), and by comments
+    disassembly.fix_label_names(include_annotations=True)
+
     # Get the final assembly as a string
     result = disassembly.emit()
 
