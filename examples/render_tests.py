@@ -40,6 +40,26 @@ def instruction(addr, length, *args, **kwargs):
     import output
     return output.Instruction(*args, **kwargs).placed(binary_loc(addr), length, 0, "", None)
 
+def with_cpu_state(cpu_name, make_line):
+    """Make the line with config.set_show_cpu_state(True), with the CPU state
+    after the instruction at &2000 ('lda #&41') worked out as when tracing:
+    the CPU updates an unknown state for it. (So for the 6502, A=&41 and the
+    N and Z flags are clear. The 8080 doesn't track its state yet.)"""
+    def make():
+        import config
+        import cpu6502
+        import cpu8080
+        import memorymanager
+        import session
+        config.set_show_cpu_state(True)
+        cpu = cpu6502.Cpu6502() if cpu_name == "6502" else cpu8080.Cpu8080()
+        session.current().cpu = cpu
+        state = cpu.CpuState()
+        cpu.opcodes[MEMORY[0]].update_cpu_state(memorymanager.BinaryAddr(0x2000), state)
+        cpu.cpu_states[0x2000] = state
+        return make_line()
+    return make
+
 def make_tests():
     """The tests: a list of (name, assemblers, function making the line).
 
@@ -68,6 +88,10 @@ def make_tests():
                                           data_byte=Num(0xad, "hex"), listing_operand=Name("zp_value"))),
         ("8080 instruction",
          ["z88dk-8080"], lambda: instruction(0x2000, 2, "mvi a,", Num(0x41, "hex"), char_literal="'A'")),
+        ("6502 CPU state",
+         ASSEMBLERS_6502, with_cpu_state("6502", lambda: instruction(0x2000, 2, "lda", Num(0x41, "hex"), prefix="#"))),
+        ("8080 CPU state",
+         ["z88dk-8080"], with_cpu_state("8080", lambda: instruction(0x2000, 2, "mvi a,", Num(0x41, "hex")))),
         ("byte data *",
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x2008), 4, None, 1, None)),
         ("byte data, two per line",
@@ -175,6 +199,18 @@ EXPECTED = {
     ],
     '8080 instruction, z88dk-8080': [
         "    mvi a, $41 ; 'A'                                                  ; 2000: a9 41       .A",
+    ],
+    '6502 CPU state, acme': [
+        '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
+    ],
+    '6502 CPU state, beebasm': [
+        '    lda #&41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
+    ],
+    '6502 CPU state, xa': [
+        '    lda #$41                                                          // 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
+    ],
+    '8080 CPU state, z88dk-8080': [
+        '    mvi a, $41                                                        ; 2000: a9 41       .A',
     ],
     'byte data, acme': [
         '    !byte 1, 2, 3, $ff                                                ; 2008: 01 02 03... ...',

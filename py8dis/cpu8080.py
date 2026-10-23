@@ -619,20 +619,9 @@ class Cpu8080(cpu.Cpu):
             self._d[key] = item
 
         def show(self):
-            s = ""
-            def reg(r):
-                v = self[r][0]
-                if v is None:
-                    return "--"
-                return utils.plainhex2(v)
-            s += "A:%s B:%s C:%s D:%s E:%s H:%s L:%s" % (reg('a'), reg('b'), reg('c'), reg('d'), reg('e'), reg('h'), reg('l'))
-            def flag(name):
-                b = self[name]
-                if b is None:
-                    return "-"
-                return name.upper() if b else name.lower()
-            s += " %s%s%s%s%s" % (flag('C'), flag('H'), flag('S'), flag('Z'), flag('P'))
-            return s
+            """The CPU state, for config.set_show_cpu_state(True). The 8080
+            doesn't track register state yet, so this is empty."""
+            return ""
 
 
     def is_subroutine_call(self, binary_addr):

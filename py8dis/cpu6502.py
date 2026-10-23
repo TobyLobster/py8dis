@@ -453,6 +453,11 @@ class Cpu6502(cpu.Cpu):
             if not pessimistic_only:
                 self.optimistic.clear()
 
+        def show(self):
+            """The CPU state, for config.set_show_cpu_state(True): what's
+            known for certain (i.e. pessimistically)."""
+            return self.pessimistic.show()
+
     def __init__(self):
         super().__init__()
 
