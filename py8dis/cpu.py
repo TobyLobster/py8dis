@@ -13,6 +13,7 @@ import re
 import trace
 import utils
 from memorymanager import BinaryLocation
+from comment import OverlappingInstruction
 from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from memorymanager import BinaryAddr, RuntimeAddr
@@ -68,14 +69,9 @@ class Cpu:
             # re-classify it but that doesn't mean we can't continue to
             # trace until something breaks the control flow.
             if classification.is_classified(binary_addr, 1 + opcode.operand_length):
-                # Format the comment using a LazyString and a late_formatter,
-                # to be resolved later.
-                s = opcode.as_string(binary_addr)
-
-                def late_formatter():
-                    return mainformatter.add_inline_comment_including_hexdump(binary_loc, opcode.length(), "", None, config.get_assembler().comment_prefix() + " overlapping: " + str(s)[4:])
-
-                disassembly.add_raw_annotation(binary_loc, utils.LazyString("%s", late_formatter))
+                # Show the instruction in a comment. (It's formatted when it's
+                # output, once its labels are named.)
+                disassembly.add_annotation(binary_loc, OverlappingInstruction(binary_loc, opcode.length(), opcode.as_string(binary_addr)))
             else:
                 # Check if we run out of binary within this instruction
                 if not memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1 + opcode.operand_length):

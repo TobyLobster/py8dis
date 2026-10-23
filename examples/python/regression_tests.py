@@ -52,4 +52,9 @@ local_label(0x72, "temp", 0x2009, 0x200b)       # sty &72
 local_label(0x70, "value", 0x2016, 0x2018)      # lda &70
 local_label(0x70, "value", 0x201e, 0x2020)      # lda &70
 
+# Joining text and a label, either way round, gives text whose label is named
+# when it's output. ("text" + get_label(...) used to be an error.)
+comment(0x200b, "Calls " + get_label(0x2036, 0x200c, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE), inline=True)
+comment(0x200b, get_label(0x2036, 0x200c, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE) + " is quiet", inline=True)
+
 go()

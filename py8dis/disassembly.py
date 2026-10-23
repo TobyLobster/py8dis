@@ -108,9 +108,14 @@ def comment_binary(binary_loc, text, *, word_wrap=False, indent=0, align=Align.B
 def add_raw_annotation(binary_loc, text, *, align=Align.BEFORE_LABEL, priority=None):
     """Add a raw string to the output."""
 
+    add_annotation(binary_loc, Annotation(text, align, priority))
+
+def add_annotation(binary_loc, annotation):
+    """Add an annotation (see comment.py) to the output."""
+
     annotations = session.current().disassembly.annotations
     binary_loc = movemanager.make_binloc(binary_loc)
-    annotations[binary_loc].append(Annotation(text, align, priority))
+    annotations[binary_loc].append(annotation)
 
 def annotate_binary(binary_loc, s, *, align=Align.BEFORE_LABEL, priority=None, once_only=False):
     """Add a raw string directly to the assembly code output at the
@@ -119,7 +124,8 @@ def annotate_binary(binary_loc, s, *, align=Align.BEFORE_LABEL, priority=None, o
     # Check if it's already been added
     annotations = session.current().disassembly.annotations
     if once_only:
-        match = next((True for a in annotations[binary_loc] if a.text == s), None)
+        # (Only raw annotations are compared, not comments)
+        match = next((True for a in annotations[binary_loc] if type(a) is Annotation and a.text == s), None)
         if match is not None:
             return
     add_raw_annotation(binary_loc, s, align=align, priority=priority)
@@ -242,11 +248,28 @@ def get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, mo
     # Ensure the label exists (with the appropriate active/relevant move ids)
     session.current().labels.labels[runtime_addr]
 
-    result = utils.LazyString("%s", lambda: get_final_label(runtime_addr, binary_addr, move_id, binary_addr_type=binary_addr_type))
-    # (Whatever name is chosen, its value is the runtime address. This is used
-    # when evaluating expressions, see expression.py.)
-    result.runtime_addr = int(runtime_addr)
-    return result
+    return LabelRef(runtime_addr, binary_addr, move_id, binary_addr_type)
+
+class LabelRef(utils.LazyString):
+    """A reference to a label, from get_label(): the label's runtime address,
+    and where it's used or defined (see get_label()). Its name is chosen
+    (see get_final_label()) when it's first converted to a string.
+
+    (Whatever name is chosen, its value is the runtime address. This is used
+    when evaluating expressions, see expression.py.)"""
+
+    def __init__(self, runtime_addr, binary_addr, move_id, binary_addr_type):
+        super().__init__("%s", self._final_name)
+        self.runtime_addr = runtime_addr
+        self.binary_addr = binary_addr
+        self.move_id = move_id
+        self.binary_addr_type = binary_addr_type
+
+    def _final_name(self):
+        return get_final_label(self.runtime_addr, self.binary_addr, self.move_id, binary_addr_type=self.binary_addr_type)
+
+    def __repr__(self):
+        return "LabelRef({0}, {1}, {2}, {3})".format(hex(self.runtime_addr), hex(self.binary_addr), self.move_id, self.binary_addr_type.name)
 
 def get_emitted_label(runtime_addr):
     """Get the name of an existing, emitted label name for the given runtime address, or just

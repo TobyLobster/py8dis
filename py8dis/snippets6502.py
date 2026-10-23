@@ -135,14 +135,14 @@ def comment_memory_copy_loop(p):
         if not is_stop_at_zero:
             offset_string = "+1"
 
-    def late_formatter():
-        if bytes_to_copy is not None:
-            bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
-        else:
-            bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
-        return "Copy{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
+    if bytes_to_copy is not None:
+        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
+    else:
+        bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
 
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    # (The labels aren't named yet, so the text is a LazyString)
+    text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
+    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_memory_copy_with_limited_end_loop(p):
@@ -209,14 +209,14 @@ def comment_memory_copy_with_limited_end_loop(p):
     # the register minus (end_count - 1)
     offset_string = "" if end_count == 1 else "-%d" % (end_count - 1)
 
-    def late_formatter():
-        if bytes_to_copy is not None:
-            bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
-        else:
-            bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
-        return "Copy{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
+    if bytes_to_copy is not None:
+        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
+    else:
+        bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
 
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    # (The labels aren't named yet, so the text is a LazyString)
+    text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
+    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 
 # ************************************************************************************************
@@ -264,14 +264,14 @@ def comment_memory_copy_increment(p):
             dest_label = p.make_subtract_wrapped(new_expression, 'other', start_count)
         dest_label = utils.LazyString(" to %s", dest_label)
 
-    def late_formatter():
-        if bytes_to_copy is not None:
-            bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
-        else:
-            bytes_to_copy_string = " some bytes of memory"
-        return "Copy{0}{1}{2}".format(bytes_to_copy_string, source_label, dest_label)
+    if bytes_to_copy is not None:
+        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
+    else:
+        bytes_to_copy_string = " some bytes of memory"
 
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    # (The labels aren't named yet, so the text is a LazyString)
+    text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
+    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_add_to_y(p):
@@ -330,19 +330,19 @@ def comment_set_memory_r_loop(p, reg, other_reg):
         dest_label = p.get_expr('addr', label_offset=0, final_offset=0)
         dest_label = utils.LazyString(" at %s%s", dest_label, plus_reg)
 
-    def late_formatter():
-        if bytes_to_set is not None:
-            bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
-        else:
-            bytes_to_set_string = " {0} bytes of memory".format(reg.upper())
+    if bytes_to_set is not None:
+        bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
+    else:
+        bytes_to_set_string = " {0} bytes of memory".format(reg.upper())
 
-        if to_value == 0:
-            # "This loop clears 18 bytes of memory at l20e1+Y"
-            return "Clear{0}{1}".format(bytes_to_set_string, dest_label)
+    # (The labels aren't named yet, so the text is a LazyString)
+    if to_value == 0:
+        # "This loop clears 18 bytes of memory at l20e1+Y"
+        text = utils.LazyString("Clear%s%s", bytes_to_set_string, dest_label)
+    else:
         # "This loop sets 18 bytes of memory at l20e1+Y to 0"
-        return "Set{0}{1}{2}".format(bytes_to_set_string, dest_label, to_value_string)
-
-    disassembly.comment_binary(comment_loc, utils.LazyString("%s", late_formatter), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+        text = utils.LazyString("Set%s%s%s", bytes_to_set_string, dest_label, to_value_string)
+    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_set_memory_x_loop(p):

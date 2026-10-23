@@ -229,7 +229,7 @@ class LazyLeaf(Expr):
         # A label from disassembly.get_label() knows its runtime address
         runtime_addr = getattr(self.lazy_string, "runtime_addr", None)
         if runtime_addr is not None:
-            return runtime_addr
+            return int(runtime_addr)
         return names(str(self.lazy_string))
 
     def is_lazy(self):
@@ -385,7 +385,19 @@ def render(value, context=DEFAULT):
 def in_context(value, context):
     """A LazyString that renders the expression for the given context when
     it's output."""
-    return utils.LazyString("%s", lambda: render(value, context))
+    return InContext(value, context)
+
+class InContext(utils.LazyString):
+    """An expression (or a string, int or LazyString) to be rendered for the
+    given context (see render()) when it's output."""
+
+    def __init__(self, value, context):
+        super().__init__("%s", self._render)
+        self.value = value
+        self.context = context
+
+    def _render(self):
+        return render(self.value, self.context)
 
 def is_fully_bracketed(text):
     """Is the whole text enclosed in one matching pair of brackets?

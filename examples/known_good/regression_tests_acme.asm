@@ -17,7 +17,7 @@ start
     jsr store_value                                                   ; 2004: 20 2f 20     / ; Store a value
     stx temp                                                          ; 2007: 86 71       .q
     sty temp_2                                                        ; 2009: 84 72       .r ; Y=count
-    jsr quiet_routine                                                 ; 200b: 20 36 20     6
+    jsr quiet_routine                                                 ; 200b: 20 36 20     6 ; Calls quiet_routine ; quiet_routine is quiet
     lda #5                                                            ; 200e: a9 05       ..
     sec                                                               ; 2010: 38          8
     and (l0070,x)                                                     ; 2011: 21 70       !p

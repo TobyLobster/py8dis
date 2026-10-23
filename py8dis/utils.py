@@ -135,6 +135,10 @@ class LazyString:
             return LazyString(self._fmt + other._fmt, *(self._args + other._args))
         return LazyString(self._fmt + "%s", *(list(self._args) + [other]))
 
+    def __radd__(self, other):
+        # e.g. "jump to " + get_label(...)
+        return LazyString("%s" + self._fmt, *([other] + list(self._args)))
+
     def __len__(self):
         return len(str(self))
 
