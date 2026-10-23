@@ -6,10 +6,13 @@ output rather than holding text: an instruction (its mnemonic and operand), a
 block of data bytes or words, a string, a blank line. render_lines() turns
 them into text for the current assembler.
 
+disassembly.emit() builds the whole output as a list of these lines.
+
 (This is being introduced in steps: see "Structure the output before
 rendering" in claude/architecture-notes-2026-10-21.md in the project. For now,
-each classification's lines are rendered as soon as they are made, in the
-same order as before, since rendering is still where label names are chosen.)
+each line is rendered as soon as it's made (see Line.now()), in the same order
+as before, since rendering is still where label names are chosen and label
+definitions are marked as output.)
 """
 
 import classification
@@ -24,10 +27,131 @@ import utils
 class Line:
     """A line (or several lines) of output."""
 
+    # The text, once rendered by now()
+    _text = None
+
     def render(self):
         """The text for the current assembler, as a list of lines (each a
         string or a LazyString)."""
         raise NotImplementedError
+
+    def now(self):
+        """Render the line now, keeping the text for text_lines(). Returns the
+        line."""
+        self._text = self.render()
+        return self
+
+    def text_lines(self):
+        """The text (as rendered by now(), if it has been)."""
+        text = self._text
+        return self.render() if text is None else text
+
+
+class Text(Line):
+    """Lines of text, e.g. a table made by a function that produces text."""
+
+    def __init__(self, lines):
+        self.lines = lines
+
+    def render(self):
+        return list(self.lines)
+
+
+class CommentLine(Line):
+    """A one line comment (not word wrapped), e.g. '; Constants'."""
+
+    def __init__(self, text=""):
+        self.text = text
+
+    def render(self):
+        prefix = config.get_assembler().comment_prefix()
+        return [prefix + " " + self.text if self.text else prefix]
+
+
+class Comment(Line):
+    """A comment, word wrapped, at the given indent level."""
+
+    def __init__(self, text, indent=0):
+        self.text = text
+        self.indent = indent
+
+    def render(self):
+        return [mainformatter.format_comment(self.text, self.indent)]
+
+
+class AnnotationLine(Line):
+    """An annotation (e.g. a comment, see comment.py) that has a line of its
+    own, at a binary address."""
+
+    def __init__(self, annotation, binary_addr):
+        self.annotation = annotation
+        self.binary_addr = binary_addr
+
+    def render(self):
+        return [self.annotation.as_string(self.binary_addr)]
+
+
+class Directive(Line):
+    """An assembler directive, e.g. setting the address to assemble at, or
+    the start of a block that's moved at run time.
+
+    'name' is the name of the assembler method that writes it (e.g.
+    'code_start'), and 'args' its arguments."""
+
+    def __init__(self, name, *args):
+        self.name = name
+        self.args = args
+
+    def render(self):
+        result = getattr(config.get_assembler(), self.name)(*self.args)
+        # (Some methods return a single line)
+        return result if isinstance(result, list) else [result]
+
+
+class ConstantDefinition(Line):
+    """A 'name = value' definition of a constant, with an optional inline
+    comment, aligned to the given columns."""
+
+    def __init__(self, name, value, align_value_column, inline_comment, align_comment_column):
+        self.name = name
+        self.value = value
+        self.align_value_column = align_value_column
+        self.inline_comment = inline_comment
+        self.align_comment_column = align_comment_column
+
+    def render(self):
+        return [mainformatter.explicit_label_with_inline_comment(self.name, self.value, None,
+            align_value_column=self.align_value_column, inline_comment=self.inline_comment,
+            align_comment_column=self.align_comment_column)]
+
+
+class InlineLabelDefinitions(Line):
+    """The definitions of a label's names that are output where the label
+    is, at the runtime address 'emit_addr' (the label's own address, or an
+    address just before it, for a label inside an instruction or data), for
+    binary location 'binary_loc'. (Names already output aren't output again.)"""
+
+    def __init__(self, label, emit_addr, binary_loc):
+        self.label = label
+        self.emit_addr = emit_addr
+        self.binary_loc = binary_loc
+
+    def render(self):
+        return self.label.gather_inline_label_definitions(self.emit_addr, self.binary_loc)
+
+
+class ExplicitLabelDefinitions(Line):
+    """The 'name = value' definitions of a label's names that weren't output
+    where the label is, and of its local label names, aligned to the given
+    column."""
+
+    def __init__(self, label, align_value_column):
+        self.label = label
+        self.align_value_column = align_value_column
+
+    def render(self):
+        return (self.label.explicit_definition_string_list(self.align_value_column) +
+                self.label.local_definition_string_list(self.align_value_column))
 
 
 class Blank(Line):
@@ -262,5 +386,12 @@ def render_lines(lines):
     """The text for a list of line objects, as a list of lines."""
     result = []
     for line in lines:
-        result.extend(line.render())
+        result.extend(line.text_lines())
     return result
+
+def now(lines):
+    """Render each of a list of lines now (see Line.now()), returning the
+    list."""
+    for line in lines:
+        line.now()
+    return lines
