@@ -88,6 +88,10 @@ class Labels:
         # that address. See disassembly.emit().
         self.emit_opportunities = collections.defaultdict(set)
 
+        # The name chosen for each label reference (see disassembly.LabelRef),
+        # keyed by LabelRef.key()
+        self.final_names = {}
+
 def notify_emit_opportunity(runtime_addr, move_id):
     """Record that the move_id is output at the runtime address."""
 

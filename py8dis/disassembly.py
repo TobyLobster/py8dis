@@ -252,8 +252,9 @@ def get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, mo
 
 class LabelRef(utils.LazyString):
     """A reference to a label, from get_label(): the label's runtime address,
-    and where it's used or defined (see get_label()). Its name is chosen
-    (see get_final_label()) when it's first converted to a string.
+    and where it's used or defined (see get_label()). Its name is chosen (see
+    get_final_label()) the first time this reference, or an equal one, is
+    converted to a string (see name_labels()), and kept in the session.
 
     (Whatever name is chosen, its value is the runtime address. This is used
     when evaluating expressions, see expression.py.)"""
@@ -265,8 +266,19 @@ class LabelRef(utils.LazyString):
         self.move_id = move_id
         self.binary_addr_type = binary_addr_type
 
+    def key(self):
+        """What identifies the reference: two references with the same key
+        are given the same name."""
+        return (int(self.runtime_addr), int(self.binary_addr), self.move_id, self.binary_addr_type)
+
     def _final_name(self):
-        return get_final_label(self.runtime_addr, self.binary_addr, self.move_id, binary_addr_type=self.binary_addr_type)
+        final_names = session.current().labels.final_names
+        key = self.key()
+        name = final_names.get(key)
+        if name is None:
+            name = get_final_label(self.runtime_addr, self.binary_addr, self.move_id, binary_addr_type=self.binary_addr_type)
+            final_names[key] = name
+        return name
 
     def __repr__(self):
         return "LabelRef({0}, {1}, {2}, {3})".format(hex(self.runtime_addr), hex(self.binary_addr), self.move_id, self.binary_addr_type.name)
@@ -603,13 +615,15 @@ def get_final_label(runtime_addr, binary_addr, move_id, *, binary_addr_type: Bin
     return lmd.name
 
 def fix_label_names():
-    """Fix the final label names.
+    """Choose the names for the labels used by the classifications so far
+    (instructions and data), in address order.
 
-    get_label() returns LazyString objects so we can defer assignment
-    of actual concrete label strings until we've finished the tracing
-    process. This function forces a conversion of all label names to
-    concrete strings in order to ensure that we have a full set of
-    label definitions ready to emit.
+    get_label() returns LabelRef objects so we can defer choosing label
+    names until we've finished the tracing process. This names each label
+    referred to by an instruction or data item (in the order they would be
+    output), so that we have a full set of label definitions ready to emit.
+    Labels referred to only by other things (e.g. comments) are named when
+    the output is made (see emit()).
     """
 
     assert session.current().cpu.trace_done
@@ -624,7 +638,8 @@ def fix_label_names():
             if c is not None:
                 if not (binary_addr in session.current().classifications.include_binary_files):
                     move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                    dummy = [str(x) for x in output.render_lines(c.as_lines(movemanager.BinaryLocation(BinaryAddr(binary_addr), move_id), None))]
+                    for line in c.as_lines(movemanager.BinaryLocation(BinaryAddr(binary_addr), move_id), None):
+                        line.name_labels()
                 binary_addr += c.length()
             else:
                 binary_addr += 1
@@ -694,7 +709,7 @@ def emit_constants():
     # Length of indent string
     indent_len = len(config.get_indent_string())
 
-    lines.append(output.CommentLine("Constants").now())
+    lines.append(output.CommentLine("Constants").resolve())
 
     # We want to align the equals symbols in the list of constants, so
     # we find the longest name. Add one to allow for a space after the name
@@ -717,23 +732,25 @@ def emit_constants():
 
         # output a comment on the line before the definition
         if (c.align == Align.BEFORE_LINE) or (c.align == Align.BEFORE_LABEL):
-            lines.append(output.Comment(c.comment, indent=0).now())
+            lines.append(output.Comment(c.comment, indent=0).resolve())
 
         # output the definition with an optional inline comment
         lines.append(output.ConstantDefinition(c.name, value, max_name_len,
-            c.comment if c.align == Align.INLINE else None, comment_column).now())
+            c.comment if c.align == Align.INLINE else None, comment_column).resolve())
 
         # output a comment on the line after the definition
         if (c.align == Align.AFTER_LINE) or (c.align == Align.AFTER_LABEL):
-            lines.append(output.Comment(c.comment, indent=0).now())
-    lines.append(output.Blank().now())
+            lines.append(output.Comment(c.comment, indent=0).resolve())
+    lines.append(output.Blank().resolve())
     return lines
 
 def emit(print_output=True):
     """Outputs the disassembly.
 
-    The output is built as a list of line objects (see output.py), which are
-    then joined to make the text."""
+    The output is built as a list of line objects (see output.py), each
+    resolved as it's made (naming any labels used for the first time, and
+    choosing which label definitions go where), in output order. Then the
+    lines are rendered and joined to make the text."""
 
     autogenerated_labels = session.current().disassembly.autogenerated_labels
     formatter = config.get_assembler()
@@ -746,7 +763,7 @@ def emit(print_output=True):
     classification.prepare_expression_checks()
 
     # Output any prologue
-    header.append(output.Directive("disassembly_start").now())
+    header.append(output.Directive("disassembly_start").resolve())
 
     # Length of indent string
     indent_len = len(config.get_indent_string())
@@ -756,7 +773,7 @@ def emit(print_output=True):
 
     # For debugging py8dis output all labels, their addresses and move_ids
     if config.get_show_all_labels():
-        header.append(output.Text(labelmanager.all_labels_as_comments()).now())
+        header.append(output.Text(labelmanager.all_labels_as_comments()).resolve())
 
     # Break the output down into sub-ranges which share the same move
     # ID. We completely ignore the classifications here; moves are more
@@ -801,7 +818,7 @@ def emit(print_output=True):
     for start_addr, end_addr in move_ranges:
         if old_end_addr is None:
             # Output an ORG at the beginning
-            d.append(output.Directive("code_start", start_addr, end_addr, True).now())
+            d.append(output.Directive("code_start", start_addr, end_addr, True).resolve())
             old_end_addr = start_addr
 
         move_id = session.current().moves.move_id_for_binary_addr[start_addr]
@@ -814,14 +831,14 @@ def emit(print_output=True):
             # Output start of !pseudopc block
             dest_runtime_addr = movemanager.b2r(start_addr)
             block_title = "Move {0}: {1} to {2} for length {3}".format(move_id, config.get_assembler().hex(start_addr), config.get_assembler().hex(dest_runtime_addr), end_addr - start_addr)
-            d.append(output.Blank().now())
-            d.append(output.Comment(block_title, 0).now())
+            d.append(output.Blank().resolve())
+            d.append(output.Comment(block_title, 0).resolve())
             pseudopc_args = (dest_runtime_addr, start_addr, end_addr - start_addr, move_id)
-            d.append(output.Directive("pseudopc_start", *pseudopc_args).now())
+            d.append(output.Directive("pseudopc_start", *pseudopc_args).resolve())
         else:
             # If a new ORG is needed, output that
             if start_addr != old_end_addr:
-                d.append(output.Directive("code_start", start_addr, end_addr, False).now())
+                d.append(output.Directive("code_start", start_addr, end_addr, False).resolve())
 
         # output at each address within the block
         was_code = None
@@ -830,13 +847,13 @@ def emit(print_output=True):
             # if we have just transitioned from data to code, add a blank line
             now_is_code = classification.is_code(addr)
             if now_is_code and was_code == False:
-                d.append(output.Blank().now())
+                d.append(output.Blank().resolve())
             was_code = now_is_code
 
             if addr in session.current().classifications.include_binary_files:
                 # output an included binary
                 inc_binary_filepath = session.current().classifications.include_binary_files[addr]
-                d.append(output.Directive("include_binary_file", inc_binary_filepath).now())
+                d.append(output.Directive("include_binary_file", inc_binary_filepath).resolve())
             else:
                 # output the line itself
                 d.extend(emit_addr(BinaryLocation(addr, move_id)))
@@ -852,14 +869,14 @@ def emit(print_output=True):
         if move_id != movemanager.BASE_MOVE_ID:
             # Output the end of the !pseudopc block
             pseudopc_args = (movemanager.b2r(start_addr), start_addr, end_addr - start_addr, move_id)
-            d.append(output.Directive("pseudopc_end", *pseudopc_args).now())
+            d.append(output.Directive("pseudopc_end", *pseudopc_args).resolve())
 
             # Output any base move labels after the !pseudopc block is done
             d.extend(emit_labels(BinaryLocation(end_addr, movemanager.BASE_MOVE_ID), False))
         old_end_addr = end_addr
 
     # Emit labels which haven't been emitted inline with the disassembly.
-    header.append(output.CommentLine("Memory locations").now())
+    header.append(output.CommentLine("Memory locations").resolve())
 
     # Find the longest such explicit label name
     align_name_length = labelmanager.find_max_explicit_name_length()
@@ -867,30 +884,30 @@ def emit(print_output=True):
 
     # Add the explicit label names (aligned) to the output
     for addr in sorted(session.current().labels.labels):
-        header.append(output.ExplicitLabelDefinitions(session.current().labels.labels[addr], align_name_length).now())
+        header.append(output.ExplicitLabelDefinitions(session.current().labels.labels[addr], align_name_length).resolve())
 
     # The lines at the end: the assertions, and tables of information
     footer = []
 
     # Finish off disassembly
-    footer.append(output.Blank().now())
-    footer.append(output.Directive("disassembly_end").now())
+    footer.append(output.Blank().resolve())
+    footer.append(output.Directive("disassembly_end").resolve())
 
     # Show label reference frequency table
     if config.get_label_references():
-        footer.append(output.Text(session.current().cpu.add_reference_frequency_table()).now())
+        footer.append(output.Text(session.current().cpu.add_reference_frequency_table()).resolve())
 
     # Show auto-generated labels
     if config.get_show_autogenerated_labels():
         if len(autogenerated_labels) > 0:
-            footer.append(output.Blank().now())
-            footer.append(output.CommentLine("Automatically generated labels:").now())
+            footer.append(output.Blank().resolve())
+            footer.append(output.CommentLine("Automatically generated labels:").resolve())
             for label in sorted(autogenerated_labels):
-                footer.append(output.CommentLine("    {0}".format(label)).now())
+                footer.append(output.CommentLine("    {0}".format(label)).resolve())
 
     # Show stats
     if config.get_show_stats():
-        footer.append(output.Blank().now())
+        footer.append(output.Blank().resolve())
         stats = classification.get_stats()
 
         total = stats.num_code_bytes + stats.total_data()
@@ -907,8 +924,8 @@ def emit(print_output=True):
                      "    Number of data words     = {0} bytes".format(stats.num_data_words),
                      "    Number of string bytes   = {0} bytes".format(stats.num_string_bytes),
                      "    Number of strings        = {0}".format(stats.num_strings)]:
-            footer.append(output.CommentLine(text).now())
-        footer.append(output.Blank().now())
+            footer.append(output.CommentLine(text).resolve())
+        footer.append(output.Blank().resolve())
 
     # The whole document: the header, then the main disassembly, then the footer
     document = header + d + footer
@@ -942,14 +959,14 @@ def emit_labels(binary_loc, output_annotations):
     if output_annotations:
         for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
             if annotation.align == Align.BEFORE_LABEL:
-                result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).now())
+                result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).resolve())
 
-    result.append(output.InlineLabelDefinitions(session.current().labels.labels[runtime_addr], runtime_addr, binary_loc).now())
+    result.append(output.InlineLabelDefinitions(session.current().labels.labels[runtime_addr], runtime_addr, binary_loc).resolve())
 
     if output_annotations:
         for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
             if annotation.align == Align.AFTER_LABEL:
-                result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).now())
+                result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).resolve())
     return result
 
 def emit_addr(binary_loc):
@@ -968,7 +985,7 @@ def emit_addr(binary_loc):
         runtime_addr = movemanager.b2r(binary_loc.binary_addr + i)
         if runtime_addr in session.current().labels.labels:
             if session.current().labels.labels[runtime_addr].definable_inline:
-                pending_labels.append(output.InlineLabelDefinitions(session.current().labels.labels[runtime_addr], movemanager.b2r(binary_loc.binary_addr), binary_loc).now())
+                pending_labels.append(output.InlineLabelDefinitions(session.current().labels.labels[runtime_addr], movemanager.b2r(binary_loc.binary_addr), binary_loc).resolve())
 
     # Emit label definitions for this address.
     result.extend(emit_labels(binary_loc, True))
@@ -979,15 +996,15 @@ def emit_addr(binary_loc):
     # Emit any annotations before outputting the line itself
     for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
         if annotation.align == Align.BEFORE_LINE:
-            result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).now())
+            result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).resolve())
 
     # Emit the classification itself.
-    result.extend(output.now(classification.get_classification(binary_loc.binary_addr).as_lines(binary_loc, annotations)))
+    result.extend(output.resolve(classification.get_classification(binary_loc.binary_addr).as_lines(binary_loc, annotations)))
 
     # Emit any annotations after outputting the line itself
     for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
         if annotation.align == Align.AFTER_LINE:
-            result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).now())
+            result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).resolve())
 
     # Emit any annotations which would fall within the classification.
     # We do this after the classification itself; this does have some
@@ -999,6 +1016,6 @@ def emit_addr(binary_loc):
 
         for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
             if annotation.align != Align.INLINE:
-                result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).now())
+                result.append(output.AnnotationLine(annotation, binary_loc.binary_addr).resolve())
 
     return result

@@ -6,17 +6,22 @@ output rather than holding text: an instruction (its mnemonic and operand), a
 block of data bytes or words, a string, a blank line. render_lines() turns
 them into text for the current assembler.
 
-disassembly.emit() builds the whole output as a list of these lines.
+disassembly.emit() builds the whole output as a list of these lines. Each
+line is resolved as it's made (see Line.resolve()): this makes any decisions
+that depend on what's been output so far, e.g. naming labels used for the
+first time (in e.g. comments), and choosing which label definitions are
+output where. Then the lines are rendered.
 
 (This is being introduced in steps: see "Structure the output before
-rendering" in claude/architecture-notes-2026-10-21.md in the project. For now,
-each line is rendered as soon as it's made (see Line.now()), in the same order
-as before, since rendering is still where label names are chosen and label
-definitions are marked as output.)
+rendering" in claude/architecture-notes-2026-10-21.md in the project. For
+now, resolving most kinds of line renders it, keeping the text. Instructions
+and data blocks are only rendered at the end.)
 """
 
 import classification
 import config
+import disassembly
+import expression
 import mainformatter
 import memorymanager
 import movemanager
@@ -27,7 +32,7 @@ import utils
 class Line:
     """A line (or several lines) of output."""
 
-    # The text, once rendered by now()
+    # The text, once rendered by resolve()
     _text = None
 
     def render(self):
@@ -35,16 +40,49 @@ class Line:
         string or a LazyString)."""
         raise NotImplementedError
 
-    def now(self):
-        """Render the line now, keeping the text for text_lines(). Returns the
-        line."""
+    def resolve(self):
+        """Make any decisions about the line that depend on what's been output
+        before it (see the module docs). Called as each line is made, in
+        order. Returns the line.
+
+        By default this renders the line, keeping the text for text_lines()."""
         self._text = self.render()
         return self
 
+    def name_labels(self):
+        """Name the labels the line refers to (see disassembly.LabelRef), in
+        the order they appear in its text."""
+        pass
+
     def text_lines(self):
-        """The text (as rendered by now(), if it has been)."""
+        """The text (as rendered by resolve(), if it has been)."""
         text = self._text
         return self.render() if text is None else text
+
+
+def label_refs(value):
+    """The label references (see disassembly.LabelRef) in a value (an
+    expression, LazyString, string or number), in the order they appear in
+    its text."""
+    if isinstance(value, disassembly.LabelRef):
+        yield value
+    elif isinstance(value, expression.InContext):
+        yield from label_refs(value.value)
+    elif isinstance(value, utils.LazyString):
+        for arg in value._args:
+            yield from label_refs(arg)
+    elif isinstance(value, expression.LazyLeaf):
+        yield from label_refs(value.lazy_string)
+    elif isinstance(value, expression.Unary):
+        yield from label_refs(value.operand)
+    elif isinstance(value, expression.Binary):
+        yield from label_refs(value.left)
+        yield from label_refs(value.right)
+
+def name_labels_in(value):
+    """Name the labels in a value (see label_refs())."""
+    for ref in label_refs(value):
+        str(ref)
 
 
 class Text(Line):
@@ -248,6 +286,21 @@ class Instruction(Line):
             result = result + " %s %s" % (assembler.comment_prefix(), self.char_literal)
         return result
 
+    def name_labels(self):
+        # (In the order of text(): e.g. for AS_DATA, the data byte comes first)
+        if self.form == Instruction.AS_DATA:
+            name_labels_in(self.data_byte)
+        name_labels_in(self.operand)
+        if self.form == Instruction.AS_DATA:
+            name_labels_in(self.listing_operand)
+
+    def resolve(self):
+        # Name the labels in the instruction, then in any inline comments (in
+        # the order they're output). It's rendered later.
+        self.name_labels()
+        mainformatter.inline_annotation_texts(self.binary_loc, self.length, self.annotations)
+        return self
+
     def render(self):
         line = utils.LazyString(utils.make_indent(self.indent_level) + "%s", self.text())
         return [mainformatter.add_inline_comment_including_hexdump(self.binary_loc, self.length, self.cycles_description, self.annotations, line)]
@@ -272,13 +325,30 @@ class DataBlock(Line):
         self.cols = cols
         self.element_size = element_size
         self.annotations = annotations
+        self._items = None
 
     def items(self):
-        """The values (expressions, labels or formatted numbers)."""
-        binary_addr = self.binary_loc.binary_addr
-        if self.element_size == 1:
-            return list(classification.get_constant8(binary_addr + i) for i in range(self.length))
-        return list(classification.get_constant16(binary_addr + i) for i in range(0, self.length, 2))
+        """The values (expressions, labels or formatted numbers). (These are
+        worked out once, since getting an expression checks it, see
+        classification.get_expression().)"""
+        if self._items is None:
+            binary_addr = self.binary_loc.binary_addr
+            if self.element_size == 1:
+                self._items = list(classification.get_constant8(binary_addr + i) for i in range(self.length))
+            else:
+                self._items = list(classification.get_constant16(binary_addr + i) for i in range(0, self.length, 2))
+        return self._items
+
+    def name_labels(self):
+        for item in self.items():
+            name_labels_in(item)
+
+    def resolve(self):
+        # Name the labels in the data, then in any inline comments (in the
+        # order they're output). It's rendered later.
+        self.name_labels()
+        mainformatter.inline_annotation_texts(self.binary_loc, self.length, self.annotations)
+        return self
 
     def render(self):
         # TODO: We should also support "just emit with no padding or
@@ -310,6 +380,19 @@ class StringData(Line):
         self.binary_loc = binary_loc
         self.length = length
         self.annotations = annotations
+
+    def name_labels(self):
+        # (The labels can only be in an expression for the whole string, or
+        # for a byte that's not shown as a character, see render())
+        binary_addr = self.binary_loc.binary_addr
+        if binary_addr in session.current().classifications.expressions:
+            name_labels_in(classification.get_expression(binary_addr, session.current().memory.binary[binary_addr]))
+            return
+        assembler = config.get_assembler()
+        for i in range(self.length):
+            c = memorymanager.get_u8_binary(binary_addr + i)
+            if assembler.string_chr(c) is None and c != ord('"'):
+                name_labels_in(classification.get_constant8(binary_addr + i))
 
     def render(self):
         expressions = session.current().classifications.expressions
@@ -389,9 +472,9 @@ def render_lines(lines):
         result.extend(line.text_lines())
     return result
 
-def now(lines):
-    """Render each of a list of lines now (see Line.now()), returning the
+def resolve(lines):
+    """Resolve each of a list of lines (see Line.resolve()), returning the
     list."""
     for line in lines:
-        line.now()
+        line.resolve()
     return lines

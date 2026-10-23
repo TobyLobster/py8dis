@@ -89,19 +89,30 @@ def add_inline_comment_including_hexdump(binary_loc, length, cycles_description,
     s = add_hex_dump(binary_loc.binary_addr, length, cycles_description, s)
 
     # Add any inline annotations
+    for text in inline_annotation_texts(binary_loc, length, annotations):
+        # Make sure the comment is separated from what comes before
+        # (e.g. a full width ASCII dump column, now that there is
+        # no padding for move commentary when there are no moves).
+        if text and not s.endswith(" "):
+            s += " "
+        s += text
+    return s.rstrip()
+
+def inline_annotation_texts(binary_loc, length, annotations):
+    """The text of each inline annotation (e.g. an inline comment) for the
+    'length' bytes starting at binary_loc, in the order they're output.
+
+    (Getting an annotation's text formats it, naming any labels in it, the
+    first time. See output.Instruction.name_labels().)"""
+
+    result = []
     if annotations:
         for i in range(0, length):
             for annotation in utils.sorted_annotations(binary_loc, annotations[binary_loc]):
                 if annotation.align == Align.INLINE:
-                    text = annotation.as_string(binary_loc.binary_addr)
-                    # Make sure the comment is separated from what comes before
-                    # (e.g. a full width ASCII dump column, now that there is
-                    # no padding for move commentary when there are no moves).
-                    if text and not s.endswith(" "):
-                        s += " "
-                    s += text
+                    result.append(annotation.as_string(binary_loc.binary_addr))
             binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + 1, binary_loc.move_id)
-    return s.rstrip()
+    return result
 
 def uhex_formatter(n, bits, pad=False):
     """Format an 8 or 16 bit number as hex.

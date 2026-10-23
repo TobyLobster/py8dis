@@ -313,13 +313,7 @@ def _evaluate_and_check(binary_addr, expr, expected_value, width):
 
     mask = (1 << width) - 1
     if (value & mask) == expected_value:
-        # Right, apart from the range. The expression may have been rendered
-        # (and an assertion added for it) before the names were known (see
-        # disassembly.fix_label_names()), so remove that assertion, which
-        # would fail.
-        pending = assembler().pending_assertions
-        if pending.get(expr) == expected_value:
-            del pending[expr]
+        # Right, apart from the range
         return expression.Binary(expr, 'AND', expression.Num(mask, "hex"))
 
     h = assembler().hex
@@ -330,15 +324,23 @@ def _evaluate_and_check(binary_addr, expr, expected_value, width):
 
 def get_expression(binary_addr, expected_value, is_address=False, width=8):
     """Get the previously supplied expression for the given address, whose
-    value should be 'expected_value', a 'width' bit number."""
+    value should be 'expected_value', a 'width' bit number.
+
+    Once the output is being made (see prepare_expression_checks()), the
+    expression is also checked, and an assertion added to the output. (Before
+    then, e.g. when label names are being chosen, it isn't, since the values
+    of names aren't all known yet.)"""
 
     expressions = session.current().classifications.expressions
     memory_binary = session.current().memory.binary
     expr = expressions[binary_addr]
+    if session.current().classifications.name_values is None:
+        return expr
+
     c = get_classification(binary_addr)
     if isinstance(c, String):
         expected_value = "".join(chr(memory_binary[binary_addr + i]) for i in range(c.length()))
-    elif session.current().classifications.name_values is not None:
+    else:
         expr = _evaluate_and_check(binary_addr, expr, expected_value, width)
     check_expr(expr, expected_value, "at {0}".format(assembler().hex(movemanager.b2r(binary_addr))), width)
 

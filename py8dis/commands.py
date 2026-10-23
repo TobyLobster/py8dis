@@ -998,7 +998,7 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     # Make sure local label names don't clash (before label names are finalised)
     labelmanager.assign_local_label_output_names()
 
-    # Fix up the final label names (evaluating LazyStrings into actual strings)
+    # Choose the names of the labels used by instructions and data
     disassembly.fix_label_names()
 
     # Output all the references
