@@ -907,8 +907,11 @@ def emit(print_output=True):
         old_end_addr = end_addr
 
     # Emit labels which haven't been emitted inline with the disassembly.
-    header.append(output.CommentLine("Memory locations").resolve())
-    header.extend(memory_location_definitions(indent_len))
+    # (The heading is only output if there are any.)
+    definitions = memory_location_definitions(indent_len)
+    if definitions:
+        header.append(output.CommentLine("Memory locations").resolve())
+        header.extend(definitions)
 
     # The lines at the end: the assertions, and tables of information
     footer = []
@@ -951,11 +954,19 @@ def emit(print_output=True):
             footer.append(output.CommentLine(text).resolve())
         footer.append(output.Blank().resolve())
 
-    # The whole document: the header, then the main disassembly, then the footer
-    document = header + d + footer
+    # The whole document: the header, then the main disassembly, then the
+    # footer. The main disassembly starts with a blank line (before its first
+    # 'org'), so any blank lines at the end of the header are left out, as are
+    # blank lines at the very start.
+    header_text = [str(line) for line in output.render_lines(header)]
+    while header_text and header_text[-1] == "":
+        header_text.pop()
+    text = header_text + [str(line) for line in output.render_lines(d + footer)]
+    while text and text[0] == "":
+        text.pop(0)
 
     # Join all lines of output
-    result = "\n".join(formatter.sanitise_line(str(line)) for line in output.render_lines(document))
+    result = "\n".join(formatter.sanitise_line(line) for line in text)
 
     # Return the assembly listing
     return result

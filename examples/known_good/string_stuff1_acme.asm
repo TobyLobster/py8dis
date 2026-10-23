@@ -1,8 +1,6 @@
 ; Constants
 page    = "1900"
 
-; Memory locations
-
     * = $0e00
 
 pydis_start

@@ -1,5 +1,3 @@
-; Memory locations
-
     * = $3000
 
 pydis_start

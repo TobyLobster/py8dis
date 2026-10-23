@@ -1,5 +1,3 @@
-; Memory locations
-
     org $1000
 
 pydis_start:

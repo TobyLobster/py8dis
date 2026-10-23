@@ -11,8 +11,6 @@ table   = 4660
 ten     = 10
 x       = 5
 
-; Memory locations
-
     * = $2000
 
 pydis_start

@@ -4,8 +4,6 @@ low_seven_bits  equ 127
 x_val           equ 240
 y_val           equ 60
 
-; Memory locations
-
     org $1000
 
 pydis_start:

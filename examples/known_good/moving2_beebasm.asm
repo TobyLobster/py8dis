@@ -1,5 +1,3 @@
-; Memory locations
-
     org &3000
 
 .pydis_start
