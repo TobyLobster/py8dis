@@ -2,7 +2,11 @@
 low_seven_bits  = 127
 
 ; Memory locations
+
+; Other
 l0000   = $00
+
+; Workspace ($0070-$0072)
 l0070   = $70
 value   = $70
 temp    = $71

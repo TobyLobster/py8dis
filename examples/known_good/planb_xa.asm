@@ -27,6 +27,8 @@ osword_write_clock                      = 2
 room_count                              = 55
 
 // Memory locations
+
+// Zero page ($0000-$00ff)
 cell_x                          = $0000
 cell_y                          = $0001
 sprite_pixel_width_minus_one    = $0002
@@ -100,27 +102,37 @@ enter_next_room_horizontally    = $0043
 title_offset                    = $0044
 half_length_of_room_title       = $0045
 os_escape_flag                  = $00ff
-evntv                           = $0220
-current_room_cache              = $0400
-l0401                           = $0401
-dying_items                     = $0500
-arrow_slots                     = $0580
-highscore_table_names           = $0600
-highscore_table_scores          = $06fa
-enemies_state                   = $0c00
-clock                           = $0e00
-l0f00                           = $0f00
-l1000                           = $1000
-l1100                           = $1100
-l110c                           = $110c
-address_to_overwrite            = $5800
-energy_bar_screen_address       = $58d0
-ammo_bar_screen_address         = $5a10
-computer_bar_screen_address     = $5b50
-osasci                          = $ffe3
-oswrch                          = $ffee
-osword                          = $fff1
-osbyte                          = $fff4
+
+// OS vectors ($0200-$0235)
+evntv   = $0220
+
+// Language workspace ($0400-$07ff)
+current_room_cache      = $0400
+l0401                   = $0401
+dying_items             = $0500
+arrow_slots             = $0580
+highscore_table_names   = $0600
+highscore_table_scores  = $06fa
+
+// OS workspace ($0800-$0dff)
+enemies_state   = $0c00
+
+// User memory ($0e00-$7fff)
+clock                       = $0e00
+l0f00                       = $0f00
+l1000                       = $1000
+l1100                       = $1100
+l110c                       = $110c
+address_to_overwrite        = $5800
+energy_bar_screen_address   = $58d0
+ammo_bar_screen_address     = $5a10
+computer_bar_screen_address = $5b50
+
+// MOS entry points ($ffb3-$fff9)
+osasci  = $ffe3
+oswrch  = $ffee
+osword  = $fff1
+osbyte  = $fff4
 
     * = $1210
 

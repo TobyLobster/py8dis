@@ -1,4 +1,6 @@
 ; Memory locations
+
+; Zero page (&0000-&00ff)
 l0070   = &0070
 
     org &2000

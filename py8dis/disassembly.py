@@ -61,6 +61,11 @@ class DisassemblyState:
         # `constants` is a list of class Constant.
         self.constants = []
 
+        # Named regions of memory (see add_memory_region()), as (start, end,
+        # name) with 'end' exclusive, used to group the "Memory locations"
+        # list at the top of the output
+        self.memory_regions = []
+
         # Annotations are comments or other raw strings output to the
         # assembly.
         #
@@ -903,14 +908,7 @@ def emit(print_output=True):
 
     # Emit labels which haven't been emitted inline with the disassembly.
     header.append(output.CommentLine("Memory locations").resolve())
-
-    # Find the longest such explicit label name
-    align_name_length = labelmanager.find_max_explicit_name_length()
-    align_name_length = indent_len * ((align_name_length + indent_len - 1) // indent_len)
-
-    # Add the explicit label names (aligned) to the output
-    for addr in sorted(session.current().labels.labels):
-        header.append(output.ExplicitLabelDefinitions(session.current().labels.labels[addr], align_name_length).resolve())
+    header.extend(memory_location_definitions(indent_len))
 
     # The lines at the end: the assertions, and tables of information
     footer = []
@@ -961,6 +959,87 @@ def emit(print_output=True):
 
     # Return the assembly listing
     return result
+
+def add_memory_region(start_addr, end_addr, name):
+    """Name a region of memory, from start_addr up to (but not including)
+    end_addr. The "Memory locations" list at the top of the output is grouped
+    by region. (Where regions overlap, the smallest one containing an address
+    is used, or of two the same size the one added last. An empty name
+    removes the region with that range. See memory_region_for().)"""
+    session.current().disassembly.memory_regions.append((int(start_addr), int(end_addr), name))
+
+def memory_region_for(runtime_addr):
+    """The (start, end, name) of the region containing the address (see
+    add_memory_region()), or None. Where regions overlap, the smallest one
+    containing the address is used, so e.g. a region the control file names
+    within zero page takes precedence over zero page itself. Of two the same
+    size, the one named last is used, so naming a region again renames it:
+    the CPU's regions (e.g. the 6502's zero page and stack) count as named
+    first, then those named by acorn.py or the control file, in order.
+
+    Naming a range "" removes the region with that range, so its labels go in
+    the next larger region that contains them (or none)."""
+    cpu = session.current().cpu
+    regions = (cpu.memory_regions() if cpu is not None else []) + session.current().disassembly.memory_regions
+
+    # The name of each range containing the address, as last named (in the
+    # order they were last named)
+    names = {}
+    for start, end, name in regions:
+        if start <= runtime_addr < end:
+            names.pop((start, end), None)
+            names[(start, end)] = name
+
+    result = None
+    for (start, end), name in names.items():
+        if name != "" and (result is None or end - start <= result[1] - result[0]):
+            result = (start, end, name)
+    return result
+
+def memory_location_definitions(indent_len):
+    """The 'name = value' definitions of the labels not defined in the main
+    disassembly, as a list of line objects (see output.py): in address order,
+    grouped by memory region (see add_memory_region()), each group with a
+    heading and its own alignment. (With config.set_memory_region_headings(False)
+    they're one list, as without any regions.)"""
+
+    labels = session.current().labels.labels
+    formatter = config.get_assembler()
+
+    # The names to define for each label, grouped by region (in address order)
+    groups = []         # (region, [(label, names)])
+    use_regions = config.get_memory_region_headings()
+    for addr in sorted(labels):
+        label = labels[addr]
+        names = label.gather_explicit_definitions()
+        if not names:
+            continue
+        region = memory_region_for(addr) if use_regions else None
+        if not groups or groups[-1][0] != region:
+            groups.append((region, []))
+        groups[-1][1].append((label, names))
+
+    # Without any regions (e.g. for the 8080, unless the control file names
+    # some), or with the headings turned off, there's just the one list
+    use_headings = any(region is not None for region, _ in groups)
+
+    lines = []
+    for region, definitions in groups:
+        if use_headings:
+            if region is None:
+                heading = "Other"
+            else:
+                start, end, name = region
+                heading = "{0} ({1}-{2})".format(name, formatter.hex4_for_comment(start), formatter.hex4_for_comment(end - 1))
+            lines.append(output.Blank().resolve())
+            lines.append(output.CommentLine(heading).resolve())
+
+        # Align the values (rounded up to the next indent level)
+        align = max(len(name) for _, names in definitions for name in names)
+        align = indent_len * ((align + indent_len - 1) // indent_len)
+        for label, names in definitions:
+            lines.append(output.ExplicitLabelDefinitions(label, names, align).resolve())
+    return lines
 
 # It's possible (but unlikely) there is a multi-byte classification straddling the
 # ends of our range; if so, split them so we can output the precise range wanted.

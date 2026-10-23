@@ -52,6 +52,20 @@ local_label(0x72, "temp", 0x2009, 0x200b)       # sty &72
 local_label(0x70, "value", 0x2016, 0x2018)      # lda &70
 local_label(0x70, "value", 0x201e, 0x2020)      # lda &70
 
+# The "Memory locations" list is grouped by memory region. A label goes in the
+# smallest region containing it, so this takes precedence over the 6502's zero
+# page.
+memory_region(0x70, 0x73, "Workspace")
+
+# An empty name removes the region with that range. Removing this one leaves
+# &72 in Workspace, the next larger region containing it.
+memory_region(0x72, 0x73, "Temporary")
+memory_region(0x72, 0x73, "")
+
+# Removing the 6502's zero page leaves l0000 in no region, so it goes under
+# "Other".
+memory_region(0x00, 0x100, "")
+
 # Joining text and a label, either way round, gives text whose label is named
 # when it's output. ("text" + get_label(...) used to be an error.)
 comment(0x200b, "Calls " + get_label(0x2036, 0x200c, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE), inline=True)

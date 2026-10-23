@@ -6,6 +6,7 @@ move()                  Indicates that a block of memory is copied at runtime.
 label()                 Define a label name for a runtime address.
 optional_label()        Define a label name for a runtime address, if used.
 local_label()           Define a label name for a runtime address within a memory range.
+memory_region()         Name a region of memory, to group the list of memory locations.
 addr()                  Returns the runtime address of the given label name.
 get_label()             Get the label for a specified address.
 set_label_maker_hook()  Sets a user defined 'hook' function that can make label names.
@@ -324,6 +325,31 @@ def expr_label(runtime_addr, s):
     that the expressions evaluate to the expected constants."""
 
     return _label("expr_label", runtime_addr, s)
+
+def memory_region(start_addr, end_addr, name):
+    """Name a region of memory, from start_addr up to (but not including)
+    end_addr, e.g. memory_region(0xfc00, 0xff00, "Hardware").
+
+    The "Memory locations" list at the top of the output (the labels defined
+    as 'name = value') is grouped by region, under headings. Regions can
+    overlap: each label goes in the smallest region that contains it, so a
+    region can be named within a larger one, e.g. some workspace within zero
+    page. Of two regions the same size, the one named last is used, so a
+    region can be renamed by naming it again. (The 6502's zero page and stack
+    are regions already, and acorn.bbc() etc. name the regions of the Acorn
+    machines' memory, so e.g. memory_region(0x0400, 0x0800, "BASIC
+    workspace") after acorn.bbc() renames its language workspace.)
+
+    An empty name removes the region with that range, so its labels go in the
+    next larger region that contains them, or under "Other" if there's none,
+    e.g. memory_region(0x0400, 0x0800, "") after acorn.bbc()."""
+    start_addr = _check_addr("memory_region", start_addr)
+    end_addr = _check_addr("memory_region", end_addr, allow_end=True)
+    if end_addr <= start_addr:
+        utils.die("memory_region({0}, {1}, ...): the end must be after the start".format(_hex(start_addr), _hex(end_addr)))
+    if not isinstance(name, str):
+        utils.die("memory_region({0}, {1}, ...): the name must be a string, not {2!r}".format(_hex(start_addr), _hex(end_addr), name))
+    disassembly.add_memory_region(start_addr, end_addr, name)
 
 def optional_label(runtime_addr, name, base_runtime_addr=None, *, definable_inline=True):
     """Set a label at a runtime address, but only output if used.

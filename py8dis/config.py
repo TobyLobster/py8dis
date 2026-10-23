@@ -33,6 +33,7 @@ class Settings:
         self.include_assertions                    = True
         self.label_return_instructions_numerically = True
         self.show_stats                            = True
+        self.memory_region_headings                = True
 
         # For internal use only
         self.cmos                                  = False      # True if the CPU is a 65C02
@@ -173,6 +174,14 @@ def set_show_stats(b):
     session.current().settings.show_stats = b
 
 # For internal use only:
+
+def get_memory_region_headings():
+    return session.current().settings.memory_region_headings
+
+def set_memory_region_headings(b):
+    """Group the "Memory locations" list at the top of the output by memory
+    region, under headings (see memory_region()), or not."""
+    session.current().settings.memory_region_headings = b
 
 def get_assembler():
     """The assembler object used to emit the disassembly (e.g. an Acme object)."""

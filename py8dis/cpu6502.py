@@ -458,6 +458,12 @@ class Cpu6502(cpu.Cpu):
             known for certain (i.e. pessimistically)."""
             return self.pessimistic.show()
 
+    def memory_regions(self):
+        # (The NMI, reset and IRQ/BRK vectors are at &fffa-&ffff.)
+        return [(0x0000, 0x0100, "Zero page"),
+                (0x0100, 0x0200, "Stack"),
+                (0xfffa, 0x10000, "6502 vectors")]
+
     def __init__(self):
         super().__init__()
 

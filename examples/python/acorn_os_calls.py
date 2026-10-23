@@ -14,6 +14,10 @@ load(0x1100, "orig/acorn_os_calls.orig", "6502")
 # Add labels specific to the Master
 acorn.master()
 
+# Rename one of the memory regions named by acorn.master(), by naming the same
+# range again (for the headings in the "Memory locations" list)
+memory_region(0x0000, 0x0100, "Zero page workspace")
+
 label(0x70, "mem")
 
 # Start tracing instructions.

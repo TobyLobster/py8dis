@@ -46,6 +46,11 @@ class Acme(assembler.Assembler):
         # we only use four digits when necessary.
         return self.hex(n)
 
+    def hex4_for_comment(self, n):
+        """A four digit hex number, for use in a comment. (Unlike hex4(), this
+        always gives four digits, since acme doesn't read it.)"""
+        return "$%s" % utils.plainhex4(n)
+
     def binary_operators(self):
         """Returns a dictionary that translates generic binary operator names
         into the assembler specific versions"""

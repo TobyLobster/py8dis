@@ -76,5 +76,10 @@ class Assembler:
         used if can_force_absolute().)"""
         raise NotImplementedError
 
+    def hex4_for_comment(self, n):
+        """A four digit hex number, for use in a comment (e.g. the memory
+        region headings), where it's only read, not assembled."""
+        return self.hex4(n)
+
     def assert_expr(self, expr, value):
         self.pending_assertions[expr] = value

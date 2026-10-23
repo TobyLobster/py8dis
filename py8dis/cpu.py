@@ -43,6 +43,11 @@ class Cpu:
         self.cpu_states = [None] * 64*1024
 
 
+    def memory_regions(self):
+        """Regions of memory the CPU defines, as for
+        disassembly.add_memory_region(): (start, end, name), 'end' exclusive."""
+        return []
+
     def disassemble_instruction(self, binary_addr):
         """
         Disassemble an instruction at the binary address.

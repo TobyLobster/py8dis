@@ -21,6 +21,8 @@ osword_read_io_memory                   = 5
 osword_read_pixel                       = 9
 
 // Memory locations
+
+// Zero page ($0000-$00ff)
 l0000       = $0000
 l0001       = $0001
 l0002       = $0002
@@ -111,76 +113,90 @@ romsel_copy = $00f4
 l00fd       = $00fd
 l00fe       = $00fe
 l00ff       = $00ff
-l0100       = $0100
-l0106       = $0106
-l01ff       = $01ff
-brkv        = $0202
-wrchv       = $020e
-l0400       = $0400
-l0401       = $0401
-l0402       = $0402
-l0403       = $0403
-l0404       = $0404
-l040c       = $040c
-l043c       = $043c
-l043d       = $043d
-l0440       = $0440
-l0441       = $0441
-l0460       = $0460
-l0464       = $0464
-l0469       = $0469
-l046c       = $046c
-l047f       = $047f
-l04ff       = $04ff
-l0500       = $0500
-l0513       = $0513
-l0514       = $0514
-l0519       = $0519
-l051a       = $051a
-l051b       = $051b
-l051c       = $051c
-l051d       = $051d
-l051e       = $051e
-l051f       = $051f
-l0521       = $0521
-l0522       = $0522
-l0523       = $0523
-l0524       = $0524
-l0526       = $0526
-l0527       = $0527
-l0528       = $0528
-l0529       = $0529
-l052a       = $052a
-l05cb       = $05cb
-l05cc       = $05cc
-l05e5       = $05e5
-l05e6       = $05e6
-l05ff       = $05ff
-l0600       = $0600
-l0601       = $0601
-l0700       = $0700
-l07f0       = $07f0
-l0bb1       = $0bb1
-l0e4e       = $0e4e
-l4e4e       = $4e4e
-l5252       = $5252
-l6142       = $6142
-l7461       = $7461
-l7f0e       = $7f0e
-l7f13       = $7f13
-le09c       = $e09c
-osfind      = $ffce
-osbput      = $ffd4
-osbget      = $ffd7
-osargs      = $ffda
-osfile      = $ffdd
-osrdch      = $ffe0
-osasci      = $ffe3
-osnewl      = $ffe7
-oswrch      = $ffee
-osword      = $fff1
-osbyte      = $fff4
-oscli       = $fff7
+
+// Stack ($0100-$01ff)
+l0100   = $0100
+l0106   = $0106
+l01ff   = $01ff
+
+// OS vectors ($0200-$0235)
+brkv    = $0202
+wrchv   = $020e
+
+// Language workspace ($0400-$07ff)
+l0400   = $0400
+l0401   = $0401
+l0402   = $0402
+l0403   = $0403
+l0404   = $0404
+l040c   = $040c
+l043c   = $043c
+l043d   = $043d
+l0440   = $0440
+l0441   = $0441
+l0460   = $0460
+l0464   = $0464
+l0469   = $0469
+l046c   = $046c
+l047f   = $047f
+l04ff   = $04ff
+l0500   = $0500
+l0513   = $0513
+l0514   = $0514
+l0519   = $0519
+l051a   = $051a
+l051b   = $051b
+l051c   = $051c
+l051d   = $051d
+l051e   = $051e
+l051f   = $051f
+l0521   = $0521
+l0522   = $0522
+l0523   = $0523
+l0524   = $0524
+l0526   = $0526
+l0527   = $0527
+l0528   = $0528
+l0529   = $0529
+l052a   = $052a
+l05cb   = $05cb
+l05cc   = $05cc
+l05e5   = $05e5
+l05e6   = $05e6
+l05ff   = $05ff
+l0600   = $0600
+l0601   = $0601
+l0700   = $0700
+l07f0   = $07f0
+
+// OS workspace ($0800-$0dff)
+l0bb1   = $0bb1
+
+// User memory ($0e00-$7fff)
+l0e4e   = $0e4e
+l4e4e   = $4e4e
+l5252   = $5252
+l6142   = $6142
+l7461   = $7461
+l7f0e   = $7f0e
+l7f13   = $7f13
+
+// MOS ROM ($c000-$fbff)
+le09c   = $e09c
+
+// MOS entry points ($ffb3-$fff9)
+osfind  = $ffce
+osbput  = $ffd4
+osbget  = $ffd7
+osargs  = $ffda
+osfile  = $ffdd
+osrdch  = $ffe0
+osasci  = $ffe3
+osnewl  = $ffe7
+oswrch  = $ffee
+osword  = $fff1
+osbyte  = $fff4
+oscli   = $fff7
 
     * = $8000
 

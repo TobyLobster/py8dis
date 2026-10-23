@@ -237,7 +237,11 @@ osword_write_io_memory                              = 6
 osword_write_palette                                = 12
 
 ; Memory locations
-mem     = &0070
+
+; Zero page workspace (&0000-&00ff)
+mem = &0070
+
+; MOS entry points (&ffb3-&fff9)
 oswrsc  = &ffb3
 osrdsc  = &ffb9
 oseven  = &ffbf

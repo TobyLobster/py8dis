@@ -1882,9 +1882,36 @@ def oscli_hook(runtime_addr, state, subroutine):
     xy_addr(x_addr_optimistic, y_addr_optimistic)
 
 # ENHANCE: Split this up somehow into "tube or host" and "just host"?
+def memory_regions():
+    """Name the regions of the Acorn machines' memory, to group the list of
+    memory locations at the top of the output (see memory_region()). (Called
+    by mos_labels(), once per session.)"""
+    extras = session.current().extras
+    if extras.get("acorn.memory_regions"):
+        return
+    extras["acorn.memory_regions"] = True
+
+    memory_region(0x0000, 0x0100, "Zero page")
+    memory_region(0x0100, 0x0200, "Stack")
+    memory_region(0x0200, 0x0236, "OS vectors")
+    memory_region(0x0236, 0x0400, "OS workspace")
+    memory_region(0x0400, 0x0800, "Language workspace")
+    memory_region(0x0800, 0x0e00, "OS workspace")
+    memory_region(0x0e00, 0x8000, "User memory")
+    memory_region(0x8000, 0xc000, "Paged ROM")
+    memory_region(0xc000, 0xfc00, "MOS ROM")
+    memory_region(0xfc00, 0xff00, "Hardware")
+    memory_region(0xff00, 0xffb3, "MOS ROM")
+
+    # The entry points go from &ffb3 (OSWRSC, on the Master and B+) to &fff9
+    # (OSCLI). The 6502's NMI, reset and IRQ vectors follow (a region named
+    # by the CPU).
+    memory_region(0xffb3, 0xfffa, "MOS entry points")
+
 def mos_labels():
     # (bbc(), electron(), b_plus() and master() all call this)
     register_snippets()
+    memory_regions()
 
     optional_label(0x00f2, "os_text_ptr")
     optional_label(0x00f4, "romsel_copy")

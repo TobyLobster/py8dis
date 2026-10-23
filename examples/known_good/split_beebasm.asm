@@ -1,5 +1,9 @@
 ; Memory locations
+
+; Zero page (&0000-&00ff)
 l0070   = &0070
+
+; MOS entry points (&ffb3-&fff9)
 osasci  = &ffe3
 
     org &0900

@@ -20,32 +20,36 @@ osword_read_line                        = 0
 osword_sound                            = 7
 
 ; Memory locations
-screen_address_low                      = &0070
-screen_address_high                     = &0071
-output_pixels                           = &0072
-output_fraction                         = &0073
-segment_length                          = &0074
-temp8                                   = &0075
-temp9                                   = &0076
-temp10                                  = &0077
-segment_angle                           = &0078
-screen_start_high                       = &0079
-x_pixels                                = &007a
-y_pixels                                = &007b
-temp11                                  = &007c
-temp0_low                               = &0080
-temp0_high                              = &0081
-temp1_low                               = &0082
-temp2_low                               = &0082
-temp1_high                              = &0083
-temp2_high                              = &0083
-temp3                                   = &0084
-temp4                                   = &0085
-temp5                                   = &0086
-temp6                                   = &0087
-temp7                                   = &0088
-page_low                                = &008e
-page_high                               = &008f
+
+; Zero page (&0000-&00ff)
+screen_address_low  = &0070
+screen_address_high = &0071
+output_pixels       = &0072
+output_fraction     = &0073
+segment_length      = &0074
+temp8               = &0075
+temp9               = &0076
+temp10              = &0077
+segment_angle       = &0078
+screen_start_high   = &0079
+x_pixels            = &007a
+y_pixels            = &007b
+temp11              = &007c
+temp0_low           = &0080
+temp0_high          = &0081
+temp1_low           = &0082
+temp2_low           = &0082
+temp1_high          = &0083
+temp2_high          = &0083
+temp3               = &0084
+temp4               = &0085
+temp5               = &0086
+temp6               = &0087
+temp7               = &0088
+page_low            = &008e
+page_high           = &008f
+
+; Language workspace (&0400-&07ff)
 enemy_ships_previous_on_screen          = &0400
 enemy_ships_previous_x_fraction         = &0401
 enemy_ships_previous_x_pixels           = &0402
@@ -68,14 +72,20 @@ enemy_ships_angle                       = &0487
 enemy_ships_temporary_behaviour_flags   = &0488
 enemy_ships_energy                      = &0489
 enemy_ships_firing_cooldown             = &048a
-user_defined_characters                 = &0c00
-unused_copy_of_scanner_static_eor       = &593f
-starship_top_screen_address             = &6b38
-starship_bottom_screen_address          = &6c78
-energy_screen_address                   = &6e48
-oswrch                                  = &ffee
-osword                                  = &fff1
-osbyte                                  = &fff4
+
+; OS workspace (&0800-&0dff)
+user_defined_characters = &0c00
+
+; User memory (&0e00-&7fff)
+unused_copy_of_scanner_static_eor   = &593f
+starship_top_screen_address         = &6b38
+starship_bottom_screen_address      = &6c78
+energy_screen_address               = &6e48
+
+; MOS entry points (&ffb3-&fff9)
+oswrch  = &ffee
+osword  = &fff1
+osbyte  = &fff4
 
     org &1f00
 

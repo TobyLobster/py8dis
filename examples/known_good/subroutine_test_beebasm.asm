@@ -1,6 +1,10 @@
 ; Memory locations
+
+; Zero page (&0000-&00ff)
 test_byte   = &0070
-oswrch      = &ffee
+
+; MOS entry points (&ffb3-&fff9)
+oswrch  = &ffee
 
     org &2000
 

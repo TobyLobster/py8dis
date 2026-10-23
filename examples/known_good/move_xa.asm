@@ -1,5 +1,9 @@
 // Memory locations
+
+// Zero page ($0000-$00ff)
 l0070   = $0070
+
+// Other
 lffe3   = $ffe3
 
     * = $2000

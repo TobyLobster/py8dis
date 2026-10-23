@@ -4,6 +4,10 @@ import acorn
 
 config.set_label_references(False)
 
+# One list of memory locations at the top, without the headings for each
+# memory region
+config.set_memory_region_headings(False)
+
 
 
 # Load the program to be disassembled into the debugger's memory.

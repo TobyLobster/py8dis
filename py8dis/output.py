@@ -179,17 +179,18 @@ class InlineLabelDefinitions(Line):
 
 
 class ExplicitLabelDefinitions(Line):
-    """The 'name = value' definitions of a label's names that weren't output
-    where the label is, and of its local label names, aligned to the given
-    column."""
+    """'name = value' definitions of some of a label's names (see
+    Label.gather_explicit_definitions()), aligned to the given column."""
 
-    def __init__(self, label, align_value_column):
+    def __init__(self, label, names, align_value_column):
         self.label = label
+        self.names = names
         self.align_value_column = align_value_column
 
     def render(self):
-        return (self.label.explicit_definition_string_list(self.align_value_column) +
-                self.label.local_definition_string_list(self.align_value_column))
+        assembler = config.get_assembler()
+        return [assembler.explicit_label(name, assembler.hex4(self.label.runtime_addr), offset=None, align_column=self.align_value_column)
+                for name in self.names]
 
 
 class Blank(Line):

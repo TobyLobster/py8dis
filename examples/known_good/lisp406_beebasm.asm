@@ -44,6 +44,8 @@ WARMST                                  = 42
 WSBOT                                   = 2
 
 ; Memory locations
+
+; Zero page (&0000-&00ff)
 GCNO    = &0000
 GARX    = &0002
 GARRY   = &0003
@@ -107,7 +109,11 @@ OLDLEV  = &0097
 CLISTR  = &00f2
 BRKAD   = &00fd
 KBD     = &00ff
-brkv    = &0202
+
+; OS vectors (&0200-&0235)
+brkv = &0202
+
+; Language workspace (&0400-&07ff)
 FIRST   = &0400
 TUBE    = &0401
 ACL40   = &0402
@@ -135,7 +141,11 @@ OSWBUF  = &0600
 NAMBUF  = &0600
 IMBUF   = &0600
 DOSBUF  = &0700
+
+; MOS ROM (&c000-&fbff)
 HILISP  = &d700
+
+; MOS entry points (&ffb3-&fff9)
 osfind  = &ffce
 osbput  = &ffd4
 osbget  = &ffd7

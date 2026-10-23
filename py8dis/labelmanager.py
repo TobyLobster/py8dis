@@ -149,21 +149,6 @@ def assign_local_label_output_names():
                 local_label.output_name = output_name
                 taken[output_name] = runtime_addr
 
-def find_max_explicit_name_length():
-    """Get the length of the longest explicit label.
-
-    This is used to align the equals signs on the list of memory
-    locations at the top of the output."""
-
-    labels = session.current().labels.labels
-    max_name_length = 0
-    for label in labels.values():
-        for name_list in label.explicit_names.values():
-            for name in name_list:
-                if not name.emitted:
-                    max_name_length = max(max_name_length, len(name.text))
-    return max_name_length
-
 # For debugging...
 def all_labels_as_comments():
     """Return all labels as comments.

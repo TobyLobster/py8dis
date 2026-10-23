@@ -137,6 +137,7 @@ To change the configuration, add `import config` and call the following as neede
 | `config.set_include_assertions(b)`                    | True    | Include assertions at end of output to detect misuse of expr().  |
 | `config.set_label_return_instructions_numerically(b)` | True    | Gives 'return_1' style labels where the destination is RTS.      |
 | `config.set_show_stats(b)`                            | True    | Show statistics at the end of the disassembly.                   |
+| `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
 
 ## Command reference
 
@@ -161,6 +162,10 @@ Labels defined with `label()` are always included in the disassembly even if the
 :pencil:`optional_label(runtime_addr, name, base_runtime_addr=None, *, definable_inline=True)`
 
 This is like `label`, but the disassembly will omit the label if it isn't referenced. This is intended for use in re-usable library functions like `acorn.add_standard_labels`. If an OS entry point or special memory address is used in the code it's good to have it referred to by a recognisable name, but it's not good to bloat the disassembly with labels for perhaps hundreds of special addresses that aren't used. `definable_inline` determines if the label should be defined at the top of the file as `label = value` style, or if it can be defined in the body of the disassembly.
+
+:pencil:`memory_region(start_addr, end_addr, name)`
+
+Names a region of memory, from `start_addr` up to (but not including) `end_addr`, e.g. `memory_region(0xfc00, 0xff00, "Hardware")`. The labels defined as `label = value` at the top of the disassembly ("Memory locations") are grouped by region, each group under a heading such as `; Hardware (&fc00-&feff)`. A label goes in the smallest region that contains it, so a region can be named inside a larger one. Naming the same range again renames it, and naming it `""` removes it. The 6502 already has regions for zero page, the stack and its vectors, and `acorn.bbc()` etc. name the regions of the Acorn machines' memory. `config.set_memory_region_headings(False)` turns the headings off.
 
 :pencil:`get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, move_id=None)`
 

@@ -211,53 +211,31 @@ class Label:
         if force or (s not in self.all_names()):
             self.expressions[move_id].append(s)
 
-    def explicit_definition_string_list(self, align_value_column):
-        """Return a list of the explicit `label = value` output strings."""
+    def gather_explicit_definitions(self):
+        """The names to define explicitly ('name = value', in the "Memory
+        locations" list at the top of the output): the explicit names not
+        output where the label is (in the order they're output, see
+        ExplicitName.definition_order()), then the local label names (in the
+        order they were added: by move ID, then the order of local_label()
+        calls). The explicit names are marked as output.
 
-        # Note that we don't invoke the label hook or anything here -
-        # if a name got *used* for the label at some point, it should
-        # have been added into the label object so we know to emit it
-        # here.
-        assembler = config.get_assembler()
+        (We don't invoke the label hook or anything here: if a name got
+        *used* for the label at some point, it was added to the label, so we
+        know to output it here.)"""
 
-        # Gather the names, in the order they're output (see
-        # ExplicitName.definition_order())
         gathered = []
         for name_list in self.explicit_names.values():
             for name in name_list:
                 if not name.emitted:
                     gathered.append(name)
                     name.emitted = True
-        gathered_names = [name.text for name in sorted(gathered, key=lambda name: name.definition_order())]
+        result = [name.text for name in sorted(gathered, key=lambda name: name.definition_order())]
 
-        result = []
-        for name in gathered_names:
-            result.append(assembler.explicit_label(name, assembler.hex4(self.runtime_addr), offset=None, align_column=align_value_column))
-
-        return result
-
-    def local_definition_string_list(self, align_value_column):
-        """Return a list of the local label `label = value` output strings."""
-
-        # Note that we don't invoke the label hook or anything here -
-        # if a name got *used* for the label at some point, it should
-        # have been added into the label object so we know to emit it
-        # here.
-        assembler = config.get_assembler()
-
-        # Gather the names, in the order they were added (by move ID, then
-        # the order of local_label() calls). (A local label used in several
-        # ranges is only defined once.)
-        gathered_names = []
+        # (A local label used in several ranges is only defined once.)
         for move_id in sorted(self.local_labels):
             for local_label in self.local_labels[move_id]:
-                if local_label.output_name not in gathered_names:
-                    gathered_names.append(local_label.output_name)
-
-        result = []
-        for name in gathered_names:
-            result.append(assembler.explicit_label(name, assembler.hex4(self.runtime_addr), offset=None, align_column=align_value_column))
-
+                if local_label.output_name not in result:
+                    result.append(local_label.output_name)
         return result
 
     @property

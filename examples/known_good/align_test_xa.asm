@@ -2,6 +2,8 @@
 newline = $0d
 
 // Memory locations
+
+// MOS entry points ($ffb3-$fff9)
 osasci  = $ffe3
 
     * = $2000
