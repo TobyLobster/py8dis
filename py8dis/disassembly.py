@@ -260,7 +260,8 @@ class LabelRef(utils.LazyString):
     when evaluating expressions, see expression.py.)"""
 
     def __init__(self, runtime_addr, binary_addr, move_id, binary_addr_type):
-        super().__init__("%s", self._final_name)
+        # (As a LazyString, its text is just itself: see __str__())
+        super().__init__("%s", self)
         self.runtime_addr = runtime_addr
         self.binary_addr = binary_addr
         self.move_id = move_id
@@ -271,14 +272,16 @@ class LabelRef(utils.LazyString):
         are given the same name."""
         return (int(self.runtime_addr), int(self.binary_addr), self.move_id, self.binary_addr_type)
 
-    def _final_name(self):
-        final_names = session.current().labels.final_names
-        key = self.key()
-        name = final_names.get(key)
-        if name is None:
-            name = get_final_label(self.runtime_addr, self.binary_addr, self.move_id, binary_addr_type=self.binary_addr_type)
-            final_names[key] = name
-        return name
+    def __str__(self):
+        if self.resolved is None:
+            final_names = session.current().labels.final_names
+            key = self.key()
+            name = final_names.get(key)
+            if name is None:
+                name = get_final_label(self.runtime_addr, self.binary_addr, self.move_id, binary_addr_type=self.binary_addr_type)
+                final_names[key] = name
+            self.resolved = name
+        return self.resolved
 
     def __repr__(self):
         return "LabelRef({0}, {1}, {2}, {3})".format(hex(self.runtime_addr), hex(self.binary_addr), self.move_id, self.binary_addr_type.name)

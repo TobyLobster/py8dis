@@ -71,7 +71,7 @@ class Cpu:
             if classification.is_classified(binary_addr, 1 + opcode.operand_length):
                 # Show the instruction in a comment. (It's formatted when it's
                 # output, once its labels are named.)
-                disassembly.add_annotation(binary_loc, OverlappingInstruction(binary_loc, opcode.length(), opcode.as_string(binary_addr)))
+                disassembly.add_annotation(binary_loc, OverlappingInstruction(binary_loc, opcode.length(), opcode.instruction(binary_addr)))
             else:
                 # Check if we run out of binary within this instruction
                 if not memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1 + opcode.operand_length):

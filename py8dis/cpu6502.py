@@ -999,10 +999,6 @@ class Cpu6502(cpu.Cpu):
         def is_unconditional_branch(self):
             return False
 
-        def as_string(self, binary_addr):
-            """The instruction's text (see output.Instruction.text())."""
-            return self.instruction(binary_addr).text()
-
         def as_lines(self, binary_loc, annotations):
             """The output for the instruction at binary_loc, as a list of
             line objects (see output.py)."""

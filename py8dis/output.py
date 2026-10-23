@@ -261,8 +261,8 @@ class Instruction(Line):
 
     def text(self):
         """The text of the instruction (indented, but without its extra
-        indent level or any inline comment), as a LazyString since its
-        labels may not be named yet."""
+        indent level or any inline comment). (This uses the names of its
+        labels, so it's only used once they can be named, i.e. after tracing.)"""
 
         mnemonic = utils.force_case(self.mnemonic)
         suffix = utils.force_case(self.suffix)
@@ -272,18 +272,19 @@ class Instruction(Line):
             return "%s%s" % (utils.make_indent(1), mnemonic)
 
         if self.form == Instruction.FORCE_ABSOLUTE:
-            return assembler.force_abs_instruction(mnemonic, self.prefix, self.operand, suffix)
+            return assembler.force_abs_instruction(mnemonic, self.prefix, str(self.operand), suffix)
 
         if self.form == Instruction.AS_DATA:
             # (The comment includes an acme-style '+2' suffix to help show
             # what's going on.)
-            listing = utils.LazyString("%s%s%s", self.prefix, self.listing_operand, suffix)
-            return utils.LazyString("%s%s%s, <(%s), >(%s) ; %s+2 %s", utils.make_indent(1), assembler.byte_prefix(),
-                                    self.data_byte, self.operand, self.operand, mnemonic, listing)
+            data_byte = str(self.data_byte)
+            operand = str(self.operand)
+            return "%s%s%s, <(%s), >(%s) ; %s+2 %s%s%s" % (utils.make_indent(1), assembler.byte_prefix(),
+                    data_byte, operand, operand, mnemonic, self.prefix, self.listing_operand, suffix)
 
-        result = utils.LazyString("%s%s %s%s%s", utils.make_indent(1), mnemonic, self.prefix, self.operand, suffix)
+        result = "%s%s %s%s%s" % (utils.make_indent(1), mnemonic, self.prefix, self.operand, suffix)
         if self.char_literal is not None:
-            result = result + " %s %s" % (assembler.comment_prefix(), self.char_literal)
+            result += " %s %s" % (assembler.comment_prefix(), self.char_literal)
         return result
 
     def name_labels(self):
@@ -302,7 +303,7 @@ class Instruction(Line):
         return self
 
     def render(self):
-        line = utils.LazyString(utils.make_indent(self.indent_level) + "%s", self.text())
+        line = utils.make_indent(self.indent_level) + self.text()
         return [mainformatter.add_inline_comment_including_hexdump(self.binary_loc, self.length, self.cycles_description, self.annotations, line)]
 
 

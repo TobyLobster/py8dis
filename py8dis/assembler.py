@@ -69,5 +69,12 @@ class Assembler:
         force_abs_instruction().)"""
         return True
 
+    def force_abs_instruction(self, mnemonic, prefix, operand, suffix):
+        """The text of an instruction (indented) using absolute addressing,
+        although its operand is a zero page address. The mnemonic and the
+        operand's prefix and suffix are given, and the operand's text. (Only
+        used if can_force_absolute().)"""
+        raise NotImplementedError
+
     def assert_expr(self, expr, value):
         self.pending_assertions[expr] = value

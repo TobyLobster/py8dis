@@ -56,11 +56,11 @@ class Comment(Annotation):
 class OverlappingInstruction(Annotation):
     """A comment showing an instruction found while tracing which overlaps
     code or data already there, e.g. '; overlapping: lda #3', with the hex
-    dump of its bytes. 'instruction_text' is the instruction's text (see
-    output.Instruction.text()), which may have labels that aren't named yet."""
+    dump of its bytes. 'instruction' is the instruction (an
+    output.Instruction), whose labels aren't named yet."""
 
-    def __init__(self, binary_loc, length, instruction_text):
-        Annotation.__init__(self, instruction_text, align=Align.BEFORE_LABEL)
+    def __init__(self, binary_loc, length, instruction):
+        Annotation.__init__(self, instruction, align=Align.BEFORE_LABEL)
         self.binary_loc = binary_loc
         self.length = length
         self._formatted = None
@@ -68,7 +68,7 @@ class OverlappingInstruction(Annotation):
     def as_string(self, binary_addr):
         if self._formatted is None:
             import mainformatter    # (see Comment.as_string())
-            text = config.get_assembler().comment_prefix() + " overlapping: " + str(self.text)[4:]
+            text = config.get_assembler().comment_prefix() + " overlapping: " + self.text.text()[4:]
             self._formatted = mainformatter.add_inline_comment_including_hexdump(self.binary_loc, self.length, "", None, text)
         return self._formatted
 

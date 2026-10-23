@@ -317,19 +317,9 @@ class Beebasm(assembler.Assembler):
         # Sadly beebasm doesn't currently have a way to do this.
         return False
 
-    def force_abs_instruction(self, instruction, prefix, operand, suffix):
-        # Ensure the instruction uses an absolute address rather than a zero page address.
-        # e.g. 'lda+2 addr'
-        # Sadly beebasm doesn't currently have a way to do this.
-        return None
-
-    def force_zp_instruction(self, instruction, prefix, operand, suffix):
-        # Ensure the instruction uses a zp address rather than an absolute
-        # address. e.g. 'lda LO(addr)'
-        return utils.LazyString("%s%s %sLO(%s)%s", utils.make_indent(1), instruction, prefix, operand, suffix)
-
     def force_zp_label_prefix(self):
-        # Prefix to take the low byte of a label
+        # Prefix to take the low byte of a label, used in control files
+        # (e.g. dfs226.py) to make sure an instruction uses zero page addressing
         return ""
 
     def byte_prefix(self):

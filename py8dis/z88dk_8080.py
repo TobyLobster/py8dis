@@ -156,15 +156,11 @@ class Z88DK(assembler.Assembler):
     def force_abs_instruction(self, instruction, prefix, operand, suffix):
         # Ensure the instruction uses an absolute address rather than a zero
         # page address. e.g. 'lda !addr,x'
-        return utils.LazyString("%s%s !%s%s%s", utils.make_indent(1), instruction, prefix, operand, suffix)
-
-    def force_zp_instruction(self, instruction, prefix, operand, suffix):
-        # Ensure the instruction uses a zp address rather than an absolute
-        # address. TODO: Is this possible with this assembler?
-        return utils.LazyString("%s%s %s%s%s", utils.make_indent(1), instruction, prefix, operand, suffix)
+        return "%s%s !%s%s%s" % (utils.make_indent(1), instruction, prefix, operand, suffix)
 
     def force_zp_label_prefix(self):
-        # Prefix to take the low byte of a label
+        # Prefix to take the low byte of a label, used in control files
+        # (e.g. dfs226.py) to make sure an instruction uses zero page addressing
         return ""
 
     def byte_prefix(self):

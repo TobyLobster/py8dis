@@ -194,7 +194,7 @@ class Xa(assembler.Assembler):
         # TODO: Hard-coding a literal address here is very
         # unsatisfactory but (as noted in TODO just above
         # pseudopc_start()) I am struggling to make anything else work.
-        return [utils.LazyString("* = %s", self.hex(source + length))]
+        return ["* = %s" % self.hex(source + length)]
 
     def expression_in_context(self, expr, text, level, context):
         if context == expression.PREPROCESSOR:
@@ -243,15 +243,11 @@ class Xa(assembler.Assembler):
         # It's tempting to put brackets around "operand" in case it contains an
         # expression, but the "!" prefix operator doesn't seem to like this and
         # probably doesn't need it.
-        return utils.LazyString("%s%s %s!%s%s", utils.make_indent(1), instruction, prefix, operand, suffix)
-
-    def force_zp_instruction(self, instruction, prefix, operand, suffix):
-        # Ensure the instruction uses a zp address rather than an absolute
-        # address. e.g. 'lda `addr'
-        return utils.LazyString("%s%s ``%s%s%s", utils.make_indent(1), instruction, prefix, operand, suffix)
+        return "%s%s %s!%s%s" % (utils.make_indent(1), instruction, prefix, operand, suffix)
 
     def force_zp_label_prefix(self):
-        # Prefix to take the low byte of a label
+        # Prefix to take the low byte of a label, used in control files
+        # (e.g. dfs226.py) to make sure an instruction uses zero page addressing
         return "`"
 
     def byte_prefix(self):

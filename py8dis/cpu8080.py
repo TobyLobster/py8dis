@@ -363,10 +363,6 @@ class Cpu8080(cpu.Cpu):
             """The instruction (see output.Instruction)."""
             return output.Instruction(self.mnemonic)
 
-        def as_string(self, binary_addr):
-            """The instruction's text (see output.Instruction.text())."""
-            return self.instruction(binary_addr).text()
-
         def address_operand(self, binary_addr):
             """The 16 bit address operand (following the opcode at binary_addr) as a string."""
             operand = classification.get_address16(binary_addr + 1)

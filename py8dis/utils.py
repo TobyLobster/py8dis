@@ -113,12 +113,18 @@ def natural_sort(l):
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key=alphanum_key)
 
-# Note: We only "need" LazyString to defer labelling decisions until
-# we've decided if an address is code or data, since otherwise we
-# have all the information we need straight away. This means that we
-# *don't* need to use LazyString anywhere "outside" the tracing code.
 class LazyString:
-    """Defers string formatting until needed"""
+    """Text made of parts, some of which aren't known until the output is
+    made: e.g. 'Copy 8 bytes from ' + a label, whose name is only chosen
+    after tracing. The text is 'fmt % args', worked out (once) when it's
+    first converted to a string.
+
+    The parts are kept, so the labels in it can be found (see
+    output.label_refs()). A label reference (disassembly.LabelRef) is a
+    LazyString too, so a label can be joined to text either way round.
+
+    (An argument can also be a function to call, for compatibility with
+    control files that use this. py8dis itself doesn't.)"""
 
     def __init__(self, fmt, *args):
         self._fmt = fmt

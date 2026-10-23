@@ -392,12 +392,15 @@ class InContext(utils.LazyString):
     given context (see render()) when it's output."""
 
     def __init__(self, value, context):
-        super().__init__("%s", self._render)
+        # (As a LazyString, its text is just itself: see __str__())
+        super().__init__("%s", self)
         self.value = value
         self.context = context
 
-    def _render(self):
-        return render(self.value, self.context)
+    def __str__(self):
+        if self.resolved is None:
+            self.resolved = render(self.value, self.context)
+        return self.resolved
 
 def is_fully_bracketed(text):
     """Is the whole text enclosed in one matching pair of brackets?
