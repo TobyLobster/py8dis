@@ -11,6 +11,11 @@ For each test and assembler:
      without any assemblers installed).
   4. With -m, copy the asm to known_good (only once the binary has been checked)
 
+The error tests (ERROR_TESTS below) are control files in python/errors/ that
+py8dis should stop with an error for, e.g. an expr() with the wrong value. Each
+passes if py8dis fails with exactly the expected message as the last line of
+its error output. They're run with beebasm, whose hex format the messages use.
+
 With -c, when all the tests are run, session_tests.py (several disassemblies in
 one process) and render_tests.py (rendering output lines for each assembler)
 are run as well: see those files. They're started first and reported first.
@@ -76,6 +81,25 @@ TESTS = [
     ("planb",                    ["acme", "beebasm", "xa"],    "Plan B with the old style label_maker function"),
     ("planb_new_label_maker",    ["acme", "beebasm", "xa"],    "Plan B with a new style label_maker function"),
     ("starship",                 ["acme", "beebasm", "xa"],    "Starship Command"),
+]
+
+# Each error test is (name, expected error message). The control file is
+# python/errors/<name>.py (which describes the test), and py8dis must stop with
+# this message (the last line of its error output). Run with beebasm.
+ERROR_TESTS = [
+    ("expr_wrong_byte",         "expr() at &200a: 'length + 2' is &0f, but the byte there is &0e"),
+    ("expr_wrong_word",         "expr() at &2003: 'message + 1' is &200f, but the word there is &200e"),
+    ("expr_dict_missing",       "expr(&200a, ...): the dictionary has no entry for the value &0e found at this address"),
+    ("address_out_of_range",    "label(&10001): the address must be between &0000 and &10000"),
+    ("local_label_bad_name",    "local_label(&200e, '1message'): this isn't a valid label name (a letter or underscore followed by letters, digits or underscores)"),
+    ("no_data_loaded",          "comment(&3000): no data is loaded at this address"),
+    ("already_classified",      "byte(&2010, ...): &2010 has already been classified (e.g. by an earlier byte(), word() or string command)"),
+    ("move_same_addresses",     "move(&2000, &2000, 16): the source and destination are the same"),
+    ("memory_region_bad_end",   "memory_region(&80, &70, ...): the end must be after the start"),
+    ("load_different_cpu",      "All calls to load() must use the same CPU (already using 'Cpu6502', now asked for '65c02')."),
+    ("use_command_line_late",   "use_command_line(False) must be called before any other command (the command line has already been read)"),
+    ("label_maker_hook_twice",  "set_label_maker_hook() can only be called once"),
+    ("go_without_load",         "go(): nothing has been loaded to disassemble (use load() first)"),
 ]
 
 # The program each assembler needs
@@ -194,6 +218,20 @@ def run_test(name, assembler, options, env):
     return result
 
 
+def run_error_test(name, expected, env):
+    """Run one error test, returning a Result."""
+    result = Result(name, "error")
+    proc = subprocess.run([sys.executable, str(Path("python") / "errors" / f"{name}.py"), "--beebasm"],
+                          capture_output=True, text=True, env=env)
+    lines = [line for line in proc.stderr.splitlines() if line.strip()]
+    got = lines[-1] if lines else "<no error output>"
+    if proc.returncode == 0:
+        result.failure = f"py8dis didn't stop with an error\n      expected: {expected}"
+    elif got != expected:
+        result.failure = f"py8dis stopped with a different error:\n      got:      {got}\n      expected: {expected}"
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run the py8dis example tests.")
     parser.add_argument("-c", "--check-disassembly", action="store_true", help="check the disassembly (asm) output against known_good")
@@ -204,7 +242,7 @@ def main():
     parser.add_argument("tests", nargs="*", help="names of the tests to run (default: all)")
     options = parser.parse_args()
 
-    known_names = [name for name, _, _ in TESTS]
+    known_names = [name for name, _, _ in TESTS] + [name for name, _ in ERROR_TESTS]
     unknown = [t for t in options.tests if t not in known_names]
     if unknown:
         parser.error("unknown test(s): {0}\nknown tests: {1}".format(", ".join(unknown), ", ".join(known_names)))
@@ -222,10 +260,12 @@ def main():
             if not options.tests or name in options.tests
             for assembler in assemblers
             if not options.assemblers or assembler in options.assemblers]
+    error_jobs = [(name, expected) for name, expected in ERROR_TESTS
+                  if (not options.tests or name in options.tests) and not options.assemblers]
 
     start = time.time()
     failures = 0
-    width = max((len(f"{n}_{a}") for n, a in jobs), default=0) + 2
+    width = max([len(f"{n}_{a}") for n, a in jobs] + [len(f"{n}_error") for n, _ in error_jobs], default=0) + 2
     # The other test scripts, when checking all the tests. These start first
     # since the session tests take longest.
     other_scripts = OTHER_TEST_SCRIPTS if (options.check_disassembly and not options.tests and not options.assemblers) else []
@@ -233,6 +273,8 @@ def main():
         other_futures = [executor.submit(subprocess.run, [sys.executable, script], capture_output=True, text=True, env=env)
                          for script in other_scripts]
         futures = [executor.submit(run_test, name, assembler, options, env) for name, assembler in jobs]
+        futures += [executor.submit(run_error_test, name, expected, env) for name, expected in error_jobs]
+        jobs += [(name, "error") for name, _ in error_jobs]
         # The other test scripts first, since they were started first
         for script, other_future in zip(other_scripts, other_futures):
             jobs.append((script, None))
