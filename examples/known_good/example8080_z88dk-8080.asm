@@ -1,6 +1,6 @@
 ; Memory locations
 
-    ORG $1000
+    org $1000
 
 pydis_start:
     call return_1                                                     ; 1000: cd 11 10    ...

@@ -1,12 +1,12 @@
 ; Constants
-addr_val        EQU 4660
-low_seven_bits  EQU 127
-x_val           EQU 240
-y_val           EQU 60
+addr_val        equ 4660
+low_seven_bits  equ 127
+x_val           equ 240
+y_val           equ 60
 
 ; Memory locations
 
-    ORG $1000
+    org $1000
 
 pydis_start:
     mvi a, ~low_seven_bits & $ff                                      ; 1000: 3e 80       >.

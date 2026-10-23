@@ -116,7 +116,7 @@ class Z88DK(assembler.Assembler):
 
         with an optional offset (e.g. '+1') added to the value, with optional
         column alignment at the equals sign."""
-        return "%sEQU %s%s" % (utils.tab_to(name + " ", align_column), value, "" if offset is None else "+%d" % offset)
+        return "%s%s %s%s" % (utils.tab_to(name + " ", align_column), utils.force_case("EQU"), value, "" if offset is None else "+%d" % offset)
 
     def comment_prefix(self):
         return ";"
@@ -128,7 +128,7 @@ class Z88DK(assembler.Assembler):
     def code_start(self, start_addr, end_addr, first):
         """At the start of the code we provide the address at which to
         assemble."""
-        return ["", "%sORG %s" % (utils.make_indent(1), self.hex4(start_addr)), ""]
+        return ["", "%s%s %s" % (utils.make_indent(1), utils.force_case("ORG"), self.hex4(start_addr)), ""]
 
     def code_end(self):
         return []

@@ -147,7 +147,7 @@ class Xa(assembler.Assembler):
         # So we mimic this example here:
         return [end_label,
             "%s* = %s" % (utils.make_indent(1), self.hex4(start_addr)),
-            ".dsb (*-%s), 0" % (end_label),
+            "%s (*-%s), 0" % (utils.force_case(".dsb"), end_label),
             "%s* = %s" % (utils.make_indent(1), self.hex4(start_addr)),
             ""]
 
@@ -330,4 +330,4 @@ class Xa(assembler.Assembler):
         return False
 
     def include_binary_file(self, binary_filepath):
-        return utils.make_indent(1) + '.bin 0,0,"' + binary_filepath + '"'
+        return utils.make_indent(1) + utils.force_case(".bin") + ' 0,0,"' + binary_filepath + '"'

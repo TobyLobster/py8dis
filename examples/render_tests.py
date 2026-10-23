@@ -64,8 +64,10 @@ def make_tests():
     """The tests: a list of (name, assemblers, function making the line).
 
     Tests whose name ends with '*' are also checked with upper case output."""
+    import config
     import expression
     import output
+    import session
     Instruction = output.Instruction
     Name = expression.Name
     Num = expression.Num
@@ -108,12 +110,16 @@ def make_tests():
          ASSEMBLERS_6502, lambda: output.CommentLine("")),
         ("word wrapped comment",
          ASSEMBLERS_6502, lambda: output.Comment("This is a long comment which is word wrapped, since it is much too long to fit on one line of the output.", 1)),
-        ("constant definition",
-         ASSEMBLERS_6502, lambda: output.ConstantDefinition("lives", "3", 12, "Starting number of lives", 24)),
+        ("constant definition *",
+         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.ConstantDefinition("lives", "3", 12, "Starting number of lives", 24)),
         ("code start *",
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
         ("include binary file *",
          ASSEMBLERS_6502, lambda: output.Directive("include_binary_file", "data.bin")),
+        ("start, for the 65C02 *",
+         ["acme"], lambda: (config.set_cmos(True), output.Directive("disassembly_start"))[1]),
+        ("end, saving to a file *",
+         ["acme", "beebasm"], lambda: (setattr(session.current(), "output_filename", "Out.bin"), output.Directive("disassembly_end"))[1]),
     ]
 
 # What each test should render, for each assembler (one string per line of
@@ -320,11 +326,26 @@ EXPECTED = {
     'constant definition, acme': [
         'lives       = 3         ; Starting number of lives',
     ],
+    'constant definition, acme, upper case': [
+        'lives       = 3         ; Starting number of lives',
+    ],
     'constant definition, beebasm': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, beebasm, upper case': [
         'lives       = 3         ; Starting number of lives',
     ],
     'constant definition, xa': [
         'lives       = 3         // Starting number of lives',
+    ],
+    'constant definition, xa, upper case': [
+        'lives       = 3         // Starting number of lives',
+    ],
+    'constant definition, z88dk-8080': [
+        'lives       equ 3       ; Starting number of lives',
+    ],
+    'constant definition, z88dk-8080, upper case': [
+        'lives       EQU 3       ; Starting number of lives',
     ],
     'code start, acme': [
         '',
@@ -358,7 +379,7 @@ EXPECTED = {
     ],
     'code start, z88dk-8080': [
         '',
-        '    ORG $2000',
+        '    org $2000',
         '',
     ],
     'code start, z88dk-8080, upper case': [
@@ -370,7 +391,7 @@ EXPECTED = {
         '    !binary "data.bin"',
     ],
     'include binary file, acme, upper case': [
-        '    !binary "data.bin"',
+        '    !BINARY "data.bin"',
     ],
     'include binary file, beebasm': [
         '    incbin "data.bin"',
@@ -382,7 +403,29 @@ EXPECTED = {
         '    .bin 0,0,"data.bin"',
     ],
     'include binary file, xa, upper case': [
-        '    .bin 0,0,"data.bin"',
+        '    .BIN 0,0,"data.bin"',
+    ],
+    'start, for the 65C02, acme': [
+        '!cpu 65c02',
+        '',
+    ],
+    'start, for the 65C02, acme, upper case': [
+        '!CPU 65C02',
+        '',
+    ],
+    'end, saving to a file, acme': [
+        '!to "Out.bin", plain',
+    ],
+    'end, saving to a file, acme, upper case': [
+        '!TO "Out.bin", PLAIN',
+    ],
+    'end, saving to a file, beebasm': [
+        '',
+        'save "Out.bin", pydis_start, pydis_end',
+    ],
+    'end, saving to a file, beebasm, upper case': [
+        '',
+        'SAVE "Out.bin", pydis_start, pydis_end',
     ],
 }
 

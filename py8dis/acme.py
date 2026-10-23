@@ -111,7 +111,7 @@ class Acme(assembler.Assembler):
         result = []
 
         if config.get_cmos():
-            result.extend(["!cpu 65c02", ""])
+            result.extend([utils.force_case("!cpu 65c02"), ""])
         return result
 
     def code_start(self, start_addr, end_addr, first):
@@ -138,7 +138,7 @@ class Acme(assembler.Assembler):
         # Write the output file if specified
         output_filename = session.current().output_filename
         if output_filename:
-            result.extend(["!to \"%s\", plain" % (output_filename)])
+            result.extend(['%s "%s", %s' % (utils.force_case("!to"), output_filename, utils.force_case("plain"))])
 
         # At the end of the assembly, we output assertions.
         if config.get_include_assertions():
@@ -214,4 +214,4 @@ class Acme(assembler.Assembler):
         return True
 
     def include_binary_file(self, binary_filepath):
-        return utils.make_indent(1) + '!binary "' + binary_filepath + '"'
+        return utils.make_indent(1) + utils.force_case("!binary") + ' "' + binary_filepath + '"'

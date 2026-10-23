@@ -3,11 +3,11 @@
 ;
 
 ; Memory locations
-wboot   EQU $00
-bdos    EQU $05
-stack   EQU $07ad
+wboot   equ $00
+bdos    equ $05
+stack   equ $07ad
 
-    ORG $0100
+    org $0100
 
 pydis_start:
     jmp cpu                                                           ; 0100: c3 ab 01    ... ; jump to 8080 CPU diagnostic
