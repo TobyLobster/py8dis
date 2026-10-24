@@ -223,6 +223,11 @@ class Instruction(Line):
         AS_DATA        the assembler can't force absolute addressing, so the
                        instruction is written as data bytes, with the
                        instruction in a comment
+        UNDOCUMENTED   an undocumented opcode (e.g. the 8080's &CB, which runs
+                       as JMP), which assemblers don't accept, so it's written
+                       as data bytes (the opcode, then the low and high bytes
+                       of the operand, if any), with the instruction it runs
+                       as in a comment
 
     'char_literal' is a character to show in a comment after the instruction
     (e.g. for 'lda #65', "'A'"), or None.
@@ -235,6 +240,7 @@ class Instruction(Line):
     PLAIN          = "plain"
     FORCE_ABSOLUTE = "force absolute"
     AS_DATA        = "as data"
+    UNDOCUMENTED   = "undocumented"
 
     def __init__(self, mnemonic, operand=None, prefix="", suffix="", form=PLAIN, char_literal=None,
                  data_byte=None, listing_operand=None,
@@ -272,13 +278,24 @@ class Instruction(Line):
         labels, so it's only used once they can be named, i.e. after tracing.)
 
         If 'plain', there's no indent, and no comment (the character literal,
-        or the instruction shown as AS_DATA)."""
+        or the instruction shown as AS_DATA or UNDOCUMENTED)."""
 
         mnemonic = utils.force_case(self.mnemonic)
         suffix = utils.force_case(self.suffix)
         assembler = config.get_assembler()
 
         indent = "" if plain else utils.make_indent(1)
+
+        if self.form == Instruction.UNDOCUMENTED:
+            items = [str(self.data_byte)]
+            if self.operand is not None:
+                import maker
+                items += [str(maker.make_lo(self.operand)), str(maker.make_hi(self.operand))]
+            result = "%s%s%s" % (indent, assembler.byte_prefix(), ", ".join(items))
+            if plain:
+                return result
+            return result + " %s %s%s (undocumented)" % (assembler.comment_prefix(), mnemonic,
+                                                                 "" if self.operand is None else " " + str(self.operand))
 
         if self.operand is None:
             return "%s%s" % (indent, mnemonic)

@@ -439,6 +439,8 @@ def _instruction_fields(binary_loc, c, instruction):
             mode, value, bits = "implied", None, None
 
     result["mode"] = mode
+    if instruction.form == output.Instruction.UNDOCUMENTED:
+        result["undocumented"] = True
     if value is not None and instruction.operand is not None:
         result["operand"] = { "value": value, "expr": _expr(instruction.operand, binary_addr + 1, value, bits) }
     if target is not None:

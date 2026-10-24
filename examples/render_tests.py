@@ -109,6 +109,10 @@ def make_tests():
                                           data_byte=Num(0xad, "hex"), listing_operand=Name("zp_value"))),
         ("8080 instruction",
          ["z88dk-8080"], lambda: instruction(0x2000, 2, "mvi a,", Num(0x41, "hex"), char_literal="'A'")),
+        ("8080 undocumented opcode *",
+         ["z88dk-8080"], lambda: instruction(0x2000, 3, "jmp", Name("finish"), form=Instruction.UNDOCUMENTED, data_byte=Num(0xcb, "hex2"))),
+        ("8080 undocumented opcode, no operand",
+         ["z88dk-8080"], lambda: instruction(0x2000, 1, "nop", form=Instruction.UNDOCUMENTED, data_byte=Num(0x08, "hex2"))),
         ("6502 CPU state",
          ASSEMBLERS_6502, with_cpu_state("6502", lambda: instruction(0x2000, 2, "lda", Num(0x41, "hex"), prefix="#"))),
         ("8080 CPU state",
@@ -230,6 +234,15 @@ EXPECTED = {
     ],
     '8080 instruction, z88dk-8080': [
         "    mvi a, $41 ; 'A'                                                  ; 2000: a9 41       .A",
+    ],
+    '8080 undocumented opcode, z88dk-8080': [
+        '    db $cb, finish & $ff, finish >> 8 ; jmp finish (undocumented)     ; 2000: a9 41 b1    .A.',
+    ],
+    '8080 undocumented opcode, z88dk-8080, upper case': [
+        '    DB $CB, finish & $FF, finish >> 8 ; JMP finish (undocumented)     ; 2000: A9 41 B1    .A.',
+    ],
+    '8080 undocumented opcode, no operand, z88dk-8080': [
+        '    db $08 ; nop (undocumented)                                       ; 2000: a9          .',
     ],
     '6502 CPU state, acme': [
         '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',

@@ -57,6 +57,7 @@ TESTS = [
     ("example8080",              ["z88dk-8080"],               "hello world example for the 8080 instruction set"),
     ("test8080",                 ["z88dk-8080"],               "testing the whole 8080 instruction set"),
     ("regression_tests_8080",    ["z88dk-8080"],               "regression tests for z88dk expression operators"),
+    ("undocumented_8080",        ["z88dk-8080"],               "the 8080's undocumented opcodes, traced as what they run as and output as data"),
 
     # 6502 code: tests
     ("include_binary_file",      ["acme", "beebasm", "xa"],    "tests for including a binary file"),
@@ -98,7 +99,7 @@ TESTS = [
 # The tests whose JSON output (see docs/json-format.md) is also compared with
 # known_good/<test>_<assembler>.json. (The JSON of every test is checked, see
 # check_json(), but these show any change to the JSON itself.)
-JSON_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080"]
+JSON_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080"]
 
 # Each error test is (name, expected error message). The control file is
 # python/errors/<name>.py (which describes the test), and py8dis must stop with

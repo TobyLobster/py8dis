@@ -10,7 +10,8 @@ acme -o ../orig/expressions.orig expressions.asm
 dd if=../orig/regression_tests.orig of=../orig/regression_tests1.orig bs=128 count=1
 dd if=../orig/regression_tests.orig of=../orig/regression_tests2.orig bs=128 skip=1
 z88dk-z80asm -m8080 -b -o../orig/regression_tests_8080.orig regression_tests_8080.asm
+z88dk-z80asm -m8080 -b -o../orig/undocumented_8080.orig undocumented_8080.asm
 cd ..
-md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig
+md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig
 ./go
 cd asm_to_create_test_binaries

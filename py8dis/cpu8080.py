@@ -291,7 +291,7 @@ class Cpu8080(cpu.Cpu):
             0x05: self.OpcodeImplied("DCR B"),
             0x06: self.OpcodeImmediate("MVI B,"),
             0x07: self.OpcodeImplied("RLC"),
-            0x08: self.OpcodeImplied("NOP"),
+            0x08: self.OpcodeUndocumentedImplied("NOP"),
             0x09: self.OpcodeImplied("DAD B"),
             0x0a: self.OpcodeImplied("LDAX B"),
             0x0b: self.OpcodeImplied("DCX B"),
@@ -300,7 +300,7 @@ class Cpu8080(cpu.Cpu):
             0x0e: self.OpcodeImmediate("MVI C,"),
             0x0f: self.OpcodeImplied("RRC"),
 
-            0x10: self.OpcodeImplied("NOP"),
+            0x10: self.OpcodeUndocumentedImplied("NOP"),
             0x11: self.OpcodeImmediate16("LXI DE,"),
             0x12: self.OpcodeImplied("STAX D"),
             0x13: self.OpcodeImplied("INX D"),
@@ -308,7 +308,7 @@ class Cpu8080(cpu.Cpu):
             0x15: self.OpcodeImplied("DCR D"),
             0x16: self.OpcodeImmediate("MVI D,"),
             0x17: self.OpcodeImplied("RAL"),
-            0x18: self.OpcodeImplied("NOP"),
+            0x18: self.OpcodeUndocumentedImplied("NOP"),
             0x19: self.OpcodeImplied("DAD D"),
             0x1a: self.OpcodeImplied("LDAX D"),
             0x1b: self.OpcodeImplied("DCX D"),
@@ -317,7 +317,7 @@ class Cpu8080(cpu.Cpu):
             0x1e: self.OpcodeImmediate("MVI E,"),
             0x1f: self.OpcodeImplied("RAR"),
 
-            0x20: self.OpcodeImplied("RIM"),
+            0x20: self.OpcodeUndocumentedImplied("NOP"),
             0x21: self.OpcodeImmediate16("LXI HL,"),
             0x22: self.OpcodeAddr16("SHLD"),
             0x23: self.OpcodeImplied("INX H"),
@@ -325,7 +325,7 @@ class Cpu8080(cpu.Cpu):
             0x25: self.OpcodeImplied("DCR H"),
             0x26: self.OpcodeImmediate("MVI H,"),
             0x27: self.OpcodeImplied("DAA"),
-            0x28: self.OpcodeImplied("NOP"),
+            0x28: self.OpcodeUndocumentedImplied("NOP"),
             0x29: self.OpcodeImplied("DAD H"),
             0x2a: self.OpcodeAddr16("LHLD"),
             0x2b: self.OpcodeImplied("DCX H"),
@@ -334,7 +334,7 @@ class Cpu8080(cpu.Cpu):
             0x2e: self.OpcodeImmediate("MVI L,"),
             0x2f: self.OpcodeImplied("CMA"),
 
-            0x30: self.OpcodeImplied("SIM"),
+            0x30: self.OpcodeUndocumentedImplied("NOP"),
             0x31: self.OpcodeImmediate16("LXI SP,"),
             0x32: self.OpcodeAddr16("STA"),
             0x33: self.OpcodeImplied("INX SP"),
@@ -342,7 +342,7 @@ class Cpu8080(cpu.Cpu):
             0x35: self.OpcodeImplied("DCR M"),
             0x36: self.OpcodeImmediate("MVI M,"),
             0x37: self.OpcodeImplied("STC"),
-            0x38: self.OpcodeImplied("NOP"),
+            0x38: self.OpcodeUndocumentedImplied("NOP"),
             0x39: self.OpcodeImplied("DAD SP"),
             0x3a: self.OpcodeAddr16("LDA"),
             0x3b: self.OpcodeImplied("DCX SP"),
@@ -498,7 +498,7 @@ class Cpu8080(cpu.Cpu):
             0xc8: self.OpcodeImplied("RZ"),
             0xc9: self.OpcodeReturn("RET"),
             0xca: self.OpcodeConditionalBranch("JZ"),
-            0xcb: self.OpcodeImplied("NOP"),
+            0xcb: self.OpcodeUndocumentedJmp("JMP"),
             0xcc: self.OpcodeCall("CZ"),
             0xcd: self.OpcodeCall("CALL"),
             0xce: self.OpcodeImmediate("ACI"),
@@ -513,11 +513,11 @@ class Cpu8080(cpu.Cpu):
             0xd6: self.OpcodeImmediate("SUI"),
             0xd7: self.OpcodeReset("RST 2"),
             0xd8: self.OpcodeImplied("RC"),
-            0xd9: self.OpcodeImplied("NOP"),
+            0xd9: self.OpcodeUndocumentedReturn("RET"),
             0xda: self.OpcodeConditionalBranch("JC"),
             0xdb: self.OpcodeImmediate("IN"),
             0xdc: self.OpcodeCall("CC"),
-            0xdd: self.OpcodeImplied("NOP"),
+            0xdd: self.OpcodeUndocumentedCall("CALL"),
             0xde: self.OpcodeImmediate("SBI"),
             0xdf: self.OpcodeReset("RST 3"),
 
@@ -534,7 +534,7 @@ class Cpu8080(cpu.Cpu):
             0xea: self.OpcodeConditionalBranch("JPE"),
             0xeb: self.OpcodeImplied("XCHG"),
             0xec: self.OpcodeCall("CPE"),
-            0xed: self.OpcodeImplied("NOP"),
+            0xed: self.OpcodeUndocumentedCall("CALL"),
             0xee: self.OpcodeImmediate("XRI"),
             0xef: self.OpcodeReset("RST 5"),
 
@@ -551,7 +551,7 @@ class Cpu8080(cpu.Cpu):
             0xfa: self.OpcodeConditionalBranch("JM"),
             0xfb: self.OpcodeImplied("EI"),
             0xfc: self.OpcodeCall("CM"),
-            0xfd: self.OpcodeImplied("NOP"),
+            0xfd: self.OpcodeUndocumentedCall("CALL"),
             0xfe: self.OpcodeImmediate("CPI"),
             0xff: self.OpcodeReset("RST 7"),
         }
@@ -825,6 +825,34 @@ class Cpu8080(cpu.Cpu):
 
         def is_block_end(self):
             return True
+
+    # The undocumented opcodes: &08, &10, &18, &20, &28, &30 and &38 run as
+    # NOP, &CB as JMP, &D9 as RET, and &DD, &ED and &FD as CALL. They're
+    # traced as what they run as, but output as data bytes (see
+    # output.Instruction.UNDOCUMENTED), since assemblers don't accept them.
+
+    class Undocumented:
+        """Outputs an undocumented opcode as data bytes (the opcode, then
+        the operand's low and high bytes, if any), with the instruction it
+        runs as in a comment."""
+
+        def instruction(self, binary_addr):
+            instruction = super().instruction(binary_addr)
+            instruction.form = output.Instruction.UNDOCUMENTED
+            instruction.data_byte = expression.Num(session.current().memory.binary[binary_addr], "hex2")
+            return instruction
+
+    class OpcodeUndocumentedImplied(Undocumented, OpcodeImplied):
+        pass
+
+    class OpcodeUndocumentedJmp(Undocumented, OpcodeJmp):
+        pass
+
+    class OpcodeUndocumentedReturn(Undocumented, OpcodeReturn):
+        pass
+
+    class OpcodeUndocumentedCall(Undocumented, OpcodeCall):
+        pass
 
     class OpcodeReset(Opcode):
         def __init__(self, mnemonic):

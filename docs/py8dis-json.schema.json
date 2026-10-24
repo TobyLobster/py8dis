@@ -262,6 +262,7 @@
           "properties": { "value": { "type": "integer" }, "expr": { "$ref": "#/$defs/expr" } }
         },
         "target":    { "description": "instruction: for a branch, jump or call, the runtime address it goes to.", "$ref": "#/$defs/addr" },
+        "undocumented": { "description": "instruction: true for an undocumented opcode (e.g. the 8080's &CB, which runs as JMP), which the asm writes as data bytes. 'mnemonic' and 'mode' are those of the instruction it runs as.", "const": true },
         "cycles":    { "description": "instruction: the cycles taken, as set_show_cycles(True) shows them, e.g. \"2/3\" for a 6502 branch (not taken, or taken), or \"5/11\" for an 8080 conditional return.", "type": "string" },
         "cpu_state": { "$ref": "#/$defs/cpu_state" },
 
