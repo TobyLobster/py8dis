@@ -738,6 +738,26 @@ def constant_value_to_string(value, format):
     assert format == Format.CHAR, "unknown format {0}".format(format)
     return str("'" + value + "'")
 
+def sorted_constants():
+    """The constants, in the order they're output (natural sort order of
+    their names)."""
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key.name)]
+    return sorted(session.current().disassembly.constants, key=alphanum_key)
+
+def effective_memory_regions():
+    """The memory regions in effect (see memory_region_for()): the CPU's,
+    then those named by acorn.py or the control file, with each range named
+    as it was last named, and those named "" left out. As (start, end, name),
+    by start address, larger first."""
+    cpu = session.current().cpu
+    regions = (cpu.memory_regions() if cpu is not None else []) + session.current().disassembly.memory_regions
+    names = {}
+    for start, end, name in regions:
+        names[(start, end)] = name
+    return sorted(((start, end, name) for (start, end), name in names.items() if name != ""),
+                  key=lambda r: (r[0], -(r[1] - r[0])))
+
 def emit_constants():
     """The constant definitions, as a list of line objects (see output.py)."""
     constants = session.current().disassembly.constants
@@ -764,10 +784,7 @@ def emit_constants():
     comment_column = max_name_len + 3 + max_value_len
     comment_column = utils.round_up(comment_column, indent_len) # Round up to next indent level
 
-    # Natural sort the constants
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key.name)]
-    for c in sorted(constants, key=alphanum_key):
+    for c in sorted_constants():
         value = constant_value_to_string(c.value, c.format)
 
         # output a comment on the line before the definition

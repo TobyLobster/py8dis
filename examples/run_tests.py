@@ -9,8 +9,9 @@ For each test and assembler:
      Check the JSON: that it matches the schema (docs/py8dis-json.schema.json,
      if the jsonschema package is installed), that its items cover the
      loaded data exactly, that each expression's tree gives its value (where
-     it can be worked out), that each item's text matches the asm, and that
-     the labels agree with the items
+     it can be worked out), that each item's text matches the asm, that the
+     labels agree with the items, and that the comments, constants,
+     subroutines and memory regions agree with the asm and the labels
   3. If the assembler is installed, assemble the asm and check the binary is
      identical to orig/<test>.orig. If the assembler isn't installed this step
      is skipped, but the check in step 2 still happens (so e.g. CI can run
@@ -336,6 +337,57 @@ def check_json_labels(path, doc):
                 return f"{where}: its reference from {ref['binary_addr']:#06x} gives the runtime address {ref['runtime_addr']:#06x}, but that item runs at {item['runtime_addr']:#06x}"
     return None
 
+def check_json_annotations(path, doc, asm):
+    """Check the JSON's comments, constants, subroutines and memory regions
+    agree with the asm and its labels, returning a message describing the
+    first problem, or None."""
+    def collapse(text):
+        # (Comment prefixes are removed, and whitespace collapsed, so that
+        # word wrapped comments can be found)
+        return " ".join(text.replace("//", " ").replace(";", " ").split())
+    asm_text = collapse(asm)
+
+    for item in doc["items"]:
+        for c in item.get("comments", []):
+            text = c["text"]
+            if c.get("kind") == "overlapping":
+                text = text.split(None, 1)[0]       # ("overlapping:", since the instruction is laid out)
+            if collapse(text) not in asm_text:
+                return f"{path}: the item at {item['binary_addr']:#06x} has the comment {c['text']!r}, which isn't in the asm"
+
+    asm_lines = asm.splitlines()
+    for c in doc["constants"]:
+        if not any(c["name"] in line and c["text"] in line for line in asm_lines):
+            return f"{path}: the constant {c['name']!r} = {c['text']!r} isn't defined in the asm"
+
+    labels = {label["runtime_addr"]: label for label in doc["labels"]}
+    for s in doc["subroutines"]:
+        if "name" in s:
+            names = {n["name"] for n in labels.get(s["runtime_addr"], {}).get("names", [])}
+            if s["name"] not in names:
+                return f"{path}: the subroutine {s['name']!r} at {s['runtime_addr']:#06x} isn't a name of the label there"
+
+    regions = doc["memory_regions"]
+    if regions != sorted(regions, key=lambda r: (r["start"], r["start"] - r["end"])):
+        return f"{path}: the memory regions are out of order"
+    region_names = {r["name"] for r in regions} | {"Other"}
+    # The headings in the asm, e.g. '; Zero page (&0000-&00ff)' or '; Other'
+    prefix = re.escape(asm_comment_prefix(asm))
+    asm_headings = set(re.findall("^" + prefix + r" (.*?) \([&$][0-9a-fA-F]{4}-[&$][0-9a-fA-F]{4}\)$", asm, re.M))
+    if re.search("^" + prefix + " Other$", asm, re.M):
+        asm_headings.add("Other")
+    for label in doc["labels"]:
+        for n in label.get("names", []) + label.get("local_names", []):
+            if "memory_region" in n and n["memory_region"] not in region_names:
+                return f"{path}: the label at {label['runtime_addr']:#06x} is under the heading {n['memory_region']!r}, which isn't a memory region"
+            if "memory_region" in n and n["memory_region"] not in asm_headings:
+                return f"{path}: the label at {label['runtime_addr']:#06x} is under the heading {n['memory_region']!r}, which isn't in the asm"
+    return None
+
+def asm_comment_prefix(asm):
+    """The comment prefix the asm uses (';' or '//')."""
+    return "//" if re.search(r"^//", asm, re.M) else ";"
+
 def check_json(path, asm_path=None):
     """Check the JSON output (see docs/json-format.md), returning a message
     describing the first problem, or None."""
@@ -397,6 +449,13 @@ def check_json(path, asm_path=None):
     problem = check_json_labels(path, doc)
     if problem:
         return problem
+
+    # The comments, constants, subroutines and memory regions agree with the
+    # asm and the labels
+    if asm_path is not None:
+        problem = check_json_annotations(path, doc, asm_path.read_text())
+        if problem:
+            return problem
 
     # Each item's text matches the asm (where the asm has a hex dump, giving
     # the binary address of each line)
