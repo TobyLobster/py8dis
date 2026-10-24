@@ -1,7 +1,5 @@
 # py8dis JSON output (version 1)
 
-*Status: being implemented. `--json` writes everything described here; what's left is tests of whole files and a section in the README.*
-
 As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: e.g. a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
 
 ```

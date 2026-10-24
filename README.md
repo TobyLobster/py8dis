@@ -4,6 +4,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
+- [JSON output](#json-output)
 - [Getting help](#getting-help)
 - [Credits and thanks](#credits-and-thanks)
 
@@ -96,6 +97,8 @@ This output is suitable for feeding into the beebasm assembler. You can switch t
 | [beebasm](https://github.com/stardot/beebasm)             | 6502 / 65C02   | --beebasm (this is the default) |
 | [xa](https://www.floodgap.com/retrotech/xa/)              | 6502 / 65C02   | --xa                            |
 | [z88dk-z80asm](https://z88dk.org)                         | 8080           | --z88dk-8080                    |
+
+Other command line options: `-o FILE` writes the output to a file instead of printing it, `--upper` or `--lower` choose the case of the output, and `--json FILE` writes the disassembly as JSON as well (see [JSON output](#json-output)).
 
 ### Edit me
 
@@ -472,6 +475,26 @@ load(0x8000, "rom2.bin", "6502")
 ...
 rom2_asm = go(print_output=False)
 ```
+
+## JSON output
+
+As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: for example a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
+
+    python3 mycontrolfile.py --acme --json out.json              # asm printed as usual, JSON to out.json
+    python3 mycontrolfile.py --acme -o out.asm --json out.json   # asm to out.asm, JSON to out.json
+
+When using py8dis as a library, `session.new_session(json_filename="out.json")` does the same.
+
+The JSON holds what py8dis knows once it has finished, with exactly the names used in the asm but without its layout:
+
+- the CPU, the assembler, the files loaded and the moves;
+- the constants, memory regions and subroutines;
+- every label: its names and where the asm defines them, local names, expressions, and the code and data that refer to it;
+- every instruction or piece of data, in address order: its addresses, bytes, labels, comments and text as in the asm. Instructions also have their mnemonic, addressing mode, operand (its value and expression), target, cycles and the CPU state; data has its values and expressions.
+
+Expressions are given as text and as a tree, e.g. `{"op": "+", "left": {"label": 8206, "name": "message"}, "right": {"num": 1, "format": "decimal"}}`.
+
+The format is described in [docs/json-format.md](docs/json-format.md), with a [JSON Schema](https://json-schema.org/) in [docs/py8dis-json.schema.json](docs/py8dis-json.schema.json).
 
 ## Getting help
 

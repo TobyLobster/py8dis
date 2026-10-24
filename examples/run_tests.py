@@ -16,7 +16,10 @@ For each test and assembler:
      identical to orig/<test>.orig. If the assembler isn't installed this step
      is skipped, but the check in step 2 still happens (so e.g. CI can run
      without any assemblers installed).
-  4. With -m, copy the asm to known_good (only once the binary has been checked)
+     For the tests in JSON_KNOWN_GOOD, also check the JSON is identical to
+     known_good/<test>_<assembler>.json.
+  4. With -m, copy the asm to known_good (only once the binary has been
+     checked), and the JSON for the tests in JSON_KNOWN_GOOD
 
 The error tests (ERROR_TESTS below) are control files in python/errors/ that
 py8dis should stop with an error for, e.g. an expr() with the wrong value. Each
@@ -92,6 +95,11 @@ TESTS = [
     ("starship",                 ["acme", "beebasm", "xa"],    "Starship Command"),
 ]
 
+# The tests whose JSON output (see docs/json-format.md) is also compared with
+# known_good/<test>_<assembler>.json. (The JSON of every test is checked, see
+# check_json(), but these show any change to the JSON itself.)
+JSON_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080"]
+
 # Each error test is (name, expected error message). The control file is
 # python/errors/<name>.py (which describes the test), and py8dis must stop with
 # this message (the last line of its error output). Run with beebasm.
@@ -138,6 +146,7 @@ class Paths:
         self.json          = Path("build")      / f"{name}_{assembler}.json"
         self.binary        = Path("build")      / f"{name}_{assembler}.dat"
         self.known_good    = Path("known_good") / f"{name}_{assembler}.asm"
+        self.known_good_json = Path("known_good") / f"{name}_{assembler}.json"
         self.report        = Path("build")      / f"{name}_{assembler}_report.txt"
         self.symbols       = Path("build")      / f"{name}_{assembler}_symbols.txt"
 
@@ -499,6 +508,13 @@ def run_test(name, assembler, options, env):
         if problem:
             result.failure = problem
             return result
+        if name in JSON_KNOWN_GOOD:
+            if not p.known_good_json.exists():
+                result.failure = f"{p.known_good_json} not found"
+                return result
+            if not filecmp.cmp(p.json, p.known_good_json, shallow=False):
+                result.failure = f"{p.json} differs from {p.known_good_json}, " + first_difference(p.json, p.known_good_json)
+                return result
 
     # 3. Assemble and check the binary, if the assembler is installed
     program = ASSEMBLER_PROGRAMS[assembler]
@@ -521,6 +537,8 @@ def run_test(name, assembler, options, env):
     # 4. Make known good
     if options.make_known_good:
         shutil.copy2(p.asm, p.known_good)
+        if name in JSON_KNOWN_GOOD:
+            shutil.copy2(p.json, p.known_good_json)
         result.notes.append("made known good")
     return result
 
