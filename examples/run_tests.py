@@ -4,7 +4,11 @@ Run the py8dis example tests.
 
 For each test and assembler:
   1. Run the control file in python/ to produce build/<test>_<assembler>.asm
-  2. With -c, check that the asm is identical to known_good/<test>_<assembler>.asm
+     and build/<test>_<assembler>.json (with --json, see docs/json-format.md)
+  2. With -c, check that the asm is identical to known_good/<test>_<assembler>.asm.
+     Check the JSON: that it matches the schema (docs/py8dis-json.schema.json,
+     if the jsonschema package is installed), and that its items cover the
+     loaded data exactly
   3. If the assembler is installed, assemble the asm and check the binary is
      identical to orig/<test>.orig. If the assembler isn't installed this step
      is skipped, but the check in step 2 still happens (so e.g. CI can run
@@ -31,6 +35,7 @@ Tests run in parallel. Examples:
 import argparse
 import concurrent.futures
 import filecmp
+import json
 import os
 import shutil
 import subprocess
@@ -118,6 +123,7 @@ OTHER_TEST_SCRIPTS = ["session_tests.py", "render_tests.py"]
 
 EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
+JSON_SCHEMA  = EXAMPLES_DIR.parent / "docs" / "py8dis-json.schema.json"
 
 
 class Paths:
@@ -125,6 +131,7 @@ class Paths:
         self.control_file  = Path("python")     / f"{name}.py"
         self.original      = Path("orig")       / f"{name}.orig"
         self.asm           = Path("build")      / f"{name}_{assembler}.asm"
+        self.json          = Path("build")      / f"{name}_{assembler}.json"
         self.binary        = Path("build")      / f"{name}_{assembler}.dat"
         self.known_good    = Path("known_good") / f"{name}_{assembler}.asm"
         self.report        = Path("build")      / f"{name}_{assembler}_report.txt"
@@ -173,13 +180,88 @@ def assemble_command(assembler, p, make_extras):
     raise ValueError(f"unknown assembler '{assembler}'")
 
 
+_json_validator = None
+
+def json_validator():
+    """A validator for the JSON schema, or None if the jsonschema package
+    isn't installed."""
+    global _json_validator
+    if _json_validator is None:
+        try:
+            import jsonschema
+        except ImportError:
+            _json_validator = False
+        else:
+            _json_validator = jsonschema.Draft202012Validator(json.loads(JSON_SCHEMA.read_text()))
+    return _json_validator or None
+
+def json_sample(doc):
+    """The JSON with its long lists ('items' and 'labels') cut down to a
+    sample, for checking against the schema: up to 10 entries with each set
+    of keys (and type), so that every kind of entry is checked. (Checking
+    the whole of e.g. os12's JSON with jsonschema takes about a second, which
+    for all the tests would double the time they take.)"""
+    def sample(entries):
+        result = []
+        counts = {}
+        for entry in entries:
+            key = (entry.get("type"), tuple(sorted(entry)))
+            counts[key] = counts.get(key, 0) + 1
+            if counts[key] <= 10:
+                result.append(entry)
+        return result
+    return dict(doc, items=sample(doc["items"]), labels=sample(doc["labels"])) if isinstance(doc, dict) and "items" in doc and "labels" in doc else doc
+
+def check_json(path):
+    """Check the JSON output (see docs/json-format.md), returning a message
+    describing the first problem, or None."""
+    try:
+        doc = json.loads(path.read_text())
+    except ValueError as e:
+        return f"{path} isn't valid JSON: {e}"
+
+    validator = json_validator()
+    if validator is not None:
+        error = next(iter(sorted(validator.iter_errors(json_sample(doc)), key=lambda e: list(e.path))), None)
+        if error is not None:
+            return f"{path} doesn't match the schema at {'/'.join(str(x) for x in error.path) or 'the top'}: {error.message}"
+
+    # The items must cover the loaded data exactly, each with the bytes loaded
+    # there (later loads replacing earlier ones, as py8dis does)
+    loaded = {}
+    for load in doc["loads"]:
+        data = Path(load["filename"]).read_bytes()
+        if load["start"] + len(data) != load["end"]:
+            return f"{path}: the load of {load['filename']} at {load['start']:#06x} should end at {load['start'] + len(data):#06x}, not {load['end']:#06x}"
+        for i, b in enumerate(data):
+            loaded[load["start"] + i] = b
+    covered = set()
+    for item in doc["items"]:
+        start = item["binary_addr"]
+        if len(item["bytes"]) != item["length"]:
+            return f"{path}: the item at {start:#06x} has {len(item['bytes'])} bytes, but its length is {item['length']}"
+        for i, b in enumerate(item["bytes"]):
+            addr = start + i
+            if addr in covered:
+                return f"{path}: the item at {start:#06x} overlaps another at {addr:#06x}"
+            if addr not in loaded:
+                return f"{path}: the item at {start:#06x} includes {addr:#06x}, where nothing is loaded"
+            if loaded[addr] != b:
+                return f"{path}: the item at {start:#06x} has {b:#04x} at {addr:#06x}, but {loaded[addr]:#04x} is loaded there"
+            covered.add(addr)
+    missing = sorted(set(loaded) - covered)
+    if missing:
+        return f"{path}: no item covers the loaded data at {missing[0]:#06x}" + (f" (and {len(missing) - 1} more bytes)" if len(missing) > 1 else "")
+    return None
+
+
 def run_test(name, assembler, options, env):
     """Run one test with one assembler, returning a Result."""
     result = Result(name, assembler)
     p = Paths(name, assembler)
 
     # 1. Run py8dis
-    proc = subprocess.run([sys.executable, str(p.control_file), "--" + assembler],
+    proc = subprocess.run([sys.executable, str(p.control_file), "--" + assembler, "--json", str(p.json)],
                           capture_output=True, text=True, env=env)
     result.stderr = proc.stderr.strip()
     if proc.returncode != 0:
@@ -194,6 +276,10 @@ def run_test(name, assembler, options, env):
             return result
         if not filecmp.cmp(p.asm, p.known_good, shallow=False):
             result.failure = f"{p.asm} differs from {p.known_good}, " + first_difference(p.asm, p.known_good)
+            return result
+        problem = check_json(p.json)
+        if problem:
+            result.failure = problem
             return result
 
     # 3. Assemble and check the binary, if the assembler is installed

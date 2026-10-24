@@ -1057,6 +1057,12 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     elif print_output:
         print(result)
 
+    # Write the JSON if wanted (with --json on the command line)
+    json_filename = session.current().json_filename
+    if json_filename:
+        import jsonoutput
+        jsonoutput.write(json_filename)
+
     # Return assembly code as a string
     return result
 

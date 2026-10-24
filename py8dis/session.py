@@ -19,7 +19,7 @@ import config
 import utils
 
 class Session:
-    def __init__(self, *, assembler="beebasm", lower_case=True, asm_filename=None):
+    def __init__(self, *, assembler="beebasm", lower_case=True, asm_filename=None, json_filename=None):
         """Make a new session.
 
         'assembler' is the assembler to produce output for: its name (beebasm,
@@ -28,7 +28,10 @@ class Session:
         'lower_case' is True for lower case output, False for upper case.
 
         'asm_filename' is the file to write the disassembly to, or None to
-        print it."""
+        print it.
+
+        'json_filename' is a file to write the disassembly to as JSON as well
+        (see docs/json-format.md), or None."""
 
         # (These modules are imported here rather than at the top of this
         # file, since they import this module themselves.)
@@ -46,6 +49,10 @@ class Session:
 
         # Where go() writes the disassembly (None means print it)
         self.asm_filename = asm_filename
+
+        # Where go() writes the disassembly as JSON as well (None means it
+        # doesn't), see jsonoutput.py
+        self.json_filename = json_filename
 
         # The filename the assembler saves the assembled binary to, for
         # assemblers that support it (see commands.set_output_filename())
@@ -102,6 +109,7 @@ parser.add_argument("-8", "--z88dk-8080", action="store_true", help="generate z8
 parser.add_argument("-l", "--lower", action="store_true", help="generate lower-case output (default)")
 parser.add_argument("-u", "--upper", action="store_true", help="generate upper-case output")
 parser.add_argument("-o", "--output", help="output asm file")
+parser.add_argument("--json", metavar="FILE", help="also output the disassembly as JSON to FILE (see docs/json-format.md)")
 
 def options_from_command_line():
     """Read the command line, returning the options for a new session."""
@@ -124,7 +132,7 @@ def options_from_command_line():
     else:
         assembler = "beebasm"
 
-    return { "assembler": assembler, "lower_case": not args.upper, "asm_filename": args.output }
+    return { "assembler": assembler, "lower_case": not args.upper, "asm_filename": args.output, "json_filename": args.json }
 
 
 # The current session

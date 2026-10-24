@@ -59,6 +59,12 @@ class Line:
         text = self._text
         return self.render() if text is None else text
 
+    def plain_text(self):
+        """The text without its layout (no indent, hex dump or inline
+        comments), as a list of strings, one for each line. (For the JSON
+        output.)"""
+        return [str(line).strip() for line in self.text_lines()]
+
 
 def label_refs(value):
     """The label references (see disassembly.LabelRef) in a value (an
@@ -260,31 +266,39 @@ class Instruction(Line):
         self.annotations = annotations
         return self
 
-    def text(self):
+    def text(self, plain=False):
         """The text of the instruction (indented, but without its extra
         indent level or any inline comment). (This uses the names of its
-        labels, so it's only used once they can be named, i.e. after tracing.)"""
+        labels, so it's only used once they can be named, i.e. after tracing.)
+
+        If 'plain', there's no indent, and no comment (the character literal,
+        or the instruction shown as AS_DATA)."""
 
         mnemonic = utils.force_case(self.mnemonic)
         suffix = utils.force_case(self.suffix)
         assembler = config.get_assembler()
 
+        indent = "" if plain else utils.make_indent(1)
+
         if self.operand is None:
-            return "%s%s" % (utils.make_indent(1), mnemonic)
+            return "%s%s" % (indent, mnemonic)
 
         if self.form == Instruction.FORCE_ABSOLUTE:
-            return assembler.force_abs_instruction(mnemonic, self.prefix, str(self.operand), suffix)
+            result = assembler.force_abs_instruction(mnemonic, self.prefix, str(self.operand), suffix)
+            return result.strip() if plain else result
 
         if self.form == Instruction.AS_DATA:
             # (The comment includes an acme-style '+2' suffix to help show
             # what's going on.)
             data_byte = str(self.data_byte)
             operand = str(self.operand)
-            return "%s%s%s, <(%s), >(%s) ; %s+2 %s%s%s" % (utils.make_indent(1), assembler.byte_prefix(),
-                    data_byte, operand, operand, mnemonic, self.prefix, self.listing_operand, suffix)
+            result = "%s%s%s, <(%s), >(%s)" % (indent, assembler.byte_prefix(), data_byte, operand, operand)
+            if plain:
+                return result
+            return result + " ; %s+2 %s%s%s" % (mnemonic, self.prefix, self.listing_operand, suffix)
 
-        result = "%s%s %s%s%s" % (utils.make_indent(1), mnemonic, self.prefix, self.operand, suffix)
-        if self.char_literal is not None:
+        result = "%s%s %s%s%s" % (indent, mnemonic, self.prefix, self.operand, suffix)
+        if self.char_literal is not None and not plain:
             result += " %s %s" % (assembler.comment_prefix(), self.char_literal)
         return result
 
@@ -306,6 +320,9 @@ class Instruction(Line):
     def render(self):
         line = utils.make_indent(self.indent_level) + self.text()
         return [mainformatter.add_inline_comment_including_hexdump(self.binary_loc, self.length, self.cycles_description, self.annotations, line)]
+
+    def plain_text(self):
+        return [self.text(plain=True)]
 
 
 class DataBlock(Line):
@@ -370,6 +387,17 @@ class DataBlock(Line):
 
         return utils.format_strings_in_a_table(data, data_width, self.cols, format_line)
 
+    def plain_text(self):
+        # The lines as the asm splits them, but without the padding that
+        # lines up the values
+        data = self.items()
+        assembler = config.get_assembler()
+        data_prefix = assembler.byte_prefix() if self.element_size == 1 else assembler.word_prefix()
+        data_width = config.get_inline_comment_column() - len(utils.make_indent(1) + data_prefix) - 1
+        def format_line(text, start_index, end_index):
+            return data_prefix + ", ".join(str(x) for x in data[start_index:end_index])
+        return utils.format_strings_in_a_table(data, data_width, self.cols, format_line)
+
 
 class StringData(Line):
     """A string of data bytes (e.g. '.asc "Hello", 13'), split over several
@@ -396,7 +424,12 @@ class StringData(Line):
             if assembler.string_chr(c) is None and c != ord('"'):
                 name_labels_in(classification.get_constant8(binary_addr + i))
 
-    def render(self):
+    def render(self, plain=False):
+        def finish(binary_loc, length, text):
+            if plain:
+                return text.strip()
+            return mainformatter.add_inline_comment_including_hexdump(binary_loc, length, "", annotations, text)
+
         expressions = session.current().classifications.expressions
         memory_binary = session.current().memory.binary
         assembler = config.get_assembler()
@@ -411,7 +444,7 @@ class StringData(Line):
 
         if binary_loc.binary_addr in expressions:
             s = classification.get_expression(binary_loc.binary_addr, memory_binary[binary_loc.binary_addr])
-            result.append(mainformatter.add_inline_comment_including_hexdump(binary_loc, self.length, "", annotations, prefix + s))
+            result.append(finish(binary_loc, self.length, prefix + s))
             return result
 
         i = 0
@@ -450,7 +483,7 @@ class StringData(Line):
                 if state == 1:
                     s += '"'
                 temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
-                result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, i - start_line_i, "", annotations, s))
+                result.append(finish(temp_binary_loc, i - start_line_i, s))
                 s = prefix
                 start_line_i = i
                 state = 0
@@ -463,8 +496,11 @@ class StringData(Line):
             if state == 1:
                 s += '"'
             temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
-            result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, self.length - start_line_i, "", annotations, s))
+            result.append(finish(temp_binary_loc, self.length - start_line_i, s))
         return result
+
+    def plain_text(self):
+        return [str(line) for line in self.render(plain=True)]
 
 
 def render_lines(lines):

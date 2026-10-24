@@ -9,8 +9,8 @@
     "format":    { "const": "py8dis" },
     "version":   { "const": 1 },
     "cpu":       { "enum": ["6502", "65c02", "8080"] },
-    "assembler": { "description": "The assembler the asm was written for. Every 'text' field uses its syntax.",
-                   "enum": ["acme", "beebasm", "xa", "z88dk-8080"] },
+    "assembler": { "description": "The assembler the asm was written for (as given by the assembler's get_name()). Every 'text' field uses its syntax.",
+                   "enum": ["acme", "beebasm", "xa", "z88dk"] },
     "loads": {
       "description": "The files loaded with load(), in the order loaded: the filename as given to load(), and the binary addresses the data is loaded at.",
       "type": "array",

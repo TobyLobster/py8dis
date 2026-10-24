@@ -1,6 +1,6 @@
 # py8dis JSON output (version 1)
 
-*Status: the format is agreed; it's being implemented (see section 6 of the architecture notes). Until it's finished, `--json` isn't available.*
+*Status: being implemented. So far `--json` writes the top level (`format`, `version`, `cpu`, `assembler`, `loads` and `moves`) and the items' addresses, `length`, `bytes`, `type`, `labels` and `text`. `constants`, `memory_regions`, `subroutines` and `labels` are empty lists for now, and the items' other fields are left out.*
 
 As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: e.g. a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
 
@@ -29,7 +29,7 @@ The JSON holds everything py8dis knows once it has finished: the names are exact
   "format": "py8dis",
   "version": 1,
   "cpu": "6502",                        // "6502", "65c02" or "8080"
-  "assembler": "beebasm",               // "acme", "beebasm", "xa" or "z88dk-8080"
+  "assembler": "beebasm",               // "acme", "beebasm", "xa" or "z88dk"
   "loads": [ { "filename": "orig/helloworld.orig", "start": 8192, "end": 8220 } ],
   "moves": [ { "id": 1, "binary_addr": 8208, "runtime_addr": 2304, "length": 18 } ],
   "constants": [ { "name": "newline", "value": 13, "text": "&0d",
