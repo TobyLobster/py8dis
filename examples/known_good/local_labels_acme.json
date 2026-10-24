@@ -64,5 +64,8 @@
   {"binary_addr": 8230, "runtime_addr": 8230, "length": 2, "bytes": [169, 5], "labels": ["crtc_substitution_test"], "type": "instruction", "text": ["lda #crtc_vert_total_adjust"], "mnemonic": "lda", "mode": "immediate", "operand": {"value": 5, "expr": {"text": "crtc_vert_total_adjust", "tree": {"name": "crtc_vert_total_adjust"}}}, "cycles": "2", "cpu_state": {"a": 5, "x": null, "y": null, "n": false, "v": null, "d": null, "i": null, "z": false, "c": null}},
   {"binary_addr": 8232, "runtime_addr": 8232, "length": 3, "bytes": [141, 0, 254], "type": "instruction", "text": ["sta crtc_address_register"], "mnemonic": "sta", "mode": "absolute", "operand": {"value": 65024, "expr": {"text": "crtc_address_register", "tree": {"label": 65024, "name": "crtc_address_register"}}}, "cycles": "4", "cpu_state": {"a": 5, "x": null, "y": null, "n": false, "v": null, "d": null, "i": null, "z": false, "c": null}},
   {"binary_addr": 8235, "runtime_addr": 8235, "length": 1, "bytes": [96], "type": "instruction", "text": ["rts"], "mnemonic": "rts", "mode": "implied", "cycles": "6", "cpu_state": {"a": null, "x": null, "y": null, "n": null, "v": null, "d": null, "i": null, "z": null, "c": null}}
+],
+"range_boundaries": [
+  {"binary_addr": 8236, "runtime_addr": 8236, "labels": ["pydis_end"]}
 ]
 }

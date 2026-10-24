@@ -305,12 +305,12 @@ def check_json_labels(path, doc):
                 yield from label_leaves(tree[key])
 
     item_at = {}            # (binary address of each byte) -> item
-    inline_at = {}          # (runtime address, move ID) -> the names defined inline in items there
+    inline_at = {}          # runtime address -> the names defined inline there
     for item in doc["items"]:
         where = f"{path}: the item at {item['binary_addr']:#06x}"
         for i in range(item["length"]):
             item_at[item["binary_addr"] + i] = item
-        inline_at.setdefault((item["runtime_addr"], item.get("move_id", 0)), set()).update(item.get("labels", []))
+        inline_at.setdefault(item["runtime_addr"], set()).update(item.get("labels", []))
 
         # Its labels are names of its address, defined inline
         label = labels.get(item["runtime_addr"], {})
@@ -329,14 +329,30 @@ def check_json_labels(path, doc):
                 if SIMPLE_NAME.fullmatch(leaf["name"]) and leaf["name"] not in names_at(leaf["label"]):
                     return f"{where}: its expression {e['text']!r} uses the name {leaf['name']!r} for {leaf['label']:#06x}, which isn't one of that label's names"
 
+    # The starts and ends of ranges, with their labels
+    previous = None
+    for end in doc["range_boundaries"]:
+        key = (end["binary_addr"], end.get("move_id", 0))
+        where = f"{path}: the range boundary at {end['binary_addr']:#06x}"
+        if previous is not None and key <= previous:
+            return f"{where} is out of order, or listed twice"
+        previous = key
+        label = labels.get(end["runtime_addr"], {})
+        inline = {n["name"] for n in label.get("names", []) if n["definition"] == "inline"}
+        for name in end.get("labels", []):
+            if name not in inline:
+                return f"{where}: its label {name!r} isn't an inline name of the label at {end['runtime_addr']:#06x}"
+        inline_at.setdefault(end["runtime_addr"], set()).update(end.get("labels", []))
+
     for addr, label in labels.items():
         where = f"{path}: the label at {addr:#06x}"
-        # Each inline name is defined at an item there, in the same move (or
-        # at the end of the data, where there's no item)
+        # Each inline name is defined by an item there, or at the start or
+        # end of a range there. (Not necessarily in the name's own move: a
+        # name for a move that's never output at its address is defined in
+        # another one.)
         for n in label.get("names", []):
-            key = (addr, n.get("move_id", 0))
-            if n["definition"] == "inline" and key in inline_at and n["name"] not in inline_at[key]:
-                return f"{where}: its inline name {n['name']!r} isn't defined by any item there"
+            if n["definition"] == "inline" and n["name"] not in inline_at.get(addr, set()):
+                return f"{where}: its inline name {n['name']!r} isn't defined by any item or range boundary there"
         # Each reference is from an item, at the runtime address it runs at
         for ref in label.get("references", []):
             item = item_at.get(ref["binary_addr"])
@@ -356,13 +372,13 @@ def check_json_annotations(path, doc, asm):
         return " ".join(text.replace("//", " ").replace(";", " ").split())
     asm_text = collapse(asm)
 
-    for item in doc["items"]:
+    for item in doc["items"] + doc["range_boundaries"]:
         for c in item.get("comments", []):
             text = c["text"]
             if c.get("kind") == "overlapping":
                 text = text.split(None, 1)[0]       # ("overlapping:", since the instruction is laid out)
             if collapse(text) not in asm_text:
-                return f"{path}: the item at {item['binary_addr']:#06x} has the comment {c['text']!r}, which isn't in the asm"
+                return f"{path}: the comment {c['text']!r} at {item['binary_addr']:#06x} isn't in the asm"
 
     asm_lines = asm.splitlines()
     for c in doc["constants"]:

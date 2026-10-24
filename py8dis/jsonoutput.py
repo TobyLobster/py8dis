@@ -59,6 +59,7 @@ def document():
         "subroutines":    _subroutines(),
         "labels":         _labels(),
         "items":          _items(),
+        "range_boundaries": _range_boundaries(),
     }
 
 def _cpu_name(cpu):
@@ -272,6 +273,41 @@ def _labels():
             references.append(ref)
         if references:
             entry["references"] = references
+        result.append(entry)
+    return result
+
+
+# The starts and ends of ranges
+
+def _range_boundaries():
+    """The places at the start or end of a range of the output (the loaded
+    data, or a move's data) where the asm defines labels, or gives comments,
+    with no item for them: e.g. the label for the source of a move's data,
+    defined just before the moved code."""
+    s = session.current()
+    move_definitions = s.moves.move_definitions
+    items = {(int(loc.binary_addr), loc.move_id) for loc, c, lines in s.disassembly.output_items}
+    inline_names = _inline_names()
+    boundaries = {}
+    for loc, with_comments in s.disassembly.output_range_boundaries:
+        key = (int(loc.binary_addr), loc.move_id)
+        if key not in items:
+            boundaries[key] = boundaries.get(key, False) or with_comments
+    result = []
+    for key in sorted(boundaries):
+        binary_addr, move_id = key
+        loc = movemanager.BinaryLocation(memorymanager.BinaryAddr(binary_addr), move_id)
+        labels = inline_names.get(key)
+        comments = [c for c in _comments(loc, 1) if c["align"] in ("before_label", "after_label")] if boundaries[key] else []
+        if not (labels or comments):
+            continue
+        entry = { "binary_addr": binary_addr, "runtime_addr": int(move_definitions[move_id].convert_binary_to_runtime_addr(loc.binary_addr)) }
+        if move_id != movemanager.BASE_MOVE_ID:
+            entry["move_id"] = move_id
+        if labels:
+            entry["labels"] = labels
+        if comments:
+            entry["comments"] = comments
         result.append(entry)
     return result
 

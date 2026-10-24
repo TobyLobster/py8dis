@@ -778,5 +778,8 @@
   {"binary_addr": 1705, "runtime_addr": 1705, "length": 1, "bytes": [0], "labels": ["temp3"], "type": "bytes", "text": ["db 0"], "values": [0]},
   {"binary_addr": 1706, "runtime_addr": 1706, "length": 1, "bytes": [0], "labels": ["temp4"], "type": "bytes", "text": ["db 0"], "values": [0]},
   {"binary_addr": 1707, "runtime_addr": 1707, "length": 2, "bytes": [0, 0], "labels": ["savstk"], "type": "words", "text": ["dw 0"], "values": [0]}
+],
+"range_boundaries": [
+  {"binary_addr": 1709, "runtime_addr": 1709, "labels": ["pydis_end"]}
 ]
 }

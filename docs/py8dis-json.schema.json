@@ -4,7 +4,7 @@
   "title": "py8dis JSON output, version 1",
   "description": "The finished disassembly as data, written by py8dis with --json FILE (with or without -o for the asm). See docs/json-format.md. Optional keys are left out when empty. A reader should ignore keys it doesn't know: they may be added without changing the version.",
   "type": "object",
-  "required": ["format", "version", "cpu", "assembler", "loads", "moves", "constants", "memory_regions", "subroutines", "labels", "items"],
+  "required": ["format", "version", "cpu", "assembler", "loads", "moves", "constants", "memory_regions", "subroutines", "labels", "items", "range_boundaries"],
   "properties": {
     "format":    { "const": "py8dis" },
     "version":   { "const": 1 },
@@ -83,6 +83,21 @@
       "description": "One for each instruction or piece of data, by binary address. Together they cover the loaded data exactly.",
       "type": "array",
       "items": { "$ref": "#/$defs/item" }
+    },
+    "range_boundaries": {
+      "description": "The places at the start or end of a range of the output (the loaded data, or a move's data) where the asm defines labels or gives comments, with no item for them: e.g. the label for the source of a move's data, which the asm defines just before the moved code. By binary address, then move.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["binary_addr", "runtime_addr"],
+        "properties": {
+          "binary_addr":  { "$ref": "#/$defs/label_addr" },
+          "runtime_addr": { "$ref": "#/$defs/label_addr" },
+          "move_id":      { "$ref": "#/$defs/move_id" },
+          "labels":       { "description": "The names the asm defines here, in order.", "type": "array", "items": { "type": "string" } },
+          "comments":     { "description": "The comments here, in output order.", "type": "array", "items": { "$ref": "#/$defs/comment" } }
+        }
+      }
     }
   },
 

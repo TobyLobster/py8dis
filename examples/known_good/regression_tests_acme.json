@@ -71,5 +71,8 @@
   {"binary_addr": 8327, "runtime_addr": 8327, "length": 1, "bytes": [255], "type": "bytes", "text": ["!byte >(l0000 - 1)"], "values": [255], "exprs": [{"text": ">(l0000 - 1)", "tree": {"op": ">", "arg": {"op": "-", "left": {"label": 0, "name": "l0000"}, "right": {"num": 1, "format": "decimal"}}}}]},
   {"binary_addr": 8328, "runtime_addr": 8328, "length": 1, "bytes": [255], "type": "bytes", "text": ["!byte <(l0000 - 1)"], "values": [255], "exprs": [{"text": "<(l0000 - 1)", "tree": {"op": "<", "arg": {"op": "-", "left": {"label": 0, "name": "l0000"}, "right": {"num": 1, "format": "decimal"}}}}]},
   {"binary_addr": 8329, "runtime_addr": 8329, "length": 3, "bytes": [69, 78, 68], "type": "string", "text": ["!text \"END\""]}
+],
+"range_boundaries": [
+  {"binary_addr": 8332, "runtime_addr": 8332, "labels": ["pydis_end"]}
 ]
 }
