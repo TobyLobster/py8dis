@@ -66,6 +66,10 @@ class DisassemblyState:
         # objects for the classification itself), in output order
         self.output_items = []
 
+        # The heading each label's "Memory locations" definitions are under,
+        # by runtime address (if there are headings), for the JSON output
+        self.memory_location_headings = {}
+
         # Named regions of memory (see add_memory_region()), as (start, end,
         # name) with 'end' exclusive, used to group the "Memory locations"
         # list at the top of the output
@@ -1043,6 +1047,7 @@ def memory_location_definitions(indent_len):
     use_headings = any(region is not None for region, _ in groups)
 
     lines = []
+    headings = session.current().disassembly.memory_location_headings
     for region, definitions in groups:
         if use_headings:
             if region is None:
@@ -1052,6 +1057,8 @@ def memory_location_definitions(indent_len):
                 heading = "{0} ({1}-{2})".format(name, formatter.hex4_for_comment(start), formatter.hex4_for_comment(end - 1))
             lines.append(output.Blank().resolve())
             lines.append(output.CommentLine(heading).resolve())
+            for label, _ in definitions:
+                headings[int(label.runtime_addr)] = "Other" if region is None else region[2]
 
         # Align the values (rounded up to the next indent level)
         align = max(len(name) for _, names in definitions for name in names)

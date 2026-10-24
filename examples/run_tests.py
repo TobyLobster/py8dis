@@ -9,7 +9,8 @@ For each test and assembler:
      Check the JSON: that it matches the schema (docs/py8dis-json.schema.json,
      if the jsonschema package is installed), that its items cover the
      loaded data exactly, that each expression's tree gives its value (where
-     it can be worked out) and that each item's text matches the asm
+     it can be worked out), that each item's text matches the asm, and that
+     the labels agree with the items
   3. If the assembler is installed, assemble the asm and check the binary is
      identical to orig/<test>.orig. If the assembler isn't installed this step
      is skipped, but the check in step 2 still happens (so e.g. CI can run
@@ -267,6 +268,74 @@ def asm_lines_by_address(asm_path):
             result.setdefault(int(m.group(1), 16), []).append(" ".join(line[:m.start()].split()))
     return result or None
 
+SIMPLE_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+def check_json_labels(path, doc):
+    """Check the JSON's labels agree with its items, returning a message
+    describing the first problem, or None."""
+    labels = {}
+    for label in doc["labels"]:
+        addr = label["runtime_addr"]
+        if labels and addr <= max(labels):
+            return f"{path}: the label at {addr:#06x} is out of order, or listed twice"
+        labels[addr] = label
+
+    def names_at(addr):
+        """All the names the asm can use for an address."""
+        label = labels.get(addr, {})
+        return ({n["name"] for n in label.get("names", [])} |
+                {n.get("output_name", n["name"]) for n in label.get("local_names", [])} |
+                {e["text"] for e in label.get("expressions", [])})
+
+    def label_leaves(tree):
+        if "label" in tree:
+            yield tree
+        for key in ("arg", "left", "right"):
+            if key in tree:
+                yield from label_leaves(tree[key])
+
+    item_at = {}            # (binary address of each byte) -> item
+    inline_at = {}          # (runtime address, move ID) -> the names defined inline in items there
+    for item in doc["items"]:
+        where = f"{path}: the item at {item['binary_addr']:#06x}"
+        for i in range(item["length"]):
+            item_at[item["binary_addr"] + i] = item
+        inline_at.setdefault((item["runtime_addr"], item.get("move_id", 0)), set()).update(item.get("labels", []))
+
+        # Its labels are names of its address, defined inline
+        label = labels.get(item["runtime_addr"], {})
+        inline = {n["name"] for n in label.get("names", []) if n["definition"] == "inline"}
+        for name in item.get("labels", []):
+            if name not in inline:
+                return f"{where}: its label {name!r} isn't an inline name of the label at {item['runtime_addr']:#06x}"
+
+        # The labels used by its expressions have those names
+        exprs = [item["operand"]["expr"]] if "operand" in item else []
+        exprs += [e for e in item.get("exprs", []) if e is not None]
+        for e in exprs:
+            for leaf in label_leaves(e["tree"]):
+                # (A name can also be an expression relative to another
+                # label, e.g. brkv+1)
+                if SIMPLE_NAME.fullmatch(leaf["name"]) and leaf["name"] not in names_at(leaf["label"]):
+                    return f"{where}: its expression {e['text']!r} uses the name {leaf['name']!r} for {leaf['label']:#06x}, which isn't one of that label's names"
+
+    for addr, label in labels.items():
+        where = f"{path}: the label at {addr:#06x}"
+        # Each inline name is defined at an item there, in the same move (or
+        # at the end of the data, where there's no item)
+        for n in label.get("names", []):
+            key = (addr, n.get("move_id", 0))
+            if n["definition"] == "inline" and key in inline_at and n["name"] not in inline_at[key]:
+                return f"{where}: its inline name {n['name']!r} isn't defined by any item there"
+        # Each reference is from an item, at the runtime address it runs at
+        for ref in label.get("references", []):
+            item = item_at.get(ref["binary_addr"])
+            if item is None:
+                return f"{where}: its reference from {ref['binary_addr']:#06x} isn't in any item"
+            if ref["runtime_addr"] != item["runtime_addr"] + (ref["binary_addr"] - item["binary_addr"]):
+                return f"{where}: its reference from {ref['binary_addr']:#06x} gives the runtime address {ref['runtime_addr']:#06x}, but that item runs at {item['runtime_addr']:#06x}"
+    return None
+
 def check_json(path, asm_path=None):
     """Check the JSON output (see docs/json-format.md), returning a message
     describing the first problem, or None."""
@@ -323,6 +392,11 @@ def check_json(path, asm_path=None):
                 return f"{where}: the expression {e['text']!r} has the value {v}, not {value}"
             if "operand" in item and e is item["operand"]["expr"] and e["text"] not in item["text"][0]:
                 return f"{where}: the operand {e['text']!r} isn't in its text {item['text'][0]!r}"
+
+    # The labels agree with the items
+    problem = check_json_labels(path, doc)
+    if problem:
+        return problem
 
     # Each item's text matches the asm (where the asm has a hex dump, giving
     # the binary address of each line)

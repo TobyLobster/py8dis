@@ -88,6 +88,7 @@
 
   "$defs": {
     "addr":    { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "label_addr": { "description": "A label's runtime address: this can be 65536, just past the top of memory (e.g. pydis_end, for data that ends there).", "type": "integer", "minimum": 0, "maximum": 65536 },
     "move_id": { "description": "The move (see 'moves'); left out when 0, i.e. not moved.", "type": "integer", "minimum": 1 },
     "range": {
       "description": "Addresses from 'start' up to, but not including, 'end'.",
@@ -117,7 +118,7 @@
       "type": "object",
       "required": ["runtime_addr"],
       "properties": {
-        "runtime_addr": { "$ref": "#/$defs/addr" },
+        "runtime_addr": { "$ref": "#/$defs/label_addr" },
         "names": {
           "description": "The label's names, in the order the asm defines them.",
           "type": "array",
@@ -132,22 +133,21 @@
                 "description": "Where the asm defines it: 'inline' at its address, 'relative' as an offset from the label at the start of the item it's inside (e.g. l2001 = c2000+1), 'memory_locations' as 'name = value' at the top, or 'none' if the asm doesn't need it.",
                 "enum": ["inline", "relative", "memory_locations", "none"]
               },
-              "memory_region": { "description": "For a 'memory_locations' definition, the heading it's under.", "type": "string" }
+              "memory_region": { "description": "For a 'memory_locations' definition, the heading it's under (the memory region's name, or 'Other'), if there are headings.", "type": "string" }
             }
           }
         },
         "local_names": {
-          "description": "Names given with local_label(), each used only in its range of the code.",
+          "description": "Names given with local_label(), each used only by the code in its range of binary addresses (from 'start' up to, but not including, 'end'). The asm defines them under 'Memory locations'.",
           "type": "array",
           "items": {
-            "type": "object",
-            "required": ["name", "start", "end"],
+            "allOf": [ { "$ref": "#/$defs/range" } ],
+            "required": ["name"],
             "properties": {
-              "name":        { "type": "string" },
-              "output_name": { "description": "The name the asm uses, if different (e.g. temp_2 when temp is used for another address).", "type": "string" },
-              "move_id":     { "$ref": "#/$defs/move_id" },
-              "start":       { "$ref": "#/$defs/addr" },
-              "end":         { "$ref": "#/$defs/addr" }
+              "name":          { "type": "string" },
+              "output_name":   { "description": "The name the asm uses, if different (e.g. temp_2 when temp is used for another address).", "type": "string" },
+              "move_id":       { "$ref": "#/$defs/move_id" },
+              "memory_region": { "description": "The 'Memory locations' heading it's under, if there are headings.", "type": "string" }
             }
           }
         },
@@ -161,7 +161,7 @@
           }
         },
         "references": {
-          "description": "The instructions and data that refer to this address, by binary address.",
+          "description": "The instructions and data that refer to this address (each the binary address of the instruction, or of the byte or word, with the runtime address it runs at), by binary address.",
           "type": "array",
           "items": {
             "type": "object",
@@ -190,9 +190,9 @@
         { "description": "A name, e.g. a constant.",
           "type": "object", "required": ["name"], "additionalProperties": false,
           "properties": { "name": { "type": "string" } } },
-        { "description": "A label: its runtime address, and the name used here.",
+        { "description": "A label: its runtime address, and the name used here. The name is usually one of the label's names, but can be an expression relative to another label (e.g. brkv+1), as py8dis sometimes names an address.",
           "type": "object", "required": ["label", "name"], "additionalProperties": false,
-          "properties": { "label": { "$ref": "#/$defs/addr" }, "name": { "type": "string" } } },
+          "properties": { "label": { "$ref": "#/$defs/label_addr" }, "name": { "type": "string" } } },
         { "description": "An expression written as a string in the control file, which py8dis doesn't parse.",
           "type": "object", "required": ["raw"], "additionalProperties": false,
           "properties": { "raw": { "type": "string" } } },
