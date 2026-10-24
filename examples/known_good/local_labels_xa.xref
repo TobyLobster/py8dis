@@ -1,0 +1,34 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0070  char_to_print (Memory locations), bit_value (local to $2017-$2021)
+    $2002     pydis_start+2                sta char_to_print
+    $2009     print_loop+3                 adc char_to_print
+    $200e     print_loop+8                 inc char_to_print
+    $2010     print_loop+10                inc char_to_print
+    $2017     print_loop+17                sta bit_value
+    $2019     bit_counting_loop            lsr bit_value
+    $201e     skip_add_to_bit_count        lda bit_value
+
+$2000  pydis_start (inline), test_for_local_labels (inline)
+    (not referenced)
+
+$2006  print_loop (inline)
+    $2013     print_loop+13                bne print_loop
+
+$2019  bit_counting_loop (inline)
+    $2020     skip_add_to_bit_count+2      bne bit_counting_loop
+
+$201e  skip_add_to_bit_count (inline)
+    $201b     bit_counting_loop+2          bcc skip_add_to_bit_count
+
+$2026  crtc_substitution_test (inline)
+    $2022     skip_add_to_bit_count+4      jsr crtc_substitution_test
+
+$202c  pydis_end (inline)
+    (not referenced)
+
+$fe00  crtc_address_register (Memory locations)
+    $2028     crtc_substitution_test+2     sta crtc_address_register
+
+$ffee  oswrch (Memory locations)
+    $200b     print_loop+5                 jsr oswrch

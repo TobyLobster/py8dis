@@ -1,0 +1,39 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+&0000  l0000 (Memory locations: Other)
+    (not referenced)
+
+&0070  l0070 (Memory locations: Workspace), value (local to &2016-&2017), value (local to &201e-&201f)
+    &2011     pydis_start+17               and (l0070,x)
+    &2016     pydis_start+22               lda value
+    &201e     pydis_start+30               lda value
+    &202f     store_value                  sta l0070
+
+&0071  temp (local to &2007-&2008)
+    &2007     pydis_start+7                stx temp
+
+&0072  temp_2 (local to &2009-&200a)
+    &2009     pydis_start+9                sty temp_2
+
+&2000  pydis_start (inline), start (inline)
+    (not referenced)
+
+&202c  c202c (inline)
+    &201c     pydis_start+28               beq c202c
+    &2024     pydis_start+36               bmi c202c
+
+&202f  store_value (inline)
+    &2004     pydis_start+4                jsr store_value
+    &2080     part2                        jsr store_value
+
+&2036  quiet_routine (inline)
+    &200b     pydis_start+11               jsr quiet_routine
+
+&2080  part2 (inline)
+    &202c     c202c                        jmp part2
+
+&2085  l2085 (inline)
+    (not referenced)
+
+&208c  pydis_end (inline)
+    (not referenced)

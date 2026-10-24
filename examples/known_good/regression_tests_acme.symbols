@@ -1,0 +1,13 @@
+al 000000 .l0000
+al 000070 .l0070
+al 000070 .value
+al 000071 .temp
+al 000072 .temp_2
+al 002000 .pydis_start
+al 002000 .start
+al 00202C .c202c
+al 00202F .store_value
+al 002036 .quiet_routine
+al 002080 .part2
+al 002085 .l2085
+al 00208C .pydis_end

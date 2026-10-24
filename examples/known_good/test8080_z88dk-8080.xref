@@ -1,0 +1,338 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0000  wboot (Memory locations)
+    $0698     cpuer+15                     jmp wboot
+    $06a1     cpuok+6                      jmp wboot
+
+$0005  bdos (Memory locations)
+    $0149     msg+4                        call bdos
+    $0150     pchar+2                      call bdos
+
+$0100  pydis_start (inline)
+    (not referenced)
+
+$0145  msg (inline)
+    $068c     cpuer+3                      call msg
+    $069e     cpuok+3                      call msg
+
+$014e  pchar (inline)
+    $0159     byte0+5                      call pchar
+    $0161     byte0+13                     jmp pchar
+
+$0154  byte0 (inline)
+    $0691     cpuer+8                      call byte0
+    $0695     cpuer+12                     call byte0
+
+$0164  byto1 (inline)
+    $0155     byte0+1                      call byto1
+
+$0168  byto2 (inline)
+    $015d     byte0+9                      call byto2
+
+$0171  byto3 (inline)
+    $016c     byto2+4                      jm byto3
+
+$0174  cpu_ok_message (inline)
+    (not referenced)
+
+$018b  cpu_error_message (inline)
+    (not referenced)
+
+$01ab  cpu (inline)
+    $0100     pydis_start                  jmp cpu
+
+$01b6  j010 (inline)
+    $01b0     cpu+5                        jz j010
+
+$01bc  j020 (inline)
+    $01b6     j010                         jnc j020
+
+$01c2  j030 (inline)
+    $01bc     j020                         jpe j030
+
+$01c8  j040 (inline)
+    $01c2     j030                         jp p, j040
+
+$01d7  j050 (inline)
+    $01c8     j040                         jnz j050
+    $01cb     j040+3                       jc j050
+    $01ce     j040+6                       jpo j050
+    $01d1     j040+9                       jm j050
+
+$01da  j060 (inline)
+    $01d4     j040+12                      jmp j060
+
+$01e2  j070 (inline)
+    $01dc     j060+2                       jnz j070
+
+$01eb  j080 (inline)
+    $01e2     j070                         jc j080
+    $01e5     j070+3                       jpo j080
+
+$01ee  j090 (inline)
+    $01e8     j070+6                       jp p, j090
+
+$01f6  j100 (inline)
+    $01f0     j090+2                       jpo j100
+
+$01ff  j110 (inline)
+    $01f6     j100                         jm j110
+    $01f9     j100+3                       jz j110
+
+$0202  j120 (inline)
+    $01fc     j100+6                       jnc j120
+
+$020a  j130 (inline)
+    $0204     j120+2                       jm j130
+
+$0213  j140 (inline)
+    $020a     j130                         jz j140
+    $020d     j130+3                       jc j140
+
+$0216  j150 (inline)
+    $0210     j130+6                       jpo j150
+
+$021e  j160 (inline)
+    $0218     j150+2                       jc j160
+
+$0227  j170 (inline)
+    $021e     j160                         jz j170
+    $0221     j160+3                       jpo j170
+
+$022a  aimm (inline)
+    $0224     j160+6                       jm aimm
+
+$0242  cpie (inline)
+    $022c     aimm+2                       jc cpie
+    $022f     aimm+5                       jz cpie
+    $0234     aimm+10                      jc cpie
+    $0237     aimm+13                      jnz cpie
+    $023c     aimm+18                      jz cpie
+
+$0245  acii (inline)
+    $023f     aimm+21                      jc acii
+
+$0251  suii (inline)
+    $024b     acii+6                       jz suii
+
+$025d  sbii (inline)
+    $0257     suii+6                       jz sbii
+
+$0269  anii (inline)
+    $0263     sbii+6                       jz anii
+
+$0273  orii (inline)
+    $026d     anii+4                       jz orii
+
+$027d  xrii (inline)
+    $0277     orii+4                       jz xrii
+
+$0287  c010 (inline)
+    $0281     xrii+4                       jz c010
+
+$029d  c020 (inline)
+    $0297     c010+16                      jz c020
+
+$02b3  c030 (inline)
+    $02ad     c020+16                      jz c030
+
+$02c0  cpoi (inline)
+    $02b5     c030+2                       cpo cpoi
+
+$02cc  cpei (inline)
+    $02c3     cpoi+3                       cpe cpei
+
+$02d8  cmi (inline)
+    $02cf     cpei+3                       cm cmi
+
+$02e4  tcpi (inline)
+    $02db     cmi+3                        call p, tcpi
+
+$02f0  cnci (inline)
+    $02e7     tcpi+3                       cnc cnci
+
+$02fc  cci (inline)
+    $02f3     cnci+3                       cc cci
+
+$0308  cnzi (inline)
+    $02ff     cci+3                        cnz cnzi
+
+$0314  czi (inline)
+    $030b     cnzi+3                       cz czi
+
+$031d  movi (inline)
+    $02ba     c030+7                       jz movi
+
+$0689  cpuer (inline)
+    $01b3     cpu+8                        call cpuer
+    $01b9     j010+3                       call cpuer
+    $01bf     j020+3                       call cpuer
+    $01c5     j030+3                       call cpuer
+    $01d7     j050                         call cpuer
+    $01df     j060+5                       call cpuer
+    $01eb     j080                         call cpuer
+    $01f3     j090+5                       call cpuer
+    $01ff     j110                         call cpuer
+    $0207     j120+5                       call cpuer
+    $0213     j140                         call cpuer
+    $021b     j150+5                       call cpuer
+    $0227     j170                         call cpuer
+    $0242     cpie                         call cpuer
+    $024e     acii+9                       call cpuer
+    $025a     suii+9                       call cpuer
+    $0266     sbii+9                       call cpuer
+    $0270     anii+7                       call cpuer
+    $027a     orii+7                       call cpuer
+    $0284     xrii+7                       call cpuer
+    $0289     c010+2                       cc cpuer
+    $028c     c010+5                       cpo cpuer
+    $028f     c010+8                       cm cpuer
+    $0292     c010+11                      cnz cpuer
+    $029a     c010+19                      call cpuer
+    $029f     c020+2                       cnc cpuer
+    $02a2     c020+5                       cpe cpuer
+    $02a5     c020+8                       call p, cpuer
+    $02a8     c020+11                      cz cpuer
+    $02b0     c020+19                      call cpuer
+    $02bd     c030+10                      call cpuer
+    $02c9     cpoi+9                       call cpuer
+    $02d5     cpei+9                       call cpuer
+    $02e1     cmi+9                        call cpuer
+    $02ed     tcpi+9                       call cpuer
+    $02f9     cnci+9                       call cpuer
+    $0305     cci+9                        call cpuer
+    $0311     cnzi+9                       call cpuer
+    $031a     czi+6                        call cpuer
+    $0359     movi+60                      cnz cpuer
+    $0372     movi+85                      cnz cpuer
+    $037d     movi+96                      cnz cpuer
+    $0381     movi+100                     cnz cpuer
+    $03aa     movi+141                     cnz cpuer
+    $03c1     movi+164                     cnz cpuer
+    $03ca     movi+173                     cnz cpuer
+    $03e4     movi+199                     cnz cpuer
+    $03fd     movi+224                     cnz cpuer
+    $040e     movi+241                     cnz cpuer
+    $0412     movi+245                     cnz cpuer
+    $0428     movi+267                     cnz cpuer
+    $0432     movi+277                     cnz cpuer
+    $043c     movi+287                     cnz cpuer
+    $0448     movi+299                     cnz cpuer
+    $0454     movi+311                     cnz cpuer
+    $045f     movi+322                     cnz cpuer
+    $0465     movi+328                     cnz cpuer
+    $046c     movi+335                     cnz cpuer
+    $0475     movi+344                     cnz cpuer
+    $047e     movi+353                     cnz cpuer
+    $0487     movi+362                     cnz cpuer
+    $048b     movi+366                     cnz cpuer
+    $0493     movi+374                     cnz cpuer
+    $0499     movi+380                     cnz cpuer
+    $04a3     movi+390                     cnz cpuer
+    $04b5     movi+408                     cnz cpuer
+    $04b9     movi+412                     cnz cpuer
+    $04bd     movi+416                     cnz cpuer
+    $04c3     movi+422                     cnz cpuer
+    $04c7     movi+426                     cnz cpuer
+    $04cb     movi+430                     cnz cpuer
+    $04d4     movi+439                     cnz cpuer
+    $04d8     movi+443                     cnz cpuer
+    $04dc     movi+447                     cnz cpuer
+    $04e2     movi+453                     cnz cpuer
+    $04e6     movi+457                     cnz cpuer
+    $04ea     movi+461                     cnz cpuer
+    $04f6     movi+473                     cnz cpuer
+    $0507     movi+490                     cnz cpuer
+    $0512     movi+501                     cnz cpuer
+    $0520     movi+515                     cnz cpuer
+    $052a     movi+525                     cnz cpuer
+    $053d     movi+544                     cnz cpuer
+    $0543     movi+550                     cnz cpuer
+    $0554     movi+567                     cnz cpuer
+    $055e     movi+577                     cnz cpuer
+    $0562     movi+581                     cnz cpuer
+    $056e     movi+593                     cnc cpuer
+    $0572     movi+597                     cnz cpuer
+    $0578     movi+603                     cnz cpuer
+    $0585     movi+616                     cnz cpuer
+    $0589     movi+620                     cnz cpuer
+    $058d     movi+624                     cnc cpuer
+    $0591     movi+628                     cc cpuer
+    $0599     movi+636                     cnz cpuer
+    $05a0     movi+643                     cnz cpuer
+    $05a9     movi+652                     cnz cpuer
+    $05b0     movi+659                     cnc cpuer
+    $05b5     movi+664                     cnz cpuer
+    $05bc     movi+671                     cnc cpuer
+    $05bf     movi+674                     cnz cpuer
+    $05c6     movi+681                     cc cpuer
+    $05ca     movi+685                     cnc cpuer
+    $05cf     movi+690                     cnz cpuer
+    $05d3     movi+694                     cnc cpuer
+    $05d9     movi+700                     cnz cpuer
+    $05de     movi+705                     cnc cpuer
+    $05e3     movi+710                     cnz cpuer
+    $05e8     movi+715                     cc cpuer
+    $05ed     movi+720                     cnz cpuer
+    $060f     movi+754                     cc cpuer
+    $0612     movi+757                     cnz cpuer
+    $0615     movi+760                     cpo cpuer
+    $0618     movi+763                     cm cpuer
+    $061e     movi+769                     cnz cpuer
+    $0624     movi+775                     cnz cpuer
+    $062a     movi+781                     cnz cpuer
+    $062e     movi+785                     cnz cpuer
+    $0634     movi+791                     cnz cpuer
+    $0638     movi+795                     cnz cpuer
+    $0654     movi+823                     cnz cpuer
+    $0659     movi+828                     cnz cpuer
+    $066b     movi+846                     cnz cpuer
+    $0673     movi+854                     cnz cpuer
+    $0679     movi+860                     cnz cpuer
+    $067e     movi+865                     cnz cpuer
+
+$069b  cpuok (inline)
+    (not referenced)
+
+$06a4  tempp (inline)
+    $04f9     movi+476                     lhld tempp
+    $04ff     movi+482                     lda tempp
+    $0532     movi+533                     lhld tempp
+
+$06a5  tempp+1 (expression)
+    $050a     movi+493                     lda tempp+1
+
+$06a6  temp0 (inline)
+    $04ed     movi+464                     sta temp0
+    $04f1     movi+468                     lda temp0
+    $04fc     movi+479                     shld temp0
+    $0503     movi+486                     lda temp0
+    $0517     movi+506                     sta temp0
+    $0525     movi+520                     lda temp0
+    $052f     movi+530                     sta temp0
+    $0549     movi+556                     lda temp0
+    $054f     movi+562                     lda temp0
+
+$06a7  temp1 (inline)
+    $050e     movi+497                     lda temp1
+
+$06a8  temp2 (inline)
+    $064b     movi+814                     sta temp2
+    $066e     movi+849                     lda temp2
+
+$06a9  temp3 (inline)
+    $064f     movi+818                     sta temp3
+    $0666     movi+841                     lda temp3
+
+$06aa  temp4 (inline)
+    (not referenced)
+
+$06ab  savstk (inline)
+    $063f     movi+802                     shld savstk
+    $0681     movi+868                     lhld savstk
+
+$06ad  pydis_end (inline)
+    (not referenced)
+
+$07ad  stack (Memory locations)
+    (not referenced)

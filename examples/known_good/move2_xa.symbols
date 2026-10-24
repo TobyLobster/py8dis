@@ -1,0 +1,14 @@
+comadd 900,low_a
+comadd 901,low_b
+comadd 903,c0903
+comadd 905,loop_c0905
+comadd 909,c0909
+comadd 90a,l090a
+comadd 90c,c090c
+comadd 90d,l090d
+comadd 90d,low_b_baz
+comadd 2000,pydis_start
+comadd 2022,sub_c2022
+comadd 2039,sub_c2039
+comadd 2040,pydis_end
+comadd ffee,lffee

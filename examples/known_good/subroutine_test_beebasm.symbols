@@ -1,0 +1,1 @@
+[{'test_byte':112L,'pydis_start':8192L,'start':8192L,'print_message':8208L,'print_loop':8210L,'welcome_message':8222L,'print_decimal_number':8233L,'loop_next_decimal_digit':8235L,'loop_finding_digit':8237L,'found_digit':8248L,'decimal_digits':8258L,'print_hex_number':8261L,'print_hex_digit':8272L,'pydis_end':8281L,'oswrch':65518L}]

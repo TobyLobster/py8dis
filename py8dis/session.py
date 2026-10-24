@@ -19,7 +19,8 @@ import config
 import utils
 
 class Session:
-    def __init__(self, *, assembler="beebasm", lower_case=True, asm_filename=None, json_filename=None):
+    def __init__(self, *, assembler="beebasm", lower_case=True, asm_filename=None, json_filename=None,
+                 symbols_filename=None, symbols_format="plain", xref_filename=None):
         """Make a new session.
 
         'assembler' is the assembler to produce output for: its name (beebasm,
@@ -31,7 +32,12 @@ class Session:
         print it.
 
         'json_filename' is a file to write the disassembly to as JSON as well
-        (see docs/json-format.md), or None."""
+        (see docs/json-format.md), or None.
+
+        'symbols_filename' is a file to write the labels and their addresses
+        to as well (a symbol file, see symbols.py), in 'symbols_format':
+        'plain', 'vice', 'beebasm' or 'mame'. 'xref_filename' is a file to
+        write a cross-reference listing to as well. None for neither."""
 
         # (These modules are imported here rather than at the top of this
         # file, since they import this module themselves.)
@@ -53,6 +59,15 @@ class Session:
         # Where go() writes the disassembly as JSON as well (None means it
         # doesn't), see jsonoutput.py
         self.json_filename = json_filename
+
+        # Where go() writes a symbol file and a cross-reference listing as
+        # well (None means it doesn't), see symbols.py
+        import symbols
+        if symbols_format not in symbols.FORMATS:
+            utils.die("Unknown symbol file format '{0}' (expected {1})".format(symbols_format, ", ".join(symbols.FORMATS)))
+        self.symbols_filename = symbols_filename
+        self.symbols_format = symbols_format
+        self.xref_filename = xref_filename
 
         # The filename the assembler saves the assembled binary to, for
         # assemblers that support it (see commands.set_output_filename())
@@ -110,6 +125,9 @@ parser.add_argument("-l", "--lower", action="store_true", help="generate lower-c
 parser.add_argument("-u", "--upper", action="store_true", help="generate upper-case output")
 parser.add_argument("-o", "--output", help="output asm file")
 parser.add_argument("--json", metavar="FILE", help="also output the disassembly as JSON to FILE (see docs/json-format.md)")
+parser.add_argument("--symbols", metavar="FILE", help="also output a symbol file (each label and its address) to FILE")
+parser.add_argument("--symbols-format", default="plain", choices=["plain", "vice", "beebasm", "mame"], help="the symbol file's format (default: plain)")
+parser.add_argument("--xref", metavar="FILE", help="also output a cross-reference listing (each label and what refers to it) to FILE")
 
 def options_from_command_line():
     """Read the command line, returning the options for a new session."""
@@ -132,7 +150,8 @@ def options_from_command_line():
     else:
         assembler = "beebasm"
 
-    return { "assembler": assembler, "lower_case": not args.upper, "asm_filename": args.output, "json_filename": args.json }
+    return { "assembler": assembler, "lower_case": not args.upper, "asm_filename": args.output, "json_filename": args.json,
+             "symbols_filename": args.symbols, "symbols_format": args.symbols_format, "xref_filename": args.xref }
 
 
 # The current session

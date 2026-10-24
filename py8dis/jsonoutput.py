@@ -28,10 +28,11 @@ import utils
 FORMAT  = "py8dis"
 VERSION = 1
 
-def write(filename):
-    """Write the JSON for the current session's disassembly to a file."""
+def write(filename, doc=None):
+    """Write the JSON for the current session's disassembly to a file (or
+    the given document, from document())."""
     with open(filename, "w") as f:
-        f.write(dumps(document()))
+        f.write(dumps(document() if doc is None else doc))
 
 def dumps(doc):
     """The JSON text for a document: each top level key on its own line, and

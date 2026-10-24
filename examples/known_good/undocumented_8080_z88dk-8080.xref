@@ -1,0 +1,15 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0100  pydis_start (inline)
+    (not referenced)
+
+$0115  subroutine (inline)
+    $0109     pydis_start+9                db $dd, subroutine & $ff, subroutine >> 8
+    $010c     pydis_start+12               db $ed, subroutine & $ff, subroutine >> 8
+    $010f     pydis_start+15               db $fd, subroutine & $ff, subroutine >> 8
+
+$0117  finish (inline)
+    $0112     pydis_start+18               db $cb, finish & $ff, finish >> 8
+
+$0118  pydis_end (inline)
+    (not referenced)

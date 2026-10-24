@@ -5,6 +5,7 @@
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
 - [JSON output](#json-output)
+- [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
 - [Credits and thanks](#credits-and-thanks)
 
@@ -98,7 +99,7 @@ This output is suitable for feeding into the beebasm assembler. You can switch t
 | [xa](https://www.floodgap.com/retrotech/xa/)              | 6502 / 65C02   | --xa                            |
 | [z88dk-z80asm](https://z88dk.org)                         | 8080           | --z88dk-8080                    |
 
-Other command line options: `-o FILE` writes the output to a file instead of printing it, `--upper` or `--lower` choose the case of the output, and `--json FILE` writes the disassembly as JSON as well (see [JSON output](#json-output)).
+Other command line options: `-o FILE` writes the output to a file instead of printing it, `--upper` or `--lower` choose the case of the output, `--json FILE` writes the disassembly as JSON as well (see [JSON output](#json-output)), and `--symbols FILE` (with `--symbols-format`) and `--xref FILE` write a symbol file and a cross-reference listing (see [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)).
 
 ### Edit me
 
@@ -495,6 +496,32 @@ The JSON holds what py8dis knows once it has finished, with exactly the names us
 Expressions are given as text and as a tree, e.g. `{"op": "+", "left": {"label": 8206, "name": "message"}, "right": {"num": 1, "format": "decimal"}}`.
 
 The format is described in [docs/json-format.md](docs/json-format.md), with a [JSON Schema](https://json-schema.org/) in [docs/py8dis-json.schema.json](docs/py8dis-json.schema.json).
+
+## Symbol files and cross-reference listings
+
+As well as the asm, py8dis can write a symbol file, giving each label's name and address (e.g. for an emulator's debugger), and a cross-reference listing, giving each label and everything that refers to it:
+
+    python3 mycontrolfile.py --symbols out.sym                           # plain format
+    python3 mycontrolfile.py --symbols out.lbl --symbols-format vice
+    python3 mycontrolfile.py --xref out.xref
+
+When using py8dis as a library, `session.new_session(symbols_filename=..., symbols_format=..., xref_filename=...)` does the same.
+
+The symbol file formats are:
+
+| `--symbols-format` | Example line          | For                                                                                   |
+| ------------------ | --------------------- | ------------------------------------------------------------------------------------- |
+| `plain` (default)  | `oswrch = &ffee`      | Reading, or converting to another format. In the assembler's hex syntax.               |
+| `vice`             | `al 00FFEE .oswrch`   | The VICE emulator's monitor, which loads it with `ll "file"` (as cc65's `ld65 -Ln` writes). |
+| `beebasm`          | `[{'oswrch':65518L}]` | Tools that read beebasm's symbol dump (`beebasm -d`).                                   |
+| `mame`             | `comadd ffee,oswrch`  | MAME's debugger, which runs it with `source file`, showing each name as a comment.      |
+
+Each name a label has is included (local label names as the asm uses them), but not constants or expressions such as `table+1`. Labels are by address. VICE and MAME can't take an address past the top of memory (such as `pydis_end`, for data that ends at &FFFF), so those names are left out of their files.
+
+The cross-reference listing gives each label, with its names and where the asm defines them, then each instruction or piece of data that refers to it: the address, where that is (the nearest label before it, plus an offset), and its text in the asm:
+
+    &ffe3  lffe3 (Memory locations)
+        &2005     loop_c2002+3                 jsr lffe3
 
 ## Getting help
 

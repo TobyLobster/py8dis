@@ -1,0 +1,11 @@
+comadd 70,bit_value
+comadd 70,char_to_print
+comadd 2000,pydis_start
+comadd 2000,test_for_local_labels
+comadd 2006,print_loop
+comadd 2019,bit_counting_loop
+comadd 201e,skip_add_to_bit_count
+comadd 2026,crtc_substitution_test
+comadd 202c,pydis_end
+comadd fe00,crtc_address_register
+comadd ffee,oswrch

@@ -1,0 +1,5 @@
+comadd 2000,pydis_start
+comadd 2002,loop_c2002
+comadd 200e,l200e
+comadd 201c,pydis_end
+comadd ffe3,lffe3

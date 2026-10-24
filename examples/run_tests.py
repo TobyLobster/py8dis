@@ -16,10 +16,10 @@ For each test and assembler:
      identical to orig/<test>.orig. If the assembler isn't installed this step
      is skipped, but the check in step 2 still happens (so e.g. CI can run
      without any assemblers installed).
-     For the tests in JSON_KNOWN_GOOD, also check the JSON is identical to
+     For the tests in EXTRAS_KNOWN_GOOD, also check the JSON is identical to
      known_good/<test>_<assembler>.json.
   4. With -m, copy the asm to known_good (only once the binary has been
-     checked), and the JSON for the tests in JSON_KNOWN_GOOD
+     checked), and the JSON for the tests in EXTRAS_KNOWN_GOOD
 
 The error tests (ERROR_TESTS below) are control files in python/errors/ that
 py8dis should stop with an error for, e.g. an expr() with the wrong value. Each
@@ -96,10 +96,17 @@ TESTS = [
     ("starship",                 ["acme", "beebasm", "xa"],    "Starship Command"),
 ]
 
-# The tests whose JSON output (see docs/json-format.md) is also compared with
-# known_good/<test>_<assembler>.json. (The JSON of every test is checked, see
-# check_json(), but these show any change to the JSON itself.)
-JSON_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080"]
+# The tests whose other outputs are also compared with known_good: the JSON
+# (see docs/json-format.md), the symbol file and the cross-reference listing,
+# as known_good/<test>_<assembler>.json, .symbols and .xref. (The JSON of every
+# test is checked, see check_json(), and every beebasm symbol file is checked
+# against beebasm's own, but these show any change to the outputs
+# themselves.)
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080"]
+
+# The symbol file format made for each assembler's tests, so that each format
+# is tested (see py8dis/symbols.py)
+SYMBOLS_FORMATS = {"beebasm": "beebasm", "acme": "vice", "xa": "mame", "z88dk-8080": "plain"}
 
 # Each error test is (name, expected error message). The control file is
 # python/errors/<name>.py (which describes the test), and py8dis must stop with
@@ -148,6 +155,11 @@ class Paths:
         self.binary        = Path("build")      / f"{name}_{assembler}.dat"
         self.known_good    = Path("known_good") / f"{name}_{assembler}.asm"
         self.known_good_json = Path("known_good") / f"{name}_{assembler}.json"
+        self.py8dis_symbols = Path("build")      / f"{name}_{assembler}.symbols"
+        self.xref          = Path("build")      / f"{name}_{assembler}.xref"
+        self.known_good_symbols = Path("known_good") / f"{name}_{assembler}.symbols"
+        self.known_good_xref    = Path("known_good") / f"{name}_{assembler}.xref"
+        self.beebasm_symbols = Path("build")    / f"{name}_{assembler}_beebasm_symbols.txt"
         self.report        = Path("build")      / f"{name}_{assembler}_report.txt"
         self.symbols       = Path("build")      / f"{name}_{assembler}_symbols.txt"
 
@@ -180,7 +192,8 @@ def assemble_command(assembler, p, make_extras):
             cmd += ["--report", str(p.report), "-l", str(p.symbols)]
         return cmd + [str(p.asm)]
     if assembler == "beebasm":
-        return ["beebasm", "-v", "-o", str(p.binary), "-i", str(p.asm)]
+        # (-d writes beebasm's own symbol dump, to check py8dis's against)
+        return ["beebasm", "-v", "-o", str(p.binary), "-i", str(p.asm), "-d", "-labels", str(p.beebasm_symbols)]
     if assembler == "xa":
         cmd = ["xa", str(p.asm), "-o", str(p.binary)]
         if make_extras:
@@ -499,13 +512,20 @@ def check_json(path, asm_path=None):
     return None
 
 
+def beebasm_symbols(text):
+    """The symbols in beebasm's symbol dump format ('[{'name':8192L,...}]'),
+    as a dictionary."""
+    return {name: int(float(value)) for name, value in re.findall(r"'([^']*)':(-?[0-9.e+]+)L", text)}
+
+
 def run_test(name, assembler, options, env):
     """Run one test with one assembler, returning a Result."""
     result = Result(name, assembler)
     p = Paths(name, assembler)
 
     # 1. Run py8dis
-    proc = subprocess.run([sys.executable, str(p.control_file), "--" + assembler, "--json", str(p.json)],
+    proc = subprocess.run([sys.executable, str(p.control_file), "--" + assembler, "--json", str(p.json),
+                           "--symbols", str(p.py8dis_symbols), "--symbols-format", SYMBOLS_FORMATS[assembler], "--xref", str(p.xref)],
                           capture_output=True, text=True, env=env)
     result.stderr = proc.stderr.strip()
     if proc.returncode != 0:
@@ -525,13 +545,14 @@ def run_test(name, assembler, options, env):
         if problem:
             result.failure = problem
             return result
-        if name in JSON_KNOWN_GOOD:
-            if not p.known_good_json.exists():
-                result.failure = f"{p.known_good_json} not found"
-                return result
-            if not filecmp.cmp(p.json, p.known_good_json, shallow=False):
-                result.failure = f"{p.json} differs from {p.known_good_json}, " + first_difference(p.json, p.known_good_json)
-                return result
+        if name in EXTRAS_KNOWN_GOOD:
+            for got, expected in ((p.json, p.known_good_json), (p.py8dis_symbols, p.known_good_symbols), (p.xref, p.known_good_xref)):
+                if not expected.exists():
+                    result.failure = f"{expected} not found"
+                    return result
+                if not filecmp.cmp(got, expected, shallow=False):
+                    result.failure = f"{got} differs from {expected}, " + first_difference(got, expected)
+                    return result
 
     # 3. Assemble and check the binary, if the assembler is installed
     program = ASSEMBLER_PROGRAMS[assembler]
@@ -551,11 +572,22 @@ def run_test(name, assembler, options, env):
         result.failure = f"assembled binary {p.binary} differs from {p.original}"
         return result
 
+    # beebasm's own symbols (its labels, defined as '.name') must all be in
+    # py8dis's symbol file, with the same values
+    if assembler == "beebasm":
+        ours = beebasm_symbols(p.py8dis_symbols.read_text())
+        for symbol, value in beebasm_symbols(p.beebasm_symbols.read_text()).items():
+            if ours.get(symbol) != value:
+                result.failure = f"beebasm gives {symbol} the value {value}, but py8dis's symbol file {p.py8dis_symbols} gives {ours.get(symbol)}"
+                return result
+
     # 4. Make known good
     if options.make_known_good:
         shutil.copy2(p.asm, p.known_good)
-        if name in JSON_KNOWN_GOOD:
+        if name in EXTRAS_KNOWN_GOOD:
             shutil.copy2(p.json, p.known_good_json)
+            shutil.copy2(p.py8dis_symbols, p.known_good_symbols)
+            shutil.copy2(p.xref, p.known_good_xref)
         result.notes.append("made known good")
     return result
 

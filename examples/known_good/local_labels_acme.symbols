@@ -1,0 +1,11 @@
+al 000070 .bit_value
+al 000070 .char_to_print
+al 002000 .pydis_start
+al 002000 .test_for_local_labels
+al 002006 .print_loop
+al 002019 .bit_counting_loop
+al 00201E .skip_add_to_bit_count
+al 002026 .crtc_substitution_test
+al 00202C .pydis_end
+al 00FE00 .crtc_address_register
+al 00FFEE .oswrch
