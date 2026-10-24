@@ -102,7 +102,7 @@ The `type`s are:
   - `operand` (unless implied): its `value` (an address or an immediate value) and its expression.
   - `target`: for a branch, jump or call, the runtime address it goes to.
   - `cycles`, as `config.set_show_cycles(True)` shows them, e.g. `"2/3"` for a 6502 branch (not taken, or taken), or `"5/11"` for an 8080 conditional return. Always included.
-  - `cpu_state`: what py8dis knows for certain about the registers and flags once the instruction has run, as `config.set_show_cpu_state(True)` shows it: registers as numbers, flags as `true` or `false`, and `null` where it's not known. Always included for the 6502 and 65C02 instructions py8dis traced (it's useful even when the asm doesn't show it); the 8080 has none.
+  - `cpu_state`: what py8dis knows for certain about the registers and flags once the instruction has run, as `config.set_show_cpu_state(True)` shows it: registers as numbers, flags as `true` or `false`, and `null` where it's not known. For the 6502 and 65C02 that's `a`, `x`, `y` and the flags `n`, `v`, `d`, `i`, `z`, `c`; for the 8080, `a`, `b`, `c`, `d`, `e`, `h`, `l`, `sp` and the flags `s`, `z`, `ac` (auxiliary carry), `p`, `cy`. Always included for the instructions py8dis traced (it's useful even when the asm doesn't show it).
 - **`bytes`** and **`words`:** `values`, and `exprs` with an expression for each value given with `expr()`, or `null`. `exprs` is left out if there are none.
 - **`string`:** the `text` shows it as in the asm.
 - **`include_binary`:** `filename`, the file included with `include_binary_file()`.

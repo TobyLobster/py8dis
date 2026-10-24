@@ -54,6 +54,214 @@ def cycles_description(opcode):
         return "%d/%d" % (CYCLES[opcode], CYCLES[opcode] + 6)
     return str(CYCLES[opcode])
 
+# Tracking what's known about the registers and flags (see Cpu8080.CpuState)
+
+# The registers in the order the opcodes number them ('m' is the memory at HL)
+REGISTER_ORDER = ("b", "c", "d", "e", "h", "l", "m", "a")
+
+# The register pairs, as the opcodes number them (for PUSH and POP, 3 is PSW)
+REGISTER_PAIRS = (("b", "c"), ("d", "e"), ("h", "l"), "sp")
+
+def _parity(value):
+    """True if an 8 bit value has an even number of bits set."""
+    return bin(value).count("1") % 2 == 0
+
+def _set_szp(state, value):
+    state["s"] = value >= 0x80
+    state["z"] = value == 0
+    state["p"] = _parity(value)
+
+def _forget_szp(state):
+    state["s"] = state["z"] = state["p"] = None
+
+def _get_pair(state, pair):
+    if pair == "sp":
+        return state["sp"]
+    hi, lo = state[pair[0]], state[pair[1]]
+    return None if hi is None or lo is None else (hi << 8) | lo
+
+def _set_pair(state, pair, value):
+    if pair == "sp":
+        state["sp"] = None if value is None else value & 0xffff
+    elif value is None:
+        state[pair[0]] = state[pair[1]] = None
+    else:
+        state[pair[0]] = (value >> 8) & 0xff
+        state[pair[1]] = value & 0xff
+
+def _alu(state, op, value):
+    """ADD, ADC, SUB, SBB, ANA, XRA, ORA or CMP (op 0 to 7) of A with
+    'value' (None if not known)."""
+    a = state["a"]
+    cy = state["cy"]
+    if op in (0, 1, 2, 3, 7):
+        # Addition, or subtraction (as A + NOT value + 1)
+        subtract = op in (2, 3, 7)
+        carry_in = 0 if op in (0, 7, 2) else cy
+        if op in (2, 7):
+            carry_in = 1
+        elif op == 3:
+            carry_in = None if cy is None else (0 if cy else 1)
+        if a is None or value is None or carry_in is None:
+            if op != 7:
+                state["a"] = None
+            _forget_szp(state)
+            state["cy"] = state["ac"] = None
+            return
+        b = (value ^ 0xff) if subtract else value
+        total = a + b + carry_in
+        result = total & 0xff
+        state["ac"] = bool((a ^ b ^ total) & 0x10)
+        state["cy"] = (total > 0xff) != subtract
+        _set_szp(state, result)
+        if op != 7:
+            state["a"] = result
+        return
+
+    # ANA, XRA, ORA: the carry is cleared
+    state["cy"] = False
+    if op == 4:
+        state["ac"] = None if a is None or value is None else bool((a | value) & 0x08)
+    else:
+        state["ac"] = False
+    if a is None or value is None:
+        # (Except that A XRA A is always 0)
+        if op == 5 and value == "a":
+            a = value = 0
+        else:
+            state["a"] = None
+            _forget_szp(state)
+            return
+    result = a & value if op == 4 else a ^ value if op == 5 else a | value
+    state["a"] = result
+    _set_szp(state, result)
+
+def update_state(state, opcode, operands):
+    """Update what's known about the CPU (a Cpu8080.CpuState) for the
+    instruction with the given opcode and operand bytes, so that it's what's
+    known once the instruction has run (assuming a conditional jump, call or
+    return isn't taken: if it is, the code doesn't continue to the next
+    instruction)."""
+
+    def reg(index):
+        """The value of a register (by its number in the opcode), or None."""
+        name = REGISTER_ORDER[index]
+        return None if name == "m" else state[name]
+
+    def set_reg(index, value):
+        name = REGISTER_ORDER[index]
+        if name != "m":
+            state[name] = value
+
+    imm8 = operands[0] if len(operands) >= 1 else None
+    imm16 = (operands[0] | (operands[1] << 8)) if len(operands) == 2 else None
+    pair = REGISTER_PAIRS[(opcode >> 4) & 3]
+
+    if 0x40 <= opcode <= 0x7f:
+        if opcode != 0x76:                              # MOV (0x76 is HLT)
+            set_reg((opcode >> 3) & 7, reg(opcode & 7))
+    elif 0x80 <= opcode <= 0xbf:                        # ADD ... CMP with a register
+        src = opcode & 7
+        _alu(state, (opcode >> 3) & 7, "a" if (src == 7 and state["a"] is None) else reg(src))
+    elif (opcode & 0xc7) == 0xc6:                       # ADI ... CPI
+        _alu(state, (opcode >> 3) & 7, imm8)
+    elif (opcode & 0xc7) == 0x06:                       # MVI
+        set_reg((opcode >> 3) & 7, imm8)
+    elif (opcode & 0xc6) == 0x04:                       # INR, DCR
+        index = (opcode >> 3) & 7
+        v = reg(index)
+        if v is None:
+            set_reg(index, None)
+            _forget_szp(state)
+            state["ac"] = None
+        else:
+            result = (v + (1 if (opcode & 1) == 0 else -1)) & 0xff
+            set_reg(index, result)
+            _set_szp(state, result)
+            state["ac"] = (result & 0xf) == 0 if (opcode & 1) == 0 else (result & 0xf) != 0xf
+    elif (opcode & 0xcf) == 0x01:                       # LXI
+        _set_pair(state, pair, imm16)
+    elif (opcode & 0xc7) == 0x03:                       # INX, DCX
+        v = _get_pair(state, pair)
+        _set_pair(state, pair, None if v is None else v + (1 if (opcode & 8) == 0 else -1))
+    elif (opcode & 0xcf) == 0x09:                       # DAD
+        hl, v = _get_pair(state, ("h", "l")), _get_pair(state, pair)
+        if hl is None or v is None:
+            _set_pair(state, ("h", "l"), None)
+            state["cy"] = None
+        else:
+            _set_pair(state, ("h", "l"), hl + v)
+            state["cy"] = hl + v > 0xffff
+    elif opcode in (0x0a, 0x1a, 0x3a, 0xdb):            # LDAX, LDA, IN
+        state["a"] = None
+    elif opcode == 0x2a:                                # LHLD
+        _set_pair(state, ("h", "l"), None)
+    elif opcode in (0x07, 0x0f, 0x17, 0x1f):            # RLC, RRC, RAL, RAR
+        a, cy = state["a"], state["cy"]
+        if opcode == 0x07:
+            state["cy"] = None if a is None else a >= 0x80
+            state["a"] = None if a is None else ((a << 1) | (a >> 7)) & 0xff
+        elif opcode == 0x0f:
+            state["cy"] = None if a is None else bool(a & 1)
+            state["a"] = None if a is None else ((a >> 1) | ((a & 1) << 7))
+        elif opcode == 0x17:
+            state["cy"] = None if a is None else a >= 0x80
+            state["a"] = None if a is None or cy is None else ((a << 1) | int(cy)) & 0xff
+        else:
+            state["cy"] = None if a is None else bool(a & 1)
+            state["a"] = None if a is None or cy is None else (a >> 1) | (int(cy) << 7)
+    elif opcode == 0x27:                                # DAA
+        a, cy, ac = state["a"], state["cy"], state["ac"]
+        if a is None or cy is None or ac is None:
+            state["a"] = state["cy"] = state["ac"] = None
+            _forget_szp(state)
+        else:
+            correction = 0
+            lsb, msb = a & 0x0f, a >> 4
+            if ac or lsb > 9:
+                correction += 0x06
+            if cy or msb > 9 or (msb >= 9 and lsb > 9):
+                correction += 0x60
+                cy = True
+            _alu(state, 0, correction)
+            state["cy"] = cy
+    elif opcode == 0x2f:                                # CMA
+        state["a"] = None if state["a"] is None else state["a"] ^ 0xff
+    elif opcode == 0x37:                                # STC
+        state["cy"] = True
+    elif opcode == 0x3f:                                # CMC
+        state["cy"] = None if state["cy"] is None else not state["cy"]
+    elif opcode == 0xeb:                                # XCHG
+        state["d"], state["e"], state["h"], state["l"] = state["h"], state["l"], state["d"], state["e"]
+    elif opcode == 0xe3:                                # XTHL
+        _set_pair(state, ("h", "l"), None)
+    elif opcode == 0xf9:                                # SPHL
+        state["sp"] = _get_pair(state, ("h", "l"))
+    elif (opcode & 0xcf) == 0xc5:                       # PUSH
+        _set_pair(state, "sp", None if state["sp"] is None else state["sp"] - 2)
+    elif (opcode & 0xcf) == 0xc1:                       # POP
+        if opcode == 0xf1:
+            state["a"] = None
+            for name in Cpu8080.CpuState.FLAGS:
+                state[name] = None
+        else:
+            _set_pair(state, pair, None)
+        _set_pair(state, "sp", None if state["sp"] is None else state["sp"] + 2)
+    elif (opcode & 0xc7) in (0xc0, 0xc2):               # Rcc, Jcc (when not taken)
+        pass
+    elif opcode in (0xc3, 0xcb, 0xe9):                  # JMP, PCHL
+        state.block_end = True
+    elif opcode in (0xc9, 0xd9):                        # RET
+        _set_pair(state, "sp", None if state["sp"] is None else state["sp"] + 2)
+        state.block_end = True
+    elif (opcode & 0xc7) == 0xc4 or opcode in (0xcd, 0xdd, 0xed, 0xfd) or (opcode & 0xc7) == 0xc7:
+        # Ccc, CALL, RST: the subroutine called could change anything
+        state.clear()
+        if (opcode & 0xc7) == 0xc7:
+            state.block_end = True              # (RST isn't traced past)
+    # Otherwise the instruction changes nothing that's tracked: NOP, STAX,
+    # SHLD, STA, MOV M,r, MVI M, OUT, EI, DI, HLT
+
 class Cpu8080(cpu.Cpu):
     """Class representing an 8080 CPU"""
 
@@ -389,10 +597,15 @@ class Cpu8080(cpu.Cpu):
             return True
 
         def update_cpu_state(self, binary_addr, state):
-            if self.update is not None:
-                self.update(binary_addr, state)
-            else:
-                state.clear(pessimistic_only=False)
+            # Nothing is known after an instruction the code can't continue
+            # from (e.g. JMP), or where code can come from elsewhere (at a
+            # label)
+            runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
+            if state.block_end or (runtime_addr is not None and runtime_addr in session.current().labels.labels):
+                state.clear()
+            memory_binary = session.current().memory.binary
+            operands = [memory_binary[binary_addr + 1 + i] for i in range(self.operand_length)]
+            update_state(state, memory_binary[binary_addr], operands)
 
         def update_references(self, binary_loc):
             pass
@@ -540,10 +753,6 @@ class Cpu8080(cpu.Cpu):
         def disassemble(self, binary_loc):
             return [binary_loc.binary_addr + 3] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self._target(binary_loc.binary_addr), binary_loc.move_id)
 
-        def update_cpu_state(self, binary_addr, state):
-            # TODO: No state being tracked for 8080 code, yet
-            state.clear(pessimistic_only=False)
-
         def instruction(self, binary_addr):
             label = disassembly.get_label(self._target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
             return output.Instruction(self.mnemonic, label)
@@ -628,48 +837,57 @@ class Cpu8080(cpu.Cpu):
             return True
 
     class CpuState:
+        """What's known for certain about the registers and flags (see
+        update_state()): each register's value (A, B, C, D, E, H, L as 8 bit
+        numbers, SP as a 16 bit number) and each flag's (S, Z, AC (the
+        auxiliary or half carry), P and CY, as True or False), or None if
+        it's not known."""
+
+        REGISTERS = ("a", "b", "c", "d", "e", "h", "l", "sp")
+        FLAGS     = ("s", "z", "ac", "p", "cy")
+
         def __init__(self):
             self.clear(pessimistic_only=False)
 
-        def clear(self, *, pessimistic_only):
-            self._d = {
-                # For A/X/Y, value is (integer value if known, address of integer
-                # value if set by LDA/X/Y #).
-                "a": [None, None],
-                "b": [None, None],
-                "c": [None, None],
-                "d": [None, None],
-                "e": [None, None],
-                "h": [None, None],
-                "l": [None, None],
-                # For flags, value is True/False if known.
-                "C": None,
-                "H": None,      # Also known as 'half carry', 'alternative carry', or 'AC'
-                "S": None,
-                "Z": None,
-                "P": None,
-            }
+        def clear(self, *, pessimistic_only=False):
+            """Forget everything. (There's only one state for the 8080, so
+            'pessimistic_only' makes no difference.)"""
+            self.values = dict.fromkeys(self.REGISTERS + self.FLAGS)
+
+            # True after an instruction the following instruction can't be
+            # reached from (e.g. JMP or RET), so that it starts with nothing
+            # known
+            self.block_end = False
+
+        def copy(self):
+            result = type(self).__new__(type(self))
+            result.values = dict(self.values)
+            result.block_end = self.block_end
+            return result
 
         def __getitem__(self, key):
-            assert key in "abcdehlCHSZP"
-            return self._d[key]
+            return self.values[key]
 
-        def __setitem__(self, key, item):
-            assert key in "abcdehlCHSZP"
-            if key in "abcdehl":
-                if item is None:
-                    item = [None, None]
-                assert len(item) == 2
-                assert item[1] is None or item[0] is not None
-            else:
-                assert item is None or utils.is_integer_type(item)
-            self._d[key] = item
+        def __setitem__(self, key, value):
+            assert key in self.values
+            self.values[key] = value
 
         def show(self):
-            """The CPU state, for config.set_show_cpu_state(True). The 8080
-            doesn't track register state yet, so this is empty."""
-            return ""
-
+            """The CPU state, for config.set_show_cpu_state(True), e.g.
+            'A:41 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- sZ-pc': each register
+            in hex ('--' if not known), then each flag (S, Z, AC, P, CY) as
+            an upper case letter if set, lower case if clear, or '-' if not
+            known."""
+            def reg(name):
+                v = self.values[name]
+                if name == "sp":
+                    return "----" if v is None else utils.plainhex4(v)
+                return "--" if v is None else utils.plainhex2(v)
+            def flag(name, letter):
+                v = self.values[name]
+                return "-" if v is None else (letter.upper() if v else letter)
+            return " ".join("%s:%s" % (name.upper(), reg(name)) for name in self.REGISTERS) + " " + \
+                   "".join(flag(name, letter) for name, letter in zip(self.FLAGS, "szapc"))
 
     def is_subroutine_call(self, binary_addr):
         return False

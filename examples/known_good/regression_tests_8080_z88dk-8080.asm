@@ -7,17 +7,17 @@ y_val           equ 60
     org $1000
 
 pydis_start:
-    mvi a, ~low_seven_bits & $ff                                      ; 1000: 3e 80       >.
-    ani x_val & y_val                                                 ; 1002: e6 30       .0
-    ori x_val | y_val                                                 ; 1004: f6 fc       ..
-    xri x_val ^ y_val                                                 ; 1006: ee cc       ..
-    mvi b, x_val / 16                                                 ; 1008: 06 0f       ..
-    mvi c, x_val % 7                                                  ; 100a: 0e 02       ..
-    mvi d, addr_val & $ff                                             ; 100c: 16 34       .4
-    mvi e, addr_val >> 8                                              ; 100e: 1e 12       ..
-    mvi h, +(addr_val + 1) & $ff                                      ; 1010: 26 35       &5
-    lxi bc, +(addr_val + 1)                                           ; 1012: 01 35 12    .5.
-    ret                                                               ; 1015: c9          .
+    mvi a, ~low_seven_bits & $ff                                      ; 1000: 3e 80       >.  7 cycles      A:80 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- -----
+    ani x_val & y_val                                                 ; 1002: e6 30       .0  7 cycles      A:00 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- sZaPc
+    ori x_val | y_val                                                 ; 1004: f6 fc       ..  7 cycles      A:fc B:-- C:-- D:-- E:-- H:-- L:-- SP:---- SzaPc
+    xri x_val ^ y_val                                                 ; 1006: ee cc       ..  7 cycles      A:30 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- szaPc
+    mvi b, x_val / 16                                                 ; 1008: 06 0f       ..  7 cycles      A:30 B:0f C:-- D:-- E:-- H:-- L:-- SP:---- szaPc
+    mvi c, x_val % 7                                                  ; 100a: 0e 02       ..  7 cycles      A:30 B:0f C:02 D:-- E:-- H:-- L:-- SP:---- szaPc
+    mvi d, addr_val & $ff                                             ; 100c: 16 34       .4  7 cycles      A:30 B:0f C:02 D:34 E:-- H:-- L:-- SP:---- szaPc
+    mvi e, addr_val >> 8                                              ; 100e: 1e 12       ..  7 cycles      A:30 B:0f C:02 D:34 E:12 H:-- L:-- SP:---- szaPc
+    mvi h, +(addr_val + 1) & $ff                                      ; 1010: 26 35       &5  7 cycles      A:30 B:0f C:02 D:34 E:12 H:35 L:-- SP:---- szaPc
+    lxi bc, +(addr_val + 1)                                           ; 1012: 01 35 12    .5. 10 cycles     A:30 B:12 C:35 D:34 E:12 H:35 L:-- SP:---- szaPc
+    ret                                                               ; 1015: c9          .   10 cycles     A:30 B:12 C:35 D:34 E:12 H:35 L:-- SP:---- szaPc
 
 pydis_end:
 

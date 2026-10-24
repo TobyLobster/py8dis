@@ -9,6 +9,11 @@ from commands import *
 load(0x1000, "orig/regression_tests_8080.orig", "8080", "169ba41a435c2a733dc1a121f1916e96")
 entry(0x1000)
 
+# Show the cycles each instruction takes, and the registers and flags known
+# after it (October 2026: neither used to be shown for the 8080)
+config.set_show_cycles(True)
+config.set_show_cpu_state(True)
+
 constant(0x7f, "low_seven_bits")
 constant(0xf0, "x_val")
 constant(0x3c, "y_val")

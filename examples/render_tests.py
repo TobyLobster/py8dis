@@ -42,9 +42,10 @@ def instruction(addr, length, *args, **kwargs):
 
 def with_cpu_state(cpu_name, make_line):
     """Make the line with config.set_show_cpu_state(True), with the CPU state
-    after the instruction at &2000 ('lda #&41') worked out as when tracing:
-    the CPU updates an unknown state for it. (So for the 6502, A=&41 and the
-    N and Z flags are clear. The 8080 doesn't track its state yet.)"""
+    after the instruction at &2000 worked out as when tracing: the CPU
+    updates an unknown state for it. For the 6502 that's 'lda #&41', so A=&41
+    and the N and Z flags are clear. For the 8080 the instruction is changed
+    to 'mvi a, $41' (&3e &41), so A=&41 and nothing else is known."""
     def make():
         import config
         import cpu6502
@@ -54,8 +55,10 @@ def with_cpu_state(cpu_name, make_line):
         config.set_show_cpu_state(True)
         cpu = cpu6502.Cpu6502() if cpu_name == "6502" else cpu8080.Cpu8080()
         session.current().cpu = cpu
+        if cpu_name == "8080":
+            session.current().memory.binary[0x2000] = 0x3e
         state = cpu.CpuState()
-        cpu.opcodes[MEMORY[0]].update_cpu_state(memorymanager.BinaryAddr(0x2000), state)
+        cpu.opcodes[session.current().memory.binary[0x2000]].update_cpu_state(memorymanager.BinaryAddr(0x2000), state)
         cpu.cpu_states[0x2000] = state
         return make_line()
     return make
@@ -238,7 +241,7 @@ EXPECTED = {
         '    lda #$41                                                          // 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
     ],
     '8080 CPU state, z88dk-8080': [
-        '    mvi a, $41                                                        ; 2000: a9 41       .A',
+        '    mvi a, $41                                                        ; 2000: 3e 41       >A  A:41 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- -----',
     ],
     '6502 cycles, beebasm': [
         "    lda #&41 ; 'A'                                                    ; 2000: a9 41       .A  2 cycles",
