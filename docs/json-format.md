@@ -101,7 +101,7 @@ The `type`s are:
   - `mode`, the addressing mode. For the 6502 and 65C02: `implied`, `accumulator`, `immediate`, `zp`, `zp_x`, `zp_y`, `zp_indirect`, `zp_x_indirect`, `zp_indirect_y`, `absolute`, `absolute_x`, `absolute_y`, `indirect`, `absolute_x_indirect` or `relative`. For the 8080: `implied`, `immediate`, `immediate16` or `address`.
   - `operand` (unless implied): its `value` (an address or an immediate value) and its expression.
   - `target`: for a branch, jump or call, the runtime address it goes to.
-  - `cycles`, as `config.set_show_cycles(True)` shows them, e.g. `"2/3"` for a branch. Always included for the 6502 and 65C02; py8dis doesn't count the 8080's.
+  - `cycles`, as `config.set_show_cycles(True)` shows them, e.g. `"2/3"` for a 6502 branch (not taken, or taken), or `"5/11"` for an 8080 conditional return. Always included.
   - `cpu_state`: what py8dis knows for certain about the registers and flags once the instruction has run, as `config.set_show_cpu_state(True)` shows it: registers as numbers, flags as `true` or `false`, and `null` where it's not known. Always included for the 6502 and 65C02 instructions py8dis traced (it's useful even when the asm doesn't show it); the 8080 has none.
 - **`bytes`** and **`words`:** `values`, and `exprs` with an expression for each value given with `expr()`, or `null`. `exprs` is left out if there are none.
 - **`string`:** the `text` shows it as in the asm.

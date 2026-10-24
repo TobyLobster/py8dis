@@ -444,8 +444,8 @@ def _instruction_fields(binary_loc, c, instruction):
     if target is not None:
         result["target"] = target
 
+    result["cycles"] = c.cycles_description(binary_addr)
     if isinstance(cpu, cpu6502.Cpu6502):
-        result["cycles"] = c.cycles_description(binary_addr)
         state = cpu.cpu_states[binary_addr]
         if state is not None:
             result["cpu_state"] = _cpu_state(state.pessimistic)

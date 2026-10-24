@@ -19,6 +19,41 @@ from binaryaddrtype import BinaryAddrType
 
 OPCODE_RET = 0xc9
 
+# The number of clock cycles (states) each opcode takes, from Intel's 8080
+# documentation. (Checked against two emulators: superzazu/8080 and
+# begoon/i8080-core.)
+CYCLES = [
+#   0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+    4, 10,  7,  5,  5,  5,  7,  4,  4, 10,  7,  5,  5,  5,  7,  4,   # 0
+    4, 10,  7,  5,  5,  5,  7,  4,  4, 10,  7,  5,  5,  5,  7,  4,   # 1
+    4, 10, 16,  5,  5,  5,  7,  4,  4, 10, 16,  5,  5,  5,  7,  4,   # 2
+    4, 10, 13,  5, 10, 10, 10,  4,  4, 10, 13,  5,  5,  5,  7,  4,   # 3
+    5,  5,  5,  5,  5,  5,  7,  5,  5,  5,  5,  5,  5,  5,  7,  5,   # 4
+    5,  5,  5,  5,  5,  5,  7,  5,  5,  5,  5,  5,  5,  5,  7,  5,   # 5
+    5,  5,  5,  5,  5,  5,  7,  5,  5,  5,  5,  5,  5,  5,  7,  5,   # 6
+    7,  7,  7,  7,  7,  7,  7,  7,  5,  5,  5,  5,  5,  5,  7,  5,   # 7
+    4,  4,  4,  4,  4,  4,  7,  4,  4,  4,  4,  4,  4,  4,  7,  4,   # 8
+    4,  4,  4,  4,  4,  4,  7,  4,  4,  4,  4,  4,  4,  4,  7,  4,   # 9
+    4,  4,  4,  4,  4,  4,  7,  4,  4,  4,  4,  4,  4,  4,  7,  4,   # A
+    4,  4,  4,  4,  4,  4,  7,  4,  4,  4,  4,  4,  4,  4,  7,  4,   # B
+    5, 10, 10, 10, 11, 11,  7, 11,  5, 10, 10, 10, 11, 17,  7, 11,   # C
+    5, 10, 10, 10, 11, 11,  7, 11,  5, 10, 10, 10, 11, 17,  7, 11,   # D
+    5, 10, 10, 18, 11, 11,  7, 11,  5,  5, 10,  4, 11, 17,  7, 11,   # E
+    5, 10, 10,  4, 11, 11,  7, 11,  5,  5, 10,  4, 11, 17,  7, 11,   # F
+]
+
+# A conditional return or call takes 6 more cycles if it's taken, e.g. RNZ
+# takes 5, or 11 if it returns
+CONDITIONAL_RETURNS = { 0xc0, 0xc8, 0xd0, 0xd8, 0xe0, 0xe8, 0xf0, 0xf8 }
+CONDITIONAL_CALLS   = { 0xc4, 0xcc, 0xd4, 0xdc, 0xe4, 0xec, 0xf4, 0xfc }
+
+def cycles_description(opcode):
+    """The cycles an opcode takes, as text, e.g. "7", or "5/11" for a
+    conditional return (not taken, or taken)."""
+    if opcode in CONDITIONAL_RETURNS or opcode in CONDITIONAL_CALLS:
+        return "%d/%d" % (CYCLES[opcode], CYCLES[opcode] + 6)
+    return str(CYCLES[opcode])
+
 class Cpu8080(cpu.Cpu):
     """Class representing an 8080 CPU"""
 
@@ -313,6 +348,11 @@ class Cpu8080(cpu.Cpu):
             0xff: self.OpcodeReset("RST 7"),
         }
 
+        # The cycles each opcode takes
+        assert len(self.opcodes) == 256
+        for opcode, op in self.opcodes.items():
+            op.cycles = cycles_description(opcode)
+
     def hook_subroutine(self, runtime_addr, name, hook):
         runtime_addr = RuntimeAddr(runtime_addr)
         binary_loc = movemanager.r2b_checked(runtime_addr)
@@ -340,6 +380,7 @@ class Cpu8080(cpu.Cpu):
             self.prefix = "(" if ")" in self.suffix else ""
             self.update = update
             self.operand_length = operand_length
+            self.cycles = "???"         # (Set by Cpu8080.__init__())
 
         def length(self):
             return 1 + self.operand_length
@@ -359,6 +400,11 @@ class Cpu8080(cpu.Cpu):
         def is_block_end(self):
             return False
 
+        def cycles_description(self, binary_addr):
+            """The cycles the instruction takes, as shown with
+            config.set_show_cycles(True), e.g. "7" or "5/11"."""
+            return self.cycles
+
         def instruction(self, binary_addr):
             """The instruction (see output.Instruction)."""
             return output.Instruction(self.mnemonic)
@@ -375,7 +421,8 @@ class Cpu8080(cpu.Cpu):
             """The output for the instruction at binary_loc, as a list of
             line objects (see output.py)."""
             binary_addr = binary_loc.binary_addr
-            result = [self.instruction(binary_addr).placed(binary_loc, self.length(), session.current().cpu.indent_level_dict.get(binary_addr, 0), "", annotations)]
+            result = [self.instruction(binary_addr).placed(binary_loc, self.length(), session.current().cpu.indent_level_dict.get(binary_addr, 0),
+                                                           self.cycles_description(binary_addr), annotations)]
             if self.is_block_end() and config.get_blank_line_at_block_end():
                 result.append(output.Blank())
             return result

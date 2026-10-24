@@ -60,6 +60,22 @@ def with_cpu_state(cpu_name, make_line):
         return make_line()
     return make
 
+def with_cycles(cpu_name, addr):
+    """The instruction at addr as the CPU makes it (see its opcode's
+    as_lines()), with config.set_show_cycles(True), so that the cycles come
+    from the CPU's own table. (Only for instructions without an address,
+    since naming labels isn't part of rendering.)"""
+    def make():
+        import config
+        import cpu6502
+        import cpu8080
+        import session
+        config.set_show_cycles(True)
+        cpu = cpu6502.Cpu6502() if cpu_name == "6502" else cpu8080.Cpu8080()
+        session.current().cpu = cpu
+        return cpu.opcodes[MEMORY[addr - 0x2000]].as_lines(binary_loc(addr), None)[0]
+    return make
+
 def make_tests():
     """The tests: a list of (name, assemblers, function making the line).
 
@@ -94,6 +110,12 @@ def make_tests():
          ASSEMBLERS_6502, with_cpu_state("6502", lambda: instruction(0x2000, 2, "lda", Num(0x41, "hex"), prefix="#"))),
         ("8080 CPU state",
          ["z88dk-8080"], with_cpu_state("8080", lambda: instruction(0x2000, 2, "mvi a,", Num(0x41, "hex")))),
+        ("6502 cycles",
+         ["beebasm"], with_cycles("6502", 0x2000)),
+        ("8080 cycles",
+         ["z88dk-8080"], with_cycles("8080", 0x2000)),
+        ("8080 cycles, memory",
+         ["z88dk-8080"], with_cycles("8080", 0x2003)),
         ("byte data *",
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x2008), 4, None, 1, None)),
         ("byte data, two per line",
@@ -217,6 +239,15 @@ EXPECTED = {
     ],
     '8080 CPU state, z88dk-8080': [
         '    mvi a, $41                                                        ; 2000: a9 41       .A',
+    ],
+    '6502 cycles, beebasm': [
+        "    lda #&41 ; 'A'                                                    ; 2000: a9 41       .A  2 cycles",
+    ],
+    '8080 cycles, z88dk-8080': [
+        '    xra c                                                             ; 2000: a9          .   4 cycles',
+    ],
+    '8080 cycles, memory, z88dk-8080': [
+        '    mov m, b                                                          ; 2003: 70          p   7 cycles',
     ],
     'byte data, acme': [
         '    !byte 1, 2, 3, $ff                                                ; 2008: 01 02 03... ...',
