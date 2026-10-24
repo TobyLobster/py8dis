@@ -7,8 +7,9 @@ For each test and assembler:
      and build/<test>_<assembler>.json (with --json, see docs/json-format.md)
   2. With -c, check that the asm is identical to known_good/<test>_<assembler>.asm.
      Check the JSON: that it matches the schema (docs/py8dis-json.schema.json,
-     if the jsonschema package is installed), and that its items cover the
-     loaded data exactly
+     if the jsonschema package is installed), that its items cover the
+     loaded data exactly, that each expression's tree gives its value (where
+     it can be worked out) and that each item's text matches the asm
   3. If the assembler is installed, assemble the asm and check the binary is
      identical to orig/<test>.orig. If the assembler isn't installed this step
      is skipped, but the check in step 2 still happens (so e.g. CI can run
@@ -36,6 +37,7 @@ import argparse
 import concurrent.futures
 import filecmp
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -207,12 +209,65 @@ def json_sample(doc):
         for entry in entries:
             key = (entry.get("type"), tuple(sorted(entry)))
             counts[key] = counts.get(key, 0) + 1
-            if counts[key] <= 10:
+            if counts[key] <= 2:
                 result.append(entry)
         return result
     return dict(doc, items=sample(doc["items"]), labels=sample(doc["labels"])) if isinstance(doc, dict) and "items" in doc and "labels" in doc else doc
 
-def check_json(path):
+# The operators in expression trees, as py8dis evaluates them (see
+# expression.py)
+JSON_BINARY_OPERATORS = {
+    "+":   lambda a, b: a + b,
+    "-":   lambda a, b: a - b,
+    "*":   lambda a, b: a * b,
+    "DIV": lambda a, b: a // b if b != 0 and a >= 0 and b > 0 else None,
+    "MOD": lambda a, b: a % b if b != 0 and a >= 0 and b > 0 else None,
+    "AND": lambda a, b: a & b,
+    "OR":  lambda a, b: a | b,
+    "EOR": lambda a, b: a ^ b,
+    "<<":  lambda a, b: a << b if a >= 0 and 0 <= b < 32 else None,
+    ">>":  lambda a, b: a >> b if a >= 0 and 0 <= b < 32 else None,
+}
+JSON_UNARY_OPERATORS = {
+    "<":   lambda a: a & 0xff if a >= 0 else None,
+    ">":   lambda a: (a >> 8) & 0xff if a >= 0 else None,
+    "NOT": lambda a: ~a,
+    "-":   lambda a: -a,
+}
+
+def evaluate_json_tree(tree):
+    """The value of an expression tree in the JSON, or None if it can't be
+    worked out (e.g. it uses a name, or a string written by the user)."""
+    if "num" in tree:
+        return tree["num"]
+    if "label" in tree:
+        return tree["label"]
+    if "left" in tree:
+        a, b = evaluate_json_tree(tree["left"]), evaluate_json_tree(tree["right"])
+        op = JSON_BINARY_OPERATORS.get(tree["op"])
+        return None if a is None or b is None or op is None else op(a, b)
+    if "arg" in tree:
+        a = evaluate_json_tree(tree["arg"])
+        op = JSON_UNARY_OPERATORS.get(tree["op"])
+        return None if a is None or op is None else op(a)
+    return None
+
+# The hex dump in the asm, e.g. '   ; 2000: a2 00   ..': the binary address
+HEX_DUMP = re.compile(r"\s*(?:;|//) ([0-9a-f]{4}): [0-9a-f]{2}")
+
+def asm_lines_by_address(asm_path):
+    """The asm's code lines (without the hex dump and anything after it,
+    whitespace collapsed) for each binary address, from the hex dump, or None
+    if there's no hex dump. (Comments, e.g. for overlapping instructions, are
+    left out.)"""
+    result = {}
+    for line in asm_path.read_text().splitlines():
+        m = HEX_DUMP.search(line)
+        if m and not line.lstrip().startswith((";", "//")):
+            result.setdefault(int(m.group(1), 16), []).append(" ".join(line[:m.start()].split()))
+    return result or None
+
+def check_json(path, asm_path=None):
     """Check the JSON output (see docs/json-format.md), returning a message
     describing the first problem, or None."""
     try:
@@ -252,6 +307,36 @@ def check_json(path):
     missing = sorted(set(loaded) - covered)
     if missing:
         return f"{path}: no item covers the loaded data at {missing[0]:#06x}" + (f" (and {len(missing) - 1} more bytes)" if len(missing) > 1 else "")
+
+    # Each expression's tree gives its value (where it can be worked out)
+    for item in doc["items"]:
+        where = f"{path}: the item at {item['binary_addr']:#06x}"
+        checks = []
+        if "operand" in item:
+            checks.append((item["operand"]["expr"], item["operand"]["value"]))
+        for e, value in zip(item.get("exprs", []), item.get("values", [])):
+            if e is not None:
+                checks.append((e, value))
+        for e, value in checks:
+            v = evaluate_json_tree(e["tree"])
+            if v is not None and v != value:
+                return f"{where}: the expression {e['text']!r} has the value {v}, not {value}"
+            if "operand" in item and e is item["operand"]["expr"] and e["text"] not in item["text"][0]:
+                return f"{where}: the operand {e['text']!r} isn't in its text {item['text'][0]!r}"
+
+    # Each item's text matches the asm (where the asm has a hex dump, giving
+    # the binary address of each line)
+    if asm_path is not None:
+        by_address = asm_lines_by_address(asm_path)
+        if by_address is not None:
+            for item in doc["items"]:
+                if item["type"] == "include_binary":
+                    continue            # (it has no hex dump)
+                start = item["binary_addr"]
+                asm = [line for addr in range(start, start + item["length"]) for line in by_address.get(addr, [])]
+                text = [" ".join(t.split()) for t in item["text"]]
+                if len(asm) != len(text) or not all(a.startswith(t) for a, t in zip(asm, text)):
+                    return f"{path}: the item at {start:#06x} has the text {item['text']!r}, but the asm has {asm!r}"
     return None
 
 
@@ -277,7 +362,7 @@ def run_test(name, assembler, options, env):
         if not filecmp.cmp(p.asm, p.known_good, shallow=False):
             result.failure = f"{p.asm} differs from {p.known_good}, " + first_difference(p.asm, p.known_good)
             return result
-        problem = check_json(p.json)
+        problem = check_json(p.json, p.asm)
         if problem:
             result.failure = problem
             return result

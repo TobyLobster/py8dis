@@ -1,6 +1,6 @@
 # py8dis JSON output (version 1)
 
-*Status: being implemented. So far `--json` writes the top level (`format`, `version`, `cpu`, `assembler`, `loads` and `moves`) and the items' addresses, `length`, `bytes`, `type`, `labels` and `text`. `constants`, `memory_regions`, `subroutines` and `labels` are empty lists for now, and the items' other fields are left out.*
+*Status: being implemented. So far `--json` writes the top level (`format`, `version`, `cpu`, `assembler`, `loads` and `moves`) and the items, apart from their `comments`. `constants`, `memory_regions`, `subroutines` and `labels` are empty lists for now.*
 
 As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: e.g. a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
 
@@ -85,8 +85,8 @@ One for each instruction or piece of data, in binary address order. Together the
   "mode": "absolute_x",
   "operand": { "value": 8206,
                "expr": { "text": "message", "tree": { "label": 8206, "name": "message" } } },
-  "cycles": "4",
-  "cpu_state": { "a": null, "x": 0, "y": null, "n": false, "v": null, "d": null, "i": null, "z": true, "c": null }
+  "cycles": "4/5",
+  "cpu_state": { "a": null, "x": 0, "y": null, "n": null, "v": null, "d": null, "i": null, "z": null, "c": null }
 }
 ```
 
@@ -95,12 +95,12 @@ All items have `binary_addr`, `runtime_addr`, `length`, `bytes` (a list of integ
 The `type`s are:
 
 - **`instruction`:**
-  - `mnemonic`, as in the asm.
+  - `mnemonic`, as in the asm (upper or lower case, as chosen). For the 8080 it's just the mnemonic: register operands (e.g. `mvi b,`) are only in `text`.
   - `mode`, the addressing mode. For the 6502 and 65C02: `implied`, `accumulator`, `immediate`, `zp`, `zp_x`, `zp_y`, `zp_indirect`, `zp_x_indirect`, `zp_indirect_y`, `absolute`, `absolute_x`, `absolute_y`, `indirect`, `absolute_x_indirect` or `relative`. For the 8080: `implied`, `immediate`, `immediate16` or `address`.
   - `operand` (unless implied): its `value` (an address or an immediate value) and its expression.
   - `target`: for a branch, jump or call, the runtime address it goes to.
-  - `cycles`, as `config.set_show_cycles(True)` shows them, e.g. `"2/3"` for a branch. Always included.
-  - `cpu_state`: what py8dis knows for certain about the registers and flags before the instruction runs, as `config.set_show_cpu_state(True)` shows it, with `null` where it's not known. Always included for the 6502 and 65C02 (it's useful even when it isn't shown in the asm); the 8080 has none.
+  - `cycles`, as `config.set_show_cycles(True)` shows them, e.g. `"2/3"` for a branch. Always included for the 6502 and 65C02; py8dis doesn't count the 8080's.
+  - `cpu_state`: what py8dis knows for certain about the registers and flags once the instruction has run, as `config.set_show_cpu_state(True)` shows it: registers as numbers, flags as `true` or `false`, and `null` where it's not known. Always included for the 6502 and 65C02 instructions py8dis traced (it's useful even when the asm doesn't show it); the 8080 has none.
 - **`bytes`** and **`words`:** `values`, and `exprs` with an expression for each value given with `expr()`, or `null`. `exprs` is left out if there are none.
 - **`string`:** the `text` shows it as in the asm.
 - **`include_binary`:** `filename`, the file included with `include_binary_file()`.
@@ -111,7 +111,7 @@ An expression is `{"text": ..., "tree": ...}`: the text as in the asm, and the e
 
 | Node | Example |
 |---|---|
-| number, with its `format` (`decimal`, `hex`, `hex2` for two digits, or `char`) | `{"num": 13, "format": "hex"}` |
+| number, with its `format`: `decimal`, `signed_decimal`, `hex` (2 or 4 digits as needed), `hex2` or `hex4` (that many digits), `binary`, `picture_binary` or `char`; left out if py8dis doesn't know (e.g. a control file's own formatter) | `{"num": 13, "format": "hex"}` |
 | name (e.g. a constant) | `{"name": "newline"}` |
 | label: its runtime address, and the name used here | `{"label": 8206, "name": "message"}` |
 | an expression written as a string in the control file (not parsed) | `{"raw": "<sprite0"}` |

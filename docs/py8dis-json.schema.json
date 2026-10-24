@@ -184,9 +184,9 @@
     },
     "tree": {
       "oneOf": [
-        { "description": "A number, with how it's shown: 'decimal', 'hex', 'hex2' (two digits) or 'char'.",
+        { "description": "A number, with how it's shown (if py8dis knows): 'decimal', 'signed_decimal', 'hex' (2 or 4 digits as needed), 'hex2' or 'hex4' (that many digits), 'binary', 'picture_binary' or 'char'.",
           "type": "object", "required": ["num"], "additionalProperties": false,
-          "properties": { "num": { "type": "integer" }, "format": { "enum": ["decimal", "hex", "hex2", "char"] } } },
+          "properties": { "num": { "type": "integer" }, "format": { "enum": ["decimal", "signed_decimal", "hex", "hex2", "hex4", "binary", "picture_binary", "char"] } } },
         { "description": "A name, e.g. a constant.",
           "type": "object", "required": ["name"], "additionalProperties": false,
           "properties": { "name": { "type": "string" } } },
@@ -206,7 +206,7 @@
     },
 
     "cpu_state": {
-      "description": "What py8dis knows for certain about the registers and flags before the instruction runs (as set_show_cpu_state(True) shows): null where unknown. 6502 and 65C02 only.",
+      "description": "What py8dis knows for certain about the registers and flags once the instruction has run (as set_show_cpu_state(True) shows): null where unknown. 6502 and 65C02 only.",
       "type": "object",
       "properties": {
         "a": { "type": ["integer", "null"] }, "x": { "type": ["integer", "null"] }, "y": { "type": ["integer", "null"] },
@@ -229,7 +229,7 @@
         "type":         { "enum": ["instruction", "bytes", "words", "string", "include_binary"] },
         "text":         { "description": "The instruction or data as in the asm, without its layout: one string for each line.", "type": "array", "items": { "type": "string" } },
 
-        "mnemonic":  { "description": "instruction: as in the asm.", "type": "string" },
+        "mnemonic":  { "description": "instruction: as in the asm. (For the 8080, without any register operands, which are in 'text'.)", "type": "string" },
         "mode": {
           "description": "instruction: the addressing mode. 6502/65C02: implied, accumulator, immediate, zp, zp_x, zp_y, zp_indirect, zp_x_indirect, zp_indirect_y, absolute, absolute_x, absolute_y, indirect, absolute_x_indirect, relative. 8080: implied, immediate, immediate16, address.",
           "type": "string"
@@ -241,7 +241,7 @@
           "properties": { "value": { "type": "integer" }, "expr": { "$ref": "#/$defs/expr" } }
         },
         "target":    { "description": "instruction: for a branch, jump or call, the runtime address it goes to.", "$ref": "#/$defs/addr" },
-        "cycles":    { "description": "instruction: the cycles taken, as set_show_cycles(True) shows them, e.g. \"2/3\" for a branch.", "type": "string" },
+        "cycles":    { "description": "instruction: the cycles taken, as set_show_cycles(True) shows them, e.g. \"2/3\" for a branch. 6502 and 65C02 only.", "type": "string" },
         "cpu_state": { "$ref": "#/$defs/cpu_state" },
 
         "values": { "description": "bytes, words: the values.", "type": "array", "items": { "type": "integer" } },

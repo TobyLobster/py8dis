@@ -13,9 +13,17 @@ import json
 
 import classification
 import config
+import cpu6502
+import cpu65C02
+import cpu8080
+import disassembly
+import expression
+import mainformatter
 import memorymanager
 import movemanager
+import output
 import session
+import utils
 
 FORMAT  = "py8dis"
 VERSION = 1
@@ -23,8 +31,18 @@ VERSION = 1
 def write(filename):
     """Write the JSON for the current session's disassembly to a file."""
     with open(filename, "w") as f:
-        json.dump(document(), f, indent=1)
-        f.write("\n")
+        f.write(dumps(document()))
+
+def dumps(doc):
+    """The JSON text for a document: each top level key on its own line, and
+    each entry of a list (e.g. each item) on its own line, so the file is
+    easy to read and compare. (This is also much quicker than json.dumps()
+    with indent, which can't use the json module's C encoder.)"""
+    def value_text(value):
+        if isinstance(value, list) and value:
+            return "[\n  " + ",\n  ".join(json.dumps(entry) for entry in value) + "\n]"
+        return json.dumps(value)
+    return "{\n" + ",\n".join(json.dumps(key) + ": " + value_text(value) for key, value in doc.items()) + "\n}\n"
 
 def document():
     """The JSON for the current session's disassembly, as a dictionary."""
@@ -107,5 +125,182 @@ def _items():
         item["type"] = _item_type(c, binary_addr)
         # (Blank lines, e.g. after an RTS, are layout, so they're left out)
         item["text"] = [text for line in lines for text in line.plain_text() if text != ""]
+        if item["type"] == "instruction":
+            item.update(_instruction_fields(binary_loc, c, lines[0]))
+        elif item["type"] in ("bytes", "words"):
+            item.update(_data_fields(binary_addr, length, 1 if item["type"] == "bytes" else 2, lines[0]))
+        elif item["type"] == "include_binary":
+            item["filename"] = session.current().classifications.include_binary_files[binary_addr]
         items.append(item)
     return items
+
+
+# Expressions
+
+def _num_format(binary_addr, value, bits):
+    """How a number that isn't given by an expression is shown (see the
+    formatters in mainformatter.py), as a 'format' for the JSON, or None if
+    it's shown by a formatter py8dis doesn't know (e.g. the control file's
+    own)."""
+    hex_digits = "hex2" if bits == 8 else "hex4"
+    formatter = session.current().disassembly.format_hint.get(binary_addr, mainformatter.uint_formatter)
+    if formatter is mainformatter.uint_formatter:
+        return "decimal" if value < 10 else hex_digits
+    if formatter is mainformatter.uhex_formatter:
+        return hex_digits
+    if formatter is mainformatter.hexadecimal_formatter:
+        return "hex"
+    if formatter in (mainformatter.uint_no_hex_formatter, mainformatter.decimal_formatter):
+        return "decimal"
+    if formatter is mainformatter.sint_formatter:
+        return "signed_decimal" if config.get_assembler().supports_signed_integers() else "decimal"
+    if formatter is mainformatter.char_formatter:
+        if config.get_assembler().char_literal(value) is not None:
+            return "char"
+        return "decimal" if value < 10 else hex_digits
+    if formatter is mainformatter.binary_formatter:
+        return "binary"
+    if formatter is mainformatter.picture_binary_formatter:
+        return "picture_binary"
+    return None
+
+def _tree(value):
+    """The tree for an expression (see expression.py), label reference or
+    other text, for the JSON."""
+    if isinstance(value, expression.InContext):
+        return _tree(value.value)
+    if isinstance(value, disassembly.LabelRef):
+        return { "label": int(value.runtime_addr), "name": str(value) }
+    if isinstance(value, expression.LazyLeaf):
+        return _tree(value.lazy_string)
+    if isinstance(value, expression.Num):
+        return { "num": value.value, "format": value.format }
+    if isinstance(value, expression.Name):
+        return { "name": value.name }
+    if isinstance(value, expression.Unary):
+        return { "op": value.op, "arg": _tree(value.operand) }
+    if isinstance(value, expression.Binary):
+        return { "op": value.op, "left": _tree(value.left), "right": _tree(value.right) }
+    if isinstance(value, expression.Raw):
+        return { "raw": value.text }
+    if utils.is_integer_type(value):
+        return { "num": int(value), "format": "decimal" }
+    return { "raw": str(value) }
+
+def _expr(value, binary_addr=None, number=None, bits=8):
+    """An expression for the JSON: its text and tree. A number that isn't
+    given by an expression (i.e. it's text made by a formatter, see
+    classification.get_constant8()) is the number at binary_addr, 'number'."""
+    text = str(value)
+    if binary_addr is not None and binary_addr not in session.current().classifications.expressions and not isinstance(value, (expression.Expr, utils.LazyString)):
+        tree = { "num": number }
+        fmt = _num_format(binary_addr, number, bits)
+        if fmt is not None:
+            tree["format"] = fmt
+    else:
+        tree = _tree(value)
+    return { "text": text, "tree": tree }
+
+
+# Instructions
+
+# The 6502's addressing modes (see Cpu6502.mode_*), as named in the JSON
+_MODES_6502 = {
+    cpu6502.Cpu6502.mode_implied:          "implied",
+    cpu6502.Cpu6502.mode_immediate:        "immediate",
+    cpu6502.Cpu6502.mode_accumulator:      "accumulator",
+    cpu6502.Cpu6502.mode_offset:           "relative",
+    cpu6502.Cpu6502.mode_indexed_indirect: "zp_x_indirect",
+    cpu6502.Cpu6502.mode_indirect_indexed: "zp_indirect_y",
+    cpu6502.Cpu6502.mode_abs_indexed_x:    "absolute_x",
+    cpu6502.Cpu6502.mode_zp_indexed_x:     "zp_x",
+    cpu6502.Cpu6502.mode_abs_indexed_y:    "absolute_y",
+    cpu6502.Cpu6502.mode_zp_indexed_y:     "zp_y",
+    cpu6502.Cpu6502.mode_indirect_zp:      "zp_indirect",
+    cpu6502.Cpu6502.mode_indirect_addr:    "indirect",
+    cpu6502.Cpu6502.mode_addr:             "absolute",
+    cpu6502.Cpu6502.mode_zp:               "zp",
+    cpu6502.Cpu6502.mode_indexed_abs:      "absolute_x_indirect",
+}
+
+_ZP_MODES = { "zp", "zp_x", "zp_y", "zp_indirect", "zp_x_indirect", "zp_indirect_y" }
+
+def _instruction_fields(binary_loc, c, instruction):
+    """The JSON fields of an instruction (opcode 'c', output as the
+    output.Instruction 'instruction')."""
+    binary_addr = binary_loc.binary_addr
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+    result = { "mnemonic": utils.force_case(c.mnemonic.split()[0]) }
+
+    if isinstance(cpu, cpu6502.Cpu6502):
+        mode = _MODES_6502[c.addr_mode]
+        target = None
+        if isinstance(c, (cpu6502.Cpu6502.OpcodeJsr, cpu6502.Cpu6502.OpcodeJmpAbs, cpu6502.Cpu6502.OpcodeConditionalBranch, cpu65C02.Cpu65C02.OpcodeUnconditionalBranch)):
+            target = int(c.target(binary_addr))
+        if mode in ("implied", "accumulator"):
+            value = None
+        elif mode == "relative":
+            value = target
+        elif mode == "immediate" or mode in _ZP_MODES:
+            value = memory_binary[binary_addr + 1]
+        else:
+            value = memorymanager.get_u16_binary(binary_addr + 1)
+        bits = 16 if mode not in _ZP_MODES and mode not in ("immediate", "relative") else 8
+    else:
+        assert isinstance(cpu, cpu8080.Cpu8080)
+        target = None
+        if isinstance(c, cpu8080.Cpu8080.OpcodeImmediate):
+            mode, value, bits = "immediate", memory_binary[binary_addr + 1], 8
+        elif isinstance(c, cpu8080.Cpu8080.OpcodeImmediate16):
+            mode, value, bits = "immediate16", memorymanager.get_u16_binary(binary_addr + 1), 16
+        elif c.operand_length == 2:
+            mode, value, bits = "address", memorymanager.get_u16_binary(binary_addr + 1), 16
+            if isinstance(c, (cpu8080.Cpu8080.OpcodeJmp, cpu8080.Cpu8080.OpcodeConditionalBranch, cpu8080.Cpu8080.OpcodeCall)):
+                target = value
+        else:
+            mode, value, bits = "implied", None, None
+
+    result["mode"] = mode
+    if value is not None and instruction.operand is not None:
+        result["operand"] = { "value": value, "expr": _expr(instruction.operand, binary_addr + 1, value, bits) }
+    if target is not None:
+        result["target"] = target
+
+    if isinstance(cpu, cpu6502.Cpu6502):
+        result["cycles"] = c.cycles_description(binary_addr)
+        state = cpu.cpu_states[binary_addr]
+        if state is not None:
+            result["cpu_state"] = _cpu_state(state.pessimistic)
+    return result
+
+def _cpu_state(disposition):
+    """The 6502's state (a CpuStateDisposition) for the JSON: what's known,
+    with None where it isn't."""
+    result = {}
+    for reg in "axy":
+        result[reg] = disposition[reg].value
+    for flag in "nvdizc":
+        value = disposition[flag]
+        result[flag] = bool(value) if value in (True, False, 0, 1) else None
+    return result
+
+
+# Data
+
+def _data_fields(binary_addr, length, element_size, data_block):
+    """The JSON fields of bytes or words (output as the output.DataBlock
+    'data_block')."""
+    expressions = session.current().classifications.expressions
+    memory_binary = session.current().memory.binary
+    if element_size == 1:
+        values = memory_binary[binary_addr:binary_addr + length]
+    else:
+        values = [memorymanager.get_u16_binary(binary_addr + i) for i in range(0, length, 2)]
+    result = { "values": values }
+    if isinstance(data_block, output.DataBlock):
+        items = data_block.items()
+        exprs = [_expr(items[i]) if (binary_addr + i*element_size) in expressions else None for i in range(len(values))]
+        if any(e is not None for e in exprs):
+            result["exprs"] = exprs
+    return result
