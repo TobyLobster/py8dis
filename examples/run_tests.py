@@ -92,13 +92,16 @@ ERROR_TESTS = [
     ("expr_dict_missing",       "expr(&200a, ...): the dictionary has no entry for the value &0e found at this address"),
     ("address_out_of_range",    "label(&10001): the address must be between &0000 and &10000"),
     ("local_label_bad_name",    "local_label(&200e, '1message'): this isn't a valid label name (a letter or underscore followed by letters, digits or underscores)"),
-    ("no_data_loaded",          "comment(&3000): no data is loaded at this address"),
+    ("no_data_loaded",          "comment(&3000): no data is loaded at this address (data is loaded from 'orig/helloworld.orig' at &2000-&201b)"),
     ("already_classified",      "byte(&2010, ...): &2010 has already been classified (e.g. by an earlier byte(), word() or string command)"),
     ("move_same_addresses",     "move(&2000, &2000, 16): the source and destination are the same"),
     ("memory_region_bad_end",   "memory_region(&80, &70, ...): the end must be after the start"),
     ("load_different_cpu",      "All calls to load() must use the same CPU (already using 'Cpu6502', now asked for '65c02')."),
     ("use_command_line_late",   "use_command_line(False) must be called before any other command (the command line has already been read)"),
     ("label_maker_hook_twice",  "set_label_maker_hook() can only be called once"),
+    ("load_missing_file",       "load(&2000, 'orig/no_such_file.orig'): can't read the file (No such file or directory)"),
+    ("load_wrong_md5",          "load(&2000, 'orig/helloworld.orig'): the file's md5sum is ba85fca1feae301af81806d3102b0851, not 0123456789abcdef0123456789abcdef as expected"),
+    ("load_past_top",           "load(&fff0, 'orig/helloworld.orig'): the file (28 bytes) runs past the top of memory"),
     ("go_without_load",         "go(): nothing has been loaded to disassemble (use load() first)"),
 ]
 

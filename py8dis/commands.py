@@ -159,7 +159,7 @@ def _check_data_loaded(command, runtime_addr, binary_addr, n=1):
     """Stop with an error unless there is data loaded at all n bytes from binary_addr."""
     _check_in_memory(command, runtime_addr, binary_addr, n)
     if not memorymanager.is_data_loaded_at_binary_addr(binary_addr, n):
-        utils.die("{0}({1}): no data is loaded at this address".format(command, _hex(runtime_addr)))
+        utils.die("{0}({1}): no data is loaded at this address ({2})".format(command, _hex(runtime_addr), memorymanager.describe_loaded_files()))
 
 # Reading the binary. (These check the user's address, then use the
 # memorymanager functions of the same name.)
@@ -271,7 +271,7 @@ def move(dest_runtime_addr, src_binary_addr, length):
     # You can't move from a region that hasn't been populated with data.
     for i in range(src_binary_addr, src_binary_addr + length):
         if memory_binary[i] is None:
-            utils.die("{0}: no data is loaded at {1}".format(describe(), config.get_assembler().hex(i)))
+            utils.die("{0}: no data is loaded at {1} ({2})".format(describe(), config.get_assembler().hex(i), memorymanager.describe_loaded_files()))
 
     dest_runtime_addr = memorymanager.RuntimeAddr(dest_runtime_addr)
     src_binary_addr = memorymanager.BinaryAddr(src_binary_addr)
@@ -594,7 +594,7 @@ def _is_loaded_else_warn(command, runtime_addr, binary_addr, n, consequence, war
     if memorymanager.is_data_loaded_at_binary_addr(binary_addr, n):
         return True
     if warn:
-        utils.warn("{0}({1}): no data is loaded at this address, so {2}".format(command, _hex(runtime_addr), consequence))
+        utils.warn("{0}({1}): no data is loaded at this address ({2}), so {3}".format(command, _hex(runtime_addr), memorymanager.describe_loaded_files(), consequence))
     return False
 
 def _check_not_classified(command, runtime_addr, binary_addr, length):
@@ -761,7 +761,7 @@ def code_ptr(runtime_addr, runtime_addr_high=None, offset=0, label_name=None):
     binary_addr_high = movemanager.r2b_checked(runtime_addr_high).binary_addr
     for (r, b) in ((runtime_addr, binary_addr), (runtime_addr_high, binary_addr_high)):
         if not memorymanager.is_data_loaded_at_binary_addr(b):
-            utils.die("code_ptr(): no data is loaded at {0}".format(config.get_assembler().hex(r)))
+            utils.die("code_ptr(): no data is loaded at {0} ({1})".format(config.get_assembler().hex(r), memorymanager.describe_loaded_files()))
 
     # The address of the code, wrapping round at the top of memory (e.g. an
     # 'rts' jump table entry of &ffff means the code is at &0000)

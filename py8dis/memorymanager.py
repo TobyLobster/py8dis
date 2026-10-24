@@ -174,6 +174,33 @@ class Memory:
         # Stores a (start_binary_addr, end_binary_addr) pair for each load()
         self.load_ranges = []
 
+        # The files loaded, in the order loaded: a LoadedFile for each load()
+        self.loaded_files = []
+
+class LoadedFile:
+    """A file loaded with load(): its filename (as given to load()), and the
+    binary addresses it's loaded at, from 'start' up to (but not including)
+    'end'."""
+
+    def __init__(self, filename, start, end):
+        self.filename = filename
+        self.start = start
+        self.end = end
+
+    def describe(self):
+        """e.g. "'orig/helloworld.orig' at &2000-&201b", for messages."""
+        import config
+        h = config.get_assembler().hex4
+        return "{0!r} at {1}-{2}".format(self.filename, h(self.start), h(self.end - 1))
+
+def describe_loaded_files():
+    """The files loaded, for messages, e.g. "data is loaded from
+    'orig/helloworld.orig' at &2000-&201b"."""
+    files = session.current().memory.loaded_files
+    if not files:
+        return "nothing is loaded"
+    return "data is loaded from " + ", ".join(f.describe() for f in files)
+
 # For control files (which get these with 'from commands import *'), and
 # acorn.py: these always use the current session's memory.
 #
@@ -215,25 +242,39 @@ def load(filename, binary_addr, md5sum=None):
 
     Checks the md5 checksum matches if given."""
 
+    import config
     binary_addr = BinaryAddr(binary_addr)
     memory = session.current().memory
+    h = config.get_assembler().hex4
+    def die(problem):
+        utils.die("load({0}, {1!r}): {2}".format(h(binary_addr), filename, problem))
 
     try:
         with open(filename, "rb") as f:
             data = bytearray(f.read())
-            if binary_addr + len(data) > 0x10000:
-                utils.die("load() would overflow memory")
-            memory.binary[binary_addr:binary_addr+len(data)] = data
-    except FileNotFoundError:
-        utils.die("File '{0}' not found".format(filename))
+    except OSError as e:
+        die("can't read the file ({0})".format(e.strerror))
+    if len(data) == 0:
+        die("the file is empty")
+    if binary_addr + len(data) > 0x10000:
+        die("the file ({0} bytes) runs past the top of memory".format(len(data)))
 
     if md5sum is not None:
         import hashlib
-        hash = hashlib.md5()
-        hash.update(data)
-        if md5sum != hash.hexdigest():
-            utils.die("load() md5sum doesn't match")
-    memory.load_ranges.append((binary_addr, binary_addr + len(data)))
+        actual = hashlib.md5(data).hexdigest()
+        if md5sum != actual:
+            die("the file's md5sum is {0}, not {1} as expected".format(actual, md5sum))
+
+    # Loading over data loaded earlier replaces it, as it always has, but is
+    # probably a mistake
+    end_addr = binary_addr + len(data)
+    for earlier in memory.loaded_files:
+        if earlier.start < end_addr and binary_addr < earlier.end:
+            utils.warn("load({0}, {1!r}): this replaces some of the data loaded from {2}".format(h(binary_addr), filename, earlier.describe()))
+
+    memory.binary[binary_addr:end_addr] = data
+    memory.load_ranges.append((binary_addr, end_addr))
+    memory.loaded_files.append(LoadedFile(filename, int(binary_addr), int(end_addr)))
 
 def is_data_loaded_at_binary_addr(binary_addr, n=1):
     assert all(is_valid_binary_addr(x) for x in range(binary_addr, binary_addr+n))

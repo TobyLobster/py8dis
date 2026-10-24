@@ -463,7 +463,7 @@ def _check_string_start(binary_addr):
     """Check there is unclassified data at the start of a string."""
 
     if not _is_loaded(binary_addr):
-        _string_error(binary_addr, "no data is loaded there")
+        _string_error(binary_addr, "no data is loaded there ({0})".format(memorymanager.describe_loaded_files()))
     if is_classified(binary_addr):
         _string_error(binary_addr, "it is already classified as {0}".format(describe_classification_at(binary_addr)))
 
@@ -671,7 +671,7 @@ def include_binary_file(binary_addr, relative_filepath):
     # Check the contents of the file matches the file we are disassembling
     for i in range(length):
         if memory_binary[binary_addr + i] is None:
-            die("no data is loaded at {0} (offset {1} in the file)".format(h(binary_addr + i), i))
+            die("no data is loaded at {0} (offset {1} in the file; {2})".format(h(binary_addr + i), i, memorymanager.describe_loaded_files()))
         if memory_binary[binary_addr + i] != contents[i]:
             die("the file doesn't match the loaded data at {0} (offset {1} in the file)".format(h(binary_addr + i), i))
     if is_classified(binary_addr, length):

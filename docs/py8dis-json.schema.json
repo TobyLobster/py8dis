@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/TobyLobster/py8dis/docs/py8dis-json.schema.json",
+  "title": "py8dis JSON output, version 1",
+  "description": "The finished disassembly as data, written by py8dis with --json FILE (with or without -o for the asm). See docs/json-format.md. Optional keys are left out when empty. A reader should ignore keys it doesn't know: they may be added without changing the version.",
+  "type": "object",
+  "required": ["format", "version", "cpu", "assembler", "loads", "moves", "constants", "memory_regions", "subroutines", "labels", "items"],
+  "properties": {
+    "format":    { "const": "py8dis" },
+    "version":   { "const": 1 },
+    "cpu":       { "enum": ["6502", "65c02", "8080"] },
+    "assembler": { "description": "The assembler the asm was written for. Every 'text' field uses its syntax.",
+                   "enum": ["acme", "beebasm", "xa", "z88dk-8080"] },
+    "loads": {
+      "description": "The files loaded with load(), in the order loaded: the filename as given to load(), and the binary addresses the data is loaded at.",
+      "type": "array",
+      "items": {
+        "allOf": [ { "$ref": "#/$defs/range" } ],
+        "required": ["filename"],
+        "properties": { "filename": { "type": "string" } }
+      }
+    },
+    "moves": {
+      "description": "The move() commands, in the order made. Move 0 (no move) isn't listed.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "binary_addr", "runtime_addr", "length"],
+        "properties": {
+          "id":           { "type": "integer", "minimum": 1 },
+          "binary_addr":  { "$ref": "#/$defs/addr" },
+          "runtime_addr": { "$ref": "#/$defs/addr" },
+          "length":       { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "constants": {
+      "description": "The constant() definitions, in the order made.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "value", "text"],
+        "properties": {
+          "name":    { "type": "string" },
+          "value":   { "type": ["integer", "string"] },
+          "text":    { "description": "The value as the asm shows it.", "type": "string" },
+          "comment": { "$ref": "#/$defs/comment" }
+        }
+      }
+    },
+    "memory_regions": {
+      "description": "The memory regions in effect (the CPU's, acorn.py's and the control file's, after any renaming or removal), by start address then size.",
+      "type": "array",
+      "items": {
+        "allOf": [ { "$ref": "#/$defs/range" } ],
+        "required": ["name"],
+        "properties": { "name": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "subroutines": {
+      "description": "The subroutine() definitions, by runtime address.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["runtime_addr"],
+        "properties": {
+          "runtime_addr": { "$ref": "#/$defs/addr" },
+          "move_id":      { "$ref": "#/$defs/move_id" },
+          "name":         { "type": "string" },
+          "title":        { "type": "string" },
+          "description":  { "type": "string" },
+          "on_entry":     { "$ref": "#/$defs/registers" },
+          "on_exit":      { "$ref": "#/$defs/registers" }
+        }
+      }
+    },
+    "labels": {
+      "description": "Every address with a name, inside or outside the loaded data, by runtime address.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/label" }
+    },
+    "items": {
+      "description": "One for each instruction or piece of data, by binary address. Together they cover the loaded data exactly.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+
+  "$defs": {
+    "addr":    { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "move_id": { "description": "The move (see 'moves'); left out when 0, i.e. not moved.", "type": "integer", "minimum": 1 },
+    "range": {
+      "description": "Addresses from 'start' up to, but not including, 'end'.",
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "$ref": "#/$defs/addr" },
+        "end":   { "type": "integer", "minimum": 1, "maximum": 65536 }
+      }
+    },
+    "align": { "enum": ["before_label", "after_label", "before_line", "inline", "after_line"] },
+    "comment": {
+      "type": "object",
+      "required": ["text", "align"],
+      "properties": {
+        "text":  { "description": "As written in the control file (or by py8dis), before word wrapping.", "type": "string" },
+        "align": { "$ref": "#/$defs/align" }
+      }
+    },
+    "registers": {
+      "description": "A description of each register, e.g. {\"a\": \"the character\"}.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+
+    "label": {
+      "type": "object",
+      "required": ["runtime_addr"],
+      "properties": {
+        "runtime_addr": { "$ref": "#/$defs/addr" },
+        "names": {
+          "description": "The label's names, in the order the asm defines them.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "autogenerated", "definition"],
+            "properties": {
+              "name":          { "type": "string" },
+              "move_id":       { "$ref": "#/$defs/move_id" },
+              "autogenerated": { "description": "Made up by py8dis (e.g. l2000), rather than given by the control file, acorn.py or a label maker hook.", "type": "boolean" },
+              "definition": {
+                "description": "Where the asm defines it: 'inline' at its address, 'relative' as an offset from the label at the start of the item it's inside (e.g. l2001 = c2000+1), 'memory_locations' as 'name = value' at the top, or 'none' if the asm doesn't need it.",
+                "enum": ["inline", "relative", "memory_locations", "none"]
+              },
+              "memory_region": { "description": "For a 'memory_locations' definition, the heading it's under.", "type": "string" }
+            }
+          }
+        },
+        "local_names": {
+          "description": "Names given with local_label(), each used only in its range of the code.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "start", "end"],
+            "properties": {
+              "name":        { "type": "string" },
+              "output_name": { "description": "The name the asm uses, if different (e.g. temp_2 when temp is used for another address).", "type": "string" },
+              "move_id":     { "$ref": "#/$defs/move_id" },
+              "start":       { "$ref": "#/$defs/addr" },
+              "end":         { "$ref": "#/$defs/addr" }
+            }
+          }
+        },
+        "expressions": {
+          "description": "Expressions naming this address, given with expr_label(), e.g. table+1.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text"],
+            "properties": { "text": { "type": "string" }, "move_id": { "$ref": "#/$defs/move_id" } }
+          }
+        },
+        "references": {
+          "description": "The instructions and data that refer to this address, by binary address.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["binary_addr", "runtime_addr"],
+            "properties": {
+              "binary_addr":  { "$ref": "#/$defs/addr" },
+              "runtime_addr": { "$ref": "#/$defs/addr" },
+              "move_id":      { "$ref": "#/$defs/move_id" }
+            }
+          }
+        }
+      }
+    },
+
+    "expr": {
+      "description": "An expression: the text as in the asm, and its tree.",
+      "type": "object",
+      "required": ["text", "tree"],
+      "properties": { "text": { "type": "string" }, "tree": { "$ref": "#/$defs/tree" } }
+    },
+    "tree": {
+      "oneOf": [
+        { "description": "A number, with how it's shown: 'decimal', 'hex', 'hex2' (two digits) or 'char'.",
+          "type": "object", "required": ["num"], "additionalProperties": false,
+          "properties": { "num": { "type": "integer" }, "format": { "enum": ["decimal", "hex", "hex2", "char"] } } },
+        { "description": "A name, e.g. a constant.",
+          "type": "object", "required": ["name"], "additionalProperties": false,
+          "properties": { "name": { "type": "string" } } },
+        { "description": "A label: its runtime address, and the name used here.",
+          "type": "object", "required": ["label", "name"], "additionalProperties": false,
+          "properties": { "label": { "$ref": "#/$defs/addr" }, "name": { "type": "string" } } },
+        { "description": "An expression written as a string in the control file, which py8dis doesn't parse.",
+          "type": "object", "required": ["raw"], "additionalProperties": false,
+          "properties": { "raw": { "type": "string" } } },
+        { "description": "A unary operator, using py8dis's names: '<' (low byte), '>' (high byte), 'NOT', or another given to make_op1().",
+          "type": "object", "required": ["op", "arg"], "additionalProperties": false,
+          "properties": { "op": { "type": "string" }, "arg": { "$ref": "#/$defs/tree" } } },
+        { "description": "A binary operator, using py8dis's names: '+', '-', '*', 'DIV', 'MOD', 'AND', 'OR', 'EOR', '<<', '>>', or another given to make_op2().",
+          "type": "object", "required": ["op", "left", "right"], "additionalProperties": false,
+          "properties": { "op": { "type": "string" }, "left": { "$ref": "#/$defs/tree" }, "right": { "$ref": "#/$defs/tree" } } }
+      ]
+    },
+
+    "cpu_state": {
+      "description": "What py8dis knows for certain about the registers and flags before the instruction runs (as set_show_cpu_state(True) shows): null where unknown. 6502 and 65C02 only.",
+      "type": "object",
+      "properties": {
+        "a": { "type": ["integer", "null"] }, "x": { "type": ["integer", "null"] }, "y": { "type": ["integer", "null"] },
+        "n": { "type": ["boolean", "null"] }, "v": { "type": ["boolean", "null"] }, "d": { "type": ["boolean", "null"] },
+        "i": { "type": ["boolean", "null"] }, "z": { "type": ["boolean", "null"] }, "c": { "type": ["boolean", "null"] }
+      }
+    },
+
+    "item": {
+      "type": "object",
+      "required": ["binary_addr", "runtime_addr", "length", "bytes", "type", "text"],
+      "properties": {
+        "binary_addr":  { "$ref": "#/$defs/addr" },
+        "runtime_addr": { "$ref": "#/$defs/addr" },
+        "move_id":      { "$ref": "#/$defs/move_id" },
+        "length":       { "type": "integer", "minimum": 1 },
+        "bytes":        { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+        "labels":       { "description": "The names the asm defines at this item, in order.", "type": "array", "items": { "type": "string" } },
+        "comments":     { "description": "The comments at this item, in output order.", "type": "array", "items": { "$ref": "#/$defs/comment" } },
+        "type":         { "enum": ["instruction", "bytes", "words", "string", "include_binary"] },
+        "text":         { "description": "The instruction or data as in the asm, without its layout: one string for each line.", "type": "array", "items": { "type": "string" } },
+
+        "mnemonic":  { "description": "instruction: as in the asm.", "type": "string" },
+        "mode": {
+          "description": "instruction: the addressing mode. 6502/65C02: implied, accumulator, immediate, zp, zp_x, zp_y, zp_indirect, zp_x_indirect, zp_indirect_y, absolute, absolute_x, absolute_y, indirect, absolute_x_indirect, relative. 8080: implied, immediate, immediate16, address.",
+          "type": "string"
+        },
+        "operand": {
+          "description": "instruction: the operand's value (an address, or an immediate value), with its expression.",
+          "type": "object",
+          "required": ["value", "expr"],
+          "properties": { "value": { "type": "integer" }, "expr": { "$ref": "#/$defs/expr" } }
+        },
+        "target":    { "description": "instruction: for a branch, jump or call, the runtime address it goes to.", "$ref": "#/$defs/addr" },
+        "cycles":    { "description": "instruction: the cycles taken, as set_show_cycles(True) shows them, e.g. \"2/3\" for a branch.", "type": "string" },
+        "cpu_state": { "$ref": "#/$defs/cpu_state" },
+
+        "values": { "description": "bytes, words: the values.", "type": "array", "items": { "type": "integer" } },
+        "exprs":  { "description": "bytes, words: the expression for each value given with expr(), or null. Left out if there are none.",
+                    "type": "array", "items": { "oneOf": [ { "$ref": "#/$defs/expr" }, { "type": "null" } ] } },
+        "filename": { "description": "include_binary: the file included.", "type": "string" }
+      }
+    }
+  }
+}
