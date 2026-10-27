@@ -178,20 +178,24 @@ class Memory:
         self.loaded_files = []
 
 class LoadedFile:
-    """A file loaded with load(): its filename (as given to load()), and the
-    binary addresses it's loaded at, from 'start' up to (but not including)
-    'end'."""
+    """A file loaded with load() or load_prg(): its filename (as given), and
+    the binary addresses it's loaded at, from 'start' up to (but not
+    including) 'end'. 'offset' is where in the file the data loaded starts,
+    and 'prg' is True for a PRG file loaded with load_prg()."""
 
-    def __init__(self, filename, start, end):
+    def __init__(self, filename, start, end, offset=0, prg=False):
         self.filename = filename
         self.start = start
         self.end = end
+        self.offset = offset
+        self.prg = prg
 
     def describe(self):
         """e.g. "'orig/helloworld.orig' at &2000-&201b", for messages."""
         import config
         h = config.get_assembler().hex4
-        return "{0!r} at {1}-{2}".format(self.filename, h(self.start), h(self.end - 1))
+        from_offset = " (from offset {0})".format(self.offset) if self.offset else ""
+        return "{0!r}{1} at {2}-{3}".format(self.filename, from_offset, h(self.start), h(self.end - 1))
 
 def describe_loaded_files():
     """The files loaded, for messages, e.g. "data is loaded from
@@ -237,27 +241,39 @@ def get_entire_load_range():
 
     return (pydis_start, pydis_end)
 
-def load(filename, binary_addr, md5sum=None):
-    """Load a binary file into memory at the given address.
+def read_file(filename, die):
+    """The contents of a file, as a bytearray. 'die' is called with a
+    description of any problem."""
+    try:
+        with open(filename, "rb") as f:
+            return bytearray(f.read())
+    except OSError as e:
+        die("can't read the file ({0})".format(e.strerror))
 
-    Checks the md5 checksum matches if given."""
+def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False, command=None):
+    """Load a binary file (or the part of it from 'offset', for 'length'
+    bytes or to the end) into memory at the given address.
+
+    Checks the md5 checksum (of the whole file) matches if given. 'command'
+    describes the command for messages, e.g. "load(&2000, 'file')"."""
 
     import config
     binary_addr = BinaryAddr(binary_addr)
     memory = session.current().memory
     h = config.get_assembler().hex4
+    if command is None:
+        command = "load({0}, {1!r})".format(h(binary_addr), filename)
     def die(problem):
-        utils.die("load({0}, {1!r}): {2}".format(h(binary_addr), filename, problem))
+        utils.die("{0}: {1}".format(command, problem))
 
-    try:
-        with open(filename, "rb") as f:
-            data = bytearray(f.read())
-    except OSError as e:
-        die("can't read the file ({0})".format(e.strerror))
+    data = read_file(filename, die)
     if len(data) == 0:
         die("the file is empty")
-    if binary_addr + len(data) > 0x10000:
-        die("the file ({0} bytes) runs past the top of memory".format(len(data)))
+    whole_file = (offset == 0 and length is None)
+    if offset >= len(data):
+        die("the offset ({0}) is past the end of the file ({1} bytes)".format(offset, len(data)))
+    if length is not None and offset + length > len(data):
+        die("the offset and length ({0} + {1}) run past the end of the file ({2} bytes)".format(offset, length, len(data)))
 
     if md5sum is not None:
         import hashlib
@@ -265,16 +281,36 @@ def load(filename, binary_addr, md5sum=None):
         if md5sum != actual:
             die("the file's md5sum is {0}, not {1} as expected".format(actual, md5sum))
 
+    data = data[offset:] if length is None else data[offset:offset + length]
+    if binary_addr + len(data) > 0x10000:
+        if whole_file:
+            die("the file ({0} bytes) runs past the top of memory".format(len(data)))
+        die("the {0} bytes loaded run past the top of memory".format(len(data)))
+
     # Loading over data loaded earlier replaces it, as it always has, but is
     # probably a mistake
     end_addr = binary_addr + len(data)
     for earlier in memory.loaded_files:
         if earlier.start < end_addr and binary_addr < earlier.end:
-            utils.warn("load({0}, {1!r}): this replaces some of the data loaded from {2}".format(h(binary_addr), filename, earlier.describe()))
+            utils.warn("{0}: this replaces some of the data loaded from {1}".format(command, earlier.describe()))
 
     memory.binary[binary_addr:end_addr] = data
     memory.load_ranges.append((binary_addr, end_addr))
-    memory.loaded_files.append(LoadedFile(filename, int(binary_addr), int(end_addr)))
+    memory.loaded_files.append(LoadedFile(filename, int(binary_addr), int(end_addr), offset, prg))
+
+def prg_header_addr():
+    """If the output starts with a PRG file's two-byte load address (see
+    load_prg()), so that it assembles to the whole PRG file, the load address;
+    otherwise None. That's when a PRG file is loaded at the lowest address
+    loaded (and at &0002 or above)."""
+    memory = session.current().memory
+    if not memory.load_ranges:
+        return None
+    start, _ = get_entire_load_range()
+    for loaded_file in memory.loaded_files:
+        if loaded_file.prg and loaded_file.start == start and start >= 2:
+            return int(start)
+    return None
 
 def is_data_loaded_at_binary_addr(binary_addr, n=1):
     assert all(is_valid_binary_addr(x) for x in range(binary_addr, binary_addr+n))

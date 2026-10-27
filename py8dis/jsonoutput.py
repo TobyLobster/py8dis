@@ -71,8 +71,15 @@ def _cpu_name(cpu):
     return type(cpu).__name__
 
 def _loads():
-    return [{ "filename": f.filename, "start": f.start, "end": f.end }
-            for f in session.current().memory.loaded_files]
+    result = []
+    for f in session.current().memory.loaded_files:
+        entry = { "filename": f.filename, "start": f.start, "end": f.end }
+        if f.offset:
+            entry["offset"] = f.offset
+        if f.prg:
+            entry["prg"] = True
+        result.append(entry)
+    return result
 
 def _moves():
     move_definitions = session.current().moves.move_definitions

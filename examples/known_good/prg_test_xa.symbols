@@ -1,0 +1,7 @@
+comadd 801,pydis_start
+comadd 80d,start
+comadd 80f,loop_c080f
+comadd 81a,return_1
+comadd 81b,l081b
+comadd 822,pydis_end
+comadd ffd2,chrout

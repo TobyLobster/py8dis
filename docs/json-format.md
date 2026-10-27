@@ -41,7 +41,7 @@ The JSON holds everything py8dis knows once it has finished: the names are exact
 }
 ```
 
-- `loads` are the files loaded with `load()`, in the order loaded: the filename as given to `load()`, and the binary addresses the data is loaded at.
+- `loads` are the files loaded with `load()` or `load_prg()`, in the order loaded: the filename as given, and the binary addresses the data is loaded at. `offset` is where in the file the data loaded starts, if it isn't the start of the file (with `load(..., offset=...)`, or after a PRG file's two-byte header). `prg` is `true` for a PRG file loaded with `load_prg()`; if it's the lowest load, the asm starts with the file's two-byte header, so that it assembles to the whole file.
 - `constants` are in the order the asm defines them. `text` is the value as the asm shows it, and `comment` the constant's comment, if any.
 - `memory_regions` are those in effect (the CPU's, acorn.py's and the control file's, after any renaming or removal), as used to group "Memory locations" in the asm, by start address, larger first.
 - `subroutines` are those given with `subroutine()` that are in the loaded data, or whose names the asm uses (e.g. the OS calls acorn.py names, when they're called). Each has the `runtime_addr`, its `move_id` if any, and whichever of `name`, `title`, `description`, `on_entry` and `on_exit` were given.

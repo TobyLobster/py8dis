@@ -2,6 +2,7 @@
 Exposes useful commands to the user:
 
 load()                  Loads a binary file to analyse.
+load_prg()              Loads a Commodore PRG file, at the address in its first two bytes.
 move()                  Indicates that a block of memory is copied at runtime.
 label()                 Define a label name for a runtime address.
 optional_label()        Define a label name for a runtime address, if used.
@@ -188,14 +189,55 @@ def get_u16_be_runtime(runtime_addr):
     _check_data_loaded("get_u16_be_runtime", runtime_addr, binary_loc.binary_addr, 2)
     return memorymanager.get_u16_be_binary(binary_loc.binary_addr)
 
-def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
+def load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, length=None):
     """Loads a binary file to analyse at the given address.
 
-    Load a binary file and optionally verify the checksum of the data."""
+    Load a binary file and optionally verify the checksum of the data (of the
+    whole file). To load only part of the file, give the offset in the file
+    to start from, and the length to load (or None for the rest of the
+    file)."""
 
-    # Check we have a valid CPU for the chosen assembler and select the
-    # session's CPU accordingly
     _check_address_range("load", binary_load_addr)
+    command = "load({0}, {1!r})".format(_hex(binary_load_addr), filename)
+    if not utils.is_integer_type(offset) or offset < 0:
+        utils.die("{0}: the offset must be a whole number, 0 or more, not {1!r}".format(command, offset))
+    if length is not None and (not utils.is_integer_type(length) or length <= 0):
+        utils.die("{0}: the length must be a positive whole number (or None for the rest of the file), not {1!r}".format(command, length))
+    _select_cpu(cpu_name)
+
+    # A PRG file's first two bytes are its load address, not part of the data
+    if offset == 0 and filename.lower().endswith((".prg", ".p00")):
+        utils.warn("{0}: this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg({1!r}) loads it at that address without them".format(command, filename))
+
+    memorymanager.load(filename, binary_load_addr, md5sum, offset, length, command=command)
+
+def load_prg(filename, cpu_name="6502", md5sum=None):
+    """Loads a Commodore PRG file: its first two bytes are the address to load
+    the rest of it at. (A PC64 'P00' file, a PRG file after a 26 byte header
+    starting 'C64File', is also accepted.)
+
+    The disassembly starts with the same two bytes, so that it assembles to
+    the whole PRG file. (To load the data without them, use
+    load(address, filename, offset=2).) The md5sum, if given, is that of the
+    whole file. Returns the load address."""
+
+    command = "load_prg({0!r})".format(filename)
+    def die(problem):
+        utils.die("{0}: {1}".format(command, problem))
+    _select_cpu(cpu_name)
+
+    data = memorymanager.read_file(filename, die)
+    header_length = 26 if data[:8] == b"C64File\0" else 0
+    if len(data) < header_length + 3:
+        die("the file ({0} bytes) is too short to be a PRG file (two bytes of load address, then the data)".format(len(data)))
+    binary_load_addr = data[header_length] | (data[header_length + 1] << 8)
+    memorymanager.load(filename, binary_load_addr, md5sum, header_length + 2, prg=True, command=command)
+    return binary_load_addr
+
+def _select_cpu(cpu_name):
+    """Check the CPU asked for by load() or load_prg() is supported by the
+    chosen assembler, and make it the session's CPU (or check it's the same
+    type as one chosen by an earlier load())."""
     if cpu_name is None:
         utils.die("No CPU type selected in call to load().")
 
@@ -232,9 +274,6 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None):
     # about (see get_cmos())
     if isinstance(session.current().cpu, cpu65C02.Cpu65C02):
         config.set_cmos(True)
-
-    # Load the file
-    memorymanager.load(filename, binary_load_addr, md5sum)
 
 def move(dest_runtime_addr, src_binary_addr, length):
     """Indicates that a block of memory is copied at runtime.

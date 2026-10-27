@@ -12,12 +12,16 @@
     "assembler": { "description": "The assembler the asm was written for (as given by the assembler's get_name()). Every 'text' field uses its syntax.",
                    "enum": ["acme", "beebasm", "xa", "z88dk"] },
     "loads": {
-      "description": "The files loaded with load(), in the order loaded: the filename as given to load(), and the binary addresses the data is loaded at.",
+      "description": "The files loaded with load() or load_prg(), in the order loaded: the filename as given, the binary addresses the data is loaded at, where in the file the data loaded starts (if not at the start), and whether it's a PRG file loaded with load_prg().",
       "type": "array",
       "items": {
         "allOf": [ { "$ref": "#/$defs/range" } ],
         "required": ["filename"],
-        "properties": { "filename": { "type": "string" } }
+        "properties": {
+          "filename": { "type": "string" },
+          "offset":   { "type": "integer", "minimum": 1 },
+          "prg":      { "const": true }
+        }
       }
     },
     "moves": {

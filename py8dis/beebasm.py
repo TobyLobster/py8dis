@@ -136,6 +136,9 @@ class Beebasm(assembler.Assembler):
 
     def find_temporary_area(self, dest, source, length):
         pydis_start, pydis_end = memorymanager.get_entire_load_range()
+        if memorymanager.prg_header_addr() is not None:
+            # The output starts with the two-byte PRG header (see prg_header())
+            pydis_start -= 2
 
         temp_start = -1
         overlap_length = -1
@@ -306,10 +309,12 @@ class Beebasm(assembler.Assembler):
         result.append("")
         s = utils.force_case("save")
         output_filename = session.current().output_filename
+        # (Starting with the two-byte header of a PRG file, see prg_header())
+        start = "pydis_start - 2" if memorymanager.prg_header_addr() is not None else "pydis_start"
         if output_filename is None:
-            s += " pydis_start, pydis_end"
+            s += " %s, pydis_end" % start
         else:
-            s += ' "%s", pydis_start, pydis_end' % output_filename
+            s += ' "%s", %s, pydis_end' % (output_filename, start)
         result.append(s)
         return result
 

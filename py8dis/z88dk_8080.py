@@ -125,6 +125,10 @@ class Z88DK(assembler.Assembler):
         """Preamble to be output at the start of the disassembly."""
         return []
 
+    def prg_header(self, load_addr):
+        # (A second org would start a separate section)
+        return None
+
     def code_start(self, start_addr, end_addr, first):
         """At the start of the code we provide the address at which to
         assemble."""

@@ -25,6 +25,8 @@ The error tests (ERROR_TESTS below) are control files in python/errors/ that
 py8dis should stop with an error for, e.g. an expr() with the wrong value. Each
 passes if py8dis fails with exactly the expected message as the last line of
 its error output. They're run with beebasm, whose hex format the messages use.
+The warning tests (WARNING_TESTS) are control files in python/warnings/ that
+should run successfully and give the expected warning.
 
 With -c, when all the tests are run, session_tests.py (several disassemblies in
 one process) and render_tests.py (rendering output lines for each assembler)
@@ -82,6 +84,9 @@ TESTS = [
     ("regression_tests",         ["acme", "beebasm", "xa"],    "regression tests for fixed bugs"),
     ("expressions",              ["acme", "beebasm", "xa"],    "how expressions are bracketed for each assembler"),
     ("acorn_os_calls",           ["acme", "beebasm", "xa"],    "test all the os calls for acorn machines"),
+    ("prg_test",                 ["acme", "beebasm", "xa"],    "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
+    ("p00_test",                 ["acme", "beebasm", "xa"],    "a PC64 P00 file loaded with load_prg()"),
+    ("load_offset",              ["acme", "beebasm", "xa"],    "loading parts of a file with load(..., offset=..., length=...)"),
 
     # 6502 code: real programs
     ("os12",                     ["acme", "beebasm", "xa"],    "MOS 1.20"),
@@ -102,7 +107,7 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)
@@ -128,6 +133,17 @@ ERROR_TESTS = [
     ("load_wrong_md5",          "load(&2000, 'orig/helloworld.orig'): the file's md5sum is ba85fca1feae301af81806d3102b0851, not 0123456789abcdef0123456789abcdef as expected"),
     ("load_past_top",           "load(&fff0, 'orig/helloworld.orig'): the file (28 bytes) runs past the top of memory"),
     ("go_without_load",         "go(): nothing has been loaded to disassemble (use load() first)"),
+    ("load_offset_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset (28) is past the end of the file (28 bytes)"),
+    ("load_length_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset and length (20 + 10) run past the end of the file (28 bytes)"),
+    ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),
+    ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
+]
+
+# Each warning test is (name, expected warning). The control file is
+# python/warnings/<name>.py, which must run successfully (with beebasm) and
+# give this warning (as one line of its error output).
+WARNING_TESTS = [
+    ("load_prg_file",           "warning: load(&07ff, 'build/load_prg_file.prg'): this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg('build/load_prg_file.prg') loads it at that address without them"),
 ]
 
 # The program each assembler needs
@@ -445,7 +461,8 @@ def check_json(path, asm_path=None):
     # there (later loads replacing earlier ones, as py8dis does)
     loaded = {}
     for load in doc["loads"]:
-        data = Path(load["filename"]).read_bytes()
+        offset = load.get("offset", 0)
+        data = Path(load["filename"]).read_bytes()[offset:offset + load["end"] - load["start"]]
         if load["start"] + len(data) != load["end"]:
             return f"{path}: the load of {load['filename']} at {load['start']:#06x} should end at {load['start'] + len(data):#06x}, not {load['end']:#06x}"
         for i, b in enumerate(data):
@@ -606,6 +623,19 @@ def run_error_test(name, expected, env):
     return result
 
 
+def run_warning_test(name, expected, env):
+    """Run one warning test, returning a Result."""
+    result = Result(name, "warning")
+    proc = subprocess.run([sys.executable, str(Path("python") / "warnings" / f"{name}.py"), "--beebasm"],
+                          capture_output=True, text=True, env=env)
+    lines = [line.strip() for line in proc.stderr.splitlines() if line.strip()]
+    if proc.returncode != 0:
+        result.failure = "py8dis stopped with an error:\n      " + (lines[-1] if lines else "<no error output>")
+    elif expected not in lines:
+        result.failure = f"py8dis didn't give the expected warning:\n      expected: {expected}\n      got:      " + ("\n                " .join(lines) or "<nothing>")
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run the py8dis example tests.")
     parser.add_argument("-c", "--check-disassembly", action="store_true", help="check the disassembly (asm) output against known_good")
@@ -616,7 +646,7 @@ def main():
     parser.add_argument("tests", nargs="*", help="names of the tests to run (default: all)")
     options = parser.parse_args()
 
-    known_names = [name for name, _, _ in TESTS] + [name for name, _ in ERROR_TESTS]
+    known_names = [name for name, _, _ in TESTS] + [name for name, _ in ERROR_TESTS] + [name for name, _ in WARNING_TESTS]
     unknown = [t for t in options.tests if t not in known_names]
     if unknown:
         parser.error("unknown test(s): {0}\nknown tests: {1}".format(", ".join(unknown), ", ".join(known_names)))
@@ -636,10 +666,12 @@ def main():
             if not options.assemblers or assembler in options.assemblers]
     error_jobs = [(name, expected) for name, expected in ERROR_TESTS
                   if (not options.tests or name in options.tests) and not options.assemblers]
+    warning_jobs = [(name, expected) for name, expected in WARNING_TESTS
+                    if (not options.tests or name in options.tests) and not options.assemblers]
 
     start = time.time()
     failures = 0
-    width = max([len(f"{n}_{a}") for n, a in jobs] + [len(f"{n}_error") for n, _ in error_jobs], default=0) + 2
+    width = max([len(f"{n}_{a}") for n, a in jobs] + [len(f"{n}_error") for n, _ in error_jobs] + [len(f"{n}_warning") for n, _ in warning_jobs], default=0) + 2
     # The other test scripts, when checking all the tests. These start first
     # since the session tests take longest.
     other_scripts = OTHER_TEST_SCRIPTS if (options.check_disassembly and not options.tests and not options.assemblers) else []
@@ -649,6 +681,8 @@ def main():
         futures = [executor.submit(run_test, name, assembler, options, env) for name, assembler in jobs]
         futures += [executor.submit(run_error_test, name, expected, env) for name, expected in error_jobs]
         jobs += [(name, "error") for name, _ in error_jobs]
+        futures += [executor.submit(run_warning_test, name, expected, env) for name, expected in warning_jobs]
+        jobs += [(name, "warning") for name, _ in warning_jobs]
         # The other test scripts first, since they were started first
         for script, other_future in zip(other_scripts, other_futures):
             jobs.append((script, None))

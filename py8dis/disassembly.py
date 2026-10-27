@@ -881,6 +881,14 @@ def emit(print_output=True):
     old_end_addr = None
     for start_addr, end_addr in move_ranges:
         if old_end_addr is None:
+            # A PRG file's two-byte header (its load address), if it was
+            # loaded with load_prg(), so the output assembles to the whole file
+            prg_addr = memorymanager.prg_header_addr()
+            if prg_addr is not None:
+                if config.get_assembler().prg_header(prg_addr) is None:
+                    utils.warn("the PRG file's load address isn't output with this assembler, so the output assembles to the data without it")
+                else:
+                    d.append(output.Directive("prg_header", prg_addr).resolve())
             # Output an ORG at the beginning
             d.append(output.Directive("code_start", start_addr, end_addr, True).resolve())
             old_end_addr = start_addr

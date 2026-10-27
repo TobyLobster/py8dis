@@ -2,6 +2,8 @@
 Assembler base class
 """
 
+import utils
+
 class Assembler:
     """The base assembler class. Classes representing particular assemblers such
     as acme, beebasm etc are derived from this class."""
@@ -75,6 +77,15 @@ class Assembler:
         operand's prefix and suffix are given, and the operand's text. (Only
         used if can_force_absolute().)"""
         raise NotImplementedError
+
+    def prg_header(self, load_addr):
+        """The lines at the start of the output for a PRG file loaded with
+        load_prg(): its two-byte load address, assembled just before the
+        data, so that the output assembles to the whole PRG file. (The
+        code_start() that follows sets the address to load_addr.) None if the
+        assembler can't do this."""
+        org = [line for line in self.code_start(load_addr - 2, load_addr, True) if line.strip()]
+        return ["", self.comment_prefix() + " The PRG file's header: the address to load it at"] + org + [utils.make_indent(1) + self.word_prefix() + self.hex4(load_addr)]
 
     def hex4_for_comment(self, n):
         """A four digit hex number, for use in a comment (e.g. the memory

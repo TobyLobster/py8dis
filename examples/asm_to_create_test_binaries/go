@@ -11,7 +11,14 @@ dd if=../orig/regression_tests.orig of=../orig/regression_tests1.orig bs=128 cou
 dd if=../orig/regression_tests.orig of=../orig/regression_tests2.orig bs=128 skip=1
 z88dk-z80asm -m8080 -b -o../orig/regression_tests_8080.orig regression_tests_8080.asm
 z88dk-z80asm -m8080 -b -o../orig/undocumented_8080.orig undocumented_8080.asm
+acme -f cbm -o ../orig/prg_test.orig prg_test.asm
+# The same program in a PC64 P00 file: a 26 byte header ("C64File", 0, the
+# 16 character name padded with zeros, 0, 0) then the PRG file; and its data
+# without the PRG header, for load_offset
+(printf 'C64File\000PRG_TEST\000\000\000\000\000\000\000\000\000\000'; cat ../orig/prg_test.orig) > ../orig/p00_test.p00
+cp ../orig/prg_test.orig ../orig/p00_test.orig
+dd if=../orig/prg_test.orig of=../orig/load_offset.orig bs=1 skip=2
 cd ..
-md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig
+md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig orig/prg_test.orig orig/p00_test.p00 orig/p00_test.orig orig/load_offset.orig
 ./go
 cd asm_to_create_test_binaries

@@ -151,9 +151,21 @@ In what follows a `binary_addr` refers to a location in memory where the binary 
 
 ### Initialisation
 
-:pencil:`load(binary_load_addr, filename, cpu_name="6502", md5sum=None)`
+:pencil:`load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, length=None)`
 
-Load the contents of `filename` into the disassembler's memory at address `addr`. `cpu_name` can be "6502", "65C02", or "8080". If the optional `md5sum` argument is provided, disassembly will fail if the md5sum of `filename`'s contents doesn't match; this allows you to detect if a disassembly is being used against a different version of a program by accident.
+Load the contents of `filename` into the disassembler's memory at address `binary_load_addr`. `cpu_name` can be "6502", "65C02", or "8080". If the optional `md5sum` argument is provided, disassembly will fail if the md5sum of `filename`'s contents doesn't match; this allows you to detect if a disassembly is being used against a different version of a program by accident.
+
+To load only part of the file (e.g. to skip a header), give `offset`, where in the file to start, and optionally `length`, the number of bytes to load (by default, the rest of the file). The `md5sum` is still that of the whole file. A file whose name ends `.prg` or `.p00` gives a warning when loaded from its start, since `load_prg()` (below) is probably what's wanted.
+
+:pencil:`load_prg(filename, cpu_name="6502", md5sum=None)`
+
+Load a Commodore PRG file. Its first two bytes are the address to load the rest of it at, so no address is given; `load_prg()` returns it:
+
+```python
+start = load_prg("game.prg", "6502")
+```
+
+The disassembly starts with the same two bytes (e.g. `!word $0801` just before the program), so that it assembles to the whole PRG file, with acme, beebasm or xa. (To disassemble just the data, use `load(address, "game.prg", offset=2)` instead.) A PC64 `.p00` file, which is a PRG file after a 26 byte header starting `C64File`, is also accepted; its disassembly assembles to the PRG file.
 
 ### Labels
 
