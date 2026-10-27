@@ -12496,7 +12496,7 @@ entry_point
     sty evntv+1                                                       // 4cc3: 8c 21 02    .!.
 
     lda #osbyte_enable_event                                          // 4cc6: a9 0e       ..
-    ldx #event_start_of_vertical_sync                                 // 4cc8: a2 04       ..
+    ldx #event_start_of_vertical_sync                                 // 4cc8: a2 04       .. // X=event number
     jsr osbyte                                                        // 4cca: 20 f4 ff     .. // Enable 'Start of vertical sync' event (X=4)
     lda #osbyte_set_cursor_editing                                    // 4ccd: a9 04       ..
     ldx #1                                                            // 4ccf: a2 01       ..
@@ -12995,7 +12995,7 @@ made_space_in_highscore_table
     lda #osbyte_clear_escape                                          // 533e: a9 7c       .|
     jsr osbyte                                                        // 5340: 20 f4 ff     .. // Clear escape condition
     lda #osbyte_flush_buffer                                          // 5343: a9 15       ..
-    ldx #buffer_keyboard                                              // 5345: a2 00       ..
+    ldx #buffer_keyboard                                              // 5345: a2 00       .. // X=buffer number
     jsr osbyte                                                        // 5347: 20 f4 ff     .. // Flush the keyboard buffer (X=0)
     ldx #0                                                            // 534a: a2 00       ..
     stx player_y                                                      // 534c: 86 1b       ..

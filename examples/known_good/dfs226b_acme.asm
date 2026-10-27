@@ -5543,7 +5543,7 @@ c9e41
     lda #osbyte_read_write_spool_file_handle                          ; 3e4b: a9 c7       ..  :9e4b[1]
 ; $3e4d referenced 1 time by $9e3f[1]
 osbyte_write_0
-    ldx #0                                                            ; 3e4d: a2 00       ..  :9e4d[1]
+    ldx #0                                                            ; 3e4d: a2 00       ..  :9e4d[1]   ; X=File handle
     ldy #0                                                            ; 3e4f: a0 00       ..  :9e4f[1]
     jmp osbyte                                                        ; 3e51: 4c f4 ff    L.. :9e51[1]
 

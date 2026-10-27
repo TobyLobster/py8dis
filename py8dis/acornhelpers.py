@@ -37,18 +37,18 @@ def xy_addr(x_addr, y_addr):
 
 
 def enum_lookup(reg_binary_addr, e, comment=None):
-    """Given a binary_addr and a dictionary, read the byte at the address and look
-    it up in the dictionary and use the result to create a constant and use it as
-    an expression.
-    """
+    """Given a binary_addr (e.g. the operand of an LDX #) and a dictionary, read
+    the byte at the address and look it up in the dictionary and use the result
+    to create a constant and use it as an expression. The comment, if given, is
+    put on the same line. Returns the byte."""
 
     if reg_binary_addr is None:
         return None
     r = memorymanager.memory_binary[reg_binary_addr]
+    runtime_addr = movemanager.b2r(reg_binary_addr)
     if r in e:
         constant(r, e[r])
-        runtime_addr = movemanager.b2r(reg_binary_addr)
         auto_expr(runtime_addr, e[r])
     if comment is not None:
-        auto_comment(r, comment)
+        auto_comment(runtime_addr, comment, align=Align.INLINE)
     return r

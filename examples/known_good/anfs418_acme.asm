@@ -7246,7 +7246,7 @@ return_29
 ; $aafc referenced 2 times by $ab0b, $ab10
 caafc
     lda #osbyte_read_buffer                                           ; aafc: a9 91       ..
-    ldx #buffer_printer                                               ; aafe: a2 03       ..
+    ldx #buffer_printer                                               ; aafe: a2 03       ..             ; X=buffer number
     jsr osbyte                                                        ; ab00: 20 f4 ff     ..            ; Get character from input buffer (C is set if the buffer is empty, otherwise Y=extracted character)
     bcs return_29                                                     ; ab03: b0 e7       ..
     tya                                                               ; ab05: 98          .              ; Y is the character extracted from the buffer

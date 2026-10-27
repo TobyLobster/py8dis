@@ -16,9 +16,6 @@ A call is commented in three places:
 - where X and Y are next used after the call, saying what OSBYTE returned in
   them (e.g. "X is the previous value of the user flag byte"), also only when
   the call is surely that OSBYTE.
-A few OSBYTEs comment the call or its results even when it may not be that
-OSBYTE (call_when_unsure and exits_when_unsure below). That reproduces what
-py8dis has always done.
 
 Texts can use these fields, filled in at the call:
     {x}, {y}        the value of X or Y (pessimistically), or "X" or "Y" if
@@ -142,9 +139,7 @@ class Osbyte:
     Where X and Y are set:
         x_enum      (dictionary, comment): name the value of X with the
                     constant from the dictionary, and comment on it (with
-                    acornhelpers.enum_lookup()). x_enum_again does this a
-                    second time when the call is surely this OSBYTE, as
-                    py8dis always has for OSBYTEs &91 and &98
+                    acornhelpers.enum_lookup())
         x_format    show X's value with binary, char or decimal
         x_note, y_note  (where, comment): comment on where X or Y is set:
                     "operand" (the operand of the load), "load" (the
@@ -157,8 +152,8 @@ class Osbyte:
 
     def __init__(self, call=None, *, x_choices=None, x_names=None, x_named=None, x_other=None, suffix="",
                  x_exit=None, y_exit=None, xy_exit=None,
-                 x_enum=None, x_enum_again=False, x_format=None, x_note=None, y_note=None,
-                 call_when_unsure=False, exits_when_unsure=False, handler=None):
+                 x_enum=None, x_format=None, x_note=None, y_note=None,
+                 handler=None):
         self.call = call
         self.x_choices = x_choices or {}
         self.x_names = x_names or {}
@@ -169,12 +164,9 @@ class Osbyte:
         self.y_exit = y_exit
         self.xy_exit = xy_exit
         self.x_enum = x_enum
-        self.x_enum_again = x_enum_again
         self.x_format = x_format
         self.x_note = x_note
         self.y_note = y_note
-        self.call_when_unsure = call_when_unsure
-        self.exits_when_unsure = exits_when_unsure
         self.handler = handler
 
     def describe(self, call):
@@ -193,17 +185,13 @@ class Osbyte:
                 where, text = note
                 auto_comment(getattr(call, register + "_" + where), text, align=Align.INLINE)
 
-        # The call
-        if call.sure or self.call_when_unsure:
-            if self.x_enum is not None and self.x_enum_again and call.x_addr is not None:
-                enum_lookup(call.x_addr, *self.x_enum)
-            call.comment(self.call_comment(call))
-
-        # Its results
-        if call.sure or self.exits_when_unsure:
-            for runtime_addr, text in [(call.x_next_use, self.x_exit), (call.y_next_use, self.y_exit), (call.xy_next_use, self.xy_exit)]:
-                if text is not None and runtime_addr is not None:
-                    call.exit_comment(runtime_addr, call.text(text))
+        # The call and its results, only if it's surely this OSBYTE
+        if not call.sure:
+            return
+        call.comment(self.call_comment(call))
+        for runtime_addr, text in [(call.x_next_use, self.x_exit), (call.y_next_use, self.y_exit), (call.xy_next_use, self.xy_exit)]:
+            if text is not None and runtime_addr is not None:
+                call.exit_comment(runtime_addr, call.text(text))
 
     def call_comment(self, call):
         x = call.x
@@ -326,9 +314,7 @@ def set_printer_ignore_character(call):
     call.exit_comment(call.x_next_use, "X is the previous printer ignore character")
 
 def keyboard_scan(call):
-    com = "Keyboard scan, or test for a specific key"
-    many_key_scan = False
-    one_key_scan = ""
+    # Where X is set (optimistically): name the key
     if call.x_addr_optimistic is not None:
         key = memory_binary[call.x_addr_optimistic]
         if key >= 0x80:
@@ -338,8 +324,6 @@ def keyboard_scan(call):
                 key_exp = make_eor(make_subtract(255, inkey_enum[inkey_key]), 128)
                 auto_expr(call.x_operand, key_exp)
                 auto_comment(call.x_operand, "X=internal key number EOR 128", align=Align.INLINE)
-            com = "Test for " + key_name(inkey_key) + " key pressed (X=%d)" % key
-            one_key_scan = key_name(inkey_key)
         else:
             inkey_key = 255-key
             if inkey_key in inkey_enum:
@@ -348,11 +332,22 @@ def keyboard_scan(call):
                 auto_expr(call.x_operand, key_exp)
                 auto_comment(call.x_operand, "X=internal key number", align=Align.INLINE)
 
+    if not call.sure:
+        return
+    com = "Keyboard scan, or test for a specific key"
+    many_key_scan = False
+    one_key_scan = ""
+    if call.x is not None:
+        key = call.x
+        if key >= 0x80:
+            inkey_key = (255-key) ^ 0x80
+            com = "Test for " + key_name(inkey_key) + " key pressed (X=%d)" % key
+            one_key_scan = key_name(inkey_key)
+        else:
+            inkey_key = 255-key
             com = "Keyboard scan starting from " + key_name(inkey_key) + " key (X=%d)" % key
             many_key_scan = True
-
-    if call.sure:
-        call.comment(com)
+    call.comment(com)
 
     # Post exit:
     if call.x_next_use:
@@ -407,12 +402,15 @@ def read_buffer_status_or_adc(call):
             call.exit_comment(call.xy_next_use, "X and Y contain the ADC value read (low,high)")
 
 def read_key(call):
-    # Comment on setting X
+    # Comment on setting X: an INKEY key number, unless X=0 (read machine type)
     if call.y_addr_optimistic is not None:
         if memory_binary[call.y_addr_optimistic] >= 0x80:
             if call.x_addr_optimistic is not None:
-                enum_lookup(call.x_addr_optimistic, inkey_enum, "X=inkey number")
+                x = memory_binary[call.x_addr_optimistic]
+                enum_lookup(call.x_addr_optimistic, inkey_enum, None if x == 0 else "X=inkey key value")
 
+    if not call.sure:
+        return
     com = "Read key within time limit, or read a specific key, or read machine type"
     is_read_machine_type = False
     is_read_ascii_key = False
@@ -426,7 +424,6 @@ def read_key(call):
                     com = "Read the machine type"
                     is_read_machine_type = True
                 else:
-                    auto_comment(call.x_operand, "X=inkey key value", align=Align.INLINE)
                     com = "Is the " + key_name(key) + " key pressed?"
                     is_checking_specific_key_pressed = True
         else:
@@ -545,7 +542,7 @@ def video_ula_control(call):
     cassette_motor_on = (val & 128) != 0
     com = "Set cassette motor " + {False: "off", True: "on" }[cassette_motor_on]
     com += ", " + {False: "cassette system in charge", True: "RS423 in charge"}[rs423_in_charge]
-    com += ", recieve at " + receive_baud + ", transmit at " + transmit_baud
+    com += ", receive at " + receive_baud + ", transmit at " + transmit_baud
     com += ", and reset flash cycle"
     return com
 
@@ -624,7 +621,7 @@ def read_cmos(call):
                 name_of_byte = "'" + cmos_ram[by] + "'"
                 com = "Master and Compact: Read the " + name_of_byte + " byte from CMOS RAM/EEPROM (X=" + str(by) + ")"
             else:
-                com += "Master and Compact: Read CMOS RAM/EEPROM byte X=" + str(by)
+                com = "Master and Compact: Read CMOS RAM/EEPROM byte X=" + str(by)
 
     call.comment(com)
 
@@ -658,8 +655,18 @@ def write_cmos(call):
 
 def os_variable(call):
     """OSBYTEs &A6 to &FF: read or write an OS variable"""
-    write_value = None
-    _, write_value = osbyte_rw(call.x_addr_optimistic, call.y_addr_optimistic)
+    # Where X is set (optimistically)
+    if call.a in (0xc6, 0xc7):
+        auto_comment(call.x_adjust, "X=File handle", align=Align.INLINE)
+    if call.a == 0xff:
+        # If writing the startup byte, show it in binary
+        _, write_value = osbyte_rw(call.x_addr_optimistic, call.y_addr_optimistic)
+        if write_value is not None and call.x_operand is not None:
+            binary(call.x_operand)
+
+    if not call.sure:
+        return
+    _, write_value = osbyte_rw(call.x_addr, call.y_addr)
 
     name = os_variable_names[call.a]
     next_name = os_variable_names.get(call.a + 1)
@@ -667,11 +674,7 @@ def os_variable(call):
 
     # Exceptions
     skip_normal_comment = False
-    if call.sure and call.a in (0xc6, 0xc7):
-        if call.x_adjust is not None:
-            auto_comment(call.x_adjust, "X=File handle", align=Align.INLINE)
-
-    if call.sure and call.a == 0xc8:
+    if call.a == 0xc8:
         if write_value is not None:
             if write_value & 1:
                 name = "Disable ESCAPE action, "
@@ -681,7 +684,7 @@ def os_variable(call):
                 name += "set normal BREAK action"
             else:
                 name += "clear memory on BREAK"
-    elif call.sure and call.a == 0xc9:
+    elif call.a == 0xc9:
         result = "Enable/Disable keyboard (for Econet)"
         if write_value is not None:
             if write_value == 0:
@@ -690,22 +693,16 @@ def os_variable(call):
                 result = "Disable keyboard (for Econet)"
         call.comment(result)
         skip_normal_comment = True
-    elif call.sure and call.a == 0xe5:
+    elif call.a == 0xe5 and write_value is not None:
         if write_value == 0:
             name = "Set ESCAPE key status to normal action"
         else:
             name = "Set ESCAPE key to produce ASCII code " + str(write_value)
         call.comment(name)
         skip_normal_comment = True
-    elif call.a == 0xff:
-        # If writing the startup byte, show it in binary
-        if write_value is not None:
-            if call.x_operand is not None:
-                binary(call.x_operand)
 
-    if call.sure:
-        if not skip_normal_comment:
-            call.comment(format_osbyte_rw(call.x_addr, call.y_addr, name))
+    if not skip_normal_comment:
+        call.comment(format_osbyte_rw(call.x_addr, call.y_addr, name))
 
     # Post exit:
     # Exit parameters specify low byte for a corresponding high byte.
@@ -723,7 +720,7 @@ def os_variable(call):
             call.exit_comment(call.y_next_use, "Y=value of " + next_name)
 
     # Exceptions
-    if call.sure and call.a == 0xff:
+    if call.a == 0xff:
         auto_comment(call.x_next_use,
 """X is the startup option byte:
     bits 0 to 2     screen MODE selected following reset
@@ -838,14 +835,12 @@ osbyte_calls = {
     0x0d: Osbyte("Disable event X",
         x_enum=(event_enum, "X=event number"),
         x_names=event_names, x_named="Disable '{name}' event (X={x})",
-        x_exit="X is the previous value of the event enable flag (0=disabled, non-zero=enabled)",
-        call_when_unsure=True, exits_when_unsure=True),
+        x_exit="X is the previous value of the event enable flag (0=disabled, non-zero=enabled)"),
 
     0x0e: Osbyte("Enable event X",
         x_enum=(event_enum, "X=event number"),
         x_names=event_names, x_named="Enable '{name}' event (X={x})",
-        x_exit="X is the previous event enable flag (0=disabled, non-zero=enabled)",
-        exits_when_unsure=True),
+        x_exit="X is the previous event enable flag (0=disabled, non-zero=enabled)"),
 
     0x0f: Osbyte("Flush all buffers (X=0), or just input buffers (X non-zero)",
         x_choices={0: "Flush all buffers (X=0)"},
@@ -912,7 +907,7 @@ osbyte_calls = {
             0: "Master: Select main memory for MODE 0-7 and shadow memory for MODE 128-135 VDU access (X=0)",
             1: "Master: Select main memory for VDU access (X=1)",
             2: "Master: Select shadow memory for VDU access (X=2)"},
-        x_other="Master: Select main/shadow memory for VDU accessMaster: Select unknown screen memory bank for VDU access (X={x})",
+        x_other="Master: Select unknown screen memory bank for VDU access (X={x})",
         x_exit="X is the previous VDU access memory setting (0=main or shadow memory according to current mode, 1=main memory, 2=shadow memory)"),
 
     0x71: Osbyte("Master: Select main/shadow memory for display",
@@ -970,8 +965,7 @@ osbyte_calls = {
 
     0x7f: Osbyte("Check for EOF in file handle X",
         x_note=("adjust", "X=File handle"),
-        x_exit="X is non-zero if reached end of file, zero otherwise",
-        exits_when_unsure=True),
+        x_exit="X is non-zero if reached end of file, zero otherwise"),
 
     0x80: Osbyte(handler=read_buffer_status_or_adc),
 
@@ -1034,7 +1028,7 @@ osbyte_calls = {
     0x90: Osbyte(handler=tv),
 
     0x91: Osbyte("Get character from input buffer",
-        x_enum=(buffer_enum, "X=buffer number"), x_enum_again=True,
+        x_enum=(buffer_enum, "X=buffer number"),
         x_choices={
             0: "Get character from keyboard buffer",
             1: "Get character from RS423 input buffer"},
@@ -1044,7 +1038,7 @@ osbyte_calls = {
     **{a: Osbyte(handler=read_or_write_memory_mapped_io) for a in range(0x92, 0x98)},
 
     0x98: Osbyte("Examine status of buffer X",
-        x_enum=(buffer_enum, "X=buffer number"), x_enum_again=True,
+        x_enum=(buffer_enum, "X=buffer number"),
         x_names=buffer_names, x_named="Examine {name}",
         x_other="Examine status of unknown buffer",
         suffix=" (exits with carry clear on success)",

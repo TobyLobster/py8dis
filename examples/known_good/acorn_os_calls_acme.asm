@@ -430,43 +430,43 @@ pydis_start
     ldy #0                                                            ; 1217: a0 00       ..
     jsr osbyte                                                        ; 1219: 20 f4 ff     .. ; Set serial receive rate based on X
     lda #osbyte_set_serial_receive_rate                               ; 121c: a9 07       ..
-    ldx #baud_rate_default_9600                                       ; 121e: a2 00       ..
+    ldx #baud_rate_default_9600                                       ; 121e: a2 00       .. ; X=baud rate
     ldy #0                                                            ; 1220: a0 00       ..
     jsr osbyte                                                        ; 1222: 20 f4 ff     .. ; Set serial receive rate to default 9600 baud (X=0)
     lda #osbyte_set_serial_receive_rate                               ; 1225: a9 07       ..
-    ldx #baud_rate_75                                                 ; 1227: a2 01       ..
+    ldx #baud_rate_75                                                 ; 1227: a2 01       .. ; X=baud rate
     ldy #0                                                            ; 1229: a0 00       ..
     jsr osbyte                                                        ; 122b: 20 f4 ff     .. ; Set serial receive rate to 75 baud (X=1)
     lda #osbyte_set_serial_receive_rate                               ; 122e: a9 07       ..
-    ldx #baud_rate_150                                                ; 1230: a2 02       ..
+    ldx #baud_rate_150                                                ; 1230: a2 02       .. ; X=baud rate
     ldy #0                                                            ; 1232: a0 00       ..
     jsr osbyte                                                        ; 1234: 20 f4 ff     .. ; Set serial receive rate to 150 baud (X=2)
     lda #osbyte_set_serial_receive_rate                               ; 1237: a9 07       ..
-    ldx #baud_rate_300                                                ; 1239: a2 03       ..
+    ldx #baud_rate_300                                                ; 1239: a2 03       .. ; X=baud rate
     ldy #0                                                            ; 123b: a0 00       ..
     jsr osbyte                                                        ; 123d: 20 f4 ff     .. ; Set serial receive rate to 300 baud (X=3)
     lda #osbyte_set_serial_receive_rate                               ; 1240: a9 07       ..
-    ldx #baud_rate_1200                                               ; 1242: a2 04       ..
+    ldx #baud_rate_1200                                               ; 1242: a2 04       .. ; X=baud rate
     ldy #0                                                            ; 1244: a0 00       ..
     jsr osbyte                                                        ; 1246: 20 f4 ff     .. ; Set serial receive rate to 1200 baud (X=4)
     lda #osbyte_set_serial_receive_rate                               ; 1249: a9 07       ..
-    ldx #baud_rate_2400                                               ; 124b: a2 05       ..
+    ldx #baud_rate_2400                                               ; 124b: a2 05       .. ; X=baud rate
     ldy #0                                                            ; 124d: a0 00       ..
     jsr osbyte                                                        ; 124f: 20 f4 ff     .. ; Set serial receive rate to 2400 baud (X=5)
     lda #osbyte_set_serial_receive_rate                               ; 1252: a9 07       ..
-    ldx #baud_rate_4800                                               ; 1254: a2 06       ..
+    ldx #baud_rate_4800                                               ; 1254: a2 06       .. ; X=baud rate
     ldy #0                                                            ; 1256: a0 00       ..
     jsr osbyte                                                        ; 1258: 20 f4 ff     .. ; Set serial receive rate to 4800 baud (X=6)
     lda #osbyte_set_serial_receive_rate                               ; 125b: a9 07       ..
-    ldx #baud_rate_9600                                               ; 125d: a2 07       ..
+    ldx #baud_rate_9600                                               ; 125d: a2 07       .. ; X=baud rate
     ldy #0                                                            ; 125f: a0 00       ..
     jsr osbyte                                                        ; 1261: 20 f4 ff     .. ; Set serial receive rate to 9600 baud (X=7)
     lda #osbyte_set_serial_receive_rate                               ; 1264: a9 07       ..
-    ldx #baud_rate_19200                                              ; 1266: a2 08       ..
+    ldx #baud_rate_19200                                              ; 1266: a2 08       .. ; X=baud rate
     ldy #0                                                            ; 1268: a0 00       ..
     jsr osbyte                                                        ; 126a: 20 f4 ff     .. ; Set serial receive rate to 19200 baud (X=8)
     lda #osbyte_set_serial_receive_rate                               ; 126d: a9 07       ..
-    ldx #9                                                            ; 126f: a2 09       ..
+    ldx #9                                                            ; 126f: a2 09       .. ; X=baud rate
     ldy #0                                                            ; 1271: a0 00       ..
     jsr osbyte                                                        ; 1273: 20 f4 ff     .. ; Set serial receive rate based on X
 
@@ -484,45 +484,45 @@ pydis_start
     ldy #0                                                            ; 127e: a0 00       ..
     jsr osbyte                                                        ; 1280: 20 f4 ff     .. ; Set serial transmission rate based on X
     lda #osbyte_set_serial_transmit_rate                              ; 1283: a9 08       ..
-    ldx #baud_rate_default_9600                                       ; 1285: a2 00       ..
+    ldx #baud_rate_default_9600                                       ; 1285: a2 00       .. ; X=baud rate
     ldy #0                                                            ; 1287: a0 00       ..
     jsr osbyte                                                        ; 1289: 20 f4 ff     .. ; Set serial transmission rate to default 9600 baud (X=0)
     lda #osbyte_set_serial_transmit_rate                              ; 128c: a9 08       ..
-    ldx #baud_rate_75                                                 ; 128e: a2 01       ..
+    ldx #baud_rate_75                                                 ; 128e: a2 01       .. ; X=baud rate
     ldy #0                                                            ; 1290: a0 00       ..
     jsr osbyte                                                        ; 1292: 20 f4 ff     .. ; Set serial transmission rate to 75 baud (X=1)
     lda #osbyte_set_serial_transmit_rate                              ; 1295: a9 08       ..
-    ldx #baud_rate_150                                                ; 1297: a2 02       ..
+    ldx #baud_rate_150                                                ; 1297: a2 02       .. ; X=baud rate
     ldy #0                                                            ; 1299: a0 00       ..
     jsr osbyte                                                        ; 129b: 20 f4 ff     .. ; Set serial transmission rate to 150 baud (X=2)
     lda #osbyte_set_serial_transmit_rate                              ; 129e: a9 08       ..
-    ldx #baud_rate_300                                                ; 12a0: a2 03       ..
+    ldx #baud_rate_300                                                ; 12a0: a2 03       .. ; X=baud rate
     ldy #0                                                            ; 12a2: a0 00       ..
     jsr osbyte                                                        ; 12a4: 20 f4 ff     .. ; Set serial transmission rate to 300 baud (X=3)
     lda #osbyte_set_serial_transmit_rate                              ; 12a7: a9 08       ..
-    ldx #baud_rate_1200                                               ; 12a9: a2 04       ..
+    ldx #baud_rate_1200                                               ; 12a9: a2 04       .. ; X=baud rate
     ldy #0                                                            ; 12ab: a0 00       ..
     jsr osbyte                                                        ; 12ad: 20 f4 ff     .. ; Set serial transmission rate to 1200 baud (X=4)
     lda #osbyte_set_serial_transmit_rate                              ; 12b0: a9 08       ..
-    ldx #baud_rate_2400                                               ; 12b2: a2 05       ..
+    ldx #baud_rate_2400                                               ; 12b2: a2 05       .. ; X=baud rate
     ldy #0                                                            ; 12b4: a0 00       ..
     jsr osbyte                                                        ; 12b6: 20 f4 ff     .. ; Set serial transmission rate to 2400 baud (X=5)
     lda #osbyte_set_serial_transmit_rate                              ; 12b9: a9 08       ..
-    ldx #baud_rate_4800                                               ; 12bb: a2 06       ..
+    ldx #baud_rate_4800                                               ; 12bb: a2 06       .. ; X=baud rate
     ldy #0                                                            ; 12bd: a0 00       ..
     jsr osbyte                                                        ; 12bf: 20 f4 ff     .. ; Set serial transmission rate to 4800 baud (X=6)
     lda #osbyte_set_serial_transmit_rate                              ; 12c2: a9 08       ..
-    ldx #baud_rate_9600                                               ; 12c4: a2 07       ..
+    ldx #baud_rate_9600                                               ; 12c4: a2 07       .. ; X=baud rate
     ldy #0                                                            ; 12c6: a0 00       ..
     jsr osbyte                                                        ; 12c8: 20 f4 ff     .. ; Set serial transmission rate to 9600 baud (X=7)
     lda #osbyte_set_serial_transmit_rate                              ; 12cb: a9 08       ..
-    ldx #baud_rate_19200                                              ; 12cd: a2 08       ..
+    ldx #baud_rate_19200                                              ; 12cd: a2 08       .. ; X=baud rate
     ldy #0                                                            ; 12cf: a0 00       ..
     jsr osbyte                                                        ; 12d1: 20 f4 ff     .. ; Set serial transmission rate to 19200 baud (X=8)
     lda #osbyte_set_serial_transmit_rate                              ; 12d4: a9 08       ..
 
     ; *************** Test OSBYTE 0x09 ***************
-    ldx #9                                                            ; 12d6: a2 09       ..
+    ldx #9                                                            ; 12d6: a2 09       .. ; X=baud rate
     ldy #0                                                            ; 12d8: a0 00       ..
     jsr osbyte                                                        ; 12da: 20 f4 ff     .. ; Set serial transmission rate based on X
 
@@ -609,94 +609,94 @@ pydis_start
 
     ; *************** Test OSBYTE 0x0d ***************
     lda #osbyte_disable_event                                         ; 1377: a9 0d       ..
-    ldx #event_output_buffer_empty                                    ; 1379: a2 00       ..
+    ldx #event_output_buffer_empty                                    ; 1379: a2 00       .. ; X=event number
     ldy #0                                                            ; 137b: a0 00       ..
     jsr osbyte                                                        ; 137d: 20 f4 ff     .. ; Disable 'Output buffer empty' event (X=0)
     lda #osbyte_disable_event                                         ; 1380: a9 0d       ..
-    ldx #event_input_buffer_full                                      ; 1382: a2 01       ..
+    ldx #event_input_buffer_full                                      ; 1382: a2 01       .. ; X=event number
     ldy #0                                                            ; 1384: a0 00       ..
     jsr osbyte                                                        ; 1386: 20 f4 ff     .. ; Disable 'Input buffer full' event (X=1)
     lda #osbyte_disable_event                                         ; 1389: a9 0d       ..
-    ldx #event_character_entering_input_buffer                        ; 138b: a2 02       ..
+    ldx #event_character_entering_input_buffer                        ; 138b: a2 02       .. ; X=event number
     ldy #0                                                            ; 138d: a0 00       ..
     jsr osbyte                                                        ; 138f: 20 f4 ff     .. ; Disable 'Character entering input buffer' event (X=2)
     lda #osbyte_disable_event                                         ; 1392: a9 0d       ..
-    ldx #event_adc_conversion_complete                                ; 1394: a2 03       ..
+    ldx #event_adc_conversion_complete                                ; 1394: a2 03       .. ; X=event number
     ldy #0                                                            ; 1396: a0 00       ..
     jsr osbyte                                                        ; 1398: 20 f4 ff     .. ; Disable 'ADC conversion complete' event (X=3)
     lda #osbyte_disable_event                                         ; 139b: a9 0d       ..
-    ldx #event_start_of_vertical_sync                                 ; 139d: a2 04       ..
+    ldx #event_start_of_vertical_sync                                 ; 139d: a2 04       .. ; X=event number
     ldy #0                                                            ; 139f: a0 00       ..
     jsr osbyte                                                        ; 13a1: 20 f4 ff     .. ; Disable 'Start of vertical sync' event (X=4)
     lda #osbyte_disable_event                                         ; 13a4: a9 0d       ..
-    ldx #event_interval_timer_crossing_zero                           ; 13a6: a2 05       ..
+    ldx #event_interval_timer_crossing_zero                           ; 13a6: a2 05       .. ; X=event number
     ldy #0                                                            ; 13a8: a0 00       ..
     jsr osbyte                                                        ; 13aa: 20 f4 ff     .. ; Disable 'Interval timer crossing zero' event (X=5)
     lda #osbyte_disable_event                                         ; 13ad: a9 0d       ..
-    ldx #event_escape_condition_detected                              ; 13af: a2 06       ..
+    ldx #event_escape_condition_detected                              ; 13af: a2 06       .. ; X=event number
     ldy #0                                                            ; 13b1: a0 00       ..
     jsr osbyte                                                        ; 13b3: 20 f4 ff     .. ; Disable 'ESCAPE condition detected' event (X=6)
     lda #osbyte_disable_event                                         ; 13b6: a9 0d       ..
-    ldx #event_rs423_error                                            ; 13b8: a2 07       ..
+    ldx #event_rs423_error                                            ; 13b8: a2 07       .. ; X=event number
     ldy #0                                                            ; 13ba: a0 00       ..
     jsr osbyte                                                        ; 13bc: 20 f4 ff     .. ; Disable 'RS423 error' event (X=7)
     lda #osbyte_disable_event                                         ; 13bf: a9 0d       ..
-    ldx #event_network_error                                          ; 13c1: a2 08       ..
+    ldx #event_network_error                                          ; 13c1: a2 08       .. ; X=event number
     ldy #0                                                            ; 13c3: a0 00       ..
     jsr osbyte                                                        ; 13c5: 20 f4 ff     .. ; Disable 'Network error' event (X=8)
     lda #osbyte_disable_event                                         ; 13c8: a9 0d       ..
-    ldx #event_user                                                   ; 13ca: a2 09       ..
+    ldx #event_user                                                   ; 13ca: a2 09       .. ; X=event number
     ldy #0                                                            ; 13cc: a0 00       ..
     jsr osbyte                                                        ; 13ce: 20 f4 ff     .. ; Disable 'User' event (X=9)
     lda #osbyte_disable_event                                         ; 13d1: a9 0d       ..
-    ldx #$0a                                                          ; 13d3: a2 0a       ..
+    ldx #$0a                                                          ; 13d3: a2 0a       .. ; X=event number
     ldy #0                                                            ; 13d5: a0 00       ..
     jsr osbyte                                                        ; 13d7: 20 f4 ff     .. ; Disable event X
     cpx #0                                                            ; 13da: e0 00       .. ; X is the previous value of the event enable flag (0=disabled, non-zero=enabled)
 
     ; *************** Test OSBYTE 0x0e ***************
     lda #osbyte_enable_event                                          ; 13dc: a9 0e       ..
-    ldx #event_output_buffer_empty                                    ; 13de: a2 00       ..
+    ldx #event_output_buffer_empty                                    ; 13de: a2 00       .. ; X=event number
     ldy #0                                                            ; 13e0: a0 00       ..
     jsr osbyte                                                        ; 13e2: 20 f4 ff     .. ; Enable 'Output buffer empty' event (X=0)
     lda #osbyte_enable_event                                          ; 13e5: a9 0e       ..
-    ldx #event_input_buffer_full                                      ; 13e7: a2 01       ..
+    ldx #event_input_buffer_full                                      ; 13e7: a2 01       .. ; X=event number
     ldy #0                                                            ; 13e9: a0 00       ..
     jsr osbyte                                                        ; 13eb: 20 f4 ff     .. ; Enable 'Input buffer full' event (X=1)
     lda #osbyte_enable_event                                          ; 13ee: a9 0e       ..
-    ldx #event_character_entering_input_buffer                        ; 13f0: a2 02       ..
+    ldx #event_character_entering_input_buffer                        ; 13f0: a2 02       .. ; X=event number
     ldy #0                                                            ; 13f2: a0 00       ..
     jsr osbyte                                                        ; 13f4: 20 f4 ff     .. ; Enable 'Character entering input buffer' event (X=2)
     lda #osbyte_enable_event                                          ; 13f7: a9 0e       ..
-    ldx #event_adc_conversion_complete                                ; 13f9: a2 03       ..
+    ldx #event_adc_conversion_complete                                ; 13f9: a2 03       .. ; X=event number
     ldy #0                                                            ; 13fb: a0 00       ..
     jsr osbyte                                                        ; 13fd: 20 f4 ff     .. ; Enable 'ADC conversion complete' event (X=3)
     lda #osbyte_enable_event                                          ; 1400: a9 0e       ..
-    ldx #event_start_of_vertical_sync                                 ; 1402: a2 04       ..
+    ldx #event_start_of_vertical_sync                                 ; 1402: a2 04       .. ; X=event number
     ldy #0                                                            ; 1404: a0 00       ..
     jsr osbyte                                                        ; 1406: 20 f4 ff     .. ; Enable 'Start of vertical sync' event (X=4)
     lda #osbyte_enable_event                                          ; 1409: a9 0e       ..
-    ldx #event_interval_timer_crossing_zero                           ; 140b: a2 05       ..
+    ldx #event_interval_timer_crossing_zero                           ; 140b: a2 05       .. ; X=event number
     ldy #0                                                            ; 140d: a0 00       ..
     jsr osbyte                                                        ; 140f: 20 f4 ff     .. ; Enable 'Interval timer crossing zero' event (X=5)
     lda #osbyte_enable_event                                          ; 1412: a9 0e       ..
-    ldx #event_escape_condition_detected                              ; 1414: a2 06       ..
+    ldx #event_escape_condition_detected                              ; 1414: a2 06       .. ; X=event number
     ldy #0                                                            ; 1416: a0 00       ..
     jsr osbyte                                                        ; 1418: 20 f4 ff     .. ; Enable 'ESCAPE condition detected' event (X=6)
     lda #osbyte_enable_event                                          ; 141b: a9 0e       ..
-    ldx #event_rs423_error                                            ; 141d: a2 07       ..
+    ldx #event_rs423_error                                            ; 141d: a2 07       .. ; X=event number
     ldy #0                                                            ; 141f: a0 00       ..
     jsr osbyte                                                        ; 1421: 20 f4 ff     .. ; Enable 'RS423 error' event (X=7)
     lda #osbyte_enable_event                                          ; 1424: a9 0e       ..
-    ldx #event_network_error                                          ; 1426: a2 08       ..
+    ldx #event_network_error                                          ; 1426: a2 08       .. ; X=event number
     ldy #0                                                            ; 1428: a0 00       ..
     jsr osbyte                                                        ; 142a: 20 f4 ff     .. ; Enable 'Network error' event (X=8)
     lda #osbyte_enable_event                                          ; 142d: a9 0e       ..
-    ldx #event_user                                                   ; 142f: a2 09       ..
+    ldx #event_user                                                   ; 142f: a2 09       .. ; X=event number
     ldy #0                                                            ; 1431: a0 00       ..
     jsr osbyte                                                        ; 1433: 20 f4 ff     .. ; Enable 'User' event (X=9)
     lda #osbyte_enable_event                                          ; 1436: a9 0e       ..
-    ldx #$0a                                                          ; 1438: a2 0a       ..
+    ldx #$0a                                                          ; 1438: a2 0a       .. ; X=event number
     ldy #0                                                            ; 143a: a0 00       ..
     jsr osbyte                                                        ; 143c: 20 f4 ff     .. ; Enable event X
     cpx #0                                                            ; 143f: e0 00       .. ; X is the previous event enable flag (0=disabled, non-zero=enabled)
@@ -809,43 +809,43 @@ pydis_start
     ldy #0                                                            ; 150f: a0 00       ..
     jsr osbyte                                                        ; 1511: 20 f4 ff     .. ; Flush specific buffer X
     lda #osbyte_flush_buffer                                          ; 1514: a9 15       ..
-    ldx #buffer_keyboard                                              ; 1516: a2 00       ..
+    ldx #buffer_keyboard                                              ; 1516: a2 00       .. ; X=buffer number
     ldy #0                                                            ; 1518: a0 00       ..
     jsr osbyte                                                        ; 151a: 20 f4 ff     .. ; Flush the keyboard buffer (X=0)
     lda #osbyte_flush_buffer                                          ; 151d: a9 15       ..
-    ldx #buffer_rs423_input                                           ; 151f: a2 01       ..
+    ldx #buffer_rs423_input                                           ; 151f: a2 01       .. ; X=buffer number
     ldy #0                                                            ; 1521: a0 00       ..
     jsr osbyte                                                        ; 1523: 20 f4 ff     .. ; Flush the RS423 input buffer (X=1)
     lda #osbyte_flush_buffer                                          ; 1526: a9 15       ..
-    ldx #buffer_rs423_output                                          ; 1528: a2 02       ..
+    ldx #buffer_rs423_output                                          ; 1528: a2 02       .. ; X=buffer number
     ldy #0                                                            ; 152a: a0 00       ..
     jsr osbyte                                                        ; 152c: 20 f4 ff     .. ; Flush the RS423 output buffer (X=2)
     lda #osbyte_flush_buffer                                          ; 152f: a9 15       ..
-    ldx #buffer_printer                                               ; 1531: a2 03       ..
+    ldx #buffer_printer                                               ; 1531: a2 03       .. ; X=buffer number
     ldy #0                                                            ; 1533: a0 00       ..
     jsr osbyte                                                        ; 1535: 20 f4 ff     .. ; Flush the printer buffer (X=3)
     lda #osbyte_flush_buffer                                          ; 1538: a9 15       ..
-    ldx #buffer_sound_channel_0                                       ; 153a: a2 04       ..
+    ldx #buffer_sound_channel_0                                       ; 153a: a2 04       .. ; X=buffer number
     ldy #0                                                            ; 153c: a0 00       ..
     jsr osbyte                                                        ; 153e: 20 f4 ff     .. ; Flush sound channel 0 (X=4)
     lda #osbyte_flush_buffer                                          ; 1541: a9 15       ..
-    ldx #buffer_sound_channel_1                                       ; 1543: a2 05       ..
+    ldx #buffer_sound_channel_1                                       ; 1543: a2 05       .. ; X=buffer number
     ldy #0                                                            ; 1545: a0 00       ..
     jsr osbyte                                                        ; 1547: 20 f4 ff     .. ; Flush sound channel 1 (X=5)
     lda #osbyte_flush_buffer                                          ; 154a: a9 15       ..
-    ldx #buffer_sound_channel_2                                       ; 154c: a2 06       ..
+    ldx #buffer_sound_channel_2                                       ; 154c: a2 06       .. ; X=buffer number
     ldy #0                                                            ; 154e: a0 00       ..
     jsr osbyte                                                        ; 1550: 20 f4 ff     .. ; Flush sound channel 2 (X=6)
     lda #osbyte_flush_buffer                                          ; 1553: a9 15       ..
-    ldx #buffer_sound_channel_3                                       ; 1555: a2 07       ..
+    ldx #buffer_sound_channel_3                                       ; 1555: a2 07       .. ; X=buffer number
     ldy #0                                                            ; 1557: a0 00       ..
     jsr osbyte                                                        ; 1559: 20 f4 ff     .. ; Flush sound channel 3 (X=7)
     lda #osbyte_flush_buffer                                          ; 155c: a9 15       ..
-    ldx #buffer_speech                                                ; 155e: a2 08       ..
+    ldx #buffer_speech                                                ; 155e: a2 08       .. ; X=buffer number
     ldy #0                                                            ; 1560: a0 00       ..
     jsr osbyte                                                        ; 1562: 20 f4 ff     .. ; Flush the speech buffer (X=8)
     lda #osbyte_flush_buffer                                          ; 1565: a9 15       ..
-    ldx #9                                                            ; 1567: a2 09       ..
+    ldx #9                                                            ; 1567: a2 09       .. ; X=buffer number
     ldy #0                                                            ; 1569: a0 00       ..
     jsr osbyte                                                        ; 156b: 20 f4 ff     .. ; Flush unknown buffer (X=9)
 
@@ -1284,47 +1284,47 @@ pydis_start
     ldy #0                                                            ; 1881: a0 00       ..
     jsr osbyte                                                        ; 1883: 20 f4 ff     .. ; Insert value 0 into buffer X; carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 1886: a9 8a       ..
-    ldx #buffer_rs423_input                                           ; 1888: a2 01       ..
+    ldx #buffer_rs423_input                                           ; 1888: a2 01       .. ; X=buffer number
     ldy mem                                                           ; 188a: a4 70       .p
     jsr osbyte                                                        ; 188c: 20 f4 ff     .. ; Insert value Y into the RS423 input buffer (X=1); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 188f: a9 8a       ..
-    ldx #buffer_keyboard                                              ; 1891: a2 00       ..
+    ldx #buffer_keyboard                                              ; 1891: a2 00       .. ; X=buffer number
     ldy #2                                                            ; 1893: a0 02       ..
     jsr osbyte                                                        ; 1895: 20 f4 ff     .. ; Insert value 2 into the keyboard buffer (X=0); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 1898: a9 8a       ..
-    ldx #buffer_rs423_input                                           ; 189a: a2 01       ..
+    ldx #buffer_rs423_input                                           ; 189a: a2 01       .. ; X=buffer number
     ldy #3                                                            ; 189c: a0 03       ..
     jsr osbyte                                                        ; 189e: 20 f4 ff     .. ; Insert value 3 into the RS423 input buffer (X=1); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18a1: a9 8a       ..
-    ldx #buffer_rs423_output                                          ; 18a3: a2 02       ..
+    ldx #buffer_rs423_output                                          ; 18a3: a2 02       .. ; X=buffer number
     ldy #$63 ; 'c'                                                    ; 18a5: a0 63       .c
     jsr osbyte                                                        ; 18a7: 20 f4 ff     .. ; Insert value 99 into the RS423 output buffer (X=2); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18aa: a9 8a       ..
-    ldx #buffer_printer                                               ; 18ac: a2 03       ..
+    ldx #buffer_printer                                               ; 18ac: a2 03       .. ; X=buffer number
     ldy #$17                                                          ; 18ae: a0 17       ..
     jsr osbyte                                                        ; 18b0: 20 f4 ff     .. ; Insert value 23 into the printer buffer (X=3); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18b3: a9 8a       ..
-    ldx #buffer_sound_channel_0                                       ; 18b5: a2 04       ..
+    ldx #buffer_sound_channel_0                                       ; 18b5: a2 04       .. ; X=buffer number
     ldy #$ce                                                          ; 18b7: a0 ce       ..
     jsr osbyte                                                        ; 18b9: 20 f4 ff     .. ; Insert value 206 into sound channel 0 (X=4); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18bc: a9 8a       ..
-    ldx #buffer_sound_channel_1                                       ; 18be: a2 05       ..
+    ldx #buffer_sound_channel_1                                       ; 18be: a2 05       .. ; X=buffer number
     ldy #$63 ; 'c'                                                    ; 18c0: a0 63       .c
     jsr osbyte                                                        ; 18c2: 20 f4 ff     .. ; Insert value 99 into sound channel 1 (X=5); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18c5: a9 8a       ..
-    ldx #buffer_sound_channel_2                                       ; 18c7: a2 06       ..
+    ldx #buffer_sound_channel_2                                       ; 18c7: a2 06       .. ; X=buffer number
     ldy #$2a ; '*'                                                    ; 18c9: a0 2a       .*
     jsr osbyte                                                        ; 18cb: 20 f4 ff     .. ; Insert value 42 into sound channel 2 (X=6); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18ce: a9 8a       ..
-    ldx #buffer_sound_channel_3                                       ; 18d0: a2 07       ..
+    ldx #buffer_sound_channel_3                                       ; 18d0: a2 07       .. ; X=buffer number
     ldy #1                                                            ; 18d2: a0 01       ..
     jsr osbyte                                                        ; 18d4: 20 f4 ff     .. ; Insert value 1 into sound channel 3 (X=7); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18d7: a9 8a       ..
-    ldx #buffer_speech                                                ; 18d9: a2 08       ..
+    ldx #buffer_speech                                                ; 18d9: a2 08       .. ; X=buffer number
     ldy #$5a ; 'Z'                                                    ; 18db: a0 5a       .Z
     jsr osbyte                                                        ; 18dd: 20 f4 ff     .. ; Insert value 90 into the speech buffer (X=8); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18e0: a9 8a       ..
-    ldx #9                                                            ; 18e2: a2 09       ..
+    ldx #9                                                            ; 18e2: a2 09       .. ; X=buffer number
     ldy #$64 ; 'd'                                                    ; 18e4: a0 64       .d
     jsr osbyte                                                        ; 18e6: 20 f4 ff     .. ; Insert value 100 into unknown buffer (X=9); carry is clear if successful
 
@@ -1676,7 +1676,7 @@ pydis_start
 
     ; *************** Test OSBYTE 0x91 ***************
     lda #osbyte_read_buffer                                           ; 1bd8: a9 91       ..
-    ldx #buffer_keyboard                                              ; 1bda: a2 00       ..
+    ldx #buffer_keyboard                                              ; 1bda: a2 00       .. ; X=buffer number
     ldy #0                                                            ; 1bdc: a0 00       ..
     jsr osbyte                                                        ; 1bde: 20 f4 ff     .. ; Get character from keyboard buffer (C is set if the buffer is empty, otherwise Y=extracted character)
     bcs buffer_empty                                                  ; 1be1: b0 02       ..
@@ -1771,34 +1771,34 @@ buffer_empty
     ldy #0                                                            ; 1c85: a0 00       ..
     jsr osbyte                                                        ; 1c87: 20 f4 ff     .. ; Examine status of buffer X (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c8a: a9 98       ..
-    ldx #buffer_keyboard                                              ; 1c8c: a2 00       ..
+    ldx #buffer_keyboard                                              ; 1c8c: a2 00       .. ; X=buffer number
     jsr osbyte                                                        ; 1c8e: 20 f4 ff     .. ; Examine the keyboard buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c91: a9 98       ..
-    ldx #buffer_rs423_input                                           ; 1c93: a2 01       ..
+    ldx #buffer_rs423_input                                           ; 1c93: a2 01       .. ; X=buffer number
     jsr osbyte                                                        ; 1c95: 20 f4 ff     .. ; Examine the RS423 input buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c98: a9 98       ..
-    ldx #buffer_rs423_output                                          ; 1c9a: a2 02       ..
+    ldx #buffer_rs423_output                                          ; 1c9a: a2 02       .. ; X=buffer number
     jsr osbyte                                                        ; 1c9c: 20 f4 ff     .. ; Examine the RS423 output buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c9f: a9 98       ..
-    ldx #buffer_printer                                               ; 1ca1: a2 03       ..
+    ldx #buffer_printer                                               ; 1ca1: a2 03       .. ; X=buffer number
     jsr osbyte                                                        ; 1ca3: 20 f4 ff     .. ; Examine the printer buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1ca6: a9 98       ..
-    ldx #buffer_sound_channel_0                                       ; 1ca8: a2 04       ..
+    ldx #buffer_sound_channel_0                                       ; 1ca8: a2 04       .. ; X=buffer number
     jsr osbyte                                                        ; 1caa: 20 f4 ff     .. ; Examine sound channel 0 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cad: a9 98       ..
-    ldx #buffer_sound_channel_1                                       ; 1caf: a2 05       ..
+    ldx #buffer_sound_channel_1                                       ; 1caf: a2 05       .. ; X=buffer number
     jsr osbyte                                                        ; 1cb1: 20 f4 ff     .. ; Examine sound channel 1 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cb4: a9 98       ..
-    ldx #buffer_sound_channel_2                                       ; 1cb6: a2 06       ..
+    ldx #buffer_sound_channel_2                                       ; 1cb6: a2 06       .. ; X=buffer number
     jsr osbyte                                                        ; 1cb8: 20 f4 ff     .. ; Examine sound channel 2 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cbb: a9 98       ..
-    ldx #buffer_sound_channel_3                                       ; 1cbd: a2 07       ..
+    ldx #buffer_sound_channel_3                                       ; 1cbd: a2 07       .. ; X=buffer number
     jsr osbyte                                                        ; 1cbf: 20 f4 ff     .. ; Examine sound channel 3 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cc2: a9 98       ..
-    ldx #buffer_speech                                                ; 1cc4: a2 08       ..
+    ldx #buffer_speech                                                ; 1cc4: a2 08       .. ; X=buffer number
     jsr osbyte                                                        ; 1cc6: 20 f4 ff     .. ; Examine the speech buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cc9: a9 98       ..
-    ldx #9                                                            ; 1ccb: a2 09       ..
+    ldx #9                                                            ; 1ccb: a2 09       .. ; X=buffer number
     jsr osbyte                                                        ; 1ccd: 20 f4 ff     .. ; Examine status of unknown buffer (exits with carry clear on success)
     cpy #0                                                            ; 1cd0: c0 00       .. ; Y is: on BBC Micro: offset to next character to be read from address stored at ($fa, $fb); or Master, B+, Electron: the byte read
 
@@ -1826,31 +1826,31 @@ buffer_empty
     jsr osbyte                                                        ; 1cfa: 20 f4 ff     .. ; Write X to video ULA control register and OS copy (BBC and Master only), and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1cfd: a9 9a       ..
     ldx #%11111111                                                    ; 1cff: a2 ff       ..
-    jsr osbyte                                                        ; 1d01: 20 f4 ff     .. ; Set cassette motor on, RS423 in charge, recieve at 75 baud, transmit at 75 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d01: 20 f4 ff     .. ; Set cassette motor on, RS423 in charge, receive at 75 baud, transmit at 75 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d04: a9 9a       ..
     ldx #%00111000                                                    ; 1d06: a2 38       .8
-    jsr osbyte                                                        ; 1d08: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 75 baud, transmit at 19200 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d08: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 75 baud, transmit at 19200 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d0b: a9 9a       ..
     ldx #%00110001                                                    ; 1d0d: a2 31       .1
-    jsr osbyte                                                        ; 1d0f: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 150 baud, transmit at 9600 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d0f: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 150 baud, transmit at 9600 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d12: a9 9a       ..
     ldx #%00101010                                                    ; 1d14: a2 2a       .*
-    jsr osbyte                                                        ; 1d16: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 300 baud, transmit at 4800 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d16: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 300 baud, transmit at 4800 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d19: a9 9a       ..
     ldx #%00100011                                                    ; 1d1b: a2 23       .#
-    jsr osbyte                                                        ; 1d1d: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 1200 baud, transmit at 2400 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d1d: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 1200 baud, transmit at 2400 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d20: a9 9a       ..
     ldx #%00011100                                                    ; 1d22: a2 1c       ..
-    jsr osbyte                                                        ; 1d24: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 2400 baud, transmit at 1200 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d24: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 2400 baud, transmit at 1200 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d27: a9 9a       ..
     ldx #%00010101                                                    ; 1d29: a2 15       ..
-    jsr osbyte                                                        ; 1d2b: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 4800 baud, transmit at 300 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d2b: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 4800 baud, transmit at 300 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d2e: a9 9a       ..
     ldx #%00001110                                                    ; 1d30: a2 0e       ..
-    jsr osbyte                                                        ; 1d32: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 9600 baud, transmit at 150 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d32: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 9600 baud, transmit at 150 baud, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d35: a9 9a       ..
     ldx #%00000111                                                    ; 1d37: a2 07       ..
-    jsr osbyte                                                        ; 1d39: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, recieve at 19200 baud, transmit at 75 baud, and reset flash cycle
+    jsr osbyte                                                        ; 1d39: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 19200 baud, transmit at 75 baud, and reset flash cycle
 
     ; *************** Test OSBYTE 0x9b ***************
     lda #osbyte_write_video_ula_palette                               ; 1d3c: a9 9b       ..
@@ -2734,12 +2734,12 @@ buffer_empty
     cpy #0                                                            ; 2499: c0 00       .. ; Y is the 'Default FDRIVE; default CAPS; load DIR at switch on; floppy/hard disc' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 249b: a9 a1       ..
     ldx #$0c                                                          ; 249d: a2 0c       ..
-    jsr osbyte                                                        ; 249f: 20 f4 ff     .. ; Master and Compact: Read the 'Keybaord auto-repeat delay' byte from CMOS RAM/EEPROM (X=12)
-    cpy #0                                                            ; 24a2: c0 00       .. ; Y is the 'Keybaord auto-repeat delay' byte read from the CMOS RAM/EEPROM
+    jsr osbyte                                                        ; 249f: 20 f4 ff     .. ; Master and Compact: Read the 'Keyboard auto-repeat delay' byte from CMOS RAM/EEPROM (X=12)
+    cpy #0                                                            ; 24a2: c0 00       .. ; Y is the 'Keyboard auto-repeat delay' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24a4: a9 a1       ..
     ldx #$0d                                                          ; 24a6: a2 0d       ..
-    jsr osbyte                                                        ; 24a8: 20 f4 ff     .. ; Master and Compact: Read the 'Keybaord auto-repeat rate' byte from CMOS RAM/EEPROM (X=13)
-    cpy #0                                                            ; 24ab: c0 00       .. ; Y is the 'Keybaord auto-repeat rate' byte read from the CMOS RAM/EEPROM
+    jsr osbyte                                                        ; 24a8: 20 f4 ff     .. ; Master and Compact: Read the 'Keyboard auto-repeat rate' byte from CMOS RAM/EEPROM (X=13)
+    cpy #0                                                            ; 24ab: c0 00       .. ; Y is the 'Keyboard auto-repeat rate' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24ad: a9 a1       ..
     ldx #$0e                                                          ; 24af: a2 0e       ..
     jsr osbyte                                                        ; 24b1: 20 f4 ff     .. ; Master and Compact: Read the 'Printer ignore character' byte from CMOS RAM/EEPROM (X=14)
@@ -2953,11 +2953,11 @@ buffer_empty
     lda #osbyte_write_cmos_ram                                        ; 2681: a9 a2       ..
     ldx #$0c                                                          ; 2683: a2 0c       ..
     ldy #0                                                            ; 2685: a0 00       ..
-    jsr osbyte                                                        ; 2687: 20 f4 ff     .. ; Master and Compact: Write to the 'Keybaord auto-repeat delay' byte from CMOS RAM/EEPROM (X=12) with value Y=0
+    jsr osbyte                                                        ; 2687: 20 f4 ff     .. ; Master and Compact: Write to the 'Keyboard auto-repeat delay' byte from CMOS RAM/EEPROM (X=12) with value Y=0
     lda #osbyte_write_cmos_ram                                        ; 268a: a9 a2       ..
     ldx #$0d                                                          ; 268c: a2 0d       ..
     ldy #0                                                            ; 268e: a0 00       ..
-    jsr osbyte                                                        ; 2690: 20 f4 ff     .. ; Master and Compact: Write to the 'Keybaord auto-repeat rate' byte from CMOS RAM/EEPROM (X=13) with value Y=0
+    jsr osbyte                                                        ; 2690: 20 f4 ff     .. ; Master and Compact: Write to the 'Keyboard auto-repeat rate' byte from CMOS RAM/EEPROM (X=13) with value Y=0
     lda #osbyte_write_cmos_ram                                        ; 2693: a9 a2       ..
     ldx #$0e                                                          ; 2695: a2 0e       ..
     ldy #0                                                            ; 2697: a0 00       ..
@@ -3731,26 +3731,26 @@ buffer_empty
     ldy #0                                                            ; 2c58: a0 00       ..
     jsr osbyte                                                        ; 2c5a: 20 f4 ff     .. ; Write speech suppression, value X=42
     stx mem                                                           ; 2c5d: 86 70       .p ; X=old value of speech suppression
-    sty mem                                                           ; 2c5f: 84 70       .p ; Y=value of sound suppression (anything non-zero supresses sound)
+    sty mem                                                           ; 2c5f: 84 70       .p ; Y=value of sound suppression (anything non-zero suppresses sound)
     lda #osbyte_read_write_speech_suppression                         ; 2c61: a9 d1       ..
     ldx #0                                                            ; 2c63: a2 00       ..
     ldy #$ff                                                          ; 2c65: a0 ff       ..
     jsr osbyte                                                        ; 2c67: 20 f4 ff     .. ; Read speech suppression
     stx mem                                                           ; 2c6a: 86 70       .p ; X=value of speech suppression
-    sty mem                                                           ; 2c6c: 84 70       .p ; Y=value of sound suppression (anything non-zero supresses sound)
+    sty mem                                                           ; 2c6c: 84 70       .p ; Y=value of sound suppression (anything non-zero suppresses sound)
 
     ; *************** Test OSBYTE 0xd2 ***************
     lda #osbyte_read_write_sound_suppression                          ; 2c6e: a9 d2       ..
     ldx #$2a ; '*'                                                    ; 2c70: a2 2a       .*
     ldy #0                                                            ; 2c72: a0 00       ..
-    jsr osbyte                                                        ; 2c74: 20 f4 ff     .. ; Write sound suppression (anything non-zero supresses sound), value X=42
-    stx mem                                                           ; 2c77: 86 70       .p ; X=old value of sound suppression (anything non-zero supresses sound)
+    jsr osbyte                                                        ; 2c74: 20 f4 ff     .. ; Write sound suppression (anything non-zero suppresses sound), value X=42
+    stx mem                                                           ; 2c77: 86 70       .p ; X=old value of sound suppression (anything non-zero suppresses sound)
     sty mem                                                           ; 2c79: 84 70       .p ; Y=value of CTRL G channel
     lda #osbyte_read_write_sound_suppression                          ; 2c7b: a9 d2       ..
     ldx #0                                                            ; 2c7d: a2 00       ..
     ldy #$ff                                                          ; 2c7f: a0 ff       ..
-    jsr osbyte                                                        ; 2c81: 20 f4 ff     .. ; Read sound suppression (anything non-zero supresses sound)
-    stx mem                                                           ; 2c84: 86 70       .p ; X=value of sound suppression (anything non-zero supresses sound)
+    jsr osbyte                                                        ; 2c81: 20 f4 ff     .. ; Read sound suppression (anything non-zero suppresses sound)
+    stx mem                                                           ; 2c84: 86 70       .p ; X=value of sound suppression (anything non-zero suppresses sound)
     sty mem                                                           ; 2c86: 84 70       .p ; Y=value of CTRL G channel
 
     ; *************** Test OSBYTE 0xd3 ***************
@@ -4015,8 +4015,8 @@ buffer_empty
     lda #osbyte_read_write_escape_status                              ; 2e69: a9 e5       ..
     ldx #0                                                            ; 2e6b: a2 00       ..
     ldy #$ff                                                          ; 2e6d: a0 ff       ..
-    jsr osbyte                                                        ; 2e6f: 20 f4 ff     .. ; Set ESCAPE key to produce ASCII code None
-    stx mem                                                           ; 2e72: 86 70       .p ; X=value of Set ESCAPE key to produce ASCII code None
+    jsr osbyte                                                        ; 2e6f: 20 f4 ff     .. ; Read ESCAPE key status
+    stx mem                                                           ; 2e72: 86 70       .p ; X=value of ESCAPE key status
     sty mem                                                           ; 2e74: 84 70       .p ; Y=value of ESCAPE effects
 
     ; *************** Test OSBYTE 0xe6 ***************
@@ -4494,7 +4494,7 @@ buffer_empty
     lda #4                                                            ; 31ba: a9 04       .. ; A=value to be written
     ldy #$5a ; 'Z'                                                    ; 31bc: a0 5a       .Z ; Y=offset from base address
     jsr oswrsc                                                        ; 31be: 20 b3 ff     .. ; Write byte to screen
-    ldy #event_character_entering_input_buffer                        ; 31c1: a0 02       ..
+    ldy #event_character_entering_input_buffer                        ; 31c1: a0 02       .. ; Y=event number
     jsr oseven                                                        ; 31c3: 20 bf ff     .. ; Generate event Y='Character entering input buffer'
     jsr osrdch                                                        ; 31c6: 20 e0 ff     .. ; Read a character from the current input stream
     cmp #$20 ; ' '                                                    ; 31c9: c9 20       .  ; A=character read
@@ -4685,7 +4685,7 @@ buffer_empty
     lda #$15                                                          ; 3352: a9 15       ..
     ldx #<osword255block                                              ; 3354: a2 81       ..
     ldy #>osword255block                                              ; 3356: a0 41       .A
-    jsr osword                                                        ; 3358: 20 f1 ff     .. ; Read/Write mouse and pointer infomation (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3358: 20 f1 ff     .. ; Read/Write mouse and pointer information (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$16                                                          ; 335b: a9 16       ..
     ldx #<osword255block                                              ; 335d: a2 81       ..
     ldy #>osword255block                                              ; 335f: a0 41       .A
@@ -4701,7 +4701,7 @@ buffer_empty
     lda #$19                                                          ; 3376: a9 19       ..
     ldx #<osword255block                                              ; 3378: a2 81       ..
     ldy #>osword255block                                              ; 337a: a0 41       .A
-    jsr osword                                                        ; 337c: 20 f1 ff     .. ; Watford Electronics Speech control (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 337c: 20 f1 ff     .. ; IP Open or read network receive block; Watford Electronics Speech control (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$1a                                                          ; 337f: a9 1a       ..
     ldx #<osword255block                                              ; 3381: a2 81       ..
     ldy #>osword255block                                              ; 3383: a0 41       .A
@@ -4729,7 +4729,7 @@ buffer_empty
     lda #$20 ; ' '                                                    ; 33b5: a9 20       .
     ldx #<osword255block                                              ; 33b7: a2 81       ..
     ldy #>osword255block                                              ; 33b9: a0 41       .A
-    jsr osword                                                        ; 33bb: 20 f1 ff     .. ; Transfer data between Tube and I/O (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 33bb: 20 f1 ff     .. ; Acorn User Windowing System (deprecated); Transfer data between Tube and I/O (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$21 ; '!'                                                    ; 33be: a9 21       .!
     ldx #<osword255block                                              ; 33c0: a2 81       ..
     ldy #>osword255block                                              ; 33c2: a0 41       .A
@@ -4761,27 +4761,27 @@ buffer_empty
     lda #$28 ; '('                                                    ; 33fd: a9 28       .(
     ldx #<osword255block                                              ; 33ff: a2 81       ..
     ldy #>osword255block                                              ; 3401: a0 41       .A
-    jsr osword                                                        ; 3403: 20 f1 ff     .. ; Read PRISMA information table (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3403: 20 f1 ff     .. ; EasyTalk speech ROM; Read PRISMA information table (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$29 ; ')'                                                    ; 3406: a9 29       .)
     ldx #<osword255block                                              ; 3408: a2 81       ..
     ldy #>osword255block                                              ; 340a: a0 41       .A
-    jsr osword                                                        ; 340c: 20 f1 ff     .. ; Read PRISMA pixel value (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 340c: 20 f1 ff     .. ; EasyTalk speech ROM; Read PRISMA pixel value (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$2a ; '*'                                                    ; 340f: a9 2a       .*
     ldx #<osword255block                                              ; 3411: a2 81       ..
     ldy #>osword255block                                              ; 3413: a0 41       .A
-    jsr osword                                                        ; 3415: 20 f1 ff     .. ; Read PRISMA logical screen size (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3415: 20 f1 ff     .. ; EasyTalk speech ROM; Read PRISMA logical screen size (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$2b ; '+'                                                    ; 3418: a9 2b       .+
     ldx #<osword255block                                              ; 341a: a2 81       ..
     ldy #>osword255block                                              ; 341c: a0 41       .A
-    jsr osword                                                        ; 341e: 20 f1 ff     .. ; Read PRISMA colour palette (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 341e: 20 f1 ff     .. ; EasyTalk speech ROM; Read PRISMA colour palette (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$2c ; ','                                                    ; 3421: a9 2c       .,
     ldx #<osword255block                                              ; 3423: a2 81       ..
     ldy #>osword255block                                              ; 3425: a0 41       .A
-    jsr osword                                                        ; 3427: 20 f1 ff     .. ; Send VDU code direct to PRISMA (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3427: 20 f1 ff     .. ; EasyTalk speech ROM; Send VDU code direct to PRISMA (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$2d ; '-'                                                    ; 342a: a9 2d       .-
     ldx #<osword255block                                              ; 342c: a2 81       ..
     ldy #>osword255block                                              ; 342e: a0 41       .A
-    jsr osword                                                        ; 3430: 20 f1 ff     .. ; Read last two PRISMA graphics positions (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3430: 20 f1 ff     .. ; EasyTalk speech ROM; Read last two PRISMA graphics positions (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$2e ; '.'                                                    ; 3433: a9 2e       ..
     ldx #<osword255block                                              ; 3435: a2 81       ..
     ldy #>osword255block                                              ; 3437: a0 41       .A
@@ -4805,7 +4805,7 @@ buffer_empty
     lda #$33 ; '3'                                                    ; 3460: a9 33       .3
     ldx #<osword255block                                              ; 3462: a2 81       ..
     ldy #>osword255block                                              ; 3464: a0 41       .A
-    jsr osword                                                        ; 3466: 20 f1 ff     .. ; Read/write PRISMA non-volatitle memory (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3466: 20 f1 ff     .. ; Read/write PRISMA non-volatile memory (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$34 ; '4'                                                    ; 3469: a9 34       .4
     ldx #<osword255block                                              ; 346b: a2 81       ..
     ldy #>osword255block                                              ; 346d: a0 41       .A
@@ -4877,7 +4877,7 @@ buffer_empty
     lda #$45 ; 'E'                                                    ; 3502: a9 45       .E
     ldx #<osword255block                                              ; 3504: a2 81       ..
     ldy #>osword255block                                              ; 3506: a0 41       .A
-    jsr osword                                                        ; 3508: 20 f1 ff     .. ; Digitise picture (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3508: 20 f1 ff     .. ; Move/Swap memory; Digitise picture (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$46 ; 'F'                                                    ; 350b: a9 46       .F
     ldx #<osword255block                                              ; 350d: a2 81       ..
     ldy #>osword255block                                              ; 350f: a0 41       .A
@@ -4885,7 +4885,7 @@ buffer_empty
     lda #$47 ; 'G'                                                    ; 3514: a9 47       .G
     ldx #<osword255block                                              ; 3516: a2 81       ..
     ldy #>osword255block                                              ; 3518: a0 41       .A
-    jsr osword                                                        ; 351a: 20 f1 ff     .. ; PrettyPrint (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 351a: 20 f1 ff     .. ; Allocated to HowSoft, probably unused; PrettyPrint (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$48 ; 'H'                                                    ; 351d: a9 48       .H
     ldx #<osword255block                                              ; 351f: a2 81       ..
     ldy #>osword255block                                              ; 3521: a0 41       .A
@@ -4921,19 +4921,19 @@ buffer_empty
     lda #$50 ; 'P'                                                    ; 3565: a9 50       .P
     ldx #<osword255block                                              ; 3567: a2 81       ..
     ldy #>osword255block                                              ; 3569: a0 41       .A
-    jsr osword                                                        ; 356b: 20 f1 ff     .. ; Read Real-Time Clock (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 356b: 20 f1 ff     .. ; Release area to heap; ADFS extension; Read Real-Time Clock (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$51 ; 'Q'                                                    ; 356e: a9 51       .Q
     ldx #<osword255block                                              ; 3570: a2 81       ..
     ldy #>osword255block                                              ; 3572: a0 41       .A
-    jsr osword                                                        ; 3574: 20 f1 ff     .. ; TORCH (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3574: 20 f1 ff     .. ; Get maximum heap block size; Write Real-Time Clock; HKSET Support; TORCH (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$52 ; 'R'                                                    ; 3577: a9 52       .R
     ldx #<osword255block                                              ; 3579: a2 81       ..
     ldy #>osword255block                                              ; 357b: a0 41       .A
-    jsr osword                                                        ; 357d: 20 f1 ff     .. ; TORCH (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 357d: 20 f1 ff     .. ; Initialise file buffer; TORCH (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$53 ; 'S'                                                    ; 3580: a9 53       .S
     ldx #<osword255block                                              ; 3582: a2 81       ..
     ldy #>osword255block                                              ; 3584: a0 41       .A
-    jsr osword                                                        ; 3586: 20 f1 ff     .. ; TORCH (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3586: 20 f1 ff     .. ; Finish with file buffer; TORCH (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$54 ; 'T'                                                    ; 3589: a9 54       .T
     ldx #<osword255block                                              ; 358b: a2 81       ..
     ldy #>osword255block                                              ; 358d: a0 41       .A
@@ -4961,7 +4961,7 @@ buffer_empty
     lda #$5a ; 'Z'                                                    ; 35bf: a9 5a       .Z
     ldx #<osword255block                                              ; 35c1: a2 81       ..
     ldy #>osword255block                                              ; 35c3: a0 41       .A
-    jsr osword                                                        ; 35c5: 20 f1 ff     .. ; HADFS Sector read/write/access (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 35c5: 20 f1 ff     .. ; Find node in binary tree; HADFS Sector read/write/access (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$5b ; '['                                                    ; 35c8: a9 5b       .[
     ldx #<osword255block                                              ; 35ca: a2 81       ..
     ldy #>osword255block                                              ; 35cc: a0 41       .A
@@ -5093,7 +5093,7 @@ buffer_empty
     lda #$7b ; '{'                                                    ; 36e8: a9 7b       .{
     ldx #<osword255block                                              ; 36ea: a2 81       ..
     ldy #>osword255block                                              ; 36ec: a0 41       .A
-    jsr osword                                                        ; 36ee: 20 f1 ff     .. ; Move a block of memory (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 36ee: 20 f1 ff     .. ; Modem commands; Move a block of memory (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$7c ; '|'                                                    ; 36f1: a9 7c       .|
     ldx #<osword255block                                              ; 36f3: a2 81       ..
     ldy #>osword255block                                              ; 36f5: a0 41       .A
@@ -5113,7 +5113,7 @@ buffer_empty
     lda #$80                                                          ; 3715: a9 80       ..
     ldx #<osword255block                                              ; 3717: a2 81       ..
     ldy #>osword255block                                              ; 3719: a0 41       .A
-    jsr osword                                                        ; 371b: 20 f1 ff     .. ; Springboard DOS INT (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 371b: 20 f1 ff     .. ; IEEE Command; Springboard DOS INT (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$81                                                          ; 371e: a9 81       ..
     ldx #<osword255block                                              ; 3720: a2 81       ..
     ldy #>osword255block                                              ; 3722: a0 41       .A
@@ -5369,7 +5369,7 @@ buffer_empty
     lda #$c0                                                          ; 3955: a9 c0       ..
     ldx #<osword255block                                              ; 3957: a2 81       ..
     ldy #>osword255block                                              ; 3959: a0 41       .A
-    jsr osword                                                        ; 395b: 20 f1 ff     .. ; Eureka memory control (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 395b: 20 f1 ff     .. ; Sockets and Resolver interface; Eureka memory control (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$c1                                                          ; 395e: a9 c1       ..
     ldx #<osword255block                                              ; 3960: a2 81       ..
     ldy #>osword255block                                              ; 3962: a0 41       .A
@@ -5617,11 +5617,11 @@ buffer_empty
     lda #$fe                                                          ; 3b83: a9 fe       ..
     ldx #<osword255block                                              ; 3b85: a2 81       ..
     ldy #>osword255block                                              ; 3b87: a0 41       .A
-    jsr osword                                                        ; 3b89: 20 f1 ff     .. ; Z80 MFM disk access (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3b89: 20 f1 ff     .. ; DOS Text output (unimplemented); Z80 MFM disk access (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$ff                                                          ; 3b8c: a9 ff       ..
     ldx #<osword255block                                              ; 3b8e: a2 81       ..
     ldy #>osword255block                                              ; 3b90: a0 41       .A
-    jsr osword                                                        ; 3b92: 20 f1 ff     .. ; Z80 Data transfer over Tube (see https://beebwiki.mdfs.net/OSWORDs)
+    jsr osword                                                        ; 3b92: 20 f1 ff     .. ; DOS fast screen control; Z80 Data transfer over Tube (see https://beebwiki.mdfs.net/OSWORDs)
     lda #$1a                                                          ; 3b95: a9 1a       ..
     jsr osbyte                                                        ; 3b97: 20 f4 ff     .. ; Handset detection (Communicator); BASIC Editor toggle configuration (see https://beebwiki.mdfs.net/OSBYTEs)
     lda #$1e                                                          ; 3b9a: a9 1e       ..
@@ -5685,7 +5685,7 @@ buffer_empty
     lda #$6a ; 'j'                                                    ; 3c2b: a9 6a       .j
     jsr osbyte                                                        ; 3c2d: 20 f4 ff     .. ; Select pointer/activate mouse (see https://beebwiki.mdfs.net/OSBYTEs)
     lda #$6e ; 'n'                                                    ; 3c30: a9 6e       .n
-    jsr osbyte                                                        ; 3c32: 20 f4 ff     .. ; Write to ROMSTROBE (or Early Watford DFS: Control drive double-stepping, superceeded by *OPT40, *OPT80) (see https://beebwiki.mdfs.net/OSBYTEs)
+    jsr osbyte                                                        ; 3c32: 20 f4 ff     .. ; Write to ROMSTROBE (or Early Watford DFS: Control drive double-stepping, superseded by *OPT40, *OPT80) (see https://beebwiki.mdfs.net/OSBYTEs)
     lda #$6f ; 'o'                                                    ; 3c35: a9 6f       .o
     jsr osbyte                                                        ; 3c37: 20 f4 ff     .. ; Read/Write shadow RAM switch (see https://beebwiki.mdfs.net/OSBYTEs)
     rts                                                               ; 3c3a: 60          `
