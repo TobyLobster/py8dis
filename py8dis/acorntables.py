@@ -1099,3 +1099,494 @@ os_variable_names = {
     0xfe: "RAM size (or Master only: shift key effect)",
     0xff: "start-up option byte",
 }
+
+
+# ----------------------------------------------------------------------------
+# Hardware addresses (FRED, JIM and SHEILA), named by acorn.hardware() and so
+# by bbc(), b_plus(), master() and electron().
+#
+# Each entry is (address, name, machines) or (address, name, machines, True).
+# The label is defined (with optional_label()) for each of the machines. The
+# True (only on a few, as before) lets the label be defined inline, which the
+# hardware labels otherwise never are. Entries for the same address on
+# different machines are alternatives; entries for the same address on the
+# same machine are all defined, in this order.
+# ----------------------------------------------------------------------------
+
+from collections import namedtuple
+from machinetype import MachineType
+
+HardwareLabel = namedtuple("HardwareLabel", "addr name machines definable_inline", defaults=(False,))
+
+_BBC_B_PLUS    = frozenset({MachineType.MACHINE_BBC, MachineType.MACHINE_BPLUS})
+_MASTER        = frozenset({MachineType.MACHINE_MASTER})
+_B_PLUS_MASTER = frozenset({MachineType.MACHINE_BPLUS, MachineType.MACHINE_MASTER})
+_NOT_ELECTRON  = _BBC_B_PLUS | _MASTER
+_ELECTRON      = frozenset({MachineType.MACHINE_ELECTRON})
+_ALL           = _NOT_ELECTRON | _ELECTRON
+
+def _numbered(addr, count, name, machines, definable_inline=False):
+    """count entries from addr, named name.format(0), name.format(1), ..."""
+    return [(addr + i, name.format(i), machines, definable_inline) for i in range(count)]
+
+_via_registers = ["register_b", "register_a", "ddrb", "ddra", "t1c_l", "t1c_h", "t1l_l", "t1l_h",
+                  "t2c_l", "t2c_h", "sr", "acr", "pcr", "ifr", "ier", "register_a_no_handshake"]
+
+def _via(addr, name, machines):
+    """The 16 registers of a 6522 VIA, e.g. system_via_register_b."""
+    return [(addr + i, name + "_via_" + register, machines) for i, register in enumerate(_via_registers)]
+
+hardware_labels = [HardwareLabel(*entry) for entry in [
+    #######################################################################
+    # FRED: see p404 of NAUG and https://mdfs.net/Docs/Comp/BBC/Hardware/FREDAddrs
+    # Some addresses conflict between different hardware, we make some fairly arbitrary
+    # decisions about how to decode these addresses.
+    #######################################################################
+
+    (0xfc00, "fred",                                                   _ALL),
+
+    # FC00-03 Byte-Wide Expansion RAM
+    # (0xfc00, "fred_bytewide_expansion_ram_addr_b0_b7",                 _ALL),
+    # (0xfc01, "fred_bytewide_expansion_ram_addr_b8_b15",                _ALL),
+    # (0xfc02, "fred_bytewide_expansion_ram_addr_b16_b23",               _ALL),
+    # (0xfc03, "fred_bytewide_expansion_ram_data",                       _ALL),
+
+    # FC04-05 BeebOPL (FM Synthsiser for the BBC Micro)
+    (0xfc04, "fred_beebopl0",                                          _ALL),
+    (0xfc05, "fred_beebopl1",                                          _ALL),
+
+    # FC08-0F Ample M2000/EMR/EE MIDI Interface (see also FCF0)
+    (0xfc08, "fred_midi_port1_6850_control_or_status",                 _ALL),
+    (0xfc09, "fred_midi_port1_6850_data",                              _ALL),
+    (0xfc0a, "fred_midi_port2_6850_control_or_status",                 _ALL),
+    (0xfc0b, "fred_midi_port2_6850_data",                              _ALL),
+    (0xfc0c, "fred_midi_port3_6850_control_or_status",                 _ALL),
+    (0xfc0d, "fred_midi_port3_6850_data",                              _ALL),
+    (0xfc0e, "fred_output_latch0",                                     _ALL),
+    (0xfc0f, "fred_output_latch1",                                     _ALL),
+
+    # FC10-13 Teletext Hardware
+    (0xfc10, "fred_teletext_0",                                        _ALL),
+    (0xfc11, "fred_teletext_1",                                        _ALL),
+    (0xfc12, "fred_teletext_2",                                        _ALL),
+    (0xfc13, "fred_teletext_3",                                        _ALL),
+
+    # FC14-1F Prestel Hardware
+    (0xfc14, "fred_prestel_0",                                         _ALL),
+    (0xfc15, "fred_prestel_1",                                         _ALL),
+    (0xfc16, "fred_prestel_2",                                         _ALL),
+    (0xfc17, "fred_prestel_3",                                         _ALL),
+    (0xfc18, "fred_prestel_4",                                         _ALL),
+    (0xfc19, "fred_prestel_5",                                         _ALL),
+    (0xfc1a, "fred_prestel_6",                                         _ALL),
+    (0xfc1b, "fred_prestel_7",                                         _ALL),
+
+    # FC1C-FC1F Teletext display expansion
+    (0xfc1c, "fred_jafa_6845_write_addr",                              _ALL),
+    (0xfc1d, "fred_jafa_6845_write_data",                              _ALL),
+    (0xfc1e, "fred_jafa_6845_read_status",                             _ALL),
+    (0xfc1f, "fred_jafa_6845_read_data",                               _ALL),
+
+    # FC28-2F Electron Econet
+    (0xfc28, "electron_econet_fc28",                                   _ELECTRON),
+    (0xfc29, "electron_econet_fc29",                                   _ELECTRON),
+    (0xfc2a, "electron_econet_fc2a",                                   _ELECTRON),
+    (0xfc2b, "electron_econet_fc2b",                                   _ELECTRON),
+    (0xfc2c, "electron_econet_fc2c",                                   _ELECTRON),
+    (0xfc2d, "electron_econet_fc2d",                                   _ELECTRON),
+    (0xfc2e, "electron_econet_fc2e",                                   _ELECTRON),
+    (0xfc2f, "electron_econet_fc2f",                                   _ELECTRON),
+
+    # FC20-3F SID Interface (6581 Sound Interface Device)
+    (0xfc20, "sid_voice1_frequency_low",                               _NOT_ELECTRON),
+    (0xfc21, "sid_voice1_frequency_high",                              _NOT_ELECTRON),
+    (0xfc22, "sid_voice1_pw_low",                                      _NOT_ELECTRON),
+    (0xfc23, "sid_voice1_pw_high",                                     _NOT_ELECTRON),
+    (0xfc24, "sid_voice1_control_register",                            _NOT_ELECTRON),
+    (0xfc25, "sid_voice1_attack_slash_decay",                          _NOT_ELECTRON),
+    (0xfc26, "sid_voice1_sustain_slash_release",                       _NOT_ELECTRON),
+
+    (0xfc27, "sid_voice2_frequency_low",                               _NOT_ELECTRON),
+    (0xfc28, "sid_voice2_frequency_high",                              _NOT_ELECTRON),
+    (0xfc29, "sid_voice2_pw_low",                                      _NOT_ELECTRON),
+    (0xfc2a, "sid_voice2_pw_high",                                     _NOT_ELECTRON),
+    (0xfc2b, "sid_voice2_control_register",                            _NOT_ELECTRON),
+    (0xfc2c, "sid_voice2_attack_slash_decay",                          _NOT_ELECTRON),
+    (0xfc2d, "sid_voice2_sustain_slash_release",                       _NOT_ELECTRON),
+
+    (0xfc2e, "sid_voice3_frequency_low",                               _NOT_ELECTRON),
+    (0xfc2f, "sid_voice3_frequency_high",                              _NOT_ELECTRON),
+    (0xfc30, "sid_voice3_pw_low",                                      _NOT_ELECTRON),
+    (0xfc31, "sid_voice3_pw_high",                                     _NOT_ELECTRON),
+    (0xfc32, "sid_voice3_control_register",                            _NOT_ELECTRON),
+    (0xfc33, "sid_voice3_attack_slash_decay",                          _NOT_ELECTRON),
+    (0xfc34, "sid_voice3_sustain_slash_release",                       _NOT_ELECTRON),
+
+    (0xfc35, "sid_filter_fc_low",                                      _NOT_ELECTRON),
+    (0xfc36, "sid_filter_fc_high",                                     _NOT_ELECTRON),
+    (0xfc37, "sid_filter_reset_slash_filter",                          _NOT_ELECTRON),
+    (0xfc38, "sid_filter_mode_slash_volume",                           _NOT_ELECTRON),
+
+    (0xfc39, "sid_potx",                                               _NOT_ELECTRON),
+    (0xfc3a, "sid_poty",                                               _NOT_ELECTRON),
+    (0xfc3b, "sid_osc3_slash_random",                                  _NOT_ELECTRON),
+    (0xfc3c, "sid_env3",                                               _NOT_ELECTRON),
+
+    # FC20-27 IEEE Interface (TMS 9914A)
+    # *_numbered(0xfc20, 8, "fred_IEE488_{0}", _ALL),
+
+    # FC30-3F Cambridge Ring interface
+    # *_numbered(0xfc30, 16, "fred_cambridge_ring_{0}", _ALL),
+
+    # FC30-3F WiFi interface 16C2552 UART
+    # (0xfc30, "wifi_data",                                              _ALL),
+    # (0xfc31, "wifi_interrupt_enable",                                  _ALL),
+    # (0xfc32, "wifi_fifo_control_or_interrupt_id",                      _ALL),
+    # (0xfc33, "wifi_line_control",                                      _ALL),
+    # (0xfc34, "wifi_modem_control",                                     _ALL),
+    # (0xfc35, "wifi_line_status",                                       _ALL),
+    # (0xfc36, "wifi_modem_status",                                      _ALL),
+    # (0xfc37, "wifi_scratchpad",                                        _ALL),
+
+    # FC40-4F Hard Drive Access
+    *_numbered(0xfc40, 16, "fred_hard_drive_{0}", _ALL),
+    *_numbered(0xfc50, 16, "fred_undefinedA_{0}", _ALL),
+
+    # FC60-6F Electron Serial controller (2681 ACIA Serial controller)
+    (0xfc60, "electron_serial_mode_register_A",                        _ELECTRON),
+    (0xfc61, "electron_serial_clock_select_A_or_status_register_A",    _ELECTRON),
+    (0xfc62, "electron_serial_command_register_A",                     _ELECTRON),
+    (0xfc63, "electron_serial_data_A",                                 _ELECTRON),
+    (0xfc64, "electron_serial_aux_control_or_input_port_changed",      _ELECTRON),
+    (0xfc65, "electron_serial_interupt_mask_or_status",                _ELECTRON),
+    (0xfc66, "electron_serial_counter_or_timer_upper_register",        _ELECTRON),
+    (0xfc67, "electron_serial_counter_or_timer_lower_register",        _ELECTRON),
+    (0xfc68, "electron_serial_mode_register_B",                        _ELECTRON),
+    (0xfc69, "electron_serial_clock_select_B_or_status_register_B",    _ELECTRON),
+    (0xfc6a, "electron_serial_command_register_B",                     _ELECTRON),
+    (0xfc6b, "electron_serial_data_B",                                 _ELECTRON),
+    (0xfc6c, "electron_serial_reserved",                               _ELECTRON),
+    (0xfc6d, "electron_serial_io_port_data",                           _ELECTRON),
+    (0xfc6e, "electron_serial_set_output_port_bits_or_start_counter",  _ELECTRON),
+    (0xfc6f, "electron_serial_reset_output_port_bits_or_stop_counter", _ELECTRON),
+
+    # FC70-73 Electron Plus 1 expansion
+    (0xfc70, "electron_expansion_atod_convertor_control_or_data",      _ELECTRON, True),
+    (0xfc71, "electron_expansion_centronics_parallel_data",            _ELECTRON, True),
+    (0xfc72, "electron_expansion_status",                              _ELECTRON, True),
+    (0xfc73, "electron_expansion_romstrobe",                           _ELECTRON, True),
+    (0xfc78, "electron_laserdisc_0",                                   _ELECTRON, True),
+    (0xfc79, "electron_laserdisc_1",                                   _ELECTRON, True),
+    (0xfc7a, "electron_laserdisc_2",                                   _ELECTRON, True),
+    (0xfc7b, "electron_laserdisc_3",                                   _ELECTRON, True),
+    (0xfc7c, "electron_laserdisc_4",                                   _ELECTRON, True),
+    (0xfc7d, "electron_laserdisc_5",                                   _ELECTRON, True),
+    (0xfc7e, "electron_laserdisc_6",                                   _ELECTRON, True),
+    # (0xfc7f, "electron_laserdisc_7",                                   _ELECTRON, True),
+    (0xfc7f, "electron_shadow_ram_paging_register",                    _ELECTRON),
+
+    # FC60-6F Additional/External Serial ports
+    (0xfc60, "fred_port1_6850_control_or_status",                      _NOT_ELECTRON),
+    (0xfc61, "fred_port1_6850_data",                                   _NOT_ELECTRON),
+    (0xfc62, "fred_port1_baud_rate_control",                           _NOT_ELECTRON),
+    (0xfc64, "fred_port2_6850_control_or_status",                      _NOT_ELECTRON),
+    (0xfc65, "fred_port2_6850_data",                                   _NOT_ELECTRON),
+    (0xfc66, "fred_port2_baud_rate_control",                           _NOT_ELECTRON),
+    (0xfc68, "fred_port3_6850_control_or_status",                      _NOT_ELECTRON),
+    (0xfc69, "fred_port3_6850_data",                                   _NOT_ELECTRON),
+    (0xfc6a, "fred_port3_baud_rate_control",                           _NOT_ELECTRON),
+    (0xfc6c, "fred_port4_6850_control_or_status",                      _NOT_ELECTRON),
+    (0xfc6d, "fred_port4_6850_data",                                   _NOT_ELECTRON),
+    (0xfc6e, "fred_port4_baud_rate_control",                           _NOT_ELECTRON),
+
+    # FC7C-7F Watford Video Digitiser
+    (0xfc7c, "fred_6821_register_0",                                   _NOT_ELECTRON),
+    (0xfc7d, "fred_6821_register_1",                                   _NOT_ELECTRON),
+    (0xfc7e, "fred_6821_register_2",                                   _NOT_ELECTRON),
+    (0xfc7f, "fred_6821_register_3",                                   _NOT_ELECTRON),
+
+    # FC84-85 Electron external sound
+    (0xfc84, "external_sound_support_0",                               _ELECTRON),
+    (0xfc85, "external_sound_support_1",                               _ELECTRON),
+
+    # FC80-87 LCD Display Control
+    (0xfc80, "fred_lcd_bank0_display_control_or_status",               _NOT_ELECTRON),
+    (0xfc81, "fred_lcd_bank0_display_data",                            _NOT_ELECTRON),
+    (0xfc82, "fred_lcd_bank1_display_control_or_status",               _NOT_ELECTRON),
+    (0xfc83, "fred_lcd_bank1_display_data",                            _NOT_ELECTRON),
+    (0xfc84, "fred_lcd_bank2_display_control_or_status",               _NOT_ELECTRON),
+    (0xfc85, "fred_lcd_bank2_display_data",                            _NOT_ELECTRON),
+    (0xfc86, "fred_lcd_bank3_display_control_or_status",               _NOT_ELECTRON),
+    (0xfc87, "fred_lcd_bank3_display_data",                            _NOT_ELECTRON),
+
+    # FC88-8B HostFS+TubeTCP
+    (0xfc88, "hostfs_and_tube_tcp0",                                   _ALL),
+    (0xfc89, "hostfs_and_tube_tcp1",                                   _ALL),
+    (0xfc8a, "hostfs_and_tube_tcp2",                                   _ALL),
+    (0xfc8b, "hostfs_and_tube_tcp3",                                   _ALL),
+    (0xfc8c, "hostfs_and_tube_tcp4",                                   _ALL),
+    (0xfc8d, "hostfs_and_tube_tcp5",                                   _ALL),
+    (0xfc8e, "hostfs_and_tube_tcp6",                                   _ALL),
+    (0xfc8f, "hostfs_and_tube_tcp7",                                   _ALL),
+
+    # FC90-9F Electron sound and speech cartridge
+    *_numbered(0xfc90, 16, "electron_sound_and_speech_{0}", _ELECTRON),
+
+    # FC90-9F CTS Recognition Plus palette expander additional 6522 VIA
+    (0xfc90, "cts_palette_io_register_B",                              _NOT_ELECTRON),
+    (0xfc91, "cts_palette_io_register_A",                              _NOT_ELECTRON),
+    (0xfc92, "cts_palette_ddr_B",                                      _NOT_ELECTRON),
+    (0xfc93, "cts_palette_ddr_A",                                      _NOT_ELECTRON),
+    (0xfc94, "cts_palette_T1_low_order_counter_or_latches",            _NOT_ELECTRON),
+    (0xfc95, "cts_palette_T1_high_order_counter",                      _NOT_ELECTRON),
+    (0xfc96, "cts_palette_T1_low_order_latches",                       _NOT_ELECTRON),
+    (0xfc97, "cts_palette_T1_high_order_latches",                      _NOT_ELECTRON),
+    (0xfc98, "cts_palette_T2_low_order_counter_or_latches",            _NOT_ELECTRON),
+    (0xfc99, "cts_palette_T2_high_order_counter",                      _NOT_ELECTRON),
+    (0xfc9a, "cts_palette_shift_register",                             _NOT_ELECTRON),
+    (0xfc9b, "cts_palette_auxilary_control_register",                  _NOT_ELECTRON),
+    (0xfc9c, "cts_palette_peripheral_control_register",                _NOT_ELECTRON),
+    (0xfc9d, "cts_palette_interrupt_flag_register",                    _NOT_ELECTRON),
+    (0xfc9e, "cts_palette_interrupt_enable_register",                  _NOT_ELECTRON),
+    (0xfc9f, "cts_palette_io_register_A_no_handshake",                 _NOT_ELECTRON),
+
+    # FCA0-B7 CTS Recognition Plus palette expander
+    # [(0xfca0 + i, "fred_cts_{0}_colour_{1}".format(["red","green","blue"][i // 8], i & 7), _ALL) for i in range(24)]
+
+    # FCB0-BF PRISMA video system
+    (0xfcb0, "prisma_reserved",                                        _ALL),
+    (0xfcb1, "prisma_horizontal_line_phase",                           _ALL),
+    (0xfcb2, "prisma_frame_grab_black_level_and_gain",                 _ALL),
+    (0xfcb3, "prisma_frame_grab_and_control_output_register",          _ALL),
+    (0xfcb4, "prisma_palette_control",                                 _ALL),
+    (0xfcb5, "prisma_palette_address",                                 _ALL),
+    (0xfcb6, "prisma_window_or_background_delay_trims",                _ALL),
+    (0xfcb7, "prisma_overlay_or_NVM_page_paged_into_JIM_at_FDxx",      _ALL),
+    (0xfcb8, "prisma_HD63484_ACRTC_address_or_status",                 _ALL),
+    (0xfcb9, "prisma_HD63484_ACRTC_data",                              _ALL),
+    (0xfcba, "prisma_control_or_status",                               _ALL),
+    (0xfcbb, "prisma_palette_data",                                    _ALL),
+    (0xfcbc, "prisma_overlay_data",                                    _ALL),
+    (0xfcbd, "prisma_overlay_address_or_ACRTC_data_read",              _ALL),
+    (0xfcbe, "prisma_NVR_data",                                        _ALL),
+    (0xfcbf, "prisma_reserved_for_control_in_multiple_PRISMA_systems", _ALL),
+
+    # FCC0    Electron digital joystick option C (see also FCD0)
+    # (0xfcc0, "electron_joystickC_state",                               _ELECTRON),
+
+    # FCC0-C7 Electron 1770 floppy disk expansion (Plus 3)
+    (0xfcc0, "electron_1770_control_port",                             _ELECTRON),
+    (0xfcc4, "electron_1770_command_or_status_register",               _ELECTRON),
+    (0xfcc5, "electron_1770_track_register",                           _ELECTRON),
+    (0xfcc6, "electron_1770_sector_register",                          _ELECTRON),
+    (0xfcc7, "electron_1770_data_register",                            _ELECTRON),
+
+    # FCCC-CF Morley Electronics RAMdisc - paged into JIM at &FDxx
+    (0xfccc, "morley_ramdisc_bank_select_b8_b15",                      _ALL),
+    (0xfccd, "morley_ramdisc_bank_select_b16_b23",                     _ALL),
+    (0xfcce, "morley_ramdisc_bank_select_b24_b31",                     _ALL),
+    (0xfccf, "morley_ramdisc_control_register",                        _ALL),
+
+    # FCD0    Electron digital joystick option D
+    (0xfcd0, "electron_digital_joystickD_state",                       _ELECTRON),
+    (0xfcd6, "electron_ii2c_control",                                  _ELECTRON),
+
+    # FCD8-DF PRES Advanced Battery-Backed RAM
+    (0xfcd8, "pres_battery_backed_ram_unlock_AP7_lower_bank",          _ALL),
+    (0xfcd9, "pres_battery_backed_ram_lock_AP7_lower_bank",            _ALL),
+    (0xfcda, "pres_battery_backed_ram_unlock_AP7_upper_bank",          _ALL),
+    (0xfcdb, "pres_battery_backed_ram_lock_AP7_upper_bank",            _ALL),
+    (0xfcdc, "pres_battery_backed_ram_unlock_ABR_RAM_bank_0_and_2",    _ALL),
+    (0xfcdd, "pres_battery_backed_ram_lock_ABR_RAM_bank_0_and_2",      _ALL),
+    (0xfcde, "pres_battery_backed_ram_unlock_ABR_RAM_bank_1_and_3",    _ALL),
+    (0xfcdf, "pres_battery_backed_ram_lock_ABR_RAM_bank_1_and_3",      _ALL),
+
+    # FCE0    Electron digital joystick option E
+    # (0xfce0, "electron_digital_joystickE_state",                       _ELECTRON),
+
+    # FCE0-EF Electron Tube control
+    (0xfce0, "electron_tube_setup_or_status_register",                 _ELECTRON),
+    (0xfce1, "electron_tube_vdu_transfer_port",                        _ELECTRON),
+    (0xfce2, "electron_tube_command_status_register",                  _ELECTRON),
+    (0xfce3, "electron_tube_command_transfer_port",                    _ELECTRON),
+    (0xfce4, "electron_tube_data_status_register",                     _ELECTRON),
+    (0xfce5, "electron_tube_data_transfer_port",                       _ELECTRON),
+    (0xfce6, "electron_tube_interrupt_status_register_slash_CPU",      _ELECTRON),
+    (0xfce7, "electron_tube_interrupt_transfer_port",                  _ELECTRON),
+
+    # FCE0-EF Watford hand scanner
+    (0xfce0, "watford_hand_scanner_data_byte",                         _NOT_ELECTRON),
+    (0xfce1, "watford_hand_scanner_data_ready",                        _NOT_ELECTRON),
+    (0xfce2, "watford_hand_scanner_start_of_line",                     _NOT_ELECTRON),
+    (0xfce3, "watford_hand_scanner_vertical_pulse",                    _NOT_ELECTRON),
+
+    # FCF0    Electron digital joystick option F
+    (0xfcf0, "electron_digital_joystickF_state",                       _ELECTRON),
+
+    # FCF0-F7 JGH/ETI/EE/EMR MIDI Interface (see also FC08)
+    (0xfcf0, "fred_MIDI_port_1_6850_control_or_status",                _NOT_ELECTRON),
+    (0xfcf1, "fred_MIDI_port_1_6850_data",                             _NOT_ELECTRON),
+    (0xfcf2, "fred_MIDI_port_2_6850_control_or_status",                _NOT_ELECTRON),
+    (0xfcf3, "fred_MIDI_port_2_6850_data",                             _NOT_ELECTRON),
+    (0xfcf4, "fred_MIDI_port_3_6850_control_or_status",                _NOT_ELECTRON),
+    (0xfcf5, "fred_MIDI_port_3_6850_data",                             _NOT_ELECTRON),
+    (0xfcf6, "fred_MIDI_port_4_6850_control_or_status",                _NOT_ELECTRON),
+    (0xfcf7, "fred_MIDI_port_4_6850_data",                             _NOT_ELECTRON),
+
+    # FCF8-F9 USB Port
+    # (0xfcf8, "fred_USB_data",                                          _ALL),
+    # (0xfcf9, "fred_USB_control_or_status",                             _ALL),
+
+    # FCFA-FD DataCentre non-volatile RAM control
+    (0xfcf8, "datacentre_vnc_data_port",                               _ALL),
+    (0xfcf9, "datacentre_vnc_control_port",                            _ALL),
+    (0xfcfa, "datacentre_nvram_data",                                  _ALL),
+    (0xfcfb, "datacentre_nvram_data_direction_register",               _ALL),
+
+    # FCFC-FF Electron Advanced Quarter Meg RAM ('AQR')
+    (0xfcfc, "electron_aqr_ram_bank_select",                           _ELECTRON),
+    (0xfcfd, "electron_aqr_ram_disable_write_protect",                 _ELECTRON),
+    (0xfcfe, "electron_aqr_ram_write_protect",                         _ELECTRON),
+
+    # FCFC-FF Page-Wide Expansion RAM
+    (0xfcfc, "page_ram_bank_select_b32_b39",                           _NOT_ELECTRON),
+    (0xfcfd, "page_ram_bank_select_b24_b31",                           _NOT_ELECTRON),
+    (0xfcfe, "page_ram_bank_select_b16_b23",                           _NOT_ELECTRON),
+    (0xfcff, "page_ram_bank_select_b8_b15",                            _NOT_ELECTRON),
+
+    #######################################################################
+    # JIM, see https://mdfs.net/Docs/Comp/BBC/Hardware/JIMAddrs
+    #######################################################################
+    (0xfd00, "jim",                                                    _ALL),
+
+    # FDF0-F7 Torch SASI/SCSI Hard Drive Access
+    (0xfdf0, "torch_sasi_slash_scsi_data",                             _ALL, True),
+    (0xfdf1, "torch_sasi_slash_scsi_status_or_reset",                  _ALL, True),
+    (0xfdf2, "torch_sasi_slash_scsi_set_ack_or_select_1",              _ALL, True),
+    (0xfdf3, "torch_sasi_slash_scsi_select_0",                         _ALL, True),
+
+    (0xfdfe, "jim_reset_address_low",                                  _ALL),
+    (0xfdff, "jim_reset_address_high",                                 _ALL),
+
+    #######################################################################
+    # SHEILA, see https://mdfs.net/Docs/Comp/BBC/Hardware/SHEILAddrs
+    #######################################################################
+    (0xfe00, "electron_interrupt_control_or_status",                   _ELECTRON),
+    (0xfe02, "electron_screen_start_div2_low",                         _ELECTRON),
+    (0xfe03, "electron_screen_start_div2_high",                        _ELECTRON),
+    (0xfe04, "electron_cassette_data_shift_io",                        _ELECTRON),
+    (0xfe05, "electron_romsel_and_interrupt_clear",                    _ELECTRON),
+    (0xfe06, "electron_counter_plus_cassette_control",                 _ELECTRON),
+    (0xfe07, "electron_cassette_and_mode_and_sound_and_caps_led",      _ELECTRON),
+    (0xfe08, "electron_palette_0",                                     _ELECTRON),
+    (0xfe09, "electron_palette_1",                                     _ELECTRON),
+    (0xfe0a, "electron_palette_2",                                     _ELECTRON),
+    (0xfe0b, "electron_palette_3",                                     _ELECTRON),
+    (0xfe0c, "electron_palette_4",                                     _ELECTRON),
+    (0xfe0d, "electron_palette_5",                                     _ELECTRON),
+    (0xfe0e, "electron_palette_6",                                     _ELECTRON),
+    (0xfe0f, "electron_palette_7",                                     _ELECTRON),
+    # (hardware() also names the CRTC registers written to crtc_address_register)
+    (0xfe00, "crtc_address_register",                                  _NOT_ELECTRON),
+
+    (0xfe01, "crtc_register_data",                                     _NOT_ELECTRON),
+
+    # FE08-0F 6850 ACIA Serial controller
+    (0xfe08, "acia_control_or_status",                                 _NOT_ELECTRON),
+    (0xfe09, "acia_data",                                              _NOT_ELECTRON),
+
+    (0xfe10, "serial_ula_set_baud_cassette_and_motor",                 _NOT_ELECTRON),
+
+    # FE18-1F Station ID/NMI Control (BBC B, B+)
+    (0xfe18, "station_id_disable_net_nmis",                            _BBC_B_PLUS),
+
+    # FE18-1F Analogue-to-Digital Convertor (Master)
+    (0xfe18, "a2d_start_conversion_or_read_status",                    _MASTER),
+    (0xfe19, "a2d_read_data_high_byte",                                _MASTER),
+    (0xfe1a, "a2d_read_data_low_byte",                                 _MASTER),
+
+    # FE20-2F Video ULA
+    (0xfe20, "video_ula_control",                                      _NOT_ELECTRON),
+    (0xfe21, "video_ula_palette",                                      _NOT_ELECTRON),
+    (0xfe22, "video_ula_border_colour_and_palette_control",            _NOT_ELECTRON),
+    (0xfe23, "video_ula_palette_selection",                            _NOT_ELECTRON),
+
+    # FE24-27 Disk control (Master)
+    (0xfe24, "disk_drive_control_register",                            _MASTER),
+
+    # FE28-2B 1770 Floppy Disk Controller (Master)
+    (0xfe28, "fdc_command_or_status",                                  _MASTER),
+    (0xfe29, "fdc_track",                                              _MASTER),
+    (0xfe2a, "fdc_sector",                                             _MASTER),
+    (0xfe2b, "fdc_data",                                               _MASTER),
+
+    (0xfe30, "romsel",                                                 _NOT_ELECTRON),
+
+    (0xfe34, "acccon",                                                 _B_PLUS_MASTER),
+
+    (0xfe38, "disable_network_nmis",                                   _MASTER),
+    (0xfe3c, "enable_network_nmis",                                    _MASTER),
+
+    *_via(0xfe40, "system", _NOT_ELECTRON),
+    *_via(0xfe60, "user", _NOT_ELECTRON),
+
+    # FE80-9F 8271 Floppy disk controller (BBC B, B+)
+    # FE80-9F 1770 Floppy disk controller (BBC B, B+)
+    (0xfe80, "fdc_8271_command_or_status_or_1770_drive_control",       _BBC_B_PLUS),
+    (0xfe81, "fdc_8271_parameter_or_result",                           _BBC_B_PLUS),
+    (0xfe82, "fdc_8271_reset",                                         _BBC_B_PLUS),
+    (0xfe84, "fdc_8271_data_or_1770_command_or_status",                _BBC_B_PLUS),
+
+    (0xfe85, "fdc_1770_track",                                         _BBC_B_PLUS),
+    (0xfe86, "fdc_1770_sector",                                        _BBC_B_PLUS),
+    (0xfe87, "fdc_1770_data",                                          _BBC_B_PLUS),
+
+    # FE80-9F Master internal expansion port (PL12)
+    *_numbered(0xfe80, 16, "internal_expansion_port_{0}", _MASTER),
+
+    # FE80-8F Videodisc SCSI controller (Master)
+    # (0xfe80, "videodisc_data",                                         _MASTER),
+    # (0xfe81, "videodisc_status",                                       _MASTER),
+    # (0xfe82, "videodisc_select",                                       _MASTER),
+    # (0xfe83, "videodisc_int_enable",                                   _MASTER),
+
+    # FEA0-BF 6854 ALDC Econet controller
+    (0xfea0, "econet_control1_or_status1",                             _NOT_ELECTRON),
+    (0xfea1, "econet_control23_or_status2",                            _NOT_ELECTRON),
+    (0xfea2, "econet_data_continue_frame",                             _NOT_ELECTRON),
+    (0xfea3, "econet_data_terminate_frame",                            _NOT_ELECTRON),
+
+    # FEC0-DF Analogue-to-digital convertor (B/B+)
+    (0xfec0, "adc_start_conversion_or_status",                         _BBC_B_PLUS),
+    (0xfec1, "adc_read_data_high_byte",                                _BBC_B_PLUS),
+    (0xfec2, "adc_read_data_low_byte",                                 _BBC_B_PLUS),
+
+    # FEC0-DF "Network interface" (Master)
+    *_numbered(0xfec0, 32, "network_interface_{0}", _MASTER, True),
+
+    # FEDF    Eureka memory control
+    # (0xfedf, "eureka_memory_control",                                  _MASTER),
+
+    # FEE0-FF Tube control
+    (0xfee0, "tube_status_1_and_tube_control",                         _NOT_ELECTRON),
+    (0xfee1, "tube_data_register_1",                                   _NOT_ELECTRON),
+    (0xfee2, "tube_status_register_2",                                 _NOT_ELECTRON),
+    (0xfee3, "tube_data_register_2",                                   _NOT_ELECTRON),
+    (0xfee4, "tube_status_register_3",                                 _NOT_ELECTRON),
+    (0xfee5, "tube_data_register_3",                                   _NOT_ELECTRON),
+    (0xfee6, "tube_status_register_4_and_cpu_control",                 _NOT_ELECTRON),
+    (0xfee7, "tube_data_register_4",                                   _NOT_ELECTRON),
+
+    # Torch Tube control
+    # FEE0-EF 6522 VIA access to Torch 8255, release Torch reset line
+    # (0xfee0, "torch_tube_data_out_from_host",                          _NOT_ELECTRON),
+    # (0xfee1, "torch_tube_data_in_to_host",                             _NOT_ELECTRON),
+    # (0xfeed, "torch_tube_status",                                      _NOT_ELECTRON),
+    # *_numbered(0xfef0, 16, "torch_tube_via_access_{0}_assert_reset_line", _NOT_ELECTRON, True),
+
+    # CUBE Tube control (may also be mirrored at &FEE0)
+    # FEF0-FF 6522 VIA access to CUBE 8255
+    (0xfef0, "cube_tube_data_out_from_host",                           _NOT_ELECTRON),
+    (0xfef1, "cube_tube_data_in_to_host",                              _NOT_ELECTRON),
+    (0xfefd, "cube_tube_status",                                       _NOT_ELECTRON),
+]]
