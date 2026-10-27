@@ -141,6 +141,8 @@ def _items():
             item.update(_instruction_fields(binary_loc, c, lines[0]))
         elif item["type"] in ("bytes", "words"):
             item.update(_data_fields(binary_addr, length, 1 if item["type"] == "bytes" else 2, lines[0]))
+        elif item["type"] == "string" and c.encoding.name != "ascii":
+            item["encoding"] = c.encoding.name
         elif item["type"] == "include_binary":
             item["filename"] = session.current().classifications.include_binary_files[binary_addr]
         items.append(item)

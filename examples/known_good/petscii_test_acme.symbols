@@ -1,0 +1,10 @@
+al 000400 .l0400
+al 00C000 .pydis_start
+al 00C000 .start
+al 00C007 .loop_cc007
+al 00C012 .cc012
+al 00C014 .loop_cc014
+al 00C023 .lc023
+al 00C04E .lc04e
+al 00C086 .pydis_end
+al 00FFD2 .chrout

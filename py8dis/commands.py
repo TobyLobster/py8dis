@@ -91,6 +91,7 @@ import cpu
 import snippets6502
 import cpu65C02
 import cpu6510
+import textencoding
 import cpu6502
 import cpu8080
 
@@ -952,18 +953,27 @@ def is_assembler(s):
 ##############################################################################
 # String functions
 ##############################################################################
-def string(runtime_addr, n=None):
+def _encoding(encoding):
+    """The textencoding.Encoding for a string command's 'encoding' (a name,
+    or None for the session's, see config.set_text_encoding())."""
+    return textencoding.current() if encoding is None else textencoding.get(encoding)
+
+def string(runtime_addr, n=None, *, encoding=None):
     """Classifies a part of the binary as a string of given length or
     up to the next non-printable character.
+
+    'encoding' is the string's text encoding (e.g. "petscii", see
+    config.set_text_encoding()), if not the session's. The same goes for
+    the other string commands.
 
     Returns the next available memory address after the string."""
 
     runtime_addr = _check_addr("string", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
 
-    return classification.string_binary(binary_loc.binary_addr, n=n)
+    return classification.string_binary(binary_loc.binary_addr, n=n, encoding=_encoding(encoding))
 
-def stringterm(runtime_addr, terminator, exclude_terminator=False):
+def stringterm(runtime_addr, terminator, exclude_terminator=False, *, encoding=None):
     """Classifies part of the binary as a string followed by a given
     terminator byte.
 
@@ -971,23 +981,23 @@ def stringterm(runtime_addr, terminator, exclude_terminator=False):
 
     runtime_addr = _check_addr("stringterm", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    return classification.stringterm_binary(binary_loc.binary_addr, terminator=terminator, exclude_terminator=exclude_terminator)
+    return classification.stringterm_binary(binary_loc.binary_addr, terminator=terminator, exclude_terminator=exclude_terminator, encoding=_encoding(encoding))
 
-def stringcr(runtime_addr, exclude_terminator=False):
+def stringcr(runtime_addr, exclude_terminator=False, *, encoding=None):
     """Classifies part of the binary as a string followed by ASCII 13.
 
     Returns the next available memory address after the string."""
 
-    return stringterm(runtime_addr, 13, exclude_terminator)
+    return stringterm(runtime_addr, 13, exclude_terminator, encoding=encoding)
 
-def stringz(runtime_addr, exclude_terminator=False):
+def stringz(runtime_addr, exclude_terminator=False, *, encoding=None):
     """Classifies part of the binary as a string followed by ASCII 0.
 
     Returns the next available memory address after the string."""
 
-    return stringterm(runtime_addr, 0, exclude_terminator)
+    return stringterm(runtime_addr, 0, exclude_terminator, encoding=encoding)
 
-def stringhi(runtime_addr, include_terminator_fn=None):
+def stringhi(runtime_addr, include_terminator_fn=None, *, encoding=None):
     """Classifies a part of the binary as a string up to the next bit 7 set character.
 
     The string may or may not include the terminator character without
@@ -997,16 +1007,16 @@ def stringhi(runtime_addr, include_terminator_fn=None):
 
     runtime_addr = _check_addr("stringhi", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    return classification.stringhi_binary(binary_loc.binary_addr, include_terminator_fn=include_terminator_fn)
+    return classification.stringhi_binary(binary_loc.binary_addr, include_terminator_fn=include_terminator_fn, encoding=_encoding(encoding))
 
-def stringhiz(runtime_addr, include_terminator_fn=None):
+def stringhiz(runtime_addr, include_terminator_fn=None, *, encoding=None):
     """Classifies a part of the binary as a string up to the next bit 7 set character or zero character."""
 
     runtime_addr = _check_addr("stringhiz", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    return classification.stringhiz_binary(binary_loc.binary_addr, include_terminator_fn=include_terminator_fn)
+    return classification.stringhiz_binary(binary_loc.binary_addr, include_terminator_fn=include_terminator_fn, encoding=_encoding(encoding))
 
-def stringn(runtime_addr):
+def stringn(runtime_addr, *, encoding=None):
     """Classifies a part of the binary as a string with the first byte
     giving the length.
 
@@ -1014,7 +1024,7 @@ def stringn(runtime_addr):
 
     runtime_addr = _check_addr("stringn", runtime_addr)
     binary_loc = movemanager.r2b_checked(runtime_addr)
-    return classification.stringn_binary(runtime_addr, binary_loc.binary_addr)
+    return classification.stringn_binary(runtime_addr, binary_loc.binary_addr, encoding=_encoding(encoding))
 
 #
 # Assembler specific expression strings can be built using these functions:

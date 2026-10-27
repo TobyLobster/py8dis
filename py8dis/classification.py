@@ -142,11 +142,14 @@ class Word:
 
 
 class String:
-    """Object used to mark part of the binary data as a string."""
+    """Object used to mark part of the binary data as a string, in the given
+    text encoding (a textencoding.Encoding; by default the session's)."""
 
-    def __init__(self, length):
+    def __init__(self, length, encoding=None):
+        import textencoding
         assert length > 0
         self._length = length
+        self.encoding = encoding if encoding is not None else textencoding.current()
         self._caller = utils.find_external_callstack()
 
     def length(self):
@@ -160,7 +163,7 @@ class String:
         return False
 
     def as_lines(self, binary_loc, annotations):
-        return [output.StringData(binary_loc, self._length, annotations)]
+        return [output.StringData(binary_loc, self._length, annotations, self.encoding)]
 
         i = 0
         while(i < self._length):
@@ -496,7 +499,7 @@ def describe_classification_at(binary_addr):
         return "code"
     return "something else"
 
-def stringterm_binary(binary_addr, terminator, exclude_terminator=False):
+def stringterm_binary(binary_addr, terminator, exclude_terminator=False, encoding=None):
     """Classifies part of the binary as a string followed by a given
     terminator byte.
 
@@ -520,30 +523,34 @@ def stringterm_binary(binary_addr, terminator, exclude_terminator=False):
     if exclude_terminator:
         string_length -= 1
     if string_length > 0:
-        add_classification(initial_addr, String(string_length))
+        add_classification(initial_addr, String(string_length, encoding))
     return _runtime_addr_after(binary_addr + 1)
 
-def string_binary(binary_addr, n):
+def string_binary(binary_addr, n, encoding=None):
     """Classifies part of the binary as a string of length `n`, or if `n`
-    is None up to the next non-printable character (or the end of the
-    loaded data, or something already classified).
+    is None up to the next non-printable character (in the string's
+    encoding: by default the session's) (or the end of the loaded data, or
+    something already classified).
 
     Returns the next available memory address after the string."""
 
+    import textencoding
     memory_binary = session.current().memory.binary
+    if encoding is None:
+        encoding = textencoding.current()
     if n is None:
         _check_string_start(binary_addr)
         n = 0
-        while _is_loaded(binary_addr + n) and not is_classified(binary_addr + n) and utils.isprint(memory_binary[binary_addr + n]):
+        while _is_loaded(binary_addr + n) and not is_classified(binary_addr + n) and encoding.is_printable(memory_binary[binary_addr + n]):
             n += 1
     else:
         _check_string_bytes(binary_addr, n)
 
     if n > 0:
-        add_classification(binary_addr, String(n))
+        add_classification(binary_addr, String(n, encoding))
     return _runtime_addr_after(binary_addr + n)
 
-def stringhi_binary(binary_addr, include_terminator_fn=None):
+def stringhi_binary(binary_addr, include_terminator_fn=None, encoding=None):
     """Classifies a part of the binary as a string up to the next bit 7 set character.
 
     The string may or may not include the terminator character without
@@ -561,8 +568,9 @@ def stringhi_binary(binary_addr, include_terminator_fn=None):
         if memory_binary[binary_addr] & 0x80 != 0:
             if include_terminator_fn is not None and include_terminator_fn(memory_binary[binary_addr]):
                 c = memory_binary[binary_addr] & 0x7f
-                # The terminator is shown as e.g. &80+'A'
-                if utils.isprint(c) and c != ord('"') and c != ord('\''):
+                # The terminator is shown as e.g. &80+'A' (in ASCII; a
+                # character literal is always ASCII)
+                if (encoding is None or encoding.name == "ascii") and utils.isprint(c) and c != ord('"') and c != ord('\''):
                     char = expression.Num(c, "char")
                 else:
                     char = expression.Num(c, "hex2")
@@ -571,11 +579,11 @@ def stringhi_binary(binary_addr, include_terminator_fn=None):
             break
         binary_addr += 1
     if binary_addr > initial_addr:
-        add_classification(initial_addr, String(binary_addr - initial_addr))
+        add_classification(initial_addr, String(binary_addr - initial_addr, encoding))
     return _runtime_addr_after(binary_addr)
 
 # Behaviour with include_terminator_fn=None should be beebdis-compatible.
-def stringhiz_binary(binary_addr, include_terminator_fn=None):
+def stringhiz_binary(binary_addr, include_terminator_fn=None, encoding=None):
     """Classifies a part of the binary as a string up to the next bit 7 set
     character or zero character. The string also ends if it reaches
     something already classified or the end of the loaded data."""
@@ -592,10 +600,10 @@ def stringhiz_binary(binary_addr, include_terminator_fn=None):
             break
         binary_addr += 1
     if binary_addr > initial_addr:
-        add_classification(initial_addr, String(binary_addr - initial_addr))
+        add_classification(initial_addr, String(binary_addr - initial_addr, encoding))
     return _runtime_addr_after(binary_addr)
 
-def stringn_binary(runtime_addr, binary_addr):
+def stringn_binary(runtime_addr, binary_addr, encoding=None):
     """Classifies a part of the binary as a string with the first byte
     giving the length.
 
@@ -611,15 +619,18 @@ def stringn_binary(runtime_addr, binary_addr):
     label_end   = disassembly.get_label(runtime_addr + 1 + length, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
     add_expression(binary_addr, expression.Binary(expression.to_expr(label_end), "-", expression.to_expr(label_start)))
     if length > 0:
-        add_classification(binary_addr + 1, String(length))
+        add_classification(binary_addr + 1, String(length, encoding))
     return RuntimeAddr(runtime_addr + 1 + length)
 
 def autostring(min_length=3):
     """Attempt to automatically find and classify strings through the entire binary."""
 
+    import textencoding
     classifications = session.current().classifications.classifications
     memory_binary = session.current().memory.binary
     assert min_length >= 2
+    # (Printable in the session's text encoding)
+    printable = textencoding.current().chars
 
     # (For speed, this loop uses plain integer addresses.)
     memory_size = len(memory_binary)
@@ -629,7 +640,7 @@ def autostring(min_length=3):
         binary_addr = max(binary_addr, range_start)
         while binary_addr < range_end:
             i = 0
-            while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None and utils.isprint(memory_binary[binary_addr + i]):
+            while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None and memory_binary[binary_addr + i] in printable:
                 i += 1
                 runtime_addr = movemanager.b2r(BinaryAddr(binary_addr + i))
 

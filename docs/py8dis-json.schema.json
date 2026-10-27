@@ -273,7 +273,8 @@
         "values": { "description": "bytes, words: the values.", "type": "array", "items": { "type": "integer" } },
         "exprs":  { "description": "bytes, words: the expression for each value given with expr(), or null. Left out if there are none.",
                     "type": "array", "items": { "oneOf": [ { "$ref": "#/$defs/expr" }, { "type": "null" } ] } },
-        "filename": { "description": "include_binary: the file included.", "type": "string" }
+        "filename": { "description": "include_binary: the file included.", "type": "string" },
+        "encoding": { "description": "string: its text encoding, if not ASCII (see config.set_text_encoding()).", "enum": ["petscii", "screen"] }
       }
     }
   }

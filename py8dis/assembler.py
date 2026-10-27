@@ -78,6 +78,19 @@ class Assembler:
         used if can_force_absolute().)"""
         raise NotImplementedError
 
+    def text_directive(self, encoding):
+        """The directive for a string in the given encoding (a
+        textencoding.Encoding), e.g. '.asc ', or None if the assembler has
+        none for it, in which case the string is written as bytes, with its
+        text in a comment."""
+        return self.string_prefix() if encoding.name == "ascii" else None
+
+    def text_chr(self, n, encoding):
+        """How the byte n is written inside the quotes of a string in the
+        given encoding (one with a text_directive()), or None if it's
+        written as a number."""
+        return self.string_chr(n) if encoding.name == "ascii" else None
+
     def undocumented_6502_opcodes(self):
         """The 6502's undocumented opcodes (see cpu6510.py) that the
         assembler can assemble from their mnemonics. Others are written as

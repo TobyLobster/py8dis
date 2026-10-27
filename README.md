@@ -142,6 +142,7 @@ To change the configuration, add `import config` and call the following as neede
 | `config.set_label_return_instructions_numerically(b)` | True    | Gives 'return_1' style labels where the destination is RTS.      |
 | `config.set_show_stats(b)`                            | True    | Show statistics at the end of the disassembly.                   |
 | `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
+| `config.set_text_encoding(s)`                         | "ascii" | How bytes are shown as text: "ascii", "petscii" or "screen" (see [Text encodings](#text-encodings)). |
 
 ## Command reference
 
@@ -327,6 +328,14 @@ Strings have different ways of terminating, so we have many functions available 
 | :pencil:`stringhi(addr,include_terminator_fn=None)`            | The string terminates with a top-bit-set character, optionally including the bottom 7 bits of the terminator as the final character. A user supplied function can determine whether the terminator is included or not, based on the final character. |
 | :pencil:`stringhiz(addr,include_terminator_fn=None)`           | As stringhi(), but also terminates at ASCII code zero. |
 | :pencil:`stringn(addr)`                                        | The first byte holds the length of the string, followed by the string itself. |
+
+Each of these also takes `encoding=` (e.g. `stringz(addr, encoding="screen")`) to give the string a text encoding other than the session's (see below).
+
+#### Text encodings
+
+By default strings are ASCII. For a Commodore program, `config.set_text_encoding("petscii")` makes PETSCII (the character codes used with CHROUT) the session's text encoding: for strings (including those `autostring()` finds), the character column of the hex dump, and the character comments on immediate operands (`lda #$41 ; 'a'`). `"screen"` is for Commodore screen codes, as stored in screen memory. A string command's `encoding=` option gives one string another encoding, e.g. `string(0xc04e, 21, encoding="screen")` for text copied straight to the screen, or `encoding="ascii"`. (Set the session's encoding before marking any strings: each string keeps the encoding it was marked with.)
+
+The characters are those of acme's `!pet` and `!scr`, so that acme can write the strings as text, e.g. `!pet "Hello", $0d` and `!scr "Score"`. As in acme, lower case letters are the unshifted letters (PETSCII $41-$5A, screen codes $01-$1A) and upper case ones the shifted letters (PETSCII $C1-$DA, screen codes $41-$5A): the text as it appears in the C64's lower/upper case character set. (In the default upper case/graphics set, both appear as upper case letters or graphics.) Codes acme's character would misrepresent, such as PETSCII $5C (a pound sign on the C64, but a backslash to acme), and the graphics characters, are written as numbers. beebasm and xa have no PETSCII or screen code directives, so these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`.
 
 ### Marking code (and data that points to code)
 

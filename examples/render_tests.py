@@ -104,6 +104,35 @@ def undocumented_zp():
     line.operand_length = 1
     return line
 
+def text_string(text_bytes, encoding_name, session_encoding=None):
+    """A string of the given bytes at &2010, in the given text encoding
+    (with config.set_text_encoding(session_encoding) if given, which the hex
+    dump uses)"""
+    def make():
+        import config
+        import output
+        import session
+        import textencoding
+        if session_encoding is not None:
+            config.set_text_encoding(session_encoding)
+        session.current().memory.binary[0x2010:0x2010 + len(text_bytes)] = text_bytes
+        return output.StringData(binary_loc(0x2010), len(text_bytes), None, textencoding.get(encoding_name))
+    return make
+
+def data_with_text_encoding(encoding_name):
+    """The byte data at &2010 (the string "Hi!" then 13 in ASCII), with
+    config.set_text_encoding(encoding_name), which the hex dump uses"""
+    def make():
+        import config
+        import output
+        config.set_text_encoding(encoding_name)
+        return output.DataBlock(binary_loc(0x2010), 4, None, 1, None)
+    return make
+
+# "Hello", '"', 13 in PETSCII (shifted H), and "@ab[" in screen codes
+PETSCII_HELLO = [0xc8, 0x45, 0x4c, 0x4c, 0x4f, 0x22, 0x0d]
+SCREEN_TEXT = [0x00, 0x01, 0x02, 0x1b]
+
 def make_tests():
     """The tests: a list of (name, assemblers, function making the line).
 
@@ -156,6 +185,16 @@ def make_tests():
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x200c), 4, None, 2, None)),
         ("string *",
          ASSEMBLERS_6502, lambda: output.StringData(binary_loc(0x2010), 4, None)),
+        ("PETSCII string *",
+         ASSEMBLERS_6502, text_string(PETSCII_HELLO, "petscii", "petscii")),
+        ("screen code string *",
+         ASSEMBLERS_6502, text_string(SCREEN_TEXT, "screen")),
+        ("ASCII string with PETSCII the session's encoding",
+         ASSEMBLERS_6502, text_string([0x48, 0x69, 0x21, 0x0d], "ascii", "petscii")),
+        ("PETSCII string over two lines",
+         ["beebasm"], text_string(PETSCII_HELLO * 2, "petscii", "petscii")),
+        ("byte data with PETSCII the session's encoding",
+         ASSEMBLERS_6502, data_with_text_encoding("petscii")),
         ("blank",
          ASSEMBLERS_6502, lambda: output.Blank()),
         ("one line comment",
@@ -369,6 +408,69 @@ EXPECTED = {
     ],
     'string, xa, upper case': [
         '    .ASC "Hi!", $0D                                                   // 2010: 48 69 21... Hi!',
+    ],
+    'PETSCII string, acme': [
+        '    !pet "Hello", \'"\', $0d                                            ; 2010: c8 45 4c... Hel',
+    ],
+    'PETSCII string, acme, upper case': [
+        '    !PET "Hello", \'"\', $0D                                            ; 2010: C8 45 4C... Hel',
+    ],
+    'PETSCII string, beebasm': [
+        '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',
+        '    equb &0d ; petscii &0d                                            ; 2016: 0d          .',
+    ],
+    'PETSCII string, beebasm, upper case': [
+        '    EQUB &C8, &45, &4C, &4C, &4F, &22 ; petscii "Hello", &22          ; 2010: C8 45 4C... Hel',
+        '    EQUB &0D ; petscii &0D                                            ; 2016: 0D          .',
+    ],
+    'PETSCII string, xa': [
+        '    .byt $c8, $45, $4c, $4c, $4f, $22 // petscii "Hello", $22         // 2010: c8 45 4c... Hel',
+        '    .byt $0d // petscii $0d                                           // 2016: 0d          .',
+    ],
+    'PETSCII string, xa, upper case': [
+        '    .BYT $C8, $45, $4C, $4C, $4F, $22 // petscii "Hello", $22         // 2010: C8 45 4C... Hel',
+        '    .BYT $0D // petscii $0D                                           // 2016: 0D          .',
+    ],
+    'screen code string, acme': [
+        '    !scr "@ab["                                                       ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, acme, upper case': [
+        '    !SCR "@ab["                                                       ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, beebasm': [
+        '    equb 0, 1, 2, &1b ; screen "@ab["                                 ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, beebasm, upper case': [
+        '    EQUB 0, 1, 2, &1B ; screen "@ab["                                 ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, xa': [
+        '    .byt 0, 1, 2, $1b // screen "@ab["                                // 2010: 00 01 02... @ab',
+    ],
+    'screen code string, xa, upper case': [
+        '    .BYT 0, 1, 2, $1B // screen "@ab["                                // 2010: 00 01 02... @ab',
+    ],
+    "ASCII string with PETSCII the session's encoding, acme": [
+        '    !text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
+    ],
+    "ASCII string with PETSCII the session's encoding, beebasm": [
+        '    equs "Hi!", &0d                                                   ; 2010: 48 69 21... Hi!',
+    ],
+    "ASCII string with PETSCII the session's encoding, xa": [
+        '    .asc "Hi!", $0d                                                   // 2010: 48 69 21... Hi!',
+    ],
+    'PETSCII string over two lines, beebasm': [
+        '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',
+        '    equb &0d, &c8, &45, &4c, &4c, &4f ; petscii &0d, "Hello"          ; 2016: 0d c8 45... .He',
+        '    equb &22, &0d ; petscii &22, &0d                                  ; 201c: 22 0d       ".',
+    ],
+    "byte data with PETSCII the session's encoding, acme": [
+        '    !byte $48, $69, $21, $0d                                          ; 2010: 48 69 21... h.!',
+    ],
+    "byte data with PETSCII the session's encoding, beebasm": [
+        '    equb &48, &69, &21, &0d                                           ; 2010: 48 69 21... h.!',
+    ],
+    "byte data with PETSCII the session's encoding, xa": [
+        '    .byt $48, $69, $21, $0d                                           // 2010: 48 69 21... h.!',
     ],
     'blank, acme': [
         '',

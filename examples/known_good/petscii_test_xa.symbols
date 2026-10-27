@@ -1,0 +1,10 @@
+comadd 400,l0400
+comadd c000,pydis_start
+comadd c000,start
+comadd c007,loop_cc007
+comadd c012,cc012
+comadd c014,loop_cc014
+comadd c023,lc023
+comadd c04e,lc04e
+comadd c086,pydis_end
+comadd ffd2,chrout

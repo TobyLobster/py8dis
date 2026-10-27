@@ -427,13 +427,31 @@ class StringData(Line):
     """A string of data bytes (e.g. '.asc "Hello", 13'), split over several
     lines if it's too long for one.
 
+    'encoding' (a textencoding.Encoding) says how its bytes are shown as
+    text. If the assembler has no directive for that encoding (see
+    Assembler.text_directive(), e.g. beebasm for PETSCII), the string is
+    written as bytes, with its text in a comment.
+
     If there's an expression for its first byte (given by expr()), the
     expression is output instead of the bytes."""
 
-    def __init__(self, binary_loc, length, annotations):
+    def __init__(self, binary_loc, length, annotations, encoding=None):
+        import textencoding
         self.binary_loc = binary_loc
         self.length = length
         self.annotations = annotations
+        self.encoding = encoding if encoding is not None else textencoding.ASCII
+
+    def _text_form(self):
+        """(directive, chr) for writing the string: the directive (e.g.
+        '!pet ') and a function giving how a byte is written inside the
+        string's quotes (or None to write it as a number). If the assembler
+        has no directive for the encoding, it's (None, None)."""
+        assembler = config.get_assembler()
+        directive = assembler.text_directive(self.encoding)
+        if directive is None:
+            return None, None
+        return directive, lambda c: assembler.text_chr(c, self.encoding)
 
     def name_labels(self):
         # (The labels can only be in an expression for the whole string, or
@@ -442,39 +460,66 @@ class StringData(Line):
         if binary_addr in session.current().classifications.expressions:
             name_labels_in(classification.get_expression(binary_addr, session.current().memory.binary[binary_addr]))
             return
-        assembler = config.get_assembler()
+        _, text_chr = self._text_form()
         for i in range(self.length):
             c = memorymanager.get_u8_binary(binary_addr + i)
-            if assembler.string_chr(c) is None and c != ord('"'):
+            if text_chr is None or (text_chr(c) is None and c != ord('"')):
                 name_labels_in(classification.get_constant8(binary_addr + i))
 
-    def render(self, plain=False):
-        def finish(binary_loc, length, text):
-            if plain:
-                return text.strip()
-            return mainformatter.add_inline_comment_including_hexdump(binary_loc, length, "", annotations, text)
+    def text_comment(self, start, end):
+        """The text of bytes start to end of the string (in its encoding),
+        for a comment when it's written as bytes: printable runs in quotes,
+        the others as numbers, e.g. '"hello", $0d'."""
+        assembler = config.get_assembler()
+        parts = []
+        run = ""
+        for i in range(start, end):
+            c = memorymanager.get_u8_binary(self.binary_loc.binary_addr + i)
+            char = self.encoding.char(c)
+            if char is not None and char != '"':
+                run += char
+            else:
+                if run:
+                    parts.append('"%s"' % run)
+                    run = ""
+                parts.append(assembler.hex2(c))
+        if run:
+            parts.append('"%s"' % run)
+        return "%s %s" % (self.encoding.name, ", ".join(parts))
 
+    def render(self, plain=False):
         expressions = session.current().classifications.expressions
         memory_binary = session.current().memory.binary
         assembler = config.get_assembler()
         binary_loc = self.binary_loc
         annotations = self.annotations
+        directive, text_chr = self._text_form()
+        as_bytes = directive is None
+
+        def finish(start, end, text):
+            """The line for bytes start to end of the string"""
+            line_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start, binary_loc.move_id)
+            if plain:
+                return text.strip()
+            if as_bytes:
+                text += " %s %s" % (assembler.comment_prefix(), self.text_comment(start, end))
+            return mainformatter.add_inline_comment_including_hexdump(line_loc, end - start, "", annotations, text, self.encoding)
 
         result = []
-        prefix = utils.make_indent(1) + assembler.string_prefix()
+        prefix = utils.make_indent(1) + (assembler.byte_prefix() if as_bytes else directive)
         s = prefix
         state = 0       # 0=not started first string yet, 1=within string, 2=finished string
         start_line_i = 0
 
         if binary_loc.binary_addr in expressions:
             s = classification.get_expression(binary_loc.binary_addr, memory_binary[binary_loc.binary_addr])
-            result.append(finish(binary_loc, self.length, prefix + s))
+            result.append(finish(0, self.length, utils.make_indent(1) + (directive if directive is not None else assembler.string_prefix()) + s))
             return result
 
         i = 0
         while(i < self.length):
             c = memorymanager.get_u8_binary(binary_loc.binary_addr + i)
-            c_in_string = assembler.string_chr(c)
+            c_in_string = None if as_bytes else text_chr(c)
 
             # Calculate how to add 'c' to  the current assembly string in 'next_char'
             next_char = ""
@@ -492,7 +537,7 @@ class StringData(Line):
                 elif state == 2:
                     next_char += ", "
                 next_state = 2
-                if c == ord('"'):
+                if c == ord('"') and not as_bytes:
                     next_char += "'\"'"
                 else:
                     next_char += classification.get_constant8(binary_loc.binary_addr + i)
@@ -501,13 +546,15 @@ class StringData(Line):
             len_new_s = len(new_s)
             if next_state == 1:
                 len_new_s += 1
+            if as_bytes:
+                # (Leaving room for the comment with the text)
+                len_new_s += 2 + len(assembler.comment_prefix()) + len(self.text_comment(start_line_i, i + 1))
 
-            if len_new_s > (config.get_inline_comment_column() - 1):
+            if len_new_s > (config.get_inline_comment_column() - 1) and i > start_line_i:
                 # Save out the line before the next char
                 if state == 1:
                     s += '"'
-                temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
-                result.append(finish(temp_binary_loc, i - start_line_i, s))
+                result.append(finish(start_line_i, i, s))
                 s = prefix
                 start_line_i = i
                 state = 0
@@ -519,8 +566,7 @@ class StringData(Line):
         if s != prefix:
             if state == 1:
                 s += '"'
-            temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
-            result.append(finish(temp_binary_loc, self.length - start_line_i, s))
+            result.append(finish(start_line_i, self.length, s))
         return result
 
     def plain_text(self):

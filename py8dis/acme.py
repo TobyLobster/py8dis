@@ -225,6 +225,25 @@ class Acme(assembler.Assembler):
             return chr(n)
         return None
 
+    def text_directive(self, encoding):
+        # acme's !pet and !scr convert the text to PETSCII or screen codes
+        # (see textencoding.py, whose characters for these are acme's)
+        if encoding.name == "petscii":
+            return utils.force_case("!pet ")
+        if encoding.name == "screen":
+            return utils.force_case("!scr ")
+        return super().text_directive(encoding)
+
+    def text_chr(self, n, encoding):
+        if encoding.name == "ascii":
+            return self.string_chr(n)
+        c = encoding.char(n)
+        if c is None or c == '"':
+            return None
+        if c == "\\":
+            return "\\\\"
+        return c
+
     def binary_format(self, s):
         # For outputting a value as binary
         return "%" + s

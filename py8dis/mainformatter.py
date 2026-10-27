@@ -16,12 +16,15 @@ import session
 from memorymanager import BinaryAddr, RuntimeAddr
 from align import Align
 
-def add_hex_dump(binary_addr, length, cycles_description, s):
+def add_hex_dump(binary_addr, length, cycles_description, s, encoding=None):
     """Creates the majority of the inline comment for a line of output.
 
     This creates a string containing the hex dump and character
     equivalents, CPU state, and move commentary. This string has a
     fixed width.
+
+    The characters are in the given text encoding (e.g. a string's), or
+    the session's (see config.set_text_encoding()).
     """
 
     memory_binary = session.current().memory.binary
@@ -40,7 +43,10 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
 
     # Add ASCII characters as a fixed width string
     if config.get_hex_dump_show_ascii():
-        dump_chars = utils.tab_to("".join(chr(x) if utils.isprint(x) else "." for x in data), config.get_hex_dump_max_bytes())
+        import textencoding
+        if encoding is None:
+            encoding = textencoding.current()
+        dump_chars = utils.tab_to("".join(encoding.char(x) or "." for x in data), config.get_hex_dump_max_bytes())
     else:
         dump_chars = ""
 
@@ -72,7 +78,7 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
     s += utils.plainhex4(binary_addr) + ": " + dump_hex + dump_chars + cycles_description + dump_cpu_state + dump_move
     return s
 
-def add_inline_comment_including_hexdump(binary_loc, length, cycles_description, annotations, s):
+def add_inline_comment_including_hexdump(binary_loc, length, cycles_description, annotations, s, encoding=None):
     """Creates the entire inline comment for the line as a string.
 
     Creates a string including the hex dump and character equivalents,
@@ -88,7 +94,7 @@ def add_inline_comment_including_hexdump(binary_loc, length, cycles_description,
     s = utils.tab_to(s, config.get_inline_comment_column())
 
     # Add any hex dump (fixed width)
-    s = add_hex_dump(binary_loc.binary_addr, length, cycles_description, s)
+    s = add_hex_dump(binary_loc.binary_addr, length, cycles_description, s, encoding)
 
     # Add any inline annotations
     for text in inline_annotation_texts(binary_loc, length, annotations):

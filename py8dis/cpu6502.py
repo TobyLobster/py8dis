@@ -14,6 +14,7 @@ import cpu
 import trace
 import utils
 import snippets6502
+import textencoding
 import sys
 from align import Align
 from binaryaddrtype import BinaryAddrType
@@ -1079,8 +1080,10 @@ class Cpu6502(cpu.Cpu):
             char_literal = None
             if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
-                if config.get_show_char_literals() and utils.isprint(c):
-                    char_literal = "'%s'" % chr(c)
+                # (In the session's text encoding, see config.set_text_encoding())
+                char = textencoding.current().char(c)
+                if config.get_show_char_literals() and char is not None:
+                    char_literal = "'%s'" % char
             return output.Instruction(self.mnemonic, operand, prefix="#", char_literal=char_literal)
 
 

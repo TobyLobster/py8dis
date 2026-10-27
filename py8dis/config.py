@@ -34,6 +34,7 @@ class Settings:
         self.label_return_instructions_numerically = True
         self.show_stats                            = True
         self.memory_region_headings                = True
+        self.text_encoding                         = "ascii"    # see textencoding.py
 
         # For internal use only
         self.cmos                                  = False      # True if the CPU is a 65C02
@@ -173,8 +174,6 @@ def get_show_stats():
 def set_show_stats(b):
     session.current().settings.show_stats = b
 
-# For internal use only:
-
 def get_memory_region_headings():
     return session.current().settings.memory_region_headings
 
@@ -182,6 +181,20 @@ def set_memory_region_headings(b):
     """Group the "Memory locations" list at the top of the output by memory
     region, under headings (see memory_region()), or not."""
     session.current().settings.memory_region_headings = b
+
+def get_text_encoding():
+    return session.current().settings.text_encoding
+
+def set_text_encoding(name):
+    """How bytes in strings (and the hex dump, and character comments) are
+    shown as text: "ascii" (the default), "petscii" or "screen" (Commodore
+    screen codes). See textencoding.py."""
+    import textencoding
+    textencoding.get(name)
+    session.current().settings.text_encoding = name
+
+
+# For internal use only:
 
 def get_assembler():
     """The assembler object used to emit the disassembly (e.g. an Acme object)."""

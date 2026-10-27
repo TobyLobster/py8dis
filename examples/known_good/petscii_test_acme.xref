@@ -1,0 +1,30 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0400  l0400 (Memory locations)
+    $c017     loop_cc014+3                 sta l0400,x
+
+$c000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$c007  loop_cc007 (inline)
+    $c010     loop_cc007+9                 bne loop_cc007
+
+$c012  cc012 (inline)
+    $c00a     loop_cc007+3                 beq cc012
+
+$c014  loop_cc014 (inline)
+    $c01b     loop_cc014+7                 bpl loop_cc014
+
+$c023  lc023 (inline)
+    $c007     loop_cc007                   lda lc023,x
+
+$c04e  lc04e (inline)
+    $c014     loop_cc014                   lda lc04e,x
+
+$c086  pydis_end (inline)
+    (not referenced)
+
+$ffd2  chrout (Memory locations)
+    $c002     pydis_start+2                jsr chrout
+    $c00c     loop_cc007+5                 jsr chrout
+    $c01f     loop_cc014+11                jsr chrout
