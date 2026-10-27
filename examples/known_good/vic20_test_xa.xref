@@ -1,0 +1,93 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0286  text_colour (Memory locations: OS workspace)
+    $102a     sys_entry+29                 sta text_colour
+
+$0314  irq_vector (Memory locations: Vectors)
+    $1010     sys_entry+3                  sta irq_vector
+
+$1001  pydis_start (inline), basic_line_10 (inline)
+    (not referenced)
+
+$100b  basic_end (inline)
+    (not referenced)
+
+$100d  sys_entry (inline)
+    (not referenced)
+
+$1034  loop_c1034 (inline)
+    $103d     loop_c1034+9                 bne loop_c1034
+
+$103f  c103f (inline)
+    $1037     loop_c1034+3                 beq c103f
+
+$1049  loop_c1049 (inline)
+    $1054     loop_c1049+11                bpl loop_c1049
+
+$1081  irq_handler (inline)
+    (not referenced)
+
+$1087  l1087 (inline)
+    $1034     loop_c1034                   lda l1087,x
+
+$108f  l108f (inline)
+    (not referenced)
+
+$109e  l109e (inline)
+    $105e     loop_c1049+21                sta l109e
+
+$109f  l109f (inline)
+    $1069     loop_c1049+32                sta l109f
+
+$10a0  l10a0 (inline)
+    $106f     loop_c1049+38                sta l10a0
+
+$10a1  pydis_end (inline)
+    (not referenced)
+
+$1e00  screen_memory (Memory locations: Screen memory)
+    $104b     loop_c1049+2                 sta screen_memory,x
+
+$900c  vic_voice3_frequency (Memory locations: VIC)
+    $1025     sys_entry+24                 sta vic_voice3_frequency
+
+$900e  vic_volume_aux_colour (Memory locations: VIC)
+    $1020     sys_entry+19                 sta vic_volume_aux_colour
+
+$900f  vic_background_border_colour (Memory locations: VIC)
+    $101b     sys_entry+14                 sta vic_background_border_colour
+    $1081     irq_handler                  inc vic_background_border_colour
+
+$9111  via1_port_a (Memory locations: VIA 1)
+    $105b     loop_c1049+18                lda via1_port_a
+
+$9113  via1_data_direction_a (Memory locations: VIA 1)
+    $1058     loop_c1049+15                sta via1_data_direction_a
+
+$9120  via2_port_b (Memory locations: VIA 2)
+    $1063     loop_c1049+26                sta via2_port_b
+
+$9121  via2_port_a (Memory locations: VIA 2)
+    $1066     loop_c1049+29                lda via2_port_a
+
+$9600  colour_ram (Memory locations: Colour RAM)
+    $1050     loop_c1049+7                 sta colour_ram,x
+
+$cb1e  basic_print_string (Memory locations: BASIC ROM)
+    $1076     loop_c1049+45                jsr basic_print_string
+
+$ddcd  basic_print_number (Memory locations: BASIC ROM)
+    $107d     loop_c1049+52                jsr basic_print_number
+
+$eabf  kernal_irq_handler (Memory locations: Kernal ROM)
+    $1084     irq_handler+3                jmp kernal_irq_handler
+
+$ffd2  chrout (Memory locations: Kernal entry points)
+    $102f     sys_entry+34                 jsr chrout
+    $1039     loop_c1034+5                 jsr chrout
+
+$ffe4  getin (Memory locations: Kernal entry points)
+    $106c     loop_c1049+35                jsr getin
+
+$fff0  plot (Memory locations: Kernal entry points)
+    $1044     c103f+5                      jsr plot

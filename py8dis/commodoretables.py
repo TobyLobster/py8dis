@@ -1,26 +1,55 @@
 """
 The Commodore machines' data tables, for commodore.py: names for the memory
 locations, hardware registers and Kernal calls, the Kernal's control codes,
-the colours, the device numbers and the BASIC tokens.
+the colours, the device numbers and the BASIC tokens, for the C64 and the
+VIC-20.
 
 Each memory location has two names: a descriptive one (the default, e.g.
 'vic_border_colour') and the one Commodore's documentation uses (from the
 Commodore 64 Programmer's Reference Guide and Commodore's own source, or for
-the I/O registers from "Mapping the Commodore 64", e.g. 'extcol'), chosen with
-commodore.c64(names=...). The Kernal calls have Commodore's names (e.g.
-'chrout') either way.
+the C64's I/O registers from "Mapping the Commodore 64", e.g. 'extcol'),
+chosen with commodore.c64(names=...) or vic20(names=...). The Kernal calls
+have Commodore's names (e.g. 'chrout') either way.
 
-The names, addresses and Kernal calling conventions are from Michael Steil's
-c64ref (https://github.com/mist64/c64ref, (c) 2022 Michael Steil; its BSD
-2-clause licence is in commodoreromlabels.py): src/c64mem/symbols.txt,
-src/c64io, src/kernal and src/charset.
+The C64's names, addresses and Kernal calling conventions are from Michael
+Steil's c64ref (https://github.com/mist64/c64ref): src/c64mem/symbols.txt,
+src/c64io, src/kernal and src/charset. The VIC-20's are from Commodore's
+source for its Kernal and BASIC (https://github.com/mist64/cbmsrc). c64ref's
+licence:
+
+    BSD 2-Clause License
+
+    Copyright (c) 2022, Michael Steil
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+       list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright notice,
+       this list of conditions and the following disclaimer in the documentation
+       and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 from collections import namedtuple
 
 # A memory location: its address, its size in bytes (a name is given to each
 # byte, e.g. 'tape_buffer+1'), Commodore's name (None if it has none, in which
-# case the descriptive name is used) and the descriptive name.
+# case the descriptive name is used) and the descriptive name. (A Commodore
+# name can be an offset from another location's, e.g. 'vicreg+1'.)
 Location = namedtuple("Location", ["addr", "size", "commodore_name", "name"])
 
 # ************************************************************************************************
@@ -445,7 +474,7 @@ RomRoutine = namedtuple("RomRoutine", ["addr", "commodore_name", "name", "title"
 
 c64_rom_routines = [
     # BASIC
-    RomRoutine(0xa474, "ready",  "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
+    RomRoutine(0xa474, "readyx", "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
     RomRoutine(0xa7ae, "newstt", "basic_next_statement", "Execute the next BASIC statement", None, None),
     RomRoutine(0xaad7, "crdo",   "basic_print_newline", "Print a carriage return", None, None),
     RomRoutine(0xab1e, "strout", "basic_print_string", "Print the zero-terminated string at A/Y",
@@ -579,3 +608,117 @@ basic_v2_tokens = [
 BASIC_TOKEN_SYS = 0x9e
 BASIC_TOKEN_REM = 0x8f
 BASIC_TOKEN_PI = 0xff
+
+
+# ************************************************************************************************
+# The VIC-20. Its Kernal and BASIC are the C64's, for a different machine:
+# the same jump table (without its first three entries), and the same
+# workspace, with these differences (from Commodore's source): the USR
+# function's jump at &0000-&0002 (where the C64 has the 6510's I/O port, and
+# &0310-&0312 instead); a shorter screen line link table (25 bytes, for 23
+# lines), with LINTMP after it at &00f2; and nothing at &02a1-&02a6.
+
+def _vic20_ram_locations():
+    result = [
+        Location(0x0000, 1, "usrpok", "usr_jmp"),
+        Location(0x0001, 2, "usradd", "usr_address"),
+        Location(0x00f2, 1, "lintmp", "screen_scroll_line"),
+    ]
+    for location in c64_ram_locations:
+        if location.addr in (0x0000, 0x0001, 0x0310, 0x0311) or 0x02a1 <= location.addr <= 0x02a6:
+            continue
+        if location.addr == 0x00d9:
+            location = location._replace(size=25)
+        result.append(location)
+    return sorted(result)
+
+vic20_ram_locations = _vic20_ram_locations()
+
+# The screen and its colour RAM move with the RAM expansion: with 8K or more
+# in block 1 (&2000), the screen is at &1000 and the colour RAM at &9400;
+# otherwise at &1e00 and &9600. (22 columns by 23 rows.)
+VIC20_SCREEN_SIZE = 22 * 23
+
+def vic20_screen_locations(expanded_8k):
+    screen = 0x1000 if expanded_8k else 0x1e00
+    colour = 0x9400 if expanded_8k else 0x9600
+    return [
+        Location(screen, VIC20_SCREEN_SIZE, "vicscn", "screen_memory"),
+        Location(colour, VIC20_SCREEN_SIZE, "viccol", "colour_ram"),
+    ]
+
+def _vic():
+    names = ["horizontal_position", "vertical_position", "columns", "rows", "raster_line", "memory_setup",
+             "light_pen_x", "light_pen_y", "paddle_x", "paddle_y", "voice1_frequency", "voice2_frequency",
+             "voice3_frequency", "noise_frequency", "volume_aux_colour", "background_border_colour"]
+    return [Location(0x9000 + i, 1, "vicreg" if i == 0 else "vicreg+%d" % i, "vic_" + names[i]) for i in range(16)]
+
+def _via(base, n):
+    names = ["port_b", "port_a", "data_direction_b", "data_direction_a",
+             "timer1_low", "timer1_high", "timer1_latch_low", "timer1_latch_high", "timer2_low", "timer2_high",
+             "shift_register", "auxiliary_control", "peripheral_control", "interrupt_flags", "interrupt_enable",
+             "port_a_no_handshake"]
+    commodore_names = ["orb", "orah", "ddrb", "ddra", "t1l", "t1h", "t1ll", "t1lh", "t2l", "t2h",
+                       "sr", "acr", "pcr", "ifr", "ier", "ora"]
+    return [Location(base + i, 1, "d%d%s" % (n, commodore_names[i]), "via%d_%s" % (n, names[i])) for i in range(16)]
+
+vic20_hardware_locations = (
+    [Location(0x8000, 4096, None, "character_rom")] +
+    _vic() +
+    _via(0x9110, 1) +
+    _via(0x9120, 2)
+)
+
+vic20_rom_locations = [
+    Location(0xc000, 2, None, "basic_cold_start_vector"),
+    Location(0xc002, 2, None, "basic_warm_start_vector"),
+]
+
+vic20_rom_routines = [
+    # BASIC
+    RomRoutine(0xc474, "ready",  "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
+    RomRoutine(0xc7ae, "newstt", "basic_next_statement", "Execute the next BASIC statement", None, None),
+    RomRoutine(0xcad7, "crdo",   "basic_print_newline", "Print a carriage return", None, None),
+    RomRoutine(0xcb1e, "strout", "basic_print_string", "Print the zero-terminated string at A/Y",
+               {'a': "string address (low byte)", 'y': "string address (high byte)"}, None),
+    RomRoutine(0xddcd, "linprt", "basic_print_number", "Print the 16-bit number in A/X",
+               {'a': "number to print (high byte)", 'x': "number to print (low byte)"}, None),
+    # The Kernal
+    RomRoutine(0xe55f, "clsr",   "clear_screen", "Clear the screen", None, None),
+    RomRoutine(0xe581, "nxtd",   "cursor_home", "Move the cursor to the top left of the screen", None, None),
+    RomRoutine(0xe742, "prt",    "screen_output_char", "Output a character to the screen",
+               {'a': "character to output"}, None),
+    RomRoutine(0xeabf, "key",    "kernal_irq_handler", "The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)", None, None),
+    RomRoutine(0xeb15, "kprend", "kernal_irq_acknowledge", "Acknowledge the VIA 2 interrupt and return from the interrupt", None, None),
+    RomRoutine(0xeb18, None,     "kernal_irq_return", "Restore the registers and return from the interrupt", None, None),
+    RomRoutine(0xfd22, "start",  "kernal_reset", "The Kernal's reset handler", None, None),
+    RomRoutine(0xfea9, "nmi",    "kernal_nmi_handler", "The Kernal's NMI handler", None, None),
+    RomRoutine(0xff56, "prend",  "kernal_nmi_return", "Restore the registers and return from the NMI", None, None),
+    RomRoutine(0xff72, "puls",   "kernal_irq_entry", "The Kernal's IRQ and BRK entry point (saves the registers and jumps through the IRQ or BRK vector)", None, None),
+]
+
+# The VIC-20's colours (the text colour at &0286 can be the first 8)
+vic20_colours = {
+    0: "colour_black",
+    1: "colour_white",
+    2: "colour_red",
+    3: "colour_cyan",
+    4: "colour_purple",
+    5: "colour_green",
+    6: "colour_blue",
+    7: "colour_yellow",
+    8: "colour_orange",
+    9: "colour_light_orange",
+    10: "colour_pink",
+    11: "colour_light_cyan",
+    12: "colour_light_purple",
+    13: "colour_light_green",
+    14: "colour_light_blue",
+    15: "colour_light_yellow",
+}
+vic20_colour_registers = [0x0286]
+
+# The VIC-20's control codes: the C64's, without its extra colours (from
+# c64ref's control_codes_vic-20.txt, which also leaves out $08 and $09, but
+# the VIC-20's Kernal source handles those as the C64's does)
+vic20_control_codes = {c: d for c, d in control_codes.items() if c not in (0x81, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b)}

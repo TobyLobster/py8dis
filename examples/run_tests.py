@@ -92,6 +92,9 @@ TESTS = [
     ("c64_test",                 ["acme", "beebasm", "xa"],    "a C64 program (a PRG file with a BASIC SYS line), with commodore.c64()"),
     ("c64_names_test",           ["acme", "beebasm", "xa"],    "c64_test with commodore.c64(names=\"commodore\"), and a name clash"),
     ("cartridge_test",           ["acme", "beebasm", "xa"],    "a C64 cartridge, with commodore.is_cartridge()"),
+    ("vic20_test",               ["acme", "beebasm", "xa"],    "a VIC-20 program, with commodore.vic20()"),
+    ("vic20_8k_test",            ["acme", "beebasm", "xa"],    "vic20_test for a VIC-20 with 8K or more RAM"),
+    ("vic20_cartridge_test",     ["acme", "beebasm", "xa"],    "a VIC-20 cartridge, with commodore.is_cartridge()"),
 
     # 6502 code: real programs
     ("os12",                     ["acme", "beebasm", "xa"],    "MOS 1.20"),
@@ -106,6 +109,7 @@ TESTS = [
     ("starship",                 ["acme", "beebasm", "xa"],    "Starship Command"),
     ("open_roms_kernal",         ["acme", "beebasm", "xa"],    "the Kernal ROM of MEGA65's Open ROMs, a free replacement for the C64's"),
     ("open_roms_basic",          ["acme", "beebasm", "xa"],    "the BASIC ROM of MEGA65's Open ROMs"),
+    ("quikman2k8",               ["acme", "beebasm", "xa"],    "Quikman 2K8, a VIC-20 game"),
 ]
 
 # The tests whose other outputs are also compared with known_good: the JSON
@@ -114,7 +118,7 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)

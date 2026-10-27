@@ -4,7 +4,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
-- [Commodore 64](#commodore-64)
+- [Commodore 64 and VIC-20](#commodore-64-and-vic-20)
 - [JSON output](#json-output)
 - [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
@@ -501,7 +501,7 @@ load(0x8000, "rom2.bin", "6502")
 rom2_asm = go(print_output=False)
 ```
 
-## Commodore 64
+## Commodore 64 and VIC-20
 
 `commodore.c64()` does for a Commodore 64 program what `acorn.bbc()` does for a BBC Micro one:
 
@@ -531,7 +531,7 @@ It gives:
   ```
 
   CHROUT's comment names the character (`Output $93 (clear screen)`), PLOT's and MEMTOP's say whether the call reads or sets (from the carry flag), SETNAM's filename and the string printed by BASIC's STROUT are marked as PETSCII strings, and SAVE's zero page pointer is named.
-* **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal ROM, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a label in Commodore's source has the same name as a jump table entry (e.g. PLOT, the routine at &e50a that `plot` at &fff0 jumps to), it has `_rom` added (`plot_rom`).
+* **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal and BASIC ROMs, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a Kernal label in Commodore's source has the same name as a jump table entry or another name (e.g. PLOT, the routine at &e50a that `plot` at &fff0 jumps to), it has `_rom` added (`plot_rom`), and a BASIC label with the same name as another has `_basic` added (e.g. `stop_basic`, BASIC's STOP command).
 * **Colours** stored in the VIC-II's colour registers or the text colour, as constants: `lda #colour_black : sta vic_border_colour`.
 * **Vectors set by the program** (e.g. `lda #<x : sta $0314 : lda #>x : sta $0315`, or with X and Y): the address is traced as code and named after the vector, e.g. `irq_handler` (or `irq_handler_2` etc. for more), with a comment, `; Set the IRQ vector to irq_handler`.
 * **The BASIC program** at &0801, if there is one (see `basic_program()` below).
@@ -539,9 +539,15 @@ It gives:
 
 Names are only used where nothing else names the address. An optional label isn't used if its name is given to another address (e.g. a control file's `label(0x0964, "key")` when Commodore's name for &ea31 is `key`), so the name isn't defined twice.
 
-:pencil:`commodore.basic_program(runtime_addr=0x0801)`
+:pencil:`commodore.vic20(expansion=None, names="descriptive", rom_labels=True)`
 
-Marks the tokenised BASIC program at `runtime_addr` (`c64()` does this for &0801), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
+The same for the VIC-20, whose Kernal and BASIC are the C64's with its own hardware and memory map: the VIC (`vic_background_border_colour`, `vic_voice1_frequency`…), the two VIAs (`via1_port_a`…, or Commodore's `d1ora`…), the colour RAM, the character ROM, the screen, its own ROM routines (e.g. `kernal_irq_handler` at &eabf) and the labels in Commodore's source for its ROMs. Its jump table lacks the C64's first three entries. Commodore gave the VIC's registers no names of their own, so with `names="commodore"` they're `vicreg`, `vicreg+1` and so on, as in its source.
+
+`expansion` is the RAM expansion: `"none"`, `"3k"` (block 0, &0400-&0fff) or `"8k"` (8K or more, from &2000). It decides where a BASIC program starts (&1001, &0401 or &1201) and where the screen and its colour RAM are (&1e00 and &9600, or with 8K or more &1000 and &9400). By default it's worked out from where the program is loaded: `"3k"` if there's data at &0401, else `"none"` if there's data at &1001, else `"8k"` if there's data at &1201.
+
+:pencil:`commodore.basic_program(runtime_addr=None)`
+
+Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` and `vic20()` do this), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
 
 ```
 ; 10 SYS2061
@@ -559,11 +565,11 @@ An address that SYS calls in the loaded data is traced as code, and named `sys_e
 
 :pencil:`commodore.is_cartridge()`
 
-For a cartridge loaded at &8000: names its header (the cold and warm start vectors, and the `CBM80` signature), and traces the code they point to.
+For a cartridge: names its header (the cold and warm start vectors, and the signature: `CBM80` at &8004 on the C64, `A0CBM` at &a004 on the VIC-20) and traces the code they point to. Call it after `c64()` or `vic20()`.
 
 :pencil:`commodore.kernal_rom()` and :pencil:`commodore.basic_rom()`
 
-For disassembling a Kernal ROM (at &e000) or BASIC ROM (at &a000) itself: trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors. examples/python/open_roms_kernal.py and open_roms_basic.py disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
+For disassembling a Kernal ROM (at &e000) or BASIC ROM (at &a000 on the C64, &c000 on the VIC-20) itself: trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors. examples/python/open_roms_kernal.py and open_roms_basic.py disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
 
 ## JSON output
 
@@ -618,6 +624,7 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 ## Credits and thanks
 
 * py8dis is heavily influenced by Phill Harvey-Smith's [BeebDis](https://github.com/prime6809/BeebDis); I've tried to model py8dis commands on BeebDis where possible.
-* The Commodore 64's names, Kernal calls and ROM labels in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoreromlabels.py`).
+* The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `tools/make_commodore_rom_labels.py`).
+* The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).
 * The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).
 * TobyLobster has contributed numerous improvements to py8dis, including refactoring, code clean up, local label support and constant substitution, as well as making many helpful suggestions.

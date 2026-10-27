@@ -1,5 +1,5 @@
 """
-Commodore specific functions: commodore.c64() names and comments a C64
+Commodore specific functions: commodore.c64() and vic20() name and comment a
 program's use of the Kernal, the hardware and the OS workspace, as
 acorn.bbc() does for the BBC Micro.
 
@@ -7,8 +7,8 @@ acorn.bbc() does for the BBC Micro.
     start = load_prg("game.prg", "6510")
     commodore.c64()
 
-c64() names the memory locations with descriptive names by default (e.g.
-'vic_border_colour'); c64(names="commodore") uses the names in Commodore's
+They name the memory locations with descriptive names by default (e.g.
+'vic_border_colour'); names="commodore" uses the names in Commodore's
 documentation instead (e.g. 'extcol'). See commodoretables.py.
 """
 
@@ -22,12 +22,136 @@ from memorymanager import BinaryAddr, RuntimeAddr
 from snippets6502 import register_snippet
 
 from commodoretables import *
-from commodoreromlabels import kernal_rom_labels
+import commodoreromlabels
 
 # Helpers shared with acorn.py's OS call hooks
 from acornhelpers import xy_addr, enum_lookup
 
 NAMES = ("descriptive", "commodore")
+
+
+# ************************************************************************************************
+# The machines
+
+class Machine:
+    """What commodore.py knows about one machine: its memory locations,
+    hardware, ROMs and so on (from commodoretables.py)."""
+
+    def __init__(self, name, *, locations, hardware_locations, rom_locations, rom_routines,
+                 kernal_rom_labels, basic_rom_labels, jump_table, colours, colour_registers,
+                 control_codes, io_range, basic_start, cartridge, basic_rom_addr, regions):
+        self.name = name
+        self.locations = locations                  # RAM, the vectors and the 6502's vectors
+        self.hardware_locations = hardware_locations
+        self.rom_locations = rom_locations          # data in the ROMs (named with rom_labels)
+        self.rom_routines = rom_routines
+        self.kernal_rom_labels = kernal_rom_labels  # {address: name}, from Commodore's source
+        self.basic_rom_labels = basic_rom_labels
+        self.jump_table = jump_table
+        self.colours = colours
+        self.colour_registers = colour_registers
+        self.control_codes = control_codes
+        self.io_range = io_range                    # (start, end): never defined inline
+        self.basic_start = basic_start              # where BASIC programs are loaded
+        self.cartridge = cartridge                  # (address, signature length)
+        self.basic_rom_addr = basic_rom_addr
+        self.regions = regions                      # [(start, end, name)]
+
+def _kernal_vectors():
+    """The Kernal's RAM vectors (&0314-&0333), as Locations"""
+    return [Location(v.addr, 2, v.commodore_name, v.name) for v in c64_vectors if v.name is not None and v.addr >= 0x0314]
+
+def c64_machine():
+    return Machine("c64",
+        locations=c64_ram_locations + _kernal_vectors() + c64_more_ram_locations + c64_cpu_vectors,
+        hardware_locations=c64_hardware_locations,
+        rom_locations=c64_rom_locations,
+        rom_routines=c64_rom_routines,
+        kernal_rom_labels=commodoreromlabels.c64_kernal_rom_labels,
+        basic_rom_labels=commodoreromlabels.c64_basic_rom_labels,
+        jump_table=kernal_jump_table,
+        colours=colours,
+        colour_registers=c64_colour_registers,
+        control_codes=control_codes,
+        io_range=(0xd000, 0xe000),
+        basic_start=0x0801,
+        cartridge=(0x8000, 5),
+        basic_rom_addr=0xa000,
+        regions=[
+            (0x0000, 0x0002, "6510 I/O port"),
+            (0x0200, 0x0300, "OS workspace"),
+            (0x0300, 0x0334, "Vectors"),
+            (0x0334, 0x0400, "Tape buffer"),
+            (0x0400, 0x0800, "Screen memory"),
+            (0x0800, 0xa000, "BASIC program area"),
+            (0xa000, 0xc000, "BASIC ROM"),
+            (0xc000, 0xd000, "Upper RAM"),
+            (0xd000, 0xd400, "VIC-II"),
+            (0xd400, 0xd800, "SID"),
+            (0xd800, 0xdc00, "Colour RAM"),
+            (0xdc00, 0xdd00, "CIA 1"),
+            (0xdd00, 0xde00, "CIA 2"),
+            (0xde00, 0xdf00, "I/O 1"),
+            (0xdf00, 0xe000, "I/O 2"),
+            (0xe000, 0xff81, "Kernal ROM"),
+            # The 6502's NMI, reset and IRQ vectors follow (a region named by
+            # the CPU)
+            (0xff81, 0xfffa, "Kernal entry points"),
+        ])
+
+VIC20_EXPANSIONS = ("none", "3k", "8k")
+
+def vic20_machine(expansion="none"):
+    """The VIC-20, with no RAM expansion, 3K (in block 0, &0400-&0fff), or 8K
+    or more (from block 1, &2000)"""
+    expanded_8k = (expansion == "8k")
+    basic_start = {"none": 0x1001, "3k": 0x0401, "8k": 0x1201}[expansion]
+    screen = 0x1000 if expanded_8k else 0x1e00
+    colour_ram = 0x9400 if expanded_8k else 0x9600
+    if expansion == "8k":
+        ram_regions = [(0x0400, 0x1000, "3K expansion RAM"), (0x1000, 0x1200, "Screen memory"), (0x1200, 0x8000, "BASIC program area")]
+    elif expansion == "3k":
+        ram_regions = [(0x0400, 0x1e00, "BASIC program area"), (0x1e00, 0x2000, "Screen memory"), (0x2000, 0x8000, "Expansion RAM")]
+    else:
+        ram_regions = [(0x0400, 0x1000, "3K expansion RAM"), (0x1000, 0x1e00, "BASIC program area"), (0x1e00, 0x2000, "Screen memory"), (0x2000, 0x8000, "Expansion RAM")]
+    return Machine("vic20",
+        locations=vic20_ram_locations + _kernal_vectors() + c64_more_ram_locations[:1] + vic20_screen_locations(expanded_8k) + c64_cpu_vectors,
+        hardware_locations=vic20_hardware_locations,
+        rom_locations=vic20_rom_locations,
+        rom_routines=vic20_rom_routines,
+        kernal_rom_labels=commodoreromlabels.vic20_kernal_rom_labels,
+        basic_rom_labels=commodoreromlabels.vic20_basic_rom_labels,
+        # (The VIC-20 doesn't have the first three entries)
+        jump_table=[call for call in kernal_jump_table if call.addr >= 0xff8a],
+        colours=vic20_colours,
+        colour_registers=vic20_colour_registers,
+        control_codes=vic20_control_codes,
+        io_range=(0x9000, 0x9800 if colour_ram == 0x9600 else 0x9600),
+        basic_start=basic_start,
+        cartridge=(0xa000, 5),
+        basic_rom_addr=0xc000,
+        regions=[
+            (0x0200, 0x0300, "OS workspace"),
+            (0x0300, 0x0334, "Vectors"),
+            (0x0334, 0x0400, "Tape buffer"),
+        ] + ram_regions + [
+            (0x8000, 0x9000, "Character ROM"),
+            (0x9000, 0x9010, "VIC"),
+            (0x9110, 0x9120, "VIA 1"),
+            (0x9120, 0x9130, "VIA 2"),
+            (colour_ram, colour_ram + 0x200, "Colour RAM"),
+            (0x9800, 0x9c00, "I/O 2"),
+            (0x9c00, 0xa000, "I/O 3"),
+            (0xa000, 0xc000, "Cartridge ROM"),
+            (0xc000, 0xe000, "BASIC ROM"),
+            (0xe000, 0xff8a, "Kernal ROM"),
+            (0xff8a, 0xfffa, "Kernal entry points"),
+        ])
+
+def _machine():
+    """The machine chosen for this session (by c64() or vic20()), or the C64
+    if none has been"""
+    return session.current().extras.get("commodore.machine") or c64_machine()
 
 
 # ************************************************************************************************
@@ -39,53 +163,60 @@ def _name(location, names):
         return location.commodore_name
     return location.name
 
-def c64_location_names(names="descriptive", rom_labels=True):
-    """The names c64() gives memory locations, as a list of (address, name,
-    base address or None): one for each byte of each location (e.g.
-    'tape_buffer+1', with the base address of 'tape_buffer'), the ROM
-    routines, and (with rom_labels) the labels in Commodore's source for the
-    Kernal ROM. Not the Kernal's jump table, which are subroutines.
+def location_names(machine, names="descriptive", rom_labels=True):
+    """The names c64() or vic20() give memory locations, as a list of
+    (address, name, base address or None): one for each byte of each
+    location (e.g. 'tape_buffer+1', with the base address of 'tape_buffer'),
+    the ROM routines, and (with rom_labels) the labels in Commodore's source
+    for the Kernal and BASIC ROMs. Not the Kernal's jump table, which are
+    subroutines.
 
     A label in Commodore's source with the same name as a Kernal call or
-    another location (e.g. PLOT, the routine at &e50a that the jump table's
-    plot at &fff0 jumps to) gets '_rom' added, e.g. 'plot_rom'."""
+    another location gets '_rom' added (e.g. PLOT, the routine at &e50a that
+    the jump table's plot at &fff0 jumps to on the C64, is 'plot_rom'), and a
+    label in BASIC's source with the same name as one of those gets '_basic'
+    added (e.g. 'stop_basic')."""
     result = []
     def add(location):
         name = _name(location, names)
+        if "+" in name:
+            # (An offset from another location's name, e.g. 'vicreg+1')
+            result.append((location.addr, name, location.addr - int(name.split("+")[1])))
+            return
         result.append((location.addr, name, None))
         for i in range(1, location.size):
             result.append((location.addr + i, "%s+%d" % (name, i), location.addr))
 
-    for location in c64_ram_locations:
-        add(location)
-    for vector in c64_vectors:
-        if vector.name is not None and vector.addr >= 0x0314:
-            add(Location(vector.addr, 2, vector.commodore_name, vector.name))
-    for location in c64_more_ram_locations + c64_hardware_locations + c64_cpu_vectors:
+    for location in machine.locations + machine.hardware_locations:
         add(location)
 
     if rom_labels:
-        for location in c64_rom_locations:
+        for location in machine.rom_locations:
             add(location)
-        named = {addr for addr, _, _ in result} | {call.addr for call in kernal_jump_table}
-        for routine in c64_rom_routines:
+        named = {addr for addr, _, _ in result} | {call.addr for call in machine.jump_table}
+        for routine in machine.rom_routines:
             name = routine.name
             if names == "commodore" and routine.commodore_name is not None:
                 name = routine.commodore_name
             result.append((routine.addr, name, None))
             named.add(routine.addr)
 
-        used = {name for _, name, _ in result} | {call.name for call in kernal_jump_table}
-        for addr in sorted(kernal_rom_labels):
-            if addr in named:
-                continue
-            name = kernal_rom_labels[addr]
-            if name in used:
-                name += "_rom"
-            assert name not in used, name
-            used.add(name)
-            result.append((addr, name, None))
+        used = {name for _, name, _ in result} | {call.name for call in machine.jump_table}
+        for rom_labels_table, suffix in ((machine.kernal_rom_labels, "_rom"), (machine.basic_rom_labels, "_basic")):
+            for addr in sorted(rom_labels_table):
+                if addr in named:
+                    continue
+                name = rom_labels_table[addr]
+                if name in used:
+                    name += suffix
+                assert name not in used, name
+                used.add(name)
+                result.append((addr, name, None))
     return result
+
+def c64_location_names(names="descriptive", rom_labels=True):
+    """The names c64() gives memory locations (see location_names())"""
+    return location_names(c64_machine(), names, rom_labels)
 
 
 # ************************************************************************************************
@@ -131,6 +262,7 @@ def _char_description(c):
     char = textencoding.PETSCII.char(c)
     if char is not None:
         return "'%s'" % char
+    control_codes = _machine().control_codes
     if c in control_codes:
         return "%s (%s)" % (_hex2(c), control_codes[c])
     return _hex2(c)
@@ -481,9 +613,10 @@ def _basic_lines(runtime_addr):
         lines.append((addr, link, number, text))
         addr = link
 
-def basic_program(runtime_addr=0x0801):
-    """Classify the tokenised BASIC program at the address (by default the
-    start of BASIC on the C64), e.g. the one-line 'SYS' program at the start
+def basic_program(runtime_addr=None):
+    """Classify the tokenised BASIC program at the address (by default where
+    BASIC programs start: &0801 on the C64, and on the VIC-20 &1001, or &0401
+    or &1201 with a RAM expansion), e.g. the one-line 'SYS' program at the start
     of most machine code programs. Each line is labelled (e.g.
     'basic_line_10'), its link to the next line and its line number are
     words, and its text is bytes for the tokens and PETSCII strings, listed
@@ -493,6 +626,8 @@ def basic_program(runtime_addr=0x0801):
 
     Returns the address after the program, or None (classifying nothing) if
     there isn't a valid BASIC program there."""
+    if runtime_addr is None:
+        runtime_addr = _machine().basic_start
     found = _basic_lines(runtime_addr)
     if found is None:
         return None
@@ -565,15 +700,17 @@ def _is_loaded(runtime_addr):
 # ROMs and cartridges
 
 def is_cartridge():
-    """For a C64 cartridge loaded at &8000 (with the 'CBM80' signature at
-    &8004): name its header, and trace its cold and warm start code."""
-    label(0x8000, "cartridge_cold_start_vector")
-    code_ptr(0x8000, label_name=None if _has_name(memorymanager.get_u16_runtime(RuntimeAddr(0x8000))) else "cartridge_cold_start")
-    label(0x8002, "cartridge_warm_start_vector")
-    code_ptr(0x8002, label_name=None if _has_name(memorymanager.get_u16_runtime(RuntimeAddr(0x8002))) else "cartridge_warm_start")
-    label(0x8004, "cartridge_signature")
-    string(0x8004, 5, encoding="petscii")
-    auto_comment(0x8000, "Cartridge header")
+    """For a cartridge: name its header, and trace its cold and warm start
+    code. On the C64 a cartridge is at &8000, with the signature 'CBM80' at
+    &8004; on the VIC-20 at &a000, with 'A0CBM' at &a004."""
+    addr, signature_length = _machine().cartridge
+    label(addr, "cartridge_cold_start_vector")
+    code_ptr(addr, label_name=None if _has_name(memorymanager.get_u16_runtime(RuntimeAddr(addr))) else "cartridge_cold_start")
+    label(addr + 2, "cartridge_warm_start_vector")
+    code_ptr(addr + 2, label_name=None if _has_name(memorymanager.get_u16_runtime(RuntimeAddr(addr + 2))) else "cartridge_warm_start")
+    label(addr + 4, "cartridge_signature")
+    string(addr + 4, signature_length, encoding="petscii")
+    auto_comment(addr, "Cartridge header")
 
 def _has_name(runtime_addr):
     labels = session.current().labels.labels
@@ -583,7 +720,7 @@ def kernal_rom():
     """For a disassembly of a Kernal ROM (loaded at &e000): trace the code
     from the Kernal's jump table (each entry named, e.g. 'chrout') and the
     6502's NMI, reset and IRQ vectors."""
-    for call in kernal_jump_table:
+    for call in _machine().jump_table:
         if _is_loaded(call.addr):
             entry(call.addr, call.name)
     for addr, name in ((0xfffa, "nmi_entry"), (0xfffc, "reset_entry"), (0xfffe, "irq_entry")):
@@ -592,40 +729,57 @@ def kernal_rom():
         code_ptr(addr, label_name=None if has_name else name)
 
 def basic_rom():
-    """For a disassembly of a BASIC ROM (loaded at &a000): trace the code
-    from its cold and warm start vectors, and name its signature."""
-    for addr, name in ((0xa000, "basic_cold_start"), (0xa002, "basic_warm_start")):
-        target = memorymanager.get_u16_runtime(RuntimeAddr(addr))
-        label(addr, name + "_vector")
-        code_ptr(addr, label_name=None if _has_name(target) else name)
-    label(0xa004, "basic_signature")
-    string(0xa004, encoding="petscii")
+    """For a disassembly of a BASIC ROM (loaded at &a000 on the C64, &c000 on
+    the VIC-20): trace the code from its cold and warm start vectors, and name
+    its signature."""
+    base = _machine().basic_rom_addr
+    for offset, name in ((0, "basic_cold_start"), (2, "basic_warm_start")):
+        target = memorymanager.get_u16_runtime(RuntimeAddr(base + offset))
+        label(base + offset, name + "_vector")
+        code_ptr(base + offset, label_name=None if _has_name(target) else name)
+    label(base + 4, "basic_signature")
+    string(base + 4, encoding="petscii")
 
 
 # ************************************************************************************************
-# The C64
+# The machines' set up
 
-def c64_memory_regions():
-    """Name the regions of the C64's memory, to group the list of memory
-    locations at the top of the output (see memory_region())."""
-    memory_region(0x0000, 0x0002, "6510 I/O port")
-    memory_region(0x0200, 0x0300, "OS workspace")
-    memory_region(0x0300, 0x0334, "Vectors")
-    memory_region(0x0334, 0x0400, "Tape buffer")
-    memory_region(0x0400, 0x0800, "Screen memory")
-    memory_region(0x0800, 0xa000, "BASIC program area")
-    memory_region(0xa000, 0xc000, "BASIC ROM")
-    memory_region(0xc000, 0xd000, "Upper RAM")
-    memory_region(0xd000, 0xd400, "VIC-II")
-    memory_region(0xd400, 0xd800, "SID")
-    memory_region(0xd800, 0xdc00, "Colour RAM")
-    memory_region(0xdc00, 0xdd00, "CIA 1")
-    memory_region(0xdd00, 0xde00, "CIA 2")
-    memory_region(0xde00, 0xdf00, "I/O 1")
-    memory_region(0xdf00, 0xe000, "I/O 2")
-    memory_region(0xe000, 0xff81, "Kernal ROM")
-    # The 6502's NMI, reset and IRQ vectors follow (a region named by the CPU)
-    memory_region(0xff81, 0xfffa, "Kernal entry points")
+def _set_up(command, machine, names, rom_labels):
+    """What c64() and vic20() do, for the machine"""
+    if names not in NAMES:
+        utils.die("commodore.{0}(): names must be one of {1}, not {2!r}".format(command, ", ".join(repr(n) for n in NAMES), names))
+    extras = session.current().extras
+    if extras.get("commodore.machine") is not None:
+        utils.die("commodore.{0}(): this session's machine has already been chosen".format(command))
+    extras["commodore.machine"] = machine
+    extras["commodore.names"] = names
+
+    config.set_text_encoding("petscii")
+    register_snippets()
+    for start, end, name in machine.regions:
+        memory_region(start, end, name)
+
+    io_start, io_end = machine.io_range
+    for addr, name, base in location_names(machine, names, rom_labels):
+        optional_label(addr, name, base, definable_inline=not io_start <= addr < io_end)
+
+    for call in machine.jump_table:
+        subroutine(call.addr, call.name, call.title, None, call.on_entry, call.on_exit, hook=_hooks.get(call.name, default_hook), is_entry_point=False)
+    if rom_labels:
+        for routine in machine.rom_routines:
+            name = routine.name
+            if names == "commodore" and routine.commodore_name is not None:
+                name = routine.commodore_name
+            subroutine(routine.addr, name, routine.title, None, routine.on_entry, routine.on_exit,
+                       hook=strout_hook if routine.commodore_name == "strout" else default_hook, is_entry_point=False)
+
+    # Colours stored in the colour registers
+    for addr in machine.colour_registers:
+        for reg in "axy":
+            session.current().trace.substitute_constant_list.append(cpu6502.SubConst("st%s $%04x" % (reg, addr), reg, machine.colours, True))
+
+    if _is_loaded(machine.basic_start):
+        basic_program(machine.basic_start)
 
 def c64(names="descriptive", rom_labels=True):
     """Name and comment a C64 program's use of the Kernal, the hardware and
@@ -641,7 +795,7 @@ def c64(names="descriptive", rom_labels=True):
       set for it and used after it;
     - with rom_labels (the default), names for the routines in the C64's
       ROMs that programs call (e.g. 'kernal_irq_handler' at &ea31), and the
-      labels in Commodore's source for the Kernal ROM. (Use
+      labels in Commodore's source for the Kernal and BASIC ROMs. (Use
       rom_labels=False for a program that replaces the ROMs.)
     - names for the colours stored in the VIC-II's colour registers (e.g.
       'colour_black');
@@ -650,35 +804,28 @@ def c64(names="descriptive", rom_labels=True):
     - a BASIC program loaded at &0801 (see basic_program());
     - PETSCII as the text encoding (see config.set_text_encoding()).
     """
-    if names not in NAMES:
-        utils.die("commodore.c64(): names must be one of {0}, not {1!r}".format(", ".join(repr(n) for n in NAMES), names))
-    extras = session.current().extras
-    if extras.get("commodore.machine") is not None:
-        utils.die("commodore.c64(): this session's machine has already been chosen")
-    extras["commodore.machine"] = "c64"
-    extras["commodore.names"] = names
+    _set_up("c64", c64_machine(), names, rom_labels)
 
-    config.set_text_encoding("petscii")
-    register_snippets()
-    c64_memory_regions()
+def vic20(expansion=None, names="descriptive", rom_labels=True):
+    """As c64(), for the VIC-20: its Kernal and BASIC are the C64's, with
+    its own hardware (the VIC, two VIAs and the colour RAM) and memory map.
 
-    for addr, name, base in c64_location_names(names, rom_labels):
-        optional_label(addr, name, base, definable_inline=not 0xd000 <= addr < 0xe000)
-
-    for call in kernal_jump_table:
-        subroutine(call.addr, call.name, call.title, None, call.on_entry, call.on_exit, hook=_hooks.get(call.name, default_hook), is_entry_point=False)
-    if rom_labels:
-        for routine in c64_rom_routines:
-            name = routine.name
-            if names == "commodore" and routine.commodore_name is not None:
-                name = routine.commodore_name
-            subroutine(routine.addr, name, routine.title, None, routine.on_entry, routine.on_exit,
-                       hook=strout_hook if routine.addr == 0xab1e else default_hook, is_entry_point=False)
-
-    # Colours stored in the colour registers
-    for addr in c64_colour_registers:
-        for reg in "axy":
-            session.current().trace.substitute_constant_list.append(cpu6502.SubConst("st%s $%04x" % (reg, addr), reg, colours, True))
-
-    if _is_loaded(0x0801):
-        basic_program(0x0801)
+    expansion is the RAM expansion: "none", "3k" (in block 0, &0400-&0fff)
+    or "8k" (8K or more, from &2000). It decides where BASIC programs start
+    (&1001, &0401 or &1201), and where the screen and its colour RAM are
+    (&1e00 and &9600, or with 8K or more, &1000 and &9400). By default (None)
+    it's worked out from where the program is loaded: "3k" if there's data at
+    &0401, else "none" if there's data at &1001, else "8k" if there's data at
+    &1201, else "none"."""
+    if expansion is None:
+        if _is_loaded(0x0401):
+            expansion = "3k"
+        elif _is_loaded(0x1001):
+            expansion = "none"
+        elif _is_loaded(0x1201):
+            expansion = "8k"
+        else:
+            expansion = "none"
+    if expansion not in VIC20_EXPANSIONS:
+        utils.die("commodore.vic20(): expansion must be one of {0} (or None), not {1!r}".format(", ".join(repr(e) for e in VIC20_EXPANSIONS), expansion))
+    _set_up("vic20", vic20_machine(expansion), names, rom_labels)

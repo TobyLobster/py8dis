@@ -15,7 +15,7 @@ kernal_irq_handler  = $ea31
 restor_rom          = $fd15
 ramtas_rom          = $fd50
 ioinit_rom          = $fda3
-lff5b               = $ff5b
+pcint               = $ff5b
 
 ; Kernal entry points ($ff81-$fff9)
 getin   = $ffe4
@@ -36,7 +36,7 @@ cartridge_cold_start
     jsr ioinit_rom                                                    ; 800a: 20 a3 fd     ..
     jsr ramtas_rom                                                    ; 800d: 20 50 fd     p.
     jsr restor_rom                                                    ; 8010: 20 15 fd     ..
-    jsr lff5b                                                         ; 8013: 20 5b ff     [.
+    jsr pcint                                                         ; 8013: 20 5b ff     [.
 
     ; Set the NMI vector to nmi_handler
     ldx #<nmi_handler                                                 ; 8016: a2 37       .7
@@ -95,15 +95,14 @@ pydis_end
 ;     ioinit_rom:                1
 ;     irq_vector:                1
 ;     kernal_irq_handler:        1
-;     lff5b:                     1
 ;     nmi_vector:                1
+;     pcint:                     1
 ;     ramtas_rom:                1
 ;     restor_rom:                1
 ;     vic_border_colour:         1
 
 ; Automatically generated labels:
 ;     c802b
-;     lff5b
 
 ; Stats:
 ;
