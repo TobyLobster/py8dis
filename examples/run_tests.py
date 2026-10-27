@@ -87,6 +87,7 @@ TESTS = [
     ("prg_test",                 ["acme", "beebasm", "xa"],    "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
     ("p00_test",                 ["acme", "beebasm", "xa"],    "a PC64 P00 file loaded with load_prg()"),
     ("load_offset",              ["acme", "beebasm", "xa"],    "loading parts of a file with load(..., offset=..., length=...)"),
+    ("undocumented_6502",        ["acme", "beebasm", "xa"],    "every undocumented 6502 opcode, with load(..., \"6510\")"),
 
     # 6502 code: real programs
     ("os12",                     ["acme", "beebasm", "xa"],    "MOS 1.20"),
@@ -107,7 +108,7 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)

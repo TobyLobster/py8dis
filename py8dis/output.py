@@ -224,10 +224,11 @@ class Instruction(Line):
                        instruction is written as data bytes, with the
                        instruction in a comment
         UNDOCUMENTED   an undocumented opcode (e.g. the 8080's &CB, which runs
-                       as JMP), which assemblers don't accept, so it's written
-                       as data bytes (the opcode, then the low and high bytes
-                       of the operand, if any), with the instruction it runs
-                       as in a comment
+                       as JMP) which the assembler doesn't accept, so it's
+                       written as data bytes (the opcode, then the operand, if
+                       any: one byte, or the low and high bytes of a two byte
+                       operand, as 'operand_length' says), with the
+                       instruction it runs as in a comment
 
     'char_literal' is a character to show in a comment after the instruction
     (e.g. for 'lda #65', "'A'"), or None.
@@ -256,6 +257,9 @@ class Instruction(Line):
         # operand for the instruction shown in the comment
         self.data_byte = data_byte
         self.listing_operand = listing_operand
+
+        # For UNDOCUMENTED: the operand's length in bytes
+        self.operand_length = 2
 
         self.binary_loc = binary_loc
         self.length = length
@@ -289,13 +293,16 @@ class Instruction(Line):
         if self.form == Instruction.UNDOCUMENTED:
             items = [str(self.data_byte)]
             if self.operand is not None:
-                import maker
-                items += [str(maker.make_lo(self.operand)), str(maker.make_hi(self.operand))]
+                if self.operand_length == 1:
+                    items.append(str(self.operand))
+                else:
+                    import maker
+                    items += [str(maker.make_lo(self.operand)), str(maker.make_hi(self.operand))]
             result = "%s%s%s" % (indent, assembler.byte_prefix(), ", ".join(items))
             if plain:
                 return result
             return result + " %s %s%s (undocumented)" % (assembler.comment_prefix(), mnemonic,
-                                                                 "" if self.operand is None else " " + str(self.operand))
+                                                                 "" if self.operand is None else " " + self.prefix + str(self.operand) + suffix)
 
         if self.operand is None:
             return "%s%s" % (indent, mnemonic)

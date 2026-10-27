@@ -78,6 +78,18 @@ class Assembler:
         used if can_force_absolute().)"""
         raise NotImplementedError
 
+    def undocumented_6502_opcodes(self):
+        """The 6502's undocumented opcodes (see cpu6510.py) that the
+        assembler can assemble from their mnemonics. Others are written as
+        data bytes."""
+        return frozenset()
+
+    def undocumented_6502_mnemonic(self, mnemonic):
+        """The assembler's mnemonic for one of the undocumented opcodes it
+        accepts (see undocumented_6502_opcodes()), given py8dis's name for it
+        (in upper case)."""
+        return mnemonic
+
     def prg_header(self, load_addr):
         """The lines at the start of the output for a PRG file loaded with
         load_prg(): its two-byte load address, assembled just before the

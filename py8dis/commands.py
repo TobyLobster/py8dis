@@ -90,11 +90,13 @@ import utils
 import cpu
 import snippets6502
 import cpu65C02
+import cpu6510
 import cpu6502
 import cpu8080
 
 cpu_names = { "6502"  : cpu6502.Cpu6502,
               "65c02" : cpu65C02.Cpu65C02,
+              "6510"  : cpu6510.Cpu6510,
               "8080"  : cpu8080.Cpu8080,
             }
 

@@ -79,6 +79,31 @@ def with_cycles(cpu_name, addr):
         return cpu.opcodes[MEMORY[addr - 0x2000]].as_lines(binary_loc(addr), None)[0]
     return make
 
+def with_6510(opcode_bytes, show_cycles=False):
+    """The instruction made by the 6510 CPU (the 6502 with its undocumented
+    opcodes) for the given bytes at &2000, as when disassembling. (Only for
+    instructions without an address, since naming labels isn't part of
+    rendering.)"""
+    def make():
+        import config
+        import cpu6510
+        import session
+        config.set_show_cycles(show_cycles)
+        cpu = cpu6510.Cpu6510()
+        session.current().cpu = cpu
+        session.current().memory.binary[0x2000:0x2000 + len(opcode_bytes)] = opcode_bytes
+        return cpu.opcodes[opcode_bytes[0]].as_lines(binary_loc(0x2000), None)[0]
+    return make
+
+def undocumented_zp():
+    """'lax (ptr),y' (&b3), written as data bytes with a one-byte operand"""
+    import expression
+    import output
+    line = instruction(0x2000, 2, "lax", expression.Name("ptr"), prefix="(", suffix="),y", form=output.Instruction.UNDOCUMENTED,
+                       data_byte=expression.Num(0xb3, "hex2"))
+    line.operand_length = 1
+    return line
+
 def make_tests():
     """The tests: a list of (name, assemblers, function making the line).
 
@@ -145,6 +170,20 @@ def make_tests():
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
         ("include binary file *",
          ASSEMBLERS_6502, lambda: output.Directive("include_binary_file", "data.bin")),
+        ("6510 undocumented opcode, immediate *",
+         ASSEMBLERS_6502, with_6510([0x0b, 0x81])),
+        ("6510 ALR, which acme calls ASR",
+         ASSEMBLERS_6502, with_6510([0x4b, 0x0f])),
+        ("6510 undocumented opcode acme doesn't use",
+         ASSEMBLERS_6502, with_6510([0x2b, 0x81])),
+        ("6510 undocumented opcode, implied",
+         ASSEMBLERS_6502, with_6510([0x1a])),
+        ("6510 JAM, with cycles",
+         ASSEMBLERS_6502, with_6510([0x02], show_cycles=True)),
+        ("6510 undocumented opcode as data, zero page operand *",
+         ["beebasm", "xa"], undocumented_zp),
+        ("start, for the 6510 *",
+         ["acme"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
         ("start, for the 65C02 *",
          ["acme"], lambda: (config.set_cmos(True), output.Directive("disassembly_start"))[1]),
         ("end, saving to a file *",
@@ -451,6 +490,80 @@ EXPECTED = {
     ],
     'include binary file, xa, upper case': [
         '    .BIN 0,0,"data.bin"',
+    ],
+    '6510 undocumented opcode, immediate, acme': [
+        '    anc #$81                                                          ; 2000: 0b 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, acme, upper case': [
+        '    ANC #$81                                                          ; 2000: 0B 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, beebasm': [
+        '    equb &0b, &81 ; anc #&81 (undocumented)                           ; 2000: 0b 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, beebasm, upper case': [
+        '    EQUB &0B, &81 ; ANC #&81 (undocumented)                           ; 2000: 0B 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, xa': [
+        '    .byt $0b, $81 // anc #$81 (undocumented)                          // 2000: 0b 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, xa, upper case': [
+        '    .BYT $0B, $81 // ANC #$81 (undocumented)                          // 2000: 0B 81       ..',
+    ],
+    '6510 ALR, which acme calls ASR, acme': [
+        '    asr #$0f                                                          ; 2000: 4b 0f       K.',
+    ],
+    '6510 ALR, which acme calls ASR, beebasm': [
+        '    equb &4b, &0f ; alr #&0f (undocumented)                           ; 2000: 4b 0f       K.',
+    ],
+    '6510 ALR, which acme calls ASR, xa': [
+        '    .byt $4b, $0f // alr #$0f (undocumented)                          // 2000: 4b 0f       K.',
+    ],
+    "6510 undocumented opcode acme doesn't use, acme": [
+        '    !byte $2b, $81 ; anc #$81 (undocumented)                          ; 2000: 2b 81       +.',
+    ],
+    "6510 undocumented opcode acme doesn't use, beebasm": [
+        '    equb &2b, &81 ; anc #&81 (undocumented)                           ; 2000: 2b 81       +.',
+    ],
+    "6510 undocumented opcode acme doesn't use, xa": [
+        '    .byt $2b, $81 // anc #$81 (undocumented)                          // 2000: 2b 81       +.',
+    ],
+    '6510 undocumented opcode, implied, acme': [
+        '    !byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
+    ],
+    '6510 undocumented opcode, implied, beebasm': [
+        '    equb &1a ; nop (undocumented)                                     ; 2000: 1a          .',
+    ],
+    '6510 undocumented opcode, implied, xa': [
+        '    .byt $1a // nop (undocumented)                                    // 2000: 1a          .',
+    ],
+    '6510 JAM, with cycles, acme': [
+        '    jam                                                               ; 2000: 02          .   halts',
+    ],
+    '6510 JAM, with cycles, beebasm': [
+        '    equb &02 ; jam (undocumented)                                     ; 2000: 02          .   halts',
+    ],
+    '6510 JAM, with cycles, xa': [
+        '    .byt $02 // jam (undocumented)                                    // 2000: 02          .   halts',
+    ],
+    '6510 undocumented opcode as data, zero page operand, beebasm': [
+        '    equb &b3, ptr ; lax (ptr),y (undocumented)                        ; 2000: a9 41       .A',
+    ],
+    '6510 undocumented opcode as data, zero page operand, beebasm, upper case': [
+        '    EQUB &B3, ptr ; LAX (ptr),Y (undocumented)                        ; 2000: A9 41       .A',
+    ],
+    '6510 undocumented opcode as data, zero page operand, xa': [
+        '    .byt $b3, ptr // lax (ptr),y (undocumented)                       // 2000: a9 41       .A',
+    ],
+    '6510 undocumented opcode as data, zero page operand, xa, upper case': [
+        '    .BYT $B3, ptr // LAX (ptr),Y (undocumented)                       // 2000: A9 41       .A',
+    ],
+    'start, for the 6510, acme': [
+        '!cpu 6510',
+        '',
+    ],
+    'start, for the 6510, acme, upper case': [
+        '!CPU 6510',
+        '',
     ],
     'start, for the 65C02, acme': [
         '!cpu 65c02',

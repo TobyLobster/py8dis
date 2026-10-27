@@ -28,7 +28,7 @@ class Beebasm(assembler.Assembler):
         return "beebasm"
 
     def cpus_supported(self):
-        return ["6502", "65c02"]
+        return ["6502", "65c02", "6510"]
 
     def hex2(self, n):
         """format a two digit hex number"""

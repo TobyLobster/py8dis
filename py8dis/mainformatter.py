@@ -46,7 +46,9 @@ def add_hex_dump(binary_addr, length, cycles_description, s):
 
     # Add cycle counts
     if config.get_show_cycles() and cycles_description and len(cycles_description) > 0:
-        cycles_description = utils.tab_to(" " + cycles_description + " cycles", 14)
+        # (e.g. "4 cycles", or for the 6502's JAM, "halts")
+        units = " cycles" if cycles_description[0].isdigit() else ""
+        cycles_description = utils.tab_to(" " + cycles_description + units, 14)
     else:
         cycles_description = ""
 
