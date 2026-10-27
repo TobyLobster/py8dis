@@ -4,6 +4,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
+- [Commodore 64](#commodore-64)
 - [JSON output](#json-output)
 - [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
@@ -500,6 +501,70 @@ load(0x8000, "rom2.bin", "6502")
 rom2_asm = go(print_output=False)
 ```
 
+## Commodore 64
+
+`commodore.c64()` does for a Commodore 64 program what `acorn.bbc()` does for a BBC Micro one:
+
+```python
+from commands import *
+import commodore
+
+start = load_prg("game.prg", "6510")
+commodore.c64()
+go()
+```
+
+It gives:
+
+* **Names for the memory locations**, output only if used: zero page, the OS and BASIC workspace, the Kernal's and BASIC's vectors, the screen and sprite pointers, the VIC-II, the SID, the colour RAM, the CIAs and the 6510's I/O port, grouped under headings by region (e.g. `; VIC-II ($d000-$d3ff)`). The names are descriptive by default, e.g. `vic_border_colour`, `cia1_port_a`, `keyboard_buffer_length`; `commodore.c64(names="commodore")` uses the names in Commodore's documentation instead (the Programmer's Reference Guide and Commodore's source, and for the I/O registers *Mapping the Commodore 64*), e.g. `extcol`, `ciapra`, `ndx`.
+* **The Kernal's jump table**, by Commodore's names (e.g. `chrout`, `setlfs`), with comments on each call and where its registers are set and used:
+
+  ```
+      lda #$0f              ; A=logical file number
+      ldx #device_disk_8    ; X=device number
+      ldy #$0f              ; Y=secondary address
+      jsr setlfs            ; Set logical file 15 to device 8 (disk drive), secondary address 15
+      lda #2                ; A=filename length
+      ldx #<filename        ; X=filename address (low byte)
+      ldy #>filename        ; Y=filename address (high byte)
+      jsr setnam            ; Set the filename to "i0"
+  ```
+
+  CHROUT's comment names the character (`Output $93 (clear screen)`), PLOT's and MEMTOP's say whether the call reads or sets (from the carry flag), SETNAM's filename and the string printed by BASIC's STROUT are marked as PETSCII strings, and SAVE's zero page pointer is named.
+* **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal ROM, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a label in Commodore's source has the same name as a jump table entry (e.g. PLOT, the routine at &e50a that `plot` at &fff0 jumps to), it has `_rom` added (`plot_rom`).
+* **Colours** stored in the VIC-II's colour registers or the text colour, as constants: `lda #colour_black : sta vic_border_colour`.
+* **Vectors set by the program** (e.g. `lda #<x : sta $0314 : lda #>x : sta $0315`, or with X and Y): the address is traced as code and named after the vector, e.g. `irq_handler` (or `irq_handler_2` etc. for more), with a comment, `; Set the IRQ vector to irq_handler`.
+* **The BASIC program** at &0801, if there is one (see `basic_program()` below).
+* **PETSCII** as the text encoding (see [Text encodings](#text-encodings)). Call `c64()` before marking any strings.
+
+Names are only used where nothing else names the address. An optional label isn't used if its name is given to another address (e.g. a control file's `label(0x0964, "key")` when Commodore's name for &ea31 is `key`), so the name isn't defined twice.
+
+:pencil:`commodore.basic_program(runtime_addr=0x0801)`
+
+Marks the tokenised BASIC program at `runtime_addr` (`c64()` does this for &0801), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
+
+```
+; 10 SYS2061
+basic_line_10
+    !word basic_end
+    !word 10
+    !byte $9e
+    !pet "2061"
+    !byte 0
+basic_end
+    !word 0
+```
+
+An address that SYS calls in the loaded data is traced as code, and named `sys_entry` unless it already has a name (so to name it yourself, do so before calling `c64()`). Returns the address after the program, or None if there isn't a BASIC program there.
+
+:pencil:`commodore.is_cartridge()`
+
+For a cartridge loaded at &8000: names its header (the cold and warm start vectors, and the `CBM80` signature), and traces the code they point to.
+
+:pencil:`commodore.kernal_rom()` and :pencil:`commodore.basic_rom()`
+
+For disassembling a Kernal ROM (at &e000) or BASIC ROM (at &a000) itself: trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors. examples/python/open_roms_kernal.py and open_roms_basic.py disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
+
 ## JSON output
 
 As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: for example a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
@@ -553,4 +618,6 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 ## Credits and thanks
 
 * py8dis is heavily influenced by Phill Harvey-Smith's [BeebDis](https://github.com/prime6809/BeebDis); I've tried to model py8dis commands on BeebDis where possible.
+* The Commodore 64's names, Kernal calls and ROM labels in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoreromlabels.py`).
+* The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).
 * TobyLobster has contributed numerous improvements to py8dis, including refactoring, code clean up, local label support and constant substitution, as well as making many helpful suggestions.

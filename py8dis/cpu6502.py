@@ -78,6 +78,11 @@ class SubConst:
                     return opcode_key
 
     def get_operand_value(self):
+        # A hex address (no name starts with '&' or '$', so this is what the
+        # lookups below would give, without searching the labels)
+        if self.operand[0] in "&$":
+            return int(self.operand[1:], 16)
+
         # Look up label
         result = labelmanager.addr(self.operand)
         if result is not None:

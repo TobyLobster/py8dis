@@ -14,6 +14,9 @@ z88dk-z80asm -m8080 -b -o../orig/undocumented_8080.orig undocumented_8080.asm
 acme -f cbm -o ../orig/prg_test.orig prg_test.asm
 acme -o ../orig/undocumented_6502.orig undocumented_6502.asm
 acme -o ../orig/petscii_test.orig petscii_test.asm
+acme -f cbm -o ../orig/c64_test.orig c64_test.asm
+cp ../orig/c64_test.orig ../orig/c64_names_test.orig
+acme -o ../orig/cartridge_test.orig cartridge_test.asm
 # The same program in a PC64 P00 file: a 26 byte header ("C64File", 0, the
 # 16 character name padded with zeros, 0, 0) then the PRG file; and its data
 # without the PRG header, for load_offset
@@ -21,6 +24,6 @@ acme -o ../orig/petscii_test.orig petscii_test.asm
 cp ../orig/prg_test.orig ../orig/p00_test.orig
 dd if=../orig/prg_test.orig of=../orig/load_offset.orig bs=1 skip=2
 cd ..
-md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig orig/prg_test.orig orig/p00_test.p00 orig/p00_test.orig orig/load_offset.orig orig/undocumented_6502.orig orig/petscii_test.orig
+md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig orig/prg_test.orig orig/p00_test.p00 orig/p00_test.orig orig/load_offset.orig orig/undocumented_6502.orig orig/petscii_test.orig orig/c64_test.orig orig/c64_names_test.orig orig/cartridge_test.orig
 ./go
 cd asm_to_create_test_binaries
