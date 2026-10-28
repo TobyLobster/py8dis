@@ -100,8 +100,11 @@ for addr, name in {
     label(addr, name)
 
 # Its variables
-byte(0x2000, 0x12)
+byte(0x2000, 1, 0x12)
 word(0x2012)
+
+expr(0x2134, "handler_table+1")
+expr(0x2137, "jump_addr+1")
 
 # The keys it reads, and the routines for them: it looks the key up in
 # key_table, then jumps through handler_table
@@ -116,4 +119,7 @@ label(0x4000, "chr_dat3")       # "You Win!"
 byte(0x3000, 0x3800 - 0x3000, cols=16)
 byte(0x3800, 0x4000 - 0x3800, cols=16)
 byte(0x4000, 0x47d0 - 0x4000, cols=16)
+word(0x251f, 17, 1)
+word(0x2541, 2, 1)
+word(0x2545, 32, 2)
 go()
