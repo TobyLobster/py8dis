@@ -65,6 +65,14 @@ class Assembler:
         some contexts."""
         return text
 
+    def wrapped_branch_operand(self, label, offset):
+        """The operand of a relative branch whose target wraps round the top
+        or bottom of memory (e.g. a branch back from &0002 to &fff2), given
+        the label at the target and the offset from the branch to the
+        target as if it didn't wrap (e.g. -16). acme and xa wrap the target
+        like the 6502, so the label will do."""
+        return label
+
     def can_force_absolute(self):
         """Can the assembler be told to use absolute addressing for an
         instruction whose operand is a zero page address? (See

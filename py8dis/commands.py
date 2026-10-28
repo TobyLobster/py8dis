@@ -659,13 +659,6 @@ def byte(runtime_addr, n=1, cols=None):
     _check_not_classified("byte", runtime_addr, binary_loc.binary_addr, n)
     classification.add_classification(binary_loc.binary_addr, classification.Byte(n, cols=cols))
 
-# TODO: byte()/word() should probably optionally (via an optional arg or a variant function)
-# allow the user to specify a format hint for the range without having to make a separate call
-# to the relevant formatter function with the same arguments. Just maybe an optional argument
-# "format_command=None" where we do "if format_command is not None: format_command(runtime_addr, n)"
-# would work, then you could do "word(0x432, 4, picture_binary)" (if we squeezed formatter in before
-# warn=True argument; this is all getting a smidge messy, especially if the user is forced to specify
-# 1 for the n argument) - anyway, think about it...
 def word(runtime_addr, n=1, cols=None):
     """Categorise a number of 16 bit words at the given address as word data."""
 
@@ -1071,6 +1064,10 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
 
     # Trace where code lives
     session.current().cpu.trace()
+
+    # Zero page labels used by zero page instructions before they'd be defined
+    # inline are defined at the top instead
+    disassembly.define_forward_zero_page_labels_first()
 
     # Make sure local label names don't clash (before label names are finalised)
     labelmanager.assign_local_label_output_names()

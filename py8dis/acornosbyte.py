@@ -646,7 +646,6 @@ def write_cmos(call):
             com = "Master and Compact: Write to the " + name_of_byte + " byte from CMOS RAM/EEPROM (X=" + str(by) + ")"
         else:
             com = "Master and Compact: Write to CMOS RAM/EEPROM byte X=" + str(by)
-        # TODO: Decode which byte to read and what it means, NUAG P357
     com += " with value Y"
     if call.y is not None:
         com += "=" + str(call.y)

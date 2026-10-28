@@ -139,12 +139,12 @@ class Z88DK(assembler.Assembler):
 
     def pseudopc_start(self, dest, source, length, move_id):
         """Used when assembling code at a different address to where it will
-        actually execute. Sadly, z88dk does not support this."""
-        return [utils.force_case("; TODO: !pseudopc %s {" % self.hex(dest))]
+        actually execute: z88dk-z80asm's PHASE, which assembles the code
+        that follows for the given address."""
+        return [utils.make_indent(1) + utils.force_case("PHASE") + " " + self.hex(dest)]
 
     def pseudopc_end(self, dest, source, length, move_id):
-        # Sadly, z88dk does not support this
-        return ["; TODO: }", ""]
+        return [utils.make_indent(1) + utils.force_case("DEPHASE"), ""]
 
     def disassembly_end(self):
         """Output assertions at the end of the disassembly"""
@@ -206,4 +206,4 @@ class Z88DK(assembler.Assembler):
         return True
 
     def include_binary_file(self, binary_filepath):
-        return  "; TODO:"
+        return utils.make_indent(1) + utils.force_case("BINARY") + ' "' + binary_filepath + '"'

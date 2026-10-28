@@ -145,8 +145,9 @@ def uint_formatter(n, bits, pad=False):
     if n < 10:
         s = "%d" % n
         if pad:
-            # TODO: This padding assumes hex2() and hex4() use a single-character hex prefix.
-            s = ("     " + s)[-3 if bits == 8 else -5:]
+            # (To the width of a hex number, e.g. '$12' or '$1234')
+            assembler = config.get_assembler()
+            s = s.rjust(len(assembler.hex2(0) if bits == 8 else assembler.hex4(0)))
         return s
     if bits == 8:
         return config.get_assembler().hex2(n)

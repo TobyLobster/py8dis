@@ -91,18 +91,16 @@ class _InsideAClassification:
 
 INSIDE_A_CLASSIFICATION = _InsideAClassification()
 
-# ENHANCE: At the moment there's no support for wrapping round at the top of
-# memory and we might just crash (probably with an out-of-bounds error) if
-# disassembling right up to the top of memory.
-
 class Byte:
     """Object used to mark part of the binary data as bytes."""
 
-    def __init__(self, length, cols=None):
+    def __init__(self, length, cols=None, auto_generated=False):
         assert length > 0
         assert cols is None or cols > 0
         self._length = length
         self._cols = cols
+        # (True for the bytes left over once everything else is classified)
+        self.auto_generated = auto_generated
 
     def length(self):
         return self._length
@@ -151,6 +149,8 @@ class String:
         self._length = length
         self.encoding = encoding if encoding is not None else textencoding.current()
         self._caller = utils.find_external_callstack()
+        # (True for a string found by autostring())
+        self.auto_generated = False
 
     def length(self):
         return self._length
@@ -240,9 +240,8 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     (because an auto_generated expression wasn't added)."""
 
     expressions = session.current().classifications.expressions
-    assert not isinstance(s, labelmanager.label_module.Label) # TODO!?
+    assert not isinstance(s, labelmanager.label_module.Label)
     s = expression.to_expr(s)
-    # TODO: Warn/assert if binary_addr already in expressions? Allow overriding this via an optional bool argument?
     has_existing_expr = binary_addr in expressions
     suppressed = auto_generated and (binary_addr in session.current().trace.no_auto_comment_set)
     if (force or not has_existing_expr) and not suppressed:
@@ -408,12 +407,14 @@ def split_classification(binary_addr, *, warn):
     if classifications[binary_addr] is not INSIDE_A_CLASSIFICATION:
         return
 
-    # TODO: Do we need to check and not warn if this is just an automatic string/byte classification?
-    if warn:
-        utils.warn("move boundary at binary address {0} splits a classification".format(config.get_assembler().hex(binary_addr)))
     split_addr = binary_addr
     while classifications[binary_addr] is INSIDE_A_CLASSIFICATION:
         binary_addr -= 1
+
+    # (Not for bytes or a string py8dis classified itself, which can be split
+    # without losing anything)
+    if warn and not getattr(classifications[binary_addr], "auto_generated", False):
+        utils.warn("move boundary at binary address {0} splits a classification".format(config.get_assembler().hex(split_addr)))
 
     # classify as bytes
     first_split_length = split_addr - binary_addr
@@ -439,7 +440,7 @@ def classify_leftovers():
                 if (binary_addr + i) >= memory_size or movemanager.b2r(BinaryAddr(binary_addr + i)) in labels:
                     break
             if i > 0:
-                add_classification(BinaryAddr(binary_addr), Byte(i))
+                add_classification(BinaryAddr(binary_addr), Byte(i, auto_generated=True))
             binary_addr += max(1, i)
 
 def _is_loaded(binary_addr):
@@ -642,6 +643,9 @@ def autostring(min_length=3):
             i = 0
             while (binary_addr + i) < memory_size and memory_binary[binary_addr + i] is not None and classifications[binary_addr + i] is None and memory_binary[binary_addr + i] in printable:
                 i += 1
+                if binary_addr + i >= memory_size:
+                    # (The top of memory)
+                    break
                 runtime_addr = movemanager.b2r(BinaryAddr(binary_addr + i))
 
                 # We end the classification here if there is a label (that is not an expression)
@@ -653,6 +657,7 @@ def autostring(min_length=3):
             if i >= min_length:
                 assert not is_classified(binary_addr, i)
                 string_binary(BinaryAddr(binary_addr), i)
+                classifications[binary_addr].auto_generated = True
             binary_addr += max(1, i)
 
 def include_binary_file(binary_addr, relative_filepath):

@@ -14,11 +14,8 @@ class Cpu65C02(Cpu6502):
         # code probably won't be executing them and it's probably
         # better to reduce the chances of arbitrary data being traced
         # as code.
-        # ENHANCE: All the same, it might be nice to allow the user to
-        # opt in to disassembling these.
-        #
-        # On the 6502 undocumented opcodes are sometimes used. Perhaps
-        # allow them too: e.g. Zalaga uses undocumented opcodes.
+        # (A user could perhaps opt in to them, as the 6502's undocumented
+        # opcodes are the "6510" CPU: see cpu6510.py.)
 
         # Each opcode is categorised by how it affects A:
         #
@@ -88,8 +85,8 @@ class Cpu65C02(Cpu6502):
             super().__init__(instruction_template, reg_change, cycles=cycles)
 
         def target(self, binary_addr):
-            base = movemanager.b2r(binary_addr)
-            return RuntimeAddr(base + 2 + utils.signed8(memorymanager.get_u8_binary(binary_addr + 1)))
+            # (Like the 6502, wrapping round the top or bottom of memory)
+            return RuntimeAddr(branch_target(binary_addr) & 0xffff)
 
         def abs_operand(self, binary_addr):
             return self.target(binary_addr)
@@ -107,8 +104,7 @@ class Cpu65C02(Cpu6502):
             return [None] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
 
         def instruction(self, binary_addr):
-            label = disassembly.get_label(self.target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-            return output.Instruction(self.mnemonic, label)
+            return branch_operand(self.mnemonic, binary_addr, self.target(binary_addr))
 
 
     class OpcodeJmpAbsX(Cpu6502.OpcodeAbs):

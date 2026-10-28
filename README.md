@@ -233,6 +233,8 @@ def my_label_maker(d):
         d.replace("read + 1", "hiscoreaddr + 1")
 ```
 
+The hook is called once for each place a label is used or defined, so for a label used in many places it's called many times. It should decide from the `LabelMakingData` it's given (the address, where the label is used, the suggested name), not from how many times it's been called or in what order.
+
 ### Constants
 
 :pencil:`constant(value, name, comment=None, align=Align.INLINE, format=Format.DEFAULT)`

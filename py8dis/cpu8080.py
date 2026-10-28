@@ -268,18 +268,11 @@ class Cpu8080(cpu.Cpu):
     def __init__(self):
         super().__init__()
 
-        #TODO: self.code_analysis_fns.append(subroutine_argument_finder)
-
         # For labelling ret instructions numerically
         self.return_index = 0
         self.return_array = {}
 
         # indent_level_dict has binary addresses as the keys, and indent amounts as the values.
-
-        # TODO: indent_level_dict is a bit of a hack (after all, arguably
-        # byte/word directives etc should have it too) and should
-        # probably be handled at a higher level by the code controlling
-        # emission of text disassembly output
         self.indent_level_dict = collections.defaultdict(int)
 
         self.opcodes = {
@@ -923,7 +916,6 @@ class Cpu8080(cpu.Cpu):
     def is_branch_to(self, binary_addr, target_runtime_addr):
         c = classification.get_classification(binary_addr)
 
-        # TODO: hacky use of isinstance()
         if isinstance(c, self.OpcodeConditionalBranch):
             return c._target(binary_addr) == target_runtime_addr
         return False

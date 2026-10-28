@@ -585,7 +585,6 @@ def oscli_hook(runtime_addr, state, subroutine):
     y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
     xy_addr(x_addr_optimistic, y_addr_optimistic)
 
-# ENHANCE: Split this up somehow into "tube or host" and "just host"?
 def memory_regions():
     """Name the regions of the Acorn machines' memory, to group the list of
     memory locations at the top of the output (see memory_region()). (Called
@@ -676,7 +675,8 @@ def is_sideways_rom():
 
     if not classification.is_classified(0x8000 + copyright_offset + 1):
         stringz(0x8000 + copyright_offset + 1)
-    # ENHANCE: We could recognise tube transfer/relocation data in header
+    # ENHANCE: If bit 5 of the ROM type is set, a Tube relocation address
+    # follows the copyright string, which could be labelled.
 
 def label_tube(base, name):
     optional_label(base + 0, "tube_%s_r1_status" % name, definable_inline=False)

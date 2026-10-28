@@ -60,6 +60,7 @@ TESTS = [
     ("test8080",                 ["z88dk-8080"],               "testing the whole 8080 instruction set"),
     ("regression_tests_8080",    ["z88dk-8080"],               "regression tests for z88dk expression operators"),
     ("undocumented_8080",        ["z88dk-8080"],               "the 8080's undocumented opcodes, traced as what they run as and output as data"),
+    ("move_8080",                ["z88dk-8080"],               "move() and include_binary_file() with z88dk-z80asm (PHASE and BINARY)"),
 
     # 6502 code: tests
     ("include_binary_file",      ["acme", "beebasm", "xa"],    "tests for including a binary file"),
@@ -79,6 +80,9 @@ TESTS = [
     ("move2_legacy_label_maker", ["acme", "beebasm", "xa"],    "move2 with a legacy label maker hook choosing a move"),
     ("move_from_top_of_memory",  ["acme", "beebasm", "xa"],    "a move() whose source ends at &10000"),
     ("move_to_top_of_memory",    ["acme", "beebasm", "xa"],    "a move() whose destination ends at &10000"),
+    ("top_of_memory",            ["acme", "beebasm", "xa"],    "code at the top of memory, and a branch that wraps round to zero page"),
+    ("top_of_memory_string",     ["acme", "beebasm", "xa"],    "a string found by autostring() that runs up to &ffff"),
+    ("bottom_of_memory",         ["acme", "beebasm", "xa"],    "a branch that wraps round below &0000"),
     ("split",                    ["acme", "beebasm", "xa"],    "loads *two* binary files to disassemble"),
     ("subroutine_test",          ["acme", "beebasm", "xa"],    "demonstrates the use of the subroutine() command"),
     ("regression_tests",         ["acme", "beebasm", "xa"],    "regression tests for fixed bugs"),
@@ -158,6 +162,7 @@ ERROR_TESTS = [
 # give this warning (as one line of its error output).
 WARNING_TESTS = [
     ("load_prg_file",           "warning: load(&07ff, 'build/load_prg_file.prg'): this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg('build/load_prg_file.prg') loads it at that address without them"),
+    ("move_splits_data",        "warning: move boundary at binary address &3002 splits a classification"),
 ]
 
 # The program each assembler needs

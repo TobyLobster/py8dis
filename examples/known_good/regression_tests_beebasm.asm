@@ -13,24 +13,25 @@ temp    = &0071
 temp_2  = &0072
 
 ; Other
-l0073   = &0073
-l03a0   = &03a0
+store_target = &0073
+c00c0       = &00c0
+l03a0       = &03a0
 
     org &2000
 
 .pydis_start
 .start
     ldy #3                                                            ; 2000: a0 03       ..
-    lda #7                                                            ; 2002: a9 07       .. ; A=value to store
-    jsr store_value                                                   ; 2004: 20 2f 20     / ; Store a value
+    lda #7                                                            ; 2002: a9 07       ..             ; A=value to store
+    jsr store_value                                                   ; 2004: 20 2f 20     /             ; Store a value
     stx temp                                                          ; 2007: 86 71       .q
-    sty temp_2                                                        ; 2009: 84 72       .r ; Y=count
-    jsr quiet_routine                                                 ; 200b: 20 36 20     6 ; Calls quiet_routine ; quiet_routine is quiet
+    sty temp_2                                                        ; 2009: 84 72       .r             ; Y=count
+    jsr quiet_routine                                                 ; 200b: 20 36 20     6             ; Calls quiet_routine ; quiet_routine is quiet
     lda #5                                                            ; 200e: a9 05       ..
     sec                                                               ; 2010: 38          8
     and (l0070,x)                                                     ; 2011: 21 70       !p
     tay                                                               ; 2013: a8          .
-    adc #1                                                            ; 2014: 69 01       i. ; Carry is set, so adding 2
+    adc #1                                                            ; 2014: 69 01       i.             ; Carry is set, so adding 2
     lda value                                                         ; 2016: a5 70       .p
     ldx #0                                                            ; 2018: a2 00       ..
     and #&ff                                                          ; 201a: 29 ff       ).
@@ -75,20 +76,46 @@ l03a0   = &03a0
     ; Found by a snippet with a wildcard
     ldy #3                                                            ; 2037: a0 03       ..
     cpx #4                                                            ; 2039: e0 04       ..
-    sta l0073                                                         ; 203b: 85 73       .s
+    sta store_target                                                  ; 203b: 85 73       .s
     rts                                                               ; 203d: 60          `
 
 .mid_instruction_snippet
     bit l03a0                                                         ; 203e: 2c a0 03    ,..
     cpx #4                                                            ; 2041: e0 04       ..
-    sta l0073                                                         ; 2043: 85 73       .s
+    sta store_target                                                  ; 2043: 85 73       .s
     rts                                                               ; 2045: 60          `
 
-    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 2046: ea ea ea... ...
-    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 2052: ea ea ea... ...
-    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 205e: ea ea ea... ...
-    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 206a: ea ea ea... ...
-    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea             ; 2076: ea ea ea... ...
+.zp_code_user
+    lda c00c0                                                         ; 2046: a5 c0       ..
+    jmp c00c0                                                         ; 2048: 4c c0 00    L..
+
+
+; Move 1: &204b to &c0 for length 3
+    org &c0
+; &204b referenced 2 times by &2046, &2048
+l00c1 = c00c0+1
+    inc l00c1                                                         ; 204b: e6 c1       ..  :00c0[1]
+; &204c referenced 1 time by &00c0[1]
+    rts                                                               ; 204d: 60          `   :00c2[1]
+
+
+    ; Copy the newly assembled block of code back to its proper place in the binary
+    ; file.
+    ; (Note the parameter order: 'copyblock <start>,<end>,<dest>')
+    copyblock &00c0, *, &204b
+
+    ; Clear the area of memory we just temporarily used to assemble the new block,
+    ; allowing us to assemble there again if needed
+    clear &00c0, &00c3
+
+    ; Set the program counter to the next position in the binary file.
+    org &204b + (* - &00c0)
+
+    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 204e: ea ea ea... ...
+    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 205a: ea ea ea... ...
+    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 2066: ea ea ea... ...
+    equb &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea, &ea   ; 2072: ea ea ea... ...
+    equb &ea, &ea                                                     ; 207e: ea ea       ..
 
 .part2
     jsr store_value                                                   ; 2080: 20 2f 20     /
@@ -113,9 +140,11 @@ save pydis_start, pydis_end
 ; Label references by decreasing frequency:
 ;     l0070:           4
 ;     value:           4
+;     c00c0:           2
 ;     c202c:           2
-;     l0073:           2
+;     store_target:    2
 ;     store_value:     2
+;     l00c1:           1
 ;     l03a0:           1
 ;     part2:           1
 ;     quiet_routine:   1
@@ -123,21 +152,22 @@ save pydis_start, pydis_end
 ;     temp_2:          1
 
 ; Automatically generated labels:
+;     c00c0
 ;     c202c
 ;     l0000
 ;     l0070
-;     l0073
+;     l00c1
 ;     l03a0
 ;     l2085
 
 ; Stats:
 ;
 ;     Total size (Code + Data) = 140 bytes
-;     Code                     = 74 bytes (53%)
-;     Data                     = 66 bytes (47%)
+;     Code                     = 82 bytes (59%)
+;     Data                     = 58 bytes (41%)
 ;
-;     Number of instructions   = 39
-;     Number of data bytes     = 61 bytes
+;     Number of instructions   = 43
+;     Number of data bytes     = 53 bytes
 ;     Number of data words     = 2 bytes
 ;     Number of string bytes   = 3 bytes
 ;     Number of strings        = 1

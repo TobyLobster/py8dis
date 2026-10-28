@@ -161,7 +161,7 @@ def move_ids_for_runtime_addr(runtime_addr):
     if moves.cache_move_definitions_len is None or len(moves.move_definitions) != moves.cache_move_definitions_len:
         moves.cache = collections.defaultdict(set)
         for binary_addr, move_id in enumerate(moves.move_id_for_binary_addr):
-            if move_id != BASE_MOVE_ID: # TODO: special case feels a bit awkward
+            if move_id != BASE_MOVE_ID:
                 moves.cache[b2r(BinaryAddr(binary_addr))].add(move_id)
         moves.cache_move_definitions_len = len(moves.move_definitions)
     return moves.cache[runtime_addr]
@@ -221,7 +221,6 @@ def r2b(runtime_addr, specific_move_id=None, debug=False):
         return (md.convert_runtime_to_binary_addr(runtime_addr), specific_move_id)
     return (None, None)
 
-# TODO: Maybe use this in more places
 def r2b_checked(runtime_addr):
     """As r2b() but with checks for an unambiguous result."""
 

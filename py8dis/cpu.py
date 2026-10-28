@@ -66,10 +66,18 @@ class Cpu:
 
         memory_binary = session.current().memory.binary
         assert isinstance(binary_addr, memorymanager.BinaryAddr)
+
+        # Tracing stops at the top of memory (rather than wrapping round to
+        # &0000), as it does at the end of the loaded data
+        if binary_addr >= 0x10000:
+            return [None]
         opcode_value = memory_binary[binary_addr]
         if opcode_value not in self.opcodes:
             return [None]
         opcode = self.opcodes[opcode_value]
+        # (An instruction that would run past the top of memory isn't one)
+        if binary_addr + opcode.length() > 0x10000:
+            return [None]
 
         with session.current().moves.move_id_for_binary_addr[binary_addr] as move_id:
             binary_loc = BinaryLocation(binary_addr, move_id)

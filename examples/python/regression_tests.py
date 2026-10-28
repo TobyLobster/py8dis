@@ -3,7 +3,7 @@
 
 from commands import *
 
-load(0x2000, "orig/regression_tests1.orig", "6502", "b31f72fa7656b3705825819c536046ee")
+load(0x2000, "orig/regression_tests1.orig", "6502", "3e56e4b098abd910a888da106e89d503")
 
 # An entry point added *before* a second load() must not be forgotten
 entry(0x2000, "start")
@@ -87,5 +87,22 @@ snippets6502.register_comment_code_snippet("Found by a snippet with a wildcard",
 # are now matched once the code has been traced, and a match that starts
 # inside an instruction is ignored.
 entry(0x203e, "mid_instruction_snippet")
+
+# Code copied to zero page, at &c0, and used before it in the output by a
+# zero page instruction ('lda zp_code'). Its label used to be defined inline,
+# after that use, so the assemblers took it to be an absolute address, making
+# the instruction a byte longer. It's now defined at the top.
+move(0xc0, 0x204b, 3)
+entry(0x2046, "zp_code_user")
+
+# An optional label whose name is relative to another address's ('scratch-1'
+# for &73, with 'scratch' at &74), renamed by the label maker hook: 'scratch'
+# used to be defined too, though nothing used it.
+optional_label(0x74, "scratch")
+optional_label(0x73, "scratch-1", 0x74)
+def label_maker_hook(lmd):
+    if lmd.defined_as_runtime_addr == 0x73:
+        lmd.name = "store_target"
+set_label_maker_hook(label_maker_hook)
 
 go()

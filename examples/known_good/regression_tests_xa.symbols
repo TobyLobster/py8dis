@@ -3,7 +3,9 @@ comadd 70,l0070
 comadd 70,value
 comadd 71,temp
 comadd 72,temp_2
-comadd 73,l0073
+comadd 73,store_target
+comadd c0,c00c0
+comadd c1,l00c1
 comadd 3a0,l03a0
 comadd 2000,pydis_start
 comadd 2000,start
@@ -11,6 +13,7 @@ comadd 202c,c202c
 comadd 202f,store_value
 comadd 2036,quiet_routine
 comadd 203e,mid_instruction_snippet
+comadd 2046,zp_code_user
 comadd 2080,part2
 comadd 2085,l2085
 comadd 208c,pydis_end

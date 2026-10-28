@@ -105,7 +105,6 @@ def notify_emit_opportunity(runtime_addr, move_id):
     emit_opportunities[runtime_addr].add(move_id)
 
 def addr(label_name):
-    # TODO: Ultra-inefficient implementation, optimise!
     labels = session.current().labels.labels
     for addr, label in sorted(labels.items()):
         # Check explicit label names

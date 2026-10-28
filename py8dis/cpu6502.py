@@ -88,7 +88,6 @@ class SubConst:
         if result is not None:
             return result
 
-        # TODO: Optimise!
         for addr in session.current().disassembly.optional_labels:
             if session.current().disassembly.optional_labels[addr].name == self.operand:
                 return addr
@@ -405,6 +404,20 @@ class CpuStateDisposition:
     def __str__(self):
         return self.__repl__()
 
+def branch_target(binary_addr):
+    """The target of the relative branch at binary_addr, without wrapping
+    round the top or bottom of memory (so it can be below 0 or above &ffff)."""
+    return movemanager.b2r(binary_addr) + 2 + utils.signed8(memorymanager.get_u8_binary(binary_addr + 1))
+
+def branch_operand(mnemonic, binary_addr, target):
+    """The output for the relative branch at binary_addr to the (wrapped)
+    target."""
+    label = disassembly.get_label(target, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+    unwrapped = branch_target(binary_addr)
+    if not 0 <= unwrapped < 0x10000:
+        label = config.get_assembler().wrapped_branch_operand(label, unwrapped - movemanager.b2r(binary_addr))
+    return output.Instruction(mnemonic, label)
+
 class Cpu6502(cpu.Cpu):
     """Class representing a 6502 CPU"""
 
@@ -475,7 +488,7 @@ class Cpu6502(cpu.Cpu):
 
         self.EMPTY_STATE = self.CpuState()
 
-        self.code_analysis_fns.append(self.subroutine_argument_finder)  # TODO: For the subroutine() command? Is this used?
+        self.code_analysis_fns.append(self.subroutine_argument_finder)  # For trace.subroutine_argument_finder_hooks (see subroutine_argument_finder())
         self.code_analysis_fns.append(self.substitute_constants)        # If a subroutine is being called, we can infer context of initialising registers beforehand.
         self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
         self.code_analysis_fns.append(self.show_register_knowledge)     # Show places where we use an inferred value of a register.
@@ -485,11 +498,6 @@ class Cpu6502(cpu.Cpu):
         self.return_array = {}
 
         # indent_level_dict has binary addresses as the keys, and indent values as the values.
-
-        # TODO: indent_level_dict is a bit of a hack (after all, arguably
-        # byte/word directives etc should have it too) and should
-        # probably be handled at a higher level by the code controlling
-        # emission of text disassembly output
         self.indent_level_dict = collections.defaultdict(int)
 
         # Each opcode is categorised by how it affects A:
@@ -1111,14 +1119,10 @@ class Cpu6502(cpu.Cpu):
             return [binary_loc.binary_addr + 2]
 
         def instruction(self, binary_addr):
+            # (A label used here must be defined before this instruction, or
+            # the assembler would take it to be an absolute address: see
+            # disassembly.define_forward_zero_page_labels_first())
             address_string = classification.get_address8(binary_addr + 1)
-            # TODO: We should avoid misassembly of a zp instruction by mistakenly
-            # using a label with an absolute address. But we don't have the
-            # technology to fix it automatically.
-            # If the address string is a label name that has not yet been output,
-            # then it's a forward reference, but we can't tell which label name
-            # is to be used until the LazyStrings have been evaluated to the final
-            # label name.
             return output.Instruction(self.mnemonic, address_string, prefix=self.prefix, suffix=self.suffix)
 
 
@@ -1144,10 +1148,8 @@ class Cpu6502(cpu.Cpu):
             # code. If we don't cope with them, bytes get lost and the disassembly
             # can't be correctly reassembled into a binary matching the input.)
 
-            # ENHANCE: If we could evaluate expressions, *and*
-            # (unlikely) we don't fail at disassembly time when we spot the
-            # mismatch, we should force absolute addressing if the expression is a
-            # zero page value and the value in the input is not.
+            # (An expression for the operand must have the operand's value: see
+            # classification.check_expr(). So the value decides it.)
             operand = classification.get_address16(binary_addr + 1)
             if not self.has_zp_version() or memorymanager.get_u16_binary(binary_addr + 1) >= 0x100:
                 return output.Instruction(self.mnemonic, operand, prefix=self.prefix, suffix=self.suffix)
@@ -1280,8 +1282,8 @@ class Cpu6502(cpu.Cpu):
             super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
 
         def target(self, binary_addr):
-            base = movemanager.b2r(binary_addr)
-            return memorymanager.RuntimeAddr(base + 2 + utils.signed8(memorymanager.get_u8_binary(binary_addr + 1)))
+            # (Like the 6502, wrapping round the top or bottom of memory)
+            return memorymanager.RuntimeAddr(branch_target(binary_addr) & 0xffff)
 
         def abs_operand(self, binary_addr):
             return self.target(binary_addr)
@@ -1333,8 +1335,7 @@ class Cpu6502(cpu.Cpu):
                     state.clear(pessimistic_only=False)
 
         def instruction(self, binary_addr):
-            label = disassembly.get_label(self.target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-            return output.Instruction(self.mnemonic, label)
+            return branch_operand(self.mnemonic, binary_addr, self.target(binary_addr))
 
 
     def make_update_flag(self, flag, b):
@@ -1455,7 +1456,6 @@ class Cpu6502(cpu.Cpu):
 
         c = classification.get_classification(binary_addr)
 
-        # TODO: hacky use of isinstance()
         if isinstance(c, self.OpcodeConditionalBranch):
             return c.target(binary_addr) == target_runtime_addr
         if isinstance(c, self.OpcodeJmpAbs):
@@ -1468,6 +1468,12 @@ class Cpu6502(cpu.Cpu):
     # that the sequence might *also* be entered part-way through via a
     # label doesn't invalidate that inference.
     def subroutine_argument_finder(self):
+        """Call each of the hooks in trace.subroutine_argument_finder_hooks
+        for each JSR or JMP, with the target and the values of A, X and Y
+        if they were loaded with immediate values (or None), until one
+        returns something other than None. There's no command for these
+        hooks: a control file can append them to the list (which older
+        control files may do), and none do in the examples."""
         memory_binary = session.current().memory.binary
         if len(session.current().trace.subroutine_argument_finder_hooks) == 0:
             return

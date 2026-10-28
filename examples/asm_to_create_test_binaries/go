@@ -11,6 +11,8 @@ dd if=../orig/regression_tests.orig of=../orig/regression_tests1.orig bs=128 cou
 dd if=../orig/regression_tests.orig of=../orig/regression_tests2.orig bs=128 skip=1
 z88dk-z80asm -m8080 -b -o../orig/regression_tests_8080.orig regression_tests_8080.asm
 z88dk-z80asm -m8080 -b -o../orig/undocumented_8080.orig undocumented_8080.asm
+z88dk-z80asm -m8080 -b -o../orig/move_8080.orig move_8080.asm
+dd if=../orig/move_8080.orig of=../orig/move_8080_table.bin bs=1 skip=32
 acme -f cbm -o ../orig/prg_test.orig prg_test.asm
 acme -o ../orig/undocumented_6502.orig undocumented_6502.asm
 acme -o ../orig/petscii_test.orig petscii_test.asm
@@ -22,6 +24,9 @@ acme -f cbm -DEXPANDED=1 -o ../orig/vic20_8k_test.orig vic20_test.asm
 acme -o ../orig/vic20_cartridge_test.orig vic20_cartridge_test.asm
 acme -f cbm -o ../orig/c128_test.orig c128_test.asm
 acme -f cbm -o ../orig/plus4_test.orig plus4_test.asm
+acme -o ../orig/top_of_memory.orig top_of_memory.asm
+cp ../orig/top_of_memory.orig ../orig/top_of_memory_string.orig
+acme -o ../orig/bottom_of_memory.orig bottom_of_memory.asm
 # The same program in a PC64 P00 file: a 26 byte header ("C64File", 0, the
 # 16 character name padded with zeros, 0, 0) then the PRG file; and its data
 # without the PRG header, for load_offset
@@ -29,6 +34,6 @@ acme -f cbm -o ../orig/plus4_test.orig plus4_test.asm
 cp ../orig/prg_test.orig ../orig/p00_test.orig
 dd if=../orig/prg_test.orig of=../orig/load_offset.orig bs=1 skip=2
 cd ..
-md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig orig/prg_test.orig orig/p00_test.p00 orig/p00_test.orig orig/load_offset.orig orig/undocumented_6502.orig orig/petscii_test.orig orig/c64_test.orig orig/c64_names_test.orig orig/cartridge_test.orig orig/vic20_test.orig orig/vic20_8k_test.orig orig/vic20_cartridge_test.orig orig/c128_test.orig orig/plus4_test.orig
+md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig orig/move_8080.orig orig/move_8080_table.bin orig/prg_test.orig orig/p00_test.p00 orig/p00_test.orig orig/load_offset.orig orig/undocumented_6502.orig orig/petscii_test.orig orig/c64_test.orig orig/c64_names_test.orig orig/cartridge_test.orig orig/vic20_test.orig orig/vic20_8k_test.orig orig/vic20_cartridge_test.orig orig/c128_test.orig orig/plus4_test.orig orig/top_of_memory.orig orig/top_of_memory_string.orig orig/bottom_of_memory.orig
 ./go
 cd asm_to_create_test_binaries

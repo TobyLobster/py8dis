@@ -394,10 +394,6 @@ class DataBlock(Line):
         return self
 
     def render(self):
-        # TODO: We should also support "just emit with no padding or
-        # attempt to align columns but not spilling past data_width
-        # unless a single item forces it", a pseudo "word wrapping"
-        # style
         data = self.items()
         assembler = config.get_assembler()
         data_prefix = assembler.byte_prefix() if self.element_size == 1 else assembler.word_prefix()

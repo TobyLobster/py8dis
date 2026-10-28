@@ -197,22 +197,14 @@ class Beebasm(assembler.Assembler):
         # We will need some labels in pseudopc_end() but by then
         # it will be too late to create them, so do it now.
 
-        # TODO: The idea of including move_id here is to force the
-        # labels to be emitted "around" the pseudopc-emulation block,
-        # which is both more readable and necessary in some cases to
-        # avoid assembly problems where a label is not forward
-        # declared. It isn't working quite right yet.
+        # (With the move ID, so that the labels are defined around the
+        # block, where pseudopc_end() can use them without forward
+        # references.)
         disassembly.get_label(dest, source, move_id=move_id, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
         disassembly.get_label(dest + length, source, move_id=move_id, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
         disassembly.get_label(movemanager.RuntimeAddr(int(source)), source, move_id=move_id, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_DEFINITION)
         return result
 
-    # TODO: General comment - I've currently given up on generating
-    # "guard" for beebasm, I can probably do this later but on a "whole
-    # program" basis - note that guard sets m_aFlags[x], it is not a
-    # "guard=x" and there's only one such guard active at a time, so we
-    # need to set it at the end of distinct non-adjoining ranges (I
-    # think)
     def pseudopc_end(self, dest, source, length, move_id):
         memory_binary = session.current().memory.binary
         assert isinstance(dest, memorymanager.RuntimeAddr)
@@ -317,6 +309,11 @@ class Beebasm(assembler.Assembler):
             s += ' "%s", %s, pydis_end' % (output_filename, start)
         result.append(s)
         return result
+
+    def wrapped_branch_operand(self, label, offset):
+        # beebasm doesn't wrap a branch's target, but takes an address past
+        # the top or bottom of memory, so give it relative to the branch
+        return "P%{0:+d}".format(offset)
 
     def can_force_absolute(self):
         # Sadly beebasm doesn't currently have a way to do this.

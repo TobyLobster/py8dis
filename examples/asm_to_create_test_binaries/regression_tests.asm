@@ -73,6 +73,17 @@ mid_instruction_snippet
     sta $73
     rts
 
+    ; Code copied to zero page (the control file moves it to $c0), used
+    ; before it: the zero page label used to be defined inline in the moved
+    ; code, after 'lda zp_code', so the assemblers took that to be absolute
+    ; addressing (a byte longer).
+zp_code_user
+    lda $c0
+    jmp $c0
+zp_code
+    inc $c1
+    rts
+
     !fill $2080 - *, $ea
 
 ; ---------------------------------------------------------------------------

@@ -15,9 +15,16 @@ $0071  temp (local to $2007-$2008)
 $0072  temp_2 (local to $2009-$200a)
     $2009     pydis_start+9                sty temp_2
 
-$0073  l0073 (Memory locations: Other)
-    $203b     quiet_routine+5              sta l0073
-    $2043     mid_instruction_snippet+5    sta l0073
+$0073  store_target (Memory locations: Other)
+    $203b     quiet_routine+5              sta store_target
+    $2043     mid_instruction_snippet+5    sta store_target
+
+$00c0  c00c0 (Memory locations: Other)
+    $2046     zp_code_user                 lda c00c0
+    $2048     zp_code_user+2               jmp c00c0
+
+$00c1  l00c1 (relative to the item it's inside)
+    $00c0[1]                               inc l00c1
 
 $03a0  l03a0 (Memory locations: Other)
     $203e     mid_instruction_snippet      bit l03a0
@@ -37,6 +44,9 @@ $2036  quiet_routine (inline)
     $200b     pydis_start+11               jsr quiet_routine
 
 $203e  mid_instruction_snippet (inline)
+    (not referenced)
+
+$2046  zp_code_user (inline)
     (not referenced)
 
 $2080  part2 (inline)
