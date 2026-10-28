@@ -722,3 +722,366 @@ vic20_colour_registers = [0x0286]
 # c64ref's control_codes_vic-20.txt, which also leaves out $08 and $09, but
 # the VIC-20's Kernal source handles those as the C64's does)
 vic20_control_codes = {c: d for c, d in control_codes.items() if c not in (0x81, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b)}
+
+
+# ************************************************************************************************
+# The C128 and the Plus/4 (and C16). Their workspace is from Commodore's source
+# (commodoresource.py, which has hundreds of locations each). The
+# descriptive names are: a hand-written name below; else the C64's
+# descriptive name for a location with the same Commodore name (e.g.
+# 'txttab', BASIC's start, is 'basic_program_start' wherever it is), unless
+# it's listed below as meaning something else; else Commodore's name. (So
+# with names="descriptive", the less common locations still have
+# Commodore's names.)
+
+import commodoresource
+
+_c64_descriptive_names = dict(
+    [(l.commodore_name, l.name) for l in c64_ram_locations if l.commodore_name] +
+    [(v.commodore_name, v.name) for v in c64_vectors if v.commodore_name] +
+    [(l.commodore_name, l.name) for l in c64_more_ram_locations if l.commodore_name])
+
+def _workspace(declarations, descriptive_names):
+    """Locations for the workspace declared in Commodore's source, with the
+    descriptive names (None in descriptive_names means Commodore's)"""
+    result = []
+    for addr, size, commodore_name in declarations:
+        if addr in descriptive_names:
+            name = descriptive_names[addr] or commodore_name
+        else:
+            name = _c64_descriptive_names.get(commodore_name, commodore_name)
+        result.append(Location(addr, size, commodore_name, name))
+    return result
+
+# The C128's: its own locations, and those whose Commodore name is the C64's
+# for something else
+c128_descriptive_names = {
+    # JSRFAR/JMPFAR's (and the monitor's) registers
+    0x0002: "far_call_bank",
+    0x0003: "far_call_pc_high",
+    0x0004: "far_call_pc_low",
+    0x0005: "far_call_status",
+    0x0006: "far_call_a",
+    0x0007: "far_call_x",
+    0x0008: "far_call_y",
+    0x0009: "far_call_stack_pointer",
+    0x00c5: "tape_data",
+    0x00c6: "io_bank",
+    0x00c7: "filename_bank",
+    0x00ce: "primm_string_ptr",
+    0x00d7: "screen_mode_40_80",
+    0x00d8: "graphics_mode",
+    0x00d9: "vic_charset_rom_flag",
+    0x00e4: "window_bottom",
+    0x00e5: "window_top",
+    0x00e6: "window_left",
+    0x00e7: "window_right",
+    0x00ed: "screen_lines",
+    0x00ee: "screen_columns",
+    # The routines copied to RAM that reach any bank
+    0x02a2: "fetch_any_bank",
+    0x02af: "stash_any_bank",
+    0x02be: "compare_any_bank",
+    0x02cd: "jsrfar_routine",
+    0x02e3: "jmpfar_routine",
+    0x030c: "basic_escape_link_vector",
+    0x030e: "basic_escape_print_vector",
+    0x0310: "basic_escape_execute_vector",
+    0x0312: "basic_time_vector",
+    0x0314: "irq_vector",
+    0x0316: "brk_vector",
+    0x0318: "nmi_vector",
+    0x032e: "monitor_command_vector",
+    0x0334: "editor_control_vector",
+    0x0336: "editor_shift_vector",
+    0x0338: "editor_escape_vector",
+    0x033a: "editor_keyscan_vector",
+    0x033c: "editor_store_key_vector",
+    0x033e: "keyboard_decode_tables",
+    0x0a00: "system_restart_vector",
+    0x0a02: "kernal_init_status",
+    0x0a04: "reset_or_nmi_status",
+    0x0a07: "os_memory_end",
+    0x0a1c: "fast_serial_flag",
+    0x0a1d: "jiffy_countdown",
+    0x0a21: "pause_flag",
+    0x0a26: "vic_cursor_mode",
+    0x0a2c: "vic_screen_charset_base",
+    0x0a2d: "vic_bitmap_base",
+    0x0a2e: "vdc_screen_base",
+    0x0a2f: "vdc_attribute_base",
+    0x0a34: "vic_split_raster",
+    0x0a37: "saved_cpu_speed",
+    0x1000: "function_key_lengths",
+    0x100a: "function_key_strings",
+}
+
+# The Plus/4's
+plus4_descriptive_names = {
+    0x0000: "cpu_port_direction",
+    0x0001: "cpu_port",
+    0x00c6: None,                   # (a shift mode, not the C64's key pressed)
+    0x030c: "basic_escape_link_vector",
+    0x030e: "basic_escape_print_vector",
+    0x0310: "basic_escape_execute_vector",
+    0x0312: "basic_time_vector",
+    0x0333: "tape_buffer",
+    0x0567: "function_key_buffer",
+}
+
+c128_workspace_locations = _workspace(commodoresource.c128_workspace, c128_descriptive_names)
+plus4_workspace_locations = _workspace(commodoresource.plus4_workspace, plus4_descriptive_names)
+
+# The Kernal's RAM vectors, for the snippet that recognises a program setting
+# one: (address, description, handler name)
+def _vectors(locations, descriptions):
+    by_addr = {l.addr: l for l in locations}
+    return [VectorLocation(addr, by_addr[addr].commodore_name, by_addr[addr].name, description, handler)
+            for addr, description, handler in descriptions]
+
+c128_vectors = _vectors(c128_workspace_locations, [
+    (0x0314, "IRQ vector", "irq_handler"),
+    (0x0316, "BRK vector", "brk_handler"),
+    (0x0318, "NMI vector", "nmi_handler"),
+    (0x031a, "OPEN vector", "open_handler"),
+    (0x031c, "CLOSE vector", "close_handler"),
+    (0x031e, "CHKIN vector", "chkin_handler"),
+    (0x0320, "CHKOUT vector", "chkout_handler"),
+    (0x0322, "CLRCHN vector", "clrchn_handler"),
+    (0x0324, "CHRIN vector", "chrin_handler"),
+    (0x0326, "CHROUT vector", "chrout_handler"),
+    (0x0328, "STOP vector", "stop_handler"),
+    (0x032a, "GETIN vector", "getin_handler"),
+    (0x032c, "CLALL vector", "clall_handler"),
+    (0x032e, "monitor command vector", "monitor_command_handler"),
+    (0x0330, "LOAD vector", "load_handler"),
+    (0x0332, "SAVE vector", "save_handler"),
+    (0x0300, "BASIC error vector", "basic_error_handler"),
+    (0x0302, "BASIC main loop vector", "basic_main_loop_handler"),
+    (0x0304, "BASIC tokenise vector", "basic_tokenise_handler"),
+    (0x0306, "BASIC list token vector", "basic_list_token_handler"),
+    (0x0308, "BASIC execute vector", "basic_execute_handler"),
+    (0x030a, "BASIC evaluate vector", "basic_evaluate_handler"),
+    (0x030c, "BASIC escape link vector", "basic_escape_link_handler"),
+    (0x030e, "BASIC escape print vector", "basic_escape_print_handler"),
+    (0x0310, "BASIC escape execute vector", "basic_escape_execute_handler"),
+    (0x0334, "editor control vector", "editor_control_handler"),
+    (0x0336, "editor shift vector", "editor_shift_handler"),
+    (0x0338, "editor escape vector", "editor_escape_handler"),
+    (0x033a, "editor keyscan vector", "editor_keyscan_handler"),
+    (0x033c, "editor store key vector", "editor_store_key_handler"),
+]) + [VectorLocation(0xfffa, None, None, "NMI hardware vector", "nmi_handler"),
+      VectorLocation(0xfffe, None, None, "IRQ hardware vector", "irq_handler")]
+
+plus4_vectors = _vectors(plus4_workspace_locations, [
+    (0x0314, "IRQ vector", "irq_handler"),
+    (0x0316, "BRK vector", "brk_handler"),
+    (0x0318, "OPEN vector", "open_handler"),
+    (0x031a, "CLOSE vector", "close_handler"),
+    (0x031c, "CHKIN vector", "chkin_handler"),
+    (0x031e, "CHKOUT vector", "chkout_handler"),
+    (0x0320, "CLRCHN vector", "clrchn_handler"),
+    (0x0322, "CHRIN vector", "chrin_handler"),
+    (0x0324, "CHROUT vector", "chrout_handler"),
+    (0x0326, "STOP vector", "stop_handler"),
+    (0x0328, "GETIN vector", "getin_handler"),
+    (0x032a, "CLALL vector", "clall_handler"),
+    (0x032c, "user command vector", "user_command_handler"),
+    (0x032e, "LOAD vector", "load_handler"),
+    (0x0330, "SAVE vector", "save_handler"),
+    (0x0300, "BASIC error vector", "basic_error_handler"),
+    (0x0302, "BASIC main loop vector", "basic_main_loop_handler"),
+    (0x0304, "BASIC tokenise vector", "basic_tokenise_handler"),
+    (0x0306, "BASIC list token vector", "basic_list_token_handler"),
+    (0x0308, "BASIC execute vector", "basic_execute_handler"),
+    (0x030a, "BASIC evaluate vector", "basic_evaluate_handler"),
+    (0x030c, "BASIC escape link vector", "basic_escape_link_handler"),
+    (0x030e, "BASIC escape print vector", "basic_escape_print_handler"),
+    (0x0310, "BASIC escape execute vector", "basic_escape_execute_handler"),
+]) + [VectorLocation(0xfffa, None, None, "NMI hardware vector", "nmi_handler"),
+      VectorLocation(0xfffe, None, None, "IRQ hardware vector", "irq_handler")]
+
+# The C128's hardware: the C64's VIC-II, SID and CIAs (with Commodore's
+# names in its C128 source: 'vicreg+n', 'sidreg+n', 'd1pra'), the VIC-II's two
+# new registers, the MMU, the VDC and the colour RAM
+def _c128_hardware():
+    result = []
+    vic_ii = [l for l in c64_hardware_locations if 0xd000 <= l.addr < 0xd400]
+    for l in vic_ii:
+        result.append(l._replace(commodore_name="vicreg" if l.addr == 0xd000 else "vicreg+%d" % (l.addr - 0xd000)))
+    result += [
+        Location(0xd02f, 1, "vicreg+47", "vic_keyboard_lines"),
+        Location(0xd030, 1, "vicreg+48", "vic_clock_speed"),
+    ]
+    for l in c64_hardware_locations:
+        if 0xd400 <= l.addr < 0xd800:
+            result.append(l._replace(commodore_name="sidreg" if l.addr == 0xd400 else "sidreg+%d" % (l.addr - 0xd400)))
+    result += [
+        Location(0xd500, 1, "mmucrl", "mmu_configuration_io"),
+        Location(0xd501, 1, "pcra",   "mmu_preconfiguration_a"),
+        Location(0xd502, 1, "pcrb",   "mmu_preconfiguration_b"),
+        Location(0xd503, 1, "pcrc",   "mmu_preconfiguration_c"),
+        Location(0xd504, 1, "pcrd",   "mmu_preconfiguration_d"),
+        Location(0xd505, 1, "mmumcr", "mmu_mode_configuration"),
+        Location(0xd506, 1, "mmurcr", "mmu_ram_configuration"),
+        Location(0xd507, 1, "mmup0l", "mmu_page0_low"),
+        Location(0xd508, 1, "mmup0h", "mmu_page0_high"),
+        Location(0xd509, 1, "mmup1l", "mmu_page1_low"),
+        Location(0xd50a, 1, "mmup1h", "mmu_page1_high"),
+        Location(0xd50b, 1, "mmuver", "mmu_version"),
+        Location(0xd600, 1, "vdcadr", "vdc_address"),
+        Location(0xd601, 1, "vdcdat", "vdc_data"),
+        Location(0xd800, 1024, None, "colour_ram"),
+    ]
+    c128_cia_names = ["pra", "prb", "ddra", "ddrb", "t1l", "t1h", "t2l", "t2h", "tod1", "tods", "todm", "todh", "sdr", "icr", "cra", "crb"]
+    for l in c64_hardware_locations:
+        if 0xdc00 <= l.addr < 0xde00:
+            n = 1 if l.addr < 0xdd00 else 2
+            result.append(l._replace(commodore_name="d%d%s" % (n, c128_cia_names[l.addr & 0x0f])))
+    result += [
+        Location(0xff00, 1, "mmucr", "mmu_configuration"),
+        Location(0xff01, 1, "lcra",  "mmu_load_configuration_a"),
+        Location(0xff02, 1, "lcrb",  "mmu_load_configuration_b"),
+        Location(0xff03, 1, "lcrc",  "mmu_load_configuration_c"),
+        Location(0xff04, 1, "lcrd",  "mmu_load_configuration_d"),
+    ]
+    return result
+
+c128_hardware_locations = _c128_hardware()
+
+# The Plus/4's hardware: the TED (with the names in its Kernal source where
+# there are any), the ACIA, the 6529 ports and the ROM bank select
+plus4_hardware_locations = [
+    Location(0xfd00, 1, "acia", "acia_data"),
+    Location(0xfd01, 1, "acia+1", "acia_status"),
+    Location(0xfd02, 1, "acia+2", "acia_command"),
+    Location(0xfd03, 1, "acia+3", "acia_control"),
+    Location(0xfd10, 1, "xport", "user_port"),
+    Location(0xfd30, 1, None, "keyboard_latch"),
+    Location(0xfdd0, 16, "bnksel", "rom_bank_select"),
+    Location(0xff00, 1, "timr1l", "ted_timer1_low"),
+    Location(0xff01, 1, "timr1h", "ted_timer1_high"),
+    Location(0xff02, 1, "timr2l", "ted_timer2_low"),
+    Location(0xff03, 1, "timr2h", "ted_timer2_high"),
+    Location(0xff04, 1, "timr3l", "ted_timer3_low"),
+    Location(0xff05, 1, "timr3h", "ted_timer3_high"),
+    Location(0xff06, 1, "tedvcr", "ted_control_1"),
+    Location(0xff07, 1, None, "ted_control_2"),
+    Location(0xff08, 1, "keybrd", "ted_keyboard_latch"),
+    Location(0xff09, 1, "tedirq", "ted_interrupt_status"),
+    Location(0xff0a, 1, "tedicr", "ted_interrupt_enable"),
+    Location(0xff0b, 1, None, "ted_raster_compare"),
+    Location(0xff0c, 1, "tedcrh", "ted_cursor_high"),
+    Location(0xff0d, 1, "tedcrl", "ted_cursor_low"),
+    Location(0xff0e, 1, "tedmlo", "ted_voice1_frequency_low"),
+    Location(0xff0f, 1, "tedmlo+1", "ted_voice2_frequency_low"),
+    Location(0xff10, 1, "tedmhi", "ted_voice2_frequency_high"),
+    Location(0xff11, 1, "tedvoi", "ted_sound_control"),
+    Location(0xff12, 1, "tedmhi+2", "ted_bitmap_base_voice1_high"),
+    Location(0xff13, 1, "tedcbr", "ted_character_base"),
+    Location(0xff14, 1, None, "ted_video_matrix_base"),
+    Location(0xff15, 1, None, "ted_background_colour_0"),
+    Location(0xff16, 1, None, "ted_background_colour_1"),
+    Location(0xff17, 1, None, "ted_background_colour_2"),
+    Location(0xff18, 1, None, "ted_background_colour_3"),
+    Location(0xff19, 1, None, "ted_border_colour"),
+    Location(0xff1a, 1, None, "ted_cursor_reload_high"),
+    Location(0xff1b, 1, None, "ted_cursor_reload_low"),
+    Location(0xff1c, 1, None, "ted_raster_line_high"),
+    Location(0xff1d, 1, None, "ted_raster_line_low"),
+    Location(0xff1e, 1, None, "ted_raster_column"),
+    Location(0xff1f, 1, None, "ted_flash_counter"),
+    Location(0xff3e, 1, "romon", "ted_rom_select"),
+    Location(0xff3f, 1, "romoff", "ted_ram_select"),
+]
+
+# The Plus/4's screen and its attributes (colour and luminance)
+plus4_screen_locations = [
+    Location(0x0800, 1000, "tedatr", "colour_ram"),
+    Location(0x0c00, 1000, "tedscn", "screen_memory"),
+]
+
+# The C128's and Plus/4's additions to the Kernal's jump table
+c128_jump_table_additions = [
+    KernalCall(0xff47, "spin_spout", "Set up the fast serial port for input (carry clear) or output (carry set)", None, None),
+    KernalCall(0xff4a, "close_all", "Close all files on a device",
+               {'a': "device number"}, None),
+    KernalCall(0xff4d, "c64mode", "Switch to C64 mode (doesn't return)", None, None),
+    KernalCall(0xff50, "dma_call", "Send a command to a DMA device (e.g. a RAM expansion)",
+               {'x': "bank", 'y': "DMA command"}, None),
+    KernalCall(0xff53, "boot_call", "Boot from a disk",
+               {'a': "drive number (as a character)", 'x': "device number"}, None),
+    KernalCall(0xff56, "phoenix", "Start the function ROMs, then boot from a disk", None, None),
+    KernalCall(0xff59, "lkupla", "Look up a logical file number (carry clear if it's found)",
+               {'a': "logical file number"}, {'x': "device number", 'y': "secondary address"}),
+    KernalCall(0xff5c, "lkupsa", "Look up a secondary address (carry clear if it's found)",
+               {'y': "secondary address"}, {'a': "logical file number", 'x': "device number"}),
+    KernalCall(0xff5f, "swapper", "Switch between the 40 and 80 column screens", None, None),
+    KernalCall(0xff62, "dlchr", "Copy the character set to the VDC's RAM", None, None),
+    KernalCall(0xff65, "pfkey", "Program a function key",
+               {'a': "zero page address of the string's address", 'x': "key number", 'y': "string length"}, None),
+    KernalCall(0xff68, "setbnk", "Set the banks for LOAD, SAVE and VERIFY, and for the filename",
+               {'a': "bank for the data", 'x': "bank for the filename"}, None),
+    KernalCall(0xff6b, "getcfg", "Get the MMU configuration for a bank",
+               {'x': "bank"}, {'a': "MMU configuration"}),
+    KernalCall(0xff6e, "jsrfar", "Call a routine in another bank (set up at $02-$08)", None, None),
+    KernalCall(0xff71, "jmpfar", "Jump to a routine in another bank (set up at $02-$08)", None, None),
+    KernalCall(0xff74, "indfet", "Read a byte from any bank (LDA (pointer),Y)",
+               {'a': "zero page address of the pointer", 'x': "bank", 'y': "index"}, {'a': "byte read"}),
+    KernalCall(0xff77, "indsta", "Write a byte to any bank (STA (pointer),Y; the pointer's zero page address at $02b9)",
+               {'a': "byte to write", 'x': "bank", 'y': "index"}, None),
+    KernalCall(0xff7a, "indcmp", "Compare a byte in any bank (CMP (pointer),Y; the pointer's zero page address at $02c8)",
+               {'a': "byte to compare", 'x': "bank", 'y': "index"}, None),
+    KernalCall(0xff7d, "primm", "Print the zero-terminated string that follows the JSR", None, None),
+]
+
+plus4_jump_table_additions = [
+    KernalCall(0xff4c, "print", "Output a character to the screen",
+               {'a': "character to output"}, None),
+    KernalCall(0xff4f, "primm", "Print the zero-terminated string that follows the JSR", None, None),
+    KernalCall(0xff52, "monitr", "Enter the machine code monitor", None, None),
+]
+
+c128_rom_routines = [
+    # BASIC
+    RomRoutine(0x4db7, "readyx", "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
+    RomRoutine(0x4af6, "newstt", "basic_next_statement", "Execute the next BASIC statement", None, None),
+    RomRoutine(0x5598, "crdo",   "basic_print_newline", "Print a carriage return", None, None),
+    RomRoutine(0x55e2, "strout", "basic_print_string", "Print the zero-terminated string at A/Y",
+               {'a': "string address (low byte)", 'y': "string address (high byte)"}, None),
+    RomRoutine(0x8e32, "linprt", "basic_print_number", "Print the 16-bit number in A/X",
+               {'a': "number to print (high byte)", 'x': "number to print (low byte)"}, None),
+    # The screen editor
+    RomRoutine(0xc142, "clsr",   "clear_screen", "Clear the current screen window", None, None),
+    RomRoutine(0xc72d, "print",  "screen_output_char", "Output a character to the screen",
+               {'a': "character to output"}, None),
+    # The Kernal
+    RomRoutine(0xe000, "start",  "kernal_reset", "The Kernal's reset handler", None, None),
+    RomRoutine(0xe224, "c128mode", "c128_mode", "Start the C128 in C128 mode", None, None),
+    RomRoutine(0xfa40, "nnmi",   "kernal_nmi_handler", "The Kernal's NMI handler", None, None),
+    RomRoutine(0xfa65, "nirq",   "kernal_irq_handler", "The Kernal's IRQ handler (blinks the cursor, scans the keyboard etc., then returns from the interrupt)", None, None),
+    RomRoutine(0xff05, "nmi",    "kernal_nmi_entry", "The Kernal's NMI entry point (saves the registers and jumps through the NMI vector)", None, None),
+    RomRoutine(0xff17, "irq",    "kernal_irq_entry", "The Kernal's IRQ and BRK entry point (saves the registers and jumps through the IRQ or BRK vector)", None, None),
+    RomRoutine(0xff33, "prend",  "kernal_irq_return", "Restore the registers and return from the interrupt", None, None),
+]
+
+plus4_rom_routines = [
+    # BASIC
+    RomRoutine(0x8703, "readyx", "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
+    RomRoutine(0x8bdc, "newstt", "basic_next_statement", "Execute the next BASIC statement", None, None),
+    RomRoutine(0x903e, "crdo",   "basic_print_newline", "Print a carriage return", None, None),
+    RomRoutine(0x9088, "strout", "basic_print_string", "Print the zero-terminated string at A/Y",
+               {'a': "string address (low byte)", 'y': "string address (high byte)"}, None),
+    RomRoutine(0xa45f, "linprt", "basic_print_number", "Print the 16-bit number in A/X",
+               {'a': "number to print (high byte)", 'x': "number to print (low byte)"}, None),
+    # The Kernal
+    RomRoutine(0xd88b, "clsr",   "clear_screen", "Clear the screen", None, None),
+    RomRoutine(0xf2a4, "start",  "kernal_reset", "The Kernal's reset handler", None, None),
+    RomRoutine(0xfcb3, "puls",   "kernal_irq_entry", "The Kernal's IRQ and BRK entry point (saves the registers and jumps through the IRQ or BRK vector)", None, None),
+    RomRoutine(0xfcc3, None,     "kernal_irq_return", "Restore the registers and return from the interrupt", None, None),
+]
+
+# The C128's colour registers: the VIC-II's, as on the C64. (The text colour
+# at &00f1 isn't one, since in 80 columns it's a VDC attribute, not a colour
+# number.)
+c128_colour_registers = [0xd020, 0xd021, 0xd022, 0xd023, 0xd024, 0xd025, 0xd026] + list(range(0xd027, 0xd02f))

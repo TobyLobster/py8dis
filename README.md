@@ -4,7 +4,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
-- [Commodore 64 and VIC-20](#commodore-64-and-vic-20)
+- [Commodore 64, VIC-20, C128 and Plus/4](#commodore-64-vic-20-c128-and-plus4)
 - [JSON output](#json-output)
 - [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
@@ -501,7 +501,7 @@ load(0x8000, "rom2.bin", "6502")
 rom2_asm = go(print_output=False)
 ```
 
-## Commodore 64 and VIC-20
+## Commodore 64, VIC-20, C128 and Plus/4
 
 `commodore.c64()` does for a Commodore 64 program what `acorn.bbc()` does for a BBC Micro one:
 
@@ -545,9 +545,26 @@ The same for the VIC-20, whose Kernal and BASIC are the C64's with its own hardw
 
 `expansion` is the RAM expansion: `"none"`, `"3k"` (block 0, &0400-&0fff) or `"8k"` (8K or more, from &2000). It decides where a BASIC program starts (&1001, &0401 or &1201) and where the screen and its colour RAM are (&1e00 and &9600, or with 8K or more &1000 and &9400). By default it's worked out from where the program is loaded: `"3k"` if there's data at &0401, else `"none"` if there's data at &1001, else `"8k"` if there's data at &1201.
 
+:pencil:`commodore.c128(names="descriptive", rom_labels=True)`
+
+The same for the C128 in C128 mode, with the usual bank 15 (the ROMs, and the I/O at &d000): its workspace, the MMU (`mmu_configuration` at &ff00, `mmu_ram_configuration`…), the VDC (`vdc_address` and `vdc_data` at &d600), the VIC-II, the SID and the CIAs as on the C64, a BASIC program at &1c01, and the labels in Commodore's source for its BASIC, monitor, screen editor and Kernal (a screen editor or monitor label with the same name as another has `_editor` or `_monitor` added). Its jump table is the C64's and 19 more at &ff47-&ff7d, e.g. `jsrfar`, `setbnk` and `primm`, whose inline string is marked and skipped when tracing:
+
+```
+    jsr primm             ; Print the zero-terminated string that follows the JSR
+    !pet "hello, c128", $0d, 0
+```
+
+(A C128 program in C64 mode is a C64 program: use `c64()`.)
+
+:pencil:`commodore.plus4(names="descriptive", rom_labels=True)`
+
+The same for the Plus/4 (and the C16 and C116, which have the same ROMs): its workspace, the TED at &ff00-&ff3f (the timers, video, sound, keyboard latch, interrupts, and the ROM switch at &ff3e/&ff3f: `ted_rom_select`, `ted_ram_select`), the ACIA at &fd00, the 6529 ports, the screen and its attributes, a BASIC program at &1001, and the labels in Commodore's source for its BASIC and Kernal. Its jump table is the C64's with `print`, `primm` (as on the C128) and `monitr`. The TED's colours include their luminance, so they aren't named as constants.
+
+The C128's and Plus/4's workspace (zero page and &0200 up) has Commodore's names from its source. With the default `names="descriptive"`, the locations that are the C64's have its descriptive names (e.g. `jiffy_clock`, `keyboard_buffer_length`), and the most used of the rest have descriptive names of their own (e.g. the C128's `screen_mode_40_80`, `vdc_screen_base`, `function_key_lengths`); the others have Commodore's names either way, since there are hundreds and most are BASIC's or the monitor's. The hardware's names are descriptive with `names="descriptive"` and Commodore's (from its source, e.g. `mmucr`, `vdcadr`, `tedirq`) with `names="commodore"`.
+
 :pencil:`commodore.basic_program(runtime_addr=None)`
 
-Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` and `vic20()` do this), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
+Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` etc. do this), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
 
 ```
 ; 10 SYS2061
@@ -565,11 +582,11 @@ An address that SYS calls in the loaded data is traced as code, and named `sys_e
 
 :pencil:`commodore.is_cartridge()`
 
-For a cartridge: names its header (the cold and warm start vectors, and the signature: `CBM80` at &8004 on the C64, `A0CBM` at &a004 on the VIC-20) and traces the code they point to. Call it after `c64()` or `vic20()`.
+For a cartridge: names its header (the cold and warm start vectors, and the signature: `CBM80` at &8004 on the C64, `A0CBM` at &a004 on the VIC-20) and traces the code they point to. On the C128 and Plus/4, a function ROM at &8000 starts with its cold and warm start code (usually JMPs) rather than vectors, then an ID byte and `CBM` in ASCII; these are named and the code traced. Call it after `c64()` etc.
 
 :pencil:`commodore.kernal_rom()` and :pencil:`commodore.basic_rom()`
 
-For disassembling a Kernal ROM (at &e000) or BASIC ROM (at &a000 on the C64, &c000 on the VIC-20) itself: trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors. examples/python/open_roms_kernal.py and open_roms_basic.py disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
+For disassembling a Kernal ROM (at &e000, or &c000 on the C128 and Plus/4) or BASIC ROM (at &a000 on the C64, &c000 on the VIC-20, &4000 on the C128, &8000 on the Plus/4) itself: trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors (or JMPs, on the C128 and Plus/4). examples/python/open_roms_kernal.py and open_roms_basic.py disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
 
 ## JSON output
 
@@ -624,7 +641,8 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 ## Credits and thanks
 
 * py8dis is heavily influenced by Phill Harvey-Smith's [BeebDis](https://github.com/prime6809/BeebDis); I've tried to model py8dis commands on BeebDis where possible.
-* The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `tools/make_commodore_rom_labels.py`).
+* The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels (and the C128's and Plus/4's workspace) from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `commodoresource.py`, made by `tools/make_commodoresource.py`).
 * The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).
+* The C128 test game is Sebastian Dechert's [memory128](https://github.com/radi0sus/memory128) (BSD 3-clause licence; see `examples/orig/memory128`).
 * The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).
 * TobyLobster has contributed numerous improvements to py8dis, including refactoring, code clean up, local label support and constant substitution, as well as making many helpful suggestions.
