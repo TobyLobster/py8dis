@@ -18,11 +18,12 @@ oswrch                  = $ffee
 // right. It also shows the subroutine header.
 // 
 // On Entry:
-//     A: File handle
-//     Y: 0 to write, otherwise read
+//     A: (ignored)
+//     X: (ignored)
 // 
 // On Exit:
 //     X: Holds the number of bits set.
+//     Y: (preserved)
 // ***************************************************************************************
 pydis_start
 test_for_local_labels

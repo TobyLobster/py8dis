@@ -1,7 +1,8 @@
 ; A C64 cartridge for commodore.is_cartridge() (see python/cartridge_test.py):
 ; the header with its cold and warm start vectors and 'CBM80' signature, and
-; code that initialises the machine, sets the NMI and IRQ vectors (in the two
-; other ways commodore.c64() recognises) and polls the keyboard. Assemble with:
+; code that initialises the machine, sets the NMI, IRQ, BRK and CHROUT vectors
+; (in other ways commodore.c64() recognises: with X and Y, and with the stores
+; in the other order) and polls the keyboard. Assemble with:
 ;
 ;   acme -o ../orig/cartridge_test.orig cartridge_test.asm
 
@@ -25,6 +26,14 @@ cold_start
     ldx #>irq
     sta $0314
     stx $0315
+    ldy #<brk_routine
+    sty $0316
+    ldy #>brk_routine
+    sty $0317
+    ldx #<chrout_routine
+    lda #>chrout_routine
+    sta $0327
+    stx $0326
     cli
 wait
     jsr $ffe4               ; GETIN
@@ -36,6 +45,12 @@ warm_start
 
 nmi
     rti
+
+brk_routine
+    rti
+
+chrout_routine
+    jmp $f1ca
 
 irq
     inc $d020

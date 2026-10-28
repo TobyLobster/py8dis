@@ -30,12 +30,10 @@ from acornosbyte import osbyte_hook
 def pre_trace_writing_to_vector(p):
     p.entry()
 
-    addr1 = p.get_memory('first_store', 1) + 256*p.get_memory('first_store', 2)
-    addr2 = p.get_memory('second_store', 1) + 256*p.get_memory('second_store', 2)
-    nn1_addr = p.get_binary_address('nn1')
-    nn2_addr = p.get_binary_address('nn2')
-    nn1 = p.get_memory('nn1')
-    nn2 = p.get_memory('nn2')
+    stored = p.stored_values(['nn1', 'nn2'], ['first_store', 'second_store'])
+    if stored is None:
+        return
+    (addr1, nn1, nn1_addr), (addr2, nn2, nn2_addr) = stored
     end = p.get_binary_location('end')
 
     # The number of handlers found so far for each vector, for naming them
@@ -254,25 +252,35 @@ loop2
     # ********************************************************************************************
     # ********************************************************************************************
     # ********************************************************************************************
-    register_snippet(pre_trace_writing_to_vector, None, """
-    lda #nn1
-first_store
-    sta $200 | sta $201 | sta $202 | sta $203 | sta $204 | sta $205 | sta $206 | sta $207 | sta $208 | sta $209 | sta $20a | sta $20b | sta $20c | sta $20d | sta $20e | sta $20f | sta $210 | sta $211 | sta $212 | sta $213 | sta $214 | sta $215 | sta $216 | sta $217 | sta $218 | sta $219 | sta $21a | sta $21b | sta $21c | sta $21d | sta $21e | sta $21f | sta $220 | sta $221 | sta $222 | sta $223 | sta $224 | sta $225 | sta $226 | sta $227 | sta $228 | sta $229 | sta $22a | sta $22b | sta $22c | sta $22d | sta $22e | sta $22f | sta $230 | sta $231 | sta $232 | sta $233 | sta $234 | sta $235
-    lda #nn2
-second_store
-    sta $200 | sta $201 | sta $202 | sta $203 | sta $204 | sta $205 | sta $206 | sta $207 | sta $208 | sta $209 | sta $20a | sta $20b | sta $20c | sta $20d | sta $20e | sta $20f | sta $210 | sta $211 | sta $212 | sta $213 | sta $214 | sta $215 | sta $216 | sta $217 | sta $218 | sta $219 | sta $21a | sta $21b | sta $21c | sta $21d | sta $21e | sta $21f | sta $220 | sta $221 | sta $222 | sta $223 | sta $224 | sta $225 | sta $226 | sta $227 | sta $228 | sta $229 | sta $22a | sta $22b | sta $22c | sta $22d | sta $22e | sta $22f | sta $230 | sta $231 | sta $232 | sta $233 | sta $234 | sta $235
-end
-""")
+    # Code setting one of the vectors at &0200-&0235
+    vector_addrs = range(0x200, 0x236)
+    # Any store to one of them, e.g. 'sta $200 | ... | sty $235'
+    stores = " | ".join("st{0} ${1:x}".format(reg, addr) for reg in "axy" for addr in vector_addrs)
+    # Any load and store to one of them, e.g. 'lda #nn1 : sta $200 | ...'
+    def pairs(n):
+        return " | ".join("ld{0} #nn{1} : st{0} ${2:x}".format(reg, n, addr) for reg in "axy" for addr in vector_addrs)
+    # Two loads into different registers, e.g. 'ldx #nn1 : ldy #nn2 | ...'
+    loads = " | ".join("ld{0} #nn1 : ld{1} #nn2".format(reg1, reg2) for reg1 in "axy" for reg2 in "axy" if reg1 != reg2)
 
+    # e.g. 'lda #<handler : sta $206 : lda #>handler : sta $207' (with A, X or
+    # Y for each)
     register_snippet(pre_trace_writing_to_vector, None, """
-    ldx #nn1
-    ldy #nn2
 first_store
-    stx $200 | stx $201 | stx $202 | stx $203 | stx $204 | stx $205 | stx $206 | stx $207 | stx $208 | stx $209 | stx $20a | stx $20b | stx $20c | stx $20d | stx $20e | stx $20f | stx $210 | stx $211 | stx $212 | stx $213 | stx $214 | stx $215 | stx $216 | stx $217 | stx $218 | stx $219 | stx $21a | stx $21b | stx $21c | stx $21d | stx $21e | stx $21f | stx $220 | stx $221 | stx $222 | stx $223 | stx $224 | stx $225 | stx $226 | stx $227 | stx $228 | stx $229 | stx $22a | stx $22b | stx $22c | stx $22d | stx $22e | stx $22f | stx $230 | stx $231 | stx $232 | stx $233 | stx $234 | stx $235
+    {0}
 second_store
-    sty $200 | sty $201 | sty $202 | sty $203 | sty $204 | sty $205 | sty $206 | sty $207 | sty $208 | sty $209 | sty $20a | sty $20b | sty $20c | sty $20d | sty $20e | sty $20f | sty $210 | sty $211 | sty $212 | sty $213 | sty $214 | sty $215 | sty $216 | sty $217 | sty $218 | sty $219 | sty $21a | sty $21b | sty $21c | sty $21d | sty $21e | sty $21f | sty $220 | sty $221 | sty $222 | sty $223 | sty $224 | sty $225 | sty $226 | sty $227 | sty $228 | sty $229 | sty $22a | sty $22b | sty $22c | sty $22d | sty $22e | sty $22f | sty $230 | sty $231 | sty $232 | sty $233 | sty $234 | sty $235
+    {1}
 end
-""")
+""".format(pairs(1), pairs(2)))
+    # e.g. 'ldx #<handler : ldy #>handler : stx $206 : sty $207' (with any two
+    # registers, and the stores in either order)
+    register_snippet(pre_trace_writing_to_vector, None, """
+    {0}
+first_store
+    {1}
+second_store
+    {1}
+end
+""".format(loads, stores))
 
 
 # ************************************************************************************************

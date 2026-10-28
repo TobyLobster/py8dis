@@ -2939,8 +2939,8 @@ l8e54 = c8e52+2
 
 ; &8fcb referenced 5 times by &9bbe, &9d4e, &9dee, &9e2f, &b5fb
 .sub_c8fcb
+    ; push flags,A,Y onto the stack
     php                                                               ; 8fcb: 08          .
-    ; push A,Y onto the stack
     pha                                                               ; 8fcc: 48          H
     tya                                                               ; 8fcd: 98          .
     pha                                                               ; 8fce: 48          H
@@ -2955,7 +2955,7 @@ l8e54 = c8e52+2
     ldy #&77 ; 'w'                                                    ; 8fd9: a0 77       .w
     cmp (l00cc),y                                                     ; 8fdb: d1 cc       ..
     bne c8fe4                                                         ; 8fdd: d0 05       ..
-    ; pull A,Y from the stack
+    ; pull flags,A,Y from the stack
     pla                                                               ; 8fdf: 68          h
     tay                                                               ; 8fe0: a8          .
     pla                                                               ; 8fe1: 68          h

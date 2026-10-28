@@ -377,10 +377,6 @@ def parse_line(line, group_number):
         return (None, None, group_number)
 
     labels = collections.defaultdict(list)
-    pattern = bytearray()
-
-    if optional:
-        pattern += "(?:".encode()
 
     m = re.match(r'^('+label_name + ')', line)
     if m:
@@ -392,7 +388,7 @@ def parse_line(line, group_number):
     # The line's alternatives, separated by '|', each an instruction or a
     # sequence of instructions separated by ':' (e.g. 'lda #nn : sta $70 |
     # ldx #nn : stx $70')
-    index = 0
+    alternatives = []
     for alternative in line.split('|'):
         inst_result = bytearray()
         for inst in alternative.split(':'):
@@ -402,15 +398,17 @@ def parse_line(line, group_number):
             for inst_label in inst_labels:
                 labels[inst_label].extend(inst_labels[inst_label])
         if inst_result:
-            if index == 1:
-                pattern = "(?:".encode() + pattern
-            pattern += "|".encode()+inst_result if pattern else inst_result
-            index += 1
-    if index >= 2:
-        pattern += ")".encode()
+            alternatives.append(bytes(inst_result))
 
+    if not alternatives:
+        return (None, labels, group_number)
+    pattern = bytearray(alternatives[0]) if len(alternatives) == 1 else bytearray(b"(?:" + b"|".join(alternatives) + b")")
+
+    # An optional line matches if it can (it's greedy). (It used to have an
+    # empty alternative first, so it matched nothing unless what followed
+    # needed it, and an optional last line never matched anything.)
     if optional:
-        pattern += ")?".encode()
+        pattern = bytearray(b"(?:" + pattern + b")?")
 
     return(pattern, labels, group_number)
 

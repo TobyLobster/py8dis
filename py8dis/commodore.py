@@ -561,12 +561,10 @@ def pre_trace_writing_to_vector(p):
     the code."""
     p.entry()
 
-    addr1 = p.get_memory('first_store', 1) + 256*p.get_memory('first_store', 2)
-    addr2 = p.get_memory('second_store', 1) + 256*p.get_memory('second_store', 2)
-    nn1_addr = p.get_binary_address('nn1')
-    nn2_addr = p.get_binary_address('nn2')
-    nn1 = p.get_memory('nn1')
-    nn2 = p.get_memory('nn2')
+    stored = p.stored_values(['nn1', 'nn2'], ['first_store', 'second_store'])
+    if stored is None:
+        return
+    (addr1, nn1, nn1_addr), (addr2, nn2, nn2_addr) = stored
     end = p.get_binary_location('end')
 
     if addr1 == addr2 + 1:
@@ -621,12 +619,7 @@ def pre_trace_far_call(p):
     &02-&04 with immediate values (through A, X or Y), then calling it: comment the set-up, and if
     the address is in the program (in RAM 0 in that bank), trace it, name it
     (e.g. 'far_call_target') and use its name in the set-up."""
-    stores = {}
-    for i in (1, 2, 3):
-        # (Each is e.g. 'lda #nn1 : sta $02', so the address stored to is
-        # two bytes after the value)
-        nn_addr = p.get_binary_address('nn%d' % i, prioritise_definition=False)
-        stores[p.get_memory(nn_addr + 2)] = (nn_addr, p.get_memory(nn_addr))
+    stores = {addr: (value_addr, value) for addr, value, value_addr in p.stored_values([], ['store1', 'store2', 'store3'])}
     if sorted(stores) != [2, 3, 4]:
         return
     p.entry()
@@ -673,66 +666,58 @@ def register_snippets():
         return
     extras["commodore.snippets_registered"] = True
 
-    stores = {}
-    for reg in "axy":
-        alternatives = []
-        for vector in _machine().vectors:
-            for addr in (vector.addr, vector.addr + 1):
-                alternatives.append("st%s $%x" % (reg, addr))
-        stores[reg] = " | ".join(alternatives)
-
     # On the C128, e.g. 'lda #0 : sta $02 : lda #>target : sta $03 :
     # lda #<target : sta $04 : jsr jsrfar', the three in any order, each with
     # A, X or Y, with stores to &05-&08 (the status, A, X and Y to call it
     # with) between them and the call
     if any(call.name == "jsrfar" for call in _machine().jump_table):
         extra = "?   " + " | ".join(["lda #v", "ldx #v", "ldy #v"] + ["st%s $%02x" % (reg, addr) for reg in "axy" for addr in range(5, 9)])
-        def pair(n):
+        def far_pair(n):
             # e.g. 'lda #nn1 : sta $02 | ... | ldy #nn1 : sty $04'
             return "    " + " | ".join("ld{0} #nn{1} : st{0} ${2:02x}".format(reg, n, addr) for reg in "axy" for addr in (2, 3, 4))
         register_snippet(pre_trace_far_call, None, """
+store1
 {pair1}
 {extra4}
+store2
 {pair2}
 {extra4}
+store3
 {pair3}
 {extra8}
 call
     jsr $ff6e | jmp $ff71
 end
-""".format(pair1=pair(1), pair2=pair(2), pair3=pair(3), extra4="\n".join([extra]*4), extra8="\n".join([extra]*8)))
+""".format(pair1=far_pair(1), pair2=far_pair(2), pair3=far_pair(3), extra4="\n".join([extra]*4), extra8="\n".join([extra]*8)))
 
-    # e.g. 'lda #<handler : sta $0314 : lda #>handler : sta $0315'
-    register_snippet(pre_trace_writing_to_vector, None, """
-    lda #nn1
-first_store
-    {a}
-    lda #nn2
-second_store
-    {a}
-end
-""".format(**stores))
-    # e.g. 'ldx #<handler : ldy #>handler : stx $0314 : sty $0315'
-    register_snippet(pre_trace_writing_to_vector, None, """
-    ldx #nn1
-    ldy #nn2
-first_store
-    {x}
-second_store
-    {y}
-end
-""".format(**stores))
-    # e.g. 'lda #<handler : ldx #>handler : sta $0314 : stx $0315'
-    register_snippet(pre_trace_writing_to_vector, None, """
-    lda #nn1
-    ldx #nn2
-first_store
-    {a}
-second_store
-    {x}
-end
-""".format(**stores))
+    vector_addrs = [addr for vector in _machine().vectors for addr in (vector.addr, vector.addr + 1)]
+    # Any store to one of them, e.g. 'sta $0314 | ... | sty $0315'
+    stores = " | ".join("st{0} ${1:04x}".format(reg, addr) for reg in "axy" for addr in vector_addrs)
+    # Any load and store to one of them, e.g. 'lda #nn1 : sta $0314 | ...'
+    def pairs(n):
+        return " | ".join("ld{0} #nn{1} : st{0} ${2:04x}".format(reg, n, addr) for reg in "axy" for addr in vector_addrs)
+    # Two loads into different registers, e.g. 'ldx #nn1 : ldy #nn2 | ...'
+    loads = " | ".join("ld{0} #nn1 : ld{1} #nn2".format(reg1, reg2) for reg1 in "axy" for reg2 in "axy" if reg1 != reg2)
 
+    # e.g. 'lda #<handler : sta $0314 : lda #>handler : sta $0315' (with A, X
+    # or Y for each)
+    register_snippet(pre_trace_writing_to_vector, None, """
+first_store
+    {0}
+second_store
+    {1}
+end
+""".format(pairs(1), pairs(2)))
+    # e.g. 'ldx #<handler : ldy #>handler : stx $0314 : sty $0315' (with any
+    # two registers, and the stores in either order)
+    register_snippet(pre_trace_writing_to_vector, None, """
+    {0}
+first_store
+    {1}
+second_store
+    {1}
+end
+""".format(loads, stores))
 
 # ************************************************************************************************
 # BASIC programs

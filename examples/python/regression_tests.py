@@ -16,7 +16,7 @@ entry(0x2080, "part2")
 # are private: shown in the header but not used to comment calling code.
 subroutine(0x202f, "store_value", "Store a value",
     on_entry={'a': "value to store", 'y': "(ignored)"},
-    on_exit={'a': "(corrupted)", 'y': "count"})
+    on_exit={'a': "(preserved)", 'y': "count"})
 
 # no_automatic_comment() suppresses the decoration of calling code, which it
 # used not to (the call at &2004 still gets the 'Store a value' comment)

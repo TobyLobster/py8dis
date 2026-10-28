@@ -356,6 +356,51 @@ def comment_set_memory_y_loop(p):
 
 
 # ************************************************************************************************
+OPCODE_PHP                      = 0x08      # php
+OPCODE_PHA                      = 0x48      # pha
+OPCODE_PLP                      = 0x28      # plp
+OPCODE_PLA                      = 0x68      # pla
+OPCODE_TAX                      = 0xaa      # tax
+OPCODE_TAY                      = 0xa8      # tay
+
+def _comment_stack(p, names, verb):
+    """Comment a push or pull of the registers named (e.g. ['flags', 'A',
+    'X']), if it's at least two of A, X and Y, each once; otherwise ignore the
+    match."""
+    registers = [name for name in names if name != "flags"]
+    if len(registers) < 2 or len(set(registers)) != len(registers):
+        p.reject()
+    add_code_comment(p, "{0} {1} {2} the stack".format(verb, ",".join(names), "onto" if verb == "push" else "from"))
+
+def comment_push(p):
+    """e.g. 'php : pha : txa : pha' pushes the flags, A, then X (each PHA
+    pushes what was transferred to A just before it, if anything)"""
+    memory = p.memory_binary
+    start = p.match.start()
+    names = []
+    for addr in range(start, p.match.end()):
+        if memory[addr] == OPCODE_PHP:
+            names.append("flags")
+        elif memory[addr] == OPCODE_PHA:
+            previous = memory[addr - 1] if addr > start else None
+            names.append({OPCODE_TXA: "X", OPCODE_TYA: "Y"}.get(previous, "A"))
+    _comment_stack(p, names, "push")
+
+def comment_pull(p):
+    """e.g. 'pla : tax : pla : plp' pulls X, then A, then the flags. They're
+    named in the order they were pushed: 'flags,A,X'."""
+    memory = p.memory_binary
+    end = p.match.end()
+    names = []
+    for addr in range(p.match.start(), end):
+        if memory[addr] == OPCODE_PLP:
+            names.append("flags")
+        elif memory[addr] == OPCODE_PLA:
+            following = memory[addr + 1] if addr + 1 < end else None
+            names.append({OPCODE_TAX: "X", OPCODE_TAY: "Y"}.get(following, "A"))
+    _comment_stack(p, list(reversed(names)), "pull")
+
+# ************************************************************************************************
 # ************************************************************************************************
 # ************************************************************************************************
 register_code_snippet(comment_memory_copy_loop, """
@@ -457,170 +502,21 @@ branch
     bne loop | bcc loop
 """)
 
-register_comment_code_snippet("push flags,A,X,Y onto the stack", """
-    php
-    pha
-    txa
-    pha
-    tya
-    pha
+# Pushing and pulling at least two of A, X and Y (and perhaps the flags), e.g.
+# 'php : pha : txa : pha : tya : pha' ("push flags,A,X,Y onto the stack"), and
+# the reverse, 'pla : tay : pla : tax : pla : plp'
+register_snippet(comment_push, None, """
+?   php
+?   pha
+    txa : pha | tya : pha
+?   txa : pha | tya : pha
 """)
 
-register_comment_code_snippet("pull flags,A,X,Y from the stack", """
-    pla
-    tay
-    pla
-    tax
-    pla
-    plp
-""")
-
-register_comment_code_snippet("push A,X,Y onto the stack", """
-    pha
-    txa
-    pha
-    tya
-    pha
-""")
-
-register_comment_code_snippet("pull A,X,Y from the stack", """
-    pla
-    tay
-    pla
-    tax
-    pla
-""")
-
-register_comment_code_snippet("push flags,A,Y,X onto the stack", """
-    php
-    pha
-    tya
-    pha
-    txa
-    pha
-""")
-
-register_comment_code_snippet("pull flags,A,Y,X from the stack", """
-    pla
-    tax
-    pla
-    tay
-    pla
-    plp
-""")
-
-register_comment_code_snippet("push flags,X,Y onto the stack", """
-    php
-    txa
-    pha
-    tya
-    pha
-""")
-
-register_comment_code_snippet("pull flags,X,Y from the stack", """
-    pla
-    tay
-    pla
-    tax
-    plp
-""")
-
-register_comment_code_snippet("push flags,Y,X onto the stack", """
-    php
-    tya
-    pha
-    txa
-    pha
-""")
-
-register_comment_code_snippet("pull flags,Y,X from the stack", """
-    pla
-    tax
-    pla
-    tay
-    plp
-""")
-
-register_comment_code_snippet("push flags,A,X onto the stack", """
-    php
-    pha
-    txa
-    pha
-""")
-
-register_comment_code_snippet("pull flags,A,X from the stack", """
-    pla
-    tax
-    pla
-    plp
-""")
-
-register_comment_code_snippet("push A,Y,X onto the stack", """
-    pha
-    tya
-    pha
-    txa
-    pha
-""")
-
-register_comment_code_snippet("pull A,Y,X from the stack", """
-    pla
-    tax
-    pla
-    tay
-    pla
-""")
-
-register_comment_code_snippet("push X,Y onto the stack", """
-    txa
-    pha
-    tya
-    pha
-""")
-
-register_comment_code_snippet("pull X,Y from the stack", """
-    pla
-    tay
-    pla
-    tax
-""")
-
-register_comment_code_snippet("push Y,X onto the stack", """
-    tya
-    pha
-    txa
-    pha
-""")
-
-register_comment_code_snippet("pull Y,X from the stack", """
-    pla
-    tax
-    pla
-    tay
-""")
-
-register_comment_code_snippet("push A,X onto the stack", """
-    pha
-    txa
-    pha
-""")
-
-register_comment_code_snippet("pull A,X from the stack", """
-    pla
-    tax
-    pla
-""")
-
-register_comment_code_snippet("push A,Y onto the stack", """
-    pha
-    tya
-    pha
-""")
-
-register_comment_code_snippet("pull A,Y from the stack", """
-    pla
-    tay
-    pla
+register_snippet(comment_pull, None, """
+    pla : tax | pla : tay
+?   pla : tax | pla : tay
+?   pla
+?   plp
 """)
 
 register_code_snippet(comment_add_to_y, """
