@@ -108,9 +108,9 @@ plot    = &fff0
     lda #&7f                                                          ; 0832: a9 7f       ..
     sta ciaicr                                                        ; 0834: 8d 0d dc    ...
     lda #1                                                            ; 0837: a9 01       ..
-    sta irqmask                                                       ; 0839: 8d 1a d0    ..P
+    sta irqmask                                                       ; 0839: 8d 1a d0    ..P ; Enable only the VIC-II's raster interrupt
     lda #&64                                                          ; 083c: a9 64       ..
-    sta raster                                                        ; 083e: 8d 12 d0    ..P
+    sta raster                                                        ; 083e: 8d 12 d0    ..P ; Raster interrupt at line 100
     lda scroly                                                        ; 0841: ad 11 d0    ..P
     and #&7f                                                          ; 0844: 29 7f       ).
     sta scroly                                                        ; 0846: 8d 11 d0    ..P
@@ -218,7 +218,7 @@ plot    = &fff0
     rts                                                               ; 092f: 60          .
 
 .irq_handler
-    asl vicirq                                                        ; 0930: 0e 19 d0    ..P
+    asl vicirq                                                        ; 0930: 0e 19 d0    ..P ; Acknowledge the VIC-II's interrupts
     inc extcol                                                        ; 0933: ee 20 d0    . P
     jmp lea31                                                         ; 0936: 4c 31 ea    l1. ; The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)
 

@@ -1000,6 +1000,143 @@ end
 """.format(loads, stores))
 
 # ************************************************************************************************
+# The VIC-II's interrupts (C64 and C128)
+
+_VIC_CONTROL_1 = 0xd011
+_VIC_RASTER_LINE = 0xd012
+_VIC_INTERRUPT_STATUS = 0xd019
+_VIC_INTERRUPT_ENABLE = 0xd01a
+_VIC_REGISTERS = (_VIC_CONTROL_1, _VIC_RASTER_LINE, _VIC_INTERRUPT_STATUS, _VIC_INTERRUPT_ENABLE)
+
+# The read-modify-write instructions (absolute), which write back what they
+# read from the interrupt status register (so acknowledge all its interrupts)
+_READ_MODIFY_WRITE_ABS_OPCODES = (0x0e, 0x2e, 0x4e, 0x6e, 0xce, 0xee)   # asl, rol, lsr, ror, dec, inc
+
+# The VIC-II's interrupts, by bit (of &d019 and &d01a)
+_VIC_INTERRUPTS = ("raster", "sprite-background collision", "sprite-sprite collision", "light pen")
+
+def _vic_interrupts_text(value):
+    """e.g. 'raster interrupt', 'raster and light pen interrupts'"""
+    names = [name for bit, name in enumerate(_VIC_INTERRUPTS) if value & (1 << bit)]
+    if len(names) == 1:
+        return names[0] + " interrupt"
+    return ", ".join(names[:-1]) + " and " + names[-1] + " interrupts"
+
+def _straight_runs():
+    """The code, as runs of instructions (lists of binary addresses) that
+    the code runs straight through: each ends at the end of a block (e.g.
+    RTS or JMP), or before an instruction that other code jumps or branches
+    to (or an entry point)."""
+    labels = session.current().labels.labels
+    explicit_entry_points = session.current().cpu.explicit_entry_points
+    run = []
+    for range_start, range_end in memorymanager.loaded_ranges():
+        binary_addr = range_start
+        while binary_addr < range_end:
+            c = classification.get_classification(binary_addr)
+            if c is None or c is classification.INSIDE_A_CLASSIFICATION or not c.is_code(binary_addr):
+                if run:
+                    yield run
+                    run = []
+                binary_addr += 1 if c is None or c is classification.INSIDE_A_CLASSIFICATION else c.length()
+                continue
+            label = labels.get(movemanager.b2r(BinaryAddr(binary_addr)))
+            if run and ((label is not None and label.references) or binary_addr in explicit_entry_points):
+                yield run
+                run = []
+            run.append(binary_addr)
+            binary_addr += c.length()
+            if c.is_block_end():
+                yield run
+                run = []
+        if run:
+            yield run
+            run = []
+
+def _vic_interrupt_analysis():
+    """Comment the code that sets up the VIC-II's interrupts: a store of a
+    known value to its raster line register (&d012), e.g. 'Raster interrupt
+    at line 100', with bit 8 from a store to &d011 that runs with it, if it's
+    known; to its interrupt enable register (&d01a), e.g. 'Enable only the
+    VIC-II's raster interrupt'; and to its interrupt status register (&d019),
+    e.g. 'Acknowledge the VIC-II's raster interrupt', as does a
+    read-modify-write instruction (e.g. 'asl $d019'). (Not where a C128's
+    MMU maps the I/O out: see _mapped_out(). Run once the code has been
+    traced, as one of the CPU's code analysis functions.)"""
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+
+    def stored_value(binary_addr):
+        state = cpu.cpu_states[binary_addr]
+        reg = _STORE_ABS_OPCODES[memory_binary[binary_addr]]
+        if state is None or not state.pessimistic[reg]:
+            return None
+        return state.pessimistic[reg].value
+
+    def comment(binary_addr, text):
+        move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
+        disassembly.comment_binary(memorymanager.BinaryLocation(BinaryAddr(binary_addr), move_id), text, align=Align.INLINE, auto_generated=True)
+
+    for run in _straight_runs():
+        # The stores to the VIC-II's interrupt registers in the run
+        accesses = []       # (binary address, register, opcode)
+        for binary_addr in run:
+            opcode = memory_binary[binary_addr]
+            if opcode not in _STORE_ABS_OPCODES and opcode not in _READ_MODIFY_WRITE_ABS_OPCODES:
+                continue
+            register = memorymanager.get_u16_binary(binary_addr + 1)
+            if register in _VIC_REGISTERS and not _mapped_out(binary_addr, register):
+                accesses.append((binary_addr, register, opcode))
+        if not accesses:
+            continue
+
+        # Bit 8 of the raster line: bit 7 of what's stored to &d011, if
+        # that's known, or set by an 'and #n' or 'ora #n' just before
+        high_bits = set()
+        for binary_addr, register, opcode in accesses:
+            if register != _VIC_CONTROL_1 or opcode not in _STORE_ABS_OPCODES:
+                continue
+            value = stored_value(binary_addr)
+            previous = run[run.index(binary_addr) - 1] if run.index(binary_addr) > 0 else None
+            if value is not None:
+                high_bits.add(value >> 7)
+            elif previous is not None and memory_binary[previous] == 0x29 and not memory_binary[previous + 1] & 0x80:   # and #n
+                high_bits.add(0)
+            elif previous is not None and memory_binary[previous] == 0x09 and memory_binary[previous + 1] & 0x80:       # ora #n
+                high_bits.add(1)
+            else:
+                high_bits.add(None)
+        high_bit = high_bits.pop() if len(high_bits) == 1 else None
+
+        for binary_addr, register, opcode in accesses:
+            if opcode in _READ_MODIFY_WRITE_ABS_OPCODES:
+                if register == _VIC_INTERRUPT_STATUS:
+                    comment(binary_addr, "Acknowledge the VIC-II's interrupts")
+                continue
+            value = stored_value(binary_addr)
+            if value is None:
+                continue
+            if register == _VIC_RASTER_LINE:
+                if high_bit is None:
+                    text = "Raster interrupt at line {0} (or {1}, if bit 7 of {2} is set)".format(value, value + 256, _hex4(_VIC_CONTROL_1))
+                else:
+                    text = "Raster interrupt at line {0}".format(value + 256 * high_bit)
+                comment(binary_addr, text)
+            elif register == _VIC_INTERRUPT_ENABLE:
+                if value & 0x0f == 0:
+                    text = "Disable the VIC-II's interrupts"
+                elif value & 0x0f == 0x0f:
+                    text = "Enable all the VIC-II's interrupts"
+                else:
+                    text = "Enable only the VIC-II's " + _vic_interrupts_text(value)
+                comment(binary_addr, text)
+            elif register == _VIC_INTERRUPT_STATUS:
+                if value & 0x0f == 0x0f:
+                    comment(binary_addr, "Acknowledge the VIC-II's interrupts")
+                elif value & 0x0f:
+                    comment(binary_addr, "Acknowledge the VIC-II's " + _vic_interrupts_text(value))
+
+# ************************************************************************************************
 # BASIC programs
 
 def _basic_line_text(data):
@@ -1272,6 +1409,9 @@ def _set_up(command, machine, names, rom_labels):
     if machine.name == "c128":
         code_analysis_fns = session.current().cpu.code_analysis_fns
         code_analysis_fns.insert(code_analysis_fns.index(session.current().cpu.substitute_constants), _c128_mmu_analysis)
+    # The VIC-II's interrupts (see _vic_interrupt_analysis())
+    if machine.name in ("c64", "c128"):
+        session.current().cpu.code_analysis_fns.append(_vic_interrupt_analysis)
 
     if _is_loaded(machine.basic_start):
         basic_program(machine.basic_start)

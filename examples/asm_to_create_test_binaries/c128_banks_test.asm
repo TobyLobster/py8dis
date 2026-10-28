@@ -60,6 +60,8 @@ start
     lda $d020               ; the border colour again
     lda #$41
     jsr $ffd2               ; the Kernal's CHROUT
+    lda #1
+    sta $d019               ; acknowledge the VIC-II's raster interrupt
     rts
 
 ; Called with the MMU set to bank 0 (by the caller, in a real program)
@@ -72,6 +74,7 @@ in_bank_0
     bne -
     lda #1
     sta $d020               ; RAM, so not a colour
+    sta $d019               ; RAM, so not the VIC-II's interrupts
     jsr $ff7d               ; RAM, not the Kernal's PRIMM, so no string after it
     rts
 in_bank_0_end

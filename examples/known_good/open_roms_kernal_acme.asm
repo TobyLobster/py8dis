@@ -490,7 +490,7 @@ loop_ce5a4
     lda #$14                                                          ; e5b4: a9 14       ..
     sta vic_memory_setup                                              ; e5b6: 8d 18 d0    ..P
     lda #$0f                                                          ; e5b9: a9 0f       ..
-    sta vic_interrupt_status                                          ; e5bb: 8d 19 d0    ..P
+    sta vic_interrupt_status                                          ; e5bb: 8d 19 d0    ..P ; Acknowledge the VIC-II's interrupts
     lda #colour_blue                                                  ; e5be: a9 06       ..
     sta vic_border_colour                                             ; e5c0: 8d 20 d0    . P
     sta vic_background_colour_0                                       ; e5c3: 8d 21 d0    .!P

@@ -111,9 +111,9 @@ sys_entry
     lda #$7f                                                          ; 0832: a9 7f       ..
     sta cia1_interrupt_control                                        ; 0834: 8d 0d dc    ...
     lda #1                                                            ; 0837: a9 01       ..
-    sta vic_interrupt_enable                                          ; 0839: 8d 1a d0    ..P
+    sta vic_interrupt_enable                                          ; 0839: 8d 1a d0    ..P ; Enable only the VIC-II's raster interrupt
     lda #$64                                                          ; 083c: a9 64       ..
-    sta vic_raster_line                                               ; 083e: 8d 12 d0    ..P
+    sta vic_raster_line                                               ; 083e: 8d 12 d0    ..P ; Raster interrupt at line 100
     lda vic_control_1                                                 ; 0841: ad 11 d0    ..P
     and #$7f                                                          ; 0844: 29 7f       ).
     sta vic_control_1                                                 ; 0846: 8d 11 d0    ..P
@@ -221,7 +221,7 @@ loop_c0913
     rts                                                               ; 092f: 60          .
 
 irq_handler
-    asl vic_interrupt_status                                          ; 0930: 0e 19 d0    ..P
+    asl vic_interrupt_status                                          ; 0930: 0e 19 d0    ..P ; Acknowledge the VIC-II's interrupts
     inc vic_border_colour                                             ; 0933: ee 20 d0    . P
     jmp kernal_irq_handler                                            ; 0936: 4c 31 ea    l1. ; The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)
 

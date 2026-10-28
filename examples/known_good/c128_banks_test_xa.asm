@@ -14,6 +14,7 @@ basic_error_vector  = $0300
 l4000   = $4000
 
 // VIC-II ($d000-$d3ff)
+vic_interrupt_status    = $d019
 vic_border_colour       = $d020
 vic_background_colour_0 = $d021
 
@@ -30,6 +31,7 @@ chrout  = $ffd2
 // Other banks
 l1000   = $1000
 ld000   = $d000
+ld019   = $d019
 ld020   = $d020
 le000   = $e000
 lff7d   = $ff7d
@@ -77,25 +79,28 @@ sys_entry
     lda vic_border_colour                                             // 1c44: ad 20 d0    . P
     lda #0                                                            // 1c47: a9 00       ..
     sta mmu_configuration                                             // 1c49: 8d 00 ff    ... // Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
-    jsr sub_c1c58                                                     // 1c4c: 20 58 1c     x.
+    jsr sub_c1c5d                                                     // 1c4c: 20 5d 1c     ].
     lda vic_border_colour                                             // 1c4f: ad 20 d0    . P
     lda #$41 // 'a'                                                   // 1c52: a9 41       .a // A=character to output
     jsr chrout                                                        // 1c54: 20 d2 ff     R. // Output 'a'
-    rts                                                               // 1c57: 60          .
+    lda #1                                                            // 1c57: a9 01       ..
+    sta vic_interrupt_status                                          // 1c59: 8d 19 d0    ..P // Acknowledge the VIC-II's raster interrupt
+    rts                                                               // 1c5c: 60          .
 
-// $1c58 referenced 1 time by $1c4c
-sub_c1c58
-    ldx #0                                                            // 1c58: a2 00       ..
-// $1c5a referenced 1 time by $1c61
-loop_c1c5a
-    lda ld000,x                                                       // 1c5a: bd 00 d0    ..P
-    sta l4000,x                                                       // 1c5d: 9d 00 40    ..@
-    inx                                                               // 1c60: e8          .
-    bne loop_c1c5a                                                    // 1c61: d0 f7       P.
-    lda #1                                                            // 1c63: a9 01       ..
-    sta ld020                                                         // 1c65: 8d 20 d0    . P
-    jsr lff7d                                                         // 1c68: 20 7d ff     ..
-    rts                                                               // 1c6b: 60          .
+// $1c5d referenced 1 time by $1c4c
+sub_c1c5d
+    ldx #0                                                            // 1c5d: a2 00       ..
+// $1c5f referenced 1 time by $1c66
+loop_c1c5f
+    lda ld000,x                                                       // 1c5f: bd 00 d0    ..P
+    sta l4000,x                                                       // 1c62: 9d 00 40    ..@
+    inx                                                               // 1c65: e8          .
+    bne loop_c1c5f                                                    // 1c66: d0 f7       P.
+    lda #1                                                            // 1c68: a9 01       ..
+    sta ld020                                                         // 1c6a: 8d 20 d0    . P
+    sta ld019                                                         // 1c6d: 8d 19 d0    ..P
+    jsr lff7d                                                         // 1c70: 20 7d ff     ..
+    rts                                                               // 1c73: 60          .
 
 pydis_end
 
@@ -108,7 +113,9 @@ pydis_end
 //     mmu_configuration:          5
 //     vic_border_colour:          5
 //     chrout:                     2
+//     ld019:                      2
 //     lffd2:                      2
+//     vic_interrupt_status:       2
 //     basic_error_vector:         1
 //     l00fb:                      1
 //     l00fc:                      1
@@ -117,26 +124,26 @@ pydis_end
 //     ld000:                      1
 //     le000:                      1
 //     lff7d:                      1
-//     loop_c1c5a:                 1
+//     loop_c1c5f:                 1
 //     mmu_configuration_io:       1
 //     mmu_load_configuration_a:   1
-//     sub_c1c58:                  1
+//     sub_c1c5d:                  1
 //     vic_background_colour_0:    1
 
 // Automatically generated labels:
 //     l00fb
 //     l00fc
 //     l4000
-//     loop_c1c5a
-//     sub_c1c58
+//     loop_c1c5f
+//     sub_c1c5d
 
 // Stats:
 //
-//     Total size (Code + Data) = 107 bytes
-//     Code                     = 95 bytes (89%)
-//     Data                     = 12 bytes (11%)
+//     Total size (Code + Data) = 115 bytes
+//     Code                     = 103 bytes (90%)
+//     Data                     = 12 bytes (10%)
 //
-//     Number of instructions   = 38
+//     Number of instructions   = 41
 //     Number of data bytes     = 2 bytes
 //     Number of data words     = 6 bytes
 //     Number of string bytes   = 4 bytes
