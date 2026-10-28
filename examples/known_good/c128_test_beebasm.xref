@@ -2,12 +2,27 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 
 &0002  far_call_bank (Memory locations: Zero page)
     &1c53     loop_c1c36+29                sta far_call_bank
+    &1c66     loop_c1c36+48                sta far_call_bank
+    &1c79     loop_c1c36+67                sta far_call_bank
+    &1cb2     sub_c1cb0+2                  sta far_call_bank
 
 &0003  far_call_pc_high (Memory locations: Zero page)
     &1c57     loop_c1c36+33                sta far_call_pc_high
+    &1c6e     loop_c1c36+56                sta far_call_pc_high
+    &1c7d     loop_c1c36+71                sta far_call_pc_high
+    &1cb6     sub_c1cb0+6                  sta far_call_pc_high
 
 &0004  far_call_pc_low (Memory locations: Zero page)
     &1c5b     loop_c1c36+37                sta far_call_pc_low
+    &1c62     loop_c1c36+44                sta far_call_pc_low
+    &1c81     loop_c1c36+75                sta far_call_pc_low
+    &1cba     sub_c1cb0+10                 sta far_call_pc_low
+
+&0005  far_call_status (Memory locations: Zero page)
+    &1c6a     loop_c1c36+52                sta far_call_status
+
+&0006  far_call_a (Memory locations: Zero page)
+    &1c72     loop_c1c36+60                sta far_call_a
 
 &00d7  screen_mode_40_80 (Memory locations: Zero page)
     &1c40     loop_c1c36+10                lda screen_mode_40_80
@@ -27,21 +42,38 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 &1c36  loop_c1c36 (inline)
     &1c39     loop_c1c36+3                 bpl loop_c1c36
 
-&1c83  irq_handler (inline)
+&1ca8  far_call_target (inline)
     (not referenced)
 
-&1c89  filename (inline)
+&1cac  far_call_target_2 (inline)
     (not referenced)
 
-&1c8d  l1c8d (inline)
-    &1c42     loop_c1c36+12                sta l1c8d
+&1cb0  sub_c1cb0 (inline)
+    &1c86     loop_c1c36+80                jsr sub_c1cb0
 
-&1c8e  pydis_end (inline)
+&1cbf  far_jump_target (inline)
+    (not referenced)
+
+&1cc3  irq_handler (inline)
+    (not referenced)
+
+&1cc9  filename (inline)
+    (not referenced)
+
+&1ccd  l1ccd (inline)
+    &1c42     loop_c1c36+12                sta l1ccd
+
+&1cce  pydis_end (inline)
     (not referenced)
 
 &d020  vic_border_colour (Memory locations: VIC-II)
     &1c2e     sys_entry+33                 sta vic_border_colour
-    &1c83     irq_handler                  inc vic_border_colour
+    &1ca8     far_call_target              inc vic_border_colour
+    &1cac     far_call_target_2            dec vic_border_colour
+    &1cc3     irq_handler                  inc vic_border_colour
+
+&d021  vic_background_colour_0 (Memory locations: VIC-II)
+    &1cbf     far_jump_target              inc vic_background_colour_0
 
 &d030  vic_clock_speed (Memory locations: VIC-II)
     &1c14     sys_entry+7                  sta vic_clock_speed
@@ -54,28 +86,33 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
     &1c3d     loop_c1c36+7                 sta vdc_data
 
 &fa65  kernal_irq_handler (Memory locations: Kernal ROM)
-    &1c86     irq_handler+3                jmp kernal_irq_handler
+    &1cc6     irq_handler+3                jmp kernal_irq_handler
 
 &ff00  mmu_configuration (Memory locations: MMU)
     &1c0f     sys_entry+2                  sta mmu_configuration
 
 &ff68  setbnk (Memory locations: Kernal entry points)
-    &1c64     loop_c1c36+46                jsr setbnk
+    &1c8d     loop_c1c36+87                jsr setbnk
 
 &ff6e  jsrfar (Memory locations: Kernal entry points)
     &1c5d     loop_c1c36+39                jsr jsrfar
+    &1c74     loop_c1c36+62                jsr jsrfar
+    &1c83     loop_c1c36+77                jsr jsrfar
+
+&ff71  jmpfar (Memory locations: Kernal entry points)
+    &1cbc     sub_c1cb0+12                 jmp jmpfar
 
 &ff7d  primm (Memory locations: Kernal entry points)
     &1c17     sys_entry+10                 jsr primm
 
 &ffba  setlfs (Memory locations: Kernal entry points)
-    &1c6d     loop_c1c36+55                jsr setlfs
+    &1c96     loop_c1c36+96                jsr setlfs
 
 &ffbd  setnam (Memory locations: Kernal entry points)
-    &1c76     loop_c1c36+64                jsr setnam
+    &1c9f     loop_c1c36+105               jsr setnam
 
 &ffd2  chrout (Memory locations: Kernal entry points)
     &1c29     sys_entry+28                 jsr chrout
 
 &ffd5  load (Memory locations: Kernal entry points)
-    &1c7b     loop_c1c36+69                jsr load
+    &1ca4     loop_c1c36+110               jsr load

@@ -554,6 +554,19 @@ The same for the C128 in C128 mode, with the usual bank 15 (the ROMs, and the I/
     !pet "hello, c128", $0d, 0
 ```
 
+A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up at &02-&04 with immediate values (in any order, with stores to &05-&08 between them and the call), is commented, e.g. `; Call far_call_target in bank 0`. If the address is in the program, in a bank that has RAM 0 there, where the program is (banks 0 and 2, and below their ROMs, 4, 6, 8, 10 and 12-15), it's traced as code, named `far_call_target` (or `far_jump_target`, then `_2` etc.) unless it already has a name, and the set-up uses its name:
+
+```
+    ; Call far_call_target in bank 0
+    lda #0
+    sta far_call_bank
+    lda #>far_call_target
+    sta far_call_pc_high
+    lda #<far_call_target
+    sta far_call_pc_low
+    jsr jsrfar
+```
+
 (A C128 program in C64 mode is a C64 program: use `c64()`.)
 
 :pencil:`commodore.plus4(names="descriptive", rom_labels=True)`

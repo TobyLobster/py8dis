@@ -605,6 +605,64 @@ def pre_trace_writing_to_vector(p):
     expr(movemanager.b2r(nn1_addr), make_lo(label_name))
     expr(movemanager.b2r(nn2_addr), make_hi(label_name))
 
+# The top of RAM 0 (the bank a C128 program is loaded into) in each of the
+# C128's 16 banks that has it (on a 128K C128, RAM 2 is RAM 0), from the MMU
+# configurations the Kernal's bank numbers stand for: below it, the bank's
+# memory is the program's
+_C128_BANK_RAM0_TOP = {
+    0: 0x10000, 2: 0x10000,                         # RAM only
+    4: 0x8000, 6: 0x8000, 8: 0x8000, 10: 0x8000,    # function ROM from &8000
+    12: 0x8000, 13: 0x8000,                         # function ROM and the Kernal
+    14: 0x4000, 15: 0x4000,                         # BASIC and the Kernal
+}
+
+def pre_trace_far_call(p):
+    """A C128 program setting up JSRFAR or JMPFAR's bank and address at
+    &02-&04 with immediate values, then calling it: comment the set-up, and if
+    the address is in the program (in RAM 0 in that bank), trace it, name it
+    (e.g. 'far_call_target') and use its name in the set-up."""
+    stores = {}
+    for i in (1, 2, 3):
+        store_addr = p.get_memory('store%d' % i, 1)
+        stores[store_addr] = (p.get_binary_address('nn%d' % i, prioritise_definition=False), p.get_memory('nn%d' % i))
+    if sorted(stores) != [2, 3, 4]:
+        return
+    p.entry()
+
+    bank = stores[2][1]
+    target = stores[4][1] + 256*stores[3][1]
+    is_jump = p.get_memory('call') == 0x4c
+    start = p.get_start_loc()
+
+    traced = _is_loaded(target) and target < _C128_BANK_RAM0_TOP.get(bank, 0)
+    if traced:
+        labels = session.current().labels.labels
+        if target in labels and labels[target].explicit_names:
+            # (Use its first name)
+            for move_id, name_list in labels[target].explicit_names.items():
+                label_name = name_list[0].text
+                break
+        else:
+            # e.g. 'far_call_target', then 'far_call_target_2'
+            base_name = "far_jump_target" if is_jump else "far_call_target"
+            counts = session.current().extras.setdefault("commodore.far_call_count", {})
+            count = counts.get(base_name, 0) + 1
+            counts[base_name] = count
+            label_name = base_name if count == 1 else "%s_%d" % (base_name, count)
+            label(target, label_name)
+        p.entry(RuntimeAddr(target))
+        expr(movemanager.b2r(stores[4][0]), make_lo(label_name))
+        expr(movemanager.b2r(stores[3][0]), make_hi(label_name))
+        target_text = label_name
+    else:
+        target_text = "$%04x" % target
+
+    if not p.has_explicit_label(start):
+        p.blank_once(start)
+    disassembly.comment_binary(start, "{0} {1} in bank {2}".format("Jump to" if is_jump else "Call", target_text, bank),
+                               indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    p.blank_once(p.get_binary_location('end'))
+
 def register_snippets():
     """Register commodore's snippets with the current session (once per
     session)"""
@@ -620,6 +678,31 @@ def register_snippets():
             for addr in (vector.addr, vector.addr + 1):
                 alternatives.append("st%s $%x" % (reg, addr))
         stores[reg] = " | ".join(alternatives)
+
+    # On the C128, e.g. 'lda #0 : sta $02 : lda #>target : sta $03 :
+    # lda #<target : sta $04 : jsr jsrfar', the three in any order, with
+    # stores to &05-&08 (the status, A, X and Y to call it with) between them
+    # and the call
+    if any(call.name == "jsrfar" for call in _machine().jump_table):
+        extra = "?   " + " | ".join(["lda #v", "ldx #v", "ldy #v"] + ["st%s $%02x" % (reg, addr) for reg in "axy" for addr in range(5, 9)])
+        far_store = "sta $02 | sta $03 | sta $04"
+        register_snippet(pre_trace_far_call, None, """
+    lda #nn1
+store1
+    {store}
+{extra4}
+    lda #nn2
+store2
+    {store}
+{extra4}
+    lda #nn3
+store3
+    {store}
+{extra8}
+call
+    jsr $ff6e | jmp $ff71
+end
+""".format(store=far_store, extra4="\n".join([extra]*4), extra8="\n".join([extra]*8)))
 
     # e.g. 'lda #<handler : sta $0314 : lda #>handler : sta $0315'
     register_snippet(pre_trace_writing_to_vector, None, """

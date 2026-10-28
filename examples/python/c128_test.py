@@ -4,6 +4,6 @@
 from commands import *
 import commodore
 
-load_prg("orig/c128_test.orig", "6502", "c8e16e878f5125aa538550eece285be3")
+load_prg("orig/c128_test.orig", "6502", "3501b69daf1bc30029932ee1a9f5fbb5")
 commodore.c128()
 go()

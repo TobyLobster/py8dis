@@ -1,7 +1,8 @@
 ; A C128 program for commodore.c128() (see python/c128_test.py): a BASIC
 ; program that SYSes to the machine code, which prints with PRIMM, uses the
 ; MMU, the VDC, the VIC-II and the C128's workspace, sets the IRQ vector,
-; calls a routine in bank 0 with JSRFAR, and loads a file into bank 1.
+; calls routines in other banks with JSRFAR and JMPFAR (set up in different
+; orders), and loads a file into bank 1.
 ; Assemble with:
 ;
 ;   acme -f cbm -o ../orig/c128_test.orig c128_test.asm
@@ -10,6 +11,7 @@
 
 primm   = $ff7d
 jsrfar  = $ff6e
+jmpfar  = $ff71
 setbnk  = $ff68
 setlfs  = $ffba
 setnam  = $ffbd
@@ -73,6 +75,32 @@ vdc_wait
     sta $04
     jsr jsrfar
 
+    ; The same in another order, with the status and A to call it with, and
+    ; the C128's usual bank 15
+    lda #<far_routine_2
+    sta $04
+    lda #15
+    sta $02
+    lda #0
+    sta $05
+    lda #>far_routine_2
+    sta $03
+    lda #1
+    sta $06
+    jsr jsrfar
+
+    ; A routine in RAM 1, which isn't this program's
+    lda #1
+    sta $02
+    lda #$20
+    sta $03
+    lda #$00
+    sta $04
+    jsr jsrfar
+
+    ; JMPFAR, from a subroutine
+    jsr far_jump
+
     ; Load a file into bank 1
     lda #1
     ldx #0
@@ -91,6 +119,23 @@ vdc_wait
 
 far_routine
     inc $d020
+    rts
+
+far_routine_2
+    dec $d020
+    rts
+
+far_jump
+    lda #0
+    sta $02
+    lda #>far_routine_3
+    sta $03
+    lda #<far_routine_3
+    sta $04
+    jmp jmpfar
+
+far_routine_3
+    inc $d021
     rts
 
 irq
