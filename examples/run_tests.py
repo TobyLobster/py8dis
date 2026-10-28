@@ -451,12 +451,16 @@ def check_json_annotations(path, doc, asm):
     regions = doc["memory_regions"]
     if regions != sorted(regions, key=lambda r: (r["start"], r["start"] - r["end"])):
         return f"{path}: the memory regions are out of order"
-    region_names = {r["name"] for r in regions} | {"Other"}
+    # (A local name can have a heading of its own: commodore.py's 'Other
+    # banks', for the C128's names in other banks)
+    own_headings = {"Other banks"}
+    region_names = {r["name"] for r in regions} | {"Other"} | own_headings
     # The headings in the asm, e.g. '; Zero page (&0000-&00ff)' or '; Other'
     prefix = re.escape(asm_comment_prefix(asm))
     asm_headings = set(re.findall("^" + prefix + r" (.*?) \([&$][0-9a-fA-F]{4}-[&$][0-9a-fA-F]{4}\)$", asm, re.M))
-    if re.search("^" + prefix + " Other$", asm, re.M):
-        asm_headings.add("Other")
+    for heading in {"Other"} | own_headings:
+        if re.search("^" + prefix + " " + re.escape(heading) + "$", asm, re.M):
+            asm_headings.add(heading)
     for label in doc["labels"]:
         for n in label.get("names", []) + label.get("local_names", []):
             if "memory_region" in n and n["memory_region"] not in region_names:

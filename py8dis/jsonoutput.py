@@ -255,7 +255,9 @@ def _labels():
                     n["move_id"] = move_id
                 n["start"] = int(local.start_addr)
                 n["end"] = int(local.end_addr)
-                if int(runtime_addr) in headings:
+                if local.heading is not None and config.get_memory_region_headings():
+                    n["memory_region"] = local.heading
+                elif int(runtime_addr) in headings:
                     n["memory_region"] = headings[int(runtime_addr)]
                 local_names.append(n)
         if local_names:

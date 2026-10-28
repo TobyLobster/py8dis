@@ -10,27 +10,25 @@ l00fc   = &00fc
 ; OS workspace (&0200-&03ff)
 basic_error_vector  = &0300
 
-; Function keys (&1000-&10ff)
-l1000   = &1000
-
 ; BASIC ROM (&4000-&afff)
 l4000   = &4000
 
 ; VIC-II (&d000-&d3ff)
-ld000                   = &d000
 vic_border_colour       = &d020
-ld020                   = &d020
 vic_background_colour_0 = &d021
 
 ; MMU (&d500-&d5ff)
 mmu_configuration_io = &d500
 
-; Kernal ROM (&e000-&feff)
-le000   = &e000
-
 ; MMU (&ff00-&ff04)
 mmu_configuration       = &ff00
 mmu_load_configuration_a = &ff01
+
+; Other banks
+l1000   = &1000
+ld000   = &d000
+ld020   = &d020
+le000   = &e000
 
 ; The PRG file's header: the address to load it at
     org &1bff

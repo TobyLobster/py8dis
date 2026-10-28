@@ -770,6 +770,11 @@ def _c128_configuration_at(binary_addr, ranges):
             return configuration
     return None
 
+# The heading for the names of addresses in another configuration than bank
+# 15 in the "Memory locations" list (since their memory regions are bank
+# 15's)
+C128_OTHER_BANKS_HEADING = "Other banks"
+
 def _c128_name_by_configuration(ranges):
     """Where code that runs with another MMU configuration (in the ranges,
     see _c128_configuration_at()) uses an address that's something else in
@@ -800,7 +805,7 @@ def _c128_name_by_configuration(ranges):
             c = classification.get_classification(reference.binary_addr)
             length = c.length() if c is not None and c is not classification.INSIDE_A_CLASSIFICATION else 1
             disassembly.add_local_label(RuntimeAddr(runtime_addr), utils.force_case("l%04x" % runtime_addr),
-                                        reference.binary_addr, reference.binary_addr + length)
+                                        reference.binary_addr, reference.binary_addr + length, heading=C128_OTHER_BANKS_HEADING)
 
 def _c128_mmu_analysis():
     """The C128's MMU: comment the code that sets its configuration, and name

@@ -279,14 +279,17 @@ def add_optional_label(runtime_addr, s, *, base_addr=None, definable_inline=True
         check(is_simple_name(s), "this isn't a valid label name (a letter or underscore followed by letters, digits or underscores)")
     optional_labels[runtime_addr] = new_label
 
-def add_local_label(runtime_addr, name, start_addr, end_addr, move_id=None):
+def add_local_label(runtime_addr, name, start_addr, end_addr, move_id=None, heading=None):
     """Add a label at the given runtime address, valid only if referenced in the region specified.
 
     start_addr, end_addr are runtime addresses.
+
+    `heading` is the heading to define it under in the "Memory locations"
+    list, if not its memory region's (see memory_location_definitions()).
     """
 
     label = session.current().labels.labels[runtime_addr]
-    label.add_local_label(name, start_addr, end_addr, move_id)
+    label.add_local_label(name, start_addr, end_addr, move_id, heading)
 
 def get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, move_id=None):
     """Get a label name (a lazy string) for the given runtime address.
@@ -1124,18 +1127,28 @@ def memory_location_definitions(indent_len):
     labels = session.current().labels.labels
     formatter = config.get_assembler()
 
-    # The names to define for each label, grouped by region (in address order)
+    # The names to define for each label, grouped by region (in address
+    # order), then the local labels with a heading of their own (see
+    # Label.LocalLabelName), grouped by heading (in the order they come)
     groups = []         # (region, [(label, names)])
+    own_headings = {}   # heading: [(label, names)]
     use_regions = config.get_memory_region_headings()
     for addr in sorted(labels):
         label = labels[addr]
         names = label.gather_explicit_definitions()
+        local_headings = label.local_label_headings() if use_regions else {}
+        for name in names:
+            if name in local_headings:
+                own_headings.setdefault(local_headings[name], []).append((label, [name]))
+        names = [name for name in names if name not in local_headings]
         if not names:
             continue
         region = memory_region_for(addr) if use_regions else None
         if not groups or groups[-1][0] != region:
             groups.append((region, []))
         groups[-1][1].append((label, names))
+    for heading, definitions in own_headings.items():
+        groups.append((heading, definitions))
 
     # Without any regions (e.g. for the 8080, unless the control file names
     # some), or with the headings turned off, there's just the one list
@@ -1147,13 +1160,17 @@ def memory_location_definitions(indent_len):
         if use_headings:
             if region is None:
                 heading = "Other"
+            elif isinstance(region, str):
+                # (A heading of its own)
+                heading = region
             else:
                 start, end, name = region
                 heading = "{0} ({1}-{2})".format(name, formatter.hex4_for_comment(start), formatter.hex4_for_comment(end - 1))
             lines.append(output.Blank().resolve())
             lines.append(output.CommentLine(heading).resolve())
             for label, _ in definitions:
-                headings[int(label.runtime_addr)] = "Other" if region is None else region[2]
+                if not isinstance(region, str):
+                    headings[int(label.runtime_addr)] = "Other" if region is None else region[2]
 
         # Align the values (rounded up to the next indent level)
         align = max(len(name) for _, names in definitions for name in names)
