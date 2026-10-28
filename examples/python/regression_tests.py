@@ -3,7 +3,7 @@
 
 from commands import *
 
-load(0x2000, "orig/regression_tests1.orig", "6502", "ddb58b6e5436655daa93ae6f3c033220")
+load(0x2000, "orig/regression_tests1.orig", "6502", "5a6fea323bcb742b072e4bac4ebcdf8c")
 
 # An entry point added *before* a second load() must not be forgotten
 entry(0x2000, "start")
@@ -70,5 +70,15 @@ memory_region(0x00, 0x100, "")
 # when it's output. ("text" + get_label(...) used to be an error.)
 comment(0x200b, "Calls " + get_label(0x2036, 0x200c, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE), inline=True)
 comment(0x200b, get_label(0x2036, 0x200c, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE) + " is quiet", inline=True)
+
+# A snippet whose pattern has '.' (any instruction) where the code has
+# 'cpx #4' used not to match, since the wildcard's pattern for opcode &e0 was
+# wrong. It matches, so the code at &2037 is traced and commented.
+import snippets6502
+snippets6502.register_comment_code_snippet("Found by a snippet with a wildcard", """
+    ldy #3
+    .
+    sta $73
+""")
 
 go()

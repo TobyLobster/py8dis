@@ -249,7 +249,11 @@ def json_validator():
         except ImportError:
             _json_validator = False
         else:
-            _json_validator = jsonschema.Draft202012Validator(json.loads(JSON_SCHEMA.read_text()))
+            # The schema is draft 2020-12, but uses nothing that draft 7
+            # doesn't have, so jsonschema before 4.0 (which has no
+            # Draft202012Validator) checks it the same way with draft 7
+            validator = getattr(jsonschema, "Draft202012Validator", None) or jsonschema.Draft7Validator
+            _json_validator = validator(json.loads(JSON_SCHEMA.read_text()))
     return _json_validator or None
 
 def json_sample(doc):

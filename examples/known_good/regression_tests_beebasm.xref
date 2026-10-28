@@ -15,6 +15,9 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 &0072  temp_2 (local to &2009-&200a)
     &2009     pydis_start+9                sty temp_2
 
+&0073  l0073 (Memory locations: Other)
+    &203b     quiet_routine+5              sta l0073
+
 &2000  pydis_start (inline), start (inline)
     (not referenced)
 

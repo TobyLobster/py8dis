@@ -3,6 +3,7 @@ al 000070 .l0070
 al 000070 .value
 al 000071 .temp
 al 000072 .temp_2
+al 000073 .l0073
 al 002000 .pydis_start
 al 002000 .start
 al 00202C .c202c

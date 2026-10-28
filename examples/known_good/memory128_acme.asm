@@ -108,40 +108,56 @@ basic_end
     !byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                             ; 1ff5: 00 00 00... ...
 ; $2000 referenced 24 times by $2197, $21d2, $220d, $2248, $2283, $22be, $22f9, $2334, $236f, $23aa, $23e5, $2420, $245b, $2496, $24d1, $250c, $2661, $2772, $27a9, $27e1, $27fc, $2831, $2850, $2855
 src_low
-src_high = src_low+1
-dst_low = src_low+2
-dst_high = src_low+3
-src_low_crd1 = src_low+4
-src_high_crd1 = src_low+5
-dst_low_crd1 = src_low+6
-dst_high_crd1 = src_low+7
-src_low_crd2 = src_low+8
-src_high_crd2 = src_low+9
-dst_low_crd2 = src_low+10
-dst_high_crd2 = src_low+11
-match = src_low+12
-match_cnt = src_low+13
-value_1 = src_low+14
-value_2 = src_low+15
-score = src_low+16
-param = src_low+17
-    !byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0        ; 2000: 00 00 00... ...
+    !byte 0                                                           ; 2000: 00          .
 ; $2001 referenced 24 times by $219d, $21d8, $2213, $224e, $2289, $22c4, $22ff, $233a, $2375, $23b0, $23eb, $2426, $2461, $249c, $24d7, $2512, $2666, $2778, $27af, $27e7, $2802, $2829, $2858, $285d
+src_high
+    !byte 0                                                           ; 2001: 00          .
 ; $2002 referenced 76 times by $2172, $2185, $21ad, $21c0, $21e8, $21fb, $2223, $2236, $225e, $2271, $2299, $22ac, $22d4, $22e7, $230f, $2322, $234a, $235d, $2385, $2398, $23c0, $23d3, $23fb, $240e, $2436, $2449, $2471, $2484, $24ac, $24bf, $24e7, $24fa, $2657, $26f9, $270c, $274a, $2756, $2781, $278d, $27d5, $27f0, $2821, $283f, $2844, $2869, $287c, $288f, $28a2, $28b5, $28c8, $28db, $28ee, $2901, $2914, $2927, $293a, $294d, $2960, $2973, $2986, $2999, $29ac, $29bf, $29d2, $29e5, $29f8, $2a0b, $2a1e, $2a31, $2a44, $2a57, $2a6a, $2a7d, $2a90, $2aa3, $2ab6
+dst_low
+    !byte 0                                                           ; 2002: 00          .
 ; $2003 referenced 76 times by $2178, $217d, $21b3, $21b8, $21ee, $21f3, $2229, $222e, $2264, $2269, $229f, $22a4, $22da, $22df, $2315, $231a, $2350, $2355, $238b, $2390, $23c6, $23cb, $2401, $2406, $243c, $2441, $2477, $247c, $24b2, $24b7, $24ed, $24f2, $265c, $26ff, $2712, $2750, $2760, $2787, $2797, $27db, $27f6, $2819, $2847, $284c, $286f, $2874, $2895, $289a, $28bb, $28c0, $28e1, $28e6, $2907, $290c, $292d, $2932, $2953, $2958, $2979, $297e, $299f, $29a4, $29c5, $29ca, $29eb, $29f0, $2a11, $2a16, $2a37, $2a3c, $2a5d, $2a62, $2a83, $2a88, $2aa9, $2aae
+dst_high
+    !byte 0                                                           ; 2003: 00          .
+src_low_crd1
+    !byte 0                                                           ; 2004: 00          .
+src_high_crd1
+    !byte 0                                                           ; 2005: 00          .
 ; $2006 referenced 3 times by $26fc, $2747, $27d2
+dst_low_crd1
+    !byte 0                                                           ; 2006: 00          .
 ; $2007 referenced 3 times by $2702, $274d, $27d8
+dst_high_crd1
+    !byte 0                                                           ; 2007: 00          .
+src_low_crd2
+    !byte 0                                                           ; 2008: 00          .
+src_high_crd2
+    !byte 0                                                           ; 2009: 00          .
 ; $200a referenced 3 times by $270f, $277e, $27ed
+dst_low_crd2
+    !byte 0                                                           ; 200a: 00          .
 ; $200b referenced 3 times by $2715, $2784, $27f3
+dst_high_crd2
+    !byte 0                                                           ; 200b: 00          .
 ; $200c referenced 19 times by $21a3, $21de, $2219, $2254, $228f, $22ca, $2305, $2340, $237b, $23b6, $23f1, $242c, $2467, $24a2, $24dd, $2518, $26f5, $2705, $2718
+match
+    !byte 0                                                           ; 200c: 00          .
 ; $200d referenced 4 times by $26b9, $26bc, $26c3, $26f2
+match_cnt
+    !byte 0                                                           ; 200d: 00          .
 ; $200e referenced 2 times by $26ca, $2708
+value_1
+    !byte 0                                                           ; 200e: 00          .
 ; $200f referenced 3 times by $26cd, $26d3, $271b
+value_2
+    !byte 0                                                           ; 200f: 00          .
 ; $2010 referenced 7 times by $2108, $26da, $26e0, $26ea, $2724, $272a, $2b05
+score
+    !byte 0                                                           ; 2010: 00          .
 ; $2011 referenced 6 times by $2b08, $2b0d, $2b15, $2b7d, $2b85, $2bef
+param
+    !byte 0                                                           ; 2011: 00          .
 ; $2012 referenced 2 times by $2130, $2139
 jump_addr
-l2013 = jump_addr+1
     !word 0                                                           ; 2012: 00 00       ..
 ; $2013 referenced 1 time by $2136
     !byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  ; 2014: 00 00 00... ...
@@ -285,8 +301,8 @@ found_key
     tax                                                               ; 212c: aa          .
     lda handler_table,x                                               ; 212d: bd 4f 21    .o!
     sta jump_addr                                                     ; 2130: 8d 12 20    ..
-    lda l2150,x                                                       ; 2133: bd 50 21    .p!
-    sta l2013                                                         ; 2136: 8d 13 20    ..
+    lda handler_table+1,x                                             ; 2133: bd 50 21    .p!
+    sta jump_addr+1                                                   ; 2136: 8d 13 20    ..
     jmp (jump_addr)                                                   ; 2139: 6c 12 20    ..
 
 ; $213c referenced 1 time by $211b
@@ -304,7 +320,6 @@ key_table
     !pet "12345678qwertyui"                                           ; 213f: 31 32 33... 123
 ; $214f referenced 1 time by $212d
 handler_table
-l2150 = handler_table+1
     !word show_1, show_2, show_3, show_4, show_5, show_6, show_7      ; 214f: 6f 21 aa... .!.
     !word show_8, show_Q, show_W, show_E, show_R, show_T, show_Y      ; 215d: 0c 23 47... .#g
     !word show_U, show_I                                              ; 216b: a9 24 e4... .$.
@@ -728,125 +743,116 @@ return_16
 
 ; $251f referenced 1 time by $2866
 card_pos_array
-    !byte 0                                                           ; 251f: 00          .
+l2520 = card_pos_array+1
+l2521 = card_pos_array+2
+l2522 = card_pos_array+3
+l2523 = card_pos_array+4
+l2524 = card_pos_array+5
+l2525 = card_pos_array+6
+l2526 = card_pos_array+7
+l2527 = card_pos_array+8
+l2528 = card_pos_array+9
+l2529 = card_pos_array+10
+l252a = card_pos_array+11
+l252b = card_pos_array+12
+l252c = card_pos_array+13
+l252d = card_pos_array+14
+l252e = card_pos_array+15
+l252f = card_pos_array+16
+l2530 = card_pos_array+17
+l2531 = card_pos_array+18
+l2532 = card_pos_array+19
+l2533 = card_pos_array+20
+l2534 = card_pos_array+21
+l2535 = card_pos_array+22
+l2536 = card_pos_array+23
+l2537 = card_pos_array+24
+l2538 = card_pos_array+25
+l2539 = card_pos_array+26
+l253a = card_pos_array+27
+l253b = card_pos_array+28
+l253c = card_pos_array+29
+l253d = card_pos_array+30
+l253e = card_pos_array+31
+l253f = card_pos_array+32
+l2540 = card_pos_array+33
+    !word     0                                                       ; 251f: 00 00       ..
+    !word   $51                                                       ; 2521: 51 00       q.
+    !word   $5b                                                       ; 2523: 5b 00       [.
+    !word   $65                                                       ; 2525: 65 00       ..
+    !word   $6f                                                       ; 2527: 6f 00       ..
+    !word   $79                                                       ; 2529: 79 00       ..
+    !word   $83                                                       ; 252b: 83 00       ..
+    !word   $8d                                                       ; 252d: 8d 00       ..
+    !word   $97                                                       ; 252f: 97 00       ..
+    !word $0411                                                       ; 2531: 11 04       ..
+    !word $041b                                                       ; 2533: 1b 04       ..
+    !word $0425                                                       ; 2535: 25 04       %.
+    !word $042f                                                       ; 2537: 2f 04       /.
+    !word $0439                                                       ; 2539: 39 04       9.
+    !word $0443                                                       ; 253b: 43 04       c.
+    !word $044d                                                       ; 253d: 4d 04       m.
+    !word $0457                                                       ; 253f: 57 04       w.
 ; $2520 referenced 1 time by $286c
-l2520
-    !byte 0                                                           ; 2520: 00          .
 ; $2521 referenced 2 times by $216f, $288c
-l2521
-    !byte $51                                                         ; 2521: 51          q
 ; $2522 referenced 2 times by $2175, $2892
-l2522
-    !byte 0                                                           ; 2522: 00          .
 ; $2523 referenced 2 times by $21aa, $28b2
-l2523
-    !byte $5b                                                         ; 2523: 5b          [
 ; $2524 referenced 2 times by $21b0, $28b8
-l2524
-    !byte 0                                                           ; 2524: 00          .
 ; $2525 referenced 2 times by $21e5, $28d8
-l2525
-    !byte $65                                                         ; 2525: 65          .
 ; $2526 referenced 2 times by $21eb, $28de
-l2526
-    !byte 0                                                           ; 2526: 00          .
 ; $2527 referenced 2 times by $2220, $28fe
-l2527
-    !byte $6f                                                         ; 2527: 6f          .
 ; $2528 referenced 2 times by $2226, $2904
-l2528
-    !byte 0                                                           ; 2528: 00          .
 ; $2529 referenced 2 times by $225b, $2924
-l2529
-    !byte $79                                                         ; 2529: 79          .
 ; $252a referenced 2 times by $2261, $292a
-l252a
-    !byte 0                                                           ; 252a: 00          .
 ; $252b referenced 2 times by $2296, $294a
-l252b
-    !byte $83                                                         ; 252b: 83          .
 ; $252c referenced 2 times by $229c, $2950
-l252c
-    !byte 0                                                           ; 252c: 00          .
 ; $252d referenced 2 times by $22d1, $2970
-l252d
-    !byte $8d                                                         ; 252d: 8d          .
 ; $252e referenced 2 times by $22d7, $2976
-l252e
-    !byte 0                                                           ; 252e: 00          .
 ; $252f referenced 2 times by $230c, $2996
-l252f
-    !byte $97                                                         ; 252f: 97          .
 ; $2530 referenced 2 times by $2312, $299c
-l2530
-    !byte 0                                                           ; 2530: 00          .
 ; $2531 referenced 2 times by $2347, $29bc
-l2531
-    !byte $11                                                         ; 2531: 11          .
 ; $2532 referenced 2 times by $234d, $29c2
-l2532
-    !byte 4                                                           ; 2532: 04          .
 ; $2533 referenced 2 times by $2382, $29e2
-l2533
-    !byte $1b                                                         ; 2533: 1b          .
 ; $2534 referenced 2 times by $2388, $29e8
-l2534
-    !byte 4                                                           ; 2534: 04          .
 ; $2535 referenced 2 times by $23bd, $2a08
-l2535
-    !byte $25                                                         ; 2535: 25          %
 ; $2536 referenced 2 times by $23c3, $2a0e
-l2536
-    !byte 4                                                           ; 2536: 04          .
 ; $2537 referenced 2 times by $23f8, $2a2e
-l2537
-    !byte $2f                                                         ; 2537: 2f          /
 ; $2538 referenced 2 times by $23fe, $2a34
-l2538
-    !byte 4                                                           ; 2538: 04          .
 ; $2539 referenced 2 times by $2433, $2a54
-l2539
-    !byte $39                                                         ; 2539: 39          9
 ; $253a referenced 2 times by $2439, $2a5a
-l253a
-    !byte 4                                                           ; 253a: 04          .
 ; $253b referenced 2 times by $246e, $2a7a
-l253b
-    !byte $43                                                         ; 253b: 43          c
 ; $253c referenced 2 times by $2474, $2a80
-l253c
-    !byte 4                                                           ; 253c: 04          .
 ; $253d referenced 2 times by $24a9, $2aa0
-l253d
-    !byte $4d                                                         ; 253d: 4d          m
 ; $253e referenced 2 times by $24af, $2aa6
-l253e
-    !byte 4                                                           ; 253e: 04          .
 ; $253f referenced 1 time by $24e4
-l253f
-    !byte $57                                                         ; 253f: 57          w
 ; $2540 referenced 1 time by $24ea
-l2540
-    !byte 4                                                           ; 2540: 04          .
 ; $2541 referenced 2 times by $27de, $27f9
 special_card_face_array
-    !byte 0                                                           ; 2541: 00          .
+l2542 = special_card_face_array+1
+l2543 = special_card_face_array+2
+l2544 = special_card_face_array+3
+    !word $1000                                                       ; 2541: 00 10       ..
+    !word $1040                                                       ; 2543: 40 10       @.
 ; $2542 referenced 2 times by $27e4, $27ff
-l2542
-    !byte $10                                                         ; 2542: 10          .
 ; $2543 referenced 2 times by $276f, $27a6
-l2543
-    !byte $40                                                         ; 2543: 40          @
 ; $2544 referenced 2 times by $2775, $27ac
-l2544
-    !byte $10                                                         ; 2544: 10          .
 card_face_origin
-    !byte $80, $10,   1, 0, $c0, $10, $fe, 0,   0, $11,   2, 0        ; 2545: 80 10 01... ...
-    !byte $40, $11, $fd, 0, $80, $11,   3, 0, $c0, $11, $fc, 0        ; 2551: 40 11 fd... @..
-    !byte   0, $12,   4, 0, $40, $12, $fb, 0, $80, $12,   5, 0        ; 255d: 00 12 04... ...
-    !byte $c0, $12, $fa, 0,   0, $13,   6, 0, $40, $13, $f9, 0        ; 2569: c0 12 fa... ...
-    !byte $80, $13,   7, 0, $c0, $13, $f8, 0,   0, $14,   8, 0        ; 2575: 80 13 07... ...
-    !byte $40, $14, $f7, 0                                            ; 2581: 40 14 f7... @..
+    !word $1080,   1                                                  ; 2545: 80 10 01... ...
+    !word $10c0, $fe                                                  ; 2549: c0 10 fe... ...
+    !word $1100,   2                                                  ; 254d: 00 11 02... ...
+    !word $1140, $fd                                                  ; 2551: 40 11 fd... @..
+    !word $1180,   3                                                  ; 2555: 80 11 03... ...
+    !word $11c0, $fc                                                  ; 2559: c0 11 fc... ...
+    !word $1200,   4                                                  ; 255d: 00 12 04... ...
+    !word $1240, $fb                                                  ; 2561: 40 12 fb... @..
+    !word $1280,   5                                                  ; 2565: 80 12 05... ...
+    !word $12c0, $fa                                                  ; 2569: c0 12 fa... ...
+    !word $1300,   6                                                  ; 256d: 00 13 06... ...
+    !word $1340, $f9                                                  ; 2571: 40 13 f9... @..
+    !word $1380,   7                                                  ; 2575: 80 13 07... ...
+    !word $13c0, $f8                                                  ; 2579: c0 13 f8... ...
+    !word $1400,   8                                                  ; 257d: 00 14 08... ...
+    !word $1440, $f7                                                  ; 2581: 40 14 f7... @..
 
 ; $2585 referenced 1 time by $20f0
 fill_unique_array
@@ -2300,6 +2306,12 @@ pydis_end
 !if (basic_end) != $1c0b {
     !error "Assertion failed: basic_end == $1c0b"
 }
+!if (handler_table+1) != $2150 {
+    !error "Assertion failed: handler_table+1 == $2150"
+}
+!if (jump_addr+1) != $2013 {
+    !error "Assertion failed: jump_addr+1 == $2013"
+}
 !if (show_1) != $216f {
     !error "Assertion failed: show_1 == $216f"
 }
@@ -2463,8 +2475,6 @@ pydis_end
 ;     handler_table:                 1
 ;     inner_loop:                    1
 ;     key_table:                     1
-;     l2013:                         1
-;     l2150:                         1
 ;     l2520:                         1
 ;     l253f:                         1
 ;     l2540:                         1
@@ -2587,8 +2597,6 @@ pydis_end
 ;     l00fb
 ;     l00fc
 ;     l00fd
-;     l2013
-;     l2150
 ;     l2520
 ;     l2521
 ;     l2522
@@ -2705,8 +2713,8 @@ pydis_end
 ;     Data                     = 8320 bytes (74%)
 ;
 ;     Number of instructions   = 1198
-;     Number of data bytes     = 8260 bytes
-;     Number of data words     = 40 bytes
+;     Number of data bytes     = 8158 bytes
+;     Number of data words     = 142 bytes
 ;     Number of string bytes   = 20 bytes
 ;     Number of strings        = 2
 

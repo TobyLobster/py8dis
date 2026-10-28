@@ -12,6 +12,9 @@ value   = $70
 temp    = $71
 temp_2  = $72
 
+; Other
+l0073   = $73
+
     * = $2000
 
 pydis_start
@@ -68,13 +71,18 @@ store_value
 quiet_routine
     rts                                                               ; 2036: 60          `
 
-    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 2037: ea ea ea... ...
-    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 2043: ea ea ea... ...
-    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 204f: ea ea ea... ...
-    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 205b: ea ea ea... ...
-    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 2067: ea ea ea... ...
-    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 2073: ea ea ea... ...
-    !byte $ea                                                         ; 207f: ea          .
+    ; Found by a snippet with a wildcard
+    ldy #3                                                            ; 2037: a0 03       ..
+    cpx #4                                                            ; 2039: e0 04       ..
+    sta l0073                                                         ; 203b: 85 73       .s
+    rts                                                               ; 203d: 60          `
+
+    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 203e: ea ea ea... ...
+    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 204a: ea ea ea... ...
+    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 2056: ea ea ea... ...
+    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 2062: ea ea ea... ...
+    !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; 206e: ea ea ea... ...
+    !byte $ea, $ea, $ea, $ea, $ea, $ea                                ; 207a: ea ea ea... ...
 
 part2
     jsr store_value                                                   ; 2080: 20 2f 20     /
@@ -109,6 +117,7 @@ pydis_end
 ;     value:           4
 ;     c202c:           2
 ;     store_value:     2
+;     l0073:           1
 ;     part2:           1
 ;     quiet_routine:   1
 ;     temp:            1
@@ -118,16 +127,17 @@ pydis_end
 ;     c202c
 ;     l0000
 ;     l0070
+;     l0073
 ;     l2085
 
 ; Stats:
 ;
 ;     Total size (Code + Data) = 140 bytes
-;     Code                     = 59 bytes (42%)
-;     Data                     = 81 bytes (58%)
+;     Code                     = 66 bytes (47%)
+;     Data                     = 74 bytes (53%)
 ;
-;     Number of instructions   = 31
-;     Number of data bytes     = 76 bytes
+;     Number of instructions   = 35
+;     Number of data bytes     = 69 bytes
 ;     Number of data words     = 2 bytes
 ;     Number of string bytes   = 3 bytes
 ;     Number of strings        = 1

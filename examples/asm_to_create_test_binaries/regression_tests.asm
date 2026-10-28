@@ -54,6 +54,15 @@ store_value
 quiet_routine
     rts
 
+    ; Not called: a snippet whose pattern has '.' (any instruction) for the
+    ; cpx #4 finds it (see the control file). The wildcard used not to match
+    ; cpx #n, so this was left as data.
+wildcard_snippet
+    ldy #3
+    cpx #4
+    sta $73
+    rts
+
     !fill $2080 - *, $ea
 
 ; ---------------------------------------------------------------------------
