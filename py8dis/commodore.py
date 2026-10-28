@@ -786,11 +786,14 @@ def _c128_name_by_configuration(ranges):
         return
     machine = _machine()
     optional_labels = session.current().disassembly.optional_labels
-    # The names c128() gives that can be replaced: the ROM routines' (but not
-    # the Kernal's jump table's, which are calls, with hooks)
+    # The names c128() gives that can be replaced: the ROM routines' and
+    # the Kernal's jump table's (whose calls aren't commented there either,
+    # see _unless_mapped_out())
     routine_names = collections.defaultdict(set)
     for routine in machine.rom_routines:
         routine_names[routine.addr].update({routine.name, routine.commodore_name})
+    for call in machine.jump_table:
+        routine_names[call.addr].add(call.name)
     bank_15 = c128_bank_configurations[15]
     for runtime_addr, label in sorted(session.current().labels.labels.items()):
         if runtime_addr not in optional_labels and runtime_addr not in routine_names:
@@ -807,6 +810,42 @@ def _c128_name_by_configuration(ranges):
             disassembly.add_local_label(RuntimeAddr(runtime_addr), utils.force_case("l%04x" % runtime_addr),
                                         reference.binary_addr, reference.binary_addr + length, heading=C128_OTHER_BANKS_HEADING)
 
+def _mapped_out(binary_addr, runtime_addr):
+    """Whether the code at binary_addr runs with a C128 MMU configuration in
+    which runtime_addr is something else than in bank 15 (e.g. RAM rather
+    than the Kernal ROM or I/O), so a call to a ROM routine there, or a store
+    to an I/O register, isn't one. (Always False for the other machines.)
+    During tracing, only c128_bank()'s configurations are known; once the
+    code has been traced, those the code sets too (see
+    _c128_mmu_analysis())."""
+    if _machine().name != "c128":
+        return False
+    extras = session.current().extras
+    ranges = extras.get("commodore.c128_ranges")
+    if ranges is None:
+        ranges = extras.get("commodore.c128_banks", [])
+    configuration = _c128_configuration_at(binary_addr, ranges)
+    return configuration is not None and c128_memory(configuration, runtime_addr) != c128_memory(c128_bank_configurations[15], runtime_addr)
+
+def _unless_mapped_out(hook):
+    """A subroutine hook for a ROM routine, that does nothing for a call
+    from code that runs with the ROM mapped out (see _mapped_out())."""
+    def wrapper(runtime_addr, state, subroutine):
+        binary_addr, _ = movemanager.r2b(runtime_addr)
+        if binary_addr is not None and _mapped_out(binary_addr, subroutine.runtime_addr):
+            return
+        hook(runtime_addr, state, subroutine)
+    return wrapper
+
+def _inline_string_hook(target, caller):
+    """The hook for a call that prints the string after it (PRIMM): tracing
+    continues after the string, unless the call is from code that runs with
+    the Kernal ROM mapped out (see _mapped_out())."""
+    binary_addr, _ = movemanager.r2b(caller)
+    if binary_addr is not None and _mapped_out(binary_addr, target):
+        return caller + 3
+    return stringz_hook(target, caller)
+
 def _c128_mmu_analysis():
     """The C128's MMU: comment the code that sets its configuration, and name
     the addresses code uses according to the configuration it runs with:
@@ -818,6 +857,7 @@ def _c128_mmu_analysis():
     # (The configuration the code sets comes first, since it changes the one
     # c128_bank() gives)
     ranges = _c128_switched_ranges(writes) + list(session.current().extras.get("commodore.c128_banks", []))
+    session.current().extras["commodore.c128_ranges"] = ranges
     _c128_name_by_configuration(ranges)
 
 def c128_bank(start, end, bank=None, *, configuration=None):
@@ -828,7 +868,9 @@ def c128_bank(start, end, bank=None, *, configuration=None):
     An address it uses that's something else there (e.g. in bank 0, RAM
     rather than I/O or a ROM) isn't given its name in bank 15: e.g. 'lda
     $d020' is 'lda ld020', not 'lda vic_border_colour'. (Only the names
-    c128() gives; and &0000-&03ff is RAM 0 in every bank.) Call it after
+    c128() gives; and &0000-&03ff is RAM 0 in every bank.) A call to a ROM
+    routine that's mapped out isn't commented as one, and a call to PRIMM
+    isn't followed by a string (see _mapped_out()). Call it after
     c128()."""
     command = "c128_bank"
     if _machine().name != "c128":
@@ -1202,30 +1244,34 @@ def _set_up(command, machine, names, rom_labels):
         optional_label(addr, name, base, definable_inline=not any(start <= addr < end for start, end in machine.io_ranges))
 
     for call in machine.jump_table:
-        subroutine(call.addr, call.name, call.title, None, call.on_entry, call.on_exit, hook=_hooks.get(call.name, default_hook), is_entry_point=False)
+        subroutine(call.addr, call.name, call.title, None, call.on_entry, call.on_exit, hook=_unless_mapped_out(_hooks.get(call.name, default_hook)), is_entry_point=False)
     # A call that prints the string after it (PRIMM) continues after the
     # string
     for addr in machine.inline_string_calls:
         cpu = session.current().cpu
         if cpu is None:
             utils.die("commodore.{0}(): call load() first".format(command))
-        cpu.subroutine_hooks[RuntimeAddr(addr)] = stringz_hook
+        cpu.subroutine_hooks[RuntimeAddr(addr)] = _inline_string_hook
     if rom_labels:
         for routine in machine.rom_routines:
             name = routine.name
             if names == "commodore" and routine.commodore_name is not None:
                 name = routine.commodore_name
             subroutine(routine.addr, name, routine.title, None, routine.on_entry, routine.on_exit,
-                       hook=strout_hook if routine.commodore_name == "strout" else default_hook, is_entry_point=False)
+                       hook=_unless_mapped_out(strout_hook if routine.commodore_name == "strout" else default_hook), is_entry_point=False)
 
     # Colours stored in the colour registers
     for addr in machine.colour_registers:
         for reg in "axy":
-            session.current().trace.substitute_constant_list.append(cpu6502.SubConst("st%s $%04x" % (reg, addr), reg, machine.colours, True))
+            session.current().trace.substitute_constant_list.append(cpu6502.SubConst("st%s $%04x" % (reg, addr), reg, machine.colours, True,
+                                                                                     condition=lambda binary_addr, addr=addr: not _mapped_out(binary_addr, addr)))
 
-    # The C128's MMU (see _c128_mmu_analysis())
+    # The C128's MMU (see _c128_mmu_analysis()), before the calls are
+    # commented and the colours substituted, since they depend on it (see
+    # _mapped_out())
     if machine.name == "c128":
-        session.current().cpu.code_analysis_fns.append(_c128_mmu_analysis)
+        code_analysis_fns = session.current().cpu.code_analysis_fns
+        code_analysis_fns.insert(code_analysis_fns.index(session.current().cpu.substitute_constants), _c128_mmu_analysis)
 
     if _is_loaded(machine.basic_start):
         basic_program(machine.basic_start)

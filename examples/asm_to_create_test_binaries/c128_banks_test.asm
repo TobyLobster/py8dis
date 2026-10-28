@@ -37,6 +37,8 @@ start
     sta $ff00
     lda $d020               ; RAM, not the VIC-II
     sta $fc
+    lda #$41
+    jsr $ffd2               ; RAM, not the Kernal's CHROUT
 
     ; Bank 1, through the MMU's register in I/O, from bank 15
     lda #0
@@ -56,6 +58,8 @@ start
     sta $ff00
     jsr in_bank_0
     lda $d020               ; the border colour again
+    lda #$41
+    jsr $ffd2               ; the Kernal's CHROUT
     rts
 
 ; Called with the MMU set to bank 0 (by the caller, in a real program)
@@ -66,4 +70,8 @@ in_bank_0
     sta $4000,x             ; RAM, not BASIC
     inx
     bne -
+    lda #1
+    sta $d020               ; RAM, so not a colour
+    jsr $ff7d               ; RAM, not the Kernal's PRIMM, so no string after it
     rts
+in_bank_0_end

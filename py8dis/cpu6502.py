@@ -49,8 +49,11 @@ class SubConst:
 
     These are stored in substitute_constant_list"""
 
-    def __init__(self, instruction, reg, constants_dict, define_constant):
+    def __init__(self, instruction, reg, constants_dict, define_constant, condition=None):
+        """condition, if given, is called with the instruction's binary
+        address, and the substitution is made only if it returns True."""
         mnemonic, operand, operand_length, prefix, suffix, addr_modes = Cpu6502.parse_instruction(instruction)
+        self.condition      = condition
         self.mnemonic       = mnemonic
         self.addr_modes     = addr_modes        # There can be two possible addressing modes, a zp and addr version
         self.operand        = operand           # This is a label
@@ -1746,6 +1749,9 @@ class Cpu6502(cpu.Cpu):
 
                         # if we have an operand, make sure it matches too
                         if const_sub.operand and (const_sub.get_operand_value() != c.target(binary_addr)):
+                            continue
+
+                        if const_sub.condition is not None and not const_sub.condition(binary_addr):
                             continue
 
                         # check the const_sub dictionary has the current value as a key

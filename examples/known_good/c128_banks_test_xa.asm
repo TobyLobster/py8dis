@@ -24,11 +24,16 @@ mmu_configuration_io = $d500
 mmu_configuration       = $ff00
 mmu_load_configuration_a = $ff01
 
+// Kernal entry points ($ff47-$fff9)
+chrout  = $ffd2
+
 // Other banks
 l1000   = $1000
 ld000   = $d000
 ld020   = $d020
 le000   = $e000
+lff7d   = $ff7d
+lffd2   = $ffd2
 
 // The PRG file's header: the address to load it at
     * = $1bff
@@ -60,30 +65,37 @@ sys_entry
     sta mmu_configuration                                             // 1c24: 8d 00 ff    ... // Set the MMU to bank 0 (RAM 0 only)
     lda ld020                                                         // 1c27: ad 20 d0    . P
     sta l00fc                                                         // 1c2a: 85 fc       ..
-    lda #0                                                            // 1c2c: a9 00       ..
-    sta mmu_configuration                                             // 1c2e: 8d 00 ff    ... // Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
-    ldx #$7f                                                          // 1c31: a2 7f       ..
-    stx mmu_configuration_io                                          // 1c33: 8e 00 d5    ..U // Set the MMU to bank 1 (RAM 1 only)
-    lda l1000                                                         // 1c36: ad 00 10    ...
-    sta basic_error_vector                                            // 1c39: 8d 00 03    ...
-    sta mmu_load_configuration_a                                      // 1c3c: 8d 01 ff    ... // Set the MMU to preconfiguration A (as set at $d501)
-    lda vic_border_colour                                             // 1c3f: ad 20 d0    . P
-    lda #0                                                            // 1c42: a9 00       ..
-    sta mmu_configuration                                             // 1c44: 8d 00 ff    ... // Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
-    jsr sub_c1c4e                                                     // 1c47: 20 4e 1c     n.
-    lda vic_border_colour                                             // 1c4a: ad 20 d0    . P
-    rts                                                               // 1c4d: 60          .
+    lda #$41 // 'a'                                                   // 1c2c: a9 41       .a
+    jsr lffd2                                                         // 1c2e: 20 d2 ff     R.
+    lda #0                                                            // 1c31: a9 00       ..
+    sta mmu_configuration                                             // 1c33: 8d 00 ff    ... // Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
+    ldx #$7f                                                          // 1c36: a2 7f       ..
+    stx mmu_configuration_io                                          // 1c38: 8e 00 d5    ..U // Set the MMU to bank 1 (RAM 1 only)
+    lda l1000                                                         // 1c3b: ad 00 10    ...
+    sta basic_error_vector                                            // 1c3e: 8d 00 03    ...
+    sta mmu_load_configuration_a                                      // 1c41: 8d 01 ff    ... // Set the MMU to preconfiguration A (as set at $d501)
+    lda vic_border_colour                                             // 1c44: ad 20 d0    . P
+    lda #0                                                            // 1c47: a9 00       ..
+    sta mmu_configuration                                             // 1c49: 8d 00 ff    ... // Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
+    jsr sub_c1c58                                                     // 1c4c: 20 58 1c     x.
+    lda vic_border_colour                                             // 1c4f: ad 20 d0    . P
+    lda #$41 // 'a'                                                   // 1c52: a9 41       .a // A=character to output
+    jsr chrout                                                        // 1c54: 20 d2 ff     R. // Output 'a'
+    rts                                                               // 1c57: 60          .
 
-// $1c4e referenced 1 time by $1c47
-sub_c1c4e
-    ldx #0                                                            // 1c4e: a2 00       ..
-// $1c50 referenced 1 time by $1c57
-loop_c1c50
-    lda ld000,x                                                       // 1c50: bd 00 d0    ..P
-    sta l4000,x                                                       // 1c53: 9d 00 40    ..@
-    inx                                                               // 1c56: e8          .
-    bne loop_c1c50                                                    // 1c57: d0 f7       P.
-    rts                                                               // 1c59: 60          .
+// $1c58 referenced 1 time by $1c4c
+sub_c1c58
+    ldx #0                                                            // 1c58: a2 00       ..
+// $1c5a referenced 1 time by $1c61
+loop_c1c5a
+    lda ld000,x                                                       // 1c5a: bd 00 d0    ..P
+    sta l4000,x                                                       // 1c5d: 9d 00 40    ..@
+    inx                                                               // 1c60: e8          .
+    bne loop_c1c5a                                                    // 1c61: d0 f7       P.
+    lda #1                                                            // 1c63: a9 01       ..
+    sta ld020                                                         // 1c65: 8d 20 d0    . P
+    jsr lff7d                                                         // 1c68: 20 7d ff     ..
+    rts                                                               // 1c6b: 60          .
 
 pydis_end
 
@@ -92,9 +104,11 @@ pydis_end
 #endif
 
 // Label references by decreasing frequency:
+//     ld020:                      5
 //     mmu_configuration:          5
-//     ld020:                      4
-//     vic_border_colour:          4
+//     vic_border_colour:          5
+//     chrout:                     2
+//     lffd2:                      2
 //     basic_error_vector:         1
 //     l00fb:                      1
 //     l00fc:                      1
@@ -102,26 +116,27 @@ pydis_end
 //     l4000:                      1
 //     ld000:                      1
 //     le000:                      1
-//     loop_c1c50:                 1
+//     lff7d:                      1
+//     loop_c1c5a:                 1
 //     mmu_configuration_io:       1
 //     mmu_load_configuration_a:   1
-//     sub_c1c4e:                  1
+//     sub_c1c58:                  1
 //     vic_background_colour_0:    1
 
 // Automatically generated labels:
 //     l00fb
 //     l00fc
 //     l4000
-//     loop_c1c50
-//     sub_c1c4e
+//     loop_c1c5a
+//     sub_c1c58
 
 // Stats:
 //
-//     Total size (Code + Data) = 89 bytes
-//     Code                     = 77 bytes (87%)
-//     Data                     = 12 bytes (13%)
+//     Total size (Code + Data) = 107 bytes
+//     Code                     = 95 bytes (89%)
+//     Data                     = 12 bytes (11%)
 //
-//     Number of instructions   = 31
+//     Number of instructions   = 38
 //     Number of data bytes     = 2 bytes
 //     Number of data words     = 6 bytes
 //     Number of string bytes   = 4 bytes
