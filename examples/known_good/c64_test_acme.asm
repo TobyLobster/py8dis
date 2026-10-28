@@ -1,5 +1,7 @@
 !cpu 6510
 
+!ct pet ; (so a character literal, e.g. 'a', is PETSCII)
+
 ; Constants
 colour_black    = 0
 colour_blue     = 6
@@ -134,7 +136,7 @@ loop_c0860
     bne loop_c0860                                                    ; 0869: d0 f5       P.
 ; $086b referenced 1 time by $0863
 c086b
-    lda #$21 ; '!'                                                    ; 086b: a9 21       .! ; A=character to output
+    lda #'!'                                                          ; 086b: a9 21       .! ; A=character to output
     jsr chrout                                                        ; 086d: 20 d2 ff     R. ; Output '!'
     clc                                                               ; 0870: 18          .
     ldx #5                                                            ; 0871: a2 05       .. ; X=cursor row

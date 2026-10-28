@@ -14,7 +14,9 @@ documentation instead (e.g. 'extcol'). See commodoretables.py.
 
 from commands import *
 import classification
+import collections
 import config
+import mainformatter
 import session
 import textencoding
 import utils
@@ -339,6 +341,9 @@ def _known_value(state, reg):
 def _hex2(n):
     return config.get_assembler().hex2(n)
 
+def _hex4(n):
+    return config.get_assembler().hex4(n)
+
 def _comment_registers(runtime_addr, state, subroutine, entry=True, exit=True):
     """Comment where the registers are set before the call, and used after
     it, from the subroutine's on_entry and on_exit (as the 6502's default
@@ -385,6 +390,13 @@ def chrout_hook(runtime_addr, state, subroutine):
         _comment_call(runtime_addr, subroutine, subroutine.title)
     else:
         _comment_call(runtime_addr, subroutine, "Output " + _char_description(a))
+        # A character is written as one where it's loaded (e.g. "lda #'a'",
+        # if the assembler can: see Assembler.encoded_char_literal())
+        operand_addr = state.pessimistic['a'].get_previous_load_imm_operand()
+        format_hint = session.current().disassembly.format_hint
+        if (textencoding.current().char(a) is not None and operand_addr not in format_hint
+                and operand_addr not in session.current().classifications.expressions):
+            format_hint[operand_addr] = mainformatter.char_formatter
 
 def setlfs_hook(runtime_addr, state, subroutine):
     _comment_registers(runtime_addr, state, subroutine)
@@ -603,16 +615,236 @@ def pre_trace_writing_to_vector(p):
     expr(movemanager.b2r(nn1_addr), make_lo(label_name))
     expr(movemanager.b2r(nn2_addr), make_hi(label_name))
 
-# The top of RAM 0 (the bank a C128 program is loaded into) in each of the
-# C128's 16 banks that has it (on a 128K C128, RAM 2 is RAM 0), from the MMU
-# configurations the Kernal's bank numbers stand for: below it, the bank's
-# memory is the program's
-_C128_BANK_RAM0_TOP = {
-    0: 0x10000, 2: 0x10000,                         # RAM only
-    4: 0x8000, 6: 0x8000, 8: 0x8000, 10: 0x8000,    # function ROM from &8000
-    12: 0x8000, 13: 0x8000,                         # function ROM and the Kernal
-    14: 0x4000, 15: 0x4000,                         # BASIC and the Kernal
-}
+# ************************************************************************************************
+# The C128's MMU
+
+def c128_memory(configuration, addr):
+    """What the C128 has at addr with the given MMU configuration (the value
+    of its configuration register, at &ff00, e.g. c128_bank_configurations[0]
+    for bank 0): 'MMU' (&ff00-&ff04, in every configuration), 'I/O',
+    'character ROM', 'BASIC ROM', 'Kernal ROM' (which includes the screen
+    editor), 'internal ROM', 'external ROM' (the function ROMs), or 'RAM 0' to
+    'RAM 3' (RAM 2 and 3 are RAM 0 and 1 on a C128 with 128K). &0000-&03ff is
+    always RAM 0, since the Kernal makes it common RAM."""
+    if 0xff00 <= addr < 0xff05:
+        return "MMU"
+    ram = "RAM %d" % (configuration >> 6)
+    if addr < 0x0400:
+        return "RAM 0"
+    if addr < 0x4000:
+        return ram
+    if addr < 0x8000:
+        return ram if configuration & 0x02 else "BASIC ROM"
+    if addr < 0xc000:
+        return ("BASIC ROM", "internal ROM", "external ROM", ram)[(configuration >> 2) & 3]
+    high = ("Kernal ROM", "internal ROM", "external ROM", ram)[(configuration >> 4) & 3]
+    if 0xd000 <= addr < 0xe000:
+        if not configuration & 0x01:
+            return "I/O"
+        return ram if high == ram else "character ROM"
+    return high
+
+def c128_configuration_description(configuration):
+    """A description of an MMU configuration, e.g. 'bank 15 (RAM 0, BASIC
+    ROM, Kernal ROM, I/O)', or for one that isn't one of the Kernal's banks,
+    e.g. 'RAM 0, I/O'."""
+    def at(addr):
+        return c128_memory(configuration, addr)
+    ram = "RAM %d" % (configuration >> 6)
+    parts = []
+    low, mid, high = at(0x4000), at(0x8000), at(0xc000)
+    if low == "BASIC ROM" and mid == "BASIC ROM":
+        parts.append("BASIC ROM")
+    elif low == "BASIC ROM":
+        parts.append("BASIC ROM at $4000-$7fff")
+    elif mid == "BASIC ROM":
+        parts.append("BASIC ROM at $8000-$bfff")
+    for rom in ("internal ROM", "external ROM"):
+        name = rom.replace("ROM", "function ROM")
+        if mid == rom and high == rom:
+            parts.append(name + " at $8000-$ffff")
+        elif mid == rom:
+            parts.append(name + " at $8000-$bfff")
+        elif high == rom:
+            parts.append(name + " at $c000-$ffff")
+    if high == "Kernal ROM":
+        parts.append("Kernal ROM")
+    if at(0xd000) in ("I/O", "character ROM"):
+        parts.append(at(0xd000))
+    text = ram + (", " + ", ".join(parts) if parts else " only")
+    if configuration in c128_bank_configurations:
+        return "bank {0} ({1})".format(c128_bank_configurations.index(configuration), text)
+    return text
+
+# The MMU's configuration register (at &ff00 and &d500), and its load
+# configuration registers (&ff01-&ff04: writing to one sets the configuration
+# to the preconfiguration register at &d501-&d504)
+_MMU_CONFIGURATION_REGISTERS = (0xff00, 0xd500)
+_MMU_LOAD_CONFIGURATION_REGISTERS = range(0xff01, 0xff05)
+
+# The absolute store opcodes, with their registers
+_STORE_ABS_OPCODES = {0x8d: 'a', 0x8e: 'x', 0x8c: 'y'}
+
+def _c128_mmu_writes():
+    """[(binary location, configuration or None)] for each instruction that
+    sets the MMU configuration: the value stored to &ff00 or &d500 (if it's
+    known), or None for a store to one of the load configuration registers
+    (&ff01-&ff04), or of an unknown value. ([(binary location, register
+    address, configuration or None)])"""
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+    result = []
+    for range_start, range_end in memorymanager.loaded_ranges():
+        binary_addr = range_start
+        while binary_addr < range_end:
+            c = classification.get_classification(binary_addr)
+            if c is None or c is classification.INSIDE_A_CLASSIFICATION:
+                binary_addr += 1
+                continue
+            if c.is_code(binary_addr) and memory_binary[binary_addr] in _STORE_ABS_OPCODES:
+                register = memorymanager.get_u16_binary(binary_addr + 1)
+                if register in _MMU_CONFIGURATION_REGISTERS or register in _MMU_LOAD_CONFIGURATION_REGISTERS:
+                    configuration = None
+                    if register in _MMU_CONFIGURATION_REGISTERS:
+                        reg = _STORE_ABS_OPCODES[memory_binary[binary_addr]]
+                        state = cpu.cpu_states[binary_addr]
+                        if state is not None and state.pessimistic[reg]:
+                            configuration = state.pessimistic[reg].value
+                    move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
+                    result.append((memorymanager.BinaryLocation(BinaryAddr(binary_addr), move_id), register, configuration))
+            binary_addr += c.length()
+    return result
+
+def _c128_comment_mmu_writes(writes):
+    """Comment each instruction that sets the MMU configuration, e.g. 'Set
+    the MMU to bank 0 (RAM 0 only)'."""
+    for binary_loc, register, configuration in writes:
+        if register in _MMU_LOAD_CONFIGURATION_REGISTERS:
+            text = "Set the MMU to preconfiguration {0} (as set at ${1:04x})".format("ABCD"[register - 0xff01], 0xd501 + register - 0xff01)
+        elif configuration is not None:
+            text = "Set the MMU to " + c128_configuration_description(configuration)
+        else:
+            continue
+        disassembly.comment_binary(binary_loc, text, align=Align.INLINE, auto_generated=True)
+
+def _c128_switched_ranges(writes):
+    """[(binary start, binary end, configuration)] for the code after each
+    instruction that sets the MMU's configuration to a known value (see
+    _c128_mmu_writes()): from the next instruction, for as long as the code
+    runs straight on from it. That stops at the end of a block (e.g. RTS or
+    JMP), at an instruction that other code jumps or branches to (or an entry
+    point), since that might come from code with another configuration, and
+    at the next instruction that sets the configuration. (A JSR is taken to
+    return with the configuration it was called with.)"""
+    memory_binary = session.current().memory.binary
+    labels = session.current().labels.labels
+    explicit_entry_points = session.current().cpu.explicit_entry_points
+    write_addrs = {binary_loc.binary_addr for binary_loc, _, _ in writes}
+    result = []
+    for binary_loc, register, configuration in writes:
+        if configuration is None:
+            continue
+        c = classification.get_classification(binary_loc.binary_addr)
+        start = binary_loc.binary_addr + c.length()
+        end = start
+        while end < 0x10000 and memory_binary[end] is not None and end not in write_addrs:
+            c = classification.get_classification(end)
+            if c is None or c is classification.INSIDE_A_CLASSIFICATION or not c.is_code(end):
+                break
+            label = labels.get(movemanager.b2r(BinaryAddr(end)))
+            if end > start and ((label is not None and label.references) or end in explicit_entry_points):
+                break
+            end += c.length()
+            if c.is_block_end():
+                break
+        if end > start:
+            result.append((start, end, configuration))
+    return result
+
+def _c128_configuration_at(binary_addr, ranges):
+    """The MMU configuration the code at binary_addr runs with, from the
+    ranges [(binary start, binary end, configuration)] (the first that
+    covers it), or None if it's not known (so it's taken to be bank 15)."""
+    for start, end, configuration in ranges:
+        if start <= binary_addr < end:
+            return configuration
+    return None
+
+def _c128_name_by_configuration(ranges):
+    """Where code that runs with another MMU configuration (in the ranges,
+    see _c128_configuration_at()) uses an address that's something else in
+    that configuration than in bank 15 (e.g. RAM rather than I/O or a ROM),
+    give the address a plain name there (e.g. 'ld020'), as a local label,
+    rather than its name in bank 15 (e.g. 'vic_border_colour'). Only names
+    commodore.py gives are replaced, not the control file's."""
+    if not ranges:
+        return
+    machine = _machine()
+    optional_labels = session.current().disassembly.optional_labels
+    # The names c128() gives that can be replaced: the ROM routines' (but not
+    # the Kernal's jump table's, which are calls, with hooks)
+    routine_names = collections.defaultdict(set)
+    for routine in machine.rom_routines:
+        routine_names[routine.addr].update({routine.name, routine.commodore_name})
+    bank_15 = c128_bank_configurations[15]
+    for runtime_addr, label in sorted(session.current().labels.labels.items()):
+        if runtime_addr not in optional_labels and runtime_addr not in routine_names:
+            continue
+        given = {name.text for names in label.explicit_names.values() for name in names}
+        if not given <= routine_names.get(runtime_addr, set()):
+            continue
+        for reference in label.references:
+            configuration = _c128_configuration_at(reference.binary_addr, ranges)
+            if configuration is None or c128_memory(configuration, runtime_addr) == c128_memory(bank_15, runtime_addr):
+                continue
+            c = classification.get_classification(reference.binary_addr)
+            length = c.length() if c is not None and c is not classification.INSIDE_A_CLASSIFICATION else 1
+            disassembly.add_local_label(RuntimeAddr(runtime_addr), utils.force_case("l%04x" % runtime_addr),
+                                        reference.binary_addr, reference.binary_addr + length)
+
+def _c128_mmu_analysis():
+    """The C128's MMU: comment the code that sets its configuration, and name
+    the addresses code uses according to the configuration it runs with:
+    after the code sets it (see _c128_switched_ranges()), or as
+    c128_bank() says. (Run once the code has been traced, as one of the CPU's
+    code analysis functions.)"""
+    writes = _c128_mmu_writes()
+    _c128_comment_mmu_writes(writes)
+    # (The configuration the code sets comes first, since it changes the one
+    # c128_bank() gives)
+    ranges = _c128_switched_ranges(writes) + list(session.current().extras.get("commodore.c128_banks", []))
+    _c128_name_by_configuration(ranges)
+
+def c128_bank(start, end, bank=None, *, configuration=None):
+    """Say that the code from start to end (runtime addresses, end exclusive)
+    runs with the C128's MMU set to the given bank (0-15, as the Kernal
+    numbers them, see c128_bank_configurations), or configuration (the value
+    of its configuration register, at &ff00), rather than the usual bank 15.
+    An address it uses that's something else there (e.g. in bank 0, RAM
+    rather than I/O or a ROM) isn't given its name in bank 15: e.g. 'lda
+    $d020' is 'lda ld020', not 'lda vic_border_colour'. (Only the names
+    c128() gives; and &0000-&03ff is RAM 0 in every bank.) Call it after
+    c128()."""
+    command = "c128_bank"
+    if _machine().name != "c128":
+        utils.die("commodore.c128_bank(): call commodore.c128() first")
+    if (bank is None) == (configuration is None):
+        utils.die("commodore.c128_bank(): give a bank or a configuration (but not both)")
+    if bank is not None:
+        if not utils.is_integer_type(bank) or not 0 <= bank < 16:
+            utils.die("commodore.c128_bank(): the bank must be 0-15, not {0!r}".format(bank))
+        configuration = c128_bank_configurations[bank]
+    elif not utils.is_integer_type(configuration) or not 0 <= configuration < 0x100:
+        utils.die("commodore.c128_bank(): the configuration must be 0-255, not {0!r}".format(configuration))
+    for addr in (start, end):
+        if not utils.is_integer_type(addr) or not 0 <= addr <= 0x10000:
+            utils.die("commodore.c128_bank(): the addresses must be between 0 and &10000, not {0!r}".format(addr))
+    if not start < end:
+        utils.die("commodore.c128_bank(): the start ({0}) must be before the end ({1})".format(_hex4(start), _hex4(end)))
+    binary_start = movemanager.r2b_checked(start).binary_addr
+    binary_end = movemanager.r2b_checked(end - 1).binary_addr + 1
+    session.current().extras.setdefault("commodore.c128_banks", []).append((binary_start, binary_end, configuration))
+
 
 def pre_trace_far_call(p):
     """A C128 program setting up JSRFAR or JMPFAR's bank and address at
@@ -629,7 +861,8 @@ def pre_trace_far_call(p):
     is_jump = p.get_memory('call') == 0x4c
     start = p.get_start_loc()
 
-    traced = _is_loaded(target) and target < _C128_BANK_RAM0_TOP.get(bank, 0)
+    # (RAM 2 is RAM 0 on a C128 with 128K)
+    traced = _is_loaded(target) and bank < 16 and c128_memory(c128_bank_configurations[bank], target) in ("RAM 0", "RAM 2")
     if traced:
         labels = session.current().labels.labels
         if target in labels and labels[target].explicit_names:
@@ -984,6 +1217,10 @@ def _set_up(command, machine, names, rom_labels):
     for addr in machine.colour_registers:
         for reg in "axy":
             session.current().trace.substitute_constant_list.append(cpu6502.SubConst("st%s $%04x" % (reg, addr), reg, machine.colours, True))
+
+    # The C128's MMU (see _c128_mmu_analysis())
+    if machine.name == "c128":
+        session.current().cpu.code_analysis_fns.append(_c128_mmu_analysis)
 
     if _is_loaded(machine.basic_start):
         basic_program(machine.basic_start)

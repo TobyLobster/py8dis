@@ -342,7 +342,8 @@ def _num_format(binary_addr, value, bits):
     if formatter is mainformatter.sint_formatter:
         return "signed_decimal" if config.get_assembler().supports_signed_integers() else "decimal"
     if formatter is mainformatter.char_formatter:
-        if config.get_assembler().char_literal(value) is not None:
+        import textencoding
+        if config.get_assembler().encoded_char_literal(value, textencoding.current()) is not None:
             return "char"
         return "decimal" if value < 10 else hex_digits
     if formatter is mainformatter.binary_formatter:

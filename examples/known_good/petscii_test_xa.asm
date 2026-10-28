@@ -51,10 +51,14 @@ lc04e
     .byt $20, $41, $55, $54, $4f, $53, $54, $52 // petscii " autostr" // c07a: 20 41 55...  au
     .byt $49, $4e, $47 // petscii "ing"                               // c082: 49 4e 47    ing
     .byt 0                                                            // c085: 00          .
+    .asc "o", $80 + 'k'                                               // c086: 6f eb       o.
 pydis_end
 
 #if ($80 + $78) <> $f8
 #error Assertion failed: $80 + $78 == $f8
+#endif
+#if ($80 + 'k') <> $eb
+#error Assertion failed: $80 + 'k' == $eb
 #endif
 
 // Label references by decreasing frequency:
@@ -76,13 +80,13 @@ pydis_end
 
 // Stats:
 //
-//     Total size (Code + Data) = 134 bytes
+//     Total size (Code + Data) = 136 bytes
 //     Code                     = 35 bytes (26%)
-//     Data                     = 99 bytes (74%)
+//     Data                     = 101 bytes (74%)
 //
 //     Number of instructions   = 16
 //     Number of data bytes     = 1 bytes
 //     Number of data words     = 0 bytes
-//     Number of string bytes   = 98 bytes
-//     Number of strings        = 6
+//     Number of string bytes   = 100 bytes
+//     Number of strings        = 7
 

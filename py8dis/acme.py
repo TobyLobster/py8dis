@@ -8,6 +8,7 @@ import config
 import session
 import utils
 import assembler
+import textencoding
 import traceback
 
 class Acme(assembler.Assembler):
@@ -111,6 +112,23 @@ class Acme(assembler.Assembler):
     def comment_prefix(self):
         return ";"
 
+    def conversion_table(self):
+        """acme's conversion table for character literals and !text, if the
+        output needs one: 'pet' or 'scr' if the session's text encoding is
+        PETSCII or screen codes, and there are character literals in it
+        (from char(), e.g. by commodore.py's CHROUT hook), otherwise None.
+        With one, a character literal like 'a' is that encoding's byte, so
+        an ASCII string is written with !raw, rather than !text, which would
+        be converted, and an ASCII character literal can't be written."""
+        import mainformatter
+        import textencoding
+        name = textencoding.current().name
+        if name == "ascii":
+            return None
+        if not any(formatter is mainformatter.char_formatter for formatter in session.current().disassembly.format_hint.values()):
+            return None
+        return {"petscii": "pet", "screen": "scr"}[name]
+
     def disassembly_start(self):
         """Preamble to be output at the start of the disassembly."""
         result = []
@@ -119,6 +137,10 @@ class Acme(assembler.Assembler):
             result.extend([utils.force_case("!cpu 65c02"), ""])
         elif getattr(session.current().cpu, "has_undocumented_opcodes", False):
             result.extend([utils.force_case("!cpu 6510"), ""])
+        table = self.conversion_table()
+        if table is not None:
+            result.extend([utils.force_case("!ct " + table) + " " + self.comment_prefix() + " (so a character literal, e.g. 'a', is " +
+                           ("PETSCII" if table == "pet" else "a screen code") + ")", ""])
         return result
 
     def code_start(self, start_addr, end_addr, first):
@@ -199,12 +221,18 @@ class Acme(assembler.Assembler):
         return utils.force_case("!word ")
 
     def string_prefix(self):
-        # For outputting strings
+        # For outputting strings (in ASCII: !raw if there's a conversion
+        # table, which would convert !text)
+        if self.conversion_table() is not None:
+            return utils.force_case("!raw ")
         return utils.force_case("!text ")
 
     def char_literal(self, n):
         # When composing a literal character, this returns a character string
         # from an integer, or None if not possible
+        if self.conversion_table() is not None:
+            # (It would be converted)
+            return None
         quote = "'"
         if n == ord('\\'):
             return quote + "\\\\" + quote
@@ -224,6 +252,18 @@ class Acme(assembler.Assembler):
         if utils.isprint(n):
             return chr(n)
         return None
+
+    def encoded_char_literal(self, n, encoding):
+        # In the session's encoding, with its conversion table (see
+        # conversion_table())
+        if encoding.name == "ascii" or encoding.name != textencoding.current().name or self.conversion_table() is None:
+            return super().encoded_char_literal(n, encoding)
+        c = encoding.char(n)
+        if c is None:
+            return None
+        if c in ("\\", "'"):
+            return "'\\" + c + "'"
+        return "'" + c + "'"
 
     def text_directive(self, encoding):
         # acme's !pet and !scr convert the text to PETSCII or screen codes

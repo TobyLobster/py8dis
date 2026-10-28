@@ -188,7 +188,10 @@ class Num(Expr):
         if self.format == "hex2":
             return config.get_assembler().hex2(self.value)
         if self.format == "char":
-            return "'%s'" % chr(self.value)
+            literal = config.get_assembler().char_literal(self.value)
+            if literal is not None:
+                return literal
+            return config.get_assembler().hex2(self.value)
         return str(self.value)
 
 

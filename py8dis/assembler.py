@@ -86,6 +86,12 @@ class Assembler:
         used if can_force_absolute().)"""
         raise NotImplementedError
 
+    def encoded_char_literal(self, n, encoding):
+        """A character literal for the byte n in the given text encoding (a
+        textencoding.Encoding), e.g. "'a'", or None if there isn't one. Only
+        ASCII by default (see char_literal())."""
+        return self.char_literal(n) if encoding.name == "ascii" else None
+
     def text_directive(self, encoding):
         """The directive for a string in the given encoding (a
         textencoding.Encoding), e.g. '.asc ', or None if the assembler has

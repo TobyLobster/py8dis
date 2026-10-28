@@ -1,3 +1,5 @@
+!ct pet ; (so a character literal, e.g. 'a', is PETSCII)
+
 ; Memory locations
 l0400   = $0400
 chrout  = $ffd2
@@ -26,7 +28,7 @@ loop_cc014
     sta l0400,x                                                       ; c017: 9d 00 04    ...
     dex                                                               ; c01a: ca          J
     bpl loop_cc014                                                    ; c01b: 10 f7       ..
-    lda #$41 ; 'a'                                                    ; c01d: a9 41       .a
+    lda #'a'                                                          ; c01d: a9 41       .a
     jsr chrout                                                        ; c01f: 20 d2 ff     R.
     rts                                                               ; c022: 60          .
 
@@ -38,12 +40,16 @@ lc023
 ; $c04e referenced 1 time by $c014
 lc04e
     !scr "@ Score [000] Lives 3"                                      ; c04e: 00 20 53... @ S
-    !text "ASCII text", 0                                             ; c063: 41 53 43... ASC
+    !raw "ASCII text", 0                                              ; c063: 41 53 43... ASC
     !pet "end", $80 + $78                                             ; c06e: 45 4e 44... end
     !pet "found by autostring"                                        ; c072: 46 4f 55... fou
     !byte 0                                                           ; c085: 00          .
+    !raw "o", $80 + $6b                                               ; c086: 6f eb       o.
 pydis_end
 
+!if ($80 + $6b) != $eb {
+    !error "Assertion failed: $80 + $6b == $eb"
+}
 !if ($80 + $78) != $f8 {
     !error "Assertion failed: $80 + $78 == $f8"
 }
@@ -67,13 +73,13 @@ pydis_end
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 134 bytes
+;     Total size (Code + Data) = 136 bytes
 ;     Code                     = 35 bytes (26%)
-;     Data                     = 99 bytes (74%)
+;     Data                     = 101 bytes (74%)
 ;
 ;     Number of instructions   = 16
 ;     Number of data bytes     = 1 bytes
 ;     Number of data words     = 0 bytes
-;     Number of string bytes   = 98 bytes
-;     Number of strings        = 6
+;     Number of string bytes   = 100 bytes
+;     Number of strings        = 7
 

@@ -354,7 +354,7 @@ Each of these also takes `encoding=` (e.g. `stringz(addr, encoding="screen")`) t
 
 By default strings are ASCII. For a Commodore program, `config.set_text_encoding("petscii")` makes PETSCII (the character codes used with CHROUT) the session's text encoding: for strings (including those `autostring()` finds), the character column of the hex dump, and the character comments on immediate operands (`lda #$41 ; 'a'`). `"screen"` is for Commodore screen codes, as stored in screen memory. A string command's `encoding=` option gives one string another encoding, e.g. `string(0xc04e, 21, encoding="screen")` for text copied straight to the screen, or `encoding="ascii"`. (Set the session's encoding before marking any strings: each string keeps the encoding it was marked with.)
 
-The characters are those of acme's `!pet` and `!scr`, so that acme can write the strings as text, e.g. `!pet "Hello", $0d` and `!scr "Score"`. As in acme, lower case letters are the unshifted letters (PETSCII $41-$5A, screen codes $01-$1A) and upper case ones the shifted letters (PETSCII $C1-$DA, screen codes $41-$5A): the text as it appears in the C64's lower/upper case character set. (In the default upper case/graphics set, both appear as upper case letters or graphics.) Codes acme's character would misrepresent, such as PETSCII $5C (a pound sign on the C64, but a backslash to acme), and the graphics characters, are written as numbers. beebasm and xa have no PETSCII or screen code directives, so these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`.
+The characters are those of acme's `!pet` and `!scr`, so that acme can write the strings as text, e.g. `!pet "Hello", $0d` and `!scr "Score"`. A character literal (from `char()`, or the character CHROUT outputs, see [Commodore](#commodore-64-vic-20-c128-and-plus4)) is in the session's encoding too: acme's output then starts with `!ct pet` (or `!ct scr`), which makes `lda #'a'` PETSCII, so an ASCII string in it is written with `!raw` rather than `!text` (which would be converted). beebasm and xa have no such character literals, so they're numbers with the character in a comment (`lda #$41 ; 'a'`). As in acme, lower case letters are the unshifted letters (PETSCII $41-$5A, screen codes $01-$1A) and upper case ones the shifted letters (PETSCII $C1-$DA, screen codes $41-$5A): the text as it appears in the C64's lower/upper case character set. (In the default upper case/graphics set, both appear as upper case letters or graphics.) Codes acme's character would misrepresent, such as PETSCII $5C (a pound sign on the C64, but a backslash to acme), and the graphics characters, are written as numbers. beebasm and xa have no PETSCII or screen code directives, so these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`.
 
 ### Marking code (and data that points to code)
 
@@ -412,7 +412,7 @@ By default numerical values are formatted as decimals for single digits or hex o
 
 | Function                                  | Description                                                                                |
 | :---------------------------------------- | :----------------------------------------------------------------------------------------- |
-| :pencil:`char(addr,n=1)`                  | Specifies quoted character (e.g. 'a') formatting for data in the given block               |
+| :pencil:`char(addr,n=1)`                  | Specifies quoted character (e.g. 'a', in the session's text encoding) formatting for data in the given block |
 | :pencil:`binary(addr,n=1)`                | Specifies binary (e.g. %010110111) formatting for data in the given block                  |
 | :pencil:`picture_binary(addr,n=1)`        | Specifies picture binary (e.g. %#.####.#) formatting for data in the given block           |
 | :pencil:`decimal(addr,n=1)`               | Specifies decimal formatting for data in the given block                                   |
@@ -548,7 +548,7 @@ It gives:
       jsr setnam            ; Set the filename to "i0"
   ```
 
-  CHROUT's comment names the character (`Output $93 (clear screen)`), PLOT's and MEMTOP's say whether the call reads or sets (from the carry flag), SETNAM's filename and the string printed by BASIC's STROUT are marked as PETSCII strings, and SAVE's zero page pointer is named.
+  CHROUT's comment names the character (`Output $93 (clear screen)`), and a printable character is written as one where it's loaded (`lda #'a'`, with acme; see [Text encodings](#text-encodings)), PLOT's and MEMTOP's say whether the call reads or sets (from the carry flag), SETNAM's filename and the string printed by BASIC's STROUT are marked as PETSCII strings, and SAVE's zero page pointer is named.
 * **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal and BASIC ROMs, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a Kernal label in Commodore's source has the same name as a jump table entry or another name (e.g. PLOT, the routine at &e50a that `plot` at &fff0 jumps to), it has `_rom` added (`plot_rom`), and a BASIC label with the same name as another has `_basic` added (e.g. `stop_basic`, BASIC's STOP command).
 * **Colours** stored in the VIC-II's colour registers or the text colour, as constants: `lda #colour_black : sta vic_border_colour`.
 * **Vectors set by the program** (e.g. `lda #<x : sta $0314 : lda #>x : sta $0315`, or with X and Y): the address is traced as code and named after the vector, e.g. `irq_handler` (or `irq_handler_2` etc. for more), with a comment, `; Set the IRQ vector to irq_handler`.
@@ -584,6 +584,17 @@ A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up 
     sta far_call_pc_low
     jsr jsrfar
 ```
+
+The names assume the C128's usual bank 15: the ROMs, with I/O at &d000. In another configuration of its MMU, the same addresses can be something else, e.g. RAM rather than the VIC-II or the Kernal ROM. So:
+
+* **The code that sets the MMU's configuration is commented** with what it sets, when the value stored to its configuration register (&ff00, or &d500) is known, e.g. `sta mmu_configuration ; Set the MMU to bank 0 (RAM 0 only)`, or `; Set the MMU to RAM 0, I/O` for one that isn't one of the Kernal's 16 banks. A store to one of its load configuration registers (&ff01-&ff04) is commented too, e.g. `; Set the MMU to preconfiguration A (as set at $d501)`.
+* **The code after it uses that configuration's names.** An address it uses that's something else in that configuration than in bank 15 gets a plain name there, e.g. after `lda #$3f : sta $ff00` (bank 0), `lda $d020` is `lda ld020` rather than `lda vic_border_colour`. This lasts as long as the code runs straight on: up to the end of a block (e.g. RTS or JMP), an instruction other code jumps or branches to, or the next change of configuration. (&0000-&03ff is RAM 0 in every bank, the Kernal's common RAM, so its names stay. Only the names `c128()` gives are replaced, not the control file's; and the Kernal calls keep their names and comments.)
+
+:pencil:`commodore.c128_bank(start, end, bank=None, *, configuration=None)`
+
+Says that the code from `start` to `end` (runtime addresses, `end` exclusive) runs with the MMU set to `bank` (0-15, as the Kernal numbers them) or `configuration` (the value of its configuration register), e.g. a routine whose caller sets the bank. The addresses it uses are named as above. (Code after a change of configuration in it follows that change.) Call it after `c128()`.
+
+`commodore.c128_memory(configuration, addr)` says what's at an address in a configuration (e.g. `"I/O"`, `"Kernal ROM"`, `"RAM 1"`), and `commodore.c128_configuration_description(configuration)` describes a configuration, as in the comments above.
 
 (A C128 program in C64 mode is a C64 program: use `c64()`.)
 

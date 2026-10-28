@@ -6,5 +6,5 @@ al 00C012 .cc012
 al 00C014 .loop_cc014
 al 00C023 .lc023
 al 00C04E .lc04e
-al 00C086 .pydis_end
+al 00C088 .pydis_end
 al 00FFD2 .chrout

@@ -1,3 +1,5 @@
+!ct pet ; (so a character literal, e.g. 'a', is PETSCII)
+
 ; Memory locations
 
 ; 6510 I/O port ($0000-$0001)
@@ -2651,7 +2653,7 @@ sub_cb40e
     stx fac1_exponent                                                 ; b410: 86 61       ..
     ora fac1_exponent                                                 ; b412: 05 61       ..
     bne cb41b                                                         ; b414: d0 05       P.
-    lda #$30 ; '0'                                                    ; b416: a9 30       .0 ; A=character to output
+    lda #'0'                                                          ; b416: a9 30       .0 ; A=character to output
     jmp chrout                                                        ; b418: 4c d2 ff    lR. ; Output '0'
 
 ; $b41b referenced 1 time by $b414

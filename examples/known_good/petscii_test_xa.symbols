@@ -6,5 +6,5 @@ comadd c012,cc012
 comadd c014,loop_cc014
 comadd c023,lc023
 comadd c04e,lc04e
-comadd c086,pydis_end
+comadd c088,pydis_end
 comadd ffd2,chrout

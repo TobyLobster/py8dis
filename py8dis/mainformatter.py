@@ -186,7 +186,8 @@ def char_formatter(n, bits):
     decimal integer.
     """
 
-    c = config.get_assembler().char_literal(n)
+    import textencoding
+    c = config.get_assembler().encoded_char_literal(n, textencoding.current())
     if c is not None:
         return c
     return uint_formatter(n, bits)

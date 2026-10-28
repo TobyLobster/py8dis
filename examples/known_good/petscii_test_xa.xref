@@ -21,7 +21,7 @@ $c023  lc023 (inline)
 $c04e  lc04e (inline)
     $c014     loop_cc014                   lda lc04e,x
 
-$c086  pydis_end (inline)
+$c088  pydis_end (inline)
     (not referenced)
 
 $ffd2  chrout (Memory locations)

@@ -1091,7 +1091,12 @@ class Cpu6502(cpu.Cpu):
             memory_binary = session.current().memory.binary
             operand = classification.get_constant8(binary_addr + 1)
             char_literal = None
-            if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
+            format_hint = session.current().disassembly.format_hint.get(binary_addr + 1)
+            if format_hint is mainformatter.char_formatter and config.get_assembler().encoded_char_literal(memory_binary[binary_addr + 1], textencoding.current()) is None:
+                # (char() asks for a character, but the assembler can't
+                # write it as one, so it's a number, with the comment)
+                format_hint = None
+            if (binary_addr + 1) not in session.current().classifications.expressions and format_hint is None:
                 c = memory_binary[binary_addr + 1]
                 # (In the session's text encoding, see config.set_text_encoding())
                 char = textencoding.current().char(c)

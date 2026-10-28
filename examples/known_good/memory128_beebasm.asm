@@ -167,7 +167,7 @@ getin   = &ffe4
 .start
     jsr lc000                                                         ; 2030: 20 00 c0     ..
     lda #6                                                            ; 2033: a9 06       ..
-    sta mmu_configuration                                             ; 2035: 8d 00 ff    ...
+    sta mmu_configuration                                             ; 2035: 8d 00 ff    ... ; Set the MMU to bank 12 (RAM 0, internal function ROM at $8000-$bfff, Kernal ROM, I/O)
     lda #&8f                                                          ; 2038: a9 8f       ..
     sta sid_volume_filter_mode                                        ; 203a: 8d 18 d4    ..T
     lda #8                                                            ; 203d: a9 08       ..
@@ -275,7 +275,7 @@ getin   = &ffe4
     sta score                                                         ; 2108: 8d 10 20    ..
     jsr lc000                                                         ; 210b: 20 00 c0     ..
     lda #0                                                            ; 210e: a9 00       ..
-    sta mmu_configuration                                             ; 2110: 8d 00 ff    ...
+    sta mmu_configuration                                             ; 2110: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
     rts                                                               ; 2113: 60          .
 
 ; &2114 referenced 1 time by &20fc

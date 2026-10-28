@@ -60,3 +60,9 @@ hi_string
 ; PETSCII text found by autostring()
 found
     !pet "found by autostring", 0
+
+; An ASCII string with its last character's top bit set, in a PETSCII
+; disassembly
+ascii_hi_string
+    !text "o"
+    !byte 'k' + $80

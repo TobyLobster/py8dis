@@ -101,6 +101,7 @@ TESTS = [
     ("vic20_cartridge_test",     ["acme", "beebasm", "xa"],    "a VIC-20 cartridge, with commodore.is_cartridge()"),
     ("c128_test",                ["acme", "beebasm", "xa"],    "a C128 program, with commodore.c128(): the MMU, the VDC, PRIMM and JSRFAR"),
     ("plus4_test",               ["acme", "beebasm", "xa"],    "a Plus/4 program, with commodore.plus4(): the TED, the ACIA and PRIMM"),
+    ("c128_banks_test",          ["acme", "beebasm", "xa"],    "a C128 program that changes the MMU's configuration"),
 
     # 6502 code: real programs
     ("os12",                     ["acme", "beebasm", "xa"],    "MOS 1.20"),
@@ -155,6 +156,8 @@ ERROR_TESTS = [
     ("load_length_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset and length (20 + 10) run past the end of the file (28 bytes)"),
     ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
+    ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
+    ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
 ]
 
 # Each warning test is (name, expected warning). The control file is

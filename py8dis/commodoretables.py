@@ -1002,6 +1002,19 @@ plus4_screen_locations = [
 ]
 
 # The C128's and Plus/4's additions to the Kernal's jump table
+# The MMU configuration (the value of its configuration register, at &ff00)
+# for each of the Kernal's 16 banks (its table 'config', at &f7f0, which
+# GETCFG reads)
+c128_bank_configurations = [
+    0x3f, 0x7f, 0xbf, 0xff,     # 0-3: RAM 0-3 only
+    0x16, 0x56, 0x96, 0xd6,     # 4-7: internal function ROM, RAM 0-3, I/O
+    0x2a, 0x6a, 0xaa, 0xea,     # 8-11: external function ROM, RAM 0-3, I/O
+    0x06,                       # 12: Kernal and internal function ROM (low), RAM 0, I/O
+    0x0a,                       # 13: Kernal and external function ROM (low), RAM 0, I/O
+    0x01,                       # 14: Kernal and BASIC, RAM 0, character ROM
+    0x00,                       # 15: Kernal and BASIC, RAM 0, I/O
+]
+
 c128_jump_table_additions = [
     KernalCall(0xff47, "spin_spout", "Set up the fast serial port for input (carry clear) or output (carry set)", None, None),
     KernalCall(0xff4a, "close_all", "Close all files on a device",

@@ -1,3 +1,5 @@
+!ct pet ; (so a character literal, e.g. 'a', is PETSCII)
+
 ; Constants
 colour_blue     = 6
 device_disk_8   = 8
@@ -59,13 +61,13 @@ basic_end
 
 sys_entry
     lda #0                                                            ; 1c0d: a9 00       ..
-    sta mmu_configuration                                             ; 1c0f: 8d 00 ff    ...
+    sta mmu_configuration                                             ; 1c0f: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
     lda #1                                                            ; 1c12: a9 01       ..
     sta vic_clock_speed                                               ; 1c14: 8d 30 d0    .0P
     jsr primm                                                         ; 1c17: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
     !pet "hello, c128", $0d, 0                                        ; 1c1a: 48 45 4c... hel
 
-    lda #$21 ; '!'                                                    ; 1c27: a9 21       .! ; A=character to output
+    lda #'!'                                                          ; 1c27: a9 21       .! ; A=character to output
     jsr chrout                                                        ; 1c29: 20 d2 ff     R. ; Output '!'
     lda #colour_blue                                                  ; 1c2c: a9 06       ..
     sta vic_border_colour                                             ; 1c2e: 8d 20 d0    . P
