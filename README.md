@@ -118,6 +118,8 @@ py8dis itself needs only Python 3. The tests also use these, when they're instal
 
 `./run_tests.py --help` describes the other options, e.g. running particular tests, and `-m` to make the known good output after a deliberate change.
 
+On GitHub, the tests are run on every push and pull request (`.github/workflows/tests.yml`), with Python 3.9 and 3.14 and all four assemblers: acme and xa from Ubuntu's packages, and beebasm and z88dk-z80asm built from source (and cached). The results are on the repository's Actions tab.
+
 ### Edit me
 
 The output of the hello world example can be improved. Load helloworld.py and add:

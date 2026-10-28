@@ -1,0 +1,71 @@
+# Run the example tests (examples/run_tests.py -c) on every push and pull
+# request, with all four assemblers, so that each disassembly is also checked
+# to reassemble to the original binary.
+#
+# acme and xa come from Ubuntu's packages. beebasm and z88dk-z80asm aren't
+# packaged, so they're built from source at a fixed version, and cached, so
+# they're only built again when the versions below change.
+
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ matrix.python }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest and newest Python versions the tests are run with
+        python: ["3.9", "3.14"]
+    env:
+      BEEBASM_COMMIT: ca2cc5fd2fa3f73da3b0682ad004b2aca99840c3   # beebasm 1.11
+      Z88DK_TAG: v2.4
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install acme, xa and jsonschema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q acme xa65
+          python -m pip install -q jsonschema
+
+      - name: Cache beebasm and z88dk-z80asm
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/assemblers
+          key: assemblers-${{ runner.os }}-beebasm-${{ env.BEEBASM_COMMIT }}-z88dk-${{ env.Z88DK_TAG }}
+
+      - name: Build beebasm and z88dk-z80asm
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/assemblers
+          git clone -q https://github.com/stardot/beebasm.git /tmp/beebasm
+          git -C /tmp/beebasm checkout -q "$BEEBASM_COMMIT"
+          make -C /tmp/beebasm/src code -j4
+          cp /tmp/beebasm/beebasm ~/assemblers/
+          git clone -q --depth 1 --branch "$Z88DK_TAG" https://github.com/z88dk/z88dk.git /tmp/z88dk
+          cd /tmp/z88dk
+          git submodule update -q --init --depth 1 ext/optparse ext/regex ext/uthash
+          make src/config.h
+          make -C src/z80asm z88dk-z80asm -j4
+          cp src/z80asm/z88dk-z80asm ~/assemblers/
+
+      - name: Add the assemblers to the PATH
+        run: echo "$HOME/assemblers" >> "$GITHUB_PATH"
+
+      - name: Run the tests
+        working-directory: examples
+        run: python run_tests.py -c
