@@ -733,6 +733,8 @@ def main():
     print(f"\n{len(jobs) - failures} passed, {failures} failed ({time.time() - start:.1f}s)")
     if not options.check_disassembly:
         print("(Use -c to also check the disassembly against known_good.)")
+    elif json_validator() is None:
+        print("(The JSON wasn't checked against its schema, since the jsonschema package isn't installed: pip install jsonschema)")
     sys.exit(1 if failures else 0)
 
 

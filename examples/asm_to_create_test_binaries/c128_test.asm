@@ -2,7 +2,7 @@
 ; program that SYSes to the machine code, which prints with PRIMM, uses the
 ; MMU, the VDC, the VIC-II and the C128's workspace, sets the IRQ vector,
 ; calls routines in other banks with JSRFAR and JMPFAR (set up in different
-; orders), and loads a file into bank 1.
+; orders, and with A, X and Y), and loads a file into bank 1.
 ; Assemble with:
 ;
 ;   acme -f cbm -o ../orig/c128_test.orig c128_test.asm
@@ -75,16 +75,16 @@ vdc_wait
     sta $04
     jsr jsrfar
 
-    ; The same in another order, with the status and A to call it with, and
-    ; the C128's usual bank 15
+    ; The same in another order, with X and Y as well as A, the status and A
+    ; to call it with, and the C128's usual bank 15
     lda #<far_routine_2
     sta $04
-    lda #15
-    sta $02
+    ldx #15
+    stx $02
     lda #0
     sta $05
-    lda #>far_routine_2
-    sta $03
+    ldy #>far_routine_2
+    sty $03
     lda #1
     sta $06
     jsr jsrfar

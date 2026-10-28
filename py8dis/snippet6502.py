@@ -389,16 +389,23 @@ def parse_line(line, group_number):
         group_number += 1
         return (b"()", labels, group_number)
 
+    # The line's alternatives, separated by '|', each an instruction or a
+    # sequence of instructions separated by ':' (e.g. 'lda #nn : sta $70 |
+    # ldx #nn : stx $70')
     index = 0
-    for inst in line.split('|'):
-        inst_result, inst_labels, group_number = parse_instruction(inst, group_number)
+    for alternative in line.split('|'):
+        inst_result = bytearray()
+        for inst in alternative.split(':'):
+            seq_result, inst_labels, group_number = parse_instruction(inst, group_number)
+            if seq_result:
+                inst_result += seq_result
+            for inst_label in inst_labels:
+                labels[inst_label].extend(inst_labels[inst_label])
         if inst_result:
             if index == 1:
                 pattern = "(?:".encode() + pattern
             pattern += "|".encode()+inst_result if pattern else inst_result
             index += 1
-        for inst_label in inst_labels:
-            labels[inst_label].extend(inst_labels[inst_label])
     if index >= 2:
         pattern += ")".encode()
 
@@ -535,6 +542,22 @@ def parse_instruction(inst, group_number):
 
 # Parse a full snippet (list of assembly lines)
 def parse_snippet(program):
+    """Make a Snippet (a regular expression for the bytes) from a snippet's
+    lines of 6502 assembly, one per line:
+
+    - an instruction, indented, e.g. '    lda #$1f' or '    jsr $ffee'. An
+      operand that's a name rather than a number matches any value, and
+      records where it is, for SnippetHelper.get_memory() etc.: a one byte
+      operand ('lda #nn1'), a two byte one ('lda message,y'), or a zero page
+      one if the name starts with 'zp' ('lda (zp1),y');
+    - '.', any instruction;
+    - '!byte' or '!word' and numbers, those bytes;
+    - alternatives, separated by '|', e.g. '    lda #nn1 | txa | tya';
+    - a sequence of instructions, separated by ':', which is useful as an
+      alternative, e.g. '    lda #nn1 : sta $70 | ldx #nn1 : stx $70';
+    - '?' at the start of the line makes the line optional;
+    - a name, not indented, records the position (e.g. a loop's start);
+    - ';' starts a comment."""
     # parse the program into a whole_pattern
     whole_pattern = bytearray()
     whole_labels = collections.defaultdict(list)

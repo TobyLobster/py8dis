@@ -438,7 +438,7 @@ sub_ce56c
 sub_ce572
     jsr sub_ce594                                                     ; e572: 20 94 e5     ..
     bcc ce57a                                                         ; e575: 90 03       ..
-    jmp cfc7e                                                         ; e577: 4c 7e fc    l..
+    jmp lfc7e                                                         ; e577: 4c 7e fc    l..
 
 ; $e57a referenced 1 time by $e575
 ce57a
@@ -2588,7 +2588,7 @@ cf23b
     pla                                                               ; f23b: 68          .
     tay                                                               ; f23c: a8          .
     pla                                                               ; f23d: 68          .
-    jmp cfc7e                                                         ; f23e: 4c 7e fc    l..
+    jmp lfc7e                                                         ; f23e: 4c 7e fc    l..
 
 ; $f241 referenced 1 time by $ff9c
 cf241
@@ -2638,7 +2638,7 @@ cf27b
     pla                                                               ; f27b: 68          .
     tay                                                               ; f27c: a8          .
     pla                                                               ; f27d: 68          .
-    jmp cfc81                                                         ; f27e: 4c 81 fc    l..
+    jmp lfc81                                                         ; f27e: 4c 81 fc    l..
 
 nmi_entry
     sei                                                               ; f281: 78          .
@@ -3570,7 +3570,7 @@ cf949
     pla                                                               ; f949: 68          .
     tay                                                               ; f94a: a8          .
     pla                                                               ; f94b: 68          .
-    jmp cfc75                                                         ; f94c: 4c 75 fc    l..
+    jmp lfc75                                                         ; f94c: 4c 75 fc    l..
 
 ; $f94f referenced 1 time by $f2dd
 lf94f
@@ -4201,12 +4201,11 @@ cfc6f
 ; $fc72 referenced 1 time by $f359
 cfc72
     lda #2                                                            ; fc72: a9 02       ..
-; overlapping: bit tape_buffer+109                                    ; fc74: 2c a9 03    ,..
-    !byte $2c                                                         ; fc74: 2c          ,
-
+cfc74
+lfc75 = cfc74+1
+    bit tape_buffer+109                                               ; fc74: 2c a9 03    ,..
+; overlapping: lda #3                                                 ; fc75: a9 03       ..
 ; $fc75 referenced 1 time by $f94c
-cfc75
-    lda #3                                                            ; fc75: a9 03       ..
 cfc77
 lfc78 = cfc77+1
     bit screen_memory+169                                             ; fc77: 2c a9 04    ,..
@@ -4218,28 +4217,27 @@ lfc78 = cfc77+1
 ; $fc7b referenced 7 times by $f3ff, $f4d5, $f946, $fabb, $fbb6, $fbc0, $ff46
 cfc7b
     lda #5                                                            ; fc7b: a9 05       ..
-; overlapping: bit screen_memory+681                                  ; fc7d: 2c a9 06    ,..
-    !byte $2c                                                         ; fc7d: 2c          ,
-
+cfc7d
+lfc7e = cfc7d+1
+    bit screen_memory+681                                             ; fc7d: 2c a9 06    ,..
+; overlapping: lda #6                                                 ; fc7e: a9 06       ..
 ; $fc7e referenced 2 times by $e577, $f23e
-cfc7e
-    lda #6                                                            ; fc7e: a9 06       ..
-; overlapping: bit screen_memory+937                                  ; fc80: 2c a9 07    ,..
-    !byte $2c                                                         ; fc80: 2c          ,
-
+cfc80
+lfc81 = cfc80+1
+    bit screen_memory+937                                             ; fc80: 2c a9 07    ,..
+; overlapping: lda #7                                                 ; fc81: a9 07       ..
 ; $fc81 referenced 1 time by $f27e
-cfc81
-    lda #7                                                            ; fc81: a9 07       ..
 cfc83
 lfc84 = cfc83+1
     bit l08a9                                                         ; fc83: 2c a9 08    ,..
 ; overlapping: lda #8                                                 ; fc84: a9 08       ..
 ; $fc84 referenced 2 times by $e753, $f05c
-cfc86
-lfc87 = cfc86+1
-    bit l09a9                                                         ; fc86: 2c a9 09    ,..
-; overlapping: lda #9                                                 ; fc87: a9 09       ..
+; overlapping: bit l09a9                                              ; fc86: 2c a9 09    ,..
+    !byte $2c                                                         ; fc86: 2c          ,
+
 ; $fc87 referenced 1 time by $ff4c
+cfc87
+    lda #9                                                            ; fc87: a9 09       ..
 cfc89
 lfc8a = cfc89+1
     bit l02a9                                                         ; fc89: 2c a9 02    ,..
@@ -4762,7 +4760,7 @@ cff43
 ; $ff49 referenced 2 times by $f4ca, $f5fa
 cff49
     jsr sub_cf98b                                                     ; ff49: 20 8b f9     ..
-    jmp lfc87                                                         ; ff4c: 4c 87 fc    l..
+    jmp cfc87                                                         ; ff4c: 4c 87 fc    l..
 
 ; $ff4f referenced 2 times by $e6b3, $e743
 cff4f
@@ -5436,7 +5434,6 @@ pydis_end
 ;     cfbe4:                         2
 ;     cfbfa:                         2
 ;     cfc6c:                         2
-;     cfc7e:                         2
 ;     cfc9a:                         2
 ;     cfcb8:                         2
 ;     cff0d:                         2
@@ -5458,6 +5455,7 @@ pydis_end
 ;     l03ff:                         2
 ;     last_shift_key_flags:          2
 ;     lf80b:                         2
+;     lfc7e:                         2
 ;     lfc84:                         2
 ;     os_memory_end:                 2
 ;     os_memory_start:               2
@@ -5709,8 +5707,7 @@ pydis_end
 ;     cfc69:                         1
 ;     cfc6f:                         1
 ;     cfc72:                         1
-;     cfc75:                         1
-;     cfc81:                         1
+;     cfc87:                         1
 ;     cfcc9:                         1
 ;     cfcd5:                         1
 ;     cfcf4:                         1
@@ -5770,7 +5767,6 @@ pydis_end
 ;     l01a9:                         1
 ;     l02a9:                         1
 ;     l08a9:                         1
-;     l09a9:                         1
 ;     l8002:                         1
 ;     l8003:                         1
 ;     la000:                         1
@@ -5793,8 +5789,9 @@ pydis_end
 ;     lf8cf:                         1
 ;     lf8d3:                         1
 ;     lf94f:                         1
+;     lfc75:                         1
 ;     lfc78:                         1
-;     lfc87:                         1
+;     lfc81:                         1
 ;     lfc8a:                         1
 ;     lfdec:                         1
 ;     lfff8:                         1
@@ -6250,13 +6247,13 @@ pydis_end
 ;     cfc6c
 ;     cfc6f
 ;     cfc72
-;     cfc75
+;     cfc74
 ;     cfc77
 ;     cfc7b
-;     cfc7e
-;     cfc81
+;     cfc7d
+;     cfc80
 ;     cfc83
-;     cfc86
+;     cfc87
 ;     cfc89
 ;     cfc9a
 ;     cfcb8
@@ -6330,9 +6327,11 @@ pydis_end
 ;     lf8cf
 ;     lf8d3
 ;     lf94f
+;     lfc75
 ;     lfc78
+;     lfc7e
+;     lfc81
 ;     lfc84
-;     lfc87
 ;     lfc8a
 ;     lfdec
 ;     lfff8
@@ -6537,11 +6536,11 @@ pydis_end
 ; Stats:
 ;
 ;     Total size (Code + Data) = 8192 bytes
-;     Code                     = 5768 bytes (70%)
-;     Data                     = 2424 bytes (30%)
+;     Code                     = 5770 bytes (70%)
+;     Data                     = 2422 bytes (30%)
 ;
 ;     Number of instructions   = 2783
-;     Number of data bytes     = 2109 bytes
+;     Number of data bytes     = 2107 bytes
 ;     Number of data words     = 38 bytes
 ;     Number of string bytes   = 277 bytes
 ;     Number of strings        = 48

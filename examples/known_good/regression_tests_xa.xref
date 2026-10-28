@@ -17,6 +17,10 @@ $0072  temp_2 (local to $2009-$200a)
 
 $0073  l0073 (Memory locations: Other)
     $203b     quiet_routine+5              sta l0073
+    $2043     mid_instruction_snippet+5    sta l0073
+
+$03a0  l03a0 (Memory locations: Other)
+    $203e     mid_instruction_snippet      bit l03a0
 
 $2000  pydis_start (inline), start (inline)
     (not referenced)
@@ -31,6 +35,9 @@ $202f  store_value (inline)
 
 $2036  quiet_routine (inline)
     $200b     pydis_start+11               jsr quiet_routine
+
+$203e  mid_instruction_snippet (inline)
+    (not referenced)
 
 $2080  part2 (inline)
     $202c     c202c                        jmp part2

@@ -1784,7 +1784,7 @@ class Cpu6502(cpu.Cpu):
         found_already = [False]*65536
 
         # for each snippet
-        for details in session.current().snippets:
+        for index, details in enumerate(session.current().snippets):
             if details.pre_trace_function is None:
                 continue
 
@@ -1807,10 +1807,21 @@ class Cpu6502(cpu.Cpu):
                     # A string means just add an inline string
                     disassembly.comment_binary(helper.get_start_loc(), details.pre_trace_function, align=Align.INLINE, auto_generated=True)
                 else:
-                    if details.pre_trace_parameter is None:
-                        details.pre_trace_function(helper)
-                    else:
-                        details.pre_trace_function(helper, details.pre_trace_parameter)
+                    try:
+                        if details.pre_trace_parameter is None:
+                            details.pre_trace_function(helper)
+                        else:
+                            details.pre_trace_function(helper, details.pre_trace_parameter)
+                    except SnippetRejected:
+                        # It starts in the middle of an instruction (or data),
+                        # so the post trace function ignores it too
+                        found_already[binary_addr:binary_addr+length] = [False]*length
+                        self.rejected_snippet_matches.add((index, binary_addr))
+                        continue
+
+                # Trace from the match's entry points now, so the next match
+                # is checked against the code they lead to
+                self.trace_entry_points()
 
     def post_trace_with_regex(self):
         # Make a byte array of memory
@@ -1822,7 +1833,7 @@ class Cpu6502(cpu.Cpu):
         found_already = [False]*65536
 
         # for each snippet
-        for details in session.current().snippets:
+        for index, details in enumerate(session.current().snippets):
             if details.post_trace_function is None:
                 continue
 
@@ -1830,6 +1841,10 @@ class Cpu6502(cpu.Cpu):
             for match in (m for start, end in loaded for m in details.pattern.whole_pattern.finditer(bytes_array, start, end)):
                 binary_addr = match.start()
                 length = match.end() - match.start()
+
+                # Ignore a match rejected before tracing
+                if (index, binary_addr) in self.rejected_snippet_matches:
+                    continue
 
                 # Check if any of the bytes are already commented on
                 if any(found_already[binary_addr:binary_addr+length]):

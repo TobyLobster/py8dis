@@ -3,7 +3,7 @@
 
 from commands import *
 
-load(0x2000, "orig/regression_tests1.orig", "6502", "5a6fea323bcb742b072e4bac4ebcdf8c")
+load(0x2000, "orig/regression_tests1.orig", "6502", "b31f72fa7656b3705825819c536046ee")
 
 # An entry point added *before* a second load() must not be forgotten
 entry(0x2000, "start")
@@ -80,5 +80,12 @@ snippets6502.register_comment_code_snippet("Found by a snippet with a wildcard",
     .
     sta $73
 """)
+
+# The same snippet also matches from the second byte of 'bit $03a0' at &203e.
+# A match that starts in the middle of an instruction used to be traced as
+# code too (so the BIT was shown with an 'overlapping: ldy #3' line). Snippets
+# are now matched once the code has been traced, and a match that starts
+# inside an instruction is ignored.
+entry(0x203e, "mid_instruction_snippet")
 
 go()

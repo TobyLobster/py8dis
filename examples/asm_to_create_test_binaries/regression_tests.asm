@@ -63,6 +63,16 @@ wildcard_snippet
     sta $73
     rts
 
+    ; The same snippet matches from the second byte of 'bit $03a0' (a0 03 e0
+    ; 04 85 73). That used to be traced as code too, overlapping the BIT. It
+    ; starts in the middle of an instruction, so it's now ignored (the control
+    ; file makes this an entry point).
+mid_instruction_snippet
+    bit $03a0
+    cpx #4
+    sta $73
+    rts
+
     !fill $2080 - *, $ea
 
 ; ---------------------------------------------------------------------------

@@ -102,12 +102,12 @@ load    = &ffd5
     ; Call far_call_target_2 in bank 15
     lda #<far_call_target_2                                           ; 1c60: a9 ac       ..
     sta far_call_pc_low                                               ; 1c62: 85 04       ..
-    lda #&0f                                                          ; 1c64: a9 0f       ..
-    sta far_call_bank                                                 ; 1c66: 85 02       ..
+    ldx #&0f                                                          ; 1c64: a2 0f       ..
+    stx far_call_bank                                                 ; 1c66: 86 02       ..
     lda #0                                                            ; 1c68: a9 00       ..
     sta far_call_status                                               ; 1c6a: 85 05       ..
-    lda #>far_call_target_2                                           ; 1c6c: a9 1c       ..
-    sta far_call_pc_high                                              ; 1c6e: 85 03       ..
+    ldy #>far_call_target_2                                           ; 1c6c: a0 1c       ..
+    sty far_call_pc_high                                              ; 1c6e: 84 03       ..
     lda #1                                                            ; 1c70: a9 01       ..
     sta far_call_a                                                    ; 1c72: 85 06       ..
     jsr jsrfar                                                        ; 1c74: 20 6e ff     .. ; Call a routine in another bank (set up at $02-$08)

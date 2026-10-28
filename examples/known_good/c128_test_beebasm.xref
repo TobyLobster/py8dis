@@ -2,13 +2,13 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 
 &0002  far_call_bank (Memory locations: Zero page)
     &1c53     loop_c1c36+29                sta far_call_bank
-    &1c66     loop_c1c36+48                sta far_call_bank
+    &1c66     loop_c1c36+48                stx far_call_bank
     &1c79     loop_c1c36+67                sta far_call_bank
     &1cb2     sub_c1cb0+2                  sta far_call_bank
 
 &0003  far_call_pc_high (Memory locations: Zero page)
     &1c57     loop_c1c36+33                sta far_call_pc_high
-    &1c6e     loop_c1c36+56                sta far_call_pc_high
+    &1c6e     loop_c1c36+56                sty far_call_pc_high
     &1c7d     loop_c1c36+71                sta far_call_pc_high
     &1cb6     sub_c1cb0+6                  sta far_call_pc_high
 

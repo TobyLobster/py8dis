@@ -20,7 +20,9 @@ OPCODE_TYA                      = 0x98      # tya
 
 # Snippets are 'SnippetDetails' which contain a regex for binary data to find common code tropes,
 # and two associated functions (for commenting, adding expressions etc).
-# One function is executed before the code is traced, allowing new entry points to be added for the trace.
+# One function is executed before the code is traced (or rather, once the code has been traced from the
+# entry points given, so that a match in the middle of an instruction can be ignored: see
+# snippethelper.SnippetRejected), allowing new entry points to be added for the trace.
 # The other happens after tracing which allows for more detailed comments to be added because we know the
 # cpu_state of registers.
 #

@@ -32,6 +32,10 @@ class Cpu:
         self.entry_points = []
         self.explicit_entry_points = set()  # binary addresses given as entry points by the user (or a helper like code_ptr()), not just found by tracing
         self.traced_entry_points = set()
+        # Snippet matches ignored because they start in the middle of an
+        # instruction, as (snippet index, binary address): see
+        # snippethelper.SnippetRejected
+        self.rejected_snippet_matches = set()
         self.code_analysis_fns = []
         self.trace_done = False
 
@@ -142,16 +146,43 @@ class Cpu:
     def trace(self):
         """Trace all the code from the entry points."""
 
+        # First trace from the entry points given so far
+        self.trace_entry_points()
+
+        # We have a number of regular expressions that represent common segments
+        # of code and/or data. If we find a match, we can mark code as an
+        # entry() point for tracing. (This is done once the code found so far
+        # has been traced, so that a match that starts in the middle of an
+        # instruction can be ignored: see snippethelper.SnippetRejected. Each
+        # match's entry points are traced before the next match is looked at.)
+        self.pre_trace_with_regex()
+        self.trace_entry_points()
+
+        # Generate all the references
+        self.generate_references()
+
+        # Calculate the CPU states and analyse the code to add commentary
+        self.analyse_code()
+        
+        # Now we have traced and analysed the code we can again look for regex matches
+        # and comment in more detail, knowing the cpu_cache for the state of registers 
+        # at each instruction can tell us for example how many times we execute a loop.
+        self.post_trace_with_regex()
+
+        # We defer final label name generating (using LazyString) until tracing
+        # is complete, since e.g. part way through tracing we may not have
+        # identified any code at address X and that can affect the label name
+        # used for address X.
+        self.trace_done = True
+
+
+    def trace_entry_points(self):
+        """Trace the code from each entry point in 'entry_points', and the
+        entry points found by doing so, until there are none left."""
+
         # As each instruction is processed, the next possible instructions
         # are added to the 'entry_points' list. The first of these will be
         # the following instruction (if there is one; it might be None).
-
-        # We have a number of regular expressions that represent common segments
-        # of code and/or data. If we find a match, then because we are pre-trace
-        # we can mark code as an entry() point for tracing.
-        self.pre_trace_with_regex()
-
-        # Work through each entry point
         while len(self.entry_points) > 0:
             entry_point = self.entry_points.pop(0)
             if entry_point not in self.traced_entry_points:
@@ -172,24 +203,6 @@ class Cpu:
                     move_id = session.current().moves.move_id_for_binary_addr[new_entry_point]
                     runtime_addr = movemanager.b2r(new_entry_point)
                     self.add_entry(new_entry_point, runtime_addr, move_id=move_id, name=None)
-
-        # Generate all the references
-        self.generate_references()
-
-        # Calculate the CPU states and analyse the code to add commentary
-        self.analyse_code()
-        
-        # Now we have traced and analysed the code we can again look for regex matches
-        # and comment in more detail, knowing the cpu_cache for the state of registers 
-        # at each instruction can tell us for example how many times we execute a loop.
-        self.post_trace_with_regex()
-
-        # We defer final label name generating (using LazyString) until tracing
-        # is complete, since e.g. part way through tracing we may not have
-        # identified any code at address X and that can affect the label name
-        # used for address X.
-        self.trace_done = True
-
 
     def generate_references(self):
         """Generate references from the label data.

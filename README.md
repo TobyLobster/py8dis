@@ -102,6 +102,22 @@ This output is suitable for feeding into the beebasm assembler. You can switch t
 
 Other command line options: `-o FILE` writes the output to a file instead of printing it, `--upper` or `--lower` choose the case of the output, `--json FILE` writes the disassembly as JSON as well (see [JSON output](#json-output)), and `--symbols FILE` (with `--symbols-format`) and `--xref FILE` write a symbol file and a cross-reference listing (see [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)).
 
+### Running the tests
+
+The `examples` directory also has py8dis's tests: control files in `examples/python`, the binaries they disassemble in `examples/orig`, and the output they should give in `examples/known_good`. To run them all and check the output:
+
+``` sh
+cd examples
+./run_tests.py -c
+```
+
+py8dis itself needs only Python 3. The tests also use these, when they're installed, and skip what needs them otherwise:
+
+- the assemblers (acme, beebasm, xa and z88dk-z80asm), to check that each disassembly assembles to the original binary;
+- the [jsonschema](https://pypi.org/project/jsonschema/) package (`pip install jsonschema`), to check the JSON output against its schema (see [JSON output](#json-output)). Without it, `run_tests.py -c` says so at the end.
+
+`./run_tests.py --help` describes the other options, e.g. running particular tests, and `-m` to make the known good output after a deliberate change.
+
 ### Edit me
 
 The output of the hello world example can be improved. Load helloworld.py and add:
@@ -554,7 +570,7 @@ The same for the C128 in C128 mode, with the usual bank 15 (the ROMs, and the I/
     !pet "hello, c128", $0d, 0
 ```
 
-A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up at &02-&04 with immediate values (in any order, with stores to &05-&08 between them and the call), is commented, e.g. `; Call far_call_target in bank 0`. If the address is in the program, in a bank that has RAM 0 there, where the program is (banks 0 and 2, and below their ROMs, 4, 6, 8, 10 and 12-15), it's traced as code, named `far_call_target` (or `far_jump_target`, then `_2` etc.) unless it already has a name, and the set-up uses its name:
+A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up at &02-&04 with immediate values (through A, X or Y, in any order, with stores to &05-&08 between them and the call), is commented, e.g. `; Call far_call_target in bank 0`. If the address is in the program, in a bank that has RAM 0 there, where the program is (banks 0 and 2, and below their ROMs, 4, 6, 8, 10 and 12-15), it's traced as code, named `far_call_target` (or `far_jump_target`, then `_2` etc.) unless it already has a name, and the set-up uses its name:
 
 ```
     ; Call far_call_target in bank 0

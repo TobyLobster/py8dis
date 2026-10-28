@@ -9,6 +9,26 @@ import disassembly
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from memorymanager import BinaryLocation, BinaryAddr, RuntimeAddr
 
+class SnippetRejected(Exception):
+    """Raised by SnippetHelper.entry() when a match can't be code where it
+    starts, because the bytes are already classified otherwise (see
+    starts_mid_instruction()). The match is then ignored: the snippet's
+    functions do nothing more with it, before or after tracing."""
+
+def starts_mid_instruction(binary_addr):
+    """Would an instruction at binary_addr overlap one already traced (or
+    other classified data) without starting where it does? That is, is
+    binary_addr inside another instruction or data, or does an instruction or
+    data start in this instruction's operand?"""
+    c = classification.get_classification(binary_addr)
+    if c is not None:
+        # Fine if an instruction already starts here (it's the same one)
+        return not classification.is_code(binary_addr)
+    opcode = session.current().cpu.opcodes.get(session.current().memory.binary[binary_addr])
+    if opcode is None:
+        return True
+    return classification.is_classified(binary_addr + 1, opcode.length() - 1)
+
 class SnippetDetails:
     def __init__(self, pre_trace_function, pre_trace_parameter, post_trace_function, post_trace_parameter, pattern):
         self.pre_trace_function = pre_trace_function
@@ -133,7 +153,12 @@ class SnippetHelper:
             binary_addr = self.get_start_loc().binary_addr
             runtime_addr = movemanager.b2r(binary_addr)
             move_id = self.get_start_loc().move_id
-            
+            # The match itself must be able to be code: not starting inside
+            # an instruction already traced (snippets are matched after
+            # tracing from the other entry points), or inside data
+            if self.memory_binary[binary_addr] is not None and starts_mid_instruction(binary_addr):
+                raise SnippetRejected()
+
         if self.memory_binary[binary_addr] is not None:
             # We add the entry point, but we don't call trace.cpu.add_entry() because this
             # also adds a label (even if without a name) which we don't want since this causes 

@@ -618,13 +618,15 @@ _C128_BANK_RAM0_TOP = {
 
 def pre_trace_far_call(p):
     """A C128 program setting up JSRFAR or JMPFAR's bank and address at
-    &02-&04 with immediate values, then calling it: comment the set-up, and if
+    &02-&04 with immediate values (through A, X or Y), then calling it: comment the set-up, and if
     the address is in the program (in RAM 0 in that bank), trace it, name it
     (e.g. 'far_call_target') and use its name in the set-up."""
     stores = {}
     for i in (1, 2, 3):
-        store_addr = p.get_memory('store%d' % i, 1)
-        stores[store_addr] = (p.get_binary_address('nn%d' % i, prioritise_definition=False), p.get_memory('nn%d' % i))
+        # (Each is e.g. 'lda #nn1 : sta $02', so the address stored to is
+        # two bytes after the value)
+        nn_addr = p.get_binary_address('nn%d' % i, prioritise_definition=False)
+        stores[p.get_memory(nn_addr + 2)] = (nn_addr, p.get_memory(nn_addr))
     if sorted(stores) != [2, 3, 4]:
         return
     p.entry()
@@ -680,29 +682,25 @@ def register_snippets():
         stores[reg] = " | ".join(alternatives)
 
     # On the C128, e.g. 'lda #0 : sta $02 : lda #>target : sta $03 :
-    # lda #<target : sta $04 : jsr jsrfar', the three in any order, with
-    # stores to &05-&08 (the status, A, X and Y to call it with) between them
-    # and the call
+    # lda #<target : sta $04 : jsr jsrfar', the three in any order, each with
+    # A, X or Y, with stores to &05-&08 (the status, A, X and Y to call it
+    # with) between them and the call
     if any(call.name == "jsrfar" for call in _machine().jump_table):
         extra = "?   " + " | ".join(["lda #v", "ldx #v", "ldy #v"] + ["st%s $%02x" % (reg, addr) for reg in "axy" for addr in range(5, 9)])
-        far_store = "sta $02 | sta $03 | sta $04"
+        def pair(n):
+            # e.g. 'lda #nn1 : sta $02 | ... | ldy #nn1 : sty $04'
+            return "    " + " | ".join("ld{0} #nn{1} : st{0} ${2:02x}".format(reg, n, addr) for reg in "axy" for addr in (2, 3, 4))
         register_snippet(pre_trace_far_call, None, """
-    lda #nn1
-store1
-    {store}
+{pair1}
 {extra4}
-    lda #nn2
-store2
-    {store}
+{pair2}
 {extra4}
-    lda #nn3
-store3
-    {store}
+{pair3}
 {extra8}
 call
     jsr $ff6e | jmp $ff71
 end
-""".format(store=far_store, extra4="\n".join([extra]*4), extra8="\n".join([extra]*8)))
+""".format(pair1=pair(1), pair2=pair(2), pair3=pair(3), extra4="\n".join([extra]*4), extra8="\n".join([extra]*8)))
 
     # e.g. 'lda #<handler : sta $0314 : lda #>handler : sta $0315'
     register_snippet(pre_trace_writing_to_vector, None, """

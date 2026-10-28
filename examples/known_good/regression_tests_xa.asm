@@ -14,6 +14,7 @@ temp_2  = $0072
 
 // Other
 l0073   = $0073
+l03a0   = $03a0
 
     * = $2000
 
@@ -77,12 +78,17 @@ quiet_routine
     sta l0073                                                         // 203b: 85 73       .s
     rts                                                               // 203d: 60          `
 
-    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 203e: ea ea ea... ...
-    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 204a: ea ea ea... ...
-    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 2056: ea ea ea... ...
-    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 2062: ea ea ea... ...
-    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 206e: ea ea ea... ...
-    .byt $ea, $ea, $ea, $ea, $ea, $ea                                 // 207a: ea ea ea... ...
+mid_instruction_snippet
+    bit l03a0                                                         // 203e: 2c a0 03    ,..
+    cpx #4                                                            // 2041: e0 04       ..
+    sta l0073                                                         // 2043: 85 73       .s
+    rts                                                               // 2045: 60          `
+
+    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 2046: ea ea ea... ...
+    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 2052: ea ea ea... ...
+    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 205e: ea ea ea... ...
+    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea   // 206a: ea ea ea... ...
+    .byt $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea             // 2076: ea ea ea... ...
 
 part2
     jsr store_value                                                   // 2080: 20 2f 20     /
@@ -116,8 +122,9 @@ pydis_end
 //     l0070:           4
 //     value:           4
 //     c202c:           2
+//     l0073:           2
 //     store_value:     2
-//     l0073:           1
+//     l03a0:           1
 //     part2:           1
 //     quiet_routine:   1
 //     temp:            1
@@ -128,16 +135,17 @@ pydis_end
 //     l0000
 //     l0070
 //     l0073
+//     l03a0
 //     l2085
 
 // Stats:
 //
 //     Total size (Code + Data) = 140 bytes
-//     Code                     = 66 bytes (47%)
-//     Data                     = 74 bytes (53%)
+//     Code                     = 74 bytes (53%)
+//     Data                     = 66 bytes (47%)
 //
-//     Number of instructions   = 35
-//     Number of data bytes     = 69 bytes
+//     Number of instructions   = 39
+//     Number of data bytes     = 61 bytes
 //     Number of data words     = 2 bytes
 //     Number of string bytes   = 3 bytes
 //     Number of strings        = 1
