@@ -88,6 +88,7 @@ TESTS = [
     ("regression_tests",         ["acme", "beebasm", "xa"],    "regression tests for fixed bugs"),
     ("expressions",              ["acme", "beebasm", "xa"],    "how expressions are bracketed for each assembler"),
     ("acorn_os_calls",           ["acme", "beebasm", "xa"],    "test all the os calls for acorn machines"),
+    ("acorn_vectors",            ["acme", "beebasm", "xa"],    "the ways of setting an Acorn OS vector that acorn.py recognises"),
     ("prg_test",                 ["acme", "beebasm", "xa"],    "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
     ("p00_test",                 ["acme", "beebasm", "xa"],    "a PC64 P00 file loaded with load_prg()"),
     ("load_offset",              ["acme", "beebasm", "xa"],    "loading parts of a file with load(..., offset=..., length=...)"),
