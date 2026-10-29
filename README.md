@@ -437,7 +437,9 @@ Calls `pre_trace_fn(p)` for each match before tracing (for adding entry points, 
   ?   [vector+1] = hi_value
   ```
 
-  `[target] = value` means that code earlier in the same run of code (up to a branch target, or the end of a block such as RTS) stored the value at the target, and nothing has overwritten it, or possibly overwritten it (a JSR, or an indexed store), since. A target is an address, a variable given its addresses (`vector = $0300 | $0302`), or a variable plus or minus a number. A value is a number, a name (`lo_value`: a known value, the same wherever the name is used), or `?` (any value stored, known or not). `a = value` (or `x`, `y`) is a register's value just before the **anchor**, an instruction line (at most one), e.g. for a call:
+  `[target] = value` means that code earlier in the same run of code (up to a branch target, or the end of a block such as RTS) stored the value at the target, and nothing has overwritten it, or possibly overwritten it (a JSR, or an indexed store), since. A target is an address, a variable given its addresses (`vector = $0300 | $0302`), or a variable plus or minus a number. A value is a number, a name (`lo_value`: a known value, the same wherever the name is used), or `?` (any value stored, known or not). `a = value` (or `x`, `y`) is a register's value.
+
+  An effect pattern can also have **instruction lines**, as a regex snippet does. Then it matches where they match (starting at an instruction in the traced code) and its effect lines hold, each effect line applying just before the instruction line after it. So the effect lines are conditions on a regex snippet's lines. For example, a call with its arguments in memory and a register, set up in any way:
 
   ```
       [$02] = bank
@@ -446,7 +448,19 @@ Calls `pre_trace_fn(p)` for each match before tracing (for adding entry points, 
       jsr $ff6e
   ```
 
-  With an anchor, the pattern matches at each instruction that matches the anchor where the other lines hold just before it. Without one, it matches as soon as all its lines hold; or, if some are optional (`?`) and not all hold, when those that do stop holding, if that's enough (every line that isn't optional, and at least one line). A match's pre-trace function is called once, while tracing (which continues from any entry points it adds), and its post-trace function once, for the code as finally traced. `p.matched(name)` says whether an optional line holds, `p.value(name)` and `p.binding(variable)` give what a value or variable matched, `p.store(name)` the store (its value and where it was loaded, for e.g. `#<handler`), and `p.extent()` the code from the first load to the last store. See `effectpattern.py`.
+  or two calls to OSWRCH, the first with A=22 and the second with A known, with up to two instructions between them (`lda #7`, or `ldx #7 : txa`, ...):
+
+  ```
+      a = 22
+      jsr $ffee
+  ?   .
+  ?   .
+  mode
+      a = n
+      jsr $ffee
+  ```
+
+  (A match's instructions aren't matched again by the same pattern.) Without instruction lines, an effect pattern matches as soon as all its lines hold; or, if some are optional (`?`) and not all hold, when those that do stop holding, if that's enough (every line that isn't optional, and at least one line). A match's pre-trace function is called once, while tracing (which continues from any entry points it adds), and its post-trace function once, for the code as finally traced. `p.matched(name)` says whether an optional line holds, `p.value(name)` and `p.binding(variable)` give what a value or variable matched, `p.store(name)` the store, `p.value_operand(name)` where a line's value was loaded (for e.g. `#<handler`), and `p.extent()` the code from the first load to the last instruction. The instruction lines' names work as in a regex snippet. See `effectpattern.py`.
 
 ### Number Formats
 

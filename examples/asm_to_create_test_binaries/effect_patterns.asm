@@ -78,12 +78,39 @@ start
 split
     lda #>handler5
     sta vector2+1
+
+    ; 8. Conditions on the lines of a sequence: 'write' called with A=22,
+    ; then with A known, with up to two instructions between
+    lda #22
+    jsr write
+    lda #7
+    jsr write
+    ; ...A set another way
+    ldx #22
+    txa
+    jsr write
+    ldy #3
+    tya
+    jsr write
+    ; ...not 22 first: not matched
+    lda #23
+    jsr write
+    lda #7
+    jsr write
+    ; ...A not known the second time: not matched
+    lda #22
+    jsr write
+    lda temp
+    jsr write
     rts
 
 subroutine
     rts
 
 print
+    rts
+
+write
     rts
 
 handler1

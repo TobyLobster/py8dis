@@ -22,23 +22,30 @@ of these:
   overwritten it, or made it unknown (a JSR, or an indexed store), since.
   These lines can be satisfied in any order, by any register, with other
   instructions in between.
-- 'a = value' (or 'x', 'y'): the register holds the value just before the
-  anchor.
+- 'a = value' (or 'x', 'y'): the register holds the value at the point the
+  line applies to (see below).
 
-The other lines are:
+The other lines are instructions, in the regex snippets' syntax (e.g. 'jsr
+$ff6e | jmp $ff71', or 'lda #nn : sta zp1'), names and comments:
 
-- the anchor: an instruction line, in the regex snippets' syntax (e.g.
-  'jsr $ff6e | jmp $ff71'). There can be at most one. With an anchor, the
-  pattern matches at each instruction that matches it where the other lines
-  hold just before it. Without one, the pattern matches as soon as all its
-  lines hold; or, if some lines are optional and not all of them hold, when
-  the lines that do hold stop holding (an overwrite, a JSR or an indexed
-  store, or the end of the run), if they're enough for a match.
+- With instruction lines, the pattern matches where they match, as a regex
+  snippet does (see snippet6502.parse_snippet()), starting at an instruction
+  in the traced code, and where its effect lines hold. Each effect line
+  applies just before the instruction line that comes after it (or, after
+  the last one, just after the match): its memory and registers are as they
+  are then. So effect lines can be conditions on the lines of a regex
+  snippet, e.g. 'a = $1f' before a 'jsr oswrch'. A match's instructions
+  aren't matched again by the same pattern.
+- Without, the pattern matches as soon as all its lines hold; or, if some
+  lines are optional and not all of them hold, when the lines that do hold
+  stop holding (an overwrite, a JSR or an indexed store, or the end of the
+  run), if they're enough for a match.
 - a name, not indented: names the next line, for SnippetHelper's methods
   (e.g. get_binary_location()): an effect line's location is that of the
-  store, the anchor's is the anchor's.
-- '?' at the start of a line makes it optional. A match needs every line
-  that isn't optional, and at least one line.
+  store, an instruction line's is its own (as in a regex snippet).
+- '?' at the start of a line makes it optional. A match needs every effect
+  line that isn't optional, and at least one effect line. (An optional
+  instruction line is as in a regex snippet.)
 - ';' starts a comment.
 
 A target is an address ('$0206', zero page or absolute); a variable bound to
@@ -53,6 +60,7 @@ import collections
 import itertools
 import re
 
+import classification
 import snippet6502
 import utils
 
@@ -87,6 +95,9 @@ class Line:
     name) or ('any', None)."""
 
     def __init__(self, label, optional, kind, *, address=None, var=None, offset=0, reg=None, value=None):
+        # (position is the group of the position in the pattern's regex
+        # that the line applies to, if it has instruction lines)
+        self.position = None
         self.label = label
         self.optional = optional
         self.kind = kind
@@ -105,11 +116,28 @@ class EffectPattern:
     def __init__(self, text):
         self.text = text
         self.lines = []
-        self.anchor = None          # a compiled regex for the anchor's bytes
-        self.anchor_label = None
-        self.anchor_regex_labels = None
         self.variables = {}         # name: [addresses]
+
+        # The instruction lines, as a regex snippet (None if there aren't
+        # any), with a position (an empty group) before each instruction line
+        # and at the end, which the effect lines before it apply to
+        self.regex = None
+        self.regex_labels = collections.defaultdict(list)
+        whole = bytearray()
+        group_number = 1
+        waiting = []                # the effect lines waiting for a position
         pending_label = None
+
+        def position():
+            nonlocal group_number
+            whole.extend(b"()")
+            group = group_number
+            group_number += 1
+            for i in waiting:
+                self.lines[i].position = group
+            waiting.clear()
+            return group
+
         for raw in text.splitlines():
             line = _strip_comment(raw)
             if not line.strip():
@@ -119,27 +147,31 @@ class EffectPattern:
                 pending_label = m.group(1)
                 continue
             optional = line.startswith('?')
-            if optional:
-                line = ' ' + line[1:]
-            m = _EFFECT_LINE.match(line)
-            if m:
-                self.lines.append(self._parse_effect(m, pending_label, optional, raw))
+            effect = _EFFECT_LINE.match(' ' + line[1:] if optional else line)
+            if effect:
+                self.lines.append(self._parse_effect(effect, pending_label, optional, raw))
+                waiting.append(len(self.lines) - 1)
             else:
-                if self.anchor is not None:
-                    self._error("an effect pattern can have only one instruction line (its anchor)", raw)
-                if optional:
-                    self._error("the anchor can't be optional", raw)
-                pattern, labels, _ = snippet6502.parse_line(line, 1)
+                group = position()
+                if pending_label is not None:
+                    self.regex_labels[pending_label].append((group, True))
+                pattern, labels, group_number = snippet6502.parse_line(line, group_number)
                 if pattern is None:
                     self._error("not an effect or an instruction", raw)
-                self.anchor = re.compile(bytes(pattern), re.DOTALL)
-                self.anchor_label = pending_label
+                whole.extend(pattern)
+                for name, groups in labels.items():
+                    self.regex_labels[name].extend(groups)
             pending_label = None
+        if whole:
+            position()
+            if pending_label is not None:
+                self.regex_labels[pending_label].append((group_number - 1, True))
+            self.regex = re.compile(bytes(whole), re.DOTALL)
         if not self.lines:
             self._error("an effect pattern needs an effect line", "")
         for line in self.lines:
-            if line.kind == 'register' and self.anchor is None:
-                self._error("a register line ('{0} = ...') needs an anchor (an instruction line)".format(line.reg), "")
+            if line.kind == 'register' and self.regex is None:
+                self._error("a register line ('{0} = ...') needs an instruction line, to say where it applies".format(line.reg), "")
             if line.var is not None and line.var not in self.variables:
                 self._error("the variable '{0}' isn't given its addresses (e.g. '[{0} = $70 | $72]')".format(line.var), "")
         self.labels = {line.label: i for i, line in enumerate(self.lines) if line.label is not None}
@@ -214,15 +246,29 @@ class EffectPattern:
         return "EffectPattern({0!r})".format(self.text)
 
 
+class RegisterValue:
+    """The value of a register that satisfies a register line, and the
+    binary address of the immediate operand it was loaded from (e.g. the 'nn'
+    of 'lda #nn'), or None."""
+
+    __slots__ = ("value", "value_operand")
+
+    def __init__(self, value, value_operand):
+        self.value = value
+        self.value_operand = value_operand
+
+
 class EffectMatch:
     """A match of an effect pattern. satisfied is {line index: the
-    MemoryWrite (memory lines) or the value (register lines)} for the lines
+    MemoryWrite (memory lines) or RegisterValue (register lines)} for the lines
     that hold; writes is {line index: the MemoryWrite at the line's target
     when the match was found, whether or not the line holds} for the memory
-    lines; values is {name: value}; anchor is the anchor's binary address,
-    if there is one."""
+    lines; values is {name: value}; anchor is the binary address where the
+    instruction lines matched, and regex_match the match (or None if there
+    are none)."""
 
-    def __init__(self, pattern, binding_index, satisfied, values, writes, anchor):
+    def __init__(self, pattern, binding_index, satisfied, values, writes, anchor, regex_match=None):
+        self.regex_match = regex_match
         self.pattern = pattern
         self.binding_index = binding_index
         self.binding = pattern.bindings[binding_index]
@@ -238,22 +284,23 @@ class EffectMatch:
 
     def locations(self):
         """The binary addresses of the stores that satisfy its lines, and of
-        the anchor."""
+        the start of its instruction lines' match."""
         result = [w.binary_addr for i, w in self.satisfied.items() if self.pattern.lines[i].kind == 'memory']
         if self.anchor is not None:
             result.append(self.anchor)
         return result
 
 
-def _evaluate(pattern, b, known, consumed, registers):
+def _evaluate(pattern, b, context, consumed):
     """The lines of binding b that hold, and the values of the names they
-    give ({line index: write or value}, {name: value}). known is {address:
-    MemoryWrite}, consumed the stores already used by a match of this
-    binding, and registers the pessimistic state before the anchor (or
-    None)."""
+    give ({line index: write or value}, {name: value}). context(i) is the
+    state that line i applies to: (known, registers), where known is
+    {address: MemoryWrite} and registers the pessimistic state (or None).
+    consumed is the stores already used by a match of this binding."""
     satisfied = {}
     values = {}
     for i, line in enumerate(pattern.lines):
+        known, registers = context(i)
         if line.kind == 'memory':
             write = known.get(pattern.targets[b][i])
             if write is None or write.binary_addr in consumed:
@@ -264,7 +311,7 @@ def _evaluate(pattern, b, known, consumed, registers):
             value = None if registers is None else registers[line.reg].value
             if value is None:
                 continue
-            result = value
+            result = RegisterValue(value, registers[line.reg].get_previous_load_imm_operand())
         kind, expected = line.value
         if kind == 'number':
             if value != expected:
@@ -282,49 +329,90 @@ def _enough(pattern, satisfied):
     """Whether the lines that hold are enough for a match."""
     return len(satisfied) > 0 and all(i in satisfied for i, line in enumerate(pattern.lines) if not line.optional)
 
+def _apply(known, write):
+    """Update the known memory {address: MemoryWrite} with a write."""
+    if write is not None:
+        if write.target is None:
+            known.clear()
+        else:
+            known[write.target] = write
+
 def find_matches(cpu, pattern, bytes_array):
     """The EffectMatches of the pattern in the code, in order (using the
     CPU states, which must be up to date)."""
     matches = []
     memory_lines = [i for i, line in enumerate(pattern.lines) if line.kind == 'memory']
 
-    def make_match(b, satisfied, values, known, anchor=None, consumed=()):
+    def make_match(b, satisfied, values, context, anchor=None, consumed=(), regex_match=None):
         writes = {}
         for i in memory_lines:
-            write = known.get(pattern.targets[b][i])
+            write = context(i)[0].get(pattern.targets[b][i])
             writes[i] = None if write is None or write.binary_addr in consumed else write
-        matches.append(EffectMatch(pattern, b, satisfied, values, writes, anchor))
+        matches.append(EffectMatch(pattern, b, satisfied, values, writes, anchor, regex_match))
 
-    for run in cpu.straight_runs():
-        known = {}
-        if pattern.anchor is not None:
-            registers = None
+    runs = list(cpu.straight_runs())
+    if pattern.regex is not None:
+        # Where each instruction is in the runs (run, index), and where the
+        # address after it is
+        where = {}
+        for r, run in enumerate(runs):
+            for k, binary_addr in enumerate(run):
+                where[binary_addr] = (r, k)
+        after = {}
+        for r, run in enumerate(runs):
+            for k, binary_addr in enumerate(run):
+                end = binary_addr + classification.get_classification(binary_addr).length()
+                after.setdefault(end, (r, k + 1))
+        states = {}
+
+        def state_at(position):
+            """(known memory, registers) just before the instruction at the
+            position (or just after the one that ends there)."""
+            if position not in states:
+                place = where.get(position, after.get(position))
+                if place is None:
+                    states[position] = ({}, None)
+                else:
+                    r, k = place
+                    known = {}
+                    for binary_addr in runs[r][:k]:
+                        _apply(known, cpu.memory_write(binary_addr))
+                    state = cpu.cpu_states[runs[r][k - 1]] if k > 0 else None
+                    states[position] = (known, None if state is None else state.pessimistic)
+            return states[position]
+
+        for run in runs:
+            skip_until = None
             for binary_addr in run:
-                if pattern.anchor.match(bytes_array, binary_addr):
-                    for b in range(len(pattern.bindings)):
-                        satisfied, values = _evaluate(pattern, b, known, (), registers)
-                        if _enough(pattern, satisfied):
-                            make_match(b, satisfied, values, known, binary_addr)
-                write = cpu.memory_write(binary_addr)
-                if write is not None:
-                    if write.target is None:
-                        known.clear()
-                    else:
-                        known[write.target] = write
-                state = cpu.cpu_states[binary_addr]
-                registers = None if state is None else state.pessimistic
-            continue
+                if skip_until is not None and binary_addr < skip_until:
+                    continue
+                m = pattern.regex.match(bytes_array, binary_addr)
+                if m is None:
+                    continue
+                context = lambda i: state_at(m.start(pattern.lines[i].position))
+                found = False
+                for b in range(len(pattern.bindings)):
+                    satisfied, values = _evaluate(pattern, b, context, ())
+                    if _enough(pattern, satisfied):
+                        make_match(b, satisfied, values, context, binary_addr, regex_match=m)
+                        found = True
+                if found and m.end() > binary_addr:
+                    skip_until = m.end()
+        return matches
 
-        # Without an anchor: the bindings with lines that hold, but not all
-        # of them (binding index: (satisfied, values, known when last
-        # evaluated))
+    for run in runs:
+        known = {}
+        context = lambda i: (known, None)
+
+        # The bindings with lines that hold, but not all of them (binding
+        # index: (satisfied, values, known when last evaluated))
         live = {}
         consumed = collections.defaultdict(set)
 
         def close(b):
             satisfied, values, known_then = live.pop(b)
             if _enough(pattern, satisfied):
-                make_match(b, satisfied, values, known_then, consumed=consumed[b])
+                make_match(b, satisfied, values, lambda i: (known_then, None), consumed=consumed[b])
                 consumed[b].update(w.binary_addr for i, w in satisfied.items())
 
         for write in cpu.memory_writes(run):
@@ -340,12 +428,12 @@ def find_matches(cpu, pattern, bytes_array):
                     close(b)
             known[write.target] = write
             for b in affected:
-                satisfied, values = _evaluate(pattern, b, known, consumed[b], None)
+                satisfied, values = _evaluate(pattern, b, context, consumed[b])
                 if not satisfied:
                     live.pop(b, None)
                 elif len(satisfied) == len(pattern.lines):
                     live.pop(b, None)
-                    make_match(b, satisfied, values, known, consumed=consumed[b])
+                    make_match(b, satisfied, values, context, consumed=consumed[b])
                     consumed[b].update(w.binary_addr for i, w in satisfied.items())
                 else:
                     live[b] = (satisfied, values, dict(known))

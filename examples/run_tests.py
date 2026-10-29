@@ -160,8 +160,8 @@ ERROR_TESTS = [
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
     ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
     ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
-    ("effect_register_without_anchor", "register_snippet(): a register line ('x = ...') needs an anchor (an instruction line)"),
-    ("effect_two_anchors",      "register_snippet(): an effect pattern can have only one instruction line (its anchor): 'jsr $2073'"),
+    ("effect_register_without_anchor", "register_snippet(): a register line ('x = ...') needs an instruction line, to say where it applies"),
+    ("effect_bad_value",        "register_snippet(): a value is a number, a name or '?': '[$70] = 1+2'"),
     ("effect_unbound_variable", "register_snippet(): the variable 'vec' isn't given its addresses (e.g. '[vec = $70 | $72]')"),
 ]
 

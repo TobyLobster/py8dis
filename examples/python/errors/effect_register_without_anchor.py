@@ -1,5 +1,5 @@
-"""An effect pattern with a register line but no anchor (an instruction to
-test the register just before)."""
+"""An effect pattern with a register line but no instruction line (to say
+where the register is tested)."""
 
 from commands import *
 import snippets6502

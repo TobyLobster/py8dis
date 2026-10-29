@@ -8,15 +8,19 @@ asm_to_create_test_binaries/effect_patterns.asm:
   is commented. Both lines are optional, so a vector with only one byte set
   in a run (before a JSR, before a store of an unknown value, or before a
   label) is commented as half set;
-- a call to 'print' (&2073) with a known value at &70 and X=5, anchored on
-  the JSR, with an optional line for any store to &71."""
+- a call to 'print' (&209d) with a known value at &70 and X=5, anchored on
+  the JSR, with an optional line for any store to &71;
+- conditions on the lines of a sequence: two calls to 'write' (&209e), the
+  first with A=22, the second with A known, with up to two instructions
+  between them, however A is set."""
 
 from commands import *
 import snippets6502
 
-load(0x2000, "orig/effect_patterns.orig", "6502", "db2a1a4acdd116c536486635a5bb0f31")
-label(0x2072, "subroutine")
-label(0x2073, "print")
+load(0x2000, "orig/effect_patterns.orig", "6502", "902de504973829fb3c6ad2c6c7ecf24a")
+label(0x209c, "subroutine")
+label(0x209d, "print")
+label(0x209e, "write")
 
 def trace_vector_handler(p):
     # Before tracing: trace the handler, and name it
@@ -64,7 +68,26 @@ snippets6502.register_snippet(None, comment_print, """
 flag
 ?   [$71] = ?
 call
-    jsr $2073
+    jsr $209d
+""")
+
+def comment_mode(p):
+    # (Before the first of the instructions, including the loads of the
+    # values the registers hold)
+    disassembly.comment_binary(p.extent()[0], "Select mode {0}".format(p.value('mode')), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    # The mode as a constant, where it's loaded
+    if p.value_operand('mode_value') is not None:
+        constant(p.value('mode'), "mode_{0}".format(p.value('mode')))
+        expr(movemanager.b2r(p.value_operand('mode_value')), "mode_{0}".format(p.value('mode')))
+
+snippets6502.register_snippet(None, comment_mode, """
+    a = 22
+    jsr $209e
+?   .
+?   .
+mode_value
+    a = mode
+    jsr $209e
 """)
 
 entry(0x2000, "start")
