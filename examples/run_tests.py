@@ -109,6 +109,7 @@ TESTS = [
     ("pet1_test",                ["acme", "beebasm", "xa", "64tass"],    "the PET program for BASIC 1, with Commodore's names"),
     ("drive1541_test",           ["acme", "beebasm", "xa", "64tass"],    "code for the 1541 disk drive (commodore.drive1541()): its job queue, buffers, VIAs and DOS ROM"),
     ("drive1541_names_test",     ["acme", "beebasm", "xa", "64tass"],    "drive1541_test for the 1541-II's DOS ROM, with Commodore's names"),
+    ("fastload_test",            ["acme", "beebasm", "xa", "64tass"], "a C64 program with code for the 1541 in it (commodore.drive1541_code())"),
     ("c128_banks_test",          ["acme", "beebasm", "xa", "64tass"],    "a C128 program that changes the MMU's configuration"),
 
     # 6502 code: real programs
@@ -170,6 +171,7 @@ ERROR_TESTS = [
     ("tass64_local_label_name", "64tass takes a label starting with '_' to be local to the label before it, so '_count' can't be used: rename it"),
     ("drive1541_bad_rom",       "commodore.drive1541(): rom must be one of '1541', '1541-ii', not '1571'"),
     ("drive1541_kernal_rom",    "commodore.kernal_rom(): the 1541 has no Kernal (use dos_rom())"),
+    ("drive1541_code_in_drive", "commodore.drive1541_code(): this is already the 1541's disassembly (drive1541())"),
     ("effect_register_without_anchor", "register_snippet(): a register line ('x = ...') needs an instruction line, to say where it applies"),
     ("effect_bad_value",        "register_snippet(): a value is a number, a name or '?': '[$70] = 1+2'"),
     ("effect_unbound_variable", "register_snippet(): the variable 'vec' isn't given its addresses (e.g. '[vec = $70 | $72]')"),
@@ -478,8 +480,9 @@ def check_json_annotations(path, doc, asm):
     if regions != sorted(regions, key=lambda r: (r["start"], r["start"] - r["end"])):
         return f"{path}: the memory regions are out of order"
     # (A local name can have a heading of its own: commodore.py's 'Other
-    # banks', for the C128's names in other banks)
-    own_headings = {"Other banks"}
+    # banks', for the C128's names in other banks, and '1541 drive', for the
+    # names in drive code)
+    own_headings = {"Other banks", "1541 drive"}
     region_names = {r["name"] for r in regions} | {"Other"} | own_headings
     # The headings in the asm, e.g. '; Zero page (&0000-&00ff)' or '; Other'
     prefix = re.escape(asm_comment_prefix(asm))

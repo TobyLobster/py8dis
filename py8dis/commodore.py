@@ -866,6 +866,101 @@ def _c128_name_by_configuration(ranges):
             disassembly.add_local_label(RuntimeAddr(runtime_addr), utils.force_case("l%04x" % runtime_addr),
                                         reference.binary_addr, reference.binary_addr + length, heading=C128_OTHER_BANKS_HEADING)
 
+# ************************************************************************************************
+# Drive code in another machine's program (see drive1541_code())
+
+DriveCode = collections.namedtuple("DriveCode", ["binary_start", "length", "runtime_start", "move_id", "rom"])
+
+# The heading for the drive's names in the "Memory locations" list
+DRIVE_CODE_HEADING = "1541 drive"
+
+def _drive_code_at(binary_addr):
+    """The DriveCode that binary_addr is in, or None"""
+    for drive_code in session.current().extras.get("commodore.drive_code", []):
+        if drive_code.binary_start <= binary_addr < drive_code.binary_start + drive_code.length:
+            return drive_code
+    return None
+
+def _drive_code_names():
+    """Where drive code (see drive1541_code()) uses an address outside the
+    drive code itself, it gets the 1541's name (e.g. 'job_queue', rather
+    than the machine's name for the address), with '_drive' added to a name
+    that's also the machine's (see disassembly.add_range_optional_labels()).
+    Calls from it to the DOS ROM's routines are commented. (Run once the
+    code has been traced, as one of the CPU's code analysis functions.)"""
+    drive_codes = session.current().extras.get("commodore.drive_code", [])
+    if not drive_codes:
+        return
+    labels = session.current().labels.labels
+    memory_binary = session.current().memory.binary
+    names_style = session.current().extras.get("commodore.names", "descriptive")
+    rom_labels = session.current().extras.get("commodore.rom_labels", True)
+
+    # The names used elsewhere: the machine's, and the control file's
+    used = {name for _, name, _ in location_names(_machine(), names_style, rom_labels)}
+    used |= {call.name for call in _machine().jump_table}
+    for label_ in labels.values():
+        for names in label_.explicit_names.values():
+            used |= {name.text for name in names}
+
+    for drive_code in drive_codes:
+        start, end = drive_code.binary_start, drive_code.binary_start + drive_code.length
+        # (A buffer the drive code is in isn't named)
+        buffers = [n for n in range(5) if not any(_drive_loaded(addr)[0] for addr in (0x0300 + 0x100 * n, 0x03ff + 0x100 * n))]
+        machine = drive1541_machine(drive_code.rom, buffers)
+        names = {}
+        for addr, name, base in location_names(machine, names_style, rom_labels):
+            if addr in names or _drive_loaded(addr)[0]:
+                continue
+            if base is None:
+                name = utils.force_case(name + "_drive" if name in used else name)
+            names[addr] = (name, base)
+        disassembly.add_range_optional_labels(start, end, names, DRIVE_CODE_HEADING)
+
+        # Calls to the DOS ROM's routines
+        titles = {routine.addr: routine.title for routine in machine.rom_routines}
+        for runtime_addr, title in titles.items():
+            label_ = labels.get(runtime_addr)
+            if label_ is None:
+                continue
+            for reference in label_.references:
+                if start <= reference.binary_addr < end and memory_binary[reference.binary_addr] in (0x20, 0x4c):
+                    disassembly.comment_binary(memorymanager.BinaryLocation(BinaryAddr(reference.binary_addr), drive_code.move_id), title,
+                                               align=Align.INLINE, auto_generated=True)
+
+def drive1541_code(runtime_addr, binary_addr, length, rom="1541"):
+    """Code for the 1541 disk drive in another machine's program (e.g. a C64
+    fast loader's drive code, which it sends to the drive with M-W and runs
+    with M-E or a job): length bytes at binary_addr, that run at runtime_addr
+    in the drive. Call it after c64() etc.
+
+    The bytes are moved to runtime_addr (see move(); the move ID is
+    returned), and traced from there. Where the drive code uses an address
+    outside itself, it gets the 1541's name (as drive1541() gives, e.g.
+    'job_queue' or 'via2_disk_control', under the heading '1541 drive', with
+    '_drive' added to a name that's also the machine's), rather than the
+    machine's name for that address. Calls from it to the DOS ROM's routines
+    are commented, and not taken to be calls to the machine's ROM (whose
+    hooks don't run there). Its jobs are commented, and a JUMP or EXECUTE
+    job's code is traced if it's in drive code too (see drive1541()). rom is
+    as for drive1541()."""
+    if _machine().name == "1541":
+        utils.die("commodore.drive1541_code(): this is already the 1541's disassembly (drive1541())")
+    if session.current().extras.get("commodore.machine") is None:
+        utils.die("commodore.drive1541_code(): call c64() etc. first")
+    if rom not in DRIVE1541_ROMS:
+        utils.die("commodore.drive1541_code(): rom must be one of {0}, not {1!r}".format(", ".join(repr(r) for r in DRIVE1541_ROMS), rom))
+    move_id = move(runtime_addr, binary_addr, length)
+    extras = session.current().extras
+    drive_codes = extras.setdefault("commodore.drive_code", [])
+    drive_codes.append(DriveCode(binary_addr, length, runtime_addr, move_id, rom))
+    if len(drive_codes) == 1:
+        session.current().cpu.code_analysis_fns.append(_drive_code_names)
+        _register_job_patterns()
+    with move_id:
+        entry(runtime_addr)
+    return move_id
+
 def _mapped_out(binary_addr, runtime_addr):
     """Whether the code at binary_addr runs with a C128 MMU configuration in
     which runtime_addr is something else than in bank 15 (e.g. RAM rather
@@ -874,6 +969,9 @@ def _mapped_out(binary_addr, runtime_addr):
     During tracing, only c128_bank()'s configurations are known; once the
     code has been traced, those the code sets too (see
     _c128_mmu_analysis())."""
+    if _drive_code_at(binary_addr) is not None:
+        # (Drive code, see drive1541_code(), runs in the drive)
+        return True
     if _machine().name != "c128":
         return False
     extras = session.current().extras
@@ -1005,11 +1103,27 @@ def post_trace_far_call(p):
 def _drive1541_job(p):
     """For a match of a job pattern (see register_snippets()): (job number,
     job code name, track, sector), the track and sector None if they're not
-    known, or None if the value stored isn't a job code."""
+    known, or None if the value stored isn't a job code, or the code isn't
+    the 1541's (in a disassembly for another machine, only the drive code
+    given by drive1541_code() is)."""
     code = p.value('code')
     if code not in drive1541_job_codes:
         return None
+    if _machine().name != "1541" and _drive_code_at(p.extent()[0].binary_addr) is None:
+        return None
     return p.binding('job'), drive1541_job_codes[code], p.value('track'), p.value('sector')
+
+def _drive_loaded(runtime_addr):
+    """Whether there's code for the 1541 at runtime_addr (one of its
+    addresses): in the 1541's own disassembly, if data is loaded there; in
+    another machine's, if drive code (see drive1541_code()) is there. Returns
+    (whether it is, its move ID)."""
+    if _machine().name == "1541":
+        return _is_loaded(runtime_addr), None
+    for drive_code in session.current().extras.get("commodore.drive_code", []):
+        if drive_code.runtime_start <= runtime_addr < drive_code.runtime_start + drive_code.length:
+            return True, drive_code.move_id
+    return False, None
 
 def pre_trace_drive1541_job(p):
     """Code writing a job code to the 1541's job queue (an effect pattern):
@@ -1021,9 +1135,10 @@ def pre_trace_drive1541_job(p):
         return
     n, name, _, _ = job
     code = 0x0300 + 0x100 * n
-    if name in ("job_jump", "job_execute") and _is_loaded(code):
+    loaded, move_id = _drive_loaded(code)
+    if name in ("job_jump", "job_execute") and loaded:
         if vector_handler_name(code) is None:
-            label(code, "job_%d_code" % n)
+            label(code, "job_%d_code" % n, move_id)
         p.entry(code)
 
 def post_trace_drive1541_job(p):
@@ -1063,6 +1178,19 @@ def post_trace_drive1541_job(p):
     disassembly.comment_binary(start, "Job {0}: {1}".format(n, text), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
     p.blank_once(end)
 
+def _register_job_patterns():
+    """Register the effect patterns for jobs written to the 1541's job queue
+    (see register_snippets())."""
+    for n in range(6):
+        register_snippet(pre_trace_drive1541_job, post_trace_drive1541_job, """
+track
+?   [${0:02x}] = track
+sector
+?   [${1:02x}] = sector
+store
+    [job = ${2:02x}] = code
+""".format(6 + 2 * n, 7 + 2 * n, n))
+
 def register_snippets():
     """Register commodore's snippets with the current session (once per
     session)"""
@@ -1091,15 +1219,7 @@ call
     # each buffer), with the job's track and sector (&06-&11) if they're set
     # too (an effect pattern for each job)
     if _machine().name == "1541":
-        for n in range(6):
-            register_snippet(pre_trace_drive1541_job, post_trace_drive1541_job, """
-track
-?   [${0:02x}] = track
-sector
-?   [${1:02x}] = sector
-store
-    [job = ${2:02x}] = code
-""".format(6 + 2 * n, 7 + 2 * n, n))
+        _register_job_patterns()
 
     # Code setting one of the vectors, in any order, with any registers (an
     # effect pattern)
@@ -1467,6 +1587,7 @@ def _set_up(command, machine, names, rom_labels):
         utils.die("commodore.{0}(): this session's machine has already been chosen".format(command))
     extras["commodore.machine"] = machine
     extras["commodore.names"] = names
+    extras["commodore.rom_labels"] = rom_labels
 
     config.set_text_encoding("petscii")
     register_snippets()
@@ -1624,9 +1745,8 @@ def drive1541(rom="1541", names="descriptive", rom_labels=True):
     (251968-03, the 1541-II's and the 1541C's), which only changes a few ROM
     labels. Most of the workspace has Commodore's names either way; the most
     used have descriptive names (e.g. 'job_queue' rather than 'jobs'). The
-    drive has no Kernal, BASIC or cartridges. (A C64 program that contains
-    drive code needs a separate disassembly of the drive code, since a
-    session has one machine.)"""
+    drive has no Kernal, BASIC or cartridges. (For drive code in a C64
+    program, see drive1541_code().)"""
     if rom not in DRIVE1541_ROMS:
         utils.die("commodore.drive1541(): rom must be one of {0}, not {1!r}".format(", ".join(repr(r) for r in DRIVE1541_ROMS), rom))
     # (Each buffer is named, unless the program is loaded in it)

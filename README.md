@@ -697,7 +697,18 @@ The same for code that runs in the 1541 disk drive's own 6502, e.g. a fast loade
 
 For a JUMP or EXECUTE job, which runs the code in the job's buffer, that code is traced, if it's loaded, and named (e.g. `job_3_code`).
 
-`rom` is `"1541"` (DOS 325302-01 and 901229-05, the default) or `"1541-ii"` (251968-03, the 1541-II's and 1541C's), which only changes a few ROM labels. A session has one machine, so drive code inside a C64 program needs a disassembly of its own (with `load()` at the address it runs at, e.g. &0500).
+`rom` is `"1541"` (DOS 325302-01 and 901229-05, the default) or `"1541-ii"` (251968-03, the 1541-II's and 1541C's), which only changes a few ROM labels. For drive code inside a C64 program, see `drive1541_code()` below.
+
+:pencil:`commodore.drive1541_code(runtime_addr, binary_addr, length, rom="1541")`
+
+For a C64 (or other) program with code for the drive in it, e.g. a fast loader's, which the program sends to the drive with `M-W` and runs with `M-E` or a job: the `length` bytes at `binary_addr` run at `runtime_addr` in the drive. Call it after `c64()` etc. The bytes are moved there (see `move()`; the move ID is returned) and traced from there. Where the drive code uses an address outside itself, it gets the 1541's name, as `drive1541()` gives (e.g. `job_queue`, `via2_disk_control`, `wait_for_sync`), rather than the C64's name for that address (which is the 6510's port at &00, or the screen at &0400). These names are defined under the heading `; 1541 drive`, with `_drive` added to one that's also a C64 name. Its jobs are commented, and a JUMP or EXECUTE job's code is traced if it's in drive code too. Calls to the DOS ROM's routines are commented, and aren't taken to be calls to the C64's ROM. A name the control file gives an address is kept.
+
+```python
+start = load_prg("fastload.prg", "6510")
+commodore.c64()
+drive_move = commodore.drive1541_code(0x0500, 0x083b, 0x0111)   # &083b-&094b runs at &0500 in the drive
+label(0x0500, "drive_code", drive_move)
+```
 
 :pencil:`commodore.dos_rom()`
 
