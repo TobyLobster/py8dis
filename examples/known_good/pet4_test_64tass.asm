@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Memory locations
 
 ; Zero page ($0000-$00ff)
@@ -44,7 +52,7 @@ basic_line_10
     .word basic_line_20                                               ; 0401: 0b 04       ..
     .word 10                                                          ; 0403: 0a 00       ..
     .byte $9e                                                         ; 0405: 9e          .
-    .byte $31, $30, $35, $36 ; petscii "1056"                         ; 0406: 31 30 35... 105
+    .text "1056"                                                      ; 0406: 31 30 35... 105
     .byte 0                                                           ; 040a: 00          .
 ; 20 CATALOG
 basic_line_20
@@ -106,8 +114,7 @@ irq_handler
     jmp kernal_irq_handler                                            ; 0475: 4c 55 e4    lu. ; The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)
 
 l0478
-    .byte $48, $45, $4c, $4c, $4f, $2c, $20, $50 ; petscii "hello, p" ; 0478: 48 45 4c... hel
-    .byte $45, $54, $0d, 0 ; petscii "et", $0d, $00                   ; 0480: 45 54 0d... et.
+    .text "hello, pet", $0d, 0                                        ; 0478: 48 45 4c... hel
 pydis_end
 
 .cerror (<irq_handler) != $72, "Assertion failed: <irq_handler == $72"

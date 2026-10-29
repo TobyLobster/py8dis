@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Memory locations
 
 ; Vectors ($0300-$0333)
@@ -24,7 +32,7 @@ cartridge_cold_start_vector
 cartridge_warm_start_vector
     .word cartridge_warm_start                                        ; a002: 24 a0       $.
 cartridge_signature
-    .byte $41, $30, $c3, $c2, $cd ; petscii "a0CBM"                   ; a004: 41 30 c3... a0C
+    .text "a0CBM"                                                     ; a004: 41 30 c3... a0C
 
 cartridge_cold_start
     jsr ramtas                                                        ; a009: 20 8d fd     ..

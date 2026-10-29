@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Memory locations
 
 ; Vectors ($0300-$0333)
@@ -32,7 +40,7 @@ cartridge_cold_start_vector
 cartridge_warm_start_vector
     .word cartridge_warm_start                                        ; 8002: 48 80       h.
 cartridge_signature
-    .byte $c3, $c2, $cd, $38, $30 ; petscii "CBM80"                   ; 8004: c3 c2 cd... CBM
+    .text "CBM80"                                                     ; 8004: c3 c2 cd... CBM
 
 cartridge_cold_start
     sei                                                               ; 8009: 78          .

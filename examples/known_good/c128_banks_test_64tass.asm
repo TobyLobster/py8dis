@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Constants
 colour_black    = 0
 
@@ -49,7 +57,7 @@ basic_line_10
     .word basic_end                                                   ; 1c01: 0b 1c       ..
     .word 10                                                          ; 1c03: 0a 00       ..
     .byte $9e                                                         ; 1c05: 9e          .
-    .byte $37, $31, $38, $31 ; petscii "7181"                         ; 1c06: 37 31 38... 718
+    .text "7181"                                                      ; 1c06: 37 31 38... 718
     .byte 0                                                           ; 1c0a: 00          .
 basic_end
     .word 0                                                           ; 1c0b: 00 00       ..
@@ -81,7 +89,7 @@ sys_entry
     sta mmu_configuration                                             ; 1c49: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
     jsr sub_c1c5d                                                     ; 1c4c: 20 5d 1c     ].
     lda vic_border_colour                                             ; 1c4f: ad 20 d0    . P
-    lda #$41 ; 'a'                                                    ; 1c52: a9 41       .a ; A=character to output
+    lda #'a'                                                          ; 1c52: a9 41       .a ; A=character to output
     jsr chrout                                                        ; 1c54: 20 d2 ff     R. ; Output 'a'
     lda #1                                                            ; 1c57: a9 01       ..
     sta vic_interrupt_status                                          ; 1c59: 8d 19 d0    ..P ; Acknowledge the VIC-II's raster interrupt

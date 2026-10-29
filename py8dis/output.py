@@ -488,6 +488,15 @@ class StringData(Line):
         return "%s %s" % (self.encoding.name, ", ".join(parts))
 
     def render(self, plain=False):
+        result = self._render(plain)
+        directive, _ = self._text_form()
+        if plain or directive is None:
+            return result
+        # (e.g. 64tass's '.enc', for a string in an encoding of its own)
+        before, after = config.get_assembler().text_encoding_lines(self.encoding)
+        return before + result + after
+
+    def _render(self, plain):
         expressions = session.current().classifications.expressions
         memory_binary = session.current().memory.binary
         assembler = config.get_assembler()

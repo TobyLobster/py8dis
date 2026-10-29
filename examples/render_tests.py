@@ -521,12 +521,10 @@ EXPECTED = {
         '    .BYT $0D // petscii $0D                                           // 2016: 0D          .',
     ],
     'PETSCII string, 64tass': [
-        '    .byte $c8, $45, $4c, $4c, $4f, $22 ; petscii "Hello", $22         ; 2010: c8 45 4c... Hel',
-        '    .byte $0d ; petscii $0d                                           ; 2016: 0d          .',
+        '    .text "Hello""", $0d                                              ; 2010: c8 45 4c... Hel',
     ],
     'PETSCII string, 64tass, upper case': [
-        '    .BYTE $C8, $45, $4C, $4C, $4F, $22 ; petscii "Hello", $22         ; 2010: C8 45 4C... Hel',
-        '    .BYTE $0D ; petscii $0D                                           ; 2016: 0D          .',
+        '    .TEXT "Hello""", $0D                                              ; 2010: C8 45 4C... Hel',
     ],
     'screen code string, acme': [
         '    !scr "@ab["                                                       ; 2010: 00 01 02... @ab',
@@ -547,10 +545,14 @@ EXPECTED = {
         '    .BYT 0, 1, 2, $1B // screen "@ab["                                // 2010: 00 01 02... @ab',
     ],
     'screen code string, 64tass': [
-        '    .byte 0, 1, 2, $1b ; screen "@ab["                                ; 2010: 00 01 02... @ab',
+        '    .enc "screencodes"',
+        '    .text "@ab["                                                      ; 2010: 00 01 02... @ab',
+        '    .enc "none"',
     ],
     'screen code string, 64tass, upper case': [
-        '    .BYTE 0, 1, 2, $1B ; screen "@ab["                                ; 2010: 00 01 02... @ab',
+        '    .ENC "screencodes"',
+        '    .TEXT "@ab["                                                      ; 2010: 00 01 02... @ab',
+        '    .ENC "none"',
     ],
     "ASCII string with PETSCII the session's encoding, acme": [
         '    !text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
@@ -562,7 +564,9 @@ EXPECTED = {
         '    .asc "Hi!", $0d                                                   // 2010: 48 69 21... Hi!',
     ],
     "ASCII string with PETSCII the session's encoding, 64tass": [
+        '    .enc "none"',
         '    .text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
+        '    .enc "petscii"',
     ],
     'PETSCII string over two lines, beebasm': [
         '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',

@@ -7,6 +7,12 @@ import session
 import utils
 import assembler
 import cpu6510
+import textencoding
+
+# The names of the encodings the output defines for PETSCII and screen codes
+# (not 64tass's own 'screen', which '64tass -a' changes, as it does 'none',
+# which is ASCII without it)
+_ENCODING_NAMES = {"ascii": "none", "petscii": "petscii", "screen": "screencodes"}
 
 class Tass64(assembler.Assembler):
     """This class encapsulates 64tass-specific syntax and features. (Tested
@@ -113,11 +119,110 @@ class Tass64(assembler.Assembler):
         """Preamble to be output at the start of the disassembly."""
         # (The CPU's name is a string, which 64tass reads case sensitively, so
         # it's always lower case)
+        result = []
         if config.get_cmos():
-            return [utils.force_case(".cpu") + ' "65c02"', ""]
-        if getattr(session.current().cpu, "has_undocumented_opcodes", False):
-            return [utils.force_case(".cpu") + ' "6502i"', ""]
-        return []
+            result += [utils.force_case(".cpu") + ' "65c02"', ""]
+        elif getattr(session.current().cpu, "has_undocumented_opcodes", False):
+            result += [utils.force_case(".cpu") + ' "6502i"', ""]
+        return result + self._encoding_definitions()
+
+    # Text encodings. 64tass's '.text' and character literals use the current
+    # encoding, set with '.enc', which can be defined with '.cdef' (each
+    # character, or range of characters, and its byte). The output defines
+    # PETSCII and screen codes (as in textencoding.py), if it has text in
+    # them, and selects the session's encoding (see _main_encoding()), so a
+    # string or character literal in it is written as text. A string in
+    # another encoding (e.g. ASCII in a C64 program) selects its own encoding
+    # just for that string (see text_encoding_lines()). Character literals
+    # are only in the main encoding.
+
+    def _main_encoding(self):
+        """The encoding selected for the output as a whole: the session's."""
+        return textencoding.current()
+
+    def _encoding_definitions(self):
+        """The lines defining and selecting the encodings the output uses
+        (nothing if it has no text other than ASCII): each non-ASCII encoding
+        a string uses, and the session's, if it isn't ASCII and the output
+        has strings or character literals in its encoding."""
+        import classification
+        import mainformatter
+        used = set()
+        any_strings = False
+        for c in session.current().classifications.classifications:
+            if isinstance(c, classification.String):
+                any_strings = True
+                used.add(c.encoding.name)
+        main = self._main_encoding()
+        if main.name != "ascii":
+            if any_strings or any(formatter is mainformatter.char_formatter for formatter in session.current().disassembly.format_hint.values()):
+                used.add(main.name)
+        used.discard("ascii")
+        if not used:
+            return []
+        result = [self.comment_prefix() + " Text encodings (for '.text' and character literals)"]
+        # (Defining an encoding selects it, so the main one is defined last;
+        # if it's ASCII, 64tass's 'none' is selected after the others)
+        for name in sorted(used, key=lambda n: (n == main.name, n)):
+            result.append(self._enc_line(name))
+            result += self._cdef_lines(textencoding.get(name))
+        if main.name not in used:
+            result.append(self._enc_line(main.name))
+        return result + [""]
+
+    def _enc_line(self, encoding_name):
+        return '%s%s "%s"' % (utils.make_indent(1), utils.force_case(".enc"), _ENCODING_NAMES[encoding_name])
+
+    def _cdef_lines(self, encoding):
+        """'.cdef' lines defining the encoding's characters: each run of
+        characters with consecutive codes, whose bytes are consecutive too
+        (e.g. '.cdef "az", $41')"""
+        pairs = sorted((ord(char), byte) for byte, char in encoding.chars.items())
+        runs = []
+        for code, byte in pairs:
+            if runs and runs[-1][1] == code - 1 and runs[-1][2] == byte - (code - runs[-1][0]):
+                runs[-1][1] = code
+            else:
+                runs.append([code, code, byte])
+
+        def quoted(text):
+            # (A string can be in either kind of quote; inside it, its own
+            # kind is doubled)
+            quote = "'" if '"' in text else '"'
+            return quote + text.replace(quote, quote * 2) + quote
+
+        return ["%s%s %s, %s" % (utils.make_indent(1), utils.force_case(".cdef"), quoted(chr(first) + chr(last)), self.hex2(byte))
+                for first, last, byte in runs]
+
+    def text_encoding_lines(self, encoding):
+        # A string in an encoding other than the main one selects its own
+        # encoding, then the main one again
+        main = self._main_encoding()
+        if encoding.name == main.name:
+            return [], []
+        return [self._enc_line(encoding.name)], [self._enc_line(main.name)]
+
+    def text_directive(self, encoding):
+        return utils.force_case(".text ")
+
+    def text_chr(self, n, encoding):
+        if encoding.name == "ascii":
+            return self.string_chr(n)
+        c = encoding.char(n)
+        if c == '"':
+            return '""'
+        return c
+
+    def encoded_char_literal(self, n, encoding):
+        # Only in the main encoding (see above)
+        if encoding.name != self._main_encoding().name:
+            return None
+        if encoding.name == "ascii":
+            return self.char_literal(n)
+        c = encoding.char(n)
+        if c is None:
+            return None
+        return '"\'"' if c == "'" else "'" + c + "'"
 
     def code_start(self, start_addr, end_addr, first):
         """At the start of the code we provide the address at which to
@@ -183,7 +288,10 @@ class Tass64(assembler.Assembler):
 
     def char_literal(self, n):
         # When composing a literal character, this returns a character string
-        # from an integer, or None if not possible
+        # from an integer, or None if not possible (only if the main encoding
+        # is ASCII, see above)
+        if self._main_encoding().name != "ascii":
+            return None
         if n == ord("'"):
             return '"\'"'
         if utils.isprint(n):

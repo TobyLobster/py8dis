@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Memory locations
 
 ; Vectors ($0300-$0332)
@@ -43,15 +51,14 @@ basic_line_10
     .word basic_end                                                   ; 1001: 0b 10       ..
     .word 10                                                          ; 1003: 0a 00       ..
     .byte $9e                                                         ; 1005: 9e          .
-    .byte $34, $31, $30, $39 ; petscii "4109"                         ; 1006: 34 31 30... 410
+    .text "4109"                                                      ; 1006: 34 31 30... 410
     .byte 0                                                           ; 100a: 00          .
 basic_end
     .word 0                                                           ; 100b: 00 00       ..
 
 sys_entry
     jsr primm                                                         ; 100d: 20 4f ff     o. ; Print the zero-terminated string that follows the JSR
-    .byte $48, $45, $4c, $4c, $4f, $2c, $20, $50 ; petscii "hello, p" ; 1010: 48 45 4c... hel
-    .byte $4c, $55, $53, $2f, $34, $0d, 0 ; petscii "lus/4", $0d, $00 ; 1018: 4c 55 53... lus
+    .text "hello, plus/4", $0d, 0                                     ; 1010: 48 45 4c... hel
 
     lda #$93                                                          ; 101f: a9 93       .. ; A=character to output
     jsr chrout                                                        ; 1021: 20 d2 ff     R. ; Output $93 (clear screen)

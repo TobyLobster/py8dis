@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Constants
 colour_black        = 0
 colour_blue         = 6
@@ -188,7 +196,7 @@ pydis_start
     .byte $15, $48, $20, $df, $a1, $90,   3, $4c, $cf, $a6, $a8, $68  ; e00c: 15 48 20... .h
     .byte $85, $15, $68, $85, $14, $98, $a0,   0, $91, $14, $60, $a9  ; e018: 85 15 68... ...
     .byte $26, $85,   1, $a0,   4, $8a                                ; e024: 26 85 01... &..
-    .byte $d1, $47, $4c ; petscii "Qgl"                               ; e02a: d1 47 4c    Qgl
+    .text "Qgl"                                                       ; e02a: d1 47 4c    Qgl
     .byte $b0, $e3, $a9, $26, $85,   1, $a0,   0, $b1, $7a, $85, $3d  ; e02d: b0 e3 a9... ...
     .byte $c8, $b1, $7a, $85, $3e,   5, $3d, $4c, $b0, $e3, $60, $a9  ; e039: c8 b1 7a... H..
     .byte $26, $85,   1, $a0,   0, $c4, $61, $d0,   3, $4c, $61, $e3  ; e045: 26 85 01... &..
@@ -209,12 +217,12 @@ pydis_start
     .byte $65, $a9,   0, $85, $66, $a9, $80, $85, $70, $85, $61, $4c  ; e0f9: 65 a9 00... ...
     .byte $1e, $b5, $aa, $a5, $16, $c9, $22, $b0, $13, $a8, $85, $17  ; e105: 1e b5 aa... ...
     .byte $18, $69,   3, $85, $16, $96,   0, $84, $47, $a9,   0, $85  ; e111: 18 69 03... ...
-    .byte $48, $4c, $d3 ; petscii "hlS"                               ; e11d: 48 4c d3    hlS
+    .text "hlS"                                                       ; e11d: 48 4c d3    hlS
     .byte $b4, $a0, $19, $b9, 0, 0, $f0, $ee                          ; e120: b4 a0 19... ...
-    .byte $c8, $c8, $c8 ; petscii "HHH"                               ; e128: c8 c8 c8    HHH
+    .text "HHH"                                                       ; e128: c8 c8 c8    HHH
     .byte $c0, $22, $d0, $f4, $4c, $c1, $a6, $a9, $26, $85, 1, $a0, 0 ; e12b: c0 22 d0... ."P
     .byte $b1                                                         ; e138: b1          .
-    .byte $3d, $48, $c8 ; petscii "=hH"                               ; e139: 3d 48 c8    =hH
+    .text "=hH"                                                       ; e139: 3d 48 c8    =hH
     .byte $b1, $3d, $85, $3e, $68, $85, $3d, $4c, $61, $e3, $a9, $26  ; e13c: b1 3d 85... .=.
     .byte $85,   1, $a0,   3, $b1, $47, $48, $88, $b1, $47, $18, $65  ; e148: 85 01 a0... ...
     .byte $47, $85, $47, $68, $65, $48, $85, $48, $a9, $27, $85,   1  ; e154: 47 85 47... g.g
@@ -241,9 +249,9 @@ ce1b5
     jmp ce1db                                                         ; e1c4: 4c db e1    l..
 
     .byte 8, $a9, $26, $85, 1, $b1, $24, $91                          ; e1c7: 08 a9 26... ..&
-    .byte $26, $c8, $d0 ; petscii "&HP"                               ; e1cf: 26 c8 d0    &HP
+    .text "&HP"                                                       ; e1cf: 26 c8 d0    &HP
     .byte $f9, $e6, $25, $e6                                          ; e1d2: f9 e6 25... ..%
-    .byte $27, $c6, $29, $d0 ; petscii "'F)P"                         ; e1d6: 27 c6 29... 'F)
+    .text "'F)P"                                                      ; e1d6: 27 c6 29... 'F)
     .byte $f1                                                         ; e1da: f1          .
 
 ; $e1db referenced 1 time by $e1c4
@@ -261,7 +269,7 @@ ce1db
     .byte $e2, $f0, $3e, $a0,   3, $b1, $3d, $c5, $15, $f0,   4, $b0  ; e21d: e2 f0 3e... ..>
     .byte $34, $d0, $0b, $88, $b1, $3d, $c5, $14, $f0, $25, $b0, $29  ; e229: 34 d0 0b... 4P.
     .byte $d0,   0, $20, $4c, $e2, $f0, $22, $a0,   0, $b1            ; e235: d0 00 20... P.
-    .byte $3d, $48, $c8 ; petscii "=hH"                               ; e23f: 3d 48 c8    =hH
+    .text "=hH"                                                       ; e23f: 3d 48 c8    =hH
     .byte $b1, $3d, $85, $3e, $68, $85, $3d, $4c, $17, $e2, $a0,   1  ; e242: b1 3d 85... .=.
     .byte $b1, $3d, $d0,   5, $88, $b1, $3d, $d0,   0, $60, $a9, $27  ; e24e: b1 3d d0... .=P
     .byte $85,   1, $18, $60, $a9, $27, $85,   1, $38, $60, $60, $80  ; e25a: 85 01 18... ...
@@ -275,20 +283,20 @@ ce1db
     .byte $f1, $4c, $bd, $ff, $20, $93, $ba, $20, $29, $a7, $90,   3  ; e2ba: f1 4c bd... .l.
     .byte $4c, $d2, $a6, $20, $8c, $e3, $b0,   3, $20, $8b, $a4, $a9  ; e2c6: 4c d2 a6... lR.
     .byte $2b, $a6, $2d, $a4                                          ; e2d2: 2b a6 2d... +.-
-    .byte $2e, $20, $d8 ; petscii ". X"                               ; e2d6: 2e 20 d8    . X
+    .text ". X"                                                       ; e2d6: 2e 20 d8    . X
     .byte $ff, $90,   3, $4c, $aa, $a6, $60, $81, $49, $0f, $da, $a2  ; e2d9: ff 90 03... ...
     .byte $83, $49, $0f, $da, $a2, $7f,   0,   0,   0,   0, $ea, $ea  ; e2e5: 83 49 0f... .i.
     .byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea  ; e2f1: ea ea ea... ...
     .byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $4c, $b2, $a6  ; e2fd: ea ea ea... ...
     .byte $83, $49, $0f, $da, $a2, $60, $4c, $b2, $a6, $a5, $2b, $85  ; e309: 83 49 0f... .i.
     .byte $3d, $a5, $2c, $85, $3e, $a5, $3d, $85, $2d, $a5, $3e, $85  ; e315: 3d a5 2c... =.,
-    .byte $2e, $20, $32 ; petscii ". 2"                               ; e321: 2e 20 32    . 2
+    .text ". 2"                                                       ; e321: 2e 20 32    . 2
     .byte $e1, $a5, $3d,   5, $3e, $d0, $ef, $18, $a5, $2d, $69,   2  ; e324: e1 a5 3d... ..=
     .byte $85, $2d, $90,   2, $e6, $2e, $4c,   0, $ba, $a9, $26, $85  ; e330: 85 2d 90... .-.
     .byte   1, $a0,   0, $b1                                          ; e33c: 01 a0 00... ...
-    .byte $47, $c5, $45, $d0 ; petscii "gEeP"                         ; e340: 47 c5 45... gEe
+    .text "gEeP"                                                      ; e340: 47 c5 45... gEe
     .byte 5, $c8, $b1                                                 ; e344: 05 c8 b1    .H.
-    .byte $47, $c5, $46, $4c ; petscii "gEfl"                         ; e347: 47 c5 46... gEf
+    .text "gEfl"                                                      ; e347: 47 c5 46... gEf
     .byte $b0, $e3, $a9, $26, $85,   1, $a0,   0, $b1, $47, $85, $61  ; e34b: b0 e3 a9... ...
     .byte $c8, $b1, $47, $85, $62, $c8, $b1, $47, $85, $63, $a9, $27  ; e357: c8 b1 47... H.g
     .byte $85,   1, $60, $a9, $26, $85,   1, $b1, $3d, $85, $24, $c8  ; e363: 85 01 60... ...
@@ -306,7 +314,7 @@ ce1db
     .byte $85, $50, $c8, $b1, $47, $85, $51, $c8, $b1, $47, $85, $52  ; e3f3: 85 50 c8... .pH
     .byte $a9, $27, $85,   1, $60, $a9, $26, $85,   1, $a0,   2, $b1  ; e3ff: a9 27 85... .'.
     .byte $47, $85, $52, $88, $b1, $47, $85, $51, $88, $b1, $62, $91  ; e40b: 47 85 52... g.r
-    .byte $51, $c8, $c4 ; petscii "qHD"                               ; e417: 51 c8 c4    qHD
+    .text "qHD"                                                       ; e417: 51 c8 c4    qHD
     .byte $61, $d0, $f7, $a9, $27, $85,   1, $60, $4c, $b6, $b7, $84  ; e41a: 61 d0 f7... .P.
     .byte $23, $85, $22, $a0,   4, $b1, $22, $85, $6d, $88, $b1, $22  ; e426: 23 85 22... #."
     .byte $85, $6c, $88, $b1, $22, $85, $6b, $88, $b1, $22,   9, $80  ; e432: 85 6c 88... ...
@@ -318,12 +326,11 @@ ce1db
     .byte $3e, $85, $29, $4c, $c0, $b1, $a9, $26, $85,   1, $b1, $3d  ; e47a: 3e 85 29... >.)
     .byte $85, $39, $c8, $b1, $3d, $85, $3a, $a9, $27, $85,   1, $4c  ; e486: 85 39 c8... .9H
     .byte $93, $a4, $a9, $26, $85,   1, $a0,   0, $b1, $6a, $91       ; e492: 93 a4 a9... ...
-    .byte $22, $c8, $c4 ; petscii $22, "HD"                           ; e49d: 22 c8 c4    "HD
+    .text """HD"                                                      ; e49d: 22 c8 c4    "HD
     .byte $69, $d0, $f7, $98, $20, $89, $e0, $a0, 0, $b1, $62, $91    ; e4a0: 69 d0 f7... .P.
-    .byte $22, $c8, $c4 ; petscii $22, "HD"                           ; e4ac: 22 c8 c4    "HD
+    .text """HD"                                                      ; e4ac: 22 c8 c4    "HD
     .byte $61, $d0, $f7, $a9, $27, $85, 1, $60, $8b, $ea, $4f, $52, 1 ; e4af: 61 d0 f7... .P.
-    .byte $44, $45, $56, $2e, $32, $31, $30, $38 ; petscii "dev.2108" ; e4bc: 44 45 56... dev
-    .byte $32, $33, $2e, $46, $43, $2e, $31 ; petscii "23.fc.1"       ; e4c4: 32 33 2e... 23.
+    .text "dev.210823.fc.1"                                           ; e4bc: 44 45 56... dev
     .byte 0, 0, $f5, $4b, $8c, $0e, 2, 0                              ; e4cb: 00 00 f5... ...
 
 ; $e4d3 referenced 1 time by $ffea
@@ -1338,31 +1345,23 @@ lea87
 ; $ead1 referenced 1 time by $e971
 lead1
     .byte $0d                                                         ; ead1: 0d          .
-    .byte $53, $45, $41, $52, $43, $48, $49, $4e ; petscii "searchin" ; ead2: 53 45 41... sea
-    .byte $47, $20, $46, $4f, $52 ; petscii "g for"                   ; eada: 47 20 46... g f
+    .text "searching for"                                             ; ead2: 53 45 41... sea
     .byte $a0, $0d                                                    ; eadf: a0 0d       ..
-    .byte $4c, $4f, $41, $44, $49, $4e, $c7 ; petscii "loadinG"       ; eae1: 4c 4f 41... loa
+    .text "loadinG"                                                   ; eae1: 4c 4f 41... loa
     .byte $0d                                                         ; eae8: 0d          .
-    .byte $56, $45, $52, $49, $46, $59, $49, $4e ; petscii "verifyin" ; eae9: 56 45 52... ver
-    .byte $c7 ; petscii "G"                                           ; eaf1: c7          G
+    .text "verifyinG"                                                 ; eae9: 56 45 52... ver
     .byte $0d                                                         ; eaf2: 0d          .
-    .byte $53, $41, $56, $49, $4e, $47 ; petscii "saving"             ; eaf3: 53 41 56... sav
+    .text "saving"                                                    ; eaf3: 53 41 56... sav
     .byte $a0                                                         ; eaf9: a0          .
-    .byte $20, $46, $52, $4f, $4d, $20 ; petscii " from "             ; eafa: 20 46 52...  fr
+    .text " from "                                                    ; eafa: 20 46 52...  fr
     .byte $a4                                                         ; eb00: a4          .
-    .byte $20, $54, $4f, $20 ; petscii " to "                         ; eb01: 20 54 4f...  to
+    .text " to "                                                      ; eb01: 20 54 4f...  to
     .byte $a4, $0d                                                    ; eb05: a4 0d       ..
-    .byte $50, $52, $45, $53, $53, $20, $50, $4c ; petscii "press pl" ; eb07: 50 52 45... pre
-    .byte $41, $59, $20, $4f, $4e, $20, $54, $41 ; petscii "ay on ta" ; eb0f: 41 59 20... ay
-    .byte $50, $45 ; petscii "pe"                                     ; eb17: 50 45       pe
+    .text "press play on tape"                                        ; eb07: 50 52 45... pre
     .byte $8d                                                         ; eb19: 8d          .
-    .byte $46, $4f, $55, $4e, $44 ; petscii "found"                   ; eb1a: 46 4f 55... fou
+    .text "found"                                                     ; eb1a: 46 4f 55... fou
     .byte $a0, $4f, $4b, $0d, $0d                                     ; eb1f: a0 4f 4b... .ok
-    .byte $53, $45, $41, $52, $43, $48, $49, $4e ; petscii "searchin" ; eb24: 53 45 41... sea
-    .byte $c7, $4b, $45, $52, $4e, $41, $4c, $20 ; petscii "Gkernal " ; eb2c: c7 4b 45... Gke
-    .byte $50, $41, $4e, $49, $c3, $20, $2d, $20 ; petscii "paniC - " ; eb34: 50 41 4e... pan
-    .byte $52, $4f, $4d, $20, $4d, $49, $53, $4d ; petscii "rom mism" ; eb3c: 52 4f 4d... rom
-    .byte $41, $54, $43, $c8 ; petscii "atcH"                         ; eb44: 41 54 43... atc
+    .text "searchinGkernal paniC - rom mismatcH"                      ; eb24: 53 45 41... sea
 
 ; $eb48 referenced 1 time by $e834
 sub_ceb48
@@ -1450,17 +1449,17 @@ lebc1
 ; $ebc8 referenced 1 time by $fc18
 lebc8
     .byte $5f, $4c, 0                                                 ; ebc8: 5f 4c 00    .l.
-    .byte $40, $38, $24 ; petscii "@8$"                               ; ebcb: 40 38 24    @8$
+    .text "@8$"                                                       ; ebcb: 40 38 24    @8$
     .byte 0                                                           ; ebce: 00          .
-    .byte $4c, $4f, $41, $44 ; petscii "load"                         ; ebcf: 4c 4f 41... loa
+    .text "load"                                                      ; ebcf: 4c 4f 41... loa
     .byte 0                                                           ; ebd3: 00          .
-    .byte $40, $39, $24 ; petscii "@9$"                               ; ebd4: 40 39 24    @9$
+    .text "@9$"                                                       ; ebd4: 40 39 24    @9$
     .byte 0                                                           ; ebd7: 00          .
-    .byte $52, $55, $4e, $3a ; petscii "run:"                         ; ebd8: 52 55 4e... run
+    .text "run:"                                                      ; ebd8: 52 55 4e... run
     .byte 0                                                           ; ebdc: 00          .
-    .byte $40, $31, $30, $24 ; petscii "@10$"                         ; ebdd: 40 31 30... @10
+    .text "@10$"                                                      ; ebdd: 40 31 30... @10
     .byte 0                                                           ; ebe1: 00          .
-    .byte $40, $31, $31, $24 ; petscii "@11$"                         ; ebe2: 40 31 31... @11
+    .text "@11$"                                                      ; ebe2: 40 31 31... @11
     .byte 0                                                           ; ebe6: 00          .
 ; $ebe7 referenced 1 time by $fc14
 lebe7
@@ -1605,13 +1604,13 @@ cecb9
     jmp cee22                                                         ; ecb9: 4c 22 ee    l".
 
     .byte $a5, $d6, $c9, $18, $d0, 3, $20, $ea, $e8, $e6              ; ecbc: a5 d6 c9... .VI
-    .byte $d6, $4c, $22 ; petscii "Vl", $22                           ; ecc6: d6 4c 22    Vl"
+    .text "Vl"""                                                      ; ecc6: d6 4c 22    Vl"
     .byte $ee, $20, $f0, $f8, $c0, $27, $d0,   3, $4c, $a4, $f9, $c8  ; ecc9: ee 20 f0... . .
     .byte $84, $d3, $10, $e0, $20, $f0, $f8, $88, $10, $f6, $a5, $d6  ; ecd5: 84 d3 10... .S.
     .byte $f0                                                         ; ece1: f0          .
-    .byte $d6, $c6, $d6 ; petscii "VFV"                               ; ece2: d6 c6 d6    VFV
+    .text "VFV"                                                       ; ece2: d6 c6 d6    VFV
     .byte $a9, $27, $85                                               ; ece5: a9 27 85    .'.
-    .byte $d3, $d0, $ce ; petscii "SPN"                               ; ece8: d3 d0 ce    SPN
+    .text "SPN"                                                       ; ece8: d3 d0 ce    SPN
 
 ; $eceb referenced 2 times by $e98f, $ecff
 ceceb
@@ -2835,12 +2834,12 @@ cf388
 
     .byte $a6, $d8, $f0,   5, $a9, $14, $4c, $74, $f8, $a4, $d3, $f0  ; f38d: a6 d8 f0... .X.
     .byte $47, $c0, $28, $d0, $16, $a5, $f3, $d0,   4, $c6, $f4       ; f399: 47 c0 28... g.(
-    .byte $c6, $d2, $c6 ; petscii "FRF"                               ; f3a4: c6 d2 c6    FRF
+    .text "FRF"                                                       ; f3a4: c6 d2 c6    FRF
     .byte $f3, $c6, $d1, $a2, $27, $a0, 0, $20, $cc, $f3, $4c, $d9    ; f3a7: f3 c6 d1... .FQ
     .byte $ec, $20, $f0, $f8, $84                                     ; f3b3: ec 20 f0... . .
-    .byte $d3, $20, $4a ; petscii "S j"                               ; f3b8: d3 20 4a    S j
+    .text "S j"                                                       ; f3b8: d3 20 4a    S j
     .byte $fa, $98, $38, $e5, $d3, $aa, $a4, $d3, $88, $20, $cc, $f3  ; f3bb: fa 98 38... ..8
-    .byte $c6, $d3, $4c, $22 ; petscii "FSl", $22                     ; f3c7: c6 d3 4c... FSl
+    .text "FSl"""                                                     ; f3c7: c6 d3 4c... FSl
     .byte $ee                                                         ; f3cb: ee          .
 
 ; $f3cc referenced 1 time by $f3da
@@ -2862,7 +2861,7 @@ loop_cf3cc
 
     .byte $a4, $d6, $f0, $e4, $c6, $d6, $a9, $27, $85, $d3, $20, $ee  ; f3e1: a4 d6 f0... .V.
     .byte $eb, $a0, $27, $a9, $20, $91                                ; f3ed: eb a0 27... ..'
-    .byte $d1, $d0, $d3 ; petscii "QPS"                               ; f3f3: d1 d0 d3    QPS
+    .text "QPS"                                                       ; f3f3: d1 d0 d3    QPS
     .byte $60                                                         ; f3f6: 60          .
 
 ; $f3f7 referenced 3 times by $e76e, $fc54, $ffb4
@@ -3024,12 +3023,9 @@ cf4d8
     jmp cf404                                                         ; f4da: 4c 04 f4    l..
 
     .byte $14, $0d, $1d, $88, $85, $86, $87, $11                      ; f4dd: 14 0d 1d... ...
-    .byte $33, $57, $41, $34, $5a, $53, $45 ; petscii "3wa4zse"       ; f4e5: 33 57 41... 3wa
+    .text "3wa4zse"                                                   ; f4e5: 33 57 41... 3wa
     .byte 0                                                           ; f4ec: 00          .
-    .byte $35, $52, $44, $36, $43, $46, $54, $58 ; petscii "5rd6cftx" ; f4ed: 35 52 44... 5rd
-    .byte $37, $59, $47, $38, $42, $48, $55, $56 ; petscii "7yg8bhuv" ; f4f5: 37 59 47... 7yg
-    .byte $39, $49, $4a, $30, $4d, $4b, $4f, $4e ; petscii "9ij0mkon" ; f4fd: 39 49 4a... 9ij
-    .byte $2b, $50, $4c, $2d, $2e, $3a, $40, $2c ; petscii "+pl-.:@," ; f505: 2b 50 4c... +pl
+    .text "5rd6cftx7yg8bhuv9ij0mkon+pl-.:@,"                          ; f4ed: 35 52 44... 5rd
     .byte $5c, $2a, $3b, $13,   0, $3d, $5e, $2f, $31, $5f,   0, $32  ; f50d: 5c 2a 3b... .*;
     .byte $20,   0, $51,   3, $94, $8d, $9d, $8c, $89, $8a, $8b, $91  ; f519: 20 00 51...  .q
     .byte $23, $77, $61, $24, $7a, $73, $65,   0, $25, $72, $64, $26  ; f525: 23 77 61... #..
@@ -3075,10 +3071,10 @@ cf5fa
     .byte $fa, $a6, $d6, $b5, $d9, $10, $12, $20, $32, $f6, $a9, $20  ; f609: fa a6 d6... ..V
     .byte $91, $d1, $20, $13, $f8, $f0,   3, $20, $15, $f4, $4c, $22  ; f615: 91 d1 20... .Q
     .byte $ee, $a5, $d3, $38, $e9, $28, $85                           ; f621: ee a5 d3... ..S
-    .byte $d3, $20, $32 ; petscii "S 2"                               ; f628: d3 20 32    S 2
+    .text "S 2"                                                       ; f628: d3 20 32    S 2
     .byte $f6, $a9, $20, $91, $d1, $d0, $ed, $88, $b1, $f3, $c8, $91  ; f62b: f6 a9 20... ..
     .byte $f3, $88, $b1, $d1, $c8, $91, $d1, $88                      ; f637: f3 88 b1... ...
-    .byte $c4, $d3, $d0 ; petscii "DSP"                               ; f63f: c4 d3 d0    DSP
+    .text "DSP"                                                       ; f63f: c4 d3 d0    DSP
     .byte $ef, $e6, $d8, $60, $60                                     ; f642: ef e6 d8... ..X
 
 ; $f647 referenced 5 times by $e586, $e590, $f0bf, $fa2d, $ff7a
@@ -3230,7 +3226,7 @@ lf7b6 = cf7b4+2
     jmp acptr                                                         ; f7b4: 4c a5 ff    l.. ; Read a byte from the serial bus
 
 ; $f7b6 referenced 1 time by $f929
-    .byte $c3, $c2, $cd, $38, $30 ; petscii "CBM80"                   ; f7b7: c3 c2 cd... CBM
+    .text "CBM80"                                                     ; f7b7: c3 c2 cd... CBM
 
 ; $f7bc referenced 1 time by $f689
 sub_cf7bc
@@ -3244,7 +3240,7 @@ sub_cf7c1
     jmp chrout                                                        ; f7c3: 4c d2 ff    lR. ; Output $0d (RETURN)
 
     .byte $a9                                                         ; f7c6: a9          .
-    .byte $20, $4c, $d2 ; petscii " lR"                               ; f7c7: 20 4c d2     lR
+    .text " lR"                                                       ; f7c7: 20 4c d2     lR
     .byte $ff                                                         ; f7ca: ff          .
 
 ; $f7cb referenced 2 times by $e83d, $e87d
@@ -3306,12 +3302,12 @@ sub_cf804
 ; $f80b referenced 2 times by $e84d, $e863
 lf80b
     .byte $fe, $fd, $fb, $f7, $ef, $df, $bf, $7f, $20, $4a, $fa, $b1  ; f80b: fe fd fb... ...
-    .byte $d1, $c9, $20 ; petscii "QI "                               ; f817: d1 c9 20    QI
+    .text "QI "                                                       ; f817: d1 c9 20    QI
     .byte $60                                                         ; f81a: 60          .
 ; $f81b referenced 1 time by $e86a
 lf81b
     .byte 0, 8, $10, $18                                              ; f81b: 00 08 10... ...
-    .byte $20, $28, $30, $38 ; petscii " (08"                         ; f81f: 20 28 30...  (0
+    .text " (08"                                                      ; f81f: 20 28 30...  (0
 ; $f823 referenced 1 time by $eb56
 lf823
     .byte 0, $40, $80, $ff, $c0, $ff, $ff, $ff                        ; f823: 00 40 80... .@.
@@ -3327,7 +3323,7 @@ sub_cf833
     rts                                                               ; f83a: 60          .
 
     .byte $a9, 0, $85, $d4, $85                                       ; f83b: a9 00 85... ...
-    .byte $d8, $4c, $25 ; petscii "Xl%"                               ; f840: d8 4c 25    Xl%
+    .text "Xl%"                                                       ; f840: d8 4c 25    Xl%
     .byte $ee                                                         ; f843: ee          .
 
 ; $f844 referenced 1 time by $ffde
@@ -3359,7 +3355,7 @@ cf85b
     jmp cff43                                                         ; f85d: 4c 43 ff    lc.
 
     .byte $a9, $80, $2c, $a9, 0, $85                                  ; f860: a9 80 2c... ..,
-    .byte $c7, $4c, $25 ; petscii "Gl%"                               ; f866: c7 4c 25    Gl%
+    .text "Gl%"                                                       ; f866: c7 4c 25    Gl%
     .byte $ee                                                         ; f869: ee          .
 
 ; $f86a referenced 2 times by $e6e5, $efce
@@ -3641,7 +3637,7 @@ cf98f
     rts                                                               ; f991: 60          .
 
     .byte $ad, $18, $d0, $29, 2, $8d, $18                             ; f992: ad 18 d0... ..P
-    .byte $d0, $4c, $25 ; petscii "Pl%"                               ; f999: d0 4c 25    Pl%
+    .text "Pl%"                                                       ; f999: d0 4c 25    Pl%
     .byte $ee, $ad, $18, $d0, 9, 2, $d0, $f3                          ; f99c: ee ad 18... ...
 
 ; $f9a4 referenced 1 time by $ee1f

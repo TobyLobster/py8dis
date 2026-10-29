@@ -105,6 +105,11 @@ class Assembler:
         text in a comment."""
         return self.string_prefix() if encoding.name == "ascii" else None
 
+    def text_encoding_lines(self, encoding):
+        """(lines before, lines after) a string in the given encoding (one
+        with a text_directive()), e.g. to select the encoding for it."""
+        return [], []
+
     def text_chr(self, n, encoding):
         """How the byte n is written inside the quotes of a string in the
         given encoding (one with a text_directive()), or None if it's

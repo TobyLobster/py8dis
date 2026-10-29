@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Constants
 colour_blue     = 6
 device_disk_8   = 8
@@ -52,7 +60,7 @@ basic_line_10
     .word basic_end                                                   ; 1c01: 0b 1c       ..
     .word 10                                                          ; 1c03: 0a 00       ..
     .byte $9e                                                         ; 1c05: 9e          .
-    .byte $37, $31, $38, $31 ; petscii "7181"                         ; 1c06: 37 31 38... 718
+    .text "7181"                                                      ; 1c06: 37 31 38... 718
     .byte 0                                                           ; 1c0a: 00          .
 basic_end
     .word 0                                                           ; 1c0b: 00 00       ..
@@ -63,10 +71,9 @@ sys_entry
     lda #1                                                            ; 1c12: a9 01       ..
     sta vic_clock_speed                                               ; 1c14: 8d 30 d0    .0P
     jsr primm                                                         ; 1c17: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
-    .byte $48, $45, $4c, $4c, $4f, $2c, $20, $43 ; petscii "hello, c" ; 1c1a: 48 45 4c... hel
-    .byte $31, $32, $38, $0d, 0 ; petscii "128", $0d, $00             ; 1c22: 31 32 38... 128
+    .text "hello, c128", $0d, 0                                       ; 1c1a: 48 45 4c... hel
 
-    lda #$21 ; '!'                                                    ; 1c27: a9 21       .! ; A=character to output
+    lda #'!'                                                          ; 1c27: a9 21       .! ; A=character to output
     jsr chrout                                                        ; 1c29: 20 d2 ff     R. ; Output '!'
     lda #colour_blue                                                  ; 1c2c: a9 06       ..
     sta vic_border_colour                                             ; 1c2e: 8d 20 d0    . P
@@ -167,7 +174,7 @@ irq_handler
     jmp kernal_irq_handler                                            ; 1cc6: 4c 65 fa    l.. ; The Kernal's IRQ handler (blinks the cursor, scans the keyboard etc., then returns from the interrupt)
 
 filename
-    .byte $44, $41, $54, $41 ; petscii "data"                         ; 1cc9: 44 41 54... dat
+    .text "data"                                                      ; 1cc9: 44 41 54... dat
 ; $1ccd referenced 1 time by $1c42
 l1ccd
     .byte 0                                                           ; 1ccd: 00          .

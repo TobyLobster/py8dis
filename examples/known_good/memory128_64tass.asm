@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Memory locations
 
 ; Zero page ($0000-$00ff)
@@ -51,7 +59,7 @@ basic_line_10
     .word basic_end                                                   ; 1c01: 0b 1c       ..
     .word 10                                                          ; 1c03: 0a 00       ..
     .byte $9e                                                         ; 1c05: 9e          .
-    .byte $38, $32, $34, $30 ; petscii "8240"                         ; 1c06: 38 32 34... 824
+    .text "8240"                                                      ; 1c06: 38 32 34... 824
     .byte 0                                                           ; 1c0a: 00          .
 basic_end
     .word 0                                                           ; 1c0b: 00 00       ..
@@ -317,8 +325,7 @@ invalid_key
     .byte $60                                                         ; 213e: 60          .
 ; $213f referenced 1 time by $211f
 key_table
-    .byte $31, $32, $33, $34, $35, $36, $37, $38 ; petscii "12345678" ; 213f: 31 32 33... 123
-    .byte $51, $57, $45, $52, $54, $59, $55, $49 ; petscii "qwertyui" ; 2147: 51 57 45... qwe
+    .text "12345678qwertyui"                                          ; 213f: 31 32 33... 123
 ; $214f referenced 1 time by $212d
 handler_table
     .word show_1, show_2, show_3, show_4, show_5, show_6, show_7      ; 214f: 6f 21 aa... .!.

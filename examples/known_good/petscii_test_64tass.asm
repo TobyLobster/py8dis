@@ -1,3 +1,18 @@
+; Text encodings (for '.text' and character literals)
+    .enc "screencodes"
+    .cdef " ?", $20
+    .cdef "@@", $00
+    .cdef "AZ", $41
+    .cdef "[[", $1b
+    .cdef "]]", $1d
+    .cdef "az", $01
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Memory locations
 l0400   = $0400
 chrout  = $ffd2
@@ -26,36 +41,33 @@ loop_cc014
     sta l0400,x                                                       ; c017: 9d 00 04    ...
     dex                                                               ; c01a: ca          J
     bpl loop_cc014                                                    ; c01b: 10 f7       ..
-    lda #$41 ; 'a'                                                    ; c01d: a9 41       .a
+    lda #'a'                                                          ; c01d: a9 41       .a
     jsr chrout                                                        ; c01f: 20 d2 ff     R.
     rts                                                               ; c022: 60          .
 
 ; $c023 referenced 1 time by $c007
 lc023
-    .byte $93, $c8, $45, $4c, $4c, $4f, $2c ; petscii $93, "Hello,"   ; c023: 93 c8 45... .He
-    .byte $20, $d7, $4f, $52, $4c, $44, $21, $20 ; petscii " World! " ; c02a: 20 d7 4f...  Wo
-    .byte $d3, $41, $59, $20, $22, $48 ; petscii "Say ", $22, "h"     ; c032: d3 41 59... Say
-    .byte $49, $22, $0d, 0 ; petscii "i", $22, $0d, $00               ; c038: 49 22 0d... i".
-    .byte $43, $4f, $53, $54, $3a, $20, $5c ; petscii "cost: ", $5c   ; c03c: 43 4f 53... cos
-    .byte $35, $20, $5e, $5f, $60 ; petscii "5 ", $5e, $5f, $60       ; c043: 35 20 5e... 5 .
-    .byte $7b, $a0, $b0, $db, $ff ; petscii $7b, $a0, $b0, $db, $ff   ; c048: 7b a0 b0... ...
-    .byte 0 ; petscii $00                                             ; c04d: 00          .
+    .text $93, "Hello, World! Say ""hi""", $0d, 0                     ; c023: 93 c8 45... .He
+    .text "cost: ", $5c, "5 ", $5e, $5f, $60, $7b, $a0, $b0, $db, $ff ; c03c: 43 4f 53... cos
+    .text 0                                                           ; c04d: 00          .
 ; $c04e referenced 1 time by $c014
 lc04e
-    .byte 0, $20, $53, 3, $0f, $12, 5, $20, $1b ; screen "@ Score ["  ; c04e: 00 20 53... @ S
-    .byte $30, $30, $30, $1d, $20, $4c, 9, $16 ; screen "000] Liv"    ; c057: 30 30 30... 000
-    .byte 5, $13, $20, $33 ; screen "es 3"                            ; c05f: 05 13 20... es
+    .enc "screencodes"
+    .text "@ Score [000] Lives 3"                                     ; c04e: 00 20 53... @ S
+    .enc "petscii"
+    .enc "none"
     .text "ASCII text", 0                                             ; c063: 41 53 43... ASC
-    .byte $45, $4e, $44, $80 + $78 ; petscii "end", $f8               ; c06e: 45 4e 44... end
-    .byte $46, $4f, $55, $4e, $44, $20, $42, $59 ; petscii "found by" ; c072: 46 4f 55... fou
-    .byte $20, $41, $55, $54, $4f, $53, $54, $52 ; petscii " autostr" ; c07a: 20 41 55...  au
-    .byte $49, $4e, $47 ; petscii "ing"                               ; c082: 49 4e 47    ing
+    .enc "petscii"
+    .text "end", $80 + $78                                            ; c06e: 45 4e 44... end
+    .text "found by autostring"                                       ; c072: 46 4f 55... fou
     .byte 0                                                           ; c085: 00          .
-    .text "o", $80 + 'k'                                              ; c086: 6f eb       o.
+    .enc "none"
+    .text "o", $80 + $6b                                              ; c086: 6f eb       o.
+    .enc "petscii"
 pydis_end
 
+.cerror ($80 + $6b) != $eb, "Assertion failed: $80 + $6b == $eb"
 .cerror ($80 + $78) != $f8, "Assertion failed: $80 + $78 == $f8"
-.cerror ($80 + 'k') != $eb, "Assertion failed: $80 + 'k' == $eb"
 
 ; Label references by decreasing frequency:
 ;     chrout:       3

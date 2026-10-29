@@ -1,3 +1,11 @@
+; Text encodings (for '.text' and character literals)
+    .enc "petscii"
+    .cdef " @", $20
+    .cdef "AZ", $c1
+    .cdef "[[", $5b
+    .cdef "]]", $5d
+    .cdef "az", $41
+
 ; Constants
 colour_red  = 2
 
@@ -52,7 +60,7 @@ basic_line_10
     .word basic_end                                                   ; 1201: 0b 12       ..
     .word 10                                                          ; 1203: 0a 00       ..
     .byte $9e                                                         ; 1205: 9e          .
-    .byte $34, $36, $32, $31 ; petscii "4621"                         ; 1206: 34 36 32... 462
+    .text "4621"                                                      ; 1206: 34 36 32... 462
     .byte 0                                                           ; 120a: 00          .
 basic_end
     .word 0                                                           ; 120b: 00 00       ..
@@ -124,11 +132,10 @@ irq_handler
 
 ; $1287 referenced 1 time by $1234
 l1287
-    .byte $56, $49, $43, $2d, $32, $30 ; petscii "vic-20"             ; 1287: 56 49 43... vic
+    .text "vic-20"                                                    ; 1287: 56 49 43... vic
     .byte $0d, 0                                                      ; 128d: 0d 00       ..
 l128f
-    .byte $54, $48, $45, $20, $41, $4e, $53, $57 ; petscii "the answ" ; 128f: 54 48 45... the
-    .byte $45, $52, $20, $49, $53, $20, 0 ; petscii "er is ", $00     ; 1297: 45 52 20... er
+    .text "the answer is ", 0                                         ; 128f: 54 48 45... the
 ; $129e referenced 1 time by $125e
 l129e
     .byte 0                                                           ; 129e: 00          .
