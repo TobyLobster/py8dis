@@ -321,7 +321,11 @@ class Instruction(Line):
                 return result
             return result + " ; %s+2 %s%s%s" % (mnemonic, self.prefix, self.listing_operand, suffix)
 
-        result = "%s%s %s%s%s" % (indent, mnemonic, self.prefix, self.operand, suffix)
+        operand = str(self.operand)
+        if self.prefix == "" and operand.startswith("("):
+            # (Not indirect, which some assemblers would take it to be)
+            operand = assembler.direct_operand(operand)
+        result = "%s%s %s%s%s" % (indent, mnemonic, self.prefix, operand, suffix)
         if self.char_literal is not None and not plain:
             result += " %s %s" % (assembler.comment_prefix(), self.char_literal)
         return result

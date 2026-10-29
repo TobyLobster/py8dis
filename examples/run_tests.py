@@ -107,6 +107,8 @@ TESTS = [
     ("pet4_test",                ["acme", "beebasm", "xa"],    "a PET program for BASIC 4 with 80 columns (commodore.pet())"),
     ("pet2_test",                ["acme", "beebasm", "xa"],    "the PET program for BASIC 2"),
     ("pet1_test",                ["acme", "beebasm", "xa"],    "the PET program for BASIC 1, with Commodore's names"),
+    ("drive1541_test",           ["acme", "beebasm", "xa"],    "code for the 1541 disk drive (commodore.drive1541()): its job queue, buffers, VIAs and DOS ROM"),
+    ("drive1541_names_test",     ["acme", "beebasm", "xa"],    "drive1541_test for the 1541-II's DOS ROM, with Commodore's names"),
     ("c128_banks_test",          ["acme", "beebasm", "xa"],    "a C128 program that changes the MMU's configuration"),
 
     # 6502 code: real programs
@@ -165,6 +167,8 @@ ERROR_TESTS = [
     ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
     ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
     ("pet_80_columns_basic_2",  "commodore.pet(): only BASIC 4 PETs have 80 columns"),
+    ("drive1541_bad_rom",       "commodore.drive1541(): rom must be one of '1541', '1541-ii', not '1571'"),
+    ("drive1541_kernal_rom",    "commodore.kernal_rom(): the 1541 has no Kernal (use dos_rom())"),
     ("effect_register_without_anchor", "register_snippet(): a register line ('x = ...') needs an instruction line, to say where it applies"),
     ("effect_bad_value",        "register_snippet(): a value is a number, a name or '?': '[$70] = 1+2'"),
     ("effect_unbound_variable", "register_snippet(): the variable 'vec' isn't given its addresses (e.g. '[vec = $70 | $72]')"),

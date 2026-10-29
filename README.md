@@ -4,7 +4,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
-- [Commodore 64, VIC-20, C128, Plus/4 and PET](#commodore-64-vic-20-c128-plus4-and-pet)
+- [Commodore 64, VIC-20, C128, Plus/4, PET and 1541](#commodore-64-vic-20-c128-plus4-pet-and-1541)
 - [JSON output](#json-output)
 - [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
@@ -577,7 +577,7 @@ load(0x8000, "rom2.bin", "6502")
 rom2_asm = go(print_output=False)
 ```
 
-## Commodore 64, VIC-20, C128, Plus/4 and PET
+## Commodore 64, VIC-20, C128, Plus/4, PET and 1541
 
 `commodore.c64()` does for a Commodore 64 program what `acorn.bbc()` does for a BBC Micro one:
 
@@ -671,6 +671,33 @@ The same for the PET (and the CBM 3000, 4000 and 8000 series), with BASIC 1 (the
 
 The PET has no colours. `is_cartridge()` and `basic_rom()` aren't supported, since its expansion ROMs and BASIC ROM have no standard header or vectors.
 
+:pencil:`commodore.drive1541(rom="1541", names="descriptive", rom_labels=True)`
+
+The same for code that runs in the 1541 disk drive's own 6502, e.g. a fast loader's drive code (which a C64 program sends with `M-W` and runs with `M-E` or a job), or the drive's DOS ROM itself. It names:
+* the DOS's workspace (Commodore's names from its source, with descriptive names for the most used, e.g. `job_queue`, `job_track_sector`, `buffer_pointer`, `drive_number`), and the five buffers at &0300-&07ff (`buffer_0` to `buffer_4`, except those the code is loaded in);
+* the two VIAs: VIA 1 at &1800, the serial bus (`via1_serial_bus`, ...), and VIA 2 at &1c00, the disk controller (`via2_disk_control`, the motors, LED, write protect sensor, bit rate and sync; `via2_disk_data`, the GCR data from or to the disk), with Commodore's names (`pb`, `dskcnt`, `data2`...) with `names="commodore"`;
+* the DOS ROM's routines that drive code calls (`wait_for_sync`, `gcr_to_binary`, `end_job`, `dos_idle_loop`...) and the labels in Commodore's source for the ROM, and code that sets the NMI vector at &0065.
+
+**Jobs are commented.** Code that writes a job code to the job queue (&00-&05, one for each buffer), however it does it, is commented with the job, with its track and sector (&06-&11) if they're set too, and the job code is named, e.g.:
+
+```
+    ; Job 0: read track 18, sector 1 into buffer 0 ($0300)
+    lda #$12
+    sta job_track_sector
+    ldx #1
+    stx job_track_sector+1
+    lda #job_read
+    sta job_queue
+```
+
+For a JUMP or EXECUTE job, which runs the code in the job's buffer, that code is traced, if it's loaded, and named (e.g. `job_3_code`).
+
+`rom` is `"1541"` (DOS 325302-01 and 901229-05, the default) or `"1541-ii"` (251968-03, the 1541-II's and 1541C's), which only changes a few ROM labels. A session has one machine, so drive code inside a C64 program needs a disassembly of its own (with `load()` at the address it runs at, e.g. &0500).
+
+:pencil:`commodore.dos_rom()`
+
+For disassembling the 1541's DOS ROM (loaded at &c000, after `drive1541()`): traces the code from the vectors at its end (`format`, `motor_off` and the user commands U1 and U2; U3-U8's, at &0500-&050f in buffer 2, are named but not traced) and the 6502's vectors.
+
 The C128's, Plus/4's and PET's workspace (zero page and &0200 up) has Commodore's names from its source. With the default `names="descriptive"`, the locations that are the C64's have its descriptive names (e.g. `jiffy_clock`, `keyboard_buffer_length`), and the most used of the rest have descriptive names of their own (e.g. the C128's `screen_mode_40_80`, `vdc_screen_base`, `function_key_lengths`); the others have Commodore's names either way, since there are hundreds and most are BASIC's or the monitor's. The hardware's names are descriptive with `names="descriptive"` and Commodore's (from its source, e.g. `mmucr`, `vdcadr`, `tedirq`) with `names="commodore"`.
 
 :pencil:`commodore.basic_program(runtime_addr=None)`
@@ -753,7 +780,7 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 
 * py8dis is heavily influenced by Phill Harvey-Smith's [BeebDis](https://github.com/prime6809/BeebDis); I've tried to model py8dis commands on BeebDis where possible.
 * The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels (and the C128's and Plus/4's workspace) from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `commodoresource.py`, made by `tools/make_commodoresource.py`).
-* The PET's ROM labels and workspace are from Martin Hoffmann-Vetter's reconstructions of Commodore's source, in cbmsrc.
+* The PET's ROM labels and workspace are from Martin Hoffmann-Vetter's reconstructions of Commodore's source, in cbmsrc, and the 1541's DOS ROM labels and workspace from the reconstructions of its source there.
 * The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).
 * The C128 test game is Sebastian Dechert's [memory128](https://github.com/radi0sus/memory128) (BSD 3-clause licence; see `examples/orig/memory128`).
 * The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).

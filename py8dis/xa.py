@@ -214,6 +214,12 @@ class Xa(assembler.Assembler):
         # probably doesn't need it.
         return "%s%s %s!%s%s" % (utils.make_indent(1), instruction, prefix, operand, suffix)
 
+    def direct_operand(self, operand):
+        # xa takes an operand starting with a bracket to be indirect, so 'lda
+        # (table+1) - 1,y' is an error. (Forcing absolute addressing, '!(...)',
+        # isn't affected.)
+        return "0+" + operand
+
     def force_zp_label_prefix(self):
         # Prefix to take the low byte of a label, used in control files
         # (e.g. dfs226.py) to make sure an instruction uses zero page addressing

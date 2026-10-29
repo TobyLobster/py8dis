@@ -86,6 +86,12 @@ class Assembler:
         used if can_force_absolute().)"""
         raise NotImplementedError
 
+    def direct_operand(self, operand):
+        """The text of an operand that isn't indirect (e.g. for 'lda
+        operand,y') but starts with a bracket, e.g. '(table+1) - 1', which
+        some assemblers would take to be indirect."""
+        return operand
+
     def encoded_char_literal(self, n, encoding):
         """A character literal for the byte n in the given text encoding (a
         textencoding.Encoding), e.g. "'a'", or None if there isn't one. Only

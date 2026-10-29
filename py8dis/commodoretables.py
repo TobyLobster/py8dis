@@ -2,7 +2,7 @@
 The Commodore machines' data tables, for commodore.py: names for the memory
 locations, hardware registers and Kernal calls, the Kernal's control codes,
 the colours, the device numbers and the BASIC tokens, for the C64, the
-VIC-20, the C128, the Plus/4 and the PET.
+VIC-20, the C128, the Plus/4 and the PET, and the 1541 disk drive's.
 
 Each memory location has two names: a descriptive one (the default, e.g.
 'vic_border_colour') and the one Commodore's documentation uses (from the
@@ -1297,3 +1297,139 @@ basic_v4_tokens = basic_v2_tokens + [
     "CONCAT", "DOPEN", "DCLOSE", "RECORD", "HEADER", "COLLECT", "BACKUP", "COPY",
     "APPEND", "DSAVE", "DLOAD", "CATALOG", "RENAME", "SCRATCH", "DIRECTORY",
 ]
+
+
+# ************************************************************************************************
+# The 1541 disk drive: its own 6502, with 2K of RAM (the DOS's workspace,
+# and five 256-byte buffers at &0300-&07ff), two VIAs (the serial bus at
+# &1800, and the disk controller at &1c00) and the DOS ROM at &c000-&ffff.
+# Its workspace, VIA and ROM names are from Commodore's source (cbmsrc's
+# DOS_1541_05_REC), with descriptive names for the most used.
+
+# Descriptive names by Commodore's name (the others keep Commodore's: the
+# C64's names mean other things here)
+_drive1541_descriptive_names = {
+    "jobs":   "job_queue",              # a job code for each buffer
+    "hdrs":   "job_track_sector",       # a track and sector for each job
+    "dskid":  "disk_id",
+    "header": "header_image",
+    "actjob": "active_job",
+    "wpsw":   "write_protect_changed",
+    "drvst":  "drive_status",
+    "drvtrk": "drive_track",
+    "bufpnt": "buffer_pointer",
+    "hdrpnt": "header_pointer",
+    "gcrpnt": "gcr_pointer",
+    "bytcnt": "byte_count",
+    "chksum": "checksum",
+    "ctrack": "current_track",
+    "vnmi":   "nmi_vector",
+    "usrjmp": "user_jump_table_pointer",
+    "lsnadr": "listen_address",
+    "tlkadr": "talk_address",
+    "lsnact": "listener_active",
+    "tlkact": "talker_active",
+    "atnpnd": "atn_pending",
+    "atnmod": "atn_mode",
+    "drvnum": "drive_number",
+    "sa":     "secondary_address",
+    "buftab": "buffer_pointers",
+    "jobnum": "job_number",
+    "cmdbuf": "command_buffer",
+    "cmdnum": "command_number",
+    "nambuf": "name_buffer",
+    "errbuf": "error_buffer",
+}
+
+# The workspace (RAM) and the VIAs
+_drive1541_declarations = [d for d in commodoresource.drive1541_workspace if d[0] < 0x0800]
+_drive1541_via_names = {addr: name for addr, size, name in commodoresource.drive1541_workspace if addr >= 0x0800}
+
+drive1541_workspace_locations = [
+    Location(addr, size, commodore_name, _drive1541_descriptive_names.get(commodore_name, commodore_name))
+    for addr, size, commodore_name in _drive1541_declarations]
+drive1541_buffer_locations = [Location(0x0300 + 0x100 * n, 0x100, None, "buffer_%d" % n) for n in range(5)]
+
+def _drive1541_via(base, n, port_names):
+    names = ["port_b", "port_a", "data_direction_b", "data_direction_a",
+             "timer1_low", "timer1_high", "timer1_latch_low", "timer1_latch_high", "timer2_low", "timer2_high",
+             "shift_register", "auxiliary_control", "peripheral_control", "interrupt_flags", "interrupt_enable",
+             "port_a_no_handshake"]
+    names[0:2] = port_names
+    return [Location(base + i, 1, _drive1541_via_names.get(base + i), "via%d_%s" % (n, names[i])) for i in range(16)]
+
+# VIA 1's port B is the serial bus (data, clock and ATN); VIA 2's port B
+# controls the drive (the stepper motor, the spindle motor, the LED, the
+# write protect sensor, the bit rate and the sync detector), and its port A
+# is the data read from or written to the disk (GCR encoded)
+drive1541_hardware_locations = (
+    _drive1541_via(0x1800, 1, ["serial_bus", "port_a"]) +
+    _drive1541_via(0x1c00, 2, ["disk_control", "disk_data"])
+)
+
+# The DOS's NMI vector (in RAM; its IRQ handler has none), and the 6502's
+drive1541_vectors = _vectors(drive1541_workspace_locations, [(0x0065, "NMI vector", "nmi_handler")]) + [
+    VectorLocation(0xfffa, None, None, "NMI hardware vector", "nmi_handler"),
+    VectorLocation(0xfffe, None, None, "IRQ hardware vector", "irq_handler")]
+
+# The vectors at the end of the DOS ROM: the format routine (which runs in
+# buffer 0), turning off the motor, the user commands U1 and U2 (block read
+# and write), and the user commands U3-U8 (&0500-&050f, in buffer 2)
+drive1541_rom_vectors = [
+    (0xffe6, "format_vector", "format"),
+    (0xffe8, "motor_off_vector", "motor_off"),
+    (0xffea, "user_block_read_vector", "user_block_read"),
+    (0xffec, "user_block_write_vector", "user_block_write"),
+] + [(0xffee + 2 * i, "user_command_%d_vector" % (i + 3), None) for i in range(6)]
+
+def drive1541_rom_routines(rom):
+    """The routines in the DOS ROM that drive code calls, from the labels in
+    its source (rom is "1541" or "1541-ii": they're at the same addresses in
+    both)"""
+    labels = {n: a for a, n in getattr(commodoresource, "drive%s_rom_labels" % rom.replace("-", "")).items()}
+    def routine(commodore_name, name, title, on_entry=None, on_exit=None):
+        return RomRoutine(labels[commodore_name], commodore_name, name, title, on_entry, on_exit)
+    return [
+        routine("setlds", "drive_led_on", "Turn on the activity LED"),
+        routine("erron",  "error_led_on", "Start flashing the activity LED (an error)"),
+        routine("initdr", "initialise_drive", "Initialise the drive (read the BAM)"),
+        routine("doread", "read_block", "Read the block at TRACK and SECTOR into the current buffer (the job in JOBNUM), and wait until it's done"),
+        routine("dowrit", "write_block", "Write the current buffer to the block at TRACK and SECTOR (the job in JOBNUM), and wait until it's done"),
+        routine("dojob",  "do_job", "Do the job in A for the current buffer, and wait until it's done",
+                {'a': "job code"}),
+        routine("watjob", "wait_for_job", "Wait until the job in X is done",
+                {'x': "job number"}),
+        routine("acptr",  "serial_receive_byte", "Receive a byte from the serial bus"),
+        routine("dskint", "dos_reset", "The DOS's reset handler"),
+        routine("idle",   "dos_idle_loop", "The DOS's main loop, waiting for a command (and running the jobs)"),
+        routine("maxsec", "sectors_on_track", "The number of sectors on the track in A",
+                {'a': "track"}, {'a': "number of sectors"}),
+        routine("lcc",    "controller_job_loop", "The disk controller's job loop (in its IRQ), which finds the jobs in the job queue for the current track"),
+        routine("dstrt",  "find_data_block", "Find the job's header, then wait for the sync before its data block"),
+        routine("srch",   "find_header", "Find the header of the job's track and sector"),
+        routine("sync",   "wait_for_sync", "Wait for a sync mark (20 ms at most)"),
+        routine("chkblk", "data_block_checksum", "Calculate the checksum of the buffer (the EOR of its bytes)",
+                None, {'a': "checksum"}),
+        routine("bingcr", "binary_to_gcr", "Convert the buffer at BUFPNT to GCR (for writing)"),
+        routine("gcrbin", "gcr_to_binary", "Convert the GCR data read into the buffer at BUFPNT to binary"),
+        routine("conhdr", "header_to_gcr", "Convert the job's header to GCR (for writing)"),
+        routine("errr",   "end_job", "End the job, with its result (A) in the job queue",
+                {'a': "result (1 for OK)"}),
+        routine("trnoff", "motor_off", "Start the motor's turn-off delay"),
+        routine("end",    "controller_irq", "The disk controller's IRQ (every 10 ms): drive the stepper and spindle motors"),
+        routine("sysirq", "dos_irq_handler", "The DOS's IRQ handler"),
+        routine("nnmi",   "dos_nmi_handler", "The DOS's NMI handler"),
+    ]
+
+# The job codes (written to the job queue for a buffer, and run by the disk
+# controller), in Commodore's source READ, WRITE, WVERFY, SEEK, BUMP, JUMPC
+# and EXEC
+drive1541_job_codes = {
+    0x80: "job_read",
+    0x90: "job_write",
+    0xa0: "job_verify",
+    0xb0: "job_seek",
+    0xc0: "job_bump",
+    0xd0: "job_jump",
+    0xe0: "job_execute",
+}

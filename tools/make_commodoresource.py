@@ -1,7 +1,7 @@
 """Make py8dis/commodoresource.py: the labels in Commodore's source for the
-C64's, VIC-20's, C128's, Plus/4's and PET's ROMs, and the C128's, Plus/4's
-and PET's workspace (the RAM locations their source declares), from the
-listings made by assembling that source.
+C64's, VIC-20's, C128's, Plus/4's and PET's ROMs and the 1541's DOS ROM, and
+the C128's, Plus/4's, PET's and 1541's workspace (the RAM locations their
+source declares), from the listings made by assembling that source.
 
 The source is in https://github.com/mist64/cbmsrc, whose build.sh assembles
 it (with Commodore's own assembler under https://github.com/mist64/kernalemu
@@ -36,6 +36,11 @@ They assemble to the real ROMs (checked against VICE's ROM images):
     left out.
   The European 80-column editor's source (EDITOR_PET_EURO) declares the
   80-column editor's workspace.
+- 1541 (DOS_1541_05_REC and DOS_1541C_03_REC, built like the PET's): DOS
+  325302-01 and 901229-05 apart from two checksum bytes, and the 1541-II's
+  251968-03 apart from its copyright text at &c002-&c038 and two bytes. Their
+  workspace (and the two VIAs, which the source declares in the same way) is
+  the same.
 
 Labels: one is taken from each line of a listing that has one, an
 instruction or data line with a label (the address is the assembler's), or a
@@ -95,6 +100,8 @@ ROM_LISTINGS = [
     ("pet2_basic_rom_labels",    "BASIC_PET_V2_REC.lst", "the PET's BASIC 2 (901465-01, -02, and 901447-24 to &e1dd)", [(0xc000, 0xe1de)], []),
     ("pet4_kernal_rom_labels",   "KERNAL_PET_4.0_REC.lst", "the PET's BASIC 4 Kernal (901465-21 from &d472, and 901465-22; not the screen editor at &e000)", [(0xd472, 0xe000), (0xf000, 0x10000)], []),
     ("pet4_basic_rom_labels",    "BASIC_PET_V4R_REC.lst", "the PET's BASIC 4 (901465-23, -20, and 901465-21 to &d471)", [(0xb000, 0xd472)], []),
+    ("drive1541_rom_labels",     "DOS_1541_05_REC.lst", "the 1541's DOS ROM (325302-01 and 901229-05)", [(0xc000, 0x10000)], []),
+    ("drive1541ii_rom_labels",   "DOS_1541C_03_REC.lst", "the 1541-II's DOS ROM (251968-03)", [(0xc000, 0x10000)], []),
 ]
 
 # The workspace: (variable, listings in order of preference with the suffix
@@ -112,6 +119,8 @@ WORKSPACE_LISTINGS = [
      "the BASIC 4 PET's workspace (40 columns)", [(0x0000, 0x0100), (0x0200, 0x0400)]),
     ("pet4_80_workspace", [("KERNAL_PET_4.0_REC.lst", ""), ("EDITOR_PET_EURO.lst", "_editor"), ("BASIC_PET_V4R_REC.lst", "_basic")],
      "the BASIC 4 PET's workspace (80 columns, with the 80-column editor's)", [(0x0000, 0x0100), (0x0200, 0x0400)]),
+    ("drive1541_workspace", [("DOS_1541_05_REC.lst", "")],
+     "the 1541's workspace, and its VIAs", [(0x0000, 0x0800), (0x1800, 0x1810), (0x1c00, 0x1c10)]),
 ]
 
 def rom_labels(path, ranges, excluded):
@@ -183,9 +192,11 @@ tools/make_commodoresource.py, from the listings made by assembling the
 source in https://github.com/mist64/cbmsrc, which assemble to the real ROMs):
 
 - the labels in the C64's, VIC-20's, C128's, Plus/4's and PET's Kernal and
-  BASIC ROMs (and the C128's screen editor and monitor), as {address: name},
-  which commodore.c64() etc. give as optional labels (see their rom_labels);
-- the C128's, Plus/4's and PET's workspace, as [(address, size, name)].
+  BASIC ROMs (and the C128's screen editor and monitor) and the 1541's DOS
+  ROM, as {address: name}, which commodore.c64() etc. give as optional
+  labels (see their rom_labels);
+- the C128's, Plus/4's, PET's and 1541's workspace, as [(address, size,
+  name)].
 """
 ''')
         for variable, listing, description, ranges, excluded in ROM_LISTINGS:
