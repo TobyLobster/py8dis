@@ -118,7 +118,7 @@ TESTS = [
     ("dfs226",                   ["acme", "beebasm", "xa", "64tass"],    "DFS 2.26"),
     ("dfs226b",                  ["acme", "beebasm", "xa", "64tass"],    "DFS with an artificially added move() just for testing"),
     ("anfs418",                  ["acme", "beebasm", "xa", "64tass"],    "Network filing system 4.18"),
-    ("lisp406",                  ["acme", "beebasm"],          "Lisp 4.06 (xa is excluded since it can't cope with: 'ldx #(>(LISPEN-LISVAL-1))+1', and 64tass since it has labels starting with '_', e.g. '_AND', which 64tass takes to be local)"),
+    ("lisp406",                  ["acme", "beebasm", "64tass"],"Lisp 4.06 (xa is excluded since it can't cope with: 'ldx #(>(LISPEN-LISVAL-1))+1'; for 64tass its '_AND' is 'AND_', since 64tass takes a label starting with '_' to be local)"),
     ("chuckie",                  ["acme", "beebasm", "xa", "64tass"],    "Chuckie Egg"),
     ("planb",                    ["acme", "beebasm", "xa", "64tass"],    "Plan B with the old style label_maker function"),
     ("planb_new_label_maker",    ["acme", "beebasm", "xa", "64tass"],    "Plan B with a new style label_maker function"),
@@ -667,11 +667,17 @@ def run_test(name, assembler, options, env):
     # be in py8dis's symbol file, with the same values
     if assembler == "64tass":
         ours = vice_symbols(p.py8dis_symbols.read_text())
+        # (A name defined as 'name=...' in a control file's own text, e.g.
+        # lisp406's 'DWARF=NERRC-1' from annotate(), is a label to 64tass if
+        # its value is an address, but py8dis doesn't know about it)
+        asm_text = p.asm.read_text()
         for symbol, value in vice_symbols(p.assembler_symbols.read_text()).items():
             if value == 0 and symbol not in ours:
                 # (A label at &10000, after code at the top of memory, which
                 # 64tass gives the value 0, and py8dis's VICE symbols leave
                 # out)
+                continue
+            if symbol not in ours and re.search(r"^" + re.escape(symbol) + r"\s*=", asm_text, re.MULTILINE):
                 continue
             if ours.get(symbol) != value:
                 result.failure = f"64tass gives {symbol} the value {value}, but py8dis's symbol file {p.py8dis_symbols} gives {ours.get(symbol)}"

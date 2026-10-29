@@ -1523,6 +1523,10 @@ for line in labels.splitlines():
         else:
             old_addr = addr
         output_multiline_comment(addr)
+        if name == "_AND" and config.get_assembler().get_name() == "64tass":
+            # (64tass takes a label starting with '_' to be local to the
+            # label before it)
+            name = "AND_"
         if name != "":
             label(addr, name)
         if line_comment != "":
