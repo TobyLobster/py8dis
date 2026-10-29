@@ -4,7 +4,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
-- [Commodore 64, VIC-20, C128 and Plus/4](#commodore-64-vic-20-c128-and-plus4)
+- [Commodore 64, VIC-20, C128, Plus/4 and PET](#commodore-64-vic-20-c128-plus4-and-pet)
 - [JSON output](#json-output)
 - [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
@@ -358,7 +358,7 @@ Each of these also takes `encoding=` (e.g. `stringz(addr, encoding="screen")`) t
 
 By default strings are ASCII. For a Commodore program, `config.set_text_encoding("petscii")` makes PETSCII (the character codes used with CHROUT) the session's text encoding: for strings (including those `autostring()` finds), the character column of the hex dump, and the character comments on immediate operands (`lda #$41 ; 'a'`). `"screen"` is for Commodore screen codes, as stored in screen memory. A string command's `encoding=` option gives one string another encoding, e.g. `string(0xc04e, 21, encoding="screen")` for text copied straight to the screen, or `encoding="ascii"`. (Set the session's encoding before marking any strings: each string keeps the encoding it was marked with.)
 
-The characters are those of acme's `!pet` and `!scr`, so that acme can write the strings as text, e.g. `!pet "Hello", $0d` and `!scr "Score"`. A character literal (from `char()`, or the character CHROUT outputs, see [Commodore](#commodore-64-vic-20-c128-and-plus4)) is in the session's encoding too: acme's output then starts with `!ct pet` (or `!ct scr`), which makes `lda #'a'` PETSCII, so an ASCII string in it is written with `!raw` rather than `!text` (which would be converted). beebasm and xa have no such character literals, so they're numbers with the character in a comment (`lda #$41 ; 'a'`). As in acme, lower case letters are the unshifted letters (PETSCII $41-$5A, screen codes $01-$1A) and upper case ones the shifted letters (PETSCII $C1-$DA, screen codes $41-$5A): the text as it appears in the C64's lower/upper case character set. (In the default upper case/graphics set, both appear as upper case letters or graphics.) Codes acme's character would misrepresent, such as PETSCII $5C (a pound sign on the C64, but a backslash to acme), and the graphics characters, are written as numbers. beebasm and xa have no PETSCII or screen code directives, so these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`.
+The characters are those of acme's `!pet` and `!scr`, so that acme can write the strings as text, e.g. `!pet "Hello", $0d` and `!scr "Score"`. A character literal (from `char()`, or the character CHROUT outputs, see [Commodore](#commodore-64-vic-20-c128-plus4-and-pet)) is in the session's encoding too: acme's output then starts with `!ct pet` (or `!ct scr`), which makes `lda #'a'` PETSCII, so an ASCII string in it is written with `!raw` rather than `!text` (which would be converted). beebasm and xa have no such character literals, so they're numbers with the character in a comment (`lda #$41 ; 'a'`). As in acme, lower case letters are the unshifted letters (PETSCII $41-$5A, screen codes $01-$1A) and upper case ones the shifted letters (PETSCII $C1-$DA, screen codes $41-$5A): the text as it appears in the C64's lower/upper case character set. (In the default upper case/graphics set, both appear as upper case letters or graphics.) Codes acme's character would misrepresent, such as PETSCII $5C (a pound sign on the C64, but a backslash to acme), and the graphics characters, are written as numbers. beebasm and xa have no PETSCII or screen code directives, so these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`.
 
 ### Marking code (and data that points to code)
 
@@ -577,7 +577,7 @@ load(0x8000, "rom2.bin", "6502")
 rom2_asm = go(print_output=False)
 ```
 
-## Commodore 64, VIC-20, C128 and Plus/4
+## Commodore 64, VIC-20, C128, Plus/4 and PET
 
 `commodore.c64()` does for a Commodore 64 program what `acorn.bbc()` does for a BBC Micro one:
 
@@ -661,7 +661,17 @@ Says that the code from `start` to `end` (runtime addresses, `end` exclusive) ru
 
 The same for the Plus/4 (and the C16 and C116, which have the same ROMs): its workspace, the TED at &ff00-&ff3f (the timers, video, sound, keyboard latch, interrupts, and the ROM switch at &ff3e/&ff3f: `ted_rom_select`, `ted_ram_select`), the ACIA at &fd00, the 6529 ports, the screen and its attributes, a BASIC program at &1001, and the labels in Commodore's source for its BASIC and Kernal. Its jump table is the C64's with `print`, `primm` (as on the C128) and `monitr`. The TED's colours include their luminance, so they aren't named as constants.
 
-The C128's and Plus/4's workspace (zero page and &0200 up) has Commodore's names from its source. With the default `names="descriptive"`, the locations that are the C64's have its descriptive names (e.g. `jiffy_clock`, `keyboard_buffer_length`), and the most used of the rest have descriptive names of their own (e.g. the C128's `screen_mode_40_80`, `vdc_screen_base`, `function_key_lengths`); the others have Commodore's names either way, since there are hundreds and most are BASIC's or the monitor's. The hardware's names are descriptive with `names="descriptive"` and Commodore's (from its source, e.g. `mmucr`, `vdcadr`, `tedirq`) with `names="commodore"`.
+:pencil:`commodore.pet(basic=4, columns=40, names="descriptive", rom_labels=True)`
+
+The same for the PET (and the CBM 3000, 4000 and 8000 series), with BASIC 1 (the original 1977 ROMs), 2 or 4, whose workspace and ROM addresses differ (e.g. the IRQ vector is at &0219 with BASIC 1 and &0090 with BASIC 2 and 4), and a 40 or 80 column screen (`columns=80`, only with BASIC 4: the 8000 series, with its CRTC at &e880 as `crtc_address` and `crtc_data`, and the 80-column editor's workspace, e.g. `window_top`). It names:
+* the two PIAs (`pia1_port_a`, ... `pia2_control_b`; Commodore's `pial`, `ieei`...), the VIA at &e840 (`via_port_b`... `via_peripheral_control`, `pia`, `sync`... in Commodore's source) and the screen at &8000;
+* the Kernal's jump table at &ffc0-&ffea (`open`, `chkin`, `chrout`, `getin`, `stop`, `udtim`...). Only `chrout` has its own comments (`Output $93 (clear screen)`): `load`, `save`, `verify` and `sys` there are BASIC's commands, which read their parameters from the BASIC text, not the C64's Kernal calls;
+* its ROM routines (`basic_print_string`, `basic_print_number`, `kernal_irq_handler`, the IRQ handler programs end with, e.g. &e455 with BASIC 4...) and the labels in Commodore's source for its BASIC and Kernal (Martin Hoffmann-Vetter's reconstructions, which assemble to the ROMs VICE uses). BASIC 4's screen editor at &e000 is different for each model, so its labels are left out;
+* a BASIC program at &0401, listed with that version's keywords (BASIC 4's disk commands, e.g. `CATALOG`, too), and code that sets the IRQ, BRK or NMI vector.
+
+The PET has no colours. `is_cartridge()` and `basic_rom()` aren't supported, since its expansion ROMs and BASIC ROM have no standard header or vectors.
+
+The C128's, Plus/4's and PET's workspace (zero page and &0200 up) has Commodore's names from its source. With the default `names="descriptive"`, the locations that are the C64's have its descriptive names (e.g. `jiffy_clock`, `keyboard_buffer_length`), and the most used of the rest have descriptive names of their own (e.g. the C128's `screen_mode_40_80`, `vdc_screen_base`, `function_key_lengths`); the others have Commodore's names either way, since there are hundreds and most are BASIC's or the monitor's. The hardware's names are descriptive with `names="descriptive"` and Commodore's (from its source, e.g. `mmucr`, `vdcadr`, `tedirq`) with `names="commodore"`.
 
 :pencil:`commodore.basic_program(runtime_addr=None)`
 
@@ -743,6 +753,7 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 
 * py8dis is heavily influenced by Phill Harvey-Smith's [BeebDis](https://github.com/prime6809/BeebDis); I've tried to model py8dis commands on BeebDis where possible.
 * The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels (and the C128's and Plus/4's workspace) from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `commodoresource.py`, made by `tools/make_commodoresource.py`).
+* The PET's ROM labels and workspace are from Martin Hoffmann-Vetter's reconstructions of Commodore's source, in cbmsrc.
 * The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).
 * The C128 test game is Sebastian Dechert's [memory128](https://github.com/radi0sus/memory128) (BSD 3-clause licence; see `examples/orig/memory128`).
 * The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).

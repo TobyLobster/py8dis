@@ -1,8 +1,8 @@
 """
 The Commodore machines' data tables, for commodore.py: names for the memory
 locations, hardware registers and Kernal calls, the Kernal's control codes,
-the colours, the device numbers and the BASIC tokens, for the C64 and the
-VIC-20.
+the colours, the device numbers and the BASIC tokens, for the C64, the
+VIC-20, the C128, the Plus/4 and the PET.
 
 Each memory location has two names: a descriptive one (the default, e.g.
 'vic_border_colour') and the one Commodore's documentation uses (from the
@@ -1098,3 +1098,202 @@ plus4_rom_routines = [
 # at &00f1 isn't one, since in 80 columns it's a VDC attribute, not a colour
 # number.)
 c128_colour_registers = [0xd020, 0xd021, 0xd022, 0xd023, 0xd024, 0xd025, 0xd026] + list(range(0xd027, 0xd02f))
+
+
+# ************************************************************************************************
+# The PET (and CBM 3000, 4000 and 8000 series), with BASIC 1, 2 or 4. Its
+# workspace, ROM labels and hardware names are from Commodore's source (Martin
+# Hoffmann-Vetter's reconstructions, in cbmsrc), with descriptive names from
+# the C64's where Commodore's names are the same, and these
+
+# Descriptive names by Commodore's name, for those that aren't the C64's (or
+# mean something else on the PET); None for Commodore's name
+_pet_descriptive_names = {
+    "tape1":  "tape_buffer_1",
+    "tape2":  "tape_buffer_2",
+    "satus":  "io_status",
+    "sfst":   "shift_flag",
+    "cas2":   "tape_motor_interlock_2",
+    "count":  None,                 # (BASIC 4: a DOS count, not BASIC's input index)
+    # The machine code monitor's saved registers
+    "pch":    "monitor_pc_high",
+    "pcl":    "monitor_pc_low",
+    "flgs":   "monitor_flags",
+    "acc":    "monitor_a",
+    "xr":     "monitor_x",
+    "yr":     "monitor_y",
+    "sp":     "monitor_sp",
+    "invh":   "monitor_irq_vector_high",
+    "invl":   "monitor_irq_vector_low",
+    # The 80-column editor's
+    "sctop":  "window_top",
+    "scbot":  "window_bottom",
+    "sclf":   "window_left",
+    "scrt":   "window_right",
+    "rptcnt": "key_repeat_counter",
+    "delay":  "key_repeat_delay",
+    "keyimg": "key_image",
+    "tab":    "tab_stops",
+}
+
+def _pet_workspace(declarations):
+    by_name = {commodore_name: addr for addr, size, commodore_name in declarations}
+    return _workspace(declarations, {by_name[n]: d for n, d in _pet_descriptive_names.items() if n in by_name})
+
+pet_workspace_locations = {
+    (1, 40): _pet_workspace(commodoresource.pet1_workspace),
+    (2, 40): _pet_workspace(commodoresource.pet2_workspace),
+    (4, 40): _pet_workspace(commodoresource.pet4_workspace),
+    (4, 80): _pet_workspace(commodoresource.pet4_80_workspace),
+}
+
+def pet_vectors(locations):
+    """The PET's RAM vectors (in its workspace, which depends on the BASIC
+    version), and the 6502's"""
+    by_name = {l.commodore_name: l.addr for l in locations}
+    descriptions = [("cinv", "IRQ vector", "irq_handler"), ("cbinv", "BRK vector", "brk_handler"),
+                    ("nminv", "NMI vector", "nmi_handler"), ("usrcmd", "monitor command vector", "monitor_command_handler")]
+    return _vectors(locations, [(by_name[n], d, h) for n, d, h in descriptions if n in by_name]) + [
+        VectorLocation(0xfffa, None, None, "NMI hardware vector", "nmi_handler"),
+        VectorLocation(0xfffe, None, None, "IRQ hardware vector", "irq_handler")]
+
+def pet_screen_locations(columns):
+    return [Location(0x8000, 40 * 25 if columns == 40 else 80 * 25, None, "screen_memory")]
+
+# The PET's hardware: two PIAs (the keyboard, and the IEEE-488 bus), the VIA
+# and, with 80 columns, the CRTC, with the names in its Kernal source
+pet_hardware_locations = [
+    Location(0xe810, 1, "pial",  "pia1_port_a"),
+    Location(0xe811, 1, "pial1", "pia1_control_a"),
+    Location(0xe812, 1, "piak",  "pia1_port_b"),
+    Location(0xe813, 1, "pias",  "pia1_control_b"),
+    Location(0xe820, 1, "ieei",  "pia2_port_a"),
+    Location(0xe821, 1, "ieeis", "pia2_control_a"),
+    Location(0xe822, 1, "ieeo",  "pia2_port_b"),
+    Location(0xe823, 1, "ieeos", "pia2_control_b"),
+    Location(0xe840, 1, "pia",   "via_port_b"),
+    Location(0xe841, 1, "sync",  "via_port_a"),
+    Location(0xe842, 1, "p2db",  "via_data_direction_b"),
+    Location(0xe843, 1, "p2da",  "via_data_direction_a"),
+    Location(0xe844, 1, "til",   "via_timer1_low"),
+    Location(0xe845, 1, "tih",   "via_timer1_high"),
+    Location(0xe846, 1, "till",  "via_timer1_latch_low"),
+    Location(0xe847, 1, "tilh",  "via_timer1_latch_high"),
+    Location(0xe848, 1, "t2l",   "via_timer2_low"),
+    Location(0xe849, 1, "t2h",   "via_timer2_high"),
+    Location(0xe84a, 1, "sr",    "via_shift_register"),
+    Location(0xe84b, 1, "acr",   "via_auxiliary_control"),
+    Location(0xe84c, 1, "pcr",   "via_peripheral_control"),
+    Location(0xe84d, 1, "ifr",   "via_interrupt_flags"),
+    Location(0xe84e, 1, "ier",   "via_interrupt_enable"),
+    Location(0xe84f, 1, "sync1", "via_port_a_no_handshake"),
+]
+
+pet_crtc_locations = [
+    Location(0xe880, 1, "crtca", "crtc_address"),
+    Location(0xe881, 1, "crtcb", "crtc_data"),
+]
+
+# The PET's Kernal jump table (the same in each version). LOAD, SAVE, VERIFY
+# and SYS are BASIC's commands, which read their parameters from the BASIC
+# text, not the C64's Kernal calls.
+pet_jump_table = [
+    KernalCall(0xffc0, "open",   "Open a logical file (its file number, device number, secondary address and filename set up in the workspace)", None, None),
+    KernalCall(0xffc3, "close",  "Close a logical file", None, None),
+    KernalCall(0xffc6, "chkin",  "Open a logical file for input",
+               {'x': "logical file number"}, None),
+    KernalCall(0xffc9, "chkout", "Open a logical file for output",
+               {'x': "logical file number"}, None),
+    KernalCall(0xffcc, "clrchn", "Restore the default input and output (keyboard and screen)", None, None),
+    KernalCall(0xffcf, "chrin",  "Read a byte from the input",
+               None, {'a': "byte read"}),
+    KernalCall(0xffd2, "chrout", "Output a character",
+               {'a': "character to output"}, None),
+    KernalCall(0xffd5, "load",   "BASIC's LOAD command (its parameters read from the BASIC text)", None, None),
+    KernalCall(0xffd8, "save",   "BASIC's SAVE command (its parameters read from the BASIC text)", None, None),
+    KernalCall(0xffdb, "verify", "BASIC's VERIFY command (its parameters read from the BASIC text)", None, None),
+    KernalCall(0xffde, "sys",    "BASIC's SYS command (its parameters read from the BASIC text)", None, None),
+    KernalCall(0xffe1, "stop",   "Check the STOP key (Z set if it's pressed)", None, None),
+    KernalCall(0xffe4, "getin",  "Get a character from the keyboard buffer (0 if there's none)",
+               None, {'a': "character"}),
+    KernalCall(0xffe7, "clall",  "Close all files", None, None),
+    KernalCall(0xffea, "udtim",  "Update the clock (and check the STOP key)", None, None),
+]
+
+def pet_rom_routines(basic):
+    """The routines in the PET's ROMs that programs call, from the labels in
+    its source (whose addresses depend on the BASIC version)"""
+    basic_labels = {n: a for a, n in getattr(commodoresource, "pet%d_basic_rom_labels" % basic).items()}
+    kernal_labels = {n: a for a, n in getattr(commodoresource, "pet%d_kernal_rom_labels" % basic).items()}
+    result = [
+        RomRoutine(basic_labels["ready"],  "ready",  "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
+        RomRoutine(basic_labels["newstt"], "newstt", "basic_next_statement", "Execute the next BASIC statement", None, None),
+        RomRoutine(basic_labels["crdo"],   "crdo",   "basic_print_newline", "Print a carriage return", None, None),
+        RomRoutine(basic_labels["strout"], "strout", "basic_print_string", "Print the zero-terminated string at A/Y",
+                   {'a': "string address (low byte)", 'y': "string address (high byte)"}, None),
+        RomRoutine(basic_labels["linprt"], "linprt", "basic_print_number", "Print the 16-bit number in A/X",
+                   {'a': "number to print (high byte)", 'x': "number to print (low byte)"}, None),
+    ]
+    if basic == 4:
+        # (The screen editor at &e000 is different for each BASIC 4 model, so
+        # its labels aren't known, but these are the same in every one)
+        editor = {"puls": 0xe442, "key": 0xe455, "prend": 0xe600}
+    else:
+        editor = {n: kernal_labels[n] for n in ("clsr", "nxtd", "prt", "puls", "key", "prend")}
+        result += [
+            RomRoutine(editor["clsr"], "clsr", "clear_screen", "Clear the screen", None, None),
+            RomRoutine(editor["nxtd"], "nxtd", "cursor_home", "Move the cursor to the top left of the screen", None, None),
+            RomRoutine(editor["prt"],  "prt",  "screen_output_char", "Output a character to the screen",
+                       {'a': "character to output"}, None),
+        ]
+    result += [
+        RomRoutine(editor["puls"],  "puls",  "kernal_irq_entry", "The Kernal's IRQ and BRK entry point (saves the registers and jumps through the IRQ or BRK vector)", None, None),
+        RomRoutine(editor["key"],   "key",   "kernal_irq_handler", "The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)", None, None),
+        RomRoutine(editor["prend"], "prend", "kernal_irq_return", "Restore the registers and return from the interrupt", None, None),
+        RomRoutine(kernal_labels["start"], "start", "kernal_reset", "The Kernal's reset handler", None, None),
+    ]
+    if "nmi" in kernal_labels:
+        result.append(RomRoutine(kernal_labels["nmi"], "nmi", "kernal_nmi_handler", "The Kernal's NMI handler (jumps through the NMI vector)", None, None))
+    return sorted(result, key=lambda r: r.addr)
+
+# The control codes the PET's screen editor acts on, from c64ref's
+# control_codes_pet-n.txt (40 columns) and control_codes_pet-b.txt (the
+# 80-column business models)
+pet_control_codes = {
+    0x03: "STOP",
+    0x0d: "RETURN",
+    0x11: "cursor down",
+    0x12: "reverse on",
+    0x13: "home",
+    0x14: "delete",
+    0x1d: "cursor right",
+    0x83: "RUN",
+    0x8d: "shifted RETURN",
+    0x91: "cursor up",
+    0x92: "reverse off",
+    0x93: "clear screen",
+    0x94: "insert",
+    0x9d: "cursor left",
+}
+pet_80_column_control_codes = {**pet_control_codes, **{
+    0x07: "bell",
+    0x09: "tab",
+    0x0f: "set window top",
+    0x15: "insert line",
+    0x16: "erase to end of line",
+    0x19: "scroll up",
+    0x1b: "escape",
+    0x89: "set tab",
+    0x8f: "set window bottom",
+    0x95: "delete line",
+    0x96: "erase to start of line",
+    0x99: "scroll down",
+}}
+
+# BASIC 1's keywords (BASIC V2's without GO), and BASIC 4's (V2's and the
+# disk commands), by token ($80 upwards)
+basic_v1_tokens = basic_v2_tokens[:-1]
+basic_v4_tokens = basic_v2_tokens + [
+    "CONCAT", "DOPEN", "DCLOSE", "RECORD", "HEADER", "COLLECT", "BACKUP", "COPY",
+    "APPEND", "DSAVE", "DLOAD", "CATALOG", "RENAME", "SCRATCH", "DIRECTORY",
+]

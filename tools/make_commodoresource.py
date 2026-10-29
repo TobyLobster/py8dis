@@ -1,7 +1,7 @@
 """Make py8dis/commodoresource.py: the labels in Commodore's source for the
-C64's, VIC-20's, C128's and Plus/4's ROMs, and the C128's and Plus/4's
-workspace (the RAM locations their source declares), from the listings made
-by assembling that source.
+C64's, VIC-20's, C128's, Plus/4's and PET's ROMs, and the C128's, Plus/4's
+and PET's workspace (the RAM locations their source declares), from the
+listings made by assembling that source.
 
 The source is in https://github.com/mist64/cbmsrc, whose build.sh assembles
 it (with Commodore's own assembler under https://github.com/mist64/kernalemu
@@ -23,6 +23,19 @@ They assemble to the real ROMs (checked against VICE's ROM images):
   out).
 - Plus/4: BASIC 318006-01 to within 6 bytes, and Kernal 318004-05 to within
   39 bytes (single bytes, and a patch at &cfc5-&cfe9, left out).
+- PET (Martin Hoffmann-Vetter's reconstructions, BASIC_PET_V1R_REC,
+  BASIC_PET_V2_REC, BASIC_PET_V4R_REC and KERNAL_PET_1.0_REC, 2.0_REC and
+  4.0_REC, as VICE has them):
+  - BASIC 1 (901439-09, -05, -02, -06), its editor 901439-03 and Kernal
+    901439-04/-07 exactly, apart from unused bytes at their ends;
+  - BASIC 2 (901465-01, -02), its editor 901447-24 and Kernal 901465-03
+    likewise;
+  - BASIC 4 (901465-23, -20, -21) and Kernal 901465-22 apart from three
+    checksum bytes. Its source's editor (&e000-&e7ff) is 901447-29, which
+    no PET in VICE has (each model's BASIC 4 editor is different), so it's
+    left out.
+  The European 80-column editor's source (EDITOR_PET_EURO) declares the
+  80-column editor's workspace.
 
 Labels: one is taken from each line of a listing that has one, an
 instruction or data line with a label (the address is the assembler's), or a
@@ -76,6 +89,12 @@ ROM_LISTINGS = [
     ("c128_basic_rom_labels",    "BASIC_C128_04.lst",  "the C128's BASIC 7.0 (318018-04 and 318019-04, &4000-&afff)", [(0x4000, 0xb000)], []),
     ("plus4_kernal_rom_labels",  "KERNAL_TED_05.lst",  "the Plus/4's Kernal (318004-05, &c000-&ffff)", [(0xc000, 0x10000)], [(0xcfc5, 0xcfea)]),
     ("plus4_basic_rom_labels",   "BASIC_TED.lst",      "the Plus/4's BASIC 3.5 (318006-01, &8000-&bfff, and parts of the Kernal ROM)", [(0x8000, 0x10000)], []),
+    ("pet1_kernal_rom_labels",   "KERNAL_PET_1.0_REC.lst", "the PET's BASIC 1 Kernal and screen editor (901439-03, from &e1e1, and 901439-04/-07)", [(0xe1e1, 0xe800), (0xf000, 0x10000)], []),
+    ("pet1_basic_rom_labels",    "BASIC_PET_V1R_REC.lst", "the PET's BASIC 1 (901439-09, -05, -02, -06, and 901439-03 to &e1e0)", [(0xc000, 0xe1e1)], []),
+    ("pet2_kernal_rom_labels",   "KERNAL_PET_2.0_REC.lst", "the PET's BASIC 2 Kernal and screen editor (901447-24, from &e1de, and 901465-03)", [(0xe1de, 0xe800), (0xf000, 0x10000)], []),
+    ("pet2_basic_rom_labels",    "BASIC_PET_V2_REC.lst", "the PET's BASIC 2 (901465-01, -02, and 901447-24 to &e1dd)", [(0xc000, 0xe1de)], []),
+    ("pet4_kernal_rom_labels",   "KERNAL_PET_4.0_REC.lst", "the PET's BASIC 4 Kernal (901465-21 from &d472, and 901465-22; not the screen editor at &e000)", [(0xd472, 0xe000), (0xf000, 0x10000)], []),
+    ("pet4_basic_rom_labels",    "BASIC_PET_V4R_REC.lst", "the PET's BASIC 4 (901465-23, -20, and 901465-21 to &d471)", [(0xb000, 0xd472)], []),
 ]
 
 # The workspace: (variable, listings in order of preference with the suffix
@@ -85,6 +104,14 @@ WORKSPACE_LISTINGS = [
      "the C128's workspace", [(0x0000, 0x0100), (0x0200, 0x1400)]),
     ("plus4_workspace", [("KERNAL_TED_05.lst", ""), ("BASIC_TED.lst", "_basic")],
      "the Plus/4's workspace", [(0x0000, 0x0100), (0x0200, 0x0800)]),
+    ("pet1_workspace", [("KERNAL_PET_1.0_REC.lst", ""), ("BASIC_PET_V1R_REC.lst", "_basic")],
+     "the BASIC 1 PET's workspace", [(0x0000, 0x0100), (0x0200, 0x0400)]),
+    ("pet2_workspace", [("KERNAL_PET_2.0_REC.lst", ""), ("BASIC_PET_V2_REC.lst", "_basic")],
+     "the BASIC 2 PET's workspace", [(0x0000, 0x0100), (0x0200, 0x0400)]),
+    ("pet4_workspace", [("KERNAL_PET_4.0_REC.lst", ""), ("BASIC_PET_V4R_REC.lst", "_basic")],
+     "the BASIC 4 PET's workspace (40 columns)", [(0x0000, 0x0100), (0x0200, 0x0400)]),
+    ("pet4_80_workspace", [("KERNAL_PET_4.0_REC.lst", ""), ("EDITOR_PET_EURO.lst", "_editor"), ("BASIC_PET_V4R_REC.lst", "_basic")],
+     "the BASIC 4 PET's workspace (80 columns, with the 80-column editor's)", [(0x0000, 0x0100), (0x0200, 0x0400)]),
 ]
 
 def rom_labels(path, ranges, excluded):
@@ -115,12 +142,20 @@ def workspace(build_dir, listings, ranges):
     declared = {}           # address -> (name, size)
     names = {}              # name -> address
     for listing, suffix in listings:
-        for addr, code, source in listing_lines(os.path.join(build_dir, listing)):
-            m = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s+\*\s*=\s*\*\s*\+", source)
-            if not m or not code.startswith("=") or not any(lo <= addr < hi for lo, hi in ranges):
+        lines = listing_lines(os.path.join(build_dir, listing))
+        for i, (addr, code, source) in enumerate(lines):
+            m = re.match(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s+\*\s*=\s*\*\s*\+", source)
+            if not m or not any(lo <= addr < hi for lo, hi in ranges):
+                continue
+            if code.startswith("="):
+                # (cbm6502asm gives the location counter after it)
+                size = int(code[1:], 16) - addr
+            elif not code and i + 1 < len(lines):
+                # (Commodore's assembler doesn't, but the next line has it)
+                size = lines[i + 1][0] - addr
+            else:
                 continue
             name = m.group(1).lower()
-            size = int(code[1:], 16) - addr
             if addr in declared or size <= 0:
                 continue
             if name in names:
@@ -147,10 +182,10 @@ Names from Commodore's source for its machines' ROMs (made by
 tools/make_commodoresource.py, from the listings made by assembling the
 source in https://github.com/mist64/cbmsrc, which assemble to the real ROMs):
 
-- the labels in the C64's, VIC-20's, C128's and Plus/4's Kernal and BASIC
-  ROMs (and the C128's screen editor and monitor), as {address: name}, which
-  commodore.c64() etc. give as optional labels (see their rom_labels);
-- the C128's and Plus/4's workspace, as [(address, size, name)].
+- the labels in the C64's, VIC-20's, C128's, Plus/4's and PET's Kernal and
+  BASIC ROMs (and the C128's screen editor and monitor), as {address: name},
+  which commodore.c64() etc. give as optional labels (see their rom_labels);
+- the C128's, Plus/4's and PET's workspace, as [(address, size, name)].
 """
 ''')
         for variable, listing, description, ranges, excluded in ROM_LISTINGS:

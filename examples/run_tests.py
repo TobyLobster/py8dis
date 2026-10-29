@@ -104,6 +104,9 @@ TESTS = [
     ("vic20_cartridge_test",     ["acme", "beebasm", "xa"],    "a VIC-20 cartridge, with commodore.is_cartridge()"),
     ("c128_test",                ["acme", "beebasm", "xa"],    "a C128 program, with commodore.c128(): the MMU, the VDC, PRIMM and JSRFAR"),
     ("plus4_test",               ["acme", "beebasm", "xa"],    "a Plus/4 program, with commodore.plus4(): the TED, the ACIA and PRIMM"),
+    ("pet4_test",                ["acme", "beebasm", "xa"],    "a PET program for BASIC 4 with 80 columns (commodore.pet())"),
+    ("pet2_test",                ["acme", "beebasm", "xa"],    "the PET program for BASIC 2"),
+    ("pet1_test",                ["acme", "beebasm", "xa"],    "the PET program for BASIC 1, with Commodore's names"),
     ("c128_banks_test",          ["acme", "beebasm", "xa"],    "a C128 program that changes the MMU's configuration"),
 
     # 6502 code: real programs
@@ -161,6 +164,7 @@ ERROR_TESTS = [
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
     ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
     ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
+    ("pet_80_columns_basic_2",  "commodore.pet(): only BASIC 4 PETs have 80 columns"),
     ("effect_register_without_anchor", "register_snippet(): a register line ('x = ...') needs an instruction line, to say where it applies"),
     ("effect_bad_value",        "register_snippet(): a value is a number, a name or '?': '[$70] = 1+2'"),
     ("effect_unbound_variable", "register_snippet(): the variable 'vec' isn't given its addresses (e.g. '[vec = $70 | $72]')"),

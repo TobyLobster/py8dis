@@ -1,7 +1,7 @@
 """
-Commodore specific functions: commodore.c64() and vic20() name and comment a
-program's use of the Kernal, the hardware and the OS workspace, as
-acorn.bbc() does for the BBC Micro.
+Commodore specific functions: commodore.c64(), vic20(), c128(), plus4() and
+pet() name and comment a program's use of the Kernal, the hardware and the OS
+workspace, as acorn.bbc() does for the BBC Micro.
 
     import commodore
     start = load_prg("game.prg", "6510")
@@ -42,8 +42,11 @@ class Machine:
 
     def __init__(self, name, *, locations, hardware_locations, rom_locations, rom_routines,
                  rom_label_tables, jump_table, inline_string_calls, vectors, colours, colour_registers,
-                 control_codes, io_ranges, basic_start, cartridge, basic_rom_addr, regions):
+                 control_codes, io_ranges, basic_start, cartridge, basic_rom_addr, regions,
+                 basic_tokens=None, call_hooks=None):
         self.name = name
+        self.basic_tokens = basic_tokens or basic_v2_tokens   # BASIC's keywords, by token from $80
+        self.call_hooks = call_hooks                # {jump table name: hook}, if not the C64's (see _hooks)
         self.locations = locations                  # RAM, the vectors and the 6502's vectors
         self.hardware_locations = hardware_locations
         self.rom_locations = rom_locations          # data in the ROMs (named with rom_labels)
@@ -57,8 +60,8 @@ class Machine:
         self.control_codes = control_codes
         self.io_ranges = io_ranges                  # [(start, end)]: never defined inline
         self.basic_start = basic_start              # where BASIC programs are loaded
-        self.cartridge = cartridge                  # (address, style): see is_cartridge()
-        self.basic_rom_addr = basic_rom_addr
+        self.cartridge = cartridge                  # (address, style): see is_cartridge(); None if there's no standard header
+        self.basic_rom_addr = basic_rom_addr        # (None if basic_rom() isn't supported)
         self.regions = regions                      # [(start, end, name)]
 
 def _kernal_vectors():
@@ -239,9 +242,61 @@ def plus4_machine():
             (0xff40, 0xfffa, "Kernal entry points"),
         ])
 
+PET_BASIC_VERSIONS = (1, 2, 4)
+PET_COLUMNS = (40, 80)
+
+def pet_machine(basic=4, columns=40):
+    """The PET (or CBM 3000, 4000 or 8000), with BASIC 1, 2 or 4, and a 40 or
+    80 column screen (80 columns only with BASIC 4)"""
+    workspace = pet_workspace_locations[(basic, columns)]
+    if basic == 1:
+        os_regions = [(0x0200, 0x027a, "OS workspace"), (0x027a, 0x033a, "Tape buffer 1"), (0x033a, 0x03fa, "Tape buffer 2")]
+    elif basic == 2:
+        os_regions = [(0x0200, 0x027a, "OS workspace"), (0x027a, 0x033a, "Tape buffer 1"), (0x033a, 0x03fa, "Tape buffer 2"),
+                      (0x03fa, 0x0400, "OS workspace")]
+    else:
+        os_regions = [(0x0200, 0x027a, "OS workspace"), (0x027a, 0x033a, "Tape buffer 1"), (0x033a, 0x0353, "DOS workspace"),
+                      (0x0353, 0x03fa, "Tape buffer 2"), (0x03fa, 0x0400, "OS workspace")]
+    basic_rom_start = 0xb000 if basic == 4 else 0xc000
+    screen_end = 0x8000 + (40 if columns == 40 else 80) * 25
+    return Machine("pet",
+        locations=workspace + pet_screen_locations(columns) + c64_cpu_vectors,
+        hardware_locations=pet_hardware_locations + (pet_crtc_locations if columns == 80 else []),
+        rom_locations=[],
+        rom_routines=pet_rom_routines(basic),
+        rom_label_tables=[(getattr(commodoresource, "pet%d_kernal_rom_labels" % basic), "_rom"),
+                          (getattr(commodoresource, "pet%d_basic_rom_labels" % basic), "_basic")],
+        jump_table=pet_jump_table,
+        inline_string_calls=[],
+        vectors=pet_vectors(workspace),
+        colours={},
+        colour_registers=[],
+        control_codes=pet_80_column_control_codes if columns == 80 else pet_control_codes,
+        io_ranges=[(0xe800, 0xe900)],
+        basic_start=0x0401,
+        cartridge=None,
+        basic_rom_addr=None,
+        basic_tokens={1: basic_v1_tokens, 2: basic_v2_tokens, 4: basic_v4_tokens}[basic],
+        # (Its LOAD and SAVE aren't the C64's, so only CHROUT has a hook of
+        # its own)
+        call_hooks={"chrout": chrout_hook},
+        regions=os_regions + [
+            (0x0400, 0x8000, "BASIC program area"),
+            (0x8000, screen_end, "Screen memory"),
+            (0x9000, basic_rom_start, "Expansion ROM"),
+            (basic_rom_start, 0xe000, "BASIC ROM"),
+            (0xe000, 0xe800, "Screen editor ROM"),
+            (0xe810, 0xe814, "PIA 1"),
+            (0xe820, 0xe824, "PIA 2"),
+            (0xe840, 0xe850, "VIA"),
+        ] + ([(0xe880, 0xe882, "CRTC")] if columns == 80 else []) + [
+            (0xf000, 0xffc0, "Kernal ROM"),
+            (0xffc0, 0xfffa, "Kernal entry points"),
+        ])
+
 def _machine():
-    """The machine chosen for this session (by c64(), vic20(), c128() or
-    plus4()), or the C64 if none has been"""
+    """The machine chosen for this session (by c64(), vic20(), c128(),
+    plus4() or pet()), or the C64 if none has been"""
     return session.current().extras.get("commodore.machine") or c64_machine()
 
 
@@ -1043,8 +1098,8 @@ def _basic_line_text(data):
         if c >= 0x80 and not in_quotes and not in_rem:
             if c == BASIC_TOKEN_PI:
                 result += "{pi}"
-            elif c - 0x80 < len(basic_v2_tokens):
-                result += basic_v2_tokens[c - 0x80]
+            elif c - 0x80 < len(_machine().basic_tokens):
+                result += _machine().basic_tokens[c - 0x80]
                 in_rem = (c == BASIC_TOKEN_REM)
             else:
                 result += "{%s}" % _hex2(c)
@@ -1188,7 +1243,10 @@ def is_cartridge():
     PETSCII ('CBM80' on the C64, 'A0CBM' on the VIC-20). On the C128 and the
     Plus/4 a function ROM is at &8000 (or &c000 for the C128's internal
     one), starting with its cold and warm start code (usually JMPs), then an
-    ID byte (1 to start it automatically) and 'CBM' in ASCII."""
+    ID byte (1 to start it automatically) and 'CBM' in ASCII. (The PET's
+    expansion ROMs have no standard header.)"""
+    if _machine().cartridge is None:
+        utils.die("commodore.is_cartridge(): the PET's expansion ROMs have no standard header")
     addr, signature = _machine().cartridge
     if signature == "CBM":
         label(addr, "cartridge_cold_start")
@@ -1230,6 +1288,8 @@ def basic_rom():
     from its cold and warm start vectors (or JMPs), and name its signature."""
     machine = _machine()
     base = machine.basic_rom_addr
+    if base is None:
+        utils.die("commodore.basic_rom(): the PET's BASIC ROM has no vectors to trace from (use entry())")
     if machine.cartridge[1] == "CBM":
         # JMPs to the cold and warm start code (and on the C128 the IRQ
         # code), then on the Plus/4 an ID byte and 'CBM'
@@ -1255,7 +1315,7 @@ def basic_rom():
 # The machines' set up
 
 def _set_up(command, machine, names, rom_labels):
-    """What c64(), vic20(), c128() and plus4() do, for the machine"""
+    """What c64(), vic20(), c128(), plus4() and pet() do, for the machine"""
     if names not in NAMES:
         utils.die("commodore.{0}(): names must be one of {1}, not {2!r}".format(command, ", ".join(repr(n) for n in NAMES), names))
     extras = session.current().extras
@@ -1273,7 +1333,8 @@ def _set_up(command, machine, names, rom_labels):
         optional_label(addr, name, base, definable_inline=not any(start <= addr < end for start, end in machine.io_ranges))
 
     for call in machine.jump_table:
-        subroutine(call.addr, call.name, call.title, None, call.on_entry, call.on_exit, hook=_unless_mapped_out(_hooks.get(call.name, default_hook)), is_entry_point=False)
+        hooks = _hooks if machine.call_hooks is None else machine.call_hooks
+        subroutine(call.addr, call.name, call.title, None, call.on_entry, call.on_exit, hook=_unless_mapped_out(hooks.get(call.name, default_hook)), is_entry_point=False)
     # A call that prints the string after it (PRIMM) continues after the
     # string
     for addr in machine.inline_string_calls:
@@ -1379,3 +1440,23 @@ def plus4(names="descriptive", rom_labels=True):
     Commodore's source for its BASIC and Kernal, and a BASIC program at
     &1001. Its workspace's names are as for c128()."""
     _set_up("plus4", plus4_machine(), names, rom_labels)
+
+def pet(basic=4, columns=40, names="descriptive", rom_labels=True):
+    """As c64(), for the PET (and the CBM 3000, 4000 and 8000 series), with
+    BASIC 1 (the original 1977 ROMs), 2 or 4, and a 40 or 80 column screen
+    (columns=80, BASIC 4's 8000 series, with a CRTC at &e880): its workspace
+    (which depends on the BASIC version), the PIAs, the VIA, the screen at
+    &8000, its jump table at &ffc0 (where only CHROUT has a hook: its LOAD,
+    SAVE, VERIFY and SYS are BASIC's commands, not the C64's calls), its ROM
+    routines and the labels in Commodore's source for its BASIC and Kernal
+    (not BASIC 4's screen editor, which is different for each model), and a
+    BASIC program at &0401, listed with that version's keywords (BASIC 4's
+    disk commands too). The PET has no colours. Its workspace's names are as
+    for c128()."""
+    if basic not in PET_BASIC_VERSIONS:
+        utils.die("commodore.pet(): basic must be 1, 2 or 4, not {0!r}".format(basic))
+    if columns not in PET_COLUMNS:
+        utils.die("commodore.pet(): columns must be 40 or 80, not {0!r}".format(columns))
+    if columns == 80 and basic != 4:
+        utils.die("commodore.pet(): only BASIC 4 PETs have 80 columns")
+    _set_up("pet", pet_machine(basic, columns), names, rom_labels)
