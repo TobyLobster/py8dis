@@ -102,6 +102,35 @@ class SubConst:
         return int(result, 16)
 
 
+class MemoryWrite:
+    """A write to memory by an instruction (see Cpu6502.memory_writes()).
+
+    binary_addr is the instruction's binary address. target is the address
+    written (a runtime address), or None if it isn't known (e.g. an indexed
+    store), in which case any memory may have changed. value is the value
+    written, if it's known (e.g. 'sta' of a known A). reg is the register
+    stored ('a', 'x' or 'y'), or None (e.g. STZ, a read-modify-write).
+    value_operand is the binary address of the immediate operand the value
+    was loaded from (e.g. the 'nn' of 'lda #nn'), if the value is a
+    register's that was loaded that way (and not changed since), or None.
+    read_modify_write is True for e.g. INC or ASL, which read the memory as
+    well."""
+
+    __slots__ = ("binary_addr", "target", "value", "reg", "value_operand", "read_modify_write")
+
+    def __init__(self, binary_addr, target, value=None, reg=None, value_operand=None, read_modify_write=False):
+        self.binary_addr = binary_addr
+        self.target = target
+        self.value = value
+        self.reg = reg
+        self.value_operand = value_operand
+        self.read_modify_write = read_modify_write
+
+    def __repr__(self):
+        return "MemoryWrite({0}, {1}, {2}, {3}, {4}, {5})".format(
+            hex(self.binary_addr), None if self.target is None else hex(self.target), self.value, self.reg, self.value_operand, self.read_modify_write)
+
+
 class RegState:
     def __init__(self):
         self.clear()
@@ -1789,6 +1818,98 @@ class Cpu6502(cpu.Cpu):
                                 self.return_array[defined_at_binary_addr] = self.return_index
 
                             lmd.name = "return_{0}".format(self.return_array[defined_at_binary_addr])
+
+    # ********************************************************************************************
+    # What the code does: straight runs of code, and the memory they write
+
+    # The instructions that store a register, with the register (SAX, the
+    # 6510's, stores A AND X; STZ, the 65C02's, stores zero)
+    _STORE_MNEMONICS = {"STA": 'a', "STX": 'x', "STY": 'y', "STZ": None, "SAX": None}
+
+    # The instructions that write memory after reading it, or that write an
+    # unknown value (the 6510's SHA etc, which are always indexed)
+    _READ_MODIFY_WRITE_MNEMONICS = {"ASL", "LSR", "ROL", "ROR", "INC", "DEC", "TSB", "TRB",
+                                    "SLO", "RLA", "SRE", "RRA", "DCP", "ISC", "SHA", "SHX", "SHY", "TAS"}
+
+    def straight_runs(self):
+        """The code, as runs of instructions (lists of binary addresses, in
+        address order) that the code runs straight through: each ends at
+        the end of a block (e.g. RTS or JMP), or before an instruction that
+        other code jumps or branches to (or an entry point), since that might
+        come from code with other values in its registers and memory. (A JSR
+        doesn't end a run.)"""
+        labels = session.current().labels.labels
+        explicit_entry_points = self.explicit_entry_points
+        run = []
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = range_start
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is None or c is classification.INSIDE_A_CLASSIFICATION or not c.is_code(binary_addr):
+                    if run:
+                        yield run
+                        run = []
+                    binary_addr += 1 if c is None or c is classification.INSIDE_A_CLASSIFICATION else c.length()
+                    continue
+                label = labels.get(movemanager.b2r(BinaryAddr(binary_addr)))
+                if run and ((label is not None and label.references) or binary_addr in explicit_entry_points):
+                    yield run
+                    run = []
+                run.append(binary_addr)
+                binary_addr += c.length()
+                if c.is_block_end():
+                    yield run
+                    run = []
+            if run:
+                yield run
+                run = []
+
+    def memory_write(self, binary_addr):
+        """The MemoryWrite for the instruction at binary_addr, if it writes
+        memory (or might: a JSR, whose subroutine could write anywhere),
+        otherwise None. A value is known only if it's known for certain
+        (the pessimistic state)."""
+        memory_binary = session.current().memory.binary
+        c = classification.get_classification(binary_addr)
+        if memory_binary[binary_addr] == 0x20:
+            # JSR (see the docstring)
+            return MemoryWrite(binary_addr, None)
+        mnemonic = c.mnemonic.upper()
+        is_store = mnemonic in self._STORE_MNEMONICS
+        if not is_store and mnemonic not in self._READ_MODIFY_WRITE_MNEMONICS:
+            return None
+        if c.addr_mode == Cpu6502.mode_accumulator:
+            return None
+        if c.addr_mode == Cpu6502.mode_zp:
+            target = memory_binary[binary_addr + 1]
+        elif c.addr_mode == Cpu6502.mode_addr:
+            target = memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
+        else:
+            # Indexed or indirect: the address isn't known
+            return MemoryWrite(binary_addr, None, read_modify_write=not is_store)
+        if not is_store:
+            return MemoryWrite(binary_addr, target, read_modify_write=True)
+        state = self.cpu_states[binary_addr]
+        pessimistic = None if state is None else state.pessimistic
+        reg = self._STORE_MNEMONICS[mnemonic]
+        if mnemonic == "STZ":
+            return MemoryWrite(binary_addr, target, 0)
+        if pessimistic is None:
+            return MemoryWrite(binary_addr, target, reg=reg)
+        if mnemonic == "SAX":
+            a, x = pessimistic['a'].value, pessimistic['x'].value
+            return MemoryWrite(binary_addr, target, None if a is None or x is None else a & x)
+        # (A store doesn't change the register, so the state after it is
+        # the state it stores)
+        return MemoryWrite(binary_addr, target, pessimistic[reg].value, reg, pessimistic[reg].get_previous_load_imm_operand())
+
+    def memory_writes(self, run):
+        """The MemoryWrite for each instruction in the run (see
+        straight_runs()) that writes memory, in order."""
+        for binary_addr in run:
+            write = self.memory_write(binary_addr)
+            if write is not None:
+                yield write
 
     # Regex searching (shared between 6502 and 65C02)
     def pre_trace_with_regex(self):

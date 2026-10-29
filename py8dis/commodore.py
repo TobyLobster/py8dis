@@ -682,9 +682,6 @@ def c128_configuration_description(configuration):
 _MMU_CONFIGURATION_REGISTERS = (0xff00, 0xd500)
 _MMU_LOAD_CONFIGURATION_REGISTERS = range(0xff01, 0xff05)
 
-# The absolute store opcodes, with their registers
-_STORE_ABS_OPCODES = {0x8d: 'a', 0x8e: 'x', 0x8c: 'y'}
-
 def _c128_mmu_writes():
     """[(binary location, configuration or None)] for each instruction that
     sets the MMU configuration: the value stored to &ff00 or &d500 (if it's
@@ -692,27 +689,16 @@ def _c128_mmu_writes():
     (&ff01-&ff04), or of an unknown value. ([(binary location, register
     address, configuration or None)])"""
     cpu = session.current().cpu
-    memory_binary = session.current().memory.binary
     result = []
-    for range_start, range_end in memorymanager.loaded_ranges():
-        binary_addr = range_start
-        while binary_addr < range_end:
-            c = classification.get_classification(binary_addr)
-            if c is None or c is classification.INSIDE_A_CLASSIFICATION:
-                binary_addr += 1
+    for run in cpu.straight_runs():
+        for write in cpu.memory_writes(run):
+            if write.read_modify_write or write.target is None:
                 continue
-            if c.is_code(binary_addr) and memory_binary[binary_addr] in _STORE_ABS_OPCODES:
-                register = memorymanager.get_u16_binary(binary_addr + 1)
-                if register in _MMU_CONFIGURATION_REGISTERS or register in _MMU_LOAD_CONFIGURATION_REGISTERS:
-                    configuration = None
-                    if register in _MMU_CONFIGURATION_REGISTERS:
-                        reg = _STORE_ABS_OPCODES[memory_binary[binary_addr]]
-                        state = cpu.cpu_states[binary_addr]
-                        if state is not None and state.pessimistic[reg]:
-                            configuration = state.pessimistic[reg].value
-                    move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                    result.append((memorymanager.BinaryLocation(BinaryAddr(binary_addr), move_id), register, configuration))
-            binary_addr += c.length()
+            register = write.target
+            if register in _MMU_CONFIGURATION_REGISTERS or register in _MMU_LOAD_CONFIGURATION_REGISTERS:
+                configuration = write.value if register in _MMU_CONFIGURATION_REGISTERS else None
+                move_id = session.current().moves.move_id_for_binary_addr[write.binary_addr]
+                result.append((memorymanager.BinaryLocation(BinaryAddr(write.binary_addr), move_id), register, configuration))
     return result
 
 def _c128_comment_mmu_writes(writes):
@@ -1008,10 +994,6 @@ _VIC_INTERRUPT_STATUS = 0xd019
 _VIC_INTERRUPT_ENABLE = 0xd01a
 _VIC_REGISTERS = (_VIC_CONTROL_1, _VIC_RASTER_LINE, _VIC_INTERRUPT_STATUS, _VIC_INTERRUPT_ENABLE)
 
-# The read-modify-write instructions (absolute), which write back what they
-# read from the interrupt status register (so acknowledge all its interrupts)
-_READ_MODIFY_WRITE_ABS_OPCODES = (0x0e, 0x2e, 0x4e, 0x6e, 0xce, 0xee)   # asl, rol, lsr, ror, dec, inc
-
 # The VIC-II's interrupts, by bit (of &d019 and &d01a)
 _VIC_INTERRUPTS = ("raster", "sprite-background collision", "sprite-sprite collision", "light pen")
 
@@ -1021,37 +1003,6 @@ def _vic_interrupts_text(value):
     if len(names) == 1:
         return names[0] + " interrupt"
     return ", ".join(names[:-1]) + " and " + names[-1] + " interrupts"
-
-def _straight_runs():
-    """The code, as runs of instructions (lists of binary addresses) that
-    the code runs straight through: each ends at the end of a block (e.g.
-    RTS or JMP), or before an instruction that other code jumps or branches
-    to (or an entry point)."""
-    labels = session.current().labels.labels
-    explicit_entry_points = session.current().cpu.explicit_entry_points
-    run = []
-    for range_start, range_end in memorymanager.loaded_ranges():
-        binary_addr = range_start
-        while binary_addr < range_end:
-            c = classification.get_classification(binary_addr)
-            if c is None or c is classification.INSIDE_A_CLASSIFICATION or not c.is_code(binary_addr):
-                if run:
-                    yield run
-                    run = []
-                binary_addr += 1 if c is None or c is classification.INSIDE_A_CLASSIFICATION else c.length()
-                continue
-            label = labels.get(movemanager.b2r(BinaryAddr(binary_addr)))
-            if run and ((label is not None and label.references) or binary_addr in explicit_entry_points):
-                yield run
-                run = []
-            run.append(binary_addr)
-            binary_addr += c.length()
-            if c.is_block_end():
-                yield run
-                run = []
-        if run:
-            yield run
-            run = []
 
 def _vic_interrupt_analysis():
     """Comment the code that sets up the VIC-II's interrupts: a store of a
@@ -1066,38 +1017,26 @@ def _vic_interrupt_analysis():
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
 
-    def stored_value(binary_addr):
-        state = cpu.cpu_states[binary_addr]
-        reg = _STORE_ABS_OPCODES[memory_binary[binary_addr]]
-        if state is None or not state.pessimistic[reg]:
-            return None
-        return state.pessimistic[reg].value
-
     def comment(binary_addr, text):
         move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
         disassembly.comment_binary(memorymanager.BinaryLocation(BinaryAddr(binary_addr), move_id), text, align=Align.INLINE, auto_generated=True)
 
-    for run in _straight_runs():
-        # The stores to the VIC-II's interrupt registers in the run
-        accesses = []       # (binary address, register, opcode)
-        for binary_addr in run:
-            opcode = memory_binary[binary_addr]
-            if opcode not in _STORE_ABS_OPCODES and opcode not in _READ_MODIFY_WRITE_ABS_OPCODES:
-                continue
-            register = memorymanager.get_u16_binary(binary_addr + 1)
-            if register in _VIC_REGISTERS and not _mapped_out(binary_addr, register):
-                accesses.append((binary_addr, register, opcode))
+    for run in cpu.straight_runs():
+        # The writes to the VIC-II's interrupt registers in the run
+        accesses = [write for write in cpu.memory_writes(run)
+                    if write.target in _VIC_REGISTERS and not _mapped_out(write.binary_addr, write.target)]
         if not accesses:
             continue
 
         # Bit 8 of the raster line: bit 7 of what's stored to &d011, if
         # that's known, or set by an 'and #n' or 'ora #n' just before
         high_bits = set()
-        for binary_addr, register, opcode in accesses:
-            if register != _VIC_CONTROL_1 or opcode not in _STORE_ABS_OPCODES:
+        for write in accesses:
+            if write.target != _VIC_CONTROL_1 or write.read_modify_write:
                 continue
-            value = stored_value(binary_addr)
-            previous = run[run.index(binary_addr) - 1] if run.index(binary_addr) > 0 else None
+            value = write.value
+            index = run.index(write.binary_addr)
+            previous = run[index - 1] if index > 0 else None
             if value is not None:
                 high_bits.add(value >> 7)
             elif previous is not None and memory_binary[previous] == 0x29 and not memory_binary[previous + 1] & 0x80:   # and #n
@@ -1108,12 +1047,12 @@ def _vic_interrupt_analysis():
                 high_bits.add(None)
         high_bit = high_bits.pop() if len(high_bits) == 1 else None
 
-        for binary_addr, register, opcode in accesses:
-            if opcode in _READ_MODIFY_WRITE_ABS_OPCODES:
+        for write in accesses:
+            binary_addr, register, value = write.binary_addr, write.target, write.value
+            if write.read_modify_write:
                 if register == _VIC_INTERRUPT_STATUS:
                     comment(binary_addr, "Acknowledge the VIC-II's interrupts")
                 continue
-            value = stored_value(binary_addr)
             if value is None:
                 continue
             if register == _VIC_RASTER_LINE:
