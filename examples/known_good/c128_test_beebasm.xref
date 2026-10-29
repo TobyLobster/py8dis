@@ -66,14 +66,14 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 &1cce  pydis_end (inline)
     (not referenced)
 
-&d020  vic_border_colour (Memory locations: VIC-II)
+&d020  vic_border_colour (Memory locations: VIC-II), ld020 (local to &1ca8-&1caa)
     &1c2e     sys_entry+33                 sta vic_border_colour
-    &1ca8     far_call_target              inc vic_border_colour
+    &1ca8     far_call_target              inc ld020
     &1cac     far_call_target_2            dec vic_border_colour
     &1cc3     irq_handler                  inc vic_border_colour
 
-&d021  vic_background_colour_0 (Memory locations: VIC-II)
-    &1cbf     far_jump_target              inc vic_background_colour_0
+&d021  ld021 (local to &1cbf-&1cc1)
+    &1cbf     far_jump_target              inc ld021
 
 &d030  vic_clock_speed (Memory locations: VIC-II)
     &1c14     sys_entry+7                  sta vic_clock_speed

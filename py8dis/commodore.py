@@ -783,38 +783,134 @@ def _c128_comment_mmu_writes(writes):
             continue
         disassembly.comment_binary(binary_loc, text, align=Align.INLINE, auto_generated=True)
 
-def _c128_switched_ranges(writes):
-    """[(binary start, binary end, configuration)] for the code after each
-    instruction that sets the MMU's configuration to a known value (see
-    _c128_mmu_writes()): from the next instruction, for as long as the code
-    runs straight on from it. That stops at the end of a block (e.g. RTS or
-    JMP), at an instruction that other code jumps or branches to (or an entry
-    point), since that might come from code with another configuration, and
-    at the next instruction that sets the configuration. (A JSR is taken to
-    return with the configuration it was called with.)"""
+# The 6502's opcodes that end a block of code (RTS, RTI, BRK, JMP (ind)),
+# and its conditional branches
+_BLOCK_END_OPCODES = (0x60, 0x40, 0x00, 0x6c)
+_BRANCH_OPCODES = (0x10, 0x30, 0x50, 0x70, 0x90, 0xb0, 0xd0, 0xf0)
+
+def _c128_flow_ranges(writes):
+    """[(binary start, binary end, configuration)] for the code that runs
+    with a known MMU configuration, following the configuration through the
+    code as it runs: from an instruction that sets it to a known value (see
+    _c128_mmu_writes()), to the next instruction, the target of a branch or
+    JMP, and a subroutine called with JSR (whose return is taken to come
+    back with the configuration it was called with), up to the next
+    instruction that sets it. Where code can be reached with different
+    configurations (or from an entry point, or code the program refers to
+    another way, e.g. a vector it sets, which aren't known), it isn't known
+    (so it's taken to be bank 15). Code in a c128_bank() range whose
+    configuration isn't known from the code before it has the range's; a
+    JSRFAR or JMPFAR target (see pre_trace_far_call()) starts with its
+    bank's."""
+    cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     labels = session.current().labels.labels
-    explicit_entry_points = session.current().cpu.explicit_entry_points
-    write_addrs = {binary_loc.binary_addr for binary_loc, _, _ in writes}
+    moves = session.current().moves.move_id_for_binary_addr
+    UNKNOWN = object()
+
+    # The code's instructions, and how control flows from each
+    instructions = []
+    for range_start, range_end in memorymanager.loaded_ranges():
+        binary_addr = range_start
+        while binary_addr < range_end:
+            c = classification.get_classification(binary_addr)
+            if c is None or c is classification.INSIDE_A_CLASSIFICATION:
+                binary_addr += 1
+                continue
+            if c.is_code(binary_addr):
+                instructions.append((binary_addr, c.length()))
+            binary_addr += c.length()
+    is_instruction = {binary_addr for binary_addr, _ in instructions}
+
+    def code_at(runtime_addr, move_id):
+        binary_addr = cpu.get_target_binary_addr_preferring_given_move_id(RuntimeAddr(runtime_addr), move_id) if runtime_addr < 0x10000 else []
+        return [b for b in binary_addr if b in is_instruction]
+
+    successors = {}
+    predecessors = collections.defaultdict(set)
+    for binary_addr, length in instructions:
+        opcode = memory_binary[binary_addr]
+        nexts = []
+        if opcode in _BLOCK_END_OPCODES:
+            pass
+        elif opcode == 0x4c:
+            nexts = code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])
+        else:
+            if binary_addr + length in is_instruction and not classification.get_classification(binary_addr).is_block_end():
+                nexts.append(binary_addr + length)
+            if opcode == 0x20:
+                nexts += code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])
+            elif opcode in _BRANCH_OPCODES:
+                offset = memory_binary[binary_addr + 1]
+                runtime = movemanager.b2r(BinaryAddr(binary_addr)) + 2 + (offset - 256 if offset >= 128 else offset)
+                nexts += code_at(runtime & 0xffff, moves[binary_addr])
+        successors[binary_addr] = nexts
+        for n in nexts:
+            predecessors[n].add(binary_addr)
+
+    # Where the configuration isn't known on entry: the entry points, code
+    # with no other code before it, and code the program refers to other
+    # than by branching, jumping or calling to it (e.g. a vector it sets)
+    seeds = {}
+    for binary_addr, _ in instructions:
+        label = labels.get(movemanager.b2r(BinaryAddr(binary_addr)))
+        referred = label is not None and any(ref.binary_addr not in predecessors[binary_addr] for ref in label.references)
+        if binary_addr in cpu.explicit_entry_points or not predecessors[binary_addr] or referred:
+            seeds[binary_addr] = UNKNOWN
+    for binary_addr, configuration in session.current().extras.get("commodore.c128_far_targets", {}).items():
+        if binary_addr in is_instruction:
+            seeds[binary_addr] = configuration if seeds.get(binary_addr, configuration) is UNKNOWN or binary_addr not in seeds else seeds[binary_addr]
+
+    banks = list(session.current().extras.get("commodore.c128_banks", []))
+    def bank_range(binary_addr):
+        """The c128_bank() range binary_addr is in, or None"""
+        for r in banks:
+            if r[0] <= binary_addr < r[1]:
+                return r
+        return None
+
+    write_values = {binary_loc.binary_addr: configuration for binary_loc, _, configuration in writes}
+
+    # Work out the configuration each instruction runs with (its 'in'),
+    # merging what reaches it: a known configuration if every way in agrees
+    def merge(a, b):
+        if a is None:
+            return b
+        return a if a == b else UNKNOWN
+
+    configuration_in = {}
+    work = collections.deque()
+    for binary_addr, value in seeds.items():
+        if bank_range(binary_addr) is not None:
+            # (c128_bank() says what it runs with)
+            value = bank_range(binary_addr)[2]
+        configuration_in[binary_addr] = merge(configuration_in.get(binary_addr), value)
+        work.append(binary_addr)
+    while work:
+        binary_addr = work.popleft()
+        value = configuration_in[binary_addr]
+        if binary_addr in write_values:
+            value = write_values[binary_addr] if write_values[binary_addr] is not None else UNKNOWN
+        for n in successors[binary_addr]:
+            r = bank_range(n)
+            # (Code in a c128_bank() range runs with its configuration when
+            # it's reached from outside the range)
+            new = merge(configuration_in.get(n), r[2] if r is not None and r is not bank_range(binary_addr) else value)
+            if new is not configuration_in.get(n) and new != configuration_in.get(n):
+                configuration_in[n] = new
+                work.append(n)
+
     result = []
-    for binary_loc, register, configuration in writes:
-        if configuration is None:
+    for binary_addr, length in instructions:
+        value = configuration_in.get(binary_addr)
+        if value is None and bank_range(binary_addr) is not None:
+            value = bank_range(binary_addr)[2]
+        if value is None or value is UNKNOWN:
             continue
-        c = classification.get_classification(binary_loc.binary_addr)
-        start = binary_loc.binary_addr + c.length()
-        end = start
-        while end < 0x10000 and memory_binary[end] is not None and end not in write_addrs:
-            c = classification.get_classification(end)
-            if c is None or c is classification.INSIDE_A_CLASSIFICATION or not c.is_code(end):
-                break
-            label = labels.get(movemanager.b2r(BinaryAddr(end)))
-            if end > start and ((label is not None and label.references) or end in explicit_entry_points):
-                break
-            end += c.length()
-            if c.is_block_end():
-                break
-        if end > start:
-            result.append((start, end, configuration))
+        if result and result[-1][1] == binary_addr and result[-1][2] == value:
+            result[-1] = (result[-1][0], binary_addr + length, value)
+        else:
+            result.append((binary_addr, binary_addr + length, value))
     return result
 
 def _c128_configuration_at(binary_addr, ranges):
@@ -1004,14 +1100,14 @@ def _inline_string_hook(target, caller):
 def _c128_mmu_analysis():
     """The C128's MMU: comment the code that sets its configuration, and name
     the addresses code uses according to the configuration it runs with:
-    after the code sets it (see _c128_switched_ranges()), or as
+    after the code sets it (see _c128_flow_ranges()), or as
     c128_bank() says. (Run once the code has been traced, as one of the CPU's
     code analysis functions.)"""
     writes = _c128_mmu_writes()
     _c128_comment_mmu_writes(writes)
     # (The configuration the code sets comes first, since it changes the one
     # c128_bank() gives)
-    ranges = _c128_switched_ranges(writes) + list(session.current().extras.get("commodore.c128_banks", []))
+    ranges = _c128_flow_ranges(writes) + list(session.current().extras.get("commodore.c128_banks", []))
     session.current().extras["commodore.c128_ranges"] = ranges
     _c128_name_by_configuration(ranges)
 
@@ -1075,6 +1171,10 @@ def pre_trace_far_call(p):
         counts[base_name] = count
         label(target, base_name if count == 1 else "%s_%d" % (base_name, count))
     p.entry(target)
+    # (The target runs with its bank's configuration, see _c128_flow_ranges())
+    binary_addr, _ = movemanager.r2b(RuntimeAddr(target))
+    if binary_addr is not None:
+        session.current().extras.setdefault("commodore.c128_far_targets", {})[binary_addr] = c128_bank_configurations[bank]
 
 def post_trace_far_call(p):
     """After tracing: comment the set-up of a JSRFAR or JMPFAR (e.g. 'Call

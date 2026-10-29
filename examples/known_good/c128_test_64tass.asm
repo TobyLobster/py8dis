@@ -24,9 +24,8 @@ screen_mode_40_80   = $00d7
 irq_vector  = $0314
 
 ; VIC-II ($d000-$d3ff)
-vic_border_colour       = $d020
-vic_background_colour_0 = $d021
-vic_clock_speed         = $d030
+vic_border_colour   = $d020
+vic_clock_speed     = $d030
 
 ; VDC ($d600-$d6ff)
 vdc_address = $d600
@@ -47,6 +46,10 @@ setlfs  = $ffba
 setnam  = $ffbd
 chrout  = $ffd2
 load    = $ffd5
+
+; Other banks
+ld020   = $d020
+ld021   = $d021
 
 ; The PRG file's header: the address to load it at
     * = $1bff
@@ -145,7 +148,7 @@ loop_c1c36
     rts                                                               ; 1ca7: 60          .
 
 far_call_target
-    inc vic_border_colour                                             ; 1ca8: ee 20 d0    . P
+    inc ld020                                                         ; 1ca8: ee 20 d0    . P
     rts                                                               ; 1cab: 60          .
 
 far_call_target_2
@@ -166,7 +169,7 @@ sub_c1cb0
 
 
 far_jump_target
-    inc vic_background_colour_0                                       ; 1cbf: ee 21 d0    .!P
+    inc ld021                                                         ; 1cbf: ee 21 d0    .!P
     rts                                                               ; 1cc2: 60          .
 
 irq_handler
@@ -193,31 +196,32 @@ pydis_end
 .cerror (basic_end) != $1c0b, "Assertion failed: basic_end == $1c0b"
 
 ; Label references by decreasing frequency:
-;     far_call_bank:             4
-;     far_call_pc_high:          4
-;     far_call_pc_low:           4
-;     vic_border_colour:         4
-;     jsrfar:                    3
-;     vdc_address:               2
-;     chrout:                    1
-;     far_call_a:                1
-;     far_call_status:           1
-;     irq_vector:                1
-;     jmpfar:                    1
-;     kernal_irq_handler:        1
-;     l1ccd:                     1
-;     load:                      1
-;     loop_c1c36:                1
-;     mmu_configuration:         1
-;     primm:                     1
-;     screen_mode_40_80:         1
-;     setbnk:                    1
-;     setlfs:                    1
-;     setnam:                    1
-;     sub_c1cb0:                 1
-;     vdc_data:                  1
-;     vic_background_colour_0:   1
-;     vic_clock_speed:           1
+;     far_call_bank:        4
+;     far_call_pc_high:     4
+;     far_call_pc_low:      4
+;     ld020:                4
+;     vic_border_colour:    4
+;     jsrfar:               3
+;     vdc_address:          2
+;     chrout:               1
+;     far_call_a:           1
+;     far_call_status:      1
+;     irq_vector:           1
+;     jmpfar:               1
+;     kernal_irq_handler:   1
+;     l1ccd:                1
+;     ld021:                1
+;     load:                 1
+;     loop_c1c36:           1
+;     mmu_configuration:    1
+;     primm:                1
+;     screen_mode_40_80:    1
+;     setbnk:               1
+;     setlfs:               1
+;     setnam:               1
+;     sub_c1cb0:            1
+;     vdc_data:             1
+;     vic_clock_speed:      1
 
 ; Automatically generated labels:
 ;     l1ccd

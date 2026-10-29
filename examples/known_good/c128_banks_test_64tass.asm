@@ -18,6 +18,9 @@ l00fc   = $00fc
 ; OS workspace ($0200-$03ff)
 basic_error_vector  = $0300
 
+; Screen memory ($0400-$07ff)
+screen_memory   = $0400
+
 ; BASIC ROM ($4000-$afff)
 l4000   = $4000
 
@@ -87,69 +90,110 @@ sys_entry
     lda vic_border_colour                                             ; 1c44: ad 20 d0    . P
     lda #0                                                            ; 1c47: a9 00       ..
     sta mmu_configuration                                             ; 1c49: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
-    jsr sub_c1c5d                                                     ; 1c4c: 20 5d 1c     ].
+    jsr sub_c1c5f                                                     ; 1c4c: 20 5f 1c     ..
     lda vic_border_colour                                             ; 1c4f: ad 20 d0    . P
     lda #'a'                                                          ; 1c52: a9 41       .a ; A=character to output
     jsr chrout                                                        ; 1c54: 20 d2 ff     R. ; Output 'a'
     lda #1                                                            ; 1c57: a9 01       ..
     sta vic_interrupt_status                                          ; 1c59: 8d 19 d0    ..P ; Acknowledge the VIC-II's raster interrupt
-    rts                                                               ; 1c5c: 60          .
+    jmp c1c76                                                         ; 1c5c: 4c 76 1c    l..
 
-; $1c5d referenced 1 time by $1c4c
-sub_c1c5d
-    ldx #0                                                            ; 1c5d: a2 00       ..
-; $1c5f referenced 1 time by $1c66
-loop_c1c5f
-    lda ld000,x                                                       ; 1c5f: bd 00 d0    ..P
-    sta l4000,x                                                       ; 1c62: 9d 00 40    ..@
-    inx                                                               ; 1c65: e8          .
-    bne loop_c1c5f                                                    ; 1c66: d0 f7       P.
-    lda #1                                                            ; 1c68: a9 01       ..
-    sta ld020                                                         ; 1c6a: 8d 20 d0    . P
-    sta ld019                                                         ; 1c6d: 8d 19 d0    ..P
-    jsr lff7d                                                         ; 1c70: 20 7d ff     ..
-    rts                                                               ; 1c73: 60          .
+; $1c5f referenced 1 time by $1c4c
+sub_c1c5f
+    ldx #0                                                            ; 1c5f: a2 00       ..
+; $1c61 referenced 1 time by $1c68
+loop_c1c61
+    lda ld000,x                                                       ; 1c61: bd 00 d0    ..P
+    sta l4000,x                                                       ; 1c64: 9d 00 40    ..@
+    inx                                                               ; 1c67: e8          .
+    bne loop_c1c61                                                    ; 1c68: d0 f7       P.
+    lda #1                                                            ; 1c6a: a9 01       ..
+    sta ld020                                                         ; 1c6c: 8d 20 d0    . P
+    sta ld019                                                         ; 1c6f: 8d 19 d0    ..P
+    jsr lff7d                                                         ; 1c72: 20 7d ff     ..
+    rts                                                               ; 1c75: 60          .
+
+; $1c76 referenced 1 time by $1c5c
+c1c76
+    lda #$3f ; '?'                                                    ; 1c76: a9 3f       .?
+    sta mmu_configuration                                             ; 1c78: 8d 00 ff    ... ; Set the MMU to bank 0 (RAM 0 only)
+    ldx #0                                                            ; 1c7b: a2 00       ..
+; $1c7d referenced 1 time by $1c84
+loop_c1c7d
+    lda ld000,x                                                       ; 1c7d: bd 00 d0    ..P
+    sta screen_memory,x                                               ; 1c80: 9d 00 04    ...
+    inx                                                               ; 1c83: e8          .
+    bne loop_c1c7d                                                    ; 1c84: d0 f7       P.
+    jsr sub_c1c9f                                                     ; 1c86: 20 9f 1c     ..
+    lda #0                                                            ; 1c89: a9 00       ..
+    sta mmu_configuration                                             ; 1c8b: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
+    jsr sub_c1ca3                                                     ; 1c8e: 20 a3 1c     ..
+    lda #$3f ; '?'                                                    ; 1c91: a9 3f       .?
+    sta mmu_configuration                                             ; 1c93: 8d 00 ff    ... ; Set the MMU to bank 0 (RAM 0 only)
+    jsr sub_c1ca3                                                     ; 1c96: 20 a3 1c     ..
+    lda #0                                                            ; 1c99: a9 00       ..
+    sta mmu_configuration                                             ; 1c9b: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
+    rts                                                               ; 1c9e: 60          .
+
+; $1c9f referenced 1 time by $1c86
+sub_c1c9f
+    inc ld020                                                         ; 1c9f: ee 20 d0    . P
+    rts                                                               ; 1ca2: 60          .
+
+; $1ca3 referenced 2 times by $1c8e, $1c96
+sub_c1ca3
+    inc vic_background_colour_0                                       ; 1ca3: ee 21 d0    .!P
+    rts                                                               ; 1ca6: 60          .
 
 pydis_end
 
 .cerror (basic_end) != $1c0b, "Assertion failed: basic_end == $1c0b"
 
 ; Label references by decreasing frequency:
-;     ld020:                      5
-;     mmu_configuration:          5
-;     vic_border_colour:          5
+;     mmu_configuration:          9
+;     ld020:                      6
+;     vic_border_colour:          6
 ;     chrout:                     2
+;     ld000:                      2
 ;     ld019:                      2
 ;     lffd2:                      2
+;     sub_c1ca3:                  2
+;     vic_background_colour_0:    2
 ;     vic_interrupt_status:       2
 ;     basic_error_vector:         1
+;     c1c76:                      1
 ;     l00fb:                      1
 ;     l00fc:                      1
 ;     l1000:                      1
 ;     l4000:                      1
-;     ld000:                      1
 ;     le000:                      1
 ;     lff7d:                      1
-;     loop_c1c5f:                 1
+;     loop_c1c61:                 1
+;     loop_c1c7d:                 1
 ;     mmu_configuration_io:       1
 ;     mmu_load_configuration_a:   1
-;     sub_c1c5d:                  1
-;     vic_background_colour_0:    1
+;     screen_memory:              1
+;     sub_c1c5f:                  1
+;     sub_c1c9f:                  1
 
 ; Automatically generated labels:
+;     c1c76
 ;     l00fb
 ;     l00fc
 ;     l4000
-;     loop_c1c5f
-;     sub_c1c5d
+;     loop_c1c61
+;     loop_c1c7d
+;     sub_c1c5f
+;     sub_c1c9f
+;     sub_c1ca3
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 115 bytes
-;     Code                     = 103 bytes (90%)
-;     Data                     = 12 bytes (10%)
+;     Total size (Code + Data) = 166 bytes
+;     Code                     = 154 bytes (93%)
+;     Data                     = 12 bytes (7%)
 ;
-;     Number of instructions   = 41
+;     Number of instructions   = 62
 ;     Number of data bytes     = 2 bytes
 ;     Number of data words     = 6 bytes
 ;     Number of string bytes   = 4 bytes

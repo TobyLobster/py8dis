@@ -62,7 +62,7 @@ start
     jsr $ffd2               ; the Kernal's CHROUT
     lda #1
     sta $d019               ; acknowledge the VIC-II's raster interrupt
-    rts
+    jmp flow_test
 
 ; Called with the MMU set to bank 0 (by the caller, in a real program)
 in_bank_0
@@ -78,3 +78,32 @@ in_bank_0
     jsr $ff7d               ; RAM, not the Kernal's PRIMM, so no string after it
     rts
 in_bank_0_end
+
+; The configuration followed through a loop and into subroutines
+flow_test
+    lda #$3f
+    sta $ff00               ; bank 0
+    ldx #0
+-
+    lda $d000,x             ; RAM: the loop runs in bank 0 too
+    sta $0400,x
+    inx
+    bne -
+    jsr bank_0_only         ; only ever called in bank 0
+    lda #0
+    sta $ff00               ; bank 15
+    jsr either_bank         ; called in bank 15 here...
+    lda #$3f
+    sta $ff00
+    jsr either_bank         ; ...and in bank 0 here, so not known
+    lda #0
+    sta $ff00
+    rts
+
+bank_0_only
+    inc $d020               ; RAM
+    rts
+
+either_bank
+    inc $d021               ; not known, so bank 15's name
+    rts

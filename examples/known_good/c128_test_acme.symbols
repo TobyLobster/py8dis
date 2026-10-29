@@ -18,8 +18,9 @@ al 001CC3 .irq_handler
 al 001CC9 .filename
 al 001CCD .l1ccd
 al 001CCE .pydis_end
+al 00D020 .ld020
 al 00D020 .vic_border_colour
-al 00D021 .vic_background_colour_0
+al 00D021 .ld021
 al 00D030 .vic_clock_speed
 al 00D600 .vdc_address
 al 00D601 .vdc_data

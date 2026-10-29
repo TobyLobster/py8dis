@@ -18,8 +18,9 @@ comadd 1cc3,irq_handler
 comadd 1cc9,filename
 comadd 1ccd,l1ccd
 comadd 1cce,pydis_end
+comadd d020,ld020
 comadd d020,vic_border_colour
-comadd d021,vic_background_colour_0
+comadd d021,ld021
 comadd d030,vic_clock_speed
 comadd d600,vdc_address
 comadd d601,vdc_data

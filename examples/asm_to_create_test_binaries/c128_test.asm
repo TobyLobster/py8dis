@@ -118,7 +118,7 @@ vdc_wait
     rts
 
 far_routine
-    inc $d020
+    inc $d020               ; RAM, since it's called in bank 0
     rts
 
 far_routine_2
@@ -135,7 +135,7 @@ far_jump
     jmp jmpfar
 
 far_routine_3
-    inc $d021
+    inc $d021               ; RAM, since it's jumped to in bank 0
     rts
 
 irq

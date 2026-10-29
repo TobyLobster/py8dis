@@ -10,17 +10,22 @@ the function key lengths (but $0300 is common RAM, RAM 0, as always). After
 everywhere else. In bank 0, 'jsr $ffd2' calls RAM, 'lffd2', so it isn't
 commented as CHROUT (and its 'lda #$41' isn't a character), as it is in bank
 15 at the end (with a store to $d019 that acknowledges the VIC-II's raster
-interrupt). The routine at &1c5d runs in bank 0 (its caller would set the
+interrupt). The routine at &1c5f runs in bank 0 (its caller would set the
 MMU in a real program), which c128_bank() says: so its 'lda $d000,x' is RAM,
 'ld000', not the VIC-II's 'vic_sprite0_x', its 'sta $4000,x' is RAM, not
 BASIC ROM, its 'sta $d020' doesn't store a colour, its 'sta $d019' isn't
 commented as acknowledging an interrupt, and its 'jsr $ff7d' isn't
-PRIMM, so there's no string after it to skip."""
+PRIMM, so there's no string after it to skip.
+
+The configuration is followed through the code as it runs: after bank 0 is
+set at flow_test, the loop's 'lda $d000,x' is RAM too, and so is 'inc
+$d020' in the subroutine only ever called in bank 0; the subroutine called
+in bank 15 and in bank 0 isn't known, so it has bank 15's names."""
 
 from commands import *
 import commodore
 
-load_prg("orig/c128_banks_test.orig", "6502", "ef38e0b56da198822f13bc76c2fd8230")
+load_prg("orig/c128_banks_test.orig", "6502", "1f026b31035962f150f49f51132fec16")
 commodore.c128()
-commodore.c128_bank(0x1c5d, 0x1c74, 0)
+commodore.c128_bank(0x1c5f, 0x1c76, 0)
 go()
