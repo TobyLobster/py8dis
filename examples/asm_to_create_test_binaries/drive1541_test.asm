@@ -31,6 +31,8 @@ errr    = $f969         ; end a job
 wait_read
     lda jobs
     bmi wait_read
+    cmp #$01            ; OK?
+    bne read_failed
 
     ldy #18             ; run the code in buffer 3, on track 18
     sty hdrs+6
@@ -63,8 +65,20 @@ move_up
 nmi
     rti
 
+read_failed
+    lda dskcnt          ; turn off the LED
+    and #$f7
+    sta dskcnt
+    rts
+
     * = $0600
     ; The EXECUTE job's code, with the head on track 18
+    lda dskcnt          ; the motor on, and the bit rate for tracks 1-17
+    ora #$64
+    sta dskcnt
+wait_sync
+    bit dskcnt
+    bmi wait_sync
     jsr sync
 wait_byte
     bvc wait_byte

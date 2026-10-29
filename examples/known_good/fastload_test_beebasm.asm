@@ -2,6 +2,7 @@
 colour_black    = 0
 device_disk_8   = 8
 job_execute     = &e0
+job_ok          = 1     ; OK
 job_read        = &80
 
 ; Memory locations
@@ -82,7 +83,7 @@ end_job             = &f969
     sei                                                               ; 083b: 78          .   :0500[1]
     lda via2_disk_control                                             ; 083c: ad 00 1c    ... :0501[1]
     ora #8                                                            ; 083f: 09 08       ..  :0504[1]
-    sta via2_disk_control                                             ; 0841: 8d 00 1c    ... :0506[1]
+    sta via2_disk_control                                             ; 0841: 8d 00 1c    ... :0506[1]   ; Turn the LED on
 
     ; Job 0: read track 18, sector 1 into buffer 0 ($0300)
     lda #&12                                                          ; 0844: a9 12       ..  :0509[1]
@@ -116,7 +117,7 @@ end_job             = &f969
     lda job_queue+3                                                   ; 0867: a5 03       ..  :052c[1]
     bmi loop_c052c                                                    ; 0869: 30 fc       0.  :052e[1]
     lda via1_serial_bus                                               ; 086b: ad 00 18    ... :0530[1]
-    and #4                                                            ; 086e: 29 04       ).  :0533[1]
+    and #4                                                            ; 086e: 29 04       ).  :0533[1]   ; Test CLOCK IN
     cli                                                               ; 0870: 58          x   :0535[1]
     jmp dos_idle_loop                                                 ; 0871: 4c e7 eb    l.. :0536[1]   ; The DOS's main loop, waiting for a command (and running the jobs)
 
@@ -139,7 +140,7 @@ end_job             = &f969
     clv                                                               ; 0940: b8          .   :0605[1]
     lda via2_disk_data                                                ; 0941: ad 01 1c    ... :0606[1]
     sta buffer_1                                                      ; 0944: 8d 00 04    ... :0609[1]
-    lda #1                                                            ; 0947: a9 01       ..  :060c[1]
+    lda #job_ok                                                       ; 0947: a9 01       ..  :060c[1]
     jmp end_job                                                       ; 0949: 4c 69 f9    l.. :060e[1]   ; End the job, with its result (A) in the job queue
 
 

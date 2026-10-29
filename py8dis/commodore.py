@@ -956,6 +956,7 @@ def drive1541_code(runtime_addr, binary_addr, length, rom="1541"):
     drive_codes.append(DriveCode(binary_addr, length, runtime_addr, move_id, rom))
     if len(drive_codes) == 1:
         session.current().cpu.code_analysis_fns.append(_drive_code_names)
+        session.current().cpu.code_analysis_fns.append(_drive1541_analysis)
         _register_job_patterns()
     with move_id:
         entry(runtime_addr)
@@ -1190,6 +1191,130 @@ sector
 store
     [job = ${2:02x}] = code
 """.format(6 + 2 * n, 7 + 2 * n, n))
+
+# ************************************************************************************************
+# The 1541's job results and VIAs
+
+_DRIVE1541_END_JOB = 0xf969     # ERRR, which ends a job with the result in A
+
+def _drive1541_in_scope(binary_addr):
+    """Whether the code at binary_addr is the 1541's: any code in its own
+    disassembly (drive1541()), or drive code in another machine's (see
+    drive1541_code())."""
+    return _machine().name == "1541" or _drive_code_at(binary_addr) is not None
+
+def _a_set_by(run, k):
+    """The binary address of the instruction before run[k] in the straight
+    run of code that last changed A, or None"""
+    for binary_addr in reversed(run[:k]):
+        if classification.get_classification(binary_addr).reg_changes['a'] not in "-U":
+            return binary_addr
+    return None
+
+def _via_bits_text(register, set_mask, clear_mask):
+    """What setting and clearing the bits of a 1541 VIA port does, e.g.
+    'Turn the LED on', or None if none of them are outputs it knows."""
+    phrases = []
+    for bit, (_, output) in sorted(drive1541_via_bits[register].items()):
+        if output is not None:
+            if set_mask & (1 << bit):
+                phrases.append(output[0])
+            elif clear_mask & (1 << bit):
+                phrases.append(output[1])
+    if register == 0x1c00:
+        # Two-bit fields: the head stepper's phase, and the bit rate (3 for
+        # tracks 1-17, 2 for 18-24, 1 for 25-30, 0 for 31 on)
+        mask = 3
+        if (set_mask | clear_mask) & mask == mask:
+            phrases.append("set the stepper motor's phase to {0}".format(set_mask & mask))
+        mask = 3 << 5
+        if (set_mask | clear_mask) & mask == mask:
+            rate = (set_mask & mask) >> 5
+            phrases.append("set the bit rate to {0} (for tracks {1})".format(rate, ("31-35", "25-30", "18-24", "1-17")[rate]))
+    if not phrases:
+        return None
+    text = ", ".join(phrases)
+    return text[0].upper() + text[1:]
+
+def _drive1541_analysis():
+    """The 1541's job results and VIAs, in its code (see _drive1541_in_scope()):
+    name the job result compared with after reading the job queue (e.g. 'cmp
+    #job_ok'), or given to ERRR to end a job (e.g. 'lda #job_ok : jmp
+    end_job'); comment what a store to a VIA port does (e.g. 'Turn the LED
+    on', after 'lda $1c00 : ora #$08'), and a test of one of its bits (e.g.
+    'Test CLOCK IN', for 'lda $1800 : and #$04'). (Run once the code has been
+    traced, as one of the CPU's code analysis functions.)"""
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+    moves = session.current().moves.move_id_for_binary_addr
+
+    def comment(binary_addr, text):
+        disassembly.comment_binary(memorymanager.BinaryLocation(BinaryAddr(binary_addr), moves[binary_addr]), text,
+                                   align=Align.INLINE, auto_generated=True)
+
+    def name_result(operand_addr):
+        value = memory_binary[operand_addr]
+        if value in drive1541_job_results:
+            name, description = drive1541_job_results[value]
+            disassembly.add_constant(value, name, description)
+            classification.add_expression(operand_addr, name, force=False)
+
+    def absolute(binary_addr):
+        return memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
+
+    for run in cpu.straight_runs():
+        for k, binary_addr in enumerate(run):
+            if not _drive1541_in_scope(binary_addr):
+                continue
+            opcode = memory_binary[binary_addr]
+            if opcode == 0xc9:
+                # 'cmp #n' after reading the job queue
+                source = _a_set_by(run, k)
+                if source is not None and ((memory_binary[source] in (0xa5, 0xb5) and memory_binary[source + 1] <= 5) or
+                                           (memory_binary[source] in (0xad, 0xbd) and absolute(source) <= 5)):
+                    name_result(binary_addr + 1)
+            elif opcode in (0x20, 0x4c) and absolute(binary_addr) == _DRIVE1541_END_JOB:
+                # 'lda #n : jmp end_job'
+                source = _a_set_by(run, k)
+                if source is not None and memory_binary[source] == 0xa9:
+                    name_result(source + 1)
+            elif opcode in (0x8d, 0x8e, 0x8c) and absolute(binary_addr) in drive1541_via_bits:
+                register = absolute(binary_addr)
+                set_mask = clear_mask = 0
+                # 'lda register', then 'ora #n' and 'and #n', then 'sta register'
+                i = k - 1
+                while opcode == 0x8d and i >= 0 and memory_binary[run[i]] in (0x09, 0x29):
+                    i -= 1
+                if opcode == 0x8d and i >= 0 and i < k - 1 and memory_binary[run[i]] == 0xad and absolute(run[i]) == register:
+                    for j in range(i + 1, k):
+                        n = memory_binary[run[j] + 1]
+                        if memory_binary[run[j]] == 0x09:
+                            set_mask |= n
+                            clear_mask &= ~n
+                        else:
+                            clear_mask |= ~n & 0xff
+                            set_mask &= n
+                elif k > 0:
+                    # A known value
+                    value = cpu.cpu_states[run[k - 1]].pessimistic["axy"[(0x8d, 0x8e, 0x8c).index(opcode)]].value
+                    if value is None:
+                        continue
+                    set_mask, clear_mask = value, ~value & 0xff
+                else:
+                    continue
+                text = _via_bits_text(register, set_mask, clear_mask)
+                if text is not None:
+                    comment(binary_addr, text)
+            elif opcode == 0x29 and k > 0 and memory_binary[run[k - 1]] == 0xad and absolute(run[k - 1]) in drive1541_via_bits:
+                # 'lda register : and #n', testing bits
+                bits = drive1541_via_bits[absolute(run[k - 1])]
+                n = memory_binary[binary_addr + 1]
+                names = [bits[bit][0] for bit in range(8) if n & (1 << bit) and bit in bits]
+                if names and all(n & (1 << bit) == 0 or bit in bits for bit in range(8)):
+                    comment(binary_addr, "Test " + " and ".join(names))
+            elif opcode == 0x2c and absolute(binary_addr) in drive1541_via_bits and 7 in drive1541_via_bits[absolute(binary_addr)]:
+                # 'bit register' (N is bit 7)
+                comment(binary_addr, "Test " + drive1541_via_bits[absolute(binary_addr)][7][0])
 
 def register_snippets():
     """Register commodore's snippets with the current session (once per
@@ -1627,6 +1752,9 @@ def _set_up(command, machine, names, rom_labels):
     if machine.name == "c128":
         code_analysis_fns = session.current().cpu.code_analysis_fns
         code_analysis_fns.insert(code_analysis_fns.index(session.current().cpu.substitute_constants), _c128_mmu_analysis)
+    # The 1541's job results and VIAs (see _drive1541_analysis())
+    if machine.name == "1541":
+        session.current().cpu.code_analysis_fns.append(_drive1541_analysis)
     # The VIC-II's interrupts (see _vic_interrupt_analysis())
     if machine.name in ("c64", "c128"):
         session.current().cpu.code_analysis_fns.append(_vic_interrupt_analysis)

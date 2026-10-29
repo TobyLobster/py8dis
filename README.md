@@ -697,6 +697,10 @@ The same for code that runs in the 1541 disk drive's own 6502, e.g. a fast loade
 
 For a JUMP or EXECUTE job, which runs the code in the job's buffer, that code is traced, if it's loaded, and named (e.g. `job_3_code`).
 
+**Job results are named.** The result the disk controller leaves in the job queue, where code compares it after reading the queue (`lda job_queue : bmi wait : cmp #job_ok`), or gives it to ERRR to end a job (`lda #job_ok : jmp end_job`), is named as a constant, with the error the DOS reports for it, e.g. `job_no_sync = 3 ; 21 READ ERROR: no sync mark`.
+
+**The VIAs' bits are described.** A store to VIA 1's or VIA 2's port B, after `lda` of the port then `ora #n` or `and #n`, or of a known value, is commented with what it does, e.g. `; Turn the LED on`, `; Turn the motor on, set the bit rate to 3 (for tracks 1-17)` or `; Pull the clock line low`. A test of an input bit (`lda $1800 : and #$04`, or `bit $1c00`) is commented too, e.g. `; Test CLOCK IN` or `; Test SYNC (clear at a sync mark)`.
+
 `rom` is `"1541"` (DOS 325302-01 and 901229-05, the default) or `"1541-ii"` (251968-03, the 1541-II's and 1541C's), which only changes a few ROM labels. For drive code inside a C64 program, see `drive1541_code()` below.
 
 :pencil:`commodore.drive1541_code(runtime_addr, binary_addr, length, rom="1541")`

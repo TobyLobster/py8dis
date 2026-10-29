@@ -1433,3 +1433,43 @@ drive1541_job_codes = {
     0xd0: "job_jump",
     0xe0: "job_execute",
 }
+
+# The results of a job, which the disk controller writes to the job queue
+# in place of the job code (bit 7 clear), and the DOS turns into the error
+# numbers it reports (e.g. 3 into 21 READ ERROR; see ERROR at &e60a in
+# Commodore's source)
+drive1541_job_results = {
+    0x01: ("job_ok",                    "OK"),
+    0x02: ("job_header_not_found",      "20 READ ERROR: header block not found"),
+    0x03: ("job_no_sync",               "21 READ ERROR: no sync mark"),
+    0x04: ("job_data_block_not_found",  "22 READ ERROR: data block not found"),
+    0x05: ("job_data_checksum_error",   "23 READ ERROR: data block checksum error"),
+    0x07: ("job_verify_error",          "25 WRITE ERROR: verify error"),
+    0x08: ("job_write_protected",       "26 WRITE PROTECT ON"),
+    0x09: ("job_header_checksum_error", "27 READ ERROR: header block checksum error"),
+    0x0a: ("job_data_block_too_long",   "28 WRITE ERROR: data block too long"),
+    0x0b: ("job_disk_id_mismatch",      "29 DISK ID MISMATCH"),
+    0x0f: ("job_drive_not_ready",       "74 DRIVE NOT READY"),
+    0x10: ("job_decoding_error",        "24 READ ERROR: GCR decoding error"),
+}
+
+# The bits of the 1541's VIA ports that code sets and tests: for each
+# register, {bit: (name, output: (set, clear) or None if it's an input)}.
+# VIA 1's port B is the serial bus (an output bit set pulls the line low);
+# VIA 2's port B controls the drive.
+drive1541_via_bits = {
+    0x1800: {
+        0: ("DATA IN", None),
+        1: ("DATA OUT", ("pull the data line low", "release the data line")),
+        2: ("CLOCK IN", None),
+        3: ("CLOCK OUT", ("pull the clock line low", "release the clock line")),
+        4: ("ATN ACK", ("acknowledge ATN", "stop acknowledging ATN")),
+        7: ("ATN IN", None),
+    },
+    0x1c00: {
+        2: ("motor", ("turn the motor on", "turn the motor off")),
+        3: ("LED", ("turn the LED on", "turn the LED off")),
+        4: ("write protect (clear if the disk is write protected)", None),
+        7: ("SYNC (clear at a sync mark)", None),
+    },
+}
