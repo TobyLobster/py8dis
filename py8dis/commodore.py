@@ -860,50 +860,55 @@ def c128_bank(start, end, bank=None, *, configuration=None):
     session.current().extras.setdefault("commodore.c128_banks", []).append((binary_start, binary_end, configuration))
 
 
+def _far_call(p):
+    """For a match of the JSRFAR/JMPFAR effect pattern: (bank, target address,
+    whether it's JMPFAR, whether the target is traced). The target is traced
+    if it's in the program, i.e. loaded, and RAM 0 in that bank (RAM 2 is
+    RAM 0 on a C128 with 128K)."""
+    bank = p.value('bank')
+    target = p.value('lo') + 256*p.value('hi')
+    is_jump = p.memory_binary[p.get_binary_address('call')] == 0x4c
+    traced = _is_loaded(target) and bank < 16 and c128_memory(c128_bank_configurations[bank], target) in ("RAM 0", "RAM 2")
+    return bank, target, is_jump, traced
+
 def pre_trace_far_call(p):
     """A C128 program setting up JSRFAR or JMPFAR's bank and address at
-    &02-&04 with immediate values (through A, X or Y), then calling it: comment the set-up, and if
-    the address is in the program (in RAM 0 in that bank), trace it, name it
-    (e.g. 'far_call_target') and use its name in the set-up."""
-    stores = {addr: (value_addr, value) for addr, value, value_addr in p.stored_values([], ['store1', 'store2', 'store3'])}
-    if sorted(stores) != [2, 3, 4]:
+    &02-&04 with known values, then calling it (an effect pattern): before
+    tracing, if the address is in the program (see _far_call()), name it
+    (e.g. 'far_call_target') and trace it."""
+    bank, target, is_jump, traced = _far_call(p)
+    if not traced:
         return
-    p.entry()
+    if vector_handler_name(target) is None:
+        # e.g. 'far_call_target', then 'far_call_target_2'
+        base_name = "far_jump_target" if is_jump else "far_call_target"
+        counts = session.current().extras.setdefault("commodore.far_call_count", {})
+        count = counts.get(base_name, 0) + 1
+        counts[base_name] = count
+        label(target, base_name if count == 1 else "%s_%d" % (base_name, count))
+    p.entry(target)
 
-    bank = stores[2][1]
-    target = stores[4][1] + 256*stores[3][1]
-    is_jump = p.get_memory('call') == 0x4c
-    start = p.get_start_loc()
-
-    # (RAM 2 is RAM 0 on a C128 with 128K)
-    traced = _is_loaded(target) and bank < 16 and c128_memory(c128_bank_configurations[bank], target) in ("RAM 0", "RAM 2")
+def post_trace_far_call(p):
+    """After tracing: comment the set-up of a JSRFAR or JMPFAR (e.g. 'Call
+    far_call_target in bank 0'), and use the target's name in it."""
+    bank, target, is_jump, traced = _far_call(p)
+    start, end = p.extent()
     if traced:
-        labels = session.current().labels.labels
-        if target in labels and labels[target].explicit_names:
-            # (Use its first name)
-            for move_id, name_list in labels[target].explicit_names.items():
-                label_name = name_list[0].text
-                break
-        else:
-            # e.g. 'far_call_target', then 'far_call_target_2'
-            base_name = "far_jump_target" if is_jump else "far_call_target"
-            counts = session.current().extras.setdefault("commodore.far_call_count", {})
-            count = counts.get(base_name, 0) + 1
-            counts[base_name] = count
-            label_name = base_name if count == 1 else "%s_%d" % (base_name, count)
-            label(target, label_name)
-        p.entry(RuntimeAddr(target))
-        expr(movemanager.b2r(stores[4][0]), make_lo(label_name))
-        expr(movemanager.b2r(stores[3][0]), make_hi(label_name))
-        target_text = label_name
+        target_text = vector_handler_name(target)
+        for line, maker in (('store_lo', make_lo), ('store_hi', make_hi)):
+            operand = p.store(line).value_operand
+            if operand is not None:
+                classification.add_expression(operand, maker(target_text), force=False)
     else:
         target_text = "$%04x" % target
 
-    if not p.has_explicit_label(start):
+    labels = session.current().labels.labels
+    runtime_addr = movemanager.b2r(start.binary_addr)
+    if not (runtime_addr in labels and labels[runtime_addr].explicit_names.get(start.move_id)):
         p.blank_once(start)
     disassembly.comment_binary(start, "{0} {1} in bank {2}".format("Jump to" if is_jump else "Call", target_text, bank),
                                indent=1, align=Align.AFTER_LABEL, auto_generated=True)
-    p.blank_once(p.get_binary_location('end'))
+    p.blank_once(end)
 
 def register_snippets():
     """Register commodore's snippets with the current session (once per
@@ -913,29 +918,21 @@ def register_snippets():
         return
     extras["commodore.snippets_registered"] = True
 
-    # On the C128, e.g. 'lda #0 : sta $02 : lda #>target : sta $03 :
-    # lda #<target : sta $04 : jsr jsrfar', the three in any order, each with
-    # A, X or Y, with stores to &05-&08 (the status, A, X and Y to call it
-    # with) between them and the call
+    # On the C128, a call to JSRFAR or JMPFAR with its bank and address set at
+    # &02-&04, e.g. 'lda #0 : sta $02 : lda #>target : sta $03 : lda #<target
+    # : sta $04 : jsr jsrfar' (an effect pattern, so in any order, with any
+    # registers and other instructions between)
     if any(call.name == "jsrfar" for call in _machine().jump_table):
-        extra = "?   " + " | ".join(["lda #v", "ldx #v", "ldy #v"] + ["st%s $%02x" % (reg, addr) for reg in "axy" for addr in range(5, 9)])
-        def far_pair(n):
-            # e.g. 'lda #nn1 : sta $02 | ... | ldy #nn1 : sty $04'
-            return "    " + " | ".join("ld{0} #nn{1} : st{0} ${2:02x}".format(reg, n, addr) for reg in "axy" for addr in (2, 3, 4))
-        register_snippet(pre_trace_far_call, None, """
-store1
-{pair1}
-{extra4}
-store2
-{pair2}
-{extra4}
-store3
-{pair3}
-{extra8}
+        register_snippet(pre_trace_far_call, post_trace_far_call, """
+store_bank
+    [$02] = bank
+store_hi
+    [$03] = hi
+store_lo
+    [$04] = lo
 call
     jsr $ff6e | jmp $ff71
-end
-""".format(pair1=far_pair(1), pair2=far_pair(2), pair3=far_pair(3), extra4="\n".join([extra]*4), extra8="\n".join([extra]*8)))
+""")
 
     # Code setting one of the vectors, in any order, with any registers (an
     # effect pattern)

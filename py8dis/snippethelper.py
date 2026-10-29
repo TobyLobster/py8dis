@@ -17,11 +17,6 @@ class SnippetRejected(Exception):
     ignored: the snippet's functions do nothing more with it, before or after
     tracing, and other snippets can match its bytes."""
 
-# The opcodes of the immediate loads and the (zero page and absolute) stores,
-# with their registers
-LOAD_IMMEDIATE_OPCODES = {0xa9: 'a', 0xa2: 'x', 0xa0: 'y'}
-STORE_OPCODES = {0x85: 'a', 0x86: 'x', 0x84: 'y', 0x8d: 'a', 0x8e: 'x', 0x8c: 'y'}
-
 def starts_mid_instruction(binary_addr):
     """Would an instruction at binary_addr overlap one already traced (or
     other classified data) without starting where it does? That is, is
@@ -176,46 +171,6 @@ class SnippetHelper:
         """Ignore this match (see SnippetRejected). Call it before making any
         changes for the match."""
         raise SnippetRejected()
-
-    def stored_values(self, value_labels, store_labels):
-        """For a snippet that stores immediate values: the address stored to,
-        the value, and the binary address of the value, for each store, as a
-        list in the order of store_labels; or None if a store doesn't store
-        one of the values.
-
-        value_labels are the operands of the immediate loads (e.g. 'nn1' for
-        'lda #nn1'). Each of store_labels is the position of a store (e.g.
-        'sta $0314'), or of a load and store pair (e.g.
-        'lda #nn1 : sta $0314 | ldx #nn1 : stx $0314'), whose value is the
-        load's. A store on its own stores the value loaded into the same
-        register, and each register can only be stored once like this."""
-        memory = self.memory_binary
-        loaded = {}
-        for name in value_labels:
-            value_addr = self.get_binary_address(name, prioritise_definition=False)
-            if value_addr is not None:
-                loaded[LOAD_IMMEDIATE_OPCODES.get(memory[value_addr - 1])] = value_addr
-        result = []
-        stored = set()
-        for name in store_labels:
-            store_addr = self.get_binary_address(name)
-            if memory[store_addr] in LOAD_IMMEDIATE_OPCODES:
-                # A pair: the value is the load's
-                value_addr = store_addr + 1
-                store_addr += 2
-            else:
-                reg = STORE_OPCODES.get(memory[store_addr])
-                if reg not in loaded or reg in stored:
-                    return None
-                stored.add(reg)
-                value_addr = loaded[reg]
-            if memory[store_addr] not in STORE_OPCODES:
-                return None
-            target = memory[store_addr + 1]
-            if memory[store_addr] in (0x8d, 0x8e, 0x8c):
-                target += 256*memory[store_addr + 2]
-            result.append((target, memory[value_addr], BinaryAddr(value_addr)))
-        return result
 
     def blank_once(self, binary_loc):
         disassembly.annotate_binary(binary_loc, "", align=Align.BEFORE_LABEL, once_only=True)
