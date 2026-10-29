@@ -408,6 +408,46 @@ When a `jsr subroutine_addr` instruction is disassembled, `hook(subroutine_addr,
 
 Wrappers around `stringhi()`, `stringhiz()` etc for use with `hook_subroutine()`. These are designed for the 'print the following string' case described above.
 
+### Snippets
+
+A snippet recognises a common piece of code and comments it, or traces the code it leads to. py8dis has some built in (e.g. memory copying loops), and `acorn.bbc()`, `commodore.c64()` etc. add more (e.g. code that sets an OS vector). A control file can add its own:
+
+:pencil:`snippets6502.register_snippet(pre_trace_fn, post_trace_fn, snippet)`
+
+Calls `pre_trace_fn(p)` for each match before tracing (for adding entry points, with `p.entry()`) and `post_trace_fn(p)` after (for comments and expressions), either of which can be None. `p` is a `SnippetHelper`, whose methods give where each named line of the snippet matched (`p.get_binary_location(name)`), the bytes there, and so on. There are two kinds of snippet:
+
+* **A regex snippet** matches a sequence of instructions, e.g.
+
+  ```
+  loop
+      lda (zp1),y
+      sta (zp2),y
+      dey
+      bne loop
+  ```
+
+  Each line is an instruction (an operand that's a name matches any value), `.` (any instruction), alternatives separated by `|`, or a sequence separated by `:`. `?` at the start of a line makes it optional, and a name at the start of a line names the position. See `snippet6502.parse_snippet()`.
+
+* **An effect pattern** matches what the code does rather than how: the values it stores to memory, and the registers at an instruction. So it matches whatever the order of the instructions, the registers used, or the other instructions between them. For example, code that sets one of two vectors to a known address:
+
+  ```
+  lo
+  ?   [vector = $0300 | $0302] = lo_value
+  hi
+  ?   [vector+1] = hi_value
+  ```
+
+  `[target] = value` means that code earlier in the same run of code (up to a branch target, or the end of a block such as RTS) stored the value at the target, and nothing has overwritten it, or possibly overwritten it (a JSR, or an indexed store), since. A target is an address, a variable given its addresses (`vector = $0300 | $0302`), or a variable plus or minus a number. A value is a number, a name (`lo_value`: a known value, the same wherever the name is used), or `?` (any value stored, known or not). `a = value` (or `x`, `y`) is a register's value just before the **anchor**, an instruction line (at most one), e.g. for a call:
+
+  ```
+      [$02] = bank
+      a = $41
+  call
+      jsr $ff6e
+  ```
+
+  With an anchor, the pattern matches at each instruction that matches the anchor where the other lines hold just before it. Without one, it matches as soon as all its lines hold; or, if some are optional (`?`) and not all hold, when those that do stop holding, if that's enough (every line that isn't optional, and at least one line). A match's pre-trace function is called once, while tracing (which continues from any entry points it adds), and its post-trace function once, for the code as finally traced. `p.matched(name)` says whether an optional line holds, `p.value(name)` and `p.binding(variable)` give what a value or variable matched, `p.store(name)` the store (its value and where it was loaded, for e.g. `#<handler`), and `p.extent()` the code from the first load to the last store. See `effectpattern.py`.
+
 ### Number Formats
 
 By default numerical values are formatted as decimals for single digits or hex otherwise (known as 'uint' formatting). The following functions override this format for data in the specified block.
@@ -554,7 +594,7 @@ It gives:
 * **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal and BASIC ROMs, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a Kernal label in Commodore's source has the same name as a jump table entry or another name (e.g. PLOT, the routine at &e50a that `plot` at &fff0 jumps to), it has `_rom` added (`plot_rom`), and a BASIC label with the same name as another has `_basic` added (e.g. `stop_basic`, BASIC's STOP command).
 * **Colours** stored in the VIC-II's colour registers or the text colour, as constants: `lda #colour_black : sta vic_border_colour`.
 * **The VIC-II's interrupts:** a store of a known value to its raster line register is commented with the line, e.g. `lda #100 : sta vic_raster_line ; Raster interrupt at line 100`. Bit 8 of the line is bit 7 of `vic_control_1` (&d011): it's included when a store to that in the same run of code sets it to a known value, or just after `and #n` or `ora #n` sets or clears that bit; otherwise the comment gives both lines (`Raster interrupt at line 100 (or 356, if bit 7 of $d011 is set)`). Stores to its interrupt enable and status registers are commented too (`Enable only the VIC-II's raster interrupt`, `Acknowledge the VIC-II's raster interrupt`), as is the usual `asl vic_interrupt_status` (`Acknowledge the VIC-II's interrupts`). The same for the C128 (but not where its MMU maps the I/O out).
-* **Vectors set by the program** (e.g. `lda #<x : sta $0314 : lda #>x : sta $0315`, or with X and Y): the address is traced as code and named after the vector, e.g. `irq_handler` (or `irq_handler_2` etc. for more), with a comment, `; Set the IRQ vector to irq_handler`.
+* **Vectors set by the program** (e.g. `lda #<x : sta $0314 : lda #>x : sta $0315`; found from the values stored, so in any order, with any registers and other instructions between, see [Snippets](#snippets)): the address is traced as code and named after the vector, e.g. `irq_handler` (or `irq_handler_2` etc. for more), with a comment, `; Set the IRQ vector to irq_handler`. A vector with only one byte set to a known value has a comment on that store, e.g. `; Set the high byte of the NMI vector to $00`.
 * **The BASIC program** at &0801, if there is one (see `basic_program()` below).
 * **PETSCII** as the text encoding (see [Text encodings](#text-encodings)). Call `c64()` before marking any strings.
 
@@ -575,7 +615,7 @@ The same for the C128 in C128 mode, with the usual bank 15 (the ROMs, and the I/
     !pet "hello, c128", $0d, 0
 ```
 
-A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up at &02-&04 with immediate values (through A, X or Y, in any order, with stores to &05-&08 between them and the call), is commented, e.g. `; Call far_call_target in bank 0`. If the address is in the program, in a bank that has RAM 0 there, where the program is (banks 0 and 2, and below their ROMs, 4, 6, 8, 10 and 12-15), it's traced as code, named `far_call_target` (or `far_jump_target`, then `_2` etc.) unless it already has a name, and the set-up uses its name:
+A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up at &02-&04 with known values (in any order, with any registers and other instructions between them and the call: an effect pattern, see [Snippets](#snippets)), is commented, e.g. `; Call far_call_target in bank 0`. If the address is in the program, in a bank that has RAM 0 there, where the program is (banks 0 and 2, and below their ROMs, 4, 6, 8, 10 and 12-15), it's traced as code, named `far_call_target` (or `far_jump_target`, then `_2` etc.) unless it already has a name, and the set-up uses its name:
 
 ```
     ; Call far_call_target in bank 0
