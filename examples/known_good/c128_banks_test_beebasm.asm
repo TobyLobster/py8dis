@@ -29,6 +29,7 @@ mmu_configuration       = &ff00
 mmu_load_configuration_a = &ff01
 
 ; Kernal entry points (&ff47-&fff9)
+primm   = &ff7d
 chrout  = &ffd2
 
 ; Other banks
@@ -116,26 +117,42 @@ lffd2   = &ffd2
     sta screen_memory,x                                               ; 1c80: 9d 00 04    ...
     inx                                                               ; 1c83: e8          .
     bne loop_c1c7d                                                    ; 1c84: d0 f7       P.
-    jsr sub_c1c9f                                                     ; 1c86: 20 9f 1c     ..
+    jsr sub_c1cbe                                                     ; 1c86: 20 be 1c     ..
     lda #0                                                            ; 1c89: a9 00       ..
     sta mmu_configuration                                             ; 1c8b: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
-    jsr sub_c1ca3                                                     ; 1c8e: 20 a3 1c     ..
+    jsr sub_c1cc2                                                     ; 1c8e: 20 c2 1c     B.
     lda #&3f ; '?'                                                    ; 1c91: a9 3f       .?
     sta mmu_configuration                                             ; 1c93: 8d 00 ff    ... ; Set the MMU to bank 0 (RAM 0 only)
-    jsr sub_c1ca3                                                     ; 1c96: 20 a3 1c     ..
+    jsr sub_c1cc2                                                     ; 1c96: 20 c2 1c     B.
     lda #0                                                            ; 1c99: a9 00       ..
     sta mmu_configuration                                             ; 1c9b: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
-    rts                                                               ; 1c9e: 60          .
+    jsr sub_c1cb8                                                     ; 1c9e: 20 b8 1c     ..
+    lda ld020                                                         ; 1ca1: ad 20 d0    . P
+    lda #1                                                            ; 1ca4: a9 01       ..
+    sta mmu_configuration                                             ; 1ca6: 8d 00 ff    ... ; Set the MMU to bank 14 (RAM 0, BASIC ROM, Kernal ROM, character ROM)
+    jsr primm                                                         ; 1ca9: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
+    equb &48, &49, 0 ; petscii "hi", &00                              ; 1cac: 48 49 00    hi.
 
-; &1c9f referenced 1 time by &1c86
-.sub_c1c9f
-    inc ld020                                                         ; 1c9f: ee 20 d0    . P
-    rts                                                               ; 1ca2: 60          .
+    lda ld020                                                         ; 1caf: ad 20 d0    . P
+    lda #0                                                            ; 1cb2: a9 00       ..
+    sta mmu_configuration                                             ; 1cb4: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
+    rts                                                               ; 1cb7: 60          .
 
-; &1ca3 referenced 2 times by &1c8e, &1c96
-.sub_c1ca3
-    inc vic_background_colour_0                                       ; 1ca3: ee 21 d0    .!P
-    rts                                                               ; 1ca6: 60          .
+; &1cb8 referenced 1 time by &1c9e
+.sub_c1cb8
+    lda #&3f ; '?'                                                    ; 1cb8: a9 3f       .?
+    sta mmu_configuration                                             ; 1cba: 8d 00 ff    ... ; Set the MMU to bank 0 (RAM 0 only)
+    rts                                                               ; 1cbd: 60          .
+
+; &1cbe referenced 1 time by &1c86
+.sub_c1cbe
+    inc ld020                                                         ; 1cbe: ee 20 d0    . P
+    rts                                                               ; 1cc1: 60          .
+
+; &1cc2 referenced 2 times by &1c8e, &1c96
+.sub_c1cc2
+    inc vic_background_colour_0                                       ; 1cc2: ee 21 d0    .!P
+    rts                                                               ; 1cc5: 60          .
 
 .pydis_end
 
@@ -144,14 +161,16 @@ lffd2   = &ffd2
 save pydis_start - 2, pydis_end
 
 ; Label references by decreasing frequency:
-;     mmu_configuration:          9
-;     ld020:                      6
-;     vic_border_colour:          6
+;     mmu_configuration:         12
+;     ld020:                      8
+;     vic_border_colour:          8
 ;     chrout:                     2
 ;     ld000:                      2
 ;     ld019:                      2
+;     lff7d:                      2
 ;     lffd2:                      2
-;     sub_c1ca3:                  2
+;     primm:                      2
+;     sub_c1cc2:                  2
 ;     vic_background_colour_0:    2
 ;     vic_interrupt_status:       2
 ;     basic_error_vector:         1
@@ -161,14 +180,14 @@ save pydis_start - 2, pydis_end
 ;     l1000:                      1
 ;     l4000:                      1
 ;     le000:                      1
-;     lff7d:                      1
 ;     loop_c1c61:                 1
 ;     loop_c1c7d:                 1
 ;     mmu_configuration_io:       1
 ;     mmu_load_configuration_a:   1
 ;     screen_memory:              1
 ;     sub_c1c5f:                  1
-;     sub_c1c9f:                  1
+;     sub_c1cb8:                  1
+;     sub_c1cbe:                  1
 
 ; Automatically generated labels:
 ;     c1c76
@@ -178,18 +197,19 @@ save pydis_start - 2, pydis_end
 ;     loop_c1c61
 ;     loop_c1c7d
 ;     sub_c1c5f
-;     sub_c1c9f
-;     sub_c1ca3
+;     sub_c1cb8
+;     sub_c1cbe
+;     sub_c1cc2
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 166 bytes
-;     Code                     = 154 bytes (93%)
-;     Data                     = 12 bytes (7%)
+;     Total size (Code + Data) = 197 bytes
+;     Code                     = 182 bytes (92%)
+;     Data                     = 15 bytes (8%)
 ;
-;     Number of instructions   = 62
+;     Number of instructions   = 73
 ;     Number of data bytes     = 2 bytes
 ;     Number of data words     = 6 bytes
-;     Number of string bytes   = 4 bytes
-;     Number of strings        = 1
+;     Number of string bytes   = 7 bytes
+;     Number of strings        = 2
 

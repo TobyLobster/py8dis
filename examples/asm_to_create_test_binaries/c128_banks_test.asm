@@ -97,6 +97,20 @@ flow_test
     sta $ff00
     jsr either_bank         ; ...and in bank 0 here, so not known
     lda #0
+    sta $ff00               ; bank 15
+    jsr set_bank_0          ; a subroutine that sets bank 0
+    lda $d020               ; RAM
+    lda #$01
+    sta $ff00               ; bank 14: the Kernal, and the character ROM
+    jsr $ff7d               ; PRIMM, with the Kernal in bank 14
+    !pet "hi", 0
+    lda $d020               ; the character ROM, after the string
+    lda #0
+    sta $ff00
+    rts
+
+set_bank_0
+    lda #$3f
     sta $ff00
     rts
 

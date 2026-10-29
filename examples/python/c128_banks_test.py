@@ -20,12 +20,16 @@ PRIMM, so there's no string after it to skip.
 The configuration is followed through the code as it runs: after bank 0 is
 set at flow_test, the loop's 'lda $d000,x' is RAM too, and so is 'inc
 $d020' in the subroutine only ever called in bank 0; the subroutine called
-in bank 15 and in bank 0 isn't known, so it has bank 15's names."""
+in bank 15 and in bank 0 isn't known, so it has bank 15's names. After a
+call to a subroutine that sets bank 0 itself, 'lda $d020' is RAM; and after
+PRIMM in bank 14 (with the Kernal, and the character ROM at $d000), the
+code after its string runs in bank 14 too, so 'lda $d020' is the character
+ROM."""
 
 from commands import *
 import commodore
 
-load_prg("orig/c128_banks_test.orig", "6502", "1f026b31035962f150f49f51132fec16")
+load_prg("orig/c128_banks_test.orig", "6502", "a1eace66151a6ecad511e56199df70b9")
 commodore.c128()
 commodore.c128_bank(0x1c5f, 0x1c76, 0)
 go()

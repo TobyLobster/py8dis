@@ -793,9 +793,10 @@ def _c128_flow_ranges(writes):
     with a known MMU configuration, following the configuration through the
     code as it runs: from an instruction that sets it to a known value (see
     _c128_mmu_writes()), to the next instruction, the target of a branch or
-    JMP, and a subroutine called with JSR (whose return is taken to come
-    back with the configuration it was called with), up to the next
-    instruction that sets it. Where code can be reached with different
+    JMP, and a subroutine called with JSR (whose return comes back with the
+    configuration it was called with, unless the subroutine sets its own,
+    see summary(); after a call that prints the string after it, PRIMM, at
+    the code after the string), up to the next instruction that sets it. Where code can be reached with different
     configurations (or from an entry point, or code the program refers to
     another way, e.g. a vector it sets, which aren't known), it isn't known
     (so it's taken to be bank 15). Code in a c128_bank() range whose
@@ -826,6 +827,9 @@ def _c128_flow_ranges(writes):
         binary_addr = cpu.get_target_binary_addr_preferring_given_move_id(RuntimeAddr(runtime_addr), move_id) if runtime_addr < 0x10000 else []
         return [b for b in binary_addr if b in is_instruction]
 
+    # Each instruction's successors: [(binary address, the JSR's target if
+    # it's the return from a call (or 'call' for the call itself), else
+    # None)]
     successors = {}
     predecessors = collections.defaultdict(set)
     for binary_addr, length in instructions:
@@ -834,18 +838,27 @@ def _c128_flow_ranges(writes):
         if opcode in _BLOCK_END_OPCODES:
             pass
         elif opcode == 0x4c:
-            nexts = code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])
+            nexts = [(n, None) for n in code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])]
+        elif opcode == 0x20:
+            targets = code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])
+            after = binary_addr + length
+            c = classification.get_classification(after) if after < 0x10000 else None
+            if after not in is_instruction and isinstance(c, classification.String) and after + c.length() in is_instruction:
+                # (The call prints the string after it, e.g. PRIMM, and
+                # returns after the string)
+                after += c.length()
+            if after in is_instruction and not classification.get_classification(binary_addr).is_block_end():
+                nexts.append((after, targets[0] if targets else None))
+            nexts += [(n, "call") for n in targets]
         else:
             if binary_addr + length in is_instruction and not classification.get_classification(binary_addr).is_block_end():
-                nexts.append(binary_addr + length)
-            if opcode == 0x20:
-                nexts += code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])
-            elif opcode in _BRANCH_OPCODES:
+                nexts.append((binary_addr + length, None))
+            if opcode in _BRANCH_OPCODES:
                 offset = memory_binary[binary_addr + 1]
                 runtime = movemanager.b2r(BinaryAddr(binary_addr)) + 2 + (offset - 256 if offset >= 128 else offset)
-                nexts += code_at(runtime & 0xffff, moves[binary_addr])
+                nexts += [(n, None) for n in code_at(runtime & 0xffff, moves[binary_addr])]
         successors[binary_addr] = nexts
-        for n in nexts:
+        for n, _ in nexts:
             predecessors[n].add(binary_addr)
 
     # Where the configuration isn't known on entry: the entry points, code
@@ -878,34 +891,77 @@ def _c128_flow_ranges(writes):
             return b
         return a if a == b else UNKNOWN
 
-    configuration_in = {}
-    work = collections.deque()
-    for binary_addr, value in seeds.items():
-        if bank_range(binary_addr) is not None:
-            # (c128_bank() says what it runs with)
-            value = bank_range(binary_addr)[2]
-        configuration_in[binary_addr] = merge(configuration_in.get(binary_addr), value)
-        work.append(binary_addr)
-    while work:
-        binary_addr = work.popleft()
-        value = configuration_in[binary_addr]
-        if binary_addr in write_values:
-            value = write_values[binary_addr] if write_values[binary_addr] is not None else UNKNOWN
-        for n in successors[binary_addr]:
-            r = bank_range(n)
-            # (Code in a c128_bank() range runs with its configuration when
-            # it's reached from outside the range)
-            new = merge(configuration_in.get(n), r[2] if r is not None and r is not bank_range(binary_addr) else value)
-            if new is not configuration_in.get(n) and new != configuration_in.get(n):
-                configuration_in[n] = new
-                work.append(n)
+    # A subroutine's effect on the configuration (see summary()): CALLER if
+    # it returns with the one it was called with
+    CALLER = object()
+    summaries = {}
+    in_progress = set()
+
+    def propagate(seeds, follow_calls):
+        """{binary address: the configuration it runs with} for the code
+        reached from the seeds ({binary address: configuration}), following
+        calls into subroutines (and using the c128_bank() ranges) if
+        follow_calls. (Without, it's for summary(), which only counts the
+        configurations the subroutine sets itself.)"""
+        def bank_range_used(binary_addr):
+            return bank_range(binary_addr) if follow_calls else None
+        configuration_in = {}
+        work = collections.deque()
+        for binary_addr, value in seeds.items():
+            if bank_range_used(binary_addr) is not None:
+                # (c128_bank() says what it runs with)
+                value = bank_range_used(binary_addr)[2]
+            configuration_in[binary_addr] = merge(configuration_in.get(binary_addr), value)
+            work.append(binary_addr)
+        while work:
+            binary_addr = work.popleft()
+            value = configuration_in[binary_addr]
+            if binary_addr in write_values:
+                value = write_values[binary_addr] if write_values[binary_addr] is not None else UNKNOWN
+            for n, call in successors[binary_addr]:
+                if call == "call" and not follow_calls:
+                    continue
+                out = value
+                if call is not None and call != "call":
+                    # The return from a subroutine: with the configuration it
+                    # was called with, unless it sets its own
+                    effect = summary(call)
+                    out = value if effect is CALLER else effect
+                r = bank_range_used(n)
+                # (Code in a c128_bank() range runs with its configuration
+                # when it's reached from outside the range)
+                new = merge(configuration_in.get(n), r[2] if r is not None and r is not bank_range_used(binary_addr) else out)
+                if new is not configuration_in.get(n) and new != configuration_in.get(n):
+                    configuration_in[n] = new
+                    work.append(n)
+        return configuration_in
+
+    def summary(target):
+        """What the subroutine at target does to the configuration: CALLER
+        if every RTS it reaches has the one it was called with, a
+        configuration if they all have that one (e.g. 'lda #$3f : sta $ff00
+        : rts'), else UNKNOWN."""
+        if target in summaries:
+            return summaries[target]
+        if target in in_progress:
+            return CALLER
+        in_progress.add(target)
+        result = None
+        for binary_addr, value in propagate({target: CALLER}, follow_calls=False).items():
+            if memory_binary[binary_addr] == 0x60:
+                result = merge(result, value)
+        in_progress.discard(target)
+        summaries[target] = CALLER if result is None else result
+        return summaries[target]
+
+    configuration_in = propagate(seeds, follow_calls=True)
 
     result = []
     for binary_addr, length in instructions:
         value = configuration_in.get(binary_addr)
         if value is None and bank_range(binary_addr) is not None:
             value = bank_range(binary_addr)[2]
-        if value is None or value is UNKNOWN:
+        if value is None or value is UNKNOWN or value is CALLER:
             continue
         if result and result[-1][1] == binary_addr and result[-1][2] == value:
             result[-1] = (result[-1][0], binary_addr + length, value)
