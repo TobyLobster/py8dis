@@ -1,5 +1,6 @@
 import classification
 import disassembly
+import effectpattern
 import snippet6502
 import utils
 import labelmanager
@@ -53,20 +54,34 @@ def add_data_comment(p, comment):
     disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE, auto_generated=True)
 
 
+def parse_snippet(snippet):
+    """A regex snippet (snippet6502.Snippet) or, if it describes effects, an
+    effect pattern (effectpattern.EffectPattern)."""
+    if effectpattern.is_effect_pattern(snippet):
+        return effectpattern.EffectPattern(snippet)
+    return snippet6502.parse_snippet(snippet)
+
 def register_snippet(pre_trace_fn, post_trace_fn, snippet):
-    _add(SnippetDetails(pre_trace_fn, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+    """Register a snippet: a regex snippet (see snippet6502.parse_snippet())
+    or an effect pattern (see effectpattern.py), with the functions to call
+    for each match, before and after tracing (or None). For an effect
+    pattern, the pre-trace function is called once for each match found
+    while tracing (it can add entry points and labels), and the post-trace
+    function once for each match in the code as finally traced, after the
+    code has been analysed (for comments and expressions)."""
+    _add(SnippetDetails(pre_trace_fn, None, post_trace_fn, None, parse_snippet(snippet)))
 
 def register_code_snippet(post_trace_fn, snippet):
-    _add(SnippetDetails(add_entry, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(add_entry, None, post_trace_fn, None, parse_snippet(snippet)))
 
 def register_data_snippet(post_trace_fn, snippet):
-    _add(SnippetDetails(None, None, post_trace_fn, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(None, None, post_trace_fn, None, parse_snippet(snippet)))
 
 def register_comment_code_snippet(comment, snippet):
-    _add(SnippetDetails(add_code_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(add_code_comment, comment, None, None, parse_snippet(snippet)))
 
 def register_comment_data_snippet(comment, snippet):
-    _add(SnippetDetails(add_data_comment, comment, None, None, snippet6502.parse_snippet(snippet)))
+    _add(SnippetDetails(add_data_comment, comment, None, None, parse_snippet(snippet)))
 
 # ************************************************************************************************
 def comment_memory_copy_loop(p):

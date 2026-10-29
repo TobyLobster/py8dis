@@ -89,6 +89,7 @@ TESTS = [
     ("expressions",              ["acme", "beebasm", "xa"],    "how expressions are bracketed for each assembler"),
     ("acorn_os_calls",           ["acme", "beebasm", "xa"],    "test all the os calls for acorn machines"),
     ("acorn_vectors",            ["acme", "beebasm", "xa"],    "the ways of setting an Acorn OS vector that acorn.py recognises"),
+    ("effect_patterns",          ["acme", "beebasm", "xa"],    "effect patterns: snippets matching the values code stores, and the registers at a call"),
     ("prg_test",                 ["acme", "beebasm", "xa"],    "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
     ("p00_test",                 ["acme", "beebasm", "xa"],    "a PC64 P00 file loaded with load_prg()"),
     ("load_offset",              ["acme", "beebasm", "xa"],    "loading parts of a file with load(..., offset=..., length=...)"),
@@ -159,6 +160,9 @@ ERROR_TESTS = [
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
     ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
     ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
+    ("effect_register_without_anchor", "register_snippet(): a register line ('x = ...') needs an anchor (an instruction line)"),
+    ("effect_two_anchors",      "register_snippet(): an effect pattern can have only one instruction line (its anchor): 'jsr $2073'"),
+    ("effect_unbound_variable", "register_snippet(): the variable 'vec' isn't given its addresses (e.g. '[vec = $70 | $72]')"),
 ]
 
 # Each warning test is (name, expected warning). The control file is

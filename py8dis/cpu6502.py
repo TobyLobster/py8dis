@@ -2,6 +2,7 @@ import classification
 import collections
 import config
 import disassembly
+import effectpattern
 import labelmanager
 import optionallabel
 import mainformatter
@@ -519,6 +520,12 @@ class Cpu6502(cpu.Cpu):
         super().__init__()
 
         self.EMPTY_STATE = self.CpuState()
+
+        # The effect patterns' matches (see find_entry_points_from_effects()):
+        # the latest for each snippet (by index), and the keys of those whose
+        # pre-trace function has been called
+        self.effect_matches = {}
+        self.effect_matches_seen = set()
 
         self.code_analysis_fns.append(self.subroutine_argument_finder)  # For trace.subroutine_argument_finder_hooks (see subroutine_argument_finder())
         self.code_analysis_fns.append(self.substitute_constants)        # If a subroutine is being called, we can infer context of initialising registers beforehand.
@@ -1923,7 +1930,7 @@ class Cpu6502(cpu.Cpu):
 
         # for each snippet
         for index, details in enumerate(session.current().snippets):
-            if details.pre_trace_function is None:
+            if details.pre_trace_function is None or getattr(details.pattern, "is_effect", False):
                 continue
 
             # Find all matches (just in the loaded data)
@@ -1972,7 +1979,7 @@ class Cpu6502(cpu.Cpu):
 
         # for each snippet
         for index, details in enumerate(session.current().snippets):
-            if details.post_trace_function is None:
+            if details.post_trace_function is None or getattr(details.pattern, "is_effect", False):
                 continue
 
             # Find all matches (just in the loaded data)
@@ -2003,3 +2010,60 @@ class Cpu6502(cpu.Cpu):
                         details.post_trace_function(helper)
                     else:
                         details.post_trace_function(helper, details.post_trace_parameter)
+
+
+        # Then the effect patterns' matches, as last found (see
+        # find_entry_points_from_effects())
+        self.post_trace_effects()
+
+    def find_entry_points_from_effects(self):
+        """Find the matches of the effect patterns (see effectpattern.py),
+        and call each new match's pre-trace function (which can add entry
+        points). The matches are kept for post_trace_effects(), so the last
+        call's are those for the code as finally traced."""
+        memory_binary = session.current().memory.binary
+        bytes_array = None
+        for index, details in enumerate(session.current().snippets):
+            if not getattr(details.pattern, "is_effect", False):
+                continue
+            if bytes_array is None:
+                bytes_array = bytes([0 if x is None else x for x in memory_binary])
+            matches = effectpattern.find_matches(self, details.pattern, bytes_array)
+            self.effect_matches[index] = matches
+            if details.pre_trace_function is None:
+                continue
+            for match in matches:
+                key = (index, match.key())
+                if key in self.effect_matches_seen:
+                    continue
+                self.effect_matches_seen.add(key)
+                helper = EffectHelper(memory_binary, match)
+                if isinstance(details.pre_trace_function, str):
+                    disassembly.comment_binary(helper.get_start_loc(), details.pre_trace_function, align=Align.INLINE, auto_generated=True)
+                    continue
+                try:
+                    if details.pre_trace_parameter is None:
+                        details.pre_trace_function(helper)
+                    else:
+                        details.pre_trace_function(helper, details.pre_trace_parameter)
+                except SnippetRejected:
+                    self.rejected_snippet_matches.add(key)
+
+    def post_trace_effects(self):
+        """Call the post-trace function of each effect pattern for each of
+        its matches (see find_entry_points_from_effects())."""
+        memory_binary = session.current().memory.binary
+        for index, matches in sorted(self.effect_matches.items()):
+            details = session.current().snippets[index]
+            if details.post_trace_function is None:
+                continue
+            for match in matches:
+                if (index, match.key()) in self.rejected_snippet_matches:
+                    continue
+                helper = EffectHelper(memory_binary, match)
+                if isinstance(details.post_trace_function, str):
+                    disassembly.comment_binary(helper.get_start_loc(), details.post_trace_function, align=Align.INLINE, auto_generated=True)
+                elif details.post_trace_parameter is None:
+                    details.post_trace_function(helper)
+                else:
+                    details.post_trace_function(helper, details.post_trace_parameter)

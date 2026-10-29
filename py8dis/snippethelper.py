@@ -154,8 +154,8 @@ class SnippetHelper:
 
     def entry(self, runtime_addr = None):
         if runtime_addr is not None:
-            assert isinstance(runtime_addr, RuntimeAddr)
-            binary_addr, move_id = movemanager.r2b(runtime_addr, None)
+            assert not isinstance(runtime_addr, BinaryAddr)
+            binary_addr, move_id = movemanager.r2b(RuntimeAddr(runtime_addr), None)
         else:
             binary_addr = self.get_start_loc().binary_addr
             runtime_addr = movemanager.b2r(binary_addr)
@@ -234,3 +234,74 @@ class SnippetHelper:
     
     def __repr__(self):
         return "binary_addr = {0}, match={1}, labels={2}".format(self.binary_loc, self.match, self.labels)
+
+
+class EffectHelper(SnippetHelper):
+    """The SnippetHelper for a match of an effect pattern (see
+    effectpattern.py). Its labels are those of the pattern's lines: an
+    effect line's location is that of the store that satisfies it (none if
+    it doesn't hold, e.g. an optional line), the anchor's is the anchor's.
+    The start is the first of these locations, in address order."""
+
+    def __init__(self, memory_binary, match):
+        self.effect_match = match
+        locations = match.locations()
+        start = min(locations) if locations else None
+        move_id = None if start is None else session.current().moves.move_id_for_binary_addr[start]
+        super().__init__(memory_binary, BinaryLocation(start, move_id), None, None)
+
+    def _line(self, label_name):
+        pattern = self.effect_match.pattern
+        if label_name in pattern.labels:
+            return pattern.labels[label_name]
+        if label_name == pattern.anchor_label and label_name is not None:
+            return None
+        raise KeyError("the effect pattern has no label '{0}'".format(label_name))
+
+    def get_binary_address_and_length(self, label_name, prioritise_definition=False):
+        i = self._line(label_name)
+        if i is None:
+            binary_addr = self.effect_match.anchor
+        else:
+            write = self.effect_match.satisfied.get(i)
+            if write is None or self.effect_match.pattern.lines[i].kind != 'memory':
+                return (None, None)
+            binary_addr = write.binary_addr
+        if binary_addr is None:
+            return (None, None)
+        return (BinaryAddr(binary_addr), classification.get_classification(binary_addr).length())
+
+    def get_end_loc(self):
+        """The location after the last of the match's instructions."""
+        binary_addr = max(self.effect_match.locations())
+        binary_addr += classification.get_classification(binary_addr).length()
+        return BinaryLocation(BinaryAddr(binary_addr), session.current().moves.move_id_for_binary_addr[binary_addr])
+
+    def matched(self, label_name):
+        """Whether the named line holds (always True for one that isn't
+        optional, and for the anchor)."""
+        i = self._line(label_name)
+        return i is None or i in self.effect_match.satisfied
+
+    def value(self, name):
+        """The value that a name in the pattern (e.g. 'nn1') matched, or
+        None if the lines with it don't hold."""
+        return self.effect_match.values.get(name)
+
+    def binding(self, variable):
+        """The address the variable was bound to (e.g. 'vec')."""
+        return self.effect_match.binding[variable]
+
+    def target(self, label_name):
+        """The address of the named memory line, for this match."""
+        i = self._line(label_name)
+        return self.effect_match.pattern.targets[self.effect_match.binding_index][i]
+
+    def store(self, label_name):
+        """The cpu6502.MemoryWrite at the named memory line's address when
+        the match was found, whether or not the line holds (e.g. a store of
+        a value that isn't known), or None if there wasn't one."""
+        return self.effect_match.writes.get(self._line(label_name))
+
+    def __repr__(self):
+        return "effect match at {0}: {1}".format(self.binary_loc, self.effect_match.key())
