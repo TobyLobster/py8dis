@@ -1082,7 +1082,7 @@ expr(0x21b5, sprite_constants)
 expr(0x21bd, sprite_constants)
 expr(0x21c7, sprite_constants)
 label_skip(0x2200)
-if is_assembler("xa"):
+if is_assembler("xa") or is_assembler("64tass"):
     expr(0x2208, "(MapId_Egg | MapId_Seed)")
 else:
     expr(0x2208, "(MapId_Egg OR MapId_Seed)")

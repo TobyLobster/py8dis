@@ -9,6 +9,7 @@ import session
 import utils
 import assembler
 import textencoding
+import cpu6510
 import traceback
 
 class Acme(assembler.Assembler):
@@ -187,20 +188,12 @@ class Acme(assembler.Assembler):
         # where an instruction has several opcodes (e.g. ANC is &0b and &2b;
         # JAM and the NOPs have many) it uses only one, so the others are
         # written as data. (Found by assembling each with acme 0.97 of 31 Jan 2021.)
-        return self._UNDOCUMENTED_6502_OPCODES
+        return cpu6510.ASSEMBLED_UNDOCUMENTED_OPCODES
 
     def undocumented_6502_mnemonic(self, mnemonic):
         # acme 0.97 of 31 Jan 2021 accepts ALR (&4b) as well as ASR, but
         # 0.97 of 4 Jul 2020 (and older versions) only ASR
         return "ASR" if mnemonic == "ALR" else mnemonic
-
-    _UNDOCUMENTED_6502_OPCODES = frozenset([
-        0x02, 0x03, 0x04, 0x07, 0x0b, 0x0c, 0x0f, 0x13, 0x14, 0x17, 0x1b, 0x1c, 0x1f, 0x23,
-        0x27, 0x2f, 0x33, 0x37, 0x3b, 0x3f, 0x43, 0x47, 0x4b, 0x4f, 0x53, 0x57, 0x5b, 0x5f,
-        0x63, 0x67, 0x6b, 0x6f, 0x73, 0x77, 0x7b, 0x7f, 0x80, 0x83, 0x87, 0x8b, 0x8f, 0x93,
-        0x97, 0x9b, 0x9c, 0x9e, 0x9f, 0xa3, 0xa7, 0xab, 0xaf, 0xb3, 0xb7, 0xbb, 0xbf, 0xc3,
-        0xc7, 0xcb, 0xcf, 0xd3, 0xd7, 0xdb, 0xdf, 0xe3, 0xe7, 0xef, 0xf3, 0xf7, 0xfb, 0xff,
-    ])
 
     def force_abs_instruction(self, instruction, prefix, operand, suffix):
         # Ensure the instruction uses an absolute address rather than a zero

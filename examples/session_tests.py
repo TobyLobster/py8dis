@@ -45,6 +45,7 @@ INTERLEAVED = [
     (("os12",             "acme"), ("test8080",                 "z88dk-8080")),
     (("chuckie",          "xa"),   ("move2_legacy_label_maker", "beebasm")),
     (("regression_tests", "acme"), ("local_labels",             "beebasm")),
+    (("c128_test",        "64tass"), ("helloworld",             "acme")),
 ]
 
 # Module level names that are allowed to change

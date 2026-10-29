@@ -1,0 +1,15 @@
+al 000070 .test_byte
+al 002000 .pydis_start
+al 002000 .start
+al 002010 .print_message
+al 002012 .print_loop
+al 00201E .welcome_message
+al 002029 .print_decimal_number
+al 00202B .loop_next_decimal_digit
+al 00202D .loop_finding_digit
+al 002038 .found_digit
+al 002042 .decimal_digits
+al 002045 .print_hex_number
+al 002050 .print_hex_digit
+al 002059 .pydis_end
+al 00FFEE .oswrch

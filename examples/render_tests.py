@@ -20,7 +20,7 @@ from pathlib import Path
 EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
 
-ASSEMBLERS_6502 = ["acme", "beebasm", "xa"]
+ASSEMBLERS_6502 = ["acme", "beebasm", "xa", "64tass"]
 
 # The bytes at &2000 onwards: 'lda #&41' (with 'A' as a character), 'lda
 # (&70),y', 'lda &0070' (absolute, with a zero page operand), 'rts', some
@@ -155,9 +155,9 @@ def make_tests():
         ("operand expression",
          ASSEMBLERS_6502, lambda: instruction(0x2002, 2, "lda", expression.Binary(Name("ptr"), "+", Num(1)))),
         ("force absolute addressing",
-         ["acme", "xa"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), form=Instruction.FORCE_ABSOLUTE)),
+         ["acme", "xa", "64tass"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), form=Instruction.FORCE_ABSOLUTE)),
         ("force absolute addressing, indexed *",
-         ["acme", "xa"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
+         ["acme", "xa", "64tass"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
         ("absolute addressing as data *",
          ["beebasm"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.AS_DATA,
                                           data_byte=Num(0xad, "hex"), listing_operand=Name("zp_value"))),
@@ -185,6 +185,10 @@ def make_tests():
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x200c), 4, None, 2, None)),
         ("string *",
          ASSEMBLERS_6502, lambda: output.StringData(binary_loc(0x2010), 4, None)),
+        ("ASCII string with a quote *",
+         ASSEMBLERS_6502, text_string([0x48, 0x22, 0x69, 0x22], "ascii")),
+        ("operand with a low byte in an expression",
+         ASSEMBLERS_6502, lambda: instruction(0x2000, 2, "lda", expression.Binary(expression.Unary("<", Name("table")), "+", Num(1)), prefix="#")),
         ("PETSCII string *",
          ASSEMBLERS_6502, text_string(PETSCII_HELLO, "petscii", "petscii")),
         ("screen code string *",
@@ -222,9 +226,9 @@ def make_tests():
         ("6510 undocumented opcode as data, zero page operand *",
          ["beebasm", "xa"], undocumented_zp),
         ("start, for the 6510 *",
-         ["acme"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
+         ["acme", "64tass"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
         ("start, for the 65C02 *",
-         ["acme"], lambda: (config.set_cmos(True), output.Directive("disassembly_start"))[1]),
+         ["acme", "64tass"], lambda: (config.set_cmos(True), output.Directive("disassembly_start"))[1]),
         ("end, saving to a file *",
          ["acme", "beebasm"], lambda: (setattr(session.current(), "output_filename", "Out.bin"), output.Directive("disassembly_end"))[1]),
     ]
@@ -250,6 +254,12 @@ EXPECTED = {
     'implied, xa, upper case': [
         '    RTS                                                               // 2007: 60          `',
     ],
+    'implied, 64tass': [
+        '    rts                                                               ; 2007: 60          `',
+    ],
+    'implied, 64tass, upper case': [
+        '    RTS                                                               ; 2007: 60          `',
+    ],
     'immediate with a character, acme': [
         "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
@@ -258,6 +268,9 @@ EXPECTED = {
     ],
     'immediate with a character, xa': [
         "    lda #$41 // 'A'                                                   // 2000: a9 41       .A",
+    ],
+    'immediate with a character, 64tass': [
+        "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
     'operand prefix and suffix, acme': [
         '    lda (ptr),y                                                       ; 2002: b1 70       .p',
@@ -277,6 +290,12 @@ EXPECTED = {
     'operand prefix and suffix, xa, upper case': [
         '    LDA (ptr),Y                                                       // 2002: B1 70       .p',
     ],
+    'operand prefix and suffix, 64tass': [
+        '    lda (ptr),y                                                       ; 2002: b1 70       .p',
+    ],
+    'operand prefix and suffix, 64tass, upper case': [
+        '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
+    ],
     'operand expression, acme': [
         '    lda ptr + 1                                                       ; 2002: b1 70       .p',
     ],
@@ -286,11 +305,17 @@ EXPECTED = {
     'operand expression, xa': [
         '    lda ptr + 1                                                       // 2002: b1 70       .p',
     ],
+    'operand expression, 64tass': [
+        '    lda ptr + 1                                                       ; 2002: b1 70       .p',
+    ],
     'force absolute addressing, acme': [
         '    lda+2 zp_value                                                    ; 2004: ad 70 00    .p.',
     ],
     'force absolute addressing, xa': [
         '    lda !zp_value                                                     // 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, 64tass': [
+        '    lda @w zp_value                                                   ; 2004: ad 70 00    .p.',
     ],
     'force absolute addressing, indexed, acme': [
         '    lda+2 zp_value,x                                                  ; 2004: ad 70 00    .p.',
@@ -303,6 +328,12 @@ EXPECTED = {
     ],
     'force absolute addressing, indexed, xa, upper case': [
         '    LDA !zp_value,X                                                   // 2004: AD 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, 64tass': [
+        '    lda @w zp_value,x                                                 ; 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, 64tass, upper case': [
+        '    LDA @W zp_value,X                                                 ; 2004: AD 70 00    .p.',
     ],
     'absolute addressing as data, beebasm': [
         '    equb &ad, <(zp_value), >(zp_value) ; lda+2 zp_value,x             ; 2004: ad 70 00    .p.',
@@ -330,6 +361,9 @@ EXPECTED = {
     ],
     '6502 CPU state, xa': [
         '    lda #$41                                                          // 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
+    ],
+    '6502 CPU state, 64tass': [
+        '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
     ],
     '8080 CPU state, z88dk-8080': [
         '    mvi a, $41                                                        ; 2000: 3e 41       >A  A:41 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- -----',
@@ -361,6 +395,12 @@ EXPECTED = {
     'byte data, xa, upper case': [
         '    .BYT 1, 2, 3, $FF                                                 // 2008: 01 02 03... ...',
     ],
+    'byte data, 64tass': [
+        '    .byte 1, 2, 3, $ff                                                ; 2008: 01 02 03... ...',
+    ],
+    'byte data, 64tass, upper case': [
+        '    .BYTE 1, 2, 3, $FF                                                ; 2008: 01 02 03... ...',
+    ],
     'byte data, z88dk-8080': [
         '    db 1, 2, 3, $ff                                                   ; 2008: 01 02 03... ...',
     ],
@@ -379,6 +419,10 @@ EXPECTED = {
         '    .byt 1,   2                                                       // 2008: 01 02       ..',
         '    .byt 3, $ff                                                       // 200a: 03 ff       ..',
     ],
+    'byte data, two per line, 64tass': [
+        '    .byte 1,   2                                                      ; 2008: 01 02       ..',
+        '    .byte 3, $ff                                                      ; 200a: 03 ff       ..',
+    ],
     'word data, acme': [
         '    !word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
@@ -387,6 +431,9 @@ EXPECTED = {
     ],
     'word data, xa': [
         '    .word $1234, $5678                                                // 200c: 34 12 78... 4.x',
+    ],
+    'word data, 64tass': [
+        '    .word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
     'word data, z88dk-8080': [
         '    dw $1234, $5678                                                   ; 200c: 34 12 78... 4.x',
@@ -408,6 +455,48 @@ EXPECTED = {
     ],
     'string, xa, upper case': [
         '    .ASC "Hi!", $0D                                                   // 2010: 48 69 21... Hi!',
+    ],
+    'string, 64tass': [
+        '    .text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
+    ],
+    'string, 64tass, upper case': [
+        '    .TEXT "Hi!", $0D                                                  ; 2010: 48 69 21... Hi!',
+    ],
+    'ASCII string with a quote, acme': [
+        '    !text "H", \'"\', "i", \'"\'                                          ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, acme, upper case': [
+        '    !TEXT "H", \'"\', "i", \'"\'                                          ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, beebasm': [
+        '    equs "H", \'"\', "i", \'"\'                                           ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, beebasm, upper case': [
+        '    EQUS "H", \'"\', "i", \'"\'                                           ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, xa': [
+        '    .asc "H", 34, "i", 34, ""                                         // 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, xa, upper case': [
+        '    .ASC "H", 34, "i", 34, ""                                         // 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, 64tass': [
+        '    .text "H""i"""                                                    ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, 64tass, upper case': [
+        '    .TEXT "H""i"""                                                    ; 2010: 48 22 69... H"i',
+    ],
+    'operand with a low byte in an expression, acme': [
+        '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
+    ],
+    'operand with a low byte in an expression, beebasm': [
+        '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
+    ],
+    'operand with a low byte in an expression, xa': [
+        '    lda #(table & $ff) + 1                                            // 2000: a9 41       .A',
+    ],
+    'operand with a low byte in an expression, 64tass': [
+        '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
     ],
     'PETSCII string, acme': [
         '    !pet "Hello", \'"\', $0d                                            ; 2010: c8 45 4c... Hel',
@@ -431,6 +520,14 @@ EXPECTED = {
         '    .BYT $C8, $45, $4C, $4C, $4F, $22 // petscii "Hello", $22         // 2010: C8 45 4C... Hel',
         '    .BYT $0D // petscii $0D                                           // 2016: 0D          .',
     ],
+    'PETSCII string, 64tass': [
+        '    .byte $c8, $45, $4c, $4c, $4f, $22 ; petscii "Hello", $22         ; 2010: c8 45 4c... Hel',
+        '    .byte $0d ; petscii $0d                                           ; 2016: 0d          .',
+    ],
+    'PETSCII string, 64tass, upper case': [
+        '    .BYTE $C8, $45, $4C, $4C, $4F, $22 ; petscii "Hello", $22         ; 2010: C8 45 4C... Hel',
+        '    .BYTE $0D ; petscii $0D                                           ; 2016: 0D          .',
+    ],
     'screen code string, acme': [
         '    !scr "@ab["                                                       ; 2010: 00 01 02... @ab',
     ],
@@ -449,6 +546,12 @@ EXPECTED = {
     'screen code string, xa, upper case': [
         '    .BYT 0, 1, 2, $1B // screen "@ab["                                // 2010: 00 01 02... @ab',
     ],
+    'screen code string, 64tass': [
+        '    .byte 0, 1, 2, $1b ; screen "@ab["                                ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, 64tass, upper case': [
+        '    .BYTE 0, 1, 2, $1B ; screen "@ab["                                ; 2010: 00 01 02... @ab',
+    ],
     "ASCII string with PETSCII the session's encoding, acme": [
         '    !text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
     ],
@@ -457,6 +560,9 @@ EXPECTED = {
     ],
     "ASCII string with PETSCII the session's encoding, xa": [
         '    .asc "Hi!", $0d                                                   // 2010: 48 69 21... Hi!',
+    ],
+    "ASCII string with PETSCII the session's encoding, 64tass": [
+        '    .text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
     ],
     'PETSCII string over two lines, beebasm': [
         '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',
@@ -472,6 +578,9 @@ EXPECTED = {
     "byte data with PETSCII the session's encoding, xa": [
         '    .byt $48, $69, $21, $0d                                           // 2010: 48 69 21... h.!',
     ],
+    "byte data with PETSCII the session's encoding, 64tass": [
+        '    .byte $48, $69, $21, $0d                                          ; 2010: 48 69 21... h.!',
+    ],
     'blank, acme': [
         '',
     ],
@@ -479,6 +588,9 @@ EXPECTED = {
         '',
     ],
     'blank, xa': [
+        '',
+    ],
+    'blank, 64tass': [
         '',
     ],
     'one line comment, acme': [
@@ -489,6 +601,9 @@ EXPECTED = {
     ],
     'one line comment, xa': [
         '// Memory locations',
+    ],
+    'one line comment, 64tass': [
+        '; Memory locations',
     ],
     'one line comment, z88dk-8080': [
         '; Memory locations',
@@ -502,6 +617,9 @@ EXPECTED = {
     'empty one line comment, xa': [
         '//',
     ],
+    'empty one line comment, 64tass': [
+        ';',
+    ],
     'word wrapped comment, acme': [
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
@@ -510,6 +628,9 @@ EXPECTED = {
     ],
     'word wrapped comment, xa': [
         '    // This is a long comment which is word wrapped, since it is much too long to fit\n    // on one line of the output.',
+    ],
+    'word wrapped comment, 64tass': [
+        '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
     'constant definition, acme': [
         'lives       = 3         ; Starting number of lives',
@@ -528,6 +649,12 @@ EXPECTED = {
     ],
     'constant definition, xa, upper case': [
         'lives       = 3         // Starting number of lives',
+    ],
+    'constant definition, 64tass': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, 64tass, upper case': [
+        'lives       = 3         ; Starting number of lives',
     ],
     'constant definition, z88dk-8080': [
         'lives       equ 3       ; Starting number of lives',
@@ -565,6 +692,16 @@ EXPECTED = {
         '    * = $2000',
         '',
     ],
+    'code start, 64tass': [
+        '',
+        '    * = $2000',
+        '',
+    ],
+    'code start, 64tass, upper case': [
+        '',
+        '    * = $2000',
+        '',
+    ],
     'code start, z88dk-8080': [
         '',
         '    org $2000',
@@ -593,6 +730,12 @@ EXPECTED = {
     'include binary file, xa, upper case': [
         '    .BIN 0,0,"data.bin"',
     ],
+    'include binary file, 64tass': [
+        '    .binary "data.bin"',
+    ],
+    'include binary file, 64tass, upper case': [
+        '    .BINARY "data.bin"',
+    ],
     '6510 undocumented opcode, immediate, acme': [
         '    anc #$81                                                          ; 2000: 0b 81       ..',
     ],
@@ -611,6 +754,12 @@ EXPECTED = {
     '6510 undocumented opcode, immediate, xa, upper case': [
         '    .BYT $0B, $81 // ANC #$81 (undocumented)                          // 2000: 0B 81       ..',
     ],
+    '6510 undocumented opcode, immediate, 64tass': [
+        '    anc #$81                                                          ; 2000: 0b 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, 64tass, upper case': [
+        '    ANC #$81                                                          ; 2000: 0B 81       ..',
+    ],
     '6510 ALR, which acme calls ASR, acme': [
         '    asr #$0f                                                          ; 2000: 4b 0f       K.',
     ],
@@ -619,6 +768,9 @@ EXPECTED = {
     ],
     '6510 ALR, which acme calls ASR, xa': [
         '    .byt $4b, $0f // alr #$0f (undocumented)                          // 2000: 4b 0f       K.',
+    ],
+    '6510 ALR, which acme calls ASR, 64tass': [
+        '    alr #$0f                                                          ; 2000: 4b 0f       K.',
     ],
     "6510 undocumented opcode acme doesn't use, acme": [
         '    !byte $2b, $81 ; anc #$81 (undocumented)                          ; 2000: 2b 81       +.',
@@ -629,6 +781,9 @@ EXPECTED = {
     "6510 undocumented opcode acme doesn't use, xa": [
         '    .byt $2b, $81 // anc #$81 (undocumented)                          // 2000: 2b 81       +.',
     ],
+    "6510 undocumented opcode acme doesn't use, 64tass": [
+        '    .byte $2b, $81 ; anc #$81 (undocumented)                          ; 2000: 2b 81       +.',
+    ],
     '6510 undocumented opcode, implied, acme': [
         '    !byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
     ],
@@ -638,6 +793,9 @@ EXPECTED = {
     '6510 undocumented opcode, implied, xa': [
         '    .byt $1a // nop (undocumented)                                    // 2000: 1a          .',
     ],
+    '6510 undocumented opcode, implied, 64tass': [
+        '    .byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
+    ],
     '6510 JAM, with cycles, acme': [
         '    jam                                                               ; 2000: 02          .   halts',
     ],
@@ -646,6 +804,9 @@ EXPECTED = {
     ],
     '6510 JAM, with cycles, xa': [
         '    .byt $02 // jam (undocumented)                                    // 2000: 02          .   halts',
+    ],
+    '6510 JAM, with cycles, 64tass': [
+        '    jam                                                               ; 2000: 02          .   halts',
     ],
     '6510 undocumented opcode as data, zero page operand, beebasm': [
         '    equb &b3, ptr ; lax (ptr),y (undocumented)                        ; 2000: a9 41       .A',
@@ -667,12 +828,28 @@ EXPECTED = {
         '!CPU 6510',
         '',
     ],
+    'start, for the 6510, 64tass': [
+        '.cpu "6502i"',
+        '',
+    ],
+    'start, for the 6510, 64tass, upper case': [
+        '.CPU "6502i"',
+        '',
+    ],
     'start, for the 65C02, acme': [
         '!cpu 65c02',
         '',
     ],
     'start, for the 65C02, acme, upper case': [
         '!CPU 65C02',
+        '',
+    ],
+    'start, for the 65C02, 64tass': [
+        '.cpu "65c02"',
+        '',
+    ],
+    'start, for the 65C02, 64tass, upper case': [
+        '.CPU "65c02"',
         '',
     ],
     'end, saving to a file, acme': [

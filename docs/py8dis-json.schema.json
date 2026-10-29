@@ -10,7 +10,7 @@
     "version":   { "const": 1 },
     "cpu":       { "enum": ["6502", "65c02", "6510", "8080"] },
     "assembler": { "description": "The assembler the asm was written for (as given by the assembler's get_name()). Every 'text' field uses its syntax.",
-                   "enum": ["acme", "beebasm", "xa", "z88dk"] },
+                   "enum": ["acme", "beebasm", "xa", "64tass", "z88dk"] },
     "loads": {
       "description": "The files loaded with load() or load_prg(), in the order loaded: the filename as given, the binary addresses the data is loaded at, where in the file the data loaded starts (if not at the start), and whether it's a PRG file loaded with load_prg().",
       "type": "array",

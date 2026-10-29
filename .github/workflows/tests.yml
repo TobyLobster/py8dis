@@ -1,8 +1,8 @@
 # Run the example tests (examples/run_tests.py -c) on every push and pull
-# request, with all four assemblers, so that each disassembly is also checked
+# request, with all five assemblers, so that each disassembly is also checked
 # to reassemble to the original binary.
 #
-# acme and xa come from Ubuntu's packages. beebasm and z88dk-z80asm aren't
+# acme, xa and 64tass come from Ubuntu's packages. beebasm and z88dk-z80asm aren't
 # packaged, so they're built from source at a fixed version, and cached, so
 # they're only built again when the versions below change.
 
@@ -35,10 +35,10 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
-      - name: Install acme, xa and jsonschema
+      - name: Install acme, xa, 64tass and jsonschema
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q acme xa65
+          sudo apt-get install -y -q acme xa65 64tass
           python -m pip install -q jsonschema
 
       - name: Cache beebasm and z88dk-z80asm
