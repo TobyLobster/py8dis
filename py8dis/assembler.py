@@ -110,6 +110,12 @@ class Assembler:
         with a text_directive()), e.g. to select the encoding for it."""
         return [], []
 
+    def tidy_output(self, lines):
+        """The lines of the whole output (text), tidied if the assembler
+        needs it (e.g. 64tass's, to leave out '.enc' lines that change
+        nothing)."""
+        return lines
+
     def text_chr(self, n, encoding):
         """How the byte n is written inside the quotes of a string in the
         given encoding (one with a text_directive()), or None if it's

@@ -54,7 +54,6 @@ lc023
 lc04e
     .enc "screencodes"
     .text "@ Score [000] Lives 3"                                     ; c04e: 00 20 53... @ S
-    .enc "petscii"
     .enc "none"
     .text "ASCII text", 0                                             ; c063: 41 53 43... ASC
     .enc "petscii"

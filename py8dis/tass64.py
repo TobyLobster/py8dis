@@ -2,6 +2,8 @@
 64tass assembler
 """
 
+import re
+
 import config
 import session
 import utils
@@ -201,6 +203,27 @@ class Tass64(assembler.Assembler):
         if encoding.name == main.name:
             return [], []
         return [self._enc_line(encoding.name)], [self._enc_line(main.name)]
+
+    _ENC_LINE = re.compile(r'^\s*\.enc "([^"]*)"\s*$', re.IGNORECASE)
+
+    def tidy_output(self, lines):
+        # Strings in other encodings than the main one each select their own,
+        # then the main one again (see text_encoding_lines()), so for two in
+        # a row there are lines that change nothing: the main encoding
+        # selected just before another, or an encoding selected when it
+        # already is. Leave those out.
+        result = []
+        current = None
+        for i, line in enumerate(lines):
+            m = self._ENC_LINE.match(line)
+            if m is not None:
+                if i + 1 < len(lines) and self._ENC_LINE.match(lines[i + 1]):
+                    continue
+                if m.group(1) == current:
+                    continue
+                current = m.group(1)
+            result.append(line)
+        return result
 
     def text_directive(self, encoding):
         return utils.force_case(".text ")

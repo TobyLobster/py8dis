@@ -1141,6 +1141,7 @@ def emit(print_output=True):
     text = header_text + [str(line) for line in output.render_lines(d + footer)]
     while text and text[0] == "":
         text.pop(0)
+    text = formatter.tidy_output(text)
 
     # Join all lines of output
     result = "\n".join(formatter.sanitise_line(line) for line in text)
