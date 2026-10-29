@@ -11,7 +11,7 @@ import utils
 import classification
 import machinetype
 import sys
-from memorymanager import BinaryAddr, RuntimeAddr
+from memorymanager import BinaryAddr, BinaryLocation, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from snippets6502 import register_snippet, register_code_snippet, register_data_snippet, OPCODE_TXA, OPCODE_TYA
 from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
@@ -67,23 +67,246 @@ def post_trace_writing_to_vector(p):
     comment_vector(p, text)
 
 # ************************************************************************************************
-def comment_print_tab(p):
-    def get_coord_str(operand_label, instruction_label):
-        coord = p.get_memory(operand_label)
-        if coord is None:
-            opcode = p.get_memory(instruction_label)
-            if opcode == OPCODE_TXA:
-                coord = 'X'
-            elif opcode == OPCODE_TYA:
-                coord = 'Y'
+# ************************************************************************************************
+# VDU sequences: the characters code writes with OSWRCH, decoded as VDU
+# commands
+
+# OSWRCH and the other calls that write characters: their addresses, and the
+# characters each writes (None for A's)
+_VDU_CALLS = {0xffee: [None], 0xffcb: [None], 0xffe3: [None], 0xffe7: [10, 13]}
+
+def _vdu_streams():
+    """The streams of characters the code writes: for each straight run of
+    code, the calls to OSWRCH (and OSASCI, OSNEWL and NVWRCH) with no other
+    call between them, as lists of VduChar. A character is a number if it's
+    known; 'X' or 'Y' if it's that register's, from TXA or TYA with the
+    register unchanged since; or None. (OSWRCH preserves A, so A is the same
+    for the next call unless an instruction between them changes it.)"""
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+    streams = []
+    for run in cpu.straight_runs():
+        stream = []
+        previous_char = None
+        previous_call = None    # the index in the run of the previous call
+        for k, binary_addr in enumerate(run):
+            opcode = memory_binary[binary_addr]
+            if opcode not in (0x20, 0x4c):
+                continue
+            target = memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
+            if target not in _VDU_CALLS:
+                if opcode == 0x20:
+                    # Another call: it could write characters too
+                    if stream:
+                        streams.append(stream)
+                    stream = []
+                    previous_call = None
+                continue
+            between = run[previous_call + 1:k] if previous_call is not None else run[:k]
+            state = cpu.cpu_states[run[k - 1]] if k > 0 else None
+            a = None if state is None else state.pessimistic['a']
+            set_at = a.previous_adjust if a is not None and a.previous_adjust in between else None
+            if a is not None and a.value is not None:
+                char = a.value
+            elif set_at is not None and memory_binary[set_at] in (OPCODE_TXA, OPCODE_TYA):
+                reg = 'x' if memory_binary[set_at] == OPCODE_TXA else 'y'
+                after = between[between.index(set_at) + 1:]
+                unchanged = all(classification.get_classification(b).reg_changes[reg] in "-U" for b in after)
+                char = reg.upper() if unchanged else None
+            elif stream and previous_call is not None and all(classification.get_classification(b).reg_changes['a'] in "-U" for b in between):
+                char = previous_char
             else:
-                coord = '?'
-        else:
-            coord = str(coord)
-        return coord
-    x = get_coord_str('nn1', 'transfer1')
-    y = get_coord_str('nn2', 'transfer2')
-    disassembly.comment_binary(p.get_start_loc(), "Position text cursor at ({0},{1})".format(x,y), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+                char = None
+            # Where the set-up starts: where A was set (or, for a value
+            # transferred from another register, loaded), if that's since the
+            # previous call, otherwise the call
+            start = set_at if set_at is not None else binary_addr
+            if a is not None and a.previous_load_imm in between:
+                start = min(start, a.previous_load_imm)
+            for written in _VDU_CALLS[target]:
+                stream.append(VduChar(binary_addr, start, char if written is None else written, target))
+                start = binary_addr
+            previous_char = char
+            previous_call = k
+        if stream:
+            streams.append(stream)
+    return streams
+
+class VduChar:
+    """A character written by a call (see _vdu_streams()): the call's binary
+    address, where the code that sets up the character starts, the character,
+    and the address called (e.g. &ffee for OSWRCH)."""
+
+    __slots__ = ("call", "start", "char", "target")
+
+    def __init__(self, call, start, char, target):
+        self.call = call
+        self.start = start
+        self.char = char
+        self.target = target
+
+# VDU 0 and 27 do nothing, so a zero in a stream is much more likely to be a
+# parameter of an earlier command than a command, and they don't count as
+# explaining any characters (see _vdu_parse())
+_VDU_NO_OPS = (0, 27)
+
+def _vdu_parse(chars, start):
+    """Parse the characters (see _vdu_streams()) as VDU commands, from index
+    start: [(index, length)] for each command, and the number of characters
+    covered by the commands that are known (their first character is), other
+    than VDU 0 and 27. A
+    character that isn't known where a command starts is taken to be one
+    character (written as itself, e.g. a digit). Parsing stops at a command
+    that runs past the end."""
+    commands = []
+    covered = 0
+    i = start
+    while i < len(chars):
+        code = chars[i]
+        if not isinstance(code, int):
+            commands.append((i, 1))
+            i += 1
+            continue
+        length = 1 + (vdu_parameter_counts.get(code, 0) if code < 32 else 0)
+        if i + length > len(chars):
+            break
+        commands.append((i, length))
+        if code not in _VDU_NO_OPS:
+            covered += length
+        i += length
+    return commands, covered
+
+def _vdu_best_parse(chars):
+    """The most likely way to parse the characters as VDU commands. The
+    first few may be the end of a command that earlier code started, so this
+    tries starting at each of the first ten characters (a command has at most
+    nine parameters), and takes the parse that explains the most characters
+    (see _vdu_parse()): longer runs of commands that fit are more likely to
+    be right. Of those, it takes the one with fewer, so longer, known commands, and
+    then the earliest start. Returns (start, commands, characters
+    explained)."""
+    best = None
+    for start in range(0, min(10, len(chars))):
+        commands, covered = _vdu_parse(chars, start)
+        known = sum(1 for index, length in commands if isinstance(chars[index], int))
+        score = (covered, -known, -start)
+        if best is None or score > best[0]:
+            best = (score, start, commands, covered)
+    return best[1], best[2], best[3]
+
+def _vdu_description(code, params):
+    """What a VDU command does, e.g. 'Select mode 4', from its code and
+    parameters (numbers, 'X', 'Y' or None)."""
+    def p(v):
+        return "?" if v is None else str(v)
+    def word(lo, hi):
+        if isinstance(lo, int) and isinstance(hi, int):
+            v = lo + 256 * hi
+            return str(v - 65536 if v >= 32768 else v)
+        return "?"
+    if code in vdu_descriptions:
+        return vdu_descriptions[code]
+    if code == 1:
+        return "Send character {0} to the printer only".format(p(params[0]))
+    if code == 17:
+        c = params[0]
+        if isinstance(c, int) and c >= 128:
+            return "Set the text background colour to {0}".format(c - 128)
+        return "Set the text colour to {0}".format(p(c))
+    if code == 18:
+        c = params[1]
+        if isinstance(c, int) and c >= 128:
+            return "Set the graphics background colour to {0} (plot action {1})".format(c - 128, p(params[0]))
+        return "Set the graphics colour to {0} (plot action {1})".format(p(c), p(params[0]))
+    if code == 19:
+        return "Set logical colour {0} to physical colour {1}".format(p(params[0]), p(params[1]))
+    if code == 22:
+        return "Select mode {0}".format(p(params[0]))
+    if code == 23:
+        n = params[0]
+        if n == 0:
+            return "Set CRTC register {0} to {1}".format(p(params[1]), p(params[2]))
+        if n == 1:
+            if params[1] == 0:
+                return "Turn the cursor off"
+            if params[1] == 1:
+                return "Turn the cursor on"
+        if isinstance(n, int) and n >= 32:
+            return "Define character {0}".format(n)
+        return "VDU 23,{0}".format(p(n))
+    if code == 24:
+        return "Set the graphics window to ({0},{1})-({2},{3})".format(word(*params[0:2]), word(*params[2:4]), word(*params[4:6]), word(*params[6:8]))
+    if code == 25:
+        return "PLOT {0},{1},{2}".format(p(params[0]), word(*params[1:3]), word(*params[3:5]))
+    if code == 28:
+        return "Set the text window to ({0},{1})-({2},{3})".format(*(p(v) for v in params))
+    if code == 29:
+        return "Set the graphics origin to ({0},{1})".format(word(*params[0:2]), word(*params[2:4]))
+    if code == 31:
+        return "Position text cursor at ({0},{1})".format(p(params[0]), p(params[1]))
+    return None
+
+def _vdu_text(chars):
+    """A comment for printable characters (all known numbers), e.g. 'Print
+    "Hello"', or 'Print characters 32, 224, 225'."""
+    if all(32 <= c < 127 and c != 34 for c in chars):
+        return 'Print "{0}"'.format("".join(chr(c) for c in chars))
+    return "Print characters {0}".format(", ".join(str(c) for c in chars))
+
+def comment_vdu_sequences():
+    """Comment the VDU commands that code writes with OSWRCH (e.g. 'Select
+    mode 4' before 'lda #22 : jsr oswrch : lda #4 : jsr oswrch'), however A
+    is set, and runs of two or more printable characters. Since a stream of
+    calls can start part way through a command that earlier code started,
+    the parse used is the one that explains the most characters (see
+    _vdu_best_parse()); if that skips some first characters, they're
+    commented as the end of an earlier sequence. (Run once the code has been
+    traced, as an analysis hook.)"""
+    moves = session.current().moves.move_id_for_binary_addr
+
+    def comment(binary_addr, text):
+        disassembly.comment_binary(BinaryLocation(BinaryAddr(binary_addr), moves[binary_addr]), text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+
+    for stream in _vdu_streams():
+        chars = [c.char for c in stream]
+        start, commands, covered = _vdu_best_parse(chars)
+        if covered == 0:
+            continue
+        if start > 0:
+            comment(stream[0].start, "The end of a VDU sequence that earlier code started")
+        printable = []      # (index, char) of the run of printable characters so far
+
+        def end_printable():
+            if len(printable) >= 2:
+                comment(stream[printable[0][0]].start, _vdu_text([c for _, c in printable]))
+            printable.clear()
+
+        skip = set()
+        for n, (index, length) in enumerate(commands):
+            code = chars[index]
+            if not isinstance(code, int) or index in skip:
+                end_printable()
+                continue
+            if code >= 32 and code != 127:
+                printable.append((index, code))
+                continue
+            end_printable()
+            if stream[index].target == 0xffe7:
+                # (OSNEWL, whose hook comments it)
+                continue
+            if code == 13 and stream[index].target == 0xffe3:
+                # (OSASCI writes CR as a new line)
+                comment(stream[index].start, "Start a new line")
+                continue
+            if code in (10, 13) and n + 1 < len(commands) and chars[commands[n + 1][0]] == 23 - code and stream[commands[n + 1][0]].target != 0xffe7:
+                # CR and LF, or LF and CR
+                comment(stream[index].start, "Start a new line")
+                skip.add(commands[n + 1][0])
+                continue
+            text = _vdu_description(code, chars[index + 1:index + length])
+            if text is not None:
+                comment(stream[index].start, text)
+        end_printable()
 
 # ************************************************************************************************
 def comment_print_message(p):
@@ -164,17 +387,6 @@ def register_snippets():
     if extras.get("acorn.snippets_registered"):
         return
     extras["acorn.snippets_registered"] = True
-
-    register_code_snippet(comment_print_tab, """
-    lda #$1f
-    jsr $ffee
-transfer1
-    lda #nn1 | txa | tya
-    jsr $ffee
-transfer2
-    lda #nn2 | txa | tya
-    jsr $ffee
-""")
 
     register_code_snippet(comment_print_message, """
 ?   ldy #nn1 | ldy zp | ldy zp,x | ldy addr | ldy addr,x
@@ -575,6 +787,8 @@ def memory_regions():
 def mos_labels():
     # (bbc(), electron(), b_plus() and master() all call this)
     register_snippets()
+    if comment_vdu_sequences not in session.current().trace.analysis_hooks:
+        session.current().trace.analysis_hooks.append(comment_vdu_sequences)
     memory_regions()
 
     optional_label(0x00f2, "os_text_ptr")

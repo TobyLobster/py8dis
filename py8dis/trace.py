@@ -20,6 +20,7 @@ class TraceState:
         self.subroutines_list                 = []      # List of Subroutine() objects
         self.no_auto_comment_set              = set()   # binary locations not to be auto-commented
         self.references                       = None    # dictionary of references keyed by binary location
+        self.analysis_hooks                   = []      # functions to call once the code is traced and its CPU states known (after the CPU's own analysis)
 
 def add_subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id):
     session.current().trace.subroutines_list.append(subroutine.Subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id))

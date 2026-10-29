@@ -34,6 +34,7 @@ osasci  = &ffe3
     jsr print_and_inc_zp                                              ; 2006: 20 00 09     ..
     dex                                                               ; 2009: ca          .
     bne loop_c2006                                                    ; 200a: d0 fa       ..
+    ; Start a new line
     lda #&0d                                                          ; 200c: a9 0d       ..
     jmp osasci                                                        ; 200e: 4c e3 ff    L.. ; Write newline (characters 10 and 13)
 

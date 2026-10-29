@@ -8720,6 +8720,7 @@ loop_cb3b5
     jsr sub_cb431                                                     // b3cb: 20 31 b4     1.
     cmp #$3f // '?'                                                   // b3ce: c9 3f       .?
     bne cb3ed                                                         // b3d0: d0 1b       ..
+    // Move the cursor to the start of the line
     lda #$0d                                                          // b3d2: a9 0d       ..
     jsr oswrch                                                        // b3d4: 20 ee ff     ..            // Write character 13
     ldx #2                                                            // b3d7: a2 02       ..

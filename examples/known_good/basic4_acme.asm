@@ -9069,6 +9069,7 @@ cb445
     jsr cbdd4                                                         ; b445: 20 d4 bd     ..
     bit l001f                                                         ; b448: 24 1f       $.
     bmi cb451                                                         ; b44a: 30 05       0.
+    ; Move the cursor down one line
     lda #$0a                                                          ; b44c: a9 0a       ..
     jsr oswrch                                                        ; b44e: 20 ee ff     .. ; Write character 10
 ; $b451 referenced 2 times by $b44a, $b4c4

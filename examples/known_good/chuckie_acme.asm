@@ -1754,6 +1754,7 @@ finisheddelay
 ; Initialise map (build and display map)
 ; ----------------------------------------------------------------------------------
 initmap
+    ; Clear the graphics area
     lda #$10                                                          ; 1b33: a9 10       ..
     jsr oswrch                                                        ; 1b35: 20 ee ff     ..            ; Write character 16
     jsr drawtopstatus                                                 ; 1b38: 20 c3 1c     ..
@@ -4243,12 +4244,15 @@ copyloop
     sta showkeys+$0700,x                                              ; 2b0f: 9d 00 10    ...
     dex                                                               ; 2b12: ca          .
     bne copyloop                                                      ; 2b13: d0 cd       ..
+    ; Select mode 2
     lda #$16                                                          ; 2b15: a9 16       ..
     jsr oswrch                                                        ; 2b17: 20 ee ff     ..            ; Write character 22
     lda #2                                                            ; 2b1a: a9 02       ..
     jsr oswrch                                                        ; 2b1c: 20 ee ff     ..            ; Write character 2
+    ; Write text at the graphics cursor
     lda #5                                                            ; 2b1f: a9 05       ..
     jsr oswrch                                                        ; 2b21: 20 ee ff     ..            ; Write character 5
+    ; Write text at the graphics cursor
     lda #5                                                            ; 2b24: a9 05       ..
     jsr oswrch                                                        ; 2b26: 20 ee ff     ..            ; Write character 5
     lda #$9d                                                          ; 2b29: a9 9d       ..
@@ -4413,6 +4417,7 @@ resetperplayerloop
     lda playernum                                                     ; 2c37: a5 5d       .]
     bne resetperplayerloop                                            ; 2c39: d0 f7       ..
     jsr restoreplayerdata                                             ; 2c3b: 20 37 2e     7.
+    ; Restore the default windows
     lda #$1a                                                          ; 2c3e: a9 1a       ..
     jsr oswrch                                                        ; 2c40: 20 ee ff     ..            ; Write character 26
     rts                                                               ; 2c43: 60          `
@@ -4449,6 +4454,7 @@ titlepage
     stx savesp                                                        ; 2c70: 86 1b       ..
     jsr initplayersfordemo                                            ; 2c72: 20 d8 2c     .,
 titlepageloop
+    ; Clear the graphics area
     lda #$10                                                          ; 2c75: a9 10       ..
     jsr oswrch                                                        ; 2c77: 20 ee ff     ..            ; Write character 16
     jsr showlogo                                                      ; 2c7a: 20 e5 2c     .,
@@ -4467,6 +4473,7 @@ titlepagewait2
     jsr checktitlepagekeys                                            ; 2c95: 20 b0 2d     .-
     dec temp3                                                         ; 2c98: c6 8a       ..
     bne titlepagewait2                                                ; 2c9a: d0 f9       ..
+    ; Clear the graphics area
     lda #$10                                                          ; 2c9c: a9 10       ..
     jsr oswrch                                                        ; 2c9e: 20 ee ff     ..            ; Write character 16
     jsr showlogo                                                      ; 2ca1: 20 e5 2c     .,
@@ -5093,6 +5100,7 @@ notsamecolumn
     ldx #1                                                            ; 30c5: a2 01       ..  :09c5[1]
     ldy #0                                                            ; 30c7: a0 00       ..  :09c7[1]
     jsr osbyte                                                        ; 30c9: 20 f4 ff     .. :09c9[1]   ; Write CTRL G duration, value X=1
+    ; Make a short beep
     lda #7                                                            ; 30cc: a9 07       ..  :09cc[1]
     jsr oswrch                                                        ; 30ce: 20 ee ff     .. :09ce[1]   ; Write character 7
     jmp waitforkey                                                    ; 30d1: 4c 5c 09    L\. :09d1[1]

@@ -4060,6 +4060,7 @@ oscli   = &fff7
     sty ARETOP                                     ; 97c5: 84 79       .y ; New ARETOP
     sty SP+1                                       ; 97c7: 84 7f       .. ; Reset software stack
 .CHANGE
+    ; Select mode ?
     lda #&16                                       ; 97c9: a9 16       .. ; Change mode
     jsr oswrch                                     ; 97cb: 20 ee ff     .. ; Write character 22
     pla                                            ; 97ce: 68          h
@@ -5231,6 +5232,7 @@ oscli   = &fff7
     inx                                            ; 9eba: e8          .  ; X=0
     stx DEPTH                                      ; 9ebb: 86 8b       ..
     stx HANDLE                                     ; 9ebd: 86 13       ..
+    ; Enable paged mode
     lda #&0e                                       ; 9ebf: a9 0e       .. ; Page mode
     jsr oswrch                                     ; 9ec1: 20 ee ff     .. ; Write character 14
     lda #&18                                       ; 9ec4: a9 18       .. ; Mask for LEVEL
@@ -5258,6 +5260,7 @@ oscli   = &fff7
 DWARF=NERRC-1
     cmp ARETOP                                     ; 9eee: c5 79       .y ; Pop return
     bcc WINDER                                     ; 9ef0: 90 0c       .. ; stack completely
+    ; Disable paged mode
     lda #&0f                                       ; 9ef2: a9 0f       ..
     jsr oswrch                                     ; 9ef4: 20 ee ff     .. ; Page mode off ; Write character 15
     lda OLDLEV                                     ; 9ef7: a5 97       ..
@@ -5300,6 +5303,7 @@ DWARF=NERRC-1
 .QZQ
     lda ERRNO                                      ; 9f30: a5 11       .. ; Return err no.
     sta ACL                                        ; 9f32: 85 72       .r
+    ; Disable paged mode
     lda #&0f                                       ; 9f34: a9 0f       ..
     jsr oswrch                                     ; 9f36: 20 ee ff     .. ; Page mode off ; Write character 15
     jmp ACLRET                                     ; 9f39: 4c a4 92    L.. ; POP via ACLRET

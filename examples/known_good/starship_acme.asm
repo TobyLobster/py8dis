@@ -5955,6 +5955,7 @@ prepare_starship_for_next_command
     lda #$7f                                                          ; 4665: a9 7f       ..  :3565[1]
     sta starship_energy_low                                           ; 4667: 8d 1c 19    ... :3567[1]
 ; clear screen
+    ; Clear the text area
     lda #$0c                                                          ; 466a: a9 0c       ..  :356a[1]
     jsr oswrch                                                        ; 466c: 20 ee ff     .. :356c[1]   ; Write character 12
     ldx #<sound_0                                                     ; 466f: a2 08       ..  :356f[1]
@@ -6031,6 +6032,7 @@ single_digit_command_number
     clc                                                               ; 46eb: 18          .   :35eb[1]
     adc #$30                                                          ; 46ec: 69 30       i0  :35ec[1]
     jsr oswrch                                                        ; 46ee: 20 ee ff     .. :35ee[1]   ; Write character
+    ; Write text at the text cursor
     lda #4                                                            ; 46f1: a9 04       ..  :35f1[1]
     jsr oswrch                                                        ; 46f3: 20 ee ff     .. :35f3[1]   ; Write character 4
     rts                                                               ; 46f6: 60          `   :35f6[1]
@@ -6487,10 +6489,12 @@ unused94
     !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea                           ; 4c5a: ea ea ea... ... :3b5a[1]
 
 plot_debriefing
+    ; Move the cursor down one line
     lda #$0a                                                          ; 4c61: a9 0a       ..  :3b61[1]
     jsr oswrch                                                        ; 4c63: 20 ee ff     .. :3b63[1]   ; Write character 10
     ldy #$0d                                                          ; 4c66: a0 0d       ..  :3b66[1]
 plot_row_of_starships_top_line_loop
+    ; Print characters 32, 224, 225, 32
     lda #$20                                                          ; 4c68: a9 20       .   :3b68[1]
     jsr oswrch                                                        ; 4c6a: 20 ee ff     .. :3b6a[1]   ; Write character 32
     lda #$e0                                                          ; 4c6d: a9 e0       ..  :3b6d[1]
@@ -6503,6 +6507,7 @@ plot_row_of_starships_top_line_loop
     jsr oswrch                                                        ; 4c7c: 20 ee ff     .. :3b7c[1]   ; Write character 32
     ldy #$0d                                                          ; 4c7f: a0 0d       ..  :3b7f[1]
 plot_row_of_starships_bottom_line_loop
+    ; Print characters 32, 226, 227
     lda #$20                                                          ; 4c81: a9 20       .   :3b81[1]
     jsr oswrch                                                        ; 4c83: 20 ee ff     .. :3b83[1]   ; Write character 32
     lda #$e2                                                          ; 4c86: a9 e2       ..  :3b86[1]
@@ -6726,6 +6731,7 @@ leave_after_plotting_line_of_underscores
     rts                                                               ; 4e1a: 60          `   :3d1a[1]
 
 plot_line_of_underscores
+    ; Start a new line
     lda #$0d                                                          ; 4e1b: a9 0d       ..  :3d1b[1]
     jsr oswrch                                                        ; 4e1d: 20 ee ff     .. :3d1d[1]   ; Write character 13
     lda #$0a                                                          ; 4e20: a9 0a       ..  :3d20[1]
@@ -6948,6 +6954,7 @@ unused98
 plot_selected_options
     ldx #3                                                            ; 529b: a2 03       ..  :419b[1]
 plot_selected_options_loop
+    ; Position text cursor at (9,?)
     lda #$1f                                                          ; 529d: a9 1f       ..  :419d[1]
     jsr oswrch                                                        ; 529f: 20 ee ff     .. :419f[1]   ; Write character 31
     lda #9                                                            ; 52a2: a9 09       ..  :41a2[1]
@@ -6997,6 +7004,7 @@ escape_pressed
     jmp wait_for_return_loop                                          ; 52e6: 4c c4 41    L.A :41e6[1]
 
 instructions_screen
+    ; Select mode 4
     lda #$16                                                          ; 52e9: a9 16       ..  :41e9[1]
     jsr oswrch                                                        ; 52eb: 20 ee ff     .. :41eb[1]   ; Write character 22
     lda #4                                                            ; 52ee: a9 04       ..  :41ee[1]
@@ -7009,6 +7017,7 @@ instructions_screen
     rts                                                               ; 5302: 60          `   :4202[1]
 
 combat_preparation_screen
+    ; Select mode 4
     lda #$16                                                          ; 5303: a9 16       ..  :4203[1]
     jsr oswrch                                                        ; 5305: 20 ee ff     .. :4205[1]   ; Write character 22
     lda #4                                                            ; 5308: a9 04       ..  :4208[1]
@@ -7131,6 +7140,7 @@ unused101
     !byte $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea, $ea            ; 54cd: ea ea ea... ... :43cd[1]
 
 starfleet_records_screen
+    ; Select mode 7
     lda #$16                                                          ; 54d7: a9 16       ..  :43d7[1]
     jsr oswrch                                                        ; 54d9: 20 ee ff     .. :43d9[1]   ; Write character 22
     lda #7                                                            ; 54dc: a9 07       ..  :43dc[1]
@@ -7155,6 +7165,7 @@ finished_plotting_starfleet_records
     sta temp8                                                         ; 5501: 85 75       .u  :4401[1]
     ldx #0                                                            ; 5503: a2 00       ..  :4403[1]
 plot_high_scores_loop
+    ; Position text cursor at (7,?)
     lda #$1f                                                          ; 5505: a9 1f       ..  :4405[1]
     jsr oswrch                                                        ; 5507: 20 ee ff     .. :4407[1]   ; Write character 31
     lda #7                                                            ; 550a: a9 07       ..  :440a[1]
@@ -7176,6 +7187,7 @@ plot_high_scores_loop
     clc                                                               ; 5523: 18          .   :4423[1]
     adc #$31                                                          ; 5524: 69 31       i1  :4424[1]
     jsr oswrch                                                        ; 5526: 20 ee ff     .. :4426[1]   ; Write character
+    ; Print "   "
     lda #$20                                                          ; 5529: a9 20       .   :4429[1]
     jsr oswrch                                                        ; 552b: 20 ee ff     .. :442b[1]   ; Write character 32
     jsr oswrch                                                        ; 552e: 20 ee ff     .. :442e[1]   ; Write character
@@ -7190,6 +7202,7 @@ plot_name_loop
     inx                                                               ; 553f: e8          .   :443f[1]
     dey                                                               ; 5540: 88          .   :4440[1]
     bne plot_name_loop                                                ; 5541: d0 f6       ..  :4441[1]
+    ; Print "   "
     lda #$20                                                          ; 5543: a9 20       .   :4443[1]
     jsr oswrch                                                        ; 5545: 20 ee ff     .. :4445[1]   ; Write character 32
     jsr oswrch                                                        ; 5548: 20 ee ff     .. :4448[1]   ; Write character
@@ -7252,6 +7265,7 @@ unused3
 
 ; ----------------------------------------------------------------------------------
 check_for_high_score
+    ; Select mode 4
     lda #$16                                                          ; 55e8: a9 16       ..  :44e8[1]
     jsr oswrch                                                        ; 55ea: 20 ee ff     .. :44ea[1]   ; Write character 22
     lda #4                                                            ; 55ed: a9 04       ..  :44ed[1]
@@ -7383,6 +7397,7 @@ unused102
     !byte   0,   0,   0,   0                                          ; 56d6: 00 00 00... ... :45d6[1]
 
 start_game
+    ; Select mode 4
     lda #$16                                                          ; 56da: a9 16       ..  :45da[1]
     jsr oswrch                                                        ; 56dc: 20 ee ff     .. :45dc[1]   ; Write character 22
     lda #4                                                            ; 56df: a9 04       ..  :45df[1]
@@ -7406,6 +7421,7 @@ end_of_command
     sta rnd_2                                                         ; 570c: 8d d2 1c    ... :460c[1]
     lda enemy_ships_previous_x_fraction1                              ; 570f: ad 04 04    ... :460f[1]
     sta rnd_1                                                         ; 5712: 8d d1 1c    ... :4612[1]
+    ; Select mode 4
     lda #$16                                                          ; 5715: a9 16       ..  :4615[1]
     jsr oswrch                                                        ; 5717: 20 ee ff     .. :4617[1]   ; Write character 22
     lda #4                                                            ; 571a: a9 04       ..  :461a[1]
@@ -7446,6 +7462,7 @@ skip_change_of_probability
     adc change_in_number_of_stars_per_command                         ; 576b: 6d bb 34    m.4 :466b[1]
     sta maximum_number_of_stars                                       ; 576e: 8d 50 0e    .P. :466e[1]
 skip_change_of_stars
+    ; Select mode 4
     lda #$16                                                          ; 5771: a9 16       ..  :4671[1]
     jsr oswrch                                                        ; 5773: 20 ee ff     .. :4673[1]   ; Write character 22
     lda #4                                                            ; 5776: a9 04       ..  :4676[1]
@@ -7493,10 +7510,12 @@ skip
     inx                                                               ; 58ce: e8          .   :47ce[1]
     bne initialise_stars_loop                                         ; 58cf: d0 ee       ..  :47cf[1]
     jsr initialise_joystick_and_cursor_keys                           ; 58d1: 20 2f 36     /6 :47d1[1]
+    ; Select mode 4
     lda #$16                                                          ; 58d4: a9 16       ..  :47d4[1]
     jsr oswrch                                                        ; 58d6: 20 ee ff     .. :47d6[1]   ; Write character 22
     lda #4                                                            ; 58d9: a9 04       ..  :47d9[1]
     jsr oswrch                                                        ; 58db: 20 ee ff     .. :47db[1]   ; Write character 4
+    ; Move the cursor to the start of the line
     lda #$0d                                                          ; 58de: a9 0d       ..  :47de[1]
     jsr oswrch                                                        ; 58e0: 20 ee ff     .. :47e0[1]   ; Write character 13
     lda #0                                                            ; 58e3: a9 00       ..  :47e3[1]
@@ -7563,6 +7582,7 @@ return_pressed
     lda rnd_1                                                         ; 595e: ad d1 1c    ... :485e[1]
     eor #$cd                                                          ; 5961: 49 cd       I.  :4861[1]
     sta rnd_2                                                         ; 5963: 8d d2 1c    ... :4863[1]
+    ; Move the cursor to the start of the line
     lda #$0d                                                          ; 5966: a9 0d       ..  :4866[1]
     jsr oswrch                                                        ; 5968: 20 ee ff     .. :4868[1]   ; Write character 13
     jsr combat_preparation_screen                                     ; 596b: 20 03 42     .B :486b[1]

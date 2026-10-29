@@ -89,6 +89,7 @@ TESTS = [
     ("expressions",              ["acme", "beebasm", "xa"],    "how expressions are bracketed for each assembler"),
     ("acorn_os_calls",           ["acme", "beebasm", "xa"],    "test all the os calls for acorn machines"),
     ("acorn_vectors",            ["acme", "beebasm", "xa"],    "the ways of setting an Acorn OS vector that acorn.py recognises"),
+    ("acorn_vdu",                ["acme", "beebasm", "xa"],    "VDU sequences written with OSWRCH, decoded by acorn.py"),
     ("effect_patterns",          ["acme", "beebasm", "xa"],    "effect patterns: snippets matching the values code stores, and the registers at a call"),
     ("prg_test",                 ["acme", "beebasm", "xa"],    "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
     ("p00_test",                 ["acme", "beebasm", "xa"],    "a PC64 P00 file loaded with load_prg()"),

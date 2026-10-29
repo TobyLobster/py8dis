@@ -7078,6 +7078,7 @@ nmi_XXX5 = c0d1f+1
     jsr sub_ca9ca                                                     ; a8d5: 20 ca a9     ..
     lda l00c1                                                         ; a8d8: a5 c1       ..
     jsr sub_ca9c2                                                     ; a8da: 20 c2 a9     ..
+    ; Start a new line
     lda #&0d                                                          ; a8dd: a9 0d       ..
     jsr osasci                                                        ; a8df: 20 e3 ff     ..            ; Write newline (characters 10 and 13)
 ; &a8e2 referenced 1 time by &a845
@@ -7544,6 +7545,7 @@ nmi_XXX5 = c0d1f+1
     bcc cab93                                                         ; ab7e: 90 13       ..
 ; &ab80 referenced 1 time by &ab91
 .loop_cab80
+    ; Print "**"
     lda #&2a ; '*'                                                    ; ab80: a9 2a       .*
     jsr osasci                                                        ; ab82: 20 e3 ff     ..            ; Write character 42
     jsr osasci                                                        ; ab85: 20 e3 ff     ..            ; Write character

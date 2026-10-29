@@ -12259,6 +12259,7 @@ screen_addr_high = opcode10+2
     bne check_for_doors_loop                                          ; 4b43: d0 c4       .. ; ALWAYS branch
 
 .update_key_count
+    ; Position text cursor at (15,?)
     lda #&1f                                                          ; 4b45: a9 1f       ..
     jsr oswrch                                                        ; 4b47: 20 ee ff     .. ; Write character 31
     lda #&0f                                                          ; 4b4a: a9 0f       ..

@@ -1567,3 +1567,33 @@ hardware_labels = [HardwareLabel(*entry) for entry in [
     (0xfef1, "cube_tube_data_in_to_host",                              _NOT_ELECTRON),
     (0xfefd, "cube_tube_status",                                       _NOT_ELECTRON),
 ]]
+
+
+# The number of parameter bytes after each VDU code (0-31; the others have
+# none)
+vdu_parameter_counts = {1: 1, 17: 1, 18: 2, 19: 5, 22: 1, 23: 9, 24: 8, 25: 5, 28: 4, 29: 4, 31: 2}
+
+# What the VDU codes without parameters do (other than VDU 0 and 27, which
+# do nothing)
+vdu_descriptions = {
+    2: "Enable the printer",
+    3: "Disable the printer",
+    4: "Write text at the text cursor",
+    5: "Write text at the graphics cursor",
+    6: "Enable the VDU drivers",
+    7: "Make a short beep",
+    8: "Move the cursor back one character",
+    9: "Move the cursor forward one character",
+    10: "Move the cursor down one line",
+    11: "Move the cursor up one line",
+    12: "Clear the text area",
+    13: "Move the cursor to the start of the line",
+    14: "Enable paged mode",
+    15: "Disable paged mode",
+    16: "Clear the graphics area",
+    20: "Restore the default colours",
+    21: "Disable the VDU drivers",
+    26: "Restore the default windows",
+    30: "Move the text cursor to the top left",
+    127: "Delete the character before the cursor",
+}

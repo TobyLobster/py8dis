@@ -164,8 +164,11 @@ class Cpu:
         if calculate_states:
             self.calculate_cpu_states()
 
-        # Call each of the code analysis functions
+        # Call each of the code analysis functions, then the session's (e.g.
+        # from acorn.py, which may be set up before the CPU is chosen)
         for f in self.code_analysis_fns:
+            f()
+        for f in session.current().trace.analysis_hooks:
             f()
 
     def trace(self):

@@ -134,6 +134,8 @@ This defines BBC Micro OS specific constants, which resolves &ffe3 into a proper
 
 to give proper names for the remaining labels.
 
+`acorn.bbc()` (and `acorn.electron()`, `acorn.b_plus()`, `acorn.master()`) also comments the OS calls and the code that sets the OS vectors, and decodes the VDU sequences the code writes with OSWRCH, however A is set: e.g. `; Select mode 7` before `lda #22 : jsr oswrch : lda #7 : jsr oswrch`, `; Position text cursor at (X,Y)`, `; PLOT 69,640,512` or `; Print "Hi"`. Since a run of calls can start part way through a VDU sequence that earlier code started, the decoding is a heuristic: it takes the way of reading the characters that explains the most of them (zeros, as VDU 0 does nothing, count as more likely to be parameters), preferring fewer, longer commands.
+
 ## Configuration reference
 
 To change the configuration, add `import config` and call the following as needed:

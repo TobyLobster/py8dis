@@ -9950,6 +9950,7 @@ le5b4 = le5b3+1
     sta l03df                                                         ; f8c0: 8d df 03    ...
     jsr sub_ce7dc                                                     ; f8c3: 20 dc e7     ..
     beq return_54                                                     ; f8c6: f0 6b       .k
+    ; Move the cursor to the start of the line
     lda #&0d                                                          ; f8c8: a9 0d       ..
     jsr oswrch                                                        ; f8ca: 20 ee ff     .. ; Write character 13
 ; &f8cd referenced 1 time by &f8e0
@@ -10305,6 +10306,7 @@ le5b4 = le5b3+1
 .sub_cfae8
     jsr sub_ce7dc                                                     ; fae8: 20 dc e7     ..
     beq cfaf2                                                         ; faeb: f0 05       ..
+    ; Make a short beep
     lda #7                                                            ; faed: a9 07       ..
     jsr oswrch                                                        ; faef: 20 ee ff     .. ; Write character 7
 ; &faf2 referenced 6 times by &f1f6, &f465, &f542, &f6ff, &f9a3, &faeb
@@ -10728,6 +10730,7 @@ lffb3 = osbyte150EntryPoint+1
 ; ***************************************************************************************
 ; &ffe7 referenced 5 times by &dbf7, &dbfa, &dc5f, &dc62, &e96c
 .osnewl
+    ; Move the cursor down one line
     lda #&0a                                                          ; ffe7: a9 0a       .. ; Write newline (characters 10 and 13)
     jsr oswrch                                                        ; ffe9: 20 ee ff     .. ; Write character 10
 ; ***************************************************************************************
