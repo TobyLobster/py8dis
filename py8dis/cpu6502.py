@@ -2037,7 +2037,7 @@ class Cpu6502(cpu.Cpu):
                 if key in self.effect_matches_seen:
                     continue
                 self.effect_matches_seen.add(key)
-                helper = EffectHelper(memory_binary, match)
+                helper = EffectHelper(memory_binary, match, matches)
                 if isinstance(details.pre_trace_function, str):
                     disassembly.comment_binary(helper.get_start_loc(), details.pre_trace_function, align=Align.INLINE, auto_generated=True)
                     continue
@@ -2060,7 +2060,7 @@ class Cpu6502(cpu.Cpu):
             for match in matches:
                 if (index, match.key()) in self.rejected_snippet_matches:
                     continue
-                helper = EffectHelper(memory_binary, match)
+                helper = EffectHelper(memory_binary, match, matches)
                 if isinstance(details.post_trace_function, str):
                     disassembly.comment_binary(helper.get_start_loc(), details.post_trace_function, align=Align.INLINE, auto_generated=True)
                 elif details.post_trace_parameter is None:

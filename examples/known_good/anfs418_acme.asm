@@ -2869,7 +2869,7 @@ sub_c8f5d
     stx l00b8                                                         ; 8f65: 86 b8       ..
     sty l00b9                                                         ; 8f67: 84 b9       ..
     ldy #$36 ; '6'                                                    ; 8f69: a0 36       .6
-    sty netv                                                          ; 8f6b: 8c 24 02    .$.
+    sty netv                                                          ; 8f6b: 8c 24 02    .$.            ; Set the low byte of econet vector to $36 (its extended vector entry, $ff36, if the high byte is $ff)
     ldx #1                                                            ; 8f6e: a2 01       ..
 ; $8f70 referenced 2 times by $8b5c, $8f82
 c8f70

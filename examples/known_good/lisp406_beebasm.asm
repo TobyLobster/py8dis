@@ -921,9 +921,9 @@ oscli   = &fff7
     ; ******************************
 .INIT
     ; Set BRK vector to 'ERRORS'
-    lda #<ERRORS                                   ; 84b5: a9 87       ..
+    lda #<ERROR                                    ; 84b5: a9 87       ..
     sta brkv                                       ; 84b7: 8d 02 02    ... ; Error handling
-    lda #>ERRORS                                   ; 84ba: a9 9e       ..
+    lda #>ERROR                                    ; 84ba: a9 9e       ..
     sta brkv+1                                     ; 84bc: 8d 03 02    ...
 
     lda #osbyte_read_himem                         ; 84bf: a9 84       .. ; Find end of memory
@@ -8086,7 +8086,7 @@ MOVE_OFFSET = HILISP-LISVAL
     assert &11 == <CTRUE
     assert &00 == <DOSBUF
     assert &eb == <DWARF
-    assert &87 == <ERRORS
+    assert &87 == <ERROR
     assert &20 == <GCTIME
     assert &31 == <GOSTR
     assert &00 == <HILISP
@@ -8116,7 +8116,7 @@ MOVE_OFFSET = HILISP-LISVAL
     assert &57 == >(HILISP-LISVAL)
     assert &07 == >DOSBUF
     assert &9e == >DWARF
-    assert &9e == >ERRORS
+    assert &9e == >ERROR
     assert &04 == >GCTIME
     assert &82 == >GOSTR
     assert &d7 == >HILISP

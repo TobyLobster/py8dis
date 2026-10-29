@@ -14,6 +14,7 @@ import sys
 from memorymanager import BinaryAddr, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from snippets6502 import register_snippet, register_code_snippet, register_data_snippet, OPCODE_TXA, OPCODE_TYA
+from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
 
 # The data tables (OS call names, INKEY numbers etc), which control files can
 # use as e.g. acorn.inkey_enum
@@ -28,55 +29,42 @@ from acornosbyte import osbyte_hook
 
 # ************************************************************************************************
 def pre_trace_writing_to_vector(p):
-    p.entry()
-
-    stored = p.stored_values(['nn1', 'nn2'], ['first_store', 'second_store'])
-    if stored is None:
-        return
-    (addr1, nn1, nn1_addr), (addr2, nn2, nn2_addr) = stored
-    end = p.get_binary_location('end')
-
+    """Code setting one of the vectors (an effect pattern, see
+    snippethelper.vector_pattern()): before tracing, label the handler (e.g.
+    'handle_brkv', then 'handle_brkv_2' etc) and trace it."""
+    vector = p.binding('vector')
     # The number of handlers found so far for each vector, for naming them
     vector_handler_count = session.current().extras.setdefault("acorn.vector_handler_count", {})
 
-    if addr1 == (addr2 + 1) and ((addr2 & 1) == 0):
-        # swap addr1 and addr2, so that addr1 is the lower
-        addr1, addr2 = addr2, addr1
-        nn1, nn2 = nn2, nn1
-        nn1_addr, nn2_addr = nn2_addr, nn1_addr
+    def new_name():
+        if vector not in vector_handler_count:
+            vector_handler_count[vector] = 2
+            return "handle_{0}".format(vectors[vector])
+        name = "handle_{0}_{1}".format(vectors[vector], vector_handler_count[vector])
+        vector_handler_count[vector] += 1
+        return name
 
-    if addr2 == (addr1 + 1) and ((addr1 & 1) == 0):
-        if addr1 in vectors:
-            new_addr = nn1 + 256 * nn2
+    vector_handler(p, new_name)
 
-            # Get a label name if it already exists (just choose the first explicit name for lack of a better choice)
-            if new_addr in session.current().labels.labels and session.current().labels.labels[new_addr].explicit_names:
-                for move_id, name_list in session.current().labels.labels[new_addr].explicit_names.items():
-                    label_name = name_list[0].text
-                    break
-            else:
-                # Create new label name
-                if addr1 not in vector_handler_count:
-                    label_name = "handle_{0}".format(vectors[addr1])
-                    vector_handler_count[addr1] = 2
-                else:
-                    label_name = "handle_{0}_{1}".format(vectors[addr1], vector_handler_count[addr1])
-                    vector_handler_count[addr1] += 1
-                label(new_addr, label_name)
-
-            p.entry(RuntimeAddr(new_addr))
-
-            if not p.has_explicit_label(p.get_start_loc()):
-                p.blank_once(p.get_start_loc())
-            disassembly.comment_binary(p.get_start_loc(), "Set {0} to '{1}'".format(vector_descriptions[addr1], label_name), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
-            p.blank_once(end)
-
-            # Get addresses of nn1 and nn2
-            nn1_addr_runtime = movemanager.b2r(nn1_addr)
-            nn2_addr_runtime = movemanager.b2r(nn2_addr)
-
-            expr(nn1_addr_runtime, make_lo(label_name))
-            expr(nn2_addr_runtime, make_hi(label_name))
+def post_trace_writing_to_vector(p):
+    """Code setting one of the vectors: after tracing, comment it (e.g. "Set
+    BRK vector to 'handle_brkv'", or for one with only one byte set to a
+    known value, "Set the low byte of econet vector to &36"), and write the
+    handler's address as its name's low and high bytes."""
+    vector = p.binding('vector')
+    description = vector_descriptions[vector]
+    if p.matched('lo') and p.matched('hi'):
+        name = vector_handler_name(p.value('lo_value') + 256 * p.value('hi_value'))
+        text = "Set {0} to '{1}'".format(description, name)
+    else:
+        text = half_set_vector_text(p, description, config.get_assembler().hex2)
+        # A vector set to its extended vector entry (&ff00 + 3 * its number),
+        # which calls the routine in the extended vector table for a paged ROM
+        extended = 0xff00 + 3 * ((vector - 0x200) // 2)
+        if p.matched('lo') and not p.matched('hi') and p.value('lo_value') == extended & 0xff:
+            text += " (its extended vector entry, {0}, if the high byte is {1})".format(
+                config.get_assembler().hex4(extended), config.get_assembler().hex2(extended >> 8))
+    comment_vector(p, text)
 
 # ************************************************************************************************
 def comment_print_tab(p):
@@ -252,36 +240,9 @@ loop2
     # ********************************************************************************************
     # ********************************************************************************************
     # ********************************************************************************************
-    # Code setting one of the vectors at &0200-&0235
-    vector_addrs = range(0x200, 0x236)
-    # Any store to one of them, e.g. 'sta $200 | ... | sty $235'
-    stores = " | ".join("st{0} ${1:x}".format(reg, addr) for reg in "axy" for addr in vector_addrs)
-    # Any load and store to one of them, e.g. 'lda #nn1 : sta $200 | ...'
-    def pairs(n):
-        return " | ".join("ld{0} #nn{1} : st{0} ${2:x}".format(reg, n, addr) for reg in "axy" for addr in vector_addrs)
-    # Two loads into different registers, e.g. 'ldx #nn1 : ldy #nn2 | ...'
-    loads = " | ".join("ld{0} #nn1 : ld{1} #nn2".format(reg1, reg2) for reg1 in "axy" for reg2 in "axy" if reg1 != reg2)
-
-    # e.g. 'lda #<handler : sta $206 : lda #>handler : sta $207' (with A, X or
-    # Y for each)
-    register_snippet(pre_trace_writing_to_vector, None, """
-first_store
-    {0}
-second_store
-    {1}
-end
-""".format(pairs(1), pairs(2)))
-    # e.g. 'ldx #<handler : ldy #>handler : stx $206 : sty $207' (with any two
-    # registers, and the stores in either order)
-    register_snippet(pre_trace_writing_to_vector, None, """
-    {0}
-first_store
-    {1}
-second_store
-    {1}
-end
-""".format(loads, stores))
-
+    # Code setting one of the vectors at &0200-&0235, in any order, with any
+    # registers (an effect pattern)
+    register_snippet(pre_trace_writing_to_vector, post_trace_writing_to_vector, vector_pattern(addr for addr in vectors if addr % 2 == 0))
 
 # ************************************************************************************************
 def oswrsc_hook(runtime_addr, state, subroutine):

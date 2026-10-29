@@ -22,6 +22,7 @@ import textencoding
 import utils
 from memorymanager import BinaryAddr, RuntimeAddr
 from snippets6502 import register_snippet
+from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
 
 from commodoretables import *
 import commodoresource
@@ -568,52 +569,32 @@ def _vector_names(names):
     return result
 
 def pre_trace_writing_to_vector(p):
-    """A program setting one of the vectors (e.g. the IRQ vector) to an
-    address in its code: trace it, name it (e.g. 'irq_handler') and comment
-    the code."""
-    p.entry()
+    """A program setting one of the vectors (e.g. the IRQ vector), an effect
+    pattern (see snippethelper.vector_pattern()): before tracing, label the
+    handler (e.g. 'irq_handler', then 'irq_handler_2' etc) and trace it."""
+    _, description, handler = _vector_names(session.current().extras["commodore.names"])[p.binding('vector')]
 
-    stored = p.stored_values(['nn1', 'nn2'], ['first_store', 'second_store'])
-    if stored is None:
-        return
-    (addr1, nn1, nn1_addr), (addr2, nn2, nn2_addr) = stored
-    end = p.get_binary_location('end')
-
-    if addr1 == addr2 + 1:
-        # The high byte first: swap them so addr1 is the low byte's
-        addr1, addr2 = addr2, addr1
-        nn1, nn2 = nn2, nn1
-        nn1_addr, nn2_addr = nn2_addr, nn1_addr
-    vectors = _vector_names(session.current().extras["commodore.names"])
-    if addr2 != addr1 + 1 or addr1 not in vectors:
-        return
-    _, description, handler = vectors[addr1]
-
-    new_addr = nn1 + 256*nn2
-    labels = session.current().labels.labels
-    if new_addr in labels and labels[new_addr].explicit_names:
-        # (Use its first name)
-        for move_id, name_list in labels[new_addr].explicit_names.items():
-            label_name = name_list[0].text
-            break
-    else:
+    def new_name():
         # The first handler for a vector is e.g. 'irq_handler', the next
         # 'irq_handler_2'
         counts = session.current().extras.setdefault("commodore.vector_handler_count", {})
         count = counts.get(handler, 0) + 1
         counts[handler] = count
-        label_name = handler if count == 1 else "%s_%d" % (handler, count)
-        label(new_addr, label_name)
+        return handler if count == 1 else "%s_%d" % (handler, count)
 
-    p.entry(RuntimeAddr(new_addr))
+    vector_handler(p, new_name)
 
-    if not p.has_explicit_label(p.get_start_loc()):
-        p.blank_once(p.get_start_loc())
-    disassembly.comment_binary(p.get_start_loc(), "Set the {0} to {1}".format(description, label_name), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
-    p.blank_once(end)
-
-    expr(movemanager.b2r(nn1_addr), make_lo(label_name))
-    expr(movemanager.b2r(nn2_addr), make_hi(label_name))
+def post_trace_writing_to_vector(p):
+    """A program setting one of the vectors: after tracing, comment it (e.g.
+    'Set the IRQ vector to irq_handler', or for one with only one byte set to
+    a known value, 'Set the low byte of the IRQ vector to $31'), and write
+    the handler's address as its name's low and high bytes."""
+    _, description, handler = _vector_names(session.current().extras["commodore.names"])[p.binding('vector')]
+    if p.matched('lo') and p.matched('hi'):
+        text = "Set the {0} to {1}".format(description, vector_handler_name(p.value('lo_value') + 256 * p.value('hi_value')))
+    else:
+        text = half_set_vector_text(p, "the " + description, _hex2)
+    comment_vector(p, text)
 
 # ************************************************************************************************
 # The C128's MMU
@@ -956,34 +937,9 @@ call
 end
 """.format(pair1=far_pair(1), pair2=far_pair(2), pair3=far_pair(3), extra4="\n".join([extra]*4), extra8="\n".join([extra]*8)))
 
-    vector_addrs = [addr for vector in _machine().vectors for addr in (vector.addr, vector.addr + 1)]
-    # Any store to one of them, e.g. 'sta $0314 | ... | sty $0315'
-    stores = " | ".join("st{0} ${1:04x}".format(reg, addr) for reg in "axy" for addr in vector_addrs)
-    # Any load and store to one of them, e.g. 'lda #nn1 : sta $0314 | ...'
-    def pairs(n):
-        return " | ".join("ld{0} #nn{1} : st{0} ${2:04x}".format(reg, n, addr) for reg in "axy" for addr in vector_addrs)
-    # Two loads into different registers, e.g. 'ldx #nn1 : ldy #nn2 | ...'
-    loads = " | ".join("ld{0} #nn1 : ld{1} #nn2".format(reg1, reg2) for reg1 in "axy" for reg2 in "axy" if reg1 != reg2)
-
-    # e.g. 'lda #<handler : sta $0314 : lda #>handler : sta $0315' (with A, X
-    # or Y for each)
-    register_snippet(pre_trace_writing_to_vector, None, """
-first_store
-    {0}
-second_store
-    {1}
-end
-""".format(pairs(1), pairs(2)))
-    # e.g. 'ldx #<handler : ldy #>handler : stx $0314 : sty $0315' (with any
-    # two registers, and the stores in either order)
-    register_snippet(pre_trace_writing_to_vector, None, """
-    {0}
-first_store
-    {1}
-second_store
-    {1}
-end
-""".format(loads, stores))
+    # Code setting one of the vectors, in any order, with any registers (an
+    # effect pattern)
+    register_snippet(pre_trace_writing_to_vector, post_trace_writing_to_vector, vector_pattern(vector.addr for vector in _machine().vectors))
 
 # ************************************************************************************************
 # The VIC-II's interrupts (C64 and C128)

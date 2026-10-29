@@ -4092,7 +4092,7 @@ cfbe6
     sty load_address_temp+1                                           ; fbe6: 84 c4       .D
     stx load_address_temp                                             ; fbe8: 86 c3       .C
     lda #0                                                            ; fbea: a9 00       ..
-    sta nmi_vector+1                                                  ; fbec: 8d 19 03    ...
+    sta nmi_vector+1                                                  ; fbec: 8d 19 03    ... ; Set the high byte of the NMI vector to $00
     ldy #$1f                                                          ; fbef: a0 1f       ..
     bcc cfbfa                                                         ; fbf1: 90 07       ..
     lda irq_vector,y                                                  ; fbf3: b9 14 03    ...
@@ -4315,7 +4315,7 @@ reset_entry
     sei                                                               ; fce2: 78          .
     cld                                                               ; fce3: d8          X
     lda #0                                                            ; fce4: a9 00       ..
-    sta nmi_vector+1                                                  ; fce6: 8d 19 03    ...
+    sta nmi_vector+1                                                  ; fce6: 8d 19 03    ... ; Set the high byte of the NMI vector to $00
     ldx #$ff                                                          ; fce9: a2 ff       ..
     txs                                                               ; fceb: 9a          .
     jsr sub_cf924                                                     ; fcec: 20 24 f9     $.
