@@ -1,0 +1,47 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0070  test_byte (Memory locations: Zero page)
+    $2003     pydis_start+3                stx test_byte
+    $200a     pydis_start+10               lda test_byte
+
+$2000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$2010  print_message (inline)
+    $2000     pydis_start                  jsr print_message
+
+$2012  print_loop (inline)
+    $201b     print_loop+9                 bne print_loop
+
+$201e  welcome_message (inline)
+    $2012     print_loop                   lda welcome_message,x
+
+$2029  print_decimal_number (inline)
+    $2007     pydis_start+7                jsr print_decimal_number
+
+$202b  loop_next_decimal_digit (inline)
+    $203f     found_digit+7                bpl loop_next_decimal_digit
+
+$202d  loop_finding_digit (inline)
+    $2036     loop_finding_digit+9         bne loop_finding_digit
+
+$2038  found_digit (inline)
+    $2030     loop_finding_digit+3         bcc found_digit
+
+$2042  decimal_digits (inline)
+    $202d     loop_finding_digit           cmp decimal_digits,y
+    $2032     loop_finding_digit+5         sbc decimal_digits,y
+
+$2045  print_hex_number (inline)
+    $200c     pydis_start+12               jsr print_hex_number
+
+$2050  print_hex_digit (inline)
+    $204a     print_hex_number+5           jsr print_hex_digit
+
+$2059  pydis_end (inline)
+    (not referenced)
+
+$ffee  oswrch (Memory locations: MOS entry points)
+    $2015     print_loop+3                 jsr oswrch
+    $203a     found_digit+2                jsr oswrch
+    $2056     print_hex_digit+6            jmp oswrch

@@ -9,16 +9,19 @@ from commands import *
 
 load(0x2000, "orig/expressions.orig", "6502", "3cae9c43d5d489f353999570645c6285")
 
+# (ca65 doesn't accept 'a' or 'x' as names: they're registers)
+A, X = ("a_", "x_") if config.get_assembler().get_name() == "ca65" else ("a", "x")
+
 constant(0x1234, "table")
 constant(0x7f, "k")
 constant(0x0f, "m")
 constant(0x0f, "p")
 constant(0x30, "q")
 constant(0x3c, "r")
-constant(1, "a")
+constant(1, A)
 constant(2, "b")
 constant(3, "c")
-constant(5, "x")
+constant(5, X)
 constant(10, "ten")
 
 def test(addr, e):
@@ -28,11 +31,11 @@ def test(addr, e):
 test(0x2000, make_lo(make_add("table", 1)))                         # <(table + 1)
 test(0x2001, make_add(make_hi("table"), 1))                         # (>table) + 1
 test(0x2002, make_eor(make_subtract(255, "k"), 128))                # (255 - k) EOR 128
-test(0x2003, make_add(make_add("a", "b"), "c"))                     # a + b + c
-test(0x2004, make_add("a", make_add("b", "c")))                     # a + b + c
+test(0x2003, make_add(make_add(A, "b"), "c"))                     # a + b + c
+test(0x2004, make_add(A, make_add("b", "c")))                     # a + b + c
 test(0x2005, make_subtract("ten", make_subtract("b", "c")))         # ten - (b - c)
-test(0x2006, make_add(make_multiply("x", 2), 1))                    # x * 2 + 1
-test(0x2007, make_multiply("x", make_add(2, 1)))                    # x * (2 + 1)
+test(0x2006, make_add(make_multiply(X, 2), 1))                    # x * 2 + 1
+test(0x2007, make_multiply(X, make_add(2, 1)))                    # x * (2 + 1)
 test(0x2008, make_and(make_op1("NOT", "m"), make_hex(0xff)))        # NOT(m) AND $ff
 test(0x2009, make_and(make_or("p", "q"), "r"))                      # (p OR q) AND r
 test(0x200a, make_or("p", make_and("q", "r")))                      # p OR (q AND r)
@@ -43,7 +46,7 @@ test(0x200e, make_eor("p", make_eor("q", "r")))                     # p EOR q EO
 test(0x200f, make_or("p", make_eor("q", "r")))                      # p OR (q EOR r)
 test(0x2010, make_and(make_op2("table", ">>", 8), make_hex(0xff)))  # (table >> 8) AND $ff
 test(0x2011, make_add(make_op2(1, "<<", 3), 1))                     # (1 << 3) + 1
-test(0x2012, make_divide("x", 2))                                   # x DIV 2
+test(0x2012, make_divide(X, 2))                                   # x DIV 2
 word(0x2013)
 expr(0x2013, make_subtract("table", 1))                             # table - 1
 

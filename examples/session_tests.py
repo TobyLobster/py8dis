@@ -46,6 +46,7 @@ INTERLEAVED = [
     (("chuckie",          "xa"),   ("move2_legacy_label_maker", "beebasm")),
     (("regression_tests", "acme"), ("local_labels",             "beebasm")),
     (("c128_test",        "64tass"), ("helloworld",             "acme")),
+    (("pet4_test",        "ca65"),   ("subroutine_test",        "xa")),
 ]
 
 # Module level names that are allowed to change

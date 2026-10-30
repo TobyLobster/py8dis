@@ -1,0 +1,128 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0070  l0070 (Memory locations: Zero page)
+    $2000     pydis_start                  slo (l0070,x)
+    $2002     pydis_start+2                slo l0070
+    $2007     pydis_start+7                slo (l0070),y
+    $2009     pydis_start+9                slo l0070,x
+    $2011     pydis_start+17               rla (l0070,x)
+    $2013     pydis_start+19               rla l0070
+    $2018     pydis_start+24               rla (l0070),y
+    $201a     pydis_start+26               rla l0070,x
+    $2022     pydis_start+34               sre (l0070,x)
+    $2024     pydis_start+36               sre l0070
+    $2029     pydis_start+41               sre (l0070),y
+    $202b     pydis_start+43               sre l0070,x
+    $2033     pydis_start+51               rra (l0070,x)
+    $2035     pydis_start+53               rra l0070
+    $203a     pydis_start+58               rra (l0070),y
+    $203c     pydis_start+60               rra l0070,x
+    $2066     pydis_start+102              sax (l0070,x)
+    $2068     pydis_start+104              sax l0070
+    $206d     pydis_start+109              sax l0070,y
+    $207d     pydis_start+125              slo a:l0070
+    $2083     pydis_start+131              nop a:l0070,x
+    $20aa     pydis_start+170              nop l0070
+    $20ac     pydis_start+172              .byte $44, l0070
+    $20ae     pydis_start+174              .byte $64, l0070
+    $20b0     pydis_start+176              nop l0070,x
+    $20b2     pydis_start+178              .byte $34, l0070
+    $20b4     pydis_start+180              .byte $54, l0070
+    $20b6     pydis_start+182              .byte $74, l0070
+    $20b8     pydis_start+184              .byte $d4, l0070
+    $20ba     pydis_start+186              .byte $f4, l0070
+    $20db     pydis_start+219              sha (l0070),y
+
+$0072  l0072 (Memory locations: Zero page)
+    $2044     pydis_start+68               dcp (l0072,x)
+    $2046     pydis_start+70               dcp l0072
+    $204b     pydis_start+75               dcp (l0072),y
+    $204d     pydis_start+77               dcp l0072,x
+    $2055     pydis_start+85               isc (l0072,x)
+    $2057     pydis_start+87               isc l0072
+    $205c     pydis_start+92               isc (l0072),y
+    $205e     pydis_start+94               isc l0072,x
+    $206f     pydis_start+111              lax (l0072,x)
+    $2071     pydis_start+113              lax l0072
+    $2076     pydis_start+118              lax (l0072),y
+    $2078     pydis_start+120              lax l0072,y
+    $2080     pydis_start+128              lax a:l0072,y
+
+$2000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$20e9  c20e9 (inline)
+    $20e6     pydis_start+230              beq c20e9
+
+$20ec  c20ec (inline)
+    $20e9     c20e9                        beq c20ec
+
+$20ef  c20ef (inline)
+    $20ec     c20ec                        beq c20ef
+
+$20f2  c20f2 (inline)
+    $20ef     c20ef                        beq c20f2
+
+$20f5  c20f5 (inline)
+    $20f2     c20f2                        beq c20f5
+
+$20f8  c20f8 (inline)
+    $20f5     c20f5                        beq c20f8
+
+$20fb  c20fb (inline)
+    $20f8     c20f8                        beq c20fb
+
+$20fe  c20fe (inline)
+    $20fb     c20fb                        beq c20fe
+
+$2101  c2101 (inline)
+    $20fe     c20fe                        beq c2101
+
+$2104  c2104 (inline)
+    $2101     c2101                        beq c2104
+
+$2107  c2107 (inline)
+    $2104     c2104                        beq c2107
+
+$210a  return_1 (inline)
+    $2107     c2107                        beq return_1
+
+$210b  pydis_end (inline)
+    (not referenced)
+
+$3000  l3000 (Memory locations: Other)
+    $2004     pydis_start+4                slo l3000
+    $200b     pydis_start+11               slo l3000,y
+    $200e     pydis_start+14               slo l3000,x
+    $2015     pydis_start+21               rla l3000
+    $201c     pydis_start+28               rla l3000,y
+    $201f     pydis_start+31               rla l3000,x
+    $2026     pydis_start+38               sre l3000
+    $202d     pydis_start+45               sre l3000,y
+    $2030     pydis_start+48               sre l3000,x
+    $2037     pydis_start+55               rra l3000
+    $203e     pydis_start+62               rra l3000,y
+    $2041     pydis_start+65               rra l3000,x
+    $206a     pydis_start+106              sax l3000
+    $20bc     pydis_start+188              nop l3000
+    $20bf     pydis_start+191              nop l3000,x
+    $20c2     pydis_start+194              .byte $3c, <l3000, >l3000
+    $20c5     pydis_start+197              .byte $5c, <l3000, >l3000
+    $20c8     pydis_start+200              .byte $7c, <l3000, >l3000
+    $20cb     pydis_start+203              .byte $dc, <l3000, >l3000
+    $20ce     pydis_start+206              .byte $fc, <l3000, >l3000
+    $20d5     pydis_start+213              las l3000,y
+    $20d8     pydis_start+216              tas l3000,y
+    $20dd     pydis_start+221              sha l3000,y
+    $20e0     pydis_start+224              shx l3000,y
+    $20e3     pydis_start+227              shy l3000,x
+
+$3456  l3456 (Memory locations: Other)
+    $2048     pydis_start+72               dcp l3456
+    $204f     pydis_start+79               dcp l3456,y
+    $2052     pydis_start+82               dcp l3456,x
+    $2059     pydis_start+89               isc l3456
+    $2060     pydis_start+96               isc l3456,y
+    $2063     pydis_start+99               isc l3456,x
+    $2073     pydis_start+115              lax l3456
+    $207a     pydis_start+122              lax l3456,y

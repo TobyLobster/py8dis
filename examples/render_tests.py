@@ -20,7 +20,7 @@ from pathlib import Path
 EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
 
-ASSEMBLERS_6502 = ["acme", "beebasm", "xa", "64tass"]
+ASSEMBLERS_6502 = ["acme", "beebasm", "xa", "64tass", "ca65"]
 
 # The bytes at &2000 onwards: 'lda #&41' (with 'A' as a character), 'lda
 # (&70),y', 'lda &0070' (absolute, with a zero page operand), 'rts', some
@@ -155,9 +155,9 @@ def make_tests():
         ("operand expression",
          ASSEMBLERS_6502, lambda: instruction(0x2002, 2, "lda", expression.Binary(Name("ptr"), "+", Num(1)))),
         ("force absolute addressing",
-         ["acme", "xa", "64tass"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), form=Instruction.FORCE_ABSOLUTE)),
+         ["acme", "xa", "64tass", "ca65"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), form=Instruction.FORCE_ABSOLUTE)),
         ("force absolute addressing, indexed *",
-         ["acme", "xa", "64tass"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
+         ["acme", "xa", "64tass", "ca65"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
         ("absolute addressing as data *",
          ["beebasm"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.AS_DATA,
                                           data_byte=Num(0xad, "hex"), listing_operand=Name("zp_value"))),
@@ -211,12 +211,18 @@ def make_tests():
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.ConstantDefinition("lives", "3", 12, "Starting number of lives", 24)),
         ("code start *",
          ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
+        ("code start, after other code *",
+         ["xa", "ca65"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
         ("include binary file *",
          ASSEMBLERS_6502, lambda: output.Directive("include_binary_file", "data.bin")),
         ("6510 undocumented opcode, immediate *",
          ASSEMBLERS_6502, with_6510([0x0b, 0x81])),
         ("6510 ALR, which acme calls ASR",
          ASSEMBLERS_6502, with_6510([0x4b, 0x0f])),
+        ("6510 LXA, which ca65 calls LAX",
+         ["acme", "64tass", "ca65"], with_6510([0xab, 0x12])),
+        ("6510 SBX, which ca65 calls AXS",
+         ["acme", "64tass", "ca65"], with_6510([0xcb, 0x12])),
         ("6510 undocumented opcode acme doesn't use",
          ASSEMBLERS_6502, with_6510([0x2b, 0x81])),
         ("6510 undocumented opcode, implied",
@@ -226,9 +232,9 @@ def make_tests():
         ("6510 undocumented opcode as data, zero page operand *",
          ["beebasm", "xa"], undocumented_zp),
         ("start, for the 6510 *",
-         ["acme", "64tass"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
+         ["acme", "64tass", "ca65"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
         ("start, for the 65C02 *",
-         ["acme", "64tass"], lambda: (config.set_cmos(True), output.Directive("disassembly_start"))[1]),
+         ["acme", "64tass", "ca65"], lambda: (config.set_cmos(True), output.Directive("disassembly_start"))[1]),
         ("end, saving to a file *",
          ["acme", "beebasm"], lambda: (setattr(session.current(), "output_filename", "Out.bin"), output.Directive("disassembly_end"))[1]),
     ]
@@ -260,6 +266,12 @@ EXPECTED = {
     'implied, 64tass, upper case': [
         '    RTS                                                               ; 2007: 60          `',
     ],
+    'implied, ca65': [
+        '    rts                                                               ; 2007: 60          `',
+    ],
+    'implied, ca65, upper case': [
+        '    RTS                                                               ; 2007: 60          `',
+    ],
     'immediate with a character, acme': [
         "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
@@ -270,6 +282,9 @@ EXPECTED = {
         "    lda #$41 // 'A'                                                   // 2000: a9 41       .A",
     ],
     'immediate with a character, 64tass': [
+        "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
+    ],
+    'immediate with a character, ca65': [
         "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
     'operand prefix and suffix, acme': [
@@ -296,6 +311,12 @@ EXPECTED = {
     'operand prefix and suffix, 64tass, upper case': [
         '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
     ],
+    'operand prefix and suffix, ca65': [
+        '    lda (ptr),y                                                       ; 2002: b1 70       .p',
+    ],
+    'operand prefix and suffix, ca65, upper case': [
+        '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
+    ],
     'operand expression, acme': [
         '    lda ptr + 1                                                       ; 2002: b1 70       .p',
     ],
@@ -308,6 +329,9 @@ EXPECTED = {
     'operand expression, 64tass': [
         '    lda ptr + 1                                                       ; 2002: b1 70       .p',
     ],
+    'operand expression, ca65': [
+        '    lda ptr + 1                                                       ; 2002: b1 70       .p',
+    ],
     'force absolute addressing, acme': [
         '    lda+2 zp_value                                                    ; 2004: ad 70 00    .p.',
     ],
@@ -316,6 +340,9 @@ EXPECTED = {
     ],
     'force absolute addressing, 64tass': [
         '    lda @w zp_value                                                   ; 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, ca65': [
+        '    lda a:zp_value                                                    ; 2004: ad 70 00    .p.',
     ],
     'force absolute addressing, indexed, acme': [
         '    lda+2 zp_value,x                                                  ; 2004: ad 70 00    .p.',
@@ -334,6 +361,12 @@ EXPECTED = {
     ],
     'force absolute addressing, indexed, 64tass, upper case': [
         '    LDA @W zp_value,X                                                 ; 2004: AD 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, ca65': [
+        '    lda a:zp_value,x                                                  ; 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, ca65, upper case': [
+        '    LDA A:zp_value,X                                                  ; 2004: AD 70 00    .p.',
     ],
     'absolute addressing as data, beebasm': [
         '    equb &ad, <(zp_value), >(zp_value) ; lda+2 zp_value,x             ; 2004: ad 70 00    .p.',
@@ -363,6 +396,9 @@ EXPECTED = {
         '    lda #$41                                                          // 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
     ],
     '6502 CPU state, 64tass': [
+        '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
+    ],
+    '6502 CPU state, ca65': [
         '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
     ],
     '8080 CPU state, z88dk-8080': [
@@ -401,6 +437,12 @@ EXPECTED = {
     'byte data, 64tass, upper case': [
         '    .BYTE 1, 2, 3, $FF                                                ; 2008: 01 02 03... ...',
     ],
+    'byte data, ca65': [
+        '    .byte 1, 2, 3, $ff                                                ; 2008: 01 02 03... ...',
+    ],
+    'byte data, ca65, upper case': [
+        '    .BYTE 1, 2, 3, $FF                                                ; 2008: 01 02 03... ...',
+    ],
     'byte data, z88dk-8080': [
         '    db 1, 2, 3, $ff                                                   ; 2008: 01 02 03... ...',
     ],
@@ -423,6 +465,10 @@ EXPECTED = {
         '    .byte 1,   2                                                      ; 2008: 01 02       ..',
         '    .byte 3, $ff                                                      ; 200a: 03 ff       ..',
     ],
+    'byte data, two per line, ca65': [
+        '    .byte 1,   2                                                      ; 2008: 01 02       ..',
+        '    .byte 3, $ff                                                      ; 200a: 03 ff       ..',
+    ],
     'word data, acme': [
         '    !word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
@@ -433,6 +479,9 @@ EXPECTED = {
         '    .word $1234, $5678                                                // 200c: 34 12 78... 4.x',
     ],
     'word data, 64tass': [
+        '    .word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
+    ],
+    'word data, ca65': [
         '    .word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
     'word data, z88dk-8080': [
@@ -462,6 +511,12 @@ EXPECTED = {
     'string, 64tass, upper case': [
         '    .TEXT "Hi!", $0D                                                  ; 2010: 48 69 21... Hi!',
     ],
+    'string, ca65': [
+        '    .byte "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
+    ],
+    'string, ca65, upper case': [
+        '    .BYTE "Hi!", $0D                                                  ; 2010: 48 69 21... Hi!',
+    ],
     'ASCII string with a quote, acme': [
         '    !text "H", \'"\', "i", \'"\'                                          ; 2010: 48 22 69... H"i',
     ],
@@ -486,6 +541,12 @@ EXPECTED = {
     'ASCII string with a quote, 64tass, upper case': [
         '    .TEXT "H""i"""                                                    ; 2010: 48 22 69... H"i',
     ],
+    'ASCII string with a quote, ca65': [
+        '    .byte "H", \'"\', "i", \'"\'                                          ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, ca65, upper case': [
+        '    .BYTE "H", \'"\', "i", \'"\'                                          ; 2010: 48 22 69... H"i',
+    ],
     'operand with a low byte in an expression, acme': [
         '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
     ],
@@ -496,6 +557,9 @@ EXPECTED = {
         '    lda #(table & $ff) + 1                                            // 2000: a9 41       .A',
     ],
     'operand with a low byte in an expression, 64tass': [
+        '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
+    ],
+    'operand with a low byte in an expression, ca65': [
         '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
     ],
     'PETSCII string, acme': [
@@ -526,6 +590,14 @@ EXPECTED = {
     'PETSCII string, 64tass, upper case': [
         '    .TEXT "Hello""", $0D                                              ; 2010: C8 45 4C... Hel',
     ],
+    'PETSCII string, ca65': [
+        '    .byte $c8, $45, $4c, $4c, $4f, $22 ; petscii "Hello", $22         ; 2010: c8 45 4c... Hel',
+        '    .byte $0d ; petscii $0d                                           ; 2016: 0d          .',
+    ],
+    'PETSCII string, ca65, upper case': [
+        '    .BYTE $C8, $45, $4C, $4C, $4F, $22 ; petscii "Hello", $22         ; 2010: C8 45 4C... Hel',
+        '    .BYTE $0D ; petscii $0D                                           ; 2016: 0D          .',
+    ],
     'screen code string, acme': [
         '    !scr "@ab["                                                       ; 2010: 00 01 02... @ab',
     ],
@@ -554,6 +626,12 @@ EXPECTED = {
         '    .TEXT "@ab["                                                      ; 2010: 00 01 02... @ab',
         '    .ENC "none"',
     ],
+    'screen code string, ca65': [
+        '    .byte 0, 1, 2, $1b ; screen "@ab["                                ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, ca65, upper case': [
+        '    .BYTE 0, 1, 2, $1B ; screen "@ab["                                ; 2010: 00 01 02... @ab',
+    ],
     "ASCII string with PETSCII the session's encoding, acme": [
         '    !text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
     ],
@@ -567,6 +645,9 @@ EXPECTED = {
         '    .enc "none"',
         '    .text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
         '    .enc "petscii"',
+    ],
+    "ASCII string with PETSCII the session's encoding, ca65": [
+        '    .byte "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
     ],
     'PETSCII string over two lines, beebasm': [
         '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',
@@ -585,6 +666,9 @@ EXPECTED = {
     "byte data with PETSCII the session's encoding, 64tass": [
         '    .byte $48, $69, $21, $0d                                          ; 2010: 48 69 21... h.!',
     ],
+    "byte data with PETSCII the session's encoding, ca65": [
+        '    .byte $48, $69, $21, $0d                                          ; 2010: 48 69 21... h.!',
+    ],
     'blank, acme': [
         '',
     ],
@@ -597,6 +681,9 @@ EXPECTED = {
     'blank, 64tass': [
         '',
     ],
+    'blank, ca65': [
+        '',
+    ],
     'one line comment, acme': [
         '; Memory locations',
     ],
@@ -607,6 +694,9 @@ EXPECTED = {
         '// Memory locations',
     ],
     'one line comment, 64tass': [
+        '; Memory locations',
+    ],
+    'one line comment, ca65': [
         '; Memory locations',
     ],
     'one line comment, z88dk-8080': [
@@ -624,6 +714,9 @@ EXPECTED = {
     'empty one line comment, 64tass': [
         ';',
     ],
+    'empty one line comment, ca65': [
+        ';',
+    ],
     'word wrapped comment, acme': [
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
@@ -634,6 +727,9 @@ EXPECTED = {
         '    // This is a long comment which is word wrapped, since it is much too long to fit\n    // on one line of the output.',
     ],
     'word wrapped comment, 64tass': [
+        '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
+    ],
+    'word wrapped comment, ca65': [
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
     'constant definition, acme': [
@@ -658,6 +754,12 @@ EXPECTED = {
         'lives       = 3         ; Starting number of lives',
     ],
     'constant definition, 64tass, upper case': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, ca65': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, ca65, upper case': [
         'lives       = 3         ; Starting number of lives',
     ],
     'constant definition, z88dk-8080': [
@@ -706,6 +808,16 @@ EXPECTED = {
         '    * = $2000',
         '',
     ],
+    'code start, ca65': [
+        '',
+        '    .org $2000',
+        '',
+    ],
+    'code start, ca65, upper case': [
+        '',
+        '    .ORG $2000',
+        '',
+    ],
     'code start, z88dk-8080': [
         '',
         '    org $2000',
@@ -714,6 +826,32 @@ EXPECTED = {
     'code start, z88dk-8080, upper case': [
         '',
         '    ORG $2000',
+        '',
+    ],
+    'code start, after other code, xa': [
+        'end_of_part_1',
+        '    * = $3000',
+        '.dsb (*-end_of_part_1), 0',
+        '    * = $3000',
+        '',
+    ],
+    'code start, after other code, xa, upper case': [
+        'end_of_part_1',
+        '    * = $3000',
+        '.DSB (*-end_of_part_1), 0',
+        '    * = $3000',
+        '',
+    ],
+    'code start, after other code, ca65': [
+        '',
+        '    .res $3000 - *',
+        '    .org $3000',
+        '',
+    ],
+    'code start, after other code, ca65, upper case': [
+        '',
+        '    .RES $3000 - *',
+        '    .ORG $3000',
         '',
     ],
     'include binary file, acme': [
@@ -740,6 +878,12 @@ EXPECTED = {
     'include binary file, 64tass, upper case': [
         '    .BINARY "data.bin"',
     ],
+    'include binary file, ca65': [
+        '    .incbin "data.bin"',
+    ],
+    'include binary file, ca65, upper case': [
+        '    .INCBIN "data.bin"',
+    ],
     '6510 undocumented opcode, immediate, acme': [
         '    anc #$81                                                          ; 2000: 0b 81       ..',
     ],
@@ -764,6 +908,12 @@ EXPECTED = {
     '6510 undocumented opcode, immediate, 64tass, upper case': [
         '    ANC #$81                                                          ; 2000: 0B 81       ..',
     ],
+    '6510 undocumented opcode, immediate, ca65': [
+        '    anc #$81                                                          ; 2000: 0b 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, ca65, upper case': [
+        '    ANC #$81                                                          ; 2000: 0B 81       ..',
+    ],
     '6510 ALR, which acme calls ASR, acme': [
         '    asr #$0f                                                          ; 2000: 4b 0f       K.',
     ],
@@ -776,6 +926,27 @@ EXPECTED = {
     '6510 ALR, which acme calls ASR, 64tass': [
         '    alr #$0f                                                          ; 2000: 4b 0f       K.',
     ],
+    '6510 ALR, which acme calls ASR, ca65': [
+        '    alr #$0f                                                          ; 2000: 4b 0f       K.',
+    ],
+    '6510 LXA, which ca65 calls LAX, acme': [
+        '    lxa #$12                                                          ; 2000: ab 12       ..',
+    ],
+    '6510 LXA, which ca65 calls LAX, 64tass': [
+        '    lxa #$12                                                          ; 2000: ab 12       ..',
+    ],
+    '6510 LXA, which ca65 calls LAX, ca65': [
+        '    lax #$12                                                          ; 2000: ab 12       ..',
+    ],
+    '6510 SBX, which ca65 calls AXS, acme': [
+        '    sbx #$12                                                          ; 2000: cb 12       ..',
+    ],
+    '6510 SBX, which ca65 calls AXS, 64tass': [
+        '    sbx #$12                                                          ; 2000: cb 12       ..',
+    ],
+    '6510 SBX, which ca65 calls AXS, ca65': [
+        '    axs #$12                                                          ; 2000: cb 12       ..',
+    ],
     "6510 undocumented opcode acme doesn't use, acme": [
         '    !byte $2b, $81 ; anc #$81 (undocumented)                          ; 2000: 2b 81       +.',
     ],
@@ -786,6 +957,9 @@ EXPECTED = {
         '    .byt $2b, $81 // anc #$81 (undocumented)                          // 2000: 2b 81       +.',
     ],
     "6510 undocumented opcode acme doesn't use, 64tass": [
+        '    .byte $2b, $81 ; anc #$81 (undocumented)                          ; 2000: 2b 81       +.',
+    ],
+    "6510 undocumented opcode acme doesn't use, ca65": [
         '    .byte $2b, $81 ; anc #$81 (undocumented)                          ; 2000: 2b 81       +.',
     ],
     '6510 undocumented opcode, implied, acme': [
@@ -800,6 +974,9 @@ EXPECTED = {
     '6510 undocumented opcode, implied, 64tass': [
         '    .byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
     ],
+    '6510 undocumented opcode, implied, ca65': [
+        '    .byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
+    ],
     '6510 JAM, with cycles, acme': [
         '    jam                                                               ; 2000: 02          .   halts',
     ],
@@ -810,6 +987,9 @@ EXPECTED = {
         '    .byt $02 // jam (undocumented)                                    // 2000: 02          .   halts',
     ],
     '6510 JAM, with cycles, 64tass': [
+        '    jam                                                               ; 2000: 02          .   halts',
+    ],
+    '6510 JAM, with cycles, ca65': [
         '    jam                                                               ; 2000: 02          .   halts',
     ],
     '6510 undocumented opcode as data, zero page operand, beebasm': [
@@ -840,6 +1020,30 @@ EXPECTED = {
         '.CPU "6502i"',
         '',
     ],
+    'start, for the 6510, ca65': [
+        '; Assemble with ca65 and its linker (from cc65), to a plain binary:',
+        ';     cl65 -t none -C ca65.cfg -o program.bin this_file.asm',
+        "; where ca65.cfg (as in py8dis's examples/ca65.cfg) holds:",
+        ';     MEMORY { MAIN: start = $0000, size = $10000, file = %O; }',
+        ';     SEGMENTS { CODE: load = MAIN, type = rw; }',
+        "; ('-t none': cl65's default target is the C64, whose character map would change",
+        '; the strings.)',
+        '',
+        '    .setcpu "6502X"',
+        '',
+    ],
+    'start, for the 6510, ca65, upper case': [
+        '; Assemble with ca65 and its linker (from cc65), to a plain binary:',
+        ';     cl65 -t none -C ca65.cfg -o program.bin this_file.asm',
+        "; where ca65.cfg (as in py8dis's examples/ca65.cfg) holds:",
+        ';     MEMORY { MAIN: start = $0000, size = $10000, file = %O; }',
+        ';     SEGMENTS { CODE: load = MAIN, type = rw; }',
+        "; ('-t none': cl65's default target is the C64, whose character map would change",
+        '; the strings.)',
+        '',
+        '    .SETCPU "6502X"',
+        '',
+    ],
     'start, for the 65C02, acme': [
         '!cpu 65c02',
         '',
@@ -854,6 +1058,30 @@ EXPECTED = {
     ],
     'start, for the 65C02, 64tass, upper case': [
         '.CPU "65c02"',
+        '',
+    ],
+    'start, for the 65C02, ca65': [
+        '; Assemble with ca65 and its linker (from cc65), to a plain binary:',
+        ';     cl65 -t none -C ca65.cfg -o program.bin this_file.asm',
+        "; where ca65.cfg (as in py8dis's examples/ca65.cfg) holds:",
+        ';     MEMORY { MAIN: start = $0000, size = $10000, file = %O; }',
+        ';     SEGMENTS { CODE: load = MAIN, type = rw; }',
+        "; ('-t none': cl65's default target is the C64, whose character map would change",
+        '; the strings.)',
+        '',
+        '    .setcpu "65C02"',
+        '',
+    ],
+    'start, for the 65C02, ca65, upper case': [
+        '; Assemble with ca65 and its linker (from cc65), to a plain binary:',
+        ';     cl65 -t none -C ca65.cfg -o program.bin this_file.asm',
+        "; where ca65.cfg (as in py8dis's examples/ca65.cfg) holds:",
+        ';     MEMORY { MAIN: start = $0000, size = $10000, file = %O; }',
+        ';     SEGMENTS { CODE: load = MAIN, type = rw; }',
+        "; ('-t none': cl65's default target is the C64, whose character map would change",
+        '; the strings.)',
+        '',
+        '    .SETCPU "65C02"',
         '',
     ],
     'end, saving to a file, acme': [
