@@ -1,0 +1,5 @@
+pydis_start = $8000
+start       = $8000
+loop_c804e  = $804e
+return_1    = $805e
+pydis_end   = $805f

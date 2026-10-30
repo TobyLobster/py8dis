@@ -17,6 +17,7 @@ import collections
 import classification
 import config
 import cpu
+import cpuz80state
 import disassembly
 import expression
 import memorymanager
@@ -417,9 +418,8 @@ class CpuZ80(cpu.Cpu):
             assert binary_addr is not None
         return [binary_addr]
 
-    def calculate_cpu_states(self):
-        # (The registers and flags aren't tracked yet, so nothing is known)
-        pass
+    # What's known about the registers and flags (see cpuz80state.py)
+    CpuState = cpuz80state.CpuState
 
     class Opcode:
         """An opcode, with its prefix (if any): 'key' is its bytes, without
@@ -445,7 +445,19 @@ class CpuZ80(cpu.Cpu):
             session.current().cpu.indent_level_dict[binary_addr] += 1
 
         def update_cpu_state(self, binary_addr, state):
-            pass
+            # Nothing is known after an instruction the code can't continue
+            # from (e.g. JP), or where code can come from elsewhere (at a
+            # label)
+            runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
+            if state.block_end or (runtime_addr is not None and runtime_addr in session.current().labels.labels):
+                state.clear()
+            memory_binary = session.current().memory.binary
+            if len(self.key) == 3:
+                operands = [memory_binary[binary_addr + 2]]         # (DD CB d op: the displacement)
+            else:
+                operands = [memory_binary[binary_addr + i] for i in range(len(self.key), self.length())]
+            next_addr = None if runtime_addr is None else (runtime_addr + self.length()) & 0xffff
+            cpuz80state.update_state(state, self.key, operands, next_addr)
 
         def cycles_description(self, binary_addr):
             """The cycles the instruction takes, as shown with

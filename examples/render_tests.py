@@ -95,19 +95,27 @@ def with_6510(opcode_bytes, show_cycles=False):
         return cpu.opcodes[opcode_bytes[0]].as_lines(binary_loc(0x2000), None)[0]
     return make
 
-def with_z80(opcode_bytes, show_cycles=False):
+def with_z80(opcode_bytes, show_cycles=False, show_cpu_state=False):
     """The instruction made by the Z80 CPU for the given bytes at &2000, as
-    when disassembling. (Only for instructions without an address, since
-    naming labels isn't part of rendering.)"""
+    when disassembling, with the CPU state it leaves if 'show_cpu_state'
+    (starting with nothing known). (Only for instructions without an address,
+    since naming labels isn't part of rendering.)"""
     def make():
         import config
         import cpuz80
+        import memorymanager
         import session
         config.set_show_cycles(show_cycles)
+        config.set_show_cpu_state(show_cpu_state)
         cpu = cpuz80.CpuZ80()
         session.current().cpu = cpu
         session.current().memory.binary[0x2000:0x2000 + len(opcode_bytes)] = opcode_bytes
-        return cpu.opcode_at(0x2000).as_lines(binary_loc(0x2000), None)[0]
+        opcode = cpu.opcode_at(0x2000)
+        if show_cpu_state:
+            state = cpu.CpuState()
+            opcode.update_cpu_state(memorymanager.BinaryAddr(0x2000), state)
+            cpu.cpu_states[0x2000] = state
+        return opcode.as_lines(binary_loc(0x2000), None)[0]
     return make
 
 def undocumented_zp():
@@ -196,6 +204,10 @@ def make_tests():
          ["z88dk"], with_z80([0xdd, 0xcb, 0xfe, 0x41])),
         ("Z80 prefix with no effect",
          ["z88dk"], with_z80([0xdd, 0x00])),
+        ("Z80 CPU state",
+         ["z88dk"], with_z80([0xdd, 0x21, 0x34, 0x12], show_cpu_state=True)),
+        ("Z80 CPU state, flags",
+         ["z88dk"], with_z80([0xaf], show_cpu_state=True)),
         ("Z80 cycles",
          ["z88dk"], with_z80([0xed, 0xb0], show_cycles=True)),
         ("6502 CPU state",
@@ -446,6 +458,12 @@ EXPECTED = {
     ],
     'Z80 prefix with no effect, z88dk': [
         '    db $dd ; prefix with no effect (undocumented)                     ; 2000: dd          .',
+    ],
+    'Z80 CPU state, z88dk': [
+        '    ld ix,$1234                                                       ; 2000: dd 21 34... .!4 A:-- BC:---- DE:---- HL:---- IX:1234 IY:---- SP:---- ------',
+    ],
+    'Z80 CPU state, flags, z88dk': [
+        '    xor a                                                             ; 2000: af          .   A:00 BC:---- DE:---- HL:---- IX:---- IY:---- SP:---- sZhPnc',
     ],
     'Z80 cycles, z88dk': [
         '    ldir                                                              ; 2000: ed b0       ..  16/21 cycles',
