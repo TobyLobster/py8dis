@@ -1,72 +1,75 @@
+; Constants
+ula_port    equ $fe
+
 ; Memory locations
-l5c08   equ $5c08
-l5c09   equ $5c09
-l5c0a   equ $5c0a
-l5c0b   equ $5c0b
-l5c0c   equ $5c0c
-l5c0d   equ $5c0d
-l5c0e   equ $5c0e
-l5c0f   equ $5c0f
-l5c16   equ $5c16
-l5c36   equ $5c36
-l5c38   equ $5c38
-l5c3a   equ $5c3a
-l5c3b   equ $5c3b
-l5c3d   equ $5c3d
-l5c3f   equ $5c3f
-l5c41   equ $5c41
-l5c42   equ $5c42
-l5c44   equ $5c44
-l5c45   equ $5c45
-l5c47   equ $5c47
-l5c48   equ $5c48
-l5c49   equ $5c49
-l5c4b   equ $5c4b
-l5c4d   equ $5c4d
-l5c4f   equ $5c4f
-l5c51   equ $5c51
-l5c53   equ $5c53
-l5c55   equ $5c55
-l5c57   equ $5c57
-l5c59   equ $5c59
-l5c5b   equ $5c5b
-l5c5d   equ $5c5d
-l5c5f   equ $5c5f
-l5c61   equ $5c61
-l5c63   equ $5c63
-l5c65   equ $5c65
-l5c66   equ $5c66
-l5c67   equ $5c67
-l5c68   equ $5c68
-l5c6a   equ $5c6a
-l5c6b   equ $5c6b
-l5c6c   equ $5c6c
-l5c6e   equ $5c6e
-l5c71   equ $5c71
-l5c72   equ $5c72
-l5c74   equ $5c74
-l5c76   equ $5c76
-l5c78   equ $5c78
-l5c7b   equ $5c7b
-l5c7d   equ $5c7d
-l5c7e   equ $5c7e
-l5c80   equ $5c80
-l5c82   equ $5c82
-l5c84   equ $5c84
-l5c86   equ $5c86
-l5c88   equ $5c88
-l5c8a   equ $5c8a
-l5c8b   equ $5c8b
-l5c8c   equ $5c8c
-l5c8d   equ $5c8d
-l5c8f   equ $5c8f
-l5c91   equ $5c91
-l5ca1   equ $5ca1
-l5cab   equ $5cab
-l5cac   equ $5cac
-l5cb0   equ $5cb0
-l5cb2   equ $5cb2
-l5cb4   equ $5cb4
+
+; System variables ($5c00-$5cb5)
+kstate  equ $5c00
+last_k  equ $5c08
+repdel  equ $5c09
+repper  equ $5c0a
+defadd  equ $5c0b
+k_data  equ $5c0d
+tvdata  equ $5c0e
+strms   equ $5c10
+chars   equ $5c36
+rasp    equ $5c38
+pip     equ $5c39
+err_nr  equ $5c3a
+flags   equ $5c3b
+tv_flag equ $5c3c
+err_sp  equ $5c3d
+list_sp equ $5c3f
+mode    equ $5c41
+newppc  equ $5c42
+nsppc   equ $5c44
+ppc     equ $5c45
+subppc  equ $5c47
+bordcr  equ $5c48
+e_ppc   equ $5c49
+vars    equ $5c4b
+dest    equ $5c4d
+chans   equ $5c4f
+curchl  equ $5c51
+prog    equ $5c53
+nxtlin  equ $5c55
+datadd  equ $5c57
+e_line  equ $5c59
+k_cur   equ $5c5b
+ch_add  equ $5c5d
+x_ptr   equ $5c5f
+worksp  equ $5c61
+stkbot  equ $5c63
+stkend  equ $5c65
+breg    equ $5c67
+mem     equ $5c68
+flags2  equ $5c6a
+df_sz   equ $5c6b
+s_top   equ $5c6c
+oldppc  equ $5c6e
+osppc   equ $5c70
+flagx   equ $5c71
+strlen  equ $5c72
+t_addr  equ $5c74
+seed    equ $5c76
+frames  equ $5c78
+udg     equ $5c7b
+coords  equ $5c7d
+p_posn  equ $5c7f
+pr_cc   equ $5c80
+echo_e  equ $5c82
+df_cc   equ $5c84
+df_ccl  equ $5c86
+s_posn  equ $5c88
+s_posnl equ $5c8a
+scr_ct  equ $5c8c
+attr_p  equ $5c8d
+attr_t  equ $5c8f
+p_flag  equ $5c91
+membot  equ $5c92
+nmiadd  equ $5cb0
+ramtop  equ $5cb2
+p_ramt  equ $5cb4
 
     org $00
 
@@ -79,24 +82,42 @@ start:
 
 ; $08 referenced 37 times by $046c, $0552, $0642, $0670, $0806, $0c86, $0d00, $0f0a, $15c4, $15e4, $160e, $1725, $1765, $1b7b, $1bb0, $1bec, $1c2e, $1c8a, $1cee, $1d84, $1dd8, $1e08, $1e9f, $1eda, $1f38, $21ce, $21d4, $2244, $24f9, $2812, $288b, $2a20, $31ad, $34e7, $35dc, $3703, $371a
 error_1:
-    ld hl,(l5c5d)                                                     ; 0008: 2a 5d 5c    *]\ 16 cycles
-    ld (l5c5f),hl                                                     ; 000b: 22 5f 5c    "_\ 16 cycles
+    ld hl,(ch_add)                                                    ; 0008: 2a 5d 5c    *]\ 16 cycles
+    ld (x_ptr),hl                                                     ; 000b: 22 5f 5c    "_\ 16 cycles
     jr error_2                                                        ; 000e: 18 43       .C  12 cycles
 
+; ***************************************************************************************
+; Print a character
+; 
+; On Entry:
+;     A: the character
+; ***************************************************************************************
 ; $10 referenced 21 times by $07ad, $07b6, $0c3d, $1341, $1359, $1838, $187c, $196c, $1ffa, $201e, $2020, $2022, $2042, $205e, $220d, $220f, $2df0, $2df6, $2f64, $2f75, $2f85
 print_a:
     jp print_a_2                                                      ; 0010: c3 f2 15    ... 10 cycles
 
     db $ff, $ff, $ff, $ff, $ff                                        ; 0013: ff ff ff... ...
 
+; ***************************************************************************************
+; Get the current BASIC character
+; 
+; On Exit:
+;     A: the character, at CH_ADD
+; ***************************************************************************************
 ; $18 referenced 48 times by $0652, $06e4, $12dd, $1805, $180b, $1b32, $1b6c, $1b6f, $1bf4, $1cd5, $1df5, $1e10, $1e1e, $1fdf, $1ffc, $204e, $20ce, $21bf, $21ca, $21e6, $2320, $2382, $24fb, $252a, $25b3, $2695, $26b5, $2712, $273a, $27dc, $2879, $2886, $28b6, $2935, $2942, $29aa, $29ba, $29c4, $29e0, $29f2, $2a1b, $2a3c, $2a64, $2a72, $2a8d, $2c41, $2cda, $3600
 get_char:
-    ld hl,(l5c5d)                                                     ; 0018: 2a 5d 5c    *]\ 16 cycles
+    ld hl,(ch_add)                                                    ; 0018: 2a 5d 5c    *]\ 16 cycles
     ld a,(hl)                                                         ; 001b: 7e          ~   7 cycles
 ; $1c referenced 1 time by $23
 test_char:
     call skip_over                                                    ; 001c: cd 7d 00    .}. 17 cycles
     ret nc                                                            ; 001f: d0          .   5/11 cycles
+; ***************************************************************************************
+; Get the next BASIC character
+; 
+; On Exit:
+;     A: the character, at CH_ADD
+; ***************************************************************************************
 ; $20 referenced 83 times by $065f, $0693, $0698, $06ac, $06cf, $06f5, $072a, $1814, $1992, $1a02, $1b28, $1b42, $1b74, $1c79, $1c81, $1d07, $1d73, $1d79, $1d7c, $1dec, $1e34, $1f73, $1f7c, $1f81, $1f8d, $1f93, $1fa3, $1faa, $1faf, $2012, $2067, $2074, $20ca, $20d4, $20dc, $21e1, $21fa, $2326, $238d, $2522, $25af, $25e8, $25f1, $2630, $2637, $266e, $2678, $2681, $270e, $2720, $2791, $27c2, $27c9, $27cf, $27d4, $27e1, $27e9, $27f7, $27fb, $2801, $2802, $287e, $289a, $289b, $28a7, $28c1, $28db, $28de, $2948, $29d6, $29eb, $2a22, $2a48, $2a58, $2a82, $2c2e, $2c4a, $2ca2, $2cc3, $2ccb, $2ce8, $2cf4, $2cfe
 next_char:
     call ch_add_plus_1                                                ; 0020: cd 74 00    .t. 17 cycles
@@ -110,23 +131,33 @@ fp_calc:
 
     db $ff, $ff, $ff, $ff, $ff                                        ; 002b: ff ff ff... ...
 
+; ***************************************************************************************
+; Make space in the workspace
+; 
+; On Entry:
+;     BC: the number of bytes
+; 
+; On Exit:
+;     DE: the first byte
+;     HL: the last byte
+; ***************************************************************************************
 ; $30 referenced 12 times by $0621, $08be, $211c, $256f, $25c8, $265b, $2b83, $35ab, $35d4, $35ec, $3622, $365d
 bc_spaces:
     push bc                                                           ; 0030: c5          .   11 cycles
-    ld hl,(l5c61)                                                     ; 0031: 2a 61 5c    *a\ 16 cycles
+    ld hl,(worksp)                                                    ; 0031: 2a 61 5c    *a\ 16 cycles
     push hl                                                           ; 0034: e5          .   11 cycles
     jp reserve                                                        ; 0035: c3 9e 16    ... 10 cycles
 
 mask_int:
     push af                                                           ; 0038: f5          .   11 cycles
     push hl                                                           ; 0039: e5          .   11 cycles
-    ld hl,(l5c78)                                                     ; 003a: 2a 78 5c    *x\ 16 cycles
+    ld hl,(frames)                                                    ; 003a: 2a 78 5c    *x\ 16 cycles
     inc hl                                                            ; 003d: 23          #   6 cycles
-    ld (l5c78),hl                                                     ; 003e: 22 78 5c    "x\ 16 cycles
+    ld (frames),hl                                                    ; 003e: 22 78 5c    "x\ 16 cycles
     ld a,h                                                            ; 0041: 7c          |   4 cycles
     or l                                                              ; 0042: b5          .   4 cycles
     jr nz,key_int                                                     ; 0043: 20 03        .  7/12 cycles
-    inc (iy+64)                                                       ; 0045: fd 34 40    .4@ 23 cycles
+    inc (iy+(frames+2) - err_nr)                                      ; 0045: fd 34 40    .4@ 23 cycles
 ; $48 referenced 1 time by $43
 key_int:
     push bc                                                           ; 0048: c5          .   11 cycles
@@ -145,8 +176,8 @@ error_2:
     ld l,(hl)                                                         ; 0054: 6e          n   7 cycles
 ; $55 referenced 1 time by $1f17
 error_3:
-    ld (iy+0),l                                                       ; 0055: fd 75 00    .u. 19 cycles
-    ld sp,(l5c3d)                                                     ; 0058: ed 7b 3d... .{= 20 cycles
+    ld (iy+err_nr - err_nr),l                                         ; 0055: fd 75 00    .u. 19 cycles
+    ld sp,(err_sp)                                                    ; 0058: ed 7b 3d... .{= 20 cycles
     jp set_stk                                                        ; 005c: c3 c5 16    ... 10 cycles
 
     db $ff, $ff, $ff, $ff, $ff, $ff, $ff                              ; 005f: ff ff ff... ...
@@ -154,7 +185,7 @@ error_3:
 reset:
     push af                                                           ; 0066: f5          .   11 cycles
     push hl                                                           ; 0067: e5          .   11 cycles
-    ld hl,(l5cb0)                                                     ; 0068: 2a b0 5c    *.\ 16 cycles
+    ld hl,(nmiadd)                                                    ; 0068: 2a b0 5c    *.\ 16 cycles
     ld a,h                                                            ; 006b: 7c          |   4 cycles
     or l                                                              ; 006c: b5          .   4 cycles
     jr nz,no_reset                                                    ; 006d: 20 01        .  7/12 cycles
@@ -168,13 +199,13 @@ no_reset:
 
 ; $74 referenced 4 times by $20, $250f, $251c, $2d4a
 ch_add_plus_1:
-    ld hl,(l5c5d)                                                     ; 0074: 2a 5d 5c    *]\ 16 cycles
+    ld hl,(ch_add)                                                    ; 0074: 2a 5d 5c    *]\ 16 cycles
 ; $77 referenced 2 times by $1e0a, $26b0
 temp_ptr1:
     inc hl                                                            ; 0077: 23          #   6 cycles
 ; $78 referenced 1 time by $1e1b
 temp_ptr2:
-    ld (l5c5d),hl                                                     ; 0078: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 0078: 22 5d 5c    "]\ 16 cycles
     ld a,(hl)                                                         ; 007b: 7e          ~   7 cycles
     ret                                                               ; 007c: c9          .   10 cycles
 
@@ -196,7 +227,7 @@ skip_over:
 ; $90 referenced 1 time by $8d
 skips:
     scf                                                               ; 0090: 37          7   4 cycles
-    ld (l5c5d),hl                                                     ; 0091: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 0091: 22 5d 5c    "]\ 16 cycles
     ret                                                               ; 0094: c9          .   10 cycles
 
 tkn_table:
@@ -308,6 +339,12 @@ main_keys:
     db $c7, $3c, $c3, $3e, $c5, $2f, $c9, $60, $c6, $3a, $d0, $ce     ; 027a: c7 3c c3... .<.
     db $a8, $ca, $d3, $d4, $d1, $d2, $a9, $cf                         ; 0286: a8 ca d3... ...
 
+; ***************************************************************************************
+; Scan the keyboard
+; 
+; On Exit:
+;     DE: the keys pressed (E the key, D a shift key, $FF if none)
+; ***************************************************************************************
 ; $028e referenced 2 times by $02bf, $2646
 key_scan:
     ld l,$2f                                                          ; 028e: 2e 2f       ./  7 cycles
@@ -353,7 +390,7 @@ key_done:
 
 ; $02bf referenced 1 time by $4a
 keyboard:
-    call key_scan                                                     ; 02bf: cd 8e 02    ... 17 cycles
+    call key_scan                                                     ; 02bf: cd 8e 02    ... 17 cycles    ; Scan the keyboard
     ret nz                                                            ; 02c2: c0          .   5/11 cycles
     ld hl,$5c00                                                       ; 02c3: 21 00 5c    !.\ 10 cycles
 ; $02c6 referenced 1 time by $02d6
@@ -392,19 +429,19 @@ k_new:
     inc hl                                                            ; 02f3: 23          #   6 cycles
     ld (hl),5                                                         ; 02f4: 36 05       6.  10 cycles
     inc hl                                                            ; 02f6: 23          #   6 cycles
-    ld a,(l5c09)                                                      ; 02f7: 3a 09 5c    :.\ 13 cycles
+    ld a,(repdel)                                                     ; 02f7: 3a 09 5c    :.\ 13 cycles
     ld (hl),a                                                         ; 02fa: 77          w   7 cycles
     inc hl                                                            ; 02fb: 23          #   6 cycles
-    ld c,(iy+7)                                                       ; 02fc: fd 4e 07    .N. 19 cycles
-    ld d,(iy+1)                                                       ; 02ff: fd 56 01    .V. 19 cycles
+    ld c,(iy+mode - err_nr)                                           ; 02fc: fd 4e 07    .N. 19 cycles
+    ld d,(iy+flags - err_nr)                                          ; 02ff: fd 56 01    .V. 19 cycles
     push hl                                                           ; 0302: e5          .   11 cycles
     call k_decode                                                     ; 0303: cd 33 03    .3. 17 cycles
     pop hl                                                            ; 0306: e1          .   10 cycles
     ld (hl),a                                                         ; 0307: 77          w   7 cycles
 ; $0308 referenced 1 time by $031c
 k_end:
-    ld (l5c08),a                                                      ; 0308: 32 08 5c    2.\ 13 cycles
-    set 5,(iy+1)                                                      ; 030b: fd cb 01... ... 23 cycles
+    ld (last_k),a                                                     ; 0308: 32 08 5c    2.\ 13 cycles
+    set 5,(iy+flags - err_nr)                                         ; 030b: fd cb 01... ... 23 cycles
     ret                                                               ; 030f: c9          .   10 cycles
 
 ; $0310 referenced 2 times by $02e0, $02e7
@@ -414,7 +451,7 @@ k_repeat:
     inc hl                                                            ; 0313: 23          #   6 cycles
     dec (hl)                                                          ; 0314: 35          5   11 cycles
     ret nz                                                            ; 0315: c0          .   5/11 cycles
-    ld a,(l5c0a)                                                      ; 0316: 3a 0a 5c    :.\ 13 cycles
+    ld a,(repper)                                                     ; 0316: 3a 0a 5c    :.\ 13 cycles
     ld (hl),a                                                         ; 0319: 77          w   7 cycles
     inc hl                                                            ; 031a: 23          #   6 cycles
     ld a,(hl)                                                         ; 031b: 7e          ~   7 cycles
@@ -470,7 +507,7 @@ k_klc_let:
     jr z,k_look_up                                                    ; 0354: 28 f4       (.  7/12 cycles
     bit 3,d                                                           ; 0356: cb 5a       .Z  8 cycles
     jr z,k_tokens                                                     ; 0358: 28 0a       (.  7/12 cycles
-    bit 3,(iy+48)                                                     ; 035a: fd cb 30... ..0 20 cycles
+    bit 3,(iy+flags2 - err_nr)                                        ; 035a: fd cb 30... ..0 20 cycles
     ret nz                                                            ; 035e: c0          .   5/11 cycles
     inc b                                                             ; 035f: 04          .   4 cycles
     ret nz                                                            ; 0360: c0          .   5/11 cycles
@@ -542,6 +579,13 @@ k_at_char:
     ld a,$40                                                          ; 03b2: 3e 40       >@  7 cycles
     ret                                                               ; 03b4: c9          .   10 cycles
 
+; ***************************************************************************************
+; Make a sound
+; 
+; On Entry:
+;     DE: the duration (frequency times seconds)
+;     HL: the period (437500 / frequency - 30.125)
+; ***************************************************************************************
 ; $03b5 referenced 4 times by $0469, $0f44, $1091, $116f
 beeper:
     di                                                                ; 03b5: f3          .   4 cycles
@@ -554,7 +598,7 @@ beeper:
     ld b,0                                                            ; 03bf: 06 00       ..  7 cycles
     ld ix,$03d1                                                       ; 03c1: dd 21 d1... .!. 14 cycles
     add ix,bc                                                         ; 03c5: dd 09       ..  15 cycles
-    ld a,(l5c48)                                                      ; 03c7: 3a 48 5c    :H\ 13 cycles
+    ld a,(bordcr)                                                     ; 03c7: 3a 48 5c    :H\ 13 cycles
     and $38                                                           ; 03ca: e6 38       .8  7 cycles
     rrca                                                              ; 03cc: 0f          .   4 cycles
     rrca                                                              ; 03cd: 0f          .   4 cycles
@@ -577,7 +621,7 @@ be_h_and_l_lp:
     dec b                                                             ; 03db: 05          .   4 cycles
     jp nz,be_h_and_l_lp                                               ; 03dc: c2 d6 03    ... 10 cycles
     xor $10                                                           ; 03df: ee 10       ..  7 cycles
-    out ($fe),a                                                       ; 03e1: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 03e1: d3 fe       ..  11 cycles
     ld b,h                                                            ; 03e3: 44          D   4 cycles
     ld c,a                                                            ; 03e4: 4f          O   4 cycles
     bit 4,a                                                           ; 03e5: cb 67       .g  8 cycles
@@ -660,7 +704,7 @@ be_octave:
     db $31                                                            ; 0441: 31          1  ; duplicate
     db $38                                                            ; 0442: 38          8  ; end-calc
 
-    call find_int1                                                    ; 0443: cd 94 1e    ... 17 cycles
+    call find_int1                                                    ; 0443: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     cp $0b                                                            ; 0446: fe 0b       ..  7 cycles
     jr nc,report_b                                                    ; 0448: 30 22       0"  7/12 cycles
     rst $28                                                           ; 044a: ef          .   11 cycles
@@ -676,9 +720,9 @@ be_octave:
     db 3                                                              ; 0459: 03          .  ; subtract
     db $38                                                            ; 045a: 38          8  ; end-calc
 
-    call find_int2                                                    ; 045b: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 045b: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     push bc                                                           ; 045e: c5          .   11 cycles
-    call find_int2                                                    ; 045f: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 045f: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     pop hl                                                            ; 0462: e1          .   10 cycles
     ld d,b                                                            ; 0463: 50          P   4 cycles
     ld e,c                                                            ; 0464: 59          Y   4 cycles
@@ -686,12 +730,12 @@ be_octave:
     or e                                                              ; 0466: b3          .   4 cycles
     ret z                                                             ; 0467: c8          .   5/11 cycles
     dec de                                                            ; 0468: 1b          .   6 cycles
-    jp beeper                                                         ; 0469: c3 b5 03    ... 10 cycles
+    jp beeper                                                         ; 0469: c3 b5 03    ... 10 cycles    ; Make a sound
 
 ; $046c referenced 5 times by $040c, $0416, $041a, $0422, $0448
 report_b:
     rst $08                                                           ; 046c: cf          .   11 cycles
-    db $0a                                                            ; 046d: 0a          .  ; Report B: Integer out of range
+    db $0a                                                            ; 046d: 0a          .  ; Report B Integer out of range
 semi_tone:
     db $89,   2, $d0, $12, $86, $89, $0a, $97, $60, $75, $89, $12     ; 046e: 89 02 d0... ...
     db $d5, $17, $1f, $89, $1b, $90, $41,   2, $89, $24, $d0, $53     ; 047a: d5 17 1f... ...
@@ -701,13 +745,13 @@ semi_tone:
 
 zx81_name:
     call scanning                                                     ; 04aa: cd fb 24    ..$ 17 cycles
-    ld a,(l5c3b)                                                      ; 04ad: 3a 3b 5c    :;\ 13 cycles
+    ld a,(flags)                                                      ; 04ad: 3a 3b 5c    :;\ 13 cycles
     add a,a                                                           ; 04b0: 87          .   4 cycles
     jp m,report_c                                                     ; 04b1: fa 8a 1c    ... 10 cycles
     pop hl                                                            ; 04b4: e1          .   10 cycles
     ret nc                                                            ; 04b5: d0          .   5/11 cycles
     push hl                                                           ; 04b6: e5          .   11 cycles
-    call stk_fetch                                                    ; 04b7: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 04b7: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     ld h,d                                                            ; 04ba: 62          b   4 cycles
     ld l,e                                                            ; 04bb: 6b          k   4 cycles
     dec c                                                             ; 04bc: 0d          .   4 cycles
@@ -716,6 +760,14 @@ zx81_name:
     set 7,(hl)                                                        ; 04bf: cb fe       ..  15 cycles
     ret                                                               ; 04c1: c9          .   10 cycles
 
+; ***************************************************************************************
+; Save bytes to tape
+; 
+; On Entry:
+;     IX: the start
+;     DE: the length
+;     A: the flag byte ($00 for a header, $FF for data)
+; ***************************************************************************************
 ; $04c2 referenced 2 times by $098a, $099e
 sa_bytes:
     ld hl,sa_ld_ret                                                   ; 04c2: 21 3f 05    !?. 10 cycles
@@ -735,7 +787,7 @@ sa_flag:
 ; $04d8 referenced 3 times by $04d8, $04e1, $04e5
 sa_leader:
     djnz sa_leader                                                    ; 04d8: 10 fe       ..  8/13 cycles
-    out ($fe),a                                                       ; 04da: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 04da: d3 fe       ..  11 cycles
     xor $0f                                                           ; 04dc: ee 0f       ..  7 cycles
     ld b,$a4                                                          ; 04de: 06 a4       ..  7 cycles
     dec l                                                             ; 04e0: 2d          -   4 cycles
@@ -747,13 +799,13 @@ sa_leader:
 ; $04ea referenced 1 time by $04ea
 sa_sync_1:
     djnz sa_sync_1                                                    ; 04ea: 10 fe       ..  8/13 cycles
-    out ($fe),a                                                       ; 04ec: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 04ec: d3 fe       ..  11 cycles
     ld a,$0d                                                          ; 04ee: 3e 0d       >.  7 cycles
     ld b,$37                                                          ; 04f0: 06 37       .7  7 cycles
 ; $04f2 referenced 1 time by $04f2
 sa_sync_2:
     djnz sa_sync_2                                                    ; 04f2: 10 fe       ..  8/13 cycles
-    out ($fe),a                                                       ; 04f4: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 04f4: d3 fe       ..  11 cycles
     ld bc,$3b0e                                                       ; 04f6: 01 0e 3b    ..; 10 cycles
     ex af,af'                                                         ; 04f9: 08          .   4 cycles
     ld l,a                                                            ; 04fa: 6f          o   4 cycles
@@ -795,7 +847,7 @@ sa_set:
     djnz sa_set                                                       ; 051a: 10 fe       ..  8/13 cycles
 ; $051c referenced 1 time by $0516
 sa_out:
-    out ($fe),a                                                       ; 051c: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 051c: d3 fe       ..  11 cycles
     ld b,$3e                                                          ; 051e: 06 3e       .>  7 cycles
     jr nz,sa_bit_2                                                    ; 0520: 20 ef        .  7/12 cycles
     dec b                                                             ; 0522: 05          .   4 cycles
@@ -809,7 +861,7 @@ sa_8_bits:
     inc ix                                                            ; 052b: dd 23       .#  10 cycles
     ld b,$31                                                          ; 052d: 06 31       .1  7 cycles
     ld a,$7f                                                          ; 052f: 3e 7f       >.  7 cycles
-    in a,($fe)                                                        ; 0531: db fe       ..  11 cycles
+    in a,(ula_port)                                                   ; 0531: db fe       ..  11 cycles    ; Read the keyboard (SPACE-B)
     rra                                                               ; 0533: 1f          .   4 cycles
     ret nc                                                            ; 0534: d0          .   5/11 cycles
     ld a,d                                                            ; 0535: 7a          z   4 cycles
@@ -823,26 +875,38 @@ sa_delay:
 
 sa_ld_ret:
     push af                                                           ; 053f: f5          .   11 cycles
-    ld a,(l5c48)                                                      ; 0540: 3a 48 5c    :H\ 13 cycles
+    ld a,(bordcr)                                                     ; 0540: 3a 48 5c    :H\ 13 cycles
     and $38                                                           ; 0543: e6 38       .8  7 cycles
     rrca                                                              ; 0545: 0f          .   4 cycles
     rrca                                                              ; 0546: 0f          .   4 cycles
     rrca                                                              ; 0547: 0f          .   4 cycles
-    out ($fe),a                                                       ; 0548: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 0548: d3 fe       ..  11 cycles
     ld a,$7f                                                          ; 054a: 3e 7f       >.  7 cycles
-    in a,($fe)                                                        ; 054c: db fe       ..  11 cycles
+    in a,(ula_port)                                                   ; 054c: db fe       ..  11 cycles    ; Read the keyboard (SPACE-B)
     rra                                                               ; 054e: 1f          .   4 cycles
     ei                                                                ; 054f: fb          .   4 cycles
     jr c,sa_ld_end                                                    ; 0550: 38 02       8.  7/12 cycles
 report_da:
     rst $08                                                           ; 0552: cf          .   11 cycles
-    db $0c                                                            ; 0553: 0c          .  ; Report D: BREAK - CONT repeats
+    db $0c                                                            ; 0553: 0c          .  ; Report D BREAK - CONT repeats
 
 ; $0554 referenced 1 time by $0550
 sa_ld_end:
     pop af                                                            ; 0554: f1          .   10 cycles
     ret                                                               ; 0555: c9          .   10 cycles
 
+; ***************************************************************************************
+; Load bytes from tape
+; 
+; On Entry:
+;     IX: the start
+;     DE: the length
+;     A: the flag byte ($00 for a header, $FF for data)
+;     F: carry set to load, clear to verify
+; 
+; On Exit:
+;     F: carry set if it worked
+; ***************************************************************************************
 ; $0556 referenced 2 times by $076e, $0802
 ld_bytes:
     inc d                                                             ; 0556: 14          .   4 cycles
@@ -850,10 +914,10 @@ ld_bytes:
     dec d                                                             ; 0558: 15          .   4 cycles
     di                                                                ; 0559: f3          .   4 cycles
     ld a,$0f                                                          ; 055a: 3e 0f       >.  7 cycles
-    out ($fe),a                                                       ; 055c: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 055c: d3 fe       ..  11 cycles    ; Border white, MIC on
     ld hl,sa_ld_ret                                                   ; 055e: 21 3f 05    !?. 10 cycles
     push hl                                                           ; 0561: e5          .   11 cycles
-    in a,($fe)                                                        ; 0562: db fe       ..  11 cycles
+    in a,(ula_port)                                                   ; 0562: db fe       ..  11 cycles    ; Read the keyboard (0-6, P-Y, ENTER-H, SPACE-B)
     rra                                                               ; 0564: 1f          .   4 cycles
     and $20                                                           ; 0565: e6 20       .   7 cycles
     or 2                                                              ; 0567: f6 02       ..  7 cycles
@@ -974,7 +1038,7 @@ ld_sample:
     inc b                                                             ; 05ed: 04          .   4 cycles
     ret z                                                             ; 05ee: c8          .   5/11 cycles
     ld a,$7f                                                          ; 05ef: 3e 7f       >.  7 cycles
-    in a,($fe)                                                        ; 05f1: db fe       ..  11 cycles
+    in a,(ula_port)                                                   ; 05f1: db fe       ..  11 cycles    ; Read the keyboard (SPACE-B)
     rra                                                               ; 05f3: 1f          .   4 cycles
     ret nc                                                            ; 05f4: d0          .   5/11 cycles
     xor c                                                             ; 05f5: a9          .   4 cycles
@@ -985,27 +1049,27 @@ ld_sample:
     ld c,a                                                            ; 05fc: 4f          O   4 cycles
     and 7                                                             ; 05fd: e6 07       ..  7 cycles
     or 8                                                              ; 05ff: f6 08       ..  7 cycles
-    out ($fe),a                                                       ; 0601: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 0601: d3 fe       ..  11 cycles
     scf                                                               ; 0603: 37          7   4 cycles
     ret                                                               ; 0604: c9          .   10 cycles
 
 ; $0605 referenced 1 time by $1cdb
 save_etc:
     pop af                                                            ; 0605: f1          .   10 cycles
-    ld a,(l5c74)                                                      ; 0606: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 0606: 3a 74 5c    :t\ 13 cycles
     sub $e0                                                           ; 0609: d6 e0       ..  7 cycles
-    ld (l5c74),a                                                      ; 060b: 32 74 5c    2t\ 13 cycles
+    ld (t_addr),a                                                     ; 060b: 32 74 5c    2t\ 13 cycles
     call expt_exp                                                     ; 060e: cd 8c 1c    ... 17 cycles
     call syntax_z                                                     ; 0611: cd 30 25    .0% 17 cycles
     jr z,sa_data                                                      ; 0614: 28 3c       (<  7/12 cycles
     ld bc,$11                                                         ; 0616: 01 11 00    ... 10 cycles
-    ld a,(l5c74)                                                      ; 0619: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 0619: 3a 74 5c    :t\ 13 cycles
     and a                                                             ; 061c: a7          .   4 cycles
     jr z,sa_space                                                     ; 061d: 28 02       (.  7/12 cycles
     ld c,$22                                                          ; 061f: 0e 22       ."  7 cycles
 ; $0621 referenced 1 time by $061d
 sa_space:
-    rst $30                                                           ; 0621: f7          .   11 cycles
+    rst $30                                                           ; 0621: f7          .   11 cycles    ; Make space in the workspace
     push de                                                           ; 0622: d5          .   11 cycles
     pop ix                                                            ; 0623: dd e1       ..  14 cycles
     ld b,$0b                                                          ; 0625: 06 0b       ..  7 cycles
@@ -1016,18 +1080,18 @@ sa_blank:
     inc de                                                            ; 062a: 13          .   6 cycles
     djnz sa_blank                                                     ; 062b: 10 fc       ..  8/13 cycles
     ld (ix+1),$ff                                                     ; 062d: dd 36 01... .6. 19 cycles
-    call stk_fetch                                                    ; 0631: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 0631: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     ld hl,$fff6                                                       ; 0634: 21 f6 ff    !.. 10 cycles
     dec bc                                                            ; 0637: 0b          .   6 cycles
     add hl,bc                                                         ; 0638: 09          .   11 cycles
     inc bc                                                            ; 0639: 03          .   6 cycles
     jr nc,sa_name                                                     ; 063a: 30 0f       0.  7/12 cycles
-    ld a,(l5c74)                                                      ; 063c: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 063c: 3a 74 5c    :t\ 13 cycles
     and a                                                             ; 063f: a7          .   4 cycles
     jr nz,sa_null                                                     ; 0640: 20 02        .  7/12 cycles
 report_fa:
     rst $08                                                           ; 0642: cf          .   11 cycles
-    db $0e                                                            ; 0643: 0e          .  ; Report F: Invalid file name
+    db $0e                                                            ; 0643: 0e          .  ; Report F Invalid file name
 
 ; $0644 referenced 1 time by $0640
 sa_null:
@@ -1044,23 +1108,23 @@ sa_name:
     ldir                                                              ; 0650: ed b0       ..  16/21 cycles
 ; $0652 referenced 2 times by $0614, $0646
 sa_data:
-    rst $18                                                           ; 0652: df          .   11 cycles
+    rst $18                                                           ; 0652: df          .   11 cycles    ; Get the current BASIC character
     cp $e4                                                            ; 0653: fe e4       ..  7 cycles
     jr nz,sa_scr_str                                                  ; 0655: 20 49        I  7/12 cycles
-    ld a,(l5c74)                                                      ; 0657: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 0657: 3a 74 5c    :t\ 13 cycles
     cp 3                                                              ; 065a: fe 03       ..  7 cycles
     jp z,report_c                                                     ; 065c: ca 8a 1c    ... 10 cycles
-    rst $20                                                           ; 065f: e7          .   11 cycles
+    rst $20                                                           ; 065f: e7          .   11 cycles    ; Get the next BASIC character
     call look_vars                                                    ; 0660: cd b2 28    ..( 17 cycles
     set 7,c                                                           ; 0663: cb f9       ..  8 cycles
     jr nc,sa_v_old                                                    ; 0665: 30 0b       0.  7/12 cycles
     ld hl,0                                                           ; 0667: 21 00 00    !.. 10 cycles
-    ld a,(l5c74)                                                      ; 066a: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 066a: 3a 74 5c    :t\ 13 cycles
     dec a                                                             ; 066d: 3d          =   4 cycles
     jr z,sa_v_new                                                     ; 066e: 28 15       (.  7/12 cycles
 report_2a:
     rst $08                                                           ; 0670: cf          .   11 cycles
-    db 1                                                              ; 0671: 01          .  ; Report 2: Variable not found
+    db 1                                                              ; 0671: 01          .  ; Report 2 Variable not found
 
 ; $0672 referenced 2 times by $0665, $0696
 sa_v_old:
@@ -1087,10 +1151,10 @@ sa_v_type:
 ; $0692 referenced 1 time by $0678
 sa_data_1:
     ex de,hl                                                          ; 0692: eb          .   4 cycles
-    rst $20                                                           ; 0693: e7          .   11 cycles
+    rst $20                                                           ; 0693: e7          .   11 cycles    ; Get the next BASIC character
     cp $29                                                            ; 0694: fe 29       .)  7 cycles
     jr nz,sa_v_old                                                    ; 0696: 20 da        .  7/12 cycles
-    rst $20                                                           ; 0698: e7          .   11 cycles
+    rst $20                                                           ; 0698: e7          .   11 cycles    ; Get the next BASIC character
     call check_end                                                    ; 0699: cd ee 1b    ... 17 cycles
     ex de,hl                                                          ; 069c: eb          .   4 cycles
     jp sa_all                                                         ; 069d: c3 5a 07    .Z. 10 cycles
@@ -1099,10 +1163,10 @@ sa_data_1:
 sa_scr_str:
     cp $aa                                                            ; 06a0: fe aa       ..  7 cycles
     jr nz,sa_code                                                     ; 06a2: 20 1f        .  7/12 cycles
-    ld a,(l5c74)                                                      ; 06a4: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 06a4: 3a 74 5c    :t\ 13 cycles
     cp 3                                                              ; 06a7: fe 03       ..  7 cycles
     jp z,report_c                                                     ; 06a9: ca 8a 1c    ... 10 cycles
-    rst $20                                                           ; 06ac: e7          .   11 cycles
+    rst $20                                                           ; 06ac: e7          .   11 cycles    ; Get the next BASIC character
     call check_end                                                    ; 06ad: cd ee 1b    ... 17 cycles
     ld (ix+11),0                                                      ; 06b0: dd 36 0b... .6. 19 cycles
     ld (ix+12),$1b                                                    ; 06b4: dd 36 0c... .6. 19 cycles
@@ -1115,13 +1179,13 @@ sa_scr_str:
 sa_code:
     cp $af                                                            ; 06c3: fe af       ..  7 cycles
     jr nz,sa_line                                                     ; 06c5: 20 4f        O  7/12 cycles
-    ld a,(l5c74)                                                      ; 06c7: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 06c7: 3a 74 5c    :t\ 13 cycles
     cp 3                                                              ; 06ca: fe 03       ..  7 cycles
     jp z,report_c                                                     ; 06cc: ca 8a 1c    ... 10 cycles
-    rst $20                                                           ; 06cf: e7          .   11 cycles
+    rst $20                                                           ; 06cf: e7          .   11 cycles    ; Get the next BASIC character
     call pr_st_end                                                    ; 06d0: cd 48 20    .H  17 cycles
     jr nz,sa_code_1                                                   ; 06d3: 20 0c        .  7/12 cycles
-    ld a,(l5c74)                                                      ; 06d5: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 06d5: 3a 74 5c    :t\ 13 cycles
     and a                                                             ; 06d8: a7          .   4 cycles
     jp z,report_c                                                     ; 06d9: ca 8a 1c    ... 10 cycles
     call use_zero                                                     ; 06dc: cd e6 1c    ... 17 cycles
@@ -1130,10 +1194,10 @@ sa_code:
 ; $06e1 referenced 1 time by $06d3
 sa_code_1:
     call expt_1num                                                    ; 06e1: cd 82 1c    ... 17 cycles
-    rst $18                                                           ; 06e4: df          .   11 cycles
+    rst $18                                                           ; 06e4: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 06e5: fe 2c       .,  7 cycles
     jr z,sa_code_3                                                    ; 06e7: 28 0c       (.  7/12 cycles
-    ld a,(l5c74)                                                      ; 06e9: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 06e9: 3a 74 5c    :t\ 13 cycles
     and a                                                             ; 06ec: a7          .   4 cycles
     jp z,report_c                                                     ; 06ed: ca 8a 1c    ... 10 cycles
 ; $06f0 referenced 1 time by $06df
@@ -1143,15 +1207,15 @@ sa_code_2:
 
 ; $06f5 referenced 1 time by $06e7
 sa_code_3:
-    rst $20                                                           ; 06f5: e7          .   11 cycles
+    rst $20                                                           ; 06f5: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 06f6: cd 82 1c    ... 17 cycles
 ; $06f9 referenced 1 time by $06f3
 sa_code_4:
     call check_end                                                    ; 06f9: cd ee 1b    ... 17 cycles
-    call find_int2                                                    ; 06fc: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 06fc: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld (ix+11),c                                                      ; 06ff: dd 71 0b    .q. 19 cycles
     ld (ix+12),b                                                      ; 0702: dd 70 0c    .p. 19 cycles
-    call find_int2                                                    ; 0705: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 0705: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld (ix+13),c                                                      ; 0708: dd 71 0d    .q. 19 cycles
     ld (ix+14),b                                                      ; 070b: dd 70 0e    .p. 19 cycles
     ld h,b                                                            ; 070e: 60          `   4 cycles
@@ -1171,32 +1235,32 @@ sa_line:
 
 ; $0723 referenced 1 time by $0718
 sa_line_1:
-    ld a,(l5c74)                                                      ; 0723: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 0723: 3a 74 5c    :t\ 13 cycles
     and a                                                             ; 0726: a7          .   4 cycles
     jp nz,report_c                                                    ; 0727: c2 8a 1c    ... 10 cycles
-    rst $20                                                           ; 072a: e7          .   11 cycles
+    rst $20                                                           ; 072a: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 072b: cd 82 1c    ... 17 cycles
     call check_end                                                    ; 072e: cd ee 1b    ... 17 cycles
-    call find_int2                                                    ; 0731: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 0731: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld (ix+13),c                                                      ; 0734: dd 71 0d    .q. 19 cycles
     ld (ix+14),b                                                      ; 0737: dd 70 0e    .p. 19 cycles
 ; $073a referenced 1 time by $0721
 sa_type_0:
     ld (ix+0),0                                                       ; 073a: dd 36 00... .6. 19 cycles
-    ld hl,(l5c59)                                                     ; 073e: 2a 59 5c    *Y\ 16 cycles
-    ld de,(l5c53)                                                     ; 0741: ed 5b 53... .[S 20 cycles
+    ld hl,(e_line)                                                    ; 073e: 2a 59 5c    *Y\ 16 cycles
+    ld de,(prog)                                                      ; 0741: ed 5b 53... .[S 20 cycles
     scf                                                               ; 0745: 37          7   4 cycles
     sbc hl,de                                                         ; 0746: ed 52       .R  15 cycles
     ld (ix+11),l                                                      ; 0748: dd 75 0b    .u. 19 cycles
     ld (ix+12),h                                                      ; 074b: dd 74 0c    .t. 19 cycles
-    ld hl,(l5c4b)                                                     ; 074e: 2a 4b 5c    *K\ 16 cycles
+    ld hl,(vars)                                                      ; 074e: 2a 4b 5c    *K\ 16 cycles
     sbc hl,de                                                         ; 0751: ed 52       .R  15 cycles
     ld (ix+15),l                                                      ; 0753: dd 75 0f    .u. 19 cycles
     ld (ix+16),h                                                      ; 0756: dd 74 10    .t. 19 cycles
     ex de,hl                                                          ; 0759: eb          .   4 cycles
 ; $075a referenced 2 times by $069d, $0714
 sa_all:
-    ld a,(l5c74)                                                      ; 075a: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 075a: 3a 74 5c    :t\ 13 cycles
     and a                                                             ; 075d: a7          .   4 cycles
     jp z,sa_contrl                                                    ; 075e: ca 70 09    .p. 10 cycles
     push hl                                                           ; 0761: e5          .   11 cycles
@@ -1208,12 +1272,12 @@ ld_look_h:
     ld de,$11                                                         ; 0769: 11 11 00    ... 10 cycles
     xor a                                                             ; 076c: af          .   4 cycles
     scf                                                               ; 076d: 37          7   4 cycles
-    call ld_bytes                                                     ; 076e: cd 56 05    .V. 17 cycles
+    call ld_bytes                                                     ; 076e: cd 56 05    .V. 17 cycles    ; Load bytes from tape
     pop ix                                                            ; 0771: dd e1       ..  14 cycles
     jr nc,ld_look_h                                                   ; 0773: 30 f2       0.  7/12 cycles
     ld a,$fe                                                          ; 0775: 3e fe       >.  7 cycles
-    call chan_open                                                    ; 0777: cd 01 16    ... 17 cycles
-    ld (iy+82),3                                                      ; 077a: fd 36 52... .6R 19 cycles
+    call chan_open                                                    ; 0777: cd 01 16    ... 17 cycles    ; Open a channel
+    ld (iy+scr_ct - err_nr),3                                         ; 077a: fd 36 52... .6R 19 cycles
     ld c,$80                                                          ; 077e: 0e 80       ..  7 cycles
     ld a,(ix+0)                                                       ; 0780: dd 7e 00    .~. 19 cycles
     cp (ix-17)                                                        ; 0783: dd be ef    ... 19 cycles
@@ -1225,7 +1289,7 @@ ld_type:
     jr nc,ld_look_h                                                   ; 078c: 30 d9       0.  7/12 cycles
     ld de,$09c0                                                       ; 078e: 11 c0 09    ... 10 cycles
     push bc                                                           ; 0791: c5          .   11 cycles
-    call po_msg                                                       ; 0792: cd 0a 0c    ... 17 cycles
+    call po_msg                                                       ; 0792: cd 0a 0c    ... 17 cycles    ; Print a message
     pop bc                                                            ; 0795: c1          .   10 cycles
     push ix                                                           ; 0796: dd e5       ..  15 cycles
     pop de                                                            ; 0798: d1          .   10 cycles
@@ -1248,17 +1312,17 @@ ld_name:
     inc c                                                             ; 07ac: 0c          .   4 cycles
 ; $07ad referenced 1 time by $07aa
 ld_ch_pr:
-    rst $10                                                           ; 07ad: d7          .   11 cycles
+    rst $10                                                           ; 07ad: d7          .   11 cycles    ; Print a character
     djnz ld_name                                                      ; 07ae: 10 f6       ..  8/13 cycles
     bit 7,c                                                           ; 07b0: cb 79       .y  8 cycles
     jr nz,ld_look_h                                                   ; 07b2: 20 b3        .  7/12 cycles
     ld a,$0d                                                          ; 07b4: 3e 0d       >.  7 cycles
-    rst $10                                                           ; 07b6: d7          .   11 cycles
+    rst $10                                                           ; 07b6: d7          .   11 cycles    ; Print $0D (ENTER)
     pop hl                                                            ; 07b7: e1          .   10 cycles
     ld a,(ix+0)                                                       ; 07b8: dd 7e 00    .~. 19 cycles
     cp 3                                                              ; 07bb: fe 03       ..  7 cycles
     jr z,vr_control                                                   ; 07bd: 28 0c       (.  7/12 cycles
-    ld a,(l5c74)                                                      ; 07bf: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 07bf: 3a 74 5c    :t\ 13 cycles
     dec a                                                             ; 07c2: 3d          =   4 cycles
     jp z,ld_contrl                                                    ; 07c3: ca 08 08    ... 10 cycles
     cp 2                                                              ; 07c6: fe 02       ..  7 cycles
@@ -1291,7 +1355,7 @@ vr_cont_1:
 vr_cont_2:
     push hl                                                           ; 07f4: e5          .   11 cycles
     pop ix                                                            ; 07f5: dd e1       ..  14 cycles
-    ld a,(l5c74)                                                      ; 07f7: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 07f7: 3a 74 5c    :t\ 13 cycles
     cp 2                                                              ; 07fa: fe 02       ..  7 cycles
     scf                                                               ; 07fc: 37          7   4 cycles
     jr nz,vr_cont_3                                                   ; 07fd: 20 01        .  7/12 cycles
@@ -1301,12 +1365,12 @@ vr_cont_3:
     ld a,$ff                                                          ; 0800: 3e ff       >.  7 cycles
 ; $0802 referenced 3 times by $0870, $08b3, $08ca
 ld_block:
-    call ld_bytes                                                     ; 0802: cd 56 05    .V. 17 cycles
+    call ld_bytes                                                     ; 0802: cd 56 05    .V. 17 cycles    ; Load bytes from tape
     ret c                                                             ; 0805: d8          .   5/11 cycles
 ; $0806 referenced 2 times by $07de, $07e7
 report_r:
     rst $08                                                           ; 0806: cf          .   11 cycles
-    db $1a                                                            ; 0807: 1a          .  ; Report R: Tape loading error
+    db $1a                                                            ; 0807: 1a          .  ; Report R Tape loading error
 
 ; $0808 referenced 1 time by $07c3
 ld_contrl:
@@ -1354,12 +1418,12 @@ ld_data:
     inc bc                                                            ; 083e: 03          .   6 cycles
     inc bc                                                            ; 083f: 03          .   6 cycles
     inc bc                                                            ; 0840: 03          .   6 cycles
-    ld (l5c5f),ix                                                     ; 0841: dd 22 5f... ."_ 20 cycles
+    ld (x_ptr),ix                                                     ; 0841: dd 22 5f... ."_ 20 cycles
     call reclaim_2                                                    ; 0845: cd e8 19    ... 17 cycles
-    ld ix,(l5c5f)                                                     ; 0848: dd 2a 5f... .*_ 20 cycles
+    ld ix,(x_ptr)                                                     ; 0848: dd 2a 5f... .*_ 20 cycles
 ; $084c referenced 1 time by $0837
 ld_data_1:
-    ld hl,(l5c59)                                                     ; 084c: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 084c: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 084f: 2b          +   6 cycles
     ld c,(ix+11)                                                      ; 0850: dd 4e 0b    .N. 19 cycles
     ld b,(ix+12)                                                      ; 0853: dd 46 0c    .F. 19 cycles
@@ -1388,9 +1452,9 @@ ld_data_1:
 ; $0873 referenced 1 time by $0833
 ld_prog:
     ex de,hl                                                          ; 0873: eb          .   4 cycles
-    ld hl,(l5c59)                                                     ; 0874: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 0874: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 0877: 2b          +   6 cycles
-    ld (l5c5f),ix                                                     ; 0878: dd 22 5f... ."_ 20 cycles
+    ld (x_ptr),ix                                                     ; 0878: dd 22 5f... ."_ 20 cycles
     ld c,(ix+11)                                                      ; 087c: dd 4e 0b    .N. 19 cycles
     ld b,(ix+12)                                                      ; 087f: dd 46 0c    .F. 19 cycles
     push bc                                                           ; 0882: c5          .   11 cycles
@@ -1399,19 +1463,19 @@ ld_prog:
     push hl                                                           ; 0887: e5          .   11 cycles
     push bc                                                           ; 0888: c5          .   11 cycles
     call make_room                                                    ; 0889: cd 55 16    .U. 17 cycles
-    ld ix,(l5c5f)                                                     ; 088c: dd 2a 5f... .*_ 20 cycles
+    ld ix,(x_ptr)                                                     ; 088c: dd 2a 5f... .*_ 20 cycles
     inc hl                                                            ; 0890: 23          #   6 cycles
     ld c,(ix+15)                                                      ; 0891: dd 4e 0f    .N. 19 cycles
     ld b,(ix+16)                                                      ; 0894: dd 46 10    .F. 19 cycles
     add hl,bc                                                         ; 0897: 09          .   11 cycles
-    ld (l5c4b),hl                                                     ; 0898: 22 4b 5c    "K\ 16 cycles
+    ld (vars),hl                                                      ; 0898: 22 4b 5c    "K\ 16 cycles
     ld h,(ix+14)                                                      ; 089b: dd 66 0e    .f. 19 cycles
     ld a,h                                                            ; 089e: 7c          |   4 cycles
     and $c0                                                           ; 089f: e6 c0       ..  7 cycles
     jr nz,ld_prog_1                                                   ; 08a1: 20 0a        .  7/12 cycles
     ld l,(ix+13)                                                      ; 08a3: dd 6e 0d    .n. 19 cycles
-    ld (l5c42),hl                                                     ; 08a6: 22 42 5c    "B\ 16 cycles
-    ld (iy+10),0                                                      ; 08a9: fd 36 0a... .6. 19 cycles
+    ld (newppc),hl                                                    ; 08a6: 22 42 5c    "B\ 16 cycles
+    ld (iy+nsppc - err_nr),0                                          ; 08a9: fd 36 0a... .6. 19 cycles
 ; $08ad referenced 1 time by $08a1
 ld_prog_1:
     pop de                                                            ; 08ad: d1          .   10 cycles
@@ -1426,7 +1490,7 @@ me_contrl:
     ld b,(ix+12)                                                      ; 08b9: dd 46 0c    .F. 19 cycles
     push bc                                                           ; 08bc: c5          .   11 cycles
     inc bc                                                            ; 08bd: 03          .   6 cycles
-    rst $30                                                           ; 08be: f7          .   11 cycles
+    rst $30                                                           ; 08be: f7          .   11 cycles    ; Make space in the workspace
     ld (hl),$80                                                       ; 08bf: 36 80       6.  10 cycles
     ex de,hl                                                          ; 08c1: eb          .   4 cycles
     pop de                                                            ; 08c2: d1          .   10 cycles
@@ -1437,7 +1501,7 @@ me_contrl:
     ld a,$ff                                                          ; 08c8: 3e ff       >.  7 cycles
     call ld_block                                                     ; 08ca: cd 02 08    ... 17 cycles
     pop hl                                                            ; 08cd: e1          .   10 cycles
-    ld de,(l5c53)                                                     ; 08ce: ed 5b 53... .[S 20 cycles
+    ld de,(prog)                                                      ; 08ce: ed 5b 53... .[S 20 cycles
 ; $08d2 referenced 1 time by $08ee
 me_new_lp:
     ld a,(hl)                                                         ; 08d2: 7e          ~   7 cycles
@@ -1475,7 +1539,7 @@ me_var_lp:
     cp $80                                                            ; 08f2: fe 80       ..  7 cycles
     ret z                                                             ; 08f4: c8          .   5/11 cycles
     push hl                                                           ; 08f5: e5          .   11 cycles
-    ld hl,(l5c4b)                                                     ; 08f6: 2a 4b 5c    *K\ 16 cycles
+    ld hl,(vars)                                                      ; 08f6: 2a 4b 5c    *K\ 16 cycles
 ; $08f9 referenced 1 time by $0907
 me_old_vp:
     ld a,(hl)                                                         ; 08f9: 7e          ~   7 cycles
@@ -1532,20 +1596,20 @@ me_var_l2:
 me_enter:
     jr nz,me_ent_1                                                    ; 092c: 20 10        .  7/12 cycles
     ex af,af'                                                         ; 092e: 08          .   4 cycles
-    ld (l5c5f),hl                                                     ; 092f: 22 5f 5c    "_\ 16 cycles
+    ld (x_ptr),hl                                                     ; 092f: 22 5f 5c    "_\ 16 cycles
     ex de,hl                                                          ; 0932: eb          .   4 cycles
     call next_one                                                     ; 0933: cd b8 19    ... 17 cycles
     call reclaim_2                                                    ; 0936: cd e8 19    ... 17 cycles
     ex de,hl                                                          ; 0939: eb          .   4 cycles
-    ld hl,(l5c5f)                                                     ; 093a: 2a 5f 5c    *_\ 16 cycles
+    ld hl,(x_ptr)                                                     ; 093a: 2a 5f 5c    *_\ 16 cycles
     ex af,af'                                                         ; 093d: 08          .   4 cycles
 ; $093e referenced 1 time by $092c
 me_ent_1:
     ex af,af'                                                         ; 093e: 08          .   4 cycles
     push de                                                           ; 093f: d5          .   11 cycles
     call next_one                                                     ; 0940: cd b8 19    ... 17 cycles
-    ld (l5c5f),hl                                                     ; 0943: 22 5f 5c    "_\ 16 cycles
-    ld hl,(l5c53)                                                     ; 0946: 2a 53 5c    *S\ 16 cycles
+    ld (x_ptr),hl                                                     ; 0943: 22 5f 5c    "_\ 16 cycles
+    ld hl,(prog)                                                      ; 0946: 2a 53 5c    *S\ 16 cycles
     ex (sp),hl                                                        ; 0949: e3          .   19 cycles
     push bc                                                           ; 094a: c5          .   11 cycles
     ex af,af'                                                         ; 094b: 08          .   4 cycles
@@ -1563,8 +1627,8 @@ me_ent_3:
     inc hl                                                            ; 0958: 23          #   6 cycles
     pop bc                                                            ; 0959: c1          .   10 cycles
     pop de                                                            ; 095a: d1          .   10 cycles
-    ld (l5c53),de                                                     ; 095b: ed 53 53... .SS 20 cycles
-    ld de,(l5c5f)                                                     ; 095f: ed 5b 5f... .[_ 20 cycles
+    ld (prog),de                                                      ; 095b: ed 53 53... .SS 20 cycles
+    ld de,(x_ptr)                                                     ; 095f: ed 5b 5f... .[_ 20 cycles
     push bc                                                           ; 0963: c5          .   11 cycles
     push de                                                           ; 0964: d5          .   11 cycles
     ex de,hl                                                          ; 0965: eb          .   4 cycles
@@ -1580,16 +1644,16 @@ me_ent_3:
 sa_contrl:
     push hl                                                           ; 0970: e5          .   11 cycles
     ld a,$fd                                                          ; 0971: 3e fd       >.  7 cycles
-    call chan_open                                                    ; 0973: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 0973: cd 01 16    ... 17 cycles    ; Open a channel
     xor a                                                             ; 0976: af          .   4 cycles
     ld de,$09a1                                                       ; 0977: 11 a1 09    ... 10 cycles
-    call po_msg                                                       ; 097a: cd 0a 0c    ... 17 cycles
-    set 5,(iy+2)                                                      ; 097d: fd cb 02... ... 23 cycles
-    call wait_key                                                     ; 0981: cd d4 15    ... 17 cycles
+    call po_msg                                                       ; 097a: cd 0a 0c    ... 17 cycles    ; Print a message
+    set 5,(iy+tv_flag - err_nr)                                       ; 097d: fd cb 02... ... 23 cycles
+    call wait_key                                                     ; 0981: cd d4 15    ... 17 cycles    ; Wait for a key
     push ix                                                           ; 0984: dd e5       ..  15 cycles
     ld de,$11                                                         ; 0986: 11 11 00    ... 10 cycles
     xor a                                                             ; 0989: af          .   4 cycles
-    call sa_bytes                                                     ; 098a: cd c2 04    ... 17 cycles
+    call sa_bytes                                                     ; 098a: cd c2 04    ... 17 cycles    ; Save bytes to tape
     pop ix                                                            ; 098d: dd e1       ..  14 cycles
     ld b,$32                                                          ; 098f: 06 32       .2  7 cycles
 ; $0991 referenced 1 time by $0992
@@ -1600,7 +1664,7 @@ sa_1_sec:
     ld d,(ix+12)                                                      ; 0997: dd 56 0c    .V. 19 cycles
     ld a,$ff                                                          ; 099a: 3e ff       >.  7 cycles
     pop ix                                                            ; 099c: dd e1       ..  14 cycles
-    jp sa_bytes                                                       ; 099e: c3 c2 04    ... 10 cycles
+    jp sa_bytes                                                       ; 099e: c3 c2 04    ... 10 cycles    ; Save bytes to tape
 
 tape_msgs:
     db $80                                                            ; 09a1: 80          .
@@ -1653,7 +1717,7 @@ po_back_1:
     ld a,$22                                                          ; 0a24: 3e 22       >"  7 cycles
     cp c                                                              ; 0a26: b9          .   4 cycles
     jr nz,po_back_3                                                   ; 0a27: 20 11        .  7/12 cycles
-    bit 1,(iy+1)                                                      ; 0a29: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0a29: fd cb 01... ... 20 cycles
     jr nz,po_back_2                                                   ; 0a2d: 20 09        .  7/12 cycles
     inc b                                                             ; 0a2f: 04          .   4 cycles
     ld c,2                                                            ; 0a30: 0e 02       ..  7 cycles
@@ -1666,25 +1730,25 @@ po_back_2:
     ld c,$21                                                          ; 0a38: 0e 21       .!  7 cycles
 ; $0a3a referenced 2 times by $0a27, $0a35
 po_back_3:
-    jp cl_set                                                         ; 0a3a: c3 d9 0d    ... 10 cycles
+    jp cl_set                                                         ; 0a3a: c3 d9 0d    ... 10 cycles    ; Set the print position
 
 po_right:
-    ld a,(l5c91)                                                      ; 0a3d: 3a 91 5c    :.\ 13 cycles
+    ld a,(p_flag)                                                     ; 0a3d: 3a 91 5c    :.\ 13 cycles
     push af                                                           ; 0a40: f5          .   11 cycles
-    ld (iy+87),1                                                      ; 0a41: fd 36 57... .6W 19 cycles
+    ld (iy+p_flag - err_nr),1                                         ; 0a41: fd 36 57... .6W 19 cycles
     ld a,$20                                                          ; 0a45: 3e 20       >   7 cycles
     call po_char                                                      ; 0a47: cd 65 0b    .e. 17 cycles
     pop af                                                            ; 0a4a: f1          .   10 cycles
-    ld (l5c91),a                                                      ; 0a4b: 32 91 5c    2.\ 13 cycles
+    ld (p_flag),a                                                     ; 0a4b: 32 91 5c    2.\ 13 cycles
     ret                                                               ; 0a4e: c9          .   10 cycles
 
 po_enter:
-    bit 1,(iy+1)                                                      ; 0a4f: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0a4f: fd cb 01... ... 20 cycles
     jp nz,copy_buff                                                   ; 0a53: c2 cd 0e    ... 10 cycles
     ld c,$21                                                          ; 0a56: 0e 21       .!  7 cycles
     call po_scr                                                       ; 0a58: cd 55 0c    .U. 17 cycles
     dec b                                                             ; 0a5b: 05          .   4 cycles
-    jp cl_set                                                         ; 0a5c: c3 d9 0d    ... 10 cycles
+    jp cl_set                                                         ; 0a5c: c3 d9 0d    ... 10 cycles    ; Set the print position
 
 po_comma:
     call po_fetch                                                     ; 0a5f: cd 03 0b    ... 17 cycles
@@ -1701,7 +1765,7 @@ po_quest:
 
 po_tv_2:
     ld de,$0a87                                                       ; 0a6d: 11 87 0a    ... 10 cycles
-    ld (l5c0f),a                                                      ; 0a70: 32 0f 5c    2.\ 13 cycles
+    ld (tvdata+1),a                                                   ; 0a70: 32 0f 5c    2.\ 13 cycles
     jr po_change                                                      ; 0a73: 18 0b       ..  12 cycles
 
 po_2_oper:
@@ -1712,10 +1776,10 @@ po_1_oper:
     ld de,po_cont                                                     ; 0a7a: 11 87 0a    ... 10 cycles
 ; $0a7d referenced 1 time by $0a78
 po_tv_1:
-    ld (l5c0e),a                                                      ; 0a7d: 32 0e 5c    2.\ 13 cycles
+    ld (tvdata),a                                                     ; 0a7d: 32 0e 5c    2.\ 13 cycles
 ; $0a80 referenced 2 times by $0a73, $0a8a
 po_change:
-    ld hl,(l5c51)                                                     ; 0a80: 2a 51 5c    *Q\ 16 cycles
+    ld hl,(curchl)                                                    ; 0a80: 2a 51 5c    *Q\ 16 cycles
     ld (hl),e                                                         ; 0a83: 73          s   7 cycles
     inc hl                                                            ; 0a84: 23          #   6 cycles
     ld (hl),d                                                         ; 0a85: 72          r   7 cycles
@@ -1724,7 +1788,7 @@ po_change:
 po_cont:
     ld de,$09f4                                                       ; 0a87: 11 f4 09    ... 10 cycles
     call po_change                                                    ; 0a8a: cd 80 0a    ... 17 cycles
-    ld hl,(l5c0e)                                                     ; 0a8d: 2a 0e 5c    *.\ 16 cycles
+    ld hl,(tvdata)                                                    ; 0a8d: 2a 0e 5c    *.\ 16 cycles
     ld d,a                                                            ; 0a90: 57          W   4 cycles
     ld a,l                                                            ; 0a91: 7d          }   4 cycles
     cp $16                                                            ; 0a92: fe 16       ..  7 cycles
@@ -1737,7 +1801,7 @@ po_cont:
     jr c,po_at_err                                                    ; 0a9e: 38 0c       8.  7/12 cycles
     add a,2                                                           ; 0aa0: c6 02       ..  7 cycles
     ld c,a                                                            ; 0aa2: 4f          O   4 cycles
-    bit 1,(iy+1)                                                      ; 0aa3: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0aa3: fd cb 01... ... 20 cycles
     jr nz,po_at_set                                                   ; 0aa7: 20 16        .  7/12 cycles
     ld a,$16                                                          ; 0aa9: 3e 16       >.  7 cycles
     sub b                                                             ; 0aab: 90          .   4 cycles
@@ -1747,13 +1811,13 @@ po_at_err:
     inc a                                                             ; 0aaf: 3c          <   4 cycles
     ld b,a                                                            ; 0ab0: 47          G   4 cycles
     inc b                                                             ; 0ab1: 04          .   4 cycles
-    bit 0,(iy+2)                                                      ; 0ab2: fd cb 02... ... 20 cycles
+    bit 0,(iy+tv_flag - err_nr)                                       ; 0ab2: fd cb 02... ... 20 cycles
     jp nz,po_scr                                                      ; 0ab6: c2 55 0c    .U. 10 cycles
-    cp (iy+49)                                                        ; 0ab9: fd be 31    ..1 19 cycles
+    cp (iy+df_sz - err_nr)                                            ; 0ab9: fd be 31    ..1 19 cycles
     jp c,report_5                                                     ; 0abc: da 86 0c    ... 10 cycles
 ; $0abf referenced 1 time by $0aa7
 po_at_set:
-    jp cl_set                                                         ; 0abf: c3 d9 0d    ... 10 cycles
+    jp cl_set                                                         ; 0abf: c3 d9 0d    ... 10 cycles    ; Set the print position
 
 ; $0ac2 referenced 1 time by $0a97
 po_tab:
@@ -1766,7 +1830,7 @@ po_fill:
     and $1f                                                           ; 0ac8: e6 1f       ..  7 cycles
     ret z                                                             ; 0aca: c8          .   5/11 cycles
     ld d,a                                                            ; 0acb: 57          W   4 cycles
-    set 0,(iy+1)                                                      ; 0acc: fd cb 01... ... 23 cycles
+    set 0,(iy+flags - err_nr)                                         ; 0acc: fd cb 01... ... 23 cycles
 ; $0ad0 referenced 1 time by $0ad6
 po_space:
     ld a,$20                                                          ; 0ad0: 3e 20       >   7 cycles
@@ -1780,43 +1844,43 @@ po_able:
     call po_any                                                       ; 0ad9: cd 24 0b    .$. 17 cycles
 ; $0adc referenced 1 time by $0dfb
 po_store:
-    bit 1,(iy+1)                                                      ; 0adc: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0adc: fd cb 01... ... 20 cycles
     jr nz,po_st_pr                                                    ; 0ae0: 20 1a        .  7/12 cycles
-    bit 0,(iy+2)                                                      ; 0ae2: fd cb 02... ... 20 cycles
+    bit 0,(iy+tv_flag - err_nr)                                       ; 0ae2: fd cb 02... ... 20 cycles
     jr nz,po_st_e                                                     ; 0ae6: 20 08        .  7/12 cycles
-    ld (l5c88),bc                                                     ; 0ae8: ed 43 88... .C. 20 cycles
-    ld (l5c84),hl                                                     ; 0aec: 22 84 5c    ".\ 16 cycles
+    ld (s_posn),bc                                                    ; 0ae8: ed 43 88... .C. 20 cycles
+    ld (df_cc),hl                                                     ; 0aec: 22 84 5c    ".\ 16 cycles
     ret                                                               ; 0aef: c9          .   10 cycles
 
 ; $0af0 referenced 1 time by $0ae6
 po_st_e:
-    ld (l5c8a),bc                                                     ; 0af0: ed 43 8a... .C. 20 cycles
-    ld (l5c82),bc                                                     ; 0af4: ed 43 82... .C. 20 cycles
-    ld (l5c86),hl                                                     ; 0af8: 22 86 5c    ".\ 16 cycles
+    ld (s_posnl),bc                                                   ; 0af0: ed 43 8a... .C. 20 cycles
+    ld (echo_e),bc                                                    ; 0af4: ed 43 82... .C. 20 cycles
+    ld (df_ccl),hl                                                    ; 0af8: 22 86 5c    ".\ 16 cycles
     ret                                                               ; 0afb: c9          .   10 cycles
 
 ; $0afc referenced 1 time by $0ae0
 po_st_pr:
-    ld (iy+69),c                                                      ; 0afc: fd 71 45    .qE 19 cycles
-    ld (l5c80),hl                                                     ; 0aff: 22 80 5c    ".\ 16 cycles
+    ld (iy+p_posn - err_nr),c                                         ; 0afc: fd 71 45    .qE 19 cycles
+    ld (pr_cc),hl                                                     ; 0aff: 22 80 5c    ".\ 16 cycles
     ret                                                               ; 0b02: c9          .   10 cycles
 
 ; $0b03 referenced 6 times by $09f4, $0a0e, $0a5f, $0ac3, $0b30, $0b62
 po_fetch:
-    bit 1,(iy+1)                                                      ; 0b03: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0b03: fd cb 01... ... 20 cycles
     jr nz,po_f_pr                                                     ; 0b07: 20 14        .  7/12 cycles
-    ld bc,(l5c88)                                                     ; 0b09: ed 4b 88... .K. 20 cycles
-    ld hl,(l5c84)                                                     ; 0b0d: 2a 84 5c    *.\ 16 cycles
-    bit 0,(iy+2)                                                      ; 0b10: fd cb 02... ... 20 cycles
+    ld bc,(s_posn)                                                    ; 0b09: ed 4b 88... .K. 20 cycles
+    ld hl,(df_cc)                                                     ; 0b0d: 2a 84 5c    *.\ 16 cycles
+    bit 0,(iy+tv_flag - err_nr)                                       ; 0b10: fd cb 02... ... 20 cycles
     ret z                                                             ; 0b14: c8          .   5/11 cycles
-    ld bc,(l5c8a)                                                     ; 0b15: ed 4b 8a... .K. 20 cycles
-    ld hl,(l5c86)                                                     ; 0b19: 2a 86 5c    *.\ 16 cycles
+    ld bc,(s_posnl)                                                   ; 0b15: ed 4b 8a... .K. 20 cycles
+    ld hl,(df_ccl)                                                    ; 0b19: 2a 86 5c    *.\ 16 cycles
     ret                                                               ; 0b1c: c9          .   10 cycles
 
 ; $0b1d referenced 1 time by $0b07
 po_f_pr:
-    ld c,(iy+69)                                                      ; 0b1d: fd 4e 45    .NE 19 cycles
-    ld hl,(l5c80)                                                     ; 0b20: 2a 80 5c    *.\ 16 cycles
+    ld c,(iy+p_posn - err_nr)                                         ; 0b1d: fd 4e 45    .NE 19 cycles
+    ld hl,(pr_cc)                                                     ; 0b20: 2a 80 5c    *.\ 16 cycles
     ret                                                               ; 0b23: c9          .   10 cycles
 
 ; $0b24 referenced 1 time by $0ad9
@@ -1860,7 +1924,7 @@ po_t_and_udg:
     jr nc,po_t                                                        ; 0b54: 30 09       0.  7/12 cycles
     add a,$15                                                         ; 0b56: c6 15       ..  7 cycles
     push bc                                                           ; 0b58: c5          .   11 cycles
-    ld bc,(l5c7b)                                                     ; 0b59: ed 4b 7b... .K{ 20 cycles
+    ld bc,(udg)                                                       ; 0b59: ed 4b 7b... .K{ 20 cycles
     jr po_char_2                                                      ; 0b5d: 18 0b       ..  12 cycles
 
 ; $0b5f referenced 1 time by $0b54
@@ -1871,7 +1935,7 @@ po_t:
 ; $0b65 referenced 2 times by $0a47, $0b26
 po_char:
     push bc                                                           ; 0b65: c5          .   11 cycles
-    ld bc,(l5c36)                                                     ; 0b66: ed 4b 36... .K6 20 cycles
+    ld bc,(chars)                                                     ; 0b66: ed 4b 36... .K6 20 cycles
 ; $0b6a referenced 1 time by $0b5d
 po_char_2:
     ex de,hl                                                          ; 0b6a: eb          .   4 cycles
@@ -1898,7 +1962,7 @@ pr_all:
     jr nz,pr_all_1                                                    ; 0b83: 20 0e        .  7/12 cycles
     dec b                                                             ; 0b85: 05          .   4 cycles
     ld c,a                                                            ; 0b86: 4f          O   4 cycles
-    bit 1,(iy+1)                                                      ; 0b87: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0b87: fd cb 01... ... 20 cycles
     jr z,pr_all_1                                                     ; 0b8b: 28 06       (.  7/12 cycles
     push de                                                           ; 0b8d: d5          .   11 cycles
     call copy_buff                                                    ; 0b8e: cd cd 0e    ... 17 cycles
@@ -1912,7 +1976,7 @@ pr_all_1:
     pop de                                                            ; 0b98: d1          .   10 cycles
     push bc                                                           ; 0b99: c5          .   11 cycles
     push hl                                                           ; 0b9a: e5          .   11 cycles
-    ld a,(l5c91)                                                      ; 0b9b: 3a 91 5c    :.\ 13 cycles
+    ld a,(p_flag)                                                     ; 0b9b: 3a 91 5c    :.\ 13 cycles
     ld b,$ff                                                          ; 0b9e: 06 ff       ..  7 cycles
     rra                                                               ; 0ba0: 1f          .   4 cycles
     jr c,pr_all_2                                                     ; 0ba1: 38 01       8.  7/12 cycles
@@ -1925,9 +1989,9 @@ pr_all_2:
     ld c,a                                                            ; 0ba7: 4f          O   4 cycles
     ld a,8                                                            ; 0ba8: 3e 08       >.  7 cycles
     and a                                                             ; 0baa: a7          .   4 cycles
-    bit 1,(iy+1)                                                      ; 0bab: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0bab: fd cb 01... ... 20 cycles
     jr z,pr_all_3                                                     ; 0baf: 28 05       (.  7/12 cycles
-    set 1,(iy+48)                                                     ; 0bb1: fd cb 30... ..0 23 cycles
+    set 1,(iy+flags2 - err_nr)                                        ; 0bb1: fd cb 30... ..0 23 cycles
     scf                                                               ; 0bb5: 37          7   4 cycles
 ; $0bb6 referenced 1 time by $0baf
 pr_all_3:
@@ -1950,7 +2014,7 @@ pr_all_5:
     jr nz,pr_all_4                                                    ; 0bc3: 20 f2        .  7/12 cycles
     ex de,hl                                                          ; 0bc5: eb          .   4 cycles
     dec h                                                             ; 0bc6: 25          %   4 cycles
-    bit 1,(iy+1)                                                      ; 0bc7: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0bc7: fd cb 01... ... 20 cycles
     call z,po_attr                                                    ; 0bcb: cc db 0b    ... 10/17 cycles
     pop hl                                                            ; 0bce: e1          .   10 cycles
     pop bc                                                            ; 0bcf: c1          .   10 cycles
@@ -1976,12 +2040,12 @@ po_attr:
     and 3                                                             ; 0bdf: e6 03       ..  7 cycles
     or $58                                                            ; 0be1: f6 58       .X  7 cycles
     ld h,a                                                            ; 0be3: 67          g   4 cycles
-    ld de,(l5c8f)                                                     ; 0be4: ed 5b 8f... .[. 20 cycles
+    ld de,(attr_t)                                                    ; 0be4: ed 5b 8f... .[. 20 cycles
     ld a,(hl)                                                         ; 0be8: 7e          ~   7 cycles
     xor e                                                             ; 0be9: ab          .   4 cycles
     and d                                                             ; 0bea: a2          .   4 cycles
     xor e                                                             ; 0beb: ab          .   4 cycles
-    bit 6,(iy+87)                                                     ; 0bec: fd cb 57... ..W 20 cycles
+    bit 6,(iy+p_flag - err_nr)                                        ; 0bec: fd cb 57... ..W 20 cycles
     jr z,po_attr_1                                                    ; 0bf0: 28 08       (.  7/12 cycles
     and $c7                                                           ; 0bf2: e6 c7       ..  7 cycles
     bit 2,a                                                           ; 0bf4: cb 57       .W  8 cycles
@@ -1989,7 +2053,7 @@ po_attr:
     xor $38                                                           ; 0bf8: ee 38       .8  7 cycles
 ; $0bfa referenced 2 times by $0bf0, $0bf6
 po_attr_1:
-    bit 4,(iy+87)                                                     ; 0bfa: fd cb 57... ..W 20 cycles
+    bit 4,(iy+p_flag - err_nr)                                        ; 0bfa: fd cb 57... ..W 20 cycles
     jr z,po_attr_2                                                    ; 0bfe: 28 08       (.  7/12 cycles
     and $f8                                                           ; 0c00: e6 f8       ..  7 cycles
     bit 5,a                                                           ; 0c02: cb 6f       .o  8 cycles
@@ -2000,6 +2064,13 @@ po_attr_2:
     ld (hl),a                                                         ; 0c08: 77          w   7 cycles
     ret                                                               ; 0c09: c9          .   10 cycles
 
+; ***************************************************************************************
+; Print a message
+; 
+; On Entry:
+;     A: the message number
+;     DE: the message table
+; ***************************************************************************************
 ; $0c0a referenced 6 times by $0792, $097a, $0ca4, $1299, $1346, $134d
 po_msg:
     push hl                                                           ; 0c0a: e5          .   11 cycles
@@ -2016,7 +2087,7 @@ po_table:
     call po_search                                                    ; 0c14: cd 41 0c    .A. 17 cycles
     jr c,po_each                                                      ; 0c17: 38 09       8.  7/12 cycles
     ld a,$20                                                          ; 0c19: 3e 20       >   7 cycles
-    bit 0,(iy+1)                                                      ; 0c1b: fd cb 01... ... 20 cycles
+    bit 0,(iy+flags - err_nr)                                         ; 0c1b: fd cb 01... ... 20 cycles
     call z,po_save                                                    ; 0c1f: cc 3b 0c    .;. 10/17 cycles
 ; $0c22 referenced 2 times by $0c17, $0c2b
 po_each:
@@ -2042,7 +2113,7 @@ po_tr_sp:
 po_save:
     push de                                                           ; 0c3b: d5          .   11 cycles
     exx                                                               ; 0c3c: d9          .   4 cycles
-    rst $10                                                           ; 0c3d: d7          .   11 cycles
+    rst $10                                                           ; 0c3d: d7          .   11 cycles    ; Print a character
     exx                                                               ; 0c3e: d9          .   4 cycles
     pop de                                                            ; 0c3f: d1          .   10 cycles
     ret                                                               ; 0c40: c9          .   10 cycles
@@ -2069,54 +2140,54 @@ po_step:
 
 ; $0c55 referenced 3 times by $0a58, $0ab6, $0b95
 po_scr:
-    bit 1,(iy+1)                                                      ; 0c55: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0c55: fd cb 01... ... 20 cycles
     ret nz                                                            ; 0c59: c0          .   5/11 cycles
     ld de,$0dd9                                                       ; 0c5a: 11 d9 0d    ... 10 cycles
     push de                                                           ; 0c5d: d5          .   11 cycles
     ld a,b                                                            ; 0c5e: 78          x   4 cycles
-    bit 0,(iy+2)                                                      ; 0c5f: fd cb 02... ... 20 cycles
+    bit 0,(iy+tv_flag - err_nr)                                       ; 0c5f: fd cb 02... ... 20 cycles
     jp nz,po_scr_4                                                    ; 0c63: c2 02 0d    ... 10 cycles
-    cp (iy+49)                                                        ; 0c66: fd be 31    ..1 19 cycles
+    cp (iy+df_sz - err_nr)                                            ; 0c66: fd be 31    ..1 19 cycles
     jr c,report_5                                                     ; 0c69: 38 1b       8.  7/12 cycles
     ret nz                                                            ; 0c6b: c0          .   5/11 cycles
-    bit 4,(iy+2)                                                      ; 0c6c: fd cb 02... ... 20 cycles
+    bit 4,(iy+tv_flag - err_nr)                                       ; 0c6c: fd cb 02... ... 20 cycles
     jr z,po_scr_2                                                     ; 0c70: 28 16       (.  7/12 cycles
-    ld e,(iy+45)                                                      ; 0c72: fd 5e 2d    .^- 19 cycles
+    ld e,(iy+breg - err_nr)                                           ; 0c72: fd 5e 2d    .^- 19 cycles
     dec e                                                             ; 0c75: 1d          .   4 cycles
     jr z,po_scr_3                                                     ; 0c76: 28 5a       (Z  7/12 cycles
     ld a,0                                                            ; 0c78: 3e 00       >.  7 cycles
-    call chan_open                                                    ; 0c7a: cd 01 16    ... 17 cycles
-    ld sp,(l5c3f)                                                     ; 0c7d: ed 7b 3f... .{? 20 cycles
-    res 4,(iy+2)                                                      ; 0c81: fd cb 02... ... 23 cycles
+    call chan_open                                                    ; 0c7a: cd 01 16    ... 17 cycles    ; Open a channel
+    ld sp,(list_sp)                                                   ; 0c7d: ed 7b 3f... .{? 20 cycles
+    res 4,(iy+tv_flag - err_nr)                                       ; 0c81: fd cb 02... ... 23 cycles
     ret                                                               ; 0c85: c9          .   10 cycles
 
 ; $0c86 referenced 3 times by $0abc, $0c69, $0d04
 report_5:
     rst $08                                                           ; 0c86: cf          .   11 cycles
-    db 4                                                              ; 0c87: 04          .  ; Report 5: Out of screen
+    db 4                                                              ; 0c87: 04          .  ; Report 5 Out of screen
 
 ; $0c88 referenced 1 time by $0c70
 po_scr_2:
-    dec (iy+82)                                                       ; 0c88: fd 35 52    .5R 23 cycles
+    dec (iy+scr_ct - err_nr)                                          ; 0c88: fd 35 52    .5R 23 cycles
     jr nz,po_scr_3                                                    ; 0c8b: 20 45        E  7/12 cycles
     ld a,$18                                                          ; 0c8d: 3e 18       >.  7 cycles
     sub b                                                             ; 0c8f: 90          .   4 cycles
-    ld (l5c8c),a                                                      ; 0c90: 32 8c 5c    2.\ 13 cycles
-    ld hl,(l5c8f)                                                     ; 0c93: 2a 8f 5c    *.\ 16 cycles
+    ld (scr_ct),a                                                     ; 0c90: 32 8c 5c    2.\ 13 cycles
+    ld hl,(attr_t)                                                    ; 0c93: 2a 8f 5c    *.\ 16 cycles
     push hl                                                           ; 0c96: e5          .   11 cycles
-    ld a,(l5c91)                                                      ; 0c97: 3a 91 5c    :.\ 13 cycles
+    ld a,(p_flag)                                                     ; 0c97: 3a 91 5c    :.\ 13 cycles
     push af                                                           ; 0c9a: f5          .   11 cycles
     ld a,$fd                                                          ; 0c9b: 3e fd       >.  7 cycles
-    call chan_open                                                    ; 0c9d: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 0c9d: cd 01 16    ... 17 cycles    ; Open a channel
     xor a                                                             ; 0ca0: af          .   4 cycles
     ld de,$0cf8                                                       ; 0ca1: 11 f8 0c    ... 10 cycles
-    call po_msg                                                       ; 0ca4: cd 0a 0c    ... 17 cycles
-    set 5,(iy+2)                                                      ; 0ca7: fd cb 02... ... 23 cycles
+    call po_msg                                                       ; 0ca4: cd 0a 0c    ... 17 cycles    ; Print a message
+    set 5,(iy+tv_flag - err_nr)                                       ; 0ca7: fd cb 02... ... 23 cycles
     ld hl,$5c3b                                                       ; 0cab: 21 3b 5c    !;\ 10 cycles
     set 3,(hl)                                                        ; 0cae: cb de       ..  15 cycles
     res 5,(hl)                                                        ; 0cb0: cb ae       ..  15 cycles
     exx                                                               ; 0cb2: d9          .   4 cycles
-    call wait_key                                                     ; 0cb3: cd d4 15    ... 17 cycles
+    call wait_key                                                     ; 0cb3: cd d4 15    ... 17 cycles    ; Wait for a key
     exx                                                               ; 0cb6: d9          .   4 cycles
     cp $20                                                            ; 0cb7: fe 20       .   7 cycles
     jr z,report_d                                                     ; 0cb9: 28 45       (E  7/12 cycles
@@ -2126,15 +2197,15 @@ po_scr_2:
     cp $6e                                                            ; 0cc1: fe 6e       .n  7 cycles
     jr z,report_d                                                     ; 0cc3: 28 3b       (;  7/12 cycles
     ld a,$fe                                                          ; 0cc5: 3e fe       >.  7 cycles
-    call chan_open                                                    ; 0cc7: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 0cc7: cd 01 16    ... 17 cycles    ; Open a channel
     pop af                                                            ; 0cca: f1          .   10 cycles
-    ld (l5c91),a                                                      ; 0ccb: 32 91 5c    2.\ 13 cycles
+    ld (p_flag),a                                                     ; 0ccb: 32 91 5c    2.\ 13 cycles
     pop hl                                                            ; 0cce: e1          .   10 cycles
-    ld (l5c8f),hl                                                     ; 0ccf: 22 8f 5c    ".\ 16 cycles
+    ld (attr_t),hl                                                    ; 0ccf: 22 8f 5c    ".\ 16 cycles
 ; $0cd2 referenced 2 times by $0c76, $0c8b
 po_scr_3:
     call cl_sc_all                                                    ; 0cd2: cd fe 0d    ... 17 cycles
-    ld b,(iy+49)                                                      ; 0cd5: fd 46 31    .F1 19 cycles
+    ld b,(iy+df_sz - err_nr)                                          ; 0cd5: fd 46 31    .F1 19 cycles
     inc b                                                             ; 0cd8: 04          .   4 cycles
     ld c,$21                                                          ; 0cd9: 0e 21       .!  7 cycles
     push bc                                                           ; 0cdb: c5          .   11 cycles
@@ -2168,21 +2239,21 @@ scrl_mssg:
 ; $0d00 referenced 3 times by $0cb9, $0cbd, $0cc3
 report_d:
     rst $08                                                           ; 0d00: cf          .   11 cycles
-    db $0c                                                            ; 0d01: 0c          .  ; Report D: BREAK - CONT repeats
+    db $0c                                                            ; 0d01: 0c          .  ; Report D BREAK - CONT repeats
 
 ; $0d02 referenced 1 time by $0c63
 po_scr_4:
     cp 2                                                              ; 0d02: fe 02       ..  7 cycles
     jr c,report_5                                                     ; 0d04: 38 80       8.  7/12 cycles
-    add a,(iy+49)                                                     ; 0d06: fd 86 31    ..1 19 cycles
+    add a,(iy+df_sz - err_nr)                                         ; 0d06: fd 86 31    ..1 19 cycles
     sub $19                                                           ; 0d09: d6 19       ..  7 cycles
     ret nc                                                            ; 0d0b: d0          .   5/11 cycles
     neg                                                               ; 0d0c: ed 44       .D  8 cycles
     push bc                                                           ; 0d0e: c5          .   11 cycles
     ld b,a                                                            ; 0d0f: 47          G   4 cycles
-    ld hl,(l5c8f)                                                     ; 0d10: 2a 8f 5c    *.\ 16 cycles
+    ld hl,(attr_t)                                                    ; 0d10: 2a 8f 5c    *.\ 16 cycles
     push hl                                                           ; 0d13: e5          .   11 cycles
-    ld hl,(l5c91)                                                     ; 0d14: 2a 91 5c    *.\ 16 cycles
+    ld hl,(p_flag)                                                    ; 0d14: 2a 91 5c    *.\ 16 cycles
     push hl                                                           ; 0d17: e5          .   11 cycles
     call temps                                                        ; 0d18: cd 4d 0d    .M. 17 cycles
     ld a,b                                                            ; 0d1b: 78          x   4 cycles
@@ -2206,27 +2277,27 @@ po_scr_4b:
     dec a                                                             ; 0d31: 3d          =   4 cycles
     jr nz,po_scr_4a                                                   ; 0d32: 20 e8        .  7/12 cycles
     pop hl                                                            ; 0d34: e1          .   10 cycles
-    ld (iy+87),l                                                      ; 0d35: fd 75 57    .uW 19 cycles
+    ld (iy+p_flag - err_nr),l                                         ; 0d35: fd 75 57    .uW 19 cycles
     pop hl                                                            ; 0d38: e1          .   10 cycles
-    ld (l5c8f),hl                                                     ; 0d39: 22 8f 5c    ".\ 16 cycles
-    ld bc,(l5c88)                                                     ; 0d3c: ed 4b 88... .K. 20 cycles
-    res 0,(iy+2)                                                      ; 0d40: fd cb 02... ... 23 cycles
-    call cl_set                                                       ; 0d44: cd d9 0d    ... 17 cycles
-    set 0,(iy+2)                                                      ; 0d47: fd cb 02... ... 23 cycles
+    ld (attr_t),hl                                                    ; 0d39: 22 8f 5c    ".\ 16 cycles
+    ld bc,(s_posn)                                                    ; 0d3c: ed 4b 88... .K. 20 cycles
+    res 0,(iy+tv_flag - err_nr)                                       ; 0d40: fd cb 02... ... 23 cycles
+    call cl_set                                                       ; 0d44: cd d9 0d    ... 17 cycles    ; Set the print position
+    set 0,(iy+tv_flag - err_nr)                                       ; 0d47: fd cb 02... ... 23 cycles
     pop bc                                                            ; 0d4b: c1          .   10 cycles
     ret                                                               ; 0d4c: c9          .   10 cycles
 
 ; $0d4d referenced 11 times by $0d18, $0d75, $0dc1, $111d, $114d, $164a, $1c9e, $1cc7, $1fd5, $22e2, $247a
 temps:
     xor a                                                             ; 0d4d: af          .   4 cycles
-    ld hl,(l5c8d)                                                     ; 0d4e: 2a 8d 5c    *.\ 16 cycles
-    bit 0,(iy+2)                                                      ; 0d51: fd cb 02... ... 20 cycles
+    ld hl,(attr_p)                                                    ; 0d4e: 2a 8d 5c    *.\ 16 cycles
+    bit 0,(iy+tv_flag - err_nr)                                       ; 0d51: fd cb 02... ... 20 cycles
     jr z,temps_1                                                      ; 0d55: 28 04       (.  7/12 cycles
     ld h,a                                                            ; 0d57: 67          g   4 cycles
-    ld l,(iy+14)                                                      ; 0d58: fd 6e 0e    .n. 19 cycles
+    ld l,(iy+bordcr - err_nr)                                         ; 0d58: fd 6e 0e    .n. 19 cycles
 ; $0d5b referenced 1 time by $0d55
 temps_1:
-    ld (l5c8f),hl                                                     ; 0d5b: 22 8f 5c    ".\ 16 cycles
+    ld (attr_t),hl                                                    ; 0d5b: 22 8f 5c    ".\ 16 cycles
     ld hl,$5c91                                                       ; 0d5e: 21 91 5c    !.\ 10 cycles
     jr nz,temps_2                                                     ; 0d61: 20 02        .  7/12 cycles
     ld a,(hl)                                                         ; 0d63: 7e          ~   7 cycles
@@ -2239,19 +2310,22 @@ temps_2:
     ld (hl),a                                                         ; 0d69: 77          w   7 cycles
     ret                                                               ; 0d6a: c9          .   10 cycles
 
+; ***************************************************************************************
+; Clear the screen
+; ***************************************************************************************
 ; $0d6b referenced 2 times by $1292, $1ec3
 cls:
-    call cl_all                                                       ; 0d6b: cd af 0d    ... 17 cycles
+    call cl_all                                                       ; 0d6b: cd af 0d    ... 17 cycles    ; Clear the whole display
 ; $0d6e referenced 5 times by $10c1, $12e9, $132d, $2093, $20be
 cls_lower:
     ld hl,$5c3c                                                       ; 0d6e: 21 3c 5c    !<\ 10 cycles
     res 5,(hl)                                                        ; 0d71: cb ae       ..  15 cycles
     set 0,(hl)                                                        ; 0d73: cb c6       ..  15 cycles
     call temps                                                        ; 0d75: cd 4d 0d    .M. 17 cycles
-    ld b,(iy+49)                                                      ; 0d78: fd 46 31    .F1 19 cycles
-    call cl_line                                                      ; 0d7b: cd 44 0e    .D. 17 cycles
+    ld b,(iy+df_sz - err_nr)                                          ; 0d78: fd 46 31    .F1 19 cycles
+    call cl_line                                                      ; 0d7b: cd 44 0e    .D. 17 cycles    ; Clear lines at the bottom of the display
     ld hl,$5ac0                                                       ; 0d7e: 21 c0 5a    !.Z 10 cycles
-    ld a,(l5c8d)                                                      ; 0d81: 3a 8d 5c    :.\ 13 cycles
+    ld a,(attr_p)                                                     ; 0d81: 3a 8d 5c    :.\ 13 cycles
     dec b                                                             ; 0d84: 05          .   4 cycles
     jr cls_3                                                          ; 0d85: 18 07       ..  12 cycles
 
@@ -2267,12 +2341,12 @@ cls_2:
 ; $0d8e referenced 1 time by $0d85
 cls_3:
     djnz cls_1                                                        ; 0d8e: 10 f7       ..  8/13 cycles
-    ld (iy+49),2                                                      ; 0d90: fd 36 31... .61 19 cycles
+    ld (iy+df_sz - err_nr),2                                          ; 0d90: fd 36 31... .61 19 cycles
 ; $0d94 referenced 1 time by $0db9
 cl_chan:
     ld a,$fd                                                          ; 0d94: 3e fd       >.  7 cycles
-    call chan_open                                                    ; 0d96: cd 01 16    ... 17 cycles
-    ld hl,(l5c51)                                                     ; 0d99: 2a 51 5c    *Q\ 16 cycles
+    call chan_open                                                    ; 0d96: cd 01 16    ... 17 cycles    ; Open a channel
+    ld hl,(curchl)                                                    ; 0d99: 2a 51 5c    *Q\ 16 cycles
     ld de,$09f4                                                       ; 0d9c: 11 f4 09    ... 10 cycles
     and a                                                             ; 0d9f: a7          .   4 cycles
 ; $0da0 referenced 1 time by $0da8
@@ -2287,33 +2361,43 @@ cl_chan_a:
     ld bc,$1721                                                       ; 0daa: 01 21 17    .!. 10 cycles
     jr cl_set                                                         ; 0dad: 18 2a       .*  12 cycles
 
+; ***************************************************************************************
+; Clear the whole display
+; ***************************************************************************************
 ; $0daf referenced 3 times by $0d6b, $12e6, $179d
 cl_all:
     ld hl,0                                                           ; 0daf: 21 00 00    !.. 10 cycles
-    ld (l5c7d),hl                                                     ; 0db2: 22 7d 5c    "}\ 16 cycles
-    res 0,(iy+48)                                                     ; 0db5: fd cb 30... ..0 23 cycles
+    ld (coords),hl                                                    ; 0db2: 22 7d 5c    "}\ 16 cycles
+    res 0,(iy+flags2 - err_nr)                                        ; 0db5: fd cb 30... ..0 23 cycles
     call cl_chan                                                      ; 0db9: cd 94 0d    ... 17 cycles
     ld a,$fe                                                          ; 0dbc: 3e fe       >.  7 cycles
-    call chan_open                                                    ; 0dbe: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 0dbe: cd 01 16    ... 17 cycles    ; Open a channel
     call temps                                                        ; 0dc1: cd 4d 0d    .M. 17 cycles
     ld b,$18                                                          ; 0dc4: 06 18       ..  7 cycles
-    call cl_line                                                      ; 0dc6: cd 44 0e    .D. 17 cycles
-    ld hl,(l5c51)                                                     ; 0dc9: 2a 51 5c    *Q\ 16 cycles
+    call cl_line                                                      ; 0dc6: cd 44 0e    .D. 17 cycles    ; Clear lines at the bottom of the display
+    ld hl,(curchl)                                                    ; 0dc9: 2a 51 5c    *Q\ 16 cycles
     ld de,$09f4                                                       ; 0dcc: 11 f4 09    ... 10 cycles
     ld (hl),e                                                         ; 0dcf: 73          s   7 cycles
     inc hl                                                            ; 0dd0: 23          #   6 cycles
     ld (hl),d                                                         ; 0dd1: 72          r   7 cycles
-    ld (iy+82),1                                                      ; 0dd2: fd 36 52... .6R 19 cycles
+    ld (iy+scr_ct - err_nr),1                                         ; 0dd2: fd 36 52... .6R 19 cycles
     ld bc,$1821                                                       ; 0dd6: 01 21 18    .!. 10 cycles
+; ***************************************************************************************
+; Set the print position
+; 
+; On Entry:
+;     B: 24 - the line
+;     C: 33 - the column
+; ***************************************************************************************
 ; $0dd9 referenced 9 times by $0a3a, $0a5c, $0abf, $0d44, $0dad, $0ef1, $1184, $20bb, $2171
 cl_set:
     ld hl,$5b00                                                       ; 0dd9: 21 00 5b    !.[ 10 cycles
-    bit 1,(iy+1)                                                      ; 0ddc: fd cb 01... ... 20 cycles
+    bit 1,(iy+flags - err_nr)                                         ; 0ddc: fd cb 01... ... 20 cycles
     jr nz,cl_set_2                                                    ; 0de0: 20 12        .  7/12 cycles
     ld a,b                                                            ; 0de2: 78          x   4 cycles
-    bit 0,(iy+2)                                                      ; 0de3: fd cb 02... ... 20 cycles
+    bit 0,(iy+tv_flag - err_nr)                                       ; 0de3: fd cb 02... ... 20 cycles
     jr z,cl_set_1                                                     ; 0de7: 28 05       (.  7/12 cycles
-    add a,(iy+49)                                                     ; 0de9: fd 86 31    ..1 19 cycles
+    add a,(iy+df_sz - err_nr)                                         ; 0de9: fd 86 31    ..1 19 cycles
     sub $18                                                           ; 0dec: d6 18       ..  7 cycles
 ; $0dee referenced 1 time by $0de7
 cl_set_1:
@@ -2384,6 +2468,12 @@ cl_scr_3:
     ex de,hl                                                          ; 0e3f: eb          .   4 cycles
     ldir                                                              ; 0e40: ed b0       ..  16/21 cycles
     ld b,1                                                            ; 0e42: 06 01       ..  7 cycles
+; ***************************************************************************************
+; Clear lines at the bottom of the display
+; 
+; On Entry:
+;     B: the number of lines
+; ***************************************************************************************
 ; $0e44 referenced 3 times by $0d7b, $0dc6, $17a7
 cl_line:
     push bc                                                           ; 0e44: c5          .   11 cycles
@@ -2424,10 +2514,10 @@ cl_line_2:
     ld h,d                                                            ; 0e71: 62          b   4 cycles
     ld l,e                                                            ; 0e72: 6b          k   4 cycles
     inc de                                                            ; 0e73: 13          .   6 cycles
-    ld a,(l5c8d)                                                      ; 0e74: 3a 8d 5c    :.\ 13 cycles
-    bit 0,(iy+2)                                                      ; 0e77: fd cb 02... ... 20 cycles
+    ld a,(attr_p)                                                     ; 0e74: 3a 8d 5c    :.\ 13 cycles
+    bit 0,(iy+tv_flag - err_nr)                                       ; 0e77: fd cb 02... ... 20 cycles
     jr z,cl_line_3                                                    ; 0e7b: 28 03       (.  7/12 cycles
-    ld a,(l5c48)                                                      ; 0e7d: 3a 48 5c    :H\ 13 cycles
+    ld a,(bordcr)                                                     ; 0e7d: 3a 48 5c    :H\ 13 cycles
 ; $0e80 referenced 1 time by $0e7b
 cl_line_3:
     ld (hl),a                                                         ; 0e80: 77          w   7 cycles
@@ -2521,7 +2611,7 @@ copy_end:
 ; $0edf referenced 2 times by $0f07, $128b
 clear_prb:
     ld hl,$5b00                                                       ; 0edf: 21 00 5b    !.[ 10 cycles
-    ld (iy+70),l                                                      ; 0ee2: fd 75 46    .uF 19 cycles
+    ld (iy+pr_cc - err_nr),l                                          ; 0ee2: fd 75 46    .uF 19 cycles
     xor a                                                             ; 0ee5: af          .   4 cycles
     ld b,a                                                            ; 0ee6: 47          G   4 cycles
 ; $0ee7 referenced 1 time by $0ee9
@@ -2529,9 +2619,9 @@ prb_bytes:
     ld (hl),a                                                         ; 0ee7: 77          w   7 cycles
     inc hl                                                            ; 0ee8: 23          #   6 cycles
     djnz prb_bytes                                                    ; 0ee9: 10 fc       ..  8/13 cycles
-    res 1,(iy+48)                                                     ; 0eeb: fd cb 30... ..0 23 cycles
+    res 1,(iy+flags2 - err_nr)                                        ; 0eeb: fd cb 30... ..0 23 cycles
     ld c,$21                                                          ; 0eef: 0e 21       .!  7 cycles
-    jp cl_set                                                         ; 0ef1: c3 d9 0d    ... 10 cycles
+    jp cl_set                                                         ; 0ef1: c3 d9 0d    ... 10 cycles    ; Set the print position
 
 ; $0ef4 referenced 2 times by $0eb4, $0ed4
 copy_line:
@@ -2543,7 +2633,7 @@ copy_line:
     ld d,a                                                            ; 0efc: 57          W   4 cycles
 ; $0efd referenced 1 time by $0f10
 copy_l_1:
-    call break_key                                                    ; 0efd: cd 54 1f    .T. 17 cycles
+    call break_key                                                    ; 0efd: cd 54 1f    .T. 17 cycles    ; Test for the BREAK key
     jr c,copy_l_2                                                     ; 0f00: 38 0a       8.  7/12 cycles
     ld a,4                                                            ; 0f02: 3e 04       >.  7 cycles
     out ($fb),a                                                       ; 0f04: d3 fb       ..  11 cycles
@@ -2551,7 +2641,7 @@ copy_l_1:
     call clear_prb                                                    ; 0f07: cd df 0e    ... 17 cycles
 report_dc:
     rst $08                                                           ; 0f0a: cf          .   11 cycles
-    db $0c                                                            ; 0f0b: 0c          .  ; Report D: BREAK - CONT repeats
+    db $0c                                                            ; 0f0b: 0c          .  ; Report D BREAK - CONT repeats
 
 ; $0f0c referenced 1 time by $0f00
 copy_l_2:
@@ -2584,20 +2674,20 @@ copy_l_5:
 
 ; $0f2c referenced 3 times by $12b1, $2152, $215e
 editor:
-    ld hl,(l5c3d)                                                     ; 0f2c: 2a 3d 5c    *=\ 16 cycles
+    ld hl,(err_sp)                                                    ; 0f2c: 2a 3d 5c    *=\ 16 cycles
     push hl                                                           ; 0f2f: e5          .   11 cycles
 ; $0f30 referenced 1 time by $1094
 ed_again:
     ld hl,ed_error                                                    ; 0f30: 21 7f 10    !.. 10 cycles
     push hl                                                           ; 0f33: e5          .   11 cycles
-    ld (l5c3d),sp                                                     ; 0f34: ed 73 3d... .s= 20 cycles
+    ld (err_sp),sp                                                    ; 0f34: ed 73 3d... .s= 20 cycles
 ed_loop:
-    call wait_key                                                     ; 0f38: cd d4 15    ... 17 cycles
+    call wait_key                                                     ; 0f38: cd d4 15    ... 17 cycles    ; Wait for a key
     push af                                                           ; 0f3b: f5          .   11 cycles
     ld d,0                                                            ; 0f3c: 16 00       ..  7 cycles
-    ld e,(iy-1)                                                       ; 0f3e: fd 5e ff    .^. 19 cycles
+    ld e,(iy+pip - err_nr)                                            ; 0f3e: fd 5e ff    .^. 19 cycles
     ld hl,$c8                                                         ; 0f41: 21 c8 00    !.. 10 cycles
-    call beeper                                                       ; 0f44: cd b5 03    ... 17 cycles
+    call beeper                                                       ; 0f44: cd b5 03    ... 17 cycles    ; Make a sound
     pop af                                                            ; 0f47: f1          .   10 cycles
     ld hl,$0f38                                                       ; 0f48: 21 38 0f    !8. 10 cycles
     push hl                                                           ; 0f4b: e5          .   11 cycles
@@ -2612,16 +2702,16 @@ ed_loop:
     cp $16                                                            ; 0f5c: fe 16       ..  7 cycles
     jr c,ed_contr                                                     ; 0f5e: 38 0c       8.  7/12 cycles
     inc bc                                                            ; 0f60: 03          .   6 cycles
-    bit 7,(iy+55)                                                     ; 0f61: fd cb 37... ..7 20 cycles
+    bit 7,(iy+flagx - err_nr)                                         ; 0f61: fd cb 37... ..7 20 cycles
     jp z,ed_ignore                                                    ; 0f65: ca 1e 10    ... 10 cycles
-    call wait_key                                                     ; 0f68: cd d4 15    ... 17 cycles
+    call wait_key                                                     ; 0f68: cd d4 15    ... 17 cycles    ; Wait for a key
     ld e,a                                                            ; 0f6b: 5f          _   4 cycles
 ; $0f6c referenced 1 time by $0f5e
 ed_contr:
-    call wait_key                                                     ; 0f6c: cd d4 15    ... 17 cycles
+    call wait_key                                                     ; 0f6c: cd d4 15    ... 17 cycles    ; Wait for a key
     push de                                                           ; 0f6f: d5          .   11 cycles
-    ld hl,(l5c5b)                                                     ; 0f70: 2a 5b 5c    *[\ 16 cycles
-    res 0,(iy+7)                                                      ; 0f73: fd cb 07... ... 23 cycles
+    ld hl,(k_cur)                                                     ; 0f70: 2a 5b 5c    *[\ 16 cycles
+    res 0,(iy+mode - err_nr)                                          ; 0f73: fd cb 07... ... 23 cycles
     call make_room                                                    ; 0f77: cd 55 16    .U. 17 cycles
     pop bc                                                            ; 0f7a: c1          .   10 cycles
     inc hl                                                            ; 0f7b: 23          #   6 cycles
@@ -2632,14 +2722,14 @@ ed_contr:
 
 ; $0f81 referenced 3 times by $0f4e, $0f52, $107c
 add_char:
-    res 0,(iy+7)                                                      ; 0f81: fd cb 07... ... 23 cycles
-    ld hl,(l5c5b)                                                     ; 0f85: 2a 5b 5c    *[\ 16 cycles
+    res 0,(iy+mode - err_nr)                                          ; 0f81: fd cb 07... ... 23 cycles
+    ld hl,(k_cur)                                                     ; 0f85: 2a 5b 5c    *[\ 16 cycles
     call one_space                                                    ; 0f88: cd 52 16    .R. 17 cycles
 ; $0f8b referenced 1 time by $0f7f
 add_ch_1:
     ld (de),a                                                         ; 0f8b: 12          .   7 cycles
     inc de                                                            ; 0f8c: 13          .   6 cycles
-    ld (l5c5b),de                                                     ; 0f8d: ed 53 5b... .S[ 20 cycles
+    ld (k_cur),de                                                     ; 0f8d: ed 53 5b... .S[ 20 cycles
     ret                                                               ; 0f91: c9          .   10 cycles
 
 ; $0f92 referenced 1 time by $0f56
@@ -2651,7 +2741,7 @@ ed_keys:
     ld e,(hl)                                                         ; 0f99: 5e          ^   7 cycles
     add hl,de                                                         ; 0f9a: 19          .   11 cycles
     push hl                                                           ; 0f9b: e5          .   11 cycles
-    ld hl,(l5c5b)                                                     ; 0f9c: 2a 5b 5c    *[\ 16 cycles
+    ld hl,(k_cur)                                                     ; 0f9c: 2a 5b 5c    *[\ 16 cycles
     ret                                                               ; 0f9f: c9          .   10 cycles
 
 ed_keys_t:
@@ -2666,8 +2756,8 @@ ed_keys_t:
     db ed_graph - $                                                   ; 0fa8: d4          .
 
 ed_edit:
-    ld hl,(l5c49)                                                     ; 0fa9: 2a 49 5c    *I\ 16 cycles
-    bit 5,(iy+55)                                                     ; 0fac: fd cb 37... ..7 20 cycles
+    ld hl,(e_ppc)                                                     ; 0fa9: 2a 49 5c    *I\ 16 cycles
+    bit 5,(iy+flagx - err_nr)                                         ; 0fac: fd cb 37... ..7 20 cycles
     jp nz,clear_sp                                                    ; 0fb0: c2 97 10    ... 10 cycles
     call line_addr                                                    ; 0fb3: cd 6e 19    .n. 17 cycles
     call line_no                                                      ; 0fb6: cd 95 16    ... 17 cycles
@@ -2685,28 +2775,28 @@ ed_edit:
     ld c,l                                                            ; 0fc8: 4d          M   4 cycles
     call test_room                                                    ; 0fc9: cd 05 1f    ... 17 cycles
     call clear_sp                                                     ; 0fcc: cd 97 10    ... 17 cycles
-    ld hl,(l5c51)                                                     ; 0fcf: 2a 51 5c    *Q\ 16 cycles
+    ld hl,(curchl)                                                    ; 0fcf: 2a 51 5c    *Q\ 16 cycles
     ex (sp),hl                                                        ; 0fd2: e3          .   19 cycles
     push hl                                                           ; 0fd3: e5          .   11 cycles
     ld a,$ff                                                          ; 0fd4: 3e ff       >.  7 cycles
-    call chan_open                                                    ; 0fd6: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 0fd6: cd 01 16    ... 17 cycles    ; Open a channel
     pop hl                                                            ; 0fd9: e1          .   10 cycles
     dec hl                                                            ; 0fda: 2b          +   6 cycles
-    dec (iy+15)                                                       ; 0fdb: fd 35 0f    .5. 23 cycles
+    dec (iy+e_ppc - err_nr)                                           ; 0fdb: fd 35 0f    .5. 23 cycles
     call out_line                                                     ; 0fde: cd 55 18    .U. 17 cycles
-    inc (iy+15)                                                       ; 0fe1: fd 34 0f    .4. 23 cycles
-    ld hl,(l5c59)                                                     ; 0fe4: 2a 59 5c    *Y\ 16 cycles
+    inc (iy+e_ppc - err_nr)                                           ; 0fe1: fd 34 0f    .4. 23 cycles
+    ld hl,(e_line)                                                    ; 0fe4: 2a 59 5c    *Y\ 16 cycles
     inc hl                                                            ; 0fe7: 23          #   6 cycles
     inc hl                                                            ; 0fe8: 23          #   6 cycles
     inc hl                                                            ; 0fe9: 23          #   6 cycles
     inc hl                                                            ; 0fea: 23          #   6 cycles
-    ld (l5c5b),hl                                                     ; 0feb: 22 5b 5c    "[\ 16 cycles
+    ld (k_cur),hl                                                     ; 0feb: 22 5b 5c    "[\ 16 cycles
     pop hl                                                            ; 0fee: e1          .   10 cycles
     call chan_flag                                                    ; 0fef: cd 15 16    ... 17 cycles
     ret                                                               ; 0ff2: c9          .   10 cycles
 
 ed_down:
-    bit 5,(iy+55)                                                     ; 0ff3: fd cb 37... ..7 20 cycles
+    bit 5,(iy+flagx - err_nr)                                         ; 0ff3: fd cb 37... ..7 20 cycles
     jr nz,ed_stop                                                     ; 0ff7: 20 08        .  7/12 cycles
     ld hl,$5c49                                                       ; 0ff9: 21 49 5c    !I\ 10 cycles
     call ln_fetch                                                     ; 0ffc: cd 0f 19    ... 17 cycles
@@ -2714,7 +2804,7 @@ ed_down:
 
 ; $1001 referenced 1 time by $0ff7
 ed_stop:
-    ld (iy+0),$10                                                     ; 1001: fd 36 00... .6. 19 cycles
+    ld (iy+err_nr - err_nr),$10                                       ; 1001: fd 36 00... .6. 19 cycles
     jr ed_enter                                                       ; 1005: 18 1d       ..  12 cycles
 
 ed_left:
@@ -2728,7 +2818,7 @@ ed_right:
     inc hl                                                            ; 1010: 23          #   6 cycles
 ; $1011 referenced 1 time by $100a
 ed_cur:
-    ld (l5c5b),hl                                                     ; 1011: 22 5b 5c    "[\ 16 cycles
+    ld (k_cur),hl                                                     ; 1011: 22 5b 5c    "[\ 16 cycles
     ret                                                               ; 1014: c9          .   10 cycles
 
 ed_delete:
@@ -2738,8 +2828,8 @@ ed_delete:
 
 ; $101e referenced 1 time by $0f65
 ed_ignore:
-    call wait_key                                                     ; 101e: cd d4 15    ... 17 cycles
-    call wait_key                                                     ; 1021: cd d4 15    ... 17 cycles
+    call wait_key                                                     ; 101e: cd d4 15    ... 17 cycles    ; Wait for a key
+    call wait_key                                                     ; 1021: cd d4 15    ... 17 cycles    ; Wait for a key
 ; $1024 referenced 2 times by $1005, $107a
 ed_enter:
     pop hl                                                            ; 1024: e1          .   10 cycles
@@ -2747,8 +2837,8 @@ ed_enter:
 ; $1026 referenced 1 time by $1083
 ed_end:
     pop hl                                                            ; 1026: e1          .   10 cycles
-    ld (l5c3d),hl                                                     ; 1027: 22 3d 5c    "=\ 16 cycles
-    bit 7,(iy+0)                                                      ; 102a: fd cb 00... ... 20 cycles
+    ld (err_sp),hl                                                    ; 1027: 22 3d 5c    "=\ 16 cycles
+    bit 7,(iy+err_nr - err_nr)                                        ; 102a: fd cb 00... ... 20 cycles
     ret nz                                                            ; 102e: c0          .   5/11 cycles
     ld sp,hl                                                          ; 102f: f9          .   6 cycles
     ret                                                               ; 1030: c9          .   10 cycles
@@ -2790,9 +2880,9 @@ ed_edge_2:
     ret                                                               ; 1058: c9          .   10 cycles
 
 ed_up:
-    bit 5,(iy+55)                                                     ; 1059: fd cb 37... ..7 20 cycles
+    bit 5,(iy+flagx - err_nr)                                         ; 1059: fd cb 37... ..7 20 cycles
     ret nz                                                            ; 105d: c0          .   5/11 cycles
-    ld hl,(l5c49)                                                     ; 105e: 2a 49 5c    *I\ 16 cycles
+    ld hl,(e_ppc)                                                     ; 105e: 2a 49 5c    *I\ 16 cycles
     call line_addr                                                    ; 1061: cd 6e 19    .n. 17 cycles
     ex de,hl                                                          ; 1064: eb          .   4 cycles
     call line_no                                                      ; 1065: cd 95 16    ... 17 cycles
@@ -2802,22 +2892,22 @@ ed_up:
 ed_list:
     call auto_list                                                    ; 106e: cd 95 17    ... 17 cycles
     ld a,0                                                            ; 1071: 3e 00       >.  7 cycles
-    jp chan_open                                                      ; 1073: c3 01 16    ... 10 cycles
+    jp chan_open                                                      ; 1073: c3 01 16    ... 10 cycles    ; Open a channel
 
 ed_symbol:
-    bit 7,(iy+55)                                                     ; 1076: fd cb 37... ..7 20 cycles
+    bit 7,(iy+flagx - err_nr)                                         ; 1076: fd cb 37... ..7 20 cycles
     jr z,ed_enter                                                     ; 107a: 28 a8       (.  7/12 cycles
 ed_graph:
     jp add_char                                                       ; 107c: c3 81 0f    ... 10 cycles
 
 ed_error:
-    bit 4,(iy+48)                                                     ; 107f: fd cb 30... ..0 20 cycles
+    bit 4,(iy+flags2 - err_nr)                                        ; 107f: fd cb 30... ..0 20 cycles
     jr z,ed_end                                                       ; 1083: 28 a1       (.  7/12 cycles
-    ld (iy+0),$ff                                                     ; 1085: fd 36 00... .6. 19 cycles
+    ld (iy+err_nr - err_nr),$ff                                       ; 1085: fd 36 00... .6. 19 cycles
     ld d,0                                                            ; 1089: 16 00       ..  7 cycles
-    ld e,(iy-2)                                                       ; 108b: fd 5e fe    .^. 19 cycles
+    ld e,(iy+rasp - err_nr)                                           ; 108b: fd 5e fe    .^. 19 cycles
     ld hl,$1a90                                                       ; 108e: 21 90 1a    !.. 10 cycles
-    call beeper                                                       ; 1091: cd b5 03    ... 17 cycles
+    call beeper                                                       ; 1091: cd b5 03    ... 17 cycles    ; Make a sound
     jp ed_again                                                       ; 1094: c3 30 0f    .0. 10 cycles
 
 ; $1097 referenced 4 times by $0fb0, $0fbb, $0fcc, $1362
@@ -2826,21 +2916,21 @@ clear_sp:
     call set_hl                                                       ; 1098: cd 90 11    ... 17 cycles
     dec hl                                                            ; 109b: 2b          +   6 cycles
     call reclaim_1                                                    ; 109c: cd e5 19    ... 17 cycles
-    ld (l5c5b),hl                                                     ; 109f: 22 5b 5c    "[\ 16 cycles
-    ld (iy+7),0                                                       ; 10a2: fd 36 07... .6. 19 cycles
+    ld (k_cur),hl                                                     ; 109f: 22 5b 5c    "[\ 16 cycles
+    ld (iy+mode - err_nr),0                                           ; 10a2: fd 36 07... .6. 19 cycles
     pop hl                                                            ; 10a6: e1          .   10 cycles
     ret                                                               ; 10a7: c9          .   10 cycles
 
 key_input:
-    bit 3,(iy+2)                                                      ; 10a8: fd cb 02... ... 20 cycles
+    bit 3,(iy+tv_flag - err_nr)                                       ; 10a8: fd cb 02... ... 20 cycles
     call nz,ed_copy                                                   ; 10ac: c4 1d 11    ... 10/17 cycles
     and a                                                             ; 10af: a7          .   4 cycles
-    bit 5,(iy+1)                                                      ; 10b0: fd cb 01... ... 20 cycles
+    bit 5,(iy+flags - err_nr)                                         ; 10b0: fd cb 01... ... 20 cycles
     ret z                                                             ; 10b4: c8          .   5/11 cycles
-    ld a,(l5c08)                                                      ; 10b5: 3a 08 5c    :.\ 13 cycles
-    res 5,(iy+1)                                                      ; 10b8: fd cb 01... ... 23 cycles
+    ld a,(last_k)                                                     ; 10b5: 3a 08 5c    :.\ 13 cycles
+    res 5,(iy+flags - err_nr)                                         ; 10b8: fd cb 01... ... 23 cycles
     push af                                                           ; 10bc: f5          .   11 cycles
-    bit 5,(iy+2)                                                      ; 10bd: fd cb 02... ... 20 cycles
+    bit 5,(iy+tv_flag - err_nr)                                       ; 10bd: fd cb 02... ... 20 cycles
     call nz,cls_lower                                                 ; 10c1: c4 6e 0d    .n. 10/17 cycles
     pop af                                                            ; 10c4: f1          .   10 cycles
     cp $20                                                            ; 10c5: fe 20       .   7 cycles
@@ -2878,7 +2968,7 @@ key_mode:
     ld (hl),0                                                         ; 10f2: 36 00       6.  10 cycles
 ; $10f4 referenced 2 times by $10e4, $10f0
 key_flag:
-    set 3,(iy+2)                                                      ; 10f4: fd cb 02... ... 23 cycles
+    set 3,(iy+tv_flag - err_nr)                                       ; 10f4: fd cb 02... ... 23 cycles
     cp a                                                              ; 10f8: bf          .   4 cycles
     ret                                                               ; 10f9: c9          .   10 cycles
 
@@ -2893,16 +2983,16 @@ key_contr:
     inc a                                                             ; 1104: 3c          <   4 cycles
 ; $1105 referenced 2 times by $10d9, $1102
 key_data:
-    ld (iy-45),c                                                      ; 1105: fd 71 d3    .q. 19 cycles
+    ld (iy+k_data - err_nr),c                                         ; 1105: fd 71 d3    .q. 19 cycles
     ld de,key_next                                                    ; 1108: 11 0d 11    ... 10 cycles
     jr key_chan                                                       ; 110b: 18 06       ..  12 cycles
 
 key_next:
-    ld a,(l5c0d)                                                      ; 110d: 3a 0d 5c    :.\ 13 cycles
+    ld a,(k_data)                                                     ; 110d: 3a 0d 5c    :.\ 13 cycles
     ld de,$10a8                                                       ; 1110: 11 a8 10    ... 10 cycles
 ; $1113 referenced 1 time by $110b
 key_chan:
-    ld hl,(l5c4f)                                                     ; 1113: 2a 4f 5c    *O\ 16 cycles
+    ld hl,(chans)                                                     ; 1113: 2a 4f 5c    *O\ 16 cycles
     inc hl                                                            ; 1116: 23          #   6 cycles
     inc hl                                                            ; 1117: 23          #   6 cycles
     ld (hl),e                                                         ; 1118: 73          s   7 cycles
@@ -2916,16 +3006,16 @@ key_done2:
 ; $111d referenced 2 times by $10ac, $216a
 ed_copy:
     call temps                                                        ; 111d: cd 4d 0d    .M. 17 cycles
-    res 3,(iy+2)                                                      ; 1120: fd cb 02... ... 23 cycles
-    res 5,(iy+2)                                                      ; 1124: fd cb 02... ... 23 cycles
-    ld hl,(l5c8a)                                                     ; 1128: 2a 8a 5c    *.\ 16 cycles
+    res 3,(iy+tv_flag - err_nr)                                       ; 1120: fd cb 02... ... 23 cycles
+    res 5,(iy+tv_flag - err_nr)                                       ; 1124: fd cb 02... ... 23 cycles
+    ld hl,(s_posnl)                                                   ; 1128: 2a 8a 5c    *.\ 16 cycles
     push hl                                                           ; 112b: e5          .   11 cycles
-    ld hl,(l5c3d)                                                     ; 112c: 2a 3d 5c    *=\ 16 cycles
+    ld hl,(err_sp)                                                    ; 112c: 2a 3d 5c    *=\ 16 cycles
     push hl                                                           ; 112f: e5          .   11 cycles
     ld hl,ed_full                                                     ; 1130: 21 67 11    !g. 10 cycles
     push hl                                                           ; 1133: e5          .   11 cycles
-    ld (l5c3d),sp                                                     ; 1134: ed 73 3d... .s= 20 cycles
-    ld hl,(l5c82)                                                     ; 1138: 2a 82 5c    *.\ 16 cycles
+    ld (err_sp),sp                                                    ; 1134: ed 73 3d... .s= 20 cycles
+    ld hl,(echo_e)                                                    ; 1138: 2a 82 5c    *.\ 16 cycles
     push hl                                                           ; 113b: e5          .   11 cycles
     scf                                                               ; 113c: 37          7   4 cycles
     call set_de                                                       ; 113d: cd 95 11    ... 17 cycles
@@ -2933,18 +3023,18 @@ ed_copy:
     call out_line2                                                    ; 1141: cd 7d 18    .}. 17 cycles
     ex de,hl                                                          ; 1144: eb          .   4 cycles
     call out_curs                                                     ; 1145: cd e1 18    ... 17 cycles
-    ld hl,(l5c8a)                                                     ; 1148: 2a 8a 5c    *.\ 16 cycles
+    ld hl,(s_posnl)                                                   ; 1148: 2a 8a 5c    *.\ 16 cycles
     ex (sp),hl                                                        ; 114b: e3          .   19 cycles
     ex de,hl                                                          ; 114c: eb          .   4 cycles
     call temps                                                        ; 114d: cd 4d 0d    .M. 17 cycles
 ; $1150 referenced 1 time by $1165
 ed_blank:
-    ld a,(l5c8b)                                                      ; 1150: 3a 8b 5c    :.\ 13 cycles
+    ld a,(s_posnl+1)                                                  ; 1150: 3a 8b 5c    :.\ 13 cycles
     sub d                                                             ; 1153: 92          .   4 cycles
     jr c,ed_c_done                                                    ; 1154: 38 26       8&  7/12 cycles
     jr nz,ed_spaces                                                   ; 1156: 20 06        .  7/12 cycles
     ld a,e                                                            ; 1158: 7b          {   4 cycles
-    sub (iy+80)                                                       ; 1159: fd 96 50    ..P 19 cycles
+    sub (iy+s_posnl - err_nr)                                         ; 1159: fd 96 50    ..P 19 cycles
     jr nc,ed_c_done                                                   ; 115c: 30 1e       0.  7/12 cycles
 ; $115e referenced 1 time by $1156
 ed_spaces:
@@ -2956,11 +3046,11 @@ ed_spaces:
 
 ed_full:
     ld d,0                                                            ; 1167: 16 00       ..  7 cycles
-    ld e,(iy-2)                                                       ; 1169: fd 5e fe    .^. 19 cycles
+    ld e,(iy+rasp - err_nr)                                           ; 1169: fd 5e fe    .^. 19 cycles
     ld hl,$1a90                                                       ; 116c: 21 90 1a    !.. 10 cycles
-    call beeper                                                       ; 116f: cd b5 03    ... 17 cycles
-    ld (iy+0),$ff                                                     ; 1172: fd 36 00... .6. 19 cycles
-    ld de,(l5c8a)                                                     ; 1176: ed 5b 8a... .[. 20 cycles
+    call beeper                                                       ; 116f: cd b5 03    ... 17 cycles    ; Make a sound
+    ld (iy+err_nr - err_nr),$ff                                       ; 1172: fd 36 00... .6. 19 cycles
+    ld de,(s_posnl)                                                   ; 1176: ed 5b 8a... .[. 20 cycles
     jr ed_c_end                                                       ; 117a: 18 02       ..  12 cycles
 
 ; $117c referenced 2 times by $1154, $115c
@@ -2970,28 +3060,28 @@ ed_c_done:
 ; $117e referenced 1 time by $117a
 ed_c_end:
     pop hl                                                            ; 117e: e1          .   10 cycles
-    ld (l5c3d),hl                                                     ; 117f: 22 3d 5c    "=\ 16 cycles
+    ld (err_sp),hl                                                    ; 117f: 22 3d 5c    "=\ 16 cycles
     pop bc                                                            ; 1182: c1          .   10 cycles
     push de                                                           ; 1183: d5          .   11 cycles
-    call cl_set                                                       ; 1184: cd d9 0d    ... 17 cycles
+    call cl_set                                                       ; 1184: cd d9 0d    ... 17 cycles    ; Set the print position
     pop hl                                                            ; 1187: e1          .   10 cycles
-    ld (l5c82),hl                                                     ; 1188: 22 82 5c    ".\ 16 cycles
-    ld (iy+38),0                                                      ; 118b: fd 36 26... .6& 19 cycles
+    ld (echo_e),hl                                                    ; 1188: 22 82 5c    ".\ 16 cycles
+    ld (iy+(x_ptr+1) - err_nr),0                                      ; 118b: fd 36 26... .6& 19 cycles
     ret                                                               ; 118f: c9          .   10 cycles
 
 ; $1190 referenced 1 time by $1098
 set_hl:
-    ld hl,(l5c61)                                                     ; 1190: 2a 61 5c    *a\ 16 cycles
+    ld hl,(worksp)                                                    ; 1190: 2a 61 5c    *a\ 16 cycles
     dec hl                                                            ; 1193: 2b          +   6 cycles
     and a                                                             ; 1194: a7          .   4 cycles
 ; $1195 referenced 2 times by $1032, $113d
 set_de:
-    ld de,(l5c59)                                                     ; 1195: ed 5b 59... .[Y 20 cycles
-    bit 5,(iy+55)                                                     ; 1199: fd cb 37... ..7 20 cycles
+    ld de,(e_line)                                                    ; 1195: ed 5b 59... .[Y 20 cycles
+    bit 5,(iy+flagx - err_nr)                                         ; 1199: fd cb 37... ..7 20 cycles
     ret z                                                             ; 119d: c8          .   5/11 cycles
-    ld de,(l5c61)                                                     ; 119e: ed 5b 61... .[a 20 cycles
+    ld de,(worksp)                                                    ; 119e: ed 5b 61... .[a 20 cycles
     ret c                                                             ; 11a2: d8          .   5/11 cycles
-    ld hl,(l5c63)                                                     ; 11a3: 2a 63 5c    *c\ 16 cycles
+    ld hl,(stkbot)                                                    ; 11a3: 2a 63 5c    *c\ 16 cycles
     ret                                                               ; 11a6: c9          .   10 cycles
 
 ; $11a7 referenced 3 times by $11b4, $12c6, $214b
@@ -3009,17 +3099,17 @@ remove_fp:
 new:
     di                                                                ; 11b7: f3          .   4 cycles
     ld a,$ff                                                          ; 11b8: 3e ff       >.  7 cycles
-    ld de,(l5cb2)                                                     ; 11ba: ed 5b b2... .[. 20 cycles
+    ld de,(ramtop)                                                    ; 11ba: ed 5b b2... .[. 20 cycles
     exx                                                               ; 11be: d9          .   4 cycles
-    ld bc,(l5cb4)                                                     ; 11bf: ed 4b b4... .K. 20 cycles
-    ld de,(l5c38)                                                     ; 11c3: ed 5b 38... .[8 20 cycles
-    ld hl,(l5c7b)                                                     ; 11c7: 2a 7b 5c    *{\ 16 cycles
+    ld bc,(p_ramt)                                                    ; 11bf: ed 4b b4... .K. 20 cycles
+    ld de,(rasp)                                                      ; 11c3: ed 5b 38... .[8 20 cycles
+    ld hl,(udg)                                                       ; 11c7: 2a 7b 5c    *{\ 16 cycles
     exx                                                               ; 11ca: d9          .   4 cycles
 ; $11cb referenced 1 time by $05
 start_new:
     ld b,a                                                            ; 11cb: 47          G   4 cycles
     ld a,7                                                            ; 11cc: 3e 07       >.  7 cycles
-    out ($fe),a                                                       ; 11ce: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 11ce: d3 fe       ..  11 cycles    ; Border white
     ld a,$3f                                                          ; 11d0: 3e 3f       >?  7 cycles
     ld i,a                                                            ; 11d2: ed 47       .G  9 cycles
     nop                                                               ; 11d4: 00          .   4 cycles
@@ -3052,85 +3142,85 @@ ram_read:
 ram_done:
     dec hl                                                            ; 11ef: 2b          +   6 cycles
     exx                                                               ; 11f0: d9          .   4 cycles
-    ld (l5cb4),bc                                                     ; 11f1: ed 43 b4... .C. 20 cycles
-    ld (l5c38),de                                                     ; 11f5: ed 53 38... .S8 20 cycles
-    ld (l5c7b),hl                                                     ; 11f9: 22 7b 5c    "{\ 16 cycles
+    ld (p_ramt),bc                                                    ; 11f1: ed 43 b4... .C. 20 cycles
+    ld (rasp),de                                                      ; 11f5: ed 53 38... .S8 20 cycles
+    ld (udg),hl                                                       ; 11f9: 22 7b 5c    "{\ 16 cycles
     exx                                                               ; 11fc: d9          .   4 cycles
     inc b                                                             ; 11fd: 04          .   4 cycles
     jr z,ram_set                                                      ; 11fe: 28 19       (.  7/12 cycles
-    ld (l5cb4),hl                                                     ; 1200: 22 b4 5c    ".\ 16 cycles
+    ld (p_ramt),hl                                                    ; 1200: 22 b4 5c    ".\ 16 cycles
     ld de,$3eaf                                                       ; 1203: 11 af 3e    ..> 10 cycles
     ld bc,$a8                                                         ; 1206: 01 a8 00    ... 10 cycles
     ex de,hl                                                          ; 1209: eb          .   4 cycles
     lddr                                                              ; 120a: ed b8       ..  16/21 cycles
     ex de,hl                                                          ; 120c: eb          .   4 cycles
     inc hl                                                            ; 120d: 23          #   6 cycles
-    ld (l5c7b),hl                                                     ; 120e: 22 7b 5c    "{\ 16 cycles
+    ld (udg),hl                                                       ; 120e: 22 7b 5c    "{\ 16 cycles
     dec hl                                                            ; 1211: 2b          +   6 cycles
     ld bc,$40                                                         ; 1212: 01 40 00    .@. 10 cycles
-    ld (l5c38),bc                                                     ; 1215: ed 43 38... .C8 20 cycles
+    ld (rasp),bc                                                      ; 1215: ed 43 38... .C8 20 cycles
 ; $1219 referenced 1 time by $11fe
 ram_set:
-    ld (l5cb2),hl                                                     ; 1219: 22 b2 5c    ".\ 16 cycles
+    ld (ramtop),hl                                                    ; 1219: 22 b2 5c    ".\ 16 cycles
     ld hl,$3c00                                                       ; 121c: 21 00 3c    !.< 10 cycles
-    ld (l5c36),hl                                                     ; 121f: 22 36 5c    "6\ 16 cycles
-    ld hl,(l5cb2)                                                     ; 1222: 2a b2 5c    *.\ 16 cycles
+    ld (chars),hl                                                     ; 121f: 22 36 5c    "6\ 16 cycles
+    ld hl,(ramtop)                                                    ; 1222: 2a b2 5c    *.\ 16 cycles
     ld (hl),$3e                                                       ; 1225: 36 3e       6>  10 cycles
     dec hl                                                            ; 1227: 2b          +   6 cycles
     ld sp,hl                                                          ; 1228: f9          .   6 cycles
     dec hl                                                            ; 1229: 2b          +   6 cycles
     dec hl                                                            ; 122a: 2b          +   6 cycles
-    ld (l5c3d),hl                                                     ; 122b: 22 3d 5c    "=\ 16 cycles
+    ld (err_sp),hl                                                    ; 122b: 22 3d 5c    "=\ 16 cycles
     im 1                                                              ; 122e: ed 56       .V  8 cycles
     ld iy,$5c3a                                                       ; 1230: fd 21 3a... .!: 14 cycles
     ei                                                                ; 1234: fb          .   4 cycles
     ld hl,$5cb6                                                       ; 1235: 21 b6 5c    !.\ 10 cycles
-    ld (l5c4f),hl                                                     ; 1238: 22 4f 5c    "O\ 16 cycles
+    ld (chans),hl                                                     ; 1238: 22 4f 5c    "O\ 16 cycles
     ld de,$15af                                                       ; 123b: 11 af 15    ... 10 cycles
     ld bc,$15                                                         ; 123e: 01 15 00    ... 10 cycles
     ex de,hl                                                          ; 1241: eb          .   4 cycles
     ldir                                                              ; 1242: ed b0       ..  16/21 cycles
     ex de,hl                                                          ; 1244: eb          .   4 cycles
     dec hl                                                            ; 1245: 2b          +   6 cycles
-    ld (l5c57),hl                                                     ; 1246: 22 57 5c    "W\ 16 cycles
+    ld (datadd),hl                                                    ; 1246: 22 57 5c    "W\ 16 cycles
     inc hl                                                            ; 1249: 23          #   6 cycles
-    ld (l5c53),hl                                                     ; 124a: 22 53 5c    "S\ 16 cycles
-    ld (l5c4b),hl                                                     ; 124d: 22 4b 5c    "K\ 16 cycles
+    ld (prog),hl                                                      ; 124a: 22 53 5c    "S\ 16 cycles
+    ld (vars),hl                                                      ; 124d: 22 4b 5c    "K\ 16 cycles
     ld (hl),$80                                                       ; 1250: 36 80       6.  10 cycles
     inc hl                                                            ; 1252: 23          #   6 cycles
-    ld (l5c59),hl                                                     ; 1253: 22 59 5c    "Y\ 16 cycles
+    ld (e_line),hl                                                    ; 1253: 22 59 5c    "Y\ 16 cycles
     ld (hl),$0d                                                       ; 1256: 36 0d       6.  10 cycles
     inc hl                                                            ; 1258: 23          #   6 cycles
     ld (hl),$80                                                       ; 1259: 36 80       6.  10 cycles
     inc hl                                                            ; 125b: 23          #   6 cycles
-    ld (l5c61),hl                                                     ; 125c: 22 61 5c    "a\ 16 cycles
-    ld (l5c63),hl                                                     ; 125f: 22 63 5c    "c\ 16 cycles
-    ld (l5c65),hl                                                     ; 1262: 22 65 5c    "e\ 16 cycles
+    ld (worksp),hl                                                    ; 125c: 22 61 5c    "a\ 16 cycles
+    ld (stkbot),hl                                                    ; 125f: 22 63 5c    "c\ 16 cycles
+    ld (stkend),hl                                                    ; 1262: 22 65 5c    "e\ 16 cycles
     ld a,$38                                                          ; 1265: 3e 38       >8  7 cycles
-    ld (l5c8d),a                                                      ; 1267: 32 8d 5c    2.\ 13 cycles
-    ld (l5c8f),a                                                      ; 126a: 32 8f 5c    2.\ 13 cycles
-    ld (l5c48),a                                                      ; 126d: 32 48 5c    2H\ 13 cycles
+    ld (attr_p),a                                                     ; 1267: 32 8d 5c    2.\ 13 cycles
+    ld (attr_t),a                                                     ; 126a: 32 8f 5c    2.\ 13 cycles
+    ld (bordcr),a                                                     ; 126d: 32 48 5c    2H\ 13 cycles
     ld hl,$0523                                                       ; 1270: 21 23 05    !#. 10 cycles
-    ld (l5c09),hl                                                     ; 1273: 22 09 5c    ".\ 16 cycles
-    dec (iy-58)                                                       ; 1276: fd 35 c6    .5. 23 cycles
-    dec (iy-54)                                                       ; 1279: fd 35 ca    .5. 23 cycles
+    ld (repdel),hl                                                    ; 1273: 22 09 5c    ".\ 16 cycles
+    dec (iy+kstate - err_nr)                                          ; 1276: fd 35 c6    .5. 23 cycles
+    dec (iy+(kstate+4) - err_nr)                                      ; 1279: fd 35 ca    .5. 23 cycles
     ld hl,$15c6                                                       ; 127c: 21 c6 15    !.. 10 cycles
     ld de,$5c10                                                       ; 127f: 11 10 5c    ..\ 10 cycles
     ld bc,$0e                                                         ; 1282: 01 0e 00    ... 10 cycles
     ldir                                                              ; 1285: ed b0       ..  16/21 cycles
-    set 1,(iy+1)                                                      ; 1287: fd cb 01... ... 23 cycles
+    set 1,(iy+flags - err_nr)                                         ; 1287: fd cb 01... ... 23 cycles
     call clear_prb                                                    ; 128b: cd df 0e    ... 17 cycles
-    ld (iy+49),2                                                      ; 128e: fd 36 31... .61 19 cycles
-    call cls                                                          ; 1292: cd 6b 0d    .k. 17 cycles
+    ld (iy+df_sz - err_nr),2                                          ; 128e: fd 36 31... .61 19 cycles
+    call cls                                                          ; 1292: cd 6b 0d    .k. 17 cycles    ; Clear the screen
     xor a                                                             ; 1295: af          .   4 cycles
     ld de,$1538                                                       ; 1296: 11 38 15    .8. 10 cycles
-    call po_msg                                                       ; 1299: cd 0a 0c    ... 17 cycles
-    set 5,(iy+2)                                                      ; 129c: fd cb 02... ... 23 cycles
+    call po_msg                                                       ; 1299: cd 0a 0c    ... 17 cycles    ; Print a message
+    set 5,(iy+tv_flag - err_nr)                                       ; 129c: fd cb 02... ... 23 cycles
     jr main_1                                                         ; 12a0: 18 07       ..  12 cycles
 
 ; $12a2 referenced 2 times by $12e0, $15ac
 main_exec:
-    ld (iy+49),2                                                      ; 12a2: fd 36 31... .61 19 cycles
+    ld (iy+df_sz - err_nr),2                                          ; 12a2: fd 36 31... .61 19 cycles
     call auto_list                                                    ; 12a6: cd 95 17    ... 17 cycles
 ; $12a9 referenced 1 time by $12a0
 main_1:
@@ -3138,60 +3228,60 @@ main_1:
 ; $12ac referenced 2 times by $12cd, $138e
 main_2:
     ld a,0                                                            ; 12ac: 3e 00       >.  7 cycles
-    call chan_open                                                    ; 12ae: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 12ae: cd 01 16    ... 17 cycles    ; Open a channel
     call editor                                                       ; 12b1: cd 2c 0f    .,. 17 cycles
     call line_scan                                                    ; 12b4: cd 17 1b    ... 17 cycles
-    bit 7,(iy+0)                                                      ; 12b7: fd cb 00... ... 20 cycles
+    bit 7,(iy+err_nr - err_nr)                                        ; 12b7: fd cb 00... ... 20 cycles
     jr nz,main_3                                                      ; 12bb: 20 12        .  7/12 cycles
-    bit 4,(iy+48)                                                     ; 12bd: fd cb 30... ..0 20 cycles
+    bit 4,(iy+flags2 - err_nr)                                        ; 12bd: fd cb 30... ..0 20 cycles
     jr z,main_4                                                       ; 12c1: 28 40       (@  7/12 cycles
-    ld hl,(l5c59)                                                     ; 12c3: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 12c3: 2a 59 5c    *Y\ 16 cycles
     call remove_fp                                                    ; 12c6: cd a7 11    ... 17 cycles
-    ld (iy+0),$ff                                                     ; 12c9: fd 36 00... .6. 19 cycles
+    ld (iy+err_nr - err_nr),$ff                                       ; 12c9: fd 36 00... .6. 19 cycles
     jr main_2                                                         ; 12cd: 18 dd       ..  12 cycles
 
 ; $12cf referenced 1 time by $12bb
 main_3:
-    ld hl,(l5c59)                                                     ; 12cf: 2a 59 5c    *Y\ 16 cycles
-    ld (l5c5d),hl                                                     ; 12d2: 22 5d 5c    "]\ 16 cycles
+    ld hl,(e_line)                                                    ; 12cf: 2a 59 5c    *Y\ 16 cycles
+    ld (ch_add),hl                                                    ; 12d2: 22 5d 5c    "]\ 16 cycles
     call e_line_no                                                    ; 12d5: cd fb 19    ... 17 cycles
     ld a,b                                                            ; 12d8: 78          x   4 cycles
     or c                                                              ; 12d9: b1          .   4 cycles
     jp nz,main_add                                                    ; 12da: c2 5d 15    .]. 10 cycles
-    rst $18                                                           ; 12dd: df          .   11 cycles
+    rst $18                                                           ; 12dd: df          .   11 cycles    ; Get the current BASIC character
     cp $0d                                                            ; 12de: fe 0d       ..  7 cycles
     jr z,main_exec                                                    ; 12e0: 28 c0       (.  7/12 cycles
-    bit 0,(iy+48)                                                     ; 12e2: fd cb 30... ..0 20 cycles
-    call nz,cl_all                                                    ; 12e6: c4 af 0d    ... 10/17 cycles
+    bit 0,(iy+flags2 - err_nr)                                        ; 12e2: fd cb 30... ..0 20 cycles
+    call nz,cl_all                                                    ; 12e6: c4 af 0d    ... 10/17 cycles ; Clear the whole display
     call cls_lower                                                    ; 12e9: cd 6e 0d    .n. 17 cycles
     ld a,$19                                                          ; 12ec: 3e 19       >.  7 cycles
-    sub (iy+79)                                                       ; 12ee: fd 96 4f    ..O 19 cycles
-    ld (l5c8c),a                                                      ; 12f1: 32 8c 5c    2.\ 13 cycles
-    set 7,(iy+1)                                                      ; 12f4: fd cb 01... ... 23 cycles
-    ld (iy+0),$ff                                                     ; 12f8: fd 36 00... .6. 19 cycles
-    ld (iy+10),1                                                      ; 12fc: fd 36 0a... .6. 19 cycles
+    sub (iy+(s_posn+1) - err_nr)                                      ; 12ee: fd 96 4f    ..O 19 cycles
+    ld (scr_ct),a                                                     ; 12f1: 32 8c 5c    2.\ 13 cycles
+    set 7,(iy+flags - err_nr)                                         ; 12f4: fd cb 01... ... 23 cycles
+    ld (iy+err_nr - err_nr),$ff                                       ; 12f8: fd 36 00... .6. 19 cycles
+    ld (iy+nsppc - err_nr),1                                          ; 12fc: fd 36 0a... .6. 19 cycles
     call line_run                                                     ; 1300: cd 8a 1b    ... 17 cycles
 ; $1303 referenced 1 time by $12c1
 main_4:
     halt                                                              ; 1303: 76          v   4 cycles
-    res 5,(iy+1)                                                      ; 1304: fd cb 01... ... 23 cycles
-    bit 1,(iy+48)                                                     ; 1308: fd cb 30... ..0 20 cycles
+    res 5,(iy+flags - err_nr)                                         ; 1304: fd cb 01... ... 23 cycles
+    bit 1,(iy+flags2 - err_nr)                                        ; 1308: fd cb 30... ..0 20 cycles
     call nz,copy_buff                                                 ; 130c: c4 cd 0e    ... 10/17 cycles
-    ld a,(l5c3a)                                                      ; 130f: 3a 3a 5c    ::\ 13 cycles
+    ld a,(err_nr)                                                     ; 130f: 3a 3a 5c    ::\ 13 cycles
     inc a                                                             ; 1312: 3c          <   4 cycles
 ; $1313 referenced 1 time by $155a
 main_g:
     push af                                                           ; 1313: f5          .   11 cycles
     ld hl,0                                                           ; 1314: 21 00 00    !.. 10 cycles
-    ld (iy+55),h                                                      ; 1317: fd 74 37    .t7 19 cycles
-    ld (iy+38),h                                                      ; 131a: fd 74 26    .t& 19 cycles
-    ld (l5c0b),hl                                                     ; 131d: 22 0b 5c    ".\ 16 cycles
+    ld (iy+flagx - err_nr),h                                          ; 1317: fd 74 37    .t7 19 cycles
+    ld (iy+(x_ptr+1) - err_nr),h                                      ; 131a: fd 74 26    .t& 19 cycles
+    ld (defadd),hl                                                    ; 131d: 22 0b 5c    ".\ 16 cycles
     ld hl,1                                                           ; 1320: 21 01 00    !.. 10 cycles
-    ld (l5c16),hl                                                     ; 1323: 22 16 5c    ".\ 16 cycles
+    ld (strms+6),hl                                                   ; 1323: 22 16 5c    ".\ 16 cycles
     call set_min                                                      ; 1326: cd b0 16    ... 17 cycles
-    res 5,(iy+55)                                                     ; 1329: fd cb 37... ..7 23 cycles
+    res 5,(iy+flagx - err_nr)                                         ; 1329: fd cb 37... ..7 23 cycles
     call cls_lower                                                    ; 132d: cd 6e 0d    .n. 17 cycles
-    set 5,(iy+2)                                                      ; 1330: fd cb 02... ... 23 cycles
+    set 5,(iy+tv_flag - err_nr)                                       ; 1330: fd cb 02... ... 23 cycles
     pop af                                                            ; 1334: f1          .   10 cycles
     ld b,a                                                            ; 1335: 47          G   4 cycles
     cp $0a                                                            ; 1336: fe 0a       ..  7 cycles
@@ -3201,22 +3291,22 @@ main_g:
 main_5:
     call out_code                                                     ; 133c: cd ef 15    ... 17 cycles
     ld a,$20                                                          ; 133f: 3e 20       >   7 cycles
-    rst $10                                                           ; 1341: d7          .   11 cycles
+    rst $10                                                           ; 1341: d7          .   11 cycles    ; Print ' '
     ld a,b                                                            ; 1342: 78          x   4 cycles
     ld de,$1391                                                       ; 1343: 11 91 13    ... 10 cycles
-    call po_msg                                                       ; 1346: cd 0a 0c    ... 17 cycles
+    call po_msg                                                       ; 1346: cd 0a 0c    ... 17 cycles    ; Print a message
     xor a                                                             ; 1349: af          .   4 cycles
     ld de,$1536                                                       ; 134a: 11 36 15    .6. 10 cycles
-    call po_msg                                                       ; 134d: cd 0a 0c    ... 17 cycles
-    ld bc,(l5c45)                                                     ; 1350: ed 4b 45... .KE 20 cycles
-    call out_num_1                                                    ; 1354: cd 1b 1a    ... 17 cycles
+    call po_msg                                                       ; 134d: cd 0a 0c    ... 17 cycles    ; Print a message
+    ld bc,(ppc)                                                       ; 1350: ed 4b 45... .KE 20 cycles
+    call out_num_1                                                    ; 1354: cd 1b 1a    ... 17 cycles    ; Print a number from 0 to 9999
     ld a,$3a                                                          ; 1357: 3e 3a       >:  7 cycles
-    rst $10                                                           ; 1359: d7          .   11 cycles
-    ld c,(iy+13)                                                      ; 135a: fd 4e 0d    .N. 19 cycles
+    rst $10                                                           ; 1359: d7          .   11 cycles    ; Print ':'
+    ld c,(iy+subppc - err_nr)                                         ; 135a: fd 4e 0d    .N. 19 cycles
     ld b,0                                                            ; 135d: 06 00       ..  7 cycles
-    call out_num_1                                                    ; 135f: cd 1b 1a    ... 17 cycles
+    call out_num_1                                                    ; 135f: cd 1b 1a    ... 17 cycles    ; Print a number from 0 to 9999
     call clear_sp                                                     ; 1362: cd 97 10    ... 17 cycles
-    ld a,(l5c3a)                                                      ; 1365: 3a 3a 5c    ::\ 13 cycles
+    ld a,(err_nr)                                                     ; 1365: 3a 3a 5c    ::\ 13 cycles
     inc a                                                             ; 1368: 3c          <   4 cycles
     jr z,main_9                                                       ; 1369: 28 1b       (.  7/12 cycles
     cp 9                                                              ; 136b: fe 09       ..  7 cycles
@@ -3225,7 +3315,7 @@ main_5:
     jr nz,main_7                                                      ; 1371: 20 03        .  7/12 cycles
 ; $1373 referenced 1 time by $136d
 main_6:
-    inc (iy+13)                                                       ; 1373: fd 34 0d    .4. 23 cycles
+    inc (iy+subppc - err_nr)                                          ; 1373: fd 34 0d    .4. 23 cycles
 ; $1376 referenced 1 time by $1371
 main_7:
     ld bc,3                                                           ; 1376: 01 03 00    ... 10 cycles
@@ -3239,8 +3329,8 @@ main_8:
     lddr                                                              ; 1384: ed b8       ..  16/21 cycles
 ; $1386 referenced 1 time by $1369
 main_9:
-    ld (iy+10),$ff                                                    ; 1386: fd 36 0a... .6. 19 cycles
-    res 3,(iy+1)                                                      ; 138a: fd cb 01... ... 23 cycles
+    ld (iy+nsppc - err_nr),$ff                                        ; 1386: fd 36 0a... .6. 19 cycles
+    res 3,(iy+flags - err_nr)                                         ; 138a: fd cb 01... ... 23 cycles
     jp main_2                                                         ; 138e: c3 ac 12    ... 10 cycles
 
 rpt_mesgs:
@@ -3286,12 +3376,12 @@ report_g:
 
 ; $155d referenced 1 time by $12da
 main_add:
-    ld (l5c49),bc                                                     ; 155d: ed 43 49... .CI 20 cycles
-    ld hl,(l5c5d)                                                     ; 1561: 2a 5d 5c    *]\ 16 cycles
+    ld (e_ppc),bc                                                     ; 155d: ed 43 49... .CI 20 cycles
+    ld hl,(ch_add)                                                    ; 1561: 2a 5d 5c    *]\ 16 cycles
     ex de,hl                                                          ; 1564: eb          .   4 cycles
     ld hl,report_g                                                    ; 1565: 21 55 15    !U. 10 cycles
     push hl                                                           ; 1568: e5          .   11 cycles
-    ld hl,(l5c61)                                                     ; 1569: 2a 61 5c    *a\ 16 cycles
+    ld hl,(worksp)                                                    ; 1569: 2a 61 5c    *a\ 16 cycles
     scf                                                               ; 156c: 37          7   4 cycles
     sbc hl,de                                                         ; 156d: ed 52       .R  15 cycles
     push hl                                                           ; 156f: e5          .   11 cycles
@@ -3314,19 +3404,19 @@ main_add1:
     inc bc                                                            ; 1586: 03          .   6 cycles
     inc bc                                                            ; 1587: 03          .   6 cycles
     dec hl                                                            ; 1588: 2b          +   6 cycles
-    ld de,(l5c53)                                                     ; 1589: ed 5b 53... .[S 20 cycles
+    ld de,(prog)                                                      ; 1589: ed 5b 53... .[S 20 cycles
     push de                                                           ; 158d: d5          .   11 cycles
     call make_room                                                    ; 158e: cd 55 16    .U. 17 cycles
     pop hl                                                            ; 1591: e1          .   10 cycles
-    ld (l5c53),hl                                                     ; 1592: 22 53 5c    "S\ 16 cycles
+    ld (prog),hl                                                      ; 1592: 22 53 5c    "S\ 16 cycles
     pop bc                                                            ; 1595: c1          .   10 cycles
     push bc                                                           ; 1596: c5          .   11 cycles
     inc de                                                            ; 1597: 13          .   6 cycles
-    ld hl,(l5c61)                                                     ; 1598: 2a 61 5c    *a\ 16 cycles
+    ld hl,(worksp)                                                    ; 1598: 2a 61 5c    *a\ 16 cycles
     dec hl                                                            ; 159b: 2b          +   6 cycles
     dec hl                                                            ; 159c: 2b          +   6 cycles
     lddr                                                              ; 159d: ed b8       ..  16/21 cycles
-    ld hl,(l5c49)                                                     ; 159f: 2a 49 5c    *I\ 16 cycles
+    ld hl,(e_ppc)                                                     ; 159f: 2a 49 5c    *I\ 16 cycles
     ex de,hl                                                          ; 15a2: eb          .   4 cycles
     pop bc                                                            ; 15a3: c1          .   10 cycles
     ld (hl),b                                                         ; 15a4: 70          p   7 cycles
@@ -3353,19 +3443,26 @@ init_chan:
     db $52                                                            ; 15bd: 52          R
     dw print_out                                                      ; 15be: f4 09       ..
     dw report_j                                                       ; 15c0: c4 15       ..
-    db $50, $80                                                       ; 15c2: 50 80       P.
+    db $50                                                            ; 15c2: 50          P
+    db $80                                                            ; 15c3: 80          .
 
 report_j:
     rst $08                                                           ; 15c4: cf          .   11 cycles
-    db $12                                                            ; 15c5: 12          .  ; Report J: Invalid I/O device
+    db $12                                                            ; 15c5: 12          .  ; Report J Invalid I/O device
 init_strm:
     db 1, 0, 6, 0, $0b, 0, 1, 0, 1, 0, 6, 0, $10, 0                   ; 15c6: 01 00 06... ...
 
+; ***************************************************************************************
+; Wait for a key
+; 
+; On Exit:
+;     A: the key
+; ***************************************************************************************
 ; $15d4 referenced 7 times by $0981, $0cb3, $0f38, $0f68, $0f6c, $101e, $1021
 wait_key:
-    bit 5,(iy+2)                                                      ; 15d4: fd cb 02... ... 20 cycles
+    bit 5,(iy+tv_flag - err_nr)                                       ; 15d4: fd cb 02... ... 20 cycles
     jr nz,wait_key1                                                   ; 15d8: 20 04        .  7/12 cycles
-    set 3,(iy+2)                                                      ; 15da: fd cb 02... ... 23 cycles
+    set 3,(iy+tv_flag - err_nr)                                       ; 15da: fd cb 02... ... 23 cycles
 ; $15de referenced 2 times by $15d8, $15e2
 wait_key1:
     call input_ad                                                     ; 15de: cd e6 15    ... 17 cycles
@@ -3373,13 +3470,13 @@ wait_key1:
     jr z,wait_key1                                                    ; 15e2: 28 fa       (.  7/12 cycles
 report_8:
     rst $08                                                           ; 15e4: cf          .   11 cycles
-    db 7                                                              ; 15e5: 07          .  ; Report 8: End of file
+    db 7                                                              ; 15e5: 07          .  ; Report 8 End of file
 
 ; $15e6 referenced 2 times by $15de, $3654
 input_ad:
     exx                                                               ; 15e6: d9          .   4 cycles
     push hl                                                           ; 15e7: e5          .   11 cycles
-    ld hl,(l5c51)                                                     ; 15e8: 2a 51 5c    *Q\ 16 cycles
+    ld hl,(curchl)                                                    ; 15e8: 2a 51 5c    *Q\ 16 cycles
     inc hl                                                            ; 15eb: 23          #   6 cycles
     inc hl                                                            ; 15ec: 23          #   6 cycles
     jr call_sub                                                       ; 15ed: 18 08       ..  12 cycles
@@ -3392,7 +3489,7 @@ out_code:
 print_a_2:
     exx                                                               ; 15f2: d9          .   4 cycles
     push hl                                                           ; 15f3: e5          .   11 cycles
-    ld hl,(l5c51)                                                     ; 15f4: 2a 51 5c    *Q\ 16 cycles
+    ld hl,(curchl)                                                    ; 15f4: 2a 51 5c    *Q\ 16 cycles
 ; $15f7 referenced 1 time by $15ed
 call_sub:
     ld e,(hl)                                                         ; 15f7: 5e          ^   7 cycles
@@ -3404,6 +3501,12 @@ call_sub:
     exx                                                               ; 15ff: d9          .   4 cycles
     ret                                                               ; 1600: c9          .   10 cycles
 
+; ***************************************************************************************
+; Open a channel
+; 
+; On Entry:
+;     A: the stream (0 or 1 the lower screen, 2 the upper screen, 3 the printer)
+; ***************************************************************************************
 ; $1601 referenced 16 times by $0777, $0973, $0c7a, $0c9d, $0cc7, $0d96, $0dbe, $0fd6, $1073, $12ae, $1802, $1fd2, $2084, $2090, $362d, $3651
 chan_open:
     add a,a                                                           ; 1601: 87          .   4 cycles
@@ -3419,17 +3522,17 @@ chan_open:
 ; $160e referenced 1 time by $2081
 report_oa:
     rst $08                                                           ; 160e: cf          .   11 cycles
-    db $17                                                            ; 160f: 17          .  ; Report O: Invalid stream
+    db $17                                                            ; 160f: 17          .  ; Report O Invalid stream
 
 ; $1610 referenced 1 time by $160c
 chan_op_1:
     dec de                                                            ; 1610: 1b          .   6 cycles
-    ld hl,(l5c4f)                                                     ; 1611: 2a 4f 5c    *O\ 16 cycles
+    ld hl,(chans)                                                     ; 1611: 2a 4f 5c    *O\ 16 cycles
     add hl,de                                                         ; 1614: 19          .   11 cycles
 ; $1615 referenced 3 times by $0fef, $3634, $3663
 chan_flag:
-    ld (l5c51),hl                                                     ; 1615: 22 51 5c    "Q\ 16 cycles
-    res 4,(iy+48)                                                     ; 1618: fd cb 30... ..0 23 cycles
+    ld (curchl),hl                                                    ; 1615: 22 51 5c    "Q\ 16 cycles
+    res 4,(iy+flags2 - err_nr)                                        ; 1618: fd cb 30... ..0 23 cycles
     inc hl                                                            ; 161c: 23          #   6 cycles
     inc hl                                                            ; 161d: 23          #   6 cycles
     inc hl                                                            ; 161e: 23          #   6 cycles
@@ -3455,20 +3558,20 @@ chn_cd_lu:
     db 0                                                              ; 1633: 00          .
 
 chan_k:
-    set 0,(iy+2)                                                      ; 1634: fd cb 02... ... 23 cycles
-    res 5,(iy+1)                                                      ; 1638: fd cb 01... ... 23 cycles
-    set 4,(iy+48)                                                     ; 163c: fd cb 30... ..0 23 cycles
+    set 0,(iy+tv_flag - err_nr)                                       ; 1634: fd cb 02... ... 23 cycles
+    res 5,(iy+flags - err_nr)                                         ; 1638: fd cb 01... ... 23 cycles
+    set 4,(iy+flags2 - err_nr)                                        ; 163c: fd cb 30... ..0 23 cycles
     jr chan_s_1                                                       ; 1640: 18 04       ..  12 cycles
 
 chan_s:
-    res 0,(iy+2)                                                      ; 1642: fd cb 02... ... 23 cycles
+    res 0,(iy+tv_flag - err_nr)                                       ; 1642: fd cb 02... ... 23 cycles
 ; $1646 referenced 1 time by $1640
 chan_s_1:
-    res 1,(iy+1)                                                      ; 1646: fd cb 01... ... 23 cycles
+    res 1,(iy+flags - err_nr)                                         ; 1646: fd cb 01... ... 23 cycles
     jp temps                                                          ; 164a: c3 4d 0d    .M. 10 cycles
 
 chan_p:
-    set 1,(iy+1)                                                      ; 164d: fd cb 01... ... 23 cycles
+    set 1,(iy+flags - err_nr)                                         ; 164d: fd cb 01... ... 23 cycles
     ret                                                               ; 1651: c9          .   10 cycles
 
 ; $1652 referenced 1 time by $0f88
@@ -3480,7 +3583,7 @@ make_room:
     call test_room                                                    ; 1656: cd 05 1f    ... 17 cycles
     pop hl                                                            ; 1659: e1          .   10 cycles
     call pointers                                                     ; 165a: cd 64 16    .d. 17 cycles
-    ld hl,(l5c65)                                                     ; 165d: 2a 65 5c    *e\ 16 cycles
+    ld hl,(stkend)                                                    ; 165d: 2a 65 5c    *e\ 16 cycles
     ex de,hl                                                          ; 1660: eb          .   4 cycles
     lddr                                                              ; 1661: ed b8       ..  16/21 cycles
     ret                                                               ; 1663: c9          .   10 cycles
@@ -3547,13 +3650,13 @@ line_no:
 
 ; $169e referenced 1 time by $35
 reserve:
-    ld hl,(l5c63)                                                     ; 169e: 2a 63 5c    *c\ 16 cycles
+    ld hl,(stkbot)                                                    ; 169e: 2a 63 5c    *c\ 16 cycles
     dec hl                                                            ; 16a1: 2b          +   6 cycles
     call make_room                                                    ; 16a2: cd 55 16    .U. 17 cycles
     inc hl                                                            ; 16a5: 23          #   6 cycles
     inc hl                                                            ; 16a6: 23          #   6 cycles
     pop bc                                                            ; 16a7: c1          .   10 cycles
-    ld (l5c61),bc                                                     ; 16a8: ed 43 61... .Ca 20 cycles
+    ld (worksp),bc                                                    ; 16a8: ed 43 61... .Ca 20 cycles
     pop bc                                                            ; 16ac: c1          .   10 cycles
     ex de,hl                                                          ; 16ad: eb          .   4 cycles
     inc hl                                                            ; 16ae: 23          #   6 cycles
@@ -3561,29 +3664,29 @@ reserve:
 
 ; $16b0 referenced 2 times by $12a9, $1326
 set_min:
-    ld hl,(l5c59)                                                     ; 16b0: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 16b0: 2a 59 5c    *Y\ 16 cycles
     ld (hl),$0d                                                       ; 16b3: 36 0d       6.  10 cycles
-    ld (l5c5b),hl                                                     ; 16b5: 22 5b 5c    "[\ 16 cycles
+    ld (k_cur),hl                                                     ; 16b5: 22 5b 5c    "[\ 16 cycles
     inc hl                                                            ; 16b8: 23          #   6 cycles
     ld (hl),$80                                                       ; 16b9: 36 80       6.  10 cycles
     inc hl                                                            ; 16bb: 23          #   6 cycles
-    ld (l5c61),hl                                                     ; 16bc: 22 61 5c    "a\ 16 cycles
+    ld (worksp),hl                                                    ; 16bc: 22 61 5c    "a\ 16 cycles
 ; $16bf referenced 2 times by $1b29, $2100
 set_work:
-    ld hl,(l5c61)                                                     ; 16bf: 2a 61 5c    *a\ 16 cycles
-    ld (l5c63),hl                                                     ; 16c2: 22 63 5c    "c\ 16 cycles
+    ld hl,(worksp)                                                    ; 16bf: 2a 61 5c    *a\ 16 cycles
+    ld (stkbot),hl                                                    ; 16c2: 22 63 5c    "c\ 16 cycles
 ; $16c5 referenced 2 times by $1a18, $5c
 set_stk:
-    ld hl,(l5c63)                                                     ; 16c5: 2a 63 5c    *c\ 16 cycles
-    ld (l5c65),hl                                                     ; 16c8: 22 65 5c    "e\ 16 cycles
+    ld hl,(stkbot)                                                    ; 16c5: 2a 63 5c    *c\ 16 cycles
+    ld (stkend),hl                                                    ; 16c8: 22 65 5c    "e\ 16 cycles
     push hl                                                           ; 16cb: e5          .   11 cycles
     ld hl,$5c92                                                       ; 16cc: 21 92 5c    !.\ 10 cycles
-    ld (l5c68),hl                                                     ; 16cf: 22 68 5c    "h\ 16 cycles
+    ld (mem),hl                                                       ; 16cf: 22 68 5c    "h\ 16 cycles
     pop hl                                                            ; 16d2: e1          .   10 cycles
     ret                                                               ; 16d3: c9          .   10 cycles
 
 rec_edit:
-    ld de,(l5c59)                                                     ; 16d4: ed 5b 59... .[Y 20 cycles
+    ld de,(e_line)                                                    ; 16d4: ed 5b 59... .[Y 20 cycles
     jp reclaim_1                                                      ; 16d8: c3 e5 19    ... 10 cycles
 
 ; $16db referenced 1 time by $16e1
@@ -3624,7 +3727,7 @@ close_1:
 ; $1701 referenced 1 time by $16e8
 close_2:
     push hl                                                           ; 1701: e5          .   11 cycles
-    ld hl,(l5c4f)                                                     ; 1702: 2a 4f 5c    *O\ 16 cycles
+    ld hl,(chans)                                                     ; 1702: 2a 4f 5c    *O\ 16 cycles
     add hl,bc                                                         ; 1705: 09          .   11 cycles
     inc hl                                                            ; 1706: 23          #   6 cycles
     inc hl                                                            ; 1707: 23          #   6 cycles
@@ -3652,13 +3755,13 @@ close_str:
 
 ; $171e referenced 2 times by $16e5, $1739
 str_data:
-    call find_int1                                                    ; 171e: cd 94 1e    ... 17 cycles
+    call find_int1                                                    ; 171e: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     cp $10                                                            ; 1721: fe 10       ..  7 cycles
     jr c,str_data1                                                    ; 1723: 38 02       8.  7/12 cycles
 ; $1725 referenced 2 times by $1754, $1793
 report_ob:
     rst $08                                                           ; 1725: cf          .   11 cycles
-    db $17                                                            ; 1726: 17          .  ; Report O: Invalid stream
+    db $17                                                            ; 1726: 17          .  ; Report O Invalid stream
 
 ; $1727 referenced 1 time by $1723
 str_data1:
@@ -3684,7 +3787,7 @@ open:
     or c                                                              ; 173d: b1          .   4 cycles
     jr z,open_1                                                       ; 173e: 28 16       (.  7/12 cycles
     ex de,hl                                                          ; 1740: eb          .   4 cycles
-    ld hl,(l5c4f)                                                     ; 1741: 2a 4f 5c    *O\ 16 cycles
+    ld hl,(chans)                                                     ; 1741: 2a 4f 5c    *O\ 16 cycles
     add hl,bc                                                         ; 1744: 09          .   11 cycles
     inc hl                                                            ; 1745: 23          #   6 cycles
     inc hl                                                            ; 1746: 23          #   6 cycles
@@ -3708,14 +3811,14 @@ open_1:
 ; $175d referenced 1 time by $1756
 open_2:
     push hl                                                           ; 175d: e5          .   11 cycles
-    call stk_fetch                                                    ; 175e: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 175e: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     ld a,b                                                            ; 1761: 78          x   4 cycles
     or c                                                              ; 1762: b1          .   4 cycles
     jr nz,open_3                                                      ; 1763: 20 02        .  7/12 cycles
 ; $1765 referenced 2 times by $1772, $178e
 report_f:
     rst $08                                                           ; 1765: cf          .   11 cycles
-    db $0e                                                            ; 1766: 0e          .  ; Report F: Invalid file name
+    db $0e                                                            ; 1766: 0e          .  ; Report F Invalid file name
 
 ; $1767 referenced 1 time by $1763
 open_3:
@@ -3766,16 +3869,16 @@ cat_etc:
 
 ; $1795 referenced 2 times by $106e, $12a6
 auto_list:
-    ld (l5c3f),sp                                                     ; 1795: ed 73 3f... .s? 20 cycles
-    ld (iy+2),$10                                                     ; 1799: fd 36 02... .6. 19 cycles
-    call cl_all                                                       ; 179d: cd af 0d    ... 17 cycles
-    set 0,(iy+2)                                                      ; 17a0: fd cb 02... ... 23 cycles
-    ld b,(iy+49)                                                      ; 17a4: fd 46 31    .F1 19 cycles
-    call cl_line                                                      ; 17a7: cd 44 0e    .D. 17 cycles
-    res 0,(iy+2)                                                      ; 17aa: fd cb 02... ... 23 cycles
-    set 0,(iy+48)                                                     ; 17ae: fd cb 30... ..0 23 cycles
-    ld hl,(l5c49)                                                     ; 17b2: 2a 49 5c    *I\ 16 cycles
-    ld de,(l5c6c)                                                     ; 17b5: ed 5b 6c... .[l 20 cycles
+    ld (list_sp),sp                                                   ; 1795: ed 73 3f... .s? 20 cycles
+    ld (iy+tv_flag - err_nr),$10                                      ; 1799: fd 36 02... .6. 19 cycles
+    call cl_all                                                       ; 179d: cd af 0d    ... 17 cycles    ; Clear the whole display
+    set 0,(iy+tv_flag - err_nr)                                       ; 17a0: fd cb 02... ... 23 cycles
+    ld b,(iy+df_sz - err_nr)                                          ; 17a4: fd 46 31    .F1 19 cycles
+    call cl_line                                                      ; 17a7: cd 44 0e    .D. 17 cycles    ; Clear lines at the bottom of the display
+    res 0,(iy+tv_flag - err_nr)                                       ; 17aa: fd cb 02... ... 23 cycles
+    set 0,(iy+flags2 - err_nr)                                        ; 17ae: fd cb 30... ..0 23 cycles
+    ld hl,(e_ppc)                                                     ; 17b2: 2a 49 5c    *I\ 16 cycles
+    ld de,(s_top)                                                     ; 17b5: ed 5b 6c... .[l 20 cycles
     and a                                                             ; 17b9: a7          .   4 cycles
     sbc hl,de                                                         ; 17ba: ed 52       .R  15 cycles
     add hl,de                                                         ; 17bc: 19          .   11 cycles
@@ -3800,22 +3903,22 @@ auto_l_1:
     inc hl                                                            ; 17d8: 23          #   6 cycles
     ld e,(hl)                                                         ; 17d9: 5e          ^   7 cycles
     dec hl                                                            ; 17da: 2b          +   6 cycles
-    ld (l5c6c),de                                                     ; 17db: ed 53 6c... .Sl 20 cycles
+    ld (s_top),de                                                     ; 17db: ed 53 6c... .Sl 20 cycles
     jr auto_l_1                                                       ; 17df: 18 ed       ..  12 cycles
 
 ; $17e1 referenced 1 time by $17bd
 auto_l_2:
-    ld (l5c6c),hl                                                     ; 17e1: 22 6c 5c    "l\ 16 cycles
+    ld (s_top),hl                                                     ; 17e1: 22 6c 5c    "l\ 16 cycles
 ; $17e4 referenced 1 time by $17d4
 auto_l_3:
-    ld hl,(l5c6c)                                                     ; 17e4: 2a 6c 5c    *l\ 16 cycles
+    ld hl,(s_top)                                                     ; 17e4: 2a 6c 5c    *l\ 16 cycles
     call line_addr                                                    ; 17e7: cd 6e 19    .n. 17 cycles
     jr z,auto_l_4                                                     ; 17ea: 28 01       (.  7/12 cycles
     ex de,hl                                                          ; 17ec: eb          .   4 cycles
 ; $17ed referenced 1 time by $17ea
 auto_l_4:
     call list_all                                                     ; 17ed: cd 33 18    .3. 17 cycles
-    res 4,(iy+2)                                                      ; 17f0: fd cb 02... ... 23 cycles
+    res 4,(iy+tv_flag - err_nr)                                       ; 17f0: fd cb 02... ... 23 cycles
     ret                                                               ; 17f4: c9          .   10 cycles
 
 llist:
@@ -3826,20 +3929,20 @@ list:
     ld a,2                                                            ; 17f9: 3e 02       >.  7 cycles
 ; $17fb referenced 1 time by $17f7
 list_1:
-    ld (iy+2),0                                                       ; 17fb: fd 36 02... .6. 19 cycles
+    ld (iy+tv_flag - err_nr),0                                        ; 17fb: fd 36 02... .6. 19 cycles
     call syntax_z                                                     ; 17ff: cd 30 25    .0% 17 cycles
-    call nz,chan_open                                                 ; 1802: c4 01 16    ... 10/17 cycles
-    rst $18                                                           ; 1805: df          .   11 cycles
+    call nz,chan_open                                                 ; 1802: c4 01 16    ... 10/17 cycles ; Open a channel
+    rst $18                                                           ; 1805: df          .   11 cycles    ; Get the current BASIC character
     call str_alter                                                    ; 1806: cd 70 20    .p  17 cycles
     jr c,list_4                                                       ; 1809: 38 14       8.  7/12 cycles
-    rst $18                                                           ; 180b: df          .   11 cycles
+    rst $18                                                           ; 180b: df          .   11 cycles    ; Get the current BASIC character
     cp $3b                                                            ; 180c: fe 3b       .;  7 cycles
     jr z,list_2                                                       ; 180e: 28 04       (.  7/12 cycles
     cp $2c                                                            ; 1810: fe 2c       .,  7 cycles
     jr nz,list_3                                                      ; 1812: 20 06        .  7/12 cycles
 ; $1814 referenced 1 time by $180e
 list_2:
-    rst $20                                                           ; 1814: e7          .   11 cycles
+    rst $20                                                           ; 1814: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 1815: cd 82 1c    ... 17 cycles
     jr list_5                                                         ; 1818: 18 08       ..  12 cycles
 
@@ -3854,12 +3957,12 @@ list_4:
 ; $1822 referenced 2 times by $1818, $181d
 list_5:
     call check_end                                                    ; 1822: cd ee 1b    ... 17 cycles
-    call find_int2                                                    ; 1825: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 1825: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld a,b                                                            ; 1828: 78          x   4 cycles
     and $3f                                                           ; 1829: e6 3f       .?  7 cycles
     ld h,a                                                            ; 182b: 67          g   4 cycles
     ld l,c                                                            ; 182c: 69          i   4 cycles
-    ld (l5c49),hl                                                     ; 182d: 22 49 5c    "I\ 16 cycles
+    ld (e_ppc),hl                                                     ; 182d: 22 49 5c    "I\ 16 cycles
     call line_addr                                                    ; 1830: cd 6e 19    .n. 17 cycles
 ; $1833 referenced 1 time by $17ed
 list_all:
@@ -3867,11 +3970,11 @@ list_all:
 ; $1835 referenced 3 times by $183d, $1845, $1853
 list_all_2:
     call out_line                                                     ; 1835: cd 55 18    .U. 17 cycles
-    rst $10                                                           ; 1838: d7          .   11 cycles
-    bit 4,(iy+2)                                                      ; 1839: fd cb 02... ... 20 cycles
+    rst $10                                                           ; 1838: d7          .   11 cycles    ; Print a character
+    bit 4,(iy+tv_flag - err_nr)                                       ; 1839: fd cb 02... ... 20 cycles
     jr z,list_all_2                                                   ; 183d: 28 f6       (.  7/12 cycles
-    ld a,(l5c6b)                                                      ; 183f: 3a 6b 5c    :k\ 13 cycles
-    sub (iy+79)                                                       ; 1842: fd 96 4f    ..O 19 cycles
+    ld a,(df_sz)                                                      ; 183f: 3a 6b 5c    :k\ 13 cycles
+    sub (iy+(s_posn+1) - err_nr)                                      ; 1842: fd 96 4f    ..O 19 cycles
     jr nz,list_all_2                                                  ; 1845: 20 ee        .  7/12 cycles
     xor e                                                             ; 1847: ab          .   4 cycles
     ret z                                                             ; 1848: c8          .   5/11 cycles
@@ -3885,7 +3988,7 @@ list_all_2:
 
 ; $1855 referenced 2 times by $0fde, $1835
 out_line:
-    ld bc,(l5c49)                                                     ; 1855: ed 4b 49... .KI 20 cycles
+    ld bc,(e_ppc)                                                     ; 1855: ed 4b 49... .KI 20 cycles
     call cp_lines                                                     ; 1859: cd 80 19    ... 17 cycles
     ld d,$3e                                                          ; 185c: 16 3e       .>  7 cycles
     jr z,out_line1                                                    ; 185e: 28 05       (.  7/12 cycles
@@ -3893,7 +3996,7 @@ out_line:
     rl e                                                              ; 1863: cb 13       ..  8 cycles
 ; $1865 referenced 1 time by $185e
 out_line1:
-    ld (iy+45),e                                                      ; 1865: fd 73 2d    .s- 19 cycles
+    ld (iy+breg - err_nr),e                                           ; 1865: fd 73 2d    .s- 19 cycles
     ld a,(hl)                                                         ; 1868: 7e          ~   7 cycles
     cp $40                                                            ; 1869: fe 40       .@  7 cycles
     pop bc                                                            ; 186b: c1          .   10 cycles
@@ -3903,27 +4006,27 @@ out_line1:
     inc hl                                                            ; 1871: 23          #   6 cycles
     inc hl                                                            ; 1872: 23          #   6 cycles
     inc hl                                                            ; 1873: 23          #   6 cycles
-    res 0,(iy+1)                                                      ; 1874: fd cb 01... ... 23 cycles
+    res 0,(iy+flags - err_nr)                                         ; 1874: fd cb 01... ... 23 cycles
     ld a,d                                                            ; 1878: 7a          z   4 cycles
     and a                                                             ; 1879: a7          .   4 cycles
     jr z,out_line3                                                    ; 187a: 28 05       (.  7/12 cycles
-    rst $10                                                           ; 187c: d7          .   11 cycles
+    rst $10                                                           ; 187c: d7          .   11 cycles    ; Print a character
 ; $187d referenced 1 time by $1141
 out_line2:
-    set 0,(iy+1)                                                      ; 187d: fd cb 01... ... 23 cycles
+    set 0,(iy+flags - err_nr)                                         ; 187d: fd cb 01... ... 23 cycles
 ; $1881 referenced 1 time by $187a
 out_line3:
     push de                                                           ; 1881: d5          .   11 cycles
     ex de,hl                                                          ; 1882: eb          .   4 cycles
-    res 2,(iy+48)                                                     ; 1883: fd cb 30... ..0 23 cycles
+    res 2,(iy+flags2 - err_nr)                                        ; 1883: fd cb 30... ..0 23 cycles
     ld hl,$5c3b                                                       ; 1887: 21 3b 5c    !;\ 10 cycles
     res 2,(hl)                                                        ; 188a: cb 96       ..  15 cycles
-    bit 5,(iy+55)                                                     ; 188c: fd cb 37... ..7 20 cycles
+    bit 5,(iy+flagx - err_nr)                                         ; 188c: fd cb 37... ..7 20 cycles
     jr z,out_line4                                                    ; 1890: 28 02       (.  7/12 cycles
     set 2,(hl)                                                        ; 1892: cb d6       ..  15 cycles
 ; $1894 referenced 2 times by $1890, $18b2
 out_line4:
-    ld hl,(l5c5f)                                                     ; 1894: 2a 5f 5c    *_\ 16 cycles
+    ld hl,(x_ptr)                                                     ; 1894: 2a 5f 5c    *_\ 16 cycles
     and a                                                             ; 1897: a7          .   4 cycles
     sbc hl,de                                                         ; 1898: ed 52       .R  15 cycles
     jr nz,out_line5                                                   ; 189a: 20 05        .  7/12 cycles
@@ -3963,30 +4066,30 @@ number:
 ; $18c1 referenced 2 times by $189e, $190a
 out_flash:
     exx                                                               ; 18c1: d9          .   4 cycles
-    ld hl,(l5c8f)                                                     ; 18c2: 2a 8f 5c    *.\ 16 cycles
+    ld hl,(attr_t)                                                    ; 18c2: 2a 8f 5c    *.\ 16 cycles
     push hl                                                           ; 18c5: e5          .   11 cycles
     res 7,h                                                           ; 18c6: cb bc       ..  8 cycles
     set 7,l                                                           ; 18c8: cb fd       ..  8 cycles
-    ld (l5c8f),hl                                                     ; 18ca: 22 8f 5c    ".\ 16 cycles
+    ld (attr_t),hl                                                    ; 18ca: 22 8f 5c    ".\ 16 cycles
     ld hl,$5c91                                                       ; 18cd: 21 91 5c    !.\ 10 cycles
     ld d,(hl)                                                         ; 18d0: 56          V   7 cycles
     push de                                                           ; 18d1: d5          .   11 cycles
     ld (hl),0                                                         ; 18d2: 36 00       6.  10 cycles
     call print_out                                                    ; 18d4: cd f4 09    ... 17 cycles
     pop hl                                                            ; 18d7: e1          .   10 cycles
-    ld (iy+87),h                                                      ; 18d8: fd 74 57    .tW 19 cycles
+    ld (iy+p_flag - err_nr),h                                         ; 18d8: fd 74 57    .tW 19 cycles
     pop hl                                                            ; 18db: e1          .   10 cycles
-    ld (l5c8f),hl                                                     ; 18dc: 22 8f 5c    ".\ 16 cycles
+    ld (attr_t),hl                                                    ; 18dc: 22 8f 5c    ".\ 16 cycles
     exx                                                               ; 18df: d9          .   4 cycles
     ret                                                               ; 18e0: c9          .   10 cycles
 
 ; $18e1 referenced 2 times by $1145, $18a1
 out_curs:
-    ld hl,(l5c5b)                                                     ; 18e1: 2a 5b 5c    *[\ 16 cycles
+    ld hl,(k_cur)                                                     ; 18e1: 2a 5b 5c    *[\ 16 cycles
     and a                                                             ; 18e4: a7          .   4 cycles
     sbc hl,de                                                         ; 18e5: ed 52       .R  15 cycles
     ret nz                                                            ; 18e7: c0          .   5/11 cycles
-    ld a,(l5c41)                                                      ; 18e8: 3a 41 5c    :A\ 13 cycles
+    ld a,(mode)                                                       ; 18e8: 3a 41 5c    :A\ 13 cycles
     rlc a                                                             ; 18eb: cb 07       ..  8 cycles
     jr z,out_c_1                                                      ; 18ed: 28 04       (.  7/12 cycles
     add a,$43                                                         ; 18ef: c6 43       .C  7 cycles
@@ -4001,7 +4104,7 @@ out_c_1:
     jr z,out_c_2                                                      ; 18fc: 28 0b       (.  7/12 cycles
     set 3,(hl)                                                        ; 18fe: cb de       ..  15 cycles
     inc a                                                             ; 1900: 3c          <   4 cycles
-    bit 3,(iy+48)                                                     ; 1901: fd cb 30... ..0 20 cycles
+    bit 3,(iy+flags2 - err_nr)                                        ; 1901: fd cb 30... ..0 20 cycles
     jr z,out_c_2                                                      ; 1905: 28 02       (.  7/12 cycles
     ld a,$43                                                          ; 1907: 3e 43       >C  7 cycles
 ; $1909 referenced 3 times by $18f1, $18fc, $1905
@@ -4024,7 +4127,7 @@ ln_fetch:
     pop hl                                                            ; 191b: e1          .   10 cycles
 ; $191c referenced 1 time by $106b
 ln_store:
-    bit 5,(iy+55)                                                     ; 191c: fd cb 37... ..7 20 cycles
+    bit 5,(iy+flagx - err_nr)                                         ; 191c: fd cb 37... ..7 20 cycles
     ret nz                                                            ; 1920: c0          .   5/11 cycles
     ld (hl),d                                                         ; 1921: 72          r   7 cycles
     dec hl                                                            ; 1922: 2b          +   6 cycles
@@ -4057,14 +4160,14 @@ out_char:
     jr nc,out_ch_3                                                    ; 193a: 30 30       00  7/12 cycles
     cp $21                                                            ; 193c: fe 21       .!  7 cycles
     jr c,out_ch_3                                                     ; 193e: 38 2c       8,  7/12 cycles
-    res 2,(iy+1)                                                      ; 1940: fd cb 01... ... 23 cycles
+    res 2,(iy+flags - err_nr)                                         ; 1940: fd cb 01... ... 23 cycles
     cp $cb                                                            ; 1944: fe cb       ..  7 cycles
     jr z,out_ch_3                                                     ; 1946: 28 24       ($  7/12 cycles
     cp $3a                                                            ; 1948: fe 3a       .:  7 cycles
     jr nz,out_ch_1                                                    ; 194a: 20 0e        .  7/12 cycles
-    bit 5,(iy+55)                                                     ; 194c: fd cb 37... ..7 20 cycles
+    bit 5,(iy+flagx - err_nr)                                         ; 194c: fd cb 37... ..7 20 cycles
     jr nz,out_ch_2                                                    ; 1950: 20 16        .  7/12 cycles
-    bit 2,(iy+48)                                                     ; 1952: fd cb 30... ..0 20 cycles
+    bit 2,(iy+flags2 - err_nr)                                        ; 1952: fd cb 30... ..0 20 cycles
     jr z,out_ch_3                                                     ; 1956: 28 14       (.  7/12 cycles
     jr out_ch_2                                                       ; 1958: 18 0e       ..  12 cycles
 
@@ -4073,22 +4176,22 @@ out_ch_1:
     cp $22                                                            ; 195a: fe 22       ."  7 cycles
     jr nz,out_ch_2                                                    ; 195c: 20 0a        .  7/12 cycles
     push af                                                           ; 195e: f5          .   11 cycles
-    ld a,(l5c6a)                                                      ; 195f: 3a 6a 5c    :j\ 13 cycles
+    ld a,(flags2)                                                     ; 195f: 3a 6a 5c    :j\ 13 cycles
     xor 4                                                             ; 1962: ee 04       ..  7 cycles
-    ld (l5c6a),a                                                      ; 1964: 32 6a 5c    2j\ 13 cycles
+    ld (flags2),a                                                     ; 1964: 32 6a 5c    2j\ 13 cycles
     pop af                                                            ; 1967: f1          .   10 cycles
 ; $1968 referenced 3 times by $1950, $1958, $195c
 out_ch_2:
-    set 2,(iy+1)                                                      ; 1968: fd cb 01... ... 23 cycles
+    set 2,(iy+flags - err_nr)                                         ; 1968: fd cb 01... ... 23 cycles
 ; $196c referenced 4 times by $193a, $193e, $1946, $1956
 out_ch_3:
-    rst $10                                                           ; 196c: d7          .   11 cycles
+    rst $10                                                           ; 196c: d7          .   11 cycles    ; Print a character
     ret                                                               ; 196d: c9          .   10 cycles
 
 ; $196e referenced 10 times by $0fb3, $1061, $1572, $17c0, $17ca, $17e7, $1830, $1915, $1b9e, $1e47
 line_addr:
     push hl                                                           ; 196e: e5          .   11 cycles
-    ld hl,(l5c53)                                                     ; 196f: 2a 53 5c    *S\ 16 cycles
+    ld hl,(prog)                                                      ; 196f: 2a 53 5c    *S\ 16 cycles
     ld d,h                                                            ; 1972: 54          T   4 cycles
     ld e,l                                                            ; 1973: 5d          ]   4 cycles
 ; $1974 referenced 1 time by $197e
@@ -4118,13 +4221,13 @@ not_used:
     inc hl                                                            ; 198a: 23          #   6 cycles
 ; $198b referenced 4 times by $1be7, $1da4, $1e3f, $282b
 each_stmt:
-    ld (l5c5d),hl                                                     ; 198b: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 198b: 22 5d 5c    "]\ 16 cycles
     ld c,0                                                            ; 198e: 0e 00       ..  7 cycles
 ; $1990 referenced 1 time by $19af
 each_s_1:
     dec d                                                             ; 1990: 15          .   4 cycles
     ret z                                                             ; 1991: c8          .   5/11 cycles
-    rst $20                                                           ; 1992: e7          .   11 cycles
+    rst $20                                                           ; 1992: e7          .   11 cycles    ; Get the next BASIC character
     cp e                                                              ; 1993: bb          .   4 cycles
     jr nz,each_s_3                                                    ; 1994: 20 04        .  7/12 cycles
     and a                                                             ; 1996: a7          .   4 cycles
@@ -4137,7 +4240,7 @@ each_s_2:
 ; $199a referenced 1 time by $1994
 each_s_3:
     call number                                                       ; 199a: cd b6 18    ... 17 cycles
-    ld (l5c5d),hl                                                     ; 199d: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 199d: 22 5d 5c    "]\ 16 cycles
     cp $22                                                            ; 19a0: fe 22       ."  7 cycles
     jr nz,each_s_4                                                    ; 19a2: 20 01        .  7/12 cycles
     dec c                                                             ; 19a4: 0d          .   4 cycles
@@ -4231,14 +4334,14 @@ reclaim_2:
 
 ; $19fb referenced 2 times by $12d5, $1b1b
 e_line_no:
-    ld hl,(l5c59)                                                     ; 19fb: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 19fb: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 19fe: 2b          +   6 cycles
-    ld (l5c5d),hl                                                     ; 19ff: 22 5d 5c    "]\ 16 cycles
-    rst $20                                                           ; 1a02: e7          .   11 cycles
+    ld (ch_add),hl                                                    ; 19ff: 22 5d 5c    "]\ 16 cycles
+    rst $20                                                           ; 1a02: e7          .   11 cycles    ; Get the next BASIC character
     ld hl,$5c92                                                       ; 1a03: 21 92 5c    !.\ 10 cycles
-    ld (l5c65),hl                                                     ; 1a06: 22 65 5c    "e\ 16 cycles
+    ld (stkend),hl                                                    ; 1a06: 22 65 5c    "e\ 16 cycles
     call int_to_fp                                                    ; 1a09: cd 3b 2d    .;- 17 cycles
-    call fp_to_bc                                                     ; 1a0c: cd a2 2d    ..- 17 cycles
+    call fp_to_bc                                                     ; 1a0c: cd a2 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr c,e_l_1                                                        ; 1a0f: 38 04       8.  7/12 cycles
     ld hl,$d8f0                                                       ; 1a11: 21 f0 d8    !.. 10 cycles
     add hl,bc                                                         ; 1a14: 09          .   11 cycles
@@ -4247,6 +4350,12 @@ e_l_1:
     jp c,report_c                                                     ; 1a15: da 8a 1c    ... 10 cycles
     jp set_stk                                                        ; 1a18: c3 c5 16    ... 10 cycles
 
+; ***************************************************************************************
+; Print a number from 0 to 9999
+; 
+; On Entry:
+;     BC: the number
+; ***************************************************************************************
 ; $1a1b referenced 3 times by $1354, $135f, $2f88
 out_num_1:
     push de                                                           ; 1a1b: d5          .   11 cycles
@@ -4506,23 +4615,23 @@ p_cat:
 
 ; $1b17 referenced 1 time by $12b4
 line_scan:
-    res 7,(iy+1)                                                      ; 1b17: fd cb 01... ... 23 cycles
+    res 7,(iy+flags - err_nr)                                         ; 1b17: fd cb 01... ... 23 cycles
     call e_line_no                                                    ; 1b1b: cd fb 19    ... 17 cycles
     xor a                                                             ; 1b1e: af          .   4 cycles
-    ld (l5c47),a                                                      ; 1b1f: 32 47 5c    2G\ 13 cycles
+    ld (subppc),a                                                     ; 1b1f: 32 47 5c    2G\ 13 cycles
     dec a                                                             ; 1b22: 3d          =   4 cycles
-    ld (l5c3a),a                                                      ; 1b23: 32 3a 5c    2:\ 13 cycles
+    ld (err_nr),a                                                     ; 1b23: 32 3a 5c    2:\ 13 cycles
     jr stmt_l_1                                                       ; 1b26: 18 01       ..  12 cycles
 
 ; $1b28 referenced 3 times by $1b3b, $1be3, $1bfb
 stmt_loop:
-    rst $20                                                           ; 1b28: e7          .   11 cycles
+    rst $20                                                           ; 1b28: e7          .   11 cycles    ; Get the next BASIC character
 ; $1b29 referenced 2 times by $1b26, $1d00
 stmt_l_1:
     call set_work                                                     ; 1b29: cd bf 16    ... 17 cycles
-    inc (iy+13)                                                       ; 1b2c: fd 34 0d    .4. 23 cycles
+    inc (iy+subppc - err_nr)                                          ; 1b2c: fd 34 0d    .4. 23 cycles
     jp m,report_c                                                     ; 1b2f: fa 8a 1c    ... 10 cycles
-    rst $18                                                           ; 1b32: df          .   11 cycles
+    rst $18                                                           ; 1b32: df          .   11 cycles    ; Get the current BASIC character
     ld b,0                                                            ; 1b33: 06 00       ..  7 cycles
     cp $0d                                                            ; 1b35: fe 0d       ..  7 cycles
     jr z,line_end                                                     ; 1b37: 28 7a       (z  7/12 cycles
@@ -4531,7 +4640,7 @@ stmt_l_1:
     ld hl,stmt_ret                                                    ; 1b3d: 21 76 1b    !v. 10 cycles
     push hl                                                           ; 1b40: e5          .   11 cycles
     ld c,a                                                            ; 1b41: 4f          O   4 cycles
-    rst $20                                                           ; 1b42: e7          .   11 cycles
+    rst $20                                                           ; 1b42: e7          .   11 cycles    ; Get the next BASIC character
     ld a,c                                                            ; 1b43: 79          y   4 cycles
     sub $ce                                                           ; 1b44: d6 ce       ..  7 cycles
     jp c,report_c                                                     ; 1b46: da 8a 1c    ... 10 cycles
@@ -4543,12 +4652,12 @@ stmt_l_1:
     jr get_param                                                      ; 1b50: 18 03       ..  12 cycles
 
 scan_loop:
-    ld hl,(l5c74)                                                     ; 1b52: 2a 74 5c    *t\ 16 cycles
+    ld hl,(t_addr)                                                    ; 1b52: 2a 74 5c    *t\ 16 cycles
 ; $1b55 referenced 1 time by $1b50
 get_param:
     ld a,(hl)                                                         ; 1b55: 7e          ~   7 cycles
     inc hl                                                            ; 1b56: 23          #   6 cycles
-    ld (l5c74),hl                                                     ; 1b57: 22 74 5c    "t\ 16 cycles
+    ld (t_addr),hl                                                    ; 1b57: 22 74 5c    "t\ 16 cycles
     ld bc,scan_loop                                                   ; 1b5a: 01 52 1b    .R. 10 cycles
     push bc                                                           ; 1b5d: c5          .   11 cycles
     ld c,a                                                            ; 1b5e: 4f          O   4 cycles
@@ -4560,47 +4669,47 @@ get_param:
     ld c,(hl)                                                         ; 1b69: 4e          N   7 cycles
     add hl,bc                                                         ; 1b6a: 09          .   11 cycles
     push hl                                                           ; 1b6b: e5          .   11 cycles
-    rst $18                                                           ; 1b6c: df          .   11 cycles
+    rst $18                                                           ; 1b6c: df          .   11 cycles    ; Get the current BASIC character
     dec b                                                             ; 1b6d: 05          .   4 cycles
     ret                                                               ; 1b6e: c9          .   10 cycles
 
 ; $1b6f referenced 1 time by $1b61
 separator:
-    rst $18                                                           ; 1b6f: df          .   11 cycles
+    rst $18                                                           ; 1b6f: df          .   11 cycles    ; Get the current BASIC character
     cp c                                                              ; 1b70: b9          .   4 cycles
     jp nz,report_c                                                    ; 1b71: c2 8a 1c    ... 10 cycles
-    rst $20                                                           ; 1b74: e7          .   11 cycles
+    rst $20                                                           ; 1b74: e7          .   11 cycles    ; Get the next BASIC character
     ret                                                               ; 1b75: c9          .   10 cycles
 
 stmt_ret:
-    call break_key                                                    ; 1b76: cd 54 1f    .T. 17 cycles
+    call break_key                                                    ; 1b76: cd 54 1f    .T. 17 cycles    ; Test for the BREAK key
     jr c,stmt_r_1                                                     ; 1b79: 38 02       8.  7/12 cycles
 report_l:
     rst $08                                                           ; 1b7b: cf          .   11 cycles
-    db $14                                                            ; 1b7c: 14          .  ; Report L: BREAK into program
+    db $14                                                            ; 1b7c: 14          .  ; Report L BREAK into program
 
 ; $1b7d referenced 1 time by $1b79
 stmt_r_1:
-    bit 7,(iy+10)                                                     ; 1b7d: fd cb 0a... ... 20 cycles
+    bit 7,(iy+nsppc - err_nr)                                         ; 1b7d: fd cb 0a... ... 20 cycles
     jr nz,stmt_next                                                   ; 1b81: 20 71        q  7/12 cycles
-    ld hl,(l5c42)                                                     ; 1b83: 2a 42 5c    *B\ 16 cycles
+    ld hl,(newppc)                                                    ; 1b83: 2a 42 5c    *B\ 16 cycles
     bit 7,h                                                           ; 1b86: cb 7c       .|  8 cycles
     jr z,line_new                                                     ; 1b88: 28 14       (.  7/12 cycles
 ; $1b8a referenced 1 time by $1300
 line_run:
     ld hl,$fffe                                                       ; 1b8a: 21 fe ff    !.. 10 cycles
-    ld (l5c45),hl                                                     ; 1b8d: 22 45 5c    "E\ 16 cycles
-    ld hl,(l5c61)                                                     ; 1b90: 2a 61 5c    *a\ 16 cycles
+    ld (ppc),hl                                                       ; 1b8d: 22 45 5c    "E\ 16 cycles
+    ld hl,(worksp)                                                    ; 1b90: 2a 61 5c    *a\ 16 cycles
     dec hl                                                            ; 1b93: 2b          +   6 cycles
-    ld de,(l5c59)                                                     ; 1b94: ed 5b 59... .[Y 20 cycles
+    ld de,(e_line)                                                    ; 1b94: ed 5b 59... .[Y 20 cycles
     dec de                                                            ; 1b98: 1b          .   6 cycles
-    ld a,(l5c44)                                                      ; 1b99: 3a 44 5c    :D\ 13 cycles
+    ld a,(nsppc)                                                      ; 1b99: 3a 44 5c    :D\ 13 cycles
     jr next_line                                                      ; 1b9c: 18 33       .3  12 cycles
 
 ; $1b9e referenced 1 time by $1b88
 line_new:
     call line_addr                                                    ; 1b9e: cd 6e 19    .n. 17 cycles
-    ld a,(l5c44)                                                      ; 1ba1: 3a 44 5c    :D\ 13 cycles
+    ld a,(nsppc)                                                      ; 1ba1: 3a 44 5c    :D\ 13 cycles
     jr z,line_use                                                     ; 1ba4: 28 19       (.  7/12 cycles
     and a                                                             ; 1ba6: a7          .   4 cycles
     jr nz,report_n                                                    ; 1ba7: 20 43        C  7/12 cycles
@@ -4611,7 +4720,7 @@ line_new:
     jr z,line_use                                                     ; 1bae: 28 0f       (.  7/12 cycles
 report_0:
     rst $08                                                           ; 1bb0: cf          .   11 cycles
-    db $ff                                                            ; 1bb1: ff          .  ; Report 0: OK
+    db $ff                                                            ; 1bb1: ff          .  ; Report 0 OK
 
 rem:
     pop bc                                                            ; 1bb2: c1          .   10 cycles
@@ -4619,7 +4728,7 @@ rem:
 line_end:
     call syntax_z                                                     ; 1bb3: cd 30 25    .0% 17 cycles
     ret z                                                             ; 1bb6: c8          .   5/11 cycles
-    ld hl,(l5c55)                                                     ; 1bb7: 2a 55 5c    *U\ 16 cycles
+    ld hl,(nxtlin)                                                    ; 1bb7: 2a 55 5c    *U\ 16 cycles
     ld a,$c0                                                          ; 1bba: 3e c0       >.  7 cycles
     and (hl)                                                          ; 1bbc: a6          .   7 cycles
     ret nz                                                            ; 1bbd: c0          .   5/11 cycles
@@ -4631,7 +4740,7 @@ line_use:
     ld d,(hl)                                                         ; 1bc3: 56          V   7 cycles
     inc hl                                                            ; 1bc4: 23          #   6 cycles
     ld e,(hl)                                                         ; 1bc5: 5e          ^   7 cycles
-    ld (l5c45),de                                                     ; 1bc6: ed 53 45... .SE 20 cycles
+    ld (ppc),de                                                       ; 1bc6: ed 53 45... .SE 20 cycles
     inc hl                                                            ; 1bca: 23          #   6 cycles
     ld e,(hl)                                                         ; 1bcb: 5e          ^   7 cycles
     inc hl                                                            ; 1bcc: 23          #   6 cycles
@@ -4641,14 +4750,14 @@ line_use:
     inc hl                                                            ; 1bd0: 23          #   6 cycles
 ; $1bd1 referenced 1 time by $1b9c
 next_line:
-    ld (l5c55),hl                                                     ; 1bd1: 22 55 5c    "U\ 16 cycles
+    ld (nxtlin),hl                                                    ; 1bd1: 22 55 5c    "U\ 16 cycles
     ex de,hl                                                          ; 1bd4: eb          .   4 cycles
-    ld (l5c5d),hl                                                     ; 1bd5: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 1bd5: 22 5d 5c    "]\ 16 cycles
     ld d,a                                                            ; 1bd8: 57          W   4 cycles
     ld e,0                                                            ; 1bd9: 1e 00       ..  7 cycles
-    ld (iy+10),$ff                                                    ; 1bdb: fd 36 0a... .6. 19 cycles
+    ld (iy+nsppc - err_nr),$ff                                        ; 1bdb: fd 36 0a... .6. 19 cycles
     dec d                                                             ; 1bdf: 15          .   4 cycles
-    ld (iy+13),d                                                      ; 1be0: fd 72 0d    .r. 19 cycles
+    ld (iy+subppc - err_nr),d                                         ; 1be0: fd 72 0d    .r. 19 cycles
     jp z,stmt_loop                                                    ; 1be3: ca 28 1b    .(. 10 cycles
     inc d                                                             ; 1be6: 14          .   4 cycles
     call each_stmt                                                    ; 1be7: cd 8b 19    ... 17 cycles
@@ -4656,7 +4765,7 @@ next_line:
 ; $1bec referenced 1 time by $1ba7
 report_n:
     rst $08                                                           ; 1bec: cf          .   11 cycles
-    db $16                                                            ; 1bed: 16          .  ; Report N: Statement lost
+    db $16                                                            ; 1bed: 16          .  ; Report N Statement lost
 
 ; $1bee referenced 20 times by $0699, $06ad, $06f9, $071a, $072e, $1822, $1c12, $1c52, $1caa, $1d0b, $1d10, $1e23, $1e31, $1fc0, $1fdb, $209d, $232a, $2387, $2391, $2c12
 check_end:
@@ -4666,7 +4775,7 @@ check_end:
     pop bc                                                            ; 1bf3: c1          .   10 cycles
 ; $1bf4 referenced 2 times by $1b81, $1bea
 stmt_next:
-    rst $18                                                           ; 1bf4: df          .   11 cycles
+    rst $18                                                           ; 1bf4: df          .   11 cycles    ; Get the current BASIC character
     cp $0d                                                            ; 1bf5: fe 0d       ..  7 cycles
     jr z,line_end                                                     ; 1bf7: 28 ba       (.  7/12 cycles
     cp $3a                                                            ; 1bf9: fe 3a       .:  7 cycles
@@ -4695,7 +4804,7 @@ class_05:
     pop bc                                                            ; 1c11: c1          .   10 cycles
     call z,check_end                                                  ; 1c12: cc ee 1b    ... 10/17 cycles
     ex de,hl                                                          ; 1c15: eb          .   4 cycles
-    ld hl,(l5c74)                                                     ; 1c16: 2a 74 5c    *t\ 16 cycles
+    ld hl,(t_addr)                                                    ; 1c16: 2a 74 5c    *t\ 16 cycles
     ld c,(hl)                                                         ; 1c19: 4e          N   7 cycles
     inc hl                                                            ; 1c1a: 23          #   6 cycles
     ld b,(hl)                                                         ; 1c1b: 46          F   7 cycles
@@ -4708,31 +4817,31 @@ class_01:
     call look_vars                                                    ; 1c1f: cd b2 28    ..( 17 cycles
 ; $1c22 referenced 1 time by $1c77
 var_a_1:
-    ld (iy+55),0                                                      ; 1c22: fd 36 37... .67 19 cycles
+    ld (iy+flagx - err_nr),0                                          ; 1c22: fd 36 37... .67 19 cycles
     jr nc,var_a_2                                                     ; 1c26: 30 08       0.  7/12 cycles
-    set 1,(iy+55)                                                     ; 1c28: fd cb 37... ..7 23 cycles
+    set 1,(iy+flagx - err_nr)                                         ; 1c28: fd cb 37... ..7 23 cycles
     jr nz,var_a_3                                                     ; 1c2c: 20 18        .  7/12 cycles
 ; $1c2e referenced 2 times by $1daf, $26cc
 report_2:
     rst $08                                                           ; 1c2e: cf          .   11 cycles
-    db 1                                                              ; 1c2f: 01          .  ; Report 2: Variable not found
+    db 1                                                              ; 1c2f: 01          .  ; Report 2 Variable not found
 
 ; $1c30 referenced 1 time by $1c26
 var_a_2:
     call z,stk_var                                                    ; 1c30: cc 96 29    ..) 10/17 cycles
-    bit 6,(iy+1)                                                      ; 1c33: fd cb 01... ... 20 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 1c33: fd cb 01... ... 20 cycles
     jr nz,var_a_3                                                     ; 1c37: 20 0d        .  7/12 cycles
     xor a                                                             ; 1c39: af          .   4 cycles
     call syntax_z                                                     ; 1c3a: cd 30 25    .0% 17 cycles
-    call nz,stk_fetch                                                 ; 1c3d: c4 f1 2b    ..+ 10/17 cycles
+    call nz,stk_fetch                                                 ; 1c3d: c4 f1 2b    ..+ 10/17 cycles ; Get a string from the calculator stack
     ld hl,$5c71                                                       ; 1c40: 21 71 5c    !q\ 10 cycles
     or (hl)                                                           ; 1c43: b6          .   7 cycles
     ld (hl),a                                                         ; 1c44: 77          w   7 cycles
     ex de,hl                                                          ; 1c45: eb          .   4 cycles
 ; $1c46 referenced 2 times by $1c2c, $1c37
 var_a_3:
-    ld (l5c72),bc                                                     ; 1c46: ed 43 72... .Cr 20 cycles
-    ld (l5c4d),hl                                                     ; 1c4a: 22 4d 5c    "M\ 16 cycles
+    ld (strlen),bc                                                    ; 1c46: ed 43 72... .Cr 20 cycles
+    ld (dest),hl                                                      ; 1c4a: 22 4d 5c    "M\ 16 cycles
     ret                                                               ; 1c4d: c9          .   10 cycles
 
 class_02:
@@ -4743,13 +4852,13 @@ class_02:
 
 ; $1c56 referenced 2 times by $1c4f, $1e0d
 val_fet_1:
-    ld a,(l5c3b)                                                      ; 1c56: 3a 3b 5c    :;\ 13 cycles
+    ld a,(flags)                                                      ; 1c56: 3a 3b 5c    :;\ 13 cycles
 ; $1c59 referenced 1 time by $21c7
 val_fet_2:
     push af                                                           ; 1c59: f5          .   11 cycles
     call scanning                                                     ; 1c5a: cd fb 24    ..$ 17 cycles
     pop af                                                            ; 1c5d: f1          .   10 cycles
-    ld d,(iy+1)                                                       ; 1c5e: fd 56 01    .V. 19 cycles
+    ld d,(iy+flags - err_nr)                                          ; 1c5e: fd 56 01    .V. 19 cycles
     xor d                                                             ; 1c61: aa          .   4 cycles
     and $40                                                           ; 1c62: e6 40       .@  7 cycles
     jr nz,report_c                                                    ; 1c64: 20 24        $  7/12 cycles
@@ -4769,41 +4878,41 @@ class_04:
 
 ; $1c79 referenced 2 times by $2001, $2527
 next_2num:
-    rst $20                                                           ; 1c79: e7          .   11 cycles
+    rst $20                                                           ; 1c79: e7          .   11 cycles    ; Get the next BASIC character
 ; $1c7a referenced 1 time by $1cd9
 expt_2num:
     call expt_1num                                                    ; 1c7a: cd 82 1c    ... 17 cycles
     cp $2c                                                            ; 1c7d: fe 2c       .,  7 cycles
     jr nz,report_c                                                    ; 1c7f: 20 09        .  7/12 cycles
-    rst $20                                                           ; 1c81: e7          .   11 cycles
+    rst $20                                                           ; 1c81: e7          .   11 cycles    ; Get the next BASIC character
 ; $1c82 referenced 13 times by $06e1, $06f6, $072b, $1815, $1c7a, $1ce4, $1d08, $2013, $2075, $21ff, $2327, $238e, $2ad0
 expt_1num:
     call scanning                                                     ; 1c82: cd fb 24    ..$ 17 cycles
-    bit 6,(iy+1)                                                      ; 1c85: fd cb 01... ... 20 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 1c85: fd cb 01... ... 20 cycles
     ret nz                                                            ; 1c89: c0          .   5/11 cycles
 ; $1c8a referenced 36 times by $04b1, $065c, $0672, $06a9, $06cc, $06d9, $06ed, $0727, $1a15, $1b2f, $1b46, $1b71, $1bfe, $1c64, $1c74, $1c7f, $1c94, $1f89, $1fbd, $20d1, $20e8, $21ef, $2323, $2515, $252d, $25ee, $26ef, $26f9, $2761, $27c6, $27e6, $28ba, $2a7a, $2c05, $2ccf, $360c
 report_c:
     rst $08                                                           ; 1c8a: cf          .   11 cycles
-    db $0b                                                            ; 1c8b: 0b          .  ; Report C: Nonsense in BASIC
+    db $0b                                                            ; 1c8b: 0b          .  ; Report C Nonsense in BASIC
 
 ; $1c8c referenced 1 time by $060e
 expt_exp:
     call scanning                                                     ; 1c8c: cd fb 24    ..$ 17 cycles
-    bit 6,(iy+1)                                                      ; 1c8f: fd cb 01... ... 20 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 1c8f: fd cb 01... ... 20 cycles
     ret z                                                             ; 1c93: c8          .   5/11 cycles
     jr report_c                                                       ; 1c94: 18 f4       ..  12 cycles
 
 class_07:
-    bit 7,(iy+1)                                                      ; 1c96: fd cb 01... ... 20 cycles
-    res 0,(iy+2)                                                      ; 1c9a: fd cb 02... ... 23 cycles
+    bit 7,(iy+flags - err_nr)                                         ; 1c96: fd cb 01... ... 20 cycles
+    res 0,(iy+tv_flag - err_nr)                                       ; 1c9a: fd cb 02... ... 23 cycles
     call nz,temps                                                     ; 1c9e: c4 4d 0d    .M. 10/17 cycles
     pop af                                                            ; 1ca1: f1          .   10 cycles
-    ld a,(l5c74)                                                      ; 1ca2: 3a 74 5c    :t\ 13 cycles
+    ld a,(t_addr)                                                     ; 1ca2: 3a 74 5c    :t\ 13 cycles
     sub $13                                                           ; 1ca5: d6 13       ..  7 cycles
     call co_temp_4                                                    ; 1ca7: cd fc 21    ..! 17 cycles
     call check_end                                                    ; 1caa: cd ee 1b    ... 17 cycles
-    ld hl,(l5c8f)                                                     ; 1cad: 2a 8f 5c    *.\ 16 cycles
-    ld (l5c8d),hl                                                     ; 1cb0: 22 8d 5c    ".\ 16 cycles
+    ld hl,(attr_t)                                                    ; 1cad: 2a 8f 5c    *.\ 16 cycles
+    ld (attr_p),hl                                                    ; 1cb0: 22 8d 5c    ".\ 16 cycles
     ld hl,$5c91                                                       ; 1cb3: 21 91 5c    !.\ 10 cycles
     ld a,(hl)                                                         ; 1cb6: 7e          ~   7 cycles
     rlca                                                              ; 1cb7: 07          .   4 cycles
@@ -4816,14 +4925,14 @@ class_07:
 class_09:
     call syntax_z                                                     ; 1cbe: cd 30 25    .0% 17 cycles
     jr z,cl_09_1                                                      ; 1cc1: 28 13       (.  7/12 cycles
-    res 0,(iy+2)                                                      ; 1cc3: fd cb 02... ... 23 cycles
+    res 0,(iy+tv_flag - err_nr)                                       ; 1cc3: fd cb 02... ... 23 cycles
     call temps                                                        ; 1cc7: cd 4d 0d    .M. 17 cycles
     ld hl,$5c90                                                       ; 1cca: 21 90 5c    !.\ 10 cycles
     ld a,(hl)                                                         ; 1ccd: 7e          ~   7 cycles
     or $f8                                                            ; 1cce: f6 f8       ..  7 cycles
     ld (hl),a                                                         ; 1cd0: 77          w   7 cycles
-    res 6,(iy+87)                                                     ; 1cd1: fd cb 57... ..W 23 cycles
-    rst $18                                                           ; 1cd5: df          .   11 cycles
+    res 6,(iy+p_flag - err_nr)                                        ; 1cd1: fd cb 57... ..W 23 cycles
+    rst $18                                                           ; 1cd5: df          .   11 cycles    ; Get the current BASIC character
 ; $1cd6 referenced 1 time by $1cc1
 cl_09_1:
     call co_temp_2                                                    ; 1cd6: cd e2 21    ..! 17 cycles
@@ -4850,7 +4959,7 @@ use_zero:
 
 stop:
     rst $08                                                           ; 1cee: cf          .   11 cycles
-    db 8                                                              ; 1cef: 08          .  ; Report 9: STOP statement
+    db 8                                                              ; 1cef: 08          .  ; Report 9 STOP statement
 
 if:
     pop bc                                                            ; 1cf0: c1          .   10 cycles
@@ -4870,7 +4979,7 @@ if_1:
 for:
     cp $cd                                                            ; 1d03: fe cd       ..  7 cycles
     jr nz,f_use_1                                                     ; 1d05: 20 09        .  7/12 cycles
-    rst $20                                                           ; 1d07: e7          .   11 cycles
+    rst $20                                                           ; 1d07: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 1d08: cd 82 1c    ... 17 cycles
     call check_end                                                    ; 1d0b: cd ee 1b    ... 17 cycles
     jr f_reorder                                                      ; 1d0e: 18 06       ..  12 cycles
@@ -4893,7 +5002,7 @@ f_reorder:
     db $38                                                            ; 1d1c: 38          8  ; end-calc
 
     call let                                                          ; 1d1d: cd ff 2a    ..* 17 cycles
-    ld (l5c68),hl                                                     ; 1d20: 22 68 5c    "h\ 16 cycles
+    ld (mem),hl                                                       ; 1d20: 22 68 5c    "h\ 16 cycles
     dec hl                                                            ; 1d23: 2b          +   6 cycles
     ld a,(hl)                                                         ; 1d24: 7e          ~   7 cycles
     set 7,(hl)                                                        ; 1d25: cb fe       ..  15 cycles
@@ -4916,52 +5025,52 @@ f_l_s:
     ex de,hl                                                          ; 1d3a: eb          .   4 cycles
     ld c,$0a                                                          ; 1d3b: 0e 0a       ..  7 cycles
     ldir                                                              ; 1d3d: ed b0       ..  16/21 cycles
-    ld hl,(l5c45)                                                     ; 1d3f: 2a 45 5c    *E\ 16 cycles
+    ld hl,(ppc)                                                       ; 1d3f: 2a 45 5c    *E\ 16 cycles
     ex de,hl                                                          ; 1d42: eb          .   4 cycles
     ld (hl),e                                                         ; 1d43: 73          s   7 cycles
     inc hl                                                            ; 1d44: 23          #   6 cycles
     ld (hl),d                                                         ; 1d45: 72          r   7 cycles
-    ld d,(iy+13)                                                      ; 1d46: fd 56 0d    .V. 19 cycles
+    ld d,(iy+subppc - err_nr)                                         ; 1d46: fd 56 0d    .V. 19 cycles
     inc d                                                             ; 1d49: 14          .   4 cycles
     inc hl                                                            ; 1d4a: 23          #   6 cycles
     ld (hl),d                                                         ; 1d4b: 72          r   7 cycles
     call next_loop                                                    ; 1d4c: cd da 1d    ... 17 cycles
     ret nc                                                            ; 1d4f: d0          .   5/11 cycles
-    ld b,(iy+56)                                                      ; 1d50: fd 46 38    .F8 19 cycles
-    ld hl,(l5c45)                                                     ; 1d53: 2a 45 5c    *E\ 16 cycles
-    ld (l5c42),hl                                                     ; 1d56: 22 42 5c    "B\ 16 cycles
-    ld a,(l5c47)                                                      ; 1d59: 3a 47 5c    :G\ 13 cycles
+    ld b,(iy+strlen - err_nr)                                         ; 1d50: fd 46 38    .F8 19 cycles
+    ld hl,(ppc)                                                       ; 1d53: 2a 45 5c    *E\ 16 cycles
+    ld (newppc),hl                                                    ; 1d56: 22 42 5c    "B\ 16 cycles
+    ld a,(subppc)                                                     ; 1d59: 3a 47 5c    :G\ 13 cycles
     neg                                                               ; 1d5c: ed 44       .D  8 cycles
     ld d,a                                                            ; 1d5e: 57          W   4 cycles
-    ld hl,(l5c5d)                                                     ; 1d5f: 2a 5d 5c    *]\ 16 cycles
+    ld hl,(ch_add)                                                    ; 1d5f: 2a 5d 5c    *]\ 16 cycles
     ld e,$f3                                                          ; 1d62: 1e f3       ..  7 cycles
 ; $1d64 referenced 1 time by $1d7a
 f_loop:
     push bc                                                           ; 1d64: c5          .   11 cycles
-    ld bc,(l5c55)                                                     ; 1d65: ed 4b 55... .KU 20 cycles
+    ld bc,(nxtlin)                                                    ; 1d65: ed 4b 55... .KU 20 cycles
     call look_prog                                                    ; 1d69: cd 86 1d    ... 17 cycles
-    ld (l5c55),bc                                                     ; 1d6c: ed 43 55... .CU 20 cycles
+    ld (nxtlin),bc                                                    ; 1d6c: ed 43 55... .CU 20 cycles
     pop bc                                                            ; 1d70: c1          .   10 cycles
     jr c,report_i                                                     ; 1d71: 38 11       8.  7/12 cycles
-    rst $20                                                           ; 1d73: e7          .   11 cycles
+    rst $20                                                           ; 1d73: e7          .   11 cycles    ; Get the next BASIC character
     or $20                                                            ; 1d74: f6 20       .   7 cycles
     cp b                                                              ; 1d76: b8          .   4 cycles
     jr z,f_found                                                      ; 1d77: 28 03       (.  7/12 cycles
-    rst $20                                                           ; 1d79: e7          .   11 cycles
+    rst $20                                                           ; 1d79: e7          .   11 cycles    ; Get the next BASIC character
     jr f_loop                                                         ; 1d7a: 18 e8       ..  12 cycles
 
 ; $1d7c referenced 1 time by $1d77
 f_found:
-    rst $20                                                           ; 1d7c: e7          .   11 cycles
+    rst $20                                                           ; 1d7c: e7          .   11 cycles    ; Get the next BASIC character
     ld a,1                                                            ; 1d7d: 3e 01       >.  7 cycles
     sub d                                                             ; 1d7f: 92          .   4 cycles
-    ld (l5c44),a                                                      ; 1d80: 32 44 5c    2D\ 13 cycles
+    ld (nsppc),a                                                      ; 1d80: 32 44 5c    2D\ 13 cycles
     ret                                                               ; 1d83: c9          .   10 cycles
 
 ; $1d84 referenced 1 time by $1d71
 report_i:
     rst $08                                                           ; 1d84: cf          .   11 cycles
-    db $11                                                            ; 1d85: 11          .  ; Report I: FOR without NEXT
+    db $11                                                            ; 1d85: 11          .  ; Report I FOR without NEXT
 
 ; $1d86 referenced 3 times by $1d69, $1e03, $280c
 look_prog:
@@ -4978,7 +5087,7 @@ look_p_1:
     ld b,(hl)                                                         ; 1d91: 46          F   7 cycles
     inc hl                                                            ; 1d92: 23          #   6 cycles
     ld c,(hl)                                                         ; 1d93: 4e          N   7 cycles
-    ld (l5c42),bc                                                     ; 1d94: ed 43 42... .CB 20 cycles
+    ld (newppc),bc                                                    ; 1d94: ed 43 42... .CB 20 cycles
     inc hl                                                            ; 1d98: 23          #   6 cycles
     ld c,(hl)                                                         ; 1d99: 4e          N   7 cycles
     inc hl                                                            ; 1d9a: 23          #   6 cycles
@@ -4998,13 +5107,13 @@ look_p_2:
     jr look_p_1                                                       ; 1da9: 18 e0       ..  12 cycles
 
 next:
-    bit 1,(iy+55)                                                     ; 1dab: fd cb 37... ..7 20 cycles
+    bit 1,(iy+flagx - err_nr)                                         ; 1dab: fd cb 37... ..7 20 cycles
     jp nz,report_2                                                    ; 1daf: c2 2e 1c    ... 10 cycles
-    ld hl,(l5c4d)                                                     ; 1db2: 2a 4d 5c    *M\ 16 cycles
+    ld hl,(dest)                                                      ; 1db2: 2a 4d 5c    *M\ 16 cycles
     bit 7,(hl)                                                        ; 1db5: cb 7e       .~  12 cycles
     jr z,report_1                                                     ; 1db7: 28 1f       (.  7/12 cycles
     inc hl                                                            ; 1db9: 23          #   6 cycles
-    ld (l5c68),hl                                                     ; 1dba: 22 68 5c    "h\ 16 cycles
+    ld (mem),hl                                                       ; 1dba: 22 68 5c    "h\ 16 cycles
     rst $28                                                           ; 1dbd: ef          .   11 cycles
     db $e0                                                            ; 1dbe: e0          .  ; get-mem-0
     db $e2                                                            ; 1dbf: e2          .  ; get-mem-2
@@ -5015,7 +5124,7 @@ next:
 
     call next_loop                                                    ; 1dc4: cd da 1d    ... 17 cycles
     ret c                                                             ; 1dc7: d8          .   5/11 cycles
-    ld hl,(l5c68)                                                     ; 1dc8: 2a 68 5c    *h\ 16 cycles
+    ld hl,(mem)                                                       ; 1dc8: 2a 68 5c    *h\ 16 cycles
     ld de,$0f                                                         ; 1dcb: 11 0f 00    ... 10 cycles
     add hl,de                                                         ; 1dce: 19          .   11 cycles
     ld e,(hl)                                                         ; 1dcf: 5e          ^   7 cycles
@@ -5029,7 +5138,7 @@ next:
 ; $1dd8 referenced 1 time by $1db7
 report_1:
     rst $08                                                           ; 1dd8: cf          .   11 cycles
-    db 0                                                              ; 1dd9: 00          .  ; Report 1: NEXT without FOR
+    db 0                                                              ; 1dd9: 00          .  ; Report 1 NEXT without FOR
 
 ; $1dda referenced 2 times by $1d4c, $1dc4
 next_loop:
@@ -5059,14 +5168,14 @@ next_2:
 
 ; $1dec referenced 1 time by $1e21
 read_3:
-    rst $20                                                           ; 1dec: e7          .   11 cycles
+    rst $20                                                           ; 1dec: e7          .   11 cycles    ; Get the next BASIC character
 read:
     call class_01                                                     ; 1ded: cd 1f 1c    ... 17 cycles
     call syntax_z                                                     ; 1df0: cd 30 25    .0% 17 cycles
     jr z,read_2                                                       ; 1df3: 28 29       ()  7/12 cycles
-    rst $18                                                           ; 1df5: df          .   11 cycles
-    ld (l5c5f),hl                                                     ; 1df6: 22 5f 5c    "_\ 16 cycles
-    ld hl,(l5c57)                                                     ; 1df9: 2a 57 5c    *W\ 16 cycles
+    rst $18                                                           ; 1df5: df          .   11 cycles    ; Get the current BASIC character
+    ld (x_ptr),hl                                                     ; 1df6: 22 5f 5c    "_\ 16 cycles
+    ld hl,(datadd)                                                    ; 1df9: 2a 57 5c    *W\ 16 cycles
     ld a,(hl)                                                         ; 1dfc: 7e          ~   7 cycles
     cp $2c                                                            ; 1dfd: fe 2c       .,  7 cycles
     jr z,read_1                                                       ; 1dff: 28 09       (.  7/12 cycles
@@ -5075,20 +5184,20 @@ read:
     jr nc,read_1                                                      ; 1e06: 30 02       0.  7/12 cycles
 report_e:
     rst $08                                                           ; 1e08: cf          .   11 cycles
-    db $0d                                                            ; 1e09: 0d          .  ; Report E: Out of DATA
+    db $0d                                                            ; 1e09: 0d          .  ; Report E Out of DATA
 
 ; $1e0a referenced 2 times by $1dff, $1e06
 read_1:
     call temp_ptr1                                                    ; 1e0a: cd 77 00    .w. 17 cycles
     call val_fet_1                                                    ; 1e0d: cd 56 1c    .V. 17 cycles
-    rst $18                                                           ; 1e10: df          .   11 cycles
-    ld (l5c57),hl                                                     ; 1e11: 22 57 5c    "W\ 16 cycles
-    ld hl,(l5c5f)                                                     ; 1e14: 2a 5f 5c    *_\ 16 cycles
-    ld (iy+38),0                                                      ; 1e17: fd 36 26... .6& 19 cycles
+    rst $18                                                           ; 1e10: df          .   11 cycles    ; Get the current BASIC character
+    ld (datadd),hl                                                    ; 1e11: 22 57 5c    "W\ 16 cycles
+    ld hl,(x_ptr)                                                     ; 1e14: 2a 5f 5c    *_\ 16 cycles
+    ld (iy+(x_ptr+1) - err_nr),0                                      ; 1e17: fd 36 26... .6& 19 cycles
     call temp_ptr2                                                    ; 1e1b: cd 78 00    .x. 17 cycles
 ; $1e1e referenced 1 time by $1df3
 read_2:
-    rst $18                                                           ; 1e1e: df          .   11 cycles
+    rst $18                                                           ; 1e1e: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 1e1f: fe 2c       .,  7 cycles
     jr z,read_3                                                       ; 1e21: 28 c9       (.  7/12 cycles
     call check_end                                                    ; 1e23: cd ee 1b    ... 17 cycles
@@ -5102,7 +5211,7 @@ data_1:
     call scanning                                                     ; 1e2c: cd fb 24    ..$ 17 cycles
     cp $2c                                                            ; 1e2f: fe 2c       .,  7 cycles
     call nz,check_end                                                 ; 1e31: c4 ee 1b    ... 10/17 cycles
-    rst $20                                                           ; 1e34: e7          .   11 cycles
+    rst $20                                                           ; 1e34: e7          .   11 cycles    ; Get the next BASIC character
     jr data_1                                                         ; 1e35: 18 f5       ..  12 cycles
 
 ; $1e37 referenced 1 time by $1e2a
@@ -5116,35 +5225,35 @@ pass_by:
     jp each_stmt                                                      ; 1e3f: c3 8b 19    ... 10 cycles
 
 restore:
-    call find_int2                                                    ; 1e42: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 1e42: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
 ; $1e45 referenced 1 time by $1ea7
 rest_run:
     ld h,b                                                            ; 1e45: 60          `   4 cycles
     ld l,c                                                            ; 1e46: 69          i   4 cycles
     call line_addr                                                    ; 1e47: cd 6e 19    .n. 17 cycles
     dec hl                                                            ; 1e4a: 2b          +   6 cycles
-    ld (l5c57),hl                                                     ; 1e4b: 22 57 5c    "W\ 16 cycles
+    ld (datadd),hl                                                    ; 1e4b: 22 57 5c    "W\ 16 cycles
     ret                                                               ; 1e4e: c9          .   10 cycles
 
 randomize:
-    call find_int2                                                    ; 1e4f: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 1e4f: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld a,b                                                            ; 1e52: 78          x   4 cycles
     or c                                                              ; 1e53: b1          .   4 cycles
     jr nz,rand_1                                                      ; 1e54: 20 04        .  7/12 cycles
-    ld bc,(l5c78)                                                     ; 1e56: ed 4b 78... .Kx 20 cycles
+    ld bc,(frames)                                                    ; 1e56: ed 4b 78... .Kx 20 cycles
 ; $1e5a referenced 1 time by $1e54
 rand_1:
-    ld (l5c76),bc                                                     ; 1e5a: ed 43 76... .Cv 20 cycles
+    ld (seed),bc                                                      ; 1e5a: ed 43 76... .Cv 20 cycles
     ret                                                               ; 1e5e: c9          .   10 cycles
 
 continue:
-    ld hl,(l5c6e)                                                     ; 1e5f: 2a 6e 5c    *n\ 16 cycles
-    ld d,(iy+54)                                                      ; 1e62: fd 56 36    .V6 19 cycles
+    ld hl,(oldppc)                                                    ; 1e5f: 2a 6e 5c    *n\ 16 cycles
+    ld d,(iy+osppc - err_nr)                                          ; 1e62: fd 56 36    .V6 19 cycles
     jr go_to_2                                                        ; 1e65: 18 0c       ..  12 cycles
 
 ; $1e67 referenced 2 times by $1ea1, $1eff
 go_to:
-    call find_int2                                                    ; 1e67: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 1e67: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld h,b                                                            ; 1e6a: 60          `   4 cycles
     ld l,c                                                            ; 1e6b: 69          i   4 cycles
     ld d,0                                                            ; 1e6c: 16 00       ..  7 cycles
@@ -5153,8 +5262,8 @@ go_to:
     jr nc,report_bb                                                   ; 1e71: 30 2c       0,  7/12 cycles
 ; $1e73 referenced 3 times by $1dd5, $1e65, $1f33
 go_to_2:
-    ld (l5c42),hl                                                     ; 1e73: 22 42 5c    "B\ 16 cycles
-    ld (iy+10),d                                                      ; 1e76: fd 72 0a    .r. 19 cycles
+    ld (newppc),hl                                                    ; 1e73: 22 42 5c    "B\ 16 cycles
+    ld (iy+nsppc - err_nr),d                                          ; 1e76: fd 72 0a    .r. 19 cycles
     ret                                                               ; 1e79: c9          .   10 cycles
 
 out:
@@ -5169,25 +5278,37 @@ poke:
 
 ; $1e85 referenced 2 times by $1e7a, $1e80
 two_param:
-    call fp_to_a                                                      ; 1e85: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 1e85: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr c,report_bb                                                    ; 1e88: 38 15       8.  7/12 cycles
     jr z,two_p_1                                                      ; 1e8a: 28 02       (.  7/12 cycles
     neg                                                               ; 1e8c: ed 44       .D  8 cycles
 ; $1e8e referenced 1 time by $1e8a
 two_p_1:
     push af                                                           ; 1e8e: f5          .   11 cycles
-    call find_int2                                                    ; 1e8f: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 1e8f: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     pop af                                                            ; 1e92: f1          .   10 cycles
     ret                                                               ; 1e93: c9          .   10 cycles
 
+; ***************************************************************************************
+; Get a number from the calculator stack
+; 
+; On Exit:
+;     A: the number (0-255)
+; ***************************************************************************************
 ; $1e94 referenced 8 times by $0443, $171e, $207c, $2208, $2294, $2371, $2376, $3645
 find_int1:
-    call fp_to_a                                                      ; 1e94: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 1e94: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr find_i_1                                                       ; 1e97: 18 03       ..  12 cycles
 
+; ***************************************************************************************
+; Get a number from the calculator stack
+; 
+; On Exit:
+;     BC: the number (0-65535)
+; ***************************************************************************************
 ; $1e99 referenced 17 times by $045b, $045f, $06fc, $0705, $0731, $1825, $1e42, $1e4f, $1e67, $1e8f, $1eac, $1f3a, $2019, $2ada, $34a5, $34ac, $34b3
 find_int2:
-    call fp_to_bc                                                     ; 1e99: cd a2 2d    ..- 17 cycles
+    call fp_to_bc                                                     ; 1e99: cd a2 2d    ..- 17 cycles    ; Get a number from the calculator stack
 ; $1e9c referenced 1 time by $1e97
 find_i_1:
     jr c,report_bb                                                    ; 1e9c: 38 01       8.  7/12 cycles
@@ -5195,7 +5316,7 @@ find_i_1:
 ; $1e9f referenced 5 times by $0aac, $1e71, $1e88, $1e9c, $364a
 report_bb:
     rst $08                                                           ; 1e9f: cf          .   11 cycles
-    db $0a                                                            ; 1ea0: 0a          .  ; Report B: Integer out of range
+    db $0a                                                            ; 1ea0: 0a          .  ; Report B Integer out of range
 
 run:
     call go_to                                                        ; 1ea1: cd 67 1e    .g. 17 cycles
@@ -5204,66 +5325,66 @@ run:
     jr clear_run                                                      ; 1eaa: 18 03       ..  12 cycles
 
 clear:
-    call find_int2                                                    ; 1eac: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 1eac: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
 ; $1eaf referenced 1 time by $1eaa
 clear_run:
     ld a,b                                                            ; 1eaf: 78          x   4 cycles
     or c                                                              ; 1eb0: b1          .   4 cycles
     jr nz,clear_1                                                     ; 1eb1: 20 04        .  7/12 cycles
-    ld bc,(l5cb2)                                                     ; 1eb3: ed 4b b2... .K. 20 cycles
+    ld bc,(ramtop)                                                    ; 1eb3: ed 4b b2... .K. 20 cycles
 ; $1eb7 referenced 1 time by $1eb1
 clear_1:
     push bc                                                           ; 1eb7: c5          .   11 cycles
-    ld de,(l5c4b)                                                     ; 1eb8: ed 5b 4b... .[K 20 cycles
-    ld hl,(l5c59)                                                     ; 1ebc: 2a 59 5c    *Y\ 16 cycles
+    ld de,(vars)                                                      ; 1eb8: ed 5b 4b... .[K 20 cycles
+    ld hl,(e_line)                                                    ; 1ebc: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 1ebf: 2b          +   6 cycles
     call reclaim_1                                                    ; 1ec0: cd e5 19    ... 17 cycles
-    call cls                                                          ; 1ec3: cd 6b 0d    .k. 17 cycles
-    ld hl,(l5c65)                                                     ; 1ec6: 2a 65 5c    *e\ 16 cycles
+    call cls                                                          ; 1ec3: cd 6b 0d    .k. 17 cycles    ; Clear the screen
+    ld hl,(stkend)                                                    ; 1ec6: 2a 65 5c    *e\ 16 cycles
     ld de,$32                                                         ; 1ec9: 11 32 00    .2. 10 cycles
     add hl,de                                                         ; 1ecc: 19          .   11 cycles
     pop de                                                            ; 1ecd: d1          .   10 cycles
     sbc hl,de                                                         ; 1ece: ed 52       .R  15 cycles
     jr nc,report_m                                                    ; 1ed0: 30 08       0.  7/12 cycles
-    ld hl,(l5cb4)                                                     ; 1ed2: 2a b4 5c    *.\ 16 cycles
+    ld hl,(p_ramt)                                                    ; 1ed2: 2a b4 5c    *.\ 16 cycles
     and a                                                             ; 1ed5: a7          .   4 cycles
     sbc hl,de                                                         ; 1ed6: ed 52       .R  15 cycles
     jr nc,clear_2                                                     ; 1ed8: 30 02       0.  7/12 cycles
 ; $1eda referenced 1 time by $1ed0
 report_m:
     rst $08                                                           ; 1eda: cf          .   11 cycles
-    db $15                                                            ; 1edb: 15          .  ; Report M: RAMTOP no good
+    db $15                                                            ; 1edb: 15          .  ; Report M RAMTOP no good
 
 ; $1edc referenced 1 time by $1ed8
 clear_2:
     ex de,hl                                                          ; 1edc: eb          .   4 cycles
-    ld (l5cb2),hl                                                     ; 1edd: 22 b2 5c    ".\ 16 cycles
+    ld (ramtop),hl                                                    ; 1edd: 22 b2 5c    ".\ 16 cycles
     pop de                                                            ; 1ee0: d1          .   10 cycles
     pop bc                                                            ; 1ee1: c1          .   10 cycles
     ld (hl),$3e                                                       ; 1ee2: 36 3e       6>  10 cycles
     dec hl                                                            ; 1ee4: 2b          +   6 cycles
     ld sp,hl                                                          ; 1ee5: f9          .   6 cycles
     push bc                                                           ; 1ee6: c5          .   11 cycles
-    ld (l5c3d),sp                                                     ; 1ee7: ed 73 3d... .s= 20 cycles
+    ld (err_sp),sp                                                    ; 1ee7: ed 73 3d... .s= 20 cycles
     ex de,hl                                                          ; 1eeb: eb          .   4 cycles
     jp (hl)                                                           ; 1eec: e9          .   4 cycles
 
 go_sub:
     pop de                                                            ; 1eed: d1          .   10 cycles
-    ld h,(iy+13)                                                      ; 1eee: fd 66 0d    .f. 19 cycles
+    ld h,(iy+subppc - err_nr)                                         ; 1eee: fd 66 0d    .f. 19 cycles
     inc h                                                             ; 1ef1: 24          $   4 cycles
     ex (sp),hl                                                        ; 1ef2: e3          .   19 cycles
     inc sp                                                            ; 1ef3: 33          3   6 cycles
-    ld bc,(l5c45)                                                     ; 1ef4: ed 4b 45... .KE 20 cycles
+    ld bc,(ppc)                                                       ; 1ef4: ed 4b 45... .KE 20 cycles
     push bc                                                           ; 1ef8: c5          .   11 cycles
     push hl                                                           ; 1ef9: e5          .   11 cycles
-    ld (l5c3d),sp                                                     ; 1efa: ed 73 3d... .s= 20 cycles
+    ld (err_sp),sp                                                    ; 1efa: ed 73 3d... .s= 20 cycles
     push de                                                           ; 1efe: d5          .   11 cycles
     call go_to                                                        ; 1eff: cd 67 1e    .g. 17 cycles
     ld bc,$14                                                         ; 1f02: 01 14 00    ... 10 cycles
 ; $1f05 referenced 5 times by $082b, $0fc9, $1656, $1f1d, $33ae
 test_room:
-    ld hl,(l5c65)                                                     ; 1f05: 2a 65 5c    *e\ 16 cycles
+    ld hl,(stkend)                                                    ; 1f05: 2a 65 5c    *e\ 16 cycles
     add hl,bc                                                         ; 1f08: 09          .   11 cycles
     jr c,report_4                                                     ; 1f09: 38 0a       8.  7/12 cycles
     ex de,hl                                                          ; 1f0b: eb          .   4 cycles
@@ -5294,7 +5415,7 @@ return:
     dec sp                                                            ; 1f2b: 3b          ;   6 cycles
     ex (sp),hl                                                        ; 1f2c: e3          .   19 cycles
     ex de,hl                                                          ; 1f2d: eb          .   4 cycles
-    ld (l5c3d),sp                                                     ; 1f2e: ed 73 3d... .s= 20 cycles
+    ld (err_sp),sp                                                    ; 1f2e: ed 73 3d... .s= 20 cycles
     push bc                                                           ; 1f32: c5          .   11 cycles
     jp go_to_2                                                        ; 1f33: c3 73 1e    .s. 10 cycles
 
@@ -5303,10 +5424,10 @@ report_7:
     push de                                                           ; 1f36: d5          .   11 cycles
     push hl                                                           ; 1f37: e5          .   11 cycles
     rst $08                                                           ; 1f38: cf          .   11 cycles
-    db 6                                                              ; 1f39: 06          .  ; Report 7: RETURN without GOSUB
+    db 6                                                              ; 1f39: 06          .  ; Report 7 RETURN without GOSUB
 
 pause:
-    call find_int2                                                    ; 1f3a: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 1f3a: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
 ; $1f3d referenced 1 time by $1f4d
 pause_1:
     halt                                                              ; 1f3d: 76          v   4 cycles
@@ -5321,21 +5442,27 @@ pause_1:
     inc bc                                                            ; 1f48: 03          .   6 cycles
 ; $1f49 referenced 1 time by $1f46
 pause_2:
-    bit 5,(iy+1)                                                      ; 1f49: fd cb 01... ... 20 cycles
+    bit 5,(iy+flags - err_nr)                                         ; 1f49: fd cb 01... ... 20 cycles
     jr z,pause_1                                                      ; 1f4d: 28 ee       (.  7/12 cycles
 ; $1f4f referenced 1 time by $1f41
 pause_end:
-    res 5,(iy+1)                                                      ; 1f4f: fd cb 01... ... 23 cycles
+    res 5,(iy+flags - err_nr)                                         ; 1f4f: fd cb 01... ... 23 cycles
     ret                                                               ; 1f53: c9          .   10 cycles
 
+; ***************************************************************************************
+; Test for the BREAK key
+; 
+; On Exit:
+;     F: carry clear if pressed
+; ***************************************************************************************
 ; $1f54 referenced 2 times by $0efd, $1b76
 break_key:
     ld a,$7f                                                          ; 1f54: 3e 7f       >.  7 cycles
-    in a,($fe)                                                        ; 1f56: db fe       ..  11 cycles
+    in a,(ula_port)                                                   ; 1f56: db fe       ..  11 cycles    ; Read the keyboard (SPACE-B)
     rra                                                               ; 1f58: 1f          .   4 cycles
     ret c                                                             ; 1f59: d8          .   5/11 cycles
     ld a,$fe                                                          ; 1f5a: 3e fe       >.  7 cycles
-    in a,($fe)                                                        ; 1f5c: db fe       ..  11 cycles
+    in a,(ula_port)                                                   ; 1f5c: db fe       ..  11 cycles    ; Read the keyboard (CAPS SHIFT-V)
     rra                                                               ; 1f5e: 1f          .   4 cycles
     ret                                                               ; 1f5f: c9          .   10 cycles
 
@@ -5347,19 +5474,19 @@ def_fn:
 
 ; $1f6a referenced 1 time by $1f63
 def_fn_1:
-    set 6,(iy+1)                                                      ; 1f6a: fd cb 01... ... 23 cycles
+    set 6,(iy+flags - err_nr)                                         ; 1f6a: fd cb 01... ... 23 cycles
     call alpha                                                        ; 1f6e: cd 8d 2c    .., 17 cycles
     jr nc,def_fn_4                                                    ; 1f71: 30 16       0.  7/12 cycles
-    rst $20                                                           ; 1f73: e7          .   11 cycles
+    rst $20                                                           ; 1f73: e7          .   11 cycles    ; Get the next BASIC character
     cp $24                                                            ; 1f74: fe 24       .$  7 cycles
     jr nz,def_fn_2                                                    ; 1f76: 20 05        .  7/12 cycles
-    res 6,(iy+1)                                                      ; 1f78: fd cb 01... ... 23 cycles
-    rst $20                                                           ; 1f7c: e7          .   11 cycles
+    res 6,(iy+flags - err_nr)                                         ; 1f78: fd cb 01... ... 23 cycles
+    rst $20                                                           ; 1f7c: e7          .   11 cycles    ; Get the next BASIC character
 ; $1f7d referenced 1 time by $1f76
 def_fn_2:
     cp $28                                                            ; 1f7d: fe 28       .(  7 cycles
     jr nz,def_fn_7                                                    ; 1f7f: 20 3c        <  7/12 cycles
-    rst $20                                                           ; 1f81: e7          .   11 cycles
+    rst $20                                                           ; 1f81: e7          .   11 cycles    ; Get the next BASIC character
     cp $29                                                            ; 1f82: fe 29       .)  7 cycles
     jr z,def_fn_6                                                     ; 1f84: 28 20       (   7/12 cycles
 ; $1f86 referenced 1 time by $1fa4
@@ -5369,11 +5496,11 @@ def_fn_3:
 def_fn_4:
     jp nc,report_c                                                    ; 1f89: d2 8a 1c    ... 10 cycles
     ex de,hl                                                          ; 1f8c: eb          .   4 cycles
-    rst $20                                                           ; 1f8d: e7          .   11 cycles
+    rst $20                                                           ; 1f8d: e7          .   11 cycles    ; Get the next BASIC character
     cp $24                                                            ; 1f8e: fe 24       .$  7 cycles
     jr nz,def_fn_5                                                    ; 1f90: 20 02        .  7/12 cycles
     ex de,hl                                                          ; 1f92: eb          .   4 cycles
-    rst $20                                                           ; 1f93: e7          .   11 cycles
+    rst $20                                                           ; 1f93: e7          .   11 cycles    ; Get the next BASIC character
 ; $1f94 referenced 1 time by $1f90
 def_fn_5:
     ex de,hl                                                          ; 1f94: eb          .   4 cycles
@@ -5384,22 +5511,22 @@ def_fn_5:
     ld (hl),$0e                                                       ; 1f9d: 36 0e       6.  10 cycles
     cp $2c                                                            ; 1f9f: fe 2c       .,  7 cycles
     jr nz,def_fn_6                                                    ; 1fa1: 20 03        .  7/12 cycles
-    rst $20                                                           ; 1fa3: e7          .   11 cycles
+    rst $20                                                           ; 1fa3: e7          .   11 cycles    ; Get the next BASIC character
     jr def_fn_3                                                       ; 1fa4: 18 e0       ..  12 cycles
 
 ; $1fa6 referenced 2 times by $1f84, $1fa1
 def_fn_6:
     cp $29                                                            ; 1fa6: fe 29       .)  7 cycles
     jr nz,def_fn_7                                                    ; 1fa8: 20 13        .  7/12 cycles
-    rst $20                                                           ; 1faa: e7          .   11 cycles
+    rst $20                                                           ; 1faa: e7          .   11 cycles    ; Get the next BASIC character
     cp $3d                                                            ; 1fab: fe 3d       .=  7 cycles
     jr nz,def_fn_7                                                    ; 1fad: 20 0e        .  7/12 cycles
-    rst $20                                                           ; 1faf: e7          .   11 cycles
-    ld a,(l5c3b)                                                      ; 1fb0: 3a 3b 5c    :;\ 13 cycles
+    rst $20                                                           ; 1faf: e7          .   11 cycles    ; Get the next BASIC character
+    ld a,(flags)                                                      ; 1fb0: 3a 3b 5c    :;\ 13 cycles
     push af                                                           ; 1fb3: f5          .   11 cycles
     call scanning                                                     ; 1fb4: cd fb 24    ..$ 17 cycles
     pop af                                                            ; 1fb7: f1          .   10 cycles
-    xor (iy+1)                                                        ; 1fb8: fd ae 01    ... 19 cycles
+    xor (iy+flags - err_nr)                                           ; 1fb8: fd ae 01    ... 19 cycles
     and $40                                                           ; 1fbb: e6 40       .@  7 cycles
 ; $1fbd referenced 3 times by $1f7f, $1fa8, $1fad
 def_fn_7:
@@ -5421,7 +5548,7 @@ print:
 ; $1fcf referenced 1 time by $1fcb
 print_1:
     call syntax_z                                                     ; 1fcf: cd 30 25    .0% 17 cycles
-    call nz,chan_open                                                 ; 1fd2: c4 01 16    ... 10/17 cycles
+    call nz,chan_open                                                 ; 1fd2: c4 01 16    ... 10/17 cycles ; Open a channel
     call temps                                                        ; 1fd5: cd 4d 0d    .M. 17 cycles
     call print_2                                                      ; 1fd8: cd df 1f    ... 17 cycles
     call check_end                                                    ; 1fdb: cd ee 1b    ... 17 cycles
@@ -5429,7 +5556,7 @@ print_1:
 
 ; $1fdf referenced 2 times by $1fd8, $20cb
 print_2:
-    rst $18                                                           ; 1fdf: df          .   11 cycles
+    rst $18                                                           ; 1fdf: df          .   11 cycles    ; Get the current BASIC character
     call pr_end_z                                                     ; 1fe0: cd 45 20    .E  17 cycles
     jr z,print_4                                                      ; 1fe3: 28 0d       (.  7/12 cycles
 ; $1fe5 referenced 2 times by $1fe8, $1ff0
@@ -5447,12 +5574,12 @@ print_4:
 print_cr:
     call unstack_z                                                    ; 1ff5: cd c3 1f    ... 17 cycles
     ld a,$0d                                                          ; 1ff8: 3e 0d       >.  7 cycles
-    rst $10                                                           ; 1ffa: d7          .   11 cycles
+    rst $10                                                           ; 1ffa: d7          .   11 cycles    ; Print $0D (ENTER)
     ret                                                               ; 1ffb: c9          .   10 cycles
 
 ; $1ffc referenced 2 times by $1fea, $21af
 pr_item_1:
-    rst $18                                                           ; 1ffc: df          .   11 cycles
+    rst $18                                                           ; 1ffc: df          .   11 cycles    ; Get the current BASIC character
     cp $ac                                                            ; 1ffd: fe ac       ..  7 cycles
     jr nz,pr_item_2                                                   ; 1fff: 20 0d        .  7/12 cycles
     call next_2num                                                    ; 2001: cd 79 1c    .y. 17 cycles
@@ -5465,18 +5592,18 @@ pr_item_1:
 pr_item_2:
     cp $ad                                                            ; 200e: fe ad       ..  7 cycles
     jr nz,pr_item_3                                                   ; 2010: 20 12        .  7/12 cycles
-    rst $20                                                           ; 2012: e7          .   11 cycles
+    rst $20                                                           ; 2012: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 2013: cd 82 1c    ... 17 cycles
     call unstack_z                                                    ; 2016: cd c3 1f    ... 17 cycles
-    call find_int2                                                    ; 2019: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 2019: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld a,$17                                                          ; 201c: 3e 17       >.  7 cycles
 ; $201e referenced 1 time by $200c
 pr_at_tab:
-    rst $10                                                           ; 201e: d7          .   11 cycles
+    rst $10                                                           ; 201e: d7          .   11 cycles    ; Print a character
     ld a,c                                                            ; 201f: 79          y   4 cycles
-    rst $10                                                           ; 2020: d7          .   11 cycles
+    rst $10                                                           ; 2020: d7          .   11 cycles    ; Print a character
     ld a,b                                                            ; 2021: 78          x   4 cycles
-    rst $10                                                           ; 2022: d7          .   11 cycles
+    rst $10                                                           ; 2022: d7          .   11 cycles    ; Print a character
     ret                                                               ; 2023: c9          .   10 cycles
 
 ; $2024 referenced 1 time by $2010
@@ -5487,9 +5614,16 @@ pr_item_3:
     ret nc                                                            ; 202b: d0          .   5/11 cycles
     call scanning                                                     ; 202c: cd fb 24    ..$ 17 cycles
     call unstack_z                                                    ; 202f: cd c3 1f    ... 17 cycles
-    bit 6,(iy+1)                                                      ; 2032: fd cb 01... ... 20 cycles
-    call z,stk_fetch                                                  ; 2036: cc f1 2b    ..+ 10/17 cycles
-    jp nz,print_fp                                                    ; 2039: c2 e3 2d    ..- 10 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 2032: fd cb 01... ... 20 cycles
+    call z,stk_fetch                                                  ; 2036: cc f1 2b    ..+ 10/17 cycles ; Get a string from the calculator stack
+    jp nz,print_fp                                                    ; 2039: c2 e3 2d    ..- 10 cycles    ; Print the number on the calculator stack
+; ***************************************************************************************
+; Print a string
+; 
+; On Entry:
+;     DE: the string
+;     BC: its length
+; ***************************************************************************************
 ; $203c referenced 1 time by $2043
 pr_string:
     ld a,b                                                            ; 203c: 78          x   4 cycles
@@ -5498,7 +5632,7 @@ pr_string:
     ret z                                                             ; 203f: c8          .   5/11 cycles
     ld a,(de)                                                         ; 2040: 1a          .   7 cycles
     inc de                                                            ; 2041: 13          .   6 cycles
-    rst $10                                                           ; 2042: d7          .   11 cycles
+    rst $10                                                           ; 2042: d7          .   11 cycles    ; Print a character
     jr pr_string                                                      ; 2043: 18 f7       ..  12 cycles
 
 ; $2045 referenced 2 times by $1fe0, $2068
@@ -5514,7 +5648,7 @@ pr_st_end:
 
 ; $204e referenced 4 times by $1fe5, $1fed, $20c1, $21b2
 pr_posn_1:
-    rst $18                                                           ; 204e: df          .   11 cycles
+    rst $18                                                           ; 204e: df          .   11 cycles    ; Get the current BASIC character
     cp $3b                                                            ; 204f: fe 3b       .;  7 cycles
     jr z,pr_posn_3                                                    ; 2051: 28 14       (.  7/12 cycles
     cp $2c                                                            ; 2053: fe 2c       .,  7 cycles
@@ -5522,7 +5656,7 @@ pr_posn_1:
     call syntax_z                                                     ; 2057: cd 30 25    .0% 17 cycles
     jr z,pr_posn_3                                                    ; 205a: 28 0b       (.  7/12 cycles
     ld a,6                                                            ; 205c: 3e 06       >.  7 cycles
-    rst $10                                                           ; 205e: d7          .   11 cycles
+    rst $10                                                           ; 205e: d7          .   11 cycles    ; Print $06 (comma)
     jr pr_posn_3                                                      ; 205f: 18 06       ..  12 cycles
 
 ; $2061 referenced 1 time by $2055
@@ -5532,7 +5666,7 @@ pr_posn_2:
     call print_cr                                                     ; 2064: cd f5 1f    ... 17 cycles
 ; $2067 referenced 3 times by $2051, $205a, $205f
 pr_posn_3:
-    rst $20                                                           ; 2067: e7          .   11 cycles
+    rst $20                                                           ; 2067: e7          .   11 cycles    ; Get the next BASIC character
     call pr_end_z                                                     ; 2068: cd 45 20    .E  17 cycles
     jr nz,pr_posn_4                                                   ; 206b: 20 01        .  7/12 cycles
     pop bc                                                            ; 206d: c1          .   10 cycles
@@ -5546,14 +5680,14 @@ str_alter:
     cp $23                                                            ; 2070: fe 23       .#  7 cycles
     scf                                                               ; 2072: 37          7   4 cycles
     ret nz                                                            ; 2073: c0          .   5/11 cycles
-    rst $20                                                           ; 2074: e7          .   11 cycles
+    rst $20                                                           ; 2074: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 2075: cd 82 1c    ... 17 cycles
     and a                                                             ; 2078: a7          .   4 cycles
     call unstack_z                                                    ; 2079: cd c3 1f    ... 17 cycles
-    call find_int1                                                    ; 207c: cd 94 1e    ... 17 cycles
+    call find_int1                                                    ; 207c: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     cp $10                                                            ; 207f: fe 10       ..  7 cycles
     jp nc,report_oa                                                   ; 2081: d2 0e 16    ... 10 cycles
-    call chan_open                                                    ; 2084: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 2084: cd 01 16    ... 17 cycles    ; Open a channel
     and a                                                             ; 2087: a7          .   4 cycles
     ret                                                               ; 2088: c9          .   10 cycles
 
@@ -5561,27 +5695,27 @@ input:
     call syntax_z                                                     ; 2089: cd 30 25    .0% 17 cycles
     jr z,input_1                                                      ; 208c: 28 08       (.  7/12 cycles
     ld a,1                                                            ; 208e: 3e 01       >.  7 cycles
-    call chan_open                                                    ; 2090: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 2090: cd 01 16    ... 17 cycles    ; Open a channel
     call cls_lower                                                    ; 2093: cd 6e 0d    .n. 17 cycles
 ; $2096 referenced 1 time by $208c
 input_1:
-    ld (iy+2),1                                                       ; 2096: fd 36 02... .6. 19 cycles
+    ld (iy+tv_flag - err_nr),1                                        ; 2096: fd 36 02... .6. 19 cycles
     call in_item_1                                                    ; 209a: cd c1 20    ..  17 cycles
     call check_end                                                    ; 209d: cd ee 1b    ... 17 cycles
-    ld bc,(l5c88)                                                     ; 20a0: ed 4b 88... .K. 20 cycles
-    ld a,(l5c6b)                                                      ; 20a4: 3a 6b 5c    :k\ 13 cycles
+    ld bc,(s_posn)                                                    ; 20a0: ed 4b 88... .K. 20 cycles
+    ld a,(df_sz)                                                      ; 20a4: 3a 6b 5c    :k\ 13 cycles
     cp b                                                              ; 20a7: b8          .   4 cycles
     jr c,input_2                                                      ; 20a8: 38 03       8.  7/12 cycles
     ld c,$21                                                          ; 20aa: 0e 21       .!  7 cycles
     ld b,a                                                            ; 20ac: 47          G   4 cycles
 ; $20ad referenced 1 time by $20a8
 input_2:
-    ld (l5c88),bc                                                     ; 20ad: ed 43 88... .C. 20 cycles
+    ld (s_posn),bc                                                    ; 20ad: ed 43 88... .C. 20 cycles
     ld a,$19                                                          ; 20b1: 3e 19       >.  7 cycles
     sub b                                                             ; 20b3: 90          .   4 cycles
-    ld (l5c8c),a                                                      ; 20b4: 32 8c 5c    2.\ 13 cycles
-    res 0,(iy+2)                                                      ; 20b7: fd cb 02... ... 23 cycles
-    call cl_set                                                       ; 20bb: cd d9 0d    ... 17 cycles
+    ld (scr_ct),a                                                     ; 20b4: 32 8c 5c    2.\ 13 cycles
+    res 0,(iy+tv_flag - err_nr)                                       ; 20b7: fd cb 02... ... 23 cycles
+    call cl_set                                                       ; 20bb: cd d9 0d    ... 17 cycles    ; Set the print position
     jp cls_lower                                                      ; 20be: c3 6e 0d    .n. 10 cycles
 
 ; $20c1 referenced 3 times by $209a, $20c4, $21b5
@@ -5590,22 +5724,22 @@ in_item_1:
     jr z,in_item_1                                                    ; 20c4: 28 fb       (.  7/12 cycles
     cp $28                                                            ; 20c6: fe 28       .(  7 cycles
     jr nz,in_item_2                                                   ; 20c8: 20 0e        .  7/12 cycles
-    rst $20                                                           ; 20ca: e7          .   11 cycles
+    rst $20                                                           ; 20ca: e7          .   11 cycles    ; Get the next BASIC character
     call print_2                                                      ; 20cb: cd df 1f    ... 17 cycles
-    rst $18                                                           ; 20ce: df          .   11 cycles
+    rst $18                                                           ; 20ce: df          .   11 cycles    ; Get the current BASIC character
     cp $29                                                            ; 20cf: fe 29       .)  7 cycles
     jp nz,report_c                                                    ; 20d1: c2 8a 1c    ... 10 cycles
-    rst $20                                                           ; 20d4: e7          .   11 cycles
+    rst $20                                                           ; 20d4: e7          .   11 cycles    ; Get the next BASIC character
     jp in_next_2                                                      ; 20d5: c3 b2 21    ..! 10 cycles
 
 ; $20d8 referenced 1 time by $20c8
 in_item_2:
     cp $ca                                                            ; 20d8: fe ca       ..  7 cycles
     jr nz,in_item_3                                                   ; 20da: 20 11        .  7/12 cycles
-    rst $20                                                           ; 20dc: e7          .   11 cycles
+    rst $20                                                           ; 20dc: e7          .   11 cycles    ; Get the next BASIC character
     call class_01                                                     ; 20dd: cd 1f 1c    ... 17 cycles
-    set 7,(iy+55)                                                     ; 20e0: fd cb 37... ..7 23 cycles
-    bit 6,(iy+1)                                                      ; 20e4: fd cb 01... ... 20 cycles
+    set 7,(iy+flagx - err_nr)                                         ; 20e0: fd cb 37... ..7 23 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 20e4: fd cb 01... ... 20 cycles
     jp nz,report_c                                                    ; 20e8: c2 8a 1c    ... 10 cycles
     jr in_prompt                                                      ; 20eb: 18 0d       ..  12 cycles
 
@@ -5614,7 +5748,7 @@ in_item_3:
     call alpha                                                        ; 20ed: cd 8d 2c    .., 17 cycles
     jp nc,in_next_1                                                   ; 20f0: d2 af 21    ..! 10 cycles
     call class_01                                                     ; 20f3: cd 1f 1c    ... 17 cycles
-    res 7,(iy+55)                                                     ; 20f6: fd cb 37... ..7 23 cycles
+    res 7,(iy+flagx - err_nr)                                         ; 20f6: fd cb 37... ..7 23 cycles
 ; $20fa referenced 1 time by $20eb
 in_prompt:
     call syntax_z                                                     ; 20fa: cd 30 25    .0% 17 cycles
@@ -5626,7 +5760,7 @@ in_prompt:
     ld bc,1                                                           ; 210a: 01 01 00    ... 10 cycles
     bit 7,(hl)                                                        ; 210d: cb 7e       .~  12 cycles
     jr nz,in_pr_2                                                     ; 210f: 20 0b        .  7/12 cycles
-    ld a,(l5c3b)                                                      ; 2111: 3a 3b 5c    :;\ 13 cycles
+    ld a,(flags)                                                      ; 2111: 3a 3b 5c    :;\ 13 cycles
     and $40                                                           ; 2114: e6 40       .@  7 cycles
     jr nz,in_pr_1                                                     ; 2116: 20 02        .  7/12 cycles
     ld c,3                                                            ; 2118: 0e 03       ..  7 cycles
@@ -5636,7 +5770,7 @@ in_pr_1:
     ld (hl),a                                                         ; 211b: 77          w   7 cycles
 ; $211c referenced 1 time by $210f
 in_pr_2:
-    rst $30                                                           ; 211c: f7          .   11 cycles
+    rst $30                                                           ; 211c: f7          .   11 cycles    ; Make space in the workspace
     ld (hl),$0d                                                       ; 211d: 36 0d       6.  10 cycles
     ld a,c                                                            ; 211f: 79          y   4 cycles
     rrca                                                              ; 2120: 0f          .   4 cycles
@@ -5648,26 +5782,26 @@ in_pr_2:
     ld (hl),a                                                         ; 2128: 77          w   7 cycles
 ; $2129 referenced 1 time by $2122
 in_pr_3:
-    ld (l5c5b),hl                                                     ; 2129: 22 5b 5c    "[\ 16 cycles
-    bit 7,(iy+55)                                                     ; 212c: fd cb 37... ..7 20 cycles
+    ld (k_cur),hl                                                     ; 2129: 22 5b 5c    "[\ 16 cycles
+    bit 7,(iy+flagx - err_nr)                                         ; 212c: fd cb 37... ..7 20 cycles
     jr nz,in_var_3                                                    ; 2130: 20 2c        ,  7/12 cycles
-    ld hl,(l5c5d)                                                     ; 2132: 2a 5d 5c    *]\ 16 cycles
+    ld hl,(ch_add)                                                    ; 2132: 2a 5d 5c    *]\ 16 cycles
     push hl                                                           ; 2135: e5          .   11 cycles
-    ld hl,(l5c3d)                                                     ; 2136: 2a 3d 5c    *=\ 16 cycles
+    ld hl,(err_sp)                                                    ; 2136: 2a 3d 5c    *=\ 16 cycles
     push hl                                                           ; 2139: e5          .   11 cycles
 in_var_1:
     ld hl,$213a                                                       ; 213a: 21 3a 21    !:! 10 cycles
     push hl                                                           ; 213d: e5          .   11 cycles
-    bit 4,(iy+48)                                                     ; 213e: fd cb 30... ..0 20 cycles
+    bit 4,(iy+flags2 - err_nr)                                        ; 213e: fd cb 30... ..0 20 cycles
     jr z,in_var_2                                                     ; 2142: 28 04       (.  7/12 cycles
-    ld (l5c3d),sp                                                     ; 2144: ed 73 3d... .s= 20 cycles
+    ld (err_sp),sp                                                    ; 2144: ed 73 3d... .s= 20 cycles
 ; $2148 referenced 1 time by $2142
 in_var_2:
-    ld hl,(l5c61)                                                     ; 2148: 2a 61 5c    *a\ 16 cycles
+    ld hl,(worksp)                                                    ; 2148: 2a 61 5c    *a\ 16 cycles
     call remove_fp                                                    ; 214b: cd a7 11    ... 17 cycles
-    ld (iy+0),$ff                                                     ; 214e: fd 36 00... .6. 19 cycles
+    ld (iy+err_nr - err_nr),$ff                                       ; 214e: fd 36 00... .6. 19 cycles
     call editor                                                       ; 2152: cd 2c 0f    .,. 17 cycles
-    res 7,(iy+1)                                                      ; 2155: fd cb 01... ... 23 cycles
+    res 7,(iy+flags - err_nr)                                         ; 2155: fd cb 01... ... 23 cycles
     call in_assign                                                    ; 2159: cd b9 21    ..! 17 cycles
     jr in_var_4                                                       ; 215c: 18 03       ..  12 cycles
 
@@ -5676,12 +5810,12 @@ in_var_3:
     call editor                                                       ; 215e: cd 2c 0f    .,. 17 cycles
 ; $2161 referenced 1 time by $215c
 in_var_4:
-    ld (iy+34),0                                                      ; 2161: fd 36 22... .6" 19 cycles
+    ld (iy+(k_cur+1) - err_nr),0                                      ; 2161: fd 36 22... .6" 19 cycles
     call in_chan_k                                                    ; 2165: cd d6 21    ..! 17 cycles
     jr nz,in_var_5                                                    ; 2168: 20 0a        .  7/12 cycles
     call ed_copy                                                      ; 216a: cd 1d 11    ... 17 cycles
-    ld bc,(l5c82)                                                     ; 216d: ed 4b 82... .K. 20 cycles
-    call cl_set                                                       ; 2171: cd d9 0d    ... 17 cycles
+    ld bc,(echo_e)                                                    ; 216d: ed 4b 82... .K. 20 cycles
+    call cl_set                                                       ; 2171: cd d9 0d    ... 17 cycles    ; Set the print position
 ; $2174 referenced 1 time by $2168
 in_var_5:
     ld hl,$5c71                                                       ; 2174: 21 71 5c    !q\ 10 cycles
@@ -5691,20 +5825,20 @@ in_var_5:
     jr nz,in_var_6                                                    ; 217d: 20 1c        .  7/12 cycles
     pop hl                                                            ; 217f: e1          .   10 cycles
     pop hl                                                            ; 2180: e1          .   10 cycles
-    ld (l5c3d),hl                                                     ; 2181: 22 3d 5c    "=\ 16 cycles
+    ld (err_sp),hl                                                    ; 2181: 22 3d 5c    "=\ 16 cycles
     pop hl                                                            ; 2184: e1          .   10 cycles
-    ld (l5c5f),hl                                                     ; 2185: 22 5f 5c    "_\ 16 cycles
-    set 7,(iy+1)                                                      ; 2188: fd cb 01... ... 23 cycles
+    ld (x_ptr),hl                                                     ; 2185: 22 5f 5c    "_\ 16 cycles
+    set 7,(iy+flags - err_nr)                                         ; 2188: fd cb 01... ... 23 cycles
     call in_assign                                                    ; 218c: cd b9 21    ..! 17 cycles
-    ld hl,(l5c5f)                                                     ; 218f: 2a 5f 5c    *_\ 16 cycles
-    ld (iy+38),0                                                      ; 2192: fd 36 26... .6& 19 cycles
-    ld (l5c5d),hl                                                     ; 2196: 22 5d 5c    "]\ 16 cycles
+    ld hl,(x_ptr)                                                     ; 218f: 2a 5f 5c    *_\ 16 cycles
+    ld (iy+(x_ptr+1) - err_nr),0                                      ; 2192: fd 36 26... .6& 19 cycles
+    ld (ch_add),hl                                                    ; 2196: 22 5d 5c    "]\ 16 cycles
     jr in_next_2                                                      ; 2199: 18 17       ..  12 cycles
 
 ; $219b referenced 1 time by $217d
 in_var_6:
-    ld hl,(l5c63)                                                     ; 219b: 2a 63 5c    *c\ 16 cycles
-    ld de,(l5c61)                                                     ; 219e: ed 5b 61... .[a 20 cycles
+    ld hl,(stkbot)                                                    ; 219b: 2a 63 5c    *c\ 16 cycles
+    ld de,(worksp)                                                    ; 219e: ed 5b 61... .[a 20 cycles
     scf                                                               ; 21a2: 37          7   4 cycles
     sbc hl,de                                                         ; 21a3: ed 52       .R  15 cycles
     ld b,h                                                            ; 21a5: 44          D   4 cycles
@@ -5724,19 +5858,19 @@ in_next_2:
 
 ; $21b9 referenced 2 times by $2159, $218c
 in_assign:
-    ld hl,(l5c61)                                                     ; 21b9: 2a 61 5c    *a\ 16 cycles
-    ld (l5c5d),hl                                                     ; 21bc: 22 5d 5c    "]\ 16 cycles
-    rst $18                                                           ; 21bf: df          .   11 cycles
+    ld hl,(worksp)                                                    ; 21b9: 2a 61 5c    *a\ 16 cycles
+    ld (ch_add),hl                                                    ; 21bc: 22 5d 5c    "]\ 16 cycles
+    rst $18                                                           ; 21bf: df          .   11 cycles    ; Get the current BASIC character
     cp $e2                                                            ; 21c0: fe e2       ..  7 cycles
     jr z,in_stop                                                      ; 21c2: 28 0c       (.  7/12 cycles
-    ld a,(l5c71)                                                      ; 21c4: 3a 71 5c    :q\ 13 cycles
+    ld a,(flagx)                                                      ; 21c4: 3a 71 5c    :q\ 13 cycles
     call val_fet_2                                                    ; 21c7: cd 59 1c    .Y. 17 cycles
-    rst $18                                                           ; 21ca: df          .   11 cycles
+    rst $18                                                           ; 21ca: df          .   11 cycles    ; Get the current BASIC character
     cp $0d                                                            ; 21cb: fe 0d       ..  7 cycles
     ret z                                                             ; 21cd: c8          .   5/11 cycles
 report_cb:
     rst $08                                                           ; 21ce: cf          .   11 cycles
-    db $0b                                                            ; 21cf: 0b          .  ; Report C: Nonsense in BASIC
+    db $0b                                                            ; 21cf: 0b          .  ; Report C Nonsense in BASIC
 
 ; $21d0 referenced 1 time by $21c2
 in_stop:
@@ -5744,11 +5878,11 @@ in_stop:
     ret z                                                             ; 21d3: c8          .   5/11 cycles
 report_h:
     rst $08                                                           ; 21d4: cf          .   11 cycles
-    db $10                                                            ; 21d5: 10          .  ; Report H: STOP in INPUT
+    db $10                                                            ; 21d5: 10          .  ; Report H STOP in INPUT
 
 ; $21d6 referenced 1 time by $2165
 in_chan_k:
-    ld hl,(l5c51)                                                     ; 21d6: 2a 51 5c    *Q\ 16 cycles
+    ld hl,(curchl)                                                    ; 21d6: 2a 51 5c    *Q\ 16 cycles
     inc hl                                                            ; 21d9: 23          #   6 cycles
     inc hl                                                            ; 21da: 23          #   6 cycles
     inc hl                                                            ; 21db: 23          #   6 cycles
@@ -5759,12 +5893,12 @@ in_chan_k:
 
 ; $21e1 referenced 2 times by $21e9, $21ed
 co_temp_1:
-    rst $20                                                           ; 21e1: e7          .   11 cycles
+    rst $20                                                           ; 21e1: e7          .   11 cycles    ; Get the next BASIC character
 ; $21e2 referenced 1 time by $1cd6
 co_temp_2:
     call co_temp_3                                                    ; 21e2: cd f2 21    ..! 17 cycles
     ret c                                                             ; 21e5: d8          .   5/11 cycles
-    rst $18                                                           ; 21e6: df          .   11 cycles
+    rst $18                                                           ; 21e6: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 21e7: fe 2c       .,  7 cycles
     jr z,co_temp_1                                                    ; 21e9: 28 f6       (.  7/12 cycles
     cp $3b                                                            ; 21eb: fe 3b       .;  7 cycles
@@ -5779,7 +5913,7 @@ co_temp_3:
     ccf                                                               ; 21f7: 3f          ?   4 cycles
     ret c                                                             ; 21f8: d8          .   5/11 cycles
     push af                                                           ; 21f9: f5          .   11 cycles
-    rst $20                                                           ; 21fa: e7          .   11 cycles
+    rst $20                                                           ; 21fa: e7          .   11 cycles    ; Get the next BASIC character
     pop af                                                            ; 21fb: f1          .   10 cycles
 ; $21fc referenced 1 time by $1ca7
 co_temp_4:
@@ -5790,12 +5924,12 @@ co_temp_4:
     and a                                                             ; 2203: a7          .   4 cycles
     call unstack_z                                                    ; 2204: cd c3 1f    ... 17 cycles
     push af                                                           ; 2207: f5          .   11 cycles
-    call find_int1                                                    ; 2208: cd 94 1e    ... 17 cycles
+    call find_int1                                                    ; 2208: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld d,a                                                            ; 220b: 57          W   4 cycles
     pop af                                                            ; 220c: f1          .   10 cycles
-    rst $10                                                           ; 220d: d7          .   11 cycles
+    rst $10                                                           ; 220d: d7          .   11 cycles    ; Print a character
     ld a,d                                                            ; 220e: 7a          z   4 cycles
-    rst $10                                                           ; 220f: d7          .   11 cycles
+    rst $10                                                           ; 220f: d7          .   11 cycles    ; Print a character
     ret                                                               ; 2210: c9          .   10 cycles
 
 ; $2211 referenced 1 time by $0a94
@@ -5841,7 +5975,7 @@ co_temp_8:
 ; $2244 referenced 3 times by $222c, $2285, $2299
 report_k:
     rst $08                                                           ; 2244: cf          .   11 cycles
-    db $13                                                            ; 2245: 13          .  ; Report K: Invalid colour
+    db $13                                                            ; 2245: 13          .  ; Report K Invalid colour
 
 ; $2246 referenced 1 time by $2242
 co_temp_9:
@@ -5912,10 +6046,10 @@ co_temp_e:
     jr co_change                                                      ; 2292: 18 d8       ..  12 cycles
 
 border:
-    call find_int1                                                    ; 2294: cd 94 1e    ... 17 cycles
+    call find_int1                                                    ; 2294: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     cp 8                                                              ; 2297: fe 08       ..  7 cycles
     jr nc,report_k                                                    ; 2299: 30 a9       0.  7/12 cycles
-    out ($fe),a                                                       ; 229b: d3 fe       ..  11 cycles
+    out (ula_port),a                                                  ; 229b: d3 fe       ..  11 cycles
     rlca                                                              ; 229d: 07          .   4 cycles
     rlca                                                              ; 229e: 07          .   4 cycles
     rlca                                                              ; 229f: 07          .   4 cycles
@@ -5924,9 +6058,20 @@ border:
     xor 7                                                             ; 22a4: ee 07       ..  7 cycles
 ; $22a6 referenced 1 time by $22a2
 border_1:
-    ld (l5c48),a                                                      ; 22a6: 32 48 5c    2H\ 13 cycles
+    ld (bordcr),a                                                     ; 22a6: 32 48 5c    2H\ 13 cycles
     ret                                                               ; 22a9: c9          .   10 cycles
 
+; ***************************************************************************************
+; Get the screen address of a pixel
+; 
+; On Entry:
+;     B: y (0 at the bottom)
+;     C: x
+; 
+; On Exit:
+;     HL: the address
+;     A: the pixel's bit (0-7, from the left)
+; ***************************************************************************************
 ; $22aa referenced 2 times by $22ce, $22e9
 pixel_add:
     ld a,$af                                                          ; 22aa: 3e af       >.  7 cycles
@@ -5960,7 +6105,7 @@ pixel_add:
 ; $22cb referenced 1 time by $267e
 point_sub:
     call stk_to_bc                                                    ; 22cb: cd 07 23    ..# 17 cycles
-    call pixel_add                                                    ; 22ce: cd aa 22    .." 17 cycles
+    call pixel_add                                                    ; 22ce: cd aa 22    .." 17 cycles    ; Get the screen address of a pixel
     ld b,a                                                            ; 22d1: 47          G   4 cycles
     inc b                                                             ; 22d2: 04          .   4 cycles
     ld a,(hl)                                                         ; 22d3: 7e          ~   7 cycles
@@ -5969,18 +6114,25 @@ point_lp:
     rlca                                                              ; 22d4: 07          .   4 cycles
     djnz point_lp                                                     ; 22d5: 10 fd       ..  8/13 cycles
     and 1                                                             ; 22d7: e6 01       ..  7 cycles
-    jp stack_a                                                        ; 22d9: c3 28 2d    .(- 10 cycles
+    jp stack_a                                                        ; 22d9: c3 28 2d    .(- 10 cycles    ; Put A on the calculator stack
 
 ; $22dc referenced 2 times by $2339, $2357
 plot:
     call stk_to_bc                                                    ; 22dc: cd 07 23    ..# 17 cycles
-    call plot_sub                                                     ; 22df: cd e5 22    .." 17 cycles
+    call plot_sub                                                     ; 22df: cd e5 22    .." 17 cycles    ; Plot a pixel
     jp temps                                                          ; 22e2: c3 4d 0d    .M. 10 cycles
 
+; ***************************************************************************************
+; Plot a pixel
+; 
+; On Entry:
+;     B: y (0 at the bottom)
+;     C: x
+; ***************************************************************************************
 ; $22e5 referenced 2 times by $22df, $24ee
 plot_sub:
-    ld (l5c7d),bc                                                     ; 22e5: ed 43 7d... .C} 20 cycles
-    call pixel_add                                                    ; 22e9: cd aa 22    .." 17 cycles
+    ld (coords),bc                                                    ; 22e5: ed 43 7d... .C} 20 cycles
+    call pixel_add                                                    ; 22e9: cd aa 22    .." 17 cycles    ; Get the screen address of a pixel
     ld b,a                                                            ; 22ec: 47          G   4 cycles
     inc b                                                             ; 22ed: 04          .   4 cycles
     ld a,$fe                                                          ; 22ee: 3e fe       >.  7 cycles
@@ -5990,7 +6142,7 @@ plot_loop:
     djnz plot_loop                                                    ; 22f1: 10 fd       ..  8/13 cycles
     ld b,a                                                            ; 22f3: 47          G   4 cycles
     ld a,(hl)                                                         ; 22f4: 7e          ~   7 cycles
-    ld c,(iy+87)                                                      ; 22f5: fd 4e 57    .NW 19 cycles
+    ld c,(iy+p_flag - err_nr)                                         ; 22f5: fd 4e 57    .NW 19 cycles
     bit 0,c                                                           ; 22f8: cb 41       .A  8 cycles
     jr nz,pl_tst_in                                                   ; 22fa: 20 01        .  7/12 cycles
     and b                                                             ; 22fc: a0          .   4 cycles
@@ -6019,7 +6171,7 @@ stk_to_bc:
 
 ; $2314 referenced 2 times by $2307, $230c
 stk_to_a:
-    call fp_to_a                                                      ; 2314: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 2314: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jp c,report_bc                                                    ; 2317: da f9 24    ..$ 10 cycles
     ld c,1                                                            ; 231a: 0e 01       ..  7 cycles
     ret z                                                             ; 231c: c8          .   5/11 cycles
@@ -6027,10 +6179,10 @@ stk_to_a:
     ret                                                               ; 231f: c9          .   10 cycles
 
 circle:
-    rst $18                                                           ; 2320: df          .   11 cycles
+    rst $18                                                           ; 2320: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 2321: fe 2c       .,  7 cycles
     jp nz,report_c                                                    ; 2323: c2 8a 1c    ... 10 cycles
-    rst $20                                                           ; 2326: e7          .   11 cycles
+    rst $20                                                           ; 2326: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 2327: cd 82 1c    ... 17 cycles
     call check_end                                                    ; 232a: cd ee 1b    ... 17 cycles
     rst $28                                                           ; 232d: ef          .   11 cycles
@@ -6101,19 +6253,19 @@ c_arc_ge1:
     db 2                                                              ; 236c: 02          .  ; delete
     db $38                                                            ; 236d: 38          8  ; end-calc
 
-    inc (iy+98)                                                       ; 236e: fd 34 62    .4b 23 cycles
-    call find_int1                                                    ; 2371: cd 94 1e    ... 17 cycles
+    inc (iy+(membot+10) - err_nr)                                     ; 236e: fd 34 62    .4b 23 cycles
+    call find_int1                                                    ; 2371: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld l,a                                                            ; 2374: 6f          o   4 cycles
     push hl                                                           ; 2375: e5          .   11 cycles
-    call find_int1                                                    ; 2376: cd 94 1e    ... 17 cycles
+    call find_int1                                                    ; 2376: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     pop hl                                                            ; 2379: e1          .   10 cycles
     ld h,a                                                            ; 237a: 67          g   4 cycles
-    ld (l5c7d),hl                                                     ; 237b: 22 7d 5c    "}\ 16 cycles
+    ld (coords),hl                                                    ; 237b: 22 7d 5c    "}\ 16 cycles
     pop bc                                                            ; 237e: c1          .   10 cycles
     jp drw_steps                                                      ; 237f: c3 20 24    . $ 10 cycles
 
 draw:
-    rst $18                                                           ; 2382: df          .   11 cycles
+    rst $18                                                           ; 2382: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 2383: fe 2c       .,  7 cycles
     jr z,dr_3_prms                                                    ; 2385: 28 06       (.  7/12 cycles
     call check_end                                                    ; 2387: cd ee 1b    ... 17 cycles
@@ -6121,7 +6273,7 @@ draw:
 
 ; $238d referenced 1 time by $2385
 dr_3_prms:
-    rst $20                                                           ; 238d: e7          .   11 cycles
+    rst $20                                                           ; 238d: e7          .   11 cycles    ; Get the next BASIC character
     call expt_1num                                                    ; 238e: cd 82 1c    ... 17 cycles
     call check_end                                                    ; 2391: cd ee 1b    ... 17 cycles
     rst $28                                                           ; 2394: ef          .   11 cycles
@@ -6239,16 +6391,16 @@ dr_prms:
     db 1                                                              ; 2406: 01          .  ; exchange
     db $38                                                            ; 2407: 38          8  ; end-calc
 
-    ld a,(l5c7d)                                                      ; 2408: 3a 7d 5c    :}\ 13 cycles
-    call stack_a                                                      ; 240b: cd 28 2d    .(- 17 cycles
+    ld a,(coords)                                                     ; 2408: 3a 7d 5c    :}\ 13 cycles
+    call stack_a                                                      ; 240b: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 240e: ef          .   11 cycles
     db $c0                                                            ; 240f: c0          .  ; st-mem-0
     db $0f                                                            ; 2410: 0f          .  ; addition
     db 1                                                              ; 2411: 01          .  ; exchange
     db $38                                                            ; 2412: 38          8  ; end-calc
 
-    ld a,(l5c7e)                                                      ; 2413: 3a 7e 5c    :~\ 13 cycles
-    call stack_a                                                      ; 2416: cd 28 2d    .(- 17 cycles
+    ld a,(coords+1)                                                   ; 2413: 3a 7e 5c    :~\ 13 cycles
+    call stack_a                                                      ; 2416: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2419: ef          .   11 cycles
     db $c5                                                            ; 241a: c5          .  ; st-mem-5
     db $0f                                                            ; 241b: 0f          .  ; addition
@@ -6297,8 +6449,8 @@ arc_start:
     db $31                                                            ; 243f: 31          1  ; duplicate
     db $38                                                            ; 2440: 38          8  ; end-calc
 
-    ld a,(l5c7d)                                                      ; 2441: 3a 7d 5c    :}\ 13 cycles
-    call stack_a                                                      ; 2444: cd 28 2d    .(- 17 cycles
+    ld a,(coords)                                                     ; 2441: 3a 7d 5c    :}\ 13 cycles
+    call stack_a                                                      ; 2444: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2447: ef          .   11 cycles
     db 3                                                              ; 2448: 03          .  ; subtract
     db $e0                                                            ; 2449: e0          .  ; get-mem-0
@@ -6309,13 +6461,13 @@ arc_start:
     db $e0                                                            ; 244e: e0          .  ; get-mem-0
     db $38                                                            ; 244f: 38          8  ; end-calc
 
-    ld a,(l5c7e)                                                      ; 2450: 3a 7e 5c    :~\ 13 cycles
-    call stack_a                                                      ; 2453: cd 28 2d    .(- 17 cycles
+    ld a,(coords+1)                                                   ; 2450: 3a 7e 5c    :~\ 13 cycles
+    call stack_a                                                      ; 2453: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2456: ef          .   11 cycles
     db 3                                                              ; 2457: 03          .  ; subtract
     db $38                                                            ; 2458: 38          8  ; end-calc
 
-    call draw_line                                                    ; 2459: cd b7 24    ..$ 17 cycles
+    call draw_line                                                    ; 2459: cd b7 24    ..$ 17 cycles    ; Draw a line
     pop bc                                                            ; 245c: c1          .   10 cycles
     djnz arc_loop                                                     ; 245d: 10 c6       ..  8/13 cycles
 ; $245f referenced 1 time by $2421
@@ -6326,22 +6478,22 @@ arc_end:
     db 1                                                              ; 2462: 01          .  ; exchange
     db $38                                                            ; 2463: 38          8  ; end-calc
 
-    ld a,(l5c7d)                                                      ; 2464: 3a 7d 5c    :}\ 13 cycles
-    call stack_a                                                      ; 2467: cd 28 2d    .(- 17 cycles
+    ld a,(coords)                                                     ; 2464: 3a 7d 5c    :}\ 13 cycles
+    call stack_a                                                      ; 2467: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 246a: ef          .   11 cycles
     db 3                                                              ; 246b: 03          .  ; subtract
     db 1                                                              ; 246c: 01          .  ; exchange
     db $38                                                            ; 246d: 38          8  ; end-calc
 
-    ld a,(l5c7e)                                                      ; 246e: 3a 7e 5c    :~\ 13 cycles
-    call stack_a                                                      ; 2471: cd 28 2d    .(- 17 cycles
+    ld a,(coords+1)                                                   ; 246e: 3a 7e 5c    :~\ 13 cycles
+    call stack_a                                                      ; 2471: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2474: ef          .   11 cycles
     db 3                                                              ; 2475: 03          .  ; subtract
     db $38                                                            ; 2476: 38          8  ; end-calc
 
 ; $2477 referenced 4 times by $238a, $23a0, $23be, $2401
 line_draw:
-    call draw_line                                                    ; 2477: cd b7 24    ..$ 17 cycles
+    call draw_line                                                    ; 2477: cd b7 24    ..$ 17 cycles    ; Draw a line
     jp temps                                                          ; 247a: c3 4d 0d    .M. 10 cycles
 
 ; $247d referenced 2 times by $2344, $23c1
@@ -6359,7 +6511,7 @@ cd_prms1:
     db $2a                                                            ; 2488: 2a          *  ; abs
     db $38                                                            ; 2489: 38          8  ; end-calc
 
-    call fp_to_a                                                      ; 248a: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 248a: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr c,use_252                                                      ; 248d: 38 06       8.  7/12 cycles
     and $fc                                                           ; 248f: e6 fc       ..  7 cycles
     add a,4                                                           ; 2491: c6 04       ..  7 cycles
@@ -6370,7 +6522,7 @@ use_252:
 ; $2497 referenced 1 time by $2493
 draw_save:
     push af                                                           ; 2497: f5          .   11 cycles
-    call stack_a                                                      ; 2498: cd 28 2d    .(- 17 cycles
+    call stack_a                                                      ; 2498: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 249b: ef          .   11 cycles
     db $e5                                                            ; 249c: e5          .  ; get-mem-5
     db 1                                                              ; 249d: 01          .  ; exchange
@@ -6401,6 +6553,15 @@ draw_save:
     pop bc                                                            ; 24b5: c1          .   10 cycles
     ret                                                               ; 24b6: c9          .   10 cycles
 
+; ***************************************************************************************
+; Draw a line
+; 
+; On Entry:
+;     B: the distance in y
+;     C: the distance in x
+;     D: the sign of y (1 or -1)
+;     E: the sign of x (1 or -1)
+; ***************************************************************************************
 ; $24b7 referenced 2 times by $2459, $2477
 draw_line:
     call stk_to_bc                                                    ; 24b7: cd 07 23    ..# 17 cycles
@@ -6449,7 +6610,7 @@ d_l_hr_vt:
     pop bc                                                            ; 24de: c1          .   10 cycles
 ; $24df referenced 1 time by $24d9
 d_l_step:
-    ld hl,(l5c7d)                                                     ; 24df: 2a 7d 5c    *}\ 16 cycles
+    ld hl,(coords)                                                    ; 24df: 2a 7d 5c    *}\ 16 cycles
     ld a,b                                                            ; 24e2: 78          x   4 cycles
     add a,h                                                           ; 24e3: 84          .   4 cycles
     ld b,a                                                            ; 24e4: 47          G   4 cycles
@@ -6462,7 +6623,7 @@ d_l_step:
 d_l_plot:
     dec a                                                             ; 24ec: 3d          =   4 cycles
     ld c,a                                                            ; 24ed: 4f          O   4 cycles
-    call plot_sub                                                     ; 24ee: cd e5 22    .." 17 cycles
+    call plot_sub                                                     ; 24ee: cd e5 22    .." 17 cycles    ; Plot a pixel
     exx                                                               ; 24f1: d9          .   4 cycles
     ld a,c                                                            ; 24f2: 79          y   4 cycles
     djnz d_l_loop                                                     ; 24f3: 10 d9       ..  8/13 cycles
@@ -6475,11 +6636,11 @@ d_l_range:
 ; $24f9 referenced 3 times by $22ad, $2317, $24ea
 report_bc:
     rst $08                                                           ; 24f9: cf          .   11 cycles
-    db $0a                                                            ; 24fa: 0a          .  ; Report B: Integer out of range
+    db $0a                                                            ; 24fa: 0a          .  ; Report B Integer out of range
 
 ; $24fb referenced 13 times by $04aa, $1c5a, $1c82, $1c8c, $1e2c, $1fb4, $202c, $25e9, $27d9, $2855, $289c, $35fd, $3616
 scanning:
-    rst $18                                                           ; 24fb: df          .   11 cycles
+    rst $18                                                           ; 24fb: df          .   11 cycles    ; Get the current BASIC character
     ld b,0                                                            ; 24fc: 06 00       ..  7 cycles
     push bc                                                           ; 24fe: c5          .   11 cycles
 ; $24ff referenced 3 times by $25b0, $270f, $2792
@@ -6508,24 +6669,24 @@ s_quote_s:
 
 ; $2522 referenced 3 times by $2668, $2672, $267b
 s_2_coord:
-    rst $20                                                           ; 2522: e7          .   11 cycles
+    rst $20                                                           ; 2522: e7          .   11 cycles    ; Get the next BASIC character
     cp $28                                                            ; 2523: fe 28       .(  7 cycles
     jr nz,s_rport_c                                                   ; 2525: 20 06        .  7/12 cycles
     call next_2num                                                    ; 2527: cd 79 1c    .y. 17 cycles
-    rst $18                                                           ; 252a: df          .   11 cycles
+    rst $18                                                           ; 252a: df          .   11 cycles    ; Get the current BASIC character
     cp $29                                                            ; 252b: fe 29       .)  7 cycles
 ; $252d referenced 1 time by $2525
 s_rport_c:
     jp nz,report_c                                                    ; 252d: c2 8a 1c    ... 10 cycles
 ; $2530 referenced 31 times by $0611, $0675, $17ff, $1bb3, $1bee, $1c3a, $1cbe, $1ce6, $1cf1, $1df0, $1e27, $1f60, $1fc3, $1fcf, $2057, $2089, $20fa, $21d0, $25c3, $25f8, $2627, $268d, $274d, $27bd, $28e9, $28f0, $2a52, $2aad, $2ad4, $2af4, $2c08
 syntax_z:
-    bit 7,(iy+1)                                                      ; 2530: fd cb 01... ... 20 cycles
+    bit 7,(iy+flags - err_nr)                                         ; 2530: fd cb 01... ... 20 cycles
     ret                                                               ; 2534: c9          .   10 cycles
 
 ; $2535 referenced 1 time by $266b
 s_scrn_str_s:
     call stk_to_bc                                                    ; 2535: cd 07 23    ..# 17 cycles
-    ld hl,(l5c36)                                                     ; 2538: 2a 36 5c    *6\ 16 cycles
+    ld hl,(chars)                                                     ; 2538: 2a 36 5c    *6\ 16 cycles
     ld de,$0100                                                       ; 253b: 11 00 01    ... 10 cycles
     add hl,de                                                         ; 253e: 19          .   11 cycles
     ld a,c                                                            ; 253f: 79          y   4 cycles
@@ -6570,7 +6731,7 @@ s_sc_rows:
     ld a,$80                                                          ; 2569: 3e 80       >.  7 cycles
     sub b                                                             ; 256b: 90          .   4 cycles
     ld bc,1                                                           ; 256c: 01 01 00    ... 10 cycles
-    rst $30                                                           ; 256f: f7          .   11 cycles
+    rst $30                                                           ; 256f: f7          .   11 cycles    ; Make space in the workspace
     ld (de),a                                                         ; 2570: 12          .   7 cycles
     jr s_scr_sto                                                      ; 2571: 18 0a       ..  12 cycles
 
@@ -6603,7 +6764,7 @@ s_attr_s:
     xor $58                                                           ; 258f: ee 58       .X  7 cycles
     ld h,a                                                            ; 2591: 67          g   4 cycles
     ld a,(hl)                                                         ; 2592: 7e          ~   7 cycles
-    jp stack_a                                                        ; 2593: c3 28 2d    .(- 10 cycles
+    jp stack_a                                                        ; 2593: c3 28 2d    .(- 10 cycles    ; Put A on the calculator stack
 
 scan_func:
     db $22                                                            ; 2596: 22          "
@@ -6633,11 +6794,11 @@ scan_func:
     db 0                                                              ; 25ae: 00          .
 
 s_u_plus:
-    rst $20                                                           ; 25af: e7          .   11 cycles
+    rst $20                                                           ; 25af: e7          .   11 cycles    ; Get the next BASIC character
     jp s_loop_1                                                       ; 25b0: c3 ff 24    ..$ 10 cycles
 
 s_quote:
-    rst $18                                                           ; 25b3: df          .   11 cycles
+    rst $18                                                           ; 25b3: df          .   11 cycles    ; Get the current BASIC character
     inc hl                                                            ; 25b4: 23          #   6 cycles
     push hl                                                           ; 25b5: e5          .   11 cycles
     ld bc,0                                                           ; 25b6: 01 00 00    ... 10 cycles
@@ -6649,7 +6810,7 @@ s_q_again:
     jr z,s_q_again                                                    ; 25c1: 28 fb       (.  7/12 cycles
     call syntax_z                                                     ; 25c3: cd 30 25    .0% 17 cycles
     jr z,s_q_prms                                                     ; 25c6: 28 11       (.  7/12 cycles
-    rst $30                                                           ; 25c8: f7          .   11 cycles
+    rst $30                                                           ; 25c8: f7          .   11 cycles    ; Make space in the workspace
     pop hl                                                            ; 25c9: e1          .   10 cycles
     push de                                                           ; 25ca: d5          .   11 cycles
 ; $25cb referenced 2 times by $25d1, $25d7
@@ -6677,11 +6838,11 @@ s_string:
     jp s_cont_2                                                       ; 25e5: c3 12 27    ..' 10 cycles
 
 s_bracket:
-    rst $20                                                           ; 25e8: e7          .   11 cycles
+    rst $20                                                           ; 25e8: e7          .   11 cycles    ; Get the next BASIC character
     call scanning                                                     ; 25e9: cd fb 24    ..$ 17 cycles
     cp $29                                                            ; 25ec: fe 29       .)  7 cycles
     jp nz,report_c                                                    ; 25ee: c2 8a 1c    ... 10 cycles
-    rst $20                                                           ; 25f1: e7          .   11 cycles
+    rst $20                                                           ; 25f1: e7          .   11 cycles    ; Get the next BASIC character
     jp s_cont_2                                                       ; 25f2: c3 12 27    ..' 10 cycles
 
 s_fn:
@@ -6690,8 +6851,8 @@ s_fn:
 s_rnd:
     call syntax_z                                                     ; 25f8: cd 30 25    .0% 17 cycles
     jr z,s_rnd_end                                                    ; 25fb: 28 28       ((  7/12 cycles
-    ld bc,(l5c76)                                                     ; 25fd: ed 4b 76... .Kv 20 cycles
-    call stack_bc                                                     ; 2601: cd 2b 2d    .+- 17 cycles
+    ld bc,(seed)                                                      ; 25fd: ed 4b 76... .Kv 20 cycles
+    call stack_bc                                                     ; 2601: cd 2b 2d    .+- 17 cycles    ; Put BC on the calculator stack
     rst $28                                                           ; 2604: ef          .   11 cycles
     db $a1                                                            ; 2605: a1          .  ; stk-one
     db $0f                                                            ; 2606: 0f          .  ; addition
@@ -6707,8 +6868,8 @@ s_rnd:
     db $31                                                            ; 2615: 31          1  ; duplicate
     db $38                                                            ; 2616: 38          8  ; end-calc
 
-    call fp_to_bc                                                     ; 2617: cd a2 2d    ..- 17 cycles
-    ld (l5c76),bc                                                     ; 261a: ed 43 76... .Cv 20 cycles
+    call fp_to_bc                                                     ; 2617: cd a2 2d    ..- 17 cycles    ; Get a number from the calculator stack
+    ld (seed),bc                                                      ; 261a: ed 43 76... .Cv 20 cycles
     ld a,(hl)                                                         ; 261e: 7e          ~   7 cycles
     and a                                                             ; 261f: a7          .   4 cycles
     jr z,s_rnd_end                                                    ; 2620: 28 03       (.  7/12 cycles
@@ -6728,19 +6889,19 @@ s_pi:
     inc (hl)                                                          ; 262f: 34          4   11 cycles
 ; $2630 referenced 2 times by $2625, $262a
 s_pi_end:
-    rst $20                                                           ; 2630: e7          .   11 cycles
+    rst $20                                                           ; 2630: e7          .   11 cycles    ; Get the next BASIC character
     jp s_numeric                                                      ; 2631: c3 c3 26    ..& 10 cycles
 
 s_inkey_str:
     ld bc,$105a                                                       ; 2634: 01 5a 10    .Z. 10 cycles
-    rst $20                                                           ; 2637: e7          .   11 cycles
+    rst $20                                                           ; 2637: e7          .   11 cycles    ; Get the next BASIC character
     cp $23                                                            ; 2638: fe 23       .#  7 cycles
     jp z,s_push_po                                                    ; 263a: ca 0d 27    ..' 10 cycles
     ld hl,$5c3b                                                       ; 263d: 21 3b 5c    !;\ 10 cycles
     res 6,(hl)                                                        ; 2640: cb b6       ..  15 cycles
     bit 7,(hl)                                                        ; 2642: cb 7e       .~  12 cycles
     jr z,s_ink_str_en                                                 ; 2644: 28 1f       (.  7/12 cycles
-    call key_scan                                                     ; 2646: cd 8e 02    ... 17 cycles
+    call key_scan                                                     ; 2646: cd 8e 02    ... 17 cycles    ; Scan the keyboard
     ld c,0                                                            ; 2649: 0e 00       ..  7 cycles
     jr nz,s_ik_str_stk                                                ; 264b: 20 13        .  7/12 cycles
     call k_test                                                       ; 264d: cd 1e 03    ... 17 cycles
@@ -6750,7 +6911,7 @@ s_inkey_str:
     call k_decode                                                     ; 2654: cd 33 03    .3. 17 cycles
     push af                                                           ; 2657: f5          .   11 cycles
     ld bc,1                                                           ; 2658: 01 01 00    ... 10 cycles
-    rst $30                                                           ; 265b: f7          .   11 cycles
+    rst $30                                                           ; 265b: f7          .   11 cycles    ; Make space in the workspace
     pop af                                                            ; 265c: f1          .   10 cycles
     ld (de),a                                                         ; 265d: 12          .   7 cycles
     ld c,1                                                            ; 265e: 0e 01       ..  7 cycles
@@ -6765,19 +6926,19 @@ s_ink_str_en:
 s_screen_str:
     call s_2_coord                                                    ; 2668: cd 22 25    ."% 17 cycles
     call nz,s_scrn_str_s                                              ; 266b: c4 35 25    .5% 10/17 cycles
-    rst $20                                                           ; 266e: e7          .   11 cycles
+    rst $20                                                           ; 266e: e7          .   11 cycles    ; Get the next BASIC character
     jp s_string                                                       ; 266f: c3 db 25    ..% 10 cycles
 
 s_attr:
     call s_2_coord                                                    ; 2672: cd 22 25    ."% 17 cycles
     call nz,s_attr_s                                                  ; 2675: c4 80 25    ..% 10/17 cycles
-    rst $20                                                           ; 2678: e7          .   11 cycles
+    rst $20                                                           ; 2678: e7          .   11 cycles    ; Get the next BASIC character
     jr s_numeric                                                      ; 2679: 18 48       .H  12 cycles
 
 s_point:
     call s_2_coord                                                    ; 267b: cd 22 25    ."% 17 cycles
     call nz,point_sub                                                 ; 267e: c4 cb 22    .." 10/17 cycles
-    rst $20                                                           ; 2681: e7          .   11 cycles
+    rst $20                                                           ; 2681: e7          .   11 cycles    ; Get the next BASIC character
     jr s_numeric                                                      ; 2682: 18 3f       .?  12 cycles
 
 ; $2684 referenced 1 time by $2507
@@ -6790,18 +6951,18 @@ s_decimal:
     call syntax_z                                                     ; 268d: cd 30 25    .0% 17 cycles
     jr nz,s_stk_dec                                                   ; 2690: 20 23        #  7/12 cycles
     call dec_to_fp                                                    ; 2692: cd 9b 2c    .., 17 cycles
-    rst $18                                                           ; 2695: df          .   11 cycles
+    rst $18                                                           ; 2695: df          .   11 cycles    ; Get the current BASIC character
     ld bc,6                                                           ; 2696: 01 06 00    ... 10 cycles
     call make_room                                                    ; 2699: cd 55 16    .U. 17 cycles
     inc hl                                                            ; 269c: 23          #   6 cycles
     ld (hl),$0e                                                       ; 269d: 36 0e       6.  10 cycles
     inc hl                                                            ; 269f: 23          #   6 cycles
     ex de,hl                                                          ; 26a0: eb          .   4 cycles
-    ld hl,(l5c65)                                                     ; 26a1: 2a 65 5c    *e\ 16 cycles
+    ld hl,(stkend)                                                    ; 26a1: 2a 65 5c    *e\ 16 cycles
     ld c,5                                                            ; 26a4: 0e 05       ..  7 cycles
     and a                                                             ; 26a6: a7          .   4 cycles
     sbc hl,bc                                                         ; 26a7: ed 42       .B  15 cycles
-    ld (l5c65),hl                                                     ; 26a9: 22 65 5c    "e\ 16 cycles
+    ld (stkend),hl                                                    ; 26a9: 22 65 5c    "e\ 16 cycles
     ldir                                                              ; 26ac: ed b0       ..  16/21 cycles
     ex de,hl                                                          ; 26ae: eb          .   4 cycles
     dec hl                                                            ; 26af: 2b          +   6 cycles
@@ -6810,7 +6971,7 @@ s_decimal:
 
 ; $26b5 referenced 1 time by $2690
 s_stk_dec:
-    rst $18                                                           ; 26b5: df          .   11 cycles
+    rst $18                                                           ; 26b5: df          .   11 cycles    ; Get the current BASIC character
 ; $26b6 referenced 1 time by $26ba
 s_sd_skip:
     inc hl                                                            ; 26b6: 23          #   6 cycles
@@ -6819,10 +6980,10 @@ s_sd_skip:
     jr nz,s_sd_skip                                                   ; 26ba: 20 fa        .  7/12 cycles
     inc hl                                                            ; 26bc: 23          #   6 cycles
     call stack_num                                                    ; 26bd: cd b4 33    ..3 17 cycles
-    ld (l5c5d),hl                                                     ; 26c0: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 26c0: 22 5d 5c    "]\ 16 cycles
 ; $26c3 referenced 4 times by $2631, $2679, $2682, $26b3
 s_numeric:
-    set 6,(iy+1)                                                      ; 26c3: fd cb 01... ... 23 cycles
+    set 6,(iy+flags - err_nr)                                         ; 26c3: fd cb 01... ... 23 cycles
     jr s_cont_1                                                       ; 26c7: 18 14       ..  12 cycles
 
 ; $26c9 referenced 1 time by $268b
@@ -6830,7 +6991,7 @@ s_letter:
     call look_vars                                                    ; 26c9: cd b2 28    ..( 17 cycles
     jp c,report_2                                                     ; 26cc: da 2e 1c    ... 10 cycles
     call z,stk_var                                                    ; 26cf: cc 96 29    ..) 10/17 cycles
-    ld a,(l5c3b)                                                      ; 26d2: 3a 3b 5c    :;\ 13 cycles
+    ld a,(flags)                                                      ; 26d2: 3a 3b 5c    :;\ 13 cycles
     cp $c0                                                            ; 26d5: fe c0       ..  7 cycles
     jr c,s_cont_1                                                     ; 26d7: 38 04       8.  7/12 cycles
     inc hl                                                            ; 26d9: 23          #   6 cycles
@@ -6867,20 +7028,20 @@ s_no_to_str:
 ; $270d referenced 5 times by $263a, $26e4, $26eb, $26f7, $2709
 s_push_po:
     push bc                                                           ; 270d: c5          .   11 cycles
-    rst $20                                                           ; 270e: e7          .   11 cycles
+    rst $20                                                           ; 270e: e7          .   11 cycles    ; Get the next BASIC character
     jp s_loop_1                                                       ; 270f: c3 ff 24    ..$ 10 cycles
 
 ; $2712 referenced 6 times by $25e5, $25f2, $2665, $26dd, $27f4, $28a8
 s_cont_2:
-    rst $18                                                           ; 2712: df          .   11 cycles
+    rst $18                                                           ; 2712: df          .   11 cycles    ; Get the current BASIC character
 ; $2713 referenced 1 time by $2721
 s_cont_3:
     cp $28                                                            ; 2713: fe 28       .(  7 cycles
     jr nz,s_opertr                                                    ; 2715: 20 0c        .  7/12 cycles
-    bit 6,(iy+1)                                                      ; 2717: fd cb 01... ... 20 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 2717: fd cb 01... ... 20 cycles
     jr nz,s_loop                                                      ; 271b: 20 17        .  7/12 cycles
     call slicing                                                      ; 271d: cd 52 2a    .R* 17 cycles
-    rst $20                                                           ; 2720: e7          .   11 cycles
+    rst $20                                                           ; 2720: e7          .   11 cycles    ; Get the next BASIC character
     jr s_cont_3                                                       ; 2721: 18 f0       ..  12 cycles
 
 ; $2723 referenced 1 time by $2715
@@ -6901,7 +7062,7 @@ s_loop:
     cp b                                                              ; 2736: b8          .   4 cycles
     jr c,s_tighter                                                    ; 2737: 38 3a       8:  7/12 cycles
     and a                                                             ; 2739: a7          .   4 cycles
-    jp z,get_char                                                     ; 273a: ca 18 00    ... 10 cycles
+    jp z,get_char                                                     ; 273a: ca 18 00    ... 10 cycles    ; Get the current BASIC character
     push bc                                                           ; 273d: c5          .   11 cycles
     ld hl,$5c3b                                                       ; 273e: 21 3b 5c    !;\ 10 cycles
     ld a,e                                                            ; 2741: 7b          {   4 cycles
@@ -6927,7 +7088,7 @@ s_stk_lst:
 ; $275b referenced 1 time by $2750
 s_syntest:
     ld a,e                                                            ; 275b: 7b          {   4 cycles
-    xor (iy+1)                                                        ; 275c: fd ae 01    ... 19 cycles
+    xor (iy+flags - err_nr)                                           ; 275c: fd ae 01    ... 19 cycles
     and $40                                                           ; 275f: e6 40       .@  7 cycles
 ; $2761 referenced 1 time by $2788
 s_rport_c2:
@@ -6949,7 +7110,7 @@ s_loopend:
 s_tighter:
     push de                                                           ; 2773: d5          .   11 cycles
     ld a,c                                                            ; 2774: 79          y   4 cycles
-    bit 6,(iy+1)                                                      ; 2775: fd cb 01... ... 20 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 2775: fd cb 01... ... 20 cycles
     jr nz,s_next                                                      ; 2779: 20 15        .  7/12 cycles
     and $3f                                                           ; 277b: e6 3f       .?  7 cycles
     add a,8                                                           ; 277d: c6 08       ..  7 cycles
@@ -6968,7 +7129,7 @@ s_not_and:
 ; $2790 referenced 3 times by $2779, $2786, $278c
 s_next:
     push bc                                                           ; 2790: c5          .   11 cycles
-    rst $20                                                           ; 2791: e7          .   11 cycles
+    rst $20                                                           ; 2791: e7          .   11 cycles    ; Get the next BASIC character
     jp s_loop_1                                                       ; 2792: c3 ff 24    ..$ 10 cycles
 
 tbl_of_ops:
@@ -6982,28 +7143,28 @@ tbl_priors:
 s_fn_sbrn:
     call syntax_z                                                     ; 27bd: cd 30 25    .0% 17 cycles
     jr nz,sf_run                                                      ; 27c0: 20 35        5  7/12 cycles
-    rst $20                                                           ; 27c2: e7          .   11 cycles
+    rst $20                                                           ; 27c2: e7          .   11 cycles    ; Get the next BASIC character
     call alpha                                                        ; 27c3: cd 8d 2c    .., 17 cycles
     jp nc,report_c                                                    ; 27c6: d2 8a 1c    ... 10 cycles
-    rst $20                                                           ; 27c9: e7          .   11 cycles
+    rst $20                                                           ; 27c9: e7          .   11 cycles    ; Get the next BASIC character
     cp $24                                                            ; 27ca: fe 24       .$  7 cycles
     push af                                                           ; 27cc: f5          .   11 cycles
     jr nz,sf_brkt_1                                                   ; 27cd: 20 01        .  7/12 cycles
-    rst $20                                                           ; 27cf: e7          .   11 cycles
+    rst $20                                                           ; 27cf: e7          .   11 cycles    ; Get the next BASIC character
 ; $27d0 referenced 1 time by $27cd
 sf_brkt_1:
     cp $28                                                            ; 27d0: fe 28       .(  7 cycles
     jr nz,sf_rprt_c                                                   ; 27d2: 20 12        .  7/12 cycles
-    rst $20                                                           ; 27d4: e7          .   11 cycles
+    rst $20                                                           ; 27d4: e7          .   11 cycles    ; Get the next BASIC character
     cp $29                                                            ; 27d5: fe 29       .)  7 cycles
     jr z,sf_flag_6                                                    ; 27d7: 28 10       (.  7/12 cycles
 ; $27d9 referenced 1 time by $27e2
 sf_argmts:
     call scanning                                                     ; 27d9: cd fb 24    ..$ 17 cycles
-    rst $18                                                           ; 27dc: df          .   11 cycles
+    rst $18                                                           ; 27dc: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 27dd: fe 2c       .,  7 cycles
     jr nz,sf_brkt_2                                                   ; 27df: 20 03        .  7/12 cycles
-    rst $20                                                           ; 27e1: e7          .   11 cycles
+    rst $20                                                           ; 27e1: e7          .   11 cycles    ; Get the next BASIC character
     jr sf_argmts                                                      ; 27e2: 18 f5       ..  12 cycles
 
 ; $27e4 referenced 1 time by $27df
@@ -7014,7 +7175,7 @@ sf_rprt_c:
     jp nz,report_c                                                    ; 27e6: c2 8a 1c    ... 10 cycles
 ; $27e9 referenced 1 time by $27d7
 sf_flag_6:
-    rst $20                                                           ; 27e9: e7          .   11 cycles
+    rst $20                                                           ; 27e9: e7          .   11 cycles    ; Get the next BASIC character
     ld hl,$5c3b                                                       ; 27ea: 21 3b 5c    !;\ 10 cycles
     res 6,(hl)                                                        ; 27ed: cb b6       ..  15 cycles
     pop af                                                            ; 27ef: f1          .   10 cycles
@@ -7026,19 +7187,19 @@ sf_syn_en:
 
 ; $27f7 referenced 1 time by $27c0
 sf_run:
-    rst $20                                                           ; 27f7: e7          .   11 cycles
+    rst $20                                                           ; 27f7: e7          .   11 cycles    ; Get the next BASIC character
     and $df                                                           ; 27f8: e6 df       ..  7 cycles
     ld b,a                                                            ; 27fa: 47          G   4 cycles
-    rst $20                                                           ; 27fb: e7          .   11 cycles
+    rst $20                                                           ; 27fb: e7          .   11 cycles    ; Get the next BASIC character
     sub $24                                                           ; 27fc: d6 24       .$  7 cycles
     ld c,a                                                            ; 27fe: 4f          O   4 cycles
     jr nz,sf_argmt1                                                   ; 27ff: 20 01        .  7/12 cycles
-    rst $20                                                           ; 2801: e7          .   11 cycles
+    rst $20                                                           ; 2801: e7          .   11 cycles    ; Get the next BASIC character
 ; $2802 referenced 1 time by $27ff
 sf_argmt1:
-    rst $20                                                           ; 2802: e7          .   11 cycles
+    rst $20                                                           ; 2802: e7          .   11 cycles    ; Get the next BASIC character
     push hl                                                           ; 2803: e5          .   11 cycles
-    ld hl,(l5c53)                                                     ; 2804: 2a 53 5c    *S\ 16 cycles
+    ld hl,(prog)                                                      ; 2804: 2a 53 5c    *S\ 16 cycles
     dec hl                                                            ; 2807: 2b          +   6 cycles
 ; $2808 referenced 1 time by $282f
 sf_fnd_df:
@@ -7049,7 +7210,7 @@ sf_fnd_df:
     jr nc,sf_cp_def                                                   ; 2810: 30 02       0.  7/12 cycles
 report_p:
     rst $08                                                           ; 2812: cf          .   11 cycles
-    db $18                                                            ; 2813: 18          .  ; Report P: FN without DEF
+    db $18                                                            ; 2813: 18          .  ; Report P FN without DEF
 
 ; $2814 referenced 1 time by $2810
 sf_cp_def:
@@ -7078,7 +7239,7 @@ sf_values:
     call z,fn_skpovr                                                  ; 2832: cc ab 28    ..( 10/17 cycles
     pop de                                                            ; 2835: d1          .   10 cycles
     pop de                                                            ; 2836: d1          .   10 cycles
-    ld (l5c5d),de                                                     ; 2837: ed 53 5d... .S] 20 cycles
+    ld (ch_add),de                                                    ; 2837: ed 53 5d... .S] 20 cycles
     call fn_skpovr                                                    ; 283b: cd ab 28    ..( 17 cycles
     push hl                                                           ; 283e: e5          .   11 cycles
     cp $29                                                            ; 283f: fe 29       .)  7 cycles
@@ -7101,15 +7262,15 @@ sf_arg_vl:
     push de                                                           ; 2854: d5          .   11 cycles
     call scanning                                                     ; 2855: cd fb 24    ..$ 17 cycles
     pop af                                                            ; 2858: f1          .   10 cycles
-    xor (iy+1)                                                        ; 2859: fd ae 01    ... 19 cycles
+    xor (iy+flags - err_nr)                                           ; 2859: fd ae 01    ... 19 cycles
     and $40                                                           ; 285c: e6 40       .@  7 cycles
     jr nz,report_q                                                    ; 285e: 20 2b        +  7/12 cycles
     pop hl                                                            ; 2860: e1          .   10 cycles
     ex de,hl                                                          ; 2861: eb          .   4 cycles
-    ld hl,(l5c65)                                                     ; 2862: 2a 65 5c    *e\ 16 cycles
+    ld hl,(stkend)                                                    ; 2862: 2a 65 5c    *e\ 16 cycles
     ld bc,5                                                           ; 2865: 01 05 00    ... 10 cycles
     sbc hl,bc                                                         ; 2868: ed 42       .B  15 cycles
-    ld (l5c65),hl                                                     ; 286a: 22 65 5c    "e\ 16 cycles
+    ld (stkend),hl                                                    ; 286a: 22 65 5c    "e\ 16 cycles
     ldir                                                              ; 286d: ed b0       ..  16/21 cycles
     ex de,hl                                                          ; 286f: eb          .   4 cycles
     dec hl                                                            ; 2870: 2b          +   6 cycles
@@ -7117,10 +7278,10 @@ sf_arg_vl:
     cp $29                                                            ; 2874: fe 29       .)  7 cycles
     jr z,sf_r_br_2                                                    ; 2876: 28 0d       (.  7/12 cycles
     push hl                                                           ; 2878: e5          .   11 cycles
-    rst $18                                                           ; 2879: df          .   11 cycles
+    rst $18                                                           ; 2879: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 287a: fe 2c       .,  7 cycles
     jr nz,report_q                                                    ; 287c: 20 0d        .  7/12 cycles
-    rst $20                                                           ; 287e: e7          .   11 cycles
+    rst $20                                                           ; 287e: e7          .   11 cycles    ; Get the next BASIC character
     pop hl                                                            ; 287f: e1          .   10 cycles
     call fn_skpovr                                                    ; 2880: cd ab 28    ..( 17 cycles
     jr sf_arg_lp                                                      ; 2883: 18 be       ..  12 cycles
@@ -7128,31 +7289,31 @@ sf_arg_vl:
 ; $2885 referenced 2 times by $2841, $2876
 sf_r_br_2:
     push hl                                                           ; 2885: e5          .   11 cycles
-    rst $18                                                           ; 2886: df          .   11 cycles
+    rst $18                                                           ; 2886: df          .   11 cycles    ; Get the current BASIC character
     cp $29                                                            ; 2887: fe 29       .)  7 cycles
     jr z,sf_value                                                     ; 2889: 28 02       (.  7/12 cycles
 ; $288b referenced 2 times by $285e, $287c
 report_q:
     rst $08                                                           ; 288b: cf          .   11 cycles
-    db $19                                                            ; 288c: 19          .  ; Report Q: Parameter error
+    db $19                                                            ; 288c: 19          .  ; Report Q Parameter error
 
 ; $288d referenced 1 time by $2889
 sf_value:
     pop de                                                            ; 288d: d1          .   10 cycles
     ex de,hl                                                          ; 288e: eb          .   4 cycles
-    ld (l5c5d),hl                                                     ; 288f: 22 5d 5c    "]\ 16 cycles
-    ld hl,(l5c0b)                                                     ; 2892: 2a 0b 5c    *.\ 16 cycles
+    ld (ch_add),hl                                                    ; 288f: 22 5d 5c    "]\ 16 cycles
+    ld hl,(defadd)                                                    ; 2892: 2a 0b 5c    *.\ 16 cycles
     ex (sp),hl                                                        ; 2895: e3          .   19 cycles
-    ld (l5c0b),hl                                                     ; 2896: 22 0b 5c    ".\ 16 cycles
+    ld (defadd),hl                                                    ; 2896: 22 0b 5c    ".\ 16 cycles
     push de                                                           ; 2899: d5          .   11 cycles
-    rst $20                                                           ; 289a: e7          .   11 cycles
-    rst $20                                                           ; 289b: e7          .   11 cycles
+    rst $20                                                           ; 289a: e7          .   11 cycles    ; Get the next BASIC character
+    rst $20                                                           ; 289b: e7          .   11 cycles    ; Get the next BASIC character
     call scanning                                                     ; 289c: cd fb 24    ..$ 17 cycles
     pop hl                                                            ; 289f: e1          .   10 cycles
-    ld (l5c5d),hl                                                     ; 28a0: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 28a0: 22 5d 5c    "]\ 16 cycles
     pop hl                                                            ; 28a3: e1          .   10 cycles
-    ld (l5c0b),hl                                                     ; 28a4: 22 0b 5c    ".\ 16 cycles
-    rst $20                                                           ; 28a7: e7          .   11 cycles
+    ld (defadd),hl                                                    ; 28a4: 22 0b 5c    ".\ 16 cycles
+    rst $20                                                           ; 28a7: e7          .   11 cycles    ; Get the next BASIC character
     jp s_cont_2                                                       ; 28a8: c3 12 27    ..' 10 cycles
 
 ; $28ab referenced 11 times by $2815, $281d, $2832, $283b, $284c, $2871, $2880, $28af, $2965, $2974, $297c
@@ -7165,14 +7326,14 @@ fn_skpovr:
 
 ; $28b2 referenced 5 times by $0660, $1c1f, $1c6c, $26c9, $2c02
 look_vars:
-    set 6,(iy+1)                                                      ; 28b2: fd cb 01... ... 23 cycles
-    rst $18                                                           ; 28b6: df          .   11 cycles
+    set 6,(iy+flags - err_nr)                                         ; 28b2: fd cb 01... ... 23 cycles
+    rst $18                                                           ; 28b6: df          .   11 cycles    ; Get the current BASIC character
     call alpha                                                        ; 28b7: cd 8d 2c    .., 17 cycles
     jp nc,report_c                                                    ; 28ba: d2 8a 1c    ... 10 cycles
     push hl                                                           ; 28bd: e5          .   11 cycles
     and $1f                                                           ; 28be: e6 1f       ..  7 cycles
     ld c,a                                                            ; 28c0: 4f          O   4 cycles
-    rst $20                                                           ; 28c1: e7          .   11 cycles
+    rst $20                                                           ; 28c1: e7          .   11 cycles    ; Get the next BASIC character
     push hl                                                           ; 28c2: e5          .   11 cycles
     cp $28                                                            ; 28c3: fe 28       .(  7 cycles
     jr z,v_run_syn                                                    ; 28c5: 28 28       ((  7/12 cycles
@@ -7187,16 +7348,16 @@ v_char:
     call alphanum                                                     ; 28d4: cd 88 2c    .., 17 cycles
     jr nc,v_run_syn                                                   ; 28d7: 30 16       0.  7/12 cycles
     res 6,c                                                           ; 28d9: cb b1       ..  8 cycles
-    rst $20                                                           ; 28db: e7          .   11 cycles
+    rst $20                                                           ; 28db: e7          .   11 cycles    ; Get the next BASIC character
     jr v_char                                                         ; 28dc: 18 f6       ..  12 cycles
 
 ; $28de referenced 1 time by $28cb
 v_str_var:
-    rst $20                                                           ; 28de: e7          .   11 cycles
-    res 6,(iy+1)                                                      ; 28df: fd cb 01... ... 23 cycles
+    rst $20                                                           ; 28de: e7          .   11 cycles    ; Get the next BASIC character
+    res 6,(iy+flags - err_nr)                                         ; 28df: fd cb 01... ... 23 cycles
 ; $28e3 referenced 1 time by $28d2
 v_test_fn:
-    ld a,(l5c0c)                                                      ; 28e3: 3a 0c 5c    :.\ 13 cycles
+    ld a,(defadd+1)                                                   ; 28e3: 3a 0c 5c    :.\ 13 cycles
     and a                                                             ; 28e6: a7          .   4 cycles
     jr z,v_run_syn                                                    ; 28e7: 28 06       (.  7/12 cycles
     call syntax_z                                                     ; 28e9: cd 30 25    .0% 17 cycles
@@ -7214,7 +7375,7 @@ v_run_syn:
 
 ; $28fd referenced 1 time by $28f3
 v_run:
-    ld hl,(l5c4b)                                                     ; 28fd: 2a 4b 5c    *K\ 16 cycles
+    ld hl,(vars)                                                      ; 28fd: 2a 4b 5c    *K\ 16 cycles
 ; $2900 referenced 1 time by $2930
 v_each:
     ld a,(hl)                                                         ; 2900: 7e          ~   7 cycles
@@ -7264,7 +7425,7 @@ v_80_byte:
 ; $2934 referenced 1 time by $28fb
 v_syntax:
     pop de                                                            ; 2934: d1          .   10 cycles
-    rst $18                                                           ; 2935: df          .   11 cycles
+    rst $18                                                           ; 2935: df          .   11 cycles    ; Get the current BASIC character
     cp $28                                                            ; 2936: fe 28       .(  7 cycles
     jr z,v_pass                                                       ; 2938: 28 09       (.  7/12 cycles
     set 5,b                                                           ; 293a: cb e8       ..  8 cycles
@@ -7278,12 +7439,12 @@ v_found_2:
     pop de                                                            ; 293f: d1          .   10 cycles
     pop de                                                            ; 2940: d1          .   10 cycles
     push hl                                                           ; 2941: e5          .   11 cycles
-    rst $18                                                           ; 2942: df          .   11 cycles
+    rst $18                                                           ; 2942: df          .   11 cycles    ; Get the current BASIC character
 ; $2943 referenced 2 times by $2938, $2949
 v_pass:
     call alphanum                                                     ; 2943: cd 88 2c    .., 17 cycles
     jr nc,v_end                                                       ; 2946: 30 03       0.  7/12 cycles
-    rst $20                                                           ; 2948: e7          .   11 cycles
+    rst $20                                                           ; 2948: e7          .   11 cycles    ; Get the next BASIC character
     jr v_pass                                                         ; 2949: 18 f8       ..  12 cycles
 
 ; $294b referenced 2 times by $293c, $2946
@@ -7295,7 +7456,7 @@ v_end:
 
 ; $2951 referenced 1 time by $28ec
 stk_f_arg:
-    ld hl,(l5c0b)                                                     ; 2951: 2a 0b 5c    *.\ 16 cycles
+    ld hl,(defadd)                                                    ; 2951: 2a 0b 5c    *.\ 16 cycles
     ld a,(hl)                                                         ; 2954: 7e          ~   7 cycles
     cp $29                                                            ; 2955: fe 29       .)  7 cycles
     jp z,v_run_syn                                                    ; 2957: ca ef 28    ..( 10 cycles
@@ -7333,10 +7494,10 @@ sfa_match:
     bit 5,c                                                           ; 2981: cb 69       .i  8 cycles
     jr nz,sfa_end                                                     ; 2983: 20 0c        .  7/12 cycles
     inc hl                                                            ; 2985: 23          #   6 cycles
-    ld de,(l5c65)                                                     ; 2986: ed 5b 65... .[e 20 cycles
+    ld de,(stkend)                                                    ; 2986: ed 5b 65... .[e 20 cycles
     call move_fp                                                      ; 298a: cd c0 33    ..3 17 cycles
     ex de,hl                                                          ; 298d: eb          .   4 cycles
-    ld (l5c65),hl                                                     ; 298e: 22 65 5c    "e\ 16 cycles
+    ld (stkend),hl                                                    ; 298e: 22 65 5c    "e\ 16 cycles
 ; $2991 referenced 1 time by $2983
 sfa_end:
     pop de                                                            ; 2991: d1          .   10 cycles
@@ -7363,7 +7524,7 @@ sv_simple_str:
     inc hl                                                            ; 29a5: 23          #   6 cycles
     ex de,hl                                                          ; 29a6: eb          .   4 cycles
     call stk_sto_str                                                  ; 29a7: cd b2 2a    ..* 17 cycles
-    rst $18                                                           ; 29aa: df          .   11 cycles
+    rst $18                                                           ; 29aa: df          .   11 cycles    ; Get the current BASIC character
     jp sv_slice_q                                                     ; 29ab: c3 49 2a    .I* 10 cycles
 
 ; $29ae referenced 1 time by $299e
@@ -7377,7 +7538,7 @@ sv_arrays:
     dec b                                                             ; 29b6: 05          .   4 cycles
     jr z,sv_simple_str                                                ; 29b7: 28 e8       (.  7/12 cycles
     ex de,hl                                                          ; 29b9: eb          .   4 cycles
-    rst $18                                                           ; 29ba: df          .   11 cycles
+    rst $18                                                           ; 29ba: df          .   11 cycles    ; Get the current BASIC character
     cp $28                                                            ; 29bb: fe 28       .(  7 cycles
     jr nz,report_3                                                    ; 29bd: 20 61        a  7/12 cycles
     ex de,hl                                                          ; 29bf: eb          .   4 cycles
@@ -7389,7 +7550,7 @@ sv_ptr:
 ; $29c3 referenced 1 time by $2a0e
 sv_comma:
     push hl                                                           ; 29c3: e5          .   11 cycles
-    rst $18                                                           ; 29c4: df          .   11 cycles
+    rst $18                                                           ; 29c4: df          .   11 cycles    ; Get the current BASIC character
     pop hl                                                            ; 29c5: e1          .   10 cycles
     cp $2c                                                            ; 29c6: fe 2c       .,  7 cycles
     jr z,sv_loop                                                      ; 29c8: 28 20       (   7/12 cycles
@@ -7399,7 +7560,7 @@ sv_comma:
     jr nz,sv_close                                                    ; 29d0: 20 06        .  7/12 cycles
     cp $29                                                            ; 29d2: fe 29       .)  7 cycles
     jr nz,sv_rpt_c                                                    ; 29d4: 20 3c        <  7/12 cycles
-    rst $20                                                           ; 29d6: e7          .   11 cycles
+    rst $20                                                           ; 29d6: e7          .   11 cycles    ; Get the next BASIC character
     ret                                                               ; 29d7: c9          .   10 cycles
 
 ; $29d8 referenced 1 time by $29d0
@@ -7410,9 +7571,9 @@ sv_close:
     jr nz,sv_rpt_c                                                    ; 29de: 20 32        2  7/12 cycles
 ; $29e0 referenced 1 time by $29f9
 sv_ch_add:
-    rst $18                                                           ; 29e0: df          .   11 cycles
+    rst $18                                                           ; 29e0: df          .   11 cycles    ; Get the current BASIC character
     dec hl                                                            ; 29e1: 2b          +   6 cycles
-    ld (l5c5d),hl                                                     ; 29e2: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 29e2: 22 5d 5c    "]\ 16 cycles
     jr sv_slice                                                       ; 29e5: 18 5e       .^  12 cycles
 
 ; $29e7 referenced 2 times by $299a, $29c1
@@ -7421,12 +7582,12 @@ sv_count:
 ; $29ea referenced 1 time by $29c8
 sv_loop:
     push hl                                                           ; 29ea: e5          .   11 cycles
-    rst $20                                                           ; 29eb: e7          .   11 cycles
+    rst $20                                                           ; 29eb: e7          .   11 cycles    ; Get the next BASIC character
     pop hl                                                            ; 29ec: e1          .   10 cycles
     ld a,c                                                            ; 29ed: 79          y   4 cycles
     cp $c0                                                            ; 29ee: fe c0       ..  7 cycles
     jr nz,sv_mult                                                     ; 29f0: 20 09        .  7/12 cycles
-    rst $18                                                           ; 29f2: df          .   11 cycles
+    rst $18                                                           ; 29f2: df          .   11 cycles    ; Get the current BASIC character
     cp $29                                                            ; 29f3: fe 29       .)  7 cycles
     jr z,sv_dim                                                       ; 29f5: 28 51       (Q  7/12 cycles
     cp $cc                                                            ; 29f7: fe cc       ..  7 cycles
@@ -7455,17 +7616,17 @@ sv_rpt_c:
     jr nz,sv_elem_str                                                 ; 2a17: 20 13        .  7/12 cycles
     ld b,d                                                            ; 2a19: 42          B   4 cycles
     ld c,e                                                            ; 2a1a: 4b          K   4 cycles
-    rst $18                                                           ; 2a1b: df          .   11 cycles
+    rst $18                                                           ; 2a1b: df          .   11 cycles    ; Get the current BASIC character
     cp $29                                                            ; 2a1c: fe 29       .)  7 cycles
     jr z,sv_number                                                    ; 2a1e: 28 02       (.  7/12 cycles
 ; $2a20 referenced 6 times by $29bd, $29cc, $2a05, $2a43, $2aa3, $2c34
 report_3:
     rst $08                                                           ; 2a20: cf          .   11 cycles
-    db 2                                                              ; 2a21: 02          .  ; Report 3: Subscript wrong
+    db 2                                                              ; 2a21: 02          .  ; Report 3 Subscript wrong
 
 ; $2a22 referenced 1 time by $2a1e
 sv_number:
-    rst $20                                                           ; 2a22: e7          .   11 cycles
+    rst $20                                                           ; 2a22: e7          .   11 cycles    ; Get the next BASIC character
     pop hl                                                            ; 2a23: e1          .   10 cycles
     ld de,5                                                           ; 2a24: 11 05 00    ... 10 cycles
     call get_hl_times_de                                              ; 2a27: cd f4 2a    ..* 17 cycles
@@ -7484,7 +7645,7 @@ sv_elem_str:
     ld c,e                                                            ; 2a37: 4b          K   4 cycles
     ex de,hl                                                          ; 2a38: eb          .   4 cycles
     call stk_st_0                                                     ; 2a39: cd b1 2a    ..* 17 cycles
-    rst $18                                                           ; 2a3c: df          .   11 cycles
+    rst $18                                                           ; 2a3c: df          .   11 cycles    ; Get the current BASIC character
     cp $29                                                            ; 2a3d: fe 29       .)  7 cycles
     jr z,sv_dim                                                       ; 2a3f: 28 07       (.  7/12 cycles
     cp $2c                                                            ; 2a41: fe 2c       .,  7 cycles
@@ -7494,19 +7655,19 @@ sv_slice:
     call slicing                                                      ; 2a45: cd 52 2a    .R* 17 cycles
 ; $2a48 referenced 3 times by $29da, $29f5, $2a3f
 sv_dim:
-    rst $20                                                           ; 2a48: e7          .   11 cycles
+    rst $20                                                           ; 2a48: e7          .   11 cycles    ; Get the next BASIC character
 ; $2a49 referenced 1 time by $29ab
 sv_slice_q:
     cp $28                                                            ; 2a49: fe 28       .(  7 cycles
     jr z,sv_slice                                                     ; 2a4b: 28 f8       (.  7/12 cycles
-    res 6,(iy+1)                                                      ; 2a4d: fd cb 01... ... 23 cycles
+    res 6,(iy+flags - err_nr)                                         ; 2a4d: fd cb 01... ... 23 cycles
     ret                                                               ; 2a51: c9          .   10 cycles
 
 ; $2a52 referenced 2 times by $271d, $2a45
 slicing:
     call syntax_z                                                     ; 2a52: cd 30 25    .0% 17 cycles
-    call nz,stk_fetch                                                 ; 2a55: c4 f1 2b    ..+ 10/17 cycles
-    rst $20                                                           ; 2a58: e7          .   11 cycles
+    call nz,stk_fetch                                                 ; 2a55: c4 f1 2b    ..+ 10/17 cycles ; Get a string from the calculator stack
+    rst $20                                                           ; 2a58: e7          .   11 cycles    ; Get the next BASIC character
     cp $29                                                            ; 2a59: fe 29       .)  7 cycles
     jr z,sl_store                                                     ; 2a5b: 28 50       (P  7/12 cycles
     push de                                                           ; 2a5d: d5          .   11 cycles
@@ -7514,7 +7675,7 @@ slicing:
     push af                                                           ; 2a5f: f5          .   11 cycles
     push bc                                                           ; 2a60: c5          .   11 cycles
     ld de,1                                                           ; 2a61: 11 01 00    ... 10 cycles
-    rst $18                                                           ; 2a64: df          .   11 cycles
+    rst $18                                                           ; 2a64: df          .   11 cycles    ; Get the current BASIC character
     pop hl                                                            ; 2a65: e1          .   10 cycles
     cp $cc                                                            ; 2a66: fe cc       ..  7 cycles
     jr z,sl_second                                                    ; 2a68: 28 17       (.  7/12 cycles
@@ -7524,7 +7685,7 @@ slicing:
     ld d,b                                                            ; 2a6f: 50          P   4 cycles
     ld e,c                                                            ; 2a70: 59          Y   4 cycles
     push hl                                                           ; 2a71: e5          .   11 cycles
-    rst $18                                                           ; 2a72: df          .   11 cycles
+    rst $18                                                           ; 2a72: df          .   11 cycles    ; Get the current BASIC character
     pop hl                                                            ; 2a73: e1          .   10 cycles
     cp $cc                                                            ; 2a74: fe cc       ..  7 cycles
     jr z,sl_second                                                    ; 2a76: 28 09       (.  7/12 cycles
@@ -7539,14 +7700,14 @@ sl_rpt_c:
 ; $2a81 referenced 2 times by $2a68, $2a76
 sl_second:
     push hl                                                           ; 2a81: e5          .   11 cycles
-    rst $20                                                           ; 2a82: e7          .   11 cycles
+    rst $20                                                           ; 2a82: e7          .   11 cycles    ; Get the next BASIC character
     pop hl                                                            ; 2a83: e1          .   10 cycles
     cp $29                                                            ; 2a84: fe 29       .)  7 cycles
     jr z,sl_define                                                    ; 2a86: 28 0c       (.  7/12 cycles
     pop af                                                            ; 2a88: f1          .   10 cycles
     call int_exp2                                                     ; 2a89: cd cd 2a    ..* 17 cycles
     push af                                                           ; 2a8c: f5          .   11 cycles
-    rst $18                                                           ; 2a8d: df          .   11 cycles
+    rst $18                                                           ; 2a8d: df          .   11 cycles    ; Get the current BASIC character
     ld h,b                                                            ; 2a8e: 60          `   4 cycles
     ld l,c                                                            ; 2a8f: 69          i   4 cycles
     cp $29                                                            ; 2a90: fe 29       .)  7 cycles
@@ -7570,7 +7731,7 @@ sl_define:
 ; $2aa8 referenced 1 time by $2a9f
 sl_over:
     pop de                                                            ; 2aa8: d1          .   10 cycles
-    res 6,(iy+1)                                                      ; 2aa9: fd cb 01... ... 23 cycles
+    res 6,(iy+flags - err_nr)                                         ; 2aa9: fd cb 01... ... 23 cycles
 ; $2aad referenced 1 time by $2a5b
 sl_store:
     call syntax_z                                                     ; 2aad: cd 30 25    .0% 17 cycles
@@ -7580,13 +7741,13 @@ stk_st_0:
     xor a                                                             ; 2ab1: af          .   4 cycles
 ; $2ab2 referenced 9 times by $21a7, $257d, $25e2, $2662, $29a7, $35ac, $35d7, $3640, $365f
 stk_sto_str:
-    res 6,(iy+1)                                                      ; 2ab2: fd cb 01... ... 23 cycles
+    res 6,(iy+flags - err_nr)                                         ; 2ab2: fd cb 01... ... 23 cycles
 ; $2ab6 referenced 2 times by $2d34, $2dc8
 stk_store:
     push bc                                                           ; 2ab6: c5          .   11 cycles
     call test_5_sp                                                    ; 2ab7: cd a9 33    ..3 17 cycles
     pop bc                                                            ; 2aba: c1          .   10 cycles
-    ld hl,(l5c65)                                                     ; 2abb: 2a 65 5c    *e\ 16 cycles
+    ld hl,(stkend)                                                    ; 2abb: 2a 65 5c    *e\ 16 cycles
     ld (hl),a                                                         ; 2abe: 77          w   7 cycles
     inc hl                                                            ; 2abf: 23          #   6 cycles
     ld (hl),e                                                         ; 2ac0: 73          s   7 cycles
@@ -7597,7 +7758,7 @@ stk_store:
     inc hl                                                            ; 2ac5: 23          #   6 cycles
     ld (hl),b                                                         ; 2ac6: 70          p   7 cycles
     inc hl                                                            ; 2ac7: 23          #   6 cycles
-    ld (l5c65),hl                                                     ; 2ac8: 22 65 5c    "e\ 16 cycles
+    ld (stkend),hl                                                    ; 2ac8: 22 65 5c    "e\ 16 cycles
     ret                                                               ; 2acb: c9          .   10 cycles
 
 ; $2acc referenced 2 times by $2a02, $2c31
@@ -7613,7 +7774,7 @@ int_exp2:
     call syntax_z                                                     ; 2ad4: cd 30 25    .0% 17 cycles
     jr z,i_restore                                                    ; 2ad7: 28 12       (.  7/12 cycles
     push af                                                           ; 2ad9: f5          .   11 cycles
-    call find_int2                                                    ; 2ada: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 2ada: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     pop de                                                            ; 2add: d1          .   10 cycles
     ld a,b                                                            ; 2ade: 78          x   4 cycles
     or c                                                              ; 2adf: b1          .   4 cycles
@@ -7652,8 +7813,8 @@ get_hl_times_de:
 
 ; $2aff referenced 3 times by $1c68, $1d1d, $21aa
 let:
-    ld hl,(l5c4d)                                                     ; 2aff: 2a 4d 5c    *M\ 16 cycles
-    bit 1,(iy+55)                                                     ; 2b02: fd cb 37... ..7 20 cycles
+    ld hl,(dest)                                                      ; 2aff: 2a 4d 5c    *M\ 16 cycles
+    bit 1,(iy+flagx - err_nr)                                         ; 2b02: fd cb 37... ..7 20 cycles
     jr z,l_exists                                                     ; 2b06: 28 5e       (^  7/12 cycles
     ld bc,5                                                           ; 2b08: 01 05 00    ... 10 cycles
 ; $2b0b referenced 1 time by $2b22
@@ -7682,14 +7843,14 @@ l_test_ch:
 ; $2b29 referenced 2 times by $2b16, $2b1a
 l_spaces:
     ld a,c                                                            ; 2b29: 79          y   4 cycles
-    ld hl,(l5c59)                                                     ; 2b2a: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 2b2a: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 2b2d: 2b          +   6 cycles
     call make_room                                                    ; 2b2e: cd 55 16    .U. 17 cycles
     inc hl                                                            ; 2b31: 23          #   6 cycles
     inc hl                                                            ; 2b32: 23          #   6 cycles
     ex de,hl                                                          ; 2b33: eb          .   4 cycles
     push de                                                           ; 2b34: d5          .   11 cycles
-    ld hl,(l5c4d)                                                     ; 2b35: 2a 4d 5c    *M\ 16 cycles
+    ld hl,(dest)                                                      ; 2b35: 2a 4d 5c    *M\ 16 cycles
     dec de                                                            ; 2b38: 1b          .   6 cycles
     sub 6                                                             ; 2b39: d6 06       ..  7 cycles
     ld b,a                                                            ; 2b3b: 47          G   4 cycles
@@ -7709,7 +7870,7 @@ l_char:
     ld a,$c0                                                          ; 2b4d: 3e c0       >.  7 cycles
 ; $2b4f referenced 1 time by $2b3c
 l_single:
-    ld hl,(l5c4d)                                                     ; 2b4f: 2a 4d 5c    *M\ 16 cycles
+    ld hl,(dest)                                                      ; 2b4f: 2a 4d 5c    *M\ 16 cycles
     xor (hl)                                                          ; 2b52: ae          .   7 cycles
     or $20                                                            ; 2b53: f6 20       .   7 cycles
     pop hl                                                            ; 2b55: e1          .   10 cycles
@@ -7729,7 +7890,7 @@ l_numeric:
 
 ; $2b66 referenced 1 time by $2b06
 l_exists:
-    bit 6,(iy+1)                                                      ; 2b66: fd cb 01... ... 20 cycles
+    bit 6,(iy+flags - err_nr)                                         ; 2b66: fd cb 01... ... 20 cycles
     jr z,l_delete_str                                                 ; 2b6a: 28 06       (.  7/12 cycles
     ld de,6                                                           ; 2b6c: 11 06 00    ... 10 cycles
     add hl,de                                                         ; 2b6f: 19          .   11 cycles
@@ -7737,15 +7898,15 @@ l_exists:
 
 ; $2b72 referenced 1 time by $2b6a
 l_delete_str:
-    ld hl,(l5c4d)                                                     ; 2b72: 2a 4d 5c    *M\ 16 cycles
-    ld bc,(l5c72)                                                     ; 2b75: ed 4b 72... .Kr 20 cycles
-    bit 0,(iy+55)                                                     ; 2b79: fd cb 37... ..7 20 cycles
+    ld hl,(dest)                                                      ; 2b72: 2a 4d 5c    *M\ 16 cycles
+    ld bc,(strlen)                                                    ; 2b75: ed 4b 72... .Kr 20 cycles
+    bit 0,(iy+flagx - err_nr)                                         ; 2b79: fd cb 37... ..7 20 cycles
     jr nz,l_add_str                                                   ; 2b7d: 20 30        0  7/12 cycles
     ld a,b                                                            ; 2b7f: 78          x   4 cycles
     or c                                                              ; 2b80: b1          .   4 cycles
     ret z                                                             ; 2b81: c8          .   5/11 cycles
     push hl                                                           ; 2b82: e5          .   11 cycles
-    rst $30                                                           ; 2b83: f7          .   11 cycles
+    rst $30                                                           ; 2b83: f7          .   11 cycles    ; Make space in the workspace
     push de                                                           ; 2b84: d5          .   11 cycles
     push bc                                                           ; 2b85: c5          .   11 cycles
     ld d,h                                                            ; 2b86: 54          T   4 cycles
@@ -7754,7 +7915,7 @@ l_delete_str:
     ld (hl),$20                                                       ; 2b89: 36 20       6   10 cycles
     lddr                                                              ; 2b8b: ed b8       ..  16/21 cycles
     push hl                                                           ; 2b8d: e5          .   11 cycles
-    call stk_fetch                                                    ; 2b8e: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 2b8e: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     pop hl                                                            ; 2b91: e1          .   10 cycles
     ex (sp),hl                                                        ; 2b92: e3          .   19 cycles
     and a                                                             ; 2b93: a7          .   4 cycles
@@ -7806,24 +7967,24 @@ l_add_str:
 ; $2bc0 referenced 1 time by $2b26
 l_new_str:
     ld a,$df                                                          ; 2bc0: 3e df       >.  7 cycles
-    ld hl,(l5c4d)                                                     ; 2bc2: 2a 4d 5c    *M\ 16 cycles
+    ld hl,(dest)                                                      ; 2bc2: 2a 4d 5c    *M\ 16 cycles
     and (hl)                                                          ; 2bc5: a6          .   7 cycles
 ; $2bc6 referenced 1 time by $2bb5
 l_string:
     push af                                                           ; 2bc6: f5          .   11 cycles
-    call stk_fetch                                                    ; 2bc7: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 2bc7: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     ex de,hl                                                          ; 2bca: eb          .   4 cycles
     add hl,bc                                                         ; 2bcb: 09          .   11 cycles
     push bc                                                           ; 2bcc: c5          .   11 cycles
     dec hl                                                            ; 2bcd: 2b          +   6 cycles
-    ld (l5c4d),hl                                                     ; 2bce: 22 4d 5c    "M\ 16 cycles
+    ld (dest),hl                                                      ; 2bce: 22 4d 5c    "M\ 16 cycles
     inc bc                                                            ; 2bd1: 03          .   6 cycles
     inc bc                                                            ; 2bd2: 03          .   6 cycles
     inc bc                                                            ; 2bd3: 03          .   6 cycles
-    ld hl,(l5c59)                                                     ; 2bd4: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 2bd4: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 2bd7: 2b          +   6 cycles
     call make_room                                                    ; 2bd8: cd 55 16    .U. 17 cycles
-    ld hl,(l5c4d)                                                     ; 2bdb: 2a 4d 5c    *M\ 16 cycles
+    ld hl,(dest)                                                      ; 2bdb: 2a 4d 5c    *M\ 16 cycles
     pop bc                                                            ; 2bde: c1          .   10 cycles
     push bc                                                           ; 2bdf: c5          .   11 cycles
     inc bc                                                            ; 2be0: 03          .   6 cycles
@@ -7839,13 +8000,20 @@ l_string:
 l_first:
     dec hl                                                            ; 2bea: 2b          +   6 cycles
     ld (hl),a                                                         ; 2beb: 77          w   7 cycles
-    ld hl,(l5c59)                                                     ; 2bec: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 2bec: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 2bef: 2b          +   6 cycles
     ret                                                               ; 2bf0: c9          .   10 cycles
 
+; ***************************************************************************************
+; Get a string from the calculator stack
+; 
+; On Exit:
+;     DE: its start
+;     BC: its length
+; ***************************************************************************************
 ; $2bf1 referenced 16 times by $04b7, $0631, $175e, $1c3d, $2036, $2a55, $2b8e, $2bc7, $34bc, $355b, $3560, $359c, $35a1, $35e7, $3669, $3674
 stk_fetch:
-    ld hl,(l5c65)                                                     ; 2bf1: 2a 65 5c    *e\ 16 cycles
+    ld hl,(stkend)                                                    ; 2bf1: 2a 65 5c    *e\ 16 cycles
     dec hl                                                            ; 2bf4: 2b          +   6 cycles
     ld b,(hl)                                                         ; 2bf5: 46          F   7 cycles
     dec hl                                                            ; 2bf6: 2b          +   6 cycles
@@ -7856,7 +8024,7 @@ stk_fetch:
     ld e,(hl)                                                         ; 2bfb: 5e          ^   7 cycles
     dec hl                                                            ; 2bfc: 2b          +   6 cycles
     ld a,(hl)                                                         ; 2bfd: 7e          ~   7 cycles
-    ld (l5c65),hl                                                     ; 2bfe: 22 65 5c    "e\ 16 cycles
+    ld (stkend),hl                                                    ; 2bfe: 22 65 5c    "e\ 16 cycles
     ret                                                               ; 2c01: c9          .   10 cycles
 
 dim:
@@ -7890,7 +8058,7 @@ d_size:
     ex de,hl                                                          ; 2c2d: eb          .   4 cycles
 ; $2c2e referenced 1 time by $2c44
 d_no_loop:
-    rst $20                                                           ; 2c2e: e7          .   11 cycles
+    rst $20                                                           ; 2c2e: e7          .   11 cycles    ; Get the next BASIC character
     ld h,$ff                                                          ; 2c2f: 26 ff       &.  7 cycles
     call int_exp1                                                     ; 2c31: cd cc 2a    ..* 17 cycles
     jp c,report_3                                                     ; 2c34: da 20 2a    . * 10 cycles
@@ -7902,12 +8070,12 @@ d_no_loop:
     ld l,c                                                            ; 2c3c: 69          i   4 cycles
     call get_hl_times_de                                              ; 2c3d: cd f4 2a    ..* 17 cycles
     ex de,hl                                                          ; 2c40: eb          .   4 cycles
-    rst $18                                                           ; 2c41: df          .   11 cycles
+    rst $18                                                           ; 2c41: df          .   11 cycles    ; Get the current BASIC character
     cp $2c                                                            ; 2c42: fe 2c       .,  7 cycles
     jr z,d_no_loop                                                    ; 2c44: 28 e8       (.  7/12 cycles
     cp $29                                                            ; 2c46: fe 29       .)  7 cycles
     jr nz,d_rport_c                                                   ; 2c48: 20 bb        .  7/12 cycles
-    rst $20                                                           ; 2c4a: e7          .   11 cycles
+    rst $20                                                           ; 2c4a: e7          .   11 cycles    ; Get the next BASIC character
     pop bc                                                            ; 2c4b: c1          .   10 cycles
     ld a,c                                                            ; 2c4c: 79          y   4 cycles
     ld l,b                                                            ; 2c4d: 68          h   4 cycles
@@ -7922,7 +8090,7 @@ d_no_loop:
     push hl                                                           ; 2c59: e5          .   11 cycles
     ld b,h                                                            ; 2c5a: 44          D   4 cycles
     ld c,l                                                            ; 2c5b: 4d          M   4 cycles
-    ld hl,(l5c59)                                                     ; 2c5c: 2a 59 5c    *Y\ 16 cycles
+    ld hl,(e_line)                                                    ; 2c5c: 2a 59 5c    *Y\ 16 cycles
     dec hl                                                            ; 2c5f: 2b          +   6 cycles
     call make_room                                                    ; 2c60: cd 55 16    .U. 17 cycles
     inc hl                                                            ; 2c63: 23          #   6 cycles
@@ -7986,7 +8154,7 @@ dec_to_fp:
     ld de,0                                                           ; 2c9f: 11 00 00    ... 10 cycles
 ; $2ca2 referenced 1 time by $2cb1
 bin_digit:
-    rst $20                                                           ; 2ca2: e7          .   11 cycles
+    rst $20                                                           ; 2ca2: e7          .   11 cycles    ; Get the next BASIC character
     sub $31                                                           ; 2ca3: d6 31       .1  7 cycles
     adc a,0                                                           ; 2ca5: ce 00       ..  7 cycles
     jr nz,bin_end                                                     ; 2ca7: 20 0a        .  7/12 cycles
@@ -8001,7 +8169,7 @@ bin_digit:
 bin_end:
     ld b,d                                                            ; 2cb3: 42          B   4 cycles
     ld c,e                                                            ; 2cb4: 4b          K   4 cycles
-    jp stack_bc                                                       ; 2cb5: c3 2b 2d    .+- 10 cycles
+    jp stack_bc                                                       ; 2cb5: c3 2b 2d    .+- 10 cycles    ; Put BC on the calculator stack
 
 ; $2cb8 referenced 1 time by $2c9d
 not_bin:
@@ -8010,14 +8178,14 @@ not_bin:
     call int_to_fp                                                    ; 2cbc: cd 3b 2d    .;- 17 cycles
     cp $2e                                                            ; 2cbf: fe 2e       ..  7 cycles
     jr nz,e_format                                                    ; 2cc1: 20 28        (  7/12 cycles
-    rst $20                                                           ; 2cc3: e7          .   11 cycles
+    rst $20                                                           ; 2cc3: e7          .   11 cycles    ; Get the next BASIC character
     call numeric                                                      ; 2cc4: cd 1b 2d    ..- 17 cycles
     jr c,e_format                                                     ; 2cc7: 38 22       8"  7/12 cycles
     jr dec_sto_1                                                      ; 2cc9: 18 0a       ..  12 cycles
 
 ; $2ccb referenced 1 time by $2cba
 decimal:
-    rst $20                                                           ; 2ccb: e7          .   11 cycles
+    rst $20                                                           ; 2ccb: e7          .   11 cycles    ; Get the next BASIC character
     call numeric                                                      ; 2ccc: cd 1b 2d    ..- 17 cycles
 ; $2ccf referenced 1 time by $2d02
 dec_rpt_c:
@@ -8036,7 +8204,7 @@ dec_sto_1:
 
 ; $2cda referenced 1 time by $2ce9
 nxt_dgt_1:
-    rst $18                                                           ; 2cda: df          .   11 cycles
+    rst $18                                                           ; 2cda: df          .   11 cycles    ; Get the current BASIC character
     call stk_digit                                                    ; 2cdb: cd 22 2d    ."- 17 cycles
     jr c,e_format                                                     ; 2cde: 38 0b       8.  7/12 cycles
     rst $28                                                           ; 2ce0: ef          .   11 cycles
@@ -8048,7 +8216,7 @@ nxt_dgt_1:
     db $0f                                                            ; 2ce6: 0f          .  ; addition
     db $38                                                            ; 2ce7: 38          8  ; end-calc
 
-    rst $20                                                           ; 2ce8: e7          .   11 cycles
+    rst $20                                                           ; 2ce8: e7          .   11 cycles    ; Get the next BASIC character
     jr nxt_dgt_1                                                      ; 2ce9: 18 ef       ..  12 cycles
 
 ; $2ceb referenced 3 times by $2cc1, $2cc7, $2cde
@@ -8060,7 +8228,7 @@ e_format:
 ; $2cf2 referenced 1 time by $2ced
 sign_flag:
     ld b,$ff                                                          ; 2cf2: 06 ff       ..  7 cycles
-    rst $20                                                           ; 2cf4: e7          .   11 cycles
+    rst $20                                                           ; 2cf4: e7          .   11 cycles    ; Get the next BASIC character
     cp $2b                                                            ; 2cf5: fe 2b       .+  7 cycles
     jr z,sign_done                                                    ; 2cf7: 28 05       (.  7/12 cycles
     cp $2d                                                            ; 2cf9: fe 2d       .-  7 cycles
@@ -8068,14 +8236,14 @@ sign_flag:
     inc b                                                             ; 2cfd: 04          .   4 cycles
 ; $2cfe referenced 1 time by $2cf7
 sign_done:
-    rst $20                                                           ; 2cfe: e7          .   11 cycles
+    rst $20                                                           ; 2cfe: e7          .   11 cycles    ; Get the next BASIC character
 ; $2cff referenced 1 time by $2cfb
 st_e_part:
     call numeric                                                      ; 2cff: cd 1b 2d    ..- 17 cycles
     jr c,dec_rpt_c                                                    ; 2d02: 38 cb       8.  7/12 cycles
     push bc                                                           ; 2d04: c5          .   11 cycles
     call int_to_fp                                                    ; 2d05: cd 3b 2d    .;- 17 cycles
-    call fp_to_a                                                      ; 2d08: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 2d08: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     pop bc                                                            ; 2d0b: c1          .   10 cycles
     jp c,report_6                                                     ; 2d0c: da ad 31    ..1 10 cycles
     and a                                                             ; 2d0f: a7          .   4 cycles
@@ -8100,10 +8268,22 @@ stk_digit:
     call numeric                                                      ; 2d22: cd 1b 2d    ..- 17 cycles
     ret c                                                             ; 2d25: d8          .   5/11 cycles
     sub $30                                                           ; 2d26: d6 30       .0  7 cycles
+; ***************************************************************************************
+; Put A on the calculator stack
+; 
+; On Entry:
+;     A: the number
+; ***************************************************************************************
 ; $2d28 referenced 12 times by $22d9, $240b, $2416, $2444, $2453, $2467, $2471, $2498, $2593, $34b0, $3671, $3722
 stack_a:
     ld c,a                                                            ; 2d28: 4f          O   4 cycles
     ld b,0                                                            ; 2d29: 06 00       ..  7 cycles
+; ***************************************************************************************
+; Put BC on the calculator stack
+; 
+; On Entry:
+;     BC: the number
+; ***************************************************************************************
 ; $2d2b referenced 4 times by $2601, $2cb5, $34e4, $3677
 stack_bc:
     ld iy,$5c3a                                                       ; 2d2b: fd 21 3a... .!: 14 cycles
@@ -8237,6 +8417,13 @@ int_store:
     pop hl                                                            ; 2da0: e1          .   10 cycles
     ret                                                               ; 2da1: c9          .   10 cycles
 
+; ***************************************************************************************
+; Get a number from the calculator stack
+; 
+; On Exit:
+;     BC: the number
+;     F: carry set if too big
+; ***************************************************************************************
 ; $2da2 referenced 4 times by $1a0c, $1e99, $2617, $2dd5
 fp_to_bc:
     rst $28                                                           ; 2da2: ef          .   11 cycles
@@ -8289,9 +8476,16 @@ log_2_pow_a:
     db $27                                                            ; 2dd3: 27          '  ; int
     db $38                                                            ; 2dd4: 38          8  ; end-calc
 
+; ***************************************************************************************
+; Get a number from the calculator stack
+; 
+; On Exit:
+;     A: the number
+;     F: carry set if too big
+; ***************************************************************************************
 ; $2dd5 referenced 8 times by $1e85, $1e94, $2314, $248a, $2d08, $2e40, $35c9, $36f9
 fp_to_a:
-    call fp_to_bc                                                     ; 2dd5: cd a2 2d    ..- 17 cycles
+    call fp_to_bc                                                     ; 2dd5: cd a2 2d    ..- 17 cycles    ; Get a number from the calculator stack
     ret c                                                             ; 2dd8: d8          .   5/11 cycles
     push af                                                           ; 2dd9: f5          .   11 cycles
     dec b                                                             ; 2dda: 05          .   4 cycles
@@ -8306,6 +8500,9 @@ fp_a_end:
     pop af                                                            ; 2de1: f1          .   10 cycles
     ret                                                               ; 2de2: c9          .   10 cycles
 
+; ***************************************************************************************
+; Print the number on the calculator stack
+; ***************************************************************************************
 ; $2de3 referenced 2 times by $2039, $3630
 print_fp:
     rst $28                                                           ; 2de3: ef          .   11 cycles
@@ -8321,7 +8518,7 @@ print_fp:
     db $38                                                            ; 2ded: 38          8  ; end-calc
 
     ld a,$30                                                          ; 2dee: 3e 30       >0  7 cycles
-    rst $10                                                           ; 2df0: d7          .   11 cycles
+    rst $10                                                           ; 2df0: d7          .   11 cycles    ; Print '0'
     ret                                                               ; 2df1: c9          .   10 cycles
 
 pf_negtve:
@@ -8329,7 +8526,7 @@ pf_negtve:
     db $38                                                            ; 2df3: 38          8  ; end-calc
 
     ld a,$2d                                                          ; 2df4: 3e 2d       >-  7 cycles
-    rst $10                                                           ; 2df6: d7          .   11 cycles
+    rst $10                                                           ; 2df6: d7          .   11 cycles    ; Print '-'
     rst $28                                                           ; 2df7: ef          .   11 cycles
 pf_postve:
     db $a0                                                            ; 2df8: a0          .  ; stk-zero
@@ -8385,9 +8582,9 @@ pf_small:
     sub $7e                                                           ; 2e28: d6 7e       .~  7 cycles
     call log_2_pow_a                                                  ; 2e2a: cd c1 2d    ..- 17 cycles
     ld d,a                                                            ; 2e2d: 57          W   4 cycles
-    ld a,(l5cac)                                                      ; 2e2e: 3a ac 5c    :.\ 13 cycles
+    ld a,(membot+26)                                                  ; 2e2e: 3a ac 5c    :.\ 13 cycles
     sub d                                                             ; 2e31: 92          .   4 cycles
-    ld (l5cac),a                                                      ; 2e32: 32 ac 5c    2.\ 13 cycles
+    ld (membot+26),a                                                  ; 2e32: 32 ac 5c    2.\ 13 cycles
     ld a,d                                                            ; 2e35: 7a          z   4 cycles
     call e_to_fp                                                      ; 2e36: cd 4f 2d    .O- 17 cycles
     rst $28                                                           ; 2e39: ef          .   11 cycles
@@ -8398,9 +8595,9 @@ pf_small:
     db $e1                                                            ; 2e3e: e1          .  ; get-mem-1
     db $38                                                            ; 2e3f: 38          8  ; end-calc
 
-    call fp_to_a                                                      ; 2e40: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 2e40: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     push hl                                                           ; 2e43: e5          .   11 cycles
-    ld (l5ca1),a                                                      ; 2e44: 32 a1 5c    2.\ 13 cycles
+    ld (membot+15),a                                                  ; 2e44: 32 a1 5c    2.\ 13 cycles
     dec a                                                             ; 2e47: 3d          =   4 cycles
     rla                                                               ; 2e48: 17          .   4 cycles
     sbc a,a                                                           ; 2e49: 9f          .   4 cycles
@@ -8476,8 +8673,8 @@ pf_digits:
 pf_insert:
     ld (de),a                                                         ; 2ea9: 12          .   7 cycles
     inc de                                                            ; 2eaa: 13          .   6 cycles
-    inc (iy+113)                                                      ; 2eab: fd 34 71    .4q 23 cycles
-    inc (iy+114)                                                      ; 2eae: fd 34 72    .4r 23 cycles
+    inc (iy+(membot+25) - err_nr)                                     ; 2eab: fd 34 71    .4q 23 cycles
+    inc (iy+(membot+26) - err_nr)                                     ; 2eae: fd 34 72    .4r 23 cycles
     ld c,0                                                            ; 2eb1: 0e 00       ..  7 cycles
 ; $2eb3 referenced 1 time by $2ea7
 pf_test_2:
@@ -8487,12 +8684,12 @@ pf_test_2:
 ; $2eb8 referenced 1 time by $2eb5
 pf_all_9:
     djnz pf_digits                                                    ; 2eb8: 10 e7       ..  8/13 cycles
-    ld a,(l5cab)                                                      ; 2eba: 3a ab 5c    :.\ 13 cycles
+    ld a,(membot+25)                                                  ; 2eba: 3a ab 5c    :.\ 13 cycles
     sub 9                                                             ; 2ebd: d6 09       ..  7 cycles
     jr c,pf_more                                                      ; 2ebf: 38 0a       8.  7/12 cycles
-    dec (iy+113)                                                      ; 2ec1: fd 35 71    .5q 23 cycles
+    dec (iy+(membot+25) - err_nr)                                     ; 2ec1: fd 35 71    .5q 23 cycles
     ld a,4                                                            ; 2ec4: 3e 04       >.  7 cycles
-    cp (iy+111)                                                       ; 2ec6: fd be 6f    ..o 19 cycles
+    cp (iy+(membot+23) - err_nr)                                      ; 2ec6: fd be 6f    ..o 19 cycles
     jr pf_round                                                       ; 2ec9: 18 41       .A  12 cycles
 
 ; $2ecb referenced 1 time by $2ebf
@@ -8515,7 +8712,7 @@ pf_fractn:
     call shift_fp                                                     ; 2edc: cd dd 2f    ../ 17 cycles
 ; $2edf referenced 1 time by $2f0a
 pf_frn_lp:
-    ld a,(iy+113)                                                     ; 2edf: fd 7e 71    .~q 19 cycles
+    ld a,(iy+(membot+25) - err_nr)                                    ; 2edf: fd 7e 71    .~q 19 cycles
     cp 8                                                              ; 2ee2: fe 08       ..  7 cycles
     jr c,pf_fr_dgt                                                    ; 2ee4: 38 06       8.  7/12 cycles
     exx                                                               ; 2ee6: d9          .   4 cycles
@@ -8540,17 +8737,17 @@ pf_fr_exx:
     djnz pf_fr_exx                                                    ; 2efc: 10 f1       ..  8/13 cycles
     ld hl,$5ca1                                                       ; 2efe: 21 a1 5c    !.\ 10 cycles
     ld a,c                                                            ; 2f01: 79          y   4 cycles
-    ld c,(iy+113)                                                     ; 2f02: fd 4e 71    .Nq 19 cycles
+    ld c,(iy+(membot+25) - err_nr)                                    ; 2f02: fd 4e 71    .Nq 19 cycles
     add hl,bc                                                         ; 2f05: 09          .   11 cycles
     ld (hl),a                                                         ; 2f06: 77          w   7 cycles
-    inc (iy+113)                                                      ; 2f07: fd 34 71    .4q 23 cycles
+    inc (iy+(membot+25) - err_nr)                                     ; 2f07: fd 34 71    .4q 23 cycles
     jr pf_frn_lp                                                      ; 2f0a: 18 d3       ..  12 cycles
 
 ; $2f0c referenced 2 times by $2ec9, $2eea
 pf_round:
     push af                                                           ; 2f0c: f5          .   11 cycles
     ld hl,$5ca1                                                       ; 2f0d: 21 a1 5c    !.\ 10 cycles
-    ld c,(iy+113)                                                     ; 2f10: fd 4e 71    .Nq 19 cycles
+    ld c,(iy+(membot+25) - err_nr)                                    ; 2f10: fd 4e 71    .Nq 19 cycles
     ld b,0                                                            ; 2f13: 06 00       ..  7 cycles
     add hl,bc                                                         ; 2f15: 09          .   11 cycles
     ld b,c                                                            ; 2f16: 41          A   4 cycles
@@ -8571,10 +8768,10 @@ pf_r_back:
     djnz pf_rnd_lp                                                    ; 2f25: 10 f1       ..  8/13 cycles
     ld (hl),1                                                         ; 2f27: 36 01       6.  10 cycles
     inc b                                                             ; 2f29: 04          .   4 cycles
-    inc (iy+114)                                                      ; 2f2a: fd 34 72    .4r 23 cycles
+    inc (iy+(membot+26) - err_nr)                                     ; 2f2a: fd 34 72    .4r 23 cycles
 ; $2f2d referenced 1 time by $2f23
 pf_count:
-    ld (iy+113),b                                                     ; 2f2d: fd 70 71    .pq 19 cycles
+    ld (iy+(membot+25) - err_nr),b                                    ; 2f2d: fd 70 71    .pq 19 cycles
     rst $28                                                           ; 2f30: ef          .   11 cycles
     db 2                                                              ; 2f31: 02          .  ; delete
     db $38                                                            ; 2f32: 38          8  ; end-calc
@@ -8582,7 +8779,7 @@ pf_count:
     exx                                                               ; 2f33: d9          .   4 cycles
     pop hl                                                            ; 2f34: e1          .   10 cycles
     exx                                                               ; 2f35: d9          .   4 cycles
-    ld bc,(l5cab)                                                     ; 2f36: ed 4b ab... .K. 20 cycles
+    ld bc,(membot+25)                                                 ; 2f36: ed 4b ab... .K. 20 cycles
     ld hl,$5ca1                                                       ; 2f3a: 21 a1 5c    !.\ 10 cycles
     ld a,b                                                            ; 2f3d: 78          x   4 cycles
     cp 9                                                              ; 2f3e: fe 09       ..  7 cycles
@@ -8622,7 +8819,7 @@ pf_dc_out:
     ld a,$2e                                                          ; 2f62: 3e 2e       >.  7 cycles
 ; $2f64 referenced 1 time by $2f67
 pf_dec_0_str:
-    rst $10                                                           ; 2f64: d7          .   11 cycles
+    rst $10                                                           ; 2f64: d7          .   11 cycles    ; Print a character
     ld a,$30                                                          ; 2f65: 3e 30       >0  7 cycles
     djnz pf_dec_0_str                                                 ; 2f67: 10 fb       ..  8/13 cycles
     ld b,c                                                            ; 2f69: 41          A   4 cycles
@@ -8635,7 +8832,7 @@ pf_e_frmt:
     ld b,1                                                            ; 2f6e: 06 01       ..  7 cycles
     call pf_e_sbrn                                                    ; 2f70: cd 4a 2f    .J/ 17 cycles
     ld a,$45                                                          ; 2f73: 3e 45       >E  7 cycles
-    rst $10                                                           ; 2f75: d7          .   11 cycles
+    rst $10                                                           ; 2f75: d7          .   11 cycles    ; Print 'E'
     ld c,d                                                            ; 2f76: 4a          J   4 cycles
     ld a,c                                                            ; 2f77: 79          y   4 cycles
     and a                                                             ; 2f78: a7          .   4 cycles
@@ -8650,9 +8847,9 @@ pf_e_pos:
     ld a,$2b                                                          ; 2f83: 3e 2b       >+  7 cycles
 ; $2f85 referenced 1 time by $2f81
 pf_e_sign:
-    rst $10                                                           ; 2f85: d7          .   11 cycles
+    rst $10                                                           ; 2f85: d7          .   11 cycles    ; Print a character
     ld b,0                                                            ; 2f86: 06 00       ..  7 cycles
-    jp out_num_1                                                      ; 2f88: c3 1b 1a    ... 10 cycles
+    jp out_num_1                                                      ; 2f88: c3 1b 1a    ... 10 cycles    ; Print a number from 0 to 9999
 
 ; $2f8b referenced 2 times by $2ef0, $2ef5
 ca_10_times_a_plus_c:
@@ -9169,7 +9366,7 @@ oflow_clr:
 ; $31ad referenced 8 times by $2cad, $2d0c, $2d10, $309f, $3143, $314f, $3193, $31b7
 report_6:
     rst $08                                                           ; 31ad: cf          .   11 cycles
-    db 5                                                              ; 31ae: 05          .  ; Report 6: Number too big
+    db 5                                                              ; 31ae: 05          .  ; Report 6 Number too big
 
 division:
     call re_st_two                                                    ; 31af: cd 93 32    ..2 17 cycles
@@ -9510,14 +9707,14 @@ calculate:
 ; $335e referenced 1 time by $344a
 gen_ent_1:
     ld a,b                                                            ; 335e: 78          x   4 cycles
-    ld (l5c67),a                                                      ; 335f: 32 67 5c    2g\ 13 cycles
+    ld (breg),a                                                       ; 335f: 32 67 5c    2g\ 13 cycles
 ; $3362 referenced 1 time by $345d
 gen_ent_2:
     exx                                                               ; 3362: d9          .   4 cycles
     ex (sp),hl                                                        ; 3363: e3          .   19 cycles
     exx                                                               ; 3364: d9          .   4 cycles
 re_entry:
-    ld (l5c65),de                                                     ; 3365: ed 53 65... .Se 20 cycles
+    ld (stkend),de                                                    ; 3365: ed 53 65... .Se 20 cycles
     exx                                                               ; 3369: d9          .   4 cycles
     ld a,(hl)                                                         ; 336a: 7e          ~   7 cycles
     inc hl                                                            ; 336b: 23          #   6 cycles
@@ -9564,13 +9761,13 @@ ent_table:
     ex (sp),hl                                                        ; 339a: e3          .   19 cycles
     push de                                                           ; 339b: d5          .   11 cycles
     exx                                                               ; 339c: d9          .   4 cycles
-    ld bc,(l5c66)                                                     ; 339d: ed 4b 66... .Kf 20 cycles
+    ld bc,(stkend+1)                                                  ; 339d: ed 4b 66... .Kf 20 cycles
 delete:
     ret                                                               ; 33a1: c9          .   10 cycles
 
 fp_calc_2:
     pop af                                                            ; 33a2: f1          .   10 cycles
-    ld a,(l5c67)                                                      ; 33a3: 3a 67 5c    :g\ 13 cycles
+    ld a,(breg)                                                       ; 33a3: 3a 67 5c    :g\ 13 cycles
     exx                                                               ; 33a6: d9          .   4 cycles
     jr scan_ent                                                       ; 33a7: 18 c3       ..  12 cycles
 
@@ -9586,9 +9783,9 @@ test_5_sp:
 
 ; $33b4 referenced 3 times by $0435, $26bd, $26da
 stack_num:
-    ld de,(l5c65)                                                     ; 33b4: ed 5b 65... .[e 20 cycles
+    ld de,(stkend)                                                    ; 33b4: ed 5b 65... .[e 20 cycles
     call move_fp                                                      ; 33b8: cd c0 33    ..3 17 cycles
-    ld (l5c65),de                                                     ; 33bb: ed 53 65... .Se 20 cycles
+    ld (stkend),de                                                    ; 33bb: ed 53 65... .Se 20 cycles
     ret                                                               ; 33bf: c9          .   10 cycles
 
 ; $33c0 referenced 4 times by $298a, $33b8, $3416, $3436
@@ -9673,7 +9870,7 @@ loc_mem:
 
 get_mem_xx:
     push de                                                           ; 340f: d5          .   11 cycles
-    ld hl,(l5c68)                                                     ; 3410: 2a 68 5c    *h\ 16 cycles
+    ld hl,(mem)                                                       ; 3410: 2a 68 5c    *h\ 16 cycles
     call loc_mem                                                      ; 3413: cd 06 34    ..4 17 cycles
     call move_fp                                                      ; 3416: cd c0 33    ..3 17 cycles
     pop hl                                                            ; 3419: e1          .   10 cycles
@@ -9696,7 +9893,7 @@ stk_const_xx:
 st_mem_xx:
     push hl                                                           ; 342d: e5          .   11 cycles
     ex de,hl                                                          ; 342e: eb          .   4 cycles
-    ld hl,(l5c68)                                                     ; 342f: 2a 68 5c    *h\ 16 cycles
+    ld hl,(mem)                                                       ; 342f: 2a 68 5c    *h\ 16 cycles
     call loc_mem                                                      ; 3432: cd 06 34    ..4 17 cycles
     ex de,hl                                                          ; 3435: eb          .   4 cycles
     call move_fp                                                      ; 3436: cd c0 33    ..3 17 cycles
@@ -9806,26 +10003,26 @@ sgn:
     ret                                                               ; 34a4: c9          .   10 cycles
 
 in:
-    call find_int2                                                    ; 34a5: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 34a5: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     in a,(c)                                                          ; 34a8: ed 78       .x  12 cycles
     jr in_pk_stk                                                      ; 34aa: 18 04       ..  12 cycles
 
 peek:
-    call find_int2                                                    ; 34ac: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 34ac: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld a,(bc)                                                         ; 34af: 0a          .   7 cycles
 ; $34b0 referenced 1 time by $34aa
 in_pk_stk:
-    jp stack_a                                                        ; 34b0: c3 28 2d    .(- 10 cycles
+    jp stack_a                                                        ; 34b0: c3 28 2d    .(- 10 cycles    ; Put A on the calculator stack
 
 usr_no:
-    call find_int2                                                    ; 34b3: cd 99 1e    ... 17 cycles
+    call find_int2                                                    ; 34b3: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     ld hl,$2d2b                                                       ; 34b6: 21 2b 2d    !+- 10 cycles
     push hl                                                           ; 34b9: e5          .   11 cycles
     push bc                                                           ; 34ba: c5          .   11 cycles
     ret                                                               ; 34bb: c9          .   10 cycles
 
 usr_str:
-    call stk_fetch                                                    ; 34bc: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 34bc: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     dec bc                                                            ; 34bf: 0b          .   6 cycles
     ld a,b                                                            ; 34c0: 78          x   4 cycles
     or c                                                              ; 34c1: b1          .   4 cycles
@@ -9846,19 +10043,19 @@ usr_range:
     add a,a                                                           ; 34d6: 87          .   4 cycles
     cp $a8                                                            ; 34d7: fe a8       ..  7 cycles
     jr nc,report_a                                                    ; 34d9: 30 0c       0.  7/12 cycles
-    ld bc,(l5c7b)                                                     ; 34db: ed 4b 7b... .K{ 20 cycles
+    ld bc,(udg)                                                       ; 34db: ed 4b 7b... .K{ 20 cycles
     add a,c                                                           ; 34df: 81          .   4 cycles
     ld c,a                                                            ; 34e0: 4f          O   4 cycles
     jr nc,usr_stack                                                   ; 34e1: 30 01       0.  7/12 cycles
     inc b                                                             ; 34e3: 04          .   4 cycles
 ; $34e4 referenced 1 time by $34e1
 usr_stack:
-    jp stack_bc                                                       ; 34e4: c3 2b 2d    .+- 10 cycles
+    jp stack_bc                                                       ; 34e4: c3 2b 2d    .+- 10 cycles    ; Put BC on the calculator stack
 
 ; $34e7 referenced 4 times by $34c2, $34cc, $34d0, $34d9
 report_a:
     rst $08                                                           ; 34e7: cf          .   11 cycles
-    db 9                                                              ; 34e8: 09          .  ; Report A: Invalid argument
+    db 9                                                              ; 34e8: 09          .  ; Report A Invalid argument
 
 ; $34e9 referenced 9 times by $1cfa, $30c0, $346e, $3492, $34f9, $3501, $351c, $3525, $352e
 test_zero:
@@ -9976,10 +10173,10 @@ nu_or_str:
 strings:
     rrca                                                              ; 3559: 0f          .   4 cycles
     push af                                                           ; 355a: f5          .   11 cycles
-    call stk_fetch                                                    ; 355b: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 355b: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     push de                                                           ; 355e: d5          .   11 cycles
     push bc                                                           ; 355f: c5          .   11 cycles
-    call stk_fetch                                                    ; 3560: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 3560: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     pop hl                                                            ; 3563: e1          .   10 cycles
 ; $3564 referenced 1 time by $3583
 byte_comp:
@@ -10043,10 +10240,10 @@ end_tests:
     ret                                                               ; 359b: c9          .   10 cycles
 
 strs_add:
-    call stk_fetch                                                    ; 359c: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 359c: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     push de                                                           ; 359f: d5          .   11 cycles
     push bc                                                           ; 35a0: c5          .   11 cycles
-    call stk_fetch                                                    ; 35a1: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 35a1: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     pop hl                                                            ; 35a4: e1          .   10 cycles
     push hl                                                           ; 35a5: e5          .   11 cycles
     push de                                                           ; 35a6: d5          .   11 cycles
@@ -10054,7 +10251,7 @@ strs_add:
     add hl,bc                                                         ; 35a8: 09          .   11 cycles
     ld b,h                                                            ; 35a9: 44          D   4 cycles
     ld c,l                                                            ; 35aa: 4d          M   4 cycles
-    rst $30                                                           ; 35ab: f7          .   11 cycles
+    rst $30                                                           ; 35ab: f7          .   11 cycles    ; Make space in the workspace
     call stk_sto_str                                                  ; 35ac: cd b2 2a    ..* 17 cycles
     pop bc                                                            ; 35af: c1          .   10 cycles
     pop hl                                                            ; 35b0: e1          .   10 cycles
@@ -10072,7 +10269,7 @@ other_str:
     ldir                                                              ; 35bd: ed b0       ..  16/21 cycles
 ; $35bf referenced 4 times by $335b, $35bb, $361d, $3666
 stk_pntrs:
-    ld hl,(l5c65)                                                     ; 35bf: 2a 65 5c    *e\ 16 cycles
+    ld hl,(stkend)                                                    ; 35bf: 2a 65 5c    *e\ 16 cycles
     ld de,$fffb                                                       ; 35c2: 11 fb ff    ... 10 cycles
     push hl                                                           ; 35c5: e5          .   11 cycles
     add hl,de                                                         ; 35c6: 19          .   11 cycles
@@ -10080,12 +10277,12 @@ stk_pntrs:
     ret                                                               ; 35c8: c9          .   10 cycles
 
 chrs:
-    call fp_to_a                                                      ; 35c9: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 35c9: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr c,report_bd                                                    ; 35cc: 38 0e       8.  7/12 cycles
     jr nz,report_bd                                                   ; 35ce: 20 0c        .  7/12 cycles
     push af                                                           ; 35d0: f5          .   11 cycles
     ld bc,1                                                           ; 35d1: 01 01 00    ... 10 cycles
-    rst $30                                                           ; 35d4: f7          .   11 cycles
+    rst $30                                                           ; 35d4: f7          .   11 cycles    ; Make space in the workspace
     pop af                                                            ; 35d5: f1          .   10 cycles
     ld (de),a                                                         ; 35d6: 12          .   7 cycles
     call stk_sto_str                                                  ; 35d7: cd b2 2a    ..* 17 cycles
@@ -10095,59 +10292,59 @@ chrs:
 ; $35dc referenced 2 times by $35cc, $35ce
 report_bd:
     rst $08                                                           ; 35dc: cf          .   11 cycles
-    db $0a                                                            ; 35dd: 0a          .  ; Report B: Integer out of range
+    db $0a                                                            ; 35dd: 0a          .  ; Report B Integer out of range
 
 val_str:
-    ld hl,(l5c5d)                                                     ; 35de: 2a 5d 5c    *]\ 16 cycles
+    ld hl,(ch_add)                                                    ; 35de: 2a 5d 5c    *]\ 16 cycles
     push hl                                                           ; 35e1: e5          .   11 cycles
     ld a,b                                                            ; 35e2: 78          x   4 cycles
     add a,$e3                                                         ; 35e3: c6 e3       ..  7 cycles
     sbc a,a                                                           ; 35e5: 9f          .   4 cycles
     push af                                                           ; 35e6: f5          .   11 cycles
-    call stk_fetch                                                    ; 35e7: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 35e7: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     push de                                                           ; 35ea: d5          .   11 cycles
     inc bc                                                            ; 35eb: 03          .   6 cycles
-    rst $30                                                           ; 35ec: f7          .   11 cycles
+    rst $30                                                           ; 35ec: f7          .   11 cycles    ; Make space in the workspace
     pop hl                                                            ; 35ed: e1          .   10 cycles
-    ld (l5c5d),de                                                     ; 35ee: ed 53 5d... .S] 20 cycles
+    ld (ch_add),de                                                    ; 35ee: ed 53 5d... .S] 20 cycles
     push de                                                           ; 35f2: d5          .   11 cycles
     ldir                                                              ; 35f3: ed b0       ..  16/21 cycles
     ex de,hl                                                          ; 35f5: eb          .   4 cycles
     dec hl                                                            ; 35f6: 2b          +   6 cycles
     ld (hl),$0d                                                       ; 35f7: 36 0d       6.  10 cycles
-    res 7,(iy+1)                                                      ; 35f9: fd cb 01... ... 23 cycles
+    res 7,(iy+flags - err_nr)                                         ; 35f9: fd cb 01... ... 23 cycles
     call scanning                                                     ; 35fd: cd fb 24    ..$ 17 cycles
-    rst $18                                                           ; 3600: df          .   11 cycles
+    rst $18                                                           ; 3600: df          .   11 cycles    ; Get the current BASIC character
     cp $0d                                                            ; 3601: fe 0d       ..  7 cycles
     jr nz,v_rport_c                                                   ; 3603: 20 07        .  7/12 cycles
     pop hl                                                            ; 3605: e1          .   10 cycles
     pop af                                                            ; 3606: f1          .   10 cycles
-    xor (iy+1)                                                        ; 3607: fd ae 01    ... 19 cycles
+    xor (iy+flags - err_nr)                                           ; 3607: fd ae 01    ... 19 cycles
     and $40                                                           ; 360a: e6 40       .@  7 cycles
 ; $360c referenced 1 time by $3603
 v_rport_c:
     jp nz,report_c                                                    ; 360c: c2 8a 1c    ... 10 cycles
-    ld (l5c5d),hl                                                     ; 360f: 22 5d 5c    "]\ 16 cycles
-    set 7,(iy+1)                                                      ; 3612: fd cb 01... ... 23 cycles
+    ld (ch_add),hl                                                    ; 360f: 22 5d 5c    "]\ 16 cycles
+    set 7,(iy+flags - err_nr)                                         ; 3612: fd cb 01... ... 23 cycles
     call scanning                                                     ; 3616: cd fb 24    ..$ 17 cycles
     pop hl                                                            ; 3619: e1          .   10 cycles
-    ld (l5c5d),hl                                                     ; 361a: 22 5d 5c    "]\ 16 cycles
+    ld (ch_add),hl                                                    ; 361a: 22 5d 5c    "]\ 16 cycles
     jr stk_pntrs                                                      ; 361d: 18 a0       ..  12 cycles
 
 str_str:
     ld bc,1                                                           ; 361f: 01 01 00    ... 10 cycles
-    rst $30                                                           ; 3622: f7          .   11 cycles
-    ld (l5c5b),hl                                                     ; 3623: 22 5b 5c    "[\ 16 cycles
+    rst $30                                                           ; 3622: f7          .   11 cycles    ; Make space in the workspace
+    ld (k_cur),hl                                                     ; 3623: 22 5b 5c    "[\ 16 cycles
     push hl                                                           ; 3626: e5          .   11 cycles
-    ld hl,(l5c51)                                                     ; 3627: 2a 51 5c    *Q\ 16 cycles
+    ld hl,(curchl)                                                    ; 3627: 2a 51 5c    *Q\ 16 cycles
     push hl                                                           ; 362a: e5          .   11 cycles
     ld a,$ff                                                          ; 362b: 3e ff       >.  7 cycles
-    call chan_open                                                    ; 362d: cd 01 16    ... 17 cycles
-    call print_fp                                                     ; 3630: cd e3 2d    ..- 17 cycles
+    call chan_open                                                    ; 362d: cd 01 16    ... 17 cycles    ; Open a channel
+    call print_fp                                                     ; 3630: cd e3 2d    ..- 17 cycles    ; Print the number on the calculator stack
     pop hl                                                            ; 3633: e1          .   10 cycles
     call chan_flag                                                    ; 3634: cd 15 16    ... 17 cycles
     pop de                                                            ; 3637: d1          .   10 cycles
-    ld hl,(l5c5b)                                                     ; 3638: 2a 5b 5c    *[\ 16 cycles
+    ld hl,(k_cur)                                                     ; 3638: 2a 5b 5c    *[\ 16 cycles
     and a                                                             ; 363b: a7          .   4 cycles
     sbc hl,de                                                         ; 363c: ed 52       .R  15 cycles
     ld b,h                                                            ; 363e: 44          D   4 cycles
@@ -10157,17 +10354,17 @@ str_str:
     ret                                                               ; 3644: c9          .   10 cycles
 
 read_in:
-    call find_int1                                                    ; 3645: cd 94 1e    ... 17 cycles
+    call find_int1                                                    ; 3645: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     cp $10                                                            ; 3648: fe 10       ..  7 cycles
     jp nc,report_bb                                                   ; 364a: d2 9f 1e    ... 10 cycles
-    ld hl,(l5c51)                                                     ; 364d: 2a 51 5c    *Q\ 16 cycles
+    ld hl,(curchl)                                                    ; 364d: 2a 51 5c    *Q\ 16 cycles
     push hl                                                           ; 3650: e5          .   11 cycles
-    call chan_open                                                    ; 3651: cd 01 16    ... 17 cycles
+    call chan_open                                                    ; 3651: cd 01 16    ... 17 cycles    ; Open a channel
     call input_ad                                                     ; 3654: cd e6 15    ... 17 cycles
     ld bc,0                                                           ; 3657: 01 00 00    ... 10 cycles
     jr nc,r_i_store                                                   ; 365a: 30 03       0.  7/12 cycles
     inc c                                                             ; 365c: 0c          .   4 cycles
-    rst $30                                                           ; 365d: f7          .   11 cycles
+    rst $30                                                           ; 365d: f7          .   11 cycles    ; Make space in the workspace
     ld (de),a                                                         ; 365e: 12          .   7 cycles
 ; $365f referenced 1 time by $365a
 r_i_store:
@@ -10177,18 +10374,18 @@ r_i_store:
     jp stk_pntrs                                                      ; 3666: c3 bf 35    ..5 10 cycles
 
 code:
-    call stk_fetch                                                    ; 3669: cd f1 2b    ..+ 17 cycles
+    call stk_fetch                                                    ; 3669: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
     ld a,b                                                            ; 366c: 78          x   4 cycles
     or c                                                              ; 366d: b1          .   4 cycles
     jr z,stk_code                                                     ; 366e: 28 01       (.  7/12 cycles
     ld a,(de)                                                         ; 3670: 1a          .   7 cycles
 ; $3671 referenced 1 time by $366e
 stk_code:
-    jp stack_a                                                        ; 3671: c3 28 2d    .(- 10 cycles
+    jp stack_a                                                        ; 3671: c3 28 2d    .(- 10 cycles    ; Put A on the calculator stack
 
 len:
-    call stk_fetch                                                    ; 3674: cd f1 2b    ..+ 17 cycles
-    jp stack_bc                                                       ; 3677: c3 2b 2d    .+- 10 cycles
+    call stk_fetch                                                    ; 3674: cd f1 2b    ..+ 17 cycles    ; Get a string from the calculator stack
+    jp stack_bc                                                       ; 3677: c3 2b 2d    .+- 10 cycles    ; Put BC on the calculator stack
 
 dec_jr_nz:
     exx                                                               ; 367a: d9          .   4 cycles
@@ -10308,7 +10505,7 @@ exp:
     db $e3                                                            ; 36f7: e3          .  ; get-mem-3
     db $38                                                            ; 36f8: 38          8  ; end-calc
 
-    call fp_to_a                                                      ; 36f9: cd d5 2d    ..- 17 cycles
+    call fp_to_a                                                      ; 36f9: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr nz,n_negtv                                                     ; 36fc: 20 07        .  7/12 cycles
     jr c,report_6b                                                    ; 36fe: 38 03       8.  7/12 cycles
     add a,(hl)                                                        ; 3700: 86          .   7 cycles
@@ -10316,7 +10513,7 @@ exp:
 ; $3703 referenced 1 time by $36fe
 report_6b:
     rst $08                                                           ; 3703: cf          .   11 cycles
-    db 5                                                              ; 3704: 05          .  ; Report 6: Number too big
+    db 5                                                              ; 3704: 05          .  ; Report 6 Number too big
 
 ; $3705 referenced 1 time by $36fc
 n_negtv:
@@ -10349,7 +10546,7 @@ ln:
 
 report_ab:
     rst $08                                                           ; 371a: cf          .   11 cycles
-    db 9                                                              ; 371b: 09          .  ; Report A: Invalid argument
+    db 9                                                              ; 371b: 09          .  ; Report A Invalid argument
 valid:
     db $a0                                                            ; 371c: a0          .  ; stk-zero
     db 2                                                              ; 371d: 02          .  ; delete
@@ -10357,7 +10554,7 @@ valid:
 
     ld a,(hl)                                                         ; 371f: 7e          ~   7 cycles
     ld (hl),$80                                                       ; 3720: 36 80       6.  10 cycles
-    call stack_a                                                      ; 3722: cd 28 2d    .(- 17 cycles
+    call stack_a                                                      ; 3722: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 3725: ef          .   11 cycles
     db $34                                                            ; 3726: 34          4  ; stk-data
     db $38, 0                                                         ; 3727: 38 00       8. ; 128
@@ -11239,7 +11436,7 @@ char_set:
     db %"--------"                                                    ; 3efd: 00          .
     db %"--------"                                                    ; 3efe: 00          .
     db %"########"                                                    ; 3eff: ff          .
-    db %"--------"                                                    ; 3f00: 00          .  ; '`'
+    db %"--------"                                                    ; 3f00: 00          .  ; $60 (pound sign)
     db %"---###--"                                                    ; 3f01: 1c          .
     db %"--#---#-"                                                    ; 3f02: 22          "
     db %"-####---"                                                    ; 3f03: 78          x
@@ -11487,7 +11684,7 @@ char_set:
     db %"--------"                                                    ; 3ff5: 00          .
     db %"--------"                                                    ; 3ff6: 00          .
     db %"--------"                                                    ; 3ff7: 00          .
-    db %"--####--"                                                    ; 3ff8: 3c          <  ; the copyright symbol
+    db %"--####--"                                                    ; 3ff8: 3c          <  ; $7F (copyright sign)
     db %"-#----#-"                                                    ; 3ff9: 42          B
     db %"#--##--#"                                                    ; 3ffa: 99          .
     db %"#-#----#"                                                    ; 3ffb: a1          .
@@ -11532,6 +11729,26 @@ pydis_end:
 ; ASSERT (($80 + 's') == $f3)
 ; ASSERT (($80 + 't') == $f4)
 ; ASSERT (($80 + 'y') == $f9)
+; ASSERT (((frames+2) - err_nr) == $40)
+; ASSERT (((k_cur+1) - err_nr) == $22)
+; ASSERT (((kstate+4) - err_nr) == $-36)
+; ASSERT (((membot+10) - err_nr) == $62)
+; ASSERT (((membot+23) - err_nr) == $6f)
+; ASSERT (((membot+25) - err_nr) == $71)
+; ASSERT (((membot+25) - err_nr) == $71)
+; ASSERT (((membot+25) - err_nr) == $71)
+; ASSERT (((membot+25) - err_nr) == $71)
+; ASSERT (((membot+25) - err_nr) == $71)
+; ASSERT (((membot+25) - err_nr) == $71)
+; ASSERT (((membot+25) - err_nr) == $71)
+; ASSERT (((membot+26) - err_nr) == $72)
+; ASSERT (((membot+26) - err_nr) == $72)
+; ASSERT (((s_posn+1) - err_nr) == $4f)
+; ASSERT (((s_posn+1) - err_nr) == $4f)
+; ASSERT (((x_ptr+1) - err_nr) == $26)
+; ASSERT (((x_ptr+1) - err_nr) == $26)
+; ASSERT (((x_ptr+1) - err_nr) == $26)
+; ASSERT (((x_ptr+1) - err_nr) == $26)
 ; ASSERT ((abs) == $346a)
 ; ASSERT ((acs) == $3843)
 ; ASSERT ((add_char) == $0f81)
@@ -11539,7 +11756,10 @@ pydis_end:
 ; ASSERT ((asn) == $3833)
 ; ASSERT ((atn) == $37e2)
 ; ASSERT ((beep) == $03f8)
+; ASSERT ((bordcr - err_nr) == $0e)
 ; ASSERT ((border) == $2294)
+; ASSERT ((breg - err_nr) == $2d)
+; ASSERT ((breg - err_nr) == $2d)
 ; ASSERT ((c_ent - $) == $03)
 ; ASSERT ((c_ent - $) == $06)
 ; ASSERT ((cases - $) == $03)
@@ -11574,12 +11794,24 @@ pydis_end:
 ; ASSERT ((dec_jr_nz) == $367a)
 ; ASSERT ((def_fn) == $1f60)
 ; ASSERT ((delete) == $33a1)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
+; ASSERT ((df_sz - err_nr) == $31)
 ; ASSERT ((dim) == $2c02)
 ; ASSERT ((division) == $31af)
 ; ASSERT ((dr_sin_nz - $) == $06)
 ; ASSERT ((draw) == $2382)
 ; ASSERT ((e_divsn - $) == $04)
 ; ASSERT ((e_fetch - $) == $02)
+; ASSERT ((e_ppc - err_nr) == $0f)
+; ASSERT ((e_ppc - err_nr) == $0f)
 ; ASSERT ((e_to_fp) == $2d4f)
 ; ASSERT ((ed_delete - $) == $70)
 ; ASSERT ((ed_down - $) == $50)
@@ -11593,12 +11825,112 @@ pydis_end:
 ; ASSERT ((ed_symbol - $) == $cf)
 ; ASSERT ((ed_up - $) == $b5)
 ; ASSERT ((end_calc) == $369b)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
+; ASSERT ((err_nr - err_nr) == $00)
 ; ASSERT ((exchange) == $343c)
 ; ASSERT ((exit - $) == $03)
 ; ASSERT ((exp) == $36c4)
 ; ASSERT ((expt_1num - $) == $7b)
 ; ASSERT ((expt_2num - $) == $71)
 ; ASSERT ((expt_exp - $) == $81)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags - err_nr) == $01)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flags2 - err_nr) == $30)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
+; ASSERT ((flagx - err_nr) == $37)
 ; ASSERT ((for) == $1d03)
 ; ASSERT ((fp_calc_2) == $33a2)
 ; ASSERT ((g_loop - $) == $ee)
@@ -11614,8 +11946,10 @@ pydis_end:
 ; ASSERT ((int) == $36af)
 ; ASSERT ((jump) == $3686)
 ; ASSERT ((jump_true) == $368f)
+; ASSERT ((k_data - err_nr) == $-2d)
 ; ASSERT ((key_input) == $10a8)
 ; ASSERT ((key_next) == $110d)
+; ASSERT ((kstate - err_nr) == $-3a)
 ; ASSERT ((last - $) == $06)
 ; ASSERT ((last - $) == $1e)
 ; ASSERT ((len) == $3674)
@@ -11624,6 +11958,10 @@ pydis_end:
 ; ASSERT ((llist) == $17f5)
 ; ASSERT ((ln) == $3713)
 ; ASSERT ((lprint) == $1fc9)
+; ASSERT ((mode - err_nr) == $07)
+; ASSERT ((mode - err_nr) == $07)
+; ASSERT ((mode - err_nr) == $07)
+; ASSERT ((mode - err_nr) == $07)
 ; ASSERT ((move_fp) == $33c0)
 ; ASSERT ((multiply) == $30ca)
 ; ASSERT ((n_mod_m) == $36a0)
@@ -11646,12 +11984,19 @@ pydis_end:
 ; ASSERT ((no_l_eql_etc) == $353b)
 ; ASSERT ((no_l_eql_etc) == $353b)
 ; ASSERT ((not) == $3501)
+; ASSERT ((nsppc - err_nr) == $0a)
+; ASSERT ((nsppc - err_nr) == $0a)
+; ASSERT ((nsppc - err_nr) == $0a)
+; ASSERT ((nsppc - err_nr) == $0a)
+; ASSERT ((nsppc - err_nr) == $0a)
+; ASSERT ((nsppc - err_nr) == $0a)
 ; ASSERT ((one - $) == $09)
 ; ASSERT ((open) == $1736)
 ; ASSERT ((open_k - $) == $06)
 ; ASSERT ((open_p - $) == $0a)
 ; ASSERT ((open_s - $) == $08)
 ; ASSERT ((or) == $351b)
+; ASSERT ((osppc - err_nr) == $36)
 ; ASSERT ((out) == $1e7a)
 ; ASSERT ((p_beep - $) == $92)
 ; ASSERT ((p_border - $) == $94)
@@ -11668,6 +12013,13 @@ pydis_end:
 ; ASSERT ((p_dim - $) == $3f)
 ; ASSERT ((p_draw - $) == $5c)
 ; ASSERT ((p_erase - $) == $c4)
+; ASSERT ((p_flag - err_nr) == $57)
+; ASSERT ((p_flag - err_nr) == $57)
+; ASSERT ((p_flag - err_nr) == $57)
+; ASSERT ((p_flag - err_nr) == $57)
+; ASSERT ((p_flag - err_nr) == $57)
+; ASSERT ((p_flag - err_nr) == $57)
+; ASSERT ((p_flag - err_nr) == $57)
 ; ASSERT ((p_flash - $) == $98)
 ; ASSERT ((p_for - $) == $2b)
 ; ASSERT ((p_format - $) == $bc)
@@ -11693,6 +12045,8 @@ pydis_end:
 ; ASSERT ((p_pause - $) == $59)
 ; ASSERT ((p_plot - $) == $51)
 ; ASSERT ((p_poke - $) == $43)
+; ASSERT ((p_posn - err_nr) == $45)
+; ASSERT ((p_posn - err_nr) == $45)
 ; ASSERT ((p_print - $) == $2d)
 ; ASSERT ((p_random - $) == $42)
 ; ASSERT ((p_read - $) == $6c)
@@ -11707,6 +12061,7 @@ pydis_end:
 ; ASSERT ((peek) == $34ac)
 ; ASSERT ((pf_negtve - $) == $0b)
 ; ASSERT ((pf_postve - $) == $0d)
+; ASSERT ((pip - err_nr) == $-1)
 ; ASSERT ((plot) == $22dc)
 ; ASSERT ((po_1_oper - $) == $5a)
 ; ASSERT ((po_1_oper - $) == $5b)
@@ -11729,11 +12084,14 @@ pydis_end:
 ; ASSERT ((po_right - $) == $29)
 ; ASSERT ((po_tv_2) == $0a6d)
 ; ASSERT ((poke) == $1e80)
+; ASSERT ((pr_cc - err_nr) == $46)
 ; ASSERT ((print) == $1fcd)
 ; ASSERT ((print_out) == $09f4)
 ; ASSERT ((print_out) == $09f4)
 ; ASSERT ((print_out) == $09f4)
 ; ASSERT ((randomize) == $1e4f)
+; ASSERT ((rasp - err_nr) == $-2)
+; ASSERT ((rasp - err_nr) == $-2)
 ; ASSERT ((re_stack) == $3297)
 ; ASSERT ((read) == $1ded)
 ; ASSERT ((read_in) == $3645)
@@ -11753,6 +12111,7 @@ pydis_end:
 ; ASSERT ((s_inkey_str - $) == $8f)
 ; ASSERT ((s_pi - $) == $84)
 ; ASSERT ((s_point - $) == $ce)
+; ASSERT ((s_posnl - err_nr) == $50)
 ; ASSERT ((s_quote - $) == $1c)
 ; ASSERT ((s_rnd - $) == $57)
 ; ASSERT ((s_screen_str - $) == $bf)
@@ -11760,6 +12119,9 @@ pydis_end:
 ; ASSERT ((sa_ld_ret) == $053f)
 ; ASSERT ((sa_ld_ret) == $053f)
 ; ASSERT ((scan_loop) == $1b52)
+; ASSERT ((scr_ct - err_nr) == $52)
+; ASSERT ((scr_ct - err_nr) == $52)
+; ASSERT ((scr_ct - err_nr) == $52)
 ; ASSERT ((series_xx) == $3449)
 ; ASSERT ((sgn) == $3492)
 ; ASSERT ((sin) == $37b5)
@@ -11771,13 +12133,54 @@ pydis_end:
 ; ASSERT ((stop) == $1cee)
 ; ASSERT ((str_and_no) == $352d)
 ; ASSERT ((str_str) == $361f)
+; ASSERT ((strlen - err_nr) == $38)
 ; ASSERT ((strs_add) == $359c)
 ; ASSERT ((sub_c0eac) == $0eac)
 ; ASSERT ((sub_c1c10 - $) == $0f)
+; ASSERT ((subppc - err_nr) == $0d)
+; ASSERT ((subppc - err_nr) == $0d)
+; ASSERT ((subppc - err_nr) == $0d)
+; ASSERT ((subppc - err_nr) == $0d)
+; ASSERT ((subppc - err_nr) == $0d)
+; ASSERT ((subppc - err_nr) == $0d)
 ; ASSERT ((subtract) == $300f)
 ; ASSERT ((tan) == $37da)
 ; ASSERT ((to_power) == $3851)
 ; ASSERT ((truncate) == $3214)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
+; ASSERT ((tv_flag - err_nr) == $02)
 ; ASSERT ((usr_no) == $34b3)
 ; ASSERT ((usr_str) == $34bc)
 ; ASSERT ((val_str) == $35de)
@@ -11795,111 +12198,112 @@ pydis_end:
 ;     error_1:               37
 ;     report_c:              36
 ;     syntax_z:              31
-;     l5c5d:                 24
+;     ch_add:                24
 ;     print_a:               21
 ;     check_end:             20
-;     l5c65:                 20
-;     l5c74:                 18
+;     stkend:                20
+;     t_addr:                18
+;     e_line:                17
 ;     find_int2:             17
-;     l5c59:                 17
 ;     chan_open:             16
 ;     stk_fetch:             16
-;     l5c3d:                 14
-;     l5c5f:                 14
+;     err_sp:                14
+;     x_ptr:                 14
 ;     expt_1num:             13
-;     l5c61:                 13
 ;     make_room:             13
 ;     scanning:              13
+;     worksp:                13
 ;     bc_spaces:             12
-;     l5c5b:                 12
+;     k_cur:                 12
 ;     stack_a:               12
+;     attr_t:                11
 ;     fn_skpovr:             11
-;     l5c8f:                 11
 ;     temps:                 11
-;     l5c51:                 10
+;     curchl:                10
 ;     line_addr:             10
 ;     cl_set:                 9
-;     l5c4d:                  9
-;     l5c53:                  9
+;     dest:                   9
 ;     next_one:               9
+;     prog:                   9
 ;     stk_sto_str:            9
 ;     test_zero:              9
 ;     find_int1:              8
 ;     fp_to_a:                8
 ;     reclaim_2:              8
 ;     report_6:               8
-;     l5c49:                  7
-;     l5c7d:                  7
+;     coords:                 7
+;     e_ppc:                  7
 ;     wait_key:               7
 ;     alpha:                  6
 ;     alphanum:               6
 ;     int_fetch:              6
 ;     k_look_up:              6
-;     l5c45:                  6
-;     l5c4b:                  6
-;     l5c63:                  6
-;     l5c68:                  6
-;     l5c91:                  6
+;     mem:                    6
 ;     numeric:                6
+;     p_flag:                 6
 ;     po_fetch:               6
 ;     po_msg:                 6
+;     ppc:                    6
 ;     report_3:               6
 ;     s_cont_2:               6
 ;     stk_to_bc:              6
+;     stkbot:                 6
 ;     unstack_z:              6
+;     vars:                   6
+;     attr_p:                 5
+;     bordcr:                 5
+;     chans:                  5
 ;     cls_lower:              5
 ;     co_change:              5
+;     defadd:                 5
 ;     fetch_two:              5
+;     flags:                  5
 ;     indexer:                5
-;     l5c0b:                  5
-;     l5c3b:                  5
-;     l5c42:                  5
-;     l5c48:                  5
-;     l5c4f:                  5
-;     l5c7b:                  5
-;     l5c88:                  5
-;     l5c8a:                  5
-;     l5c8d:                  5
-;     l5cb2:                  5
 ;     look_vars:              5
+;     newppc:                 5
 ;     out_code:               5
+;     ramtop:                 5
 ;     report_b:               5
 ;     report_bb:              5
+;     s_posn:                 5
+;     s_posnl:                5
 ;     s_push_po:              5
 ;     test_room:              5
+;     udg:                    5
 ;     v_run_syn:              5
 ;     beeper:                 4
 ;     ch_add_plus_1:          4
 ;     cl_addr:                4
 ;     clear_sp:               4
+;     datadd:                 4
 ;     each_stmt:              4
+;     echo_e:                 4
 ;     fp_0_1:                 4
 ;     fp_to_bc:               4
 ;     get_hl_times_de:        4
 ;     in_next_2:              4
 ;     int_store:              4
-;     l5c55:                  4
-;     l5c57:                  4
-;     l5c6c:                  4
-;     l5c82:                  4
-;     l5cb4:                  4
 ;     ld_break:               4
 ;     ld_edge_1:              4
 ;     line_draw:              4
 ;     move_fp:                4
+;     nxtlin:                 4
 ;     oflow_clr:              4
 ;     out_ch_3:               4
+;     p_ramt:                 4
 ;     pr_posn_1:              4
 ;     prep_m_d:               4
 ;     reclaim_1:              4
 ;     report_4:               4
 ;     report_a:               4
 ;     s_numeric:              4
+;     s_top:                  4
 ;     stack_bc:               4
 ;     stk_pntrs:              4
 ;     use_zero:               4
 ;     add_char:               3
 ;     chan_flag:              3
+;     chars:                  3
 ;     cl_all:                 3
 ;     cl_line:                3
 ;     class_01:               3
@@ -11908,17 +12312,11 @@ pydis_end:
 ;     e_format:               3
 ;     e_to_fp:                3
 ;     editor:                 3
+;     err_nr:                 3
+;     frames:                 3
 ;     go_to_2:                3
 ;     in_item_1:              3
 ;     int_to_fp:              3
-;     l5c36:                  3
-;     l5c38:                  3
-;     l5c3a:                  3
-;     l5c44:                  3
-;     l5c76:                  3
-;     l5c78:                  3
-;     l5c7e:                  3
-;     l5c8c:                  3
 ;     ld_block:               3
 ;     ld_edge_2:              3
 ;     ld_look_h:              3
@@ -11928,6 +12326,7 @@ pydis_end:
 ;     list_all_2:             3
 ;     loc_mem:                3
 ;     look_prog:              3
+;     nsppc:                  3
 ;     open_1:                 3
 ;     out_c_2:                3
 ;     out_ch_2:               3
@@ -11937,6 +12336,7 @@ pydis_end:
 ;     po_save:                3
 ;     po_scr:                 3
 ;     pr_posn_3:              3
+;     rasp:                   3
 ;     re_st_two:              3
 ;     remove_fp:              3
 ;     report_5:               3
@@ -11949,6 +12349,8 @@ pydis_end:
 ;     s_next:                 3
 ;     s_quote_s:              3
 ;     sa_leader:              3
+;     scr_ct:                 3
+;     seed:                   3
 ;     shift_fp:               3
 ;     stack_num:              3
 ;     stk_var:                3
@@ -11959,6 +12361,7 @@ pydis_end:
 ;     auto_list:              2
 ;     be_h_and_l_lp:          2
 ;     break_key:              2
+;     breg:                   2
 ;     ca_10_times_a_plus_c:   2
 ;     cd_prms1:               2
 ;     cl_attr:                2
@@ -11971,6 +12374,9 @@ pydis_end:
 ;     cp_lines:               2
 ;     de_de_plus_1:           2
 ;     def_fn_6:               2
+;     df_cc:                  2
+;     df_ccl:                 2
+;     df_sz:                  2
 ;     div_start:              2
 ;     draw_line:              2
 ;     e_line_no:              2
@@ -11980,6 +12386,7 @@ pydis_end:
 ;     ed_edge_2:              2
 ;     ed_enter:               2
 ;     fetch_num:              2
+;     flags2:                 2
 ;     frst_less:              2
 ;     go_to:                  2
 ;     hl_end:                 2
@@ -11995,28 +12402,16 @@ pydis_end:
 ;     key_data:               2
 ;     key_flag:               2
 ;     key_scan:               2
-;     l5c08:                  2
-;     l5c09:                  2
-;     l5c0e:                  2
-;     l5c3f:                  2
-;     l5c47:                  2
-;     l5c67:                  2
-;     l5c6a:                  2
-;     l5c6b:                  2
-;     l5c72:                  2
-;     l5c80:                  2
-;     l5c84:                  2
-;     l5c86:                  2
-;     l5cab:                  2
-;     l5cac:                  2
 ;     l_char:                 2
 ;     l_no_sp:                2
 ;     l_spaces:               2
+;     last_k:                 2
 ;     ld_bytes:               2
 ;     ld_name:                2
 ;     ld_wait:                2
 ;     line_use:               2
 ;     list_5:                 2
+;     list_sp:                2
 ;     ln_fetch:               2
 ;     log_2_pow_a:            2
 ;     main_2:                 2
@@ -12055,6 +12450,7 @@ pydis_end:
 ;     po_step:                2
 ;     pointers:               2
 ;     pr_all_1:               2
+;     pr_cc:                  2
 ;     pr_end_z:               2
 ;     pr_item_1:              2
 ;     prep_add:               2
@@ -12064,6 +12460,7 @@ pydis_end:
 ;     print_out:              2
 ;     ram_done:               2
 ;     read_1:                 2
+;     repdel:                 2
 ;     report_2:               2
 ;     report_bd:              2
 ;     report_f:               2
@@ -12102,10 +12499,13 @@ pydis_end:
 ;     str_alter:              2
 ;     str_data:               2
 ;     str_test:               2
+;     strlen:                 2
+;     subppc:                 2
 ;     sv_count:               2
 ;     sv_rpt_c:               2
 ;     sv_slice:               2
 ;     temp_ptr1:              2
+;     tvdata:                 2
 ;     two_param:              2
 ;     v_end:                  2
 ;     v_found_2:              2
@@ -12262,6 +12662,7 @@ pydis_end:
 ;     f_use_1:                1
 ;     find_i_1:               1
 ;     first_3d:               1
+;     flagx:                  1
 ;     form_exp:               1
 ;     fp_a_end:               1
 ;     fp_delete:              1
@@ -12300,6 +12701,7 @@ pydis_end:
 ;     jump_2:                 1
 ;     k_8_and_9:              1
 ;     k_at_char:              1
+;     k_data:                 1
 ;     k_digit:                1
 ;     k_e_let:                1
 ;     k_end:                  1
@@ -12321,18 +12723,6 @@ pydis_end:
 ;     key_m_cl:               1
 ;     key_mode:               1
 ;     keyboard:               1
-;     l5c0a:                  1
-;     l5c0c:                  1
-;     l5c0d:                  1
-;     l5c0f:                  1
-;     l5c16:                  1
-;     l5c41:                  1
-;     l5c66:                  1
-;     l5c6e:                  1
-;     l5c71:                  1
-;     l5c8b:                  1
-;     l5ca1:                  1
-;     l5cb0:                  1
 ;     l_add_str:              1
 ;     l_delete_str:           1
 ;     l_each_ch:              1
@@ -12409,6 +12799,7 @@ pydis_end:
 ;     me_old_vp:              1
 ;     me_var_l2:              1
 ;     mlt_loop:               1
+;     mode:                   1
 ;     mult_long:              1
 ;     mult_oflw:              1
 ;     mult_rslt:              1
@@ -12422,6 +12813,7 @@ pydis_end:
 ;     next_o_3:               1
 ;     next_o_4:               1
 ;     next_o_5:               1
+;     nmiadd:                 1
 ;     no_add:                 1
 ;     no_reset:               1
 ;     no_rstore:              1
@@ -12432,6 +12824,7 @@ pydis_end:
 ;     nxt_dgt_1:              1
 ;     nxt_dgt_2:              1
 ;     oflw1_clr:              1
+;     oldppc:                 1
 ;     one_shift:              1
 ;     one_space:              1
 ;     open_2:                 1
@@ -12547,6 +12940,7 @@ pydis_end:
 ;     report_m:               1
 ;     report_n:               1
 ;     report_oa:              1
+;     repper:                 1
 ;     reserve:                1
 ;     rest_run:               1
 ;     restk_sub:              1
@@ -12716,74 +13110,6 @@ pydis_end:
 
 ; Automatically generated labels:
 ;     c0425
-;     l5c08
-;     l5c09
-;     l5c0a
-;     l5c0b
-;     l5c0c
-;     l5c0d
-;     l5c0e
-;     l5c0f
-;     l5c16
-;     l5c36
-;     l5c38
-;     l5c3a
-;     l5c3b
-;     l5c3d
-;     l5c3f
-;     l5c41
-;     l5c42
-;     l5c44
-;     l5c45
-;     l5c47
-;     l5c48
-;     l5c49
-;     l5c4b
-;     l5c4d
-;     l5c4f
-;     l5c51
-;     l5c53
-;     l5c55
-;     l5c57
-;     l5c59
-;     l5c5b
-;     l5c5d
-;     l5c5f
-;     l5c61
-;     l5c63
-;     l5c65
-;     l5c66
-;     l5c67
-;     l5c68
-;     l5c6a
-;     l5c6b
-;     l5c6c
-;     l5c6e
-;     l5c71
-;     l5c72
-;     l5c74
-;     l5c76
-;     l5c78
-;     l5c7b
-;     l5c7d
-;     l5c7e
-;     l5c80
-;     l5c82
-;     l5c84
-;     l5c86
-;     l5c88
-;     l5c8a
-;     l5c8b
-;     l5c8c
-;     l5c8d
-;     l5c8f
-;     l5c91
-;     l5ca1
-;     l5cab
-;     l5cac
-;     l5cb0
-;     l5cb2
-;     l5cb4
 ;     sub_c0eac
 ;     sub_c1c10
 

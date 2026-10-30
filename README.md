@@ -5,6 +5,7 @@
 - [Installation](#installation)
 - [Command/function reference](#commandfunction-reference)
 - [Commodore 64, VIC-20, C128, Plus/4, PET and 1541](#commodore-64-vic-20-c128-plus4-pet-and-1541)
+- [ZX Spectrum](#zx-spectrum)
 - [JSON output](#json-output)
 - [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
@@ -189,7 +190,7 @@ Load the contents of `filename` into the disassembler's memory at address `binar
 
 To load only part of the file (e.g. to skip a header), give `offset`, where in the file to start, and optionally `length`, the number of bytes to load (by default, the rest of the file). The `md5sum` is still that of the whole file. A file whose name ends `.prg` or `.p00` gives a warning when loaded from its start, since `load_prg()` (below) is probably what's wanted.
 
-"Z80" includes its undocumented opcodes, since Z80 code often uses them, and they're traced as what they do (with their cycle counts). Those the assembler accepts are written as instructions (see the assembler's notes above); the others are written as data bytes with the instruction in a comment, e.g. `db $ed, $4c ; neg (undocumented)`: the duplicates (another encoding of an instruction, such as ED 4C, a second NEG), the ED opcodes that do nothing, and a DD or FD prefix before an instruction that doesn't use HL (the prefix does nothing, so it's written as a byte on its own, `db $dd ; prefix with no effect (undocumented)`, followed by the instruction). RST is traced as a call to its address (when that's loaded, giving it a label such as `rst_08`), returning to the next instruction unless a subroutine hook (see `hook_subroutine()`) says otherwise, e.g. for data that follows it. `examples/python/spectrum48.py` (the ZX Spectrum 48K ROM) has hooks for RST $08, which is followed by an error number, and RST $28, which is followed by the floating point calculator's bytecode. An index register's displacement is written as a signed number, e.g. `ld a,(ix-3)`, or an expression given with `expr()` at its byte. What's known about the registers (including IX, IY, their halves, I and the alternate set) and the flags S, Z, H, P/V, N and C is tracked, as for the 6502 and 8080: `config.set_show_cpu_state(True)` shows it after each instruction, e.g. `A:41 BC:12-- DE:---- HL:---- IX:---- IY:---- SP:---- sZh-nc` (`--` where a byte isn't known; a flag is upper case if set, lower case if clear, `-` if not known). Memory isn't tracked, so a value loaded from memory isn't known; a call (or RST) could change anything; and after a conditional jump or return that isn't taken, its condition is known to be false (e.g. Z is set after `jr nz` falls through), as is B after DJNZ (0), and BC after LDIR (0).
+"Z80" includes its undocumented opcodes, since Z80 code often uses them, and they're traced as what they do (with their cycle counts). Those the assembler accepts are written as instructions (see the assembler's notes above); the others are written as data bytes with the instruction in a comment, e.g. `db $ed, $4c ; neg (undocumented)`: the duplicates (another encoding of an instruction, such as ED 4C, a second NEG), the ED opcodes that do nothing, and a DD or FD prefix before an instruction that doesn't use HL (the prefix does nothing, so it's written as a byte on its own, `db $dd ; prefix with no effect (undocumented)`, followed by the instruction). RST is traced as a call to its address (when that's loaded, giving it a label such as `rst_08`), returning to the next instruction unless a subroutine hook (see `hook_subroutine()`) says otherwise, e.g. for data that follows it. For the ZX Spectrum, see [ZX Spectrum](#zx-spectrum). An index register's displacement is written as a signed number, e.g. `ld a,(ix-3)`, or an expression given with `expr()` at its byte. What's known about the registers (including IX, IY, their halves, I and the alternate set) and the flags S, Z, H, P/V, N and C is tracked, as for the 6502 and 8080: `config.set_show_cpu_state(True)` shows it after each instruction, e.g. `A:41 BC:12-- DE:---- HL:---- IX:---- IY:---- SP:---- sZh-nc` (`--` where a byte isn't known; a flag is upper case if set, lower case if clear, `-` if not known). Memory isn't tracked, so a value loaded from memory isn't known; a call (or RST) could change anything; and after a conditional jump or return that isn't taken, its condition is known to be false (e.g. Z is set after `jr nz` falls through), as is B after DJNZ (0), and BC after LDIR (0).
 
 :pencil:`load_prg(filename, cpu_name="6502", md5sum=None)`
 
@@ -518,7 +519,7 @@ The `on_entry` and `on_exit` optional parameters are dictionaries that specify a
 
 The `is_entry_point` parameter adds the address as an entry point for code.
 
-The `hook` parameter is a callback to allow for the decoration of the calling code. If `None` (the default) a standard hook is used, which comments where registers are set up before each call and used after it; `hook=False` turns decoration off.
+The `hook` parameter is a callback to allow for the decoration of the calling code. If `None` (the default) a standard hook is used, which comments where registers are set up before each call and used after it (for the Z80, it comments each call with the title); `hook=False` turns decoration off. A hook is called as `hook(runtime_addr, state, subroutine)`, for each call to the subroutine (for the Z80, a CALL, RST or JP) and for the code at its address, with the CPU's state before the instruction.
 
 :pencil:`no_automatic_comment(runtime_addr)`
 
@@ -759,6 +760,33 @@ For a cartridge: names its header (the cold and warm start vectors, and the sign
 
 For disassembling a Kernal ROM (at &e000, or &c000 on the C128 and Plus/4) or BASIC ROM (at &a000 on the C64, &c000 on the VIC-20, &4000 on the C128, &8000 on the Plus/4) itself: trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors (or JMPs, on the C128 and Plus/4). examples/python/open_roms_kernal.py and open_roms_basic.py disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
 
+## ZX Spectrum
+
+`spectrum.spectrum48()` does the same for a 48K ZX Spectrum program (Z80 code, so load it with the CPU `"z80"`; call it after `load()`):
+
+```python
+from commands import *
+import spectrum
+
+load(0x8000, "game.bin", "z80")
+spectrum.spectrum48()
+entry(0x8000)
+go()
+```
+
+It gives:
+
+* **Names for the system variables**, output only if used, as in the Spectrum's manual, in lower case (e.g. `frames`, `last_k`, `err_sp`; `frames+1` etc. for the bytes after the first), and for the screen, the attributes and the printer buffer (`screen`, `attributes`, `printer_buffer`), under headings by region. The ROM keeps IY at ERR_NR's address, &5C3A, so a system variable addressed with IY is written as an offset from it, e.g. `res 5,(iy+flags - err_nr)` (unless the code is known to have set IY to something else).
+* **The ROM's routines and tables**, by the names in *The Complete Spectrum ROM Disassembly* (e.g. `cls`, `chan_open`, `pr_string`, `print_fp`, from CLS, CHAN-OPEN etc.), as optional labels; calls to the commonly used ones are commented, e.g. `call cls ; Clear the screen`. `spectrum48(rom_labels=False)` leaves these out.
+* **RST $10** (print a character) commented with what's printed, when A is known: `Print 'A'`, `Print $0D (ENTER)`, `Print $16 (AT)`, then `Print 10 (AT's line)` and `Print 5 (AT's column)` for its parameters.
+* **RST $08** (an error), followed by the error number, which is marked as a byte with the report in a comment (`Report 9 STOP statement`); the code doesn't continue after it.
+* **RST $28** (the floating point calculator), and calls to GEN-ENT-1 and GEN-ENT-2, followed by the calculator's bytecode, which is marked as bytes, each with its instruction's name in a comment (`multiply`, `stk-data`, `end-calc`), its jumps as `label - $`, and its numbers (in the calculator's compressed format) with their values. The code continues after the end-calc.
+* **The ULA's port**, &FE, named `ula_port`, with what's written to it commented when it's known (`out (ula_port),a ; Border blue`, with MIC and the speaker), and which keyboard half rows are read (`in a,(ula_port) ; Read the keyboard (SPACE-B)`), for `out (n),a` and `in a,(n)`, and `out (c),r` and `in r,(c)` when C is even.
+
+:pencil:`spectrum.rom()`
+
+For disassembling the 48K ROM itself (loaded at 0, after `spectrum48()`): traces its code from the restarts, the interrupt, the NMI and its tables of routines, marks its data (the tokens, the messages, the calculator's constants and the character set) and names every routine and table. See examples/python/spectrum48.py.
+
 ## JSON output
 
 As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: for example a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
@@ -814,6 +842,7 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 * py8dis is heavily influenced by Phill Harvey-Smith's [BeebDis](https://github.com/prime6809/BeebDis); I've tried to model py8dis commands on BeebDis where possible.
 * The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels (and the C128's and Plus/4's workspace) from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `commodoresource.py`, made by `tools/make_commodoresource.py`).
 * The PET's ROM labels and workspace are from Martin Hoffmann-Vetter's reconstructions of Commodore's source, in cbmsrc, and the 1541's DOS ROM labels and workspace from the reconstructions of its source there.
+* The ZX Spectrum's ROM routine names in `spectrumtables.py` are those of *The Complete Spectrum ROM Disassembly* (Ian Logan and Frank O'Hara, Melbourne House, 1983), with their addresses from Geoff Wearmouth's assembly listing of the ROM. The 48K ROM used as a test is copyright Amstrad plc, who have kindly given their permission for its redistribution but retain that copyright (see `examples/orig/spectrum48`).
 * The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).
 * The C128 test game is Sebastian Dechert's [memory128](https://github.com/radi0sus/memory128) (BSD 3-clause licence; see `examples/orig/memory128`).
 * The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).

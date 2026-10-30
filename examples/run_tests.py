@@ -66,7 +66,8 @@ TESTS = [
     ("test_z80",                 ["z88dk"],                    "every documented Z80 instruction"),
     ("undocumented_z80",         ["z88dk"],                    "the Z80's undocumented opcodes: those z88dk-z80asm accepts as instructions, the others as data"),
     ("state_z80",                ["z88dk"],                    "what's known about the Z80's registers and flags after each instruction"),
-    ("spectrum48",               ["z88dk"],                    "the ZX Spectrum 48K ROM, with hooks for RST $08 (an error number follows) and RST $28 (calculator bytecode follows)"),
+    ("spectrum48",               ["z88dk"],                    "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
+    ("spectrum_test",            ["z88dk"],                    "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
     ("trace_z80",                ["z88dk"],                    "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
 
     # 6502 code: tests
@@ -142,7 +143,7 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)
@@ -507,8 +508,9 @@ def check_json_annotations(path, doc, asm):
     own_headings = {"Other banks", "1541 drive"}
     region_names = {r["name"] for r in regions} | {"Other"} | own_headings
     # The headings in the asm, e.g. '; Zero page (&0000-&00ff)' or '; Other'
+    # (z88dk writes an address below &100 with two digits, e.g. '; ROM ($00-$3fff)')
     prefix = re.escape(asm_comment_prefix(asm))
-    asm_headings = set(re.findall("^" + prefix + r" (.*?) \([&$][0-9a-fA-F]{4}-[&$][0-9a-fA-F]{4}\)$", asm, re.M))
+    asm_headings = set(re.findall("^" + prefix + r" (.*?) \([&$][0-9a-fA-F]{2,4}-[&$][0-9a-fA-F]{2,4}\)$", asm, re.M))
     for heading in {"Other"} | own_headings:
         if re.search("^" + prefix + " " + re.escape(heading) + "$", asm, re.M):
             asm_headings.add(heading)

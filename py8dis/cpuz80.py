@@ -27,6 +27,7 @@ import session
 import utils
 from binaryaddrtype import BinaryAddrType
 from memorymanager import RuntimeAddr
+from align import Align
 
 
 OPCODE_RET = 0xc9
@@ -371,6 +372,49 @@ class CpuZ80(cpu.Cpu):
         # The runtime addresses called by RST that have been traced (see
         # label_maker())
         self.rst_targets = set()
+
+        # Calls to the subroutines defined with subroutine() (see
+        # find_subroutine_calls())
+        self.code_analysis_fns.append(self.find_subroutine_calls)
+
+    def find_subroutine_calls(self):
+        """Call the hook of each subroutine defined with subroutine() for
+        each instruction that calls it (CALL, RST or JP, conditional or
+        not), or that is at its address, with the runtime address of the
+        instruction, the CPU state before it (a CpuState) and the
+        subroutine."""
+        subroutines = collections.defaultdict(list)
+        for subroutine in session.current().trace.subroutines_list:
+            if subroutine.hook_function is not None:
+                subroutines[subroutine.runtime_addr].append(subroutine)
+        if not subroutines:
+            return
+        state = self.CpuState()
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = range_start
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is None or not c.is_code(binary_addr):
+                    state = self.CpuState()
+                    binary_addr += 1 if c is None else c.length()
+                    continue
+                runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
+                if runtime_addr in session.current().labels.labels:
+                    # (Code can come here from elsewhere)
+                    state = self.CpuState()
+                found = list(subroutines.get(runtime_addr, []))
+                if c.kind in (FLOW_CALL, FLOW_RST, FLOW_JP, FLOW_JP_CC):
+                    found += subroutines.get(c.target(binary_addr), [])
+                for subroutine in found:
+                    subroutine.hook_function(runtime_addr, state, subroutine)
+                state = self.CpuState() if c.is_block_end() else (self.cpu_states[binary_addr] or self.CpuState())
+                binary_addr += c.length()
+
+    def default_subroutine_hook(self, runtime_addr, state, subroutine):
+        """Comment a call to a subroutine (defined with subroutine()) with
+        its title."""
+        if subroutine.title and subroutine.runtime_addr != runtime_addr:
+            disassembly.comment(runtime_addr, subroutine.title, align=Align.INLINE, word_wrap=False, auto_generated=True)
 
     def opcode_at(self, binary_addr):
         """The opcode at binary_addr (an Opcode), or None if there isn't one
