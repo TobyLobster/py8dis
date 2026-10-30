@@ -6,6 +6,60 @@
 ; ('-t none': cl65's default target is the C64, whose character map would change
 ; the strings.)
 
+; The character map for PETSCII (for strings and character literals)
+    .charmap $41, $c1 ; 'A'
+    .charmap $42, $c2 ; 'B'
+    .charmap $43, $c3 ; 'C'
+    .charmap $44, $c4 ; 'D'
+    .charmap $45, $c5 ; 'E'
+    .charmap $46, $c6 ; 'F'
+    .charmap $47, $c7 ; 'G'
+    .charmap $48, $c8 ; 'H'
+    .charmap $49, $c9 ; 'I'
+    .charmap $4a, $ca ; 'J'
+    .charmap $4b, $cb ; 'K'
+    .charmap $4c, $cc ; 'L'
+    .charmap $4d, $cd ; 'M'
+    .charmap $4e, $ce ; 'N'
+    .charmap $4f, $cf ; 'O'
+    .charmap $50, $d0 ; 'P'
+    .charmap $51, $d1 ; 'Q'
+    .charmap $52, $d2 ; 'R'
+    .charmap $53, $d3 ; 'S'
+    .charmap $54, $d4 ; 'T'
+    .charmap $55, $d5 ; 'U'
+    .charmap $56, $d6 ; 'V'
+    .charmap $57, $d7 ; 'W'
+    .charmap $58, $d8 ; 'X'
+    .charmap $59, $d9 ; 'Y'
+    .charmap $5a, $da ; 'Z'
+    .charmap $61, $41 ; 'a'
+    .charmap $62, $42 ; 'b'
+    .charmap $63, $43 ; 'c'
+    .charmap $64, $44 ; 'd'
+    .charmap $65, $45 ; 'e'
+    .charmap $66, $46 ; 'f'
+    .charmap $67, $47 ; 'g'
+    .charmap $68, $48 ; 'h'
+    .charmap $69, $49 ; 'i'
+    .charmap $6a, $4a ; 'j'
+    .charmap $6b, $4b ; 'k'
+    .charmap $6c, $4c ; 'l'
+    .charmap $6d, $4d ; 'm'
+    .charmap $6e, $4e ; 'n'
+    .charmap $6f, $4f ; 'o'
+    .charmap $70, $50 ; 'p'
+    .charmap $71, $51 ; 'q'
+    .charmap $72, $52 ; 'r'
+    .charmap $73, $53 ; 's'
+    .charmap $74, $54 ; 't'
+    .charmap $75, $55 ; 'u'
+    .charmap $76, $56 ; 'v'
+    .charmap $77, $57 ; 'w'
+    .charmap $78, $58 ; 'x'
+    .charmap $79, $59 ; 'y'
+    .charmap $7a, $5a ; 'z'
+
 ; Memory locations
 
 ; Zero page ($0000-$00ff)
@@ -121,7 +175,7 @@ basic_line_2008:
     .word basic_end                                                   ; 1001: 0b 10       ..
     .word 2008                                                        ; 1003: d8 07       X.
     .byte $9e                                                         ; 1005: 9e          .
-    .byte $34, $31, $30, $39 ; petscii "4109"                         ; 1006: 34 31 30... 410
+    .byte "4109"                                                      ; 1006: 34 31 30... 410
     .byte 0                                                           ; 100a: 00          .
 basic_end:
     .word 0                                                           ; 100b: 00 00       ..
@@ -1785,90 +1839,79 @@ l1a07:
 ; $1a0f referenced 2 times by $1916, $1927
 l1a0f:
     .byte $b0, $b2, $b0, $b0, $b0, $b0                                ; 1a0f: b0 b2 b0... ...
-    .byte $37, $3a, $3a, $3a, $3a, $3a, $3a, $3a ; petscii "7:::::::" ; 1a15: 37 3a 3a... 7::
-    .byte $3a, $3a, $3d, $3a, $3a, $3a, $3a, $3a ; petscii "::=:::::" ; 1a1d: 3a 3a 3d... ::=
-    .byte $3a, $3a, $3a, $3a, $38, $39 ; petscii "::::89"             ; 1a25: 3a 3a 3a... :::
+    .byte "7:::::::::=:::::::::89"                                    ; 1a15: 37 3a 3a... 7::
     .byte $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $39, $1e, $1e  ; 1a2b: 1e 1e 1e... ...
     .byte $1e, $1e, $1e, $1e, $1e, $1e, $1e, $39, $39, $1e, $37, $38  ; 1a37: 1e 1e 1e... ...
     .byte $1e                                                         ; 1a43: 1e          .
-    .byte $37, $3a, $3a, $38 ; petscii "7::8"                         ; 1a44: 37 3a 3a... 7::
+    .byte "7::8"                                                      ; 1a44: 37 3a 3a... 7::
     .byte $1e, $39, $1e                                               ; 1a48: 1e 39 1e    .9.
-    .byte $37, $3a, $3a, $38 ; petscii "7::8"                         ; 1a4b: 37 3a 3a... 7::
+    .byte "7::8"                                                      ; 1a4b: 37 3a 3a... 7::
     .byte $1e, $37, $38, $1e, $39, $39, $1f, $35, $36, $1e            ; 1a4f: 1e 37 38... .78
-    .byte $35, $3a, $3a, $36 ; petscii "5::6"                         ; 1a59: 35 3a 3a... 5::
+    .byte "5::6"                                                      ; 1a59: 35 3a 3a... 5::
     .byte $1e, $32, $1e                                               ; 1a5d: 1e 32 1e    .2.
-    .byte $35, $3a, $3a, $36 ; petscii "5::6"                         ; 1a60: 35 3a 3a... 5::
+    .byte "5::6"                                                      ; 1a60: 35 3a 3a... 5::
     .byte $1e, $35, $36, $1f, $39, $39, $1e, $1e, $1e, $1e, $1e, $1e  ; 1a64: 1e 35 36... .56
     .byte $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e  ; 1a70: 1e 1e 1e... ...
     .byte $1e, $39, $39, $1e, $33, $34, $1e, $31, $1e                 ; 1a7c: 1e 39 39... .99
-    .byte $33, $3a, $3a, $3d, $3a, $3a, $34 ; petscii "3::=::4"       ; 1a85: 33 3a 3a... 3::
+    .byte "3::=::4"                                                   ; 1a85: 33 3a 3a... 3::
     .byte $1e, $31, $1e, $33, $34, $1e, $39, $39, $1e, $1e, $1e, $1e  ; 1a8c: 1e 31 1e... .1.
     .byte $39, $1e, $1e, $1e, $1e, $39, $1e, $1e, $1e, $1e, $39, $1e  ; 1a98: 39 1e 1e... 9..
     .byte $1e, $1e, $1e                                               ; 1aa4: 1e 1e 1e    ...
-    .byte $39, $35, $3a, $3a, $38 ; petscii "95::8"                   ; 1aa7: 39 35 3a... 95:
+    .byte "95::8"                                                     ; 1aa7: 39 35 3a... 95:
     .byte $1e                                                         ; 1aac: 1e          .
-    .byte $3b, $3a, $3a, $34, $20, $32, $20, $33 ; petscii ";::4 2 3" ; 1aad: 3b 3a 3a... ;::
-    .byte $3a, $3a, $3c ; petscii "::<"                               ; 1ab5: 3a 3a 3c    ::<
+    .byte ";::4 2 3::<"                                               ; 1aad: 3b 3a 3a... ;::
     .byte $1e                                                         ; 1ab8: 1e          .
-    .byte $37, $3a, $3a, $36, $20, $20, $20, $39 ; petscii "7::6   9" ; 1ab9: 37 3a 3a... 7::
+    .byte "7::6   9"                                                  ; 1ab9: 37 3a 3a... 7::
     .byte $1e                                                         ; 1ac1: 1e          .
-    .byte $39, $20, $20, $20, $20, $20, $20, $20 ; petscii "9       " ; 1ac2: 39 20 20... 9
-    .byte $20, $20, $39 ; petscii "  9"                               ; 1aca: 20 20 39      9
+    .byte "9         9"                                               ; 1ac2: 39 20 20... 9
     .byte $1e                                                         ; 1acd: 1e          .
-    .byte $39, $20, $20, $20, $3a, $3a, $3a, $36 ; petscii "9   :::6" ; 1ace: 39 20 20... 9
+    .byte "9   :::6"                                                  ; 1ace: 39 20 20... 9
     .byte $1e                                                         ; 1ad6: 1e          .
-    .byte $32, $20, $37, $3a, $3a, $c5, $3a, $3a ; petscii "2 7::E::" ; 1ad7: 32 20 37... 2 7
-    .byte $38, $20, $32 ; petscii "8 2"                               ; 1adf: 38 20 32    8 2
+    .byte "2 7::E::8 2"                                               ; 1ad7: 32 20 37... 2 7
     .byte $1e                                                         ; 1ae2: 1e          .
 ; $1ae3 referenced 2 times by $1595, $160c
 l1ae3:
-    .byte $35, $3a, $3a, $3a, $20, $20, $20, $20 ; petscii "5:::    " ; 1ae3: 35 3a 3a... 5::
+    .byte "5:::    "                                                  ; 1ae3: 35 3a 3a... 5::
     .byte $1e                                                         ; 1aeb: 1e          .
-    .byte $20, $20, $39, $20, $20, $20, $20, $20 ; petscii "  9     " ; 1aec: 20 20 39...   9
-    .byte $39, $20, $20 ; petscii "9  "                               ; 1af4: 39 20 20    9
+    .byte "  9     9  "                                               ; 1aec: 20 20 39...   9
     .byte $1e                                                         ; 1af7: 1e          .
-    .byte $20, $20, $20, $20, $3a, $3a, $3a, $38 ; petscii "    :::8" ; 1af8: 20 20 20...
+    .byte "    :::8"                                                  ; 1af8: 20 20 20...
     .byte $1e                                                         ; 1b00: 1e          .
-    .byte $31, $20, $35, $3a, $3a, $3a, $3a, $3a ; petscii "1 5:::::" ; 1b01: 31 20 35... 1 5
-    .byte $36, $20, $31 ; petscii "6 1"                               ; 1b09: 36 20 31    6 1
+    .byte "1 5:::::6 1"                                               ; 1b01: 31 20 35... 1 5
     .byte $1e                                                         ; 1b0c: 1e          .
-    .byte $37, $3a, $3a, $3a, $20, $20, $20, $39 ; petscii "7:::   9" ; 1b0d: 37 3a 3a... 7::
+    .byte "7:::   9"                                                  ; 1b0d: 37 3a 3a... 7::
     .byte $1e, $39                                                    ; 1b15: 1e 39       .9
 ; $1b17 referenced 1 time by $1cbc
 l1b17:
-    .byte $20, $20, $20, $20, $20, $20, $20, $20 ; petscii "        " ; 1b17: 20 20 20...
-    .byte $20, $39 ; petscii " 9"                                     ; 1b1f: 20 39        9
+    .byte "         9"                                                ; 1b17: 20 20 20...
     .byte $1e                                                         ; 1b21: 1e          .
-    .byte $39, $20, $20, $20, $37, $3a, $3a, $36 ; petscii "9   7::6" ; 1b22: 39 20 20... 9
+    .byte "9   7::6"                                                  ; 1b22: 39 20 20... 9
     .byte $1e                                                         ; 1b2a: 1e          .
-    .byte $32, $20, $33, $3a, $3a, $3d, $3a, $3a ; petscii "2 3::=::" ; 1b2b: 32 20 33... 2 3
-    .byte $34, $20, $32 ; petscii "4 2"                               ; 1b33: 34 20 32    4 2
+    .byte "2 3::=::4 2"                                               ; 1b2b: 32 20 33... 2 3
     .byte $1e                                                         ; 1b36: 1e          .
-    .byte $35, $3a, $3a, $38, $39 ; petscii "5::89"                   ; 1b37: 35 3a 3a... 5::
+    .byte "5::89"                                                     ; 1b37: 35 3a 3a... 5::
     .byte $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $39, $1e, $1e  ; 1b3c: 1e 1e 1e... ...
     .byte $1e, $1e, $1e, $1e, $1e, $1e, $1e, $39, $39, $1e, $33, $38  ; 1b48: 1e 1e 1e... ...
     .byte $1e                                                         ; 1b54: 1e          .
-    .byte $33, $3a, $3a, $34 ; petscii "3::4"                         ; 1b55: 33 3a 3a... 3::
+    .byte "3::4"                                                      ; 1b55: 33 3a 3a... 3::
     .byte $1e, $32, $1e                                               ; 1b59: 1e 32 1e    .2.
-    .byte $33, $3a, $3a, $34 ; petscii "3::4"                         ; 1b5c: 33 3a 3a... 3::
+    .byte "3::4"                                                      ; 1b5c: 33 3a 3a... 3::
     .byte $1e, $37, $34, $1e, $39, $39, $1f, $1e, $39, $1e, $1e, $1e  ; 1b60: 1e 37 34... .74
     .byte $1e, $1e, $1e, $20, $1e, $1e, $1e, $1e, $1e, $1e, $39, $1e  ; 1b6c: 1e 1e 1e... ...
     .byte $1f                                                         ; 1b78: 1f          .
-    .byte $39, $3b, $34 ; petscii "9;4"                               ; 1b79: 39 3b 34    9;4
+    .byte "9;4"                                                       ; 1b79: 39 3b 34    9;4
     .byte $1e, $32, $1e, $31, $1e                                     ; 1b7c: 1e 32 1e... .2.
-    .byte $33, $3a, $3a, $3d, $3a, $3a, $34 ; petscii "3::=::4"       ; 1b81: 33 3a 3a... 3::
+    .byte "3::=::4"                                                   ; 1b81: 33 3a 3a... 3::
     .byte $1e, $31, $1e, $32, $1e                                     ; 1b88: 1e 31 1e... .1.
-    .byte $33, $3c, $39 ; petscii "3<9"                               ; 1b8d: 33 3c 39    3<9
+    .byte "3<9"                                                       ; 1b8d: 33 3c 39    3<9
     .byte $1e, $1e, $1e, $1e, $39, $1e, $1e, $1e, $1e, $39, $1e, $1e  ; 1b90: 1e 1e 1e... ...
     .byte $1e, $1e, $39, $1e, $1e, $1e, $1e, $39, $39, $1e            ; 1b9c: 1e 1e 39... ..9
-    .byte $33, $3a, $3a, $3e, $3a, $3a, $34 ; petscii "3::>::4"       ; 1ba6: 33 3a 3a... 3::
+    .byte "3::>::4"                                                   ; 1ba6: 33 3a 3a... 3::
     .byte $1e, $32, $1e                                               ; 1bad: 1e 32 1e    .2.
-    .byte $33, $3a, $3a, $3e, $3a, $3a, $34 ; petscii "3::>::4"       ; 1bb0: 33 3a 3a... 3::
+    .byte "3::>::4"                                                   ; 1bb0: 33 3a 3a... 3::
     .byte $1e, $39, $39, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e  ; 1bb7: 1e 39 39... .99
     .byte $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e, $1e            ; 1bc3: 1e 1e 1e... ...
-    .byte $39, $35, $3a, $3a, $3a, $3a, $3a, $3a ; petscii "95::::::" ; 1bcd: 39 35 3a... 95:
-    .byte $3a, $3a, $3a, $3a, $3a, $3a, $3a, $3a ; petscii "::::::::" ; 1bd5: 3a 3a 3a... :::
-    .byte $3a, $3a, $3a, $3a, $3a ; petscii ":::::"                   ; 1bdd: 3a 3a 3a... :::
+    .byte "95:::::::::::::::::::"                                     ; 1bcd: 39 35 3a... 95:
 ; $1be2 referenced 1 time by $102e
 l1be2:
     .byte $36, $3f, $b2, $b0, $b0, $b8, $a0, $92, $88, $95, $92, $93  ; 1be2: 36 3f b2... 6?.
@@ -1902,8 +1945,7 @@ l1c5e:
     .byte $10, 0, $10, $a0, $b8, 0, $b8                               ; 1c5e: 10 00 10... ...
 ; $1c65 referenced 3 times by $107e, $12b9, $15db
 l1c65:
-    .byte $22, $23, $24, $24, $25, $25, $26 ; petscii $22, "#$$%%&"   ; 1c65: 22 23 24... "#$
-    .byte $26, $27, $27, $28, $28, $29 ; petscii "&''(()"             ; 1c6c: 26 27 27... &''
+    .byte '"', "#$$%%&&''(()"                                         ; 1c65: 22 23 24... "#$
 ; $1c72 referenced 4 times by $1084, $113b, $12bf, $15e1
 l1c72:
     .byte 2, 2, 7, 7, 2, 2, 5, 5, 4, 4, 7, 7, 3                       ; 1c72: 02 02 07... ...
@@ -1925,9 +1967,9 @@ l1c90:
 ; $1c92 referenced 2 times by $10d9, $156b
 l1c92:
     .byte $50, $88                                                    ; 1c92: 50 88       p.
-    .byte $50, $48, $50, $58 ; petscii "phpx"                         ; 1c94: 50 48 50... php
+    .byte "phpx"                                                      ; 1c94: 50 48 50... php
     .byte $60                                                         ; 1c98: 60          .
-    .byte $58, $40, $58 ; petscii "x@x"                               ; 1c99: 58 40 58    x@x
+    .byte "x@x"                                                       ; 1c99: 58 40 58    x@x
 ; $1c9c referenced 1 time by $19c2
 l1c9c:
     .byte 0, 0, $c0, $b8, $b0, $a8, $b0, $b8, $c0, $c8                ; 1c9c: 00 00 c0... ...
@@ -1968,7 +2010,7 @@ c1cca:
     rts                                                               ; 1cd1: 60          .
 
     .byte 0, 0, 0, 0, 0, 0, 0, $10, $10, $6c, $10, $10, 0, 0, $10     ; 1cd2: 00 00 00... ...
-    .byte $44, $28, $c6, $28, $44 ; petscii "d(F(d"                   ; 1ce1: 44 28 c6... d(F
+    .byte "d(F(d"                                                     ; 1ce1: 44 28 c6... d(F
     .byte $10, 0, $92, $44, 0, $82, 0, $44, $92, 0, 0, 0, 0, $18, $18 ; 1ce6: 10 00 92... ...
     .byte   0, 0,   0                                                 ; 1cf5: 00 00 00    ...
 ; $1cf8 referenced 2 times by $18d1, $18d7
@@ -1977,7 +2019,7 @@ l1cf8:
     .byte   0,   0,   0,   0, $3c, $7e, $bd, $ff, $bd, $c3, $7e, $3c  ; 1d04: 00 00 00... ...
     .byte   4,   8, $18, $24, $62, $f7, $f2, $60, $10, $7c, $fe, $aa  ; 1d10: 04 08 18... ...
     .byte $d6, $aa                                                    ; 1d1c: d6 aa       V.
-    .byte $54, $28, $20 ; petscii "t( "                               ; 1d1e: 54 28 20    t(
+    .byte "t( "                                                       ; 1d1e: 54 28 20    t(
     .byte $10, $7c, $fe, $fe, $fe, $7c, $38,   8, $10, $7c, $fe, $fe  ; 1d21: 10 7c fe... ...
     .byte $fe, $7c, $28,   8, $10, $38, $38, $7c, $fe, $fe, $6c, $10  ; 1d2d: fe 7c 28... ..(
     .byte $30, $92, $fe, $7c, $38, $10, $28, $10, $38, $7c, $7c, $7c  ; 1d39: 30 92 fe... 0..
@@ -1992,20 +2034,17 @@ l1d7f:
 ; $1d87 referenced 1 time by $18e7
 l1d87:
     .byte $54, 0, $18                                                 ; 1d87: 54 00 18    t..
-    .byte $24, $42, $42, $42, $42, $42, $42, $42 ; petscii "$bbbbbbb" ; 1d8a: 24 42 42... $bb
-    .byte $42, $42, $42, $24 ; petscii "bbb$"                         ; 1d92: 42 42 42... bbb
+    .byte "$bbbbbbbbbb$"                                              ; 1d8a: 24 42 42... $bb
     .byte $18, 0, 0, $1f                                              ; 1d96: 18 00 00... ...
-    .byte $20, $40, $40, $20 ; petscii " @@ "                         ; 1d9a: 20 40 40...  @@
+    .byte " @@ "                                                      ; 1d9a: 20 40 40...  @@
     .byte $1f, 0, 0, $f8, 4, 2, 2, 4, $f8, 0                          ; 1d9e: 1f 00 00... ...
-    .byte $42, $41, $40, $40, $40, $20 ; petscii "ba@@@ "             ; 1da8: 42 41 40... ba@
+    .byte "ba@@@ "                                                    ; 1da8: 42 41 40... ba@
     .byte $1f, 0, $42, $82, 2, 2, 2, 4, $f8, 0, 0, $1f                ; 1dae: 1f 00 42... ..b
-    .byte $20, $40, $40, $40, $41, $42 ; petscii " @@@ab"             ; 1dba: 20 40 40...  @@
+    .byte " @@@ab"                                                    ; 1dba: 20 40 40...  @@
     .byte 0, $f8, 4, 2, 2, 2, $82                                     ; 1dc0: 00 f8 04... ...
-    .byte $42, $42, $42, $42, $42, $42, $42, $42 ; petscii "bbbbbbbb" ; 1dc7: 42 42 42... bbb
-    .byte $42 ; petscii "b"                                           ; 1dcf: 42          b
+    .byte "bbbbbbbbb"                                                 ; 1dc7: 42 42 42... bbb
     .byte 0, $ff, 0, 0, 0, 0, $ff, 0                                  ; 1dd0: 00 ff 00... ...
-    .byte $42, $41, $40, $40, $40, $40, $41, $42 ; petscii "ba@@@@ab" ; 1dd8: 42 41 40... ba@
-    .byte $42 ; petscii "b"                                           ; 1de0: 42          b
+    .byte "ba@@@@abb"                                                 ; 1dd8: 42 41 40... ba@
     .byte $82,   2,   2,   2, 2, $82, $42, 0, $ff, 0,   0,   0,   0   ; 1de1: 82 02 02... ...
     .byte $81, $42, $42, $81, 0,   0,   0, 0, $ff, 0, $3c, $42, $99   ; 1dee: 81 42 42... .bb
     .byte $a1, $a1, $99, $42                                          ; 1dfb: a1 a1 99... ...

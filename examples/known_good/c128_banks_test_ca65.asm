@@ -6,6 +6,60 @@
 ; ('-t none': cl65's default target is the C64, whose character map would change
 ; the strings.)
 
+; The character map for PETSCII (for strings and character literals)
+    .charmap $41, $c1 ; 'A'
+    .charmap $42, $c2 ; 'B'
+    .charmap $43, $c3 ; 'C'
+    .charmap $44, $c4 ; 'D'
+    .charmap $45, $c5 ; 'E'
+    .charmap $46, $c6 ; 'F'
+    .charmap $47, $c7 ; 'G'
+    .charmap $48, $c8 ; 'H'
+    .charmap $49, $c9 ; 'I'
+    .charmap $4a, $ca ; 'J'
+    .charmap $4b, $cb ; 'K'
+    .charmap $4c, $cc ; 'L'
+    .charmap $4d, $cd ; 'M'
+    .charmap $4e, $ce ; 'N'
+    .charmap $4f, $cf ; 'O'
+    .charmap $50, $d0 ; 'P'
+    .charmap $51, $d1 ; 'Q'
+    .charmap $52, $d2 ; 'R'
+    .charmap $53, $d3 ; 'S'
+    .charmap $54, $d4 ; 'T'
+    .charmap $55, $d5 ; 'U'
+    .charmap $56, $d6 ; 'V'
+    .charmap $57, $d7 ; 'W'
+    .charmap $58, $d8 ; 'X'
+    .charmap $59, $d9 ; 'Y'
+    .charmap $5a, $da ; 'Z'
+    .charmap $61, $41 ; 'a'
+    .charmap $62, $42 ; 'b'
+    .charmap $63, $43 ; 'c'
+    .charmap $64, $44 ; 'd'
+    .charmap $65, $45 ; 'e'
+    .charmap $66, $46 ; 'f'
+    .charmap $67, $47 ; 'g'
+    .charmap $68, $48 ; 'h'
+    .charmap $69, $49 ; 'i'
+    .charmap $6a, $4a ; 'j'
+    .charmap $6b, $4b ; 'k'
+    .charmap $6c, $4c ; 'l'
+    .charmap $6d, $4d ; 'm'
+    .charmap $6e, $4e ; 'n'
+    .charmap $6f, $4f ; 'o'
+    .charmap $70, $50 ; 'p'
+    .charmap $71, $51 ; 'q'
+    .charmap $72, $52 ; 'r'
+    .charmap $73, $53 ; 's'
+    .charmap $74, $54 ; 't'
+    .charmap $75, $55 ; 'u'
+    .charmap $76, $56 ; 'v'
+    .charmap $77, $57 ; 'w'
+    .charmap $78, $58 ; 'x'
+    .charmap $79, $59 ; 'y'
+    .charmap $7a, $5a ; 'z'
+
 ; Constants
 colour_black    = 0
 
@@ -61,7 +115,7 @@ basic_line_10:
     .word basic_end                                                   ; 1c01: 0b 1c       ..
     .word 10                                                          ; 1c03: 0a 00       ..
     .byte $9e                                                         ; 1c05: 9e          .
-    .byte $37, $31, $38, $31 ; petscii "7181"                         ; 1c06: 37 31 38... 718
+    .byte "7181"                                                      ; 1c06: 37 31 38... 718
     .byte 0                                                           ; 1c0a: 00          .
 basic_end:
     .word 0                                                           ; 1c0b: 00 00       ..
@@ -93,7 +147,7 @@ sys_entry:
     sta mmu_configuration                                             ; 1c49: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
     jsr sub_c1c5f                                                     ; 1c4c: 20 5f 1c     ..
     lda vic_border_colour                                             ; 1c4f: ad 20 d0    . P
-    lda #$41 ; 'a'                                                    ; 1c52: a9 41       .a ; A=character to output
+    lda #'a'                                                          ; 1c52: a9 41       .a ; A=character to output
     jsr chrout                                                        ; 1c54: 20 d2 ff     R. ; Output 'a'
     lda #1                                                            ; 1c57: a9 01       ..
     sta vic_interrupt_status                                          ; 1c59: 8d 19 d0    ..P ; Acknowledge the VIC-II's raster interrupt
@@ -139,7 +193,7 @@ loop_c1c7d:
     lda #1                                                            ; 1ca4: a9 01       ..
     sta mmu_configuration                                             ; 1ca6: 8d 00 ff    ... ; Set the MMU to bank 14 (RAM 0, BASIC ROM, Kernal ROM, character ROM)
     jsr primm                                                         ; 1ca9: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
-    .byte $48, $49, 0 ; petscii "hi", $00                             ; 1cac: 48 49 00    hi.
+    .byte "hi", 0                                                     ; 1cac: 48 49 00    hi.
 
     lda ld020                                                         ; 1caf: ad 20 d0    . P
     lda #0                                                            ; 1cb2: a9 00       ..

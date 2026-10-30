@@ -6,6 +6,60 @@
 ; ('-t none': cl65's default target is the C64, whose character map would change
 ; the strings.)
 
+; The character map for PETSCII (for strings and character literals)
+    .charmap $41, $c1 ; 'A'
+    .charmap $42, $c2 ; 'B'
+    .charmap $43, $c3 ; 'C'
+    .charmap $44, $c4 ; 'D'
+    .charmap $45, $c5 ; 'E'
+    .charmap $46, $c6 ; 'F'
+    .charmap $47, $c7 ; 'G'
+    .charmap $48, $c8 ; 'H'
+    .charmap $49, $c9 ; 'I'
+    .charmap $4a, $ca ; 'J'
+    .charmap $4b, $cb ; 'K'
+    .charmap $4c, $cc ; 'L'
+    .charmap $4d, $cd ; 'M'
+    .charmap $4e, $ce ; 'N'
+    .charmap $4f, $cf ; 'O'
+    .charmap $50, $d0 ; 'P'
+    .charmap $51, $d1 ; 'Q'
+    .charmap $52, $d2 ; 'R'
+    .charmap $53, $d3 ; 'S'
+    .charmap $54, $d4 ; 'T'
+    .charmap $55, $d5 ; 'U'
+    .charmap $56, $d6 ; 'V'
+    .charmap $57, $d7 ; 'W'
+    .charmap $58, $d8 ; 'X'
+    .charmap $59, $d9 ; 'Y'
+    .charmap $5a, $da ; 'Z'
+    .charmap $61, $41 ; 'a'
+    .charmap $62, $42 ; 'b'
+    .charmap $63, $43 ; 'c'
+    .charmap $64, $44 ; 'd'
+    .charmap $65, $45 ; 'e'
+    .charmap $66, $46 ; 'f'
+    .charmap $67, $47 ; 'g'
+    .charmap $68, $48 ; 'h'
+    .charmap $69, $49 ; 'i'
+    .charmap $6a, $4a ; 'j'
+    .charmap $6b, $4b ; 'k'
+    .charmap $6c, $4c ; 'l'
+    .charmap $6d, $4d ; 'm'
+    .charmap $6e, $4e ; 'n'
+    .charmap $6f, $4f ; 'o'
+    .charmap $70, $50 ; 'p'
+    .charmap $71, $51 ; 'q'
+    .charmap $72, $52 ; 'r'
+    .charmap $73, $53 ; 's'
+    .charmap $74, $54 ; 't'
+    .charmap $75, $55 ; 'u'
+    .charmap $76, $56 ; 'v'
+    .charmap $77, $57 ; 'w'
+    .charmap $78, $58 ; 'x'
+    .charmap $79, $59 ; 'y'
+    .charmap $7a, $5a ; 'z'
+
 ; Memory locations
 
 ; OS workspace ($0200-$0279)
@@ -45,7 +99,7 @@ basic_line_10:
     .word basic_end                                                   ; 0401: 0b 04       ..
     .word 10                                                          ; 0403: 0a 00       ..
     .byte $9e                                                         ; 0405: 9e          .
-    .byte $31, $30, $35, $36 ; petscii "1056"                         ; 0406: 31 30 35... 105
+    .byte "1056"                                                      ; 0406: 31 30 35... 105
     .byte 0                                                           ; 040a: 00          .
 basic_end:
     .word 0                                                           ; 040b: 00 00       ..
@@ -95,8 +149,7 @@ irq_handler:
     jmp key                                                           ; 046a: 4c 85 e6    l.. ; The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)
 
 l046d:
-    .byte $48, $45, $4c, $4c, $4f, $2c, $20, $50 ; petscii "hello, p" ; 046d: 48 45 4c... hel
-    .byte $45, $54, $0d, 0 ; petscii "et", $0d, $00                   ; 0475: 45 54 0d... et.
+    .byte "hello, pet", $0d, 0                                        ; 046d: 48 45 4c... hel
 pydis_end:
 
 .assert (<irq_handler) = $67, error, "Assertion failed: <irq_handler = $67"

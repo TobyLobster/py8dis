@@ -8,6 +8,60 @@
 
     .setcpu "6502X"
 
+; The character map for PETSCII (for strings and character literals)
+    .charmap $41, $c1 ; 'A'
+    .charmap $42, $c2 ; 'B'
+    .charmap $43, $c3 ; 'C'
+    .charmap $44, $c4 ; 'D'
+    .charmap $45, $c5 ; 'E'
+    .charmap $46, $c6 ; 'F'
+    .charmap $47, $c7 ; 'G'
+    .charmap $48, $c8 ; 'H'
+    .charmap $49, $c9 ; 'I'
+    .charmap $4a, $ca ; 'J'
+    .charmap $4b, $cb ; 'K'
+    .charmap $4c, $cc ; 'L'
+    .charmap $4d, $cd ; 'M'
+    .charmap $4e, $ce ; 'N'
+    .charmap $4f, $cf ; 'O'
+    .charmap $50, $d0 ; 'P'
+    .charmap $51, $d1 ; 'Q'
+    .charmap $52, $d2 ; 'R'
+    .charmap $53, $d3 ; 'S'
+    .charmap $54, $d4 ; 'T'
+    .charmap $55, $d5 ; 'U'
+    .charmap $56, $d6 ; 'V'
+    .charmap $57, $d7 ; 'W'
+    .charmap $58, $d8 ; 'X'
+    .charmap $59, $d9 ; 'Y'
+    .charmap $5a, $da ; 'Z'
+    .charmap $61, $41 ; 'a'
+    .charmap $62, $42 ; 'b'
+    .charmap $63, $43 ; 'c'
+    .charmap $64, $44 ; 'd'
+    .charmap $65, $45 ; 'e'
+    .charmap $66, $46 ; 'f'
+    .charmap $67, $47 ; 'g'
+    .charmap $68, $48 ; 'h'
+    .charmap $69, $49 ; 'i'
+    .charmap $6a, $4a ; 'j'
+    .charmap $6b, $4b ; 'k'
+    .charmap $6c, $4c ; 'l'
+    .charmap $6d, $4d ; 'm'
+    .charmap $6e, $4e ; 'n'
+    .charmap $6f, $4f ; 'o'
+    .charmap $70, $50 ; 'p'
+    .charmap $71, $51 ; 'q'
+    .charmap $72, $52 ; 'r'
+    .charmap $73, $53 ; 's'
+    .charmap $74, $54 ; 't'
+    .charmap $75, $55 ; 'u'
+    .charmap $76, $56 ; 'v'
+    .charmap $77, $57 ; 'w'
+    .charmap $78, $58 ; 'x'
+    .charmap $79, $59 ; 'y'
+    .charmap $7a, $5a ; 'z'
+
 ; Constants
 colour_black    = 0
 colour_blue     = 6
@@ -84,24 +138,23 @@ basic_line_10:
     .word basic_line_15                                               ; 0801: 10 08       ..
     .word 10                                                          ; 0803: 0a 00       ..
     .byte $8f                                                         ; 0805: 8f          .
-    .byte $20, $43, $36, $34, $20, $54, $45, $53 ; petscii " c64 tes" ; 0806: 20 43 36...  c6
-    .byte $54 ; petscii "t"                                           ; 080e: 54          t
+    .byte " c64 test"                                                 ; 0806: 20 43 36...  c6
     .byte 0                                                           ; 080f: 00          .
 ; 15 PRINT"{$93}HI"
 basic_line_15:
     .word basic_line_20                                               ; 0810: 1b 08       ..
     .word 15                                                          ; 0812: 0f 00       ..
     .byte $99                                                         ; 0814: 99          .
-    .byte $22 ; petscii $22                                           ; 0815: 22          "
+    .byte '"'                                                         ; 0815: 22          "
     .byte $93                                                         ; 0816: 93          .
-    .byte $48, $49, $22 ; petscii "hi", $22                           ; 0817: 48 49 22    hi"
+    .byte "hi", '"'                                                   ; 0817: 48 49 22    hi"
     .byte 0                                                           ; 081a: 00          .
 ; 20 SYS2087
 basic_line_20:
     .word basic_end                                                   ; 081b: 25 08       %.
     .word 20                                                          ; 081d: 14 00       ..
     .byte $9e                                                         ; 081f: 9e          .
-    .byte $32, $30, $38, $37 ; petscii "2087"                         ; 0820: 32 30 38... 208
+    .byte "2087"                                                      ; 0820: 32 30 38... 208
     .byte 0                                                           ; 0824: 00          .
 basic_end:
     .word 0                                                           ; 0825: 00 00       ..
@@ -143,7 +196,7 @@ loop_c0860:
     bne loop_c0860                                                    ; 0869: d0 f5       P.
 ; $086b referenced 1 time by $0863
 c086b:
-    lda #$21 ; '!'                                                    ; 086b: a9 21       .! ; A=character to output
+    lda #'!'                                                          ; 086b: a9 21       .! ; A=character to output
     jsr chrout                                                        ; 086d: 20 d2 ff     R. ; Output '!'
     clc                                                               ; 0870: 18          .
     ldx #5                                                            ; 0871: a2 05       .. ; X=cursor row
@@ -234,16 +287,14 @@ irq_handler:
 
 ; $0939 referenced 1 time by $0860
 l0939:
-    .byte $48, $45, $4c, $4c, $4f, $2c, $20, $57 ; petscii "hello, w" ; 0939: 48 45 4c... hel
-    .byte $4f, $52, $4c, $44 ; petscii "orld"                         ; 0941: 4f 52 4c... orl
+    .byte "hello, world"                                              ; 0939: 48 45 4c... hel
     .byte $0d, 0                                                      ; 0945: 0d 00       ..
 filename:
-    .byte $49, $30 ; petscii "i0"                                     ; 0947: 49 30       i0
+    .byte "i0"                                                        ; 0947: 49 30       i0
 filename_2:
-    .byte $44, $41, $54, $41 ; petscii "data"                         ; 0949: 44 41 54... dat
+    .byte "data"                                                      ; 0949: 44 41 54... dat
 l094d:
-    .byte $54, $48, $45, $20, $41, $4e, $53, $57 ; petscii "the answ" ; 094d: 54 48 45... the
-    .byte $45, $52, $20, $49, $53, $20, 0 ; petscii "er is ", $00     ; 0955: 45 52 20... er
+    .byte "the answer is ", 0                                         ; 094d: 54 48 45... the
 ; $095c referenced 1 time by $087c
 l095c:
     .byte 0                                                           ; 095c: 00          .

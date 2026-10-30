@@ -6,6 +6,60 @@
 ; ('-t none': cl65's default target is the C64, whose character map would change
 ; the strings.)
 
+; The character map for PETSCII (for strings and character literals)
+    .charmap $41, $c1 ; 'A'
+    .charmap $42, $c2 ; 'B'
+    .charmap $43, $c3 ; 'C'
+    .charmap $44, $c4 ; 'D'
+    .charmap $45, $c5 ; 'E'
+    .charmap $46, $c6 ; 'F'
+    .charmap $47, $c7 ; 'G'
+    .charmap $48, $c8 ; 'H'
+    .charmap $49, $c9 ; 'I'
+    .charmap $4a, $ca ; 'J'
+    .charmap $4b, $cb ; 'K'
+    .charmap $4c, $cc ; 'L'
+    .charmap $4d, $cd ; 'M'
+    .charmap $4e, $ce ; 'N'
+    .charmap $4f, $cf ; 'O'
+    .charmap $50, $d0 ; 'P'
+    .charmap $51, $d1 ; 'Q'
+    .charmap $52, $d2 ; 'R'
+    .charmap $53, $d3 ; 'S'
+    .charmap $54, $d4 ; 'T'
+    .charmap $55, $d5 ; 'U'
+    .charmap $56, $d6 ; 'V'
+    .charmap $57, $d7 ; 'W'
+    .charmap $58, $d8 ; 'X'
+    .charmap $59, $d9 ; 'Y'
+    .charmap $5a, $da ; 'Z'
+    .charmap $61, $41 ; 'a'
+    .charmap $62, $42 ; 'b'
+    .charmap $63, $43 ; 'c'
+    .charmap $64, $44 ; 'd'
+    .charmap $65, $45 ; 'e'
+    .charmap $66, $46 ; 'f'
+    .charmap $67, $47 ; 'g'
+    .charmap $68, $48 ; 'h'
+    .charmap $69, $49 ; 'i'
+    .charmap $6a, $4a ; 'j'
+    .charmap $6b, $4b ; 'k'
+    .charmap $6c, $4c ; 'l'
+    .charmap $6d, $4d ; 'm'
+    .charmap $6e, $4e ; 'n'
+    .charmap $6f, $4f ; 'o'
+    .charmap $70, $50 ; 'p'
+    .charmap $71, $51 ; 'q'
+    .charmap $72, $52 ; 'r'
+    .charmap $73, $53 ; 's'
+    .charmap $74, $54 ; 't'
+    .charmap $75, $55 ; 'u'
+    .charmap $76, $56 ; 'v'
+    .charmap $77, $57 ; 'w'
+    .charmap $78, $58 ; 'x'
+    .charmap $79, $59 ; 'y'
+    .charmap $7a, $5a ; 'z'
+
 ; Memory locations
 
 ; Vectors ($0300-$0332)
@@ -51,15 +105,14 @@ basic_line_10:
     .word basic_end                                                   ; 1001: 0b 10       ..
     .word 10                                                          ; 1003: 0a 00       ..
     .byte $9e                                                         ; 1005: 9e          .
-    .byte $34, $31, $30, $39 ; petscii "4109"                         ; 1006: 34 31 30... 410
+    .byte "4109"                                                      ; 1006: 34 31 30... 410
     .byte 0                                                           ; 100a: 00          .
 basic_end:
     .word 0                                                           ; 100b: 00 00       ..
 
 sys_entry:
     jsr primm                                                         ; 100d: 20 4f ff     o. ; Print the zero-terminated string that follows the JSR
-    .byte $48, $45, $4c, $4c, $4f, $2c, $20, $50 ; petscii "hello, p" ; 1010: 48 45 4c... hel
-    .byte $4c, $55, $53, $2f, $34, $0d, 0 ; petscii "lus/4", $0d, $00 ; 1018: 4c 55 53... lus
+    .byte "hello, plus/4", $0d, 0                                     ; 1010: 48 45 4c... hel
 
     lda #$93                                                          ; 101f: a9 93       .. ; A=character to output
     jsr chrout                                                        ; 1021: 20 d2 ff     R. ; Output $93 (clear screen)

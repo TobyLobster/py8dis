@@ -7,6 +7,7 @@ import session
 import utils
 import assembler
 import cpu6510
+import textencoding
 
 # ca65's names for the undocumented opcodes whose names differ from py8dis's
 # (see Cpu6510)
@@ -152,7 +153,63 @@ class Ca65(assembler.Assembler):
             result += [utils.make_indent(1) + utils.force_case(".setcpu") + ' "65C02"', ""]
         elif getattr(session.current().cpu, "has_undocumented_opcodes", False):
             result += [utils.make_indent(1) + utils.force_case(".setcpu") + ' "6502X"', ""]
-        return result
+        return result + self._charmap_lines()
+
+    # Text encodings. ca65's character map ('.charmap', from a character in
+    # the source to a byte) applies to every string and character literal,
+    # and can't be switched for one string and back (V2.18 has no
+    # '.pushcharmap'), so it's for the session's encoding, as acme's '!ct':
+    # if that isn't ASCII, strings and character literals in it are written
+    # as text, and the output starts with the character map for it, if it
+    # has any. Strings in other encodings, including ASCII, are written as
+    # bytes, with their text in a comment.
+
+    def _main_encoding(self):
+        """The session's encoding, which the character map is for"""
+        return textencoding.current()
+
+    def _charmap_lines(self):
+        """The '.charmap' lines for the session's encoding, if it isn't ASCII
+        and the output has strings or character literals in it: each
+        character whose byte isn't its ASCII code (e.g. '.charmap $61, $41'
+        for PETSCII's 'a')"""
+        import classification
+        import mainformatter
+        main = self._main_encoding()
+        if main.name == "ascii":
+            return []
+        used = any(isinstance(c, classification.String) and c.encoding.name == main.name for c in session.current().classifications.classifications)
+        used = used or any(formatter is mainformatter.char_formatter for formatter in session.current().disassembly.format_hint.values())
+        if not used:
+            return []
+        c = self.comment_prefix()
+        result = [c + " The character map for " + {"petscii": "PETSCII", "screen": "screen codes"}[main.name] +
+                  " (for strings and character literals)"]
+        for byte, char in sorted(main.chars.items(), key=lambda item: ord(item[1])):
+            if ord(char) != byte:
+                result.append("%s%s %s, %s %s '%s'" % (utils.make_indent(1), utils.force_case(".charmap"), self.hex2(ord(char)), self.hex2(byte), c, char))
+        return result + [""]
+
+    def text_directive(self, encoding):
+        # (See above)
+        if encoding.name == self._main_encoding().name:
+            return utils.force_case(".byte ")
+        return None
+
+    def text_chr(self, n, encoding):
+        if encoding.name == "ascii":
+            return self.string_chr(n)
+        c = encoding.char(n)
+        return None if c == '"' else c
+
+    def encoded_char_literal(self, n, encoding):
+        # Only in the session's encoding (see above)
+        if encoding.name != self._main_encoding().name:
+            return None
+        if encoding.name == "ascii":
+            return self.char_literal(n)
+        c = encoding.char(n)
+        return None if c is None else "'" + c + "'"
 
     def code_start(self, start_addr, end_addr, first):
         """At the start of the code we provide the address at which to
@@ -238,7 +295,10 @@ class Ca65(assembler.Assembler):
 
     def char_literal(self, n):
         # When composing a literal character, this returns a character string
-        # from an integer, or None if not possible
+        # from an integer, or None if not possible (only if the session's
+        # encoding is ASCII, see above)
+        if self._main_encoding().name != "ascii":
+            return None
         if utils.isprint(n):
             return "'" + chr(n) + "'"
         return None
