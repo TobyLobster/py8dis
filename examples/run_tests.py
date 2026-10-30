@@ -66,6 +66,7 @@ TESTS = [
     ("test_z80",                 ["z88dk"],                    "every documented Z80 instruction"),
     ("undocumented_z80",         ["z88dk"],                    "the Z80's undocumented opcodes: those z88dk-z80asm accepts as instructions, the others as data"),
     ("state_z80",                ["z88dk"],                    "what's known about the Z80's registers and flags after each instruction"),
+    ("spectrum48",               ["z88dk"],                    "the ZX Spectrum 48K ROM, with hooks for RST $08 (an error number follows) and RST $28 (calculator bytecode follows)"),
     ("trace_z80",                ["z88dk"],                    "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
 
     # 6502 code: tests

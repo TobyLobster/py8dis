@@ -202,6 +202,18 @@ class Z88DK(assembler.Assembler):
             return chr(i)
         return None
 
+    def char_literal(self, n):
+        # When composing a literal character, this returns a character string
+        # from an integer, or None if not possible. (Checked with
+        # z88dk-z80asm: '\\' and '\'' are escaped.)
+        if n == ord('\\'):
+            return "'\\\\'"
+        if n == ord("'"):
+            return "'\\''"
+        if utils.isprint(n):
+            return "'" + chr(n) + "'"
+        return None
+
     def binary_format(self, s):
         # For outputting a value as binary
         return "%" + s

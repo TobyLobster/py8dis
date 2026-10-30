@@ -609,10 +609,12 @@ class CpuZ80(cpu.Cpu):
 
         def instruction(self, binary_addr):
             """The instruction (see output.Instruction)."""
-            if self.kind == FLOW_RST and self.target(binary_addr) in session.current().cpu.rst_targets:
+            cpu = session.current().cpu
+            if self.kind == FLOW_RST and cpu.trace_done and self.target(binary_addr) in cpu.rst_targets:
                 # The code it calls gets a label (e.g. rst_08), although the
                 # operand is a number: naming the label here means it's
-                # output
+                # output. (Not while tracing, for an overlapping
+                # instruction's comment, which is formatted later.)
                 str(disassembly.get_label(self.target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE))
             instruction = output.Instruction(self.mnemonic, self.operand(binary_addr))
             if self.undocumented is not None:

@@ -187,6 +187,20 @@ def get_u16_be_binary(binary_addr):
     _check_data_loaded("get_u16_be_binary", binary_addr, binary_addr, 2)
     return memorymanager.get_u16_be_binary(memorymanager.BinaryAddr(binary_addr))
 
+def get_u8_runtime(runtime_addr):
+    """Read a single byte of data from the specified runtime address."""
+    runtime_addr = _check_addr("get_u8_runtime", runtime_addr)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    _check_data_loaded("get_u8_runtime", runtime_addr, binary_loc.binary_addr, 1)
+    return memorymanager.get_u8_binary(binary_loc.binary_addr)
+
+def get_u16_runtime(runtime_addr):
+    """Read a 16 bit value (little endian) from the specified runtime address."""
+    runtime_addr = _check_addr("get_u16_runtime", runtime_addr)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    _check_data_loaded("get_u16_runtime", runtime_addr, binary_loc.binary_addr, 2)
+    return memorymanager.get_u16_binary(binary_loc.binary_addr)
+
 def get_u16_be_runtime(runtime_addr):
     """Read a 16 bit value (big endian) from the specified runtime address."""
     runtime_addr = _check_addr("get_u16_be_runtime", runtime_addr)
