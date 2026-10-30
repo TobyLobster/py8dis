@@ -12,7 +12,7 @@
 
 ## Overview
 
-py8dis is a programmable static tracing disassembler written in Python. It can currently disassemble 6502, 65C02 and 8080 code, and could be extended without too much difficulty to other 8-bit CPUs in the future.
+py8dis is a programmable static tracing disassembler written in Python. It can currently disassemble 6502, 65C02, 8080 and Z80 code, and could be extended without too much difficulty to other 8-bit CPUs in the future.
 
 ## Installation
 
@@ -100,11 +100,13 @@ This output is suitable for feeding into the beebasm assembler. You can switch t
 | [xa](https://www.floodgap.com/retrotech/xa/)              | 6502 / 65C02   | --xa                            |
 | [64tass](https://sourceforge.net/projects/tass64/)        | 6502 / 65C02   | --64tass (or -t)                |
 | [ca65](https://cc65.github.io/doc/ca65.html)              | 6502 / 65C02   | --ca65 (or -c)                  |
-| [z88dk-z80asm](https://z88dk.org)                         | 8080           | --z88dk-8080                    |
+| [z88dk-z80asm](https://z88dk.org)                         | 8080 / Z80     | --z88dk (or -z)                 |
 
 64tass's output is assembled with `64tass -b`, which writes a plain binary (by default 64tass writes a two-byte load address first; for a PRG file loaded with `load_prg()`, py8dis's output already has one). 64tass looks for a file included with `.binary` (see `include_binary_file()`) relative to the asm file, so if that's elsewhere add `-I` with the folder it's relative to. 64tass takes a label starting with `_` to be local to the label before it, so py8dis stops with an error for one when writing 64tass output (rename it). (Tested with 64tass 1.59.3120.)
 
 ca65 (from [cc65](https://cc65.github.io)) makes an object file, which its linker, ld65, makes into a binary with a configuration file, so the output starts with a comment saying how: `cl65 -t none -C ca65.cfg -o program.bin program.asm`, where `ca65.cfg` (as in `examples/ca65.cfg`) gives a plain binary of the bytes in order. The `-t none` matters: cl65's default target is the C64, whose character map would change the strings. ca65 doesn't accept a register's name (`a`, `x`, `y`), `z` or a mnemonic of the CPU as a label, so py8dis stops with an error for one when writing ca65 output (rename it). (Tested with ca65 V2.18, from Ubuntu's cc65 2.19.)
+
+z88dk-z80asm's output is assembled with `z88dk-z80asm -m8080 -b` for 8080 code, or `-mz80` for Z80 code. (`--z88dk-8080` and `-8`, the names before the Z80 was added, still work.) For the Z80 it assembles the undocumented instructions that use IXH, IXL, IYH and IYL (e.g. `ld ixh,a`), SLL, the indexed rotates, shifts, SET and RES that copy the result to a register (e.g. `rlc (ix+2),b`), `in f,(c)` and `out (c),0`. (Tested with z88dk-z80asm v2.4.)
 
 Other command line options: `-o FILE` writes the output to a file instead of printing it, `--upper` or `--lower` choose the case of the output, `--json FILE` writes the disassembly as JSON as well (see [JSON output](#json-output)), and `--symbols FILE` (with `--symbols-format`) and `--xref FILE` write a symbol file and a cross-reference listing (see [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)).
 
@@ -181,11 +183,13 @@ In what follows a `binary_addr` refers to a location in memory where the binary 
 
 :pencil:`load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, length=None)`
 
-Load the contents of `filename` into the disassembler's memory at address `binary_load_addr`. `cpu_name` can be "6502", "65C02", "6510" or "8080". If the optional `md5sum` argument is provided, disassembly will fail if the md5sum of `filename`'s contents doesn't match; this allows you to detect if a disassembly is being used against a different version of a program by accident.
+Load the contents of `filename` into the disassembler's memory at address `binary_load_addr`. `cpu_name` can be "6502", "65C02", "6510", "8080" or "Z80". If the optional `md5sum` argument is provided, disassembly will fail if the md5sum of `filename`'s contents doesn't match; this allows you to detect if a disassembly is being used against a different version of a program by accident.
 
 "6510" is the 6502 with its undocumented opcodes (as on the Commodore 64's 6510, and any NMOS 6502): SLO, RLA, SRE, RRA, SAX, LAX, DCP, ISC, ANC, ALR, ARR, SBX, SBC (&EB), NOP with operands, JAM, and the unstable ANE, LXA, LAS, TAS, SHA, SHX and SHY. These are traced as what they do (with their cycle counts, and what's known of the registers afterwards), so code that uses them is disassembled properly. acme writes them with its own mnemonics (after `!cpu 6510`; ALR is written as ASR, which older versions of acme need), 64tass with py8dis's (after `.cpu "6502i"`), and ca65 with its own (after `.setcpu "6502X"`; LXA is `lax #imm` and SBX is `axs`), except where an instruction has several opcodes and the assembler uses another one (e.g. ANC &2B, or most of the NOPs; the same 70 opcodes are written as instructions for all three); those, and all of them for beebasm and xa, are written as data bytes with the instruction in a comment, e.g. `equb &a7, l0070 ; lax l0070 (undocumented)`. With "6502" they aren't traced: tracing stops at one, since treating unknown opcodes as code would turn data into nonsense instructions.
 
 To load only part of the file (e.g. to skip a header), give `offset`, where in the file to start, and optionally `length`, the number of bytes to load (by default, the rest of the file). The `md5sum` is still that of the whole file. A file whose name ends `.prg` or `.p00` gives a warning when loaded from its start, since `load_prg()` (below) is probably what's wanted.
+
+"Z80" includes its undocumented opcodes, since Z80 code often uses them, and they're traced as what they do (with their cycle counts). Those the assembler accepts are written as instructions (see the assembler's notes above); the others are written as data bytes with the instruction in a comment, e.g. `db $ed, $4c ; neg (undocumented)`: the duplicates (another encoding of an instruction, such as ED 4C, a second NEG), the ED opcodes that do nothing, and a DD or FD prefix before an instruction that doesn't use HL (the prefix does nothing, so it's written as a byte on its own, `db $dd ; prefix with no effect (undocumented)`, followed by the instruction). RST is traced as a call to its address (when that's loaded, giving it a label such as `rst_08`), returning to the next instruction unless a subroutine hook (see `hook_subroutine()`) says otherwise, e.g. for data that follows it. An index register's displacement is written as a signed number, e.g. `ld a,(ix-3)`, or an expression given with `expr()` at its byte. The registers and flags aren't tracked yet.
 
 :pencil:`load_prg(filename, cpu_name="6502", md5sum=None)`
 

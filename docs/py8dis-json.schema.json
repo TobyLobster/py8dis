@@ -8,7 +8,7 @@
   "properties": {
     "format":    { "const": "py8dis" },
     "version":   { "const": 1 },
-    "cpu":       { "enum": ["6502", "65c02", "6510", "8080"] },
+    "cpu":       { "enum": ["6502", "65c02", "6510", "8080", "z80"] },
     "assembler": { "description": "The assembler the asm was written for (as given by the assembler's get_name()). Every 'text' field uses its syntax.",
                    "enum": ["acme", "beebasm", "xa", "64tass", "ca65", "z88dk"] },
     "loads": {
@@ -256,7 +256,7 @@
 
         "mnemonic":  { "description": "instruction: as in the asm. (For the 8080, without any register operands, which are in 'text'.)", "type": "string" },
         "mode": {
-          "description": "instruction: the addressing mode. 6502/65C02: implied, accumulator, immediate, zp, zp_x, zp_y, zp_indirect, zp_x_indirect, zp_indirect_y, absolute, absolute_x, absolute_y, indirect, absolute_x_indirect, relative. 8080: implied, immediate, immediate16, address.",
+          "description": "instruction: the addressing mode. 6502/65C02: implied, accumulator, immediate, zp, zp_x, zp_y, zp_indirect, zp_x_indirect, zp_indirect_y, absolute, absolute_x, absolute_y, indirect, absolute_x_indirect, relative. 8080: implied, immediate, immediate16, address. Z80: implied, immediate, immediate16, address, relative, indexed (the displacement, as a signed number), port. (A Z80 instruction with two operand values, e.g. ld (ix+d),n, gives the first.)",
           "type": "string"
         },
         "operand": {
@@ -266,7 +266,7 @@
           "properties": { "value": { "type": "integer" }, "expr": { "$ref": "#/$defs/expr" } }
         },
         "target":    { "description": "instruction: for a branch, jump or call, the runtime address it goes to.", "$ref": "#/$defs/addr" },
-        "undocumented": { "description": "instruction: true for an undocumented opcode (e.g. the 8080's &CB, which runs as JMP), which the asm writes as data bytes. 'mnemonic' and 'mode' are those of the instruction it runs as.", "const": true },
+        "undocumented": { "description": "instruction: true for an undocumented opcode (e.g. the 8080's &CB, which runs as JMP, or the Z80's ED 4C, another NEG), which the asm writes as data bytes. 'mnemonic' and 'mode' are those of the instruction it runs as.", "const": true },
         "cycles":    { "description": "instruction: the cycles taken, as set_show_cycles(True) shows them, e.g. \"2/3\" for a 6502 branch (not taken, or taken), or \"5/11\" for an 8080 conditional return (or \"halts\" for the 6502's undocumented JAM).", "type": "string" },
         "cpu_state": { "$ref": "#/$defs/cpu_state" },
 

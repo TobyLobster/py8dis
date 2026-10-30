@@ -16,6 +16,7 @@ import config
 import cpu6502
 import cpu65C02
 import cpu8080
+import cpuz80
 import disassembly
 import expression
 import mainformatter
@@ -437,6 +438,8 @@ def _instruction_fields(binary_loc, c, instruction):
         else:
             value = memorymanager.get_u16_binary(binary_addr + 1)
         bits = 16 if mode not in _ZP_MODES and mode not in ("immediate", "relative") else 8
+    elif isinstance(cpu, cpuz80.CpuZ80):
+        mode, value, bits, target, operand_addr = c.json_operand(binary_addr)
     else:
         assert isinstance(cpu, cpu8080.Cpu8080)
         target = None
@@ -454,7 +457,11 @@ def _instruction_fields(binary_loc, c, instruction):
     result["mode"] = mode
     if instruction.form == output.Instruction.UNDOCUMENTED or getattr(c, "undocumented", False):
         result["undocumented"] = True
-    if value is not None and instruction.operand is not None:
+    if isinstance(cpu, cpuz80.CpuZ80):
+        # (The value's expression is that of its part of the operand)
+        if value is not None:
+            result["operand"] = { "value": value, "expr": _expr(c.operand_part_text(binary_addr, operand_addr), operand_addr, value, bits) }
+    elif value is not None and instruction.operand is not None:
         result["operand"] = { "value": value, "expr": _expr(instruction.operand, binary_addr + 1, value, bits) }
     if target is not None:
         result["target"] = target

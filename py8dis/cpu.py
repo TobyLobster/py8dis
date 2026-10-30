@@ -47,6 +47,11 @@ class Cpu:
         self.cpu_states = [None] * 64*1024
 
 
+    def opcode_at(self, binary_addr):
+        """The opcode at binary_addr (from 'opcodes'), or None if there isn't
+        one. (The Z80's has prefixes to look at.)"""
+        return self.opcodes.get(session.current().memory.binary[binary_addr])
+
     def memory_regions(self):
         """Regions of memory the CPU defines, as for
         disassembly.add_memory_region(): (start, end, name), 'end' exclusive."""
@@ -71,10 +76,9 @@ class Cpu:
         # &0000), as it does at the end of the loaded data
         if binary_addr >= 0x10000:
             return [None]
-        opcode_value = memory_binary[binary_addr]
-        if opcode_value not in self.opcodes:
+        opcode = self.opcode_at(binary_addr)
+        if opcode is None:
             return [None]
-        opcode = self.opcodes[opcode_value]
         # (An instruction that would run past the top of memory isn't one)
         if binary_addr + opcode.length() > 0x10000:
             return [None]

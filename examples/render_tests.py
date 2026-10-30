@@ -95,6 +95,21 @@ def with_6510(opcode_bytes, show_cycles=False):
         return cpu.opcodes[opcode_bytes[0]].as_lines(binary_loc(0x2000), None)[0]
     return make
 
+def with_z80(opcode_bytes, show_cycles=False):
+    """The instruction made by the Z80 CPU for the given bytes at &2000, as
+    when disassembling. (Only for instructions without an address, since
+    naming labels isn't part of rendering.)"""
+    def make():
+        import config
+        import cpuz80
+        import session
+        config.set_show_cycles(show_cycles)
+        cpu = cpuz80.CpuZ80()
+        session.current().cpu = cpu
+        session.current().memory.binary[0x2000:0x2000 + len(opcode_bytes)] = opcode_bytes
+        return cpu.opcode_at(0x2000).as_lines(binary_loc(0x2000), None)[0]
+    return make
+
 def undocumented_zp():
     """'lax (ptr),y' (&b3), written as data bytes with a one-byte operand"""
     import expression
@@ -167,6 +182,22 @@ def make_tests():
          ["z88dk-8080"], lambda: instruction(0x2000, 3, "jmp", Name("finish"), form=Instruction.UNDOCUMENTED, data_byte=Num(0xcb, "hex2"))),
         ("8080 undocumented opcode, no operand",
          ["z88dk-8080"], lambda: instruction(0x2000, 1, "nop", form=Instruction.UNDOCUMENTED, data_byte=Num(0x08, "hex2"))),
+        ("Z80 instruction *",
+         ["z88dk"], with_z80([0xdd, 0x36, 0xfd, 0x41])),
+        ("Z80 instruction, prefix and displacement before the opcode",
+         ["z88dk"], with_z80([0xfd, 0xcb, 0x7f, 0x46])),
+        ("Z80 undocumented opcode that's assembled *",
+         ["z88dk"], with_z80([0xdd, 0x67])),
+        ("Z80 undocumented opcode that's assembled, copying to a register",
+         ["z88dk"], with_z80([0xdd, 0xcb, 0x02, 0x00])),
+        ("Z80 undocumented opcode as data *",
+         ["z88dk"], with_z80([0xed, 0x4c])),
+        ("Z80 undocumented opcode as data, with a displacement",
+         ["z88dk"], with_z80([0xdd, 0xcb, 0xfe, 0x41])),
+        ("Z80 prefix with no effect",
+         ["z88dk"], with_z80([0xdd, 0x00])),
+        ("Z80 cycles",
+         ["z88dk"], with_z80([0xed, 0xb0], show_cycles=True)),
         ("6502 CPU state",
          ASSEMBLERS_6502, with_cpu_state("6502", lambda: instruction(0x2000, 2, "lda", Num(0x41, "hex"), prefix="#"))),
         ("8080 CPU state",
@@ -385,6 +416,39 @@ EXPECTED = {
     ],
     '8080 undocumented opcode, no operand, z88dk-8080': [
         '    db $08 ; nop (undocumented)                                       ; 2000: a9          .',
+    ],
+    'Z80 instruction, z88dk': [
+        '    ld (ix-3),$41                                                     ; 2000: dd 36 fd... .6.',
+    ],
+    'Z80 instruction, z88dk, upper case': [
+        '    LD (IX-3),$41                                                     ; 2000: DD 36 FD... .6.',
+    ],
+    'Z80 instruction, prefix and displacement before the opcode, z88dk': [
+        '    bit 0,(iy+127)                                                    ; 2000: fd cb 7f... ...',
+    ],
+    "Z80 undocumented opcode that's assembled, z88dk": [
+        '    ld ixh,a                                                          ; 2000: dd 67       .g',
+    ],
+    "Z80 undocumented opcode that's assembled, z88dk, upper case": [
+        '    LD IXH,A                                                          ; 2000: DD 67       .g',
+    ],
+    "Z80 undocumented opcode that's assembled, copying to a register, z88dk": [
+        '    rlc (ix+2),b                                                      ; 2000: dd cb 02... ...',
+    ],
+    'Z80 undocumented opcode as data, z88dk': [
+        '    db $ed, $4c ; neg (undocumented)                                  ; 2000: ed 4c       .L',
+    ],
+    'Z80 undocumented opcode as data, z88dk, upper case': [
+        '    DB $ED, $4C ; NEG (undocumented)                                  ; 2000: ED 4C       .L',
+    ],
+    'Z80 undocumented opcode as data, with a displacement, z88dk': [
+        '    db $dd, $cb, -2, $41 ; bit 0,(ix-2) (undocumented)                ; 2000: dd cb fe... ...',
+    ],
+    'Z80 prefix with no effect, z88dk': [
+        '    db $dd ; prefix with no effect (undocumented)                     ; 2000: dd          .',
+    ],
+    'Z80 cycles, z88dk': [
+        '    ldir                                                              ; 2000: ed b0       ..  16/21 cycles',
     ],
     '6502 CPU state, acme': [
         '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',

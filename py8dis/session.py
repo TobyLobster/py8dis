@@ -24,7 +24,8 @@ class Session:
         """Make a new session.
 
         'assembler' is the assembler to produce output for: its name (beebasm,
-        acme, xa, 64tass, ca65 or z88dk-8080) or an assembler object.
+        acme, xa, 64tass, ca65 or z88dk, or z88dk-8080, the same as z88dk) or an
+        assembler object.
 
         'lower_case' is True for lower case output, False for upper case.
 
@@ -114,10 +115,10 @@ def make_assembler(name):
     if name == "ca65":
         import ca65
         return ca65.Ca65()
-    if name == "z88dk-8080":
-        import z88dk_8080
-        return z88dk_8080.Z88DK()
-    utils.die("Unknown assembler '{0}' (expected beebasm, acme, xa, 64tass, ca65 or z88dk-8080)".format(name))
+    if name in ("z88dk", "z88dk-8080"):
+        import z88dk
+        return z88dk.Z88DK()
+    utils.die("Unknown assembler '{0}' (expected beebasm, acme, xa, 64tass, ca65 or z88dk)".format(name))
 
 
 # The command line
@@ -128,7 +129,8 @@ parser.add_argument("-a", "--acme", action="store_true", help="generate acme-sty
 parser.add_argument("-x", "--xa", action="store_true", help="generate xa-style output")
 parser.add_argument("-t", "--64tass", dest="tass64", action="store_true", help="generate 64tass-style output")
 parser.add_argument("-c", "--ca65", action="store_true", help="generate ca65-style output")
-parser.add_argument("-8", "--z88dk-8080", action="store_true", help="generate z88dk style output for the 8080 processor")
+parser.add_argument("-z", "--z88dk", action="store_true", help="generate z88dk style output (for the 8080 or Z80)")
+parser.add_argument("-8", "--z88dk-8080", action="store_true", help="the same as --z88dk")
 parser.add_argument("-l", "--lower", action="store_true", help="generate lower-case output (default)")
 parser.add_argument("-u", "--upper", action="store_true", help="generate upper-case output")
 parser.add_argument("-o", "--output", help="output asm file")
@@ -143,9 +145,9 @@ def options_from_command_line():
     # (Other arguments are allowed, for the control file's own use.)
     args = parser.parse_known_args()[0]
 
-    assembler_count = sum(1 for x in (args.beebasm, args.acme, args.xa, args.tass64, args.ca65, args.z88dk_8080) if x)
+    assembler_count = sum(1 for x in (args.beebasm, args.acme, args.xa, args.tass64, args.ca65, args.z88dk or args.z88dk_8080) if x)
     if assembler_count > 1:
-        utils.die("--beebasm, --acme, --xa, --64tass, --ca65 and --z88dk-8080 arguments are incompatible")
+        utils.die("--beebasm, --acme, --xa, --64tass, --ca65 and --z88dk arguments are incompatible")
     if args.lower and args.upper:
         utils.die("--lower and --upper arguments are incompatible")
 
@@ -157,8 +159,8 @@ def options_from_command_line():
         assembler = "64tass"
     elif args.ca65:
         assembler = "ca65"
-    elif args.z88dk_8080:
-        assembler = "z88dk-8080"
+    elif args.z88dk or args.z88dk_8080:
+        assembler = "z88dk"
     else:
         assembler = "beebasm"
 

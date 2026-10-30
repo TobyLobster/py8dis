@@ -261,6 +261,12 @@ class Instruction(Line):
         # For UNDOCUMENTED: the operand's length in bytes
         self.operand_length = 2
 
+        # For UNDOCUMENTED: all the instruction's bytes as data items (the
+        # Z80's), if given, instead of 'data_byte' and the operand; and the
+        # comment, if not the instruction
+        self.data_items = None
+        self.comment_text = None
+
         self.binary_loc = binary_loc
         self.length = length
         self.indent_level = indent_level
@@ -291,8 +297,11 @@ class Instruction(Line):
         indent = "" if plain else utils.make_indent(1)
 
         if self.form == Instruction.UNDOCUMENTED:
-            items = [str(self.data_byte)]
-            if self.operand is not None:
+            if self.data_items is not None:
+                items = [str(x) for x in self.data_items]
+            else:
+                items = [str(self.data_byte)]
+            if self.data_items is None and self.operand is not None:
                 if self.operand_length == 1:
                     items.append(str(self.operand))
                 else:
@@ -301,6 +310,8 @@ class Instruction(Line):
             result = "%s%s%s" % (indent, assembler.byte_prefix(), ", ".join(items))
             if plain:
                 return result
+            if self.comment_text is not None:
+                return result + " %s %s (undocumented)" % (assembler.comment_prefix(), self.comment_text)
             return result + " %s %s%s (undocumented)" % (assembler.comment_prefix(), mnemonic,
                                                                  "" if self.operand is None else " " + self.prefix + str(self.operand) + suffix)
 

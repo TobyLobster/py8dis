@@ -134,6 +134,12 @@ class Assembler:
         (in upper case)."""
         return mnemonic
 
+    def undocumented_z80_accepted(self, kind):
+        """True if the assembler accepts the Z80's undocumented opcodes of
+        the given kind (see cpuz80.UNDOCUMENTED_KINDS), as written by
+        cpuz80. Those it doesn't are written as data bytes."""
+        return False
+
     def prg_header(self, load_addr):
         """The lines at the start of the output for a PRG file loaded with
         load_prg(): its two-byte load address, assembled just before the

@@ -94,11 +94,13 @@ import cpu6510
 import textencoding
 import cpu6502
 import cpu8080
+import cpuz80
 
 cpu_names = { "6502"  : cpu6502.Cpu6502,
               "65c02" : cpu65C02.Cpu65C02,
               "6510"  : cpu6510.Cpu6510,
               "8080"  : cpu8080.Cpu8080,
+              "z80"   : cpuz80.CpuZ80,
             }
 
 memory_binary = memorymanager.memory_binary

@@ -1,0 +1,72 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$8000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$852c  loop (inline)
+    $852c     loop                         jp nz,loop
+    $852f     loop+3                       jp z,loop
+    $8532     loop+6                       jp nc,loop
+    $8535     loop+9                       jp c,loop
+    $8538     loop+12                      jp po,loop
+    $853b     loop+15                      jp pe,loop
+    $853e     loop+18                      jp p,loop
+    $8541     loop+21                      jp m,loop
+    $8544     loop+24                      jr nz,loop
+    $8546     loop+26                      jr z,loop
+    $8548     loop+28                      jr nc,loop
+    $854a     loop+30                      jr c,loop
+    $854c     loop+32                      djnz loop
+
+$8574  c8574 (inline)
+    $8571     loop+69                      jr c8574
+
+$8577  subroutine (inline)
+    $854e     loop+34                      call nz,subroutine
+    $8551     loop+37                      call z,subroutine
+    $8554     loop+40                      call nc,subroutine
+    $8557     loop+43                      call c,subroutine
+    $855a     loop+46                      call po,subroutine
+    $855d     loop+49                      call pe,subroutine
+    $8560     loop+52                      call p,subroutine
+    $8563     loop+55                      call m,subroutine
+    $8566     loop+58                      call subroutine
+
+$8580  interrupt (inline)
+    (not referenced)
+
+$8582  nmi (inline)
+    (not referenced)
+
+$8584  finish (inline)
+    $8574     c8574                        jp finish
+
+$8585  jump_ix (inline)
+    (not referenced)
+
+$8587  jump_iy (inline)
+    (not referenced)
+
+$8589  value (inline)
+    $80ad     pydis_start+173              ld a,(value)
+    $80b2     pydis_start+178              ld (value),a
+
+$858a  word (inline)
+    $80d1     pydis_start+209              ld hl,(word)
+    $80d4     pydis_start+212              ld bc,(word)
+    $80d8     pydis_start+216              ld de,(word)
+    $80dc     pydis_start+220              ld sp,(word)
+    $80e0     pydis_start+224              ld ix,(word)
+    $80e4     pydis_start+228              ld iy,(word)
+    $80e8     pydis_start+232              ld (word),hl
+    $80eb     pydis_start+235              ld (word),bc
+    $80ef     pydis_start+239              ld (word),de
+    $80f3     pydis_start+243              ld (word),sp
+    $80f7     pydis_start+247              ld (word),ix
+    $80fb     pydis_start+251              ld (word),iy
+
+$858c  table (inline)
+    (not referenced)
+
+$8590  pydis_end (inline)
+    (not referenced)

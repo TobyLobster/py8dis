@@ -62,6 +62,11 @@ TESTS = [
     ("undocumented_8080",        ["z88dk-8080"],               "the 8080's undocumented opcodes, traced as what they run as and output as data"),
     ("move_8080",                ["z88dk-8080"],               "move() and include_binary_file() with z88dk-z80asm (PHASE and BINARY)"),
 
+    # Z80 code
+    ("test_z80",                 ["z88dk"],                    "every documented Z80 instruction"),
+    ("undocumented_z80",         ["z88dk"],                    "the Z80's undocumented opcodes: those z88dk-z80asm accepts as instructions, the others as data"),
+    ("trace_z80",                ["z88dk"],                    "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
+
     # 6502 code: tests
     ("include_binary_file",      ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for including a binary file"),
     ("char_literals",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for all character literals"),
@@ -135,11 +140,11 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)
-SYMBOLS_FORMATS = {"beebasm": "beebasm", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "z88dk-8080": "plain"}
+SYMBOLS_FORMATS = {"beebasm": "beebasm", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "z88dk-8080": "plain", "z88dk": "plain"}
 
 # Each error test is (name, expected error message). The control file is
 # python/errors/<name>.py (which describes the test), and py8dis must stop with
@@ -195,6 +200,7 @@ ASSEMBLER_PROGRAMS = {
     "64tass":     "64tass",
     "ca65":       "cl65",
     "z88dk-8080": "z88dk-z80asm",
+    "z88dk":      "z88dk-z80asm",
 }
 
 # Test scripts run as well by -c, when all the tests are run
@@ -277,8 +283,10 @@ def assemble_command(assembler, p, make_extras):
         if make_extras:
             cmd += ["-l", str(p.report)]
         return cmd + [str(p.asm)]
-    if assembler == "z88dk-8080":
-        cmd = ["z88dk-z80asm", "-m8080", "-b"]
+    if assembler in ("z88dk-8080", "z88dk"):
+        # (The tests of 8080 code use the name "z88dk-8080", and of Z80
+        # code "z88dk": it's the same assembler, told which CPU it is)
+        cmd = ["z88dk-z80asm", "-m8080" if assembler == "z88dk-8080" else "-mz80", "-b"]
         if make_extras:
             cmd += ["-l", "-s"]
         return cmd + ["-o" + str(p.binary), str(p.asm)]
