@@ -176,10 +176,19 @@ class CpuStateDisposition:
             "c": None,
         }
 
+        # What the Z flag says about the registers, if anything: (registers,
+        # value, binary address), meaning Z is set if and only if each of
+        # the registers is that value, as worked out by the instruction at
+        # that address (e.g. (('y',), 0, addr) after DEY, or (('a',), $7b,
+        # addr) after CMP #$7b). So when a branch that isn't taken shows Z is
+        # set, the registers' values are known. (See Cpu6502.z_source().)
+        self.z_from = None
+
     def copy(self):
         """A fast copy (much faster than copy.deepcopy())."""
         result = CpuStateDisposition.__new__(CpuStateDisposition)
         result._d = {key: (value.copy() if isinstance(value, RegState) else value) for key, value in self._d.items()}
+        result.z_from = self.z_from
         return result
 
     def clear(self):
@@ -192,6 +201,7 @@ class CpuStateDisposition:
         self._d["i"] = None
         self._d["z"] = None
         self._d["c"] = None
+        self.z_from = None
 
     def __getitem__(self, key):
         assert key in "axynvdizc"
@@ -409,6 +419,23 @@ class CpuStateDisposition:
         if flag == 'z' and flag_state == True and self['c'] == 'pending':
             # We have 'BNE addr' with c == 'pending' from a previous compare instruction
             self['c'] = True
+        if flag == 'z' and flag_state == True and self.z_from is not None:
+            # We have 'BNE addr' after an instruction whose result set Z, so
+            # the result was 0: e.g. Y is 0 after 'DEY : BNE addr', and A is
+            # $7b after 'CMP #$7b : BNE addr'. (N is clear, being bit 7 of
+            # that result.)
+            regs, value, z_addr = self.z_from
+            for reg in regs:
+                if self[reg].value is None:
+                    # (No instruction set it to this value: it's only this
+                    # value after the branch, so comments on its use, e.g.
+                    # a VDU command, go where it's used)
+                    self[reg].value = value
+                    self[reg].previous_load_imm = None
+                    self[reg].previous_load = None
+                    self[reg].previous_adjust = None
+            if self['n'] is None:
+                self['n'] = False
         if flag == 'c' and flag_state == False and self['z'] == 'pending':
             # We have 'BCS addr' with z == 'pending' from a previous compare instruction
             self['z'] = False
@@ -482,6 +509,44 @@ class Cpu6502(cpu.Cpu):
     abs_or_zp_indexed_y_pattern = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+(.+),Y$", re.IGNORECASE)
     indirect_pattern            = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+\((.*)\)$", re.IGNORECASE)
     zp_or_addr_pattern          = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+(.+)$", re.IGNORECASE)
+
+    # How instructions set the Z flag (see z_source()): the mnemonics that
+    # don't change it, and those whose result (in the given registers) sets
+    # it
+    Z_UNCHANGED = "unchanged"
+    _Z_UNCHANGED_MNEMONICS = set("""
+        sta stx sty stz sax sha shx shy tas jmp jsr bcc bcs beq bne bmi bpl bvc bvs bra
+        nop pha php phx phy txs clc sec cli sei clv cld sed wai stp""".split()) | {
+        "%s%d" % (op, bit) for op in ("bbr", "bbs", "rmb", "smb") for bit in range(8)}
+    _Z_RESULT_REGISTERS = {
+        "lda": ("a",), "pla": ("a",), "txa": ("a",), "tya": ("a",), "and": ("a",), "ora": ("a",),
+        "eor": ("a",), "adc": ("a",), "sbc": ("a",), "anc": ("a",), "alr": ("a",), "arr": ("a",), "ane": ("a",),
+        "ldx": ("x",), "tax": ("x",), "tsx": ("x",), "inx": ("x",), "dex": ("x",), "plx": ("x",), "sbx": ("x",),
+        "ldy": ("y",), "tay": ("y",), "iny": ("y",), "dey": ("y",), "ply": ("y",),
+        "slo": ("a",), "rla": ("a",), "sre": ("a",), "rra": ("a",), "isc": ("a",),
+        "lax": ("a", "x"), "lxa": ("a", "x"), "las": ("a", "x"),
+    }
+    _Z_ACCUMULATOR_MNEMONICS = {"asl", "lsr", "rol", "ror", "inc", "dec"}
+    _Z_COMPARE_REGISTERS = {"cmp": "a", "cpx": "x", "cpy": "y"}
+
+    @staticmethod
+    def z_source(opcode, binary_addr):
+        """What the Z flag says about the registers after the instruction
+        (see CpuStateDisposition.z_from): Z_UNCHANGED if it doesn't change Z,
+        (registers, 0, binary_addr) if Z is set by its result in those
+        registers (e.g. DEY, LDA, AND), ((register,), n, binary_addr) for a
+        compare with an immediate n, otherwise None."""
+        mnemonic = opcode.mnemonic.lower()
+        if mnemonic in Cpu6502._Z_UNCHANGED_MNEMONICS:
+            return Cpu6502.Z_UNCHANGED
+        binary_addr = BinaryAddr(binary_addr)
+        if mnemonic in Cpu6502._Z_RESULT_REGISTERS:
+            return (Cpu6502._Z_RESULT_REGISTERS[mnemonic], 0, binary_addr)
+        if mnemonic in Cpu6502._Z_ACCUMULATOR_MNEMONICS and opcode.addr_mode == Cpu6502.mode_accumulator:
+            return (("a",), 0, binary_addr)
+        if mnemonic in Cpu6502._Z_COMPARE_REGISTERS and opcode.addr_mode == Cpu6502.mode_immediate:
+            return ((Cpu6502._Z_COMPARE_REGISTERS[mnemonic],), session.current().memory.binary[binary_addr + 1], binary_addr)
+        return None
 
     class CpuState:
         def __init__(self):
@@ -978,6 +1043,10 @@ class Cpu6502(cpu.Cpu):
             if self.update is not None:
                 self.regular_update(binary_addr, state)
                 self.update(binary_addr, state)
+                z_from = Cpu6502.z_source(self, binary_addr)
+                if z_from is not Cpu6502.Z_UNCHANGED:
+                    state.optimistic.z_from = z_from
+                    state.pessimistic.z_from = z_from
             else:
                 state.clear(pessimistic_only=False)
 
@@ -1370,6 +1439,11 @@ class Cpu6502(cpu.Cpu):
                 # Branch is always taken, so known state is cleared, and always_branch flag is set.
                 state.clear(pessimistic_only=False)
                 state.always_branch = True
+            elif self.target(BinaryAddr(binary_addr)) == (movemanager.b2r(BinaryAddr(binary_addr)) + 2) & 0xffff:
+                # A branch to the next instruction says nothing about its
+                # condition (whether it's taken or not, the code continues
+                # there)
+                state.always_branch = False
             else:
                 # Assume conditional branch is not taken, we continue tracing
                 if self.update is not None:

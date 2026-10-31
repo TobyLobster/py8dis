@@ -2029,7 +2029,7 @@ c8a62
     bne service_handler_not_vectors_changed                           // 8a64: d0 41       .A
     ldx l0d6a                                                         // 8a66: ae 6a 0d    .j.
     bne c8a6f                                                         // 8a69: d0 04       ..
-    inx                                                               // 8a6b: e8          .
+    inx                                                               // 8a6b: e8          .              // X=1
     stx l028d                                                         // 8a6c: 8e 8d 02    ...
 // $8a6f referenced 1 time by $8a69
 c8a6f
@@ -2605,7 +2605,7 @@ loop_c8dc1
     beq c8dfa                                                         // 8dc7: f0 31       .1
     cmp #$3a // ':'                                                   // 8dc9: c9 3a       .:
     bne loop_c8dc1                                                    // 8dcb: d0 f4       ..
-    jsr oswrch                                                        // 8dcd: 20 ee ff     ..            // Write character
+    jsr oswrch                                                        // 8dcd: 20 ee ff     ..            // Write character 58
     sty l00b4                                                         // 8dd0: 84 b4       ..
 // $8dd2 referenced 4 times by $8de2, $8de6, $8de9, $8df5
 c8dd2
@@ -3854,7 +3854,7 @@ c95dd
     pha                                                               // 95e4: 48          H
     lda l009b                                                         // 95e5: a5 9b       ..
     bne c95ee                                                         // 95e7: d0 05       ..
-    ora #$80                                                          // 95e9: 09 80       ..
+    ora #$80                                                          // 95e9: 09 80       ..             // A=$80
     sta l0d61                                                         // 95eb: 8d 61 0d    .a.
 // $95ee referenced 1 time by $95e7
 c95ee
@@ -3939,7 +3939,7 @@ c9651
     cmp #2                                                            // 9654: c9 02       ..
     bne c969a                                                         // 9656: d0 42       .B
     php                                                               // 9658: 08          .
-    tax                                                               // 9659: aa          .
+    tax                                                               // 9659: aa          .              // X=2
     ldy l97ad,x                                                       // 965a: bc ad 97    ...
     lda l97b9,y                                                       // 965d: b9 b9 97    ...
     jsr sta_e09_if_d6c_b7_set                                         // 9660: 20 11 96     ..
@@ -4834,8 +4834,8 @@ loop_c9b78
     dey                                                               // 9b7d: 88          .
     dex                                                               // 9b7e: ca          .
     bne loop_c9b78                                                    // 9b7f: d0 f7       ..
-    inx                                                               // 9b81: e8          .
-    inx                                                               // 9b82: e8          .
+    inx                                                               // 9b81: e8          .              // X=1
+    inx                                                               // 9b82: e8          .              // X=2
     ldy #$11                                                          // 9b83: a0 11       ..
 // $9b85 referenced 1 time by $9b8c
 loop_c9b85
@@ -5414,7 +5414,7 @@ loop_c9ee8
     dey                                                               // 9eed: 88          .
     cpy #8                                                            // 9eee: c0 08       ..
     bne c9ef3                                                         // 9ef0: d0 01       ..
-    dey                                                               // 9ef2: 88          .
+    dey                                                               // 9ef2: 88          .              // Y=7
 // $9ef3 referenced 1 time by $9ef0
 c9ef3
     dex                                                               // 9ef3: ca          .
@@ -5423,7 +5423,7 @@ c9ef3
     lsr                                                               // 9ef7: 4a          J
     pha                                                               // 9ef8: 48          H
     bcc c9efc                                                         // 9ef9: 90 01       ..
-    inx                                                               // 9efb: e8          .
+    inx                                                               // 9efb: e8          .              // X=1
 // $9efc referenced 1 time by $9ef9
 c9efc
     stx l0f06                                                         // 9efc: 8e 06 0f    ...
@@ -5460,7 +5460,7 @@ loop_c9f27
     jsr sub_c9a92                                                     // 9f37: 20 92 9a     ..
     dex                                                               // 9f3a: ca          .
     bne loop_c9f27                                                    // 9f3b: d0 ea       ..
-    inx                                                               // 9f3d: e8          .
+    inx                                                               // 9f3d: e8          .              // X=1
 // $9f3e referenced 1 time by $9f45
 loop_c9f3e
     // Copy X+1 bytes of memory from l0f03 to l0f06
@@ -6661,7 +6661,7 @@ ca768
     sta l0e01,y                                                       // a776: 99 01 0e    ...
     cpy #1                                                            // a779: c0 01       ..
     bne ca795                                                         // a77b: d0 18       ..
-    tya                                                               // a77d: 98          .
+    tya                                                               // a77d: 98          .              // A=1
     pha                                                               // a77e: 48          H
     ldy #4                                                            // a77f: a0 04       ..
     jsr sub_ca7bf                                                     // a781: 20 bf a7     ..
@@ -6675,14 +6675,14 @@ ca78e
     iny                                                               // a78e: c8          .
     cpy #4                                                            // a78f: c0 04       ..
     bne ca751                                                         // a791: d0 be       ..
-    dey                                                               // a793: 88          .
+    dey                                                               // a793: 88          .              // Y=3
     rts                                                               // a794: 60          `
 
 // $a795 referenced 1 time by $a77b
 ca795
     cpy #2                                                            // a795: c0 02       ..
     bne ca7ac                                                         // a797: d0 13       ..
-    tya                                                               // a799: 98          .
+    tya                                                               // a799: 98          .              // A=2
     pha                                                               // a79a: 48          H
     ldy #8                                                            // a79b: a0 08       ..
     jsr sub_ca7bf                                                     // a79d: 20 bf a7     ..
@@ -6907,7 +6907,7 @@ ca8db
     dey                                                               // a8dd: 88          .
     cpy #$17                                                          // a8de: c0 17       ..
     bne loop_ca8d3                                                    // a8e0: d0 f1       ..
-    iny                                                               // a8e2: c8          .
+    iny                                                               // a8e2: c8          .              // Y=$18
     sty l009a                                                         // a8e3: 84 9a       ..
     ldy #$1c                                                          // a8e5: a0 1c       ..
     lda l00ac                                                         // a8e7: a5 ac       ..
@@ -8741,7 +8741,7 @@ cb3ed
     and #$df                                                          // b3ed: 29 df       ).
     cmp #$59 // 'Y'                                                   // b3ef: c9 59       .Y
     bne cb41d                                                         // b3f1: d0 2a       .*
-    jsr osasci                                                        // b3f3: 20 e3 ff     ..            // Write character
+    jsr osasci                                                        // b3f3: 20 e3 ff     ..            // Write character 89
     ldx #0                                                            // b3f6: a2 00       ..
     lda l0e30,x                                                       // b3f8: bd 30 0e    .0.
     cmp #$0d                                                          // b3fb: c9 0d       ..
@@ -9750,7 +9750,7 @@ loop_cba67
     dey                                                               // ba6e: 88          .
     cpy #$0f                                                          // ba6f: c0 0f       ..
     bne loop_cba67                                                    // ba71: d0 f4       ..
-    iny                                                               // ba73: c8          .
+    iny                                                               // ba73: c8          .              // Y=$10
     clc                                                               // ba74: 18          .
     adc #$10                                                          // ba75: 69 10       i.
     php                                                               // ba77: 08          .
@@ -10030,8 +10030,8 @@ loop_cbbe7
     iny                                                               // bbef: c8          .
     cpy #6                                                            // bbf0: c0 06       ..
     bne loop_cbbe7                                                    // bbf2: d0 f3       ..
-    dey                                                               // bbf4: 88          .
-    dey                                                               // bbf5: 88          .
+    dey                                                               // bbf4: 88          .              // Y=5
+    dey                                                               // bbf5: 88          .              // Y=4
 // $bbf6 referenced 1 time by $bbfd
 loop_cbbf6
     lda (l00ae),y                                                     // bbf6: b1 ae       ..

@@ -1,0 +1,14 @@
+comadd 70,l0070
+comadd 71,l0071
+comadd 72,l0072
+comadd 73,l0073
+comadd 74,l0074
+comadd 75,l0075
+comadd 76,l0076
+comadd 77,l0077
+comadd 2000,pydis_start
+comadd 2000,start
+comadd 2002,loop_c2002
+comadd 201d,c201d
+comadd 2029,return_1
+comadd 202a,pydis_end

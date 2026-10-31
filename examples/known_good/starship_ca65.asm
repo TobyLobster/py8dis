@@ -4488,19 +4488,19 @@ sine_bit_unset3:
     lsr                                                               ; 3c9f: 4a          J   :2b9f[1]
     cmp #2                                                            ; 3ca0: c9 02       ..  :2ba0[1]
     bcc finished_calculating_change_in_angle                          ; 3ca2: 90 15       ..  :2ba2[1]
-    iny                                                               ; 3ca4: c8          .   :2ba4[1]
+    iny                                                               ; 3ca4: c8          .   :2ba4[1]   ; Y=1
     cmp #5                                                            ; 3ca5: c9 05       ..  :2ba5[1]
     bcc finished_calculating_change_in_angle                          ; 3ca7: 90 10       ..  :2ba7[1]
-    iny                                                               ; 3ca9: c8          .   :2ba9[1]
+    iny                                                               ; 3ca9: c8          .   :2ba9[1]   ; Y=2
     cmp #8                                                            ; 3caa: c9 08       ..  :2baa[1]
     bcc finished_calculating_change_in_angle                          ; 3cac: 90 0b       ..  :2bac[1]
-    iny                                                               ; 3cae: c8          .   :2bae[1]
+    iny                                                               ; 3cae: c8          .   :2bae[1]   ; Y=3
     cmp #$0b                                                          ; 3caf: c9 0b       ..  :2baf[1]
     bcc finished_calculating_change_in_angle                          ; 3cb1: 90 06       ..  :2bb1[1]
-    iny                                                               ; 3cb3: c8          .   :2bb3[1]
+    iny                                                               ; 3cb3: c8          .   :2bb3[1]   ; Y=4
     cmp #$0e                                                          ; 3cb4: c9 0e       ..  :2bb4[1]
     bcc finished_calculating_change_in_angle                          ; 3cb6: 90 01       ..  :2bb6[1]
-    iny                                                               ; 3cb8: c8          .   :2bb8[1]
+    iny                                                               ; 3cb8: c8          .   :2bb8[1]   ; Y=5
 finished_calculating_change_in_angle:
     tya                                                               ; 3cb9: 98          .   :2bb9[1]
     asl temp8                                                         ; 3cba: 06 75       .u  :2bba[1]

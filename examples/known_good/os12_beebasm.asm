@@ -4918,7 +4918,7 @@ tube_data_register_3                    = &fee5
     beq cd9fd                                                         ; d9f2: f0 09       ..
     iny                                                               ; d9f4: c8          .
     bne cd9ee                                                         ; d9f5: d0 f7       ..
-    iny                                                               ; d9f7: c8          .
+    iny                                                               ; d9f7: c8          .  ; Y=1
     inx                                                               ; d9f8: e8          .
     inc l0001                                                         ; d9f9: e6 01       ..
     bpl cd9ee                                                         ; d9fb: 10 f1       ..
@@ -4979,7 +4979,7 @@ tube_data_register_3                    = &fee5
     inx                                                               ; da4d: e8          .
     bne loop_cda44                                                    ; da4e: d0 f4       ..
     sta user_via_ddra                                                 ; da50: 8d 63 fe    .c.
-    txa                                                               ; da53: 8a          .
+    txa                                                               ; da53: 8a          .  ; A=0
     ldx #&e2                                                          ; da54: a2 e2       ..
 ; &da56 referenced 1 time by &da59
 .loop_cda56
@@ -5307,7 +5307,7 @@ tube_data_register_3                    = &fee5
     bne cdcb8                                                         ; dc82: d0 34       .4
     ldx l025c                                                         ; dc84: ae 5c 02    .\.
     bne return_24                                                     ; dc87: d0 09       ..
-    inx                                                               ; dc89: e8          .
+    inx                                                               ; dc89: e8          .  ; X=1
     jsr osbyte153EntryPoint                                           ; dc8a: 20 f3 e4     ..
     jsr sub_ce741                                                     ; dc8d: 20 41 e7     A.
     bcc cdc78                                                         ; dc90: 90 e6       ..
@@ -7905,7 +7905,7 @@ le5b4 = le5b3+1
     dey                                                               ; ec86: 88          .
     bne loop_cec83                                                    ; ec87: d0 fa       ..
     sta l0818,x                                                       ; ec89: 9d 18 08    ...
-    dey                                                               ; ec8c: 88          .
+    dey                                                               ; ec8c: 88          .  ; Y=&ff
     sty l0838                                                         ; ec8d: 8c 38 08    .8.
 ; &ec90 referenced 1 time by &ec7a
 .cec90
@@ -9235,7 +9235,7 @@ le5b4 = le5b3+1
     sta l038b,x                                                       ; f44b: 9d 8b 03    ...
     dex                                                               ; f44e: ca          .
     bne loop_cf44b                                                    ; f44f: d0 fa       ..
-    txa                                                               ; f451: 8a          .
+    txa                                                               ; f451: 8a          .  ; A=0
     ldx #&14                                                          ; f452: a2 14       ..
 ; &f454 referenced 1 time by &f45a
 .loop_cf454
@@ -9688,7 +9688,7 @@ le5b4 = le5b3+1
     iny                                                               ; f751: c8          .
     cpy #&0b                                                          ; f752: c0 0b       ..
     bne loop_cf747                                                    ; f754: d0 f1       ..
-    dey                                                               ; f756: 88          .
+    dey                                                               ; f756: 88          .  ; Y=&0a
 ; &f757 referenced 1 time by &f74f
 .cf757
     ldx #&0c                                                          ; f757: a2 0c       ..

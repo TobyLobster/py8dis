@@ -2318,7 +2318,7 @@ skip4:
     jsr getmapblock                                                   ; 1ef0: 20 c8 23     .#
     and #MapId_Platform                                               ; 1ef3: 29 01       ).
     bne notfallingoffplatform                                         ; 1ef5: d0 19       ..
-    tay                                                               ; 1ef7: a8          .
+    tay                                                               ; 1ef7: a8          .              ; Y=0
     ldx #$ff                                                          ; 1ef8: a2 ff       ..
     lda movementx                                                     ; 1efa: a5 46       .F
     clc                                                               ; 1efc: 18          .
@@ -3766,13 +3766,13 @@ clearhiscorenameloop:
     bne clearhiscorenameloop                                          ; 27a8: d0 f9       ..
     lda #'F'                                                          ; 27aa: a9 46       .F
     sta (hiscoreaddr),y                                               ; 27ac: 91 76       .v
-    dey                                                               ; 27ae: 88          .
+    dey                                                               ; 27ae: 88          .              ; Y=9
     lda #char_ampersand                                               ; 27af: a9 26       .&
     sta (hiscoreaddr),y                                               ; 27b1: 91 76       .v
-    dey                                                               ; 27b3: 88          .
+    dey                                                               ; 27b3: 88          .              ; Y=8
     lda #'A'                                                          ; 27b4: a9 41       .A
     sta (hiscoreaddr),y                                               ; 27b6: 91 76       .v
-    dey                                                               ; 27b8: 88          .
+    dey                                                               ; 27b8: 88          .              ; Y=7
     lda #0                                                            ; 27b9: a9 00       ..
 clearhiscoreloop:
     sta (hiscoreaddr),y                                               ; 27bb: 91 76       .v

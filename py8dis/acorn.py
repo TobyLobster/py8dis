@@ -677,11 +677,14 @@ def oswrcr_hook(runtime_addr, state, subroutine):
 
 def oswrch_hook(runtime_addr, state, subroutine):
     a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
-    if a_addr_pessimistic is not None:
-        a = " " + str(memory_binary[a_addr_pessimistic])
+    # A's value, from an immediate load, or otherwise known (e.g. after 'cmp
+    # #13 : bne skip')
+    value = memory_binary[a_addr_pessimistic] if a_addr_pessimistic is not None else state.pessimistic['a'].value
+    if value is not None:
+        a = " " + str(value)
 
         # If OSASCI with A=13, then OSNEWL is called instead
-        if subroutine.label_name == "osasci" and memory_binary[a_addr_pessimistic] == 13:
+        if subroutine.label_name == "osasci" and value == 13:
             osnewl_hook(runtime_addr, state, subroutine)
             return
     else:

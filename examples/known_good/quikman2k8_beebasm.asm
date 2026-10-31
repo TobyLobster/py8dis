@@ -1956,7 +1956,7 @@ getin   = &ffe4
     bne c1cca                                                         ; 1ccb: d0 fd       P.
     dey                                                               ; 1ccd: 88          .
     bne c1cca                                                         ; 1cce: d0 fa       P.
-    tya                                                               ; 1cd0: 98          .
+    tya                                                               ; 1cd0: 98          .  ; A=0
     rts                                                               ; 1cd1: 60          .
 
     equb 0, 0, 0, 0, 0, 0, 0, &10, &10, &6c, &10, &10, 0, 0, &10      ; 1cd2: 00 00 00... ...

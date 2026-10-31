@@ -174,6 +174,8 @@ To change the configuration, add `import config` and call the following as neede
 | `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
 | `config.set_text_encoding(s)`                         | "ascii" | How bytes are shown as text: "ascii", "petscii" or "screen" (see [Text encodings](#text-encodings)). |
 
+The CPU state is what py8dis knows for certain about the registers and flags after each instruction, from the code before it (back to a label, where code can come from elsewhere). It's used for comments (e.g. on OS calls) as well as shown. For the 6502, after a conditional branch that isn't taken its flag is known, and after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7b after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`). A branch to the next instruction says nothing.
+
 ## Command reference
 
 The whole point of py8dis is that it's programmable/user-extendable, but standard Python functions are provided for common disassembly tasks. If these don't do quite what you want, you can always copy them and tweak the definitions; alternatively, feature requests or submissions of new "standard" functions to add are welcome.

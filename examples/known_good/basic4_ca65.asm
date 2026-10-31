@@ -6050,7 +6050,7 @@ ca36b:
     sta l002c                                                         ; a375: 85 2c       .,
     lda l0048                                                         ; a377: a5 48       .H
     bne ca37e                                                         ; a379: d0 03       ..
-    inc                                                               ; a37b: 1a          .
+    inc                                                               ; a37b: 1a          .  ; A=1
     sec                                                               ; a37c: 38          8
     rts                                                               ; a37d: 60          `
 
@@ -6253,7 +6253,7 @@ ca47a:
     ror                                                               ; a482: 6a          j
     inx                                                               ; a483: e8          .
     bne ca47a                                                         ; a484: d0 f4       ..
-    dex                                                               ; a486: ca          .
+    dex                                                               ; a486: ca          .  ; X=$ff
     bra ca452                                                         ; a487: 80 c9       ..
 ; $a489 referenced 1 time by $84aa
 ca489:
@@ -8771,7 +8771,7 @@ loop_cb259:
     beq cb266                                                         ; b260: f0 04       ..
     iny                                                               ; b262: c8          .
     bne loop_cb259                                                    ; b263: d0 f4       ..
-    tya                                                               ; b265: 98          .
+    tya                                                               ; b265: 98          .  ; A=0
 ; $b266 referenced 1 time by $b260
 cb266:
     sty l0036                                                         ; b266: 84 36       .6
@@ -10732,7 +10732,8 @@ cbdd4:
 sub_cbdd8:
     cmp #$0d                                                          ; bdd8: c9 0d       ..
     bne loop_cbdbf                                                    ; bdda: d0 e3       ..
-    jsr oswrch                                                        ; bddc: 20 ee ff     .. ; Write character
+    ; Move the cursor to the start of the line
+    jsr oswrch                                                        ; bddc: 20 ee ff     .. ; Write character 13
     jmp cbac5                                                         ; bddf: 4c c5 ba    L..
 
 ; $bde2 referenced 1 time by $bdd6

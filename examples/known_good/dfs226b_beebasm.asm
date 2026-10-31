@@ -3823,7 +3823,7 @@ nmi_XXX5 = c0d1f+1
     inc l00b8                                                         ; 3398: e6 b8       ..  :9398[1]
     dec l00b9                                                         ; 339a: c6 b9       ..  :939a[1]
     bne c936b                                                         ; 339c: d0 cd       ..  :939c[1]
-    tay                                                               ; 339e: a8          .   :939e[1]
+    tay                                                               ; 339e: a8          .   :939e[1]   ; Y=&11
     lda #&0e                                                          ; 339f: a9 0e       ..  :939f[1]
     bit l108a                                                         ; 33a1: 2c 8a 10    ,.. :93a1[1]
     bvc c93a8                                                         ; 33a4: 50 02       P.  :93a4[1]
@@ -7790,7 +7790,7 @@ nmi_XXX5 = c0d1f+1
     bne cacc4                                                         ; 4cbc: d0 06       ..  :acbc[1]
     cpx #0                                                            ; 4cbe: e0 00       ..  :acbe[1]
     bne cacc4                                                         ; 4cc0: d0 02       ..  :acc0[1]
-    dex                                                               ; 4cc2: ca          .   :acc2[1]
+    dex                                                               ; 4cc2: ca          .   :acc2[1]   ; X=&ff
     rts                                                               ; 4cc3: 60          `   :acc3[1]
 
 ; &4cc4 referenced 3 times by &acb8[1], &acbc[1], &acc0[1]
@@ -8806,7 +8806,7 @@ jump_address_low = c0050+1
     eor (l00b8),y                                                     ; 5320: 51 b8       Q.  :b320[1]
     and #&40 ; '@'                                                    ; 5322: 29 40       )@  :b322[1]
     bne cb300                                                         ; 5324: d0 da       ..  :b324[1]
-    tay                                                               ; 5326: a8          .   :b326[1]
+    tay                                                               ; 5326: a8          .   :b326[1]   ; Y=0
     ldx #&ba                                                          ; 5327: a2 ba       ..  :b327[1]
     jsr osargs                                                        ; 5329: 20 da ff     .. :b329[1]   ; Read or write a file's attributes
     jsr cb82b                                                         ; 532c: 20 2b b8     +. :b32c[1]

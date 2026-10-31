@@ -75,6 +75,7 @@ TESTS = [
     ("char_literals",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for all character literals"),
     ("align_test",               ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for formatting"),
     ("cycles",                   ["acme", "beebasm", "xa", "64tass", "ca65"],    "cycle counts for branches near page boundaries"),
+    ("branch_state",             ["acme", "beebasm", "xa", "64tass", "ca65"],    "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
     ("string_stuff1",            ["acme", "beebasm", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
     ("string_stuff3",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "testing py8dis string commands"),
@@ -143,7 +144,7 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)

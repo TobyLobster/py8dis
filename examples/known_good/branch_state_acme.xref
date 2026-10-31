@@ -1,0 +1,45 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0070  l0070 (Memory locations: Zero page)
+    $2005     loop_c2002+3                 lda l0070
+
+$0071  l0071 (Memory locations: Zero page)
+    $200b     loop_c2002+9                 ldx l0071
+
+$0072  l0072 (Memory locations: Zero page)
+    $2011     loop_c2002+15                lda l0072
+
+$0073  l0073 (Memory locations: Zero page)
+    $2015     loop_c2002+19                lda l0073
+
+$0074  l0074 (Memory locations: Zero page)
+    $2019     loop_c2002+23                ldy l0074
+
+$0075  l0075 (Memory locations: Zero page)
+    $201e     c201d+1                      bit l0075
+
+$0076  l0076 (Memory locations: Zero page)
+    $2022     c201d+5                      lda l0076
+
+$0077  l0077 (Memory locations: Zero page)
+    $2024     c201d+7                      sta l0077
+
+$2000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$2002  loop_c2002 (inline)
+    $2003     loop_c2002+1                 bne loop_c2002
+
+$201d  c201d (inline)
+    $201b     loop_c2002+25                bne c201d
+
+$2029  return_1 (inline)
+    $2009     loop_c2002+7                 bne return_1
+    $200f     loop_c2002+13                bne return_1
+    $2013     loop_c2002+17                bne return_1
+    $2017     loop_c2002+21                beq return_1
+    $2020     c201d+3                      bne return_1
+    $2026     c201d+9                      bne return_1
+
+$202a  pydis_end (inline)
+    (not referenced)
