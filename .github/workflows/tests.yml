@@ -1,10 +1,11 @@
 # Run the example tests (examples/run_tests.py -c) on every push and pull
-# request, with all six assemblers, so that each disassembly is also checked
+# request, with all seven assemblers, so that each disassembly is also checked
 # to reassemble to the original binary.
 #
-# acme, xa, 64tass and cc65 (ca65) come from Ubuntu's packages. beebasm and z88dk-z80asm aren't
-# packaged, so they're built from source at a fixed version, and cached, so
-# they're only built again when the versions below change.
+# acme, xa, 64tass and cc65 (ca65) come from Ubuntu's packages. beebasm,
+# z88dk-z80asm and sjasmplus aren't packaged, so they're built from source at a
+# fixed version, and cached, so they're only built again when the versions
+# below change.
 
 name: Tests
 
@@ -28,6 +29,7 @@ jobs:
     env:
       BEEBASM_COMMIT: ca2cc5fd2fa3f73da3b0682ad004b2aca99840c3   # beebasm 1.11
       Z88DK_TAG: v2.4
+      SJASMPLUS_TAG: v1.24.0
     steps:
       - uses: actions/checkout@v5
 
@@ -41,14 +43,14 @@ jobs:
           sudo apt-get install -y -q acme xa65 64tass cc65
           python -m pip install -q jsonschema
 
-      - name: Cache beebasm and z88dk-z80asm
+      - name: Cache beebasm, z88dk-z80asm and sjasmplus
         id: cache
         uses: actions/cache@v4
         with:
           path: ~/assemblers
-          key: assemblers-${{ runner.os }}-beebasm-${{ env.BEEBASM_COMMIT }}-z88dk-${{ env.Z88DK_TAG }}
+          key: assemblers-${{ runner.os }}-beebasm-${{ env.BEEBASM_COMMIT }}-z88dk-${{ env.Z88DK_TAG }}-sjasmplus-${{ env.SJASMPLUS_TAG }}
 
-      - name: Build beebasm and z88dk-z80asm
+      - name: Build beebasm, z88dk-z80asm and sjasmplus
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/assemblers
@@ -62,6 +64,10 @@ jobs:
           make src/config.h
           make -C src/z80asm z88dk-z80asm -j4
           cp src/z80asm/z88dk-z80asm ~/assemblers/
+          # (USE_LUA=0: without its Lua scripting, which needs its submodules)
+          git clone -q --depth 1 --branch "$SJASMPLUS_TAG" https://github.com/z00m128/sjasmplus.git /tmp/sjasmplus
+          make -C /tmp/sjasmplus USE_LUA=0 -j4
+          cp /tmp/sjasmplus/sjasmplus ~/assemblers/
 
       - name: Add the assemblers to the PATH
         run: echo "$HOME/assemblers" >> "$GITHUB_PATH"

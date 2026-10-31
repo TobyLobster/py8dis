@@ -102,12 +102,15 @@ This output is suitable for feeding into the beebasm assembler. You can switch t
 | [64tass](https://sourceforge.net/projects/tass64/)        | 6502 / 65C02   | --64tass (or -t)                |
 | [ca65](https://cc65.github.io/doc/ca65.html)              | 6502 / 65C02   | --ca65 (or -c)                  |
 | [z88dk-z80asm](https://z88dk.org)                         | 8080 / Z80     | --z88dk (or -z)                 |
+| [sjasmplus](https://github.com/z00m128/sjasmplus)         | Z80            | --sjasmplus (or -s)             |
 
 64tass's output is assembled with `64tass -b`, which writes a plain binary (by default 64tass writes a two-byte load address first; for a PRG file loaded with `load_prg()`, py8dis's output already has one). 64tass looks for a file included with `.binary` (see `include_binary_file()`) relative to the asm file, so if that's elsewhere add `-I` with the folder it's relative to. 64tass takes a label starting with `_` to be local to the label before it, so py8dis stops with an error for one when writing 64tass output (rename it). (Tested with 64tass 1.59.3120.)
 
 ca65 (from [cc65](https://cc65.github.io)) makes an object file, which its linker, ld65, makes into a binary with a configuration file, so the output starts with a comment saying how: `cl65 -t none -C ca65.cfg -o program.bin program.asm`, where `ca65.cfg` (as in `examples/ca65.cfg`) gives a plain binary of the bytes in order. The `-t none` matters: cl65's default target is the C64, whose character map would change the strings. ca65 doesn't accept a register's name (`a`, `x`, `y`), `z` or a mnemonic of the CPU as a label, so py8dis stops with an error for one when writing ca65 output (rename it). (Tested with ca65 V2.18, from Ubuntu's cc65 2.19.)
 
 z88dk-z80asm's output is assembled with `z88dk-z80asm -m8080 -b` for 8080 code, or `-mz80` for Z80 code. (`--z88dk-8080` and `-8`, the names before the Z80 was added, still work.) For the Z80 it assembles the undocumented instructions that use IXH, IXL, IYH and IYL (e.g. `ld ixh,a`), SLL, the indexed rotates, shifts, SET and RES that copy the result to a register (e.g. `rlc (ix+2),b`), `in f,(c)` and `out (c),0`. (Tested with z88dk-z80asm v2.4.)
+
+sjasmplus's output starts with a comment saying how to assemble it to a plain binary: `sjasmplus --nologo --raw=program.bin program.asm`. It's for the Z80 only, since sjasmplus has no Intel 8080 mnemonics. It assembles the same undocumented instructions as z88dk-z80asm; if `out (c),0` is used, the output turns off sjasmplus's warning for it (`OPT -Wno-out0`). A move (see `move()`) is a `DISP` block, the low and high bytes of an expression are `low x` and `high x`, and the assertions at the end are sjasmplus's `ASSERT`s, which it checks. sjasmplus doesn't accept a register's or condition's name (e.g. `hl`, `c`, `nz`), one of its operators that's a word (`and`, `or`, `xor`, `mod`, `low`, `high`, `not`, `shl`, `shr`, `abs`, `exist`, `sizeof`, `norel`, `pair`, `u16`, in any case), or a name longer than 64 characters as a label, so py8dis stops with an error for one when writing sjasmplus output (rename it). (Tested with sjasmplus v1.24.0, which isn't packaged for Ubuntu, but builds from [its source](https://github.com/z00m128/sjasmplus) on Linux and macOS with `make USE_LUA=0`.)
 
 Other command line options: `-o FILE` writes the output to a file instead of printing it, `--upper` or `--lower` choose the case of the output, `--json FILE` writes the disassembly as JSON as well (see [JSON output](#json-output)), and `--symbols FILE` (with `--symbols-format`) and `--xref FILE` write a symbol file and a cross-reference listing (see [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)).
 
@@ -122,12 +125,12 @@ cd examples
 
 py8dis itself needs only Python 3. The tests also use these, when they're installed, and skip what needs them otherwise:
 
-- the assemblers (acme, beebasm, xa, 64tass, ca65 and z88dk-z80asm), to check that each disassembly assembles to the original binary;
+- the assemblers (acme, beebasm, xa, 64tass, ca65, z88dk-z80asm and sjasmplus), to check that each disassembly assembles to the original binary;
 - the [jsonschema](https://pypi.org/project/jsonschema/) package (`pip install jsonschema`), to check the JSON output against its schema (see [JSON output](#json-output)). Without it, `run_tests.py -c` says so at the end.
 
 `./run_tests.py --help` describes the other options, e.g. running particular tests, and `-m` to make the known good output after a deliberate change.
 
-On GitHub, the tests are run on every push and pull request (`.github/workflows/tests.yml`), with Python 3.9 and 3.14 and all six assemblers: acme, xa, 64tass and ca65 (cc65) from Ubuntu's packages, and beebasm and z88dk-z80asm built from source (and cached). The results are on the repository's Actions tab.
+On GitHub, the tests are run on every push and pull request (`.github/workflows/tests.yml`), with Python 3.9 and 3.14 and all seven assemblers: acme, xa, 64tass and ca65 (cc65) from Ubuntu's packages, and beebasm, z88dk-z80asm and sjasmplus built from source (and cached). The results are on the repository's Actions tab.
 
 ### Edit me
 
@@ -791,7 +794,7 @@ go()
 It gives:
 
 * **Names for the system variables**, output only if used, as in the Spectrum's manual, in lower case (e.g. `frames`, `last_k`, `err_sp`; `frames+1` etc. for the bytes after the first), and for the screen, the attributes and the printer buffer (`screen`, `attributes`, `printer_buffer`), under headings by region. The ROM keeps IY at ERR_NR's address, &5C3A, so a system variable addressed with IY is written as an offset from it, e.g. `res 5,(iy+flags - err_nr)` (unless the code is known to have set IY to something else).
-* **The ROM's routines and tables**, by the names in *The Complete Spectrum ROM Disassembly* (e.g. `cls`, `chan_open`, `pr_string`, `print_fp`, from CLS, CHAN-OPEN etc.), as optional labels; calls to the commonly used ones are commented, e.g. `call cls ; Clear the screen`. `spectrum48(rom_labels=False)` leaves these out.
+* **The ROM's routines and tables**, by the names in *The Complete Spectrum ROM Disassembly* (e.g. `cls`, `chan_open`, `pr_string`, `print_fp`, from CLS, CHAN-OPEN etc.; the calculator's ABS, NOT and OR are `fp_abs`, `fp_not` and `fp_or`, since sjasmplus takes `abs`, `not` and `or` to be its operators), as optional labels; calls to the commonly used ones are commented, e.g. `call cls ; Clear the screen`. `spectrum48(rom_labels=False)` leaves these out.
 * **RST $10** (print a character) commented with what's printed, when A is known: `Print 'A'`, `Print $0D (ENTER)`, `Print $16 (AT)`, then `Print 10 (AT's line)` and `Print 5 (AT's column)` for its parameters.
 * **RST $08** (an error), followed by the error number, which is marked as a byte with the report in a comment (`Report 9 STOP statement`); the code doesn't continue after it.
 * **RST $28** (the floating point calculator), and calls to GEN-ENT-1 and GEN-ENT-2, followed by the calculator's bytecode, which is marked as bytes, each with its instruction's name in a comment (`multiply`, `stk-data`, `end-calc`), its jumps as `label - $`, and its numbers (in the calculator's compressed format) with their values. The code continues after the end-calc.

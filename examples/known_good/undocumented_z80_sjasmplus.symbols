@@ -1,0 +1,5 @@
+pydis_start = $8000
+start       = $8000
+finish      = $807a
+word        = $807c
+pydis_end   = $807e

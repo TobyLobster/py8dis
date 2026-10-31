@@ -1,0 +1,17 @@
+cls         = $0d6b
+chan_open   = $1601
+pr_string   = $203c
+plot_sub    = $22e5
+print_fp    = $2de3
+screen      = $4000
+attributes  = $5800
+last_k      = $5c08
+err_nr      = $5c3a
+flags       = $5c3b
+pydis_start = $8000
+start       = $8000
+loop_c802a  = $802a
+loop_c804f  = $804f
+message     = $8054
+message_end = $805a
+pydis_end   = $805a

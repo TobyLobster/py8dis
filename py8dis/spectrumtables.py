@@ -12,6 +12,8 @@ from Geoff Wearmouth's assembly listing of the ROM, which uses those names
 than letters and digits are written as '_', except for '$' ('_str'), '&'
 ('_and_'), '*' ('_times_'), '+' ('_plus_'), '^' ('_pow_'), '?' ('_q') and
 '@' ('_at_'): e.g. 'PRINT-A-2' is 'print_a_2', and 'S-INKEY$' 's_inkey_str'.
+The calculator's ABS, NOT and OR are 'fp_abs', 'fp_not' and 'fp_or', since
+sjasmplus takes 'abs', 'not' and 'or' to be its operators.
 """
 
 from collections import namedtuple
@@ -1212,7 +1214,7 @@ rom_names = {
     0x343e: "swap_byte",
     0x3449: "series_xx",
     0x3453: "g_loop",
-    0x346a: "abs",
+    0x346a: "fp_abs",
     0x346e: "negate",
     0x3474: "neg_test",
     0x3483: "int_case",
@@ -1227,11 +1229,11 @@ rom_names = {
     0x34e7: "report_a",
     0x34e9: "test_zero",
     0x34f9: "greater_0",
-    0x3501: "not",
+    0x3501: "fp_not",
     0x3506: "less_0",
     0x3507: "sign_to_c",
     0x350b: "fp_0_1",
-    0x351b: "or",
+    0x351b: "fp_or",
     0x3524: "no_and_no",
     0x352d: "str_and_no",
     0x353b: "no_l_eql_etc",

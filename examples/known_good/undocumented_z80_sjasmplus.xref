@@ -1,0 +1,14 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$8000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$807a  finish (inline)
+    $8075     pydis_start+117              jp finish
+
+$807c  word (inline)
+    $8053     pydis_start+83               db $ed, $63, low word, high word
+    $8057     pydis_start+87               db $ed, $6b, low word, high word
+
+$807e  pydis_end (inline)
+    (not referenced)

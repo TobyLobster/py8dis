@@ -1,0 +1,14 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$8000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$804e  loop_c804e (inline)
+    $804e     loop_c804e                   djnz loop_c804e
+
+$805e  return_1 (inline)
+    $8050     loop_c804e+2                 jr nz,return_1
+    $8052     loop_c804e+4                 jp c,return_1
+
+$805f  pydis_end (inline)
+    (not referenced)

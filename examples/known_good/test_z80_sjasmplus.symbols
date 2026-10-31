@@ -1,0 +1,14 @@
+pydis_start = $8000
+start       = $8000
+loop        = $852c
+c8574       = $8574
+subroutine  = $8577
+interrupt   = $8580
+nmi         = $8582
+finish      = $8584
+jump_ix     = $8585
+jump_iy     = $8587
+value       = $8589
+word        = $858a
+table       = $858c
+pydis_end   = $8590

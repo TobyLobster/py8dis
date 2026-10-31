@@ -9641,7 +9641,7 @@ tbl_addrs:
     dw multiply                                                       ; 32df: ca 30       .0
     dw division                                                       ; 32e1: af 31       .1
     dw to_power                                                       ; 32e3: 51 38       Q8
-    dw or                                                             ; 32e5: 1b 35       .5
+    dw fp_or                                                          ; 32e5: 1b 35       .5
     dw no_and_no                                                      ; 32e7: 24 35       $5
     dw no_l_eql_etc                                                   ; 32e9: 3b 35       ;5
     dw no_l_eql_etc                                                   ; 32eb: 3b 35       ;5
@@ -9676,13 +9676,13 @@ tbl_addrs:
     dw int                                                            ; 3325: af 36       .6
     dw sqr                                                            ; 3327: 4a 38       J8
     dw sgn                                                            ; 3329: 92 34       .4
-    dw abs                                                            ; 332b: 6a 34       j4
+    dw fp_abs                                                         ; 332b: 6a 34       j4
     dw peek                                                           ; 332d: ac 34       .4
     dw in                                                             ; 332f: a5 34       .4
     dw usr_no                                                         ; 3331: b3 34       .4
     dw str_str                                                        ; 3333: 1f 36       .6
     dw chrs                                                           ; 3335: c9 35       .5
-    dw not                                                            ; 3337: 01 35       .5
+    dw fp_not                                                         ; 3337: 01 35       .5
     dw move_fp                                                        ; 3339: c0 33       .3
     dw n_mod_m                                                        ; 333b: a0 36       .6
     dw jump                                                           ; 333d: 86 36       .6
@@ -9949,7 +9949,7 @@ g_loop:
 
     ret                                                               ; 3469: c9          .   10 cycles
 
-abs:
+fp_abs:
     ld b,$ff                                                          ; 346a: 06 ff       ..  7 cycles
     jr neg_test                                                       ; 346c: 18 06       ..  12 cycles
 
@@ -10084,7 +10084,7 @@ greater_0:
     jr sign_to_c                                                      ; 34ff: 18 06       ..  12 cycles
 
 ; $3501 referenced 2 times by $358e, $3598
-not:
+fp_not:
     call test_zero                                                    ; 3501: cd e9 34    ..4 17 cycles
     jr fp_0_1                                                         ; 3504: 18 05       ..  12 cycles
 
@@ -10114,7 +10114,7 @@ fp_0_1:
     pop hl                                                            ; 3519: e1          .   10 cycles
     ret                                                               ; 351a: c9          .   10 cycles
 
-or:
+fp_or:
     ex de,hl                                                          ; 351b: eb          .   4 cycles
     call test_zero                                                    ; 351c: cd e9 34    ..4 17 cycles
     ex de,hl                                                          ; 351f: eb          .   4 cycles
@@ -10230,13 +10230,13 @@ str_test:
 end_tests:
     pop af                                                            ; 358c: f1          .   10 cycles
     push af                                                           ; 358d: f5          .   11 cycles
-    call c,not                                                        ; 358e: dc 01 35    ..5 10/17 cycles
+    call c,fp_not                                                     ; 358e: dc 01 35    ..5 10/17 cycles
     pop af                                                            ; 3591: f1          .   10 cycles
     push af                                                           ; 3592: f5          .   11 cycles
     call nc,greater_0                                                 ; 3593: d4 f9 34    ..4 10/17 cycles
     pop af                                                            ; 3596: f1          .   10 cycles
     rrca                                                              ; 3597: 0f          .   4 cycles
-    call nc,not                                                       ; 3598: d4 01 35    ..5 10/17 cycles
+    call nc,fp_not                                                    ; 3598: d4 01 35    ..5 10/17 cycles
     ret                                                               ; 359b: c9          .   10 cycles
 
 strs_add:
@@ -11749,7 +11749,6 @@ pydis_end:
 ; ASSERT (((x_ptr+1) - err_nr) == $26)
 ; ASSERT (((x_ptr+1) - err_nr) == $26)
 ; ASSERT (((x_ptr+1) - err_nr) == $26)
-; ASSERT ((abs) == $346a)
 ; ASSERT ((acs) == $3843)
 ; ASSERT ((add_char) == $0f81)
 ; ASSERT ((addition) == $3014)
@@ -11898,7 +11897,10 @@ pydis_end:
 ; ASSERT ((flagx - err_nr) == $37)
 ; ASSERT ((flagx - err_nr) == $37)
 ; ASSERT ((for) == $1d03)
+; ASSERT ((fp_abs) == $346a)
 ; ASSERT ((fp_calc_2) == $33a2)
+; ASSERT ((fp_not) == $3501)
+; ASSERT ((fp_or) == $351b)
 ; ASSERT ((get_argt) == $3783)
 ; ASSERT ((get_mem_xx) == $340f)
 ; ASSERT ((go_sub) == $1eed)
@@ -11943,7 +11945,6 @@ pydis_end:
 ; ASSERT ((no_l_eql_etc) == $353b)
 ; ASSERT ((no_l_eql_etc) == $353b)
 ; ASSERT ((no_l_eql_etc) == $353b)
-; ASSERT ((not) == $3501)
 ; ASSERT ((nsppc - err_nr) == $0a)
 ; ASSERT ((nsppc - err_nr) == $0a)
 ; ASSERT ((nsppc - err_nr) == $0a)
@@ -11951,7 +11952,6 @@ pydis_end:
 ; ASSERT ((nsppc - err_nr) == $0a)
 ; ASSERT ((nsppc - err_nr) == $0a)
 ; ASSERT ((open) == $1736)
-; ASSERT ((or) == $351b)
 ; ASSERT ((osppc - err_nr) == $36)
 ; ASSERT ((out) == $1e7a)
 ; ASSERT ((p_flag - err_nr) == $57)
@@ -12255,6 +12255,7 @@ pydis_end:
 ;     ed_enter:               2
 ;     fetch_num:              2
 ;     flags2:                 2
+;     fp_not:                 2
 ;     frst_less:              2
 ;     go_to:                  2
 ;     hl_end:                 2
@@ -12291,7 +12292,6 @@ pydis_end:
 ;     next_loop:              2
 ;     next_o_2:               2
 ;     nil_bytes:              2
-;     not:                    2
 ;     number:                 2
 ;     oflw2_clr:              2
 ;     open_end:               2

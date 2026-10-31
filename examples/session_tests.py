@@ -48,6 +48,7 @@ INTERLEAVED = [
     (("c128_test",        "64tass"), ("helloworld",             "acme")),
     (("pet4_test",        "ca65"),   ("subroutine_test",        "xa")),
     (("trace_z80",        "z88dk"),  ("undocumented_8080",      "z88dk-8080")),
+    (("spectrum_test",    "sjasmplus"), ("undocumented_z80",    "z88dk")),
 ]
 
 # Module level names that are allowed to change

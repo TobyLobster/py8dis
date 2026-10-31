@@ -1,0 +1,51 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$0008  error (inline)
+    $004b     done                         rst $08
+
+$0010  rst_10 (inline)
+    $0022     main+5                       rst $10
+
+$0018  report (inline)
+    $000c     error+4                      jr report
+
+$001d  main (inline)
+    $0001     pydis_start+1                jp main
+    $fff9[2]  top+1                        jr nz,$+36
+
+$0025  loop_c0025 (inline)
+    $0025     loop_c0025                   djnz loop_c0025
+
+$004b  done (inline)
+    (not referenced)
+
+$004d  finish (inline)
+    $004e     finish+1                     jr finish
+
+$0050  routine_source (inline)
+    (not referenced)
+
+$0057  last_error (inline), routine_end (inline)
+    $0018     report                       ld (last_error),a
+
+$0059  variables (inline)
+    (not referenced)
+
+$005d  top_source (inline)
+    (not referenced)
+
+$0065  pydis_end (inline)
+    (not referenced)
+
+$8000  routine (inline)
+    $003e     loop_c0025+25                call routine
+    $8005[1]  routine+5                    jr routine
+
+$fff8  top (inline)
+    $001b     report+3                     jr $-35
+
+$fffe  last (inline)
+    (not referenced)

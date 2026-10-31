@@ -27,7 +27,7 @@ The JSON holds everything py8dis knows once it has finished: the names are exact
   "format": "py8dis",
   "version": 1,
   "cpu": "6502",                        // "6502", "65c02", "6510", "8080" or "z80"
-  "assembler": "beebasm",               // "acme", "beebasm", "xa", "64tass", "ca65" or "z88dk"
+  "assembler": "beebasm",               // "acme", "beebasm", "xa", "64tass", "ca65", "z88dk" or "sjasmplus"
   "loads": [ { "filename": "orig/helloworld.orig", "start": 8192, "end": 8220 } ],
   "moves": [ { "id": 1, "binary_addr": 8208, "runtime_addr": 2304, "length": 18 } ],
   "constants": [ { "name": "newline", "value": 13, "text": "&0d",
@@ -101,7 +101,7 @@ The `type`s are:
   - `mode`, the addressing mode. For the 6502 and 65C02: `implied`, `accumulator`, `immediate`, `zp`, `zp_x`, `zp_y`, `zp_indirect`, `zp_x_indirect`, `zp_indirect_y`, `absolute`, `absolute_x`, `absolute_y`, `indirect`, `absolute_x_indirect` or `relative`. For the 8080: `implied`, `immediate`, `immediate16` or `address`. For the Z80: `implied`, `immediate`, `immediate16`, `address` (in brackets, or a jump or call), `relative` (JR and DJNZ), `indexed` (the displacement of `(ix+d)` or `(iy+d)`, as a signed number) or `port` (`in a,(n)` and `out (n),a`); an instruction with two values, `ld (ix+d),n`, gives the displacement. (RST is `implied`, with its address as `target`.)
   - `operand` (unless implied): its `value` (an address or an immediate value) and its expression.
   - `target`: for a branch, jump or call, the runtime address it goes to.
-  - `undocumented`: `true` for an undocumented opcode, e.g. the 8080's &CB, which runs as JMP, the Z80's ED 4C (another NEG) or DD 67 (`ld ixh,a`), or the 6502's (with the CPU `"6510"`), e.g. &A7, LAX zp. Where the assembler doesn't accept it (all of them except some of the 6502's with acme, 64tass and ca65, and some of the Z80's with z88dk-z80asm), the asm writes it as data bytes (`text`), with the instruction in a comment. `mnemonic`, `mode`, `operand` and `target` are those of the instruction it runs as.
+  - `undocumented`: `true` for an undocumented opcode, e.g. the 8080's &CB, which runs as JMP, the Z80's ED 4C (another NEG) or DD 67 (`ld ixh,a`), or the 6502's (with the CPU `"6510"`), e.g. &A7, LAX zp. Where the assembler doesn't accept it (all of them except some of the 6502's with acme, 64tass and ca65, and some of the Z80's with z88dk-z80asm and sjasmplus), the asm writes it as data bytes (`text`), with the instruction in a comment. `mnemonic`, `mode`, `operand` and `target` are those of the instruction it runs as.
   - `cycles`, as `config.set_show_cycles(True)` shows them, e.g. `"2/3"` for a 6502 branch (not taken, or taken), or `"5/11"` for an 8080 or Z80 conditional return (or `"16/21"` for the Z80's LDIR, finished or repeating) (`"halts"` for the 6502's undocumented JAM). Always included.
   - `cpu_state`: what py8dis knows for certain about the registers and flags once the instruction has run, as `config.set_show_cpu_state(True)` shows it: registers as numbers, flags as `true` or `false`, and `null` where it's not known. For the 6502 and 65C02 that's `a`, `x`, `y` and the flags `n`, `v`, `d`, `i`, `z`, `c`; for the 8080, `a`, `b`, `c`, `d`, `e`, `h`, `l`, `sp` and the flags `s`, `z`, `ac` (auxiliary carry), `p`, `cy`; for the Z80, `a`, `b`, `c`, `d`, `e`, `h`, `l`, `ixh`, `ixl`, `iyh`, `iyl`, `sp`, `i` and the flags `s`, `z`, `hc` (half carry), `pv` (parity or overflow), `n`, `cy`, then the alternate set, `a'` to `l'` and `s'` to `cy'`. Always included for the instructions py8dis traced (it's useful even when the asm doesn't show it).
 - **`bytes`** and **`words`:** `values`, and `exprs` with an expression for each value given with `expr()`, or `null`. `exprs` is left out if there are none.
@@ -123,7 +123,7 @@ Each has `binary_addr`, `runtime_addr` and `move_id` (when not 0), and `labels` 
 
 ## Expressions
 
-An expression is `{"text": ..., "tree": ...}`: the text as in the asm (but without what the assembler needs only for the operand's place in the instruction, e.g. the unary plus z88dk-z80asm gets before an 8080 or Z80 operand that starts with a bracket, as in `ld b,+(count+1)*2`, whose text is `(count+1)*2`), and the expression as a tree. The tree's nodes are:
+An expression is `{"text": ..., "tree": ...}`: the text as in the asm (but without what the assembler needs only for the operand's place in the instruction, e.g. the unary plus z88dk-z80asm and sjasmplus get before an 8080 or Z80 operand that starts with a bracket, as in `ld b,+(count+1)*2`, whose text is `(count+1)*2`), and the expression as a tree. The tree's nodes are:
 
 | Node | Example |
 |---|---|

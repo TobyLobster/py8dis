@@ -63,16 +63,16 @@ TESTS = [
     ("move_8080",                ["z88dk-8080"],               "move() and include_binary_file() with z88dk-z80asm (PHASE and BINARY)"),
 
     # Z80 code
-    ("test_z80",                 ["z88dk"],                    "every documented Z80 instruction"),
-    ("undocumented_z80",         ["z88dk"],                    "the Z80's undocumented opcodes: those z88dk-z80asm accepts as instructions, the others as data"),
-    ("redundant_z80",            ["z88dk"],                    "redundant Z80 instructions (whose results aren't used)"),
-    ("state_z80",                ["z88dk"],                    "what's known about the Z80's registers and flags after each instruction"),
-    ("spectrum48",               ["z88dk"],                    "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
-    ("spectrum_test",            ["z88dk"],                    "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
-    ("trace_z80",                ["z88dk"],                    "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
-    ("bbcbasic",                 ["z88dk"],                    "BBC BASIC (Z80) for CP/M, with labels from its map file, hooks for inline data and tables of routines"),
-    ("zexdoc",                   ["z88dk"],                    "ZEXDOC, the Z80 instruction exerciser for CP/M: mostly tables, with self-modifying code"),
-    ("opense",                   ["z88dk"],                    "OpenSE BASIC, a replacement ZX Spectrum ROM, with spectrum.spectrum48() and the spectrum module's tables"),
+    ("test_z80",                 ["z88dk", "sjasmplus"],       "every documented Z80 instruction"),
+    ("undocumented_z80",         ["z88dk", "sjasmplus"],       "the Z80's undocumented opcodes: those z88dk-z80asm accepts as instructions, the others as data"),
+    ("redundant_z80",            ["z88dk", "sjasmplus"],       "redundant Z80 instructions (whose results aren't used)"),
+    ("state_z80",                ["z88dk", "sjasmplus"],       "what's known about the Z80's registers and flags after each instruction"),
+    ("spectrum48",               ["z88dk", "sjasmplus"],       "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
+    ("spectrum_test",            ["z88dk", "sjasmplus"],       "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
+    ("trace_z80",                ["z88dk", "sjasmplus"],       "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
+    ("bbcbasic",                 ["z88dk", "sjasmplus"],       "BBC BASIC (Z80) for CP/M, with labels from its map file, hooks for inline data and tables of routines"),
+    ("zexdoc",                   ["z88dk", "sjasmplus"],       "ZEXDOC, the Z80 instruction exerciser for CP/M: mostly tables, with self-modifying code"),
+    ("opense",                   ["z88dk", "sjasmplus"],       "OpenSE BASIC, a replacement ZX Spectrum ROM, with spectrum.spectrum48() and the spectrum module's tables"),
 
     # 6502 code: tests
     ("include_binary_file",      ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for including a binary file"),
@@ -154,7 +154,7 @@ EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", 
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)
-SYMBOLS_FORMATS = {"beebasm": "beebasm", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "z88dk-8080": "plain", "z88dk": "plain"}
+SYMBOLS_FORMATS = {"beebasm": "beebasm", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "z88dk-8080": "plain", "z88dk": "plain", "sjasmplus": "plain"}
 
 # Each error test is (name, expected error message). The control file is
 # python/errors/<name>.py (which describes the test), and py8dis must stop with
@@ -187,6 +187,9 @@ ERROR_TESTS = [
     ("tass64_local_label_name", "64tass takes a label starting with '_' to be local to the label before it, so '_count' can't be used: rename it"),
     ("ca65_register_label",     "ca65 doesn't accept 'x' as a label, since it's a register's name: rename it"),
     ("ca65_mnemonic_label",     "ca65 doesn't accept 'lax' as a label, since it's an instruction's mnemonic: rename it"),
+    ("sjasmplus_register_label", "sjasmplus doesn't accept 'hl' as a label, since it's a register's name: rename it"),
+    ("sjasmplus_operator_label", "sjasmplus doesn't accept 'LOW' as a label, since it's an operator's name: rename it"),
+    ("sjasmplus_long_label",    "sjasmplus doesn't accept 'a_label_name_that_is_much_too_long_for_sjasmplus_which_allows_64_chars' as a label, since it's longer than 64 characters: rename it"),
     ("drive1541_bad_rom",       "commodore.drive1541(): rom must be one of '1541', '1541-ii', not '1571'"),
     ("drive1541_kernal_rom",    "commodore.kernal_rom(): the 1541 has no Kernal (use dos_rom())"),
     ("drive1541_code_in_drive", "commodore.drive1541_code(): this is already the 1541's disassembly (drive1541())"),
@@ -212,6 +215,7 @@ ASSEMBLER_PROGRAMS = {
     "ca65":       "cl65",
     "z88dk-8080": "z88dk-z80asm",
     "z88dk":      "z88dk-z80asm",
+    "sjasmplus":  "sjasmplus",
 }
 
 # Test scripts run as well by -c, when all the tests are run
@@ -301,6 +305,14 @@ def assemble_command(assembler, p, make_extras):
         if make_extras:
             cmd += ["-l", "-s"]
         return cmd + ["-o" + str(p.binary), str(p.asm)]
+    if assembler == "sjasmplus":
+        # (--raw: a plain binary. --syntax=w makes any warning an error, e.g.
+        # the 'out (c),0' warning py8dis turns off. --sym writes sjasmplus's
+        # own symbols, to check py8dis's against.)
+        cmd = ["sjasmplus", "--nologo", "--msg=war", "--syntax=w", "--raw=" + str(p.binary), "--sym=" + str(p.assembler_symbols)]
+        if make_extras:
+            cmd += ["--lst=" + str(p.report)]
+        return cmd + [str(p.asm)]
     raise ValueError(f"unknown assembler '{assembler}'")
 
 
@@ -632,6 +644,18 @@ def vice_symbols(text):
     return {name: int(value, 16) for value, name in re.findall(r"^al ([0-9A-Fa-f]+) \.(\S+)$", text, re.MULTILINE)}
 
 
+def plain_symbols(text):
+    """The symbols in py8dis's plain symbol file format ('name = $ffee'), as
+    a dictionary."""
+    return {name: int(value, 16) for name, value in re.findall(r"^(\S+)\s*=\s*\$([0-9A-Fa-f]+)$", text, re.MULTILINE)}
+
+
+def sjasmplus_symbols(text):
+    """The symbols in sjasmplus's symbol file ('name: EQU 0x0000FFEE'), as a
+    dictionary."""
+    return {name: int(value, 16) for name, value in re.findall(r"^(\S+): EQU 0x([0-9A-Fa-f]+)$", text, re.MULTILINE)}
+
+
 def run_test(name, assembler, options, env):
     """Run one test with one assembler, returning a Result."""
     result = Result(name, assembler)
@@ -715,6 +739,18 @@ def run_test(name, assembler, options, env):
                 # out)
                 continue
             if symbol not in ours and re.search(r"^" + re.escape(symbol) + r"\s*=", asm_text, re.MULTILINE):
+                continue
+            if ours.get(symbol) != value:
+                result.failure = f"{assembler} gives {symbol} the value {value}, but py8dis's symbol file {p.py8dis_symbols} gives {ours.get(symbol)}"
+                return result
+
+    # sjasmplus's own symbols (its labels, not those defined with 'equ') must
+    # all be in py8dis's symbol file, with the same values
+    if assembler == "sjasmplus":
+        ours = plain_symbols(p.py8dis_symbols.read_text())
+        asm_text = p.asm.read_text()
+        for symbol, value in sjasmplus_symbols(p.assembler_symbols.read_text()).items():
+            if symbol not in ours and re.search(r"^" + re.escape(symbol) + r"\s+equ\b", asm_text, re.MULTILINE | re.IGNORECASE):
                 continue
             if ours.get(symbol) != value:
                 result.failure = f"{assembler} gives {symbol} the value {value}, but py8dis's symbol file {p.py8dis_symbols} gives {ours.get(symbol)}"

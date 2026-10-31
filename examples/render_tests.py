@@ -21,6 +21,7 @@ EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
 
 ASSEMBLERS_6502 = ["acme", "beebasm", "xa", "64tass", "ca65"]
+ASSEMBLERS_Z80 = ["z88dk", "sjasmplus"]
 
 # The bytes at &2000 onwards: 'lda #&41' (with 'A' as a character), 'lda
 # (&70),y', 'lda &0070' (absolute, with a zero page operand), 'rts', some
@@ -152,6 +153,24 @@ def data_with_text_encoding(encoding_name):
         return output.DataBlock(binary_loc(0x2010), 4, None, 1, None)
     return make
 
+class MultiLine:
+    """Several lines, rendered one after the other"""
+    def __init__(self, *lines):
+        self.lines = lines
+    def render(self):
+        return [text for line in self.lines for text in line.render()]
+
+def with_assertions():
+    """The end of the output, with assertions: a name's value, a negative
+    value (written e.g. '-$36'), and one that uses the current address
+    ('$'), which is left out, since it would be checked at the end"""
+    import config
+    import output
+    config.get_assembler().assert_expr("table", 0x1234)
+    config.get_assembler().assert_expr("flags - err_nr", -0x36)
+    config.get_assembler().assert_expr("target - $", 3)
+    return output.Directive("disassembly_end")
+
 # "Hello", '"', 13 in PETSCII (shifted H), and "@ab[" in screen codes
 PETSCII_HELLO = [0xc8, 0x45, 0x4c, 0x4c, 0x4f, 0x22, 0x0d]
 SCREEN_TEXT = [0x00, 0x01, 0x02, 0x1b]
@@ -191,25 +210,25 @@ def make_tests():
         ("8080 undocumented opcode, no operand",
          ["z88dk-8080"], lambda: instruction(0x2000, 1, "nop", form=Instruction.UNDOCUMENTED, data_byte=Num(0x08, "hex2"))),
         ("Z80 instruction *",
-         ["z88dk"], with_z80([0xdd, 0x36, 0xfd, 0x41])),
+         ASSEMBLERS_Z80, with_z80([0xdd, 0x36, 0xfd, 0x41])),
         ("Z80 instruction, prefix and displacement before the opcode",
-         ["z88dk"], with_z80([0xfd, 0xcb, 0x7f, 0x46])),
+         ASSEMBLERS_Z80, with_z80([0xfd, 0xcb, 0x7f, 0x46])),
         ("Z80 undocumented opcode that's assembled *",
-         ["z88dk"], with_z80([0xdd, 0x67])),
+         ASSEMBLERS_Z80, with_z80([0xdd, 0x67])),
         ("Z80 undocumented opcode that's assembled, copying to a register",
-         ["z88dk"], with_z80([0xdd, 0xcb, 0x02, 0x00])),
+         ASSEMBLERS_Z80, with_z80([0xdd, 0xcb, 0x02, 0x00])),
         ("Z80 undocumented opcode as data *",
-         ["z88dk"], with_z80([0xed, 0x4c])),
+         ASSEMBLERS_Z80, with_z80([0xed, 0x4c])),
         ("Z80 undocumented opcode as data, with a displacement",
-         ["z88dk"], with_z80([0xdd, 0xcb, 0xfe, 0x41])),
+         ASSEMBLERS_Z80, with_z80([0xdd, 0xcb, 0xfe, 0x41])),
         ("Z80 prefix with no effect",
-         ["z88dk"], with_z80([0xdd, 0x00])),
+         ASSEMBLERS_Z80, with_z80([0xdd, 0x00])),
         ("Z80 CPU state",
-         ["z88dk"], with_z80([0xdd, 0x21, 0x34, 0x12], show_cpu_state=True)),
+         ASSEMBLERS_Z80, with_z80([0xdd, 0x21, 0x34, 0x12], show_cpu_state=True)),
         ("Z80 CPU state, flags",
-         ["z88dk"], with_z80([0xaf], show_cpu_state=True)),
+         ASSEMBLERS_Z80, with_z80([0xaf], show_cpu_state=True)),
         ("Z80 cycles",
-         ["z88dk"], with_z80([0xed, 0xb0], show_cycles=True)),
+         ASSEMBLERS_Z80, with_z80([0xed, 0xb0], show_cycles=True)),
         ("6502 CPU state",
          ASSEMBLERS_6502, with_cpu_state("6502", lambda: instruction(0x2000, 2, "lda", Num(0x41, "hex"), prefix="#"))),
         ("8080 CPU state",
@@ -221,11 +240,11 @@ def make_tests():
         ("8080 cycles, memory",
          ["z88dk-8080"], with_cycles("8080", 0x2003)),
         ("byte data *",
-         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x2008), 4, None, 1, None)),
+         ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.DataBlock(binary_loc(0x2008), 4, None, 1, None)),
         ("byte data, two per line",
          ASSEMBLERS_6502, lambda: output.DataBlock(binary_loc(0x2008), 4, 2, 1, None)),
         ("word data",
-         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.DataBlock(binary_loc(0x200c), 4, None, 2, None)),
+         ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.DataBlock(binary_loc(0x200c), 4, None, 2, None)),
         ("string *",
          ASSEMBLERS_6502, lambda: output.StringData(binary_loc(0x2010), 4, None)),
         ("ASCII string with a quote *",
@@ -245,19 +264,19 @@ def make_tests():
         ("blank",
          ASSEMBLERS_6502, lambda: output.Blank()),
         ("one line comment",
-         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.CommentLine("Memory locations")),
+         ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.CommentLine("Memory locations")),
         ("empty one line comment",
          ASSEMBLERS_6502, lambda: output.CommentLine("")),
         ("word wrapped comment",
          ASSEMBLERS_6502, lambda: output.Comment("This is a long comment which is word wrapped, since it is much too long to fit on one line of the output.", 1)),
         ("constant definition *",
-         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.ConstantDefinition("lives", "3", 12, "Starting number of lives", 24)),
+         ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.ConstantDefinition("lives", "3", 12, "Starting number of lives", 24)),
         ("code start *",
-         ASSEMBLERS_6502 + ["z88dk-8080"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
+         ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
         ("code start, after other code *",
-         ["xa", "ca65"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
+         ["xa", "ca65", "sjasmplus"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
         ("include binary file *",
-         ASSEMBLERS_6502, lambda: output.Directive("include_binary_file", "data.bin")),
+         ASSEMBLERS_6502 + ASSEMBLERS_Z80, lambda: output.Directive("include_binary_file", "data.bin")),
         ("6510 undocumented opcode, immediate *",
          ASSEMBLERS_6502, with_6510([0x0b, 0x81])),
         ("6510 ALR, which acme calls ASR",
@@ -278,6 +297,16 @@ def make_tests():
          ["acme", "64tass", "ca65"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
         ("start, for the 65C02 *",
          ["acme", "64tass", "ca65"], lambda: (config.set_cmos(True), output.Directive("disassembly_start"))[1]),
+        ("Z80 operand with low and high bytes *",
+         ASSEMBLERS_Z80, lambda: instruction(0x2000, 2, "ld a,", expression.Binary(expression.Unary("<", Name("table")), "+", expression.Unary(">", Name("table"))))),
+        ("Z80 character literals",
+         ASSEMBLERS_Z80, lambda: instruction(0x2000, 2, "ld a,", expression.Binary(expression.Binary(Num(0x27, "char"), "+", Num(0x5c, "char")), "+", Num(0x22, "char")))),
+        ("move start and end *",
+         ASSEMBLERS_Z80, lambda: MultiLine(output.Directive("pseudopc_start", 0x8000, 0x2000, 0x10, 1), output.Directive("pseudopc_end", 0x8000, 0x2000, 0x10, 1))),
+        ("start *",
+         ["sjasmplus"], lambda: output.Directive("disassembly_start")),
+        ("end, with assertions *",
+         ASSEMBLERS_Z80, with_assertions),
         ("end, saving to a file *",
          ["acme", "beebasm"], lambda: (setattr(session.current(), "output_filename", "Out.bin"), output.Directive("disassembly_end"))[1]),
     ]
@@ -435,7 +464,16 @@ EXPECTED = {
     'Z80 instruction, z88dk, upper case': [
         '    LD (IX-3),$41                                                     ; 2000: DD 36 FD... .6.',
     ],
+    'Z80 instruction, sjasmplus': [
+        '    ld (ix-3),$41                                                     ; 2000: dd 36 fd... .6.',
+    ],
+    'Z80 instruction, sjasmplus, upper case': [
+        '    LD (IX-3),$41                                                     ; 2000: DD 36 FD... .6.',
+    ],
     'Z80 instruction, prefix and displacement before the opcode, z88dk': [
+        '    bit 0,(iy+127)                                                    ; 2000: fd cb 7f... ...',
+    ],
+    'Z80 instruction, prefix and displacement before the opcode, sjasmplus': [
         '    bit 0,(iy+127)                                                    ; 2000: fd cb 7f... ...',
     ],
     "Z80 undocumented opcode that's assembled, z88dk": [
@@ -444,7 +482,16 @@ EXPECTED = {
     "Z80 undocumented opcode that's assembled, z88dk, upper case": [
         '    LD IXH,A                                                          ; 2000: DD 67       .g',
     ],
+    "Z80 undocumented opcode that's assembled, sjasmplus": [
+        '    ld ixh,a                                                          ; 2000: dd 67       .g',
+    ],
+    "Z80 undocumented opcode that's assembled, sjasmplus, upper case": [
+        '    LD IXH,A                                                          ; 2000: DD 67       .g',
+    ],
     "Z80 undocumented opcode that's assembled, copying to a register, z88dk": [
+        '    rlc (ix+2),b                                                      ; 2000: dd cb 02... ...',
+    ],
+    "Z80 undocumented opcode that's assembled, copying to a register, sjasmplus": [
         '    rlc (ix+2),b                                                      ; 2000: dd cb 02... ...',
     ],
     'Z80 undocumented opcode as data, z88dk': [
@@ -453,19 +500,40 @@ EXPECTED = {
     'Z80 undocumented opcode as data, z88dk, upper case': [
         '    DB $ED, $4C ; NEG (undocumented)                                  ; 2000: ED 4C       .L',
     ],
+    'Z80 undocumented opcode as data, sjasmplus': [
+        '    db $ed, $4c ; neg (undocumented)                                  ; 2000: ed 4c       .L',
+    ],
+    'Z80 undocumented opcode as data, sjasmplus, upper case': [
+        '    DB $ED, $4C ; NEG (undocumented)                                  ; 2000: ED 4C       .L',
+    ],
     'Z80 undocumented opcode as data, with a displacement, z88dk': [
+        '    db $dd, $cb, -2, $41 ; bit 0,(ix-2) (undocumented)                ; 2000: dd cb fe... ...',
+    ],
+    'Z80 undocumented opcode as data, with a displacement, sjasmplus': [
         '    db $dd, $cb, -2, $41 ; bit 0,(ix-2) (undocumented)                ; 2000: dd cb fe... ...',
     ],
     'Z80 prefix with no effect, z88dk': [
         '    db $dd ; prefix with no effect (undocumented)                     ; 2000: dd          .',
     ],
+    'Z80 prefix with no effect, sjasmplus': [
+        '    db $dd ; prefix with no effect (undocumented)                     ; 2000: dd          .',
+    ],
     'Z80 CPU state, z88dk': [
+        '    ld ix,$1234                                                       ; 2000: dd 21 34... .!4 A:-- BC:---- DE:---- HL:---- IX:1234 IY:---- SP:---- ------',
+    ],
+    'Z80 CPU state, sjasmplus': [
         '    ld ix,$1234                                                       ; 2000: dd 21 34... .!4 A:-- BC:---- DE:---- HL:---- IX:1234 IY:---- SP:---- ------',
     ],
     'Z80 CPU state, flags, z88dk': [
         '    xor a                                                             ; 2000: af          .   A:00 BC:---- DE:---- HL:---- IX:---- IY:---- SP:---- sZhPnc',
     ],
+    'Z80 CPU state, flags, sjasmplus': [
+        '    xor a                                                             ; 2000: af          .   A:00 BC:---- DE:---- HL:---- IX:---- IY:---- SP:---- sZhPnc',
+    ],
     'Z80 cycles, z88dk': [
+        '    ldir                                                              ; 2000: ed b0       ..  16/21 cycles',
+    ],
+    'Z80 cycles, sjasmplus': [
         '    ldir                                                              ; 2000: ed b0       ..  16/21 cycles',
     ],
     '6502 CPU state, acme': [
@@ -531,6 +599,12 @@ EXPECTED = {
     'byte data, z88dk-8080, upper case': [
         '    DB 1, 2, 3, $FF                                                   ; 2008: 01 02 03... ...',
     ],
+    'byte data, sjasmplus': [
+        '    db 1, 2, 3, $ff                                                   ; 2008: 01 02 03... ...',
+    ],
+    'byte data, sjasmplus, upper case': [
+        '    DB 1, 2, 3, $FF                                                   ; 2008: 01 02 03... ...',
+    ],
     'byte data, two per line, acme': [
         '    !byte 1,   2                                                      ; 2008: 01 02       ..',
         '    !byte 3, $ff                                                      ; 200a: 03 ff       ..',
@@ -567,6 +641,9 @@ EXPECTED = {
         '    .word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
     'word data, z88dk-8080': [
+        '    dw $1234, $5678                                                   ; 200c: 34 12 78... 4.x',
+    ],
+    'word data, sjasmplus': [
         '    dw $1234, $5678                                                   ; 200c: 34 12 78... 4.x',
     ],
     'string, acme': [
@@ -782,6 +859,9 @@ EXPECTED = {
     'one line comment, z88dk-8080': [
         '; Memory locations',
     ],
+    'one line comment, sjasmplus': [
+        '; Memory locations',
+    ],
     'empty one line comment, acme': [
         ';',
     ],
@@ -848,6 +928,12 @@ EXPECTED = {
     'constant definition, z88dk-8080, upper case': [
         'lives       EQU 3       ; Starting number of lives',
     ],
+    'constant definition, sjasmplus': [
+        'lives       equ 3       ; Starting number of lives',
+    ],
+    'constant definition, sjasmplus, upper case': [
+        'lives       EQU 3       ; Starting number of lives',
+    ],
     'code start, acme': [
         '',
         '    * = $2000',
@@ -908,6 +994,16 @@ EXPECTED = {
         '    ORG $2000',
         '',
     ],
+    'code start, sjasmplus': [
+        '',
+        '    org $2000',
+        '',
+    ],
+    'code start, sjasmplus, upper case': [
+        '',
+        '    ORG $2000',
+        '',
+    ],
     'code start, after other code, xa': [
         'end_of_part_1',
         '    * = $3000',
@@ -932,6 +1028,18 @@ EXPECTED = {
         '',
         '    .RES $3000 - *',
         '    .ORG $3000',
+        '',
+    ],
+    'code start, after other code, sjasmplus': [
+        '',
+        '    ds $3000 - $',
+        '    org $3000',
+        '',
+    ],
+    'code start, after other code, sjasmplus, upper case': [
+        '',
+        '    DS $3000 - $',
+        '    ORG $3000',
         '',
     ],
     'include binary file, acme': [
@@ -963,6 +1071,18 @@ EXPECTED = {
     ],
     'include binary file, ca65, upper case': [
         '    .INCBIN "data.bin"',
+    ],
+    'include binary file, z88dk': [
+        '    binary "data.bin"',
+    ],
+    'include binary file, z88dk, upper case': [
+        '    BINARY "data.bin"',
+    ],
+    'include binary file, sjasmplus': [
+        '    incbin "data.bin"',
+    ],
+    'include binary file, sjasmplus, upper case': [
+        '    INCBIN "data.bin"',
     ],
     '6510 undocumented opcode, immediate, acme': [
         '    anc #$81                                                          ; 2000: 0b 81       ..',
@@ -1163,6 +1283,70 @@ EXPECTED = {
         '',
         '    .SETCPU "65C02"',
         '',
+    ],
+    'Z80 operand with low and high bytes, z88dk': [
+        '    ld a, (table & $ff) + (table >> 8)                                ; 2000: a9 41       .A',
+    ],
+    'Z80 operand with low and high bytes, z88dk, upper case': [
+        '    LD A, (table & $FF) + (table >> 8)                                ; 2000: A9 41       .A',
+    ],
+    'Z80 operand with low and high bytes, sjasmplus': [
+        '    ld a, (low table) + (high table)                                  ; 2000: a9 41       .A',
+    ],
+    'Z80 operand with low and high bytes, sjasmplus, upper case': [
+        '    LD A, (LOW table) + (HIGH table)                                  ; 2000: A9 41       .A',
+    ],
+    'Z80 character literals, z88dk': [
+        '    ld a, \'\\\'\' + \'\\\\\' + \'"\'                                           ; 2000: a9 41       .A',
+    ],
+    'Z80 character literals, sjasmplus': [
+        '    ld a, "\'" + \'\\\' + \'"\'                                             ; 2000: a9 41       .A',
+    ],
+    'move start and end, z88dk': [
+        '    phase $8000',
+        '    dephase',
+        '',
+    ],
+    'move start and end, z88dk, upper case': [
+        '    PHASE $8000',
+        '    DEPHASE',
+        '',
+    ],
+    'move start and end, sjasmplus': [
+        '    disp $8000',
+        '    ent',
+        '',
+    ],
+    'move start and end, sjasmplus, upper case': [
+        '    DISP $8000',
+        '    ENT',
+        '',
+    ],
+    'start, sjasmplus': [
+        '; Assemble with sjasmplus, to a plain binary:',
+        ';     sjasmplus --nologo --raw=program.bin this_file.asm',
+        '',
+    ],
+    'start, sjasmplus, upper case': [
+        '; Assemble with sjasmplus, to a plain binary:',
+        ';     sjasmplus --nologo --raw=program.bin this_file.asm',
+        '',
+    ],
+    'end, with assertions, z88dk': [
+        '; ASSERT ((flags - err_nr) == -$36)',
+        '; ASSERT ((table) == $1234)',
+    ],
+    'end, with assertions, z88dk, upper case': [
+        '; ASSERT ((flags - err_nr) == -$36)',
+        '; ASSERT ((table) == $1234)',
+    ],
+    'end, with assertions, sjasmplus': [
+        '    assert (flags - err_nr) == -$36',
+        '    assert (table) == $1234',
+    ],
+    'end, with assertions, sjasmplus, upper case': [
+        '    ASSERT (flags - err_nr) == -$36',
+        '    ASSERT (table) == $1234',
     ],
     'end, saving to a file, acme': [
         '!to "Out.bin", plain',
