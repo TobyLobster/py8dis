@@ -48,11 +48,11 @@ spectrum.keyed_offset_table(0x2596)             # the scanning functions'
 for i in range(66):                             # the calculator's
     code_ptr(0x32de + 2 * i)
 
-# Code whose address is loaded into a register, to be pushed as a return
-# address or stored as a channel's routine (each the address of an
-# instruction's operand)
-for operand_addr in (0x04c3, 0x055f, 0x0a61, 0x0a66, 0x0a6b, 0x0f31, 0x1109, 0x1131, 0x1566, 0x1b5b):
-    expr(operand_addr, entry(get_u16_runtime(operand_addr)))
+# A return address pushed with 'ld hl,nn : push hl' that isn't found from
+# what the code does (see CpuZ80.pushed_return_addresses()): n_l_only (the
+# Spectrum ROM's REPORT-G), which MAIN-ADD takes off the stack again if
+# there's room (the address of the instruction's operand)
+expr(0x1566, entry(get_u16_runtime(0x1566)))
 
 # Code the ROM doesn't use: an RST 0 after the start, and 'pop hl, ret' and
 # a jump to report O where the Spectrum ROM has CLOSE-STR and CAT-ETC

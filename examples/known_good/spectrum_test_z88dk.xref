@@ -1,7 +1,12 @@
 Cross-reference listing: each label, where it's defined, and what refers to it.
 
+$09f4  print_out (Memory locations: ROM)
+    $8070     my_print                     jp print_out
+
 $0d6b  cls (Memory locations: ROM)
     $8000     pydis_start                  call cls
+    $805f     loop_c804f+16                call cls
+    $806c     clear_screen                 call cls
 
 $1601  chan_open (Memory locations: ROM)
     $8005     pydis_start+5                call chan_open
@@ -30,6 +35,9 @@ $5c3a  err_nr (Memory locations: System variables)
 $5c3b  flags (Memory locations: System variables)
     (not referenced)
 
+$5c51  curchl (Memory locations: System variables)
+    $8052     loop_c804f+3                 ld hl,(curchl)
+
 $8000  pydis_start (inline), start (inline)
     (not referenced)
 
@@ -39,8 +47,20 @@ $802a  loop_c802a (inline)
 $804f  loop_c804f (inline)
     $8050     loop_c804f+1                 jr nz,loop_c804f
 
-$8054  message (inline)
+$806a  resume (inline)
     (not referenced)
 
-$805a  message_end (inline), pydis_end (inline)
+$806c  clear_screen (inline)
+    $8067     loop_c804f+24                jp clear_screen
+
+$8070  my_print (inline)
+    (not referenced)
+
+$8073  table (inline)
+    (not referenced)
+
+$8076  message (inline)
+    (not referenced)
+
+$807c  message_end (inline), pydis_end (inline)
     (not referenced)

@@ -7,6 +7,7 @@ ula_port    equ $fe
 ; Memory locations
 
 ; ROM ($00-$3fff)
+print_out   equ $09f4
 cls         equ $0d6b
 chan_open   equ $1601
 pr_string   equ $203c
@@ -23,6 +24,7 @@ attributes  equ $5800
 last_k  equ $5c08
 err_nr  equ $5c3a
 flags   equ $5c3b
+curchl  equ $5c51
 
     org $8000
 
@@ -37,7 +39,7 @@ start:
     rst $10                                                           ; 800d: d7          .  ; Print 10 (AT's line)
     ld a,5                                                            ; 800e: 3e 05       >.
     rst $10                                                           ; 8010: d7          .  ; Print 5 (AT's column)
-    ld de,message                                                     ; 8011: 11 54 80    .T.
+    ld de,message                                                     ; 8011: 11 76 80    .v.
     ld bc,message_end - message                                       ; 8014: 01 06 00    ...
     call pr_string                                                    ; 8017: cd 3c 20    .< ; Print a string
     rst $28                                                           ; 801a: ef          .
@@ -72,29 +74,59 @@ loop_c802a:
 loop_c804f:
     cp (hl)                                                           ; 804f: be          .
     jr nz,loop_c804f                                                  ; 8050: 20 fd        .
-    rst $08                                                           ; 8052: cf          .
-    db 8                                                              ; 8053: 08          .  ; Report 9 STOP statement
+    ld hl,(curchl)                                                    ; 8052: 2a 51 5c    *Q\
+    ld de,my_print                                                    ; 8055: 11 70 80    .p. ; Set the current channel's output routine to my_print
+    ld (hl),e                                                         ; 8058: 73          s
+    inc hl                                                            ; 8059: 23          #
+    ld (hl),d                                                         ; 805a: 72          r
+    ld hl,$8073                                                       ; 805b: 21 73 80    !s.
+    push hl                                                           ; 805e: e5          .
+    call cls                                                          ; 805f: cd 6b 0d    .k. ; Clear the screen
+    pop hl                                                            ; 8062: e1          .
+    ld hl,resume                                                      ; 8063: 21 6a 80    !j.
+    push hl                                                           ; 8066: e5          .
+    jp clear_screen                                                   ; 8067: c3 6c 80    .l.
+
+resume:
+    rst $08                                                           ; 806a: cf          .
+    db 8                                                              ; 806b: 08          .  ; Report 9 STOP statement
+
+; $806c referenced 1 time by $8067
+clear_screen:
+    call cls                                                          ; 806c: cd 6b 0d    .k. ; Clear the screen
+    ret                                                               ; 806f: c9          .
+
+my_print:
+    jp print_out                                                      ; 8070: c3 f4 09    ...
+
+table:
+    db $3e, 1, $c9                                                    ; 8073: 3e 01 c9    >..
 message:
-    db "Hello"                                                        ; 8054: 48 65 6c... Hel
-    db $0d                                                            ; 8059: 0d          .
+    db "Hello"                                                        ; 8076: 48 65 6c... Hel
+    db $0d                                                            ; 807b: 0d          .
 message_end:
 pydis_end:
 
     assert (flags - err_nr) == $01
-    assert (message) == $8054
+    assert (message) == $8076
     assert (message_end - message) == $06
+    assert (my_print) == $8070
+    assert (resume) == $806a
 
 ; Label references by decreasing frequency:
-;     attributes:   1
-;     chan_open:    1
-;     cls:          1
-;     last_k:       1
-;     loop_c802a:   1
-;     loop_c804f:   1
-;     plot_sub:     1
-;     pr_string:    1
-;     print_fp:     1
-;     screen:       1
+;     cls:            3
+;     attributes:     1
+;     chan_open:      1
+;     clear_screen:   1
+;     curchl:         1
+;     last_k:         1
+;     loop_c802a:     1
+;     loop_c804f:     1
+;     plot_sub:       1
+;     pr_string:      1
+;     print_fp:       1
+;     print_out:      1
+;     screen:         1
 
 ; Automatically generated labels:
 ;     loop_c802a
@@ -102,12 +134,12 @@ pydis_end:
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 90 bytes
-;     Code                     = 75 bytes (83%)
-;     Data                     = 15 bytes (17%)
+;     Total size (Code + Data) = 124 bytes
+;     Code                     = 106 bytes (85%)
+;     Data                     = 18 bytes (15%)
 ;
-;     Number of instructions   = 35
-;     Number of data bytes     = 10 bytes
+;     Number of instructions   = 50
+;     Number of data bytes     = 13 bytes
 ;     Number of data words     = 0 bytes
 ;     Number of string bytes   = 5 bytes
 ;     Number of strings        = 1

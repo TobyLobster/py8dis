@@ -1,8 +1,9 @@
 ; A ZX Spectrum program (October 2026), for spectrum_test (see its control
 ; file), which disassembles it with spectrum.spectrum48(): it prints with
 ; RST $10, uses the calculator (RST $28), the system variables (directly and
-; with IY), ROM routines, the border, the keyboard and the screen, and stops
-; with an error (RST $08).
+; with IY), ROM routines, the border, the keyboard and the screen, sets the
+; current channel's output routine, pushes a value and a return address, and
+; stops with an error (RST $08).
 ; Assemble with: z88dk-z80asm -mz80 -b -o../orig/spectrum_test.orig spectrum_test.asm
 
     ORG $8000
@@ -58,9 +59,39 @@ frame:
     cp (hl)
     jr nz,frame
 
+    ; Set the current channel's output routine to my_print (found from
+    ; what the code does, and traced)
+    ld hl,($5c51)                   ; CURCHL
+    ld de,my_print
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
+    ; A value pushed and popped again: table is data, not code
+    ld hl,table
+    push hl
+    call $0d6b                      ; CLS
+    pop hl
+
+    ; A return address pushed: clear_screen returns to resume (found from
+    ; what the code does, and traced)
+    ld hl,resume
+    push hl
+    jp clear_screen
+resume:
     ; Stop with report 9, STOP statement
     rst $08
     db $08
+
+clear_screen:
+    call $0d6b                      ; CLS
+    ret
+
+my_print:
+    jp $09f4                        ; PRINT-OUT
+
+table:
+    db $3e, $01, $c9                ; (as code, 'ld a,1 : ret')
 
 message:
     db "Hello", $0d

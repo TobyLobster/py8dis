@@ -1787,15 +1787,15 @@ l0a5b:
 
 l0a5d:
     ld (tvdata+1),a                                                   ; 0a5d: 32 0f 5c    2.\
-    ld de,l0a87                                                       ; 0a60: 11 87 0a    ...
+    ld de,l0a87                                                       ; 0a60: 11 87 0a    ... ; Set the current channel's output routine to l0a87
     jr l0a70                                                          ; 0a63: 18 0b       ..
 
 l0a65:
-    ld de,l0a5d                                                       ; 0a65: 11 5d 0a    .].
+    ld de,l0a5d                                                       ; 0a65: 11 5d 0a    .]. ; Set the current channel's output routine to l0a5d
     jr l0a6d                                                          ; 0a68: 18 03       ..
 
 l0a6a:
-    ld de,l0a87                                                       ; 0a6a: 11 87 0a    ...
+    ld de,l0a87                                                       ; 0a6a: 11 87 0a    ... ; Set the current channel's output routine to l0a87
 ; $0a6d referenced 1 time by $0a68
 l0a6d:
     ld (tvdata),a                                                     ; 0a6d: 32 0e 5c    2.\
@@ -1823,7 +1823,7 @@ l0a7e:
     db $53, $56                                                       ; 0a85: 53 56       SV
 
 l0a87:
-    ld de,$09f4                                                       ; 0a87: 11 f4 09    ...
+    ld de,prmain                                                      ; 0a87: 11 f4 09    ... ; Set the current channel's output routine to prmain
     call l0a70                                                        ; 0a8a: cd 70 0a    .p.
     ld hl,(tvdata)                                                    ; 0a8d: 2a 0e 5c    *.\
     ld d,a                                                            ; 0a90: 57          W
@@ -2396,7 +2396,7 @@ l0d94:
     ld a,$fd                                                          ; 0d94: 3e fd       >.
     call l1601                                                        ; 0d96: cd 01 16    ...
     ld hl,(curchl)                                                    ; 0d99: 2a 51 5c    *Q\
-    ld de,$09f4                                                       ; 0d9c: 11 f4 09    ...
+    ld de,prmain                                                      ; 0d9c: 11 f4 09    ... ; Set the current channel's output routine to prmain
     and a                                                             ; 0d9f: a7          .
 ; $0da0 referenced 1 time by $0da8
 l0da0:
@@ -2420,7 +2420,7 @@ l0daf:
     ld b,$18                                                          ; 0dbf: 06 18       ..
     call l0e44                                                        ; 0dc1: cd 44 0e    .D.
     ld hl,(curchl)                                                    ; 0dc4: 2a 51 5c    *Q\
-    ld de,$09f4                                                       ; 0dc7: 11 f4 09    ...
+    ld de,prmain                                                      ; 0dc7: 11 f4 09    ... ; Set the current channel's output routine to prmain
     ld (hl),e                                                         ; 0dca: 73          s
     inc hl                                                            ; 0dcb: 23          #
     ld (hl),d                                                         ; 0dcc: 72          r
@@ -3037,12 +3037,12 @@ l10fa:
 ; $1105 referenced 2 times by $10d7, $1102
 l1105:
     ld (iy+k_data - err_nr),c                                         ; 1105: fd 71 d3    .q.
-    ld de,l110d                                                       ; 1108: 11 0d 11    ...
+    ld de,l110d                                                       ; 1108: 11 0d 11    ... ; Set channel K's input routine to l110d
     jr l1113                                                          ; 110b: 18 06       ..
 
 l110d:
     ld a,(k_data)                                                     ; 110d: 3a 0d 5c    :.\
-    ld de,$10a6                                                       ; 1110: 11 a6 10    ...
+    ld de,kyip                                                        ; 1110: 11 a6 10    ... ; Set channel K's input routine to kyip
 ; $1113 referenced 1 time by $110b
 l1113:
     ld hl,(chans)                                                     ; 1113: 2a 4f 5c    *O\
@@ -3438,7 +3438,7 @@ l140c:
 ; $1555 referenced 1 time by $38cb
 l1555:
     pop hl                                                            ; 1555: e1          .
-    ld hl,$1301                                                       ; 1556: 21 01 13    !..
+    ld hl,l1301                                                       ; 1556: 21 01 13    !..
     push hl                                                           ; 1559: e5          .
     jp nextstat                                                       ; 155a: c3 76 1b    .v.
 
@@ -12659,6 +12659,7 @@ pydis_end:
 ; ASSERT ((k_data - err_nr) == -$2d)
 ; ASSERT ((kstate - err_nr) == -$3a)
 ; ASSERT ((kyip) == $10a6)
+; ASSERT ((kyip) == $10a6)
 ; ASSERT ((l03f8) == $03f8)
 ; ASSERT ((l053f) == $053f)
 ; ASSERT ((l053f) == $053f)
@@ -12671,6 +12672,7 @@ pydis_end:
 ; ASSERT ((l0bbb) == $0bbb)
 ; ASSERT ((l108b) == $108b)
 ; ASSERT ((l110d) == $110d)
+; ASSERT ((l1301) == $1301)
 ; ASSERT ((l16e5) == $16e5)
 ; ASSERT ((l1736) == $1736)
 ; ASSERT ((l18bc) == $18bc)
@@ -12715,6 +12717,9 @@ pydis_end:
 ; ASSERT ((poke) == $1e80)
 ; ASSERT ((pr_cc - err_nr) == $46)
 ; ASSERT ((print) == $1fcd)
+; ASSERT ((prmain) == $09f4)
+; ASSERT ((prmain) == $09f4)
+; ASSERT ((prmain) == $09f4)
 ; ASSERT ((prmain) == $09f4)
 ; ASSERT ((prmain) == $09f4)
 ; ASSERT ((rand) == $1e4f)

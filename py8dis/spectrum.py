@@ -363,6 +363,86 @@ def _analysis():
 
 
 # ************************************************************************************************
+# A channel's output or input routine set by the code: e.g. 'ld de,routine'
+# then (perhaps after a jump or call) 'ld hl,(curchl) : ld (hl),e : inc hl :
+# ld (hl),d', which sets the current channel's output routine. The routine
+# is traced, and named in the 'ld de' (see CpuZ80.code_pointer_finders).
+
+CURCHL = 0x5c51         # the address of the current channel's information
+CHANS = 0x5c4f          # the address of the channels' information (5 bytes each: K, S, R, P)
+
+# The most instructions followed from each 'ld de,nn' or 'ld hl,(curchl)'
+_CHANNEL_SEARCH_LIMIT = 32
+
+def _channel_field(variable, offset):
+    """What's at the offset from the address in the system variable (CURCHL
+    or CHANS), if it's a channel's routine, else None"""
+    if variable == CURCHL:
+        return {0: "the current channel's output routine", 2: "the current channel's input routine"}.get(offset)
+    channel, field = divmod(offset, 5)
+    if channel < 4 and field in (0, 2):
+        return "channel %s's %s routine" % ("KSRP"[channel], "output" if field == 0 else "input")
+    return None
+
+def _channel_routines():
+    """The channels' routines set by the code (see above), as
+    CpuZ80.code_pointer_finders wants them. The code is followed from each
+    'ld de,nn' and 'ld hl,(curchl)' or 'ld hl,(chans)', on through jumps
+    and into calls (but not conditional ones), while it doesn't change the
+    registers, until the routine's address in DE is stored to a channel's
+    routine with 'ld (hl),e : inc hl : ld (hl),d'."""
+    cpu = session.current().cpu
+    result = []
+    for run in cpu.straight_runs():
+        for start in run:
+            c = classification.get_classification(start)
+            if not (c.key == (0x11,) or (c.key == (0x2a,) and memorymanager.get_u16_binary(start + 1) in (CURCHL, CHANS))):
+                continue
+            de = None           # (the 'ld de' instruction's binary address, if DE is its value)
+            hl = None           # (the system variable, and the offset from its address)
+            low = None          # (where E was stored, and where DE came from)
+            binary_addr = BinaryAddr(start)
+            for _ in range(_CHANNEL_SEARCH_LIMIT):
+                c = classification.get_classification(binary_addr)
+                if not isinstance(c, cpu.Opcode):
+                    break
+                next_addr = BinaryAddr(binary_addr + c.length())
+                if c.key == (0x11,):                                        # ld de,nn
+                    de = binary_addr
+                elif c.key == (0x2a,):                                      # ld hl,(nn)
+                    variable = memorymanager.get_u16_binary(binary_addr + 1)
+                    hl = (variable, 0) if variable in (CURCHL, CHANS) else None
+                elif c.key == (0x23,):                                      # inc hl
+                    hl = None if hl is None else (hl[0], hl[1] + 1)
+                elif c.key == (0x73,):                                      # ld (hl),e
+                    low = None if hl is None or de is None else (hl, de)
+                elif c.key == (0x72,):                                      # ld (hl),d
+                    if hl is not None and de is not None and low == ((hl[0], hl[1] - 1), de):
+                        description = _channel_field(hl[0], hl[1] - 1)
+                        if description is not None:
+                            operand_addr = BinaryAddr(de + 1)
+                            result.append((de, operand_addr, memorymanager.get_u16_binary(operand_addr), "Set " + description + " to %s"))
+                    break
+                elif c.kind in (cpuz80.FLOW_JP, cpuz80.FLOW_JR) or c.key == (0xcd,):   # jp nn, jr e, call nn
+                    binary_addr = movemanager.r2b(c.target(binary_addr))[0]
+                    if binary_addr is None:
+                        break
+                    continue
+                elif c.kind != cpuz80.FLOW_NEXT or c.mnemonic == "ret":
+                    break           # (Conditional, or the code goes elsewhere)
+                else:
+                    _, writes, _ = cpu._effects(c, binary_addr)
+                    if "d" in writes or "e" in writes:
+                        de = None
+                    if "h" in writes or "l" in writes:
+                        hl = None
+                    if de is None and hl is None:
+                        break
+                binary_addr = next_addr
+    return result
+
+
+# ************************************************************************************************
 # The set up
 
 def spectrum48(rom_labels=True):
@@ -388,7 +468,11 @@ def spectrum48(rom_labels=True):
       screen');
     - the ULA's port, $FE, named 'ula_port', with what's written to it (the
       border colour etc.) and the keyboard half rows read from it commented
-      when they're known.
+      when they're known;
+    - a channel's output or input routine set by the code (e.g. 'ld
+      de,routine : ld hl,(curchl) : ld (hl),e : inc hl : ld (hl),d'), which
+      is traced, named in the 'ld de' and commented ('Set the current
+      channel's output routine to routine').
     """
     cpu = session.current().cpu
     if not isinstance(cpu, cpuz80.CpuZ80):
@@ -413,6 +497,7 @@ def spectrum48(rom_labels=True):
                        hook=print_hook if routine.addr == 0x0010 else None, is_entry_point=False)
 
     cpu.code_analysis_fns.append(_analysis)
+    cpu.code_pointer_finders.append(_channel_routines)
 
 
 # ************************************************************************************************
@@ -509,10 +594,12 @@ def rom():
     for i in range(66):                         # the calculator's
         code_ptr(0x32d7 + 2 * i)
 
-    # Code whose address is loaded into a register, to be pushed as a return
-    # address or stored as a channel's routine (each the address of an
-    # instruction's operand)
-    for operand_addr in (0x04c3, 0x055f, 0x0a76, 0x0a7b, 0x0f31, 0x1109, 0x1131, 0x1566, 0x1b3e, 0x1b5b):
+    # Return addresses pushed with 'ld hl,nn : push hl' that aren't found
+    # from what the code does (see CpuZ80.pushed_return_addresses()): REPORT-G,
+    # which MAIN-ADD takes off the stack again if there's room, and STMT-RET,
+    # which the code returns to through the commands' parameter routines
+    # (each the address of the instruction's operand)
+    for operand_addr in (0x1566, 0x1b3e):
         expr(operand_addr, entry(get_u16_runtime(operand_addr)))
 
     # Routines the ROM doesn't call: zx81_name, rec_edit, not_used, free_mem

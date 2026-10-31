@@ -380,6 +380,16 @@ class CpuZ80(cpu.Cpu):
         # find_redundant_instructions())
         self.code_analysis_fns.append(self.find_redundant_instructions)
 
+        # Functions that find code addresses from what the code does, each
+        # returning a list of (the binary address of an instruction, of its
+        # 16 bit operand, the code address that holds, and a comment for the
+        # instruction with '%s' for the address's label, or None), e.g.
+        # spectrum.py's for a channel's routine (see
+        # find_entry_points_from_effects())
+        self.code_pointer_finders = [self.pushed_return_addresses]
+        # (The operands already found)
+        self.code_pointer_operands = set()
+
     def find_subroutine_calls(self):
         """Call the hook of each subroutine defined with subroutine() for
         each instruction that calls it (CALL, RST or JP, conditional or
@@ -582,6 +592,123 @@ class CpuZ80(cpu.Cpu):
                     disassembly.comment_binary(memorymanager.BinaryAddr(binary_addr), "Redundant instruction?", align=Align.INLINE, word_wrap=False, auto_generated=True)
                     continue
                 live = (live - writes) | reads
+
+    # ********************************************************************************************
+    # Code addresses found from what the code does
+
+    def find_entry_points_from_effects(self):
+        """Trace the code addresses that code_pointer_finders find (e.g. a
+        return address pushed with 'ld hl,nn : push hl'), each naming the
+        address in the instruction that loads it."""
+        for finder in self.code_pointer_finders:
+            for instruction_binary_addr, operand_binary_addr, target, description in finder():
+                if operand_binary_addr in self.code_pointer_operands:
+                    continue
+                self.code_pointer_operands.add(operand_binary_addr)
+                target = RuntimeAddr(target)
+                binary_addr, move_id = movemanager.r2b(target)
+                if binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1):
+                    continue
+                c = classification.get_classification(binary_addr)
+                if c is not None and not isinstance(c, self.Opcode):
+                    # (Data, or inside an instruction: not code after all)
+                    continue
+                if c is None:
+                    self.add_entry(binary_addr, target, move_id, None, explicit=True)
+                label = disassembly.get_label(target, operand_binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+                classification.add_expression(operand_binary_addr, label, force=False, auto_generated=False)
+                if description is not None:
+                    disassembly.comment(movemanager.b2r(memorymanager.BinaryAddr(instruction_binary_addr)), utils.LazyString(description, label),
+                                        align=Align.INLINE, word_wrap=False, auto_generated=True)
+
+    # Instructions that load a 16 bit register with a value, 'ld rr,nn', by
+    # their bytes, and the register
+    _LD_RR_NN = {(0x01,): "bc", (0x11,): "de", (0x21,): "hl", (0xdd, 0x21): "ix", (0xfd, 0x21): "iy"}
+
+    # The most instructions pushed_return_addresses() looks through after
+    # each push, and the deepest it follows the stack
+    _RETURN_SEARCH_LIMIT = 1000
+    _RETURN_SEARCH_DEPTH = 16
+
+    def pushed_return_addresses(self):
+        """Return addresses pushed onto the stack, 'ld rr,nn' then 'push rr'
+        (e.g. so that a routine jumped to returns there). It's a return
+        address if, following the code on from the PUSH (along every path,
+        but not into calls, which are taken to return), a RET (or RET cc)
+        is reached with it at the top of the stack, or the stack pointer is
+        stored ('ld (nn),sp', so that it can be restored to return there,
+        as the ZX Spectrum's ROM does with ERR_SP), and no path takes it
+        off the stack another way first (POP, EX (SP), or a change to SP).
+        A value that's pushed to be popped later is data, not an
+        address."""
+        result = []
+        for run in self.straight_runs():
+            for first, second in zip(run, run[1:]):
+                ld = classification.get_classification(first)
+                push = classification.get_classification(second)
+                register = self._LD_RR_NN.get(ld.key)
+                if register is None or push.mnemonic != "push" or push.operands != [register]:
+                    continue
+                if self._returns_to_pushed_value(second + push.length()):
+                    operand_binary_addr = memorymanager.BinaryAddr(first + ld.part(Imm16).offset)
+                    result.append((first, operand_binary_addr, memorymanager.get_u16_binary(operand_binary_addr), None))
+        return result
+
+    def _returns_to_pushed_value(self, start):
+        """Following the code from the binary address 'start', with a value
+        just pushed, does it return to that value (see
+        pushed_return_addresses())?"""
+        todo = [(memorymanager.BinaryAddr(start), 0)]
+        seen = set()
+        returns = False
+        while todo:
+            binary_addr, depth = todo.pop()
+            if (binary_addr, depth) in seen or len(seen) >= self._RETURN_SEARCH_LIMIT:
+                continue
+            seen.add((binary_addr, depth))
+            c = classification.get_classification(binary_addr)
+            if not isinstance(c, self.Opcode):
+                continue
+            mnemonic, operands = c.mnemonic, c.operands
+            next_addr = memorymanager.BinaryAddr(binary_addr + c.length())
+            if mnemonic == "push":
+                if depth < self._RETURN_SEARCH_DEPTH:
+                    todo.append((next_addr, depth + 1))
+                continue
+            if mnemonic == "pop":
+                if depth == 0:
+                    return False            # (Popped: it's data)
+                todo.append((next_addr, depth - 1))
+                continue
+            if mnemonic in ("ret", "reti", "retn"):
+                if depth == 0:
+                    returns = True
+                # (RET cc may not return: then the code goes on)
+                if operands:
+                    todo.append((next_addr, depth))
+                continue
+            if mnemonic == "ld" and len(operands) == 3 and operands[2] == "),sp":
+                if depth == 0:
+                    returns = True          # (ld (nn),sp: SP is kept, to return there later)
+                    continue
+                todo.append((next_addr, depth))
+                continue
+            if (mnemonic == "ex" and operands and str(operands[0]).startswith("(sp)")) or \
+               (mnemonic in ("inc", "dec") and operands == ["sp"]) or \
+               (mnemonic == "ld" and operands and str(operands[0]).startswith("sp,")):
+                if depth == 0:
+                    return False            # (It's used some other way)
+                continue                    # (The stack isn't followed any further)
+            if c.kind == FLOW_JP_IND:
+                continue
+            if c.kind in (FLOW_JP, FLOW_JR, FLOW_JP_CC, FLOW_JR_CC):
+                target_binary_addr = movemanager.r2b(c.target(binary_addr))[0]
+                if target_binary_addr is not None:
+                    todo.append((target_binary_addr, depth))
+                if c.kind in (FLOW_JP, FLOW_JR):
+                    continue
+            todo.append((next_addr, depth))
+        return returns
 
     def default_subroutine_hook(self, runtime_addr, state, subroutine):
         """Comment a call to a subroutine (defined with subroutine()) with

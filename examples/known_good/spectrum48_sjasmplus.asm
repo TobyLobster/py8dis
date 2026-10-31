@@ -1767,16 +1767,16 @@ po_quest:
     jr po_able                                                        ; 0a6b: 18 6c       .l  12 cycles
 
 po_tv_2:
-    ld de,$0a87                                                       ; 0a6d: 11 87 0a    ... 10 cycles
+    ld de,po_cont                                                     ; 0a6d: 11 87 0a    ... 10 cycles    ; Set the current channel's output routine to po_cont
     ld (tvdata+1),a                                                   ; 0a70: 32 0f 5c    2.\ 13 cycles
     jr po_change                                                      ; 0a73: 18 0b       ..  12 cycles
 
 po_2_oper:
-    ld de,po_tv_2                                                     ; 0a75: 11 6d 0a    .m. 10 cycles
+    ld de,po_tv_2                                                     ; 0a75: 11 6d 0a    .m. 10 cycles    ; Set the current channel's output routine to po_tv_2
     jr po_tv_1                                                        ; 0a78: 18 03       ..  12 cycles
 
 po_1_oper:
-    ld de,po_cont                                                     ; 0a7a: 11 87 0a    ... 10 cycles
+    ld de,po_cont                                                     ; 0a7a: 11 87 0a    ... 10 cycles    ; Set the current channel's output routine to po_cont
 ; $0a7d referenced 1 time by $0a78
 po_tv_1:
     ld (tvdata),a                                                     ; 0a7d: 32 0e 5c    2.\ 13 cycles
@@ -1789,7 +1789,7 @@ po_change:
     ret                                                               ; 0a86: c9          .   10 cycles
 
 po_cont:
-    ld de,$09f4                                                       ; 0a87: 11 f4 09    ... 10 cycles
+    ld de,print_out                                                   ; 0a87: 11 f4 09    ... 10 cycles    ; Set the current channel's output routine to print_out
     call po_change                                                    ; 0a8a: cd 80 0a    ... 17 cycles
     ld hl,(tvdata)                                                    ; 0a8d: 2a 0e 5c    *.\ 16 cycles
     ld d,a                                                            ; 0a90: 57          W   4 cycles
@@ -2350,7 +2350,7 @@ cl_chan:
     ld a,$fd                                                          ; 0d94: 3e fd       >.  7 cycles
     call chan_open                                                    ; 0d96: cd 01 16    ... 17 cycles    ; Open a channel
     ld hl,(curchl)                                                    ; 0d99: 2a 51 5c    *Q\ 16 cycles
-    ld de,$09f4                                                       ; 0d9c: 11 f4 09    ... 10 cycles
+    ld de,print_out                                                   ; 0d9c: 11 f4 09    ... 10 cycles    ; Set the current channel's output routine to print_out
     and a                                                             ; 0d9f: a7          .   4 cycles
 ; $0da0 referenced 1 time by $0da8
 cl_chan_a:
@@ -2379,7 +2379,7 @@ cl_all:
     ld b,$18                                                          ; 0dc4: 06 18       ..  7 cycles
     call cl_line                                                      ; 0dc6: cd 44 0e    .D. 17 cycles    ; Clear lines at the bottom of the display
     ld hl,(curchl)                                                    ; 0dc9: 2a 51 5c    *Q\ 16 cycles
-    ld de,$09f4                                                       ; 0dcc: 11 f4 09    ... 10 cycles
+    ld de,print_out                                                   ; 0dcc: 11 f4 09    ... 10 cycles    ; Set the current channel's output routine to print_out
     ld (hl),e                                                         ; 0dcf: 73          s   7 cycles
     inc hl                                                            ; 0dd0: 23          #   6 cycles
     ld (hl),d                                                         ; 0dd1: 72          r   7 cycles
@@ -2987,12 +2987,12 @@ key_contr:
 ; $1105 referenced 2 times by $10d9, $1102
 key_data:
     ld (iy+k_data - err_nr),c                                         ; 1105: fd 71 d3    .q. 19 cycles
-    ld de,key_next                                                    ; 1108: 11 0d 11    ... 10 cycles
+    ld de,key_next                                                    ; 1108: 11 0d 11    ... 10 cycles    ; Set channel K's input routine to key_next
     jr key_chan                                                       ; 110b: 18 06       ..  12 cycles
 
 key_next:
     ld a,(k_data)                                                     ; 110d: 3a 0d 5c    :.\ 13 cycles
-    ld de,$10a8                                                       ; 1110: 11 a8 10    ... 10 cycles
+    ld de,key_input                                                   ; 1110: 11 a8 10    ... 10 cycles    ; Set channel K's input routine to key_input
 ; $1113 referenced 1 time by $110b
 key_chan:
     ld hl,(chans)                                                     ; 1113: 2a 4f 5c    *O\ 16 cycles
