@@ -418,7 +418,10 @@ def spectrum48(rom_labels=True):
 # ************************************************************************************************
 # The ROM
 
-def _offset_entry(addr, code=True):
+# The ROM's kinds of table, for rom(), and for a disassembly of another ROM
+# with the same kinds (e.g. a replacement ROM)
+
+def offset_entry(addr, code=True):
     """A byte at addr that's the offset from itself to code (as in the ROM's
     tables of routines, e.g. 'DEFB L0A5F - $'), or to data if not 'code'.
     Returns the address it gives."""
@@ -427,42 +430,44 @@ def _offset_entry(addr, code=True):
     expr(addr, (entry(target) if code else get_label(target, addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)) + " - $")
     return target
 
-def _offset_table(addr, n):
+def offset_table(addr, n):
+    """n offsets to code (see offset_entry())."""
     for i in range(n):
-        _offset_entry(addr + i)
+        offset_entry(addr + i)
 
-def _keyed_offset_table(addr, n=None):
-    """Pairs of a character and an offset (see _offset_entry()), ending with
-    a zero (or after n pairs)."""
+def keyed_offset_table(addr, n=None):
+    """Pairs of a character and an offset to code (see offset_entry()),
+    ending with a zero (or after n pairs)."""
     count = 0
     while (n is None and get_u8_runtime(addr) != 0) or (n is not None and count < n):
         byte(addr)
-        _offset_entry(addr + 1)
+        offset_entry(addr + 1)
         addr += 2
         count += 1
     if n is None:
         byte(addr)
 
-def _syntax_table(addr):
+def syntax_table(addr, routine_classes=(0x00, 0x03, 0x05), last_classes=(0x02, 0x07, 0x0b)):
     """A command's parameter table (see the offset table at $1A48): class
-    numbers (0 to $0B) and separators, until class 0, 3 or 5 (each followed
-    by the address of the command's routine), or 2 (for LET), 7 or $0B
-    (which have none)."""
+    numbers (0 to $0B) and separators, until a class in routine_classes (0,
+    3 or 5, each followed by the address of the command's routine) or in
+    last_classes (2 for LET, 7 or $0B, which have none)."""
     while True:
         c = get_u8_runtime(addr)
         byte(addr)
         addr += 1
-        if c in (0x00, 0x03, 0x05):
+        if c in routine_classes:
             code_ptr(addr)
             return
-        if c in (0x02, 0x07, 0x0b):
+        if c in last_classes:
             return
 
 def _with_terminator(c):
     return True
 
-def _stringhi_list(addr, end):
-    """Text, each item ending with a character with bit 7 set."""
+def stringhi_list(addr, end):
+    """Text from addr to end, each item ending with a character with bit 7
+    set."""
     while addr < end:
         addr = stringhi(addr, _with_terminator)
 
@@ -483,24 +488,24 @@ def rom():
         entry(addr)
 
     # The tables of routines
-    _offset_table(0x0a11, 18)                   # the control characters'
-    _offset_table(0x0fa0, 9)                    # the editing keys'
+    offset_table(0x0a11, 18)                    # the control characters'
+    offset_table(0x0fa0, 9)                     # the editing keys'
     for addr in (0x15af, 0x15b4, 0x15b9, 0x15be):   # the initial channel information
         code_ptr(addr)                          # (output and input routines,
         code_ptr(addr + 2)                      # then the channel's letter)
         byte(addr + 4)
     byte(0x15c3)                                # (the end marker)
-    _keyed_offset_table(0x162d)                 # the channels'
-    _keyed_offset_table(0x1716, 3)              # for CLOSE
-    _keyed_offset_table(0x177a)                 # for OPEN
+    keyed_offset_table(0x162d)                  # the channels'
+    keyed_offset_table(0x1716, 3)               # for CLOSE
+    keyed_offset_table(0x177a)                  # for OPEN
     syntax_tables = set()
     for i in range(50):                         # the commands' parameter tables
-        table = _offset_entry(0x1a48 + i, code=False)
+        table = offset_entry(0x1a48 + i, code=False)
         if table not in syntax_tables:
             syntax_tables.add(table)
-            _syntax_table(table)
-    _offset_table(0x1c01, 12)                   # the parameter classes'
-    _keyed_offset_table(0x2596)                 # the scanning functions'
+            syntax_table(table)
+    offset_table(0x1c01, 12)                    # the parameter classes'
+    keyed_offset_table(0x2596)                  # the scanning functions'
     for i in range(66):                         # the calculator's
         code_ptr(0x32d7 + 2 * i)
 
@@ -518,13 +523,13 @@ def rom():
     # The tokens and messages, each ending with a character with bit 7 set
     # (some after a byte with bit 7 set, so that the first is number 1)
     byte(0x0095)
-    _stringhi_list(0x0096, 0x0205)              # the tokens
+    stringhi_list(0x0096, 0x0205)               # the tokens
     byte(0x09a1)
-    _stringhi_list(0x09a2, 0x09f4)              # the tape messages
+    stringhi_list(0x09a2, 0x09f4)               # the tape messages
     byte(0x0cf8)
     stringhi(0x0cf9, _with_terminator)          # "scroll?"
     byte(0x1391)
-    _stringhi_list(0x1392, 0x1537)              # the error reports
+    stringhi_list(0x1392, 0x1537)               # the error reports
     stringhi(0x1537, _with_terminator)          # ", "
     byte(0x1539)                                # (the copyright sign)
     stringhi(0x153a, _with_terminator)          # " 1982 Sinclair Research Ltd"

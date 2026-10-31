@@ -798,6 +798,8 @@ It gives:
 
 For disassembling the 48K ROM itself (loaded at 0, after `spectrum48()`): traces its code from the restarts, the interrupt, the NMI and its tables of routines, marks its data (the tokens, the messages, the calculator's constants and the character set) and names every routine and table. See examples/python/spectrum48.py.
 
+For a ROM with the same kinds of table at other addresses (e.g. a replacement ROM), the functions `rom()` uses for them are there to call: `spectrum.offset_table(addr, n)` (offsets to routines, e.g. `defb L0A5F - $`), `spectrum.keyed_offset_table(addr, n=None)` (pairs of a character and an offset, ending with a zero), `spectrum.offset_entry(addr, code=True)`, `spectrum.syntax_table(addr, routine_classes=(0, 3, 5), last_classes=(2, 7, 11))` (a command's parameter classes, ending with the address of its routine or not) and `spectrum.stringhi_list(addr, end)` (text, each item ending with a character with bit 7 set). See examples/python/opense.py, for OpenSE BASIC.
+
 ## JSON output
 
 As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: for example a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
@@ -854,6 +856,7 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 * The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels (and the C128's and Plus/4's workspace) from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `commodoresource.py`, made by `tools/make_commodoresource.py`).
 * The PET's ROM labels and workspace are from Martin Hoffmann-Vetter's reconstructions of Commodore's source, in cbmsrc, and the 1541's DOS ROM labels and workspace from the reconstructions of its source there.
 * The ZX Spectrum's ROM routine names in `spectrumtables.py` are those of *The Complete Spectrum ROM Disassembly* (Ian Logan and Frank O'Hara, Melbourne House, 1983), with their addresses from Geoff Wearmouth's assembly listing of the ROM. The 48K ROM used as a test is copyright Amstrad plc, who have kindly given their permission for its redistribution but retain that copyright (see `examples/orig/spectrum48`).
+* The Z80 test programs are R.T. Russell's [BBC BASIC (Z80)](https://github.com/jblang/bbcbasic-z80) for CP/M (zlib licence; see `examples/orig/bbcbasic`), Frank D. Cringle's Z80 instruction exerciser [ZEXDOC](https://github.com/agn453/ZEXALL) (GPL 2; see `examples/orig/zexdoc`) and [OpenSE BASIC](https://zxdesign.itch.io/opense), a replacement ZX Spectrum ROM by Source Solutions, Inc. (GPL 2 or CC BY-SA 3.0; see `examples/orig/opense`).
 * The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).
 * The C128 test game is Sebastian Dechert's [memory128](https://github.com/radi0sus/memory128) (BSD 3-clause licence; see `examples/orig/memory128`).
 * The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).

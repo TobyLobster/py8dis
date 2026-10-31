@@ -1,0 +1,52 @@
+=== OpenSE BASIC ===
+
+OpenSE BASIC is an open source replacement firmware for the ZX
+Spectrum and clones that includes many improvements over the original,
+while retaining a high level of compatibility. Some of the highlights
+are:
+
+* Overall fastest version of Sinclair BASIC - fully optimized for
+  speed.
+* Fastest and most user-friendly editor - with additional editing
+  commands.
+* AY support including pseudo-interrupt driven sound.
+* ULAplus support including a default palette and new commands.
+* 8-bit character set support including printing characters 24-31.
+* Direct machine code calls.
+* BASIC access to LDIR.
+* Hex and Octal number entry.
+* Decimal to Hex string conversion.
+* Intelligent error trapping - OK and STOP are not errors.
+* More room for BASIC programs and line numbers up to 16383.
+* Improved SCREEN$ handling for UDGs and 8-bit character sets.
+* Improved floating-point library - faster and more accurate.
+* Remains compatible with the majority of Spectrum software and
+  hardware.
+* Ability to use reserved words as variable names during tokenization.
+
+Version 3.2.0 has the following changes from the previously released
+3.1.2:
+
+   * Compatibility improvements:
+     * Replaced Geneva Mono font with Jupiter81 font.
+     * Restored UDGs to original location.
+     * Changed boot colors to black on white.
+     * Swapped bytes at 04D0 / 04D1 to support tape traps.
+   * Reincorporated external data into the main assembly file.
+   * Switched default compiler back to Pasmo.
+   * Verified entry points against esxDOS 0.8.5 disassembly.
+
+Version 3.2.1 has the following changes:
+
+   * Note table calculated with higher precision.
+   * NMIADD system variable moved to avoid a clash with disk systems
+     including esxDOS.
+
+NOTE
+
+Virtual tape support under esxDOS is unstable at best.
+
+     -------------------------------------------------
+
+This file contains the contents of https://zxdesign.itch.io/opense
+Retrieved 17 April 2020 by Alberto Garcia

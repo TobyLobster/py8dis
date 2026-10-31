@@ -70,6 +70,9 @@ TESTS = [
     ("spectrum48",               ["z88dk"],                    "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
     ("spectrum_test",            ["z88dk"],                    "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
     ("trace_z80",                ["z88dk"],                    "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
+    ("bbcbasic",                 ["z88dk"],                    "BBC BASIC (Z80) for CP/M, with labels from its map file, hooks for inline data and tables of routines"),
+    ("zexdoc",                   ["z88dk"],                    "ZEXDOC, the Z80 instruction exerciser for CP/M: mostly tables, with self-modifying code"),
+    ("opense",                   ["z88dk"],                    "OpenSE BASIC, a replacement ZX Spectrum ROM, with spectrum.spectrum48() and the spectrum module's tables"),
 
     # 6502 code: tests
     ("include_binary_file",      ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for including a binary file"),
