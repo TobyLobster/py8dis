@@ -376,6 +376,9 @@ class CpuZ80(cpu.Cpu):
         # Calls to the subroutines defined with subroutine() (see
         # find_subroutine_calls())
         self.code_analysis_fns.append(self.find_subroutine_calls)
+        # Instructions whose results are never used (see
+        # find_redundant_instructions())
+        self.code_analysis_fns.append(self.find_redundant_instructions)
 
     def find_subroutine_calls(self):
         """Call the hook of each subroutine defined with subroutine() for
@@ -409,6 +412,176 @@ class CpuZ80(cpu.Cpu):
                     subroutine.hook_function(runtime_addr, state, subroutine)
                 state = self.CpuState() if c.is_block_end() else (self.cpu_states[binary_addr] or self.CpuState())
                 binary_addr += c.length()
+
+    # ********************************************************************************************
+    # Redundant instructions: those whose results are never used
+
+    # The instructions that can be redundant (see _effects()): they only
+    # change registers and flags, and perhaps read memory
+    _REDUNDANT_MNEMONICS = {"ld", "inc", "dec", "add", "adc", "sub", "sbc", "and", "xor", "or", "cp",
+                            "rlca", "rrca", "rla", "rra", "daa", "cpl", "scf", "ccf", "neg",
+                            "rlc", "rrc", "rl", "rr", "sla", "sra", "sll", "srl", "bit", "res", "set", "ex"}
+
+    def straight_runs(self):
+        """The code, as runs of instructions (lists of binary addresses, in
+        address order) that the code runs straight through: each ends at
+        the end of a block (e.g. RET or JP), or before an instruction that
+        other code jumps to (or an entry point). (A CALL doesn't end a
+        run.)"""
+        labels = session.current().labels.labels
+        run = []
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = range_start
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if not isinstance(c, self.Opcode):
+                    if run:
+                        yield run
+                        run = []
+                    binary_addr += 1 if c is None or c is classification.INSIDE_A_CLASSIFICATION else c.length()
+                    continue
+                label = labels.get(movemanager.b2r(memorymanager.BinaryAddr(binary_addr)))
+                if run and ((label is not None and label.references) or binary_addr in self.explicit_entry_points):
+                    yield run
+                    run = []
+                run.append(binary_addr)
+                binary_addr += c.length()
+                if c.is_block_end():
+                    yield run
+                    run = []
+            if run:
+                yield run
+                run = []
+
+    class _TrackingState(cpuz80state.CpuState):
+        """A CpuState that records which registers and flags an instruction
+        reads and writes (see _effects())."""
+        def __init__(self):
+            super().__init__()
+            self.reads = set()
+            self.writes = set()
+            self.cleared = False
+
+        def clear(self, *, pessimistic_only=False):
+            super().clear()
+            if hasattr(self, "reads"):
+                self.cleared = True
+
+        def __getitem__(self, key):
+            self.reads.add(key)
+            return super().__getitem__(key)
+
+        def __setitem__(self, key, value):
+            self.writes.add(key)
+            super().__setitem__(key, value)
+
+    def _effects(self, c, binary_addr):
+        """What the instruction does to the registers and flags, for
+        find_redundant_instructions(): (reads, writes, whether it could be
+        redundant). These are found by running it with nothing known (see
+        cpuz80state.update_state()), noting what's read and written."""
+        all_resources = set(cpuz80state.ALL)
+        if c.kind != FLOW_NEXT or c.mnemonic == "ret":
+            # (A jump, call or return, including RET cc: what comes after
+            # could use anything)
+            return all_resources, set(), False
+        memory_binary = session.current().memory.binary
+        state = self._TrackingState()
+        if len(c.key) == 3:
+            operands = [memory_binary[binary_addr + 2]]
+        else:
+            operands = [memory_binary[binary_addr + i] for i in range(len(c.key), c.length())]
+        cpuz80state.update_state(state, c.key, operands)
+        if state.cleared:
+            return all_resources, set(), False
+        reads, writes = set(state.reads), set(state.writes)
+        # (What's not tracked isn't read by update_state(), e.g. the
+        # register a store stores, or the address in HL, so those are read
+        # too)
+        reads |= self._operand_reads(c)
+        if c.mnemonic in ("xor", "sub") and c.operands == ["a"]:
+            reads.discard("a")                  # (XOR A and SUB A are 0, whatever A is)
+
+        # Whether it can be redundant: it only changes registers and flags,
+        # and doesn't write memory; it may read memory, but not I/O
+        if c.mnemonic not in self._REDUNDANT_MNEMONICS or c.undocumented in (IGNORED_PREFIX, NOP):
+            return reads, writes, False
+        first = c.operands[0] if c.operands else ""
+        if isinstance(first, str) and first.startswith("(") and c.mnemonic in ("ld", "inc", "dec", "rlc", "rrc", "rl", "rr", "sla", "sra", "sll", "srl"):
+            return reads, writes, False         # (It writes memory, e.g. 'ld (hl),a' or 'inc (hl)')
+        if c.mnemonic in ("res", "set") and any(isinstance(x, str) and "(" in x for x in c.operands):
+            return reads, writes, False         # (e.g. 'set 3,(hl)')
+        if c.mnemonic == "ld" and c.operands and c.operands[0] in ("i,a", "r,a"):
+            return reads, writes, False         # (I is the interrupt vector, R the refresh register)
+        if c.mnemonic in ("rlc", "rrc", "rl", "rr", "sla", "sra", "sll", "srl", "res", "set") and c.part(Index) is not None:
+            return reads, writes, False         # (The indexed forms write memory)
+        if c.mnemonic == "ex" and c.operands != ["de,hl"]:
+            return reads, writes, False         # (EX AF,AF' swaps with the other set; EX (SP),HL writes memory)
+        io_ranges = session.current().disassembly.io_ranges
+        addr = c.part(Addr)
+        if addr is not None:
+            target = memorymanager.get_u16_binary(binary_addr + addr.offset)
+            if any(start <= target + 1 and target < end for start, end in io_ranges):
+                return reads, writes, False
+        elif io_ranges and (c.part(Index) is not None or any(isinstance(x, str) and ("(hl)" in x or "(bc)" in x or "(de)" in x) for x in c.operands)):
+            # (It could be reading I/O, at an address that isn't known)
+            return reads, writes, False
+        return reads, writes, True
+
+    # The registers named in an operand, and what they are
+    _OPERAND_REGISTERS = {
+        "a": ("a",), "b": ("b",), "c": ("c",), "d": ("d",), "e": ("e",), "h": ("h",), "l": ("l",),
+        "af": ("a",) + cpuz80state.FLAGS, "bc": ("b", "c"), "de": ("d", "e"), "hl": ("h", "l"), "sp": ("sp",),
+        "ix": ("ixh", "ixl"), "iy": ("iyh", "iyl"), "ixh": ("ixh",), "ixl": ("ixl",), "iyh": ("iyh",), "iyl": ("iyl",),
+        "i": ("i",),
+    }
+    _BLOCK_MNEMONICS = {"ldi", "ldir", "ldd", "lddr", "cpi", "cpir", "cpd", "cpdr",
+                        "ini", "inir", "ind", "indr", "outi", "otir", "outd", "otdr"}
+
+    def _operand_reads(self, c):
+        """The registers (and flags) the instruction reads, from its operands:
+        each register named, except the one a load (LD, POP or IN) writes,
+        and the registers it uses implicitly (e.g. SP for PUSH)."""
+        import re
+        text = "".join(x if isinstance(x, str) else ("(%s+d)" % x.register if isinstance(x, Index) else "n") for x in c.operands).lower()
+        operands = text.split(",") if text else []
+        result = set()
+        for i, operand in enumerate(operands):
+            if i == 0 and c.mnemonic in ("ld", "pop", "in") and "(" not in operand:
+                continue                        # (The register it loads)
+            for name in re.findall(r"[a-z]+", operand):
+                if operand.strip() == "(c)" and name == "c":
+                    result |= {"b", "c"}        # (The port is BC)
+                else:
+                    result |= set(self._OPERAND_REGISTERS.get(name, ()))
+        if c.mnemonic in ("push", "pop") or "(sp)" in text:
+            result.add("sp")
+        if c.mnemonic in self._BLOCK_MNEMONICS:
+            result |= {"a", "b", "c", "d", "e", "h", "l"}
+        if c.mnemonic in ("rld", "rrd", "in"):
+            result |= {"a", "h", "l"}           # (IN A,(n) puts A on the address bus)
+        return result
+
+    def find_redundant_instructions(self):
+        """Comment each instruction whose results are never used: in a
+        straight run of code (see straight_runs()), each register and flag
+        it changes is changed again before anything reads it, e.g. 'ld
+        a,(hl)' just before 'pop af'. Only instructions that just change
+        registers and flags can be redundant (not a store, e.g. 'ld (hl),a',
+        or IN, or a read of I/O, see commands.io_range()). The end of a run,
+        a CALL, a jump or a return counts as reading everything. (See
+        config.set_redundant_instruction_comments().)"""
+        if not config.get_redundant_instruction_comments():
+            return
+        for run in self.straight_runs():
+            live = set(cpuz80state.ALL)
+            for binary_addr in reversed(run):
+                c = classification.get_classification(binary_addr)
+                reads, writes, candidate = self._effects(c, binary_addr)
+                if candidate and writes and not (writes & live):
+                    disassembly.comment_binary(memorymanager.BinaryAddr(binary_addr), "Redundant instruction?", align=Align.INLINE, word_wrap=False, auto_generated=True)
+                    continue
+                live = (live - writes) | reads
 
     def default_subroutine_hook(self, runtime_addr, state, subroutine):
         """Comment a call to a subroutine (defined with subroutine()) with

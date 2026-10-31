@@ -1,0 +1,11 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$8000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$8038  return_1 (inline)
+    $8010     pydis_start+16               jr nz,return_1
+    $801f     pydis_start+31               call return_1
+
+$8039  pydis_end (inline)
+    (not referenced)

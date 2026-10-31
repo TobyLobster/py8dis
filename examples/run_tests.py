@@ -65,6 +65,7 @@ TESTS = [
     # Z80 code
     ("test_z80",                 ["z88dk"],                    "every documented Z80 instruction"),
     ("undocumented_z80",         ["z88dk"],                    "the Z80's undocumented opcodes: those z88dk-z80asm accepts as instructions, the others as data"),
+    ("redundant_z80",            ["z88dk"],                    "redundant Z80 instructions (whose results aren't used)"),
     ("state_z80",                ["z88dk"],                    "what's known about the Z80's registers and flags after each instruction"),
     ("spectrum48",               ["z88dk"],                    "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
     ("spectrum_test",            ["z88dk"],                    "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
@@ -145,7 +146,7 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)

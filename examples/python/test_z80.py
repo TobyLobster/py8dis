@@ -23,6 +23,9 @@ label(0x858a, "word")
 label(0x858c, "table")
 byte(0x858c, 4)
 
+# (A test of each instruction, rather than a program, so most of its
+# instructions' results aren't used)
+config.set_redundant_instruction_comments(False)
 config.set_show_cycles(True)
 
 go()

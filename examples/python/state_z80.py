@@ -9,6 +9,9 @@ from commands import *
 load(0x8000, "orig/state_z80.orig", "z80", "a4cee08723e85f9eacd06ff70b2606b2")
 entry(0x8000, "start")
 
+# (A test of what's known after each instruction, rather than a program, so
+# most of its instructions' results aren't used)
+config.set_redundant_instruction_comments(False)
 config.set_show_cpu_state(True)
 
 go()

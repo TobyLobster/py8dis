@@ -2,7 +2,7 @@
 
 pydis_start:
 start:
-    ld ixh,a                                                          ; 8000: dd 67       .g  8 cycles
+    ld ixh,a                                                          ; 8000: dd 67       .g  8 cycles     ; Redundant instruction?
     ld ixl,$12                                                        ; 8002: dd 2e 12    ... 11 cycles
     ld a,iyh                                                          ; 8005: fd 7c       .|  8 cycles
     ld b,iyl                                                          ; 8007: fd 45       .E  8 cycles
@@ -31,14 +31,14 @@ start:
     res 0,(ix-1),l                                                    ; 8043: dd cb ff... ... 23 cycles
     in f,(c)                                                          ; 8047: ed 70       .p  12 cycles
     out (c),0                                                         ; 8049: ed 71       .q  12 cycles
-    db $ed, $4c ; neg (undocumented)                                  ; 804b: ed 4c       .L  8 cycles
+    db $ed, $4c ; neg (undocumented)                                  ; 804b: ed 4c       .L  8 cycles     ; Redundant instruction?
     db $ed, $4e ; im 0 (undocumented)                                 ; 804d: ed 4e       .N  8 cycles
     db $ed, $76 ; im 1 (undocumented)                                 ; 804f: ed 76       .v  8 cycles
     db $ed, $7e ; im 2 (undocumented)                                 ; 8051: ed 7e       .~  8 cycles
     db $ed, $63, word & $ff, word >> 8 ; ld (word),hl (undocumented)  ; 8053: ed 63 7c... .c| 20 cycles
     db $ed, $6b, word & $ff, word >> 8 ; ld hl,(word) (undocumented)  ; 8057: ed 6b 7c... .k| 20 cycles
-    db $dd, $cb, 5, $41 ; bit 0,(ix+5) (undocumented)                 ; 805b: dd cb 05... ... 20 cycles
-    db $fd, $cb, -2, $7f ; bit 7,(iy-2) (undocumented)                ; 805f: fd cb fe... ... 20 cycles
+    db $dd, $cb, 5, $41 ; bit 0,(ix+5) (undocumented)                 ; 805b: dd cb 05... ... 20 cycles    ; Redundant instruction?
+    db $fd, $cb, -2, $7f ; bit 7,(iy-2) (undocumented)                ; 805f: fd cb fe... ... 20 cycles    ; Redundant instruction?
     db $ed, $00 ; nop (undocumented)                                  ; 8063: ed 00       ..  8 cycles
     db $ed, $77 ; nop (undocumented)                                  ; 8065: ed 77       .w  8 cycles
     db $ed, $ff ; nop (undocumented)                                  ; 8067: ed ff       ..  8 cycles

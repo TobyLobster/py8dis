@@ -187,8 +187,9 @@ def get_redundant_instruction_comments():
     return session.current().settings.redundant_instruction_comments
 
 def set_redundant_instruction_comments(b):
-    """Comment 6502 instructions whose results are never used, '; Redundant
-    instruction?' (see Cpu6502.find_redundant_instructions())."""
+    """Comment 6502 and Z80 instructions whose results are never used, ';
+    Redundant instruction?' (see Cpu6502.find_redundant_instructions() and
+    CpuZ80.find_redundant_instructions())."""
     session.current().settings.redundant_instruction_comments = b
 
 def get_text_encoding():
