@@ -4478,9 +4478,6 @@ pydis_end
 #if ((ca6cf - 1) & $ff) <> $ce
 #error Assertion failed: <(ca6cf - 1) == $ce
 #endif
-#if ((ca6cf - 1) & $ff) <> $ce
-#error Assertion failed: <(ca6cf - 1) == $ce
-#endif
 #if ((sub_caf8c - 1) & $ff) <> $8b
 #error Assertion failed: <(sub_caf8c - 1) == $8b
 #endif
@@ -4600,9 +4597,6 @@ pydis_end
 #endif
 #if (((basic_command_wait - 1) >> 8) & $ff) <> $a6
 #error Assertion failed: >(basic_command_wait - 1) == $a6
-#endif
-#if (((ca6cf - 1) >> 8) & $ff) <> $a6
-#error Assertion failed: >(ca6cf - 1) == $a6
 #endif
 #if (((ca6cf - 1) >> 8) & $ff) <> $a6
 #error Assertion failed: >(ca6cf - 1) == $a6

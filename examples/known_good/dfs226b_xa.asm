@@ -10882,9 +10882,6 @@ pydis_end
 #if ((c956d - 1) & $ff) <> $6c
 #error Assertion failed: <(c956d - 1) == $6c
 #endif
-#if ((c956d - 1) & $ff) <> $6c
-#error Assertion failed: <(c956d - 1) == $6c
-#endif
 #if ((sub_c8238 - 1) & $ff) <> $37
 #error Assertion failed: <(sub_c8238 - 1) == $37
 #endif
@@ -10998,9 +10995,6 @@ pydis_end
 #endif
 #if ((tube_evntv_handler) & $ff) <> $ad
 #error Assertion failed: <tube_evntv_handler == $ad
-#endif
-#if (((c956d - 1) >> 8) & $ff) <> $95
-#error Assertion failed: >(c956d - 1) == $95
 #endif
 #if (((c956d - 1) >> 8) & $ff) <> $95
 #error Assertion failed: >(c956d - 1) == $95

@@ -5179,9 +5179,6 @@ pydis_end
 #if (default_brk_handler) <> $fe66
 #error Assertion failed: default_brk_handler == $fe66
 #endif
-#if (default_brk_handler) <> $fe66
-#error Assertion failed: default_brk_handler == $fe66
-#endif
 #if (default_chkin_handler) <> $f20e
 #error Assertion failed: default_chkin_handler == $f20e
 #endif

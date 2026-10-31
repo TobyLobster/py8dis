@@ -7981,17 +7981,8 @@ pydis_end
 #if ((enemy_ship_behaviour_routine0) & $ff) <> $49
 #error Assertion failed: <enemy_ship_behaviour_routine0 == $49
 #endif
-#if ((enemy_ship_behaviour_routine0) & $ff) <> $49
-#error Assertion failed: <enemy_ship_behaviour_routine0 == $49
-#endif
 #if ((enemy_ship_behaviour_routine1) & $ff) <> $b1
 #error Assertion failed: <enemy_ship_behaviour_routine1 == $b1
-#endif
-#if ((enemy_ship_behaviour_routine1) & $ff) <> $b1
-#error Assertion failed: <enemy_ship_behaviour_routine1 == $b1
-#endif
-#if ((enemy_ship_behaviour_routine2) & $ff) <> $ee
-#error Assertion failed: <enemy_ship_behaviour_routine2 == $ee
 #endif
 #if ((enemy_ship_behaviour_routine2) & $ff) <> $ee
 #error Assertion failed: <enemy_ship_behaviour_routine2 == $ee
@@ -7999,29 +7990,14 @@ pydis_end
 #if ((enemy_ship_behaviour_routine3) & $ff) <> $1e
 #error Assertion failed: <enemy_ship_behaviour_routine3 == $1e
 #endif
-#if ((enemy_ship_behaviour_routine3) & $ff) <> $1e
-#error Assertion failed: <enemy_ship_behaviour_routine3 == $1e
-#endif
-#if ((enemy_ship_behaviour_routine4) & $ff) <> $41
-#error Assertion failed: <enemy_ship_behaviour_routine4 == $41
-#endif
 #if ((enemy_ship_behaviour_routine4) & $ff) <> $41
 #error Assertion failed: <enemy_ship_behaviour_routine4 == $41
 #endif
 #if ((enemy_ship_behaviour_routine5) & $ff) <> $6a
 #error Assertion failed: <enemy_ship_behaviour_routine5 == $6a
 #endif
-#if ((enemy_ship_behaviour_routine5) & $ff) <> $6a
-#error Assertion failed: <enemy_ship_behaviour_routine5 == $6a
-#endif
 #if ((enemy_ship_behaviour_routine6) & $ff) <> $2e
 #error Assertion failed: <enemy_ship_behaviour_routine6 == $2e
-#endif
-#if ((enemy_ship_behaviour_routine6) & $ff) <> $2e
-#error Assertion failed: <enemy_ship_behaviour_routine6 == $2e
-#endif
-#if ((enemy_ship_behaviour_routine7) & $ff) <> $61
-#error Assertion failed: <enemy_ship_behaviour_routine7 == $61
 #endif
 #if ((enemy_ship_behaviour_routine7) & $ff) <> $61
 #error Assertion failed: <enemy_ship_behaviour_routine7 == $61
@@ -8161,17 +8137,8 @@ pydis_end
 #if (((enemy_ship_behaviour_routine0) >> 8) & $ff) <> $32
 #error Assertion failed: >enemy_ship_behaviour_routine0 == $32
 #endif
-#if (((enemy_ship_behaviour_routine0) >> 8) & $ff) <> $32
-#error Assertion failed: >enemy_ship_behaviour_routine0 == $32
-#endif
 #if (((enemy_ship_behaviour_routine1) >> 8) & $ff) <> $32
 #error Assertion failed: >enemy_ship_behaviour_routine1 == $32
-#endif
-#if (((enemy_ship_behaviour_routine1) >> 8) & $ff) <> $32
-#error Assertion failed: >enemy_ship_behaviour_routine1 == $32
-#endif
-#if (((enemy_ship_behaviour_routine2) >> 8) & $ff) <> $32
-#error Assertion failed: >enemy_ship_behaviour_routine2 == $32
 #endif
 #if (((enemy_ship_behaviour_routine2) >> 8) & $ff) <> $32
 #error Assertion failed: >enemy_ship_behaviour_routine2 == $32
@@ -8179,29 +8146,14 @@ pydis_end
 #if (((enemy_ship_behaviour_routine3) >> 8) & $ff) <> $33
 #error Assertion failed: >enemy_ship_behaviour_routine3 == $33
 #endif
-#if (((enemy_ship_behaviour_routine3) >> 8) & $ff) <> $33
-#error Assertion failed: >enemy_ship_behaviour_routine3 == $33
-#endif
-#if (((enemy_ship_behaviour_routine4) >> 8) & $ff) <> $33
-#error Assertion failed: >enemy_ship_behaviour_routine4 == $33
-#endif
 #if (((enemy_ship_behaviour_routine4) >> 8) & $ff) <> $33
 #error Assertion failed: >enemy_ship_behaviour_routine4 == $33
 #endif
 #if (((enemy_ship_behaviour_routine5) >> 8) & $ff) <> $33
 #error Assertion failed: >enemy_ship_behaviour_routine5 == $33
 #endif
-#if (((enemy_ship_behaviour_routine5) >> 8) & $ff) <> $33
-#error Assertion failed: >enemy_ship_behaviour_routine5 == $33
-#endif
 #if (((enemy_ship_behaviour_routine6) >> 8) & $ff) <> $37
 #error Assertion failed: >enemy_ship_behaviour_routine6 == $37
-#endif
-#if (((enemy_ship_behaviour_routine6) >> 8) & $ff) <> $37
-#error Assertion failed: >enemy_ship_behaviour_routine6 == $37
-#endif
-#if (((enemy_ship_behaviour_routine7) >> 8) & $ff) <> $37
-#error Assertion failed: >enemy_ship_behaviour_routine7 == $37
 #endif
 #if (((enemy_ship_behaviour_routine7) >> 8) & $ff) <> $37
 #error Assertion failed: >enemy_ship_behaviour_routine7 == $37

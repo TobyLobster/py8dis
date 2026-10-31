@@ -11044,26 +11044,8 @@ pydis_end
 #if ((l002a) & $ff) <> $2a
 #error Assertion failed: <l002a == $2a
 #endif
-#if ((l002a) & $ff) <> $2a
-#error Assertion failed: <l002a == $2a
-#endif
-#if ((l002a) & $ff) <> $2a
-#error Assertion failed: <l002a == $2a
-#endif
 #if ((l0037) & $ff) <> $37
 #error Assertion failed: <l0037 == $37
-#endif
-#if ((l0037) & $ff) <> $37
-#error Assertion failed: <l0037 == $37
-#endif
-#if ((l0037) & $ff) <> $37
-#error Assertion failed: <l0037 == $37
-#endif
-#if ((l0600) & $ff) <> $00
-#error Assertion failed: <l0600 == $00
-#endif
-#if ((l0600) & $ff) <> $00
-#error Assertion failed: <l0600 == $00
 #endif
 #if ((l0600) & $ff) <> $00
 #error Assertion failed: <l0600 == $00
@@ -11074,32 +11056,11 @@ pydis_end
 #if (((l002a) >> 8) & $ff) <> $00
 #error Assertion failed: >l002a == $00
 #endif
-#if (((l002a) >> 8) & $ff) <> $00
-#error Assertion failed: >l002a == $00
-#endif
-#if (((l002a) >> 8) & $ff) <> $00
-#error Assertion failed: >l002a == $00
-#endif
-#if (((l0037) >> 8) & $ff) <> $00
-#error Assertion failed: >l0037 == $00
-#endif
 #if (((l0037) >> 8) & $ff) <> $00
 #error Assertion failed: >l0037 == $00
 #endif
 #if (((l0600) >> 8) & $ff) <> $06
 #error Assertion failed: >l0600 == $06
-#endif
-#if (((l0600) >> 8) & $ff) <> $06
-#error Assertion failed: >l0600 == $06
-#endif
-#if (((l0600) >> 8) & $ff) <> $06
-#error Assertion failed: >l0600 == $06
-#endif
-#if (c9073) <> $9073
-#error Assertion failed: c9073 == $9073
-#endif
-#if (c9073) <> $9073
-#error Assertion failed: c9073 == $9073
 #endif
 #if (c9073) <> $9073
 #error Assertion failed: c9073 == $9073
@@ -11127,9 +11088,6 @@ pydis_end
 #endif
 #if (copyright - rom_header - 1) <> $13
 #error Assertion failed: copyright - rom_header - 1 == $13
-#endif
-#if (l0600 - 1) <> $05ff
-#error Assertion failed: l0600 - 1 == $05ff
 #endif
 #if (l0600 - 1) <> $05ff
 #error Assertion failed: l0600 - 1 == $05ff

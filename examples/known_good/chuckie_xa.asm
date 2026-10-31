@@ -6268,9 +6268,6 @@ pydis_end
 #if ((eggsoundblock) & $ff) <> $a8
 #error Assertion failed: <eggsoundblock == $a8
 #endif
-#if ((eggsoundblock) & $ff) <> $a8
-#error Assertion failed: <eggsoundblock == $a8
-#endif
 #if ((envelope2) & $ff) <> $df
 #error Assertion failed: <envelope2 == $df
 #endif
@@ -6279,9 +6276,6 @@ pydis_end
 #endif
 #if ((hiscoretab) & $ff) <> $30
 #error Assertion failed: <hiscoretab == $30
-#endif
-#if ((intervaltimerblock) & $ff) <> $00
-#error Assertion failed: <intervaltimerblock == $00
 #endif
 #if ((intervaltimerblock) & $ff) <> $00
 #error Assertion failed: <intervaltimerblock == $00
@@ -6406,9 +6400,6 @@ pydis_end
 #if (((eggsoundblock) >> 8) & $ff) <> $0c
 #error Assertion failed: >eggsoundblock == $0c
 #endif
-#if (((eggsoundblock) >> 8) & $ff) <> $0c
-#error Assertion failed: >eggsoundblock == $0c
-#endif
 #if (((envelope2) >> 8) & $ff) <> $2f
 #error Assertion failed: >envelope2 == $2f
 #endif
@@ -6417,9 +6408,6 @@ pydis_end
 #endif
 #if (((hiscoretab) >> 8) & $ff) <> $04
 #error Assertion failed: >hiscoretab == $04
-#endif
-#if (((intervaltimerblock) >> 8) & $ff) <> $00
-#error Assertion failed: >intervaltimerblock == $00
 #endif
 #if (((intervaltimerblock) >> 8) & $ff) <> $00
 #error Assertion failed: >intervaltimerblock == $00

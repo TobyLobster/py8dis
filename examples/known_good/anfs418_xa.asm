@@ -10705,29 +10705,14 @@ pydis_end
 #if ((c86e3 - 1) & $ff) <> $e2
 #error Assertion failed: <(c86e3 - 1) == $e2
 #endif
-#if ((c86e3 - 1) & $ff) <> $e2
-#error Assertion failed: <(c86e3 - 1) == $e2
-#endif
 #if ((ca114 - 1) & $ff) <> $13
 #error Assertion failed: <(ca114 - 1) == $13
 #endif
 #if ((ca1c1 - 1) & $ff) <> $c0
 #error Assertion failed: <(ca1c1 - 1) == $c0
 #endif
-#if ((ca1c1 - 1) & $ff) <> $c0
-#error Assertion failed: <(ca1c1 - 1) == $c0
-#endif
-#if ((ca1c1 - 1) & $ff) <> $c0
-#error Assertion failed: <(ca1c1 - 1) == $c0
-#endif
 #if ((ca2f4 - 1) & $ff) <> $f3
 #error Assertion failed: <(ca2f4 - 1) == $f3
-#endif
-#if ((just_rts - 1) & $ff) <> $57
-#error Assertion failed: <(just_rts - 1) == $57
-#endif
-#if ((just_rts - 1) & $ff) <> $57
-#error Assertion failed: <(just_rts - 1) == $57
 #endif
 #if ((just_rts - 1) & $ff) <> $57
 #error Assertion failed: <(just_rts - 1) == $57
@@ -10752,12 +10737,6 @@ pydis_end
 #endif
 #if ((sub_c8691 - 1) & $ff) <> $90
 #error Assertion failed: <(sub_c8691 - 1) == $90
-#endif
-#if ((sub_c86d3 - 1) & $ff) <> $d2
-#error Assertion failed: <(sub_c86d3 - 1) == $d2
-#endif
-#if ((sub_c86d3 - 1) & $ff) <> $d2
-#error Assertion failed: <(sub_c86d3 - 1) == $d2
 #endif
 #if ((sub_c86d3 - 1) & $ff) <> $d2
 #error Assertion failed: <(sub_c86d3 - 1) == $d2
@@ -10849,15 +10828,6 @@ pydis_end
 #if ((l0601) & $ff) <> $01
 #error Assertion failed: <l0601 == $01
 #endif
-#if ((l0601) & $ff) <> $01
-#error Assertion failed: <l0601 == $01
-#endif
-#if ((l0a00) & $ff) <> $00
-#error Assertion failed: <l0a00 == $00
-#endif
-#if ((l0a00) & $ff) <> $00
-#error Assertion failed: <l0a00 == $00
-#endif
 #if ((l0a00) & $ff) <> $00
 #error Assertion failed: <l0a00 == $00
 #endif
@@ -10876,20 +10846,8 @@ pydis_end
 #if (((ca1c1 - 1) >> 8) & $ff) <> $a1
 #error Assertion failed: >(ca1c1 - 1) == $a1
 #endif
-#if (((ca1c1 - 1) >> 8) & $ff) <> $a1
-#error Assertion failed: >(ca1c1 - 1) == $a1
-#endif
-#if (((ca1c1 - 1) >> 8) & $ff) <> $a1
-#error Assertion failed: >(ca1c1 - 1) == $a1
-#endif
 #if (((ca2f4 - 1) >> 8) & $ff) <> $a2
 #error Assertion failed: >(ca2f4 - 1) == $a2
-#endif
-#if (((just_rts - 1) >> 8) & $ff) <> $8e
-#error Assertion failed: >(just_rts - 1) == $8e
-#endif
-#if (((just_rts - 1) >> 8) & $ff) <> $8e
-#error Assertion failed: >(just_rts - 1) == $8e
 #endif
 #if (((just_rts - 1) >> 8) & $ff) <> $8e
 #error Assertion failed: >(just_rts - 1) == $8e
@@ -10993,15 +10951,6 @@ pydis_end
 #if (((l0601) >> 8) & $ff) <> $06
 #error Assertion failed: >l0601 == $06
 #endif
-#if (((l0601) >> 8) & $ff) <> $06
-#error Assertion failed: >l0601 == $06
-#endif
-#if (((l0a00) >> 8) & $ff) <> $0a
-#error Assertion failed: >l0a00 == $0a
-#endif
-#if (((l0a00) >> 8) & $ff) <> $0a
-#error Assertion failed: >l0a00 == $0a
-#endif
 #if (((l0a00) >> 8) & $ff) <> $0a
 #error Assertion failed: >l0a00 == $0a
 #endif
@@ -11044,9 +10993,6 @@ pydis_end
 #if (l0e00 - 1) <> $0dff
 #error Assertion failed: l0e00 - 1 == $0dff
 #endif
-#if (l0e00 - 1) <> $0dff
-#error Assertion failed: l0e00 - 1 == $0dff
-#endif
 #if (l0f04 - 1) <> $0f03
 #error Assertion failed: l0f04 - 1 == $0f03
 #endif
@@ -11076,15 +11022,6 @@ pydis_end
 #endif
 #if (sub_c8d79 - 1) <> $8d78
 #error Assertion failed: sub_c8d79 - 1 == $8d78
-#endif
-#if (sub_c92e6 - 1) <> $92e5
-#error Assertion failed: sub_c92e6 - 1 == $92e5
-#endif
-#if (sub_c92e6 - 1) <> $92e5
-#error Assertion failed: sub_c92e6 - 1 == $92e5
-#endif
-#if (sub_c92e6 - 1) <> $92e5
-#error Assertion failed: sub_c92e6 - 1 == $92e5
 #endif
 #if (sub_c92e6 - 1) <> $92e5
 #error Assertion failed: sub_c92e6 - 1 == $92e5

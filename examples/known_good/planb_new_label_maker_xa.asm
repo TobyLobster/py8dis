@@ -13961,12 +13961,6 @@ pydis_end
 #if (l0401 - 1) <> $0400
 #error Assertion failed: l0401 - 1 == $0400
 #endif
-#if (l0401 - 1) <> $0400
-#error Assertion failed: l0401 - 1 == $0400
-#endif
-#if (l0401 - 1) <> $0400
-#error Assertion failed: l0401 - 1 == $0400
-#endif
 #if (score_digits_0 - 1) <> $27
 #error Assertion failed: score_digits_0 - 1 == $27
 #endif

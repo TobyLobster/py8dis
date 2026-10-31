@@ -198,7 +198,12 @@ class Xa(assembler.Assembler):
         # (xa doesn't support string constants, so string values are not checked.)
         if config.get_include_assertions():
             spa = sorted(((str(expr), value, expr) for expr, value in self.pending_assertions.items() if utils.is_integer_type(value)), key=lambda x: x[:2])
+            old = None
             for expr_text, value, expr in spa:
+                # (The same expression can be used at more than one address)
+                if old == (expr_text, value):
+                    continue
+                old = (expr_text, value)
                 result.append("%s %s <> %s" % (utils.force_case("#if"), expression.render(expr, expression.PREPROCESSOR), self.signed_hex(value)))
                 result.append("%s Assertion failed: %s == %s" % (utils.force_case("#error"), expr_text, self.signed_hex(value)))
                 result.append(utils.force_case("#endif"))

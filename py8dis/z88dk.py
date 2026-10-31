@@ -171,8 +171,12 @@ class Z88DK(assembler.Assembler):
 
         if config.get_include_assertions():
             spa = sorted((str(expr), self.assertion_value(value)) for expr, value in self.pending_assertions.items())
+            old = None
             for expr, value in spa:
-                result.append("; ASSERT ((%s) == %s)" % (expr, value))
+                # (The same expression can be used at more than one address)
+                if old != (expr, value):
+                    result.append("; ASSERT ((%s) == %s)" % (expr, value))
+                old = (expr, value)
 
         return result
 
