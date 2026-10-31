@@ -10914,7 +10914,7 @@ room_decode_set_cellxy
 
 ; ***************************************************************************************
 room_decode_set_sprite
-    ldx #0                                                            ; 42ff: a2 00       .. ; redundant
+    ldx #0                                                            ; 42ff: a2 00       .. ; Redundant instruction?
     ldx #$80                                                          ; 4301: a2 80       .. ; use collision map value $80 if A>=0
     cmp #0                                                            ; 4303: c9 00       ..
     bpl set_sprite_a_and1f_and_collision_x                            ; 4305: 10 0a       ..

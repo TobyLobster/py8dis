@@ -35,6 +35,7 @@ class Settings:
         self.show_stats                            = True
         self.memory_region_headings                = True
         self.text_encoding                         = "ascii"    # see textencoding.py
+        self.redundant_instruction_comments        = True
 
         # For internal use only
         self.cmos                                  = False      # True if the CPU is a 65C02
@@ -181,6 +182,14 @@ def set_memory_region_headings(b):
     """Group the "Memory locations" list at the top of the output by memory
     region, under headings (see memory_region()), or not."""
     session.current().settings.memory_region_headings = b
+
+def get_redundant_instruction_comments():
+    return session.current().settings.redundant_instruction_comments
+
+def set_redundant_instruction_comments(b):
+    """Comment 6502 instructions whose results are never used, '; Redundant
+    instruction?' (see Cpu6502.find_redundant_instructions())."""
+    session.current().settings.redundant_instruction_comments = b
 
 def get_text_encoding():
     return session.current().settings.text_encoding

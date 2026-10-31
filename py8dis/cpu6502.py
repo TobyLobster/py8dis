@@ -596,6 +596,7 @@ class Cpu6502(cpu.Cpu):
         self.code_analysis_fns.append(self.substitute_constants)        # If a subroutine is being called, we can infer context of initialising registers beforehand.
         self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
         self.code_analysis_fns.append(self.show_register_knowledge)     # Show places where we use an inferred value of a register.
+        self.code_analysis_fns.append(self.find_redundant_instructions) # Comment instructions whose results are never used.
 
         # For labelling rts instructions numerically
         self.return_index = 0
@@ -1047,6 +1048,12 @@ class Cpu6502(cpu.Cpu):
                 if z_from is not Cpu6502.Z_UNCHANGED:
                     state.optimistic.z_from = z_from
                     state.pessimistic.z_from = z_from
+                # Code that jumps into the middle of this instruction (the
+                # BIT trick, e.g. 'bit $02a9' skipping 'lda #2') runs another
+                # instruction there, then continues after this one, so
+                # nothing is known for certain after it
+                if session.current().cpu.is_entered_inside(binary_addr, self.length()):
+                    state.clear(pessimistic_only=True)
             else:
                 state.clear(pessimistic_only=False)
 
@@ -1911,6 +1918,130 @@ class Cpu6502(cpu.Cpu):
     # unknown value (the 6510's SHA etc, which are always indexed)
     _READ_MODIFY_WRITE_MNEMONICS = {"ASL", "LSR", "ROL", "ROR", "INC", "DEC", "TSB", "TRB",
                                     "SLO", "RLA", "SRE", "RRA", "DCP", "ISC", "SHA", "SHX", "SHY", "TAS"}
+
+    # ********************************************************************************************
+    # Redundant instructions: those whose results are never used
+
+    # The registers and flags (d is the decimal flag, i the interrupt flag)
+    _ALL_RESOURCES = frozenset("axynvdizc")
+
+    # The instructions that can be redundant: they only change registers and
+    # flags (and read memory, which mustn't be I/O), as (reads, writes).
+    # (ASL, LSR, ROL, ROR, INC and DEC only with A as the operand.)
+    _REDUNDANT_CANDIDATES = {
+        "lda": ("", "anz"), "ldx": ("", "xnz"), "ldy": ("", "ynz"),
+        "tax": ("a", "xnz"), "tay": ("a", "ynz"), "txa": ("x", "anz"), "tya": ("y", "anz"), "tsx": ("", "xnz"),
+        "inx": ("x", "xnz"), "dex": ("x", "xnz"), "iny": ("y", "ynz"), "dey": ("y", "ynz"),
+        "adc": ("acd", "anvzc"), "sbc": ("acd", "anvzc"),
+        "and": ("a", "anz"), "ora": ("a", "anz"), "eor": ("a", "anz"),
+        "cmp": ("a", "nzc"), "cpx": ("x", "nzc"), "cpy": ("y", "nzc"), "bit": ("a", "nvz"),
+        "asl": ("a", "anzc"), "lsr": ("a", "anzc"), "rol": ("ac", "anzc"), "ror": ("ac", "anzc"),
+        "inc": ("a", "anz"), "dec": ("a", "anz"),
+        "clc": ("", "c"), "sec": ("", "c"), "clv": ("", "v"),
+    }
+    _ACCUMULATOR_ONLY = {"asl", "lsr", "rol", "ror", "inc", "dec"}
+
+    # The other instructions that don't change the flow of control (which
+    # aren't redundant, since they have other effects), as (reads, writes).
+    # (Any other instruction is taken to read everything: e.g. JSR, whose
+    # subroutine could use anything, or a branch, whose target could.)
+    _OTHER_INSTRUCTIONS = {
+        "sta": ("a", ""), "stx": ("x", ""), "sty": ("y", ""), "stz": ("", ""),
+        "pha": ("a", ""), "phx": ("x", ""), "phy": ("y", ""), "php": ("nvdizc", ""),
+        "pla": ("", "anz"), "plx": ("", "xnz"), "ply": ("", "ynz"), "plp": ("", "nvdizc"),
+        "txs": ("x", ""), "nop": ("", ""),
+        "cli": ("", "i"), "sei": ("", "i"), "cld": ("", "d"), "sed": ("", "d"),
+        "asl": ("", "nzc"), "lsr": ("", "nzc"), "rol": ("c", "nzc"), "ror": ("c", "nzc"),
+        "inc": ("", "nz"), "dec": ("", "nz"), "trb": ("a", "z"), "tsb": ("a", "z"),
+    }
+
+    def _memory_operand_range(self, c, binary_addr):
+        """The runtime addresses the instruction might read or write (first,
+        last), or None if it doesn't use memory, or 'unknown' for an indirect
+        operand."""
+        memory_binary = session.current().memory.binary
+        mode = c.addr_mode
+        if mode in (self.mode_implied, self.mode_immediate, self.mode_accumulator, self.mode_offset):
+            return None
+        if mode in (self.mode_indexed_indirect, self.mode_indirect_indexed, self.mode_indirect_zp, self.mode_indirect_addr, self.mode_indexed_abs):
+            return "unknown"
+        if mode in (self.mode_zp, self.mode_zp_indexed_x, self.mode_zp_indexed_y):
+            base = memory_binary[binary_addr + 1]
+            return (base, base) if mode == self.mode_zp else (0, 0xff)
+        base = memorymanager.get_u16_binary(binary_addr + 1)
+        if mode == self.mode_addr:
+            return (base, base)
+        return (base, base + 0xff)
+
+    def _instruction_effects(self, c, binary_addr):
+        """What the instruction does to the registers and flags, for
+        find_redundant_instructions(): (reads, writes, whether it could be
+        redundant), with reads and writes as sets of 'axynvdizc'."""
+        mnemonic = c.mnemonic.lower()
+        mode = c.addr_mode
+        index = {self.mode_indexed_indirect: "x", self.mode_abs_indexed_x: "x", self.mode_zp_indexed_x: "x",
+                 self.mode_indirect_indexed: "y", self.mode_abs_indexed_y: "y", self.mode_zp_indexed_y: "y"}.get(mode, "")
+        accumulator = mode in (self.mode_accumulator, self.mode_implied)
+        if mnemonic in self._REDUNDANT_CANDIDATES and (accumulator or mnemonic not in self._ACCUMULATOR_ONLY):
+            reads, writes = self._REDUNDANT_CANDIDATES[mnemonic]
+            if mnemonic == "bit" and mode == self.mode_immediate:
+                writes = "z"                    # (The 65C02's BIT #n only sets Z)
+            # Reading I/O has side effects (e.g. acknowledging an interrupt)
+            memory = self._memory_operand_range(c, binary_addr)
+            io_ranges = session.current().disassembly.io_ranges
+            candidate = memory is None or (memory != "unknown" and not any(start <= memory[1] and memory[0] < end for start, end in io_ranges))
+            return set(reads + index), set(writes), candidate
+        if mnemonic in self._OTHER_INSTRUCTIONS and not c.is_block_end():
+            reads, writes = self._OTHER_INSTRUCTIONS[mnemonic]
+            return set(reads + index), set(writes), False
+        return set(self._ALL_RESOURCES), set(), False
+
+    def is_entered_inside(self, binary_addr, length):
+        """Whether code jumps, branches or calls into the middle of the
+        instruction at binary_addr (with the given length), e.g. the BIT
+        trick ('bit $02a9' skipping 'lda #2' for code that doesn't jump to
+        it), to an instruction there, or it's an entry point. (A reference to
+        its operand from data, or from code that modifies it, doesn't
+        count.)"""
+        labels = session.current().labels.labels
+        memory_binary = session.current().memory.binary
+        for i in range(1, length):
+            inside = BinaryAddr(binary_addr + i)
+            if inside in self.explicit_entry_points:
+                return True
+            label = labels.get(movemanager.b2r(inside))
+            if label is None or memory_binary[inside] not in self.opcodes:
+                # (Code can't run from there if it isn't an instruction, e.g.
+                # where a branch's offset is changed before it's used, so
+                # its target as it's loaded doesn't matter)
+                continue
+            for ref in label.references:
+                c = classification.get_classification(ref.binary_addr)
+                if isinstance(c, self.Opcode) and c.could_be_call_to_subroutine() and c.target(ref.binary_addr) == movemanager.b2r(inside):
+                    return True
+        return False
+
+    def find_redundant_instructions(self):
+        """Comment each instruction whose results are never used: in a
+        straight run of code (see straight_runs()), each register and flag
+        it changes is changed again before anything reads it. E.g. 'lda
+        foo' just before 'pla'. Only instructions that just change registers
+        and flags (e.g. not a store, or a read of I/O, which can have side
+        effects) can be redundant, and not one that code jumps into the
+        middle of (the BIT trick). The end of a run, a JSR or a branch counts
+        as reading everything. (See config.set_redundant_instruction_comments().)"""
+        if not config.get_redundant_instruction_comments():
+            return
+        for run in self.straight_runs():
+            live = set(self._ALL_RESOURCES)
+            for binary_addr in reversed(run):
+                c = classification.get_classification(binary_addr)
+                reads, writes, candidate = self._instruction_effects(c, binary_addr)
+                if candidate and writes and not (writes & live) and not self.is_entered_inside(binary_addr, c.length()):
+                    disassembly.comment_binary(BinaryAddr(binary_addr), "Redundant instruction?", align=Align.INLINE, word_wrap=False, auto_generated=True)
+                    # (Its reads don't count, since it could be removed)
+                    continue
+                live = (live - writes) | reads
 
     def straight_runs(self):
         """The code, as runs of instructions (lists of binary addresses, in

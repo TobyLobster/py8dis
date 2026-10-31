@@ -871,7 +871,11 @@ def hardware(machine):
     acorntables.py), or the Tube registers for the 6502 second processor."""
     if machine == machinetype.MachineType.MACHINE_6502SP:
         label_tube(0xfef8, "parasite")
+        io_range(0xfef8, 0xff00)
         return
+
+    # FRED, JIM and SHEILA
+    io_range(0xfc00, 0xff00)
 
     for hardware_label in hardware_labels:
         if machine in hardware_label.machines:

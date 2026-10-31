@@ -1874,6 +1874,8 @@ def _set_up(command, machine, names, rom_labels):
     register_snippets()
     for start, end, name in machine.regions:
         memory_region(start, end, name)
+    for start, end in machine.io_ranges:
+        io_range(start, end)
 
     for addr, name, base in location_names(machine, names, rom_labels):
         optional_label(addr, name, base, definable_inline=not any(start <= addr < end for start, end in machine.io_ranges))

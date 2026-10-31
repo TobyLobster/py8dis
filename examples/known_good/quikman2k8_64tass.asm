@@ -1079,7 +1079,7 @@ c15fb
     bcc c160c                                                         ; 1600: 90 0a       ..
     cmp #$3f ; '?'                                                    ; 1602: c9 3f       I?
     bcs c160c                                                         ; 1604: b0 06       ..
-    lda #1                                                            ; 1606: a9 01       ..
+    lda #1                                                            ; 1606: a9 01       .. ; Redundant instruction?
     txa                                                               ; 1608: 8a          .
     sta colour_ram,y                                                  ; 1609: 99 00 96    ...
 ; $160c referenced 2 times by $1600, $1604

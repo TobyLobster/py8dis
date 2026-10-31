@@ -324,7 +324,7 @@ osbyte  = &fff4
     ldx #3                                                            ; 1160: a2 03       ..
     ldy #0                                                            ; 1162: a0 00       ..
     jsr osbyte                                                        ; 1164: 20 f4 ff     .. ; Select input stream X (0=keyboard, 1=RS232, 2=both)
-    lda mem,x                                                         ; 1167: b5 70       .p ; X is the previous input stream (0=keyboard, 1=RS232)
+    lda mem,x                                                         ; 1167: b5 70       .p ; X is the previous input stream (0=keyboard, 1=RS232) ; Redundant instruction?
 
     ; *************** Test OSBYTE 0x03 ***************
     lda #osbyte_select_output_stream                                  ; 1169: a9 03       ..
@@ -339,7 +339,7 @@ osbyte  = &fff4
     ldx #%11111111                                                    ; 117d: a2 ff       ..
     ldy #0                                                            ; 117f: a0 00       ..
     jsr osbyte                                                        ; 1181: 20 f4 ff     .. ; Select output stream based on X: enable RS232 output; disable VDU driver; disable printer output; enable printer despite CTRL-B/C state; disable SPOOLed output; disable printer output unless VDU 1 first
-    lda mem,x                                                         ; 1184: b5 70       .p ; X is the previous output stream status byte
+    lda mem,x                                                         ; 1184: b5 70       .p ; X is the previous output stream status byte ; Redundant instruction?
 
     ; *************** Test OSBYTE 0x04 ***************
     lda #osbyte_set_cursor_editing                                    ; 1186: a9 04       ..
@@ -1040,8 +1040,8 @@ osbyte  = &fff4
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16ad: a9 80       ..
     ldx #0                                                            ; 16af: a2 00       ..
     jsr osbyte                                                        ; 16b1: 20 f4 ff     .. ; Read the channel number last used for an ADC conversion and joystick fire buttons (X=0)
-    txa                                                               ; 16b4: 8a          .  ; X has the joystick fire buttons status in the lower two bits: bit 0=left button, bit 1=right button
-    and #3                                                            ; 16b5: 29 03       ).
+    txa                                                               ; 16b4: 8a          .  ; X has the joystick fire buttons status in the lower two bits: bit 0=left button, bit 1=right button ; Redundant instruction?
+    and #3                                                            ; 16b5: 29 03       ). ; Redundant instruction?
     sty mem                                                           ; 16b7: 84 70       .p ; Y is the last ADC channel number to complete conversion
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16b9: a9 80       ..
     ldx #1                                                            ; 16bb: a2 01       ..
@@ -1631,7 +1631,7 @@ osbyte  = &fff4
     ldx #&ff                                                          ; 1b78: a2 ff       ..
     ldy #0                                                            ; 1b7a: a0 00       ..
     jsr osbyte                                                        ; 1b7c: 20 f4 ff     .. ; Issue paged ROM service call, Reason X=255 - Tube system main initialisation
-    cpx #0                                                            ; 1b7f: e0 00       .. ; X is zero if a paged ROM claimed the service call
+    cpx #0                                                            ; 1b7f: e0 00       .. ; X is zero if a paged ROM claimed the service call ; Redundant instruction?
     cpy #0                                                            ; 1b81: c0 00       .. ; Y contains a return argument from the ROM service call
 
     ; *************** Test OSBYTE 0x90 ***************

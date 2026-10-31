@@ -1111,7 +1111,6 @@ entry(0x42ef, "room_decode_set_cellxy")
 
 formatted_comment(0x42ff, divider)
 entry(0x42ff, "room_decode_set_sprite")
-comment(0x42ff, "redundant", True)
 comment(0x4301, "use collision map value $80 if A>=0", True)
 comment(0x4307, "use collision map value $90 if A!=$95 ($95=128+sprite 21, the empty sprite)", True)
 comment(0x430f, "use collision map value $00 if A=$95 (the empty sprite)", True)

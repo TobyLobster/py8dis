@@ -10,6 +10,7 @@ acme -o ../orig/move_from_top_of_memory.orig move_from_top_of_memory.asm
 acme -o ../orig/move_to_top_of_memory.orig move_to_top_of_memory.asm
 acme -o ../orig/cycles.orig cycles.asm
 acme -o ../orig/branch_state.orig branch_state.asm
+acme -o ../orig/redundant_test.orig redundant_test.asm
 acme -o ../orig/expressions.orig expressions.asm
 dd if=../orig/regression_tests.orig of=../orig/regression_tests1.orig bs=128 count=1
 dd if=../orig/regression_tests.orig of=../orig/regression_tests2.orig bs=128 skip=1
@@ -50,6 +51,6 @@ acme -o ../orig/bottom_of_memory.orig bottom_of_memory.asm
 cp ../orig/prg_test.orig ../orig/p00_test.orig
 dd if=../orig/prg_test.orig of=../orig/load_offset.orig bs=1 skip=2
 cd ..
-md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/acorn_vectors.orig orig/acorn_vdu.orig orig/effect_patterns.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/branch_state.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig orig/move_8080.orig orig/move_8080_table.bin orig/test_z80.orig orig/undocumented_z80.orig orig/trace_z80.orig orig/state_z80.orig orig/spectrum_test.orig orig/prg_test.orig orig/p00_test.p00 orig/p00_test.orig orig/load_offset.orig orig/undocumented_6502.orig orig/petscii_test.orig orig/c64_test.orig orig/c64_names_test.orig orig/cartridge_test.orig orig/vic20_test.orig orig/vic20_8k_test.orig orig/vic20_cartridge_test.orig orig/c128_test.orig orig/plus4_test.orig orig/c128_banks_test.orig orig/pet4_test.orig orig/pet2_test.orig orig/pet1_test.orig orig/drive1541_test.orig orig/drive1541_names_test.orig orig/fastload_test.orig orig/top_of_memory.orig orig/top_of_memory_string.orig orig/bottom_of_memory.orig
+md5 orig/subroutine_test.orig orig/acorn_os_calls.orig orig/acorn_vectors.orig orig/acorn_vdu.orig orig/effect_patterns.orig orig/regression_tests.orig orig/regression_tests1.orig orig/regression_tests2.orig orig/move_from_top_of_memory.orig orig/move_to_top_of_memory.orig orig/cycles.orig orig/branch_state.orig orig/redundant_test.orig orig/expressions.orig orig/regression_tests_8080.orig orig/undocumented_8080.orig orig/move_8080.orig orig/move_8080_table.bin orig/test_z80.orig orig/undocumented_z80.orig orig/trace_z80.orig orig/state_z80.orig orig/spectrum_test.orig orig/prg_test.orig orig/p00_test.p00 orig/p00_test.orig orig/load_offset.orig orig/undocumented_6502.orig orig/petscii_test.orig orig/c64_test.orig orig/c64_names_test.orig orig/cartridge_test.orig orig/vic20_test.orig orig/vic20_8k_test.orig orig/vic20_cartridge_test.orig orig/c128_test.orig orig/plus4_test.orig orig/c128_banks_test.orig orig/pet4_test.orig orig/pet2_test.orig orig/pet1_test.orig orig/drive1541_test.orig orig/drive1541_names_test.orig orig/fastload_test.orig orig/top_of_memory.orig orig/top_of_memory_string.orig orig/bottom_of_memory.orig
 ./go
 cd asm_to_create_test_binaries

@@ -384,6 +384,19 @@ def expr_label(runtime_addr, s):
 
     return _label("expr_label", runtime_addr, s)
 
+def io_range(start_addr, end_addr):
+    """Say that memory from start_addr up to (but not including) end_addr is
+    memory mapped I/O, where reading can have side effects (e.g.
+    acknowledging an interrupt): so an instruction that reads it isn't taken
+    to be redundant (see config.set_redundant_instruction_comments()).
+    acorn.bbc() etc. and commodore.c64() etc. say this for their machines'
+    I/O."""
+    _check_address_range("io_range", start_addr)
+    _check_address_range("io_range", end_addr, allow_end=True)
+    if end_addr <= start_addr:
+        utils.die("io_range({0}, {1}): the end must be after the start".format(_hex(start_addr), _hex(end_addr)))
+    session.current().disassembly.io_ranges.append((start_addr, end_addr))
+
 def memory_region(start_addr, end_addr, name):
     """Name a region of memory, from start_addr up to (but not including)
     end_addr, e.g. memory_region(0xfc00, 0xff00, "Hardware").

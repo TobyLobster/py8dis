@@ -173,8 +173,11 @@ To change the configuration, add `import config` and call the following as neede
 | `config.set_show_stats(b)`                            | True    | Show statistics at the end of the disassembly.                   |
 | `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
 | `config.set_text_encoding(s)`                         | "ascii" | How bytes are shown as text: "ascii", "petscii" or "screen" (see [Text encodings](#text-encodings)). |
+| `config.set_redundant_instruction_comments(b)`        | True    | Comment 6502 instructions whose results are never used, `; Redundant instruction?` (see below). |
 
 The CPU state is what py8dis knows for certain about the registers and flags after each instruction, from the code before it (back to a label, where code can come from elsewhere). It's used for comments (e.g. on OS calls) as well as shown. For the 6502, after a conditional branch that isn't taken its flag is known, and after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7b after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`). A branch to the next instruction says nothing.
+
+For the 6502, an instruction whose results are never used is commented `; Redundant instruction?`: every register and flag it changes is changed again before anything reads it, e.g. `lda foo` just before `pla`, or `lda foo : and #3` before `lda bar` (both are redundant), or `sec` before `cmp`. This is only within a straight run of code: a label, a branch, a JSR or the end of the run counts as reading everything. Only instructions that just change registers and flags can be redundant (loads, transfers, arithmetic and logic, compares, shifts of A, CLC, SEC, CLV), and not one that reads memory mapped I/O (see `io_range()`) or whose address is unknown (an indirect load), nor one that code jumps into the middle of (the BIT trick, e.g. `bit $02a9` skipping `lda #2`). `config.set_redundant_instruction_comments(False)` turns this off.
 
 ## Command reference
 
@@ -219,6 +222,10 @@ This is like `label`, but the disassembly will omit the label if it isn't refere
 :pencil:`memory_region(start_addr, end_addr, name)`
 
 Names a region of memory, from `start_addr` up to (but not including) `end_addr`, e.g. `memory_region(0xfc00, 0xff00, "Hardware")`. The labels defined as `label = value` at the top of the disassembly ("Memory locations") are grouped by region, each group under a heading such as `; Hardware (&fc00-&feff)`. A label goes in the smallest region that contains it, so a region can be named inside a larger one. Naming the same range again renames it, and naming it `""` removes it. The 6502 already has regions for zero page, the stack and its vectors, and `acorn.bbc()` etc. name the regions of the Acorn machines' memory. `config.set_memory_region_headings(False)` turns the headings off.
+
+:pencil:`io_range(start_addr, end_addr)`
+
+Says that memory from `start_addr` up to (but not including) `end_addr` is memory mapped I/O, where reading can have side effects (e.g. acknowledging an interrupt), so an instruction that reads it isn't commented as redundant (see `config.set_redundant_instruction_comments()`). `acorn.bbc()` etc. say this for &FC00-&FEFF, and `commodore.c64()` etc. for their machines' I/O.
 
 :pencil:`get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, move_id=None)`
 

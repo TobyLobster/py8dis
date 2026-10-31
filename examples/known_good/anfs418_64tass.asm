@@ -6072,7 +6072,7 @@ loop_ca2a8
     lda (os_text_ptr),y                                               ; a2a9: b1 f2       ..
     cmp #$20 ; ' '                                                    ; a2ab: c9 20       .
     beq loop_ca2a8                                                    ; a2ad: f0 f9       ..
-    eor #$0d                                                          ; a2af: 49 0d       I.
+    eor #$0d                                                          ; a2af: 49 0d       I.             ; Redundant instruction?
     clc                                                               ; a2b1: 18          .
     tya                                                               ; a2b2: 98          .
     adc os_text_ptr                                                   ; a2b3: 65 f2       e.

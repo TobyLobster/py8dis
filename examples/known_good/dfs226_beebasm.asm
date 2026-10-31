@@ -10228,7 +10228,7 @@ lb6ce = cb6cd+1
     plp                                                               ; bb73: 28          (
     bcc cbb89                                                         ; bb74: 90 13       ..
     ldy #&f2                                                          ; bb76: a0 f2       ..
-    sec                                                               ; bb78: 38          8
+    sec                                                               ; bb78: 38          8              ; Redundant instruction?
     lda l00bc                                                         ; bb79: a5 bc       ..
     sec                                                               ; bb7b: 38          8
     sbc (l00b8),y                                                     ; bb7c: f1 b8       ..
@@ -10315,7 +10315,7 @@ lb6ce = cb6cd+1
     jsr sub_cba67                                                     ; bbf3: 20 67 ba     g.
     bcs cbbd0                                                         ; bbf6: b0 d8       ..
     bvc cbc13                                                         ; bbf8: 50 19       P.
-    sec                                                               ; bbfa: 38          8
+    sec                                                               ; bbfa: 38          8              ; Redundant instruction?
     ldx #0                                                            ; bbfb: a2 00       ..
     sec                                                               ; bbfd: 38          8
 ; &bbfe referenced 1 time by &bc08
@@ -10661,7 +10661,7 @@ lb6ce = cb6cd+1
     ldx #3                                                            ; be13: a2 03       ..
     jsr cbe8d                                                         ; be15: 20 8d be     ..
     iny                                                               ; be18: c8          .
-    cpy l00be                                                         ; be19: c4 be       ..
+    cpy l00be                                                         ; be19: c4 be       ..             ; Redundant instruction?
     cpy l00be                                                         ; be1b: c4 be       ..
     bne loop_cbe0e                                                    ; be1d: d0 ef       ..
     beq cbe3c                                                         ; be1f: f0 1b       ..             ; ALWAYS branch

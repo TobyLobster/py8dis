@@ -62,6 +62,11 @@ class DisassemblyState:
         # add_range_optional_labels()): a list of RangeOptionalLabels
         self.range_optional_labels = []
 
+        # The memory mapped I/O: (start, end) runtime addresses, 'end'
+        # exclusive (see commands.io_range()). Reading it can have side
+        # effects.
+        self.io_ranges = []
+
         # `constants` is a list of class Constant.
         self.constants = []
 
