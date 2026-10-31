@@ -240,7 +240,7 @@ class Ca65(assembler.Assembler):
         # ca65's '.assert condition, error, "message"' stops with the message
         # if the condition isn't true (the message can't contain '"')
         if config.get_include_assertions():
-            spa = sorted((str(expr), self.hex(value) if type(value) == int else '"' + value + '"') for expr, value in self.pending_assertions.items())
+            spa = sorted((str(expr), self.assertion_value(value)) for expr, value in self.pending_assertions.items())
             old = ("", 0)
             for expr, value in spa:
                 if old != (expr, value):

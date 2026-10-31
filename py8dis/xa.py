@@ -199,8 +199,8 @@ class Xa(assembler.Assembler):
         if config.get_include_assertions():
             spa = sorted(((str(expr), value, expr) for expr, value in self.pending_assertions.items() if utils.is_integer_type(value)), key=lambda x: x[:2])
             for expr_text, value, expr in spa:
-                result.append("%s %s <> %s" % (utils.force_case("#if"), expression.render(expr, expression.PREPROCESSOR), self.hex(value)))
-                result.append("%s Assertion failed: %s == %s" % (utils.force_case("#error"), expr_text, self.hex(value)))
+                result.append("%s %s <> %s" % (utils.force_case("#if"), expression.render(expr, expression.PREPROCESSOR), self.signed_hex(value)))
+                result.append("%s Assertion failed: %s == %s" % (utils.force_case("#error"), expr_text, self.signed_hex(value)))
                 result.append(utils.force_case("#endif"))
 
         return result

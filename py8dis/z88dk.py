@@ -3,6 +3,7 @@ z88dk assembler (z88dk-z80asm), for the 8080 (with -m8080) or the Z80 (with
 -mz80)
 """
 
+import re
 import sys
 
 import config
@@ -111,6 +112,12 @@ class Z88DK(assembler.Assembler):
                 return "+" + text
         return text
 
+    def uses_current_address(self, text):
+        # '$' on its own (not a hex number's '$', nor in a character literal
+        # or string, e.g. "$80 + '$'") is the current address
+        text = re.sub(r"'(\\.|[^'])*'|\"(\\.|[^\"])*\"", "", text)
+        return re.search(r"\$(?![0-9A-Fa-f])", text) is not None
+
     def wrapped_branch_operand(self, label, offset):
         # z88dk-z80asm doesn't wrap a relative jump's target, but takes an
         # address past the top or bottom of memory, so give it relative to
@@ -163,7 +170,7 @@ class Z88DK(assembler.Assembler):
         result = []
 
         if config.get_include_assertions():
-            spa = sorted((str(expr), self.hex(value) if type(value) == int else '"' + value + '"') for expr, value in self.pending_assertions.items())
+            spa = sorted((str(expr), self.assertion_value(value)) for expr, value in self.pending_assertions.items())
             for expr, value in spa:
                 result.append("; ASSERT ((%s) == %s)" % (expr, value))
 

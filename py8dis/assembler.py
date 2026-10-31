@@ -154,5 +154,24 @@ class Assembler:
         region headings), where it's only read, not assembled."""
         return self.hex4(n)
 
+    def signed_hex(self, n):
+        """A hex number that can be negative, e.g. '-$36' (rather than
+        '$-36', which a Z80 assembler takes to be the current address minus
+        $36)."""
+        return "-" + self.hex(-n) if n < 0 else self.hex(n)
+
+    def assertion_value(self, value):
+        """An assertion's expected value: a number (see signed_hex()), or a
+        string in quotes."""
+        return self.signed_hex(value) if type(value) == int else '"' + value + '"'
+
+    def uses_current_address(self, text):
+        """Whether the expression's text uses the assembler's symbol for the
+        current address (e.g. 'label - $'). Its value depends on where it's
+        used, so it can't be asserted at the end of the file."""
+        return False
+
     def assert_expr(self, expr, value):
+        if self.uses_current_address(str(expr)):
+            return
         self.pending_assertions[expr] = value

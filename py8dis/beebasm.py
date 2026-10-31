@@ -290,7 +290,7 @@ class Beebasm(assembler.Assembler):
         result = []
 
         if config.get_include_assertions():
-            spa = sorted(((str(expr), self.hex(value) if type(value) == int else '"' + value + '"', expr) for expr, value in self.pending_assertions.items()), key=lambda x: x[:2])
+            spa = sorted(((str(expr), self.assertion_value(value), expr) for expr, value in self.pending_assertions.items()), key=lambda x: x[:2])
 
             old = ("", 0)
             for expr_text, value, expr in spa:
