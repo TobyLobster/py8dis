@@ -82,12 +82,12 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 &eabf  kernal_irq_handler (Memory locations: Kernal ROM)
     &1084     irq_handler+3                jmp kernal_irq_handler
 
-&ffd2  chrout (Memory locations: Kernal entry points)
-    &102f     sys_entry+34                 jsr chrout
-    &1039     loop_c1034+5                 jsr chrout
+&ffd2  CHROUT (Memory locations: Kernal entry points)
+    &102f     sys_entry+34                 jsr CHROUT
+    &1039     loop_c1034+5                 jsr CHROUT
 
-&ffe4  getin (Memory locations: Kernal entry points)
-    &106c     loop_c1049+35                jsr getin
+&ffe4  GETIN (Memory locations: Kernal entry points)
+    &106c     loop_c1049+35                jsr GETIN
 
-&fff0  plot (Memory locations: Kernal entry points)
-    &1044     c103f+5                      jsr plot
+&fff0  PLOT (Memory locations: Kernal entry points)
+    &1044     c103f+5                      jsr PLOT

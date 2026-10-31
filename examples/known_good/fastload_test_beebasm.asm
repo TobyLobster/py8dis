@@ -14,12 +14,12 @@ cpu_port = &0001
 vic_border_colour   = &d020
 
 ; Kernal entry points (&ff81-&fff9)
-setlfs  = &ffba
-setnam  = &ffbd
-open    = &ffc0
-chkout  = &ffc9
-clrchn  = &ffcc
-chrout  = &ffd2
+SETLFS  = &ffba
+SETNAM  = &ffbd
+OPEN    = &ffc0
+CHKOUT  = &ffc9
+CLRCHN  = &ffcc
+CHROUT  = &ffd2
 
 ; 1541 drive
 job_queue           = &0000
@@ -58,20 +58,20 @@ end_job             = &f969
     lda #&0f                                                          ; 0816: a9 0f       ..             ; A=logical file number
     ldx #device_disk_8                                                ; 0818: a2 08       ..             ; X=device number
     ldy #&0f                                                          ; 081a: a0 0f       ..             ; Y=secondary address
-    jsr setlfs                                                        ; 081c: 20 ba ff     ..            ; Set logical file 15 to device 8 (disk drive), secondary address 15
+    jsr SETLFS                                                        ; 081c: 20 ba ff     ..            ; Set logical file 15 to device 8 (disk drive), secondary address 15
     lda #0                                                            ; 081f: a9 00       ..             ; A=filename length
-    jsr setnam                                                        ; 0821: 20 bd ff     ..            ; Set no filename
-    jsr open                                                          ; 0824: 20 c0 ff     ..            ; Open a logical file (set up with SETLFS and SETNAM)
+    jsr SETNAM                                                        ; 0821: 20 bd ff     ..            ; Set no filename
+    jsr OPEN                                                          ; 0824: 20 c0 ff     ..            ; Open a logical file (set up with SETLFS and SETNAM)
     ldx #&0f                                                          ; 0827: a2 0f       ..             ; X=logical file number
-    jsr chkout                                                        ; 0829: 20 c9 ff     I.            ; Open a channel for output
+    jsr CHKOUT                                                        ; 0829: 20 c9 ff     I.            ; Open a channel for output
     ldy #0                                                            ; 082c: a0 00       ..
 ; &082e referenced 1 time by &0835
 .loop_c082e
     lda c083b,y                                                       ; 082e: b9 3b 08    .;.            ; A=character to output
-    jsr chrout                                                        ; 0831: 20 d2 ff     R.            ; Output a character
+    jsr CHROUT                                                        ; 0831: 20 d2 ff     R.            ; Output a character
     iny                                                               ; 0834: c8          H
     bne loop_c082e                                                    ; 0835: d0 f7       P.
-    jsr clrchn                                                        ; 0837: 20 cc ff     L.            ; Restore the default input and output channels
+    jsr CLRCHN                                                        ; 0837: 20 cc ff     L.            ; Restore the default input and output channels
     rts                                                               ; 083a: 60          .
 
 ; &083b referenced 1 time by &082e
@@ -167,12 +167,15 @@ save pydis_start - 2, pydis_end
 ; Label references by decreasing frequency:
 ;     job_queue:           2
 ;     via2_disk_control:   2
+;     CHKOUT:              1
+;     CHROUT:              1
+;     CLRCHN:              1
+;     OPEN:                1
+;     SETLFS:              1
+;     SETNAM:              1
 ;     buffer_0:            1
 ;     buffer_1:            1
 ;     c083b:               1
-;     chkout:              1
-;     chrout:              1
-;     clrchn:              1
 ;     cpu_port:            1
 ;     dos_idle_loop:       1
 ;     end_job:             1
@@ -182,9 +185,6 @@ save pydis_start - 2, pydis_end
 ;     loop_c052c:          1
 ;     loop_c0603:          1
 ;     loop_c082e:          1
-;     open:                1
-;     setlfs:              1
-;     setnam:              1
 ;     via1_serial_bus:     1
 ;     via2_disk_data:      1
 ;     vic_border_colour:   1

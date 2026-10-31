@@ -10,7 +10,9 @@ for code that runs in the 1541 disk drive.
 
 They name the memory locations with descriptive names by default (e.g.
 'vic_border_colour'); names="commodore" uses the names in Commodore's
-documentation instead (e.g. 'extcol'). See commodoretables.py.
+documentation instead (e.g. 'EXTCOL'). Commodore's own names are in
+capitals unless config.set_upper_case_os_calls(False) (see
+official_name()). See commodoretables.py.
 """
 
 from commands import *
@@ -337,11 +339,19 @@ def _machine():
 # ************************************************************************************************
 # The names
 
+def official_name(name):
+    """Commodore's own name for something (e.g. 'chrout', or with
+    names="commodore", 'txttab'), in capitals (CHROUT, TXTTAB) unless
+    config.set_upper_case_os_calls(False). py8dis's descriptive names (e.g.
+    'tape_buffer') are left as they are."""
+    return name.upper() if config.get_upper_case_os_calls() else name
+
 def _name(location, names):
-    """A Location's name in the given style"""
+    """A Location's name in the given style, and whether it's Commodore's
+    own (which official_name() gives in capitals)"""
     if names == "commodore" and location.commodore_name is not None:
-        return location.commodore_name
-    return location.name
+        return location.commodore_name, True
+    return location.name, location.name == location.commodore_name
 
 # The mnemonics of the 65C02 and the 6502's undocumented opcodes (in each
 # assembler's spelling), which assemblers take as instructions, so they can't
@@ -362,21 +372,31 @@ def location_names(machine, names="descriptive", rom_labels=True):
 
     A label in Commodore's source with the same name as a Kernal call or
     another location gets '_rom' added (e.g. PLOT, the routine at &e50a that
-    the jump table's plot at &fff0 jumps to on the C64, is 'plot_rom'), and a
+    the jump table's PLOT at &fff0 jumps to on the C64, is 'PLOT_ROM'), and a
     label in BASIC's source with the same name as one of those gets '_basic'
-    added (e.g. 'stop_basic'), and similarly for the C128's screen editor
+    added (e.g. 'STOP_BASIC'), and similarly for the C128's screen editor
     ('_editor') and monitor ('_monitor'). So does a label that's another
     65xx CPU's mnemonic, which an assembler would take as an instruction (e.g.
-    the C128's and Plus/4's BASIC have STP and STZ, 'stp_basic' and
-    'stz_basic'). A location with the same name as a Kernal call gets '_ram'
-    added (e.g. the C128's 'jsrfar' routine in RAM is 'jsrfar_ram', with
-    names="commodore")."""
+    the C128's and Plus/4's BASIC have STP and STZ, 'STP_BASIC' and
+    'STZ_BASIC'). A location with the same name as a Kernal call gets '_ram'
+    added (e.g. the C128's 'jsrfar' routine in RAM is 'JSRFAR_RAM', with
+    names="commodore").
+
+    Commodore's own names (the Kernal calls, the labels from its source, and
+    with names="commodore" the locations and routines, or in the
+    descriptive style a location that has no other name) are given by
+    official_name(), so in capitals unless
+    config.set_upper_case_os_calls(False), with what's added, e.g.
+    'PLOT_ROM'. (Names are compared in lower case, so none differ only in
+    case.)"""
     result = []
     jump_table_names = {call.name for call in machine.jump_table}
     def add(location):
-        name = _name(location, names)
+        name, official = _name(location, names)
         if name in jump_table_names:
             name += "_ram"
+        if official:
+            name = official_name(name)
         if "+" in name:
             # (An offset from another location's name, e.g. 'vicreg+1')
             result.append((location.addr, name, location.addr - int(name.split("+")[1])))
@@ -393,13 +413,10 @@ def location_names(machine, names="descriptive", rom_labels=True):
             add(location)
         named = {addr for addr, _, _ in result} | {call.addr for call in machine.jump_table}
         for routine in machine.rom_routines:
-            name = routine.name
-            if names == "commodore" and routine.commodore_name is not None:
-                name = routine.commodore_name
-            result.append((routine.addr, name, None))
+            result.append((routine.addr, _routine_name(routine, names), None))
             named.add(routine.addr)
 
-        used = {name for _, name, _ in result} | {call.name for call in machine.jump_table}
+        used = {name.lower() for _, name, _ in result} | {call.name for call in machine.jump_table}
         for rom_labels_table, suffix in machine.rom_label_tables:
             for addr in sorted(rom_labels_table):
                 if addr in named:
@@ -409,8 +426,14 @@ def location_names(machine, names="descriptive", rom_labels=True):
                     name += suffix
                 assert name not in used, name
                 used.add(name)
-                result.append((addr, name, None))
+                result.append((addr, official_name(name), None))
     return result
+
+def _routine_name(routine, names):
+    """A RomRoutine's name in the given style (see location_names())"""
+    if names == "commodore" and routine.commodore_name is not None:
+        return official_name(routine.commodore_name)
+    return routine.name
 
 def c64_location_names(names="descriptive", rom_labels=True):
     """The names c64() gives memory locations (see location_names())"""
@@ -653,7 +676,7 @@ def _vector_names(names):
     for vector in _machine().vectors:
         name = None
         if vector.name is not None:
-            name = vector.commodore_name if names == "commodore" else vector.name
+            name = official_name(vector.commodore_name) if names == "commodore" else vector.name
         result[vector.addr] = (name, vector.description, vector.handler)
     return result
 
@@ -999,9 +1022,9 @@ def _c128_name_by_configuration(ranges):
     # see _unless_mapped_out())
     routine_names = collections.defaultdict(set)
     for routine in machine.rom_routines:
-        routine_names[routine.addr].update({routine.name, routine.commodore_name})
+        routine_names[routine.addr].update({routine.name, _routine_name(routine, "commodore")})
     for call in machine.jump_table:
-        routine_names[call.addr].add(call.name)
+        routine_names[call.addr].add(official_name(call.name))
     bank_15 = c128_bank_configurations[15]
     for runtime_addr, label in sorted(session.current().labels.labels.items()):
         if runtime_addr not in optional_labels and runtime_addr not in routine_names:
@@ -1049,11 +1072,12 @@ def _drive_code_names():
     rom_labels = session.current().extras.get("commodore.rom_labels", True)
 
     # The names used elsewhere: the machine's, and the control file's
-    used = {name for _, name, _ in location_names(_machine(), names_style, rom_labels)}
+    # (In lower case: see location_names())
+    used = {name.lower() for _, name, _ in location_names(_machine(), names_style, rom_labels)}
     used |= {call.name for call in _machine().jump_table}
     for label_ in labels.values():
         for names in label_.explicit_names.values():
-            used |= {name.text for name in names}
+            used |= {name.text.lower() for name in names}
 
     for drive_code in drive_codes:
         start, end = drive_code.binary_start, drive_code.binary_start + drive_code.length
@@ -1065,7 +1089,11 @@ def _drive_code_names():
             if addr in names or _drive_loaded(addr)[0]:
                 continue
             if base is None:
-                name = utils.force_case(name + "_drive" if name in used else name)
+                if name.lower() in used:
+                    name += "_DRIVE" if name.isupper() else "_drive"
+                if not name.isupper():
+                    # (Commodore's names are as official_name() gives them)
+                    name = utils.force_case(name)
             names[addr] = (name, base)
         disassembly.add_range_optional_labels(start, end, names, DRIVE_CODE_HEADING)
 
@@ -1788,13 +1816,13 @@ def _has_name(runtime_addr):
 def kernal_rom():
     """For a disassembly of a Kernal ROM (loaded at &e000, or &c000 on the
     C128 and Plus/4): trace the code from the Kernal's jump table (each entry
-    named, e.g. 'chrout') and the 6502's NMI, reset and IRQ vectors. (For the
+    named, e.g. 'CHROUT') and the 6502's NMI, reset and IRQ vectors. (For the
     1541's DOS ROM, use dos_rom().)"""
     if _machine().name == "1541":
         utils.die("commodore.kernal_rom(): the 1541 has no Kernal (use dos_rom())")
     for call in _machine().jump_table:
         if _is_loaded(call.addr):
-            entry(call.addr, call.name)
+            entry(call.addr, official_name(call.name))
     for addr, name in ((0xfffa, "nmi_entry"), (0xfffc, "reset_entry"), (0xfffe, "irq_entry")):
         target = memorymanager.get_u16_runtime(RuntimeAddr(addr))
         has_name = _has_name(target) or target in session.current().disassembly.optional_labels
@@ -1867,6 +1895,7 @@ def _set_up(command, machine, names, rom_labels):
     if extras.get("commodore.machine") is not None:
         utils.die("commodore.{0}(): this session's machine has already been chosen".format(command))
     extras["commodore.machine"] = machine
+    extras["os_calls_named"] = True
     extras["commodore.names"] = names
     extras["commodore.rom_labels"] = rom_labels
 
@@ -1882,7 +1911,7 @@ def _set_up(command, machine, names, rom_labels):
 
     for call in machine.jump_table:
         hooks = _hooks if machine.call_hooks is None else machine.call_hooks
-        subroutine(call.addr, call.name, call.title, None, call.on_entry, call.on_exit, hook=_unless_mapped_out(hooks.get(call.name, default_hook)), is_entry_point=False)
+        subroutine(call.addr, official_name(call.name), call.title, None, call.on_entry, call.on_exit, hook=_unless_mapped_out(hooks.get(call.name, default_hook)), is_entry_point=False)
     # A call that prints the string after it (PRIMM) continues after the
     # string
     for addr in machine.inline_string_calls:
@@ -1892,10 +1921,7 @@ def _set_up(command, machine, names, rom_labels):
         cpu.subroutine_hooks[RuntimeAddr(addr)] = _inline_string_hook
     if rom_labels:
         for routine in machine.rom_routines:
-            name = routine.name
-            if names == "commodore" and routine.commodore_name is not None:
-                name = routine.commodore_name
-            subroutine(routine.addr, name, routine.title, None, routine.on_entry, routine.on_exit,
+            subroutine(routine.addr, _routine_name(routine, names), routine.title, None, routine.on_entry, routine.on_exit,
                        hook=_unless_mapped_out(strout_hook if routine.commodore_name == "strout" else default_hook), is_entry_point=False)
 
     # Colours stored in the colour registers
@@ -1928,8 +1954,8 @@ def c64(names="descriptive", rom_labels=True):
     - names for the memory locations (only output if used): zero page, the
       OS and BASIC workspace, the vectors, the screen, the VIC-II, the SID,
       the CIAs and the colour RAM; with names="commodore", Commodore's names
-      (e.g. 'extcol' rather than 'vic_border_colour');
-    - the Kernal's jump table, e.g. 'chrout', with comments where it's
+      (e.g. 'EXTCOL' rather than 'vic_border_colour');
+    - the Kernal's jump table, e.g. 'CHROUT', with comments where it's
       called (e.g. 'Output $93 (clear screen)'), and where the registers are
       set for it and used after it;
     - with rom_labels (the default), names for the routines in the C64's

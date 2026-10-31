@@ -71,60 +71,60 @@ device_disk_8   = 8
 ; Memory locations
 
 ; Zero page ($0000-$00ff)
-time    = $00a0
-ndx     = $00c6
-frekzp  = $00fb
+TIME    = $00a0
+NDX     = $00c6
+FREKZP  = $00fb
 
 ; OS workspace ($0200-$02ff)
-color   = $0286
+COLOR   = $0286
 
 ; Vectors ($0300-$0333)
-cinv = $0314
+CINV = $0314
 
 ; Screen memory ($0400-$07ff)
-vicscn          = $0400
+VICSCN          = $0400
 sprite_pointers = $07f8
 
 ; BASIC ROM ($a000-$bfff)
-strout  = $ab1e
-linprt  = $bdcd
+STROUT  = $ab1e
+LINPRT  = $bdcd
 
 ; VIC-II ($d000-$d3ff)
-sp0x    = $d000
-scroly  = $d011
-raster  = $d012
-vicirq  = $d019
-irqmask = $d01a
-extcol  = $d020
-bgcol0  = $d021
+SP0X    = $d000
+SCROLY  = $d011
+RASTER  = $d012
+VICIRQ  = $d019
+IRQMASK = $d01a
+EXTCOL  = $d020
+BGCOL0  = $d021
 
 ; Colour RAM ($d800-$dbff)
 colour_ram  = $d800
 
 ; CIA 1 ($dc00-$dcff)
-ciapra  = $dc00
-ciaicr  = $dc0d
+CIAPRA  = $dc00
+CIAICR  = $dc0d
 
 ; Kernal ROM ($e000-$ff80)
 lea31   = $ea31
 
 ; Kernal entry points ($ff81-$fff9)
-setmsg  = $ff90
-readst  = $ffb7
-setlfs  = $ffba
-setnam  = $ffbd
-open    = $ffc0
-close   = $ffc3
-chkin   = $ffc6
-clrchn  = $ffcc
-chrin   = $ffcf
-chrout  = $ffd2
-load    = $ffd5
-save    = $ffd8
-rdtim   = $ffde
-getin   = $ffe4
-screen  = $ffed
-plot    = $fff0
+SETMSG  = $ff90
+READST  = $ffb7
+SETLFS  = $ffba
+SETNAM  = $ffbd
+OPEN    = $ffc0
+CLOSE   = $ffc3
+CHKIN   = $ffc6
+CLRCHN  = $ffcc
+CHRIN   = $ffcf
+CHROUT  = $ffd2
+LOAD    = $ffd5
+SAVE    = $ffd8
+RDTIM   = $ffde
+GETIN   = $ffe4
+SCREEN  = $ffed
+PLOT    = $fff0
 
 ; The PRG file's header: the address to load it at
     .org $07ff
@@ -164,125 +164,125 @@ sys_entry:
 
     ; Set the IRQ vector to irq_handler
     lda #<irq_handler                                                 ; 0828: a9 30       .0
-    sta cinv                                                          ; 082a: 8d 14 03    ...
+    sta CINV                                                          ; 082a: 8d 14 03    ...
     lda #>irq_handler                                                 ; 082d: a9 09       ..
-    sta cinv+1                                                        ; 082f: 8d 15 03    ...
+    sta CINV+1                                                        ; 082f: 8d 15 03    ...
 
     lda #$7f                                                          ; 0832: a9 7f       ..
-    sta ciaicr                                                        ; 0834: 8d 0d dc    ...
+    sta CIAICR                                                        ; 0834: 8d 0d dc    ...
     lda #1                                                            ; 0837: a9 01       ..
-    sta irqmask                                                       ; 0839: 8d 1a d0    ..P ; Enable only the VIC-II's raster interrupt
+    sta IRQMASK                                                       ; 0839: 8d 1a d0    ..P ; Enable only the VIC-II's raster interrupt
     lda #$64                                                          ; 083c: a9 64       ..
-    sta raster                                                        ; 083e: 8d 12 d0    ..P ; Raster interrupt at line 100
-    lda scroly                                                        ; 0841: ad 11 d0    ..P
+    sta RASTER                                                        ; 083e: 8d 12 d0    ..P ; Raster interrupt at line 100
+    lda SCROLY                                                        ; 0841: ad 11 d0    ..P
     and #$7f                                                          ; 0844: 29 7f       ).
-    sta scroly                                                        ; 0846: 8d 11 d0    ..P
+    sta SCROLY                                                        ; 0846: 8d 11 d0    ..P
     cli                                                               ; 0849: 58          x
     lda #colour_black                                                 ; 084a: a9 00       ..
-    sta extcol                                                        ; 084c: 8d 20 d0    . P
+    sta EXTCOL                                                        ; 084c: 8d 20 d0    . P
     lda #colour_blue                                                  ; 084f: a9 06       ..
-    sta bgcol0                                                        ; 0851: 8d 21 d0    .!P
+    sta BGCOL0                                                        ; 0851: 8d 21 d0    .!P
     ldx #colour_white                                                 ; 0854: a2 01       ..
-    stx color                                                         ; 0856: 8e 86 02    ...
+    stx COLOR                                                         ; 0856: 8e 86 02    ...
     lda #$93                                                          ; 0859: a9 93       .. ; A=character to output
-    jsr chrout                                                        ; 085b: 20 d2 ff     R. ; Output $93 (clear screen)
+    jsr CHROUT                                                        ; 085b: 20 d2 ff     R. ; Output $93 (clear screen)
     ldx #0                                                            ; 085e: a2 00       ..
 ; $0860 referenced 1 time by $0869
 loop_c0860:
     lda l0939,x                                                       ; 0860: bd 39 09    .9. ; A=character to output
     beq c086b                                                         ; 0863: f0 06       ..
-    jsr chrout                                                        ; 0865: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; 0865: 20 d2 ff     R. ; Output a character
     inx                                                               ; 0868: e8          .
     bne loop_c0860                                                    ; 0869: d0 f5       P.
 ; $086b referenced 1 time by $0863
 c086b:
     lda #'!'                                                          ; 086b: a9 21       .! ; A=character to output
-    jsr chrout                                                        ; 086d: 20 d2 ff     R. ; Output '!'
+    jsr CHROUT                                                        ; 086d: 20 d2 ff     R. ; Output '!'
     clc                                                               ; 0870: 18          .
     ldx #5                                                            ; 0871: a2 05       .. ; X=cursor row
     ldy #$0a                                                          ; 0873: a0 0a       .. ; Y=cursor column
-    jsr plot                                                          ; 0875: 20 f0 ff     .. ; Move the cursor to row 5, column 10
+    jsr PLOT                                                          ; 0875: 20 f0 ff     .. ; Move the cursor to row 5, column 10
     sec                                                               ; 0878: 38          8
-    jsr plot                                                          ; 0879: 20 f0 ff     .. ; Read the cursor position into X (row) and Y (column)
+    jsr PLOT                                                          ; 0879: 20 f0 ff     .. ; Read the cursor position into X (row) and Y (column)
     stx l095c                                                         ; 087c: 8e 5c 09    ... ; X=cursor row
     sty l095d                                                         ; 087f: 8c 5d 09    .]. ; Y=cursor column
     lda #$0f                                                          ; 0882: a9 0f       .. ; A=logical file number
     ldx #device_disk_8                                                ; 0884: a2 08       .. ; X=device number
     ldy #$0f                                                          ; 0886: a0 0f       .. ; Y=secondary address
-    jsr setlfs                                                        ; 0888: 20 ba ff     .. ; Set logical file 15 to device 8 (disk drive), secondary address 15
+    jsr SETLFS                                                        ; 0888: 20 ba ff     .. ; Set logical file 15 to device 8 (disk drive), secondary address 15
     lda #2                                                            ; 088b: a9 02       .. ; A=filename length
     ldx #<filename                                                    ; 088d: a2 47       .g ; X=filename address (low byte)
     ldy #>filename                                                    ; 088f: a0 09       .. ; Y=filename address (high byte)
-    jsr setnam                                                        ; 0891: 20 bd ff     .. ; Set the filename to "i0"
-    jsr open                                                          ; 0894: 20 c0 ff     .. ; Open a logical file (set up with SETLFS and SETNAM)
+    jsr SETNAM                                                        ; 0891: 20 bd ff     .. ; Set the filename to "i0"
+    jsr OPEN                                                          ; 0894: 20 c0 ff     .. ; Open a logical file (set up with SETLFS and SETNAM)
     ldx #$0f                                                          ; 0897: a2 0f       .. ; X=logical file number
-    jsr chkin                                                         ; 0899: 20 c6 ff     F. ; Open a channel for input
-    jsr chrin                                                         ; 089c: 20 cf ff     O. ; Read a character from the input channel
+    jsr CHKIN                                                         ; 0899: 20 c6 ff     F. ; Open a channel for input
+    jsr CHRIN                                                         ; 089c: 20 cf ff     O. ; Read a character from the input channel
     sta l095e                                                         ; 089f: 8d 5e 09    ... ; A=character read
-    jsr clrchn                                                        ; 08a2: 20 cc ff     L. ; Restore the default input and output channels
+    jsr CLRCHN                                                        ; 08a2: 20 cc ff     L. ; Restore the default input and output channels
     lda #$0f                                                          ; 08a5: a9 0f       .. ; A=logical file number
-    jsr close                                                         ; 08a7: 20 c3 ff     C. ; Close a logical file
+    jsr CLOSE                                                         ; 08a7: 20 c3 ff     C. ; Close a logical file
     lda #1                                                            ; 08aa: a9 01       .. ; A=logical file number
     ldx #device_disk_8                                                ; 08ac: a2 08       .. ; X=device number
     ldy #1                                                            ; 08ae: a0 01       .. ; Y=secondary address
-    jsr setlfs                                                        ; 08b0: 20 ba ff     .. ; Set logical file 1 to device 8 (disk drive), secondary address 1
+    jsr SETLFS                                                        ; 08b0: 20 ba ff     .. ; Set logical file 1 to device 8 (disk drive), secondary address 1
     lda #4                                                            ; 08b3: a9 04       .. ; A=filename length
     ldx #<filename_2                                                  ; 08b5: a2 49       .i ; X=filename address (low byte)
     ldy #>filename_2                                                  ; 08b7: a0 09       .. ; Y=filename address (high byte)
-    jsr setnam                                                        ; 08b9: 20 bd ff     .. ; Set the filename to "data"
+    jsr SETNAM                                                        ; 08b9: 20 bd ff     .. ; Set the filename to "data"
     lda #0                                                            ; 08bc: a9 00       .. ; A=0 to load, 1 to verify
-    jsr load                                                          ; 08be: 20 d5 ff     U. ; Load a file
+    jsr LOAD                                                          ; 08be: 20 d5 ff     U. ; Load a file
     stx l095f                                                         ; 08c1: 8e 5f 09    ... ; X=end address of the data loaded (low byte)
     sty l0960                                                         ; 08c4: 8c 60 09    ... ; Y=end address of the data loaded (high byte)
     lda #$27 ; '''                                                    ; 08c7: a9 27       .'
-    sta frekzp                                                        ; 08c9: 85 fb       ..
+    sta FREKZP                                                        ; 08c9: 85 fb       ..
     lda #8                                                            ; 08cb: a9 08       ..
-    sta frekzp+1                                                      ; 08cd: 85 fc       ..
-    lda #frekzp                                                       ; 08cf: a9 fb       .. ; A=zero page address of the start address
+    sta FREKZP+1                                                      ; 08cd: 85 fc       ..
+    lda #FREKZP                                                       ; 08cf: a9 fb       .. ; A=zero page address of the start address
     ldx #<pydis_end                                                   ; 08d1: a2 68       .. ; X=end address + 1 (low byte)
     ldy #>pydis_end                                                   ; 08d3: a0 09       .. ; Y=end address + 1 (high byte)
-    jsr save                                                          ; 08d5: 20 d8 ff     X. ; Save memory to a file (set up with SETLFS and SETNAM)
+    jsr SAVE                                                          ; 08d5: 20 d8 ff     X. ; Save memory to a file (set up with SETLFS and SETNAM)
     lda #$c0                                                          ; 08d8: a9 c0       .. ; A=message flags
-    jsr setmsg                                                        ; 08da: 20 90 ff     .. ; Show Kernal control and error messages
-    jsr rdtim                                                         ; 08dd: 20 de ff     .. ; Read the jiffy clock
+    jsr SETMSG                                                        ; 08da: 20 90 ff     .. ; Show Kernal control and error messages
+    jsr RDTIM                                                         ; 08dd: 20 de ff     .. ; Read the jiffy clock
     sty l0961                                                         ; 08e0: 8c 61 09    ... ; Y=jiffy clock (low byte)
     stx l0962                                                         ; 08e3: 8e 62 09    ... ; X=jiffy clock (middle byte)
     sta l0963                                                         ; 08e6: 8d 63 09    ... ; A=jiffy clock (high byte)
-    jsr getin                                                         ; 08e9: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         ; 08e9: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     sta key                                                           ; 08ec: 8d 64 09    ... ; A=character read
-    jsr readst                                                        ; 08ef: 20 b7 ff     .. ; Read the I/O status
+    jsr READST                                                        ; 08ef: 20 b7 ff     .. ; Read the I/O status
     sta l0965                                                         ; 08f2: 8d 65 09    ... ; A=I/O status
-    jsr screen                                                        ; 08f5: 20 ed ff     .. ; Read the screen size
+    jsr SCREEN                                                        ; 08f5: 20 ed ff     .. ; Read the screen size
     stx l0966                                                         ; 08f8: 8e 66 09    ... ; X=number of columns
     sty l0967                                                         ; 08fb: 8c 67 09    ... ; Y=number of rows
     lda #<l094d                                                       ; 08fe: a9 4d       .m ; A=string address (low byte)
     ldy #>l094d                                                       ; 0900: a0 09       .. ; Y=string address (high byte)
-    jsr strout                                                        ; 0902: 20 1e ab     .. ; Print the zero-terminated string at A/Y
+    jsr STROUT                                                        ; 0902: 20 1e ab     .. ; Print the zero-terminated string at A/Y
     lda #0                                                            ; 0905: a9 00       .. ; A=number to print (high byte)
     ldx #$2a ; '*'                                                    ; 0907: a2 2a       .* ; X=number to print (low byte)
-    jsr linprt                                                        ; 0909: 20 cd bd     M. ; Print the 16-bit number in A/X
-    lda ndx                                                           ; 090c: a5 c6       .F
+    jsr LINPRT                                                        ; 0909: 20 cd bd     M. ; Print the 16-bit number in A/X
+    lda NDX                                                           ; 090c: a5 c6       .F
     sta key                                                           ; 090e: 8d 64 09    ...
     ldx #$27 ; '''                                                    ; 0911: a2 27       .'
 ; $0913 referenced 1 time by $091e
 loop_c0913:
     lda #$51 ; 'q'                                                    ; 0913: a9 51       .q
-    sta vicscn,x                                                      ; 0915: 9d 00 04    ...
+    sta VICSCN,x                                                      ; 0915: 9d 00 04    ...
     lda #1                                                            ; 0918: a9 01       ..
     sta colour_ram,x                                                  ; 091a: 9d 00 d8    ..X
     dex                                                               ; 091d: ca          J
     bpl loop_c0913                                                    ; 091e: 10 f3       ..
-    lda ciapra                                                        ; 0920: ad 00 dc    ...
-    sta sp0x                                                          ; 0923: 8d 00 d0    ..P
-    lda time+2                                                        ; 0926: a5 a2       ..
+    lda CIAPRA                                                        ; 0920: ad 00 dc    ...
+    sta SP0X                                                          ; 0923: 8d 00 d0    ..P
+    lda TIME+2                                                        ; 0926: a5 a2       ..
     sta sprite_pointers                                               ; 0928: 8d f8 07    ...
-    lax frekzp                                                        ; 092b: a7 fb       ..
+    lax FREKZP                                                        ; 092b: a7 fb       ..
     axs #1                                                            ; 092d: cb 01       K.
     rts                                                               ; 092f: 60          .
 
 irq_handler:
-    asl vicirq                                                        ; 0930: 0e 19 d0    ..P ; Acknowledge the VIC-II's interrupts
-    inc extcol                                                        ; 0933: ee 20 d0    . P
+    asl VICIRQ                                                        ; 0930: 0e 19 d0    ..P ; Acknowledge the VIC-II's interrupts
+    inc EXTCOL                                                        ; 0933: ee 20 d0    . P
     jmp lea31                                                         ; 0936: 4c 31 ea    l1. ; The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)
 
 ; $0939 referenced 1 time by $0860
@@ -343,33 +343,47 @@ pydis_end:
 .assert (>irq_handler) = $09, error, "Assertion failed: >irq_handler = $09"
 .assert (>l094d) = $09, error, "Assertion failed: >l094d = $09"
 .assert (>pydis_end) = $09, error, "Assertion failed: >pydis_end = $09"
+.assert (FREKZP) = $fb, error, "Assertion failed: FREKZP = $fb"
 .assert (basic_end) = $0825, error, "Assertion failed: basic_end = $0825"
 .assert (basic_line_15) = $0810, error, "Assertion failed: basic_line_15 = $0810"
 .assert (basic_line_20) = $081b, error, "Assertion failed: basic_line_20 = $081b"
-.assert (frekzp) = $fb, error, "Assertion failed: frekzp = $fb"
 
 ; Label references by decreasing frequency:
-;     chrout:            3
-;     extcol:            2
-;     frekzp:            2
+;     CHROUT:            3
+;     EXTCOL:            2
+;     FREKZP:            2
+;     PLOT:              2
+;     SCROLY:            2
+;     SETLFS:            2
+;     SETNAM:            2
 ;     key:               2
-;     plot:              2
-;     scroly:            2
-;     setlfs:            2
-;     setnam:            2
-;     bgcol0:            1
+;     BGCOL0:            1
+;     CHKIN:             1
+;     CHRIN:             1
+;     CIAICR:            1
+;     CIAPRA:            1
+;     CINV:              1
+;     CLOSE:             1
+;     CLRCHN:            1
+;     COLOR:             1
+;     GETIN:             1
+;     IRQMASK:           1
+;     LINPRT:            1
+;     LOAD:              1
+;     NDX:               1
+;     OPEN:              1
+;     RASTER:            1
+;     RDTIM:             1
+;     READST:            1
+;     SAVE:              1
+;     SCREEN:            1
+;     SETMSG:            1
+;     SP0X:              1
+;     STROUT:            1
+;     VICIRQ:            1
+;     VICSCN:            1
 ;     c086b:             1
-;     chkin:             1
-;     chrin:             1
-;     ciaicr:            1
-;     ciapra:            1
-;     cinv:              1
-;     close:             1
-;     clrchn:            1
-;     color:             1
 ;     colour_ram:        1
-;     getin:             1
-;     irqmask:           1
 ;     l0939:             1
 ;     l095c:             1
 ;     l095d:             1
@@ -383,23 +397,9 @@ pydis_end:
 ;     l0966:             1
 ;     l0967:             1
 ;     lea31:             1
-;     linprt:            1
-;     load:              1
 ;     loop_c0860:        1
 ;     loop_c0913:        1
-;     ndx:               1
-;     open:              1
-;     raster:            1
-;     rdtim:             1
-;     readst:            1
-;     save:              1
-;     screen:            1
-;     setmsg:            1
-;     sp0x:              1
 ;     sprite_pointers:   1
-;     strout:            1
-;     vicirq:            1
-;     vicscn:            1
 
 ; Automatically generated labels:
 ;     c086b

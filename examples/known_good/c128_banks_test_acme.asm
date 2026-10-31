@@ -31,8 +31,8 @@ mmu_configuration       = $ff00
 mmu_load_configuration_a = $ff01
 
 ; Kernal entry points ($ff47-$fff9)
-primm   = $ff7d
-chrout  = $ffd2
+PRIMM   = $ff7d
+CHROUT  = $ffd2
 
 ; Other banks
 l1000   = $1000
@@ -88,7 +88,7 @@ sys_entry
     jsr sub_c1c5f                                                     ; 1c4c: 20 5f 1c     ..
     lda vic_border_colour                                             ; 1c4f: ad 20 d0    . P
     lda #'a'                                                          ; 1c52: a9 41       .a ; A=character to output
-    jsr chrout                                                        ; 1c54: 20 d2 ff     R. ; Output 'a'
+    jsr CHROUT                                                        ; 1c54: 20 d2 ff     R. ; Output 'a'
     lda #1                                                            ; 1c57: a9 01       ..
     sta vic_interrupt_status                                          ; 1c59: 8d 19 d0    ..P ; Acknowledge the VIC-II's raster interrupt
     jmp c1c76                                                         ; 1c5c: 4c 76 1c    l..
@@ -132,7 +132,7 @@ loop_c1c7d
     lda ld020                                                         ; 1ca1: ad 20 d0    . P
     lda #1                                                            ; 1ca4: a9 01       ..
     sta mmu_configuration                                             ; 1ca6: 8d 00 ff    ... ; Set the MMU to bank 14 (RAM 0, BASIC ROM, Kernal ROM, character ROM)
-    jsr primm                                                         ; 1ca9: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
+    jsr PRIMM                                                         ; 1ca9: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
     !pet "hi", 0                                                      ; 1cac: 48 49 00    hi.
 
     lda ld020                                                         ; 1caf: ad 20 d0    . P
@@ -166,12 +166,12 @@ pydis_end
 ;     mmu_configuration:         12
 ;     ld020:                      8
 ;     vic_border_colour:          8
-;     chrout:                     2
+;     CHROUT:                     2
+;     PRIMM:                      2
 ;     ld000:                      2
 ;     ld019:                      2
 ;     lff7d:                      2
 ;     lffd2:                      2
-;     primm:                      2
 ;     sub_c1cc2:                  2
 ;     vic_background_colour_0:    2
 ;     vic_interrupt_status:       2

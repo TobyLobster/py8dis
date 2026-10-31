@@ -92,14 +92,14 @@ kernal_irq_handler  = $fa65
 mmu_configuration   = $ff00
 
 ; Kernal entry points ($ff47-$fff9)
-setbnk  = $ff68
-jsrfar  = $ff6e
-jmpfar  = $ff71
-primm   = $ff7d
-setlfs  = $ffba
-setnam  = $ffbd
-chrout  = $ffd2
-load    = $ffd5
+SETBNK  = $ff68
+JSRFAR  = $ff6e
+JMPFAR  = $ff71
+PRIMM   = $ff7d
+SETLFS  = $ffba
+SETNAM  = $ffbd
+CHROUT  = $ffd2
+LOAD    = $ffd5
 
 ; Other banks
 ld020   = $d020
@@ -127,11 +127,11 @@ sys_entry:
     sta mmu_configuration                                             ; 1c0f: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
     lda #1                                                            ; 1c12: a9 01       ..
     sta vic_clock_speed                                               ; 1c14: 8d 30 d0    .0P
-    jsr primm                                                         ; 1c17: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
+    jsr PRIMM                                                         ; 1c17: 20 7d ff     .. ; Print the zero-terminated string that follows the JSR
     .byte "hello, c128", $0d, 0                                       ; 1c1a: 48 45 4c... hel
 
     lda #'!'                                                          ; 1c27: a9 21       .! ; A=character to output
-    jsr chrout                                                        ; 1c29: 20 d2 ff     R. ; Output '!'
+    jsr CHROUT                                                        ; 1c29: 20 d2 ff     R. ; Output '!'
     lda #colour_blue                                                  ; 1c2c: a9 06       ..
     sta vic_border_colour                                             ; 1c2e: 8d 20 d0    . P
     ldx #$1a                                                          ; 1c31: a2 1a       ..
@@ -161,7 +161,7 @@ loop_c1c36:
     sta far_call_pc_high                                              ; 1c57: 85 03       ..
     lda #<far_call_target                                             ; 1c59: a9 a8       ..
     sta far_call_pc_low                                               ; 1c5b: 85 04       ..
-    jsr jsrfar                                                        ; 1c5d: 20 6e ff     .. ; Call a routine in another bank (set up at $02-$08)
+    jsr JSRFAR                                                        ; 1c5d: 20 6e ff     .. ; Call a routine in another bank (set up at $02-$08)
 
     ; Call far_call_target_2 in bank 15
     lda #<far_call_target_2                                           ; 1c60: a9 ac       ..
@@ -174,7 +174,7 @@ loop_c1c36:
     sty far_call_pc_high                                              ; 1c6e: 84 03       ..
     lda #1                                                            ; 1c70: a9 01       ..
     sta far_call_a                                                    ; 1c72: 85 06       ..
-    jsr jsrfar                                                        ; 1c74: 20 6e ff     .. ; Call a routine in another bank (set up at $02-$08)
+    jsr JSRFAR                                                        ; 1c74: 20 6e ff     .. ; Call a routine in another bank (set up at $02-$08)
 
     ; Call $2000 in bank 1
     lda #1                                                            ; 1c77: a9 01       ..
@@ -183,22 +183,22 @@ loop_c1c36:
     sta far_call_pc_high                                              ; 1c7d: 85 03       ..
     lda #0                                                            ; 1c7f: a9 00       ..
     sta far_call_pc_low                                               ; 1c81: 85 04       ..
-    jsr jsrfar                                                        ; 1c83: 20 6e ff     .. ; Call a routine in another bank (set up at $02-$08)
+    jsr JSRFAR                                                        ; 1c83: 20 6e ff     .. ; Call a routine in another bank (set up at $02-$08)
 
     jsr sub_c1cb0                                                     ; 1c86: 20 b0 1c     ..
     lda #1                                                            ; 1c89: a9 01       .. ; A=bank for the data
     ldx #0                                                            ; 1c8b: a2 00       .. ; X=bank for the filename
-    jsr setbnk                                                        ; 1c8d: 20 68 ff     .. ; Set the banks for LOAD, SAVE and VERIFY, and for the filename
+    jsr SETBNK                                                        ; 1c8d: 20 68 ff     .. ; Set the banks for LOAD, SAVE and VERIFY, and for the filename
     lda #1                                                            ; 1c90: a9 01       .. ; A=logical file number
     ldx #device_disk_8                                                ; 1c92: a2 08       .. ; X=device number
     ldy #1                                                            ; 1c94: a0 01       .. ; Y=secondary address
-    jsr setlfs                                                        ; 1c96: 20 ba ff     .. ; Set logical file 1 to device 8 (disk drive), secondary address 1
+    jsr SETLFS                                                        ; 1c96: 20 ba ff     .. ; Set logical file 1 to device 8 (disk drive), secondary address 1
     lda #4                                                            ; 1c99: a9 04       .. ; A=filename length
     ldx #<filename                                                    ; 1c9b: a2 c9       .I ; X=filename address (low byte)
     ldy #>filename                                                    ; 1c9d: a0 1c       .. ; Y=filename address (high byte)
-    jsr setnam                                                        ; 1c9f: 20 bd ff     .. ; Set the filename to "data"
+    jsr SETNAM                                                        ; 1c9f: 20 bd ff     .. ; Set the filename to "data"
     lda #0                                                            ; 1ca2: a9 00       .. ; A=0 to load, 1 to verify
-    jsr load                                                          ; 1ca4: 20 d5 ff     U. ; Load a file
+    jsr LOAD                                                          ; 1ca4: 20 d5 ff     U. ; Load a file
     rts                                                               ; 1ca7: 60          .
 
 far_call_target:
@@ -219,7 +219,7 @@ sub_c1cb0:
     sta far_call_pc_high                                              ; 1cb6: 85 03       ..
     lda #<far_jump_target                                             ; 1cb8: a9 bf       ..
     sta far_call_pc_low                                               ; 1cba: 85 04       ..
-    jmp jmpfar                                                        ; 1cbc: 4c 71 ff    l.. ; Jump to a routine in another bank (set up at $02-$08)
+    jmp JMPFAR                                                        ; 1cbc: 4c 71 ff    l.. ; Jump to a routine in another bank (set up at $02-$08)
 
 
 far_jump_target:
@@ -255,24 +255,24 @@ pydis_end:
 ;     far_call_pc_low:      4
 ;     ld020:                4
 ;     vic_border_colour:    4
-;     jsrfar:               3
+;     JSRFAR:               3
 ;     vdc_address:          2
-;     chrout:               1
+;     CHROUT:               1
+;     JMPFAR:               1
+;     LOAD:                 1
+;     PRIMM:                1
+;     SETBNK:               1
+;     SETLFS:               1
+;     SETNAM:               1
 ;     far_call_a:           1
 ;     far_call_status:      1
 ;     irq_vector:           1
-;     jmpfar:               1
 ;     kernal_irq_handler:   1
 ;     l1ccd:                1
 ;     ld021:                1
-;     load:                 1
 ;     loop_c1c36:           1
 ;     mmu_configuration:    1
-;     primm:                1
 ;     screen_mode_40_80:    1
-;     setbnk:               1
-;     setlfs:               1
-;     setnam:               1
 ;     sub_c1cb0:            1
 ;     vdc_data:             1
 ;     vic_clock_speed:      1

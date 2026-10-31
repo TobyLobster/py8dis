@@ -128,6 +128,8 @@ def assign_local_label_output_names():
     lines, so a name can only have one value. If a local label's name is
     already used for a different address (by a label() name or an earlier
     local label) then it is given a numbered name instead, e.g. 'temp_2'.
+    (Names are compared in lower case, since some assemblers, e.g. 64tass,
+    take 'temp' and 'TEMP' to be the same name.)
 
     This is called after tracing, before label names are finalised."""
 
@@ -137,21 +139,21 @@ def assign_local_label_output_names():
     for runtime_addr, label in labels.items():
         for name_list in label.explicit_names.values():
             for name in name_list:
-                taken.setdefault(name.text, runtime_addr)
+                taken.setdefault(name.text.lower(), runtime_addr)
 
     for runtime_addr, label in sorted(labels.items()):
         for move_id in sorted(label.local_labels):
             for local_label in label.local_labels[move_id]:
                 output_name = local_label.name
                 suffix = 2
-                while taken.get(output_name, runtime_addr) != runtime_addr:
+                while taken.get(output_name.lower(), runtime_addr) != runtime_addr:
                     output_name = "{0}_{1}".format(local_label.name, suffix)
                     suffix += 1
                 if output_name != local_label.name:
                     utils.warn("local label '{0}' for {1} is output as '{2}', since '{0}' is already used for {3}".format(
-                        local_label.name, config.get_assembler().hex(runtime_addr), output_name, config.get_assembler().hex(taken[local_label.name])))
+                        local_label.name, config.get_assembler().hex(runtime_addr), output_name, config.get_assembler().hex(taken[local_label.name.lower()])))
                 local_label.output_name = output_name
-                taken[output_name] = runtime_addr
+                taken[output_name.lower()] = runtime_addr
 
 # For debugging...
 def all_labels_as_comments():

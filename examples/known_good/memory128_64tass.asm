@@ -20,8 +20,8 @@ vdc_screen_base = $0a2e
 
 ; Screen editor ROM ($c000-$cfff)
 lc000   = $c000
-vdcout  = $cdcc
-vdcin   = $cdda
+VDCOUT  = $cdcc
+VDCIN   = $cdda
 
 ; SID ($d400-$d4ff)
 sid_voice1_frequency_low    = $d400
@@ -45,7 +45,7 @@ cia1_tod_seconds = $dc09
 mmu_configuration   = $ff00
 
 ; Kernal entry points ($ff47-$fff9)
-getin   = $ffe4
+GETIN   = $ffe4
 
 ; The PRG file's header: the address to load it at
     * = $1bff
@@ -196,16 +196,16 @@ start
     ldy #0                                                            ; 205f: a0 00       ..
     ldx #$12                                                          ; 2061: a2 12       ..
     lda #0                                                            ; 2063: a9 00       ..
-    jsr vdcout                                                        ; 2065: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2065: 20 cc cd     LM
     ldx #$13                                                          ; 2068: a2 13       ..
     lda #0                                                            ; 206a: a9 00       ..
-    jsr vdcout                                                        ; 206c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 206c: 20 cc cd     LM
 ; $206f referenced 2 times by $207a, $2084
 loop_ch
     ldx #$1f                                                          ; 206f: a2 1f       ..
     ldy l00fa                                                         ; 2071: a4 fa       ..
     lda (l00fc),y                                                     ; 2073: b1 fc       ..
-    jsr vdcout                                                        ; 2075: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2075: 20 cc cd     LM
     inc l00fa                                                         ; 2078: e6 fa       ..
     bne loop_ch                                                       ; 207a: d0 f3       P.
     inc l00fd                                                         ; 207c: e6 fd       ..
@@ -223,16 +223,16 @@ loop_ch
     ldy #0                                                            ; 2094: a0 00       ..
     ldx #$12                                                          ; 2096: a2 12       ..
     lda #$10                                                          ; 2098: a9 10       ..
-    jsr vdcout                                                        ; 209a: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 209a: 20 cc cd     LM
     ldx #$13                                                          ; 209d: a2 13       ..
     lda #0                                                            ; 209f: a9 00       ..
-    jsr vdcout                                                        ; 20a1: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 20a1: 20 cc cd     LM
 ; $20a4 referenced 2 times by $20af, $20b9
 loop_ch2
     ldx #$1f                                                          ; 20a4: a2 1f       ..
     ldy l00fa                                                         ; 20a6: a4 fa       ..
     lda (l00fc),y                                                     ; 20a8: b1 fc       ..
-    jsr vdcout                                                        ; 20aa: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 20aa: 20 cc cd     LM
     inc l00fa                                                         ; 20ad: e6 fa       ..
     bne loop_ch2                                                      ; 20af: d0 f3       P.
     inc l00fd                                                         ; 20b1: e6 fd       ..
@@ -250,16 +250,16 @@ loop_ch2
     ldy #0                                                            ; 20c9: a0 00       ..
     ldx #$12                                                          ; 20cb: a2 12       ..
     lda #$18                                                          ; 20cd: a9 18       ..
-    jsr vdcout                                                        ; 20cf: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 20cf: 20 cc cd     LM
     ldx #$13                                                          ; 20d2: a2 13       ..
     lda #0                                                            ; 20d4: a9 00       ..
-    jsr vdcout                                                        ; 20d6: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 20d6: 20 cc cd     LM
 ; $20d9 referenced 2 times by $20e4, $20ee
 loop_ch3
     ldx #$1f                                                          ; 20d9: a2 1f       ..
     ldy l00fa                                                         ; 20db: a4 fa       ..
     lda (l00fc),y                                                     ; 20dd: b1 fc       ..
-    jsr vdcout                                                        ; 20df: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 20df: 20 cc cd     LM
     inc l00fa                                                         ; 20e2: e6 fa       ..
     bne loop_ch3                                                      ; 20e4: d0 f3       P.
     inc l00fd                                                         ; 20e6: e6 fd       ..
@@ -288,7 +288,7 @@ exit
 
 ; $2114 referenced 1 time by $20fc
 handle_input
-    jsr getin                                                         ; 2114: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         ; 2114: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     beq no_key                                                        ; 2117: f0 24       .$
     cmp #$58 ; 'x'                                                    ; 2119: c9 58       Ix ; A=character read
     beq quit_game                                                     ; 211b: f0 1f       ..
@@ -340,12 +340,12 @@ show_1
     sta dst_high                                                      ; 2178: 8d 03 20    ..
     ldx #$12                                                          ; 217b: a2 12       ..
     lda dst_high                                                      ; 217d: ad 03 20    ..
-    jsr vdcout                                                        ; 2180: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2180: 20 cc cd     LM
     ldx #$13                                                          ; 2183: a2 13       ..
     lda dst_low                                                       ; 2185: ad 02 20    ..
-    jsr vdcout                                                        ; 2188: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2188: 20 cc cd     LM
     ldx #$1f                                                          ; 218b: a2 1f       ..
-    jsr vdcin                                                         ; 218d: 20 da cd     ZM
+    jsr VDCIN                                                         ; 218d: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2190: c9 20       I
     beq return_1                                                      ; 2192: f0 15       ..
     lda card_face_array                                               ; 2194: ad 15 26    ..&
@@ -366,12 +366,12 @@ show_2
     sta dst_high                                                      ; 21b3: 8d 03 20    ..
     ldx #$12                                                          ; 21b6: a2 12       ..
     lda dst_high                                                      ; 21b8: ad 03 20    ..
-    jsr vdcout                                                        ; 21bb: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 21bb: 20 cc cd     LM
     ldx #$13                                                          ; 21be: a2 13       ..
     lda dst_low                                                       ; 21c0: ad 02 20    ..
-    jsr vdcout                                                        ; 21c3: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 21c3: 20 cc cd     LM
     ldx #$1f                                                          ; 21c6: a2 1f       ..
-    jsr vdcin                                                         ; 21c8: 20 da cd     ZM
+    jsr VDCIN                                                         ; 21c8: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 21cb: c9 20       I
     beq return_2                                                      ; 21cd: f0 15       ..
     lda l2619                                                         ; 21cf: ad 19 26    ..&
@@ -392,12 +392,12 @@ show_3
     sta dst_high                                                      ; 21ee: 8d 03 20    ..
     ldx #$12                                                          ; 21f1: a2 12       ..
     lda dst_high                                                      ; 21f3: ad 03 20    ..
-    jsr vdcout                                                        ; 21f6: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 21f6: 20 cc cd     LM
     ldx #$13                                                          ; 21f9: a2 13       ..
     lda dst_low                                                       ; 21fb: ad 02 20    ..
-    jsr vdcout                                                        ; 21fe: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 21fe: 20 cc cd     LM
     ldx #$1f                                                          ; 2201: a2 1f       ..
-    jsr vdcin                                                         ; 2203: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2203: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2206: c9 20       I
     beq return_3                                                      ; 2208: f0 15       ..
     lda l261d                                                         ; 220a: ad 1d 26    ..&
@@ -418,12 +418,12 @@ show_4
     sta dst_high                                                      ; 2229: 8d 03 20    ..
     ldx #$12                                                          ; 222c: a2 12       ..
     lda dst_high                                                      ; 222e: ad 03 20    ..
-    jsr vdcout                                                        ; 2231: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2231: 20 cc cd     LM
     ldx #$13                                                          ; 2234: a2 13       ..
     lda dst_low                                                       ; 2236: ad 02 20    ..
-    jsr vdcout                                                        ; 2239: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2239: 20 cc cd     LM
     ldx #$1f                                                          ; 223c: a2 1f       ..
-    jsr vdcin                                                         ; 223e: 20 da cd     ZM
+    jsr VDCIN                                                         ; 223e: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2241: c9 20       I
     beq return_4                                                      ; 2243: f0 15       ..
     lda l2621                                                         ; 2245: ad 21 26    .!&
@@ -444,12 +444,12 @@ show_5
     sta dst_high                                                      ; 2264: 8d 03 20    ..
     ldx #$12                                                          ; 2267: a2 12       ..
     lda dst_high                                                      ; 2269: ad 03 20    ..
-    jsr vdcout                                                        ; 226c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 226c: 20 cc cd     LM
     ldx #$13                                                          ; 226f: a2 13       ..
     lda dst_low                                                       ; 2271: ad 02 20    ..
-    jsr vdcout                                                        ; 2274: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2274: 20 cc cd     LM
     ldx #$1f                                                          ; 2277: a2 1f       ..
-    jsr vdcin                                                         ; 2279: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2279: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 227c: c9 20       I
     beq return_5                                                      ; 227e: f0 15       ..
     lda l2625                                                         ; 2280: ad 25 26    .%&
@@ -470,12 +470,12 @@ show_6
     sta dst_high                                                      ; 229f: 8d 03 20    ..
     ldx #$12                                                          ; 22a2: a2 12       ..
     lda dst_high                                                      ; 22a4: ad 03 20    ..
-    jsr vdcout                                                        ; 22a7: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 22a7: 20 cc cd     LM
     ldx #$13                                                          ; 22aa: a2 13       ..
     lda dst_low                                                       ; 22ac: ad 02 20    ..
-    jsr vdcout                                                        ; 22af: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 22af: 20 cc cd     LM
     ldx #$1f                                                          ; 22b2: a2 1f       ..
-    jsr vdcin                                                         ; 22b4: 20 da cd     ZM
+    jsr VDCIN                                                         ; 22b4: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 22b7: c9 20       I
     beq return_6                                                      ; 22b9: f0 15       ..
     lda l2629                                                         ; 22bb: ad 29 26    .)&
@@ -496,12 +496,12 @@ show_7
     sta dst_high                                                      ; 22da: 8d 03 20    ..
     ldx #$12                                                          ; 22dd: a2 12       ..
     lda dst_high                                                      ; 22df: ad 03 20    ..
-    jsr vdcout                                                        ; 22e2: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 22e2: 20 cc cd     LM
     ldx #$13                                                          ; 22e5: a2 13       ..
     lda dst_low                                                       ; 22e7: ad 02 20    ..
-    jsr vdcout                                                        ; 22ea: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 22ea: 20 cc cd     LM
     ldx #$1f                                                          ; 22ed: a2 1f       ..
-    jsr vdcin                                                         ; 22ef: 20 da cd     ZM
+    jsr VDCIN                                                         ; 22ef: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 22f2: c9 20       I
     beq return_7                                                      ; 22f4: f0 15       ..
     lda l262d                                                         ; 22f6: ad 2d 26    .-&
@@ -522,12 +522,12 @@ show_8
     sta dst_high                                                      ; 2315: 8d 03 20    ..
     ldx #$12                                                          ; 2318: a2 12       ..
     lda dst_high                                                      ; 231a: ad 03 20    ..
-    jsr vdcout                                                        ; 231d: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 231d: 20 cc cd     LM
     ldx #$13                                                          ; 2320: a2 13       ..
     lda dst_low                                                       ; 2322: ad 02 20    ..
-    jsr vdcout                                                        ; 2325: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2325: 20 cc cd     LM
     ldx #$1f                                                          ; 2328: a2 1f       ..
-    jsr vdcin                                                         ; 232a: 20 da cd     ZM
+    jsr VDCIN                                                         ; 232a: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 232d: c9 20       I
     beq return_8                                                      ; 232f: f0 15       ..
     lda l2631                                                         ; 2331: ad 31 26    .1&
@@ -548,12 +548,12 @@ show_Q
     sta dst_high                                                      ; 2350: 8d 03 20    ..
     ldx #$12                                                          ; 2353: a2 12       ..
     lda dst_high                                                      ; 2355: ad 03 20    ..
-    jsr vdcout                                                        ; 2358: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2358: 20 cc cd     LM
     ldx #$13                                                          ; 235b: a2 13       ..
     lda dst_low                                                       ; 235d: ad 02 20    ..
-    jsr vdcout                                                        ; 2360: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2360: 20 cc cd     LM
     ldx #$1f                                                          ; 2363: a2 1f       ..
-    jsr vdcin                                                         ; 2365: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2365: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2368: c9 20       I
     beq return_9                                                      ; 236a: f0 15       ..
     lda l2635                                                         ; 236c: ad 35 26    .5&
@@ -574,12 +574,12 @@ show_W
     sta dst_high                                                      ; 238b: 8d 03 20    ..
     ldx #$12                                                          ; 238e: a2 12       ..
     lda dst_high                                                      ; 2390: ad 03 20    ..
-    jsr vdcout                                                        ; 2393: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2393: 20 cc cd     LM
     ldx #$13                                                          ; 2396: a2 13       ..
     lda dst_low                                                       ; 2398: ad 02 20    ..
-    jsr vdcout                                                        ; 239b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 239b: 20 cc cd     LM
     ldx #$1f                                                          ; 239e: a2 1f       ..
-    jsr vdcin                                                         ; 23a0: 20 da cd     ZM
+    jsr VDCIN                                                         ; 23a0: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 23a3: c9 20       I
     beq return_10                                                     ; 23a5: f0 15       ..
     lda l2639                                                         ; 23a7: ad 39 26    .9&
@@ -600,12 +600,12 @@ show_E
     sta dst_high                                                      ; 23c6: 8d 03 20    ..
     ldx #$12                                                          ; 23c9: a2 12       ..
     lda dst_high                                                      ; 23cb: ad 03 20    ..
-    jsr vdcout                                                        ; 23ce: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 23ce: 20 cc cd     LM
     ldx #$13                                                          ; 23d1: a2 13       ..
     lda dst_low                                                       ; 23d3: ad 02 20    ..
-    jsr vdcout                                                        ; 23d6: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 23d6: 20 cc cd     LM
     ldx #$1f                                                          ; 23d9: a2 1f       ..
-    jsr vdcin                                                         ; 23db: 20 da cd     ZM
+    jsr VDCIN                                                         ; 23db: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 23de: c9 20       I
     beq return_11                                                     ; 23e0: f0 15       ..
     lda l263d                                                         ; 23e2: ad 3d 26    .=&
@@ -626,12 +626,12 @@ show_R
     sta dst_high                                                      ; 2401: 8d 03 20    ..
     ldx #$12                                                          ; 2404: a2 12       ..
     lda dst_high                                                      ; 2406: ad 03 20    ..
-    jsr vdcout                                                        ; 2409: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2409: 20 cc cd     LM
     ldx #$13                                                          ; 240c: a2 13       ..
     lda dst_low                                                       ; 240e: ad 02 20    ..
-    jsr vdcout                                                        ; 2411: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2411: 20 cc cd     LM
     ldx #$1f                                                          ; 2414: a2 1f       ..
-    jsr vdcin                                                         ; 2416: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2416: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2419: c9 20       I
     beq return_12                                                     ; 241b: f0 15       ..
     lda l2641                                                         ; 241d: ad 41 26    .a&
@@ -652,12 +652,12 @@ show_T
     sta dst_high                                                      ; 243c: 8d 03 20    ..
     ldx #$12                                                          ; 243f: a2 12       ..
     lda dst_high                                                      ; 2441: ad 03 20    ..
-    jsr vdcout                                                        ; 2444: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2444: 20 cc cd     LM
     ldx #$13                                                          ; 2447: a2 13       ..
     lda dst_low                                                       ; 2449: ad 02 20    ..
-    jsr vdcout                                                        ; 244c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 244c: 20 cc cd     LM
     ldx #$1f                                                          ; 244f: a2 1f       ..
-    jsr vdcin                                                         ; 2451: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2451: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2454: c9 20       I
     beq return_13                                                     ; 2456: f0 15       ..
     lda l2645                                                         ; 2458: ad 45 26    .e&
@@ -678,12 +678,12 @@ show_Y
     sta dst_high                                                      ; 2477: 8d 03 20    ..
     ldx #$12                                                          ; 247a: a2 12       ..
     lda dst_high                                                      ; 247c: ad 03 20    ..
-    jsr vdcout                                                        ; 247f: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 247f: 20 cc cd     LM
     ldx #$13                                                          ; 2482: a2 13       ..
     lda dst_low                                                       ; 2484: ad 02 20    ..
-    jsr vdcout                                                        ; 2487: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2487: 20 cc cd     LM
     ldx #$1f                                                          ; 248a: a2 1f       ..
-    jsr vdcin                                                         ; 248c: 20 da cd     ZM
+    jsr VDCIN                                                         ; 248c: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 248f: c9 20       I
     beq return_14                                                     ; 2491: f0 15       ..
     lda l2649                                                         ; 2493: ad 49 26    .i&
@@ -704,12 +704,12 @@ show_U
     sta dst_high                                                      ; 24b2: 8d 03 20    ..
     ldx #$12                                                          ; 24b5: a2 12       ..
     lda dst_high                                                      ; 24b7: ad 03 20    ..
-    jsr vdcout                                                        ; 24ba: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 24ba: 20 cc cd     LM
     ldx #$13                                                          ; 24bd: a2 13       ..
     lda dst_low                                                       ; 24bf: ad 02 20    ..
-    jsr vdcout                                                        ; 24c2: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 24c2: 20 cc cd     LM
     ldx #$1f                                                          ; 24c5: a2 1f       ..
-    jsr vdcin                                                         ; 24c7: 20 da cd     ZM
+    jsr VDCIN                                                         ; 24c7: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 24ca: c9 20       I
     beq return_15                                                     ; 24cc: f0 15       ..
     lda l264d                                                         ; 24ce: ad 4d 26    .m&
@@ -730,12 +730,12 @@ show_I
     sta dst_high                                                      ; 24ed: 8d 03 20    ..
     ldx #$12                                                          ; 24f0: a2 12       ..
     lda dst_high                                                      ; 24f2: ad 03 20    ..
-    jsr vdcout                                                        ; 24f5: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 24f5: 20 cc cd     LM
     ldx #$13                                                          ; 24f8: a2 13       ..
     lda dst_low                                                       ; 24fa: ad 02 20    ..
-    jsr vdcout                                                        ; 24fd: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 24fd: 20 cc cd     LM
     ldx #$1f                                                          ; 2500: a2 1f       ..
-    jsr vdcin                                                         ; 2502: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2502: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2505: c9 20       I
     beq return_16                                                     ; 2507: f0 15       ..
     lda l2651                                                         ; 2509: ad 51 26    .q&
@@ -1100,27 +1100,27 @@ display_card
     lda src_high                                                      ; 2666: ad 01 20    ..
     sta l00fd                                                         ; 2669: 85 fd       ..
     ldx #$18                                                          ; 266b: a2 18       ..
-    jsr vdcin                                                         ; 266d: 20 da cd     ZM
+    jsr VDCIN                                                         ; 266d: 20 da cd     ZM
     ora #$80                                                          ; 2670: 09 80       ..
     ldx #$18                                                          ; 2672: a2 18       ..
-    jsr vdcout                                                        ; 2674: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2674: 20 cc cd     LM
 ; $2677 referenced 1 time by $26b7
 c2677
     ldx #$12                                                          ; 2677: a2 12       ..
     lda l00fb                                                         ; 2679: a5 fb       ..
-    jsr vdcout                                                        ; 267b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 267b: 20 cc cd     LM
     ldx #$13                                                          ; 267e: a2 13       ..
     lda l00fa                                                         ; 2680: a5 fa       ..
-    jsr vdcout                                                        ; 2682: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2682: 20 cc cd     LM
     ldx #$20 ; ' '                                                    ; 2685: a2 20       .
     lda l00fd                                                         ; 2687: a5 fd       ..
-    jsr vdcout                                                        ; 2689: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2689: 20 cc cd     LM
     ldx #$21 ; '!'                                                    ; 268c: a2 21       .!
     lda l00fc                                                         ; 268e: a5 fc       ..
-    jsr vdcout                                                        ; 2690: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2690: 20 cc cd     LM
     ldx #$1e                                                          ; 2693: a2 1e       ..
     lda #8                                                            ; 2695: a9 08       ..
-    jsr vdcout                                                        ; 2697: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2697: 20 cc cd     LM
     clc                                                               ; 269a: 18          .
     lda l00fa                                                         ; 269b: a5 fa       ..
     adc #$50 ; 'p'                                                    ; 269d: 69 50       .p
@@ -1228,14 +1228,14 @@ loop_c273e
     clc                                                               ; 2755: 18          .
     lda dst_low                                                       ; 2756: ad 02 20    ..
     adc #$d3 ; 'S'                                                    ; 2759: 69 d3       .S
-    jsr vdcout                                                        ; 275b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 275b: 20 cc cd     LM
     ldx #$12                                                          ; 275e: a2 12       ..
     lda dst_high                                                      ; 2760: ad 03 20    ..
     adc #2                                                            ; 2763: 69 02       ..
-    jsr vdcout                                                        ; 2765: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2765: 20 cc cd     LM
     lda #$20 ; ' '                                                    ; 2768: a9 20       .
     ldx #$1f                                                          ; 276a: a2 1f       ..
-    jsr vdcout                                                        ; 276c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 276c: 20 cc cd     LM
     lda l2543                                                         ; 276f: ad 43 25    .c%
     sta src_low                                                       ; 2772: 8d 00 20    ..
     lda l2544                                                         ; 2775: ad 44 25    .d%
@@ -1249,14 +1249,14 @@ loop_c273e
     clc                                                               ; 278c: 18          .
     lda dst_low                                                       ; 278d: ad 02 20    ..
     adc #$d3 ; 'S'                                                    ; 2790: 69 d3       .S
-    jsr vdcout                                                        ; 2792: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2792: 20 cc cd     LM
     ldx #$12                                                          ; 2795: a2 12       ..
     lda dst_high                                                      ; 2797: ad 03 20    ..
     adc #2                                                            ; 279a: 69 02       ..
-    jsr vdcout                                                        ; 279c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 279c: 20 cc cd     LM
     lda #$20 ; ' '                                                    ; 279f: a9 20       .
     ldx #$1f                                                          ; 27a1: a2 1f       ..
-    jsr vdcout                                                        ; 27a3: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 27a3: 20 cc cd     LM
     lda l2543                                                         ; 27a6: ad 43 25    .c%
     sta src_low                                                       ; 27a9: 8d 00 20    ..
     lda l2544                                                         ; 27ac: ad 44 25    .d%
@@ -1307,27 +1307,27 @@ loop_c27c9
 reset_card
     ldy #0                                                            ; 2809: a0 00       ..
     ldx #$18                                                          ; 280b: a2 18       ..
-    jsr vdcin                                                         ; 280d: 20 da cd     ZM
+    jsr VDCIN                                                         ; 280d: 20 da cd     ZM
     ora #$80                                                          ; 2810: 09 80       ..
     ldx #$18                                                          ; 2812: a2 18       ..
-    jsr vdcout                                                        ; 2814: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2814: 20 cc cd     LM
 ; $2817 referenced 1 time by $2863
 c2817
     ldx #$12                                                          ; 2817: a2 12       ..
     lda dst_high                                                      ; 2819: ad 03 20    ..
-    jsr vdcout                                                        ; 281c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 281c: 20 cc cd     LM
     ldx #$13                                                          ; 281f: a2 13       ..
     lda dst_low                                                       ; 2821: ad 02 20    ..
-    jsr vdcout                                                        ; 2824: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2824: 20 cc cd     LM
     ldx #$20 ; ' '                                                    ; 2827: a2 20       .
     lda src_high                                                      ; 2829: ad 01 20    ..
-    jsr vdcout                                                        ; 282c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 282c: 20 cc cd     LM
     ldx #$21 ; '!'                                                    ; 282f: a2 21       .!
     lda src_low                                                       ; 2831: ad 00 20    ..
-    jsr vdcout                                                        ; 2834: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2834: 20 cc cd     LM
     ldx #$1e                                                          ; 2837: a2 1e       ..
     lda #8                                                            ; 2839: a9 08       ..
-    jsr vdcout                                                        ; 283b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 283b: 20 cc cd     LM
     clc                                                               ; 283e: 18          .
     lda dst_low                                                       ; 283f: ad 02 20    ..
     adc #$50 ; 'p'                                                    ; 2842: 69 50       .p
@@ -1355,12 +1355,12 @@ check_no_cards
     sta dst_high                                                      ; 286f: 8d 03 20    ..
     ldx #$12                                                          ; 2872: a2 12       ..
     lda dst_high                                                      ; 2874: ad 03 20    ..
-    jsr vdcout                                                        ; 2877: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2877: 20 cc cd     LM
     ldx #$13                                                          ; 287a: a2 13       ..
     lda dst_low                                                       ; 287c: ad 02 20    ..
-    jsr vdcout                                                        ; 287f: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 287f: 20 cc cd     LM
     ldx #$1f                                                          ; 2882: a2 1f       ..
-    jsr vdcin                                                         ; 2884: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2884: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2887: c9 20       I
     beq c288c                                                         ; 2889: f0 01       ..
     rts                                                               ; 288b: 60          .
@@ -1373,12 +1373,12 @@ c288c
     sta dst_high                                                      ; 2895: 8d 03 20    ..
     ldx #$12                                                          ; 2898: a2 12       ..
     lda dst_high                                                      ; 289a: ad 03 20    ..
-    jsr vdcout                                                        ; 289d: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 289d: 20 cc cd     LM
     ldx #$13                                                          ; 28a0: a2 13       ..
     lda dst_low                                                       ; 28a2: ad 02 20    ..
-    jsr vdcout                                                        ; 28a5: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 28a5: 20 cc cd     LM
     ldx #$1f                                                          ; 28a8: a2 1f       ..
-    jsr vdcin                                                         ; 28aa: 20 da cd     ZM
+    jsr VDCIN                                                         ; 28aa: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 28ad: c9 20       I
     beq c28b2                                                         ; 28af: f0 01       ..
     rts                                                               ; 28b1: 60          .
@@ -1391,12 +1391,12 @@ c28b2
     sta dst_high                                                      ; 28bb: 8d 03 20    ..
     ldx #$12                                                          ; 28be: a2 12       ..
     lda dst_high                                                      ; 28c0: ad 03 20    ..
-    jsr vdcout                                                        ; 28c3: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 28c3: 20 cc cd     LM
     ldx #$13                                                          ; 28c6: a2 13       ..
     lda dst_low                                                       ; 28c8: ad 02 20    ..
-    jsr vdcout                                                        ; 28cb: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 28cb: 20 cc cd     LM
     ldx #$1f                                                          ; 28ce: a2 1f       ..
-    jsr vdcin                                                         ; 28d0: 20 da cd     ZM
+    jsr VDCIN                                                         ; 28d0: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 28d3: c9 20       I
     beq c28d8                                                         ; 28d5: f0 01       ..
     rts                                                               ; 28d7: 60          .
@@ -1409,12 +1409,12 @@ c28d8
     sta dst_high                                                      ; 28e1: 8d 03 20    ..
     ldx #$12                                                          ; 28e4: a2 12       ..
     lda dst_high                                                      ; 28e6: ad 03 20    ..
-    jsr vdcout                                                        ; 28e9: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 28e9: 20 cc cd     LM
     ldx #$13                                                          ; 28ec: a2 13       ..
     lda dst_low                                                       ; 28ee: ad 02 20    ..
-    jsr vdcout                                                        ; 28f1: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 28f1: 20 cc cd     LM
     ldx #$1f                                                          ; 28f4: a2 1f       ..
-    jsr vdcin                                                         ; 28f6: 20 da cd     ZM
+    jsr VDCIN                                                         ; 28f6: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 28f9: c9 20       I
     beq c28fe                                                         ; 28fb: f0 01       ..
     rts                                                               ; 28fd: 60          .
@@ -1427,12 +1427,12 @@ c28fe
     sta dst_high                                                      ; 2907: 8d 03 20    ..
     ldx #$12                                                          ; 290a: a2 12       ..
     lda dst_high                                                      ; 290c: ad 03 20    ..
-    jsr vdcout                                                        ; 290f: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 290f: 20 cc cd     LM
     ldx #$13                                                          ; 2912: a2 13       ..
     lda dst_low                                                       ; 2914: ad 02 20    ..
-    jsr vdcout                                                        ; 2917: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2917: 20 cc cd     LM
     ldx #$1f                                                          ; 291a: a2 1f       ..
-    jsr vdcin                                                         ; 291c: 20 da cd     ZM
+    jsr VDCIN                                                         ; 291c: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 291f: c9 20       I
     beq c2924                                                         ; 2921: f0 01       ..
     rts                                                               ; 2923: 60          .
@@ -1445,12 +1445,12 @@ c2924
     sta dst_high                                                      ; 292d: 8d 03 20    ..
     ldx #$12                                                          ; 2930: a2 12       ..
     lda dst_high                                                      ; 2932: ad 03 20    ..
-    jsr vdcout                                                        ; 2935: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2935: 20 cc cd     LM
     ldx #$13                                                          ; 2938: a2 13       ..
     lda dst_low                                                       ; 293a: ad 02 20    ..
-    jsr vdcout                                                        ; 293d: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 293d: 20 cc cd     LM
     ldx #$1f                                                          ; 2940: a2 1f       ..
-    jsr vdcin                                                         ; 2942: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2942: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2945: c9 20       I
     beq c294a                                                         ; 2947: f0 01       ..
     rts                                                               ; 2949: 60          .
@@ -1463,12 +1463,12 @@ c294a
     sta dst_high                                                      ; 2953: 8d 03 20    ..
     ldx #$12                                                          ; 2956: a2 12       ..
     lda dst_high                                                      ; 2958: ad 03 20    ..
-    jsr vdcout                                                        ; 295b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 295b: 20 cc cd     LM
     ldx #$13                                                          ; 295e: a2 13       ..
     lda dst_low                                                       ; 2960: ad 02 20    ..
-    jsr vdcout                                                        ; 2963: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2963: 20 cc cd     LM
     ldx #$1f                                                          ; 2966: a2 1f       ..
-    jsr vdcin                                                         ; 2968: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2968: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 296b: c9 20       I
     beq c2970                                                         ; 296d: f0 01       ..
     rts                                                               ; 296f: 60          .
@@ -1481,12 +1481,12 @@ c2970
     sta dst_high                                                      ; 2979: 8d 03 20    ..
     ldx #$12                                                          ; 297c: a2 12       ..
     lda dst_high                                                      ; 297e: ad 03 20    ..
-    jsr vdcout                                                        ; 2981: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2981: 20 cc cd     LM
     ldx #$13                                                          ; 2984: a2 13       ..
     lda dst_low                                                       ; 2986: ad 02 20    ..
-    jsr vdcout                                                        ; 2989: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2989: 20 cc cd     LM
     ldx #$1f                                                          ; 298c: a2 1f       ..
-    jsr vdcin                                                         ; 298e: 20 da cd     ZM
+    jsr VDCIN                                                         ; 298e: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2991: c9 20       I
     beq c2996                                                         ; 2993: f0 01       ..
     rts                                                               ; 2995: 60          .
@@ -1499,12 +1499,12 @@ c2996
     sta dst_high                                                      ; 299f: 8d 03 20    ..
     ldx #$12                                                          ; 29a2: a2 12       ..
     lda dst_high                                                      ; 29a4: ad 03 20    ..
-    jsr vdcout                                                        ; 29a7: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 29a7: 20 cc cd     LM
     ldx #$13                                                          ; 29aa: a2 13       ..
     lda dst_low                                                       ; 29ac: ad 02 20    ..
-    jsr vdcout                                                        ; 29af: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 29af: 20 cc cd     LM
     ldx #$1f                                                          ; 29b2: a2 1f       ..
-    jsr vdcin                                                         ; 29b4: 20 da cd     ZM
+    jsr VDCIN                                                         ; 29b4: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 29b7: c9 20       I
     beq c29bc                                                         ; 29b9: f0 01       ..
     rts                                                               ; 29bb: 60          .
@@ -1517,12 +1517,12 @@ c29bc
     sta dst_high                                                      ; 29c5: 8d 03 20    ..
     ldx #$12                                                          ; 29c8: a2 12       ..
     lda dst_high                                                      ; 29ca: ad 03 20    ..
-    jsr vdcout                                                        ; 29cd: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 29cd: 20 cc cd     LM
     ldx #$13                                                          ; 29d0: a2 13       ..
     lda dst_low                                                       ; 29d2: ad 02 20    ..
-    jsr vdcout                                                        ; 29d5: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 29d5: 20 cc cd     LM
     ldx #$1f                                                          ; 29d8: a2 1f       ..
-    jsr vdcin                                                         ; 29da: 20 da cd     ZM
+    jsr VDCIN                                                         ; 29da: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 29dd: c9 20       I
     beq c29e2                                                         ; 29df: f0 01       ..
     rts                                                               ; 29e1: 60          .
@@ -1535,12 +1535,12 @@ c29e2
     sta dst_high                                                      ; 29eb: 8d 03 20    ..
     ldx #$12                                                          ; 29ee: a2 12       ..
     lda dst_high                                                      ; 29f0: ad 03 20    ..
-    jsr vdcout                                                        ; 29f3: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 29f3: 20 cc cd     LM
     ldx #$13                                                          ; 29f6: a2 13       ..
     lda dst_low                                                       ; 29f8: ad 02 20    ..
-    jsr vdcout                                                        ; 29fb: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 29fb: 20 cc cd     LM
     ldx #$1f                                                          ; 29fe: a2 1f       ..
-    jsr vdcin                                                         ; 2a00: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2a00: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2a03: c9 20       I
     beq c2a08                                                         ; 2a05: f0 01       ..
     rts                                                               ; 2a07: 60          .
@@ -1553,12 +1553,12 @@ c2a08
     sta dst_high                                                      ; 2a11: 8d 03 20    ..
     ldx #$12                                                          ; 2a14: a2 12       ..
     lda dst_high                                                      ; 2a16: ad 03 20    ..
-    jsr vdcout                                                        ; 2a19: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a19: 20 cc cd     LM
     ldx #$13                                                          ; 2a1c: a2 13       ..
     lda dst_low                                                       ; 2a1e: ad 02 20    ..
-    jsr vdcout                                                        ; 2a21: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a21: 20 cc cd     LM
     ldx #$1f                                                          ; 2a24: a2 1f       ..
-    jsr vdcin                                                         ; 2a26: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2a26: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2a29: c9 20       I
     beq c2a2e                                                         ; 2a2b: f0 01       ..
     rts                                                               ; 2a2d: 60          .
@@ -1571,12 +1571,12 @@ c2a2e
     sta dst_high                                                      ; 2a37: 8d 03 20    ..
     ldx #$12                                                          ; 2a3a: a2 12       ..
     lda dst_high                                                      ; 2a3c: ad 03 20    ..
-    jsr vdcout                                                        ; 2a3f: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a3f: 20 cc cd     LM
     ldx #$13                                                          ; 2a42: a2 13       ..
     lda dst_low                                                       ; 2a44: ad 02 20    ..
-    jsr vdcout                                                        ; 2a47: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a47: 20 cc cd     LM
     ldx #$1f                                                          ; 2a4a: a2 1f       ..
-    jsr vdcin                                                         ; 2a4c: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2a4c: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2a4f: c9 20       I
     beq c2a54                                                         ; 2a51: f0 01       ..
     rts                                                               ; 2a53: 60          .
@@ -1589,12 +1589,12 @@ c2a54
     sta dst_high                                                      ; 2a5d: 8d 03 20    ..
     ldx #$12                                                          ; 2a60: a2 12       ..
     lda dst_high                                                      ; 2a62: ad 03 20    ..
-    jsr vdcout                                                        ; 2a65: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a65: 20 cc cd     LM
     ldx #$13                                                          ; 2a68: a2 13       ..
     lda dst_low                                                       ; 2a6a: ad 02 20    ..
-    jsr vdcout                                                        ; 2a6d: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a6d: 20 cc cd     LM
     ldx #$1f                                                          ; 2a70: a2 1f       ..
-    jsr vdcin                                                         ; 2a72: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2a72: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2a75: c9 20       I
     beq c2a7a                                                         ; 2a77: f0 01       ..
     rts                                                               ; 2a79: 60          .
@@ -1607,12 +1607,12 @@ c2a7a
     sta dst_high                                                      ; 2a83: 8d 03 20    ..
     ldx #$12                                                          ; 2a86: a2 12       ..
     lda dst_high                                                      ; 2a88: ad 03 20    ..
-    jsr vdcout                                                        ; 2a8b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a8b: 20 cc cd     LM
     ldx #$13                                                          ; 2a8e: a2 13       ..
     lda dst_low                                                       ; 2a90: ad 02 20    ..
-    jsr vdcout                                                        ; 2a93: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2a93: 20 cc cd     LM
     ldx #$1f                                                          ; 2a96: a2 1f       ..
-    jsr vdcin                                                         ; 2a98: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2a98: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2a9b: c9 20       I
     beq c2aa0                                                         ; 2a9d: f0 01       ..
     rts                                                               ; 2a9f: 60          .
@@ -1625,12 +1625,12 @@ c2aa0
     sta dst_high                                                      ; 2aa9: 8d 03 20    ..
     ldx #$12                                                          ; 2aac: a2 12       ..
     lda dst_high                                                      ; 2aae: ad 03 20    ..
-    jsr vdcout                                                        ; 2ab1: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2ab1: 20 cc cd     LM
     ldx #$13                                                          ; 2ab4: a2 13       ..
     lda dst_low                                                       ; 2ab6: ad 02 20    ..
-    jsr vdcout                                                        ; 2ab9: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2ab9: 20 cc cd     LM
     ldx #$1f                                                          ; 2abc: a2 1f       ..
-    jsr vdcin                                                         ; 2abe: 20 da cd     ZM
+    jsr VDCIN                                                         ; 2abe: 20 da cd     ZM
     cmp #$20 ; ' '                                                    ; 2ac1: c9 20       I
     beq c2ac6                                                         ; 2ac3: f0 01       ..
     rts                                                               ; 2ac5: 60          .
@@ -1645,10 +1645,10 @@ show_win
     ldx #$0c                                                          ; 2aca: a2 0c       ..
     lda #$18                                                          ; 2acc: a9 18       ..
     sta vdc_screen_base                                               ; 2ace: 8d 2e 0a    ...
-    jsr vdcout                                                        ; 2ad1: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2ad1: 20 cc cd     LM
     ldx #$0d                                                          ; 2ad4: a2 0d       ..
     lda #0                                                            ; 2ad6: a9 00       ..
-    jsr vdcout                                                        ; 2ad8: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2ad8: 20 cc cd     LM
     pha                                                               ; 2adb: 48          h
     lda #0                                                            ; 2adc: a9 00       ..
     sta jiffy_clock+2                                                 ; 2ade: 85 a2       ..
@@ -1661,10 +1661,10 @@ loop_c2ae0
     ldx #$0c                                                          ; 2ae7: a2 0c       ..
     lda #0                                                            ; 2ae9: a9 00       ..
     sta vdc_screen_base                                               ; 2aeb: 8d 2e 0a    ...
-    jsr vdcout                                                        ; 2aee: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2aee: 20 cc cd     LM
     ldx #$0d                                                          ; 2af1: a2 0d       ..
     lda #0                                                            ; 2af3: a9 00       ..
-    jsr vdcout                                                        ; 2af5: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2af5: 20 cc cd     LM
     pha                                                               ; 2af8: 48          h
     lda #0                                                            ; 2af9: a9 00       ..
     sta jiffy_clock+2                                                 ; 2afb: 85 a2       ..
@@ -1701,46 +1701,46 @@ decout_hund_done
     pha                                                               ; 2b25: 48          h
     ldx #$12                                                          ; 2b26: a2 12       ..
     lda #7                                                            ; 2b28: a9 07       ..
-    jsr vdcout                                                        ; 2b2a: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b2a: 20 cc cd     LM
     ldx #$13                                                          ; 2b2d: a2 13       ..
     lda #$87                                                          ; 2b2f: a9 87       ..
-    jsr vdcout                                                        ; 2b31: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b31: 20 cc cd     LM
     pla                                                               ; 2b34: 68          .
     ldx #$1f                                                          ; 2b35: a2 1f       ..
-    jsr vdcout                                                        ; 2b37: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b37: 20 cc cd     LM
     pha                                                               ; 2b3a: 48          h
     ldx #$12                                                          ; 2b3b: a2 12       ..
     lda #$1f                                                          ; 2b3d: a9 1f       ..
-    jsr vdcout                                                        ; 2b3f: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b3f: 20 cc cd     LM
     ldx #$13                                                          ; 2b42: a2 13       ..
     lda #$87                                                          ; 2b44: a9 87       ..
-    jsr vdcout                                                        ; 2b46: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b46: 20 cc cd     LM
     pla                                                               ; 2b49: 68          .
     ldx #$1f                                                          ; 2b4a: a2 1f       ..
-    jsr vdcout                                                        ; 2b4c: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b4c: 20 cc cd     LM
     ldy #$11                                                          ; 2b4f: a0 11       ..
 ; $2b51 referenced 1 time by $2b21
 c2b51
     pha                                                               ; 2b51: 48          h
     ldx #$12                                                          ; 2b52: a2 12       ..
     lda #7                                                            ; 2b54: a9 07       ..
-    jsr vdcout                                                        ; 2b56: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b56: 20 cc cd     LM
     ldx #$13                                                          ; 2b59: a2 13       ..
     lda #$87                                                          ; 2b5b: a9 87       ..
-    jsr vdcout                                                        ; 2b5d: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b5d: 20 cc cd     LM
     pla                                                               ; 2b60: 68          .
     ldx #$1f                                                          ; 2b61: a2 1f       ..
-    jsr vdcout                                                        ; 2b63: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b63: 20 cc cd     LM
     pha                                                               ; 2b66: 48          h
     ldx #$12                                                          ; 2b67: a2 12       ..
     lda #$1f                                                          ; 2b69: a9 1f       ..
-    jsr vdcout                                                        ; 2b6b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b6b: 20 cc cd     LM
     ldx #$13                                                          ; 2b6e: a2 13       ..
     lda #$87                                                          ; 2b70: a9 87       ..
-    jsr vdcout                                                        ; 2b72: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b72: 20 cc cd     LM
     pla                                                               ; 2b75: 68          .
     ldx #$1f                                                          ; 2b76: a2 1f       ..
-    jsr vdcout                                                        ; 2b78: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2b78: 20 cc cd     LM
     ldx #0                                                            ; 2b7b: a2 00       ..
     lda param                                                         ; 2b7d: ad 11 20    ..
     sec                                                               ; 2b80: 38          8
@@ -1765,67 +1765,67 @@ decout_tens_done
     pha                                                               ; 2b9b: 48          h
     ldx #$12                                                          ; 2b9c: a2 12       ..
     lda #7                                                            ; 2b9e: a9 07       ..
-    jsr vdcout                                                        ; 2ba0: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2ba0: 20 cc cd     LM
     ldx #$13                                                          ; 2ba3: a2 13       ..
     lda #$88                                                          ; 2ba5: a9 88       ..
-    jsr vdcout                                                        ; 2ba7: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2ba7: 20 cc cd     LM
     pla                                                               ; 2baa: 68          .
     ldx #$1f                                                          ; 2bab: a2 1f       ..
-    jsr vdcout                                                        ; 2bad: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bad: 20 cc cd     LM
     pha                                                               ; 2bb0: 48          h
     ldx #$12                                                          ; 2bb1: a2 12       ..
     lda #$1f                                                          ; 2bb3: a9 1f       ..
-    jsr vdcout                                                        ; 2bb5: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bb5: 20 cc cd     LM
     ldx #$13                                                          ; 2bb8: a2 13       ..
     lda #$88                                                          ; 2bba: a9 88       ..
-    jsr vdcout                                                        ; 2bbc: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bbc: 20 cc cd     LM
     pla                                                               ; 2bbf: 68          .
     ldx #$1f                                                          ; 2bc0: a2 1f       ..
-    jsr vdcout                                                        ; 2bc2: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bc2: 20 cc cd     LM
 ; $2bc5 referenced 2 times by $2b91, $2b95
 c2bc5
     pha                                                               ; 2bc5: 48          h
     ldx #$12                                                          ; 2bc6: a2 12       ..
     lda #7                                                            ; 2bc8: a9 07       ..
-    jsr vdcout                                                        ; 2bca: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bca: 20 cc cd     LM
     ldx #$13                                                          ; 2bcd: a2 13       ..
     lda #$88                                                          ; 2bcf: a9 88       ..
-    jsr vdcout                                                        ; 2bd1: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bd1: 20 cc cd     LM
     pla                                                               ; 2bd4: 68          .
     ldx #$1f                                                          ; 2bd5: a2 1f       ..
-    jsr vdcout                                                        ; 2bd7: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bd7: 20 cc cd     LM
     pha                                                               ; 2bda: 48          h
     ldx #$12                                                          ; 2bdb: a2 12       ..
     lda #$1f                                                          ; 2bdd: a9 1f       ..
-    jsr vdcout                                                        ; 2bdf: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bdf: 20 cc cd     LM
     ldx #$13                                                          ; 2be2: a2 13       ..
     lda #$88                                                          ; 2be4: a9 88       ..
-    jsr vdcout                                                        ; 2be6: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2be6: 20 cc cd     LM
     pla                                                               ; 2be9: 68          .
     ldx #$1f                                                          ; 2bea: a2 1f       ..
-    jsr vdcout                                                        ; 2bec: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bec: 20 cc cd     LM
     lda param                                                         ; 2bef: ad 11 20    ..
     ora #$30 ; '0'                                                    ; 2bf2: 09 30       .0
     pha                                                               ; 2bf4: 48          h
     ldx #$12                                                          ; 2bf5: a2 12       ..
     lda #7                                                            ; 2bf7: a9 07       ..
-    jsr vdcout                                                        ; 2bf9: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2bf9: 20 cc cd     LM
     ldx #$13                                                          ; 2bfc: a2 13       ..
     lda #$89                                                          ; 2bfe: a9 89       ..
-    jsr vdcout                                                        ; 2c00: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2c00: 20 cc cd     LM
     pla                                                               ; 2c03: 68          .
     ldx #$1f                                                          ; 2c04: a2 1f       ..
-    jsr vdcout                                                        ; 2c06: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2c06: 20 cc cd     LM
     pha                                                               ; 2c09: 48          h
     ldx #$12                                                          ; 2c0a: a2 12       ..
     lda #$1f                                                          ; 2c0c: a9 1f       ..
-    jsr vdcout                                                        ; 2c0e: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2c0e: 20 cc cd     LM
     ldx #$13                                                          ; 2c11: a2 13       ..
     lda #$89                                                          ; 2c13: a9 89       ..
-    jsr vdcout                                                        ; 2c15: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2c15: 20 cc cd     LM
     pla                                                               ; 2c18: 68          .
     ldx #$1f                                                          ; 2c19: a2 1f       ..
-    jsr vdcout                                                        ; 2c1b: 20 cc cd     LM
+    jsr VDCOUT                                                        ; 2c1b: 20 cc cd     LM
     rts                                                               ; 2c1e: 60          .
 
 ; $2c1f referenced 2 times by $2c42, $2c49
@@ -2332,10 +2332,10 @@ pydis_end
 .cerror (show_Y) != $246e, "Assertion failed: show_Y == $246e"
 
 ; Label references by decreasing frequency:
-;     vdcout:                      125
+;     VDCOUT:                      125
 ;     dst_high:                     76
 ;     dst_low:                      76
-;     vdcin:                        34
+;     VDCIN:                        34
 ;     src_high:                     24
 ;     src_low:                      24
 ;     match:                        19
@@ -2406,6 +2406,7 @@ pydis_end
 ;     special_card_face_array:       2
 ;     value_1:                       2
 ;     vdc_screen_base:               2
+;     GETIN:                         1
 ;     c2677:                         1
 ;     c2817:                         1
 ;     c288c:                         1
@@ -2440,7 +2441,6 @@ pydis_end
 ;     exit:                          1
 ;     fill_unique_array:             1
 ;     found_key:                     1
-;     getin:                         1
 ;     handle_input:                  1
 ;     handler_table:                 1
 ;     inner_loop:                    1

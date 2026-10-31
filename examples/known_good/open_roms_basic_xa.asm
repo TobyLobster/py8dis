@@ -131,19 +131,19 @@ lf7c1               = $f7c1
 lf7c6               = $f7c6
 
 // Kernal entry points ($ff81-$fff9)
-setmsg  = $ff90
+SETMSG  = $ff90
 lffa9   = $ffa9
-readst  = $ffb7
-setlfs  = $ffba
-setnam  = $ffbd
-open    = $ffc0
-chkin   = $ffc6
-chrin   = $ffcf
-chrout  = $ffd2
-load    = $ffd5
-settim  = $ffdb
-rdtim   = $ffde
-clall   = $ffe7
+READST  = $ffb7
+SETLFS  = $ffba
+SETNAM  = $ffbd
+OPEN    = $ffc0
+CHKIN   = $ffc6
+CHRIN   = $ffcf
+CHROUT  = $ffd2
+LOAD    = $ffd5
+SETTIM  = $ffdb
+RDTIM   = $ffde
+CLALL   = $ffe7
 
     * = $a000
 
@@ -1278,11 +1278,11 @@ return_10
 ca885
     lda #0                                                            // a885: a9 00       ..
     sta basic_input_buffer,x                                          // a887: 9d 00 02    ...
-    jsr clall                                                         // a88a: 20 e7 ff     .. // Close all files
+    jsr CLALL                                                         // a88a: 20 e7 ff     .. // Close all files
     jsr leb8c                                                         // a88d: 20 8c eb     ..
     lda #$0f                                                          // a890: a9 0f       .. // A=logical file number
     ldy #$0f                                                          // a892: a0 0f       .. // Y=secondary address
-    jsr setlfs                                                        // a894: 20 ba ff     .. // Set the logical file number, device number and secondary address
+    jsr SETLFS                                                        // a894: 20 ba ff     .. // Set the logical file number, device number and secondary address
     jsr sub_cbc45                                                     // a897: 20 45 bc     e.
     jsr sub_ca14f                                                     // a89a: 20 4f a1     o.
     ldy #0                                                            // a89d: a0 00       ..
@@ -1301,14 +1301,14 @@ ca8ad
     jsr ca18b                                                         // a8ad: 20 8b a1     ..
     bcc ca8d5                                                         // a8b0: 90 23       .#
     jsr sub_ca9b5                                                     // a8b2: 20 b5 a9     ..
-    jsr setnam                                                        // a8b5: 20 bd ff     .. // Set the filename
-    jsr open                                                          // a8b8: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
+    jsr SETNAM                                                        // a8b5: 20 bd ff     .. // Set the filename
+    jsr OPEN                                                          // a8b8: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
     bcc ca8c0                                                         // a8bb: 90 03       ..
     jmp ca9ad                                                         // a8bd: 4c ad a9    l..
 
 // $a8c0 referenced 1 time by $a8bb
 ca8c0
-    jsr clall                                                         // a8c0: 20 e7 ff     .. // Close all files
+    jsr CLALL                                                         // a8c0: 20 e7 ff     .. // Close all files
     jsr sub_ca8f4                                                     // a8c3: 20 f4 a8     ..
     lda basic_input_buffer                                            // a8c6: ad 00 02    ...
     cmp #$30 // '0'                                                   // a8c9: c9 30       I0
@@ -1343,15 +1343,15 @@ ca8ee
 // $a8f4 referenced 2 times by $a8c3, $a929
 sub_ca8f4
     lda #0                                                            // a8f4: a9 00       .. // A=filename length
-    jsr setnam                                                        // a8f6: 20 bd ff     .. // Set no filename
-    jsr open                                                          // a8f9: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
+    jsr SETNAM                                                        // a8f6: 20 bd ff     .. // Set no filename
+    jsr OPEN                                                          // a8f9: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
     bcc ca901                                                         // a8fc: 90 03       ..
     jmp ca9ad                                                         // a8fe: 4c ad a9    l..
 
 // $a901 referenced 1 time by $a8fc
 ca901
     ldx #$0f                                                          // a901: a2 0f       .. // X=logical file number
-    jsr chkin                                                         // a903: 20 c6 ff     F. // Open a channel for input
+    jsr CHKIN                                                         // a903: 20 c6 ff     F. // Open a channel for input
     bcc ca90b                                                         // a906: 90 03       ..
     jmp ca9ad                                                         // a908: 4c ad a9    l..
 
@@ -1366,9 +1366,9 @@ loop_ca90d
 
 // $a914 referenced 1 time by $a90f
 ca914
-    jsr readst                                                        // a914: 20 b7 ff     .. // Read the I/O status
+    jsr READST                                                        // a914: 20 b7 ff     .. // Read the I/O status
     bne ca927                                                         // a917: d0 0e       P.
-    jsr chrin                                                         // a919: 20 cf ff     O. // Read a character from the input channel
+    jsr CHRIN                                                         // a919: 20 cf ff     O. // Read a character from the input channel
     bcc ca921                                                         // a91c: 90 03       ..
     jmp ca9ad                                                         // a91e: 4c ad a9    l..
 
@@ -1394,7 +1394,7 @@ loop_ca931
     dey                                                               // a931: 88          .
     bmi ca93d                                                         // a932: 30 09       0.
     lda basic_input_buffer,x                                          // a934: bd 00 02    ... // A=character to output
-    jsr chrout                                                        // a937: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // a937: 20 d2 ff     R. // Output a character
     inx                                                               // a93a: e8          .
     bne loop_ca931                                                    // a93b: d0 f4       P.
 // $a93d referenced 1 time by $a932
@@ -1411,16 +1411,16 @@ ca945
     lda #0                                                            // a945: a9 00       .. // A=logical file number
     ldx device_number                                                 // a947: a6 ba       .. // X=device number
     ldy #$60                                                          // a949: a0 60       .. // Y=secondary address
-    jsr setlfs                                                        // a94b: 20 ba ff     .. // Set the logical file number, device number and secondary address
+    jsr SETLFS                                                        // a94b: 20 ba ff     .. // Set the logical file number, device number and secondary address
     jsr sub_ca9b5                                                     // a94e: 20 b5 a9     ..
-    jsr open                                                          // a951: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
+    jsr OPEN                                                          // a951: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
     bcs ca9ad                                                         // a954: b0 57       .w
     ldx #0                                                            // a956: a2 00       .. // X=logical file number
-    jsr chkin                                                         // a958: 20 c6 ff     F. // Open a channel for input
+    jsr CHKIN                                                         // a958: 20 c6 ff     F. // Open a channel for input
     bcs ca9ad                                                         // a95b: b0 50       .p
-    jsr chrin                                                         // a95d: 20 cf ff     O. // Read a character from the input channel
+    jsr CHRIN                                                         // a95d: 20 cf ff     O. // Read a character from the input channel
     bcs ca9ad                                                         // a960: b0 4b       .k
-    jsr chrin                                                         // a962: 20 cf ff     O. // Read a character from the input channel
+    jsr CHRIN                                                         // a962: 20 cf ff     O. // Read a character from the input channel
     bcs ca9ad                                                         // a965: b0 46       .f
 // $a967 referenced 1 time by $a9a5
 ca967
@@ -1428,7 +1428,7 @@ ca967
 // $a969 referenced 2 times by $a980, $a985
 ca969
     iny                                                               // a969: c8          H
-    jsr chrin                                                         // a96a: 20 cf ff     O. // Read a character from the input channel
+    jsr CHRIN                                                         // a96a: 20 cf ff     O. // Read a character from the input channel
     bcs ca9ad                                                         // a96d: b0 3e       .>
     sta basic_input_buffer,y                                          // a96f: 99 00 02    ... // A=character read
     cpy #$50 // 'p'                                                   // a972: c0 50       .p
@@ -1437,7 +1437,7 @@ ca969
 
 // $a979 referenced 1 time by $a974
 ca979
-    jsr readst                                                        // a979: 20 b7 ff     .. // Read the I/O status
+    jsr READST                                                        // a979: 20 b7 ff     .. // Read the I/O status
     bne ca989                                                         // a97c: d0 0b       P.
     cpy #4                                                            // a97e: c0 04       ..
     bcc ca969                                                         // a980: 90 e7       ..
@@ -1465,13 +1465,13 @@ ca98d
     beq ca967                                                         // a9a5: f0 c0       ..
 // $a9a7 referenced 3 times by $a8d2, $a93d, $a98f
 ca9a7
-    jsr clall                                                         // a9a7: 20 e7 ff     .. // Close all files
+    jsr CLALL                                                         // a9a7: 20 e7 ff     .. // Close all files
     jmp cac03                                                         // a9aa: 4c 03 ac    l..
 
 // $a9ad referenced 9 times by $a8bd, $a8fe, $a908, $a91e, $a954, $a95b, $a960, $a965, $a96d
 ca9ad
     pha                                                               // a9ad: 48          h
-    jsr clall                                                         // a9ae: 20 e7 ff     .. // Close all files
+    jsr CLALL                                                         // a9ae: 20 e7 ff     .. // Close all files
     pla                                                               // a9b1: 68          .
     jmp ca6aa                                                         // a9b2: 4c aa a6    l..
 
@@ -1486,7 +1486,7 @@ loop_ca9b7
     tya                                                               // a9bc: 98          .  // A=filename length
     ldx basic_text_ptr                                                // a9bd: a6 7a       .. // X=filename address (low byte)
     ldy basic_text_ptr+1                                              // a9bf: a4 7b       .. // Y=filename address (high byte)
-    jmp setnam                                                        // a9c1: 4c bd ff    l.. // Set the filename
+    jmp SETNAM                                                        // a9c1: 4c bd ff    l.. // Set the filename
 
     .byt $60, $a9,   0, $85, $61, $60, $a5, $61, $f0, $fb, $a5, $69   // a9c4: 60 a9 00... ...
     .byt $d0,   4, $85, $61, $f0, $f3, $a5, $66, $45, $6e, $85, $66   // a9d0: d0 04 85... P..
@@ -1543,7 +1543,7 @@ loop_cab26
     tax                                                               // ab27: aa          .
     lda (basic_string_temp_ptr),y                                     // ab28: b1 35       .5 // A=character to output
     beq cab34                                                         // ab2a: f0 08       ..
-    jsr chrout                                                        // ab2c: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // ab2c: 20 d2 ff     R. // Output a character
     txa                                                               // ab2f: 8a          .
     tay                                                               // ab30: a8          .
     iny                                                               // ab31: c8          H
@@ -1650,7 +1650,7 @@ cabc3
 // $abd1 referenced 3 times by $abb6, $abbc, $abc0
 cabd1
     pla                                                               // abd1: 68          .  // A=character to output
-    jsr chrout                                                        // abd2: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // abd2: 20 d2 ff     R. // Output a character
 // $abd5 referenced 1 time by $abce
 cabd5
     iny                                                               // abd5: c8          H
@@ -1705,13 +1705,13 @@ cac03
     lda #$ff                                                          // ac08: a9 ff       ..
     sta basic_current_line+1                                          // ac0a: 85 3a       .:
     lda #$80                                                          // ac0c: a9 80       .. // A=message flags
-    jsr setmsg                                                        // ac0e: 20 90 ff     .. // Show only Kernal control messages
+    jsr SETMSG                                                        // ac0e: 20 90 ff     .. // Show only Kernal control messages
 // $ac11 referenced 2 times by $ac4e, $acad
 cac11
     ldx #0                                                            // ac11: a2 00       ..
 // $ac13 referenced 2 times by $ac16, $ac27
 cac13
-    jsr chrin                                                         // ac13: 20 cf ff     O. // Read a character from the input channel
+    jsr CHRIN                                                         // ac13: 20 cf ff     O. // Read a character from the input channel
     bcs cac13                                                         // ac16: b0 fb       ..
     cmp #$0d                                                          // ac18: c9 0d       I. // A=character read
     beq cac2a                                                         // ac1a: f0 0e       ..
@@ -2645,7 +2645,7 @@ cb405
     sta basic_load_verify_flag                                        // b405: 85 0a       ..
     ldy #1                                                            // b407: a0 01       .. // Y=secondary address
     ldx #7                                                            // b409: a2 07       .. // X=device number
-    jmp setlfs                                                        // b40b: 4c ba ff    l.. // Set the logical file number, device number and secondary address
+    jmp SETLFS                                                        // b40b: 4c ba ff    l.. // Set the logical file number, device number and secondary address
 
 // $b40e referenced 3 times by $a2c3, $a711, $ab63
 sub_cb40e
@@ -2654,7 +2654,7 @@ sub_cb40e
     ora fac1_exponent                                                 // b412: 05 61       ..
     bne cb41b                                                         // b414: d0 05       P.
     lda #$30 // '0'                                                   // b416: a9 30       .0 // A=character to output
-    jmp chrout                                                        // b418: 4c d2 ff    lR. // Output '0'
+    jmp CHROUT                                                        // b418: 4c d2 ff    lR. // Output '0'
 
 // $b41b referenced 1 time by $b414
 cb41b
@@ -2686,7 +2686,7 @@ cb43e
     txa                                                               // b43e: 8a          .
     clc                                                               // b43f: 18          .
     adc #$30 // '0'                                                   // b440: 69 30       .0 // A=character to output
-    jsr chrout                                                        // b442: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // b442: 20 d2 ff     R. // Output a character
     dey                                                               // b445: 88          .
     bpl cb425                                                         // b446: 10 dd       ..
     rts                                                               // b448: 60          .
@@ -2712,7 +2712,7 @@ basic_command_run
     jsr basic_command_clr                                             // b496: 20 00 ba     ..
     jsr sub_cbc12                                                     // b499: 20 12 bc     ..
     lda #0                                                            // b49c: a9 00       .. // A=message flags
-    jsr setmsg                                                        // b49e: 20 90 ff     .. // Turn off Kernal messages
+    jsr SETMSG                                                        // b49e: 20 90 ff     .. // Turn off Kernal messages
     jsr sub_cb9c1                                                     // b4a1: 20 c1 b9     A.
     bcs cb4ce                                                         // b4a4: b0 28       .(
 // $b4a6 referenced 2 times by $b491, $bbb8
@@ -2735,7 +2735,7 @@ cb4b9
 // $b4c1 referenced 1 time by $b4ad
 cb4c1
     lda #0                                                            // b4c1: a9 00       .. // A=message flags
-    jsr setmsg                                                        // b4c3: 20 90 ff     .. // Turn off Kernal messages
+    jsr SETMSG                                                        // b4c3: 20 90 ff     .. // Turn off Kernal messages
 // $b4c6 referenced 1 time by $b4b9
 cb4c6
     jsr le214                                                         // b4c6: 20 14 e2     ..
@@ -2914,7 +2914,7 @@ cb60d
     lda #6                                                            // b60d: a9 06       ..
     jsr le107                                                         // b60f: 20 07 e1     ..
     jsr le3eb                                                         // b612: 20 eb e3     ..
-    jsr rdtim                                                         // b615: 20 de ff     .. // Read the jiffy clock
+    jsr RDTIM                                                         // b615: 20 de ff     .. // Read the jiffy clock
     sty basic_index2                                                  // b618: 84 24       .$ // Y=jiffy clock (low byte)
     stx basic_index1+1                                                // b61a: 86 23       .# // X=jiffy clock (middle byte)
     sta basic_index1                                                  // b61c: 85 22       ." // A=jiffy clock (high byte)
@@ -3154,7 +3154,7 @@ cb83b
     ldy basic_index2                                                  // b840: a4 24       .$ // Y=jiffy clock (low byte)
     ldx basic_index1+1                                                // b842: a6 23       .# // X=jiffy clock (middle byte)
     lda basic_index1                                                  // b844: a5 22       ." // A=jiffy clock (high byte)
-    jmp settim                                                        // b846: 4c db ff    l.. // Set the jiffy clock
+    jmp SETTIM                                                        // b846: 4c db ff    l.. // Set the jiffy clock
 
     .byt $a0, $bf, $a9, $11, $4c, $67, $b8, $20, $25, $e4, $a5, $66   // b849: a0 bf a9... ...
     .byt $49, $ff, $85, $66, $4c, $6a, $b8                            // b855: 49 ff 85... i..
@@ -3272,7 +3272,7 @@ cb96e
     beq cb9a1                                                         // b976: f0 29       .)
     tax                                                               // b978: aa          .
     lda la69b,x                                                       // b979: bd 9b a6    ... // A=character to output
-    jsr chrout                                                        // b97c: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // b97c: 20 d2 ff     R. // Output a character
 // $b97f referenced 1 time by $b9b8
 cb97f
     lda (basic_string_temp_ptr),y                                     // b97f: b1 35       .5
@@ -3296,7 +3296,7 @@ cb994
     lda return_14,x                                                   // b998: bd 73 a2    ... // A=character to output
 // $b99b referenced 1 time by $b991
 cb99b
-    jsr chrout                                                        // b99b: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // b99b: 20 d2 ff     R. // Output a character
     iny                                                               // b99e: c8          H
     bne cb96e                                                         // b99f: d0 cd       PM
 // $b9a1 referenced 1 time by $b976
@@ -3313,7 +3313,7 @@ cb9a1
     txs                                                               // b9b0: 9a          .
     tax                                                               // b9b1: aa          .
     lda return_14,x                                                   // b9b2: bd 73 a2    ... // A=character to output
-    jsr chrout                                                        // b9b5: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // b9b5: 20 d2 ff     R. // Output a character
     jmp cb97f                                                         // b9b8: 4c 7f b9    l..
 
 // $b9bb referenced 2 times by $b972, $b983
@@ -3358,7 +3358,7 @@ sub_cb9eb
     sta basic_variables_start+1                                       // b9fe: 85 2e       ..
 // $ba00 referenced 2 times by $b496, $bacc
 basic_command_clr
-    jsr clall                                                         // ba00: 20 e7 ff     .. // Close all files
+    jsr CLALL                                                         // ba00: 20 e7 ff     .. // Close all files
     lda basic_memory_top                                              // ba03: a5 37       .7
     sta basic_strings_bottom                                          // ba05: 85 33       .3
     lda basic_memory_top+1                                            // ba07: a5 38       .8
@@ -3460,7 +3460,7 @@ sub_cba91
     sta basic_load_verify_flag                                        // ba91: 85 0a       ..
     jsr leb8c                                                         // ba93: 20 8c eb     ..
     ldy #0                                                            // ba96: a0 00       .. // Y=secondary address
-    jmp setlfs                                                        // ba98: 4c ba ff    l.. // Set the logical file number, device number and secondary address
+    jmp SETLFS                                                        // ba98: 4c ba ff    l.. // Set the logical file number, device number and secondary address
 
 basic_command_verify
     lda #1                                                            // ba9b: a9 01       ..
@@ -3481,7 +3481,7 @@ cbab3
     ldy basic_program_start+1                                         // bab3: a4 2c       .,
     ldx basic_program_start                                           // bab5: a6 2b       .+
     lda basic_load_verify_flag                                        // bab7: a5 0a       ..
-    jsr load                                                          // bab9: 20 d5 ff     U. // Load or verify a file (set up with SETLFS and SETNAM)
+    jsr LOAD                                                          // bab9: 20 d5 ff     U. // Load or verify a file (set up with SETLFS and SETNAM)
     bcc cbac1                                                         // babc: 90 03       ..
     jmp ca6aa                                                         // babe: 4c aa a6    l..
 
@@ -4657,9 +4657,9 @@ pydis_end
 //     l0100:                        10
 //     le195:                        10
 //     ca9ad:                         9
+//     CHROUT:                        8
 //     basic_garbage_step:            8
 //     basic_program_start:           8
-//     chrout:                        8
 //     basic_arrays_start:            7
 //     basic_garbage_flag:            7
 //     sub_cb9c1:                     7
@@ -4669,16 +4669,17 @@ pydis_end
 //     cac03:                         6
 //     quote_mode_flag:               6
 //     sub_cadae:                     6
+//     CHRIN:                         5
+//     CLALL:                         5
 //     basic_end_char:                5
 //     ca420:                         5
-//     chrin:                         5
-//     clall:                         5
 //     l0101:                         5
 //     la6ca:                         5
 //     le089:                         5
 //     lf7c1:                         5
 //     sub_cb959:                     5
 //     sub_cba2e:                     5
+//     SETLFS:                        4
 //     basic_current_line:            4
 //     basic_input_buffer_index:      4
 //     basic_load_verify_flag:        4
@@ -4687,10 +4688,12 @@ pydis_end
 //     cae3a:                         4
 //     cbef4:                         4
 //     cpu_port_direction:            4
-//     setlfs:                        4
 //     sub_ca167:                     4
 //     sub_cb901:                     4
 //     sub_cbdd3:                     4
+//     OPEN:                          3
+//     SETMSG:                        3
+//     SETNAM:                        3
 //     basic_operator_ptr:            3
 //     ca480:                         3
 //     ca493:                         3
@@ -4720,11 +4723,8 @@ pydis_end
 //     le214:                         3
 //     le265:                         3
 //     le4cd:                         3
-//     open:                          3
 //     return_13:                     3
 //     return_14:                     3
-//     setmsg:                        3
-//     setnam:                        3
 //     sub_ca1df:                     3
 //     sub_ca290:                     3
 //     sub_ca746:                     3
@@ -4735,6 +4735,8 @@ pydis_end
 //     sub_cbc45:                     3
 //     sub_cbcf7:                     3
 //     usr_jmp:                       3
+//     CHKIN:                         2
+//     READST:                        2
 //     basic_command_clr:             2
 //     basic_command_goto:            2
 //     basic_memory_top:              2
@@ -4783,7 +4785,6 @@ pydis_end
 //     cbcff:                         2
 //     cbec7:                         2
 //     cbfb0:                         2
-//     chkin:                         2
 //     filename_ptr:                  2
 //     io_status:                     2
 //     l01ff:                         2
@@ -4796,7 +4797,6 @@ pydis_end
 //     le3eb:                         2
 //     le404:                         2
 //     leb8c:                         2
-//     readst:                        2
 //     return_18:                     2
 //     return_20:                     2
 //     return_25:                     2
@@ -4826,6 +4826,9 @@ pydis_end
 //     sub_cbccd:                     2
 //     sub_cbf66:                     2
 //     usr_address:                   2
+//     LOAD:                          1
+//     RDTIM:                         1
+//     SETTIM:                        1
 //     basic_command_end:             1
 //     basic_command_let:             1
 //     basic_command_rem:             1
@@ -5121,7 +5124,6 @@ pydis_end
 //     le457:                         1
 //     le480:                         1
 //     lf7c6:                         1
-//     load:                          1
 //     loop_ca542:                    1
 //     loop_ca5b5:                    1
 //     loop_ca685:                    1
@@ -5159,7 +5161,6 @@ pydis_end
 //     loop_cbe0a:                    1
 //     loop_cbe56:                    1
 //     loop_cbf8e:                    1
-//     rdtim:                         1
 //     return_1:                      1
 //     return_10:                     1
 //     return_11:                     1
@@ -5180,7 +5181,6 @@ pydis_end
 //     return_8:                      1
 //     return_9:                      1
 //     secondary_address:             1
-//     settim:                        1
 //     stop_key_flag:                 1
 //     sub_ca1e4:                     1
 //     sub_ca2f0:                     1

@@ -7,9 +7,9 @@ job_read    = &80
 ; Memory locations
 
 ; Zero page (&0000-&00ff)
-jobs = &0000
-hdrs = &0006
-vnmi = &0065
+JOBS = &0000
+HDRS = &0006
+VNMI = &0065
 
 ; Buffer 0 (&0300-&03ff)
 buffer_0 = &0300
@@ -18,56 +18,56 @@ buffer_0 = &0300
 buffer_1 = &0400
 
 ; VIA 1 (serial bus) (&1800-&180f)
-pb  = &1800
+PB  = &1800
 
 ; VIA 2 (disk controller) (&1c00-&1c0f)
-dskcnt  = &1c00
-data2   = &1c01
+DSKCNT  = &1c00
+DATA2   = &1c01
 
 ; DOS ROM (&c000-&ffe5)
-idle    = &ebe7
-sync    = &f556
-gcrbin  = &f8e0
-errr    = &f969
+IDLE    = &ebe7
+SYNC    = &f556
+GCRBIN  = &f8e0
+ERRR    = &f969
 
     org &0500
 
 .pydis_start
 .drive_code
     sei                                                               ; 0500: 78          .
-    lda dskcnt                                                        ; 0501: ad 00 1c    ...
+    lda DSKCNT                                                        ; 0501: ad 00 1c    ...
     ora #8                                                            ; 0504: 09 08       ..
-    sta dskcnt                                                        ; 0506: 8d 00 1c    ... ; Turn the LED on
+    sta DSKCNT                                                        ; 0506: 8d 00 1c    ... ; Turn the LED on
 
     ; Job 0: read track 18, sector 1 into buffer 0 ($0300)
     lda #&12                                                          ; 0509: a9 12       ..
-    sta hdrs                                                          ; 050b: 85 06       ..
+    sta HDRS                                                          ; 050b: 85 06       ..
     ldx #1                                                            ; 050d: a2 01       ..
-    stx hdrs+1                                                        ; 050f: 86 07       ..
+    stx HDRS+1                                                        ; 050f: 86 07       ..
     lda #job_read                                                     ; 0511: a9 80       ..
-    sta jobs                                                          ; 0513: 85 00       ..
+    sta JOBS                                                          ; 0513: 85 00       ..
 
 ; &0515 referenced 1 time by &0517
 .loop_c0515
-    lda jobs                                                          ; 0515: a5 00       ..
+    lda JOBS                                                          ; 0515: a5 00       ..
     bmi loop_c0515                                                    ; 0517: 30 fc       0.
     cmp #job_ok                                                       ; 0519: c9 01       I.
     bne c054a                                                         ; 051b: d0 2d       P-
 
     ; Job 3: move the head to track 18, then run the code in buffer 3 (job_3_code)
     ldy #&12                                                          ; 051d: a0 12       ..
-    sty hdrs+6                                                        ; 051f: 84 0c       ..
+    sty HDRS+6                                                        ; 051f: 84 0c       ..
     lda #job_execute                                                  ; 0521: a9 e0       ..
-    sta jobs+3                                                        ; 0523: 85 03       ..
+    sta JOBS+3                                                        ; 0523: 85 03       ..
 
 ; &0525 referenced 1 time by &0527
 .loop_c0525
-    lda jobs+3                                                        ; 0525: a5 03       ..
+    lda JOBS+3                                                        ; 0525: a5 03       ..
     bmi loop_c0525                                                    ; 0527: 30 fc       0.
 
     ; Job 1: move the head to track 1 (bump)
     lda #job_bump                                                     ; 0529: a9 c0       ..
-    sta jobs+1                                                        ; 052b: 85 01       ..
+    sta JOBS+1                                                        ; 052b: 85 01       ..
 
     ; Copy 69 bytes of memory from buffer_0+1 to buffer_0+70
     ldy #&45 ; 'e'                                                    ; 052d: a0 45       .e
@@ -80,23 +80,23 @@ errr    = &f969
 
     ; Set the NMI vector to nmi_handler
     lda #<nmi_handler                                                 ; 0538: a9 49       .i
-    sta vnmi                                                          ; 053a: 85 65       ..
+    sta VNMI                                                          ; 053a: 85 65       ..
     lda #>nmi_handler                                                 ; 053c: a9 05       ..
-    sta vnmi+1                                                        ; 053e: 85 66       ..
+    sta VNMI+1                                                        ; 053e: 85 66       ..
 
     lda #8                                                            ; 0540: a9 08       ..
-    sta pb                                                            ; 0542: 8d 00 18    ... ; Release the data line, pull the clock line low, stop acknowledging ATN
+    sta PB                                                            ; 0542: 8d 00 18    ... ; Release the data line, pull the clock line low, stop acknowledging ATN
     cli                                                               ; 0545: 58          x
-    jmp idle                                                          ; 0546: 4c e7 eb    l.. ; The DOS's main loop, waiting for a command (and running the jobs)
+    jmp IDLE                                                          ; 0546: 4c e7 eb    l.. ; The DOS's main loop, waiting for a command (and running the jobs)
 
 .nmi_handler
     rti                                                               ; 0549: 40          @
 
 ; &054a referenced 1 time by &051b
 .c054a
-    lda dskcnt                                                        ; 054a: ad 00 1c    ...
+    lda DSKCNT                                                        ; 054a: ad 00 1c    ...
     and #&f7                                                          ; 054d: 29 f7       ).
-    sta dskcnt                                                        ; 054f: 8d 00 1c    ... ; Turn the LED off
+    sta DSKCNT                                                        ; 054f: 8d 00 1c    ... ; Turn the LED off
     rts                                                               ; 0552: 60          .
 
     equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 0553: 00 00 00... ...
@@ -110,23 +110,23 @@ errr    = &f969
     equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                        ; 05f3: 00 00 00... ...
 
 .job_3_code
-    lda dskcnt                                                        ; 0600: ad 00 1c    ...
+    lda DSKCNT                                                        ; 0600: ad 00 1c    ...
     ora #&64                                                          ; 0603: 09 64       ..
-    sta dskcnt                                                        ; 0605: 8d 00 1c    ... ; Turn the motor on, set the bit rate to 3 (for tracks 1-17)
+    sta DSKCNT                                                        ; 0605: 8d 00 1c    ... ; Turn the motor on, set the bit rate to 3 (for tracks 1-17)
 ; &0608 referenced 1 time by &060b
 .loop_c0608
-    bit dskcnt                                                        ; 0608: 2c 00 1c    ,.. ; Test SYNC (clear at a sync mark)
+    bit DSKCNT                                                        ; 0608: 2c 00 1c    ,.. ; Test SYNC (clear at a sync mark)
     bmi loop_c0608                                                    ; 060b: 30 fb       0.
-    jsr sync                                                          ; 060d: 20 56 f5     v. ; Wait for a sync mark (20 ms at most)
+    jsr SYNC                                                          ; 060d: 20 56 f5     v. ; Wait for a sync mark (20 ms at most)
 ; &0610 referenced 1 time by &0610
 .loop_c0610
     bvc loop_c0610                                                    ; 0610: 50 fe       p.
     clv                                                               ; 0612: b8          .
-    lda data2                                                         ; 0613: ad 01 1c    ...
+    lda DATA2                                                         ; 0613: ad 01 1c    ...
     sta buffer_1                                                      ; 0616: 8d 00 04    ...
-    jsr gcrbin                                                        ; 0619: 20 e0 f8     .. ; Convert the GCR data read into the buffer at BUFPNT to binary
+    jsr GCRBIN                                                        ; 0619: 20 e0 f8     .. ; Convert the GCR data read into the buffer at BUFPNT to binary
     lda #job_ok                                                       ; 061c: a9 01       .. ; A=result (1 for OK)
-    jmp errr                                                          ; 061e: 4c 69 f9    l.. ; End the job, with its result (A) in the job queue
+    jmp ERRR                                                          ; 061e: 4c 69 f9    l.. ; End the job, with its result (A) in the job queue
 
 .pydis_end
 
@@ -138,24 +138,24 @@ errr    = &f969
 save pydis_start, pydis_end
 
 ; Label references by decreasing frequency:
-;     dskcnt:       7
-;     jobs:         2
+;     DSKCNT:       7
+;     JOBS:         2
+;     DATA2:        1
+;     ERRR:         1
+;     GCRBIN:       1
+;     HDRS:         1
+;     IDLE:         1
+;     PB:           1
+;     SYNC:         1
+;     VNMI:         1
 ;     buffer_0:     1
 ;     buffer_1:     1
 ;     c054a:        1
-;     data2:        1
-;     errr:         1
-;     gcrbin:       1
-;     hdrs:         1
-;     idle:         1
 ;     loop_c0515:   1
 ;     loop_c0525:   1
 ;     loop_c052f:   1
 ;     loop_c0608:   1
 ;     loop_c0610:   1
-;     pb:           1
-;     sync:         1
-;     vnmi:         1
 
 ; Automatically generated labels:
 ;     c054a

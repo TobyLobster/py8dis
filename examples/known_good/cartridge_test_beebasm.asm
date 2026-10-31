@@ -14,14 +14,14 @@ vic_border_colour   = &d020
 
 ; Kernal ROM (&e000-&ff80)
 kernal_irq_handler  = &ea31
-nbsout              = &f1ca
-restor_rom          = &fd15
-ramtas_rom          = &fd50
-ioinit_rom          = &fda3
-pcint               = &ff5b
+NBSOUT              = &f1ca
+RESTOR_ROM          = &fd15
+RAMTAS_ROM          = &fd50
+IOINIT_ROM          = &fda3
+PCINT               = &ff5b
 
 ; Kernal entry points (&ff81-&fff9)
-getin   = &ffe4
+GETIN   = &ffe4
 
     org &8000
 
@@ -36,10 +36,10 @@ getin   = &ffe4
 
 .cartridge_cold_start
     sei                                                               ; 8009: 78          .
-    jsr ioinit_rom                                                    ; 800a: 20 a3 fd     ..
-    jsr ramtas_rom                                                    ; 800d: 20 50 fd     p.
-    jsr restor_rom                                                    ; 8010: 20 15 fd     ..
-    jsr pcint                                                         ; 8013: 20 5b ff     [.
+    jsr IOINIT_ROM                                                    ; 800a: 20 a3 fd     ..
+    jsr RAMTAS_ROM                                                    ; 800d: 20 50 fd     p.
+    jsr RESTOR_ROM                                                    ; 8010: 20 15 fd     ..
+    jsr PCINT                                                         ; 8013: 20 5b ff     [.
 
     ; Set the NMI vector to nmi_handler
     ldx #<nmi_handler                                                 ; 8016: a2 4b       .k
@@ -68,7 +68,7 @@ getin   = &ffe4
     cli                                                               ; 803e: 58          x
 ; &803f referenced 2 times by &8042, &8046
 .c803f
-    jsr getin                                                         ; 803f: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         ; 803f: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     beq c803f                                                         ; 8042: f0 fb       ..
     cmp #&51 ; 'q'                                                    ; 8044: c9 51       Iq ; A=character read
     bne c803f                                                         ; 8046: d0 f7       P.
@@ -82,7 +82,7 @@ getin   = &ffe4
     rti                                                               ; 804c: 40          @
 
 .chrout_handler
-    jmp nbsout                                                        ; 804d: 4c ca f1    lJ.
+    jmp NBSOUT                                                        ; 804d: 4c ca f1    lJ.
 
 .irq_handler
     inc vic_border_colour                                             ; 8050: ee 20 d0    . P
@@ -105,18 +105,18 @@ save pydis_start, pydis_end
 
 ; Label references by decreasing frequency:
 ;     c803f:                     2
+;     GETIN:                     1
+;     IOINIT_ROM:                1
+;     NBSOUT:                    1
+;     PCINT:                     1
+;     RAMTAS_ROM:                1
+;     RESTOR_ROM:                1
 ;     basic_warm_start_vector:   1
 ;     brk_vector:                1
 ;     chrout_vector:             1
-;     getin:                     1
-;     ioinit_rom:                1
 ;     irq_vector:                1
 ;     kernal_irq_handler:        1
-;     nbsout:                    1
 ;     nmi_vector:                1
-;     pcint:                     1
-;     ramtas_rom:                1
-;     restor_rom:                1
 ;     vic_border_colour:         1
 
 ; Automatically generated labels:

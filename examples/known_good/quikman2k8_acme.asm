@@ -98,8 +98,8 @@ kernal_irq_handler  = $eabf
 kernal_reset        = $fd22
 
 ; Kernal entry points ($ff8a-$fff9)
-chrout  = $ffd2
-getin   = $ffe4
+CHROUT  = $ffd2
+GETIN   = $ffe4
 
 ; The PRG file's header: the address to load it at
     * = $0fff
@@ -120,7 +120,7 @@ basic_end
 
 sys_entry
     lda #8                                                            ; 100d: a9 08       .. ; A=character to output
-    jsr chrout                                                        ; 100f: 20 d2 ff     R. ; Output $08 (disable case switching)
+    jsr CHROUT                                                        ; 100f: 20 d2 ff     R. ; Output $08 (disable case switching)
     lda vic_vertical_position                                         ; 1012: ad 01 90    ...
     sbc #4                                                            ; 1015: e9 04       ..
     sta vic_vertical_position                                         ; 1017: 8d 01 90    ...
@@ -204,7 +204,7 @@ loop_c1094
     sta sprite                                                        ; 109d: 8d a1 02    ...
     jsr sub_c12a3                                                     ; 10a0: 20 a3 12     ..
     jsr sub_c168d                                                     ; 10a3: 20 8d 16     ..
-    jsr getin                                                         ; 10a6: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         ; 10a6: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     cmp #3                                                            ; 10a9: c9 03       I. ; A=character read
     bne c10b0                                                         ; 10ab: d0 03       P.
     jmp kernal_reset                                                  ; 10ad: 4c 22 fd    l". ; The Kernal's reset handler
@@ -499,7 +499,7 @@ loop_c126f
 
 ; $127b referenced 5 times by $11e0, $1207, $121a, $122a, $1232
 c127b
-    jsr getin                                                         ; 127b: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         ; 127b: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     cmp #3                                                            ; 127e: c9 03       I. ; A=character read
     beq c1234                                                         ; 1280: f0 b2       ..
     jsr sub_c12a3                                                     ; 1282: 20 a3 12     ..
@@ -995,7 +995,7 @@ sub_c1577
     lda #$af                                                          ; 1583: a9 af       ..
     sta vic_volume_aux_colour                                         ; 1585: 8d 0e 90    ...
     lda #$93                                                          ; 1588: a9 93       .. ; A=character to output
-    jsr chrout                                                        ; 158a: 20 d2 ff     R. ; Output $93 (clear screen)
+    jsr CHROUT                                                        ; 158a: 20 d2 ff     R. ; Output $93 (clear screen)
     ldx #$15                                                          ; 158d: a2 15       ..
 ; $158f referenced 1 time by $159c
 loop_c158f
@@ -2080,6 +2080,8 @@ screen_memory
 ;     sub_c15f9:                      3
 ;     sub_c161f:                      3
 ;     vic_background_border_colour:   3
+;     CHROUT:                         2
+;     GETIN:                          2
 ;     c12cb:                          2
 ;     c12d8:                          2
 ;     c1309:                          2
@@ -2103,10 +2105,8 @@ screen_memory
 ;     c19ca:                          2
 ;     c19e5:                          2
 ;     c1cca:                          2
-;     chrout:                         2
 ;     demoqman:                       2
 ;     fac2_exponent:                  2
-;     getin:                          2
 ;     l1a0f:                          2
 ;     l1ae3:                          2
 ;     l1c50:                          2

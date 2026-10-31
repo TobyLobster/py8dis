@@ -174,7 +174,7 @@ To change the configuration, add `import config` and call the following as neede
 | `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
 | `config.set_text_encoding(s)`                         | "ascii" | How bytes are shown as text: "ascii", "petscii" or "screen" (see [Text encodings](#text-encodings)). |
 | `config.set_redundant_instruction_comments(b)`        | True    | Comment 6502 and Z80 instructions whose results are never used, `; Redundant instruction?` (see below). |
-| `config.set_upper_case_os_calls(b)`                   | True    | Name the Acorn MOS's calls in capitals, e.g. `OSBYTE`, `OSWRCH`, `GSINIT`, or in lower case (`osbyte`). Set it before `acorn.bbc()` etc. |
+| `config.set_upper_case_os_calls(b)`                   | True    | Name the OS's calls in capitals, as the manufacturer's documentation does: the Acorn MOS's (`OSBYTE`, `OSWRCH`, `GSINIT`) and Commodore's Kernal's (`CHROUT`), with Commodore's other names (see [Commodore](#commodore-64-vic-20-c128-plus4-pet-and-1541)); or in lower case (`osbyte`, `chrout`). Set it before `acorn.bbc()`, `commodore.c64()` etc. |
 
 The CPU state is what py8dis knows for certain about the registers and flags after each instruction, from the code before it (back to a label, where code can come from elsewhere). It's used for comments (e.g. on OS calls) as well as shown. For the 6502, after a conditional branch that isn't taken its flag is known, and after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7b after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`). A branch to the next instruction says nothing.
 
@@ -623,42 +623,44 @@ go()
 
 It gives:
 
-* **Names for the memory locations**, output only if used: zero page, the OS and BASIC workspace, the Kernal's and BASIC's vectors, the screen and sprite pointers, the VIC-II, the SID, the colour RAM, the CIAs and the 6510's I/O port, grouped under headings by region (e.g. `; VIC-II ($d000-$d3ff)`). The names are descriptive by default, e.g. `vic_border_colour`, `cia1_port_a`, `keyboard_buffer_length`; `commodore.c64(names="commodore")` uses the names in Commodore's documentation instead (the Programmer's Reference Guide and Commodore's source, and for the I/O registers *Mapping the Commodore 64*), e.g. `extcol`, `ciapra`, `ndx`.
-* **The Kernal's jump table**, by Commodore's names (e.g. `chrout`, `setlfs`), with comments on each call and where its registers are set and used:
+* **Names for the memory locations**, output only if used: zero page, the OS and BASIC workspace, the Kernal's and BASIC's vectors, the screen and sprite pointers, the VIC-II, the SID, the colour RAM, the CIAs and the 6510's I/O port, grouped under headings by region (e.g. `; VIC-II ($d000-$d3ff)`). The names are descriptive by default, e.g. `vic_border_colour`, `cia1_port_a`, `keyboard_buffer_length`; `commodore.c64(names="commodore")` uses the names in Commodore's documentation instead (the Programmer's Reference Guide and Commodore's source, and for the I/O registers *Mapping the Commodore 64*), e.g. `EXTCOL`, `CIAPRA`, `NDX`.
+* **The Kernal's jump table**, by Commodore's names (e.g. `CHROUT`, `SETLFS`), with comments on each call and where its registers are set and used:
 
   ```
       lda #$0f              ; A=logical file number
       ldx #device_disk_8    ; X=device number
       ldy #$0f              ; Y=secondary address
-      jsr setlfs            ; Set logical file 15 to device 8 (disk drive), secondary address 15
+      jsr SETLFS            ; Set logical file 15 to device 8 (disk drive), secondary address 15
       lda #2                ; A=filename length
       ldx #<filename        ; X=filename address (low byte)
       ldy #>filename        ; Y=filename address (high byte)
-      jsr setnam            ; Set the filename to "i0"
+      jsr SETNAM            ; Set the filename to "i0"
   ```
 
   CHROUT's comment names the character (`Output $93 (clear screen)`), and a printable character is written as one where it's loaded (`lda #'a'`, with acme; see [Text encodings](#text-encodings)), PLOT's and MEMTOP's say whether the call reads or sets (from the carry flag), SETNAM's filename and the string printed by BASIC's STROUT are marked as PETSCII strings, and SAVE's zero page pointer is named.
-* **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal and BASIC ROMs, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a Kernal label in Commodore's source has the same name as a jump table entry or another name (e.g. PLOT, the routine at &e50a that `plot` at &fff0 jumps to), it has `_rom` added (`plot_rom`), and a BASIC label with the same name as another has `_basic` added (e.g. `stop_basic`, BASIC's STOP command).
+* **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal and BASIC ROMs, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a Kernal label in Commodore's source has the same name as a jump table entry or another name (e.g. PLOT, the routine at &e50a that `PLOT` at &fff0 jumps to), it has `_ROM` added (`PLOT_ROM`), and a BASIC label with the same name as another has `_BASIC` added (e.g. `STOP_BASIC`, BASIC's STOP command).
 * **Colours** stored in the VIC-II's colour registers or the text colour, as constants: `lda #colour_black : sta vic_border_colour`.
 * **The VIC-II's interrupts:** a store of a known value to its raster line register is commented with the line, e.g. `lda #100 : sta vic_raster_line ; Raster interrupt at line 100`. Bit 8 of the line is bit 7 of `vic_control_1` (&d011): it's included when a store to that in the same run of code sets it to a known value, or just after `and #n` or `ora #n` sets or clears that bit; otherwise the comment gives both lines (`Raster interrupt at line 100 (or 356, if bit 7 of $d011 is set)`). Stores to its interrupt enable and status registers are commented too (`Enable only the VIC-II's raster interrupt`, `Acknowledge the VIC-II's raster interrupt`), as is the usual `asl vic_interrupt_status` (`Acknowledge the VIC-II's interrupts`). The same for the C128 (but not where its MMU maps the I/O out).
 * **Vectors set by the program** (e.g. `lda #<x : sta $0314 : lda #>x : sta $0315`; found from the values stored, so in any order, with any registers and other instructions between, see [Snippets](#snippets)): the address is traced as code and named after the vector, e.g. `irq_handler` (or `irq_handler_2` etc. for more), with a comment, `; Set the IRQ vector to irq_handler`. A vector with only one byte set to a known value has a comment on that store, e.g. `; Set the high byte of the NMI vector to $00`.
 * **The BASIC program** at &0801, if there is one (see `basic_program()` below).
 * **PETSCII** as the text encoding (see [Text encodings](#text-encodings)). Call `c64()` before marking any strings.
 
-Names are only used where nothing else names the address. An optional label isn't used if its name is given to another address (e.g. a control file's `label(0x0964, "key")` when Commodore's name for &ea31 is `key`), so the name isn't defined twice.
+Names are only used where nothing else names the address. An optional label isn't used if its name is given to another address (e.g. a control file's `label(0x0964, "key")` when Commodore's name for &ea31 is `KEY`), so the name isn't defined twice. Names are compared in lower case for this, since some assemblers (e.g. 64tass) take `key` and `KEY` to be the same name.
+
+Commodore's own names are in capitals, as in its documentation and source: the Kernal's calls (`CHROUT`), the labels from its source (`PLOT_ROM`, `VDCOUT`), and with `names="commodore"` the locations, registers and routines (`EXTCOL`, `STROUT`). py8dis's descriptive names are in lower case (`vic_border_colour`, `basic_print_string`), so with `names="descriptive"` a location with no descriptive name of its own (e.g. much of the C128's, Plus/4's and 1541's workspace) has Commodore's name, in capitals. `config.set_upper_case_os_calls(False)`, before `c64()` etc., keeps them all in lower case (as for the Acorn MOS's calls).
 
 :pencil:`commodore.vic20(expansion=None, names="descriptive", rom_labels=True)`
 
-The same for the VIC-20, whose Kernal and BASIC are the C64's with its own hardware and memory map: the VIC (`vic_background_border_colour`, `vic_voice1_frequency`…), the two VIAs (`via1_port_a`…, or Commodore's `d1ora`…), the colour RAM, the character ROM, the screen, its own ROM routines (e.g. `kernal_irq_handler` at &eabf) and the labels in Commodore's source for its ROMs. Its jump table lacks the C64's first three entries. Commodore gave the VIC's registers no names of their own, so with `names="commodore"` they're `vicreg`, `vicreg+1` and so on, as in its source.
+The same for the VIC-20, whose Kernal and BASIC are the C64's with its own hardware and memory map: the VIC (`vic_background_border_colour`, `vic_voice1_frequency`…), the two VIAs (`via1_port_a`…, or Commodore's `D1ORA`…), the colour RAM, the character ROM, the screen, its own ROM routines (e.g. `kernal_irq_handler` at &eabf) and the labels in Commodore's source for its ROMs. Its jump table lacks the C64's first three entries. Commodore gave the VIC's registers no names of their own, so with `names="commodore"` they're `VICREG`, `VICREG+1` and so on, as in its source.
 
 `expansion` is the RAM expansion: `"none"`, `"3k"` (block 0, &0400-&0fff) or `"8k"` (8K or more, from &2000). It decides where a BASIC program starts (&1001, &0401 or &1201) and where the screen and its colour RAM are (&1e00 and &9600, or with 8K or more &1000 and &9400). By default it's worked out from where the program is loaded: `"3k"` if there's data at &0401, else `"none"` if there's data at &1001, else `"8k"` if there's data at &1201.
 
 :pencil:`commodore.c128(names="descriptive", rom_labels=True)`
 
-The same for the C128 in C128 mode, with the usual bank 15 (the ROMs, and the I/O at &d000): its workspace, the MMU (`mmu_configuration` at &ff00, `mmu_ram_configuration`…), the VDC (`vdc_address` and `vdc_data` at &d600), the VIC-II, the SID and the CIAs as on the C64, a BASIC program at &1c01, and the labels in Commodore's source for its BASIC, monitor, screen editor and Kernal (a screen editor or monitor label with the same name as another has `_editor` or `_monitor` added). Its jump table is the C64's and 19 more at &ff47-&ff7d, e.g. `jsrfar`, `setbnk` and `primm`, whose inline string is marked and skipped when tracing:
+The same for the C128 in C128 mode, with the usual bank 15 (the ROMs, and the I/O at &d000): its workspace, the MMU (`mmu_configuration` at &ff00, `mmu_ram_configuration`…), the VDC (`vdc_address` and `vdc_data` at &d600), the VIC-II, the SID and the CIAs as on the C64, a BASIC program at &1c01, and the labels in Commodore's source for its BASIC, monitor, screen editor and Kernal (a screen editor or monitor label with the same name as another has `_editor` or `_monitor` added). Its jump table is the C64's and 19 more at &ff47-&ff7d, e.g. `JSRFAR`, `SETBNK` and `PRIMM`, whose inline string is marked and skipped when tracing:
 
 ```
-    jsr primm             ; Print the zero-terminated string that follows the JSR
+    jsr PRIMM             ; Print the zero-terminated string that follows the JSR
     !pet "hello, c128", $0d, 0
 ```
 
@@ -672,13 +674,13 @@ A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up 
     sta far_call_pc_high
     lda #<far_call_target
     sta far_call_pc_low
-    jsr jsrfar
+    jsr JSRFAR
 ```
 
 The names assume the C128's usual bank 15: the ROMs, with I/O at &d000. In another configuration of its MMU, the same addresses can be something else, e.g. RAM rather than the VIC-II or the Kernal ROM. So:
 
 * **The code that sets the MMU's configuration is commented** with what it sets, when the value stored to its configuration register (&ff00, or &d500) is known, e.g. `sta mmu_configuration ; Set the MMU to bank 0 (RAM 0 only)`, or `; Set the MMU to RAM 0, I/O` for one that isn't one of the Kernal's 16 banks. A store to one of its load configuration registers (&ff01-&ff04) is commented too, e.g. `; Set the MMU to preconfiguration A (as set at $d501)`.
-* **The code after it uses that configuration's names.** An address it uses that's something else in that configuration than in bank 15 gets a plain name there, e.g. after `lda #$3f : sta $ff00` (bank 0), `lda $d020` is `lda ld020` rather than `lda vic_border_colour`. These names are listed under their own heading, `; Other banks`, at the end of the memory locations, since their addresses' regions are bank 15's. The configuration is followed through the code as it runs: to the next instruction, the targets of branches and JMPs (so a loop after a change of configuration runs with it too), and a subroutine called with JSR, up to the next change. The code after a JSR continues with the configuration the call was made with, unless the subroutine always returns with one it sets itself (e.g. a routine that switches to bank 0), and after PRIMM, with the code after its string. Where code can be reached with different configurations, or from an entry point or another way that isn't known (e.g. a vector the program sets), its configuration isn't known, so it's taken to be bank 15. A JSRFAR or JMPFAR target runs with its bank's configuration. (&0000-&03ff is RAM 0 in every bank, the Kernal's common RAM, so its names stay. Only the names `c128()` gives are replaced, not the control file's.) A call to a Kernal or BASIC routine that isn't there in that configuration isn't one, so it's not commented (e.g. `jsr lffd2`, not `jsr chrout ; Output 'a'`), and a store to a colour register that isn't there doesn't store a colour.
+* **The code after it uses that configuration's names.** An address it uses that's something else in that configuration than in bank 15 gets a plain name there, e.g. after `lda #$3f : sta $ff00` (bank 0), `lda $d020` is `lda ld020` rather than `lda vic_border_colour`. These names are listed under their own heading, `; Other banks`, at the end of the memory locations, since their addresses' regions are bank 15's. The configuration is followed through the code as it runs: to the next instruction, the targets of branches and JMPs (so a loop after a change of configuration runs with it too), and a subroutine called with JSR, up to the next change. The code after a JSR continues with the configuration the call was made with, unless the subroutine always returns with one it sets itself (e.g. a routine that switches to bank 0), and after PRIMM, with the code after its string. Where code can be reached with different configurations, or from an entry point or another way that isn't known (e.g. a vector the program sets), its configuration isn't known, so it's taken to be bank 15. A JSRFAR or JMPFAR target runs with its bank's configuration. (&0000-&03ff is RAM 0 in every bank, the Kernal's common RAM, so its names stay. Only the names `c128()` gives are replaced, not the control file's.) A call to a Kernal or BASIC routine that isn't there in that configuration isn't one, so it's not commented (e.g. `jsr lffd2`, not `jsr CHROUT ; Output 'a'`), and a store to a colour register that isn't there doesn't store a colour.
 
 :pencil:`commodore.c128_bank(start, end, bank=None, *, configuration=None)`
 
@@ -690,13 +692,13 @@ Says that the code from `start` to `end` (runtime addresses, `end` exclusive) ru
 
 :pencil:`commodore.plus4(names="descriptive", rom_labels=True)`
 
-The same for the Plus/4 (and the C16 and C116, which have the same ROMs): its workspace, the TED at &ff00-&ff3f (the timers, video, sound, keyboard latch, interrupts, and the ROM switch at &ff3e/&ff3f: `ted_rom_select`, `ted_ram_select`), the ACIA at &fd00, the 6529 ports, the screen and its attributes, a BASIC program at &1001, and the labels in Commodore's source for its BASIC and Kernal. Its jump table is the C64's with `print`, `primm` (as on the C128) and `monitr`. The TED's colours include their luminance, so they aren't named as constants.
+The same for the Plus/4 (and the C16 and C116, which have the same ROMs): its workspace, the TED at &ff00-&ff3f (the timers, video, sound, keyboard latch, interrupts, and the ROM switch at &ff3e/&ff3f: `ted_rom_select`, `ted_ram_select`), the ACIA at &fd00, the 6529 ports, the screen and its attributes, a BASIC program at &1001, and the labels in Commodore's source for its BASIC and Kernal. Its jump table is the C64's with `PRINT`, `PRIMM` (as on the C128) and `MONITR`. The TED's colours include their luminance, so they aren't named as constants.
 
 :pencil:`commodore.pet(basic=4, columns=40, names="descriptive", rom_labels=True)`
 
 The same for the PET (and the CBM 3000, 4000 and 8000 series), with BASIC 1 (the original 1977 ROMs), 2 or 4, whose workspace and ROM addresses differ (e.g. the IRQ vector is at &0219 with BASIC 1 and &0090 with BASIC 2 and 4), and a 40 or 80 column screen (`columns=80`, only with BASIC 4: the 8000 series, with its CRTC at &e880 as `crtc_address` and `crtc_data`, and the 80-column editor's workspace, e.g. `window_top`). It names:
-* the two PIAs (`pia1_port_a`, ... `pia2_control_b`; Commodore's `pial`, `ieei`...), the VIA at &e840 (`via_port_b`... `via_peripheral_control`, `pia`, `sync`... in Commodore's source) and the screen at &8000;
-* the Kernal's jump table at &ffc0-&ffea (`open`, `chkin`, `chrout`, `getin`, `stop`, `udtim`...). Only `chrout` has its own comments (`Output $93 (clear screen)`): `load`, `save`, `verify` and `sys` there are BASIC's commands, which read their parameters from the BASIC text, not the C64's Kernal calls;
+* the two PIAs (`pia1_port_a`, ... `pia2_control_b`; Commodore's `PIAL`, `IEEI`...), the VIA at &e840 (`via_port_b`... `via_peripheral_control`, `PIA`, `SYNC`... in Commodore's source) and the screen at &8000;
+* the Kernal's jump table at &ffc0-&ffea (`OPEN`, `CHKIN`, `CHROUT`, `GETIN`, `STOP`, `UDTIM`...). Only `CHROUT` has its own comments (`Output $93 (clear screen)`): `LOAD`, `SAVE`, `VERIFY` and `SYS` there are BASIC's commands, which read their parameters from the BASIC text, not the C64's Kernal calls;
 * its ROM routines (`basic_print_string`, `basic_print_number`, `kernal_irq_handler`, the IRQ handler programs end with, e.g. &e455 with BASIC 4...) and the labels in Commodore's source for its BASIC and Kernal (Martin Hoffmann-Vetter's reconstructions, which assemble to the ROMs VICE uses). BASIC 4's screen editor at &e000 is different for each model, so its labels are left out;
 * a BASIC program at &0401, listed with that version's keywords (BASIC 4's disk commands, e.g. `CATALOG`, too), and code that sets the IRQ, BRK or NMI vector.
 
@@ -706,7 +708,7 @@ The PET has no colours. `is_cartridge()` and `basic_rom()` aren't supported, sin
 
 The same for code that runs in the 1541 disk drive's own 6502, e.g. a fast loader's drive code (which a C64 program sends with `M-W` and runs with `M-E` or a job), or the drive's DOS ROM itself. It names:
 * the DOS's workspace (Commodore's names from its source, with descriptive names for the most used, e.g. `job_queue`, `job_track_sector`, `buffer_pointer`, `drive_number`), and the five buffers at &0300-&07ff (`buffer_0` to `buffer_4`, except those the code is loaded in);
-* the two VIAs: VIA 1 at &1800, the serial bus (`via1_serial_bus`, ...), and VIA 2 at &1c00, the disk controller (`via2_disk_control`, the motors, LED, write protect sensor, bit rate and sync; `via2_disk_data`, the GCR data from or to the disk), with Commodore's names (`pb`, `dskcnt`, `data2`...) with `names="commodore"`;
+* the two VIAs: VIA 1 at &1800, the serial bus (`via1_serial_bus`, ...), and VIA 2 at &1c00, the disk controller (`via2_disk_control`, the motors, LED, write protect sensor, bit rate and sync; `via2_disk_data`, the GCR data from or to the disk), with Commodore's names (`PB`, `DSKCNT`, `DATA2`...) with `names="commodore"`;
 * the DOS ROM's routines that drive code calls (`wait_for_sync`, `gcr_to_binary`, `end_job`, `dos_idle_loop`...) and the labels in Commodore's source for the ROM, and code that sets the NMI vector at &0065.
 
 **Jobs are commented.** Code that writes a job code to the job queue (&00-&05, one for each buffer), however it does it, is commented with the job, with its track and sector (&06-&11) if they're set too, and the job code is named, e.g.:
@@ -744,7 +746,7 @@ label(0x0500, "drive_code", drive_move)
 
 For disassembling the 1541's DOS ROM (loaded at &c000, after `drive1541()`): traces the code from the vectors at its end (`format`, `motor_off` and the user commands U1 and U2; U3-U8's, at &0500-&050f in buffer 2, are named but not traced) and the 6502's vectors.
 
-The C128's, Plus/4's and PET's workspace (zero page and &0200 up) has Commodore's names from its source. With the default `names="descriptive"`, the locations that are the C64's have its descriptive names (e.g. `jiffy_clock`, `keyboard_buffer_length`), and the most used of the rest have descriptive names of their own (e.g. the C128's `screen_mode_40_80`, `vdc_screen_base`, `function_key_lengths`); the others have Commodore's names either way, since there are hundreds and most are BASIC's or the monitor's. The hardware's names are descriptive with `names="descriptive"` and Commodore's (from its source, e.g. `mmucr`, `vdcadr`, `tedirq`) with `names="commodore"`.
+The C128's, Plus/4's and PET's workspace (zero page and &0200 up) has Commodore's names from its source. With the default `names="descriptive"`, the locations that are the C64's have its descriptive names (e.g. `jiffy_clock`, `keyboard_buffer_length`), and the most used of the rest have descriptive names of their own (e.g. the C128's `screen_mode_40_80`, `vdc_screen_base`, `function_key_lengths`); the others have Commodore's names either way, since there are hundreds and most are BASIC's or the monitor's. The hardware's names are descriptive with `names="descriptive"` and Commodore's (from its source, e.g. `MMUCR`, `VDCADR`, `TEDIRQ`) with `names="commodore"`.
 
 :pencil:`commodore.basic_program(runtime_addr=None)`
 

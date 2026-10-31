@@ -98,9 +98,9 @@ basic_print_number  = $ddcd
 kernal_irq_handler  = $eabf
 
 ; Kernal entry points ($ff8a-$fff9)
-chrout  = $ffd2
-getin   = $ffe4
-plot    = $fff0
+CHROUT  = $ffd2
+GETIN   = $ffe4
+PLOT    = $fff0
 
 ; The PRG file's header: the address to load it at
     .org $0fff
@@ -138,13 +138,13 @@ sys_entry:
     lda #colour_red                                                   ; 1028: a9 02       ..
     sta text_colour                                                   ; 102a: 8d 86 02    ...
     lda #$93                                                          ; 102d: a9 93       .. ; A=character to output
-    jsr chrout                                                        ; 102f: 20 d2 ff     R. ; Output $93 (clear screen)
+    jsr CHROUT                                                        ; 102f: 20 d2 ff     R. ; Output $93 (clear screen)
     ldx #0                                                            ; 1032: a2 00       ..
 ; $1034 referenced 1 time by $103d
 loop_c1034:
     lda l1087,x                                                       ; 1034: bd 87 10    ... ; A=character to output
     beq c103f                                                         ; 1037: f0 06       ..
-    jsr chrout                                                        ; 1039: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; 1039: 20 d2 ff     R. ; Output a character
     inx                                                               ; 103c: e8          .
     bne loop_c1034                                                    ; 103d: d0 f5       P.
 ; $103f referenced 1 time by $1037
@@ -152,7 +152,7 @@ c103f:
     clc                                                               ; 103f: 18          .
     ldx #$0a                                                          ; 1040: a2 0a       .. ; X=cursor row
     ldy #5                                                            ; 1042: a0 05       .. ; Y=cursor column
-    jsr plot                                                          ; 1044: 20 f0 ff     .. ; Move the cursor to row 10, column 5
+    jsr PLOT                                                          ; 1044: 20 f0 ff     .. ; Move the cursor to row 10, column 5
     ldx #$15                                                          ; 1047: a2 15       ..
 ; $1049 referenced 1 time by $1054
 loop_c1049:
@@ -170,7 +170,7 @@ loop_c1049:
     sta via2_port_b                                                   ; 1063: 8d 20 91    . .
     lda via2_port_a                                                   ; 1066: ad 21 91    .!.
     sta l109f                                                         ; 1069: 8d 9f 10    ...
-    jsr getin                                                         ; 106c: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         ; 106c: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     sta l10a0                                                         ; 106f: 8d a0 10    ... ; A=character read
     lda #<l108f                                                       ; 1072: a9 8f       .. ; A=string address (low byte)
     ldy #>l108f                                                       ; 1074: a0 10       .. ; Y=string address (high byte)
@@ -208,13 +208,14 @@ pydis_end:
 .assert (basic_end) = $100b, error, "Assertion failed: basic_end = $100b"
 
 ; Label references by decreasing frequency:
-;     chrout:                         2
+;     CHROUT:                         2
 ;     vic_background_border_colour:   2
+;     GETIN:                          1
+;     PLOT:                           1
 ;     basic_print_number:             1
 ;     basic_print_string:             1
 ;     c103f:                          1
 ;     colour_ram:                     1
-;     getin:                          1
 ;     irq_vector:                     1
 ;     kernal_irq_handler:             1
 ;     l1087:                          1
@@ -223,7 +224,6 @@ pydis_end:
 ;     l10a0:                          1
 ;     loop_c1034:                     1
 ;     loop_c1049:                     1
-;     plot:                           1
 ;     screen_memory:                  1
 ;     text_colour:                    1
 ;     via1_data_direction_a:          1

@@ -89,9 +89,9 @@ ted_rom_select          = $ff3e
 ted_ram_select          = $ff3f
 
 ; Kernal entry points ($ff40-$fff9)
-primm   = $ff4f
-chrout  = $ffd2
-getin   = $ffe4
+PRIMM   = $ff4f
+CHROUT  = $ffd2
+GETIN   = $ffe4
 
 ; The PRG file's header: the address to load it at
     .org $0fff
@@ -111,11 +111,11 @@ basic_end:
     .word 0                                                           ; 100b: 00 00       ..
 
 sys_entry:
-    jsr primm                                                         ; 100d: 20 4f ff     o. ; Print the zero-terminated string that follows the JSR
+    jsr PRIMM                                                         ; 100d: 20 4f ff     o. ; Print the zero-terminated string that follows the JSR
     .byte "hello, plus/4", $0d, 0                                     ; 1010: 48 45 4c... hel
 
     lda #$93                                                          ; 101f: a9 93       .. ; A=character to output
-    jsr chrout                                                        ; 1021: 20 d2 ff     R. ; Output $93 (clear screen)
+    jsr CHROUT                                                        ; 1021: 20 d2 ff     R. ; Output $93 (clear screen)
     lda #$71                                                          ; 1024: a9 71       ..
     sta ted_border_colour                                             ; 1026: 8d 19 ff    ...
     lda #0                                                            ; 1029: a9 00       ..
@@ -152,7 +152,7 @@ loop_c1048:
     sta ted_ram_select                                                ; 1067: 8d 3f ff    .?.
     lda lc000                                                         ; 106a: ad 00 c0    ...
     sta ted_rom_select                                                ; 106d: 8d 3e ff    .>.
-    jsr getin                                                         ; 1070: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         ; 1070: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     rts                                                               ; 1073: 60          .
 
 irq_handler:
@@ -174,10 +174,11 @@ pydis_end:
 ; Label references by decreasing frequency:
 ;     ted_border_colour:          2
 ;     ted_keyboard_latch:         2
+;     CHROUT:                     1
+;     GETIN:                      1
+;     PRIMM:                      1
 ;     acia_status:                1
-;     chrout:                     1
 ;     colour_ram:                 1
-;     getin:                      1
 ;     irq_vector:                 1
 ;     kernal_irq_return:          1
 ;     keyboard_latch:             1
@@ -185,7 +186,6 @@ pydis_end:
 ;     l107b:                      1
 ;     lc000:                      1
 ;     loop_c1048:                 1
-;     primm:                      1
 ;     screen_memory:              1
 ;     ted_background_colour_0:    1
 ;     ted_ram_select:             1

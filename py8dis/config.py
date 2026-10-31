@@ -197,13 +197,16 @@ def get_upper_case_os_calls():
     return session.current().settings.upper_case_os_calls
 
 def set_upper_case_os_calls(b):
-    """Name the Acorn MOS's calls in capitals, as Acorn's documentation does
-    (e.g. OSBYTE, OSWRCH, GSINIT), or in lower case (e.g. osbyte). Call it
-    before acorn.bbc() (or electron(), b_plus() or master()), which names
-    them."""
-    if session.current().extras.get("acorn.os_calls_named"):
+    """Name the OS's calls in capitals, as the manufacturer's documentation
+    does: the Acorn MOS's (e.g. OSBYTE, OSWRCH, GSINIT) and the Commodore
+    Kernal's (e.g. CHROUT, SETLFS), and Commodore's other names, from its
+    source (see commodore.location_names()); or in lower case (e.g. osbyte,
+    chrout). py8dis's descriptive names (e.g. 'tape_buffer') are in lower
+    case either way. Call it before acorn.bbc(), commodore.c64() etc.,
+    which name them."""
+    if session.current().extras.get("os_calls_named"):
         import utils
-        utils.die("config.set_upper_case_os_calls(): call it before acorn.bbc() (or electron(), b_plus() or master()), which names the OS calls")
+        utils.die("config.set_upper_case_os_calls(): call it before acorn.bbc(), commodore.c64() etc., which name the OS calls")
     session.current().settings.upper_case_os_calls = b
 
 def get_text_encoding():

@@ -180,7 +180,7 @@ ERROR_TESTS = [
     ("load_length_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset and length (20 + 10) run past the end of the file (28 bytes)"),
     ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
-    ("upper_case_os_calls_too_late", "config.set_upper_case_os_calls(): call it before acorn.bbc() (or electron(), b_plus() or master()), which names the OS calls"),
+    ("upper_case_os_calls_too_late", "config.set_upper_case_os_calls(): call it before acorn.bbc(), commodore.c64() etc., which name the OS calls"),
     ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
     ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
     ("pet_80_columns_basic_2",  "commodore.pet(): only BASIC 4 PETs have 80 columns"),

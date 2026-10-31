@@ -91,28 +91,28 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 &ff00  mmu_configuration (Memory locations: MMU)
     &1c0f     sys_entry+2                  sta mmu_configuration
 
-&ff68  setbnk (Memory locations: Kernal entry points)
-    &1c8d     loop_c1c36+87                jsr setbnk
+&ff68  SETBNK (Memory locations: Kernal entry points)
+    &1c8d     loop_c1c36+87                jsr SETBNK
 
-&ff6e  jsrfar (Memory locations: Kernal entry points)
-    &1c5d     loop_c1c36+39                jsr jsrfar
-    &1c74     loop_c1c36+62                jsr jsrfar
-    &1c83     loop_c1c36+77                jsr jsrfar
+&ff6e  JSRFAR (Memory locations: Kernal entry points)
+    &1c5d     loop_c1c36+39                jsr JSRFAR
+    &1c74     loop_c1c36+62                jsr JSRFAR
+    &1c83     loop_c1c36+77                jsr JSRFAR
 
-&ff71  jmpfar (Memory locations: Kernal entry points)
-    &1cbc     sub_c1cb0+12                 jmp jmpfar
+&ff71  JMPFAR (Memory locations: Kernal entry points)
+    &1cbc     sub_c1cb0+12                 jmp JMPFAR
 
-&ff7d  primm (Memory locations: Kernal entry points)
-    &1c17     sys_entry+10                 jsr primm
+&ff7d  PRIMM (Memory locations: Kernal entry points)
+    &1c17     sys_entry+10                 jsr PRIMM
 
-&ffba  setlfs (Memory locations: Kernal entry points)
-    &1c96     loop_c1c36+96                jsr setlfs
+&ffba  SETLFS (Memory locations: Kernal entry points)
+    &1c96     loop_c1c36+96                jsr SETLFS
 
-&ffbd  setnam (Memory locations: Kernal entry points)
-    &1c9f     loop_c1c36+105               jsr setnam
+&ffbd  SETNAM (Memory locations: Kernal entry points)
+    &1c9f     loop_c1c36+105               jsr SETNAM
 
-&ffd2  chrout (Memory locations: Kernal entry points)
-    &1c29     sys_entry+28                 jsr chrout
+&ffd2  CHROUT (Memory locations: Kernal entry points)
+    &1c29     sys_entry+28                 jsr CHROUT
 
-&ffd5  load (Memory locations: Kernal entry points)
-    &1ca4     loop_c1c36+110               jsr load
+&ffd5  LOAD (Memory locations: Kernal entry points)
+    &1ca4     loop_c1c36+110               jsr LOAD

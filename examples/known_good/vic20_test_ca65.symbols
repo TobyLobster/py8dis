@@ -26,6 +26,6 @@ al 009600 .colour_ram
 al 00CB1E .basic_print_string
 al 00DDCD .basic_print_number
 al 00EABF .kernal_irq_handler
-al 00FFD2 .chrout
-al 00FFE4 .getin
-al 00FFF0 .plot
+al 00FFD2 .CHROUT
+al 00FFE4 .GETIN
+al 00FFF0 .PLOT

@@ -142,55 +142,55 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 &ea31  kernal_irq_handler (Memory locations: Kernal ROM)
     &0936     irq_handler+6                jmp kernal_irq_handler
 
-&ff90  setmsg (Memory locations: Kernal entry points)
-    &08da     c086b+111                    jsr setmsg
+&ff90  SETMSG (Memory locations: Kernal entry points)
+    &08da     c086b+111                    jsr SETMSG
 
-&ffb7  readst (Memory locations: Kernal entry points)
-    &08ef     c086b+132                    jsr readst
+&ffb7  READST (Memory locations: Kernal entry points)
+    &08ef     c086b+132                    jsr READST
 
-&ffba  setlfs (Memory locations: Kernal entry points)
-    &0888     c086b+29                     jsr setlfs
-    &08b0     c086b+69                     jsr setlfs
+&ffba  SETLFS (Memory locations: Kernal entry points)
+    &0888     c086b+29                     jsr SETLFS
+    &08b0     c086b+69                     jsr SETLFS
 
-&ffbd  setnam (Memory locations: Kernal entry points)
-    &0891     c086b+38                     jsr setnam
-    &08b9     c086b+78                     jsr setnam
+&ffbd  SETNAM (Memory locations: Kernal entry points)
+    &0891     c086b+38                     jsr SETNAM
+    &08b9     c086b+78                     jsr SETNAM
 
-&ffc0  open (Memory locations: Kernal entry points)
-    &0894     c086b+41                     jsr open
+&ffc0  OPEN (Memory locations: Kernal entry points)
+    &0894     c086b+41                     jsr OPEN
 
-&ffc3  close (Memory locations: Kernal entry points)
-    &08a7     c086b+60                     jsr close
+&ffc3  CLOSE (Memory locations: Kernal entry points)
+    &08a7     c086b+60                     jsr CLOSE
 
-&ffc6  chkin (Memory locations: Kernal entry points)
-    &0899     c086b+46                     jsr chkin
+&ffc6  CHKIN (Memory locations: Kernal entry points)
+    &0899     c086b+46                     jsr CHKIN
 
-&ffcc  clrchn (Memory locations: Kernal entry points)
-    &08a2     c086b+55                     jsr clrchn
+&ffcc  CLRCHN (Memory locations: Kernal entry points)
+    &08a2     c086b+55                     jsr CLRCHN
 
-&ffcf  chrin (Memory locations: Kernal entry points)
-    &089c     c086b+49                     jsr chrin
+&ffcf  CHRIN (Memory locations: Kernal entry points)
+    &089c     c086b+49                     jsr CHRIN
 
-&ffd2  chrout (Memory locations: Kernal entry points)
-    &085b     sys_entry+52                 jsr chrout
-    &0865     loop_c0860+5                 jsr chrout
-    &086d     c086b+2                      jsr chrout
+&ffd2  CHROUT (Memory locations: Kernal entry points)
+    &085b     sys_entry+52                 jsr CHROUT
+    &0865     loop_c0860+5                 jsr CHROUT
+    &086d     c086b+2                      jsr CHROUT
 
-&ffd5  load (Memory locations: Kernal entry points)
-    &08be     c086b+83                     jsr load
+&ffd5  LOAD (Memory locations: Kernal entry points)
+    &08be     c086b+83                     jsr LOAD
 
-&ffd8  save (Memory locations: Kernal entry points)
-    &08d5     c086b+106                    jsr save
+&ffd8  SAVE (Memory locations: Kernal entry points)
+    &08d5     c086b+106                    jsr SAVE
 
-&ffde  rdtim (Memory locations: Kernal entry points)
-    &08dd     c086b+114                    jsr rdtim
+&ffde  RDTIM (Memory locations: Kernal entry points)
+    &08dd     c086b+114                    jsr RDTIM
 
-&ffe4  getin (Memory locations: Kernal entry points)
-    &08e9     c086b+126                    jsr getin
+&ffe4  GETIN (Memory locations: Kernal entry points)
+    &08e9     c086b+126                    jsr GETIN
 
-&ffed  screen (Memory locations: Kernal entry points)
-    &08f5     c086b+138                    jsr screen
+&ffed  SCREEN (Memory locations: Kernal entry points)
+    &08f5     c086b+138                    jsr SCREEN
 
-&fff0  plot (Memory locations: Kernal entry points)
-    &0875     c086b+10                     jsr plot
-    &0879     c086b+14                     jsr plot
+&fff0  PLOT (Memory locations: Kernal entry points)
+    &0875     c086b+10                     jsr PLOT
+    &0879     c086b+14                     jsr PLOT

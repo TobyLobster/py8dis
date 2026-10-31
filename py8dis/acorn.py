@@ -794,7 +794,7 @@ def os_call_name(name):
 
 def mos_labels():
     # (bbc(), electron(), b_plus() and master() all call this)
-    session.current().extras["acorn.os_calls_named"] = True
+    session.current().extras["os_calls_named"] = True
     register_snippets()
     if comment_vdu_sequences not in session.current().trace.analysis_hooks:
         session.current().trace.analysis_hooks.append(comment_vdu_sequences)

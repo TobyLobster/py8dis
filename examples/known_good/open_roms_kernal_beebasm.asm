@@ -542,7 +542,7 @@ cia2_control_b          = &dd0f
 ; &e603 referenced 1 time by &e60b
 .loop_ce603
     lda (tape_buffer_ptr),y                                           ; e603: b1 b2       .. ; A=character to output
-    jsr chrout                                                        ; e605: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; e605: 20 d2 ff     R. ; Output a character
     iny                                                               ; e608: c8          H
     cpy #&15                                                          ; e609: c0 15       ..
     bne loop_ce603                                                    ; e60b: d0 f6       P.
@@ -1129,14 +1129,14 @@ cia2_control_b          = &dd0f
 
 ; &e96d referenced 1 time by &e974
 .loop_ce96d
-    jsr chrout                                                        ; e96d: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; e96d: 20 d2 ff     R. ; Output a character
     inx                                                               ; e970: e8          .
 ; &e971 referenced 8 times by &e5dc, &e5f0, &e5fe, &fed1, &fef1, &fef6, &ff1d, &ff29
 .sub_ce971
     lda lead1,x                                                       ; e971: bd d1 ea    .Q.
     bpl loop_ce96d                                                    ; e974: 10 f7       ..
     and #&7f                                                          ; e976: 29 7f       ). ; A=character to output
-    jmp chrout                                                        ; e978: 4c d2 ff    lR. ; Output a character
+    jmp CHROUT                                                        ; e978: 4c d2 ff    lR. ; Output a character
 
 ; &e97b referenced 2 times by &f4b8, &f4bf
 .ce97b
@@ -1263,8 +1263,8 @@ cia2_control_b          = &dd0f
 ; &ea31 referenced 1 time by &ea69
 .default_irq_handler
     jsr sub_ced9a                                                     ; ea31: 20 9a ed     ..
-    jsr scnkey                                                        ; ea34: 20 9f ff     .. ; Scan the keyboard
-    jsr udtim                                                         ; ea37: 20 ea ff     .. ; Update the jiffy clock and check the RUN/STOP key
+    jsr SCNKEY                                                        ; ea34: 20 9f ff     .. ; Scan the keyboard
+    jsr UDTIM                                                         ; ea37: 20 ea ff     .. ; Update the jiffy clock and check the RUN/STOP key
     lda cpu_port                                                      ; ea3a: a5 01       ..
     and #&10                                                          ; ea3c: 29 10       ).
     beq cea49                                                         ; ea3e: f0 09       ..
@@ -3227,7 +3227,7 @@ cia2_control_b          = &dd0f
 ; &f7b4 referenced 1 time by &f163
 .cf7b4
 lf7b6 = cf7b4+2
-    jmp acptr                                                         ; f7b4: 4c a5 ff    l.. ; Read a byte from the serial bus
+    jmp ACPTR                                                         ; f7b4: 4c a5 ff    l.. ; Read a byte from the serial bus
 
 ; &f7b6 referenced 1 time by &f929
     equb &c3, &c2, &cd, &38, &30 ; petscii "CBM80"                    ; f7b7: c3 c2 cd... CBM
@@ -3241,7 +3241,7 @@ lf7b6 = cf7b4+2
 ; &f7c1 referenced 2 times by &e5f3, &e65d
 .sub_cf7c1
     lda #&0d                                                          ; f7c1: a9 0d       .. ; A=character to output
-    jmp chrout                                                        ; f7c3: 4c d2 ff    lR. ; Output &0d (RETURN)
+    jmp CHROUT                                                        ; f7c3: 4c d2 ff    lR. ; Output &0d (RETURN)
 
     equb &a9                                                          ; f7c6: a9          .
     equb &20, &4c, &d2 ; petscii " lR"                                ; f7c7: 20 4c d2     lR
@@ -3528,7 +3528,7 @@ lf7b6 = cf7b4+2
 ; &f917 referenced 1 time by &f1df
 .cf917
     lda last_char_printed                                             ; f917: a5 d7       .W ; A=byte to send
-    jsr ciout                                                         ; f919: 20 a8 ff     .. ; Send a byte over the serial bus
+    jsr CIOUT                                                         ; f919: 20 a8 ff     .. ; Send a byte over the serial bus
     bcs cf921                                                         ; f91c: b0 03       ..
     jmp cf1f1                                                         ; f91e: 4c f1 f1    l..
 
@@ -3838,7 +3838,7 @@ lf7b6 = cf7b4+2
     beq cfa9e                                                         ; fa92: f0 0a       ..
     dey                                                               ; fa94: 88          .
     lda logical_file_table,y                                          ; fa95: b9 59 02    .y. ; A=logical file number
-    jsr close                                                         ; fa98: 20 c3 ff     C. ; Close a logical file
+    jsr CLOSE                                                         ; fa98: 20 c3 ff     C. ; Close a logical file
     jmp loop_cfa90                                                    ; fa9b: 4c 90 fa    l..
 
 ; &fa9e referenced 1 time by &fa92
@@ -3927,14 +3927,14 @@ lf7b6 = cf7b4+2
     cmp #&0a                                                          ; faf7: c9 0a       I.
     adc #&30 ; '0'                                                    ; faf9: 69 30       .0 ; A=character to output
     cld                                                               ; fafb: d8          X
-    jsr chrout                                                        ; fafc: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; fafc: 20 d2 ff     R. ; Output a character
     sed                                                               ; faff: f8          .
     pla                                                               ; fb00: 68          .
     and #&0f                                                          ; fb01: 29 0f       ).
     cmp #&0a                                                          ; fb03: c9 0a       I.
     adc #&30 ; '0'                                                    ; fb05: 69 30       .0 ; A=character to output
     cld                                                               ; fb07: d8          X
-    jmp chrout                                                        ; fb08: 4c d2 ff    lR. ; Output a character
+    jmp CHROUT                                                        ; fb08: 4c d2 ff    lR. ; Output a character
 
 ; &fb0b referenced 3 times by &ecef, &ed09, &fb1f
 .cfb0b
@@ -4338,10 +4338,10 @@ lfc8a = cfc89+1
 .cfcf4
     ldx #&28 ; '('                                                    ; fcf4: a2 28       .(
     stx vic_control_2                                                 ; fcf6: 8e 16 d0    ..P
-    jsr ioinit                                                        ; fcf9: 20 84 ff     .. ; Initialise the I/O devices
-    jsr ramtas                                                        ; fcfc: 20 87 ff     .. ; Test RAM, set the memory pointers and clear the system variables
-    jsr restor                                                        ; fcff: 20 8a ff     .. ; Restore the default Kernal vectors
-    jsr cint                                                          ; fd02: 20 81 ff     .. ; Initialise the screen editor and the VIC-II
+    jsr IOINIT                                                        ; fcf9: 20 84 ff     .. ; Initialise the I/O devices
+    jsr RAMTAS                                                        ; fcfc: 20 87 ff     .. ; Test RAM, set the memory pointers and clear the system variables
+    jsr RESTOR                                                        ; fcff: 20 8a ff     .. ; Restore the default Kernal vectors
+    jsr CINT                                                          ; fd02: 20 81 ff     .. ; Initialise the screen editor and the VIC-II
     cli                                                               ; fd05: 58          x
     jmp (la000)                                                       ; fd06: 6c 00 a0    ...
 
@@ -4576,7 +4576,7 @@ lfc8a = cfc89+1
 
 ; &fe54 referenced 1 time by &fe4f
 .cfe54
-    jsr stop                                                          ; fe54: 20 e1 ff     .. ; Check the RUN/STOP key (Z set if it's pressed)
+    jsr STOP                                                          ; fe54: 20 e1 ff     .. ; Check the RUN/STOP key (Z set if it's pressed)
     bcs cfe5c                                                         ; fe57: b0 03       ..
     jmp cea81                                                         ; fe59: 4c 81 ea    l..
 
@@ -4595,8 +4595,8 @@ lfc8a = cfc89+1
     ldx #0                                                            ; fe67: a2 00       ..
     sta vic_control_2                                                 ; fe69: 8d 16 d0    ..P
     cld                                                               ; fe6c: d8          X
-    jsr restor                                                        ; fe6d: 20 8a ff     .. ; Restore the default Kernal vectors
-    jsr ioinit                                                        ; fe70: 20 84 ff     .. ; Initialise the I/O devices
+    jsr RESTOR                                                        ; fe6d: 20 8a ff     .. ; Restore the default Kernal vectors
+    jsr IOINIT                                                        ; fe70: 20 84 ff     .. ; Initialise the I/O devices
     jsr cff5b                                                         ; fe73: 20 5b ff     [.
     cli                                                               ; fe76: 58          x
     jmp (la002)                                                       ; fe77: 6c 02 a0    ...
@@ -4685,7 +4685,7 @@ lfc8a = cfc89+1
     cpy filename_length                                               ; fed6: c4 b7       D.
     beq return_24                                                     ; fed8: f0 0a       ..
     jsr sub_cfca0                                                     ; feda: 20 a0 fc     ..
-    jsr chrout                                                        ; fedd: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; fedd: 20 d2 ff     R. ; Output a character
     iny                                                               ; fee0: c8          H
     jmp loop_cfed6                                                    ; fee1: 4c d6 fe    lV.
 
@@ -4745,7 +4745,7 @@ lfc8a = cfc89+1
     cpy filename_length                                               ; ff2e: c4 b7       D.
     beq return_25                                                     ; ff30: f0 08       ..
     lda (filename_ptr),y                                              ; ff32: b1 bb       .. ; A=character to output
-    jsr chrout                                                        ; ff34: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; ff34: 20 d2 ff     R. ; Output a character
     iny                                                               ; ff37: c8          H
     bne loop_cff2e                                                    ; ff38: d0 f4       P.
 ; &ff3a referenced 1 time by &ff30
@@ -4818,28 +4818,28 @@ lfc8a = cfc89+1
 ; Initialise the screen editor and the VIC-II
 ; ***************************************************************************************
 ; &ff81 referenced 1 time by &fd02
-.cint
+.CINT
     jmp cff5b                                                         ; ff81: 4c 5b ff    l[.
 
 ; ***************************************************************************************
 ; Initialise the I/O devices
 ; ***************************************************************************************
 ; &ff84 referenced 2 times by &fcf9, &fe70
-.ioinit
+.IOINIT
     jmp cfda3                                                         ; ff84: 4c a3 fd    l..
 
 ; ***************************************************************************************
 ; Test RAM, set the memory pointers and clear the system variables
 ; ***************************************************************************************
 ; &ff87 referenced 1 time by &fcfc
-.ramtas
+.RAMTAS
     jmp cfd50                                                         ; ff87: 4c 50 fd    lp.
 
 ; ***************************************************************************************
 ; Restore the default Kernal vectors
 ; ***************************************************************************************
 ; &ff8a referenced 2 times by &fcff, &fe6d
-.restor
+.RESTOR
     jmp cfd15                                                         ; ff8a: 4c 15 fd    l..
 
 ; ***************************************************************************************
@@ -4850,7 +4850,7 @@ lfc8a = cfc89+1
 ;     X: vector list address (low byte)
 ;     Y: vector list address (high byte)
 ; ***************************************************************************************
-.vector
+.VECTOR
     jmp cfd1a                                                         ; ff8d: 4c 1a fd    l..
 
 ; ***************************************************************************************
@@ -4859,7 +4859,7 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     A: message flags
 ; ***************************************************************************************
-.setmsg
+.SETMSG
     jmp ce51e                                                         ; ff90: 4c 1e e5    l..
 
 ; ***************************************************************************************
@@ -4868,7 +4868,7 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     A: secondary address
 ; ***************************************************************************************
-.second
+.SECOND
     jmp ce6b7                                                         ; ff93: 4c b7 e6    l..
 
 ; ***************************************************************************************
@@ -4877,7 +4877,7 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     A: secondary address
 ; ***************************************************************************************
-.tksa
+.TKSA
     jmp cf388                                                         ; ff96: 4c 88 f3    l..
 
 ; ***************************************************************************************
@@ -4888,7 +4888,7 @@ lfc8a = cfc89+1
 ;     X: top of memory (low byte)
 ;     Y: top of memory (high byte)
 ; ***************************************************************************************
-.memtop
+.MEMTOP
     jmp cfe25                                                         ; ff99: 4c 25 fe    l%.
 
 ; ***************************************************************************************
@@ -4899,14 +4899,14 @@ lfc8a = cfc89+1
 ;     X: bottom of memory (low byte)
 ;     Y: bottom of memory (high byte)
 ; ***************************************************************************************
-.membot
+.MEMBOT
     jmp cf241                                                         ; ff9c: 4c 41 f2    la.
 
 ; ***************************************************************************************
 ; Scan the keyboard
 ; ***************************************************************************************
 ; &ff9f referenced 1 time by &ea34
-.scnkey
+.SCNKEY
     jmp ce7fd                                                         ; ff9f: 4c fd e7    l..
 
 ; ***************************************************************************************
@@ -4915,7 +4915,7 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     A: timeout flag
 ; ***************************************************************************************
-.settmo
+.SETTMO
     jmp cfd8c                                                         ; ffa2: 4c 8c fd    l..
 
 ; ***************************************************************************************
@@ -4925,7 +4925,7 @@ lfc8a = cfc89+1
 ;     A: byte read
 ; ***************************************************************************************
 ; &ffa5 referenced 1 time by &f7b4
-.acptr
+.ACPTR
     jmp cf888                                                         ; ffa5: 4c 88 f8    l..
 
 ; ***************************************************************************************
@@ -4935,19 +4935,19 @@ lfc8a = cfc89+1
 ;     A: byte to send
 ; ***************************************************************************************
 ; &ffa8 referenced 1 time by &f919
-.ciout
+.CIOUT
     jmp cfa09                                                         ; ffa8: 4c 09 fa    l..
 
 ; ***************************************************************************************
 ; Command the devices on the serial bus to stop talking
 ; ***************************************************************************************
-.untlk
+.UNTLK
     jmp cf9b6                                                         ; ffab: 4c b6 f9    l..
 
 ; ***************************************************************************************
 ; Command the devices on the serial bus to stop listening
 ; ***************************************************************************************
-.unlsn
+.UNLSN
     jmp cfd09                                                         ; ffae: 4c 09 fd    l..
 
 ; ***************************************************************************************
@@ -4956,7 +4956,7 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     A: device number
 ; ***************************************************************************************
-.listen
+.LISTEN
     jmp cf4cd                                                         ; ffb1: 4c cd f4    lM.
 
 ; ***************************************************************************************
@@ -4965,7 +4965,7 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     A: device number
 ; ***************************************************************************************
-.talk
+.TALK
     jmp cf3f7                                                         ; ffb4: 4c f7 f3    l..
 
 ; ***************************************************************************************
@@ -4974,7 +4974,7 @@ lfc8a = cfc89+1
 ; On Exit:
 ;     A: I/O status
 ; ***************************************************************************************
-.readst
+.READST
     jmp cf8d7                                                         ; ffb7: 4c d7 f8    lW.
 
 ; ***************************************************************************************
@@ -4985,7 +4985,7 @@ lfc8a = cfc89+1
 ;     X: device number
 ;     Y: secondary address
 ; ***************************************************************************************
-.setlfs
+.SETLFS
     jmp cf7f6                                                         ; ffba: 4c f6 f7    l..
 
 ; ***************************************************************************************
@@ -4996,13 +4996,13 @@ lfc8a = cfc89+1
 ;     X: filename address (low byte)
 ;     Y: filename address (high byte)
 ; ***************************************************************************************
-.setnam
+.SETNAM
     jmp cf7fd                                                         ; ffbd: 4c fd f7    l..
 
 ; ***************************************************************************************
 ; Open a logical file (set up with SETLFS and SETNAM)
 ; ***************************************************************************************
-.open
+.OPEN
     jmp (open_vector)                                                 ; ffc0: 6c 1a 03    ...
 
 ; ***************************************************************************************
@@ -5012,7 +5012,7 @@ lfc8a = cfc89+1
 ;     A: logical file number
 ; ***************************************************************************************
 ; &ffc3 referenced 1 time by &fa98
-.close
+.CLOSE
     jmp (close_vector)                                                ; ffc3: 6c 1c 03    ...
 
 ; ***************************************************************************************
@@ -5021,7 +5021,7 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     X: logical file number
 ; ***************************************************************************************
-.chkin
+.CHKIN
     jmp (chkin_vector)                                                ; ffc6: 6c 1e 03    ...
 
 ; ***************************************************************************************
@@ -5030,13 +5030,13 @@ lfc8a = cfc89+1
 ; On Entry:
 ;     X: logical file number
 ; ***************************************************************************************
-.chkout
+.CHKOUT
     jmp (chkout_vector)                                               ; ffc9: 6c 20 03    . .
 
 ; ***************************************************************************************
 ; Restore the default input and output channels
 ; ***************************************************************************************
-.clrchn
+.CLRCHN
     jmp (clrchn_vector)                                               ; ffcc: 6c 22 03    .".
 
 ; ***************************************************************************************
@@ -5045,7 +5045,7 @@ lfc8a = cfc89+1
 ; On Exit:
 ;     A: character read
 ; ***************************************************************************************
-.chrin
+.CHRIN
     jmp (chrin_vector)                                                ; ffcf: 6c 24 03    .$.
 
 ; ***************************************************************************************
@@ -5055,7 +5055,7 @@ lfc8a = cfc89+1
 ;     A: character to output
 ; ***************************************************************************************
 ; &ffd2 referenced 8 times by &e605, &e96d, &e978, &f7c3, &fafc, &fb08, &fedd, &ff34
-.chrout
+.CHROUT
     jmp (chrout_vector)                                               ; ffd2: 6c 26 03    .&.
 
 ; ***************************************************************************************
@@ -5070,7 +5070,7 @@ lfc8a = cfc89+1
 ;     X: end address of the data loaded (low byte)
 ;     Y: end address of the data loaded (high byte)
 ; ***************************************************************************************
-.load
+.LOAD
     jmp cf49e                                                         ; ffd5: 4c 9e f4    l..
 
 ; ***************************************************************************************
@@ -5081,7 +5081,7 @@ lfc8a = cfc89+1
 ;     X: end address + 1 (low byte)
 ;     Y: end address + 1 (high byte)
 ; ***************************************************************************************
-.save
+.SAVE
     jmp cf5dd                                                         ; ffd8: 4c dd f5    l..
 
 ; ***************************************************************************************
@@ -5092,7 +5092,7 @@ lfc8a = cfc89+1
 ;     X: jiffy clock (middle byte)
 ;     Y: jiffy clock (low byte)
 ; ***************************************************************************************
-.settim
+.SETTIM
     jmp cf2bf                                                         ; ffdb: 4c bf f2    l..
 
 ; ***************************************************************************************
@@ -5103,14 +5103,14 @@ lfc8a = cfc89+1
 ;     X: jiffy clock (middle byte)
 ;     Y: jiffy clock (low byte)
 ; ***************************************************************************************
-.rdtim
+.RDTIM
     jmp cf844                                                         ; ffde: 4c 44 f8    ld.
 
 ; ***************************************************************************************
 ; Check the RUN/STOP key (Z set if it's pressed)
 ; ***************************************************************************************
 ; &ffe1 referenced 1 time by &fe54
-.stop
+.STOP
     jmp (stop_vector)                                                 ; ffe1: 6c 28 03    .(.
 
 ; ***************************************************************************************
@@ -5119,20 +5119,20 @@ lfc8a = cfc89+1
 ; On Exit:
 ;     A: character read
 ; ***************************************************************************************
-.getin
+.GETIN
     jmp (getin_vector)                                                ; ffe4: 6c 2a 03    .*.
 
 ; ***************************************************************************************
 ; Close all files
 ; ***************************************************************************************
-.clall
+.CLALL
     jmp (clall_vector)                                                ; ffe7: 6c 2c 03    .,.
 
 ; ***************************************************************************************
 ; Update the jiffy clock and check the RUN/STOP key
 ; ***************************************************************************************
 ; &ffea referenced 1 time by &ea37
-.udtim
+.UDTIM
     jmp ce4d3                                                         ; ffea: 4c d3 e4    lS.
 
 ; ***************************************************************************************
@@ -5142,7 +5142,7 @@ lfc8a = cfc89+1
 ;     X: number of columns
 ;     Y: number of rows
 ; ***************************************************************************************
-.screen
+.SCREEN
     jmp ce5c9                                                         ; ffed: 4c c9 e5    lI.
 
 ; ***************************************************************************************
@@ -5153,7 +5153,7 @@ lfc8a = cfc89+1
 ;     X: cursor row
 ;     Y: cursor column
 ; ***************************************************************************************
-.plot
+.PLOT
     jmp ce50a                                                         ; fff0: 4c 0a e5    l..
 
 ; ***************************************************************************************
@@ -5163,7 +5163,7 @@ lfc8a = cfc89+1
 ;     X: I/O base address (low byte)
 ;     Y: I/O base address (high byte)
 ; ***************************************************************************************
-.iobase
+.IOBASE
     ldy #&dc                                                          ; fff3: a0 dc       ..
     ldx #0                                                            ; fff5: a2 00       ..
     rts                                                               ; fff7: 60          .
@@ -5225,8 +5225,8 @@ save pydis_start, pydis_end
 ;     cfabe:                         9
 ;     device_number_table:           9
 ;     logical_file_table:            9
+;     CHROUT:                        8
 ;     cf4cd:                         8
-;     chrout:                        8
 ;     io_address_ptr:                8
 ;     sub_ce971:                     8
 ;     tape_parity:                   8
@@ -5347,6 +5347,8 @@ save pydis_start, pydis_end
 ;     tape_timing:                   3
 ;     vic_control_2:                 3
 ;     vic_memory_setup:              3
+;     IOINIT:                        2
+;     RESTOR:                        2
 ;     brk_vector:                    2
 ;     ce1b5:                         2
 ;     ce4dd:                         2
@@ -5424,7 +5426,6 @@ save pydis_start, pydis_end
 ;     cpu_port_direction:            2
 ;     default_chrout_handler:        2
 ;     default_stop_handler:          2
-;     ioinit:                        2
 ;     keyboard_table_setup_vector:   2
 ;     l03ff:                         2
 ;     last_shift_key_flags:          2
@@ -5434,7 +5435,6 @@ save pydis_start, pydis_end
 ;     os_memory_end:                 2
 ;     os_memory_start:               2
 ;     pal_ntsc_flag:                 2
-;     restor:                        2
 ;     return_1:                      2
 ;     return_10:                     2
 ;     return_11:                     2
@@ -5473,7 +5473,14 @@ save pydis_start, pydis_end
 ;     tape_block_count:              2
 ;     tape_byte_received_flag:       2
 ;     tape_timing_constant:          2
-;     acptr:                         1
+;     ACPTR:                         1
+;     CINT:                          1
+;     CIOUT:                         1
+;     CLOSE:                         1
+;     RAMTAS:                        1
+;     SCNKEY:                        1
+;     STOP:                          1
+;     UDTIM:                         1
 ;     basic_error_vector:            1
 ;     basic_index2:                  1
 ;     basic_input_buffer:            1
@@ -5721,10 +5728,7 @@ save pydis_start, pydis_end
 ;     cia2_timer_a_high:             1
 ;     cia2_timer_a_low:              1
 ;     cia2_timer_b_high:             1
-;     cint:                          1
-;     ciout:                         1
 ;     clall_vector:                  1
-;     close:                         1
 ;     close_vector:                  1
 ;     clrchn_vector:                 1
 ;     default_clrchn_handler:        1
@@ -5849,7 +5853,6 @@ save pydis_start, pydis_end
 ;     loop_cff3b:                    1
 ;     nmi_vector:                    1
 ;     open_vector:                   1
-;     ramtas:                        1
 ;     return_12:                     1
 ;     return_13:                     1
 ;     return_14:                     1
@@ -5867,12 +5870,10 @@ save pydis_start, pydis_end
 ;     return_8:                      1
 ;     reverse_flag:                  1
 ;     save_vector:                   1
-;     scnkey:                        1
 ;     screen_line_length:            1
 ;     serial_buffered_char:          1
 ;     serial_timeout_flag:           1
 ;     sid_voice1_frequency_low:      1
-;     stop:                          1
 ;     stop_vector:                   1
 ;     sub_ce518:                     1
 ;     sub_ce594:                     1
@@ -5915,7 +5916,6 @@ save pydis_start, pydis_end
 ;     sub_cfe99:                     1
 ;     sub_cfecb:                     1
 ;     sub_cff23:                     1
-;     udtim:                         1
 ;     vic_background_colour_0:       1
 ;     vic_interrupt_status:          1
 ;     vic_sprite0_x:                 1

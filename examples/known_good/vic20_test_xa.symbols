@@ -26,6 +26,6 @@ comadd 9600,colour_ram
 comadd cb1e,basic_print_string
 comadd ddcd,basic_print_number
 comadd eabf,kernal_irq_handler
-comadd ffd2,chrout
-comadd ffe4,getin
-comadd fff0,plot
+comadd ffd2,CHROUT
+comadd ffe4,GETIN
+comadd fff0,PLOT

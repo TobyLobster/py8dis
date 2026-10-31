@@ -45,22 +45,22 @@ cia1_interrupt_control  = $dc0d
 kernal_irq_handler  = $ea31
 
 // Kernal entry points ($ff81-$fff9)
-setmsg  = $ff90
-readst  = $ffb7
-setlfs  = $ffba
-setnam  = $ffbd
-open    = $ffc0
-close   = $ffc3
-chkin   = $ffc6
-clrchn  = $ffcc
-chrin   = $ffcf
-chrout  = $ffd2
-load    = $ffd5
-save    = $ffd8
-rdtim   = $ffde
-getin   = $ffe4
-screen  = $ffed
-plot    = $fff0
+SETMSG  = $ff90
+READST  = $ffb7
+SETLFS  = $ffba
+SETNAM  = $ffbd
+OPEN    = $ffc0
+CLOSE   = $ffc3
+CHKIN   = $ffc6
+CLRCHN  = $ffcc
+CHRIN   = $ffcf
+CHROUT  = $ffd2
+LOAD    = $ffd5
+SAVE    = $ffd8
+RDTIM   = $ffde
+GETIN   = $ffe4
+SCREEN  = $ffed
+PLOT    = $fff0
 
 // The PRG file's header: the address to load it at
     * = $07ff
@@ -122,53 +122,53 @@ sys_entry
     ldx #colour_white                                                 // 0854: a2 01       ..
     stx text_colour                                                   // 0856: 8e 86 02    ...
     lda #$93                                                          // 0859: a9 93       .. // A=character to output
-    jsr chrout                                                        // 085b: 20 d2 ff     R. // Output $93 (clear screen)
+    jsr CHROUT                                                        // 085b: 20 d2 ff     R. // Output $93 (clear screen)
     ldx #0                                                            // 085e: a2 00       ..
 // $0860 referenced 1 time by $0869
 loop_c0860
     lda l0939,x                                                       // 0860: bd 39 09    .9. // A=character to output
     beq c086b                                                         // 0863: f0 06       ..
-    jsr chrout                                                        // 0865: 20 d2 ff     R. // Output a character
+    jsr CHROUT                                                        // 0865: 20 d2 ff     R. // Output a character
     inx                                                               // 0868: e8          .
     bne loop_c0860                                                    // 0869: d0 f5       P.
 // $086b referenced 1 time by $0863
 c086b
     lda #$21 // '!'                                                   // 086b: a9 21       .! // A=character to output
-    jsr chrout                                                        // 086d: 20 d2 ff     R. // Output '!'
+    jsr CHROUT                                                        // 086d: 20 d2 ff     R. // Output '!'
     clc                                                               // 0870: 18          .
     ldx #5                                                            // 0871: a2 05       .. // X=cursor row
     ldy #$0a                                                          // 0873: a0 0a       .. // Y=cursor column
-    jsr plot                                                          // 0875: 20 f0 ff     .. // Move the cursor to row 5, column 10
+    jsr PLOT                                                          // 0875: 20 f0 ff     .. // Move the cursor to row 5, column 10
     sec                                                               // 0878: 38          8
-    jsr plot                                                          // 0879: 20 f0 ff     .. // Read the cursor position into X (row) and Y (column)
+    jsr PLOT                                                          // 0879: 20 f0 ff     .. // Read the cursor position into X (row) and Y (column)
     stx l095c                                                         // 087c: 8e 5c 09    ... // X=cursor row
     sty l095d                                                         // 087f: 8c 5d 09    .]. // Y=cursor column
     lda #$0f                                                          // 0882: a9 0f       .. // A=logical file number
     ldx #device_disk_8                                                // 0884: a2 08       .. // X=device number
     ldy #$0f                                                          // 0886: a0 0f       .. // Y=secondary address
-    jsr setlfs                                                        // 0888: 20 ba ff     .. // Set logical file 15 to device 8 (disk drive), secondary address 15
+    jsr SETLFS                                                        // 0888: 20 ba ff     .. // Set logical file 15 to device 8 (disk drive), secondary address 15
     lda #2                                                            // 088b: a9 02       .. // A=filename length
     ldx #<filename                                                    // 088d: a2 47       .g // X=filename address (low byte)
     ldy #>filename                                                    // 088f: a0 09       .. // Y=filename address (high byte)
-    jsr setnam                                                        // 0891: 20 bd ff     .. // Set the filename to "i0"
-    jsr open                                                          // 0894: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
+    jsr SETNAM                                                        // 0891: 20 bd ff     .. // Set the filename to "i0"
+    jsr OPEN                                                          // 0894: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
     ldx #$0f                                                          // 0897: a2 0f       .. // X=logical file number
-    jsr chkin                                                         // 0899: 20 c6 ff     F. // Open a channel for input
-    jsr chrin                                                         // 089c: 20 cf ff     O. // Read a character from the input channel
+    jsr CHKIN                                                         // 0899: 20 c6 ff     F. // Open a channel for input
+    jsr CHRIN                                                         // 089c: 20 cf ff     O. // Read a character from the input channel
     sta l095e                                                         // 089f: 8d 5e 09    ... // A=character read
-    jsr clrchn                                                        // 08a2: 20 cc ff     L. // Restore the default input and output channels
+    jsr CLRCHN                                                        // 08a2: 20 cc ff     L. // Restore the default input and output channels
     lda #$0f                                                          // 08a5: a9 0f       .. // A=logical file number
-    jsr close                                                         // 08a7: 20 c3 ff     C. // Close a logical file
+    jsr CLOSE                                                         // 08a7: 20 c3 ff     C. // Close a logical file
     lda #1                                                            // 08aa: a9 01       .. // A=logical file number
     ldx #device_disk_8                                                // 08ac: a2 08       .. // X=device number
     ldy #1                                                            // 08ae: a0 01       .. // Y=secondary address
-    jsr setlfs                                                        // 08b0: 20 ba ff     .. // Set logical file 1 to device 8 (disk drive), secondary address 1
+    jsr SETLFS                                                        // 08b0: 20 ba ff     .. // Set logical file 1 to device 8 (disk drive), secondary address 1
     lda #4                                                            // 08b3: a9 04       .. // A=filename length
     ldx #<filename_2                                                  // 08b5: a2 49       .i // X=filename address (low byte)
     ldy #>filename_2                                                  // 08b7: a0 09       .. // Y=filename address (high byte)
-    jsr setnam                                                        // 08b9: 20 bd ff     .. // Set the filename to "data"
+    jsr SETNAM                                                        // 08b9: 20 bd ff     .. // Set the filename to "data"
     lda #0                                                            // 08bc: a9 00       .. // A=0 to load, 1 to verify
-    jsr load                                                          // 08be: 20 d5 ff     U. // Load a file
+    jsr LOAD                                                          // 08be: 20 d5 ff     U. // Load a file
     stx l095f                                                         // 08c1: 8e 5f 09    ... // X=end address of the data loaded (low byte)
     sty l0960                                                         // 08c4: 8c 60 09    ... // Y=end address of the data loaded (high byte)
     lda #$27 // '''                                                   // 08c7: a9 27       .'
@@ -178,18 +178,18 @@ c086b
     lda #free_zero_page                                               // 08cf: a9 fb       .. // A=zero page address of the start address
     ldx #<pydis_end                                                   // 08d1: a2 68       .. // X=end address + 1 (low byte)
     ldy #>pydis_end                                                   // 08d3: a0 09       .. // Y=end address + 1 (high byte)
-    jsr save                                                          // 08d5: 20 d8 ff     X. // Save memory to a file (set up with SETLFS and SETNAM)
+    jsr SAVE                                                          // 08d5: 20 d8 ff     X. // Save memory to a file (set up with SETLFS and SETNAM)
     lda #$c0                                                          // 08d8: a9 c0       .. // A=message flags
-    jsr setmsg                                                        // 08da: 20 90 ff     .. // Show Kernal control and error messages
-    jsr rdtim                                                         // 08dd: 20 de ff     .. // Read the jiffy clock
+    jsr SETMSG                                                        // 08da: 20 90 ff     .. // Show Kernal control and error messages
+    jsr RDTIM                                                         // 08dd: 20 de ff     .. // Read the jiffy clock
     sty l0961                                                         // 08e0: 8c 61 09    ... // Y=jiffy clock (low byte)
     stx l0962                                                         // 08e3: 8e 62 09    ... // X=jiffy clock (middle byte)
     sta l0963                                                         // 08e6: 8d 63 09    ... // A=jiffy clock (high byte)
-    jsr getin                                                         // 08e9: 20 e4 ff     .. // Get a character from the input channel (from the keyboard, 0 if there's none)
+    jsr GETIN                                                         // 08e9: 20 e4 ff     .. // Get a character from the input channel (from the keyboard, 0 if there's none)
     sta l0964                                                         // 08ec: 8d 64 09    ... // A=character read
-    jsr readst                                                        // 08ef: 20 b7 ff     .. // Read the I/O status
+    jsr READST                                                        // 08ef: 20 b7 ff     .. // Read the I/O status
     sta l0965                                                         // 08f2: 8d 65 09    ... // A=I/O status
-    jsr screen                                                        // 08f5: 20 ed ff     .. // Read the screen size
+    jsr SCREEN                                                        // 08f5: 20 ed ff     .. // Read the screen size
     stx l0966                                                         // 08f8: 8e 66 09    ... // X=number of columns
     sty l0967                                                         // 08fb: 8c 67 09    ... // Y=number of rows
     lda #<l094d                                                       // 08fe: a9 4d       .m // A=string address (low byte)
@@ -316,25 +316,32 @@ pydis_end
 #endif
 
 // Label references by decreasing frequency:
-//     chrout:                    3
+//     CHROUT:                    3
+//     PLOT:                      2
+//     SETLFS:                    2
+//     SETNAM:                    2
 //     free_zero_page:            2
 //     l0964:                     2
-//     plot:                      2
-//     setlfs:                    2
-//     setnam:                    2
 //     vic_border_colour:         2
 //     vic_control_1:             2
+//     CHKIN:                     1
+//     CHRIN:                     1
+//     CLOSE:                     1
+//     CLRCHN:                    1
+//     GETIN:                     1
+//     LOAD:                      1
+//     OPEN:                      1
+//     RDTIM:                     1
+//     READST:                    1
+//     SAVE:                      1
+//     SCREEN:                    1
+//     SETMSG:                    1
 //     basic_print_number:        1
 //     basic_print_string:        1
 //     c086b:                     1
-//     chkin:                     1
-//     chrin:                     1
 //     cia1_interrupt_control:    1
 //     cia1_port_a:               1
-//     close:                     1
-//     clrchn:                    1
 //     colour_ram:                1
-//     getin:                     1
 //     irq_vector:                1
 //     kernal_irq_handler:        1
 //     keyboard_buffer_length:    1
@@ -350,16 +357,9 @@ pydis_end
 //     l0965:                     1
 //     l0966:                     1
 //     l0967:                     1
-//     load:                      1
 //     loop_c0860:                1
 //     loop_c0913:                1
-//     open:                      1
-//     rdtim:                     1
-//     readst:                    1
-//     save:                      1
-//     screen:                    1
 //     screen_memory:             1
-//     setmsg:                    1
 //     sprite_pointers:           1
 //     text_colour:               1
 //     vic_background_colour_0:   1

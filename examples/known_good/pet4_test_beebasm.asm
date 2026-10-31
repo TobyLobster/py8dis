@@ -27,10 +27,10 @@ crtc_address = &e880
 crtc_data   = &e881
 
 ; Kernal entry points (&ffc0-&fff9)
-clrchn  = &ffcc
-chrout  = &ffd2
-stop    = &ffe1
-getin   = &ffe4
+CLRCHN  = &ffcc
+CHROUT  = &ffd2
+STOP    = &ffe1
+GETIN   = &ffe4
 
 ; The PRG file's header: the address to load it at
     org &03ff
@@ -58,7 +58,7 @@ getin   = &ffe4
 
 .sys_entry
     lda #&93                                                          ; 0420: a9 93       .. ; A=character to output
-    jsr chrout                                                        ; 0422: 20 d2 ff     R. ; Output &93 (clear screen)
+    jsr CHROUT                                                        ; 0422: 20 d2 ff     R. ; Output &93 (clear screen)
     lda #<l0478                                                       ; 0425: a9 78       .. ; A=string address (low byte)
     ldy #>l0478                                                       ; 0427: a0 04       .. ; Y=string address (high byte)
     jsr basic_print_string                                            ; 0429: 20 1d bb     .. ; Print the zero-terminated string at A/Y
@@ -88,14 +88,14 @@ getin   = &ffe4
     sta keyboard_buffer_length                                        ; 0457: 85 9e       ..
 ; &0459 referenced 1 time by &0461
 .loop_c0459
-    jsr stop                                                          ; 0459: 20 e1 ff     .. ; Check the STOP key (Z set if it's pressed)
+    jsr STOP                                                          ; 0459: 20 e1 ff     .. ; Check the STOP key (Z set if it's pressed)
     beq c0466                                                         ; 045c: f0 08       ..
-    jsr getin                                                         ; 045e: 20 e4 ff     .. ; Get a character from the keyboard buffer (0 if there's none)
+    jsr GETIN                                                         ; 045e: 20 e4 ff     .. ; Get a character from the keyboard buffer (0 if there's none)
     beq loop_c0459                                                    ; 0461: f0 f6       ..
-    jsr chrout                                                        ; 0463: 20 d2 ff     R. ; Output a character
+    jsr CHROUT                                                        ; 0463: 20 d2 ff     R. ; Output a character
 ; &0466 referenced 1 time by &045c
 .c0466
-    jsr clrchn                                                        ; 0466: 20 cc ff     L. ; Restore the default input and output (keyboard and screen)
+    jsr CLRCHN                                                        ; 0466: 20 cc ff     L. ; Restore the default input and output (keyboard and screen)
     lda #9                                                            ; 0469: a9 09       ..
     sta pia1_port_a                                                   ; 046b: 8d 10 e8    ...
     lda pia1_port_b                                                   ; 046e: ad 12 e8    ...
@@ -120,14 +120,15 @@ getin   = &ffe4
 save pydis_start - 2, pydis_end
 
 ; Label references by decreasing frequency:
-;     chrout:                   2
+;     CHROUT:                   2
+;     CLRCHN:                   1
+;     GETIN:                    1
+;     STOP:                     1
 ;     basic_print_number:       1
 ;     basic_print_string:       1
 ;     c0466:                    1
-;     clrchn:                   1
 ;     crtc_address:             1
 ;     crtc_data:                1
-;     getin:                    1
 ;     irq_vector:               1
 ;     kernal_irq_handler:       1
 ;     keyboard_buffer_length:   1
@@ -136,7 +137,6 @@ save pydis_start - 2, pydis_end
 ;     pia1_port_b:              1
 ;     reverse_flag:             1
 ;     screen_memory:            1
-;     stop:                     1
 ;     via_peripheral_control:   1
 
 ; Automatically generated labels:
