@@ -559,11 +559,11 @@ def osgbpb_hook(runtime_addr, state, subroutine):
 
     if block_addr is not None:
         if action_pessimistic == 8:
-            auto_comment(block_addr, "osgbpb block: disc cycle number", align=Align.INLINE)
+            auto_comment(block_addr, os_call_name("osgbpb") + " block: disc cycle number", align=Align.INLINE)
             auto_comment(RuntimeAddr(block_addr + 1), "address for returned data (4 bytes)", align=Align.INLINE)
             auto_comment(RuntimeAddr(block_addr + 5), "number of filenames (4 bytes)", align=Align.INLINE)
         else:
-            auto_comment(block_addr, "osgbpb block: file handle", align=Align.INLINE)
+            auto_comment(block_addr, os_call_name("osgbpb") + " block: file handle", align=Align.INLINE)
             auto_comment(RuntimeAddr(block_addr + 1), "start address of data (4 bytes)", align=Align.INLINE)
             auto_comment(RuntimeAddr(block_addr + 5), "number of bytes to transfer (4 bytes)", align=Align.INLINE)
         auto_comment(RuntimeAddr(block_addr + 9), "sequential pointer value to be used (4 bytes)", align=Align.INLINE)
@@ -684,7 +684,7 @@ def oswrch_hook(runtime_addr, state, subroutine):
         a = " " + str(value)
 
         # If OSASCI with A=13, then OSNEWL is called instead
-        if subroutine.label_name == "osasci" and value == 13:
+        if subroutine.label_name.lower() == "osasci" and value == 13:
             osnewl_hook(runtime_addr, state, subroutine)
             return
     else:
@@ -787,8 +787,14 @@ def memory_regions():
     # by the CPU).
     memory_region(0xffb3, 0xfffa, "MOS entry points")
 
+def os_call_name(name):
+    """The name of an OS call, e.g. 'osbyte', in capitals (OSBYTE) unless
+    config.set_upper_case_os_calls(False)."""
+    return name.upper() if config.get_upper_case_os_calls() else name
+
 def mos_labels():
     # (bbc(), electron(), b_plus() and master() all call this)
+    session.current().extras["acorn.os_calls_named"] = True
     register_snippets()
     if comment_vdu_sequences not in session.current().trace.analysis_hooks:
         session.current().trace.analysis_hooks.append(comment_vdu_sequences)
@@ -805,28 +811,28 @@ def mos_labels():
     for vector in vectors:
         ol2(vector, vectors[vector])
 
-    optional_label(0xffc2, "gsinit")
-    optional_label(0xffc5, "gsread")
+    optional_label(0xffc2, os_call_name("gsinit"))
+    optional_label(0xffc5, os_call_name("gsread"))
 
-    subroutine(0xffb9, "osrdsc", None, None, hook=osrdsc_hook, is_entry_point=False)
-    subroutine(0xffbc, "vduchr", None, None, hook=oswrch_hook, is_entry_point=False)
-    subroutine(0xffbf, "oseven", None, None, hook=oseven_hook, is_entry_point=False)
-    subroutine(0xffce, "osfind", None, None, hook=osfind_hook, is_entry_point=False)
-    subroutine(0xffc8, "nvrdch", None, None, hook=osrdch_hook, is_entry_point=False)
-    subroutine(0xffcb, "nvwrch", None, None, hook=oswrch_hook, is_entry_point=False)
-    subroutine(0xffd1, "osgbpb", None, None, hook=osgbpb_hook, is_entry_point=False)
-    subroutine(0xffd4, "osbput", None, None, hook=osbput_hook, is_entry_point=False)
-    subroutine(0xffd7, "osbget", None, None, hook=osbget_hook, is_entry_point=False)
-    subroutine(0xffda, "osargs", None, None, hook=osargs_hook, is_entry_point=False)
-    subroutine(0xffe0, "osrdch", None, None, hook=osrdch_hook, is_entry_point=False)
-    subroutine(0xffe3, "osasci", None, None, hook=oswrch_hook, is_entry_point=False)
-    subroutine(0xffe7, "osnewl", None, None, hook=osnewl_hook, is_entry_point=False)
-    subroutine(0xffec, "oswrcr", None, None, hook=oswrcr_hook, is_entry_point=False)
-    subroutine(0xffee, "oswrch", None, None, hook=oswrch_hook, is_entry_point=False)
-    subroutine(0xfff4, "osbyte", None, None, hook=osbyte_hook, is_entry_point=False)
-    subroutine(0xfff1, "osword", None, None, hook=osword_hook, is_entry_point=False)
-    subroutine(0xffdd, "osfile", None, None, hook=osfile_hook, is_entry_point=False)
-    subroutine(0xfff7, "oscli",  None, None, hook=oscli_hook,  is_entry_point=False)
+    subroutine(0xffb9, os_call_name("osrdsc"),  None, None, hook=osrdsc_hook, is_entry_point=False)
+    subroutine(0xffbc, os_call_name("vduchr"),  None, None, hook=oswrch_hook, is_entry_point=False)
+    subroutine(0xffbf, os_call_name("oseven"),  None, None, hook=oseven_hook, is_entry_point=False)
+    subroutine(0xffce, os_call_name("osfind"),  None, None, hook=osfind_hook, is_entry_point=False)
+    subroutine(0xffc8, os_call_name("nvrdch"),  None, None, hook=osrdch_hook, is_entry_point=False)
+    subroutine(0xffcb, os_call_name("nvwrch"),  None, None, hook=oswrch_hook, is_entry_point=False)
+    subroutine(0xffd1, os_call_name("osgbpb"),  None, None, hook=osgbpb_hook, is_entry_point=False)
+    subroutine(0xffd4, os_call_name("osbput"),  None, None, hook=osbput_hook, is_entry_point=False)
+    subroutine(0xffd7, os_call_name("osbget"),  None, None, hook=osbget_hook, is_entry_point=False)
+    subroutine(0xffda, os_call_name("osargs"),  None, None, hook=osargs_hook, is_entry_point=False)
+    subroutine(0xffe0, os_call_name("osrdch"),  None, None, hook=osrdch_hook, is_entry_point=False)
+    subroutine(0xffe3, os_call_name("osasci"),  None, None, hook=oswrch_hook, is_entry_point=False)
+    subroutine(0xffe7, os_call_name("osnewl"),  None, None, hook=osnewl_hook, is_entry_point=False)
+    subroutine(0xffec, os_call_name("oswrcr"),  None, None, hook=oswrcr_hook, is_entry_point=False)
+    subroutine(0xffee, os_call_name("oswrch"),  None, None, hook=oswrch_hook, is_entry_point=False)
+    subroutine(0xfff4, os_call_name("osbyte"),  None, None, hook=osbyte_hook, is_entry_point=False)
+    subroutine(0xfff1, os_call_name("osword"),  None, None, hook=osword_hook, is_entry_point=False)
+    subroutine(0xffdd, os_call_name("osfile"),  None, None, hook=osfile_hook, is_entry_point=False)
+    subroutine(0xfff7, os_call_name("oscli"),   None, None, hook=oscli_hook,  is_entry_point=False)
 
 def is_sideways_rom():
     auto_comment(0x8000, "Sideways ROM header")
@@ -887,7 +893,7 @@ def hardware(machine):
             session.current().trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, crtc_registers_enum, True))
 
 def add_oswrsc():
-    subroutine(0xffb3, "oswrsc", None, None, hook=oswrsc_hook, is_entry_point=False)
+    subroutine(0xffb3, os_call_name("oswrsc"),  None, None, hook=oswrsc_hook, is_entry_point=False)
 
 def hardware_bbc():
     hardware(machinetype.MachineType.MACHINE_BBC)

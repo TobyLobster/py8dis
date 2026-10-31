@@ -5171,7 +5171,7 @@ cdb87
     ldx #<lead2                                                       ; dba9: a2 d2       ..
     ldy #>lead2                                                       ; dbab: a0 ea       ..
     dec l0267                                                         ; dbad: ce 67 02    .g.
-    jsr oscli                                                         ; dbb0: 20 f7 ff     ..
+    jsr OSCLI                                                         ; dbb0: 20 f7 ff     ..
     inc l0267                                                         ; dbb3: ee 67 02    .g.
     bne cdbbe                                                         ; dbb6: d0 06       ..
 ; $dbb8 referenced 2 times by $dba2, $dc65
@@ -5215,8 +5215,8 @@ osbyte142EntryPoint
     ldy #8                                                            ; dbf0: a0 08       ..
     jsr sub_cdeab                                                     ; dbf2: 20 ab de     ..
     sty l00fd                                                         ; dbf5: 84 fd       ..
-    jsr osnewl                                                        ; dbf7: 20 e7 ff     .. ; Write newline (characters 10 and 13)
-    jsr osnewl                                                        ; dbfa: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; dbf7: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; dbfa: 20 e7 ff     .. ; Write newline (characters 10 and 13)
     plp                                                               ; dbfd: 28          (
     lda #1                                                            ; dbfe: a9 01       ..
     bit l027a                                                         ; dc00: 2c 7a 02    ,z.
@@ -5280,8 +5280,8 @@ cdc27
 ; $dc5d referenced 1 time by $dc5d
 loop_cdc5d
     bcs loop_cdc5d                                                    ; dc5d: b0 fe       ..
-    jsr osnewl                                                        ; dc5f: 20 e7 ff     .. ; Write newline (characters 10 and 13)
-    jsr osnewl                                                        ; dc62: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; dc5f: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; dc62: 20 e7 ff     .. ; Write newline (characters 10 and 13)
     jmp cdbb8                                                         ; dc65: 4c b8 db    L..
 
 ; $dc68 referenced 2 times by $dccb, $dcd4
@@ -5688,7 +5688,7 @@ sub_cdeab
 cdeb1
     iny                                                               ; deb1: c8          .
     lda (l00fd),y                                                     ; deb2: b1 fd       ..
-    jsr osasci                                                        ; deb4: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; deb4: 20 e3 ff     .. ; Write character
     tax                                                               ; deb7: aa          .
     bne cdeb1                                                         ; deb8: d0 f7       ..
     rts                                                               ; deba: 60          `
@@ -5715,14 +5715,14 @@ cdec7
     beq cdee6                                                         ; ded0: f0 14       ..
     sec                                                               ; ded2: 38          8
     ror l00eb                                                         ; ded3: 66 eb       f.
-    jsr osbget                                                        ; ded5: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                                        ; ded5: 20 d7 ff     .. ; Read a single byte from an open file Y
     php                                                               ; ded8: 08          .
     lsr l00eb                                                         ; ded9: 46 eb       F.
     plp                                                               ; dedb: 28          (
     bcc cdf03                                                         ; dedc: 90 25       .%
     lda #osfind_close                                                 ; dede: a9 00       ..
     sta l0256                                                         ; dee0: 8d 56 02    .V.
-    jsr osfind                                                        ; dee3: 20 ce ff     .. ; Close one or all files
+    jsr OSFIND                                                        ; dee3: 20 ce ff     .. ; Close one or all files
 ; $dee6 referenced 3 times by $ded0, $def4, $defc
 cdee6
     bit l00ff                                                         ; dee6: 24 ff       $.
@@ -6032,7 +6032,7 @@ ce0f7
     pha                                                               ; e104: 48          H
     sec                                                               ; e105: 38          8
     ror l00eb                                                         ; e106: 66 eb       f.
-    jsr osbput                                                        ; e108: 20 d4 ff     .. ; Write a single byte A to an open file Y
+    jsr OSBPUT                                                        ; e108: 20 d4 ff     .. ; Write a single byte A to an open file Y
     lsr l00eb                                                         ; e10b: 46 eb       F.
 ; $e10d referenced 3 times by $e0b9, $e0fc, $e101
 ce10d
@@ -6260,14 +6260,14 @@ osbyte119EntryPoint
     ldy l0257                                                         ; e284: ac 57 02    .W.
     sta l0257                                                         ; e287: 8d 57 02    .W.
     beq ce28f                                                         ; e28a: f0 03       ..
-    jsr osfind                                                        ; e28c: 20 ce ff     .. ; Close one or all files
+    jsr OSFIND                                                        ; e28c: 20 ce ff     .. ; Close one or all files
 ; $e28f referenced 1 time by $e28a
 ce28f
     ldy l00e6                                                         ; e28f: a4 e6       ..
     plp                                                               ; e291: 28          (
     beq return_32                                                     ; e292: f0 0b       ..
     lda #osfind_open_output                                           ; e294: a9 80       ..
-    jsr osfind                                                        ; e296: 20 ce ff     .. ; Open file for output (A=128)
+    jsr OSFIND                                                        ; e296: 20 ce ff     .. ; Open file for output (A=128)
     tay                                                               ; e299: a8          .  ; A=file handle (or zero on failure)
     beq ce310                                                         ; e29a: f0 74       .t
     sta l0257                                                         ; e29c: 8d 57 02    .W.
@@ -7286,10 +7286,10 @@ ce920
     iny                                                               ; e920: c8          .
 ; $e921 referenced 2 times by $e935, $e940
 ce921
-    jsr oswrch                                                        ; e921: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; e921: 20 ee ff     .. ; Write character
 ; $e924 referenced 4 times by $e91b, $e93d, $e947, $e951
 ce924
-    jsr osrdch                                                        ; e924: 20 e0 ff     .. ; Read a character from the current input stream
+    jsr OSRDCH                                                        ; e924: 20 e0 ff     .. ; Read a character from the current input stream
     bcs ce972                                                         ; e927: b0 49       .I
     tax                                                               ; e929: aa          .  ; A=character read
     lda l027c                                                         ; e92a: ad 7c 02    .|.
@@ -7316,7 +7316,7 @@ ce942
     lda #$7f                                                          ; e949: a9 7f       ..
 ; $e94b referenced 1 time by $e94f
 loop_ce94b
-    jsr oswrch                                                        ; e94b: 20 ee ff     .. ; Write character 127
+    jsr OSWRCH                                                        ; e94b: 20 ee ff     .. ; Write character 127
     dey                                                               ; e94e: 88          .
     bne loop_ce94b                                                    ; e94f: d0 fa       ..
     beq ce924                                                         ; e951: f0 d1       .. ; ALWAYS branch
@@ -7337,7 +7337,7 @@ ce953
 
 ; $e96c referenced 1 time by $e957
 ce96c
-    jsr osnewl                                                        ; e96c: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; e96c: 20 e7 ff     .. ; Write newline (characters 10 and 13)
     jsr sub_ce57e                                                     ; e96f: 20 7e e5     ~.
 ; $e972 referenced 1 time by $e927
 ce972
@@ -9571,14 +9571,14 @@ sub_cf68d
     ldy l0256                                                         ; f690: ac 56 02    .V.
     sta l0256                                                         ; f693: 8d 56 02    .V.
     beq cf69b                                                         ; f696: f0 03       ..
-    jsr osfind                                                        ; f698: 20 ce ff     .. ; Open or close file(s)
+    jsr OSFIND                                                        ; f698: 20 ce ff     .. ; Open or close file(s)
 ; $f69b referenced 1 time by $f696
 cf69b
     ldy l00e6                                                         ; f69b: a4 e6       ..
     plp                                                               ; f69d: 28          (
     beq return_51                                                     ; f69e: f0 0b       ..
     lda #osfind_open_input                                            ; f6a0: a9 40       .@
-    jsr osfind                                                        ; f6a2: 20 ce ff     .. ; Open file for input (A=64)
+    jsr OSFIND                                                        ; f6a2: 20 ce ff     .. ; Open file for input (A=64)
     tay                                                               ; f6a5: a8          .  ; A=file handle (or zero on failure)
     beq cf674                                                         ; f6a6: f0 cc       ..
     sta l0256                                                         ; f6a8: 8d 56 02    .V.
@@ -9952,7 +9952,7 @@ cf8b9
     beq return_54                                                     ; f8c6: f0 6b       .k
     ; Move the cursor to the start of the line
     lda #$0d                                                          ; f8c8: a9 0d       ..
-    jsr oswrch                                                        ; f8ca: 20 ee ff     .. ; Write character 13
+    jsr OSWRCH                                                        ; f8ca: 20 ee ff     .. ; Write character 13
 ; $f8cd referenced 1 time by $f8e0
 loop_cf8cd
     lda l03b2,y                                                       ; f8cd: b9 b2 03    ...
@@ -9966,7 +9966,7 @@ cf8da
     lda #$3f ; '?'                                                    ; f8da: a9 3f       .?
 ; $f8dc referenced 1 time by $f8d8
 cf8dc
-    jsr oswrch                                                        ; f8dc: 20 ee ff     .. ; Write character 63
+    jsr OSWRCH                                                        ; f8dc: 20 ee ff     .. ; Write character 63
     iny                                                               ; f8df: c8          .
     bne loop_cf8cd                                                    ; f8e0: d0 eb       ..
 ; $f8e2 referenced 2 times by $f8d0, $f8f1
@@ -10072,7 +10072,7 @@ sub_cf983
     adc #6                                                            ; f98c: 69 06       i. ; Carry is set, so adding 7
 ; $f98e referenced 2 times by $f98a, $f993
 cf98e
-    jmp oswrch                                                        ; f98e: 4c ee ff    L.. ; Write character
+    jmp OSWRCH                                                        ; f98e: 4c ee ff    L.. ; Write character
 
 ; $f991 referenced 4 times by $f8eb, $f917, $f922, $f976
 sub_cf991
@@ -10096,7 +10096,7 @@ cf9a0
     jsr sub_cf33b                                                     ; f9a0: 20 3b f3     ;.
     jsr cfaf2                                                         ; f9a3: 20 f2 fa     ..
     lda #osbyte_acknowledge_escape                                    ; f9a6: a9 7e       .~
-    jsr osbyte                                                        ; f9a8: 20 f4 ff     .. ; Clear escape condition and perform escape effects
+    jsr OSBYTE                                                        ; f9a8: 20 f4 ff     .. ; Clear escape condition and perform escape effects
     brk                                                               ; f9ab: 00          .
 
     .byte $11                                                         ; f9ac: 11          .
@@ -10234,7 +10234,7 @@ cfa58
     plp                                                               ; fa5e: 28          (
     php                                                               ; fa5f: 08          .
     beq cfa52                                                         ; fa60: f0 f0       ..
-    jsr osasci                                                        ; fa62: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; fa62: 20 e3 ff     .. ; Write character
     jmp cfa52                                                         ; fa65: 4c 52 fa    LR.
 
 ; $fa68 referenced 1 time by $fa5c
@@ -10308,7 +10308,7 @@ sub_cfae8
     beq cfaf2                                                         ; faeb: f0 05       ..
     ; Make a short beep
     lda #7                                                            ; faed: a9 07       ..
-    jsr oswrch                                                        ; faef: 20 ee ff     .. ; Write character 7
+    jsr OSWRCH                                                        ; faef: 20 ee ff     .. ; Write character 7
 ; $faf2 referenced 6 times by $f1f6, $f465, $f542, $f6ff, $f9a3, $faeb
 cfaf2
     lda #$80                                                          ; faf2: a9 80       ..
@@ -10452,7 +10452,7 @@ sub_cfb90
 sub_cfb95
     lda #osbyte_motor                                                 ; fb95: a9 89       ..
     ldy l00c3                                                         ; fb97: a4 c3       ..
-    jmp osbyte                                                        ; fb99: 4c f4 ff    L.. ; Switch cassette motor relay on or off, based on X
+    jmp OSBYTE                                                        ; fb99: 4c f4 ff    L.. ; Switch cassette motor relay on or off, based on X
 
 ; $fb9c referenced 3 times by $f4cf, $f531, $f625
 sub_cfb9c
@@ -10648,7 +10648,7 @@ return_59
 
 osbyte157EntryPoint
     txa                                                               ; ffa7: 8a          .
-    bcs osbput                                                        ; ffa8: b0 2a       .* ; Write a single byte A to an open file Y
+    bcs OSBPUT                                                        ; ffa8: b0 2a       .* ; Write a single byte A to an open file Y
 osbyte146EntryPoint
     ldy fred,x                                                        ; ffaa: bc 00 fc    ...
     rts                                                               ; ffad: 60          `
@@ -10669,90 +10669,90 @@ lffb7
     .byte $40, $d9                                                    ; ffb7: 40 d9       @.
 
 ; ***************************************************************************************
-osrdsc
+OSRDSC
     jmp cdc0b                                                         ; ffb9: 4c 0b dc    L.. ; Read byte from ROM Y or screen
 
 ; ***************************************************************************************
-vduchr
+VDUCHR
     jmp cc4c0                                                         ; ffbc: 4c c0 c4    L.. ; Write character
 
 ; ***************************************************************************************
-oseven
+OSEVEN
     jmp ce494                                                         ; ffbf: 4c 94 e4    L.. ; Generate event Y
 
     .byte $4c, $1e, $ea, $4c, $2f, $ea                                ; ffc2: 4c 1e ea... L..
 
 ; ***************************************************************************************
-nvrdch
+NVRDCH
     jmp cdec5                                                         ; ffc8: 4c c5 de    L.. ; Read a character from the current input stream
 
 ; ***************************************************************************************
-nvwrch
+NVWRCH
     jmp ce0a4                                                         ; ffcb: 4c a4 e0    L.. ; Write character
 
 ; ***************************************************************************************
 ; $ffce referenced 5 times by $dee3, $e28c, $e296, $f698, $f6a2
-osfind
+OSFIND
     jmp (findv)                                                       ; ffce: 6c 1c 02    l.. ; Open or close file(s)
 
 ; ***************************************************************************************
-osgbpb
+OSGBPB
     jmp (gbpbv)                                                       ; ffd1: 6c 1a 02    l.. ; Read or write multiple bytes to an open file
 
 ; ***************************************************************************************
 ; $ffd4 referenced 2 times by $e108, $ffa8
-osbput
+OSBPUT
     jmp (bputv)                                                       ; ffd4: 6c 18 02    l.. ; Write a single byte A to an open file Y
 
 ; ***************************************************************************************
 ; $ffd7 referenced 1 time by $ded5
-osbget
+OSBGET
     jmp (bgetv)                                                       ; ffd7: 6c 16 02    l.. ; Read a single byte from an open file Y
 
 ; ***************************************************************************************
-osargs
+OSARGS
     jmp (argsv)                                                       ; ffda: 6c 14 02    l.. ; Read or write a file's attributes
 
 ; ***************************************************************************************
-osfile
+OSFILE
     jmp (filev)                                                       ; ffdd: 6c 12 02    l..
 
 ; ***************************************************************************************
 ; $ffe0 referenced 1 time by $e924
-osrdch
+OSRDCH
     jmp (rdchv)                                                       ; ffe0: 6c 10 02    l.. ; Read a character from the current input stream
 
 ; ***************************************************************************************
 ; $ffe3 referenced 2 times by $deb4, $fa62
-osasci
+OSASCI
     cmp #$0d                                                          ; ffe3: c9 0d       .. ; Write character
-    bne oswrch                                                        ; ffe5: d0 07       .. ; Write character
+    bne OSWRCH                                                        ; ffe5: d0 07       .. ; Write character
 ; ***************************************************************************************
 ; $ffe7 referenced 5 times by $dbf7, $dbfa, $dc5f, $dc62, $e96c
-osnewl
+OSNEWL
     ; Move the cursor down one line
     lda #$0a                                                          ; ffe7: a9 0a       .. ; Write newline (characters 10 and 13)
-    jsr oswrch                                                        ; ffe9: 20 ee ff     .. ; Write character 10
+    jsr OSWRCH                                                        ; ffe9: 20 ee ff     .. ; Write character 10
 ; ***************************************************************************************
-oswrcr
+OSWRCR
     lda #$0d                                                          ; ffec: a9 0d       .. ; Write carriage return (character 13)
 ; ***************************************************************************************
 ; $ffee referenced 8 times by $e921, $e94b, $f8ca, $f8dc, $f98e, $faef, $ffe5, $ffe9
-oswrch
+OSWRCH
     jmp (wrchv)                                                       ; ffee: 6c 0e 02    l.. ; Write character 13
 
 ; ***************************************************************************************
-osword
+OSWORD
     jmp (wordv)                                                       ; fff1: 6c 0c 02    l..
 
 ; ***************************************************************************************
 ; $fff4 referenced 2 times by $f9a8, $fb99
-osbyte
+OSBYTE
     jmp (bytev)                                                       ; fff4: 6c 0a 02    l..
 
 ; ***************************************************************************************
 ; $fff7 referenced 1 time by $dbb0
-oscli
+OSCLI
     jmp (cliv)                                                        ; fff7: 6c 08 02    l..
 
     .byte 0, $0d, $cd, $d9, $1c, $dc                                  ; fffa: 00 0d cd... ...
@@ -10915,6 +10915,7 @@ pydis_end
 ;     l0804:                                    9
 ;     sub_cc588:                                9
 ;     system_via_register_a_no_handshake:       9
+;     OSWRCH:                                   8
 ;     l00bd:                                    8
 ;     l00c2:                                    8
 ;     l00eb:                                    8
@@ -10929,7 +10930,6 @@ pydis_end
 ;     l0838:                                    8
 ;     ld9b7:                                    8
 ;     osrdsc_ptr:                               8
-;     oswrch:                                   8
 ;     romsel:                                   8
 ;     acia_data:                                7
 ;     l00b8:                                    7
@@ -10978,6 +10978,8 @@ pydis_end
 ;     l083e:                                    6
 ;     osbyte159EntryPoint:                      6
 ;     return_27:                                6
+;     OSFIND:                                   5
+;     OSNEWL:                                   5
 ;     cc59d:                                    5
 ;     cd1ad:                                    5
 ;     cd348:                                    5
@@ -11014,8 +11016,6 @@ pydis_end
 ;     l03c9:                                    5
 ;     l0b00:                                    5
 ;     osbyte152EntryPoint:                      5
-;     osfind:                                   5
-;     osnewl:                                   5
 ;     return_3:                                 5
 ;     return_54:                                5
 ;     serial_ula_set_baud_cassette_and_motor:   5
@@ -11213,6 +11213,9 @@ pydis_end
 ;     sub_cfbe2:                                3
 ;     user_via_ier:                             3
 ;     user_via_ifr:                             3
+;     OSASCI:                                   2
+;     OSBPUT:                                   2
+;     OSBYTE:                                   2
 ;     cc532:                                    2
 ;     cc6ac:                                    2
 ;     cc732:                                    2
@@ -11380,9 +11383,6 @@ pydis_end
 ;     ldf12:                                    2
 ;     le9ad:                                    2
 ;     netv:                                     2
-;     osasci:                                   2
-;     osbput:                                   2
-;     osbyte:                                   2
 ;     osbyte158EntryPoint:                      2
 ;     return_2:                                 2
 ;     return_20:                                2
@@ -11475,6 +11475,9 @@ pydis_end
 ;     vdu6EntryPoint:                           2
 ;     vdu9EntryPoint:                           2
 ;     video_ula_control:                        2
+;     OSBGET:                                   1
+;     OSCLI:                                    1
+;     OSRDCH:                                   1
 ;     adc_read_data_high_byte:                  1
 ;     adc_read_data_low_byte:                   1
 ;     argsv:                                    1
@@ -12315,7 +12318,6 @@ pydis_end
 ;     loop_cfb83:                               1
 ;     loop_cfbca:                               1
 ;     loop_cfbef:                               1
-;     osbget:                                   1
 ;     osbyte119EntryPoint:                      1
 ;     osbyte11EntryPoint:                       1
 ;     osbyte124EntryPoint:                      1
@@ -12331,8 +12333,6 @@ pydis_end
 ;     osbyte20EntryPoint:                       1
 ;     osbyte21EntryPoint:                       1
 ;     osbyte5EntryPoint:                        1
-;     oscli:                                    1
-;     osrdch:                                   1
 ;     rdchv:                                    1
 ;     remv:                                     1
 ;     return_1:                                 1

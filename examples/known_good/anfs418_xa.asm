@@ -308,23 +308,23 @@ tube_data_register_4                    = $fee7
 lffb0   = $ffb0
 
 // MOS entry points ($ffb3-$fff9)
-osrdsc  = $ffb9
+OSRDSC  = $ffb9
 lffbd   = $ffbd
-gsinit  = $ffc2
-gsread  = $ffc5
-osfind  = $ffce
-osgbpb  = $ffd1
-osbput  = $ffd4
-osbget  = $ffd7
-osargs  = $ffda
-osfile  = $ffdd
-osrdch  = $ffe0
-osasci  = $ffe3
-osnewl  = $ffe7
-oswrch  = $ffee
-osword  = $fff1
-osbyte  = $fff4
-oscli   = $fff7
+GSINIT  = $ffc2
+GSREAD  = $ffc5
+OSFIND  = $ffce
+OSGBPB  = $ffd1
+OSBPUT  = $ffd4
+OSBGET  = $ffd7
+OSARGS  = $ffda
+OSFILE  = $ffdd
+OSRDCH  = $ffe0
+OSASCI  = $ffe3
+OSNEWL  = $ffe7
+OSWRCH  = $ffee
+OSWORD  = $fff1
+OSBYTE  = $fff4
+OSCLI   = $fff7
 
     * = $8000
 
@@ -1968,7 +1968,7 @@ service_handler
     lda #osbyte_read_os_version                                       // 8a1c: a9 00       ..
     ldx #1                                                            // 8a1e: a2 01       ..
 
-    jsr osbyte                                                        // 8a20: 20 f4 ff     ..            // Read OS version number into X
+    jsr OSBYTE                                                        // 8a20: 20 f4 ff     ..            // Read OS version number into X
     // X is the OS version number:
     //     X=0, OS 1.00 (Early BBC B or Electron OS 1.00)
     //     X=1, OS 1.20 or American OS
@@ -2064,7 +2064,7 @@ c8a98
 sub_c8aa0
     inc osrdsc_ptr                                                    // 8aa0: e6 f6       ..
     ldy l00ac                                                         // 8aa2: a4 ac       ..             // Y=ROM number
-    jmp osrdsc                                                        // 8aa4: 4c b9 ff    L..            // Read byte from ROM Y or screen
+    jmp OSRDSC                                                        // 8aa4: 4c b9 ff    L..            // Read byte from ROM Y or screen
 
 // $8aa7 referenced 1 time by $8a64
 service_handler_not_vectors_changed
@@ -2115,7 +2115,7 @@ sub_c8ad4
     sta (l009c),y                                                     // 8add: 91 9c       ..
     tay                                                               // 8adf: a8          .              // Y=0
     lda #osbyte_read_write_econet_keyboard_disable                    // 8ae0: a9 c9       ..
-    jsr osbyte                                                        // 8ae2: 20 f4 ff     ..            // Enable keyboard (for Econet)
+    jsr OSBYTE                                                        // 8ae2: 20 f4 ff     ..            // Enable keyboard (for Econet)
     lda #$0a                                                          // 8ae5: a9 0a       ..
     jsr sub_ca9be                                                     // 8ae7: 20 be a9     ..
 // $8aea referenced 1 time by $959f
@@ -2126,7 +2126,7 @@ sub_c8aea
 loop_c8aee
     ldx l009e                                                         // 8aee: a6 9e       ..
     ldy #$7f                                                          // 8af0: a0 7f       ..
-    jsr osbyte                                                        // 8af2: 20 f4 ff     ..
+    jsr OSBYTE                                                        // 8af2: 20 f4 ff     ..
     adc #1                                                            // 8af5: 69 01       i.
     cmp #$d0                                                          // 8af7: c9 d0       ..
     beq loop_c8aee                                                    // 8af9: f0 f3       ..
@@ -2251,7 +2251,7 @@ c8b98
 
 // $8ba8 referenced 1 time by $8b98
 c8ba8
-    jsr osnewl                                                        // 8ba8: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // 8ba8: 20 e7 ff     ..            // Write newline (characters 10 and 13)
 // $8bab referenced 2 times by $8ba6, $8c6d
 c8bab
     tya                                                               // 8bab: 98          .
@@ -2272,7 +2272,7 @@ c8bb6
     lda la3f0,x                                                       // 8bbd: bd f0 a3    ...
 // $8bc0 referenced 1 time by $8bc8
 loop_c8bc0
-    jsr osasci                                                        // 8bc0: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // 8bc0: 20 e3 ff     ..            // Write character
     inx                                                               // 8bc3: e8          .
     dey                                                               // 8bc4: 88          .
     lda la3f0,x                                                       // 8bc5: bd f0 a3    ...
@@ -2280,7 +2280,7 @@ loop_c8bc0
 // $8bca referenced 1 time by $8bd0
 loop_c8bca
     lda #$20 // ' '                                                   // 8bca: a9 20       .
-    jsr osasci                                                        // 8bcc: 20 e3 ff     ..            // Write character 32
+    jsr OSASCI                                                        // 8bcc: 20 e3 ff     ..            // Write character 32
     dey                                                               // 8bcf: 88          .
     bpl loop_c8bca                                                    // 8bd0: 10 f8       ..
     lda la3f0,x                                                       // 8bd2: bd f0 a3    ...
@@ -2302,7 +2302,7 @@ c8be0
 
 // $8bf0 referenced 1 time by $8be8
 c8bf0
-    jsr osasci                                                        // 8bf0: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // 8bf0: 20 e3 ff     ..            // Write character
     jmp c8be0                                                         // 8bf3: 4c e0 8b    L..
 
 // $8bf6 referenced 1 time by $8bd9
@@ -2324,13 +2324,13 @@ loop_c8c06
     inx                                                               // 8c06: e8          .
     lda la3f0,x                                                       // 8c07: bd f0 a3    ...
     bmi c8c12                                                         // 8c0a: 30 06       0.
-    jsr osasci                                                        // 8c0c: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // 8c0c: 20 e3 ff     ..            // Write character
     jmp loop_c8c06                                                    // 8c0f: 4c 06 8c    L..
 
 // $8c12 referenced 1 time by $8c0a
 c8c12
     and #$7f                                                          // 8c12: 29 7f       ).
-    jsr osasci                                                        // 8c14: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // 8c14: 20 e3 ff     ..            // Write character
     iny                                                               // 8c17: c8          .
     cpy #4                                                            // 8c18: c0 04       ..
     bne c8c1f                                                         // 8c1a: d0 03       ..
@@ -2347,7 +2347,7 @@ c8c24
     tax                                                               // 8c25: aa          .
 // $8c26 referenced 1 time by $8be4
 c8c26
-    jsr osnewl                                                        // 8c26: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // 8c26: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     inx                                                               // 8c29: e8          .
     inx                                                               // 8c2a: e8          .
     inx                                                               // 8c2b: e8          .
@@ -2368,12 +2368,12 @@ sub_c8c33
     beq return_6                                                      // 8c3a: f0 11       ..
     tya                                                               // 8c3c: 98          .
     pha                                                               // 8c3d: 48          H
-    jsr osnewl                                                        // 8c3e: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // 8c3e: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     ldy #$0b                                                          // 8c41: a0 0b       ..
     lda #$20 // ' '                                                   // 8c43: a9 20       .
 // $8c45 referenced 1 time by $8c49
 loop_c8c45
-    jsr osasci                                                        // 8c45: 20 e3 ff     ..            // Write character 32
+    jsr OSASCI                                                        // 8c45: 20 e3 ff     ..            // Write character 32
     dey                                                               // 8c48: 88          .
     bpl loop_c8c45                                                    // 8c49: 10 fa       ..
     pla                                                               // 8c4b: 68          h
@@ -2465,7 +2465,7 @@ return_7
 
 sub_c8cca
     lda #osbyte_scan_keyboard_from_16                                 // 8cca: a9 7a       .z
-    jsr osbyte                                                        // 8ccc: 20 f4 ff     ..            // Keyboard scan starting from key 16
+    jsr OSBYTE                                                        // 8ccc: 20 f4 ff     ..            // Keyboard scan starting from key 16
     txa                                                               // 8ccf: 8a          .              // X is key number if key is pressed, or $ff otherwise
     bmi c8ce0                                                         // 8cd0: 30 0e       0.
     cmp #$19                                                          // 8cd2: c9 19       ..
@@ -2476,12 +2476,12 @@ sub_c8cca
 c8cda
     tay                                                               // 8cda: a8          .              // Y=key
     lda #osbyte_write_keys_pressed                                    // 8cdb: a9 78       .x
-    jsr osbyte                                                        // 8cdd: 20 f4 ff     ..            // Write current keys pressed (X and Y)
+    jsr OSBYTE                                                        // 8cdd: 20 f4 ff     ..            // Write current keys pressed (X and Y)
 // $8ce0 referenced 1 time by $8cd0
 c8ce0
     jsr sub_c8b1a                                                     // 8ce0: 20 1a 8b     ..
     jsr c8ff1                                                         // 8ce3: 20 f1 8f     ..
-    jsr osnewl                                                        // 8ce6: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // 8ce6: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     ldx l00a8                                                         // 8ce9: a6 a8       ..
     bne return_7                                                      // 8ceb: d0 dc       ..
     lda l1071                                                         // 8ced: ad 71 10    .q.
@@ -2508,7 +2508,7 @@ c8d08
 // $8d0a referenced 1 time by $8d03
 c8d0a
     lda #osbyte_issue_service_request                                 // 8d0a: a9 8f       ..
-    jmp osbyte                                                        // 8d0c: 4c f4 ff    L..            // Issue paged ROM service call
+    jmp OSBYTE                                                        // 8d0c: 4c f4 ff    L..            // Issue paged ROM service call
 
     .asc "i .boot"                                                    // 8d0f: 69 20 2e... i .
     .byt $0d                                                          // 8d16: 0d          .
@@ -2534,7 +2534,7 @@ c8d26
 loop_c8d2c
     lda l8d38,x                                                       // 8d2c: bd 38 8d    .8.
     beq return_8                                                      // 8d2f: f0 06       ..
-    jsr osasci                                                        // 8d31: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // 8d31: 20 e3 ff     ..            // Write character
     inx                                                               // 8d34: e8          .
     bne loop_c8d2c                                                    // 8d35: d0 f5       ..
 // $8d37 referenced 2 times by $8d28, $8d2f
@@ -2561,7 +2561,7 @@ sub_c8d79
     pha                                                               // 8d7a: 48          H
     lda #osbyte_close_spool_exec                                      // 8d7b: a9 77       .w
     sta l0e07                                                         // 8d7d: 8d 07 0e    ...
-    jsr osbyte                                                        // 8d80: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
+    jsr OSBYTE                                                        // 8d80: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
     ldy #0                                                            // 8d83: a0 00       ..
     sty l00b4                                                         // 8d85: 84 b4       ..
     jsr sub_cb799                                                     // 8d87: 20 99 b7     ..
@@ -2605,14 +2605,14 @@ loop_c8dc1
     beq c8dfa                                                         // 8dc7: f0 31       .1
     cmp #$3a // ':'                                                   // 8dc9: c9 3a       .:
     bne loop_c8dc1                                                    // 8dcb: d0 f4       ..
-    jsr oswrch                                                        // 8dcd: 20 ee ff     ..            // Write character 58
+    jsr OSWRCH                                                        // 8dcd: 20 ee ff     ..            // Write character 58
     sty l00b4                                                         // 8dd0: 84 b4       ..
 // $8dd2 referenced 4 times by $8de2, $8de6, $8de9, $8df5
 c8dd2
     lda #$ff                                                          // 8dd2: a9 ff       ..
     sta l0098                                                         // 8dd4: 85 98       ..
     jsr sub_c9570                                                     // 8dd6: 20 70 95     p.
-    jsr osrdch                                                        // 8dd9: 20 e0 ff     ..            // Read a character from the current input stream
+    jsr OSRDCH                                                        // 8dd9: 20 e0 ff     ..            // Read a character from the current input stream
     cmp #$15                                                          // 8ddc: c9 15       ..             // A=character read
     bne c8deb                                                         // 8dde: d0 0b       ..
     ldy l00b4                                                         // 8de0: a4 b4       ..
@@ -2631,7 +2631,7 @@ c8deb
     iny                                                               // 8df2: c8          .
     cmp #$0d                                                          // 8df3: c9 0d       ..
     bne c8dd2                                                         // 8df5: d0 db       ..
-    jsr osnewl                                                        // 8df7: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // 8df7: 20 e7 ff     ..            // Write newline (characters 10 and 13)
 // $8dfa referenced 1 time by $8dc7
 c8dfa
     tya                                                               // 8dfa: 98          .
@@ -2723,7 +2723,7 @@ sub_c8e85
     ldy #$ff                                                          // 8e85: a0 ff       ..
 // $8e87 referenced 1 time by $8e90
 loop_c8e87
-    jmp osbyte                                                        // 8e87: 4c f4 ff    L..
+    jmp OSBYTE                                                        // 8e87: 4c f4 ff    L..
 
     .byt $7a, $a9                                                     // 8e8a: 7a a9       z.
 
@@ -2784,7 +2784,7 @@ service_handler_claim_private_workspace
     lda #osbyte_issue_service_request                                 // 8ed6: a9 8f       ..
     ldx #service_claim_absolute_workspace                             // 8ed8: a2 01       ..
     ldy #$0e                                                          // 8eda: a0 0e       ..
-    jsr osbyte                                                        // 8edc: 20 f4 ff     ..            // Issue paged ROM service call, Reason X=1 - Absolute public workspace claim
+    jsr OSBYTE                                                        // 8edc: 20 f4 ff     ..            // Issue paged ROM service call, Reason X=1 - Absolute public workspace claim
     jsr clamp_absolute_workspace_and_save                             // 8edf: 20 ac 8e     ..
     lda l028d                                                         // 8ee2: ad 8d 02    ...
     beq c8f40                                                         // 8ee5: f0 59       .Y
@@ -2908,7 +2908,7 @@ sub_c8f99
     ldy #0                                                            // 8f9e: a0 00       ..
     jsr sub_cb799                                                     // 8fa0: 20 99 b7     ..
     lda #osbyte_close_spool_exec                                      // 8fa3: a9 77       .w
-    jsr osbyte                                                        // 8fa5: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
+    jsr OSBYTE                                                        // 8fa5: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
     jsr c8f8c                                                         // 8fa8: 20 8c 8f     ..
     ldy #$76 // 'v'                                                   // 8fab: a0 76       .v
     lda #0                                                            // 8fad: a9 00       ..
@@ -2985,7 +2985,7 @@ c8ff1
     nop                                                               // 901d: ea          .
 // $901e referenced 1 time by $900f
 c901e
-    jsr osnewl                                                        // 901e: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // 901e: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     rts                                                               // 9021: 60          `
 
 // $9022 referenced 1 time by $8be1
@@ -3044,7 +3044,7 @@ sub_c9138
 // $9140 referenced 1 time by $913c
 c9140
     adc #$30 // '0'                                                   // 9140: 69 30       i0
-    jmp osasci                                                        // 9142: 4c e3 ff    L..            // Write character
+    jmp OSASCI                                                        // 9142: 4c e3 ff    L..            // Write character
 
 // $9145 referenced 35 times by $8bb6, $8bf8, $8c9f, $8ff1, $9011, $953a, $adc0, $adca, $add8, $ade3, $adff, $ae14, $ae27, $ae36, $af53, $b0a2, $b0ae, $b0c5, $b0cf, $b0da, $b1aa, $b24c, $b261, $b284, $b291, $b2a0, $b2b0, $b2bf, $b3c4, $b3e4, $b431, $ba86, $ba9f, $baac, $bae0
 print_inline_top_bit_clear
@@ -3067,7 +3067,7 @@ c9153
     lda l00b9                                                         // 915a: a5 b9       ..
     pha                                                               // 915c: 48          H
     lda (l00b8),y                                                     // 915d: b1 b8       ..
-    jsr osasci                                                        // 915f: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // 915f: 20 e3 ff     ..            // Write character
     pla                                                               // 9162: 68          h
     sta l00b9                                                         // 9163: 85 b9       ..
     pla                                                               // 9165: 68          h
@@ -3636,7 +3636,7 @@ sub_c949e
     ldy #0                                                            // 949e: a0 00       ..
     jsr sub_cb799                                                     // 94a0: 20 99 b7     ..
     lda #osbyte_close_spool_exec                                      // 94a3: a9 77       .w
-    jsr osbyte                                                        // 94a5: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
+    jsr OSBYTE                                                        // 94a5: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
     jsr sub_cb559                                                     // 94a8: 20 59 b5     Y.
     ldy #$17                                                          // 94ab: a0 17       ..
 // $94ad referenced 24 times by $8e24, $9423, $9446, $9459, $9b5d, $9c42, $9c52, $9ca0, $9d37, $9db0, $9de4, $9e7c, $9e9f, $9f6f, $a02a, $a1d6, $a1fe, $ad41, $adb8, $adf6, $ae65, $b381, $b418, $b917
@@ -3789,7 +3789,7 @@ sub_c9570
 // $9576 referenced 1 time by $b445
 c9576
     lda #osbyte_acknowledge_escape                                    // 9576: a9 7e       .~
-    jsr osbyte                                                        // 9578: 20 f4 ff     ..            // Clear escape condition and perform escape effects
+    jsr OSBYTE                                                        // 9578: 20 f4 ff     ..            // Clear escape condition and perform escape effects
     lda #6                                                            // 957b: a9 06       ..
     jmp c964e                                                         // 957d: 4c 4e 96    LN.
 
@@ -3821,7 +3821,7 @@ c9589
     ldx #1                                                            // 95a5: a2 01       ..
     ldy #0                                                            // 95a7: a0 00       ..
     lda #osbyte_read_write_econet_keyboard_disable                    // 95a9: a9 c9       ..
-    jsr osbyte                                                        // 95ab: 20 f4 ff     ..            // Disable keyboard (for Econet)
+    jsr OSBYTE                                                        // 95ab: 20 f4 ff     ..            // Disable keyboard (for Econet)
 sub_c95ae
     jsr cacdd                                                         // 95ae: 20 dd ac     ..
     lda #0                                                            // 95b1: a9 00       ..
@@ -3844,7 +3844,7 @@ sub_c95ce
     ldx #0                                                            // 95d3: a2 00       ..
     jsr cacdd                                                         // 95d5: 20 dd ac     ..
     lda #osbyte_insert_input_buffer                                   // 95d8: a9 99       ..
-    jmp osbyte                                                        // 95da: 4c f4 ff    L..            // Insert character Y into input buffer X
+    jmp OSBYTE                                                        // 95da: 4c f4 ff    L..            // Insert character Y into input buffer X
 
 // $95dd referenced 6 times by $94f4, $99b2, $9aea, $a928, $abd1, $ac73
 c95dd
@@ -4091,7 +4091,7 @@ c9722
     pla                                                               // 9725: 68          h
     tay                                                               // 9726: a8          .
     lda #osfind_close                                                 // 9727: a9 00       ..
-    jsr osfind                                                        // 9729: 20 ce ff     ..            // Close one or all files
+    jsr OSFIND                                                        // 9729: 20 ce ff     ..            // Close one or all files
 // $972c referenced 1 time by $9717
 c972c
     pla                                                               // 972c: 68          h
@@ -4406,11 +4406,11 @@ loop_c990a
 sub_c9913
     ldx #$ff                                                          // 9913: a2 ff       ..
     clc                                                               // 9915: 18          .
-    jsr gsinit                                                        // 9916: 20 c2 ff     ..
+    jsr GSINIT                                                        // 9916: 20 c2 ff     ..
     beq c9926                                                         // 9919: f0 0b       ..
 // $991b referenced 1 time by $9924
 loop_c991b
-    jsr gsread                                                        // 991b: 20 c5 ff     ..
+    jsr GSREAD                                                        // 991b: 20 c5 ff     ..
     bcs c9926                                                         // 991e: b0 06       ..
     inx                                                               // 9920: e8          .
     sta l0e30,x                                                       // 9921: 9d 30 0e    .0.
@@ -4599,13 +4599,13 @@ c9a32
 // $9a40 referenced 1 time by $9a47
 loop_c9a40
     lda l0fff,y                                                       // 9a40: b9 ff 0f    ...
-    jsr osasci                                                        // 9a43: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // 9a43: 20 e3 ff     ..            // Write character
     iny                                                               // 9a46: c8          .
     bne loop_c9a40                                                    // 9a47: d0 f7       ..
     ldy #5                                                            // 9a49: a0 05       ..
     jsr sub_c9a62                                                     // 9a4b: 20 62 9a     b.
     jsr sub_c9a57                                                     // 9a4e: 20 57 9a     W.
-    jsr osnewl                                                        // 9a51: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // 9a51: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     jmp c9cc7                                                         // 9a54: 4c c7 9c    L..
 
 // $9a57 referenced 1 time by $9a4e
@@ -4627,7 +4627,7 @@ c9a64
     dex                                                               // 9a6a: ca          .
     bne c9a64                                                         // 9a6b: d0 f7       ..
     lda #$20 // ' '                                                   // 9a6d: a9 20       .
-    jmp osasci                                                        // 9a6f: 4c e3 ff    L..            // Write character 32
+    jmp OSASCI                                                        // 9a6f: 4c e3 ff    L..            // Write character 32
 
 // $9a72 referenced 2 times by $9961, $996c
 sub_c9a72
@@ -5185,7 +5185,7 @@ c9d8a
     lda l00bb                                                         // 9d90: a5 bb       ..
     pha                                                               // 9d92: 48          H
     lda #osbyte_close_spool_exec                                      // 9d93: a9 77       .w
-    jsr osbyte                                                        // 9d95: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
+    jsr OSBYTE                                                        // 9d95: 20 f4 ff     ..            // Close any *SPOOL and *EXEC files
     pla                                                               // 9d98: 68          h
     sta l00bb                                                         // 9d99: 85 bb       ..
     lda #0                                                            // 9d9b: a9 00       ..
@@ -5677,7 +5677,7 @@ sub_ca07b
     lda #$13                                                          // a092: a9 13       ..
     ldx #<l00b4                                                       // a094: a2 b4       ..
     ldy #>l00b4                                                       // a096: a0 00       ..
-    jmp osword                                                        // a098: 4c f1 ff    L..            // Read/Write NFS information (see https://beebwiki.mdfs.net/OSWORDs)
+    jmp OSWORD                                                        // a098: 4c f1 ff    L..            // Read/Write NFS information (see https://beebwiki.mdfs.net/OSWORDs)
 
 // $a09b referenced 1 time by $a089
 ca09b
@@ -5686,7 +5686,7 @@ ca09b
 sub_ca09e
     bit l9491                                                         // a09e: 2c 91 94    ,..
     jsr sub_cb198                                                     // a0a1: 20 98 b1     ..
-    jmp osnewl                                                        // a0a4: 4c e7 ff    L..            // Write newline (characters 10 and 13)
+    jmp OSNEWL                                                        // a0a4: 4c e7 ff    L..            // Write newline (characters 10 and 13)
 
 // $a0a7 referenced 3 times by $a08b, $b011, $b1e8
 sub_ca0a7
@@ -6060,10 +6060,10 @@ ca299
     jsr sub_caf02                                                     // a299: 20 02 af     ..
     ldy #0                                                            // a29c: a0 00       ..
     clc                                                               // a29e: 18          .
-    jsr gsinit                                                        // a29f: 20 c2 ff     ..
+    jsr GSINIT                                                        // a29f: 20 c2 ff     ..
 // $a2a2 referenced 1 time by $a2a5
 loop_ca2a2
-    jsr gsread                                                        // a2a2: 20 c5 ff     ..
+    jsr GSREAD                                                        // a2a2: 20 c5 ff     ..
     bcc loop_ca2a2                                                    // a2a5: 90 fb       ..
     dey                                                               // a2a7: 88          .
 // $a2a8 referenced 1 time by $a2ad
@@ -6244,7 +6244,7 @@ ca3b4
     bne ca3e3                                                         // a3c2: d0 1f       ..
     lda #osbyte_scan_keyboard                                         // a3c4: a9 79       .y
     ldx #(255 - inkey_key_ctrl) ^ 128                                 // a3c6: a2 81       ..             // X=internal key number EOR 128
-    jsr osbyte                                                        // a3c8: 20 f4 ff     ..            // Test for 'CTRL' key pressed (X=129)
+    jsr OSBYTE                                                        // a3c8: 20 f4 ff     ..            // Test for 'CTRL' key pressed (X=129)
     txa                                                               // a3cb: 8a          .              // X has top bit set if 'CTRL' pressed
     bpl ca3e3                                                         // a3cc: 10 15       ..
 // $a3ce referenced 1 time by $a3e6
@@ -6267,7 +6267,7 @@ ca3e3
 ca3e8
     ldx la3df,y                                                       // a3e8: be df a3    ...
     ldy #$a3                                                          // a3eb: a0 a3       ..
-    jmp oscli                                                         // a3ed: 4c f7 ff    L..
+    jmp OSCLI                                                         // a3ed: 4c f7 ff    L..
 
 // $a3f0 referenced 12 times by $8bae, $8bbd, $8bc5, $8bd2, $8c00, $8c07, $932a, $9332, $a145, $a14a, $a15a, $a191
 la3f0
@@ -6867,7 +6867,7 @@ loop_ca89d
     txa                                                               // a8a1: 8a          .
     pha                                                               // a8a2: 48          H
     lda #osbyte_vsync                                                 // a8a3: a9 13       ..
-    jsr osbyte                                                        // a8a5: 20 f4 ff     ..            // Wait for vertical sync
+    jsr OSBYTE                                                        // a8a5: 20 f4 ff     ..            // Wait for vertical sync
     pla                                                               // a8a8: 68          h
     tax                                                               // a8a9: aa          .
     ldy #$18                                                          // a8aa: a0 18       ..
@@ -7247,7 +7247,7 @@ return_29
 caafc
     lda #osbyte_read_buffer                                           // aafc: a9 91       ..
     ldx #buffer_printer                                               // aafe: a2 03       ..             // X=buffer number
-    jsr osbyte                                                        // ab00: 20 f4 ff     ..            // Get character from input buffer (C is set if the buffer is empty, otherwise Y=extracted character)
+    jsr OSBYTE                                                        // ab00: 20 f4 ff     ..            // Get character from input buffer (C is set if the buffer is empty, otherwise Y=extracted character)
     bcs return_29                                                     // ab03: b0 e7       ..
     tya                                                               // ab05: 98          .              // Y is the character extracted from the buffer
     jsr sub_cab12                                                     // ab06: 20 12 ab     ..
@@ -7512,7 +7512,7 @@ loop_cacaf
     ldx l009e                                                         // acb1: a6 9e       ..
     ldy l009f                                                         // acb3: a4 9f       ..
     lda #osword_read_palette                                          // acb5: a9 0b       ..
-    jsr osword                                                        // acb7: 20 f1 ff     ..            // Read palette
+    jsr OSWORD                                                        // acb7: 20 f1 ff     ..            // Read palette
     pla                                                               // acba: 68          h
     ldy #0                                                            // acbb: a0 00       ..
     sta (l009e),y                                                     // acbd: 91 9e       ..
@@ -7559,7 +7559,7 @@ sub_cacf9
     inc l009e                                                         // acfd: e6 9e       ..
     lda lad0d,y                                                       // acff: b9 0d ad    ...
     ldy #$ff                                                          // ad02: a0 ff       ..
-    jsr osbyte                                                        // ad04: 20 f4 ff     ..
+    jsr OSBYTE                                                        // ad04: 20 f4 ff     ..
     txa                                                               // ad07: 8a          .
     ldx #0                                                            // ad08: a2 00       ..
     sta (l009e,x)                                                     // ad0a: 81 9e       ..
@@ -7712,7 +7712,7 @@ caded
 loop_cae1c
     lda laeff,y                                                       // ae1c: b9 ff ae    ...
     bmi cae27                                                         // ae1f: 30 06       0.
-    jsr osasci                                                        // ae21: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // ae21: 20 e3 ff     ..            // Write character
     iny                                                               // ae24: c8          .
     bne loop_cae1c                                                    // ae25: d0 f5       ..
 // $ae27 referenced 1 time by $ae1f
@@ -7727,7 +7727,7 @@ cae27
 
     ldx #$1b                                                          // ae43: a2 1b       ..
     jsr sub_cae82                                                     // ae45: 20 82 ae     ..
-    jsr osnewl                                                        // ae48: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // ae48: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     pla                                                               // ae4b: 68          h
     sta l1071                                                         // ae4c: 8d 71 10    .q.
 // $ae4f referenced 1 time by $ae80
@@ -7764,7 +7764,7 @@ sub_cae82
 // $ae84 referenced 2 times by $adfc, $ae8c
 cae84
     lda l0f05,x                                                       // ae84: bd 05 0f    ...
-    jsr osasci                                                        // ae87: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // ae87: 20 e3 ff     ..            // Write character
     inx                                                               // ae8a: e8          .
     dey                                                               // ae8b: 88          .
     bne cae84                                                         // ae8c: d0 f6       ..
@@ -7772,7 +7772,7 @@ cae84
 
 // $ae8f referenced 1 time by $ae6c
 cae8f
-    jmp osnewl                                                        // ae8f: 4c e7 ff    L..            // Write newline (characters 10 and 13)
+    jmp OSNEWL                                                        // ae8f: 4c e7 ff    L..            // Write newline (characters 10 and 13)
 
 // $ae92 referenced 2 times by $9d05, $a1c7
 sub_cae92
@@ -7935,7 +7935,7 @@ caf5a
     lda #$0d                                                          // af5a: a9 0d       ..
 // $af5c referenced 1 time by $af45
 caf5c
-    jsr osasci                                                        // af5c: 20 e3 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSASCI                                                        // af5c: 20 e3 ff     ..            // Write newline (characters 10 and 13)
 // $af5f referenced 1 time by $af58
 caf5f
     inx                                                               // af5f: e8          .
@@ -7995,7 +7995,7 @@ loop_caf9d
 // $afad referenced 1 time by $afa7
 cafad
     ldx l00b8                                                         // afad: a6 b8       ..
-    jsr osasci                                                        // afaf: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // afaf: 20 e3 ff     ..            // Write character
     stx l00b8                                                         // afb2: 86 b8       ..
 // $afb4 referenced 1 time by $afab
 return_32
@@ -8113,7 +8113,7 @@ loop_cb032
     bne loop_cb032                                                    // b036: d0 fa       ..
     jsr sub_cafb5                                                     // b038: 20 b5 af     ..
     ldy l00ac                                                         // b03b: a4 ac       ..
-    jsr gsinit                                                        // b03d: 20 c2 ff     ..
+    jsr GSINIT                                                        // b03d: 20 c2 ff     ..
     beq cb058                                                         // b040: f0 16       ..
     ldx #6                                                            // b042: a2 06       ..
     sty l00ac                                                         // b044: 84 ac       ..
@@ -8122,7 +8122,7 @@ loop_cb032
 // $b04a referenced 1 time by $b056
 loop_cb04a
     ldy l00ac                                                         // b04a: a4 ac       ..
-    jsr gsread                                                        // b04c: 20 c5 ff     ..
+    jsr GSREAD                                                        // b04c: 20 c5 ff     ..
     sty l00ac                                                         // b04f: 84 ac       ..
     bcs cb058                                                         // b051: b0 05       ..
     jsr sub_cb2f7                                                     // b053: 20 f7 b2     ..
@@ -8367,7 +8367,7 @@ sub_cb198
     beq cb1a8                                                         // b19b: f0 0b       ..
     jsr caf88                                                         // b19d: 20 88 af     ..
     lda #$2e // '.'                                                   // b1a0: a9 2e       ..
-    jsr osasci                                                        // b1a2: 20 e3 ff     ..            // Write character 46
+    jsr OSASCI                                                        // b1a2: 20 e3 ff     ..            // Write character 46
     bit l9491                                                         // b1a5: 2c 91 94    ,..
 // $b1a8 referenced 1 time by $b19b
 cb1a8
@@ -8435,7 +8435,7 @@ loop_cb210
     bne loop_cb210                                                    // b214: d0 fa       ..
     jsr sub_cafb5                                                     // b216: 20 b5 af     ..
     ldy l00ac                                                         // b219: a4 ac       ..
-    jsr gsinit                                                        // b21b: 20 c2 ff     ..
+    jsr GSINIT                                                        // b21b: 20 c2 ff     ..
     beq cb236                                                         // b21e: f0 16       ..
     ldx #6                                                            // b220: a2 06       ..
     sty l00ac                                                         // b222: 84 ac       ..
@@ -8444,7 +8444,7 @@ loop_cb210
 // $b228 referenced 1 time by $b234
 loop_cb228
     ldy l00ac                                                         // b228: a4 ac       ..
-    jsr gsread                                                        // b22a: 20 c5 ff     ..
+    jsr GSREAD                                                        // b22a: 20 c5 ff     ..
     sty l00ac                                                         // b22d: 84 ac       ..
     bcs cb236                                                         // b22f: b0 05       ..
     jsr sub_cb2f7                                                     // b231: 20 f7 b2     ..
@@ -8468,7 +8468,7 @@ loop_cb253
     lda (l009c),y                                                     // b253: b1 9c       ..
     cmp #$20 // ' '                                                   // b255: c9 20       .
     beq cb261                                                         // b257: f0 08       ..
-    jsr osasci                                                        // b259: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // b259: 20 e3 ff     ..            // Write character
     iny                                                               // b25c: c8          .
     cpy #$1e                                                          // b25d: c0 1e       ..
     bne loop_cb253                                                    // b25f: d0 f2       ..
@@ -8543,7 +8543,7 @@ cb2ac
     jsr sub_cb198                                                     // b2d1: 20 98 b1     ..
 // $b2d4 referenced 3 times by $b29a, $b2aa, $b2bd
 cb2d4
-    jsr osnewl                                                        // b2d4: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // b2d4: 20 e7 ff     ..            // Write newline (characters 10 and 13)
 // $b2d7 referenced 1 time by $b26e
 cb2d7
     pla                                                               // b2d7: 68          h
@@ -8675,12 +8675,12 @@ cb369
     bne cb39c                                                         // b387: d0 13       ..
     lda #osbyte_flush_buffer_class                                    // b389: a9 0f       ..
     ldx #1                                                            // b38b: a2 01       ..
-    jsr osbyte                                                        // b38d: 20 f4 ff     ..            // Flush input buffers (X non-zero)
+    jsr OSBYTE                                                        // b38d: 20 f4 ff     ..            // Flush input buffers (X non-zero)
     lda #osbyte_scan_keyboard_from_16                                 // b390: a9 7a       .z
-    jsr osbyte                                                        // b392: 20 f4 ff     ..            // Keyboard scan starting from key 16
+    jsr OSBYTE                                                        // b392: 20 f4 ff     ..            // Keyboard scan starting from key 16
     ldy #0                                                            // b395: a0 00       ..             // Y=key
     lda #osbyte_write_keys_pressed                                    // b397: a9 78       .x
-    jmp osbyte                                                        // b399: 4c f4 ff    L..            // Write current keys pressed (X and Y)
+    jmp OSBYTE                                                        // b399: 4c f4 ff    L..            // Write current keys pressed (X and Y)
 
 // $b39c referenced 1 time by $b387
 cb39c
@@ -8707,7 +8707,7 @@ cb3b1
 // $b3b5 referenced 1 time by $b3c2
 loop_cb3b5
     lda l0f06,x                                                       // b3b5: bd 06 0f    ...
-    jsr osasci                                                        // b3b8: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // b3b8: 20 e3 ff     ..            // Write character
     sta l0e30,y                                                       // b3bb: 99 30 0e    .0.
     iny                                                               // b3be: c8          .
     inx                                                               // b3bf: e8          .
@@ -8722,12 +8722,12 @@ loop_cb3b5
     bne cb3ed                                                         // b3d0: d0 1b       ..
     // Move the cursor to the start of the line
     lda #$0d                                                          // b3d2: a9 0d       ..
-    jsr oswrch                                                        // b3d4: 20 ee ff     ..            // Write character 13
+    jsr OSWRCH                                                        // b3d4: 20 ee ff     ..            // Write character 13
     ldx #2                                                            // b3d7: a2 02       ..
 // $b3d9 referenced 1 time by $b3e2
 loop_cb3d9
     lda l0f05,x                                                       // b3d9: bd 05 0f    ...
-    jsr osasci                                                        // b3dc: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // b3dc: 20 e3 ff     ..            // Write character
     inx                                                               // b3df: e8          .
     cpx #$3e // '>'                                                   // b3e0: e0 3e       .>
     bne loop_cb3d9                                                    // b3e2: d0 f5       ..
@@ -8741,7 +8741,7 @@ cb3ed
     and #$df                                                          // b3ed: 29 df       ).
     cmp #$59 // 'Y'                                                   // b3ef: c9 59       .Y
     bne cb41d                                                         // b3f1: d0 2a       .*
-    jsr osasci                                                        // b3f3: 20 e3 ff     ..            // Write character 89
+    jsr OSASCI                                                        // b3f3: 20 e3 ff     ..            // Write character 89
     ldx #0                                                            // b3f6: a2 00       ..
     lda l0e30,x                                                       // b3f8: bd 30 0e    .0.
     cmp #$0d                                                          // b3fb: c9 0d       ..
@@ -8770,7 +8770,7 @@ cb40e
     dec l00b5                                                         // b41b: c6 b5       ..
 // $b41d referenced 1 time by $b3f1
 cb41d
-    jsr osnewl                                                        // b41d: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // b41d: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     jmp cb3a3                                                         // b420: 4c a3 b3    L..
 
 // $b423 referenced 1 time by $b3fd
@@ -8792,8 +8792,8 @@ sub_cb431
 
     lda #osbyte_flush_buffer_class                                    // b439: a9 0f       ..
     ldx #1                                                            // b43b: a2 01       ..
-    jsr osbyte                                                        // b43d: 20 f4 ff     ..            // Flush input buffers (X non-zero)
-    jsr osrdch                                                        // b440: 20 e0 ff     ..            // Read a character from the current input stream
+    jsr OSBYTE                                                        // b43d: 20 f4 ff     ..            // Flush input buffers (X non-zero)
+    jsr OSRDCH                                                        // b440: 20 e0 ff     ..            // Read a character from the current input stream
     bcc return_35                                                     // b443: 90 03       ..
     jmp c9576                                                         // b445: 4c 76 95    Lv.
 
@@ -9589,7 +9589,7 @@ sub_cb98f
 sub_cb994
     lda #osfind_close                                                 // b994: a9 00       ..
     tay                                                               // b996: a8          .              // Y=0
-    jmp osfind                                                        // b997: 4c ce ff    L..            // Close all files (Y=0)
+    jmp OSFIND                                                        // b997: 4c ce ff    L..            // Close all files (Y=0)
 
 sub_cb99a
     clv                                                               // b99a: b8          .
@@ -9606,11 +9606,11 @@ cb9a0
     php                                                               // b9a9: 08          .
 // $b9aa referenced 3 times by $b9ca, $b9ea, $b9fd
 cb9aa
-    jsr osbget                                                        // b9aa: 20 d7 ff     ..            // Read a single byte from an open file Y
+    jsr OSBGET                                                        // b9aa: 20 d7 ff     ..            // Read a single byte from an open file Y
     bcc cb9b6                                                         // b9ad: 90 07       ..
     plp                                                               // b9af: 28          (
     jsr cbc3d                                                         // b9b0: 20 3d bc     =.
-    jmp osnewl                                                        // b9b3: 4c e7 ff    L..            // Write newline (characters 10 and 13)
+    jmp OSNEWL                                                        // b9b3: 4c e7 ff    L..            // Write newline (characters 10 and 13)
 
 // $b9b6 referenced 1 time by $b9ad
 cb9b6
@@ -9627,7 +9627,7 @@ cb9c5
     sta l00ad                                                         // b9c5: 85 ad       ..
 // $b9c7 referenced 1 time by $b9d8
 loop_cb9c7
-    jsr oswrch                                                        // b9c7: 20 ee ff     ..            // Write character
+    jsr OSWRCH                                                        // b9c7: 20 ee ff     ..            // Write character
     jmp cb9aa                                                         // b9ca: 4c aa b9    L..
 
 // $b9cd referenced 2 times by $b9bf, $b9c3
@@ -9650,7 +9650,7 @@ cb9da
     sta l00ad                                                         // b9e5: 85 ad       ..
 // $b9e7 referenced 2 times by $b9f2, $b9f7
 cb9e7
-    jsr osnewl                                                        // b9e7: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // b9e7: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     jmp cb9aa                                                         // b9ea: 4c aa b9    L..
 
 // $b9ed referenced 1 time by $b9de
@@ -9680,9 +9680,9 @@ sub_cb9ff
 // $ba04 referenced 1 time by $ba01
 cba04
     jsr cbc3d                                                         // ba04: 20 3d bc     =.
-    jsr osnewl                                                        // ba07: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // ba07: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     lda #osbyte_acknowledge_escape                                    // ba0a: a9 7e       .~
-    jsr osbyte                                                        // ba0c: 20 f4 ff     ..            // Clear escape condition and perform escape effects
+    jsr OSBYTE                                                        // ba0c: 20 f4 ff     ..            // Clear escape condition and perform escape effects
     lda #$11                                                          // ba0f: a9 11       ..
     jsr generate_error_inline2                                        // ba11: 20 d4 96     ..
     .asc "Escape", 0                                                  // ba14: 45 73 63... Esc
@@ -9710,7 +9710,7 @@ cba33
 // $ba3a referenced 1 time by $ba49
 loop_cba3a
     ldy l00a8                                                         // ba3a: a4 a8       ..             // Y=file handle
-    jsr osbget                                                        // ba3c: 20 d7 ff     ..            // Read a single byte from an open file Y
+    jsr OSBGET                                                        // ba3c: 20 d7 ff     ..            // Read a single byte from an open file Y
     bcs cba4c                                                         // ba3f: b0 0b       ..
     inc l00aa                                                         // ba41: e6 aa       ..
     ldy l00aa                                                         // ba43: a4 aa       ..
@@ -9812,7 +9812,7 @@ loop_cbabe
 cbac0
     cmp #$7f                                                          // bac0: c9 7f       ..
     beq loop_cbabe                                                    // bac2: f0 fa       ..
-    jsr osasci                                                        // bac4: 20 e3 ff     ..            // Write character
+    jsr OSASCI                                                        // bac4: 20 e3 ff     ..            // Write character
     iny                                                               // bac7: c8          .
     cpy #$10                                                          // bac8: c0 10       ..
     beq cbacf                                                         // baca: f0 03       ..
@@ -9820,7 +9820,7 @@ cbac0
     bpl loop_cbab6                                                    // bacd: 10 e7       ..
 // $bacf referenced 1 time by $baca
 cbacf
-    jsr osnewl                                                        // bacf: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // bacf: 20 e7 ff     ..            // Write newline (characters 10 and 13)
     plp                                                               // bad2: 28          (
     bcs cbad8                                                         // bad3: b0 03       ..
     jmp cba33                                                         // bad5: 4c 33 ba    L3.
@@ -9847,15 +9847,15 @@ loop_cbaf2
     and #$0f                                                          // baf8: 29 0f       ).
     dex                                                               // bafa: ca          .
     bpl loop_cbaf2                                                    // bafb: 10 f5       ..
-    jsr osnewl                                                        // bafd: 20 e7 ff     ..            // Write newline (characters 10 and 13)
-    jmp osnewl                                                        // bb00: 4c e7 ff    L..            // Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        // bafd: 20 e7 ff     ..            // Write newline (characters 10 and 13)
+    jmp OSNEWL                                                        // bb00: 4c e7 ff    L..            // Write newline (characters 10 and 13)
 
 // $bb03 referenced 2 times by $ba92, $baf2
 sub_cbb03
     pha                                                               // bb03: 48          H
     jsr sub_c912f                                                     // bb04: 20 2f 91     /.
     lda #$20 // ' '                                                   // bb07: a9 20       .
-    jsr osasci                                                        // bb09: 20 e3 ff     ..            // Write character 32
+    jsr OSASCI                                                        // bb09: 20 e3 ff     ..            // Write character 32
     pla                                                               // bb0c: 68          h
     rts                                                               // bb0d: 60          `
 
@@ -9964,7 +9964,7 @@ sub_cbb77
     ldy l00a8                                                         // bb85: a4 a8       ..             // Y=file handle
     ldx #$aa                                                          // bb87: a2 aa       ..             // X=zero page address for result
     lda #2                                                            // bb89: a9 02       ..
-    jsr osargs                                                        // bb8b: 20 da ff     ..            // Get length of file into zero page address X (A=2)
+    jsr OSARGS                                                        // bb8b: 20 da ff     ..            // Get length of file into zero page address X (A=2)
     ldy #3                                                            // bb8e: a0 03       ..
 // $bb90 referenced 1 time by $bb98
 loop_cbb90
@@ -10000,7 +10000,7 @@ cbbbc
     ldx #$aa                                                          // bbc1: a2 aa       ..             // X=zero page address to write from
     ldy l00a8                                                         // bbc3: a4 a8       ..             // Y=file handle
     lda #1                                                            // bbc5: a9 01       ..
-    jsr osargs                                                        // bbc7: 20 da ff     ..            // Write sequential file pointer from zero page address X (A=1)
+    jsr OSARGS                                                        // bbc7: 20 da ff     ..            // Write sequential file pointer from zero page address X (A=1)
     pla                                                               // bbca: 68          h
     tay                                                               // bbcb: a8          .
     lda (os_text_ptr),y                                               // bbcc: b1 f2       ..
@@ -10017,7 +10017,7 @@ loop_cbbd4
     lda #osfile_read_catalogue_info                                   // bbdc: a9 05       ..
     ldx l00ae                                                         // bbde: a6 ae       ..
     ldy l00af                                                         // bbe0: a4 af       ..
-    jsr osfile                                                        // bbe2: 20 dd ff     ..            // Read catalogue information (A=5)
+    jsr OSFILE                                                        // bbe2: 20 dd ff     ..            // Read catalogue information (A=5)
     ldy #2                                                            // bbe5: a0 02       ..
 // $bbe7 referenced 1 time by $bbf2
 loop_cbbe7
@@ -10085,7 +10085,7 @@ loop_cbc34
 cbc3d
     ldy l00a8                                                         // bc3d: a4 a8       ..
     lda #osfind_close                                                 // bc3f: a9 00       ..
-    jmp osfind                                                        // bc41: 4c ce ff    L..            // Close one or all files
+    jmp OSFIND                                                        // bc41: 4c ce ff    L..            // Close one or all files
 
 // $bc44 referenced 2 times by $b9a0, $ba1b
 sub_cbc44
@@ -10100,7 +10100,7 @@ sub_cbc44
     pha                                                               // bc4f: 48          H
     tay                                                               // bc50: a8          .
     lda #osfind_open_input                                            // bc51: a9 40       .@
-    jsr osfind                                                        // bc53: 20 ce ff     ..            // Open file for input (A=64)
+    jsr OSFIND                                                        // bc53: 20 ce ff     ..            // Open file for input (A=64)
     tay                                                               // bc56: a8          .              // A=file handle (or zero on failure)
     sta l00a8                                                         // bc57: 85 a8       ..
     bne cbc6a                                                         // bc59: d0 0f       ..
@@ -10159,15 +10159,15 @@ lbc94
     jsr l06c5                                                         // bcb4: 20 c5 06     ..
     tay                                                               // bcb7: a8          .
     jsr l06c5                                                         // bcb8: 20 c5 06     ..
-    jsr osbput                                                        // bcbb: 20 d4 ff     ..            // Write a single byte A to an open file Y
+    jsr OSBPUT                                                        // bcbb: 20 d4 ff     ..            // Write a single byte A to an open file Y
     jmp l059c                                                         // bcbe: 4c 9c 05    L..
 
     jsr l06c5                                                         // bcc1: 20 c5 06     ..
     tay                                                               // bcc4: a8          .              // Y=file handle
-    jsr osbget                                                        // bcc5: 20 d7 ff     ..            // Read a single byte from an open file Y
+    jsr OSBGET                                                        // bcc5: 20 d7 ff     ..            // Read a single byte from an open file Y
     jmp l053a                                                         // bcc8: 4c 3a 05    L:.
 
-    jsr osrdch                                                        // bccb: 20 e0 ff     ..            // Read a character from the current input stream
+    jsr OSRDCH                                                        // bccb: 20 e0 ff     ..            // Read a character from the current input stream
     ror                                                               // bcce: 6a          j
     jsr l0695                                                         // bccf: 20 95 06     ..
     rol                                                               // bcd2: 2a          *
@@ -10178,7 +10178,7 @@ lbc94
     pha                                                               // bcdb: 48          H
     jsr l0582                                                         // bcdc: 20 82 05     ..
     pla                                                               // bcdf: 68          h
-    jsr osfind                                                        // bce0: 20 ce ff     ..            // Open or close file(s)
+    jsr OSFIND                                                        // bce0: 20 ce ff     ..            // Open or close file(s)
     jmp l059e                                                         // bce3: 4c 9e 05    L..
 
 // $bce6 referenced 1 time by $bcd9
@@ -10186,7 +10186,7 @@ cbce6
     jsr l06c5                                                         // bce6: 20 c5 06     ..
     tay                                                               // bce9: a8          .
     lda #osfind_close                                                 // bcea: a9 00       ..
-    jsr osfind                                                        // bcec: 20 ce ff     ..            // Close one or all files
+    jsr OSFIND                                                        // bcec: 20 ce ff     ..            // Close one or all files
     jmp l059c                                                         // bcef: 4c 9c 05    L..
 
     jsr l06c5                                                         // bcf2: 20 c5 06     ..
@@ -10199,7 +10199,7 @@ loop_cbcf8
     dex                                                               // bcfd: ca          .
     bne loop_cbcf8                                                    // bcfe: d0 f8       ..
     jsr l06c5                                                         // bd00: 20 c5 06     ..
-    jsr osargs                                                        // bd03: 20 da ff     ..            // Read or write a file's attributes
+    jsr OSARGS                                                        // bd03: 20 da ff     ..            // Read or write a file's attributes
     jsr l0695                                                         // bd06: 20 95 06     ..
     ldx #3                                                            // bd09: a2 03       ..
 // $bd0b referenced 1 time by $bd11
@@ -10226,7 +10226,7 @@ cbd27
     rts                                                               // bd29: 60          `
 
     jsr l0582                                                         // bd2a: 20 82 05     ..
-    jsr oscli                                                         // bd2d: 20 f7 ff     ..
+    jsr OSCLI                                                         // bd2d: 20 f7 ff     ..
     lda #$7f                                                          // bd30: a9 7f       ..
 // $bd32 referenced 1 time by $bd35
 loop_cbd32
@@ -10249,7 +10249,7 @@ loop_cbd3f
     sty l0001                                                         // bd4c: 84 01       ..
     ldy #0                                                            // bd4e: a0 00       ..
     jsr l06c5                                                         // bd50: 20 c5 06     ..
-    jsr osfile                                                        // bd53: 20 dd ff     ..
+    jsr OSFILE                                                        // bd53: 20 dd ff     ..
     jsr l0695                                                         // bd56: 20 95 06     ..
     ldx #$10                                                          // bd59: a2 10       ..
 // $bd5b referenced 1 time by $bd61
@@ -10269,7 +10269,7 @@ loop_cbd67
     bne loop_cbd67                                                    // bd6d: d0 f8       ..
     jsr l06c5                                                         // bd6f: 20 c5 06     ..
     ldy #0                                                            // bd72: a0 00       ..
-    jsr osgbpb                                                        // bd74: 20 d1 ff     ..            // Read or write multiple bytes to an open file
+    jsr OSGBPB                                                        // bd74: 20 d1 ff     ..            // Read or write multiple bytes to an open file
     pha                                                               // bd77: 48          H
     ldx #$0c                                                          // bd78: a2 0c       ..
 // $bd7a referenced 1 time by $bd80
@@ -10284,7 +10284,7 @@ loop_cbd7a
     jsr l06c5                                                         // bd86: 20 c5 06     ..
     tax                                                               // bd89: aa          .
     jsr l06c5                                                         // bd8a: 20 c5 06     ..
-    jsr osbyte                                                        // bd8d: 20 f4 ff     ..
+    jsr OSBYTE                                                        // bd8d: 20 f4 ff     ..
 // $bd90 referenced 2 times by $bd93, $bdb9
 cbd90
     bit tube_status_register_2                                        // bd90: 2c e2 fe    ,..
@@ -10302,7 +10302,7 @@ loop_cbd98
     jsr l06c5                                                         // bd9f: 20 c5 06     ..
     tay                                                               // bda2: a8          .
     jsr l06c5                                                         // bda3: 20 c5 06     ..
-    jsr osbyte                                                        // bda6: 20 f4 ff     ..
+    jsr OSBYTE                                                        // bda6: 20 f4 ff     ..
     eor #$9d                                                          // bda9: 49 9d       I.
     beq loop_cbd98                                                    // bdab: f0 eb       ..
     ror                                                               // bdad: 6a          j
@@ -10336,7 +10336,7 @@ cbdca
 cbdd9
     ldx #<l0128                                                       // bdd9: a2 28       .(
     ldy #>l0128                                                       // bddb: a0 01       ..
-    jsr osword                                                        // bddd: 20 f1 ff     ..
+    jsr OSWORD                                                        // bddd: 20 f1 ff     ..
 // $bde0 referenced 1 time by $bde3
 loop_cbde0
     bit tube_status_register_2                                        // bde0: 2c e2 fe    ,..
@@ -10368,7 +10368,7 @@ loop_cbdfe
     inx                                                               // be06: e8          .
     ldy #0                                                            // be07: a0 00       ..
     txa                                                               // be09: 8a          .
-    jsr osword                                                        // be0a: 20 f1 ff     ..
+    jsr OSWORD                                                        // be0a: 20 f1 ff     ..
     bcc cbe14                                                         // be0d: 90 05       ..
     lda #$ff                                                          // be0f: a9 ff       ..
     jmp l059e                                                         // be11: 4c 9e 05    L..
@@ -10436,14 +10436,14 @@ service_handler_tube_service_calls
     beq return_39                                                     // be6a: f0 56       .V
     ldx #6                                                            // be6c: a2 06       ..
     lda #osbyte_explode_chars                                         // be6e: a9 14       ..
-    jsr osbyte                                                        // be70: 20 f4 ff     ..            // Explode character definition RAM (six extra pages), can redefine all characters 32-255 (X=6)
+    jsr OSBYTE                                                        // be70: 20 f4 ff     ..            // Explode character definition RAM (six extra pages), can redefine all characters 32-255 (X=6)
 // $be73 referenced 2 times by $be76, $be80
 cbe73
     bit tube_status_1_and_tube_control                                // be73: 2c e0 fe    ,..
     bpl cbe73                                                         // be76: 10 fb       ..
     lda tube_data_register_1                                          // be78: ad e1 fe    ...
     beq cbec0                                                         // be7b: f0 43       .C
-    jsr oswrch                                                        // be7d: 20 ee ff     ..            // Write character
+    jsr OSWRCH                                                        // be7d: 20 ee ff     ..            // Write character
     jmp cbe73                                                         // be80: 4c 73 be    Ls.
 
 
@@ -10516,7 +10516,7 @@ loop_cbee3
 // $bee8 referenced 1 time by $bef6
 loop_cbee8
     lda tube_data_register_1                                          // bee8: ad e1 fe    ...
-    jsr oswrch                                                        // beeb: 20 ee ff     ..            // Write character
+    jsr OSWRCH                                                        // beeb: 20 ee ff     ..            // Write character
 // $beee referenced 1 time by $bee6
 cbeee
     bit tube_status_register_2                                        // beee: 2c e2 fe    ,..
@@ -11163,25 +11163,25 @@ pydis_end
 //     l00be:                                   34
 //     econet_control1_or_status1:              32
 //     l1071:                                   32
+//     OSBYTE:                                  27
 //     l00aa:                                   27
 //     l0d3e:                                   27
 //     l0f06:                                   27
-//     osbyte:                                  27
 //     l00b4:                                   25
 //     c94ad:                                   24
 //     l00a2:                                   23
+//     OSASCI:                                  22
 //     l00b0:                                   22
 //     l1060:                                   22
 //     l10b8:                                   22
 //     l9491:                                   22
-//     osasci:                                  22
 //     l00b8:                                   21
 //     l00a8:                                   20
 //     l0101:                                   20
 //     l06c5:                                   20
 //     l0d6c:                                   19
+//     OSNEWL:                                  18
 //     l1030:                                   18
-//     osnewl:                                  18
 //     l0e30:                                   17
 //     l00a5:                                   16
 //     l00b5:                                   16
@@ -11252,6 +11252,7 @@ pydis_end
 //     l0f02:                                    7
 //     sub_cb509:                                7
 //     sub_cb586:                                7
+//     OSFIND:                                   6
 //     c83f5:                                    6
 //     c9211:                                    6
 //     c95dd:                                    6
@@ -11271,9 +11272,9 @@ pydis_end
 //     l0f08:                                    6
 //     l1098:                                    6
 //     l10d8:                                    6
-//     osfind:                                   6
 //     sta_e09_if_d6c_b7_set:                    6
 //     sub_caf02:                                6
+//     OSWRCH:                                   5
 //     c80fd:                                    5
 //     c881d:                                    5
 //     c9473:                                    5
@@ -11299,13 +11300,15 @@ pydis_end
 //     l10d4:                                    5
 //     l10d5:                                    5
 //     l97ad:                                    5
-//     oswrch:                                   5
 //     sub_c8fcb:                                5
 //     sub_c916e:                                5
 //     sub_c9295:                                5
 //     sub_ca140:                                5
 //     sub_cb46b:                                5
 //     system_via_acr:                           5
+//     GSINIT:                                   4
+//     GSREAD:                                   4
+//     OSWORD:                                   4
 //     c81ba:                                    4
 //     c8dd2:                                    4
 //     c9215:                                    4
@@ -11316,8 +11319,6 @@ pydis_end
 //     cb55f:                                    4
 //     cb59b:                                    4
 //     generate_error_inline2:                   4
-//     gsinit:                                   4
-//     gsread:                                   4
 //     l0002:                                    4
 //     l00ab:                                    4
 //     l00b7:                                    4
@@ -11332,7 +11333,6 @@ pydis_end
 //     l0e0a:                                    4
 //     l0f09:                                    4
 //     l10a8:                                    4
-//     osword:                                   4
 //     sub_c8cb9:                                4
 //     sub_c912f:                                4
 //     sub_ca865:                                4
@@ -11342,6 +11342,9 @@ pydis_end
 //     sub_cb198:                                4
 //     sub_cb98a:                                4
 //     video_ula_control:                        4
+//     OSARGS:                                   3
+//     OSBGET:                                   3
+//     OSRDCH:                                   3
 //     c819f:                                    3
 //     c8278:                                    3
 //     c828f:                                    3
@@ -11408,9 +11411,6 @@ pydis_end
 //     l10f3:                                    3
 //     la3f1:                                    3
 //     la3f2:                                    3
-//     osargs:                                   3
-//     osbget:                                   3
-//     osrdch:                                   3
 //     return_25:                                3
 //     return_30:                                3
 //     return_4:                                 3
@@ -11432,6 +11432,8 @@ pydis_end
 //     sub_cb559:                                3
 //     sub_cbc86:                                3
 //     tube_data_register_1:                     3
+//     OSCLI:                                    2
+//     OSFILE:                                   2
 //     c0482:                                    2
 //     c8137:                                    2
 //     c81ac:                                    2
@@ -11587,8 +11589,6 @@ pydis_end
 //     l8e54:                                    2
 //     l9888:                                    2
 //     lb487:                                    2
-//     oscli:                                    2
-//     osfile:                                   2
 //     osrdsc_ptr:                               2
 //     return_10:                                2
 //     return_12:                                2
@@ -11675,6 +11675,9 @@ pydis_end
 //     system_via_ifr:                           2
 //     system_via_sr:                            2
 //     tube_status_register_4_and_cpu_control:   2
+//     OSBPUT:                                   1
+//     OSGBPB:                                   1
+//     OSRDSC:                                   1
 //     brkv:                                     1
 //     c0428:                                    1
 //     c0432:                                    1
@@ -12465,9 +12468,6 @@ pydis_end
 //     loop_cbfaa:                               1
 //     loop_cbfe5:                               1
 //     netv:                                     1
-//     osbput:                                   1
-//     osgbpb:                                   1
-//     osrdsc:                                   1
 //     pydis_start:                              1
 //     return_1:                                 1
 //     return_11:                                1

@@ -241,9 +241,9 @@ collectedseedflags      = $0520
 mapdata                 = $0600
 
 ; MOS entry points ($ffb3-$fff9)
-oswrch  = $ffee
-osword  = $fff1
-osbyte  = $fff4
+OSWRCH  = $ffee
+OSWORD  = $fff1
+OSBYTE  = $fff4
 
     .org $1100
 
@@ -1580,7 +1580,7 @@ printstring:
 printstringloop:
     iny                                                               ; 1a30: c8          .
     lda (string),y                                                    ; 1a31: b1 70       .p
-    jsr oswrch                                                        ; 1a33: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 1a33: 20 ee ff     ..            ; Write character
     cpy stringlength                                                  ; 1a36: c4 75       .u
     bne printstringloop                                               ; 1a38: d0 f6       ..
     rts                                                               ; 1a3a: 60          `
@@ -1593,7 +1593,7 @@ handlekeyboard:
     ldx #inkey_key_h                                                  ; 1a3b: a2 ab       ..             ; X=inkey key value
     ldy #$ff                                                          ; 1a3d: a0 ff       ..
     lda #osbyte_inkey                                                 ; 1a3f: a9 81       ..
-    jsr osbyte                                                        ; 1a41: 20 f4 ff     ..            ; Is the 'H' key pressed?
+    jsr OSBYTE                                                        ; 1a41: 20 f4 ff     ..            ; Is the 'H' key pressed?
     cpy #0                                                            ; 1a44: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq checkkeys                                                     ; 1a46: f0 26       .&
 paused:
@@ -1601,13 +1601,13 @@ paused:
     ldx #inkey_key_h                                                  ; 1a48: a2 ab       ..             ; X=inkey key value
     ldy #$ff                                                          ; 1a4a: a0 ff       ..
     lda #osbyte_inkey                                                 ; 1a4c: a9 81       ..
-    jsr osbyte                                                        ; 1a4e: 20 f4 ff     ..            ; Is the 'H' key pressed?
+    jsr OSBYTE                                                        ; 1a4e: 20 f4 ff     ..            ; Is the 'H' key pressed?
     cpy #0                                                            ; 1a51: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq stillpaused                                                   ; 1a53: f0 12       ..
     ldx #inkey_key_escape                                             ; 1a55: a2 8f       ..             ; X=inkey key value
     ldy #$ff                                                          ; 1a57: a0 ff       ..
     lda #osbyte_inkey                                                 ; 1a59: a9 81       ..
-    jsr osbyte                                                        ; 1a5b: 20 f4 ff     ..            ; Is the 'ESCAPE' key pressed?
+    jsr OSBYTE                                                        ; 1a5b: 20 f4 ff     ..            ; Is the 'ESCAPE' key pressed?
     cpy #0                                                            ; 1a5e: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq stillpaused                                                   ; 1a60: f0 05       ..
     lda #$80                                                          ; 1a62: a9 80       ..
@@ -1641,7 +1641,7 @@ checkkeys:
 checkkey:
     ldy #$ff                                                          ; 1a90: a0 ff       ..
     lda #osbyte_inkey                                                 ; 1a92: a9 81       ..
-    jsr osbyte                                                        ; 1a94: 20 f4 ff     ..            ; Read a specific key (or read machine type)
+    jsr OSBYTE                                                        ; 1a94: 20 f4 ff     ..            ; Read a specific key (or read machine type)
     cpy #0                                                            ; 1a97: c0 00       ..
     beq keynotpressed                                                 ; 1a99: f0 06       ..
     lda keys                                                          ; 1a9b: a5 60       .`
@@ -1742,7 +1742,7 @@ framedelay:
     lda #osword_read_interval_timer                                   ; 1b10: a9 03       ..
     ldx #<intervaltimerblock                                          ; 1b12: a2 00       ..
     ldy #>intervaltimerblock                                          ; 1b14: a0 00       ..
-    jsr osword                                                        ; 1b16: 20 f1 ff     ..            ; Read interval timer
+    jsr OSWORD                                                        ; 1b16: 20 f1 ff     ..            ; Read interval timer
     lda intervaltimerblock + 1                                        ; 1b19: a5 01       ..
     bne finisheddelay                                                 ; 1b1b: d0 06       ..
     lda intervaltimerblock                                            ; 1b1d: a5 00       ..
@@ -1755,7 +1755,7 @@ finisheddelay:
     lda #osword_write_interval_timer                                  ; 1b29: a9 04       ..
     ldx #<intervaltimerblock                                          ; 1b2b: a2 00       ..
     ldy #>intervaltimerblock                                          ; 1b2d: a0 00       ..
-    jsr osword                                                        ; 1b2f: 20 f1 ff     ..            ; Write interval timer
+    jsr OSWORD                                                        ; 1b2f: 20 f1 ff     ..            ; Write interval timer
     rts                                                               ; 1b32: 60          `
 
 ; ----------------------------------------------------------------------------------
@@ -1764,7 +1764,7 @@ finisheddelay:
 initmap:
     ; Clear the graphics area
     lda #$10                                                          ; 1b33: a9 10       ..
-    jsr oswrch                                                        ; 1b35: 20 ee ff     ..            ; Write character 16
+    jsr OSWRCH                                                        ; 1b35: 20 ee ff     ..            ; Write character 16
     jsr drawtopstatus                                                 ; 1b38: 20 c3 1c     ..
     lda screen                                                        ; 1b3b: a5 5c       .\
     asl                                                               ; 1b3d: 0a          .
@@ -2821,7 +2821,7 @@ skip19:
     ldx #<eggsoundblock                                               ; 2216: a2 a8       ..
     ldy #>eggsoundblock                                               ; 2218: a0 0c       ..
     lda #osword_sound                                                 ; 221a: a9 07       ..
-    jsr osword                                                        ; 221c: 20 f1 ff     ..            ; SOUND command
+    jsr OSWORD                                                        ; 221c: 20 f1 ff     ..            ; SOUND command
     lda temp1                                                         ; 221f: a5 88       ..
     lsr                                                               ; 2221: 4a          J
     lsr                                                               ; 2222: 4a          J
@@ -2853,7 +2853,7 @@ hitseed:
     ldx #<eggsoundblock                                               ; 224d: a2 a8       ..
     ldy #>eggsoundblock                                               ; 224f: a0 0c       ..
     lda #osword_sound                                                 ; 2251: a9 07       ..
-    jsr osword                                                        ; 2253: 20 f1 ff     ..            ; SOUND command
+    jsr OSWORD                                                        ; 2253: 20 f1 ff     ..            ; SOUND command
     lda temp1                                                         ; 2256: a5 88       ..
     lsr                                                               ; 2258: 4a          J
     lsr                                                               ; 2259: 4a          J
@@ -3891,11 +3891,11 @@ showhiscoresloop:
     ldx #0                                                            ; 2860: a2 00       ..
     stx temp4                                                         ; 2862: 86 8b       ..
 nothiscore10:
-    jsr oswrch                                                        ; 2864: 20 ee ff     ..            ; Write character 49
+    jsr OSWRCH                                                        ; 2864: 20 ee ff     ..            ; Write character 49
     lda temp4                                                         ; 2867: a5 8b       ..
     clc                                                               ; 2869: 18          .
     adc #'0'                                                          ; 286a: 69 30       i0
-    jsr oswrch                                                        ; 286c: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 286c: 20 ee ff     ..            ; Write character
     ldx temp3                                                         ; 286f: a6 8a       ..
     jsr gethiscoreaddr                                                ; 2871: 20 7c 27     |'
     ldy #0                                                            ; 2874: a0 00       ..
@@ -3913,15 +3913,15 @@ printhighscoredigit:
     adc #'0'                                                          ; 2886: 69 30       i0
     inc temp4                                                         ; 2888: e6 8b       ..
 printhighscorechar:
-    jsr oswrch                                                        ; 288a: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 288a: 20 ee ff     ..            ; Write character
     iny                                                               ; 288d: c8          .
     cpy #8                                                            ; 288e: c0 08       ..
     bcc hiscoredigitsloop                                             ; 2890: 90 e6       ..
     lda #' '                                                          ; 2892: a9 20       .
-    jsr oswrch                                                        ; 2894: 20 ee ff     ..            ; Write character 32
+    jsr OSWRCH                                                        ; 2894: 20 ee ff     ..            ; Write character 32
 hiscorenameloop:
     lda (hiscoreaddr),y                                               ; 2897: b1 76       .v
-    jsr oswrch                                                        ; 2899: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 2899: 20 ee ff     ..            ; Write character
     iny                                                               ; 289c: c8          .
     cpy #$10                                                          ; 289d: c0 10       ..
     bcc hiscorenameloop                                               ; 289f: 90 f6       ..
@@ -3979,25 +3979,25 @@ promptpositioned:
     lda playernum                                                     ; 28f7: a5 5d       .]
     clc                                                               ; 28f9: 18          .
     adc #$31                                                          ; 28fa: 69 31       i1
-    jsr oswrch                                                        ; 28fc: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 28fc: 20 ee ff     ..            ; Write character
     jsr showhiscores                                                  ; 28ff: 20 38 28     8(
     ldx #<string_hiscoreprompt                                        ; 2902: a2 5e       .^
     ldy #>string_hiscoreprompt                                        ; 2904: a0 29       .)
     jsr printstring                                                   ; 2906: 20 26 1a     &.
     lda #osbyte_set_cursor_editing                                    ; 2909: a9 04       ..
     ldx #1                                                            ; 290b: a2 01       ..
-    jsr osbyte                                                        ; 290d: 20 f4 ff     ..            ; Disable cursor editing (edit keys give ASCII 135-139) (X=1)
+    jsr OSBYTE                                                        ; 290d: 20 f4 ff     ..            ; Disable cursor editing (edit keys give ASCII 135-139) (X=1)
     lda #osbyte_flush_buffer_class                                    ; 2910: a9 0f       ..
     ldx #1                                                            ; 2912: a2 01       ..
-    jsr osbyte                                                        ; 2914: 20 f4 ff     ..            ; Flush input buffers (X non-zero)
+    jsr OSBYTE                                                        ; 2914: 20 f4 ff     ..            ; Flush input buffers (X non-zero)
     lda #osbyte_read_write_escape_status                              ; 2917: a9 e5       ..
     ldx #1                                                            ; 2919: a2 01       ..
     ldy #0                                                            ; 291b: a0 00       ..
-    jsr osbyte                                                        ; 291d: 20 f4 ff     ..            ; Set ESCAPE key to produce ASCII code 1
+    jsr OSBYTE                                                        ; 291d: 20 f4 ff     ..            ; Set ESCAPE key to produce ASCII code 1
     ldx #<osword0block                                                ; 2920: a2 9d       ..
     ldy #>osword0block                                                ; 2922: a0 29       .)
     lda #osword_read_line                                             ; 2924: a9 00       ..
-    jsr osword                                                        ; 2926: 20 f1 ff     ..            ; Read line from input stream (exits with C=1 if ESCAPE pressed)
+    jsr OSWORD                                                        ; 2926: 20 f1 ff     ..            ; Read line from input stream (exits with C=1 if ESCAPE pressed)
     ldx temp1                                                         ; 2929: a6 88       ..
     jsr gethiscoreaddr                                                ; 292b: 20 7c 27     |'
     ldy #8                                                            ; 292e: a0 08       ..
@@ -4080,7 +4080,7 @@ restartplayer:
     lda playernum                                                     ; 29c2: a5 5d       .]
     clc                                                               ; 29c4: 18          .
     adc #$31                                                          ; 29c5: 69 31       i1
-    jsr oswrch                                                        ; 29c7: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 29c7: 20 ee ff     ..            ; Write character
     lda #$14                                                          ; 29ca: a9 14       ..
     jsr string_howmanyplayers_end                                     ; 29cc: 20 5e 2c     ^,
 ; ----------------------------------------------------------------------------------
@@ -4091,7 +4091,7 @@ startnewlevel:
     jsr initmap                                                       ; 29d2: 20 33 1b     3.
     jsr initcharacters                                                ; 29d5: 20 9c 2e     ..
     lda #osbyte_clear_escape                                          ; 29d8: a9 7c       .|
-    jsr osbyte                                                        ; 29da: 20 f4 ff     ..            ; Clear escape condition
+    jsr OSBYTE                                                        ; 29da: 20 f4 ff     ..            ; Clear escape condition
 ; ----------------------------------------------------------------------------------
 ; Main loop
 ; ----------------------------------------------------------------------------------
@@ -4135,7 +4135,7 @@ playbonussound:
     ldx #<bonussoundblock                                             ; 2a23: a2 b0       ..
     ldy #>bonussoundblock                                             ; 2a25: a0 0c       ..
     lda #osword_sound                                                 ; 2a27: a9 07       ..
-    jsr osword                                                        ; 2a29: 20 f1 ff     ..            ; SOUND command
+    jsr OSWORD                                                        ; 2a29: 20 f1 ff     ..            ; SOUND command
 dontplaybonussound:
     lda bonusexpiredflag                                              ; 2a2c: a5 3d       .=
     beq awardbonusloop                                                ; 2a2e: f0 de       ..
@@ -4166,11 +4166,11 @@ playerdead:
     lda playernum                                                     ; 2a5c: a5 5d       .]
     clc                                                               ; 2a5e: 18          .
     adc #$31                                                          ; 2a5f: 69 31       i1
-    jsr oswrch                                                        ; 2a61: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 2a61: 20 ee ff     ..            ; Write character
     lda #$0a                                                          ; 2a64: a9 0a       ..
     jsr string_howmanyplayers_end                                     ; 2a66: 20 5e 2c     ^,
     lda #osbyte_clear_escape                                          ; 2a69: a9 7c       .|
-    jsr osbyte                                                        ; 2a6b: 20 f4 ff     ..            ; Clear escape condition
+    jsr OSBYTE                                                        ; 2a6b: 20 f4 ff     ..            ; Clear escape condition
     jsr updatehiscoretab                                              ; 2a6e: 20 be 28     .(
     lda #5                                                            ; 2a71: a9 05       ..
     jsr string_howmanyplayers_end                                     ; 2a73: 20 5e 2c     ^,
@@ -4231,7 +4231,7 @@ initialise:
     lda #osbyte_tape                                                  ; 2ad7: a9 8c       ..
     ldx #12                                                           ; 2ad9: a2 0c       ..
     ldy #0                                                            ; 2adb: a0 00       ..
-    jsr osbyte                                                        ; 2add: 20 f4 ff     ..            ; Select TAPE filing system at 1200 baud (X=12)
+    jsr OSBYTE                                                        ; 2add: 20 f4 ff     ..            ; Select TAPE filing system at 1200 baud (X=12)
     ldx #0                                                            ; 2ae0: a2 00       ..
 copyloop:
     lda codemain_end,x                                                ; 2ae2: bd 00 30    ..0
@@ -4254,15 +4254,15 @@ copyloop:
     bne copyloop                                                      ; 2b13: d0 cd       ..
     ; Select mode 2
     lda #$16                                                          ; 2b15: a9 16       ..
-    jsr oswrch                                                        ; 2b17: 20 ee ff     ..            ; Write character 22
+    jsr OSWRCH                                                        ; 2b17: 20 ee ff     ..            ; Write character 22
     lda #2                                                            ; 2b1a: a9 02       ..
-    jsr oswrch                                                        ; 2b1c: 20 ee ff     ..            ; Write character 2
+    jsr OSWRCH                                                        ; 2b1c: 20 ee ff     ..            ; Write character 2
     ; Write text at the graphics cursor
     lda #5                                                            ; 2b1f: a9 05       ..
-    jsr oswrch                                                        ; 2b21: 20 ee ff     ..            ; Write character 5
+    jsr OSWRCH                                                        ; 2b21: 20 ee ff     ..            ; Write character 5
     ; Write text at the graphics cursor
     lda #5                                                            ; 2b24: a9 05       ..
-    jsr oswrch                                                        ; 2b26: 20 ee ff     ..            ; Write character 5
+    jsr OSWRCH                                                        ; 2b26: 20 ee ff     ..            ; Write character 5
     lda #$9d                                                          ; 2b29: a9 9d       ..
     sta keynum_jump                                                   ; 2b2b: 85 65       .e
     lda #$be                                                          ; 2b2d: a9 be       ..
@@ -4277,15 +4277,15 @@ copyloop:
     ldx #<deathtune_end                                               ; 2b40: a2 d1       ..
     ldy #>deathtune_end                                               ; 2b42: a0 2f       ./
     lda #osword_envelope                                              ; 2b44: a9 08       ..
-    jsr osword                                                        ; 2b46: 20 f1 ff     ..            ; ENVELOPE command
+    jsr OSWORD                                                        ; 2b46: 20 f1 ff     ..            ; ENVELOPE command
     ldx #<envelope2                                                   ; 2b49: a2 df       ..
     ldy #>envelope2                                                   ; 2b4b: a0 2f       ./
     lda #osword_envelope                                              ; 2b4d: a9 08       ..
-    jsr osword                                                        ; 2b4f: 20 f1 ff     ..            ; ENVELOPE command
+    jsr OSWORD                                                        ; 2b4f: 20 f1 ff     ..            ; ENVELOPE command
     ldx #<envelope3                                                   ; 2b52: a2 ed       ..
     ldy #>envelope3                                                   ; 2b54: a0 2f       ./
     lda #osword_envelope                                              ; 2b56: a9 08       ..
-    jsr osword                                                        ; 2b58: 20 f1 ff     ..            ; ENVELOPE command
+    jsr OSWORD                                                        ; 2b58: 20 f1 ff     ..            ; ENVELOPE command
     ldx #$0f                                                          ; 2b5b: a2 0f       ..
     stx temp1                                                         ; 2b5d: 86 88       ..
 initpalette:
@@ -4325,7 +4325,7 @@ inputnumplayers:
     ldx #inkey_key_1                                                  ; 2b9c: a2 cf       ..             ; X=inkey key value
     ldy #$ff                                                          ; 2b9e: a0 ff       ..
     lda #osbyte_inkey                                                 ; 2ba0: a9 81       ..
-    jsr osbyte                                                        ; 2ba2: 20 f4 ff     ..            ; Is the '1' key pressed?
+    jsr OSBYTE                                                        ; 2ba2: 20 f4 ff     ..            ; Is the '1' key pressed?
     cpy #0                                                            ; 2ba5: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq not1player                                                    ; 2ba7: f0 05       ..
     lda #1                                                            ; 2ba9: a9 01       ..
@@ -4335,7 +4335,7 @@ not1player:
     ldx #inkey_key_2                                                  ; 2bae: a2 ce       ..             ; X=inkey key value
     ldy #$ff                                                          ; 2bb0: a0 ff       ..
     lda #osbyte_inkey                                                 ; 2bb2: a9 81       ..
-    jsr osbyte                                                        ; 2bb4: 20 f4 ff     ..            ; Is the '2' key pressed?
+    jsr OSBYTE                                                        ; 2bb4: 20 f4 ff     ..            ; Is the '2' key pressed?
     cpy #0                                                            ; 2bb7: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq not2player                                                    ; 2bb9: f0 05       ..
     lda #2                                                            ; 2bbb: a9 02       ..
@@ -4345,7 +4345,7 @@ not2player:
     ldx #inkey_key_3                                                  ; 2bc0: a2 ee       ..             ; X=inkey key value
     ldy #$ff                                                          ; 2bc2: a0 ff       ..
     lda #osbyte_inkey                                                 ; 2bc4: a9 81       ..
-    jsr osbyte                                                        ; 2bc6: 20 f4 ff     ..            ; Is the '3' key pressed?
+    jsr OSBYTE                                                        ; 2bc6: 20 f4 ff     ..            ; Is the '3' key pressed?
     cpy #0                                                            ; 2bc9: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq not3player                                                    ; 2bcb: f0 05       ..
     lda #3                                                            ; 2bcd: a9 03       ..
@@ -4355,7 +4355,7 @@ not3player:
     ldx #inkey_key_4                                                  ; 2bd2: a2 ed       ..             ; X=inkey key value
     ldy #$ff                                                          ; 2bd4: a0 ff       ..
     lda #osbyte_inkey                                                 ; 2bd6: a9 81       ..
-    jsr osbyte                                                        ; 2bd8: 20 f4 ff     ..            ; Is the '4' key pressed?
+    jsr OSBYTE                                                        ; 2bd8: 20 f4 ff     ..            ; Is the '4' key pressed?
     cpy #0                                                            ; 2bdb: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq not4player                                                    ; 2bdd: f0 05       ..
     lda #4                                                            ; 2bdf: a9 04       ..
@@ -4378,7 +4378,7 @@ startgame:
     sta numaliveplayers                                               ; 2bf3: 85 5f       ._
     clc                                                               ; 2bf5: 18          .
     adc #$30                                                          ; 2bf6: 69 30       i0
-    jsr oswrch                                                        ; 2bf8: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 2bf8: 20 ee ff     ..            ; Write character
     lda #5                                                            ; 2bfb: a9 05       ..
     jsr string_howmanyplayers_end                                     ; 2bfd: 20 5e 2c     ^,
 ; ----------------------------------------------------------------------------------
@@ -4427,7 +4427,7 @@ resetperplayerloop:
     jsr restoreplayerdata                                             ; 2c3b: 20 37 2e     7.
     ; Restore the default windows
     lda #$1a                                                          ; 2c3e: a9 1a       ..
-    jsr oswrch                                                        ; 2c40: 20 ee ff     ..            ; Write character 26
+    jsr OSWRCH                                                        ; 2c40: 20 ee ff     ..            ; Write character 26
     rts                                                               ; 2c43: 60          `
 
 string_howmanyplayers:
@@ -4464,7 +4464,7 @@ titlepage:
 titlepageloop:
     ; Clear the graphics area
     lda #$10                                                          ; 2c75: a9 10       ..
-    jsr oswrch                                                        ; 2c77: 20 ee ff     ..            ; Write character 16
+    jsr OSWRCH                                                        ; 2c77: 20 ee ff     ..            ; Write character 16
     jsr showlogo                                                      ; 2c7a: 20 e5 2c     .,
     jsr showhiscores                                                  ; 2c7d: 20 38 28     8(
     jsr showkeyhelp                                                   ; 2c80: 20 44 2d     D-
@@ -4483,7 +4483,7 @@ titlepagewait2:
     bne titlepagewait2                                                ; 2c9a: d0 f9       ..
     ; Clear the graphics area
     lda #$10                                                          ; 2c9c: a9 10       ..
-    jsr oswrch                                                        ; 2c9e: 20 ee ff     ..            ; Write character 16
+    jsr OSWRCH                                                        ; 2c9e: 20 ee ff     ..            ; Write character 16
     jsr showlogo                                                      ; 2ca1: 20 e5 2c     .,
     jsr showkeys                                                      ; 2ca4: 20 00 09     ..
     jsr showkeyhelp                                                   ; 2ca7: 20 44 2d     D-
@@ -4601,7 +4601,7 @@ checktitlepagekeys_core:
     lda #osbyte_inkey                                                 ; 2d88: a9 81       ..
     ldx #inkey_key_s                                                  ; 2d8a: a2 ae       ..             ; X=inkey key value
     ldy #$ff                                                          ; 2d8c: a0 ff       ..
-    jsr osbyte                                                        ; 2d8e: 20 f4 ff     ..            ; Is the 'S' key pressed?
+    jsr OSBYTE                                                        ; 2d8e: 20 f4 ff     ..            ; Is the 'S' key pressed?
     cpy #0                                                            ; 2d91: c0 00       ..             ; X and Y contain $ff if the key is pressed
     beq didntpressS                                                   ; 2d93: f0 04       ..
     ldx savesp                                                        ; 2d95: a6 1b       ..
@@ -4612,7 +4612,7 @@ didntpressS:
     lda #osbyte_inkey                                                 ; 2d99: a9 81       ..
     ldx #inkey_key_k                                                  ; 2d9b: a2 b9       ..             ; X=inkey key value
     ldy #$ff                                                          ; 2d9d: a0 ff       ..
-    jsr osbyte                                                        ; 2d9f: 20 f4 ff     ..            ; Is the 'K' key pressed?
+    jsr OSBYTE                                                        ; 2d9f: 20 f4 ff     ..            ; Is the 'K' key pressed?
     cpy #0                                                            ; 2da2: c0 00       ..             ; X and Y contain $ff if the key is pressed
     bne pressedK                                                      ; 2da4: d0 01       ..
     rts                                                               ; 2da6: 60          `
@@ -4947,7 +4947,7 @@ playdeathtuneloop:
     ldx #<deathsoundblock                                             ; 2fa2: a2 a0       ..
     ldy #>deathsoundblock                                             ; 2fa4: a0 0c       ..
     lda #osword_sound                                                 ; 2fa6: a9 07       ..
-    jsr osword                                                        ; 2fa8: 20 f1 ff     ..            ; SOUND command
+    jsr OSWORD                                                        ; 2fa8: 20 f1 ff     ..            ; SOUND command
     dec temp3                                                         ; 2fab: c6 8a       ..
     bne playdeathtuneloop                                             ; 2fad: d0 e3       ..
     rts                                                               ; 2faf: 60          `
@@ -5006,7 +5006,7 @@ choosekeys:
     lda #osbyte_read_key_table_low                                    ; 300a: a9 ac       ..  :090a[1]
     ldx #0                                                            ; 300c: a2 00       ..  :090c[1]
     ldy #$ff                                                          ; 300e: a0 ff       ..  :090e[1]
-    jsr osbyte                                                        ; 3010: 20 f4 ff     .. :0910[1]   ; Read keyboard translation table address
+    jsr OSBYTE                                                        ; 3010: 20 f4 ff     .. :0910[1]   ; Read keyboard translation table address
     stx read                                                          ; 3013: 86 76       .v  :0913[1]   ; X=value of keyboard translation table address (low byte)
     sty read + 1                                                      ; 3015: 84 77       .w  :0915[1]   ; Y=value of keyboard translation table address (high byte)
 ; Make note of how many keys have so far been defined
@@ -5047,7 +5047,7 @@ choosekeys:
 waitforkey:
     lda #osbyte_scan_keyboard                                         ; 305c: a9 79       .y  :095c[1]
     ldx #(255 - inkey_key_shift) ^ 128                                ; 305e: a2 80       ..  :095e[1]   ; X=internal key number EOR 128
-    jsr osbyte                                                        ; 3060: 20 f4 ff     .. :0960[1]   ; Test for 'SHIFT' key pressed (X=128)
+    jsr OSBYTE                                                        ; 3060: 20 f4 ff     .. :0960[1]   ; Test for 'SHIFT' key pressed (X=128)
     txa                                                               ; 3063: 8a          .   :0963[1]   ; X has top bit set if 'SHIFT' pressed
     bpl didntpressshift                                               ; 3064: 10 05       ..  :0964[1]
     ldx #0                                                            ; 3066: a2 00       ..  :0966[1]
@@ -5056,7 +5056,7 @@ waitforkey:
 didntpressshift:
     lda #osbyte_scan_keyboard                                         ; 306b: a9 79       .y  :096b[1]
     ldx #(255 - inkey_key_ctrl) ^ 128                                 ; 306d: a2 81       ..  :096d[1]   ; X=internal key number EOR 128
-    jsr osbyte                                                        ; 306f: 20 f4 ff     .. :096f[1]   ; Test for 'CTRL' key pressed (X=129)
+    jsr OSBYTE                                                        ; 306f: 20 f4 ff     .. :096f[1]   ; Test for 'CTRL' key pressed (X=129)
     txa                                                               ; 3072: 8a          .   :0972[1]   ; X has top bit set if 'CTRL' pressed
     bpl didntpressctrl                                                ; 3073: 10 05       ..  :0973[1]
     ldx #1                                                            ; 3075: a2 01       ..  :0975[1]
@@ -5064,7 +5064,7 @@ didntpressshift:
 
 didntpressctrl:
     lda #osbyte_scan_keyboard_from_16                                 ; 307a: a9 7a       .z  :097a[1]
-    jsr osbyte                                                        ; 307c: 20 f4 ff     .. :097c[1]   ; Keyboard scan starting from key 16
+    jsr OSBYTE                                                        ; 307c: 20 f4 ff     .. :097c[1]   ; Keyboard scan starting from key 16
     cpx #$ff                                                          ; 307f: e0 ff       ..  :097f[1]   ; X is key number if key is pressed, or $ff otherwise
     beq waitforkey                                                    ; 3081: f0 d9       ..  :0981[1]
 gotakey:
@@ -5107,10 +5107,10 @@ notsamecolumn:
     lda #osbyte_read_write_bell_duration                              ; 30c3: a9 d6       ..  :09c3[1]
     ldx #1                                                            ; 30c5: a2 01       ..  :09c5[1]
     ldy #0                                                            ; 30c7: a0 00       ..  :09c7[1]
-    jsr osbyte                                                        ; 30c9: 20 f4 ff     .. :09c9[1]   ; Write CTRL G duration, value X=1
+    jsr OSBYTE                                                        ; 30c9: 20 f4 ff     .. :09c9[1]   ; Write CTRL G duration, value X=1
     ; Make a short beep
     lda #7                                                            ; 30cc: a9 07       ..  :09cc[1]
-    jsr oswrch                                                        ; 30ce: 20 ee ff     .. :09ce[1]   ; Write character 7
+    jsr OSWRCH                                                        ; 30ce: 20 ee ff     .. :09ce[1]   ; Write character 7
     jmp waitforkey                                                    ; 30d1: 4c 5c 09    L\. :09d1[1]
 
 keyok:
@@ -5141,11 +5141,11 @@ notshiftorctrl:
     bcs keywithspecialname                                            ; 30fc: b0 12       ..  :09fc[1]
     pha                                                               ; 30fe: 48          H   :09fe[1]
     lda #$27                                                          ; 30ff: a9 27       .'  :09ff[1]
-    jsr oswrch                                                        ; 3101: 20 ee ff     .. :0a01[1]   ; Write character 39
+    jsr OSWRCH                                                        ; 3101: 20 ee ff     .. :0a01[1]   ; Write character 39
     pla                                                               ; 3104: 68          h   :0a04[1]
-    jsr oswrch                                                        ; 3105: 20 ee ff     .. :0a05[1]   ; Write character
+    jsr OSWRCH                                                        ; 3105: 20 ee ff     .. :0a05[1]   ; Write character
     lda #$27                                                          ; 3108: a9 27       .'  :0a08[1]
-    jsr oswrch                                                        ; 310a: 20 ee ff     .. :0a0a[1]   ; Write character 39
+    jsr OSWRCH                                                        ; 310a: 20 ee ff     .. :0a0a[1]   ; Write character 39
     jmp returninkey                                                   ; 310d: 4c af 0a    L.. :0a0d[1]
 
 keywithspecialname:
@@ -5239,11 +5239,11 @@ notuparrow:
     bcs returninkey                                                   ; 319a: b0 13       ..  :0a9a[1]
     pha                                                               ; 319c: 48          H   :0a9c[1]
     lda #$66                                                          ; 319d: a9 66       .f  :0a9d[1]
-    jsr oswrch                                                        ; 319f: 20 ee ff     .. :0a9f[1]   ; Write character 102
+    jsr OSWRCH                                                        ; 319f: 20 ee ff     .. :0a9f[1]   ; Write character 102
     pla                                                               ; 31a2: 68          h   :0aa2[1]
     sec                                                               ; 31a3: 38          8   :0aa3[1]
     sbc #$50                                                          ; 31a4: e9 50       .P  :0aa4[1]
-    jsr oswrch                                                        ; 31a6: 20 ee ff     .. :0aa6[1]   ; Write character
+    jsr OSWRCH                                                        ; 31a6: 20 ee ff     .. :0aa6[1]   ; Write character
     jmp returninkey                                                   ; 31a9: 4c af 0a    L.. :0aa9[1]
 
 printstringandreturninkey:
@@ -5375,7 +5375,7 @@ showkeys_core:
     lda #osbyte_read_key_table_low                                    ; 329f: a9 ac       ..  :0b9f[1]
     ldx #0                                                            ; 32a1: a2 00       ..  :0ba1[1]
     ldy #$ff                                                          ; 32a3: a0 ff       ..  :0ba3[1]
-    jsr osbyte                                                        ; 32a5: 20 f4 ff     .. :0ba5[1]   ; Read keyboard translation table address
+    jsr OSBYTE                                                        ; 32a5: 20 f4 ff     .. :0ba5[1]   ; Read keyboard translation table address
     stx read                                                          ; 32a8: 86 76       .v  :0ba8[1]   ; X=value of keyboard translation table address (low byte)
     sty read + 1                                                      ; 32aa: 84 77       .w  :0baa[1]   ; Y=value of keyboard translation table address (high byte)
     ldx #$dc                                                          ; 32ac: a2 dc       ..  :0bac[1]
@@ -5508,7 +5508,7 @@ playsoundblip:
     ldx #<blipsoundblock                                              ; 338e: a2 98       ..  :0c8e[1]
     ldy #>blipsoundblock                                              ; 3390: a0 0c       ..  :0c90[1]
     lda #osword_sound                                                 ; 3392: a9 07       ..  :0c92[1]
-    jsr osword                                                        ; 3394: 20 f1 ff     .. :0c94[1]   ; SOUND command
+    jsr OSWORD                                                        ; 3394: 20 f1 ff     .. :0c94[1]   ; SOUND command
     rts                                                               ; 3397: 60          `   :0c97[1]
 
 blipsoundblock:

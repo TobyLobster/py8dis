@@ -4,7 +4,7 @@
 l0070   = &0070
 
 ; MOS entry points (&ffb3-&fff9)
-osasci  = &ffe3
+OSASCI  = &ffe3
 
     org &0900
 
@@ -18,7 +18,7 @@ osasci  = &ffe3
 
 ; &0908 referenced 1 time by &0902
 .sub_c0908
-    jsr osasci                                                        ; 0908: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; 0908: 20 e3 ff     .. ; Write character
     clc                                                               ; 090b: 18          .
     adc #1                                                            ; 090c: 69 01       i.
     rts                                                               ; 090e: 60          `
@@ -36,7 +36,7 @@ osasci  = &ffe3
     bne loop_c2006                                                    ; 200a: d0 fa       ..
     ; Start a new line
     lda #&0d                                                          ; 200c: a9 0d       ..
-    jmp osasci                                                        ; 200e: 4c e3 ff    L.. ; Write newline (characters 10 and 13)
+    jmp OSASCI                                                        ; 200e: 4c e3 ff    L.. ; Write newline (characters 10 and 13)
 
 .pydis_end
 
@@ -45,7 +45,7 @@ save pydis_start, pydis_end
 
 ; Label references by decreasing frequency:
 ;     l0070:              3
-;     osasci:             2
+;     OSASCI:             2
 ;     loop_c2006:         1
 ;     print_and_inc_zp:   1
 ;     pydis_start:        1

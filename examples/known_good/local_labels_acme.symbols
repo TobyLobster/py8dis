@@ -8,4 +8,4 @@ al 00201E .skip_add_to_bit_count
 al 002026 .crtc_substitution_test
 al 00202C .pydis_end
 al 00FE00 .crtc_address_register
-al 00FFEE .oswrch
+al 00FFEE .OSWRCH

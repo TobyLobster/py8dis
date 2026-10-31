@@ -12,4 +12,4 @@ comadd 2042,decimal_digits
 comadd 2045,print_hex_number
 comadd 2050,print_hex_digit
 comadd 2059,pydis_end
-comadd ffee,oswrch
+comadd ffee,OSWRCH

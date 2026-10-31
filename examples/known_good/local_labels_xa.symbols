@@ -8,4 +8,4 @@ comadd 201e,skip_add_to_bit_count
 comadd 2026,crtc_substitution_test
 comadd 202c,pydis_end
 comadd fe00,crtc_address_register
-comadd ffee,oswrch
+comadd ffee,OSWRCH

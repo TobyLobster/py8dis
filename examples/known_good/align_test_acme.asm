@@ -4,7 +4,7 @@ newline = $0d
 ; Memory locations
 
 ; MOS entry points ($ffb3-$fff9)
-osasci  = $ffe3
+OSASCI  = $ffe3
 
     * = $2000
 
@@ -17,7 +17,7 @@ print_loop
     ; *** BEFORE LINE ***
     lda hello_world_string,x                                          ; 2002: bd 0e 20    .. ; *** INLINE ***
     ; *** AFTER LINE ***
-    jsr osasci                                                        ; 2005: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; 2005: 20 e3 ff     .. ; Write character
     inx                                                               ; 2008: e8          .
     cpx #$0e                                                          ; 2009: e0 0e       ..
     bne print_loop                                                    ; 200b: d0 f5       ..

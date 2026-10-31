@@ -36,6 +36,7 @@ class Settings:
         self.memory_region_headings                = True
         self.text_encoding                         = "ascii"    # see textencoding.py
         self.redundant_instruction_comments        = True
+        self.upper_case_os_calls                   = True
 
         # For internal use only
         self.cmos                                  = False      # True if the CPU is a 65C02
@@ -191,6 +192,19 @@ def set_redundant_instruction_comments(b):
     Redundant instruction?' (see Cpu6502.find_redundant_instructions() and
     CpuZ80.find_redundant_instructions())."""
     session.current().settings.redundant_instruction_comments = b
+
+def get_upper_case_os_calls():
+    return session.current().settings.upper_case_os_calls
+
+def set_upper_case_os_calls(b):
+    """Name the Acorn MOS's calls in capitals, as Acorn's documentation does
+    (e.g. OSBYTE, OSWRCH, GSINIT), or in lower case (e.g. osbyte). Call it
+    before acorn.bbc() (or electron(), b_plus() or master()), which names
+    them."""
+    if session.current().extras.get("acorn.os_calls_named"):
+        import utils
+        utils.die("config.set_upper_case_os_calls(): call it before acorn.bbc() (or electron(), b_plus() or master()), which names the OS calls")
+    session.current().settings.upper_case_os_calls = b
 
 def get_text_encoding():
     return session.current().settings.text_encoding

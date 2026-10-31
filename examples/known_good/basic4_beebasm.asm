@@ -187,18 +187,18 @@ l7f13   = &7f13
 le09c   = &e09c
 
 ; MOS entry points (&ffb3-&fff9)
-osfind  = &ffce
-osbput  = &ffd4
-osbget  = &ffd7
-osargs  = &ffda
-osfile  = &ffdd
-osrdch  = &ffe0
-osasci  = &ffe3
-osnewl  = &ffe7
-oswrch  = &ffee
-osword  = &fff1
-osbyte  = &fff4
-oscli   = &fff7
+OSFIND  = &ffce
+OSBPUT  = &ffd4
+OSBGET  = &ffd7
+OSARGS  = &ffda
+OSFILE  = &ffdd
+OSRDCH  = &ffe0
+OSASCI  = &ffe3
+OSNEWL  = &ffe7
+OSWRCH  = &ffee
+OSWORD  = &fff1
+OSBYTE  = &fff4
+OSCLI   = &fff7
 
     org &8000
 
@@ -246,7 +246,7 @@ oscli   = &fff7
     lda #osbyte_read_write_basic_rom_bank                             ; 8040: a9 bb       ..
     ldx romsel_copy                                                   ; 8042: a6 f4       ..
     ldy #0                                                            ; 8044: a0 00       ..
-    jsr osbyte                                                        ; 8046: 20 f4 ff     .. ; Write BASIC ROM number
+    jsr OSBYTE                                                        ; 8046: 20 f4 ff     .. ; Write BASIC ROM number
     jmp c806a                                                         ; 8049: 4c 6a 80    Lj.
 
 ; &804c referenced 1 time by &8032
@@ -254,7 +254,7 @@ oscli   = &fff7
     lda (os_text_ptr),y                                               ; 804c: b1 f2       ..
     cmp #&0d                                                          ; 804e: c9 0d       ..
     bne c806a                                                         ; 8050: d0 18       ..
-    jsr osnewl                                                        ; 8052: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; 8052: 20 e7 ff     .. ; Write newline (characters 10 and 13)
     ldx #&f6                                                          ; 8055: a2 f6       ..
 ; &8057 referenced 1 time by &8062
 .loop_c8057
@@ -263,10 +263,10 @@ oscli   = &fff7
     lda #&20 ; ' '                                                    ; 805c: a9 20       .
 ; &805e referenced 1 time by &805a
 .c805e
-    jsr osasci                                                        ; 805e: 20 e3 ff     .. ; Write character 32
+    jsr OSASCI                                                        ; 805e: 20 e3 ff     .. ; Write character 32
     inx                                                               ; 8061: e8          .
     bne loop_c8057                                                    ; 8062: d0 f3       ..
-    jsr osnewl                                                        ; 8064: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; 8064: 20 e7 ff     .. ; Write newline (characters 10 and 13)
 ; &8067 referenced 2 times by &809c, &80a6
 .c8067
     jsr sub_c80d8                                                     ; 8067: 20 d8 80     ..
@@ -344,7 +344,7 @@ oscli   = &fff7
     tax                                                               ; 80d0: aa          .  ; X=ROM number
     lda #osbyte_enter_language                                        ; 80d1: a9 8e       ..
     ldy #0                                                            ; 80d3: a0 00       ..
-    jmp osbyte                                                        ; 80d5: 4c f4 ff    L.. ; Enter language ROM X
+    jmp OSBYTE                                                        ; 80d5: 4c f4 ff    L.. ; Enter language ROM X
 
 ; &80d8 referenced 3 times by &8067, &808a, &80b1
 .sub_c80d8
@@ -376,11 +376,11 @@ oscli   = &fff7
 ; &80ff referenced 1 time by &80f1
 .c80ff
     lda #osbyte_read_himem                                            ; 80ff: a9 84       ..
-    jsr osbyte                                                        ; 8101: 20 f4 ff     .. ; Read top of user memory (HIMEM)
+    jsr OSBYTE                                                        ; 8101: 20 f4 ff     .. ; Read top of user memory (HIMEM)
     stx l0006                                                         ; 8104: 86 06       .. ; X and Y contain the address of HIMEM (low, high)
     sty l0007                                                         ; 8106: 84 07       ..
     dec a                                                             ; 8108: 3a          :
-    jsr osbyte                                                        ; 8109: 20 f4 ff     ..
+    jsr OSBYTE                                                        ; 8109: 20 f4 ff     ..
     sty l0018                                                         ; 810c: 84 18       ..
     ldx #&13                                                          ; 810e: a2 13       ..
     stx l00fd                                                         ; 8110: 86 fd       ..
@@ -2628,7 +2628,7 @@ l8993 = c8992+1
     stz l000b                                                         ; 904f: 64 0b       d.
     jsr sub_cb2e0                                                     ; 9051: 20 e0 b2     ..
     lda #&3e ; '>'                                                    ; 9054: a9 3e       .>
-    jsr oswrch                                                        ; 9056: 20 ee ff     .. ; Write character 62
+    jsr OSWRCH                                                        ; 9056: 20 ee ff     .. ; Write character 62
     jsr sub_cbaa4                                                     ; 9059: 20 a4 ba     ..
 ; &905c referenced 1 time by &8fe3
 .c905c
@@ -2643,7 +2643,7 @@ l8993 = c8992+1
     jsr c9c80                                                         ; 9069: 20 80 9c     ..
     ldx l000b                                                         ; 906c: a6 0b       ..
     ldy l000c                                                         ; 906e: a4 0c       ..
-    jsr oscli                                                         ; 9070: 20 f7 ff     ..
+    jsr OSCLI                                                         ; 9070: 20 f7 ff     ..
 ; &9073 referenced 2 times by &9084, &b788
 .c9073
     lda #&0d                                                          ; 9073: a9 0d       ..
@@ -2942,7 +2942,7 @@ l8993 = c8992+1
     jsr sub_ca545                                                     ; 9210: 20 45 a5     E.
     ply                                                               ; 9213: 7a          z  ; Y=file handle
     lda l0027                                                         ; 9214: a5 27       .'
-    jsr osbput                                                        ; 9216: 20 d4 ff     .. ; Write a single byte A to an open file Y
+    jsr OSBPUT                                                        ; 9216: 20 d4 ff     .. ; Write a single byte A to an open file Y
     tax                                                               ; 9219: aa          .
     beq c9237                                                         ; 921a: f0 1b       ..
     bmi c922a                                                         ; 921c: 30 0c       0.
@@ -2950,7 +2950,7 @@ l8993 = c8992+1
 ; &9220 referenced 1 time by &9226
 .loop_c9220
     lda l002a,x                                                       ; 9220: b5 2a       .*
-    jsr osbput                                                        ; 9222: 20 d4 ff     .. ; Write a single byte A to an open file Y
+    jsr OSBPUT                                                        ; 9222: 20 d4 ff     .. ; Write a single byte A to an open file Y
     dex                                                               ; 9225: ca          .
     bpl loop_c9220                                                    ; 9226: 10 f8       ..
     bra c9207                                                         ; 9228: 80 dd       ..
@@ -2960,20 +2960,20 @@ l8993 = c8992+1
 ; &922c referenced 1 time by &9233
 .loop_c922c
     lda l046c,x                                                       ; 922c: bd 6c 04    .l.
-    jsr osbput                                                        ; 922f: 20 d4 ff     .. ; Write a single byte A to an open file Y
+    jsr OSBPUT                                                        ; 922f: 20 d4 ff     .. ; Write a single byte A to an open file Y
     dex                                                               ; 9232: ca          .
     bpl loop_c922c                                                    ; 9233: 10 f7       ..
     bra c9207                                                         ; 9235: 80 d0       ..
 ; &9237 referenced 1 time by &921a
 .c9237
     lda l0036                                                         ; 9237: a5 36       .6
-    jsr osbput                                                        ; 9239: 20 d4 ff     .. ; Write a single byte A to an open file Y
+    jsr OSBPUT                                                        ; 9239: 20 d4 ff     .. ; Write a single byte A to an open file Y
     tax                                                               ; 923c: aa          .
     beq c9207                                                         ; 923d: f0 c8       ..
 ; &923f referenced 1 time by &9246
 .loop_c923f
     lda l05ff,x                                                       ; 923f: bd ff 05    ...
-    jsr osbput                                                        ; 9242: 20 d4 ff     .. ; Write a single byte A to an open file Y
+    jsr OSBPUT                                                        ; 9242: 20 d4 ff     .. ; Write a single byte A to an open file Y
     dex                                                               ; 9245: ca          .
     bne loop_c923f                                                    ; 9246: d0 f7       ..
     bra c9207                                                         ; 9248: 80 bd       ..
@@ -3098,9 +3098,9 @@ l8993 = c8992+1
     pha                                                               ; 92f2: 48          H
     jsr sub_c976c                                                     ; 92f3: 20 6c 97     l.
     lda #&1f                                                          ; 92f6: a9 1f       ..
-    jsr oswrch                                                        ; 92f8: 20 ee ff     .. ; Write character 31
+    jsr OSWRCH                                                        ; 92f8: 20 ee ff     .. ; Write character 31
     pla                                                               ; 92fb: 68          h
-    jsr oswrch                                                        ; 92fc: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 92fc: 20 ee ff     .. ; Write character
     jsr sub_c990f                                                     ; 92ff: 20 0f 99     ..
     bra c932d                                                         ; 9302: 80 29       .)
 ; &9304 referenced 1 time by &934f
@@ -3965,7 +3965,7 @@ l8993 = c8992+1
     jsr sub_c9771                                                     ; 9816: 20 71 97     q.
     jsr sub_c9c5a                                                     ; 9819: 20 5a 9c     Z.
     lda #&12                                                          ; 981c: a9 12       ..
-    jsr oswrch                                                        ; 981e: 20 ee ff     .. ; Write character 18
+    jsr OSWRCH                                                        ; 981e: 20 ee ff     .. ; Write character 18
     pla                                                               ; 9821: 68          h
     bra c986a                                                         ; 9822: 80 46       .F
 .sub_c9824
@@ -3989,7 +3989,7 @@ l8993 = c8992+1
     bne c9808                                                         ; 9847: d0 bf       ..
     ldx l002a                                                         ; 9849: a6 2a       .* ; X=MODE number
     lda #osbyte_read_himem_for_mode                                   ; 984b: a9 85       ..
-    jsr osbyte                                                        ; 984d: 20 f4 ff     .. ; Read top of user memory for a given screen mode X
+    jsr OSBYTE                                                        ; 984d: 20 f4 ff     .. ; Read top of user memory for a given screen mode X
     cpx l0002                                                         ; 9850: e4 02       .. ; X and Y contain the address (low, high)
     tya                                                               ; 9852: 98          .
     sbc l0003                                                         ; 9853: e5 03       ..
@@ -4008,7 +4008,7 @@ l8993 = c8992+1
     lda #&16                                                          ; 9868: a9 16       ..
 ; &986a referenced 2 times by &9822, &982c
 .c986a
-    jsr oswrch                                                        ; 986a: 20 ee ff     .. ; Write character 22
+    jsr OSWRCH                                                        ; 986a: 20 ee ff     .. ; Write character 22
     lda l002a                                                         ; 986d: a5 2a       .*
     bra c98bd                                                         ; 986f: 80 4c       .L
 .sub_c9871
@@ -4033,14 +4033,14 @@ l8993 = c8992+1
     jsr sub_c9771                                                     ; 988c: 20 71 97     q.
     jsr sub_c9c5a                                                     ; 988f: 20 5a 9c     Z.
     lda #&19                                                          ; 9892: a9 19       ..
-    jsr oswrch                                                        ; 9894: 20 ee ff     .. ; Write character 25
+    jsr OSWRCH                                                        ; 9894: 20 ee ff     .. ; Write character 25
     pla                                                               ; 9897: 68          h
-    jsr oswrch                                                        ; 9898: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 9898: 20 ee ff     .. ; Write character
     jsr sub_cbd46                                                     ; 989b: 20 46 bd     F.
     lda l0037                                                         ; 989e: a5 37       .7
-    jsr oswrch                                                        ; 98a0: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 98a0: 20 ee ff     .. ; Write character
     lda l0038                                                         ; 98a3: a5 38       .8
-    jsr oswrch                                                        ; 98a5: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 98a5: 20 ee ff     .. ; Write character
     jsr sub_c990f                                                     ; 98a8: 20 0f 99     ..
     lda l002b                                                         ; 98ab: a5 2b       .+
     bra c98bd                                                         ; 98ad: 80 0e       ..
@@ -4054,7 +4054,7 @@ l8993 = c8992+1
     lda #&0c                                                          ; 98bb: a9 0c       ..
 ; &98bd referenced 3 times by &986f, &98ad, &98b4
 .c98bd
-    jsr oswrch                                                        ; 98bd: 20 ee ff     .. ; Write character 12
+    jsr OSWRCH                                                        ; 98bd: 20 ee ff     .. ; Write character 12
 ; &98c0 referenced 2 times by &98cd, &98d5
 .c98c0
     jmp c90ca                                                         ; 98c0: 4c ca 90    L..
@@ -4074,7 +4074,7 @@ l8993 = c8992+1
 ; &98d7 referenced 1 time by &98fa
 .c98d7
     lda l002b                                                         ; 98d7: a5 2b       .+
-    jsr oswrch                                                        ; 98d9: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 98d9: 20 ee ff     .. ; Write character
 ; &98dc referenced 2 times by &98f6, &990a
 .c98dc
     jsr c8f9d                                                         ; 98dc: 20 9d 8f     ..
@@ -4099,7 +4099,7 @@ l8993 = c8992+1
     ldy #9                                                            ; 9902: a0 09       ..
 ; &9904 referenced 1 time by &9908
 .loop_c9904
-    jsr oswrch                                                        ; 9904: 20 ee ff     .. ; Write character 0
+    jsr OSWRCH                                                        ; 9904: 20 ee ff     .. ; Write character 0
     dey                                                               ; 9907: 88          .
     bne loop_c9904                                                    ; 9908: d0 fa       ..
     bra c98dc                                                         ; 990a: 80 d0       ..
@@ -7358,7 +7358,7 @@ l8993 = c8992+1
     lda #osbyte_inkey                                                 ; aa71: a9 81       ..
     ldx l002a                                                         ; aa73: a6 2a       .*
     ldy l002b                                                         ; aa75: a4 2b       .+
-    jmp osbyte                                                        ; aa77: 4c f4 ff    L.. ; Read key within time limit, or read a specific key, or read machine type
+    jmp OSBYTE                                                        ; aa77: 4c f4 ff    L.. ; Read key within time limit, or read a specific key, or read machine type
 
 ; &aa7a referenced 2 times by &aaae, &aab0
 .caa7a
@@ -7461,7 +7461,7 @@ l8993 = c8992+1
 ; &ab14 referenced 1 time by &aafb
 .sub_cab14
     lda #osbyte_read_text_cursor_pos                                  ; ab14: a9 86       ..
-    jsr osbyte                                                        ; ab16: 20 f4 ff     .. ; Read input cursor position (Sets X=POS and Y=VPOS)
+    jsr OSBYTE                                                        ; ab16: 20 f4 ff     .. ; Read input cursor position (Sets X=POS and Y=VPOS)
     tya                                                               ; ab19: 98          .  ; Y is the vertical text position ('VPOS')
 ; &ab1a referenced 2 times by &ab35, &ab52
 .cab1a
@@ -7478,11 +7478,11 @@ l8993 = c8992+1
     jsr sub_cba7a                                                     ; ab24: 20 7a ba     z.
     ldx #&2a ; '*'                                                    ; ab27: a2 2a       .*
     pla                                                               ; ab29: 68          h
-    jsr osargs                                                        ; ab2a: 20 da ff     .. ; Read or write a file's attributes
+    jsr OSARGS                                                        ; ab2a: 20 da ff     .. ; Read or write a file's attributes
     bra caae8                                                         ; ab2d: 80 b9       ..
 .sub_cab2f
     jsr sub_cba7a                                                     ; ab2f: 20 7a ba     z.
-    jsr osbget                                                        ; ab32: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                                        ; ab32: 20 d7 ff     .. ; Read a single byte from an open file Y
     bra cab1a                                                         ; ab35: 80 e3       ..
 .sub_cab37
     lda #&40 ; '@'                                                    ; ab37: a9 40       .@
@@ -7501,7 +7501,7 @@ l8993 = c8992+1
     ldx #0                                                            ; ab4a: a2 00       ..
     ldy #6                                                            ; ab4c: a0 06       ..
     pla                                                               ; ab4e: 68          h
-    jsr osfind                                                        ; ab4f: 20 ce ff     .. ; Open or close file(s)
+    jsr OSFIND                                                        ; ab4f: 20 ce ff     .. ; Open or close file(s)
     bra cab1a                                                         ; ab52: 80 c6       ..
 .sub_cab54
     stz l0031                                                         ; ab54: 64 31       d1
@@ -7641,7 +7641,7 @@ l8993 = c8992+1
     jsr sub_cba7a                                                     ; ac1f: 20 7a ba     z.
     tax                                                               ; ac22: aa          .  ; X=File handle
     lda #osbyte_check_eof                                             ; ac23: a9 7f       ..
-    jsr osbyte                                                        ; ac25: 20 f4 ff     .. ; Check for EOF in file handle X
+    jsr OSBYTE                                                        ; ac25: 20 f4 ff     .. ; Check for EOF in file handle X
     txa                                                               ; ac28: 8a          .  ; X is non-zero if reached end of file, zero otherwise
     beq cac2d                                                         ; ac29: f0 02       ..
 ; &ac2b referenced 6 times by &ac0a, &ac16, &ac44, &ac4f, &ac7b, &b3dd
@@ -7698,7 +7698,7 @@ l8993 = c8992+1
     ldy #>l002a                                                       ; ac70: a0 00       ..
     ldx #<l002a                                                       ; ac72: a2 2a       .*
     lda #osword_read_pixel                                            ; ac74: a9 09       ..
-    jsr osword                                                        ; ac76: 20 f1 ff     .. ; Read pixel value
+    jsr OSWORD                                                        ; ac76: 20 f1 ff     .. ; Read pixel value
     lda l002e                                                         ; ac79: a5 2e       ..
     bmi cac2b                                                         ; ac7b: 30 ae       0.
     bra cac5b                                                         ; ac7d: 80 dc       ..
@@ -8041,7 +8041,7 @@ l8993 = c8992+1
     jsr sub_c9779                                                     ; ae34: 20 79 97     y.
     ldx l002a                                                         ; ae37: a6 2a       .*
     lda #osbyte_read_adc_or_get_buffer_status                         ; ae39: a9 80       ..
-    jsr osbyte                                                        ; ae3b: 20 f4 ff     .. ; Read buffer status or ADC channel
+    jsr OSBYTE                                                        ; ae3b: 20 f4 ff     .. ; Read buffer status or ADC channel
     txa                                                               ; ae3e: 8a          .
 ; &ae3f referenced 1 time by &adcc
 .cae3f
@@ -8098,7 +8098,7 @@ l8993 = c8992+1
     lda (l00fd)                                                       ; ae83: b2 fd       ..
     bra cae60                                                         ; ae85: 80 d9       ..
 .sub_cae87
-    jsr osrdch                                                        ; ae87: 20 e0 ff     .. ; Read a character from the current input stream
+    jsr OSRDCH                                                        ; ae87: 20 e0 ff     .. ; Read a character from the current input stream
     bra cae60                                                         ; ae8a: 80 d4       ..
 .sub_cae8c
     iny                                                               ; ae8c: c8          .
@@ -8108,7 +8108,7 @@ l8993 = c8992+1
     ldx #<l002a                                                       ; ae93: a2 2a       .*
     ldy #>l002a                                                       ; ae95: a0 00       ..
     lda #osword_read_clock                                            ; ae97: a9 01       ..
-    jsr osword                                                        ; ae99: 20 f1 ff     .. ; Read system clock
+    jsr OSWORD                                                        ; ae99: 20 f1 ff     .. ; Read system clock
     lda #&40 ; '@'                                                    ; ae9c: a9 40       .@
     rts                                                               ; ae9e: 60          `
 
@@ -8119,11 +8119,11 @@ l8993 = c8992+1
     ldx #<l0600                                                       ; aea3: a2 00       ..
     ldy #>l0600                                                       ; aea5: a0 06       ..
     stz l0600                                                         ; aea7: 9c 00 06    ...
-    jsr osword                                                        ; aeaa: 20 f1 ff     .. ; Read CMOS clock
+    jsr OSWORD                                                        ; aeaa: 20 f1 ff     .. ; Read CMOS clock
     lda #&18                                                          ; aead: a9 18       ..
     bra caed7                                                         ; aeaf: 80 26       .&
 .sub_caeb1
-    jsr osrdch                                                        ; aeb1: 20 e0 ff     .. ; Read a character from the current input stream
+    jsr OSRDCH                                                        ; aeb1: 20 e0 ff     .. ; Read a character from the current input stream
 ; &aeb4 referenced 2 times by &af01, &b26e
 .caeb4
     sta l0600                                                         ; aeb4: 8d 00 06    ... ; A=character read
@@ -8824,9 +8824,9 @@ l8993 = c8992+1
     inx                                                               ; b2b7: e8          .  ; X=0
     ldy #0                                                            ; b2b8: a0 00       ..
     lda #osbyte_read_write_vdu_queue_size                             ; b2ba: a9 da       ..
-    jsr osbyte                                                        ; b2bc: 20 f4 ff     .. ; Write VDU queue
+    jsr OSBYTE                                                        ; b2bc: 20 f4 ff     .. ; Write VDU queue
     lda #osbyte_acknowledge_escape                                    ; b2bf: a9 7e       .~
-    jsr osbyte                                                        ; b2c1: 20 f4 ff     .. ; Clear escape condition and perform escape effects
+    jsr OSBYTE                                                        ; b2c1: 20 f4 ff     .. ; Clear escape condition and perform escape effects
     jsr sub_cb271                                                     ; b2c4: 20 71 b2     q.
     stz l0020                                                         ; b2c7: 64 20       d
     lda (l00fd)                                                       ; b2c9: b2 fd       ..
@@ -8904,7 +8904,7 @@ l8993 = c8992+1
     ldy #>l0037                                                       ; b34a: a0 00       ..
 ; &b34c referenced 1 time by &9750
 .cb34c
-    jsr osword                                                        ; b34c: 20 f1 ff     ..
+    jsr OSWORD                                                        ; b34c: 20 f1 ff     ..
     bra cb35c                                                         ; b34f: 80 0b       ..
 .sub_cb351
     jsr sub_c9332                                                     ; b351: 20 32 93     2.
@@ -9071,7 +9071,7 @@ l8993 = c8992+1
     bmi cb451                                                         ; b44a: 30 05       0.
     ; Move the cursor down one line
     lda #&0a                                                          ; b44c: a9 0a       ..
-    jsr oswrch                                                        ; b44e: 20 ee ff     .. ; Write character 10
+    jsr OSWRCH                                                        ; b44e: 20 ee ff     .. ; Write character 10
 ; &b451 referenced 2 times by &b44a, &b4c4
 .cb451
     jsr c9c80                                                         ; b451: 20 80 9c     ..
@@ -9754,19 +9754,19 @@ l8993 = c8992+1
     jsr cbc66                                                         ; b893: 20 66 bc     f.
 .sub_cb896
     ldy l004c                                                         ; b896: a4 4c       .L ; Y=file handle
-    jsr osbget                                                        ; b898: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                                        ; b898: 20 d7 ff     .. ; Read a single byte from an open file Y
     sta l0027                                                         ; b89b: 85 27       .'
     plp                                                               ; b89d: 28          (
     bcc cb8ba                                                         ; b89e: 90 1a       ..
     lda l0027                                                         ; b8a0: a5 27       .'
     bne cb86c                                                         ; b8a2: d0 c8       ..
-    jsr osbget                                                        ; b8a4: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                                        ; b8a4: 20 d7 ff     .. ; Read a single byte from an open file Y
     sta l0036                                                         ; b8a7: 85 36       .6
     tax                                                               ; b8a9: aa          .
     beq cb8b5                                                         ; b8aa: f0 09       ..
 ; &b8ac referenced 1 time by &b8b3
 .loop_cb8ac
-    jsr osbget                                                        ; b8ac: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                                        ; b8ac: 20 d7 ff     .. ; Read a single byte from an open file Y
     sta l05ff,x                                                       ; b8af: 9d ff 05    ...
     dex                                                               ; b8b2: ca          .
     bne loop_cb8ac                                                    ; b8b3: d0 f7       ..
@@ -9782,7 +9782,7 @@ l8993 = c8992+1
     ldx #3                                                            ; b8c0: a2 03       ..
 ; &b8c2 referenced 1 time by &b8c8
 .loop_cb8c2
-    jsr osbget                                                        ; b8c2: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                                        ; b8c2: 20 d7 ff     .. ; Read a single byte from an open file Y
     sta l002a,x                                                       ; b8c5: 95 2a       .*
     dex                                                               ; b8c7: ca          .
     bpl loop_cb8c2                                                    ; b8c8: 10 f8       ..
@@ -9792,7 +9792,7 @@ l8993 = c8992+1
     ldx #4                                                            ; b8cc: a2 04       ..
 ; &b8ce referenced 1 time by &b8d5
 .loop_cb8ce
-    jsr osbget                                                        ; b8ce: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                                        ; b8ce: 20 d7 ff     .. ; Read a single byte from an open file Y
     sta l046c,x                                                       ; b8d1: 9d 6c 04    .l.
     dex                                                               ; b8d4: ca          .
     bpl loop_cb8ce                                                    ; b8d5: 10 f7       ..
@@ -9864,7 +9864,7 @@ l8993 = c8992+1
     bit l004c                                                         ; b938: 24 4c       $L
     bpl cb941                                                         ; b93a: 10 05       ..
     lda #&3f ; '?'                                                    ; b93c: a9 3f       .?
-    jsr oswrch                                                        ; b93e: 20 ee ff     .. ; Write character 63
+    jsr OSWRCH                                                        ; b93e: 20 ee ff     .. ; Write character 63
 ; &b941 referenced 1 time by &b93a
 .cb941
     jsr sub_cbaa0                                                     ; b941: 20 a0 ba     ..
@@ -10113,13 +10113,13 @@ l8993 = c8992+1
     iny                                                               ; bab6: c8          .  ; Y=0
     ldx #&37 ; '7'                                                    ; bab7: a2 37       .7
     tya                                                               ; bab9: 98          .  ; A=0
-    jsr osword                                                        ; baba: 20 f1 ff     ..
+    jsr OSWORD                                                        ; baba: 20 f1 ff     ..
     bcc cbac5                                                         ; babd: 90 06       ..
     jmp c9c41                                                         ; babf: 4c 41 9c    LA.
 
 ; &bac2 referenced 8 times by &8a14, &8a68, &9285, &9319, &932a, &9538, &98c6, &bdc6
 .sub_cbac2
-    jsr osnewl                                                        ; bac2: 20 e7 ff     .. ; Write newline (characters 10 and 13)
+    jsr OSNEWL                                                        ; bac2: 20 e7 ff     .. ; Write newline (characters 10 and 13)
 ; &bac5 referenced 2 times by &babd, &bddf
 .cbac5
     stz l001e                                                         ; bac5: 64 1e       d.
@@ -10725,7 +10725,7 @@ l8993 = c8992+1
     cmp #&0d                                                          ; bdd8: c9 0d       ..
     bne loop_cbdbf                                                    ; bdda: d0 e3       ..
     ; Move the cursor to the start of the line
-    jsr oswrch                                                        ; bddc: 20 ee ff     .. ; Write character 13
+    jsr OSWRCH                                                        ; bddc: 20 ee ff     .. ; Write character 13
     jmp cbac5                                                         ; bddf: 4c c5 ba    L..
 
 ; &bde2 referenced 1 time by &bdd6
@@ -10781,7 +10781,7 @@ l8993 = c8992+1
     ldy #>l0037                                                       ; be1c: a0 00       ..
     lda #osfile_load                                                  ; be1e: a9 ff       ..
     ldx #<l0037                                                       ; be20: a2 37       .7
-    jsr osfile                                                        ; be22: 20 dd ff     .. ; Load named file (if XY+6 contains 0, use specified address) (A=255)
+    jsr OSFILE                                                        ; be22: 20 dd ff     .. ; Load named file (if XY+6 contains 0, use specified address) (A=255)
 ; &be25 referenced 6 times by &8fd2, &8fed, &944f, &b42f, &bb8b, &be95
 .sub_cbe25
     lda l0018                                                         ; be25: a5 18       ..
@@ -10863,7 +10863,7 @@ l8993 = c8992+1
 ; &be8b referenced 1 time by &9834
 .sub_cbe8b
     lda #osbyte_read_high_order_address                               ; be8b: a9 82       ..
-    jsr osbyte                                                        ; be8d: 20 f4 ff     .. ; Read the filing system 'machine high order address'
+    jsr OSBYTE                                                        ; be8d: 20 f4 ff     .. ; Read the filing system 'machine high order address'
     stx l003b                                                         ; be90: 86 3b       .; ; X and Y contain the machine high order address (low, high)
     sty l003c                                                         ; be92: 84 3c       .<
     rts                                                               ; be94: 60          `
@@ -10891,7 +10891,7 @@ l8993 = c8992+1
     lda #osfile_save                                                  ; bebd: a9 00       ..
     tay                                                               ; bebf: a8          .  ; Y=0
     ldx #<l0037                                                       ; bec0: a2 37       .7
-    jsr osfile                                                        ; bec2: 20 dd ff     .. ; Save a block of memory (returning file length and attributes) (A=0)
+    jsr OSFILE                                                        ; bec2: 20 dd ff     .. ; Save a block of memory (returning file length and attributes) (A=0)
     bra cbeeb                                                         ; bec5: 80 24       .$
 .sub_cbec7
     jsr sub_cbe76                                                     ; bec7: 20 76 be     v.
@@ -10901,7 +10901,7 @@ lbecd = cbecc+1
     ldy #>l0600                                                       ; becc: a0 06       ..
 ; overlapping: asl l0020                                              ; becd: 06 20       .
 ; &becd referenced 1 time by &be59
-    jsr oscli                                                         ; bece: 20 f7 ff     ..
+    jsr OSCLI                                                         ; bece: 20 f7 ff     ..
     bra cbeeb                                                         ; bed1: 80 18       ..
 ; &bed3 referenced 1 time by &90ad
 .cbed3
@@ -10919,7 +10919,7 @@ lbecd = cbecc+1
     ply                                                               ; bee4: 7a          z
     ldx #&2a ; '*'                                                    ; bee5: a2 2a       .*
     pla                                                               ; bee7: 68          h
-    jsr osargs                                                        ; bee8: 20 da ff     .. ; Read or write a file's attributes
+    jsr OSARGS                                                        ; bee8: 20 da ff     .. ; Read or write a file's attributes
 ; &beeb referenced 4 times by &bec5, &bed1, &befb, &bf0d
 .cbeeb
     jmp c90ca                                                         ; beeb: 4c ca 90    L..
@@ -10929,7 +10929,7 @@ lbecd = cbecc+1
     jsr sub_c9c5a                                                     ; bef1: 20 5a 9c     Z.
     ldy l002a                                                         ; bef4: a4 2a       .*
     lda #osfind_close                                                 ; bef6: a9 00       ..
-    jsr osfind                                                        ; bef8: 20 ce ff     .. ; Close one or all files
+    jsr OSFIND                                                        ; bef8: 20 ce ff     .. ; Close one or all files
     bra cbeeb                                                         ; befb: 80 ee       ..
 .sub_cbefd
 lbefe = sub_cbefd+1
@@ -10942,7 +10942,7 @@ lbefe = sub_cbefd+1
     jsr sub_c9c5a                                                     ; bf04: 20 5a 9c     Z.
     ply                                                               ; bf07: 7a          z  ; Y=file handle
     lda l002a                                                         ; bf08: a5 2a       .*
-    jsr osbput                                                        ; bf0a: 20 d4 ff     .. ; Write a single byte A to an open file Y
+    jsr OSBPUT                                                        ; bf0a: 20 d4 ff     .. ; Write a single byte A to an open file Y
     bra cbeeb                                                         ; bf0d: 80 dc       ..
 ; &bf0f referenced 2 times by &951f, &be51
 .sub_cbf0f
@@ -10953,7 +10953,7 @@ lbefe = sub_cbefd+1
     bra cbf1a                                                         ; bf15: 80 03       ..
 ; &bf17 referenced 1 time by &bf1d
 .loop_cbf17
-    jsr osasci                                                        ; bf17: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; bf17: 20 e3 ff     .. ; Write character
 ; &bf1a referenced 1 time by &bf15
 .cbf1a
     jsr sub_c8e66                                                     ; bf1a: 20 66 8e     f.
@@ -10966,7 +10966,7 @@ lbefe = sub_cbefd+1
     phx                                                               ; bf24: da          .
     ldx #<l002a                                                       ; bf25: a2 2a       .*
     ldy #>l002a                                                       ; bf27: a0 00       ..
-    jsr osword                                                        ; bf29: 20 f1 ff     .. ; Read byte of I/O processor memory
+    jsr OSWORD                                                        ; bf29: 20 f1 ff     .. ; Read byte of I/O processor memory
     plx                                                               ; bf2c: fa          .
     lda l002e                                                         ; bf2d: a5 2e       ..
 ; &bf2f referenced 4 times by &9400, &958e, &965e, &aabc
@@ -11009,14 +11009,14 @@ lbefe = sub_cbefd+1
     bpl loop_cbf56                                                    ; bf5d: 10 f7       ..
     ldx #<l0600                                                       ; bf5f: a2 00       ..
     ldy #>l0600                                                       ; bf61: a0 06       ..
-    jmp oscli                                                         ; bf63: 4c f7 ff    L..
+    jmp OSCLI                                                         ; bf63: 4c f7 ff    L..
 
 ; &bf66 referenced 1 time by &80ac
 .sub_cbf66
     lda #osbyte_read_tube_presence                                    ; bf66: a9 ea       ..
     ldx #0                                                            ; bf68: a2 00       ..
     ldy #&ff                                                          ; bf6a: a0 ff       ..
-    jsr osbyte                                                        ; bf6c: 20 f4 ff     .. ; Read Tube present flag
+    jsr OSBYTE                                                        ; bf6c: 20 f4 ff     .. ; Read Tube present flag
     txa                                                               ; bf6f: 8a          .  ; X=value of Tube present flag
     rts                                                               ; bf70: 60          `
 
@@ -11220,14 +11220,14 @@ save pydis_start, pydis_end
 ;     c8f92:               16
 ;     l0018:               16
 ;     l004d:               16
+;     OSWRCH:              15
 ;     l0013:               15
 ;     l0049:               15
-;     oswrch:              15
 ;     c9155:               14
 ;     cad78:               14
 ;     sub_c9dff:           14
+;     OSBYTE:              13
 ;     l0026:               13
-;     osbyte:              13
 ;     sub_cbd26:           13
 ;     l0029:               12
 ;     c90ca:               11
@@ -11272,6 +11272,9 @@ save pydis_start, pydis_end
 ;     sub_c9774:            7
 ;     sub_c9783:            7
 ;     sub_cbbdc:            7
+;     OSBGET:               6
+;     OSBPUT:               6
+;     OSWORD:               6
 ;     c8b1b:                6
 ;     c8bf9:                6
 ;     c8e6c:                6
@@ -11285,9 +11288,6 @@ save pydis_start, pydis_end
 ;     cbdff:                6
 ;     l000e:                6
 ;     l0015:                6
-;     osbget:               6
-;     osbput:               6
-;     osword:               6
 ;     romsel_copy:          6
 ;     sub_c8d9c:            6
 ;     sub_c8e41:            6
@@ -11378,6 +11378,8 @@ save pydis_start, pydis_end
 ;     sub_cbdd8:            4
 ;     sub_cbf22:            4
 ;     sub_cbf2f:            4
+;     OSCLI:                3
+;     OSNEWL:               3
 ;     c806a:                3
 ;     c827c:                3
 ;     c82dd:                3
@@ -11439,8 +11441,6 @@ save pydis_start, pydis_end
 ;     l051d:                3
 ;     l051f:                3
 ;     l0524:                3
-;     oscli:                3
-;     osnewl:               3
 ;     return_1:             3
 ;     return_17:            3
 ;     return_24:            3
@@ -11477,6 +11477,11 @@ save pydis_start, pydis_end
 ;     sub_cba7a:            3
 ;     sub_cbbff:            3
 ;     sub_cbd46:            3
+;     OSARGS:               2
+;     OSASCI:               2
+;     OSFILE:               2
+;     OSFIND:               2
+;     OSRDCH:               2
 ;     c8067:                2
 ;     c808f:                2
 ;     c80a8:                2
@@ -11643,11 +11648,6 @@ save pydis_start, pydis_end
 ;     l0526:                2
 ;     l0527:                2
 ;     l0700:                2
-;     osargs:               2
-;     osasci:               2
-;     osfile:               2
-;     osfind:               2
-;     osrdch:               2
 ;     return_14:            2
 ;     return_16:            2
 ;     return_23:            2

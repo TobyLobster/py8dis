@@ -129,10 +129,10 @@ ammo_bar_screen_address     = &5a10
 computer_bar_screen_address = &5b50
 
 ; MOS entry points (&ffb3-&fff9)
-osasci  = &ffe3
-oswrch  = &ffee
-osword  = &fff1
-osbyte  = &fff4
+OSASCI  = &ffe3
+OSWRCH  = &ffee
+OSWORD  = &fff1
+OSBYTE  = &fff4
 
     org &1210
 
@@ -10203,7 +10203,7 @@ osbyte  = &fff4
     jsr increment_print_address                                       ; 3e56: 20 6a 3e     j>
     lda (print_addr_low),y                                            ; 3e59: b1 2f       ./
     and #&7f                                                          ; 3e5b: 29 7f       ).
-    jsr osasci                                                        ; 3e5d: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; 3e5d: 20 e3 ff     .. ; Write character
     lda (print_addr_low),y                                            ; 3e60: b1 2f       ./
     bpl print_loop                                                    ; 3e62: 10 f2       ..
     jsr increment_print_address                                       ; 3e64: 20 6a 3e     j>
@@ -10232,7 +10232,7 @@ osbyte  = &fff4
 .print_digit_loop
     pla                                                               ; 3e83: 68          h
     beq return_4                                                      ; 3e84: f0 06       ..
-    jsr oswrch                                                        ; 3e86: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 3e86: 20 ee ff     .. ; Write character
     jmp print_digit_loop                                              ; 3e89: 4c 83 3e    L.>
 
 .return_4
@@ -10439,16 +10439,16 @@ osbyte  = &fff4
 .print_score
     ; Position text cursor at (0,2)
     lda #&1f                                                          ; 3fe3: a9 1f       ..
-    jsr oswrch                                                        ; 3fe5: 20 ee ff     .. ; Write character 31
+    jsr OSWRCH                                                        ; 3fe5: 20 ee ff     .. ; Write character 31
     lda #0                                                            ; 3fe8: a9 00       ..
-    jsr oswrch                                                        ; 3fea: 20 ee ff     .. ; Write character 0
+    jsr OSWRCH                                                        ; 3fea: 20 ee ff     .. ; Write character 0
     lda #2                                                            ; 3fed: a9 02       ..
-    jsr oswrch                                                        ; 3fef: 20 ee ff     .. ; Write character 2
+    jsr OSWRCH                                                        ; 3fef: 20 ee ff     .. ; Write character 2
     ; print message
     ldy #6                                                            ; 3ff2: a0 06       ..
 .print_score_loop
     lda score_digits_0,y                                              ; 3ff4: b9 28 00    .(.
-    jsr oswrch                                                        ; 3ff7: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 3ff7: 20 ee ff     .. ; Write character
     dey                                                               ; 3ffa: 88          .
     bpl print_score_loop                                              ; 3ffb: 10 f7       ..
     rts                                                               ; 3ffd: 60          `
@@ -10458,14 +10458,14 @@ osbyte  = &fff4
     lda #osword_read_clock                                            ; 3ffe: a9 01       ..
     ldx #<wait_clock_read_value                                       ; 4000: a2 17       ..
     ldy #>wait_clock_read_value                                       ; 4002: a0 40       .@
-    jsr osword                                                        ; 4004: 20 f1 ff     .. ; Read system clock
+    jsr OSWORD                                                        ; 4004: 20 f1 ff     .. ; Read system clock
     lda wait_clock_read_value                                         ; 4007: ad 17 40    ..@
     cmp #5                                                            ; 400a: c9 05       ..
     bcc wait                                                          ; 400c: 90 f0       ..
     lda #osword_write_clock                                           ; 400e: a9 02       ..
     ldx #<wait_clock_write_value                                      ; 4010: a2 1c       ..
     ldy #>wait_clock_write_value                                      ; 4012: a0 40       .@
-    jmp osword                                                        ; 4014: 4c f1 ff    L.. ; Write system clock
+    jmp OSWORD                                                        ; 4014: 4c f1 ff    L.. ; Write system clock
 
 .wait_clock_read_value
     equb 0, 0, 0, 0, 0                                                ; 4017: 00 00 00... ... ; Five byte clock value (low byte to high byte)
@@ -10528,7 +10528,7 @@ osbyte  = &fff4
     lda #osword_sound                                                 ; 407a: a9 07       ..
     bit suppress_sound_flag                                           ; 407c: 24 41       $A
     bmi skip_sound                                                    ; 407e: 30 03       0.
-    jsr osword                                                        ; 4080: 20 f1 ff     .. ; SOUND command
+    jsr OSWORD                                                        ; 4080: 20 f1 ff     .. ; SOUND command
 .skip_sound
     ldx remember_x                                                    ; 4083: a6 3e       .>
     ldy remember_y                                                    ; 4085: a4 3f       .?
@@ -10847,7 +10847,7 @@ routine_addr_high = opcode1+2
 .print_x_spaces_loop
     ; print character 32 repeatedly
     lda #&20                                                          ; 429c: a9 20       .
-    jsr oswrch                                                        ; 429e: 20 ee ff     .. ; Write character 32
+    jsr OSWRCH                                                        ; 429e: 20 ee ff     .. ; Write character 32
     dex                                                               ; 42a1: ca          .
     bne print_x_spaces_loop                                           ; 42a2: d0 f8       ..
     ; print message
@@ -10855,17 +10855,17 @@ routine_addr_high = opcode1+2
 .print_room_name_loop
     lda current_room_cache,y                                          ; 42a6: b9 00 04    ...
     bmi print_room_name_final_character                               ; 42a9: 30 06       0.
-    jsr oswrch                                                        ; 42ab: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 42ab: 20 ee ff     .. ; Write character
     iny                                                               ; 42ae: c8          .
     bne print_room_name_loop                                          ; 42af: d0 f5       ..
 .print_room_name_final_character
     and #&7f                                                          ; 42b1: 29 7f       ).
-    jsr oswrch                                                        ; 42b3: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 42b3: 20 ee ff     .. ; Write character
 .print_spaces_to_end_of_line
     lda #&20                                                          ; 42b6: a9 20       .
-    jsr oswrch                                                        ; 42b8: 20 ee ff     .. ; Write character 32
+    jsr OSWRCH                                                        ; 42b8: 20 ee ff     .. ; Write character 32
     lda #osbyte_read_text_cursor_pos                                  ; 42bb: a9 86       ..
-    jsr osbyte                                                        ; 42bd: 20 f4 ff     .. ; Read input cursor position (Sets X=POS and Y=VPOS)
+    jsr OSBYTE                                                        ; 42bd: 20 f4 ff     .. ; Read input cursor position (Sets X=POS and Y=VPOS)
     cpx #0                                                            ; 42c0: e0 00       .. ; X is the horizontal text position ('POS')
     bne print_spaces_to_end_of_line                                   ; 42c2: d0 f2       ..
     rts                                                               ; 42c4: 60          `
@@ -11603,7 +11603,7 @@ screen_addr_high = opcode10+2
 .skip_store_player_sprite
     jsr check_ZXShift_keys                                            ; 4706: 20 39 48     9H
     lda #osbyte_vsync                                                 ; 4709: a9 13       ..
-    jsr osbyte                                                        ; 470b: 20 f4 ff     .. ; Wait for vertical sync
+    jsr OSBYTE                                                        ; 470b: 20 f4 ff     .. ; Wait for vertical sync
     ldx player_x                                                      ; 470e: a6 1a       ..
     ldy player_y                                                      ; 4710: a4 1b       ..
     lda player_sprite                                                 ; 4712: a5 1c       ..
@@ -11749,11 +11749,11 @@ screen_addr_high = opcode10+2
     sta temp_counter                                                  ; 4807: 85 3a       .:
     ; Position text cursor at (15,X)
     lda #&1f                                                          ; 4809: a9 1f       ..
-    jsr oswrch                                                        ; 480b: 20 ee ff     .. ; Write character 31
+    jsr OSWRCH                                                        ; 480b: 20 ee ff     .. ; Write character 31
     lda #&0f                                                          ; 480e: a9 0f       ..
-    jsr oswrch                                                        ; 4810: 20 ee ff     .. ; Write character 15
+    jsr OSWRCH                                                        ; 4810: 20 ee ff     .. ; Write character 15
     txa                                                               ; 4813: 8a          .
-    jsr oswrch                                                        ; 4814: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 4814: 20 ee ff     .. ; Write character
     jsr print_decimal_number                                          ; 4817: 20 71 3e     q>
     lda #3                                                            ; 481a: a9 03       ..
     jsr check_play_sound_a                                            ; 481c: 20 65 40     e@
@@ -11959,7 +11959,7 @@ screen_addr_high = opcode10+2
 .read_key
     lda #osbyte_inkey                                                 ; 4954: a9 81       ..
     ldy #&ff                                                          ; 4956: a0 ff       ..
-    jmp osbyte                                                        ; 4958: 4c f4 ff    L.. ; Read a specific key (or read machine type)
+    jmp OSBYTE                                                        ; 4958: 4c f4 ff    L.. ; Read a specific key (or read machine type)
 
 ; ***************************************************************************************
 .draw_arrows
@@ -11997,7 +11997,7 @@ screen_addr_high = opcode10+2
 ; ***************************************************************************************
 .update_all_arrows
     lda #osbyte_vsync                                                 ; 498b: a9 13       ..
-    jsr osbyte                                                        ; 498d: 20 f4 ff     .. ; Wait for vertical sync
+    jsr OSBYTE                                                        ; 498d: 20 f4 ff     .. ; Wait for vertical sync
     lda number_of_arrows_in_flight                                    ; 4990: a5 1f       ..
     sta arrow_loop_counter                                            ; 4992: 85 20       .
     beq return_24                                                     ; 4994: f0 22       ."
@@ -12261,12 +12261,12 @@ screen_addr_high = opcode10+2
 .update_key_count
     ; Position text cursor at (15,?)
     lda #&1f                                                          ; 4b45: a9 1f       ..
-    jsr oswrch                                                        ; 4b47: 20 ee ff     .. ; Write character 31
+    jsr OSWRCH                                                        ; 4b47: 20 ee ff     .. ; Write character 31
     lda #&0f                                                          ; 4b4a: a9 0f       ..
-    jsr oswrch                                                        ; 4b4c: 20 ee ff     .. ; Write character 15
+    jsr OSWRCH                                                        ; 4b4c: 20 ee ff     .. ; Write character 15
     txa                                                               ; 4b4f: 8a          .
     inx                                                               ; 4b50: e8          .
-    jsr oswrch                                                        ; 4b51: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 4b51: 20 ee ff     .. ; Write character
     lda old_player_y,x                                                ; 4b54: b5 23       .#
     sta temp_counter                                                  ; 4b56: 85 3a       .:
     ldx current_room_cache + 4,y                                      ; 4b58: be 04 04    ...
@@ -12302,7 +12302,7 @@ screen_addr_high = opcode10+2
 .plot_updated_number
     jsr print_decimal_number                                          ; 4b8b: 20 71 3e     q>
     lda #&20                                                          ; 4b8e: a9 20       .
-    jmp oswrch                                                        ; 4b90: 4c ee ff    L.. ; Write character 32
+    jmp OSWRCH                                                        ; 4b90: 4c ee ff    L.. ; Write character 32
 
 ; ***************************************************************************************
 .start_new_room
@@ -12497,24 +12497,24 @@ screen_addr_high = opcode10+2
 
     lda #osbyte_enable_event                                          ; 4cc6: a9 0e       ..
     ldx #event_start_of_vertical_sync                                 ; 4cc8: a2 04       .. ; X=event number
-    jsr osbyte                                                        ; 4cca: 20 f4 ff     .. ; Enable 'Start of vertical sync' event (X=4)
+    jsr OSBYTE                                                        ; 4cca: 20 f4 ff     .. ; Enable 'Start of vertical sync' event (X=4)
     lda #osbyte_set_cursor_editing                                    ; 4ccd: a9 04       ..
     ldx #1                                                            ; 4ccf: a2 01       ..
-    jsr osbyte                                                        ; 4cd1: 20 f4 ff     .. ; Disable cursor editing (edit keys give ASCII 135-139) (X=1)
+    jsr OSBYTE                                                        ; 4cd1: 20 f4 ff     .. ; Disable cursor editing (edit keys give ASCII 135-139) (X=1)
     jsr show_keys_and_zero_score                                      ; 4cd4: 20 a0 3e     .>
     jsr set_colour_one_white                                          ; 4cd7: 20 84 50     .P
 .title_and_game_loop
     lda #osbyte_tape                                                  ; 4cda: a9 8c       ..
     ldy #0                                                            ; 4cdc: a0 00       ..
     ldx #12                                                           ; 4cde: a2 0c       ..
-    jsr osbyte                                                        ; 4ce0: 20 f4 ff     .. ; Select TAPE filing system at 1200 baud (X=12)
+    jsr OSBYTE                                                        ; 4ce0: 20 f4 ff     .. ; Select TAPE filing system at 1200 baud (X=12)
     lda #osbyte_clear_escape                                          ; 4ce3: a9 7c       .|
-    jsr osbyte                                                        ; 4ce5: 20 f4 ff     .. ; Clear escape condition
+    jsr OSBYTE                                                        ; 4ce5: 20 f4 ff     .. ; Clear escape condition
     jsr attract_loop                                                  ; 4ce8: 20 0d 4d     .M
     lda #osbyte_read_write_escape_break_effect                        ; 4ceb: a9 c8       ..
     ldy #0                                                            ; 4ced: a0 00       ..
     ldx #2                                                            ; 4cef: a2 02       ..
-    jsr osbyte                                                        ; 4cf1: 20 f4 ff     .. ; Write Set normal ESCAPE action, clear memory on BREAK, value X=2
+    jsr OSBYTE                                                        ; 4cf1: 20 f4 ff     .. ; Write Set normal ESCAPE action, clear memory on BREAK, value X=2
     jsr show_title_and_play_game                                      ; 4cf4: 20 86 4e     .N
     jsr wait_for_key                                                  ; 4cf7: 20 55 4e     UN
     lda #0                                                            ; 4cfa: a9 00       ..
@@ -12584,7 +12584,7 @@ screen_addr_high = opcode10+2
 ; ***************************************************************************************
 .wait_for_key
     lda #osbyte_clear_escape                                          ; 4e55: a9 7c       .|
-    jsr osbyte                                                        ; 4e57: 20 f4 ff     .. ; Clear escape condition
+    jsr OSBYTE                                                        ; 4e57: 20 f4 ff     .. ; Clear escape condition
     jsr check_for_key                                                 ; 4e5a: 20 78 4e     xN
     bcc wait_for_key                                                  ; 4e5d: 90 f6       ..
     jsr print_following_string                                        ; 4e5f: 20 4e 3e     N>
@@ -12600,7 +12600,7 @@ screen_addr_high = opcode10+2
     lda #osbyte_inkey                                                 ; 4e78: a9 81       ..
     ldx #0                                                            ; 4e7a: a2 00       ..
     ldy #0                                                            ; 4e7c: a0 00       ..
-    jmp osbyte                                                        ; 4e7e: 4c f4 ff    L.. ; Wait for a key press within 0 centiseconds
+    jmp OSBYTE                                                        ; 4e7e: 4c f4 ff    L.. ; Wait for a key press within 0 centiseconds
 
 .pull_and_reset
     pla                                                               ; 4e81: 68          h
@@ -12616,7 +12616,7 @@ screen_addr_high = opcode10+2
     lda #osword_read_clock                                            ; 4e8e: a9 01       ..
     ldx #<clock                                                       ; 4e90: a2 00       ..
     ldy #>clock                                                       ; 4e92: a0 0e       ..
-    jsr osword                                                        ; 4e94: 20 f1 ff     .. ; Read system clock
+    jsr OSWORD                                                        ; 4e94: 20 f1 ff     .. ; Read system clock
     lda clock                                                         ; 4e97: ad 00 0e    ...
     sta rnd_rom_addr_low                                              ; 4e9a: 85 38       .8
     lda clock + 1                                                     ; 4e9c: ad 01 0e    ...
@@ -12636,7 +12636,7 @@ screen_addr_high = opcode10+2
     lda #osbyte_read_write_escape_break_effect                        ; 4ebb: a9 c8       ..
     ldx #3                                                            ; 4ebd: a2 03       ..
     ldy #0                                                            ; 4ebf: a0 00       ..
-    jsr osbyte                                                        ; 4ec1: 20 f4 ff     .. ; Write Disable ESCAPE action, clear memory on BREAK, value X=3
+    jsr OSBYTE                                                        ; 4ec1: 20 f4 ff     .. ; Write Disable ESCAPE action, clear memory on BREAK, value X=3
     pla                                                               ; 4ec4: 68          h
     cmp #1                                                            ; 4ec5: c9 01       ..
     beq pull_and_reset                                                ; 4ec7: f0 b8       ..
@@ -12742,7 +12742,7 @@ screen_addr_high = opcode10+2
     lda #osbyte_read_adc_or_get_buffer_status                         ; 5032: a9 80       ..
     ldx #&fa                                                          ; 5034: a2 fa       ..
     ldy #&ff                                                          ; 5036: a0 ff       ..
-    jmp osbyte                                                        ; 5038: 4c f4 ff    L.. ; Read number of spaces remaining in sound channel 1 (X=250)
+    jmp OSBYTE                                                        ; 5038: 4c f4 ff    L.. ; Read number of spaces remaining in sound channel 1 (X=250)
 
 ; ***************************************************************************************
 .reset_rooms
@@ -12815,7 +12815,7 @@ screen_addr_high = opcode10+2
     equs &11, 1, &80 + &11                                            ; 509b: 11 01 91    ...
 
     lda #&80                                                          ; 509e: a9 80       ..
-    jmp oswrch                                                        ; 50a0: 4c ee ff    L.. ; Write character 128
+    jmp OSWRCH                                                        ; 50a0: 4c ee ff    L.. ; Write character 128
 
 ; ***************************************************************************************
 .set_inverse_colours
@@ -12823,7 +12823,7 @@ screen_addr_high = opcode10+2
     equs &11, 0, &80 + &11                                            ; 50a6: 11 00 91    ...
 
     lda #&81                                                          ; 50a9: a9 81       ..
-    jmp oswrch                                                        ; 50ab: 4c ee ff    L.. ; Write character 129
+    jmp OSWRCH                                                        ; 50ab: 4c ee ff    L.. ; Write character 129
 
 ; ***************************************************************************************
 .one_time_init
@@ -12844,19 +12844,19 @@ copy_highscores_dest_addr_high = opcode11+2
     ldx #<envelope1                                                   ; 50c4: a2 e8       ..
     ldy #>envelope1                                                   ; 50c6: a0 50       .P
     lda #osword_envelope                                              ; 50c8: a9 08       ..
-    jsr osword                                                        ; 50ca: 20 f1 ff     .. ; ENVELOPE command
+    jsr OSWORD                                                        ; 50ca: 20 f1 ff     .. ; ENVELOPE command
     ldx #<envelope2                                                   ; 50cd: a2 f6       ..
     ldy #>envelope2                                                   ; 50cf: a0 50       .P
     lda #osword_envelope                                              ; 50d1: a9 08       ..
-    jsr osword                                                        ; 50d3: 20 f1 ff     .. ; ENVELOPE command
+    jsr OSWORD                                                        ; 50d3: 20 f1 ff     .. ; ENVELOPE command
     ldx #<envelope3                                                   ; 50d6: a2 04       ..
     ldy #>envelope3                                                   ; 50d8: a0 51       .Q
     lda #osword_envelope                                              ; 50da: a9 08       ..
-    jsr osword                                                        ; 50dc: 20 f1 ff     .. ; ENVELOPE command
+    jsr OSWORD                                                        ; 50dc: 20 f1 ff     .. ; ENVELOPE command
     ldx #<envelope4                                                   ; 50df: a2 12       ..
     ldy #>envelope4                                                   ; 50e1: a0 51       .Q
     lda #osword_envelope                                              ; 50e3: a9 08       ..
-    jmp osword                                                        ; 50e5: 4c f1 ff    L.. ; ENVELOPE command
+    jmp OSWORD                                                        ; 50e5: 4c f1 ff    L.. ; ENVELOPE command
 
 .envelope1
     equb 1, 1, &f0, &fb, &fe, 5, 9, &38, &7e, 0, 0, &82, &7e, &7e     ; 50e8: 01 01 f0... ... ; Envelope Number (1-16) and rest of definition (14 bytes)
@@ -12990,13 +12990,13 @@ copy_highscores_dest_addr_high = opcode11+2
     sbc delta_x                                                       ; 5336: e5 05       ..
     asl a                                                             ; 5338: 0a          .
     adc #&0b                                                          ; 5339: 69 0b       i.
-    jsr oswrch                                                        ; 533b: 20 ee ff     .. ; finish positioning the cursor by setting the Y coordinate
+    jsr OSWRCH                                                        ; 533b: 20 ee ff     .. ; finish positioning the cursor by setting the Y coordinate
 ; input name routine
     lda #osbyte_clear_escape                                          ; 533e: a9 7c       .|
-    jsr osbyte                                                        ; 5340: 20 f4 ff     .. ; Clear escape condition
+    jsr OSBYTE                                                        ; 5340: 20 f4 ff     .. ; Clear escape condition
     lda #osbyte_flush_buffer                                          ; 5343: a9 15       ..
     ldx #buffer_keyboard                                              ; 5345: a2 00       .. ; X=buffer number
-    jsr osbyte                                                        ; 5347: 20 f4 ff     .. ; Flush the keyboard buffer (X=0)
+    jsr OSBYTE                                                        ; 5347: 20 f4 ff     .. ; Flush the keyboard buffer (X=0)
     ldx #0                                                            ; 534a: a2 00       ..
     stx player_y                                                      ; 534c: 86 1b       ..
 .input_name_loop
@@ -13026,7 +13026,7 @@ copy_highscores_dest_addr_high = opcode11+2
     beq input_name_loop                                               ; 537a: f0 d2       ..
     ldy player_x                                                      ; 537c: a4 1a       ..
     sta highscore_table_names,y                                       ; 537e: 99 00 06    ...
-    jsr oswrch                                                        ; 5381: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 5381: 20 ee ff     .. ; Write character
     inc player_x                                                      ; 5384: e6 1a       ..
     inc player_y                                                      ; 5386: e6 1b       ..
     bne input_name_loop                                               ; 5388: d0 c4       .. ; ALWAYS branch
@@ -13035,7 +13035,7 @@ copy_highscores_dest_addr_high = opcode11+2
     lda player_y                                                      ; 538a: a5 1b       ..
     beq input_name_loop                                               ; 538c: f0 c0       .. ; if no characters to delete then branch
     txa                                                               ; 538e: 8a          .
-    jsr oswrch                                                        ; 538f: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 538f: 20 ee ff     .. ; Write character
     lda #&20                                                          ; 5392: a9 20       .
     ldy player_x                                                      ; 5394: a4 1a       ..
     sta highscore_table_names - 1,y                                   ; 5396: 99 ff 05    ...
@@ -13093,7 +13093,7 @@ copy_highscores_dest_addr_high = opcode11+2
     ldx #&19                                                          ; 53e5: a2 19       ..
 .write_highscore_name_loop
     lda highscore_table_names,y                                       ; 53e7: b9 00 06    ...
-    jsr oswrch                                                        ; 53ea: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 53ea: 20 ee ff     .. ; Write character
     iny                                                               ; 53ed: c8          .
     dex                                                               ; 53ee: ca          .
     bne write_highscore_name_loop                                     ; 53ef: d0 f6       ..
@@ -13105,7 +13105,7 @@ copy_highscores_dest_addr_high = opcode11+2
     ldx #7                                                            ; 53fa: a2 07       ..
 .write_highscore_loop
     lda highscore_table_scores,y                                      ; 53fc: b9 fa 06    ...
-    jsr oswrch                                                        ; 53ff: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 53ff: 20 ee ff     .. ; Write character
     dey                                                               ; 5402: 88          .
     dex                                                               ; 5403: ca          .
     bne write_highscore_loop                                          ; 5404: d0 f6       ..

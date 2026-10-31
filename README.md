@@ -143,7 +143,7 @@ This defines BBC Micro OS specific constants, which resolves &ffe3 into a proper
 
 to give proper names for the remaining labels.
 
-`acorn.bbc()` (and `acorn.electron()`, `acorn.b_plus()`, `acorn.master()`) also comments the OS calls and the code that sets the OS vectors, and decodes the VDU sequences the code writes with OSWRCH, however A is set: e.g. `; Select mode 7` before `lda #22 : jsr oswrch : lda #7 : jsr oswrch`, `; Position text cursor at (X,Y)`, `; PLOT 69,640,512` or `; Print "Hi"`. Since a run of calls can start part way through a VDU sequence that earlier code started, the decoding is a heuristic: it takes the way of reading the characters that explains the most of them (zeros, as VDU 0 does nothing, count as more likely to be parameters), preferring fewer, longer commands.
+`acorn.bbc()` (and `acorn.electron()`, `acorn.b_plus()`, `acorn.master()`) names the OS calls in capitals, as Acorn's documentation does (`OSBYTE`, `OSWRCH`, `GSINIT` etc.; `config.set_upper_case_os_calls(False)` before it gives `osbyte` etc.). It also comments the OS calls and the code that sets the OS vectors, and decodes the VDU sequences the code writes with OSWRCH, however A is set: e.g. `; Select mode 7` before `lda #22 : jsr OSWRCH : lda #7 : jsr OSWRCH`, `; Position text cursor at (X,Y)`, `; PLOT 69,640,512` or `; Print "Hi"`. Since a run of calls can start part way through a VDU sequence that earlier code started, the decoding is a heuristic: it takes the way of reading the characters that explains the most of them (zeros, as VDU 0 does nothing, count as more likely to be parameters), preferring fewer, longer commands.
 
 ## Configuration reference
 
@@ -174,6 +174,7 @@ To change the configuration, add `import config` and call the following as neede
 | `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
 | `config.set_text_encoding(s)`                         | "ascii" | How bytes are shown as text: "ascii", "petscii" or "screen" (see [Text encodings](#text-encodings)). |
 | `config.set_redundant_instruction_comments(b)`        | True    | Comment 6502 and Z80 instructions whose results are never used, `; Redundant instruction?` (see below). |
+| `config.set_upper_case_os_calls(b)`                   | True    | Name the Acorn MOS's calls in capitals, e.g. `OSBYTE`, `OSWRCH`, `GSINIT`, or in lower case (`osbyte`). Set it before `acorn.bbc()` etc. |
 
 The CPU state is what py8dis knows for certain about the registers and flags after each instruction, from the code before it (back to a label, where code can come from elsewhere). It's used for comments (e.g. on OS calls) as well as shown. For the 6502, after a conditional branch that isn't taken its flag is known, and after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7b after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`). A branch to the next instruction says nothing.
 
@@ -834,10 +835,10 @@ The symbol file formats are:
 
 | `--symbols-format` | Example line          | For                                                                                   |
 | ------------------ | --------------------- | ------------------------------------------------------------------------------------- |
-| `plain` (default)  | `oswrch = &ffee`      | Reading, or converting to another format. In the assembler's hex syntax.               |
-| `vice`             | `al 00FFEE .oswrch`   | The VICE emulator's monitor, which loads it with `ll "file"` (as cc65's `ld65 -Ln` writes). |
-| `beebasm`          | `[{'oswrch':65518L}]` | Tools that read beebasm's symbol dump (`beebasm -d`).                                   |
-| `mame`             | `comadd ffee,oswrch`  | MAME's debugger, which runs it with `source file`, showing each name as a comment.      |
+| `plain` (default)  | `OSWRCH = &ffee`      | Reading, or converting to another format. In the assembler's hex syntax.               |
+| `vice`             | `al 00FFEE .OSWRCH`   | The VICE emulator's monitor, which loads it with `ll "file"` (as cc65's `ld65 -Ln` writes). |
+| `beebasm`          | `[{'OSWRCH':65518L}]` | Tools that read beebasm's symbol dump (`beebasm -d`).                                   |
+| `mame`             | `comadd ffee,OSWRCH`  | MAME's debugger, which runs it with `source file`, showing each name as a comment.      |
 
 Each name a label has is included (local label names as the asm uses them), but not constants or expressions such as `table+1`. Labels are by address. VICE and MAME can't take an address past the top of memory (such as `pydis_end`, for data that ends at &FFFF), so those names are left out of their files.
 

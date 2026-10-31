@@ -154,17 +154,17 @@ DOSBUF  = $0700
 HILISP  = $d700
 
 ; MOS entry points ($ffb3-$fff9)
-osfind  = $ffce
-osbput  = $ffd4
-osbget  = $ffd7
-osargs  = $ffda
-osfile  = $ffdd
-osrdch  = $ffe0
-osasci  = $ffe3
-oswrch  = $ffee
-osword  = $fff1
-osbyte  = $fff4
-oscli   = $fff7
+OSFIND  = $ffce
+OSBPUT  = $ffd4
+OSBGET  = $ffd7
+OSARGS  = $ffda
+OSFILE  = $ffdd
+OSRDCH  = $ffe0
+OSASCI  = $ffe3
+OSWRCH  = $ffee
+OSWORD  = $fff1
+OSBYTE  = $fff4
+OSCLI   = $fff7
 
     .org $8000
 
@@ -206,7 +206,7 @@ CRYON:
     cli                                            ; 8041: 58          X
     cld                                            ; 8042: d8          .
     lda #osbyte_read_high_order_address            ; 8043: a9 82       ..
-    jsr osbyte                                     ; 8045: 20 f4 ff     .. ; Find out if in tube ; Read the filing system 'machine high order address'
+    jsr OSBYTE                                     ; 8045: 20 f4 ff     .. ; Find out if in tube ; Read the filing system 'machine high order address'
     stx TUBE                                       ; 8048: 8e 01 04    ... ; X and Y contain the machine high order address (low, high)
     txa                                            ; 804b: 8a          .
     beq COLD                                       ; 804c: f0 03       ..
@@ -214,7 +214,7 @@ CRYON:
 
 COLD:
     lda #osbyte_read_oshwm                         ; 8051: a9 83       .. ; Find PAGE
-    jsr osbyte                                     ; 8053: 20 f4 ff     .. ; Read top of operating system RAM address (OSHWM)
+    jsr OSBYTE                                     ; 8053: 20 f4 ff     .. ; Read top of operating system RAM address (OSHWM)
     sty VECBOT                                     ; 8056: 8c 2b 04    .+. ; X and Y contain the address of OSHWM (low, high)
     cpx #0                                         ; 8059: e0 00       ..
     beq PBOUND                                     ; 805b: f0 03       ..
@@ -312,7 +312,7 @@ LOOP3:
     sta HILISP+2                                   ; 80f6: 8d 02 d7    ...
     ldx #<GOSTR                                    ; 80f9: a2 31       .1
     ldy #>GOSTR                                    ; 80fb: a0 82       ..
-    jsr oscli                                      ; 80fd: 20 f7 ff     ..
+    jsr OSCLI                                      ; 80fd: 20 f7 ff     ..
 
     ; General copy routine
 COPY:
@@ -414,7 +414,7 @@ OKCALL:
     lda #osbyte_read_tube_presence                 ; 817a: a9 ea       ..
     ldx #0                                         ; 817c: a2 00       ..
     ldy #$ff                                       ; 817e: a0 ff       ..
-    jsr osbyte                                     ; 8180: 20 f4 ff     .. ; Is there a tube? ; Read Tube present flag
+    jsr OSBYTE                                     ; 8180: 20 f4 ff     .. ; Is there a tube? ; Read Tube present flag
     txa                                            ; 8183: 8a          .  ; X=value of Tube present flag
     bne STLISP                                     ; 8184: d0 05       .. ; If so don't flag
     lda #COLDST                                    ; 8186: a9 00       ..
@@ -423,7 +423,7 @@ STLISP:
     pla                                            ; 818b: 68          h
     tax                                            ; 818c: aa          .  ; X=ROM number
     lda #osbyte_enter_language                     ; 818d: a9 8e       ..
-    jmp osbyte                                     ; 818f: 4c f4 ff    L.. ; Start up LISP ; Enter language ROM X
+    jmp OSBYTE                                     ; 818f: 4c f4 ff    L.. ; Start up LISP ; Enter language ROM X
 
 NOTLSP:
     ; pull A,Y,X from the stack
@@ -531,26 +531,26 @@ WARM:
     bne REBOOT                                     ; 8298: d0 1a       ..
     ldx #WRMOFF                                    ; 829a: a2 72       .r
     jsr MESSAH                                     ; 829c: 20 fc 84     ..
-    jsr osrdch                                     ; 829f: 20 e0 ff     .. ; Read a character from the current input stream
+    jsr OSRDCH                                     ; 829f: 20 e0 ff     .. ; Read a character from the current input stream
     and #$7f                                       ; 82a2: 29 7f       ).
     cmp #'C'                                       ; 82a4: c9 43       .C
     beq REBOOT                                     ; 82a6: f0 0c       ..
     cmp #'c'                                       ; 82a8: c9 63       .c
     beq REBOOT                                     ; 82aa: f0 08       ..
     lda #'W'                                       ; 82ac: a9 57       .W
-    jsr oswrch                                     ; 82ae: 20 ee ff     .. ; Write character 87
+    jsr OSWRCH                                     ; 82ae: 20 ee ff     .. ; Write character 87
     jmp INIT                                       ; 82b1: 4c b5 84    L..
 
 
     ; **** Reload from ROM
 REBOOT:
     lda #'C'                                       ; 82b4: a9 43       .C
-    jsr oswrch                                     ; 82b6: 20 ee ff     .. ; Write character 67
+    jsr OSWRCH                                     ; 82b6: 20 ee ff     .. ; Write character 67
     jsr CROUT                                      ; 82b9: 20 19 85     ..
     jsr CROUT                                      ; 82bc: 20 19 85     ..
     ldx #<LISTR                                    ; 82bf: a2 39       .9
     ldy #>LISTR                                    ; 82c1: a0 82       ..
-    jmp oscli                                      ; 82c3: 4c f7 ff    L..
+    jmp OSCLI                                      ; 82c3: 4c f7 ff    L..
 
 
     ; ******************************
@@ -935,7 +935,7 @@ INIT:
     sta brkv+1                                     ; 84bc: 8d 03 02    ...
 
     lda #osbyte_read_himem                         ; 84bf: a9 84       .. ; Find end of memory
-    jsr osbyte                                     ; 84c1: 20 f4 ff     .. ; Read top of user memory (HIMEM)
+    jsr OSBYTE                                     ; 84c1: 20 f4 ff     .. ; Read top of user memory (HIMEM)
     sty ARETOP                                     ; 84c4: 84 79       .y ; X and Y contain the address of HIMEM (low, high)
 
     ; **** Set up various values
@@ -984,7 +984,7 @@ MESSAG:
 OUT:
     ldy HANDLE                                     ; 850e: a4 13       .. ; to screen? ; Y=file handle
     beq OUTSCR                                     ; 8510: f0 03       ..
-    jmp osbput                                     ; 8512: 4c d4 ff    L.. ; Write a single byte A to an open file Y
+    jmp OSBPUT                                     ; 8512: 4c d4 ff    L.. ; Write a single byte A to an open file Y
 
 OUTSCR:
     cmp #$0d                                       ; 8515: c9 0d       ..
@@ -992,7 +992,7 @@ OUTSCR:
 CROUT:
     lda #$0d                                       ; 8519: a9 0d       ..
 NCR:
-    jmp osasci                                     ; 851b: 4c e3 ff    L.. ; Print the char ; Write newline (characters 10 and 13)
+    jmp OSASCI                                     ; 851b: 4c e3 ff    L.. ; Print the char ; Write newline (characters 10 and 13)
 
 
     ; ******************************
@@ -1030,7 +1030,7 @@ KBCHK:
     ldx #<IODCB                                    ; 8547: a2 16       ..
     ldy #>IODCB                                    ; 8549: a0 04       ..
     lda #osword_read_io_memory                     ; 854b: a9 05       ..
-    jsr osword                                     ; 854d: 20 f1 ff     .. ; Read byte of I/O processor memory
+    jsr OSWORD                                     ; 854d: 20 f1 ff     .. ; Read byte of I/O processor memory
     lda #$80                                       ; 8550: a9 80       ..
     and IODCB+4                                    ; 8552: 2d 1a 04    -..
     rts                                            ; 8555: 60          `
@@ -1366,7 +1366,7 @@ GTCHAR:
     bpl REOLD                                      ; 8777: 10 03       .. ; ALWAYS branch
 
 RENEW:
-    jsr osbget                                     ; 8779: 20 d7 ff     .. ; Read a single byte from an open file Y
+    jsr OSBGET                                     ; 8779: 20 d7 ff     .. ; Read a single byte from an open file Y
 REOLD:
     sta LSCHAR                                     ; 877c: 8d 30 04    .0.
     rts                                            ; 877f: 60          `
@@ -1386,14 +1386,14 @@ KEYCH:
 PRDEPT:
     beq READON                                     ; 878f: f0 08       ..
     lda #'['                                       ; 8791: a9 5b       .[
-    jsr oswrch                                     ; 8793: 20 ee ff     .. ; Write character 91
+    jsr OSWRCH                                     ; 8793: 20 ee ff     .. ; Write character 91
     dex                                            ; 8796: ca          .
     bpl PRDEPT                                     ; 8797: 10 f6       ..
 READON:
     ldx #<INCB                                     ; 8799: a2 3e       .>
     ldy #>INCB                                     ; 879b: a0 82       ..
     lda #osword_read_line                          ; 879d: a9 00       ..
-    jsr osword                                     ; 879f: 20 f1 ff     .. ; Read line ; Read line from input stream (exits with C=1 if ESCAPE pressed)
+    jsr OSWORD                                     ; 879f: 20 f1 ff     .. ; Read line ; Read line from input stream (exits with C=1 if ESCAPE pressed)
     bcc OKLINE                                     ; 87a2: 90 09       ..
 RDCHER:
     brk                                            ; 87a4: 00          .  ; Escape
@@ -2252,10 +2252,10 @@ EOF:
     tay                                            ; 8cb0: a8          .  ; Y=file handle
     ldx #ACL                                       ; 8cb1: a2 72       .r ; Put pointer into ACL ; X=zero page address for result
     lda #0                                         ; 8cb3: a9 00       ..
-    jsr osargs                                     ; 8cb5: 20 da ff     .. ; Get sequential file pointer into zero page address X (A=0)
+    jsr OSARGS                                     ; 8cb5: 20 da ff     .. ; Get sequential file pointer into zero page address X (A=0)
     ldx #ARGINF                                    ; 8cb8: a2 90       .. ; File extent ; X=zero page address for result
     lda #2                                         ; 8cba: a9 02       ..
-    jsr osargs                                     ; 8cbc: 20 da ff     .. ; Get length of file into zero page address X (A=2)
+    jsr OSARGS                                     ; 8cbc: 20 da ff     .. ; Get length of file into zero page address X (A=2)
     ldx #2                                         ; 8cbf: a2 02       ..
 EOFCP:
     lda ACL,x                                      ; 8cc1: b5 72       .r
@@ -2276,7 +2276,7 @@ CLOS:
     lda (ARGA),y                                   ; 8cd5: b1 3a       .:
     tay                                            ; 8cd7: a8          .
     lda #osfind_close                              ; 8cd8: a9 00       .. ; Close file (A lost)
-    jsr osfind                                     ; 8cda: 20 ce ff     .. ; Close one or all files
+    jsr OSFIND                                     ; 8cda: 20 ce ff     .. ; Close one or all files
     jmp NO                                         ; 8cdd: 4c 2d 83    L-.
 
 
@@ -2612,7 +2612,7 @@ MVDU:
     sta ARG+1                                      ; 8eae: 85 31       .1
     ldy #2                                         ; 8eb0: a0 02       ..
     lda (ARG),y                                    ; 8eb2: b1 30       .0 ; LS byte of arg
-    jsr oswrch                                     ; 8eb4: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                     ; 8eb4: 20 ee ff     .. ; Write character
     inx                                            ; 8eb7: e8          .
     inx                                            ; 8eb8: e8          .
     cpx TVSEXT                                     ; 8eb9: e4 33       .3
@@ -2712,7 +2712,7 @@ MINUSP:
 SETDCB:
     jsr MKNAM                                      ; 8f1f: 20 52 90     R. ; Pointer to name
     lda #osbyte_read_high_order_address            ; 8f22: a9 82       .. ; m/c higher order addr
-    jsr osbyte                                     ; 8f24: 20 f4 ff     .. ; Read the filing system 'machine high order address'
+    jsr OSBYTE                                     ; 8f24: 20 f4 ff     .. ; Read the filing system 'machine high order address'
     lda #0                                         ; 8f27: a9 00       ..
     sta OSINFO+6                                   ; 8f29: 8d 3e 04    .>.
     lda #AREEXT                                    ; 8f2c: a9 00       .. ; Load & save addr
@@ -2740,7 +2740,7 @@ LOAD:
     lda #osfile_load                               ; 8f5f: a9 ff       .. ; Load operation
     ldx #<OSINFO                                   ; 8f61: a2 38       .8
     ldy #>OSINFO                                   ; 8f63: a0 04       ..
-    jsr osfile                                     ; 8f65: 20 dd ff     .. ; Load named file (if XY+6 contains 0, use specified address) (A=255)
+    jsr OSFILE                                     ; 8f65: 20 dd ff     .. ; Load named file (if XY+6 contains 0, use specified address) (A=255)
 INUREL:
     lda #AREEXT                                    ; 8f68: a9 00       .. ; Set up base
     sta RELBS                                      ; 8f6a: 85 7a       .z
@@ -2758,7 +2758,7 @@ DUMP:
     lda #osfile_save                               ; 8f80: a9 00       .. ; Save
     ldx #<OSINFO                                   ; 8f82: a2 38       .8
     ldy #>OSINFO                                   ; 8f84: a0 04       ..
-    jsr osfile                                     ; 8f86: 20 dd ff     .. ; Save a block of memory (returning file length and attributes) (A=0)
+    jsr OSFILE                                     ; 8f86: 20 dd ff     .. ; Save a block of memory (returning file length and attributes) (A=0)
     jmp POP                                        ; 8f89: 4c 3a 83    L:.
 
 CHARQ:
@@ -2926,7 +2926,7 @@ MORLEZ:
 STARRY:
     ldx #<DOSBUF                                   ; 908e: a2 00       ..
     ldy #>DOSBUF                                   ; 9090: a0 07       ..
-    jsr oscli                                      ; 9092: 20 f7 ff     ..
+    jsr OSCLI                                      ; 9092: 20 f7 ff     ..
     jmp NO                                         ; 9095: 4c 2d 83    L-.
 
 
@@ -2944,7 +2944,7 @@ WOPEN:
 ROPEN:
     ldx OSINFO                                     ; 90a8: ae 38 04    .8.
     ldy OSINFO+1                                   ; 90ab: ac 39 04    .9.
-    jsr osfind                                     ; 90ae: 20 ce ff     .. ; Open or close file(s)
+    jsr OSFIND                                     ; 90ae: 20 ce ff     .. ; Open or close file(s)
     cmp #0                                         ; 90b1: c9 00       ..
     beq FNERR                                      ; 90b3: f0 09       ..
     sta ACL                                        ; 90b5: 85 72       .r
@@ -3803,7 +3803,7 @@ GETCHA:
     jmp POST                                       ; 9611: 4c 29 96    L).
 
 GETDIR:
-    jsr osrdch                                     ; 9614: 20 e0 ff     .. ; Read a character from the current input stream
+    jsr OSRDCH                                     ; 9614: 20 e0 ff     .. ; Read a character from the current input stream
     bcc POST                                       ; 9617: 90 10       ..
     brk                                            ; 9619: 00          .
 
@@ -4044,14 +4044,14 @@ MODCHN:
     sta MODEF                                      ; 9790: 8d 2a 04    .*. ; Clear flag bit
     pha                                            ; 9793: 48          H
     lda #osbyte_read_high_order_address            ; 9794: a9 82       ..
-    jsr osbyte                                     ; 9796: 20 f4 ff     .. ; M/c HO addr. ; Read the filing system 'machine high order address'
+    jsr OSBYTE                                     ; 9796: 20 f4 ff     .. ; M/c HO addr. ; Read the filing system 'machine high order address'
     cpy #$ff                                       ; 9799: c0 ff       .. ; X and Y contain the machine high order address (low, high)
     bne CHANGE                                     ; 979b: d0 2c       ., ; In 2nd processor?
     pla                                            ; 979d: 68          h
     pha                                            ; 979e: 48          H
     tax                                            ; 979f: aa          .  ; X=MODE number
     lda #osbyte_read_himem_for_mode                ; 97a0: a9 85       ..
-    jsr osbyte                                     ; 97a2: 20 f4 ff     .. ; Read top of user memory for a given screen mode X
+    jsr OSBYTE                                     ; 97a2: 20 f4 ff     .. ; Read top of user memory for a given screen mode X
     cpy AREVAL+1                                   ; 97a5: cc 2e 04    ... ; Room for OBLIST? ; X and Y contain the address (low, high)
     bcc MODERR                                     ; 97a8: 90 07       ..
     bne CHARE                                      ; 97aa: d0 19       ..
@@ -4070,9 +4070,9 @@ CHARE:
 CHANGE:
     ; Select mode ?
     lda #$16                                       ; 97c9: a9 16       .. ; Change mode
-    jsr oswrch                                     ; 97cb: 20 ee ff     .. ; Write character 22
+    jsr OSWRCH                                     ; 97cb: 20 ee ff     .. ; Write character 22
     pla                                            ; 97ce: 68          h
-    jmp oswrch                                     ; 97cf: 4c ee ff    L.. ; Write character
+    jmp OSWRCH                                     ; 97cf: 4c ee ff    L.. ; Write character
 
 
     ; **** USR
@@ -4198,7 +4198,7 @@ MORSOU:
 ENTOSW:
     ldx #<OSWBUF                                   ; 9881: a2 00       ..
     ldy #>OSWBUF                                   ; 9883: a0 06       ..
-    jsr osword                                     ; 9885: 20 f1 ff     ..
+    jsr OSWORD                                     ; 9885: 20 f1 ff     ..
     jmp YES                                        ; 9888: 4c 31 83    L1.
 
 
@@ -4257,7 +4257,7 @@ STCLK:
 ZERTIM:
     ldy #>TIMZER                                   ; 98ca: a0 82       ..
     ldx #<TIMZER                                   ; 98cc: a2 76       .v
-    jsr osword                                     ; 98ce: 20 f1 ff     ..
+    jsr OSWORD                                     ; 98ce: 20 f1 ff     ..
     ldx #$76                                       ; 98d1: a2 76       .v ; Restore pointer
     ldy #$82                                       ; 98d3: a0 82       ..
     rts                                            ; 98d5: 60          `
@@ -4277,7 +4277,7 @@ TIMER:
     lda #osword_read_clock                         ; 98e0: a9 01       ..
     ldx #<TIMEW                                    ; 98e2: a2 25       .%
     ldy #>TIMEW                                    ; 98e4: a0 04       ..
-    jsr osword                                     ; 98e6: 20 f1 ff     .. ; Read system clock
+    jsr OSWORD                                     ; 98e6: 20 f1 ff     .. ; Read system clock
     ldx #<TIMEW                                    ; 98e9: a2 25       .% ; Restore pointer
     ldy #>TIMEW                                    ; 98eb: a0 04       ..
     rts                                            ; 98ed: 60          `
@@ -4366,7 +4366,7 @@ PVAL:
     lda #osword_read_pixel                         ; 9980: a9 09       ..
     ldx #<PWORD                                    ; 9982: a2 1b       ..
     ldy #>PWORD                                    ; 9984: a0 04       ..
-    jsr osword                                     ; 9986: 20 f1 ff     .. ; Read pixel value
+    jsr OSWORD                                     ; 9986: 20 f1 ff     .. ; Read pixel value
     jsr ALNUM                                      ; 9989: 20 3d 84     =.
     ldy #2                                         ; 998c: a0 02       ..
     ldx #0                                         ; 998e: a2 00       ..
@@ -4392,7 +4392,7 @@ ADVAL:
     lda (ARGA),y                                   ; 99ab: b1 3a       .:
     tay                                            ; 99ad: a8          .
     lda #osbyte_read_adc_or_get_buffer_status      ; 99ae: a9 80       ..
-    jsr osbyte                                     ; 99b0: 20 f4 ff     .. ; Read buffer status or ADC channel
+    jsr OSBYTE                                     ; 99b0: 20 f4 ff     .. ; Read buffer status or ADC channel
     tya                                            ; 99b3: 98          .
     clc                                            ; 99b4: 18          .
     adc #$80                                       ; 99b5: 69 80       i. ; Make range +/-2^15
@@ -4418,7 +4418,7 @@ INKEY:
     lda (ARGA),y                                   ; 99d4: b1 3a       .:
     tay                                            ; 99d6: a8          .
     lda #osbyte_inkey                              ; 99d7: a9 81       ..
-    jsr osbyte                                     ; 99d9: 20 f4 ff     .. ; Read key within time limit, or read a specific key, or read machine type
+    jsr OSBYTE                                     ; 99d9: 20 f4 ff     .. ; Read key within time limit, or read a specific key, or read machine type
     ldy #2                                         ; 99dc: a0 02       ..
     bcs INKER                                      ; 99de: b0 0b       ..
     txa                                            ; 99e0: 8a          .
@@ -4443,7 +4443,7 @@ INKEY2:
     pla                                            ; 99fa: 68          h
     tay                                            ; 99fb: a8          .
     lda #osbyte_inkey                              ; 99fc: a9 81       ..
-    jsr osbyte                                     ; 99fe: 20 f4 ff     .. ; Read key within time limit, or read a specific key, or read machine type
+    jsr OSBYTE                                     ; 99fe: 20 f4 ff     .. ; Read key within time limit, or read a specific key, or read machine type
     tya                                            ; 9a01: 98          .
     bmi INKYES                                     ; 9a02: 30 03       0.
     jmp NO                                         ; 9a04: 4c 2d 83    L-.
@@ -5073,7 +5073,7 @@ NOMESC:
     lda #osword_read_interval_timer                ; 9dcc: a9 03       ..
     ldx #<TIMEW                                    ; 9dce: a2 25       .%
     ldy #>TIMEW                                    ; 9dd0: a0 04       ..
-    jsr osword                                     ; 9dd2: 20 f1 ff     .. ; Read interval timer
+    jsr OSWORD                                     ; 9dd2: 20 f1 ff     .. ; Read interval timer
     clc                                            ; 9dd5: 18          .
     ldy #0                                         ; 9dd6: a0 00       ..
     ldx #5                                         ; 9dd8: a2 05       ..
@@ -5208,7 +5208,7 @@ NULBOW:
 ERRORS:
 ERROR:
     lda #osbyte_acknowledge_escape                 ; 9e87: a9 7e       .~ ; Ack escape
-    jsr osbyte                                     ; 9e89: 20 f4 ff     .. ; Clear escape condition and perform escape effects
+    jsr OSBYTE                                     ; 9e89: 20 f4 ff     .. ; Clear escape condition and perform escape effects
     clc                                            ; 9e8c: 18          .  ; Increment error count
     lda ERRCNT                                     ; 9e8d: a5 0d       ..
     adc #1                                         ; 9e8f: 69 01       i.
@@ -5242,7 +5242,7 @@ TRCOK:
     stx HANDLE                                     ; 9ebd: 86 13       ..
     ; Enable paged mode
     lda #$0e                                       ; 9ebf: a9 0e       .. ; Page mode
-    jsr oswrch                                     ; 9ec1: 20 ee ff     .. ; Write character 14
+    jsr OSWRCH                                     ; 9ec1: 20 ee ff     .. ; Write character 14
     lda #$18                                       ; 9ec4: a9 18       .. ; Mask for LEVEL
     sta TOPBIN                                     ; 9ec6: 85 0f       ..
     lda #4                                         ; 9ec8: a9 04       .. ; Error
@@ -5270,7 +5270,7 @@ DWARF=NERRC-1
     bcc WINDER                                     ; 9ef0: 90 0c       .. ; stack completely
     ; Disable paged mode
     lda #$0f                                       ; 9ef2: a9 0f       ..
-    jsr oswrch                                     ; 9ef4: 20 ee ff     .. ; Page mode off ; Write character 15
+    jsr OSWRCH                                     ; 9ef4: 20 ee ff     .. ; Page mode off ; Write character 15
     lda OLDLEV                                     ; 9ef7: a5 97       ..
     sta LEVEL                                      ; 9ef9: 85 1a       .. ; Old LEVEL
     jmp SUPER                                      ; 9efb: 4c c6 82    L.. ; Restart
@@ -5313,7 +5313,7 @@ QZQ:
     sta ACL                                        ; 9f32: 85 72       .r
     ; Disable paged mode
     lda #$0f                                       ; 9f34: a9 0f       ..
-    jsr oswrch                                     ; 9f36: 20 ee ff     .. ; Page mode off ; Write character 15
+    jsr OSWRCH                                     ; 9f36: 20 ee ff     .. ; Page mode off ; Write character 15
     jmp ACLRET                                     ; 9f39: 4c a4 92    L.. ; POP via ACLRET
 
 SLIP:

@@ -30,5 +30,5 @@ $202c  pydis_end (inline)
 $fe00  crtc_address_register (Memory locations)
     $2028     crtc_substitution_test+2     sta crtc_address_register
 
-$ffee  oswrch (Memory locations)
-    $200b     print_loop+5                 jsr oswrch
+$ffee  OSWRCH (Memory locations)
+    $200b     print_loop+5                 jsr OSWRCH

@@ -12,4 +12,4 @@ al 002042 .decimal_digits
 al 002045 .print_hex_number
 al 002050 .print_hex_digit
 al 002059 .pydis_end
-al 00FFEE .oswrch
+al 00FFEE .OSWRCH

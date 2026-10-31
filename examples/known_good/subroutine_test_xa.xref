@@ -41,7 +41,7 @@ $2050  print_hex_digit (inline)
 $2059  pydis_end (inline)
     (not referenced)
 
-$ffee  oswrch (Memory locations: MOS entry points)
-    $2015     print_loop+3                 jsr oswrch
-    $203a     found_digit+2                jsr oswrch
-    $2056     print_hex_digit+6            jmp oswrch
+$ffee  OSWRCH (Memory locations: MOS entry points)
+    $2015     print_loop+3                 jsr OSWRCH
+    $203a     found_digit+2                jsr OSWRCH
+    $2056     print_hex_digit+6            jmp OSWRCH
