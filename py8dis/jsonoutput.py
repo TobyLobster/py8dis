@@ -381,7 +381,12 @@ def _tree(value):
 def _expr(value, binary_addr=None, number=None, bits=8):
     """An expression for the JSON: its text and tree. A number that isn't
     given by an expression (i.e. it's text made by a formatter, see
-    classification.get_constant8()) is the number at binary_addr, 'number'."""
+    classification.get_constant8()) is the number at binary_addr, 'number'.
+    An operand wrapped for the assembler's context (e.g. the 8080's, which
+    z88dk-z80asm would take to be in brackets if it started with one) is
+    given as it is without that, as the Z80's are."""
+    if isinstance(value, expression.InContext):
+        value = value.value
     text = str(value)
     if binary_addr is not None and binary_addr not in session.current().classifications.expressions and not isinstance(value, (expression.Expr, utils.LazyString)):
         tree = { "num": number }

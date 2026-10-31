@@ -123,7 +123,7 @@ Each has `binary_addr`, `runtime_addr` and `move_id` (when not 0), and `labels` 
 
 ## Expressions
 
-An expression is `{"text": ..., "tree": ...}`: the text as in the asm, and the expression as a tree. The tree's nodes are:
+An expression is `{"text": ..., "tree": ...}`: the text as in the asm (but without what the assembler needs only for the operand's place in the instruction, e.g. the unary plus z88dk-z80asm gets before an 8080 or Z80 operand that starts with a bracket, as in `ld b,+(count+1)*2`, whose text is `(count+1)*2`), and the expression as a tree. The tree's nodes are:
 
 | Node | Example |
 |---|---|
