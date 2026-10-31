@@ -200,8 +200,8 @@ def set_upper_case_os_calls(b):
     """Name the OS's calls in capitals, as the manufacturer's documentation
     does: the Acorn MOS's (e.g. OSBYTE, OSWRCH, GSINIT) and the Commodore
     Kernal's (e.g. CHROUT, SETLFS), and Commodore's other names, from its
-    source (see commodore.location_names()); or in lower case (e.g. osbyte,
-    chrout). py8dis's descriptive names (e.g. 'tape_buffer') are in lower
+    source (see commodore.location_names()), and CP/M's BDOS and its
+    functions (e.g. C_WRITESTR); or in lower case (e.g. osbyte, chrout). py8dis's descriptive names (e.g. 'tape_buffer') are in lower
     case either way. Call it before acorn.bbc(), commodore.c64() etc.,
     which name them."""
     if session.current().extras.get("os_calls_named"):

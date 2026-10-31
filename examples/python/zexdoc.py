@@ -5,11 +5,13 @@ to try it with and the CRC expected. Its labels are from the symbol file pasmo
 made when it was rebuilt (orig/zexdoc/zexdoc.sym)."""
 
 from commands import *
+import cpm
 
 load(0x0100, "orig/zexdoc.orig", "z80", "be3691b6b910d2c2e05e194cd529e45c")
 
-# CP/M (the program's own 'bdos' routine saves the registers and calls this)
-label(0x0000, "warm_boot")
+# CP/M's page zero and BDOS calls (the program's own 'bdos' routine saves the
+# registers and calls the BDOS, so the BDOS's entry point is 'cpm_bdos')
+cpm.cpm()
 label(0x0005, "cpm_bdos")
 
 # The labels from the symbol file: each line is 'name EQU 0xxxxH'
@@ -20,6 +22,7 @@ for line in open("orig/zexdoc/zexdoc.sym"):
     label(int(value[:-1], 16), name)
 
 entry(0x0100)
+cpm.bdos_wrapper(addr("bdos"))
 
 # Called only by debugging code that isn't assembled
 entry(addr("hexstr"))
@@ -34,9 +37,6 @@ expr(0x1b37, make_add("iut", 1))
 comment(addr("flgmsk"), "The operand is the flag mask (self-modified code)", inline=True)
 expr(0x1ae9, make_add("flgmsk", 1))
 
-# The top of the memory for programs is the address of CP/M's BDOS
-expr(0x0114, make_add("cpm_bdos", 1))
-
 # The 'ld de,nnnn', 'ld hl,nnnn' and 'ld sp,nnnn' instructions that load the
 # address of the program's data or messages
 for instruction in (0x0117, 0x011f, 0x012f, 0x1af1, 0x1afd, 0x1b03, 0x1b0a, 0x1b12,
@@ -45,6 +45,9 @@ for instruction in (0x0117, 0x011f, 0x012f, 0x1af1, 0x1afd, 0x1b03, 0x1b0a, 0x1b
               0x1d6c, 0x1e35, 0x1e59, 0x1e74):
     expr(instruction + 1, names[get_u16_runtime(instruction + 1)])
 expr(0x1d34, make_add("msbt", 2))
+
+# The top of the memory for programs is the address of CP/M's BDOS
+expr(0x0114, make_add("cpm_bdos", 1))
 
 msbt = addr("msbt")
 

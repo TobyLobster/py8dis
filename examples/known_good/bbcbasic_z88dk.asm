@@ -1,8 +1,19 @@
+; Constants
+C_RAWIO     equ 6
+F_CLOSE     equ 16
+F_DELETE    equ 19
+F_DMAOFF    equ 26
+F_ERRMODE   equ 45
+F_MAKE      equ 22
+F_OPEN      equ 15
+F_SFIRST    equ 17
+F_SIZE      equ 35
+F_WRITEZF   equ 40
+L_WRITE     equ 5
+
 ; Memory locations
-warm_boot   equ $00
-bdos        equ $05
-l0006       equ $06
-l005c       equ $5c
+BDOS        equ $05
+default_fcb equ $5c
 
     org $0100
 
@@ -8821,8 +8832,8 @@ save1_cpm:
     pop bc                                                            ; 340d: c1          .
 ; $340e referenced 3 times by $345a, $3460, $34b6
 close_cpm:
-    ld a,$10                                                          ; 340e: 3e 10       >.
-    call bdos1                                                        ; 3410: cd e2 35    ..5
+    ld a,F_CLOSE                                                      ; 340e: 3e 10       >.
+    call bdos1                                                        ; 3410: cd e2 35    ..5 ; Close the file whose FCB is at DE
     inc a                                                             ; 3413: 3c          <
     ret nz                                                            ; 3414: c0          .
     ld a,$c8                                                          ; 3415: 3e c8       >.
@@ -9053,8 +9064,8 @@ getext:
     ex de,hl                                                          ; 3562: eb          .
     ex (sp),hl                                                        ; 3563: e3          .
     ex de,hl                                                          ; 3564: eb          .
-    ld a,$23                                                          ; 3565: 3e 23       >#
-    call bdos1                                                        ; 3567: cd e2 35    ..5
+    ld a,F_SIZE                                                       ; 3565: 3e 23       >#
+    call bdos1                                                        ; 3567: cd e2 35    ..5 ; Get the size of the file whose FCB is at DE
     pop hl                                                            ; 356a: e1          .
     xor a                                                             ; 356b: af          .
     jr getpt1                                                         ; 356c: 18 06       ..
@@ -9185,7 +9196,7 @@ bdos0:
     push ix                                                           ; 35fc: dd e5       ..
     push iy                                                           ; 35fe: fd e5       ..
     ld c,a                                                            ; 3600: 4f          O
-    call bdos                                                         ; 3601: cd 05 00    ...
+    call BDOS                                                         ; 3601: cd 05 00    ...
     inc h                                                             ; 3604: 24          $
     dec h                                                             ; 3605: 25          %
     pop iy                                                            ; 3606: fd e1       ..
@@ -9198,8 +9209,8 @@ bdos0:
 ; $360e referenced 4 times by $3401, $344d, $35aa, $35ba
 write:
     call setdma                                                       ; 360e: cd 6c 36    .l6
-    ld a,$28                                                          ; 3611: 3e 28       >(
-    call bdos1                                                        ; 3613: cd e2 35    ..5
+    ld a,F_WRITEZF                                                    ; 3611: 3e 28       >(
+    call bdos1                                                        ; 3613: cd e2 35    ..5 ; Write a random record, with zero fill, of the file whose FCB is at DE
     jr z,incsec                                                       ; 3616: 28 0f       (.
     ld a,$c6                                                          ; 3618: 3e c6       >.
     call exterr                                                       ; 361a: cd 1a 08    ...
@@ -9220,20 +9231,20 @@ incs1:
 
 ; $3632 referenced 2 times by $348c, $34c4
 open:
-    ld de,$5c                                                         ; 3632: 11 5c 00    .\.
-    ld a,$0f                                                          ; 3635: 3e 0f       >.
-    call bdos1                                                        ; 3637: cd e2 35    ..5
+    ld de,default_fcb                                                 ; 3632: 11 5c 00    .\.
+    ld a,F_OPEN                                                       ; 3635: 3e 0f       >.
+    call bdos1                                                        ; 3637: cd e2 35    ..5 ; Open the file whose FCB is at DE
     inc a                                                             ; 363a: 3c          <
     ret                                                               ; 363b: c9          .
 
 ; $363c referenced 2 times by $33e8, $34c1
 create_cpm:
     call chkamb                                                       ; 363c: cd 4e 36    .N6
-    ld de,$5c                                                         ; 363f: 11 5c 00    .\.
-    ld a,$13                                                          ; 3642: 3e 13       >.
-    call bdos1                                                        ; 3644: cd e2 35    ..5
-    ld a,$16                                                          ; 3647: 3e 16       >.
-    call bdos1                                                        ; 3649: cd e2 35    ..5
+    ld de,default_fcb                                                 ; 363f: 11 5c 00    .\.
+    ld a,F_DELETE                                                     ; 3642: 3e 13       >.
+    call bdos1                                                        ; 3644: cd e2 35    ..5 ; Delete the files matching the FCB at DE
+    ld a,F_MAKE                                                       ; 3647: 3e 16       >.
+    call bdos1                                                        ; 3649: cd e2 35    ..5 ; Create the file whose FCB is at DE
     inc a                                                             ; 364c: 3c          <
     ret                                                               ; 364d: c9          .
 
@@ -9260,9 +9271,9 @@ ambig:
 
 ; $366c referenced 4 times by $35dd, $360e, $3815, $3868
 setdma:
-    ld a,$1a                                                          ; 366c: 3e 1a       >.
+    ld a,F_DMAOFF                                                     ; 366c: 3e 1a       >.
     ex de,hl                                                          ; 366e: eb          .
-    call bdos0                                                        ; 366f: cd f9 35    ..5
+    call bdos0                                                        ; 366f: cd f9 35    ..5 ; Set the DMA address (for reading and writing records) to DE
     ex de,hl                                                          ; 3672: eb          .
     ret                                                               ; 3673: c9          .
 
@@ -9521,7 +9532,7 @@ res:
 
 drv:
     call setup0                                                       ; 37c5: cd 9a 36    ..6
-    ld a,(l005c)                                                      ; 37c8: 3a 5c 00    :\.
+    ld a,(default_fcb)                                                ; 37c8: 3a 5c 00    :\.
     dec a                                                             ; 37cb: 3d          =
     jp m,huh                                                          ; 37cc: fa 01 38    ..8
     ld e,a                                                            ; 37cf: 5f          _
@@ -9566,9 +9577,9 @@ huh:
 exists:
     ld hl,$80                                                         ; 3812: 21 80 00    !..
     call setdma                                                       ; 3815: cd 6c 36    .l6
-    ld de,$5c                                                         ; 3818: 11 5c 00    .\.
-    ld a,$11                                                          ; 381b: 3e 11       >.
-    call bdos1                                                        ; 381d: cd e2 35    ..5
+    ld de,default_fcb                                                 ; 3818: 11 5c 00    .\.
+    ld a,F_SFIRST                                                     ; 381b: 3e 11       >.
+    call bdos1                                                        ; 381d: cd e2 35    ..5 ; Search for the first file matching the FCB at DE
     inc a                                                             ; 3820: 3c          <
     ret z                                                             ; 3821: c8          .
     ld a,$c4                                                          ; 3822: 3e c4       >.
@@ -9637,7 +9648,7 @@ dir1:
     ld c,$12                                                          ; 3888: 0e 12       ..
     jr nz,dir1                                                        ; 388a: 20 d3        .
     push bc                                                           ; 388c: c5          .
-    ld a,(l005c)                                                      ; 388d: 3a 5c 00    :\.
+    ld a,(default_fcb)                                                ; 388d: 3a 5c 00    :\.
     dec a                                                             ; 3890: 3d          =
     ld c,$19                                                          ; 3891: 0e 19       ..
     call m,bdc                                                        ; 3893: fc fc 37    ..7
@@ -9803,9 +9814,9 @@ ptext_cpm:
 
 ; $399c referenced 1 time by $0144
 osinit:
-    ld c,$2d                                                          ; 399c: 0e 2d       .-
+    ld c,F_ERRMODE                                                    ; 399c: 0e 2d       .-
     ld e,$fe                                                          ; 399e: 1e fe       ..
-    call bdos                                                         ; 39a0: cd 05 00    ...
+    call BDOS                                                         ; 39a0: cd 05 00    ... ; Set the BDOS error mode to return and display errors
     ld b,$15                                                          ; 39a3: 06 15       ..
     ld hl,$3c03                                                       ; 39a5: 21 03 3c    !.<
 ; $39a8 referenced 1 time by $39aa
@@ -9824,7 +9835,7 @@ clrtab:
 noboot:
     ex de,hl                                                          ; 39b9: eb          .
     ld (hl),$0d                                                       ; 39ba: 36 0d       6.
-    ld de,(l0006)                                                     ; 39bc: ed 5b 06... .[.
+    ld de,(BDOS+1)                                                    ; 39bc: ed 5b 06... .[.
     ld e,a                                                            ; 39c0: 5f          _
     ld hl,$4000                                                       ; 39c1: 21 00 40    !.@
     ret                                                               ; 39c4: c9          .
@@ -9853,9 +9864,9 @@ test20:
 ; $39dc referenced 1 time by $3a60
 test_cpm:
     push de                                                           ; 39dc: d5          .
-    ld a,6                                                            ; 39dd: 3e 06       >.
+    ld a,C_RAWIO                                                      ; 39dd: 3e 06       >.
     ld e,$ff                                                          ; 39df: 1e ff       ..
-    call bdos0                                                        ; 39e1: cd f9 35    ..5
+    call bdos0                                                        ; 39e1: cd f9 35    ..5 ; Read a character from the console without echoing it (0 if none)
     pop de                                                            ; 39e4: d1          .
     or a                                                              ; 39e5: b7          .
     ret z                                                             ; 39e6: c8          .
@@ -9932,9 +9943,9 @@ escdis:
 getkey:
     push bc                                                           ; 3a3f: c5          .
     push hl                                                           ; 3a40: e5          .
-    ld c,6                                                            ; 3a41: 0e 06       ..
+    ld c,C_RAWIO                                                      ; 3a41: 0e 06       ..
     ld e,$ff                                                          ; 3a43: 1e ff       ..
-    call bdos                                                         ; 3a45: cd 05 00    ...
+    call BDOS                                                         ; 3a45: cd 05 00    ... ; Read a character from the console without echoing it (0 if none)
     pop hl                                                            ; 3a48: e1          .
     pop bc                                                            ; 3a49: c1          .
     or a                                                              ; 3a4a: b7          .
@@ -10000,8 +10011,8 @@ wrch1:
     call bdos0                                                        ; 3a91: cd f9 35    ..5
     ld hl,$3c13                                                       ; 3a94: 21 13 3c    !.<
     bit 2,(hl)                                                        ; 3a97: cb 56       .V
-    ld a,5                                                            ; 3a99: 3e 05       >.
-    call nz,bdos0                                                     ; 3a9b: c4 f9 35    ..5
+    ld a,L_WRITE                                                      ; 3a99: 3e 05       >.
+    call nz,bdos0                                                     ; 3a9b: c4 f9 35    ..5 ; Write the character in E to the printer
     bit 1,(hl)                                                        ; 3a9e: cb 4e       .N
     ret z                                                             ; 3aa0: c8          .
     res 1,(hl)                                                        ; 3aa1: cb 8e       ..
@@ -10421,6 +10432,9 @@ pydis_end:
 ; ASSERT ((cos_fpp) == $2a23)
 ; ASSERT ((countv) == $2199)
 ; ASSERT ((decode) == $2450)
+; ASSERT ((default_fcb) == $5c)
+; ASSERT ((default_fcb) == $5c)
+; ASSERT ((default_fcb) == $5c)
 ; ASSERT ((deg_eval) == $2222)
 ; ASSERT ((deg_fpp) == $2957)
 ; ASSERT ((delete_main) == $063b)
@@ -10723,7 +10737,7 @@ pydis_end:
 ;     x2:            4
 ;     xeq0_exec:     4
 ;     zero_eval:     4
-;     bdos:          3
+;     BDOS:          3
 ;     bind:          3
 ;     ccolor:        3
 ;     close_cpm:     3
@@ -10805,6 +10819,7 @@ pydis_end:
 ;     corn:          2
 ;     create_cpm:    2
 ;     decode:        2
+;     default_fcb:   2
 ;     del:           2
 ;     delete_cpm:    2
 ;     delim:         2
@@ -10863,7 +10878,6 @@ pydis_end:
 ;     input3:        2
 ;     inputn:        2
 ;     instr1:        2
-;     l005c:         2
 ;     ld16:          2
 ;     lex:           2
 ;     lex1:          2
@@ -11186,7 +11200,6 @@ pydis_end:
 ;     item2:         1
 ;     jpix:          1
 ;     keyget:        1
-;     l0006:         1
 ;     ld8:           1
 ;     lda:           1
 ;     ldin:          1
@@ -11466,8 +11479,6 @@ pydis_end:
 
 ; Automatically generated labels:
 ;     c0fba
-;     l0006
-;     l005c
 ;     l0157
 
 ; Stats:

@@ -1,6 +1,10 @@
 ; Assemble with sjasmplus, to a plain binary:
 ;     sjasmplus --nologo --raw=program.bin this_file.asm
 
+; Constants
+C_WRITE     equ 2
+C_WRITESTR  equ 9
+
 ; Memory locations
 warm_boot   equ $00
 cpm_bdos    equ $05
@@ -22,8 +26,8 @@ start:
     ld hl,(cpm_bdos + 1)                                              ; 0113: 2a 06 00    *..
     ld sp,hl                                                          ; 0116: f9          .
     ld de,msg1                                                        ; 0117: 11 da 1d    ...
-    ld c,9                                                            ; 011a: 0e 09       ..
-    call bdos                                                         ; 011c: cd ce 1d    ...
+    ld c,C_WRITESTR                                                   ; 011a: 0e 09       ..
+    call bdos                                                         ; 011c: cd ce 1d    ... ; Print the string at DE, up to a '$'
     ld hl,tests                                                       ; 011f: 21 3a 01    !:.
 ; $0122 referenced 1 time by $012c
 loop:
@@ -38,8 +42,8 @@ loop:
 ; $012f referenced 1 time by $0125
 done:
     ld de,msg2                                                        ; 012f: 11 f6 1d    ...
-    ld c,9                                                            ; 0132: 0e 09       ..
-    call bdos                                                         ; 0134: cd ce 1d    ...
+    ld c,C_WRITESTR                                                   ; 0132: 0e 09       ..
+    call bdos                                                         ; 0134: cd ce 1d    ... ; Print the string at DE, up to a '$'
     jp warm_boot                                                      ; 0137: c3 00 00    ...
 
 tests:
@@ -1218,8 +1222,8 @@ stt:
     ld de,$2c                                                         ; 1b1a: 11 2c 00    .,.
     add hl,de                                                         ; 1b1d: 19          .
     ex de,hl                                                          ; 1b1e: eb          .
-    ld c,9                                                            ; 1b1f: 0e 09       ..
-    call bdos                                                         ; 1b21: cd ce 1d    ...
+    ld c,C_WRITESTR                                                   ; 1b1f: 0e 09       ..
+    call bdos                                                         ; 1b21: cd ce 1d    ... ; Print the string at DE, up to a '$'
     call initcrc                                                      ; 1b24: cd 71 1e    .q.
 ; $1b27 referenced 1 time by $1ba1
 tlp:
@@ -1246,19 +1250,19 @@ tlp2:
     ld de,okmsg                                                       ; 1b4f: 11 05 1e    ...
     jp z,tlpok                                                        ; 1b52: ca 71 1b    .q.
     ld de,ermsg1                                                      ; 1b55: 11 0c 1e    ...
-    ld c,9                                                            ; 1b58: 0e 09       ..
-    call bdos                                                         ; 1b5a: cd ce 1d    ...
+    ld c,C_WRITESTR                                                   ; 1b58: 0e 09       ..
+    call bdos                                                         ; 1b5a: cd ce 1d    ... ; Print the string at DE, up to a '$'
     call phex8                                                        ; 1b5d: cd 99 1d    ...
     ld de,ermsg2                                                      ; 1b60: 11 27 1e    .'.
-    ld c,9                                                            ; 1b63: 0e 09       ..
-    call bdos                                                         ; 1b65: cd ce 1d    ...
+    ld c,C_WRITESTR                                                   ; 1b63: 0e 09       ..
+    call bdos                                                         ; 1b65: cd ce 1d    ... ; Print the string at DE, up to a '$'
     ld hl,crcval                                                      ; 1b68: 21 85 1e    !..
     call phex8                                                        ; 1b6b: cd 99 1d    ...
     ld de,crlf                                                        ; 1b6e: 11 2f 1e    ./.
 ; $1b71 referenced 1 time by $1b52
 tlpok:
-    ld c,9                                                            ; 1b71: 0e 09       ..
-    call bdos                                                         ; 1b73: cd ce 1d    ...
+    ld c,C_WRITESTR                                                   ; 1b71: 0e 09       ..
+    call bdos                                                         ; 1b73: cd ce 1d    ... ; Print the string at DE, up to a '$'
     pop hl                                                            ; 1b76: e1          .
     inc hl                                                            ; 1b77: 23          #
     inc hl                                                            ; 1b78: 23          #
@@ -1689,8 +1693,8 @@ phex1:
 ph11:
     add a,$30                                                         ; 1dc1: c6 30       .0
     ld e,a                                                            ; 1dc3: 5f          _
-    ld c,2                                                            ; 1dc4: 0e 02       ..
-    call bdos                                                         ; 1dc6: cd ce 1d    ...
+    ld c,C_WRITE                                                      ; 1dc4: 0e 02       ..
+    call bdos                                                         ; 1dc6: cd ce 1d    ... ; Write the character in E to the console
     pop hl                                                            ; 1dc9: e1          .
     pop de                                                            ; 1dca: d1          .
     pop bc                                                            ; 1dcb: c1          .

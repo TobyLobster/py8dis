@@ -6,6 +6,7 @@
 - [Command/function reference](#commandfunction-reference)
 - [Commodore 64, VIC-20, C128, Plus/4, PET and 1541](#commodore-64-vic-20-c128-plus4-pet-and-1541)
 - [ZX Spectrum](#zx-spectrum)
+- [CP/M](#cpm)
 - [JSON output](#json-output)
 - [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
 - [Getting help](#getting-help)
@@ -177,7 +178,7 @@ To change the configuration, add `import config` and call the following as neede
 | `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
 | `config.set_text_encoding(s)`                         | "ascii" | How bytes are shown as text: "ascii", "petscii" or "screen" (see [Text encodings](#text-encodings)). |
 | `config.set_redundant_instruction_comments(b)`        | True    | Comment 6502 and Z80 instructions whose results are never used, `; Redundant instruction?` (see below). |
-| `config.set_upper_case_os_calls(b)`                   | True    | Name the OS's calls in capitals, as the manufacturer's documentation does: the Acorn MOS's (`OSBYTE`, `OSWRCH`, `GSINIT`) and Commodore's Kernal's (`CHROUT`), with Commodore's other names (see [Commodore](#commodore-64-vic-20-c128-plus4-pet-and-1541)); or in lower case (`osbyte`, `chrout`). Set it before `acorn.bbc()`, `commodore.c64()` etc. |
+| `config.set_upper_case_os_calls(b)`                   | True    | Name the OS's calls in capitals, as the manufacturer's documentation does: the Acorn MOS's (`OSBYTE`, `OSWRCH`, `GSINIT`) and Commodore's Kernal's (`CHROUT`), with Commodore's other names (see [Commodore](#commodore-64-vic-20-c128-plus4-pet-and-1541)), and CP/M's `BDOS` and its functions (`C_WRITESTR`, see [CP/M](#cpm)); or in lower case (`osbyte`, `chrout`). Set it before `acorn.bbc()`, `commodore.c64()`, `cpm.cpm()` etc. |
 
 The CPU state is what py8dis knows for certain about the registers and flags after each instruction, from the code before it (back to a label, where code can come from elsewhere). It's used for comments (e.g. on OS calls) as well as shown. For the 6502, after a conditional branch that isn't taken its flag is known, and after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7b after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`). A branch to the next instruction says nothing.
 
@@ -809,6 +810,32 @@ For disassembling the 48K ROM itself (loaded at 0, after `spectrum48()`): traces
 
 For a ROM with the same kinds of table at other addresses (e.g. a replacement ROM), the functions `rom()` uses for them are there to call: `spectrum.offset_table(addr, n)` (offsets to routines, e.g. `defb L0A5F - $`), `spectrum.keyed_offset_table(addr, n=None)` (pairs of a character and an offset, ending with a zero), `spectrum.offset_entry(addr, code=True)`, `spectrum.syntax_table(addr, routine_classes=(0, 3, 5), last_classes=(2, 7, 11))` (a command's parameter classes, ending with the address of its routine or not) and `spectrum.stringhi_list(addr, end)` (text, each item ending with a character with bit 7 set). See examples/python/opense.py, for OpenSE BASIC.
 
+## CP/M
+
+`cpm.cpm()` does the same for a CP/M program (Z80 or 8080 code, so load it with the CPU `"z80"` or `"8080"`; call it after `load()`):
+
+```python
+from commands import *
+import cpm
+
+load(0x0100, "program.com", "z80")
+cpm.cpm()
+entry(0x0100)
+go()
+```
+
+It gives:
+
+* **Names for page zero**, output only if used: `warm_boot`, `iobyte`, `current_drive`, the BDOS's entry point `BDOS` (with `BDOS+1` for the address of the BDOS, the top of the memory for programs, e.g. `ld hl,(BDOS+1)`), `default_fcb` and `second_fcb` (the file names in the command) and `default_dma` (the command's tail, and the default DMA buffer), with e.g. `default_fcb+1` for the bytes after them.
+* **Calls to the BDOS** (`call BDOS`, or a jump, conditional or not) commented with what the function does when its number in C is known, e.g. `call BDOS ; Print the string at DE, up to a '$'`, or `Write 'A' to the console` when E is known too. The `ld c,n` that sets C is given the function's name, as a constant: `ld c,C_WRITESTR`. The names are those of Digital Research's CP/M 3 documentation (see [seasip.info](https://www.seasip.info/Cpm/bdos.html)), for the functions of CP/M 2.2 and CP/M 3.
+* **The address in DE** for the functions that take one (a string to print, a buffer for a line of input, a file control block or a DMA buffer), when it's loaded with `ld de,nn`, is written with its label: `ld de,default_fcb`. A string to print is marked as a `$` terminated string, and named `message` if it has no name yet; an FCB in the program is named `fcb`, a buffer `input_buffer` and a DMA buffer `dma_buffer`, if they have no name.
+
+The names `BDOS` and `C_WRITESTR` etc. are in capitals unless `config.set_upper_case_os_calls(False)` is used first (then `bdos` and `c_writestr`).
+
+:pencil:`cpm.bdos_wrapper(runtime_addr, register="c")`
+
+Says that the routine at `runtime_addr` calls the BDOS (e.g. one that saves the registers first), with the function number in the register, `"c"` (as the BDOS has it) or `"a"`, so that the calls to it are commented in the same way. See examples/python/bbcbasic.py and examples/python/cpm_8080.py.
+
 ## JSON output
 
 As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: for example a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
@@ -865,6 +892,7 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 * The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels (and the C128's and Plus/4's workspace) from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `commodoresource.py`, made by `tools/make_commodoresource.py`).
 * The PET's ROM labels and workspace are from Martin Hoffmann-Vetter's reconstructions of Commodore's source, in cbmsrc, and the 1541's DOS ROM labels and workspace from the reconstructions of its source there.
 * The ZX Spectrum's ROM routine names in `spectrumtables.py` are those of *The Complete Spectrum ROM Disassembly* (Ian Logan and Frank O'Hara, Melbourne House, 1983), with their addresses from Geoff Wearmouth's assembly listing of the ROM. The 48K ROM used as a test is copyright Amstrad plc, who have kindly given their permission for its redistribution but retain that copyright (see `examples/orig/spectrum48`).
+* The CP/M BDOS functions' names, in `cpm.py`, are Digital Research's, as listed in John Elliott's [CP/M information archive](https://www.seasip.info/Cpm/bdos.html).
 * The Z80 test programs are R.T. Russell's [BBC BASIC (Z80)](https://github.com/jblang/bbcbasic-z80) for CP/M (zlib licence; see `examples/orig/bbcbasic`), Frank D. Cringle's Z80 instruction exerciser [ZEXDOC](https://github.com/agn453/ZEXALL) (GPL 2; see `examples/orig/zexdoc`) and [OpenSE BASIC](https://zxdesign.itch.io/opense), a replacement ZX Spectrum ROM by Source Solutions, Inc. (GPL 2 or CC BY-SA 3.0; see `examples/orig/opense`).
 * The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).
 * The C128 test game is Sebastian Dechert's [memory128](https://github.com/radi0sus/memory128) (BSD 3-clause licence; see `examples/orig/memory128`).

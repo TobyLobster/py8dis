@@ -17,6 +17,7 @@ dd if=../orig/regression_tests.orig of=../orig/regression_tests2.orig bs=128 ski
 z88dk-z80asm -m8080 -b -o../orig/regression_tests_8080.orig regression_tests_8080.asm
 z88dk-z80asm -m8080 -b -o../orig/undocumented_8080.orig undocumented_8080.asm
 z88dk-z80asm -m8080 -b -o../orig/move_8080.orig move_8080.asm
+z88dk-z80asm -m8080 -b -o../orig/cpm_8080.orig cpm_8080.asm
 z88dk-z80asm -mz80 -b -o../orig/test_z80.orig test_z80.asm
 z88dk-z80asm -mz80 -b -o../orig/undocumented_z80.orig undocumented_z80.asm
 z88dk-z80asm -mz80 -b -o../orig/trace_z80.orig trace_z80.asm

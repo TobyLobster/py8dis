@@ -61,6 +61,7 @@ TESTS = [
     ("regression_tests_8080",    ["z88dk-8080"],               "regression tests for z88dk expression operators"),
     ("undocumented_8080",        ["z88dk-8080"],               "the 8080's undocumented opcodes, traced as what they run as and output as data"),
     ("move_8080",                ["z88dk-8080"],               "move() and include_binary_file() with z88dk-z80asm (PHASE and BINARY)"),
+    ("cpm_8080",                 ["z88dk-8080"],               "a CP/M program, with cpm.cpm(): BDOS calls, their function numbers, page zero, strings to print and FCBs"),
 
     # Z80 code
     ("test_z80",                 ["z88dk", "sjasmplus"],       "every documented Z80 instruction"),
@@ -70,8 +71,8 @@ TESTS = [
     ("spectrum48",               ["z88dk", "sjasmplus"],       "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
     ("spectrum_test",            ["z88dk", "sjasmplus"],       "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
     ("trace_z80",                ["z88dk", "sjasmplus"],       "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
-    ("bbcbasic",                 ["z88dk", "sjasmplus"],       "BBC BASIC (Z80) for CP/M, with labels from its map file, hooks for inline data and tables of routines"),
-    ("zexdoc",                   ["z88dk", "sjasmplus"],       "ZEXDOC, the Z80 instruction exerciser for CP/M: mostly tables, with self-modifying code"),
+    ("bbcbasic",                 ["z88dk", "sjasmplus"],       "BBC BASIC (Z80) for CP/M, with cpm.cpm(), labels from its map file, hooks for inline data and tables of routines"),
+    ("zexdoc",                   ["z88dk", "sjasmplus"],       "ZEXDOC, the Z80 instruction exerciser for CP/M, with cpm.cpm(): mostly tables, with self-modifying code"),
     ("opense",                   ["z88dk", "sjasmplus"],       "OpenSE BASIC, a replacement ZX Spectrum ROM, with spectrum.spectrum48() and the spectrum module's tables"),
 
     # 6502 code: tests
@@ -190,6 +191,9 @@ ERROR_TESTS = [
     ("sjasmplus_register_label", "sjasmplus doesn't accept 'hl' as a label, since it's a register's name: rename it"),
     ("sjasmplus_operator_label", "sjasmplus doesn't accept 'LOW' as a label, since it's an operator's name: rename it"),
     ("sjasmplus_long_label",    "sjasmplus doesn't accept 'a_label_name_that_is_much_too_long_for_sjasmplus_which_allows_64_chars' as a label, since it's longer than 64 characters: rename it"),
+    ("cpm_wrong_cpu",           "cpm.cpm(): call load(..., \"z80\") or load(..., \"8080\") first"),
+    ("cpm_wrapper_without_cpm", "cpm.bdos_wrapper(): call cpm.cpm() first"),
+    ("cpm_wrapper_bad_register", "cpm.bdos_wrapper($015a, 'b'): the register must be \"a\" or \"c\""),
     ("drive1541_bad_rom",       "commodore.drive1541(): rom must be one of '1541', '1541-ii', not '1571'"),
     ("drive1541_kernal_rom",    "commodore.kernal_rom(): the 1541 has no Kernal (use dos_rom())"),
     ("drive1541_code_in_drive", "commodore.drive1541_code(): this is already the 1541's disassembly (drive1541())"),

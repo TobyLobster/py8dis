@@ -3,12 +3,12 @@ a test of the Z80 on a large program. Its labels are from the map file
 z88dk-z80asm made when it was built (orig/bbcbasic/bbcbasic.map)."""
 
 from commands import *
+import cpm
 
 load(0x0100, "orig/bbcbasic.orig", "z80", "78fde24b36c65ab407df934fd8da3004")
 
-# CP/M
-label(0x0000, "warm_boot")
-label(0x0005, "bdos")
+# CP/M's page zero and BDOS calls
+cpm.cpm()
 
 # The labels from the map file: each line is 'NAME = $ADDR ; addr, ...,
 # module, ...' (a constant is 'const'). A name that's in more than one module
@@ -34,6 +34,11 @@ for name, addr in map_labels("orig/bbcbasic/bbcbasic.map"):
         optional_label(addr, name)
 
 entry(0x0100)
+
+# BDOS0 calls the BDOS with the function number in A, and BDOS1 calls BDOS0
+# and reports an error if there is one
+cpm.bdos_wrapper(0x35f9, "a")
+cpm.bdos_wrapper(0x35e2, "a")
 
 # The jump table after START, for the routines other code calls (WARM,
 # ESCAPE, EXTERR, TELL, TEXT, SETTOP, CLEAR, RUN0, OSCLI, OSBGET, OSBPUT,
