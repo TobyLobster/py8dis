@@ -1,49 +1,71 @@
 # py8dis
 
-## Table of contents
-- [Overview](#overview)
-- [Installation](#installation)
-- [Command/function reference](#commandfunction-reference)
-- [Commodore 64, VIC-20, C128, Plus/4, PET and 1541](#commodore-64-vic-20-c128-plus4-pet-and-1541)
-- [ZX Spectrum](#zx-spectrum)
-- [CP/M](#cpm)
-- [JSON output](#json-output)
-- [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)
+py8dis is a disassembler for 8-bit programs: it turns a machine code program back into assembly language that you can read, change and assemble again. It handles 6502, 65C02, 8080 and Z80 code, and knows about the BBC Micro and other Acorn machines, the Commodore 64 and other Commodore machines, the ZX Spectrum and CP/M.
+
+You don't run py8dis on a program directly. Instead you write a short Python script, a *control file*, that tells it about the program: where it's loaded, where the code starts, and, as you work out what the program does, the names of its routines and variables, which parts are data, and comments. Each time you run the control file you get a better disassembly. Because the control file is ordinary Python, you can do anything Python can to help, such as reading a table of names from a file.
+
+py8dis finds the code by *tracing* it: starting from the entry points you give, it follows every instruction, branch, jump and subroutine call it can reach. Everything it reaches is code, and everything else is data, which it searches for text. Its output assembles back to exactly the original program, so you can check your work, and change the program if you want to. It's written so that other 8-bit CPUs could be added without too much difficulty.
+
+## Contents
+
+- [Getting started](#getting-started)
+- [A first disassembly](#a-first-disassembly)
+- [Working on a disassembly](#working-on-a-disassembly)
+- [Assemblers](#assemblers)
+- [Command line options](#command-line-options)
+- [Machines](#machines)
+- [Examples](#examples)
+- [More documentation](#more-documentation)
 - [Getting help](#getting-help)
 - [Credits and thanks](#credits-and-thanks)
 
-## Overview
+## Getting started
 
-py8dis is a programmable static tracing disassembler written in Python. It can currently disassemble 6502, 65C02, 8080 and Z80 code, and could be extended without too much difficulty to other 8-bit CPUs in the future.
+py8dis needs [Python 3](https://www.python.org). There's nothing to install: download or clone this repository, and tell Python where py8dis's code is by setting `PYTHONPATH` to its `py8dis` folder. On Linux or macOS:
 
-## Installation
-
-There's no real installation process as such, but you'll probably want to set PYTHONPATH to the directory containing the py8dis code. On Unix-like systems, something like this:
-
-`export PYTHONPATH=/home/you/src/py8dis/py8dis`
-
-will probably do the trick. On Windows (warning: I haven't tried this) you probably want something like:
-
-`set PYTHONPATH=C:\Users\User\src\py8dis\py8dis`
-
-If you see errors like:
-
-`ImportError: No module named ...`
-
-when you try to run a disassembly, PYTHONPATH probably needs adjusting. You can work around this if you just do everything in one directory, i.e. put the Python code you write to control a disassembly in the same directory as the py8dis code (commands.py, trace.py, etc).
-
-## Demonstration / test
-
-There is a trivial "Hello, world!" program in the `examples` subdirectory which will allow you to check py8dis is working. It also serves as a starting point you can copy when creating your own disassemblies.
-
-If your PYTHONPATH is correct, you should be able to do:
 ``` sh
-cd examples
-python helloworld.py
-
+export PYTHONPATH=/home/you/src/py8dis/py8dis
 ```
 
-and a disassembly of helloworld.orig will be produced:
+or on Windows (this hasn't been tried):
+
+``` bat
+set PYTHONPATH=C:\Users\you\src\py8dis\py8dis
+```
+
+If you see an error like `ModuleNotFoundError: No module named 'commands'` when you run a control file, `PYTHONPATH` isn't right. (Another way round it is to keep your control files in the same folder as py8dis's code: `commands.py`, `trace.py` and so on.)
+
+You'll also want an assembler for the CPU (see [Assemblers](#assemblers)), to assemble the disassembly again.
+
+## A first disassembly
+
+The `examples` folder has a tiny "Hello, world!" program for the BBC Micro, `examples/orig/helloworld.orig`, and a control file for it, `examples/python/helloworld.py`:
+
+```python
+from commands import *
+
+# Load the program to be disassembled into the debugger's memory.
+# The md5sum is optional but helps avoid confusion if there are
+# multiple versions of the same program.
+load(0x2000, "orig/helloworld.orig", "6502", "ba85fca1feae301af81806d3102b0851")
+
+# Start tracing instructions at 0x2000.
+entry(0x2000)
+
+# Add extra commands here as the disassembly progresses...
+
+# Use all the information provided to actually disassemble the program.
+go()
+```
+
+That's the shape of every control file: `load()` the program, say where the code starts with `entry()`, and finish with `go()`. Run it from the `examples` folder:
+
+``` sh
+cd examples
+python3 python/helloworld.py
+```
+
+and it prints the disassembly:
 
 ```
 ; Memory locations
@@ -80,543 +102,134 @@ save pydis_start, pydis_end
 ;     l200e
 ;     lffe3
 ;     loop_c2002
-
-; Stats:
-;     Total size (Code + Data) = 28 bytes
-;     Code                     = 14 bytes (50%)
-;     Data                     = 14 bytes (50%)
-;
-;     Number of instructions   = 7
-;     Number of data bytes     = 1 bytes
-;     Number of data words     = 0 bytes
-;     Number of string bytes   = 13 bytes
-;     Number of strings        = 1
+...
 ```
 
-This output is suitable for feeding into the beebasm assembler. You can switch to produce output suitable for other assemblers:
+This is for the beebasm assembler, py8dis's default. Some things to notice:
 
-| assembler                                                 | CPUs supported | command line                    |
-| --------------------------------------------------------  | -------------- | ------------------------------- |
-| [acme](https://sourceforge.net/projects/acme-crossass/)   | 6502 / 65C02   | --acme                          |
-| [beebasm](https://github.com/stardot/beebasm)             | 6502 / 65C02   | --beebasm (this is the default) |
-| [xa](https://www.floodgap.com/retrotech/xa/)              | 6502 / 65C02   | --xa                            |
-| [64tass](https://sourceforge.net/projects/tass64/)        | 6502 / 65C02   | --64tass (or -t)                |
-| [ca65](https://cc65.github.io/doc/ca65.html)              | 6502 / 65C02   | --ca65 (or -c)                  |
-| [z88dk-z80asm](https://z88dk.org)                         | 8080 / Z80     | --z88dk (or -z)                 |
-| [sjasmplus](https://github.com/z00m128/sjasmplus)         | Z80            | --sjasmplus (or -s)             |
+- py8dis has made up names (*labels*) for the addresses the code uses: `l200e` for data at &200E, `loop_c2002` for a loop, and `lffe3` for an address outside the program. The list of "automatically generated labels" at the end is a to-do list of names to give.
+- The comment at the end of each line is its address and bytes (and the bytes as characters).
+- "referenced 1 time by &200b" says where a label is used from.
+- py8dis found the string "Hello, world!" by itself.
 
-64tass's output is assembled with `64tass -b`, which writes a plain binary (by default 64tass writes a two-byte load address first; for a PRG file loaded with `load_prg()`, py8dis's output already has one). 64tass looks for a file included with `.binary` (see `include_binary_file()`) relative to the asm file, so if that's elsewhere add `-I` with the folder it's relative to. 64tass takes a label starting with `_` to be local to the label before it, so py8dis stops with an error for one when writing 64tass output (rename it). (Tested with 64tass 1.59.3120.)
+## Working on a disassembly
 
-ca65 (from [cc65](https://cc65.github.io)) makes an object file, which its linker, ld65, makes into a binary with a configuration file, so the output starts with a comment saying how: `cl65 -t none -C ca65.cfg -o program.bin program.asm`, where `ca65.cfg` (as in `examples/ca65.cfg`) gives a plain binary of the bytes in order. The `-t none` matters: cl65's default target is the C64, whose character map would change the strings. ca65 doesn't accept a register's name (`a`, `x`, `y`), `z` or a mnemonic of the CPU as a label, so py8dis stops with an error for one when writing ca65 output (rename it). (Tested with ca65 V2.18, from Ubuntu's cc65 2.19.)
-
-z88dk-z80asm's output is assembled with `z88dk-z80asm -m8080 -b` for 8080 code, or `-mz80` for Z80 code. (`--z88dk-8080` and `-8`, the names before the Z80 was added, still work.) For the Z80 it assembles the undocumented instructions that use IXH, IXL, IYH and IYL (e.g. `ld ixh,a`), SLL, the indexed rotates, shifts, SET and RES that copy the result to a register (e.g. `rlc (ix+2),b`), `in f,(c)` and `out (c),0`. (Tested with z88dk-z80asm v2.4.)
-
-sjasmplus's output starts with a comment saying how to assemble it to a plain binary: `sjasmplus --nologo --raw=program.bin program.asm`. It's for the Z80 only, since sjasmplus has no Intel 8080 mnemonics. It assembles the same undocumented instructions as z88dk-z80asm; if `out (c),0` is used, the output turns off sjasmplus's warning for it (`OPT -Wno-out0`). A move (see `move()`) is a `DISP` block, the low and high bytes of an expression are `low x` and `high x`, and the assertions at the end are sjasmplus's `ASSERT`s, which it checks. sjasmplus doesn't accept a register's or condition's name (e.g. `hl`, `c`, `nz`), one of its operators that's a word (`and`, `or`, `xor`, `mod`, `low`, `high`, `not`, `shl`, `shr`, `abs`, `exist`, `sizeof`, `norel`, `pair`, `u16`, in any case), or a name longer than 64 characters as a label, so py8dis stops with an error for one when writing sjasmplus output (rename it). (Tested with sjasmplus v1.24.0, which isn't packaged for Ubuntu, but builds from [its source](https://github.com/z00m128/sjasmplus) on Linux and macOS with `make USE_LUA=0`.)
-
-Other command line options: `-o FILE` writes the output to a file instead of printing it, `--upper` or `--lower` choose the case of the output, `--json FILE` writes the disassembly as JSON as well (see [JSON output](#json-output)), and `--symbols FILE` (with `--symbols-format`) and `--xref FILE` write a symbol file and a cross-reference listing (see [Symbol files and cross-reference listings](#symbol-files-and-cross-reference-listings)).
-
-### Running the tests
-
-The `examples` directory also has py8dis's tests: control files in `examples/python`, the binaries they disassemble in `examples/orig`, and the output they should give in `examples/known_good`. To run them all and check the output:
-
-``` sh
-cd examples
-./run_tests.py -c
-```
-
-py8dis itself needs only Python 3. The tests also use these, when they're installed, and skip what needs them otherwise:
-
-- the assemblers (acme, beebasm, xa, 64tass, ca65, z88dk-z80asm and sjasmplus), to check that each disassembly assembles to the original binary;
-- the [jsonschema](https://pypi.org/project/jsonschema/) package (`pip install jsonschema`), to check the JSON output against its schema (see [JSON output](#json-output)). Without it, `run_tests.py -c` says so at the end.
-
-`./run_tests.py --help` describes the other options, e.g. running particular tests, and `-m` to make the known good output after a deliberate change.
-
-On GitHub, the tests are run on every push and pull request (`.github/workflows/tests.yml`), with Python 3.9 and 3.14 and all seven assemblers: acme, xa, 64tass and ca65 (cc65) from Ubuntu's packages, and beebasm, z88dk-z80asm and sjasmplus built from source (and cached). The results are on the repository's Actions tab.
-
-### Edit me
-
-The output of the hello world example can be improved. Load helloworld.py and add:
-
-    import acorn
-    acorn.bbc()
-
-This defines BBC Micro OS specific constants, which resolves &ffe3 into a proper label name. Add:
-
-    label(0x2002, "print_message_loop")
-    label(0x200e, "message")
-
-to give proper names for the remaining labels.
-
-`acorn.bbc()` (and `acorn.electron()`, `acorn.b_plus()`, `acorn.master()`) names the OS calls in capitals, as Acorn's documentation does (`OSBYTE`, `OSWRCH`, `GSINIT` etc.; `config.set_upper_case_os_calls(False)` before it gives `osbyte` etc.). It also comments the OS calls and the code that sets the OS vectors, and decodes the VDU sequences the code writes with OSWRCH, however A is set: e.g. `; Select mode 7` before `lda #22 : jsr OSWRCH : lda #7 : jsr OSWRCH`, `; Position text cursor at (X,Y)`, `; PLOT 69,640,512` or `; Print "Hi"`. Since a run of calls can start part way through a VDU sequence that earlier code started, the decoding is a heuristic: it takes the way of reading the characters that explains the most of them (zeros, as VDU 0 does nothing, count as more likely to be parameters), preferring fewer, longer commands.
-
-## Configuration reference
-
-To change the configuration, add `import config` and call the following as needed:
-
-| Functions                                             | Default | Notes                                                            |
-| ----------------------------------------------------- | :-----: | ---------------------------------------------------------------- |
-| `config.set_lower_case(b)`                            | True    | Set output to be upper or lower case.                            |
-| `config.set_hex_dump(b)`                              | True    | Show or hide hex dump output.                                    |
-| `config.set_label_references(b)`                      | True    | Show or hide output of label references.                         |
-| `config.set_inline_comment_column(n)`                 | 70      | Specify the character column where inline comments start.        |
-| `config.set_word_wrap_comment_column(n)`              | 87      | Specify the character column where word wrapping occurs.         |
-| `config.set_indent_string(s)`                         | " "*4   | Set the string (usually spaces) for one indent level.            |
-| `config.set_indent_loops(b)`                          | False   | Set whether looping code is indented or not.                     |
-| `config.set_blank_line_at_block_end(b)`               | True    | Add a blank line at the end of a block of data.                  |
-| `config.set_loop_limit(i)`                            | 32      | Set the maximum number of bytes that counts as a loop.           |
-| `config.set_show_cpu_state(b)`                        | False   | Show or hide the output for the CPU state.                       |
-| `config.set_show_autogenerated_labels(b)`             | True    | Show or hide a list of the autogenerated labels.                 |
-| `config.set_show_char_literals(b)`                    | True    | Show or hide character literals comments.                        |
-| `config.set_show_all_labels(b)`                       | False   | Show or hide a list of all labels used (for debugging py8dis).   |
-| `config.set_hex_dump_max_bytes(i)`                    | 3       | Set the number of hex bytes output on a single line.             |
-| `config.set_show_cycles(b)`                           | False   | Show the number of cycles taken by each instruction.             |
-| `config.set_subroutine_header(s)`                     | "*"*87  | A dividing line at the start of a subroutine comment.            |
-| `config.set_subroutine_footer(s)`                     | "*"*87  | A dividing line at the end of a subroutine comment.              |
-| `config.set_include_assertions(b)`                    | True    | Include assertions at end of output to detect misuse of expr().  |
-| `config.set_label_return_instructions_numerically(b)` | True    | Gives 'return_1' style labels where the destination is RTS.      |
-| `config.set_show_stats(b)`                            | True    | Show statistics at the end of the disassembly.                   |
-| `config.set_memory_region_headings(b)`                | True    | Group the memory locations at the top by region, with headings.  |
-| `config.set_text_encoding(s)`                         | "ascii" | How bytes are shown as text: "ascii", "petscii" or "screen" (see [Text encodings](#text-encodings)). |
-| `config.set_redundant_instruction_comments(b)`        | True    | Comment 6502 and Z80 instructions whose results are never used, `; Redundant instruction?` (see below). |
-| `config.set_upper_case_os_calls(b)`                   | True    | Name the OS's calls in capitals, as the manufacturer's documentation does: the Acorn MOS's (`OSBYTE`, `OSWRCH`, `GSINIT`) and Commodore's Kernal's (`CHROUT`), with Commodore's other names (see [Commodore](#commodore-64-vic-20-c128-plus4-pet-and-1541)), and CP/M's `BDOS` and its functions (`C_WRITESTR`, see [CP/M](#cpm)); or in lower case (`osbyte`, `chrout`). Set it before `acorn.bbc()`, `commodore.c64()`, `cpm.cpm()` etc. |
-
-The CPU state is what py8dis knows for certain about the registers and flags after each instruction, from the code before it (back to a label, where code can come from elsewhere). It's used for comments (e.g. on OS calls) as well as shown. For the 6502, after a conditional branch that isn't taken its flag is known, and after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7b after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`). A branch to the next instruction says nothing.
-
-For the 6502, an instruction whose results are never used is commented `; Redundant instruction?`: every register and flag it changes is changed again before anything reads it, e.g. `lda foo` just before `pla`, or `lda foo : and #3` before `lda bar` (both are redundant), or `sec` before `cmp`. This is only within a straight run of code: a label, a branch, a JSR or the end of the run counts as reading everything. Only instructions that just change registers and flags can be redundant (loads, transfers, arithmetic and logic, compares, shifts of A, CLC, SEC, CLV), and not one that reads memory mapped I/O (see `io_range()`) or whose address is unknown (an indirect load), nor one that code jumps into the middle of (the BIT trick, e.g. `bit $02a9` skipping `lda #2`). `config.set_redundant_instruction_comments(False)` turns this off.
-
-The same is done for the Z80: e.g. `ld a,(hl)` just before `pop af`, or `scf` before `cp`. Only instructions that just change registers and flags can be redundant: loads into registers (not `ld (hl),a` etc., nor `ld i,a` or `ld r,a`), INC and DEC of registers, arithmetic and logic, compares, rotates and shifts, BIT, RES and SET of registers, DAA, CPL, SCF, CCF, NEG and `ex de,hl`; not IN, or a read of memory mapped I/O (see `io_range()`; with any I/O named, a read through HL, BC, DE, IX or IY isn't redundant either, since its address isn't known). A CALL, RST, jump or return (including `ret cc`) counts as reading everything.
-
-## Command reference
-
-The whole point of py8dis is that it's programmable/user-extendable, but standard Python functions are provided for common disassembly tasks. If these don't do quite what you want, you can always copy them and tweak the definitions; alternatively, feature requests or submissions of new "standard" functions to add are welcome.
-
-In what follows a `binary_addr` refers to a location in memory where the binary file is loaded. Often memory is moved (relocated) soon after loading, before being executed. `runtime_addr` refers to a memory location after the code/data has been relocated as specified by any `move()` commands.
-
-### Initialisation
-
-:pencil:`load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, length=None)`
-
-Load the contents of `filename` into the disassembler's memory at address `binary_load_addr`. `cpu_name` can be "6502", "65C02", "6510", "8080" or "Z80". If the optional `md5sum` argument is provided, disassembly will fail if the md5sum of `filename`'s contents doesn't match; this allows you to detect if a disassembly is being used against a different version of a program by accident.
-
-"6510" is the 6502 with its undocumented opcodes (as on the Commodore 64's 6510, and any NMOS 6502): SLO, RLA, SRE, RRA, SAX, LAX, DCP, ISC, ANC, ALR, ARR, SBX, SBC (&EB), NOP with operands, JAM, and the unstable ANE, LXA, LAS, TAS, SHA, SHX and SHY. These are traced as what they do (with their cycle counts, and what's known of the registers afterwards), so code that uses them is disassembled properly. acme writes them with its own mnemonics (after `!cpu 6510`; ALR is written as ASR, which older versions of acme need), 64tass with py8dis's (after `.cpu "6502i"`), and ca65 with its own (after `.setcpu "6502X"`; LXA is `lax #imm` and SBX is `axs`), except where an instruction has several opcodes and the assembler uses another one (e.g. ANC &2B, or most of the NOPs; the same 70 opcodes are written as instructions for all three); those, and all of them for beebasm and xa, are written as data bytes with the instruction in a comment, e.g. `equb &a7, l0070 ; lax l0070 (undocumented)`. With "6502" they aren't traced: tracing stops at one, since treating unknown opcodes as code would turn data into nonsense instructions.
-
-To load only part of the file (e.g. to skip a header), give `offset`, where in the file to start, and optionally `length`, the number of bytes to load (by default, the rest of the file). The `md5sum` is still that of the whole file. A file whose name ends `.prg` or `.p00` gives a warning when loaded from its start, since `load_prg()` (below) is probably what's wanted.
-
-"Z80" includes its undocumented opcodes, since Z80 code often uses them, and they're traced as what they do (with their cycle counts). Those the assembler accepts are written as instructions (see the assembler's notes above); the others are written as data bytes with the instruction in a comment, e.g. `db $ed, $4c ; neg (undocumented)`: the duplicates (another encoding of an instruction, such as ED 4C, a second NEG), the ED opcodes that do nothing, and a DD or FD prefix before an instruction that doesn't use HL (the prefix does nothing, so it's written as a byte on its own, `db $dd ; prefix with no effect (undocumented)`, followed by the instruction). RST is traced as a call to its address (when that's loaded, giving it a label such as `rst_08`), returning to the next instruction unless a subroutine hook (see `hook_subroutine()`) says otherwise, e.g. for data that follows it. For the ZX Spectrum, see [ZX Spectrum](#zx-spectrum). An index register's displacement is written as a signed number, e.g. `ld a,(ix-3)`, or an expression given with `expr()` at its byte. What's known about the registers (including IX, IY, their halves, I and the alternate set) and the flags S, Z, H, P/V, N and C is tracked, as for the 6502 and 8080: `config.set_show_cpu_state(True)` shows it after each instruction, e.g. `A:41 BC:12-- DE:---- HL:---- IX:---- IY:---- SP:---- sZh-nc` (`--` where a byte isn't known; a flag is upper case if set, lower case if clear, `-` if not known). Memory isn't tracked, so a value loaded from memory isn't known; a call (or RST) could change anything; and after a conditional jump or return that isn't taken, its condition is known to be false (e.g. Z is set after `jr nz` falls through), as is B after DJNZ (0), and BC after LDIR (0).
-
-A return address pushed onto the stack, `ld rr,nn` then `push rr` (e.g. so that a routine jumped to returns there), is traced as code, and named in the `ld`, e.g. `ld hl,resume : push hl : jp clear_screen`. It's taken to be a return address if, following the code on from the PUSH along every path (but not into calls, which are taken to return), a RET or RET cc is reached with it at the top of the stack, or the stack pointer is stored (`ld (nn),sp`, so that the code can return there later, as the ZX Spectrum ROM's ERR_SP is used), and no path takes it off the stack first (a POP, `ex (sp),hl` or a change to SP). A value pushed to be popped later isn't taken to be one. A return address that's taken off the stack again on some path (e.g. one for errors, which the code discards when there's no error) isn't found, so it needs `entry()` and `expr()`.
-
-:pencil:`load_prg(filename, cpu_name="6502", md5sum=None)`
-
-Load a Commodore PRG file. Its first two bytes are the address to load the rest of it at, so no address is given; `load_prg()` returns it:
-
-```python
-start = load_prg("game.prg", "6502")
-```
-
-The disassembly starts with the same two bytes (e.g. `!word $0801` just before the program), so that it assembles to the whole PRG file, with acme, beebasm, xa, 64tass or ca65. (To disassemble just the data, use `load(address, "game.prg", offset=2)` instead.) A PC64 `.p00` file, which is a PRG file after a 26 byte header starting `C64File`, is also accepted; its disassembly assembles to the PRG file.
-
-### Labels
-
-:pencil:`label(runtime_addr, name, move_id=None)`
-
-Provide a label `name` for memory address `runtime_addr`. The `name` is used automatically when disassembling an instruction which references the address. If no label name is available when disassembling, one will be automatically created (of the form `l1900`).
-
-Labels defined with `label()` are always included in the disassembly even if they're never referenced; see `optional_label` if you don't want this behaviour.
-
-:pencil:`optional_label(runtime_addr, name, base_runtime_addr=None, *, definable_inline=True)`
-
-This is like `label`, but the disassembly will omit the label if it isn't referenced. This is intended for use in re-usable library functions like `acorn.add_standard_labels`. If an OS entry point or special memory address is used in the code it's good to have it referred to by a recognisable name, but it's not good to bloat the disassembly with labels for perhaps hundreds of special addresses that aren't used. `definable_inline` determines if the label should be defined at the top of the file as `label = value` style, or if it can be defined in the body of the disassembly.
-
-:pencil:`memory_region(start_addr, end_addr, name)`
-
-Names a region of memory, from `start_addr` up to (but not including) `end_addr`, e.g. `memory_region(0xfc00, 0xff00, "Hardware")`. The labels defined as `label = value` at the top of the disassembly ("Memory locations") are grouped by region, each group under a heading such as `; Hardware (&fc00-&feff)`. A label goes in the smallest region that contains it, so a region can be named inside a larger one. Naming the same range again renames it, and naming it `""` removes it. The 6502 already has regions for zero page, the stack and its vectors, and `acorn.bbc()` etc. name the regions of the Acorn machines' memory. `config.set_memory_region_headings(False)` turns the headings off.
-
-:pencil:`io_range(start_addr, end_addr)`
-
-Says that memory from `start_addr` up to (but not including) `end_addr` is memory mapped I/O, where reading can have side effects (e.g. acknowledging an interrupt), so an instruction that reads it isn't commented as redundant (see `config.set_redundant_instruction_comments()`). `acorn.bbc()` etc. say this for &FC00-&FEFF, and `commodore.c64()` etc. for their machines' I/O.
-
-:pencil:`get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, move_id=None)`
-
-Returns the label associated with address `runtime_addr`; it is an error to call this function if there is no such label. The `binary_addr` refers to either the definition or a usage of the label (as specified by `binary_addr_type`)
-
-:pencil:`addr(label_name)`
-
-Returns the runtime address of the given `label_name`.
-
-:pencil:`set_label_maker_hook(hook)`
-
-Sets a user supplied 'hook' function for making label names. Given an address where a label is being used, the hook function chooses a new name for the label.
-The `hook` is a function that takes a single argument of class LabelMakingData. For example:
-
-```
-def my_label_maker(d):
-    # This example replaces any instances of one label name with another,
-    # when found between a range of binary addresses.
-    if d.in_range(0x0900, 0x0ab1):
-        d.replace("keys", "keycounter")
-        d.replace("score", "disallowedkeytab")
-    elif d.in_range(0x1a26, 0x1a3a):
-        d.replace("write", "string")
-        d.replace("write + 1", "string + 1")
-    elif d.in_range(0x2733, 0x2734):
-        d.replace("birddata", "birdpixelx")
-    elif d.in_range(0x277c, 0x293e):
-        d.replace("read", "hiscoreaddr")
-        d.replace("read + 1", "hiscoreaddr + 1")
-```
-
-The hook is called once for each place a label is used or defined, so for a label used in many places it's called many times. It should decide from the `LabelMakingData` it's given (the address, where the label is used, the suggested name), not from how many times it's been called or in what order.
-
-### Constants
-
-:pencil:`constant(value, name, comment=None, align=Align.INLINE, format=Format.DEFAULT)`
-
-Define a constant `name` with value `value`; think of this as being passed straight through to the output as `name = value`. The optional comment text can be `align`ed and the value can be defined as Format.DECIMAL, .DECIMAL_SIGNED, .BINARY, .HEX, .BINARY, .PICTURE_BINARY, .CHAR, .STRING, and .DEFAULT.
-
-To illustrate the difference between labels and constants:
-- If you say `label(42, "meaning_of_life")`, an `lda 42` instruction will be disassembled as `lda meaning_of_life`.
-- If you say `constant(42, "meaning_of_life")`, an `lda 42` instruction will be disassembled as `lda 42`. Instead use ``expr()`` (see below) to use a constant. Example: You could use `expr()` to change `lda #42` into `lda #meaning_of_life`.
-
-Simple rule of thumb: use `label` only for addresses, use `constant()` for everything else.
-
-:pencil:`substitute_constants(instruction, reg, constants_dict, define_all_constants=None)`
-
-The idea of this command is to replace load immediate numbers with constants.
-
-For example: `substitute_constants("sta sprite_number", 'a', sprite_dict)`
-
-Would search for any `sta sprite_number` and convert e.g.:
-
-    lda #$15
-    sta sprite_number
-
-into:
-
-    lda #SpriteId_Peanut
-    sta sprite_number
-
-When `instruction` is encountered, look for a load immediate instruction for register `reg` somewhere beforehand, and use the `constants_dict` dictionary to substitute a constant or expression (see below for an explanation of expressions) in place of the immediate value.
-
-`define_all_constants` has three possible values:
-
-    None    - define no constants (the default)
-    False   - define only the constants used
-    True    - define all constants
-
-### Expressions
-
-An expression is a string containing labels, constants and/or other arithmetic that the assembler can interpret. When the given address is reached the string expression is output instead of a regular literal value.
-
-py8dis doesn't directly check the expression provided evaluates to the expected value found in the binary file. However, the assembly code output contains assertions that will fail if the values do not match. i.e. Careless use of `expr()` can cause py8dis to generate output which will not correctly re-assemble into its input.
-
-:pencil:`expr(runtime_addr, s)`
-
-When disassembling the byte at `addr`, use the string `s` instead of the literal value of that byte. Note that `addr` is the address of the byte itself, not the address of the instruction whose operand it is. `addr` might not even be part of an instruction; it might be data of some kind.
-
-Example: `lda #$30` could be replaced with `lda #>screen_address`.
-
-Alternatively, if s is a dictionary, then use it to substitute a constant or expression in place of the byte at `addr`.
-
-:pencil:`expr_label(runtime_addr, s)`
-
-Associate expression `s` with address `runtime_addr`. Any reference to `runtime_addr` in an instruction operand when disassembling will be replaced with `s`.
-
-Example: `lda $1ee4,x` could be replaced with `lda current_level_data+1,x`
-
-#### Making expression strings
-There are functions to help construct expression strings that will work across all assemblers:
-
-:pencil:make_op1(op, expr)
-
-For unary operators. For example `make_op1('NOT', 'input_bits')` might return `'!input_bits'` or `'NOT(input_bits)'` depending on the assembler.
-
-:pencil:make_op2(expr1, op, expr2)
-
-For binary operators, e.g. `make_op2('address', 'DIV', 8)`
-
-All the usual operators, +, -, *, / and so on can be used. It will accept common alternatives, 'AND' or '&' for example, 'XOR' or 'EOR'. These will be translated appropriately for the current assembler.
-
-There are convenience functions for common uses of the above:
-
-| Function                                  | Description                                                   |
-| :---------------------------------------- | :------------------------------------------------------------ |
-| :pencil:`make_lo(expr)`                   | for the low byte of a number                                  |
-| :pencil:`make_hi(expr)`                   | for the high byte of a number                                 |
-| :pencil:`make_add(expr1, expr2)`          | add                                                           |
-| :pencil:`make_subtract(expr1, expr2)`     | subtract                                                      |
-| :pencil:`make_multiply(expr1, expr2)`     | multiply                                                      |
-| :pencil:`make_divide(expr1, expr2)`       | divide                                                        |
-| :pencil:`make_or(expr1, expr2)`           | bitwise or                                                    |
-| :pencil:`make_and(expr1, expr2)`          | bitwise and                                                   |
-| :pencil:`make_eor(expr1, expr2)`          | bitwise eor (synonym for make_xor)                            |
-| :pencil:`make_xor(expr1, expr2)`          | bitwise xor                                                   |
-| :pencil:`make_modulo(expr1, expr2)`       | remainder after division                                      |
-
-Calls can be strung together: `make_lo(make_add('level_data', 1))`
-
-
-### Marking data
-
-#### Bytes and Words
-
-:pencil:`byte(addr, n=1, cols=None)`
-
-Mark `n` bytes at address `addr` as byte data. If `cols` is not None, then format the output in a fixed number of columns.
-
-:pencil:`word(addr, n=1, cols=None)`
-
-Mark 2*`n` bytes at address `addr` as (16-bit little-endian) word data. If `cols` is not None, then format the output in a fixed number of columns.
-
-#### Strings
-Strings have different ways of terminating, so we have many functions available to help define the extent of a string. Each function marks all the bytes as a string and returns the next available address after the string.
-
-| Function                                                       | Description                                                                        |
-| :------------------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| :pencil:`string(addr,n=None)`                                  | The string terminates at a non-printable ASCII character, or the given length `n`. |
-| :pencil:`stringterm(addr,terminator,exclude_terminator=False)` | The string terminates with a `terminator` value, and can either include or exclude the terminator from the string. |
-| :pencil:`stringcr(addr,exclude_terminator=False)`              | The string terminates with ASCII code 13. |
-| :pencil:`stringz(addr,exclude_terminator=False)`               | The string terminates with ASCII code zero. |
-| :pencil:`stringhi(addr,include_terminator_fn=None)`            | The string terminates with a top-bit-set character, optionally including the bottom 7 bits of the terminator as the final character. A user supplied function can determine whether the terminator is included or not, based on the final character. |
-| :pencil:`stringhiz(addr,include_terminator_fn=None)`           | As stringhi(), but also terminates at ASCII code zero. |
-| :pencil:`stringn(addr)`                                        | The first byte holds the length of the string, followed by the string itself. |
-
-Each of these also takes `encoding=` (e.g. `stringz(addr, encoding="screen")`) to give the string a text encoding other than the session's (see below).
-
-#### Text encodings
-
-By default strings are ASCII. For a Commodore program, `config.set_text_encoding("petscii")` makes PETSCII (the character codes used with CHROUT) the session's text encoding: for strings (including those `autostring()` finds), the character column of the hex dump, and the character comments on immediate operands (`lda #$41 ; 'a'`). `"screen"` is for Commodore screen codes, as stored in screen memory. A string command's `encoding=` option gives one string another encoding, e.g. `string(0xc04e, 21, encoding="screen")` for text copied straight to the screen, or `encoding="ascii"`. (Set the session's encoding before marking any strings: each string keeps the encoding it was marked with.)
-
-The characters are those of acme's `!pet` and `!scr`, so that acme can write the strings as text, e.g. `!pet "Hello", $0d` and `!scr "Score"`. A character literal (from `char()`, or the character CHROUT outputs, see [Commodore](#commodore-64-vic-20-c128-plus4-pet-and-1541)) is in the session's encoding too: acme's output then starts with `!ct pet` (or `!ct scr`), which makes `lda #'a'` PETSCII, so an ASCII string in it is written with `!raw` rather than `!text` (which would be converted). 64tass's output does the same with its own encodings (below). ca65's output does the same with its character map (below). beebasm and xa have no such character literals, so they're numbers with the character in a comment (`lda #$41 ; 'a'`). As in acme, lower case letters are the unshifted letters (PETSCII $41-$5A, screen codes $01-$1A) and upper case ones the shifted letters (PETSCII $C1-$DA, screen codes $41-$5A): the text as it appears in the C64's lower/upper case character set. (In the default upper case/graphics set, both appear as upper case letters or graphics.) Codes acme's character would misrepresent, such as PETSCII $5C (a pound sign on the C64, but a backslash to acme), and the graphics characters, are written as numbers. beebasm and xa have no PETSCII or screen code directives, so these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`.
-
-64tass's `.text` and character literals use its current encoding, so its output defines the encodings it uses at the top, with `.enc` and `.cdef` (each run of characters and its first byte, e.g. `.cdef "az", $41` for PETSCII), and selects the session's: `"petscii"`, or `"screencodes"` for screen codes (not 64tass's own `"screen"`, which `64tass -a` changes). So `.text "Hello"` and `lda #'a'` are PETSCII in a C64 program. A string in another encoding, e.g. ASCII in a C64 program, selects its own just for that string (`.enc "none"`, then `.enc "petscii"` again; `"none"` is ASCII unless 64tass is run with `-a`, so don't use that option). A program with only ASCII text has none of this.
-
-ca65's character map (`.charmap`, from a character in the source to a byte) applies to every string and character literal, and can't be switched for one string, so ca65's output is like acme's: if the session's encoding is PETSCII or screen codes and the output has text in it, the output starts with the character map for it (e.g. `.charmap $61, $41 ; 'a'`), and its strings and character literals are text (`.byte "Hello"`, `lda #'a'`). Strings in other encodings, ASCII included, are written as bytes with the text in a comment.
-
-### Marking code (and data that points to code)
-
-:pencil:`entry(addr, label=None)`
-
-Specifies that there is code at the given address `addr`. When `go()` is called, code is automatically traced starting from each entry point walking through all possible branches and subroutines. The bytes are marked as code, and therefore get output as instructions. If specified, `label` will be attached to `addr`; this is just a convenience to save needing to call `label()` explicitly.
-
-:pencil:`wordentry(addr, n=1)`
-
-Marks a sequence of `n` words as being (16-bit little endian) addresses of subroutines. This categorises the data as being words and also adds the addresses as entry points for tracing code.
-
-:pencil:`code_ptr(addr, addr_high=None, offset=0, label=None)`
-
-Marks two bytes of data as being the address of a subroutine. The low and high bytes do not need to be stored adjacently since their addresses can be specified separately as `addr` and `addr_high`. If `addr_high` is None, then `addr_high` is assumed to be the byte after `addr`. This function can be used to handle jump tables where the low and high bytes are stored in separate tables.
-
-An optional offset can be applied to the data to get the subroutine address. The subroutine address is added as an entry point for code tracing.
-
-Note that `code_ptr(addr)` and `wordentry(addr)` are equivalent.
-
-:pencil:`rts_code_ptr(addr, addr_high=None)`
-
-Syntactic sugar for `code_ptr(..., offset=1)`. This is intended for use with jump table entries which are used by pushing them onto the stack and executing `RTS`.
-
-### Modifying the tracing process
-
-See `entry()` to find out more about tracing.
-
-:pencil:`nonentry(addr)`
-
-Marks an address `addr` as 'not to be traced as code'. If the tracing of code reaches the given address then tracing stops. For example, when a conditional branch is in practice always taken at runtime, any following code is never executed. This command is only required occasionally.
-
-:pencil:`hook_subroutine(subroutine_addr, name, hook)`
-
-Tells the instruction tracing code that a call to a subroutine (using e.g. `jsr subroutine_addr`) will not necessarily return control to the instruction immediately following the `jsr`. The common use case is a subroutine that 'prints the following string', which consists of a call to a subroutine followed by a string definition. Execution only continues *after* the string definition.
-
-When a `jsr subroutine_addr` instruction is disassembled, `hook(subroutine_addr, address of jsr instruction)` is called and the return value is used as the next instruction address to trace. The hook can return `None` to indicate tracing shouldn't continue, or it can call `entry` to indicate additional addresses to trace.
-
-`name` is used to label `subroutine_addr`, exactly as if `entry(subroutine_addr, name)` were called.
-
-:pencil:`stringhi_hook(target, addr)`
-
-:pencil:`stringhiz_hook(target, addr)`
-
-:pencil:`stringcr_hook(target, addr)`
-
-:pencil:`stringz_hook(target, addr)`
-
-:pencil:`stringn_hook(target, addr)`
-
-Wrappers around `stringhi()`, `stringhiz()` etc for use with `hook_subroutine()`. These are designed for the 'print the following string' case described above.
-
-### Snippets
-
-A snippet recognises a common piece of code and comments it, or traces the code it leads to. py8dis has some built in (e.g. memory copying loops), and `acorn.bbc()`, `commodore.c64()` etc. add more (e.g. code that sets an OS vector). A control file can add its own:
-
-:pencil:`snippets6502.register_snippet(pre_trace_fn, post_trace_fn, snippet)`
-
-Calls `pre_trace_fn(p)` for each match before tracing (for adding entry points, with `p.entry()`) and `post_trace_fn(p)` after (for comments and expressions), either of which can be None. `p` is a `SnippetHelper`, whose methods give where each named line of the snippet matched (`p.get_binary_location(name)`), the bytes there, and so on. There are two kinds of snippet:
-
-* **A regex snippet** matches a sequence of instructions, e.g.
-
-  ```
-  loop
-      lda (zp1),y
-      sta (zp2),y
-      dey
-      bne loop
-  ```
-
-  Each line is an instruction (an operand that's a name matches any value), `.` (any instruction), alternatives separated by `|`, or a sequence separated by `:`. `?` at the start of a line makes it optional, and a name at the start of a line names the position. See `snippet6502.parse_snippet()`.
-
-* **An effect pattern** matches what the code does rather than how: the values it stores to memory, and the registers at an instruction. So it matches whatever the order of the instructions, the registers used, or the other instructions between them. For example, code that sets one of two vectors to a known address:
-
-  ```
-  lo
-  ?   [vector = $0300 | $0302] = lo_value
-  hi
-  ?   [vector+1] = hi_value
-  ```
-
-  `[target] = value` means that code earlier in the same run of code (up to a branch target, or the end of a block such as RTS) stored the value at the target, and nothing has overwritten it, or possibly overwritten it (a JSR, or an indexed store), since. A target is an address, a variable given its addresses (`vector = $0300 | $0302`), or a variable plus or minus a number. A value is a number, a name (`lo_value`: a known value, the same wherever the name is used), or `?` (any value stored, known or not). `a = value` (or `x`, `y`) is a register's value.
-
-  An effect pattern can also have **instruction lines**, as a regex snippet does. Then it matches where they match (starting at an instruction in the traced code) and its effect lines hold, each effect line applying just before the instruction line after it. So the effect lines are conditions on a regex snippet's lines. For example, a call with its arguments in memory and a register, set up in any way:
-
-  ```
-      [$02] = bank
-      a = $41
-  call
-      jsr $ff6e
-  ```
-
-  or two calls to OSWRCH, the first with A=22 and the second with A known, with up to two instructions between them (`lda #7`, or `ldx #7 : txa`, ...):
-
-  ```
-      a = 22
-      jsr $ffee
-  ?   .
-  ?   .
-  mode
-      a = n
-      jsr $ffee
-  ```
-
-  (A match's instructions aren't matched again by the same pattern.) Without instruction lines, an effect pattern matches as soon as all its lines hold; or, if some are optional (`?`) and not all hold, when those that do stop holding, if that's enough (every line that isn't optional, and at least one line). A match's pre-trace function is called once, while tracing (which continues from any entry points it adds), and its post-trace function once, for the code as finally traced. `p.matched(name)` says whether an optional line holds, `p.value(name)` and `p.binding(variable)` give what a value or variable matched, `p.store(name)` the store, `p.value_operand(name)` where a line's value was loaded (for e.g. `#<handler`), and `p.extent()` the code from the first load to the last instruction. The instruction lines' names work as in a regex snippet. See `effectpattern.py`.
-
-### Number Formats
-
-By default numerical values are formatted as decimals for single digits or hex otherwise (known as 'uint' formatting). The following functions override this format for data in the specified block.
-
-| Function                                  | Description                                                                                |
-| :---------------------------------------- | :----------------------------------------------------------------------------------------- |
-| :pencil:`char(addr,n=1)`                  | Specifies quoted character (e.g. 'a', in the session's text encoding) formatting for data in the given block |
-| :pencil:`binary(addr,n=1)`                | Specifies binary (e.g. %010110111) formatting for data in the given block                  |
-| :pencil:`picture_binary(addr,n=1)`        | Specifies picture binary (e.g. %#.####.#) formatting for data in the given block           |
-| :pencil:`decimal(addr,n=1)`               | Specifies decimal formatting for data in the given block                                   |
-| :pencil:`hexadecimal(addr,n=1)`           | Specifies hex formatting for data in the given block                                       |
-| :pencil:`uint(addr,n=1)`                  | Specifies unsigned int formatting for data in the given block                              |
-| :pencil:`sint(addr,n=1)`                  | Specifies signed int formatting for data in the given block                                |
-| :pencil:`padded_uint(addr,n=1)`           | Specifies padded uint formatting for data in the given block                               |
-| :pencil:`set_formatter(addr,n,formatter)` | The `formatter` function converts a data value into a string. Used by the above functions. |
-
-### Commentary and blank lines
-
-:pencil:`subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True)`
-
-Define a subroutine. All parameters except the address are optional. These are used to create a header comment above the definition of the subroutine. They are also used to decorate calling code with explanatory text. If this is not wanted specify `hook=False`. The subroutine is commented as below. The initial and final row of stars is configurable.
-
-```
-; ***************************************************************************************
-; Print a byte as hexadecimal
-;
-; Prints a two digit hex number 00-FF.
-;
-; On Entry:
-;     A: number to print
-;
-; On Exit:
-;     A: corrupted
-; ***************************************************************************************
-```
-
-The `on_entry` and `on_exit` optional parameters are dictionaries that specify a comment for each register as required. e.g. `on_entry={ 'a': "number to print" }`. If a parameter description is in brackets, it is not used when decorating calls to this routine. This allows for `{ 'x': '(preserved)' }` style descriptions.
-
-The `is_entry_point` parameter adds the address as an entry point for code.
-
-The `hook` parameter is a callback to allow for the decoration of the calling code. If `None` (the default) a standard hook is used, which comments where registers are set up before each call and used after it (for the Z80, it comments each call with the title); `hook=False` turns decoration off. A hook is called as `hook(runtime_addr, state, subroutine)`, for each call to the subroutine (for the Z80, a CALL, RST or JP) and for the code at its address, with the CPU's state before the instruction.
-
-:pencil:`no_automatic_comment(runtime_addr)`
-
-Disables the automatic commentary at the given address, to allow the user to write their own.
-
-:pencil:`comment(runtime_addr, text, indent=0, word_wrap=True, align=Align.BEFORE_LABEL)`
-
-Insert `text` as a comment at address `addr` in the disassembly. If the line has a label, it can be added before or after the Label using Align.BEFORE_LABEL or Align.AFTER_LABEL. If a line of disassembly is output at the address, the comment can be positioned before or after the line, using Align.BEFORE_LINE or Align.AFTER_LINE. If `align` is Align.INLINE, then the comment is added to the end of the line instead. If not inline, the number of indents is applied and the comment is word wrapped by default.
-
-:pencil:`formatted_comment(addr, text, align=Align.BEFORE_LABEL, indent=0)`
-
-As `comment` but the text is assumed to be pre-formatted and is therefore not word wrapped. Equivalent to `comment()` with `word_wrap=False`.
-
-:pencil:`blank(addr, align=Align.BEFORE_LABEL, priority=None)`
-
-Add a new blank line to the output at the given address. The `priority` helps order multiple items at the same address.
-
-:pencil:`annotate(runtime_addr, s, align=Align.BEFORE_LABEL, priority=None)`
-
-Add `s` as a raw string to the output at the given address. `s` will need to be understood by the assembler. The `priority` helps order multiple items at the same address. Rarely useful in practice since it's something of a last resort to output what you want and is likely assembler specific. Used by `blank()`.
-
-### Memory access
-
-:pencil:`get_u8_binary(addr)`
-
-Returns the unsigned 8-bit byte at address `addr`.
-
-:pencil:`get_u16_binary(addr)`
-
-Returns the unsigned little-endian 16-bit word at address `addr`.
-
-:pencil:`get_u16_be_binary(addr)`
-
-Returns the unsigned big-endian 16-bit word at address `addr`.
-
-:pencil:`get_u8_runtime(addr)`, `get_u16_runtime(addr)`, `get_u16_be_runtime(addr)`
-
-The same, at the runtime address `addr` (e.g. in code that's moved, see `move()`). A subroutine hook is given runtime addresses.
-
-### Relocating memory
-:pencil:`move(dest, src, length)`
-
-Indicates that a block of memory is copied at runtime.
-
-Often a block of memory is moved (relocated) after loading the binary file but before being used at runtime. For example, BBC Micro games that load at &1900 often relocate bits of code or data, or maybe the whole file down to &e00 before use.
-
-This function specifies such a move, indicating that the runtime address is different from the address at load time for a block of memory. This allows labels within the block to be properly defined by their runtime addresses.
-
-Any `move()` calls must be done before accessing the relocated block.
-
-As a simple rule, put any `move()` commands just after `load()`.
-
-
-### Output the results
-
-:pencil:`go(print_output=True, post_trace_steps=None, autostring_min_length=3)`
-
-Classifies the binary into code and data, calculates all label names and (optionally) emits the final assembly. The output is also returned as a string. `post_trace_steps` allows the user to supply a function to find strings in the binary, overriding the default function.
-
-:pencil:`reset()`
-
-Forgets everything (loaded data, moves, labels, constants, comments, entry points, subroutines, hooks and settings), ready to disassemble something else in the same Python script. The command line is read again to choose the assembler and the case of the output. For example:
+Now make it better. &FFE3 is the BBC Micro's OSASCI call, which py8dis knows about if you tell it the program is for a BBC Micro. Give the loop and the message names, add a comment, and say that the message ends with a carriage return:
 
 ```python
 from commands import *
+import acorn
 
-load(0x8000, "rom1.bin", "6502")
-...
-rom1_asm = go(print_output=False)
+load(0x2000, "orig/helloworld.orig", "6502", "ba85fca1feae301af81806d3102b0851")
+acorn.bbc()
 
-reset()
-load(0x8000, "rom2.bin", "6502")
-...
-rom2_asm = go(print_output=False)
+entry(0x2000)
+label(0x2002, "print_loop")
+label(0x200e, "message")
+comment(0x2000, "Print the message, one character at a time")
+stringcr(0x200e)
+
+go()
 ```
 
-## Commodore 64, VIC-20, C128, Plus/4, PET and 1541
+which gives:
 
-`commodore.c64()` does for a Commodore 64 program what `acorn.bbc()` does for a BBC Micro one:
+```
+; Memory locations
+
+; MOS entry points (&ffb3-&fff9)
+OSASCI  = &ffe3
+
+    org &2000
+
+; Print the message, one character at a time
+.pydis_start
+    ldx #0                                                            ; 2000: a2 00       ..
+; &2002 referenced 1 time by &200b
+.print_loop
+    lda message,x                                                     ; 2002: bd 0e 20    ..
+    jsr OSASCI                                                        ; 2005: 20 e3 ff     .. ; Write character
+    inx                                                               ; 2008: e8          .
+    cpx #&0e                                                          ; 2009: e0 0e       ..
+    bne print_loop                                                    ; 200b: d0 f5       ..
+    rts                                                               ; 200d: 60          `
+
+; &200e referenced 1 time by &2002
+.message
+    equs "Hello, world!", &0d                                         ; 200e: 48 65 6c... Hel
+.pydis_end
+```
+
+A real disassembly goes the same way, a step at a time: run the control file, read the output, work out a little more of what the program does, and add it to the control file. These are the commands you'll use most:
+
+| Command | What it does |
+| ------- | ------------ |
+| `load(addr, filename, cpu)` | Loads the program (`load_prg()` for a Commodore PRG file). |
+| `entry(addr)` | Says there's code at the address, to trace from. |
+| `label(addr, name)` | Names an address. |
+| `comment(addr, text)` | Adds a comment (`inline=True` puts it at the end of the line). |
+| `byte(addr, n)`, `word(addr, n)` | Marks data as bytes or words. |
+| `string(addr, n)`, `stringz(addr)`, `stringcr(addr)` ... | Marks a string, ending in one of several ways. |
+| `code_ptr(addr)`, `wordentry(addr, n)` | Marks the address of a routine (e.g. a table of routines), and traces it. |
+| `subroutine(addr, name, title, ...)` | Describes a routine, with a header comment. |
+| `expr(addr, "expression")` | Writes a value as an expression, e.g. `lda #>screen` instead of `lda #&30`. |
+| `move(dest, src, length)` | Says the program copies part of itself somewhere else before running it. |
+| `go()` | Makes the disassembly. |
+
+All the commands are described in the [command reference](docs/commands.md), and the settings for the layout of the output in [configuration.md](docs/configuration.md).
+
+Some tips:
+
+- **Labels for addresses, constants for numbers.** `label()` names an address, and every instruction that uses the address gets the name. A number that isn't an address, such as a colour or a key code, is named with `constant()`, and written into an instruction with `expr()`.
+- **Labels only where they're used.** `optional_label()` is like `label()`, but the label only appears if something uses it. The machine set-ups (such as `acorn.bbc()`) name hundreds of addresses this way.
+- **Data that looks like code.** If py8dis traces into data (for example after a subroutine that never returns, or one that's followed by a string), see `hook_subroutine()` and `nonentry()`.
+- **Code py8dis doesn't find.** Code that's only reached through a table of addresses, or an address worked out at runtime, isn't found by tracing: give it with `entry()`, `code_ptr()` or `wordentry()`.
+- **Checking your work.** Expressions you give with `expr()` are checked: by py8dis, when it can work out their values, or else by the assembler, with assertions at the end of the output. So a wrong one gives an error, rather than a different program.
+
+## Assemblers
+
+py8dis can write its output for any of these assemblers:
+
+| Assembler | CPUs | Command line |
+| --------- | ---- | ------------ |
+| [beebasm](https://github.com/stardot/beebasm) | 6502, 65C02 | `--beebasm` or `-b` (the default) |
+| [acme](https://sourceforge.net/projects/acme-crossass/) | 6502, 65C02 | `--acme` or `-a` |
+| [xa](https://www.floodgap.com/retrotech/xa/) | 6502, 65C02 | `--xa` or `-x` |
+| [64tass](https://sourceforge.net/projects/tass64/) | 6502, 65C02 | `--64tass` or `-t` |
+| [ca65](https://cc65.github.io/doc/ca65.html) | 6502, 65C02 | `--ca65` or `-c` |
+| [z88dk-z80asm](https://z88dk.org) | 8080, Z80 | `--z88dk` or `-z` |
+| [sjasmplus](https://github.com/z00m128/sjasmplus) | Z80 | `--sjasmplus` or `-s` |
+
+For example, `python3 python/helloworld.py --acme`. How to assemble each one's output, and the few things to watch for with each, are in [assemblers.md](docs/assemblers.md). The CPUs, including the 6502's and the Z80's undocumented instructions, are in [cpus.md](docs/cpus.md).
+
+## Command line options
+
+A control file takes these options when you run it:
+
+| Option | What it does |
+| ------ | ------------ |
+| `--beebasm`, `--acme`, ... | Which assembler to write the output for (see above). |
+| `-o FILE`, `--output FILE` | Writes the output to a file, rather than printing it. |
+| `-u`, `--upper` | Upper case output. |
+| `-l`, `--lower` | Lower case output (the default). |
+| `--json FILE` | Writes the disassembly as JSON too, for other programs to use. |
+| `--symbols FILE` | Writes a symbol file too: each label and its address, e.g. for an emulator's debugger. `--symbols-format` chooses the format: `plain`, `vice`, `beebasm` or `mame`. |
+| `--xref FILE` | Writes a cross-reference listing too: each label, and everything that uses it. |
+
+These other files are described in [output-files.md](docs/output-files.md).
+
+## Machines
+
+Call one of these after `load()`, and py8dis names the machine's operating system calls, memory locations and hardware, comments the calls the program makes, and recognises the usual ways of doing things on that machine:
+
+| Machine | Set-up | Details |
+| ------- | ------ | ------- |
+| BBC Micro, B+, Master, Electron | `acorn.bbc()`, `acorn.b_plus()`, `acorn.master()`, `acorn.electron()` | [machines/acorn.md](docs/machines/acorn.md) |
+| Commodore 64, VIC-20, C128, Plus/4, PET, 1541 disk drive | `commodore.c64()`, `commodore.vic20()`, `commodore.c128()`, `commodore.plus4()`, `commodore.pet()`, `commodore.drive1541()` | [machines/commodore.md](docs/machines/commodore.md) |
+| ZX Spectrum 48K | `spectrum.spectrum48()` | [machines/spectrum.md](docs/machines/spectrum.md) |
+| CP/M | `cpm.cpm()` | [machines/cpm.md](docs/machines/cpm.md) |
+
+For example, for a Commodore 64 program:
 
 ```python
 from commands import *
@@ -627,264 +240,38 @@ commodore.c64()
 go()
 ```
 
-It gives:
-
-* **Names for the memory locations**, output only if used: zero page, the OS and BASIC workspace, the Kernal's and BASIC's vectors, the screen and sprite pointers, the VIC-II, the SID, the colour RAM, the CIAs and the 6510's I/O port, grouped under headings by region (e.g. `; VIC-II ($d000-$d3ff)`). The names are descriptive by default, e.g. `vic_border_colour`, `cia1_port_a`, `keyboard_buffer_length`; `commodore.c64(names="commodore")` uses the names in Commodore's documentation instead (the Programmer's Reference Guide and Commodore's source, and for the I/O registers *Mapping the Commodore 64*), e.g. `EXTCOL`, `CIAPRA`, `NDX`.
-* **The Kernal's jump table**, by Commodore's names (e.g. `CHROUT`, `SETLFS`), with comments on each call and where its registers are set and used:
-
-  ```
-      lda #$0f              ; A=logical file number
-      ldx #device_disk_8    ; X=device number
-      ldy #$0f              ; Y=secondary address
-      jsr SETLFS            ; Set logical file 15 to device 8 (disk drive), secondary address 15
-      lda #2                ; A=filename length
-      ldx #<filename        ; X=filename address (low byte)
-      ldy #>filename        ; Y=filename address (high byte)
-      jsr SETNAM            ; Set the filename to "i0"
-  ```
-
-  CHROUT's comment names the character (`Output $93 (clear screen)`), and a printable character is written as one where it's loaded (`lda #'a'`, with acme; see [Text encodings](#text-encodings)), PLOT's and MEMTOP's say whether the call reads or sets (from the carry flag), SETNAM's filename and the string printed by BASIC's STROUT are marked as PETSCII strings, and SAVE's zero page pointer is named.
-* **The ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for &ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal and BASIC ROMs, as optional labels. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a Kernal label in Commodore's source has the same name as a jump table entry or another name (e.g. PLOT, the routine at &e50a that `PLOT` at &fff0 jumps to), it has `_ROM` added (`PLOT_ROM`), and a BASIC label with the same name as another has `_BASIC` added (e.g. `STOP_BASIC`, BASIC's STOP command).
-* **Colours** stored in the VIC-II's colour registers or the text colour, as constants: `lda #colour_black : sta vic_border_colour`.
-* **The VIC-II's interrupts:** a store of a known value to its raster line register is commented with the line, e.g. `lda #100 : sta vic_raster_line ; Raster interrupt at line 100`. Bit 8 of the line is bit 7 of `vic_control_1` (&d011): it's included when a store to that in the same run of code sets it to a known value, or just after `and #n` or `ora #n` sets or clears that bit; otherwise the comment gives both lines (`Raster interrupt at line 100 (or 356, if bit 7 of $d011 is set)`). Stores to its interrupt enable and status registers are commented too (`Enable only the VIC-II's raster interrupt`, `Acknowledge the VIC-II's raster interrupt`), as is the usual `asl vic_interrupt_status` (`Acknowledge the VIC-II's interrupts`). The same for the C128 (but not where its MMU maps the I/O out).
-* **Vectors set by the program** (e.g. `lda #<x : sta $0314 : lda #>x : sta $0315`; found from the values stored, so in any order, with any registers and other instructions between, see [Snippets](#snippets)): the address is traced as code and named after the vector, e.g. `irq_handler` (or `irq_handler_2` etc. for more), with a comment, `; Set the IRQ vector to irq_handler`. A vector with only one byte set to a known value has a comment on that store, e.g. `; Set the high byte of the NMI vector to $00`.
-* **The BASIC program** at &0801, if there is one (see `basic_program()` below).
-* **PETSCII** as the text encoding (see [Text encodings](#text-encodings)). Call `c64()` before marking any strings.
-
-Names are only used where nothing else names the address. An optional label isn't used if its name is given to another address (e.g. a control file's `label(0x0964, "key")` when Commodore's name for &ea31 is `KEY`), so the name isn't defined twice. Names are compared in lower case for this, since some assemblers (e.g. 64tass) take `key` and `KEY` to be the same name.
-
-Commodore's own names are in capitals, as in its documentation and source: the Kernal's calls (`CHROUT`), the labels from its source (`PLOT_ROM`, `VDCOUT`), and with `names="commodore"` the locations, registers and routines (`EXTCOL`, `STROUT`). py8dis's descriptive names are in lower case (`vic_border_colour`, `basic_print_string`), so with `names="descriptive"` a location with no descriptive name of its own (e.g. much of the C128's, Plus/4's and 1541's workspace) has Commodore's name, in capitals. `config.set_upper_case_os_calls(False)`, before `c64()` etc., keeps them all in lower case (as for the Acorn MOS's calls).
-
-:pencil:`commodore.vic20(expansion=None, names="descriptive", rom_labels=True)`
-
-The same for the VIC-20, whose Kernal and BASIC are the C64's with its own hardware and memory map: the VIC (`vic_background_border_colour`, `vic_voice1_frequency`…), the two VIAs (`via1_port_a`…, or Commodore's `D1ORA`…), the colour RAM, the character ROM, the screen, its own ROM routines (e.g. `kernal_irq_handler` at &eabf) and the labels in Commodore's source for its ROMs. Its jump table lacks the C64's first three entries. Commodore gave the VIC's registers no names of their own, so with `names="commodore"` they're `VICREG`, `VICREG+1` and so on, as in its source.
-
-`expansion` is the RAM expansion: `"none"`, `"3k"` (block 0, &0400-&0fff) or `"8k"` (8K or more, from &2000). It decides where a BASIC program starts (&1001, &0401 or &1201) and where the screen and its colour RAM are (&1e00 and &9600, or with 8K or more &1000 and &9400). By default it's worked out from where the program is loaded: `"3k"` if there's data at &0401, else `"none"` if there's data at &1001, else `"8k"` if there's data at &1201.
-
-:pencil:`commodore.c128(names="descriptive", rom_labels=True)`
-
-The same for the C128 in C128 mode, with the usual bank 15 (the ROMs, and the I/O at &d000): its workspace, the MMU (`mmu_configuration` at &ff00, `mmu_ram_configuration`…), the VDC (`vdc_address` and `vdc_data` at &d600), the VIC-II, the SID and the CIAs as on the C64, a BASIC program at &1c01, and the labels in Commodore's source for its BASIC, monitor, screen editor and Kernal (a screen editor or monitor label with the same name as another has `_editor` or `_monitor` added). Its jump table is the C64's and 19 more at &ff47-&ff7d, e.g. `JSRFAR`, `SETBNK` and `PRIMM`, whose inline string is marked and skipped when tracing:
-
-```
-    jsr PRIMM             ; Print the zero-terminated string that follows the JSR
-    !pet "hello, c128", $0d, 0
-```
-
-A call to another bank with JSRFAR or JMPFAR, whose bank and address are set up at &02-&04 with known values (in any order, with any registers and other instructions between them and the call: an effect pattern, see [Snippets](#snippets)), is commented, e.g. `; Call far_call_target in bank 0`. If the address is in the program, in a bank that has RAM 0 there, where the program is (banks 0 and 2, and below their ROMs, 4, 6, 8, 10 and 12-15), it's traced as code, named `far_call_target` (or `far_jump_target`, then `_2` etc.) unless it already has a name, and the set-up uses its name:
-
-```
-    ; Call far_call_target in bank 0
-    lda #0
-    sta far_call_bank
-    lda #>far_call_target
-    sta far_call_pc_high
-    lda #<far_call_target
-    sta far_call_pc_low
-    jsr JSRFAR
-```
-
-The names assume the C128's usual bank 15: the ROMs, with I/O at &d000. In another configuration of its MMU, the same addresses can be something else, e.g. RAM rather than the VIC-II or the Kernal ROM. So:
-
-* **The code that sets the MMU's configuration is commented** with what it sets, when the value stored to its configuration register (&ff00, or &d500) is known, e.g. `sta mmu_configuration ; Set the MMU to bank 0 (RAM 0 only)`, or `; Set the MMU to RAM 0, I/O` for one that isn't one of the Kernal's 16 banks. A store to one of its load configuration registers (&ff01-&ff04) is commented too, e.g. `; Set the MMU to preconfiguration A (as set at $d501)`.
-* **The code after it uses that configuration's names.** An address it uses that's something else in that configuration than in bank 15 gets a plain name there, e.g. after `lda #$3f : sta $ff00` (bank 0), `lda $d020` is `lda ld020` rather than `lda vic_border_colour`. These names are listed under their own heading, `; Other banks`, at the end of the memory locations, since their addresses' regions are bank 15's. The configuration is followed through the code as it runs: to the next instruction, the targets of branches and JMPs (so a loop after a change of configuration runs with it too), and a subroutine called with JSR, up to the next change. The code after a JSR continues with the configuration the call was made with, unless the subroutine always returns with one it sets itself (e.g. a routine that switches to bank 0), and after PRIMM, with the code after its string. Where code can be reached with different configurations, or from an entry point or another way that isn't known (e.g. a vector the program sets), its configuration isn't known, so it's taken to be bank 15. A JSRFAR or JMPFAR target runs with its bank's configuration. (&0000-&03ff is RAM 0 in every bank, the Kernal's common RAM, so its names stay. Only the names `c128()` gives are replaced, not the control file's.) A call to a Kernal or BASIC routine that isn't there in that configuration isn't one, so it's not commented (e.g. `jsr lffd2`, not `jsr CHROUT ; Output 'a'`), and a store to a colour register that isn't there doesn't store a colour.
-
-:pencil:`commodore.c128_bank(start, end, bank=None, *, configuration=None)`
-
-Says that the code from `start` to `end` (runtime addresses, `end` exclusive) runs with the MMU set to `bank` (0-15, as the Kernal numbers them) or `configuration` (the value of its configuration register), e.g. a routine whose caller sets the bank. The addresses it uses are named as above. Since this is known before the code is traced, a call to PRIMM (&ff7d) there with the Kernal ROM mapped out is traced as an ordinary call, without the string after it. (After code that sets the configuration, that isn't known until the code has been traced, so it's still treated as PRIMM.) (Code after a change of configuration in it follows that change. Code reached from outside the range runs with the range's configuration, whatever the code that calls or jumps to it would give.) Call it after `c128()`.
-
-`commodore.c128_memory(configuration, addr)` says what's at an address in a configuration (e.g. `"I/O"`, `"Kernal ROM"`, `"RAM 1"`), and `commodore.c128_configuration_description(configuration)` describes a configuration, as in the comments above.
-
-(A C128 program in C64 mode is a C64 program: use `c64()`.)
-
-:pencil:`commodore.plus4(names="descriptive", rom_labels=True)`
-
-The same for the Plus/4 (and the C16 and C116, which have the same ROMs): its workspace, the TED at &ff00-&ff3f (the timers, video, sound, keyboard latch, interrupts, and the ROM switch at &ff3e/&ff3f: `ted_rom_select`, `ted_ram_select`), the ACIA at &fd00, the 6529 ports, the screen and its attributes, a BASIC program at &1001, and the labels in Commodore's source for its BASIC and Kernal. Its jump table is the C64's with `PRINT`, `PRIMM` (as on the C128) and `MONITR`. The TED's colours include their luminance, so they aren't named as constants.
-
-:pencil:`commodore.pet(basic=4, columns=40, names="descriptive", rom_labels=True)`
-
-The same for the PET (and the CBM 3000, 4000 and 8000 series), with BASIC 1 (the original 1977 ROMs), 2 or 4, whose workspace and ROM addresses differ (e.g. the IRQ vector is at &0219 with BASIC 1 and &0090 with BASIC 2 and 4), and a 40 or 80 column screen (`columns=80`, only with BASIC 4: the 8000 series, with its CRTC at &e880 as `crtc_address` and `crtc_data`, and the 80-column editor's workspace, e.g. `window_top`). It names:
-* the two PIAs (`pia1_port_a`, ... `pia2_control_b`; Commodore's `PIAL`, `IEEI`...), the VIA at &e840 (`via_port_b`... `via_peripheral_control`, `PIA`, `SYNC`... in Commodore's source) and the screen at &8000;
-* the Kernal's jump table at &ffc0-&ffea (`OPEN`, `CHKIN`, `CHROUT`, `GETIN`, `STOP`, `UDTIM`...). Only `CHROUT` has its own comments (`Output $93 (clear screen)`): `LOAD`, `SAVE`, `VERIFY` and `SYS` there are BASIC's commands, which read their parameters from the BASIC text, not the C64's Kernal calls;
-* its ROM routines (`basic_print_string`, `basic_print_number`, `kernal_irq_handler`, the IRQ handler programs end with, e.g. &e455 with BASIC 4...) and the labels in Commodore's source for its BASIC and Kernal (Martin Hoffmann-Vetter's reconstructions, which assemble to the ROMs VICE uses). BASIC 4's screen editor at &e000 is different for each model, so its labels are left out;
-* a BASIC program at &0401, listed with that version's keywords (BASIC 4's disk commands, e.g. `CATALOG`, too), and code that sets the IRQ, BRK or NMI vector.
-
-The PET has no colours. `is_cartridge()` and `basic_rom()` aren't supported, since its expansion ROMs and BASIC ROM have no standard header or vectors.
-
-:pencil:`commodore.drive1541(rom="1541", names="descriptive", rom_labels=True)`
-
-The same for code that runs in the 1541 disk drive's own 6502, e.g. a fast loader's drive code (which a C64 program sends with `M-W` and runs with `M-E` or a job), or the drive's DOS ROM itself. It names:
-* the DOS's workspace (Commodore's names from its source, with descriptive names for the most used, e.g. `job_queue`, `job_track_sector`, `buffer_pointer`, `drive_number`), and the five buffers at &0300-&07ff (`buffer_0` to `buffer_4`, except those the code is loaded in);
-* the two VIAs: VIA 1 at &1800, the serial bus (`via1_serial_bus`, ...), and VIA 2 at &1c00, the disk controller (`via2_disk_control`, the motors, LED, write protect sensor, bit rate and sync; `via2_disk_data`, the GCR data from or to the disk), with Commodore's names (`PB`, `DSKCNT`, `DATA2`...) with `names="commodore"`;
-* the DOS ROM's routines that drive code calls (`wait_for_sync`, `gcr_to_binary`, `end_job`, `dos_idle_loop`...) and the labels in Commodore's source for the ROM, and code that sets the NMI vector at &0065.
-
-**Jobs are commented.** Code that writes a job code to the job queue (&00-&05, one for each buffer), however it does it, is commented with the job, with its track and sector (&06-&11) if they're set too, and the job code is named, e.g.:
-
-```
-    ; Job 0: read track 18, sector 1 into buffer 0 ($0300)
-    lda #$12
-    sta job_track_sector
-    ldx #1
-    stx job_track_sector+1
-    lda #job_read
-    sta job_queue
-```
-
-For a JUMP or EXECUTE job, which runs the code in the job's buffer, that code is traced, if it's loaded, and named (e.g. `job_3_code`).
-
-**Job results are named.** The result the disk controller leaves in the job queue, where code compares it after reading the queue (`lda job_queue : bmi wait : cmp #job_ok`), or gives it to ERRR to end a job (`lda #job_ok : jmp end_job`), is named as a constant, with the error the DOS reports for it, e.g. `job_no_sync = 3 ; 21 READ ERROR: no sync mark`.
-
-**The VIAs' bits are described.** A store to VIA 1's or VIA 2's port B, after `lda` of the port then `ora #n` or `and #n`, or of a known value, is commented with what it does, e.g. `; Turn the LED on`, `; Turn the motor on, set the bit rate to 3 (for tracks 1-17)` or `; Pull the clock line low`. A test of an input bit (`lda $1800 : and #$04`, or `bit $1c00`) is commented too, e.g. `; Test CLOCK IN` or `; Test SYNC (clear at a sync mark)`.
-
-`rom` is `"1541"` (DOS 325302-01 and 901229-05, the default) or `"1541-ii"` (251968-03, the 1541-II's and 1541C's), which only changes a few ROM labels. For drive code inside a C64 program, see `drive1541_code()` below.
-
-:pencil:`commodore.drive1541_code(runtime_addr, binary_addr, length, rom="1541")`
-
-For a C64 (or other) program with code for the drive in it, e.g. a fast loader's, which the program sends to the drive with `M-W` and runs with `M-E` or a job: the `length` bytes at `binary_addr` run at `runtime_addr` in the drive. Call it after `c64()` etc. The bytes are moved there (see `move()`; the move ID is returned) and traced from there. Where the drive code uses an address outside itself, it gets the 1541's name, as `drive1541()` gives (e.g. `job_queue`, `via2_disk_control`, `wait_for_sync`), rather than the C64's name for that address (which is the 6510's port at &00, or the screen at &0400). These names are defined under the heading `; 1541 drive`, with `_drive` added to one that's also a C64 name. Its jobs are commented, and a JUMP or EXECUTE job's code is traced if it's in drive code too. Calls to the DOS ROM's routines are commented, and aren't taken to be calls to the C64's ROM. A name the control file gives an address is kept.
-
-```python
-start = load_prg("fastload.prg", "6510")
-commodore.c64()
-drive_move = commodore.drive1541_code(0x0500, 0x083b, 0x0111)   # &083b-&094b runs at &0500 in the drive
-label(0x0500, "drive_code", drive_move)
-```
-
-:pencil:`commodore.dos_rom()`
-
-For disassembling the 1541's DOS ROM (loaded at &c000, after `drive1541()`): traces the code from the vectors at its end (`format`, `motor_off` and the user commands U1 and U2; U3-U8's, at &0500-&050f in buffer 2, are named but not traced) and the 6502's vectors.
-
-The C128's, Plus/4's and PET's workspace (zero page and &0200 up) has Commodore's names from its source. With the default `names="descriptive"`, the locations that are the C64's have its descriptive names (e.g. `jiffy_clock`, `keyboard_buffer_length`), and the most used of the rest have descriptive names of their own (e.g. the C128's `screen_mode_40_80`, `vdc_screen_base`, `function_key_lengths`); the others have Commodore's names either way, since there are hundreds and most are BASIC's or the monitor's. The hardware's names are descriptive with `names="descriptive"` and Commodore's (from its source, e.g. `MMUCR`, `VDCADR`, `TEDIRQ`) with `names="commodore"`.
-
-:pencil:`commodore.basic_program(runtime_addr=None)`
-
-Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` etc. do this), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
-
-```
-; 10 SYS2061
-basic_line_10
-    !word basic_end
-    !word 10
-    !byte $9e
-    !pet "2061"
-    !byte 0
-basic_end
-    !word 0
-```
-
-An address that SYS calls in the loaded data is traced as code, and named `sys_entry` unless it already has a name (so to name it yourself, do so before calling `c64()`). Returns the address after the program, or None if there isn't a BASIC program there.
-
-:pencil:`commodore.is_cartridge()`
-
-For a cartridge: names its header (the cold and warm start vectors, and the signature: `CBM80` at &8004 on the C64, `A0CBM` at &a004 on the VIC-20) and traces the code they point to. On the C128 and Plus/4, a function ROM at &8000 starts with its cold and warm start code (usually JMPs) rather than vectors, then an ID byte and `CBM` in ASCII; these are named and the code traced. Call it after `c64()` etc.
-
-:pencil:`commodore.kernal_rom()` and :pencil:`commodore.basic_rom()`
-
-For disassembling a Kernal ROM (at &e000, or &c000 on the C128 and Plus/4) or BASIC ROM (at &a000 on the C64, &c000 on the VIC-20, &4000 on the C128, &8000 on the Plus/4) itself: trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors (or JMPs, on the C128 and Plus/4). examples/python/open_roms_kernal.py and open_roms_basic.py disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
-
-## ZX Spectrum
-
-`spectrum.spectrum48()` does the same for a 48K ZX Spectrum program (Z80 code, so load it with the CPU `"z80"`; call it after `load()`):
-
-```python
-from commands import *
-import spectrum
-
-load(0x8000, "game.bin", "z80")
-spectrum.spectrum48()
-entry(0x8000)
-go()
-```
-
-It gives:
-
-* **Names for the system variables**, output only if used, as in the Spectrum's manual, in lower case (e.g. `frames`, `last_k`, `err_sp`; `frames+1` etc. for the bytes after the first), and for the screen, the attributes and the printer buffer (`screen`, `attributes`, `printer_buffer`), under headings by region. The ROM keeps IY at ERR_NR's address, &5C3A, so a system variable addressed with IY is written as an offset from it, e.g. `res 5,(iy+flags - err_nr)` (unless the code is known to have set IY to something else).
-* **The ROM's routines and tables**, by the names in *The Complete Spectrum ROM Disassembly* (e.g. `cls`, `chan_open`, `pr_string`, `print_fp`, from CLS, CHAN-OPEN etc.; the calculator's ABS, NOT and OR are `fp_abs`, `fp_not` and `fp_or`, since sjasmplus takes `abs`, `not` and `or` to be its operators), as optional labels; calls to the commonly used ones are commented, e.g. `call cls ; Clear the screen`. `spectrum48(rom_labels=False)` leaves these out.
-* **RST $10** (print a character) commented with what's printed, when A is known: `Print 'A'`, `Print $0D (ENTER)`, `Print $16 (AT)`, then `Print 10 (AT's line)` and `Print 5 (AT's column)` for its parameters.
-* **RST $08** (an error), followed by the error number, which is marked as a byte with the report in a comment (`Report 9 STOP statement`); the code doesn't continue after it.
-* **RST $28** (the floating point calculator), and calls to GEN-ENT-1 and GEN-ENT-2, followed by the calculator's bytecode, which is marked as bytes, each with its instruction's name in a comment (`multiply`, `stk-data`, `end-calc`), its jumps as `label - $`, and its numbers (in the calculator's compressed format) with their values. The code continues after the end-calc.
-* **The ULA's port**, &FE, named `ula_port`, with what's written to it commented when it's known (`out (ula_port),a ; Border blue`, with MIC and the speaker), and which keyboard half rows are read (`in a,(ula_port) ; Read the keyboard (SPACE-B)`), for `out (n),a` and `in a,(n)`, and `out (c),r` and `in r,(c)` when C is even.
-* **A channel's routine set by the code:** the output or input routine of the current channel (`ld hl,(curchl) : ld (hl),e : inc hl : ld (hl),d`) or of channel K, S, R or P (from `chans`), with the address loaded into DE before (`ld de,routine`, perhaps before a jump or call to the code that stores it), is traced, named in the `ld de`, and commented, e.g. `ld de,my_print ; Set the current channel's output routine to my_print`.
-
-:pencil:`spectrum.rom()`
-
-For disassembling the 48K ROM itself (loaded at 0, after `spectrum48()`): traces its code from the restarts, the interrupt, the NMI and its tables of routines, marks its data (the tokens, the messages, the calculator's constants and the character set) and names every routine and table. See examples/python/spectrum48.py.
-
-For a ROM with the same kinds of table at other addresses (e.g. a replacement ROM), the functions `rom()` uses for them are there to call: `spectrum.offset_table(addr, n)` (offsets to routines, e.g. `defb L0A5F - $`), `spectrum.keyed_offset_table(addr, n=None)` (pairs of a character and an offset, ending with a zero), `spectrum.offset_entry(addr, code=True)`, `spectrum.syntax_table(addr, routine_classes=(0, 3, 5), last_classes=(2, 7, 11))` (a command's parameter classes, ending with the address of its routine or not) and `spectrum.stringhi_list(addr, end)` (text, each item ending with a character with bit 7 set). See examples/python/opense.py, for OpenSE BASIC.
-
-## CP/M
-
-`cpm.cpm()` does the same for a CP/M program (Z80 or 8080 code, so load it with the CPU `"z80"` or `"8080"`; call it after `load()`):
-
-```python
-from commands import *
-import cpm
-
-load(0x0100, "program.com", "z80")
-cpm.cpm()
-entry(0x0100)
-go()
-```
-
-It gives:
-
-* **Names for page zero**, output only if used: `warm_boot`, `iobyte`, `current_drive`, the BDOS's entry point `BDOS` (with `BDOS+1` for the address of the BDOS, the top of the memory for programs, e.g. `ld hl,(BDOS+1)`), `default_fcb` and `second_fcb` (the file names in the command) and `default_dma` (the command's tail, and the default DMA buffer), with e.g. `default_fcb+1` for the bytes after them.
-* **Calls to the BDOS** (`call BDOS`, or a jump, conditional or not) commented with what the function does when its number in C is known, e.g. `call BDOS ; Print the string at DE, up to a '$'`, or `Write 'A' to the console` when E is known too. The `ld c,n` that sets C is given the function's name, as a constant: `ld c,C_WRITESTR`. The names are those of Digital Research's CP/M 3 documentation (see [seasip.info](https://www.seasip.info/Cpm/bdos.html)), for the functions of CP/M 2.2 and CP/M 3.
-* **The address in DE** for the functions that take one (a string to print, a buffer for a line of input, a file control block or a DMA buffer), when it's loaded with `ld de,nn`, is written with its label: `ld de,default_fcb`. A string to print is marked as a `$` terminated string, and named `message` if it has no name yet; an FCB in the program is named `fcb`, a buffer `input_buffer` and a DMA buffer `dma_buffer`, if they have no name.
-
-The names `BDOS` and `C_WRITESTR` etc. are in capitals unless `config.set_upper_case_os_calls(False)` is used first (then `bdos` and `c_writestr`).
-
-:pencil:`cpm.bdos_wrapper(runtime_addr, register="c")`
-
-Says that the routine at `runtime_addr` calls the BDOS (e.g. one that saves the registers first), with the function number in the register, `"c"` (as the BDOS has it) or `"a"`, so that the calls to it are commented in the same way. See examples/python/bbcbasic.py and examples/python/cpm_8080.py.
-
-## JSON output
-
-As well as the asm, py8dis can write the finished disassembly as JSON, for other tools to read: for example a web page of the disassembly with links between labels and the code that uses them, a symbol table for an emulator's debugger, or a comparison of two versions of a ROM.
-
-    python3 mycontrolfile.py --acme --json out.json              # asm printed as usual, JSON to out.json
-    python3 mycontrolfile.py --acme -o out.asm --json out.json   # asm to out.asm, JSON to out.json
-
-When using py8dis as a library, `session.new_session(json_filename="out.json")` does the same.
-
-The JSON holds what py8dis knows once it has finished, with exactly the names used in the asm but without its layout:
-
-- the CPU, the assembler, the files loaded and the moves;
-- the constants, memory regions and subroutines;
-- every label: its names and where the asm defines them, local names, expressions, and the code and data that refer to it;
-- every instruction or piece of data, in address order: its addresses, bytes, labels, comments and text as in the asm. Instructions also have their mnemonic, addressing mode, operand (its value and expression), target, cycles and the CPU state; data has its values and expressions.
-
-Expressions are given as text and as a tree, e.g. `{"op": "+", "left": {"label": 8206, "name": "message"}, "right": {"num": 1, "format": "decimal"}}`.
-
-The format is described in [docs/json-format.md](docs/json-format.md), with a [JSON Schema](https://json-schema.org/) in [docs/py8dis-json.schema.json](docs/py8dis-json.schema.json).
-
-## Symbol files and cross-reference listings
-
-As well as the asm, py8dis can write a symbol file, giving each label's name and address (e.g. for an emulator's debugger), and a cross-reference listing, giving each label and everything that refers to it:
-
-    python3 mycontrolfile.py --symbols out.sym                           # plain format
-    python3 mycontrolfile.py --symbols out.lbl --symbols-format vice
-    python3 mycontrolfile.py --xref out.xref
-
-When using py8dis as a library, `session.new_session(symbols_filename=..., symbols_format=..., xref_filename=...)` does the same.
-
-The symbol file formats are:
-
-| `--symbols-format` | Example line          | For                                                                                   |
-| ------------------ | --------------------- | ------------------------------------------------------------------------------------- |
-| `plain` (default)  | `OSWRCH = &ffee`      | Reading, or converting to another format. In the assembler's hex syntax.               |
-| `vice`             | `al 00FFEE .OSWRCH`   | The VICE emulator's monitor, which loads it with `ll "file"` (as cc65's `ld65 -Ln` writes). |
-| `beebasm`          | `[{'OSWRCH':65518L}]` | Tools that read beebasm's symbol dump (`beebasm -d`).                                   |
-| `mame`             | `comadd ffee,OSWRCH`  | MAME's debugger, which runs it with `source file`, showing each name as a comment.      |
-
-Each name a label has is included (local label names as the asm uses them), but not constants or expressions such as `table+1`. Labels are by address. VICE and MAME can't take an address past the top of memory (such as `pydis_end`, for data that ends at &FFFF), so those names are left out of their files.
-
-The cross-reference listing gives each label, with its names and where the asm defines them, then each instruction or piece of data that refers to it: the address, where that is (the nearest label before it, plus an offset), and its text in the asm:
-
-    &ffe3  lffe3 (Memory locations)
-        &2005     loop_c2002+3                 jsr lffe3
+gives names such as `vic_border_colour` and `CHROUT`, comments such as `jsr SETNAM ; Set the filename to "i0"`, and lists the BASIC program at the start, if there is one (such as `10 SYS2061`), tracing the code it runs.
+
+## Examples
+
+`examples/python` has the control files for py8dis's tests. Most are small tests of one thing, but some are complete disassemblies of real programs, which show how a large disassembly is done:
+
+| Control file | Program |
+| ------------ | ------- |
+| `planb.py`, `chuckie.py`, `starship.py` | BBC Micro games |
+| `os12.py`, `basic4.py`, `dfs226.py`, `anfs418.py`, `lisp406.py` | BBC Micro and Master ROMs: the MOS, BASIC, DFS, ANFS and LISP |
+| `quikman2k8.py`, `memory128.py` | VIC-20 and C128 games |
+| `open_roms_kernal.py`, `open_roms_basic.py` | MEGA65's Open ROMs, a replacement for the C64's |
+| `spectrum48.py`, `opense.py` | the ZX Spectrum's ROM, and OpenSE BASIC, a replacement for it |
+| `bbcbasic.py`, `zexdoc.py` | BBC BASIC (Z80) for CP/M, and the Z80 instruction exerciser ZEXDOC |
+
+How to run all the tests is in [testing.md](docs/testing.md).
+
+## More documentation
+
+- [Command reference](docs/commands.md): every command for a control file.
+- [Configuration](docs/configuration.md): settings for the layout and contents of the output.
+- [CPUs](docs/cpus.md): the 6502, 65C02, 8080 and Z80, their undocumented instructions, and what py8dis works out about the registers.
+- [Assemblers](docs/assemblers.md): how to assemble the output with each assembler.
+- [Text encodings](docs/text-encodings.md): PETSCII and Commodore screen codes.
+- Machines: [Acorn](docs/machines/acorn.md), [Commodore](docs/machines/commodore.md), [ZX Spectrum](docs/machines/spectrum.md), [CP/M](docs/machines/cpm.md).
+- [Snippets and hooks](docs/snippets-and-hooks.md): teaching py8dis to recognise pieces of code, and to name things your way.
+- [JSON, symbol files and cross-references](docs/output-files.md), and the [JSON format](docs/json-format.md).
+- [Running the tests](docs/testing.md).
 
 ## Getting help
 
-If you have problems or suggestions for improvement, you can raise an issue or submit a pull request in github. Alternatively you may like to post in the [py8dis thread](https://stardot.org.uk/forums/viewtopic.php?f=55&t=23335) on the [stardot](https://stardot.org.uk) forums.
+If you have a problem or a suggestion, raise an issue or make a pull request on GitHub, or post in the [py8dis thread](https://stardot.org.uk/forums/viewtopic.php?f=55&t=23335) on the [stardot](https://stardot.org.uk) forums.
 
 ## Credits and thanks
 
@@ -898,3 +285,5 @@ If you have problems or suggestions for improvement, you can raise an issue or s
 * The C128 test game is Sebastian Dechert's [memory128](https://github.com/radi0sus/memory128) (BSD 3-clause licence; see `examples/orig/memory128`).
 * The Open ROMs test ROMs are from [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms) (LGPL 3; see `examples/orig/open-roms`).
 * TobyLobster has contributed numerous improvements to py8dis, including refactoring, code clean up, local label support and constant substitution, as well as making many helpful suggestions.
+
+py8dis is released under the MIT licence (see `LICENSE`).
