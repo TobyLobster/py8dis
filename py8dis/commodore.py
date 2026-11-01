@@ -1,8 +1,11 @@
 """
+Commodore machines
+
 Commodore specific functions: commodore.c64(), vic20(), c128(), plus4() and
 pet() name and comment a program's use of the Kernal, the hardware and the OS
 workspace, as acorn.bbc() does for the BBC Micro; drive1541() does the same
-for code that runs in the 1541 disk drive.
+for code that runs in the 1541 disk drive. A control file calls one after
+loading the program:
 
     import commodore
     start = load_prg("game.prg", "6510")
@@ -12,7 +15,40 @@ They name the memory locations with descriptive names by default (e.g.
 'vic_border_colour'); names="commodore" uses the names in Commodore's
 documentation instead (e.g. 'EXTCOL'). Commodore's own names are in
 capitals unless config.set_upper_case_os_calls(False) (see
-official_name()). See commodoretables.py.
+official_name()). docs/machines/commodore.md describes it all for users.
+
+The main pieces, in the order they come in this file:
+
+- Machine, and c64_machine() etc.: what's known about each machine (its
+  memory locations, hardware, ROM routines, Kernal jump table, vectors,
+  colours and memory regions), from the tables in commodoretables.py and
+  the labels from Commodore's source in commodoresource.py.
+- location_names(): the names the set-up gives the memory locations, as
+  optional labels (which are only output if they're used).
+- The subroutine hooks for the Kernal's calls (chrout_hook() etc.), which
+  comment each call and where its registers are set.
+- Snippets: effect patterns (see effectpattern.py and snippethelper.py) for
+  code that sets a vector, calls JSRFAR or JMPFAR on the C128, or writes a
+  job to the 1541's job queue.
+- Memory configurations: the C128's MMU and the C64's port at $01 (see
+  Banking). Once the code has been traced, the configuration is followed
+  through it (_flow_ranges()), and an address that's something else in
+  the configuration the code runs with gets a plain name there
+  (_name_by_configuration()). c128_bank() and c64_configuration() give the
+  configuration for code where it isn't known from the code.
+- drive1541_code(): code for the 1541 in another machine's program.
+- The 1541's job results and VIAs, and the VIC-II's interrupts: comments
+  made once the code has been traced.
+- basic_program(): the BASIC program at the start of most programs.
+- is_cartridge(), kernal_rom(), basic_rom() and dos_rom(): for
+  disassembling cartridges and ROMs.
+- _set_up(), and c64() etc., which put it all together.
+
+Much of the work is done after tracing, by functions added to the CPU's
+code analysis functions (cpu.code_analysis_fns, see cpu.py), since it
+needs to know which bytes are code and what's known about the registers.
+What the set-up chose, and what's found along the way, is kept in the
+session's extras (see session.py), under keys starting 'commodore.'.
 """
 
 from commands import *
@@ -33,6 +69,8 @@ import commodoresource
 # Helpers shared with acorn.py's OS call hooks
 from acornhelpers import xy_addr, enum_lookup
 
+# The styles of name for the memory locations (the names argument of c64()
+# etc.)
 NAMES = ("descriptive", "commodore")
 
 
@@ -41,7 +79,14 @@ NAMES = ("descriptive", "commodore")
 
 class Machine:
     """What commodore.py knows about one machine: its memory locations,
-    hardware, ROMs and so on (from commodoretables.py)."""
+    hardware, ROMs and so on (from commodoretables.py and
+    commodoresource.py). c64_machine() etc. make one, and _set_up() gives
+    the session its names, hooks and memory regions; _machine() is the
+    session's.
+
+    'name' is the machine's short name ("c64", "vic20", "c128", "plus4",
+    "pet" or "1541"), which the code checks for what's particular to a
+    machine. The other attributes are described where they're set."""
 
     def __init__(self, name, *, locations, hardware_locations, rom_locations, rom_routines,
                  rom_label_tables, jump_table, inline_string_calls, vectors, colours, colour_registers,
@@ -51,27 +96,30 @@ class Machine:
         self.basic_tokens = basic_tokens or basic_v2_tokens   # BASIC's keywords, by token from $80
         self.call_hooks = call_hooks                # {jump table name: hook}, if not the C64's (see _hooks)
         self.locations = locations                  # RAM, the vectors and the 6502's vectors
-        self.hardware_locations = hardware_locations
+        self.hardware_locations = hardware_locations    # the I/O registers, the colour RAM etc.
         self.rom_locations = rom_locations          # data in the ROMs (named with rom_labels)
-        self.rom_routines = rom_routines
+        self.rom_routines = rom_routines            # RomRoutines: the ROM routines programs call (named with rom_labels)
         self.rom_label_tables = rom_label_tables    # [({address: name}, suffix for a clash)], from Commodore's source
-        self.jump_table = jump_table
+        self.jump_table = jump_table                # KernalCalls, in address order
         self.inline_string_calls = inline_string_calls  # calls followed by a string to print (PRIMM)
         self.vectors = vectors                      # VectorLocations, for code that sets them
-        self.colours = colours
-        self.colour_registers = colour_registers
-        self.control_codes = control_codes
-        self.io_ranges = io_ranges                  # [(start, end)]: never defined inline
+        self.colours = colours                      # {colour number: constant name}
+        self.colour_registers = colour_registers    # the addresses where a colour stored is named
+        self.control_codes = control_codes          # {PETSCII code: description}, for CHROUT's comments
+        self.io_ranges = io_ranges                  # [(start, end)]: memory mapped I/O (see io_range()), never defined inline
         self.basic_start = basic_start              # where BASIC programs are loaded (None if there's no BASIC)
         self.cartridge = cartridge                  # (address, style): see is_cartridge(); None if there's no standard header
-        self.basic_rom_addr = basic_rom_addr        # (None if basic_rom() isn't supported)
-        self.regions = regions                      # [(start, end, name)]
+        self.basic_rom_addr = basic_rom_addr        # where the BASIC ROM starts (None if basic_rom() isn't supported)
+        self.regions = regions                      # [(start, end, name)]: the memory regions (see memory_region())
 
 def _kernal_vectors():
-    """The Kernal's RAM vectors (&0314-&0333), as Locations"""
+    """The Kernal's RAM vectors ($0314-$0333), as Locations, for the C64's
+    and VIC-20's list of locations"""
     return [Location(v.addr, 2, v.commodore_name, v.name) for v in c64_vectors if v.name is not None and v.addr >= 0x0314]
 
 def c64_machine():
+    """The Commodore 64, with its usual memory configuration ($37: BASIC,
+    the Kernal and the I/O)"""
     return Machine("c64",
         locations=c64_ram_locations + _kernal_vectors() + c64_more_ram_locations + c64_cpu_vectors,
         hardware_locations=c64_hardware_locations,
@@ -110,15 +158,21 @@ def c64_machine():
             (0xff81, 0xfffa, "Kernal entry points"),
         ])
 
+# The VIC-20's RAM expansions (the expansion argument of vic20())
 VIC20_EXPANSIONS = ("none", "3k", "8k")
 
 def vic20_machine(expansion="none"):
-    """The VIC-20, with no RAM expansion, 3K (in block 0, &0400-&0fff), or 8K
-    or more (from block 1, &2000)"""
+    """The VIC-20, with no RAM expansion ("none"), 3K ("3k", in block 0,
+    $0400-$0fff), or 8K or more ("8k", from block 1, $2000). The expansion
+    moves the start of BASIC programs, the screen and the colour RAM (see
+    vic20())."""
     expanded_8k = (expansion == "8k")
     basic_start = {"none": 0x1001, "3k": 0x0401, "8k": 0x1201}[expansion]
     screen = 0x1000 if expanded_8k else 0x1e00
     colour_ram = 0x9400 if expanded_8k else 0x9600
+    # The RAM's regions: BASIC's program area is after the screen with 8K or
+    # more, and before it otherwise. (The regions of RAM an expansion would
+    # add are named whether it's there or not.)
     if expansion == "8k":
         ram_regions = [(0x0400, 0x1000, "3K expansion RAM"), (0x1000, 0x1200, "Screen memory"), (0x1200, 0x8000, "BASIC program area")]
     elif expansion == "3k":
@@ -138,6 +192,7 @@ def vic20_machine(expansion="none"):
         colours=vic20_colours,
         colour_registers=vic20_colour_registers,
         control_codes=vic20_control_codes,
+        # (The VIC and the VIAs, up to the end of the colour RAM)
         io_ranges=[(0x9000, 0x9800 if colour_ram == 0x9600 else 0x9600)],
         basic_start=basic_start,
         cartridge=(0xa000, "A0CBM"),
@@ -162,7 +217,9 @@ def vic20_machine(expansion="none"):
 
 def c128_machine():
     """The C128 in C128 mode (in C64 mode, it's a C64), as it is with the
-    usual bank 15: the ROMs, and the I/O at &d000"""
+    usual bank 15: the ROMs, and the I/O at $d000. Its jump table is the
+    C64's and its own additions; its MMU's registers at $ff00-$ff04 are I/O
+    too."""
     jump_table = sorted(c128_jump_table_additions + kernal_jump_table, key=lambda call: call.addr)
     return Machine("c128",
         locations=c128_workspace_locations + c64_cpu_vectors,
@@ -211,7 +268,9 @@ def c128_machine():
         ])
 
 def plus4_machine():
-    """The Plus/4 (or C16, or C116)"""
+    """The Plus/4 (or C16, or C116, which have the same ROMs), with its
+    usual memory map: the ROMs, and the I/O and the TED at $fd00-$ff3f. Its
+    jump table is the C64's and its own additions."""
     jump_table = sorted(plus4_jump_table_additions + kernal_jump_table, key=lambda call: call.addr)
     return Machine("plus4",
         locations=plus4_workspace_locations + plus4_screen_locations + c64_cpu_vectors,
@@ -245,13 +304,21 @@ def plus4_machine():
             (0xff40, 0xfffa, "Kernal entry points"),
         ])
 
+# The PET's BASIC versions and screen widths (the basic and columns arguments
+# of pet())
 PET_BASIC_VERSIONS = (1, 2, 4)
 PET_COLUMNS = (40, 80)
 
 def pet_machine(basic=4, columns=40):
     """The PET (or CBM 3000, 4000 or 8000), with BASIC 1, 2 or 4, and a 40 or
-    80 column screen (80 columns only with BASIC 4)"""
+    80 column screen (80 columns only with BASIC 4). The BASIC version
+    decides the workspace, the ROM routines' addresses and labels, and
+    BASIC's keywords; 80 columns adds the CRTC and the 80-column editor's
+    workspace and control codes."""
     workspace = pet_workspace_locations[(basic, columns)]
+    # The OS workspace and tape buffers in $0200-$03ff (with BASIC 4, the
+    # DOS's workspace is at the start of what's the second tape buffer with
+    # BASIC 1 and 2)
     if basic == 1:
         os_regions = [(0x0200, 0x027a, "OS workspace"), (0x027a, 0x033a, "Tape buffer 1"), (0x033a, 0x03fa, "Tape buffer 2")]
     elif basic == 2:
@@ -297,13 +364,15 @@ def pet_machine(basic=4, columns=40):
             (0xffc0, 0xfffa, "Kernal entry points"),
         ])
 
+# The 1541's DOS ROMs (the rom argument of drive1541())
 DRIVE1541_ROMS = ("1541", "1541-ii")
 
 def drive1541_machine(rom="1541", buffers=range(5)):
     """The 1541 disk drive, with the 1541's DOS ROM (325302-01 and
     901229-05), or the 1541-II's (251968-03, also in the 1541C), and names
-    for the buffers given (not those the program is loaded in, whose code
-    has labels of its own)"""
+    for the buffers given (the numbers 0-4 of those to name: not those the
+    program is loaded in, whose code has labels of its own). It has no
+    Kernal, BASIC or cartridges."""
     return Machine("1541",
         locations=drive1541_workspace_locations + [drive1541_buffer_locations[n] for n in buffers] + c64_cpu_vectors,
         hardware_locations=drive1541_hardware_locations,
@@ -331,8 +400,9 @@ def drive1541_machine(rom="1541", buffers=range(5)):
         ])
 
 def _machine():
-    """The machine chosen for this session (by c64(), vic20(), c128(),
-    plus4(), pet() or drive1541()), or the C64 if none has been"""
+    """The Machine chosen for this session (by c64(), vic20(), c128(),
+    plus4(), pet() or drive1541()), or the C64 if none has been (e.g. for
+    a hook or command used without one: a new Machine each time)"""
     return session.current().extras.get("commodore.machine") or c64_machine()
 
 
@@ -347,8 +417,12 @@ def official_name(name):
     return name.upper() if config.get_upper_case_os_calls() else name
 
 def _name(location, names):
-    """A Location's name in the given style, and whether it's Commodore's
-    own (which official_name() gives in capitals)"""
+    """A Location's name in the given style ("descriptive" or "commodore"),
+    and whether it's Commodore's own (which official_name() gives in
+    capitals). A location with no Commodore name has its descriptive name
+    in either style, and in the descriptive style a location whose
+    descriptive name is Commodore's (e.g. much of the C128's workspace) is
+    Commodore's own."""
     if names == "commodore" and location.commodore_name is not None:
         return location.commodore_name, True
     return location.name, location.name == location.commodore_name
@@ -363,16 +437,18 @@ _OTHER_MNEMONICS = set("""
     "%s%d" % (op, bit) for op in ("bbr", "bbs", "rmb", "smb") for bit in range(8)}
 
 def location_names(machine, names="descriptive", rom_labels=True):
-    """The names c64() etc. give memory locations, as a list of
+    """The names c64() etc. give the machine's memory locations, as a list of
     (address, name, base address or None): one for each byte of each
-    location (e.g. 'tape_buffer+1', with the base address of 'tape_buffer'),
-    the ROM routines, and (with rom_labels) the labels in Commodore's source
-    for the Kernal and BASIC ROMs. Not the Kernal's jump table, which are
-    subroutines.
+    location and hardware register (e.g. 'tape_buffer+1', with the base
+    address of 'tape_buffer'), and with rom_labels, the data in the ROMs,
+    the ROM routines and the labels in Commodore's source for the ROMs (the
+    Kernal and BASIC, the C128's screen editor and monitor, and the 1541's
+    DOS). Not the Kernal's jump table, which _set_up() gives as subroutines.
+    'names' is the style, "descriptive" or "commodore" (see _name()).
 
     A label in Commodore's source with the same name as a Kernal call or
-    another location gets '_rom' added (e.g. PLOT, the routine at &e50a that
-    the jump table's PLOT at &fff0 jumps to on the C64, is 'PLOT_ROM'), and a
+    another location gets '_rom' added (e.g. PLOT, the routine at $e50a that
+    the jump table's PLOT at $fff0 jumps to on the C64, is 'PLOT_ROM'), and a
     label in BASIC's source with the same name as one of those gets '_basic'
     added (e.g. 'STOP_BASIC'), and similarly for the C128's screen editor
     ('_editor') and monitor ('_monitor'). So does a label that's another
@@ -380,7 +456,8 @@ def location_names(machine, names="descriptive", rom_labels=True):
     the C128's and Plus/4's BASIC have STP and STZ, 'STP_BASIC' and
     'STZ_BASIC'). A location with the same name as a Kernal call gets '_ram'
     added (e.g. the C128's 'jsrfar' routine in RAM is 'JSRFAR_RAM', with
-    names="commodore").
+    names="commodore"). An address that already has a name (a location, a
+    ROM routine or a Kernal call) gets no label from the source.
 
     Commodore's own names (the Kernal calls, the labels from its source, and
     with names="commodore" the locations and routines, or in the
@@ -392,6 +469,8 @@ def location_names(machine, names="descriptive", rom_labels=True):
     result = []
     jump_table_names = {call.name for call in machine.jump_table}
     def add(location):
+        """Add a name for each byte of the location (with '_ram' added if
+        it's a Kernal call's name)."""
         name, official = _name(location, names)
         if name in jump_table_names:
             name += "_ram"
@@ -411,11 +490,15 @@ def location_names(machine, names="descriptive", rom_labels=True):
     if rom_labels:
         for location in machine.rom_locations:
             add(location)
+        # The addresses with names already, which the source's labels don't
+        # replace
         named = {addr for addr, _, _ in result} | {call.addr for call in machine.jump_table}
         for routine in machine.rom_routines:
             result.append((routine.addr, _routine_name(routine, names), None))
             named.add(routine.addr)
 
+        # The labels from Commodore's source, each table in turn, with its
+        # suffix added to a name that's already used (or is a mnemonic)
         used = {name.lower() for _, name, _ in result} | {call.name for call in machine.jump_table}
         for rom_labels_table, suffix in machine.rom_label_tables:
             for addr in sorted(rom_labels_table):
@@ -430,7 +513,9 @@ def location_names(machine, names="descriptive", rom_labels=True):
     return result
 
 def _routine_name(routine, names):
-    """A RomRoutine's name in the given style (see location_names())"""
+    """A RomRoutine's name in the given style (see location_names()): with
+    names="commodore", Commodore's (by official_name()), if it has one;
+    otherwise the descriptive name."""
     if names == "commodore" and routine.commodore_name is not None:
         return official_name(routine.commodore_name)
     return routine.name
@@ -442,34 +527,50 @@ def c64_location_names(names="descriptive", rom_labels=True):
 
 # ************************************************************************************************
 # Comments on Kernal calls
+#
+# These are subroutine hooks (see subroutine()), called after tracing for
+# each call to a Kernal call or ROM routine (and for the code at its own
+# address, if it's in the program), with the CPU's state before the call
+# instruction and the subroutine's details (its title, on_entry and
+# on_exit). They comment the call, e.g. 'Output $93 (clear screen)', and
+# where its registers are set and used, e.g. 'A=logical file number'.
 
 def _known_value(state, reg):
-    """The value of the register before the call, if it's set by an
-    immediate load on every path (else None)"""
+    """The value of the register reg ('a', 'x' or 'y') before the call, if
+    it's known for certain (the pessimistic state) to have been set by an
+    immediate load (e.g. 'lda #n'), else None"""
     binary_addr = state.pessimistic[reg].get_previous_load_imm_operand()
     if binary_addr is None:
         return None
     return memory_binary[binary_addr]
 
 def _hex2(n):
+    """A byte in hex, as the assembler writes it, e.g. $1f."""
     return config.get_assembler().hex2(n)
 
 def _hex4(n):
+    """A 16-bit number in hex, as the assembler writes it, e.g. $d011."""
     return config.get_assembler().hex4(n)
 
 def _comment_registers(runtime_addr, state, subroutine, entry=True, exit=True):
-    """Comment where the registers are set before the call, and used after
-    it, from the subroutine's on_entry and on_exit (as the 6502's default
-    subroutine hook does)."""
+    """Comment where the registers are set before the call at runtime_addr,
+    and used after it, from the subroutine's on_entry and on_exit (as the
+    6502's default subroutine hook does), e.g. 'A=logical file number' on
+    the 'lda #15' before it. With entry=False or exit=False, those
+    comments are left out (for a hook that makes its own). Nothing is
+    commented for the subroutine's own code (runtime_addr being the
+    subroutine's address)."""
     if subroutine.runtime_addr == runtime_addr:
         return
     if entry and subroutine.on_entry:
+        # (On the instruction that last loaded or changed the register)
         for reg in ('a', 'x', 'y'):
             reg_addr = state.optimistic[reg].previous_adjust
             text = subroutine.on_entry.get(reg)
             if reg_addr is not None and text:
                 disassembly.comment_binary(reg_addr, reg.upper() + "=" + text, align=Align.INLINE, word_wrap=False, auto_generated=True)
     if exit and subroutine.on_exit:
+        # (On the instruction after the call that next uses the register)
         for reg in ('a', 'x', 'y'):
             text = subroutine.on_exit.get(reg)
             next_use = state.next_use[reg]
@@ -477,12 +578,15 @@ def _comment_registers(runtime_addr, state, subroutine, entry=True, exit=True):
                 disassembly.comment(movemanager.b2r(next_use), reg.upper() + "=" + text, align=Align.INLINE, auto_generated=True)
 
 def _comment_call(runtime_addr, subroutine, text):
+    """Comment the call at runtime_addr with the text, inline (but not the
+    subroutine's own code)."""
     if subroutine.runtime_addr != runtime_addr:
         disassembly.comment(runtime_addr, text, align=Align.INLINE, word_wrap=False, auto_generated=True)
 
 def _char_description(c):
-    """A description of a PETSCII character, e.g. "'a'" or "$93 (clear
-    screen)" """
+    """A description of a PETSCII character, e.g. "'a'", or for a control
+    code the machine's CHROUT acts on, "$93 (clear screen)", or else just
+    its code, e.g. "$80" """
     char = textencoding.PETSCII.char(c)
     if char is not None:
         return "'%s'" % char
@@ -492,11 +596,16 @@ def _char_description(c):
     return _hex2(c)
 
 def default_hook(runtime_addr, state, subroutine):
+    """The hook for a Kernal call or ROM routine with no hook of its own (see
+    _hooks): comment the registers, and the call with its title."""
     _comment_registers(runtime_addr, state, subroutine)
     if subroutine.title:
         _comment_call(runtime_addr, subroutine, subroutine.title)
 
 def chrout_hook(runtime_addr, state, subroutine):
+    """CHROUT's hook: if A is known, comment the call with the character
+    output (e.g. "Output 'a'" or 'Output $93 (clear screen)'), and write a
+    printable character as one where it's loaded."""
     _comment_registers(runtime_addr, state, subroutine)
     a = _known_value(state, 'a')
     if a is None:
@@ -504,7 +613,8 @@ def chrout_hook(runtime_addr, state, subroutine):
     else:
         _comment_call(runtime_addr, subroutine, "Output " + _char_description(a))
         # A character is written as one where it's loaded (e.g. "lda #'a'",
-        # if the assembler can: see Assembler.encoded_char_literal())
+        # if the assembler can: see Assembler.encoded_char_literal()), unless
+        # the operand is already formatted or has an expression
         operand_addr = state.pessimistic['a'].get_previous_load_imm_operand()
         format_hint = session.current().disassembly.format_hint
         if (textencoding.current().char(a) is not None and operand_addr not in format_hint
@@ -512,6 +622,10 @@ def chrout_hook(runtime_addr, state, subroutine):
             format_hint[operand_addr] = mainformatter.char_formatter
 
 def setlfs_hook(runtime_addr, state, subroutine):
+    """SETLFS's hook: name the device number where X is loaded (e.g. 'ldx
+    #device_disk_8'), and if A, X and Y are all known, comment the call
+    with them, e.g. 'Set logical file 15 to device 8 (disk drive),
+    secondary address 15'."""
     _comment_registers(runtime_addr, state, subroutine)
     # Name the device number where X is set
     enum_lookup(state.optimistic['x'].get_previous_load_imm_operand(), device_numbers)
@@ -523,12 +637,14 @@ def setlfs_hook(runtime_addr, state, subroutine):
     device = device_descriptions.get(x, "device %d" % x)
     if x in device_descriptions:
         device = "device %d (%s)" % (x, device)
+    # (A secondary address of 255 means none)
     secondary = "no secondary address" if y == 255 else "secondary address %d" % y
     _comment_call(runtime_addr, subroutine, "Set logical file %d to %s, %s" % (a, device, secondary))
 
 def _name_data(runtime_addr, name):
-    """Label the address, if it has no name yet, with the name (or name_2
-    etc. if that's taken)"""
+    """Label the address with the name, if it has no explicit name yet: the
+    first address given a name has it, the next name_2 and so on (e.g.
+    'filename', 'filename_2'), counted for the session."""
     labels = session.current().labels.labels
     if runtime_addr in labels and labels[runtime_addr].explicit_names:
         return
@@ -539,7 +655,8 @@ def _name_data(runtime_addr, name):
 
 def _loaded_and_unclassified(runtime_addr, length):
     """Whether there's data loaded for the length bytes at the runtime
-    address, none of it classified yet"""
+    address, none of it classified yet (so it can be marked as a string
+    without clashing with code or other data)"""
     for i in range(length):
         addr = runtime_addr + i
         if addr > 0xffff:
@@ -552,6 +669,12 @@ def _loaded_and_unclassified(runtime_addr, length):
     return True
 
 def setnam_hook(runtime_addr, state, subroutine):
+    """SETNAM's hook: the filename is the A bytes at X/Y. Where X and Y are
+    loaded, write them as the low and high bytes of the filename's label
+    (see xy_addr()). If its length and address are known, mark the filename
+    as a PETSCII string, labelled 'filename' (if it's loaded and isn't
+    classified yet), and comment the call with it, e.g. 'Set the filename
+    to "i0"'."""
     _comment_registers(runtime_addr, state, subroutine)
     length = _known_value(state, 'a')
     filename_addr = xy_addr(state.pessimistic['x'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
@@ -566,6 +689,8 @@ def setnam_hook(runtime_addr, state, subroutine):
     if _loaded_and_unclassified(filename_addr, length):
         _name_data(filename_addr, "filename")
         string(filename_addr, length, encoding="petscii")
+    # The filename's text, for the comment, if it's all printable PETSCII
+    # characters other than '"' (else the comment gives its length)
     text = ""
     for i in range(length):
         binary_addr, _ = movemanager.r2b(RuntimeAddr(filename_addr + i))
@@ -581,6 +706,10 @@ def setnam_hook(runtime_addr, state, subroutine):
         _comment_call(runtime_addr, subroutine, 'Set the filename to "%s"' % text)
 
 def load_hook(runtime_addr, state, subroutine):
+    """LOAD's hook: if A is known, comment the call as 'Load a file' (A=0)
+    or 'Verify a file' (A=1), and A where it's loaded. X and Y aren't
+    commented where they're set, only where they're used after the
+    call."""
     a = _known_value(state, 'a')
     # (X/Y are the load address only for a load with secondary address 0, so
     # they're not commented on)
@@ -595,18 +724,25 @@ def load_hook(runtime_addr, state, subroutine):
         _comment_call(runtime_addr, subroutine, subroutine.title)
 
 def save_hook(runtime_addr, state, subroutine):
+    """SAVE's hook: where A is loaded, write it as the name of the zero page
+    pointer to the start address; and where X and Y are loaded, as the low
+    and high bytes of the end address's label (see xy_addr())."""
     _comment_registers(runtime_addr, state, subroutine)
     # A is the zero page address of the pointer to the start address: name it
     a_addr = state.pessimistic['a'].get_previous_load_imm_operand()
     if a_addr is not None:
         auto_expr(movemanager.b2r(a_addr), get_label(memory_binary[a_addr], a_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE))
+    # (xy_addr() writes the expressions; the address itself isn't used)
     end_addr = xy_addr(state.pessimistic['x'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
     _comment_call(runtime_addr, subroutine, subroutine.title)
 
 def _carry_hook(read_text, set_text):
     """A hook for a call that reads something into X/Y with carry set, and
-    sets it from X/Y with carry clear (e.g. PLOT): the texts can use {x} and
-    {y}, the values of X and Y if they're known."""
+    sets it from X/Y with carry clear (e.g. PLOT). The call is commented
+    with read_text or set_text, depending on the carry flag, if it's known
+    (else with the call's title); set_text can use {x} and {y}, the values
+    of X and Y if they're known (else 'X' and 'Y'). When it reads, X and Y
+    are commented where they're next used, rather than where they're set."""
     def hook(runtime_addr, state, subroutine):
         carry = state.pessimistic['c']
         if carry is True:
@@ -626,17 +762,23 @@ def _carry_hook(read_text, set_text):
             _comment_call(runtime_addr, subroutine, subroutine.title)
     return hook
 
+# The hooks for PLOT, MEMTOP, MEMBOT and VECTOR, which read or set with the
+# carry flag
 plot_hook   = _carry_hook("Read the cursor position into X (row) and Y (column)", "Move the cursor to row {x}, column {y}")
 memtop_hook = _carry_hook("Read the top of memory into X/Y", "Set the top of memory to X/Y")
 membot_hook = _carry_hook("Read the bottom of memory into X/Y", "Set the bottom of memory to X/Y")
 vector_hook = _carry_hook("Copy the Kernal vectors to the list at X/Y", "Set the Kernal vectors from the list at X/Y")
 
 def setmsg_hook(runtime_addr, state, subroutine):
+    """SETMSG's hook: if A is known, comment the call with the Kernal
+    messages it shows, e.g. 'Show only Kernal error messages'."""
     _comment_registers(runtime_addr, state, subroutine)
     a = _known_value(state, 'a')
     if a is None:
         _comment_call(runtime_addr, subroutine, subroutine.title)
         return
+    # (Bit 7 shows the control messages, e.g. 'SEARCHING FOR', and bit 6 the
+    # error messages, e.g. 'I/O ERROR #4')
     shown = [kind for bit, kind in ((0x80, "control"), (0x40, "error")) if a & bit]
     if not shown:
         text = "Turn off Kernal messages"
@@ -645,13 +787,20 @@ def setmsg_hook(runtime_addr, state, subroutine):
     _comment_call(runtime_addr, subroutine, text)
 
 def strout_hook(runtime_addr, state, subroutine):
-    """BASIC's STROUT: print the zero-terminated string at A/Y"""
+    """The hook for BASIC's STROUT, which prints the zero-terminated string
+    at A/Y: where A and Y are loaded, write them as the low and high bytes
+    of the string's label (see xy_addr()), and mark the string as a
+    zero-terminated PETSCII string, if it's loaded and isn't classified
+    yet."""
     _comment_registers(runtime_addr, state, subroutine)
     string_addr = xy_addr(state.pessimistic['a'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
     if string_addr is not None and _loaded_and_unclassified(string_addr, 1):
         stringz(string_addr, encoding="petscii")
     _comment_call(runtime_addr, subroutine, subroutine.title)
 
+# The hooks for the Kernal calls that have one of their own, by name (the
+# others have default_hook()). A machine's call_hooks replaces this (e.g. the
+# PET's, whose LOAD and SAVE aren't these).
 _hooks = {
     "chrout": chrout_hook,
     "setlfs": setlfs_hook,
@@ -671,7 +820,8 @@ _hooks = {
 
 def _vector_names(names):
     """{address: (name, description, handler name)} for the vectors a
-    program can set"""
+    program can set on the machine, with the vector's name in the given
+    style (None for the 6502's own vectors, which have none here)"""
     result = {}
     for vector in _machine().vectors:
         name = None
@@ -683,12 +833,13 @@ def _vector_names(names):
 def pre_trace_writing_to_vector(p):
     """A program setting one of the vectors (e.g. the IRQ vector), an effect
     pattern (see snippethelper.vector_pattern()): before tracing, label the
-    handler (e.g. 'irq_handler', then 'irq_handler_2' etc) and trace it."""
+    handler (e.g. 'irq_handler', then 'irq_handler_2' etc), unless it has a
+    name already, and trace it."""
     _, description, handler = _vector_names(session.current().extras["commodore.names"])[p.binding('vector')]
 
     def new_name():
-        # The first handler for a vector is e.g. 'irq_handler', the next
-        # 'irq_handler_2'
+        """A name for a new handler: the first for a vector is e.g.
+        'irq_handler', the next 'irq_handler_2' (counted for the session)."""
         counts = session.current().extras.setdefault("commodore.vector_handler_count", {})
         count = counts.get(handler, 0) + 1
         counts[handler] = count
@@ -713,12 +864,17 @@ def post_trace_writing_to_vector(p):
 
 def c128_memory(configuration, addr):
     """What the C128 has at addr with the given MMU configuration (the value
-    of its configuration register, at &ff00, e.g. c128_bank_configurations[0]
-    for bank 0): 'MMU' (&ff00-&ff04, in every configuration), 'I/O',
+    of its configuration register, at $ff00, e.g. c128_bank_configurations[0]
+    for bank 0): 'MMU' ($ff00-$ff04, in every configuration), 'I/O',
     'character ROM', 'BASIC ROM', 'Kernal ROM' (which includes the screen
     editor), 'internal ROM', 'external ROM' (the function ROMs), or 'RAM 0' to
-    'RAM 3' (RAM 2 and 3 are RAM 0 and 1 on a C128 with 128K). &0000-&03ff is
+    'RAM 3' (RAM 2 and 3 are RAM 0 and 1 on a C128 with 128K). $0000-$03ff is
     always RAM 0, since the Kernal makes it common RAM."""
+    # The configuration register's bits: 0 is the I/O at $d000-$dfff (0 for
+    # I/O); 1 is $4000-$7fff (0 for BASIC's ROM, 1 for RAM); 2-3 are
+    # $8000-$bfff, and 4-5 $c000-$ffff (0 for BASIC's ROM or the Kernal's, 1
+    # for the internal function ROM, 2 for the external one, 3 for RAM); and
+    # 6-7 are the RAM bank
     if 0xff00 <= addr < 0xff05:
         return "MMU"
     ram = "RAM %d" % (configuration >> 6)
@@ -744,6 +900,7 @@ def c128_configuration_description(configuration):
     def at(addr):
         return c128_memory(configuration, addr)
     ram = "RAM %d" % (configuration >> 6)
+    # The ROMs, in address order, then the I/O or character ROM
     parts = []
     low, mid, high = at(0x4000), at(0x8000), at(0xc000)
     if low == "BASIC ROM" and mid == "BASIC ROM":
@@ -769,18 +926,21 @@ def c128_configuration_description(configuration):
         return "bank {0} ({1})".format(c128_bank_configurations.index(configuration), text)
     return text
 
-# The MMU's configuration register (at &ff00 and &d500), and its load
-# configuration registers (&ff01-&ff04: writing to one sets the configuration
-# to the preconfiguration register at &d501-&d504)
+# The MMU's configuration register (at $ff00 and $d500), and its load
+# configuration registers ($ff01-$ff04: writing to one sets the configuration
+# to the preconfiguration register at $d501-$d504)
 _MMU_CONFIGURATION_REGISTERS = (0xff00, 0xd500)
 _MMU_LOAD_CONFIGURATION_REGISTERS = range(0xff01, 0xff05)
 
 def _c128_mmu_writes():
-    """[(binary location, configuration or None)] for each instruction that
-    sets the MMU configuration: the value stored to &ff00 or &d500 (if it's
-    known), or None for a store to one of the load configuration registers
-    (&ff01-&ff04), or of an unknown value. ([(binary location, register
-    address, configuration or None)])"""
+    """The C128's Banking.writes (see _banking()): [(binary location,
+    register address, configuration or None)] for each instruction that
+    sets the MMU configuration, once the code has been traced. The
+    configuration is the value stored to $ff00 or $d500, if it's known; or
+    None for a store of an unknown value, or to one of the load
+    configuration registers ($ff01-$ff04), whose preconfiguration isn't
+    known. (Read-modify-write instructions, e.g. INC $ff00, and stores to
+    addresses that aren't known, e.g. indexed ones, are left out.)"""
     cpu = session.current().cpu
     result = []
     for run in cpu.straight_runs():
@@ -795,8 +955,11 @@ def _c128_mmu_writes():
     return result
 
 def _c128_comment_mmu_writes(writes, known):
-    """Comment each instruction that sets the MMU configuration, e.g. 'Set
-    the MMU to bank 0 (RAM 0 only)'."""
+    """The C128's Banking.comment: comment each instruction in writes (see
+    _c128_mmu_writes()) that sets the MMU configuration to a known value,
+    e.g. 'Set the MMU to bank 0 (RAM 0 only)', or a preconfiguration, e.g.
+    'Set the MMU to preconfiguration A (as set at $d501)'. ('known', the
+    configuration each instruction runs with, isn't needed here.)"""
     for binary_loc, register, configuration in writes:
         if register in _MMU_LOAD_CONFIGURATION_REGISTERS:
             text = "Set the MMU to preconfiguration {0} (as set at ${1:04x})".format("ABCD"[register - 0xff01], 0xd501 + register - 0xff01)
@@ -844,19 +1007,23 @@ def c64_configuration_description(configuration):
     return text
 
 # The 6510's port (its data register), and the opcodes that read-modify-write
-# it in zero page or absolute: INC and DEC
+# it in zero page or absolute: INC and DEC (with the change each makes)
 C64_PORT = 0x01
 _INC_DEC = {0xe6: 1, 0xee: 1, 0xc6: -1, 0xce: -1}
+# STA zp and STA addr, and the bytes of 'lda $01' (zero page and absolute)
 _STA = (0x85, 0x8d)
 _LDA_PORT = ((0xa5, 0x01), (0xad, 0x01, 0x00))
 _ACCUMULATOR_LOGIC = {0x29: lambda a, n: a & n, 0x09: lambda a, n: a | n, 0x49: lambda a, n: a ^ n}     # AND, ORA, EOR #n
 
 def _c64_port_writes():
-    """[(binary location, $01, value)] for each instruction that writes the
-    6510's port at $01: the value, if it's known; else a function of the
-    port's value before it, for INC and DEC, and for a store of A after 'lda
-    $01' and immediate ANDs, ORAs and EORs (e.g. 'lda $01 : and #$f8 : ora
-    #$05 : sta $01'); else None."""
+    """The C64's Banking.writes (see _banking()): [(binary location, $01,
+    value)] for each instruction that writes the 6510's port at $01, once
+    the code has been traced. The value is the value stored, if it's known;
+    else a function of the port's value before it, giving the value after,
+    for INC and DEC, and for a store of A after 'lda $01' and immediate
+    ANDs, ORAs and EORs (e.g. 'lda $01 : and #$f8 : ora #$05 : sta $01');
+    else None (e.g. for 'lsr $01', or a store of a value that isn't
+    known)."""
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     result = []
@@ -879,11 +1046,15 @@ def _c64_port_writes():
     return result
 
 def _c64_port_logic(run, index):
-    """For a store of A to $01 at run[index]: if A is the port's value with
-    immediate ANDs, ORAs or EORs ('lda $01', then e.g. 'and #$f8 : ora
-    #$05'), a function of the port's value before it, giving the value
-    stored; else None."""
+    """For a store of A to $01 at run[index] (run is a straight run of code,
+    see Cpu6502.straight_runs()): if A is the port's value with immediate
+    ANDs, ORAs or EORs ('lda $01', then e.g. 'and #$f8 : ora #$05'), a
+    function of the port's value before it, giving the value stored; else
+    None."""
     memory_binary = session.current().memory.binary
+    # Work back from the store, collecting the ANDs, ORAs and EORs (in the
+    # order they run), until the 'lda $01'; any other instruction first means
+    # A isn't known this way
     steps = []
     for binary_addr in reversed(run[:index]):
         opcode = memory_binary[binary_addr]
@@ -900,10 +1071,12 @@ def _c64_port_logic(run, index):
     return None
 
 def _c64_comment_port_writes(writes, known):
-    """Comment each instruction that sets the C64's memory configuration to
-    a known value, e.g. 'Set the memory configuration to RAM, I/O': a value
+    """The C64's Banking.comment: comment each instruction in writes (see
+    _c64_port_writes()) that sets the C64's memory configuration to a known
+    value, e.g. 'Set the memory configuration to RAM, I/O ($35)': a value
     stored, or for INC, DEC etc., the configuration after it, where the one
-    before it is known (see _flow_ranges())."""
+    before it is known ('known' is {binary address: configuration} for the
+    instructions that run with a known one, see _flow_ranges())."""
     cpu = session.current().cpu
     for binary_loc, _, value in writes:
         if callable(value):
@@ -923,7 +1096,11 @@ def c64_configuration(start, end, configuration):
     else there (e.g. RAM rather than a ROM or the I/O) isn't given its usual
     name, and a call to a ROM routine that's switched out isn't commented as
     one (see c64_memory()). (The configuration the code sets with $01 is
-    followed by itself: see c64().) Call it after c64()."""
+    followed by itself: see c64().) Call it after c64().
+
+    The range is recorded, as binary addresses, in the session's extras
+    (see _flow_ranges(), which uses it). It stops with an error if c64()
+    hasn't been called, or for a bad configuration or range."""
     if _machine().name != "c64":
         utils.die("commodore.c64_configuration(): call commodore.c64() first")
     if not utils.is_integer_type(configuration) or not 0 <= configuration < 0x100:
@@ -933,7 +1110,10 @@ def c64_configuration(start, end, configuration):
 
 def _checked_range(command, start, end):
     """The binary start and end of the runtime addresses start to end (end
-    exclusive), stopping with an error for bad addresses."""
+    exclusive), for c128_bank() or c64_configuration() (named by command,
+    for the errors). Stops with an error unless both are integers from 0 to
+    $10000 and start is before end, or if start or end - 1 isn't an
+    unambiguous runtime address (see movemanager.r2b_checked())."""
     for addr in (start, end):
         if not utils.is_integer_type(addr) or not 0 <= addr <= 0x10000:
             utils.die("commodore.{0}(): the addresses must be between 0 and &10000, not {1!r}".format(command, addr))
@@ -947,17 +1127,28 @@ def _checked_range(command, start, end):
 # Memory configurations: the C128's MMU, and the C64's port at $01
 
 # How a machine's memory configuration is set and what it maps (see
-# _banking()): 'writes' gives the code that sets it, 'memory' what's at an
-# address in a configuration, 'usual' the configuration the names are for
-# (e.g. the C128's bank 15), 'comment' comments the code that sets it,
-# 'heading' is the heading for the names in other configurations,
-# 'fixed_key' the session's extras for the ranges given by the control file
-# (c128_bank() or c64_configuration()), and 'far_targets_key' those for the
-# code that starts with a configuration (the C128's JSRFAR targets)
+# _banking()), so that the same code can follow the C128's MMU and the C64's
+# port at $01:
+# - 'writes' is a function giving the code that sets it (see
+#   _c128_mmu_writes() and _c64_port_writes());
+# - 'memory' is a function giving what's at an address in a configuration
+#   (c128_memory() or c64_memory());
+# - 'usual' is the configuration the names are for (the C128's bank 15, or
+#   the C64's $37);
+# - 'comment' is a function that comments the code that sets it;
+# - 'heading' is the heading for the names in other configurations, in the
+#   "Memory locations" list;
+# - 'fixed_key' is the key in the session's extras for the ranges the control
+#   file gives (with c128_bank() or c64_configuration()), as [(binary start,
+#   binary end, configuration)];
+# - 'far_targets_key' is the key for the code that starts with a
+#   configuration of its own, as {binary address: configuration} (the C128's
+#   JSRFAR and JMPFAR targets; the C64 has none).
 Banking = collections.namedtuple("Banking", ["writes", "memory", "usual", "comment", "heading", "fixed_key", "far_targets_key"])
 
 def _banking():
-    """The Banking for the machine, or None if it has none"""
+    """The Banking for the session's machine (the C128 or the C64), or None
+    if it has none"""
     name = _machine().name
     if name == "c128":
         return Banking(_c128_mmu_writes, c128_memory, c128_bank_configurations[15], _c128_comment_mmu_writes,
@@ -973,30 +1164,43 @@ _BLOCK_END_OPCODES = (0x60, 0x40, 0x00, 0x6c)
 _BRANCH_OPCODES = (0x10, 0x30, 0x50, 0x70, 0x90, 0xb0, 0xd0, 0xf0)
 
 def _flow_ranges(writes, banking):
-    """[(binary start, binary end, configuration)] for the code that runs
-    with a known memory configuration (the C128's MMU configuration, or the
-    C64's port at $01, see _banking()), and {binary address: configuration}
-    for each instruction that runs with a known one, following the configuration through the
-    code as it runs: from an instruction that sets it to a known value (see
-    _c128_mmu_writes()), to the next instruction, the target of a branch or
-    JMP, and a subroutine called with JSR (whose return comes back with the
-    configuration it was called with, unless the subroutine sets its own,
-    see summary(); after a call that prints the string after it, PRIMM, at
-    the code after the string), up to the next instruction that sets it. Where code can be reached with different
-    configurations (or from an entry point, or code the program refers to
-    another way, e.g. a vector it sets, which aren't known), it isn't known
-    (so it's taken to be the usual one, e.g. the C128's bank 15). Code in a
-    c128_bank() or c64_configuration() range whose configuration isn't known
-    from the code before it has the range's; a JSRFAR or JMPFAR target (see
-    pre_trace_far_call()) starts with its bank's.
+    """Follow the memory configuration (the C128's MMU configuration, or the
+    C64's port at $01, as 'banking' says, see _banking()) through the code
+    as it runs, once it's been traced. Returns (ranges, known): ranges is
+    [(binary start, binary end, configuration)] for the runs of
+    instructions that run with a known configuration, and known is {binary
+    address: configuration} for each instruction that does.
 
-    A write's value is a configuration, None if it isn't known, or a
-    function of the configuration before it (e.g. for INC $01), which is
-    only known where that is."""
+    'writes' is banking.writes()'s list of the instructions that set the
+    configuration (see _c128_mmu_writes()). A write's value is a
+    configuration, None if it isn't known, or a function of the
+    configuration before it (e.g. for INC $01), which is only known where
+    that is.
+
+    The configuration is followed from an instruction that sets it to a
+    known value to the next instruction, the target of a branch or JMP, and
+    a subroutine called with JSR, up to the next instruction that sets it.
+    The return from a JSR comes back with the configuration the call was
+    made with, unless the subroutine always returns with one it sets itself,
+    or returns with different ones (see summary()); after a call that
+    prints the string after it (PRIMM),
+    the code after the string has it. A call to code that isn't traced
+    (e.g. a ROM routine) is taken to leave the configuration as it was.
+
+    Where code can be reached with different configurations, or from an
+    entry point, code with nothing before it, or code the program refers to
+    another way (e.g. a vector it sets), its configuration isn't known (so
+    it's taken to be the usual one, e.g. the C128's bank 15). Code in a
+    c128_bank() or c64_configuration() range has the range's configuration
+    where it's reached from outside the range (or where it isn't reached at
+    all), and follows the code within it; a JSRFAR or JMPFAR target (see
+    pre_trace_far_call()) starts with its bank's."""
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     labels = session.current().labels.labels
     moves = session.current().moves.move_id_for_binary_addr
+    # (The configuration of code that can be reached with different ones, or
+    # where it isn't known)
     UNKNOWN = object()
 
     # The code's instructions, and how control flows from each
@@ -1014,6 +1218,9 @@ def _flow_ranges(writes, banking):
     is_instruction = {binary_addr for binary_addr, _ in instructions}
 
     def code_at(runtime_addr, move_id):
+        """The binary addresses of the instructions at a jump's, branch's or
+        call's target, preferring the given move (the instruction's): none
+        if the target isn't traced code."""
         binary_addr = cpu.get_target_binary_addr_preferring_given_move_id(RuntimeAddr(runtime_addr), move_id) if runtime_addr < 0x10000 else []
         return [b for b in binary_addr if b in is_instruction]
 
@@ -1028,8 +1235,11 @@ def _flow_ranges(writes, banking):
         if opcode in _BLOCK_END_OPCODES:
             pass
         elif opcode == 0x4c:
+            # JMP addr
             nexts = [(n, None) for n in code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])]
         elif opcode == 0x20:
+            # JSR: the call, and the return (with the target, so the return
+            # can use the subroutine's summary(); None if it isn't traced)
             targets = code_at(memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2], moves[binary_addr])
             after = binary_addr + length
             c = classification.get_classification(after) if after < 0x10000 else None
@@ -1041,6 +1251,8 @@ def _flow_ranges(writes, banking):
                 nexts.append((after, targets[0] if targets else None))
             nexts += [(n, "call") for n in targets]
         else:
+            # The next instruction, and a branch's target (its offset is
+            # signed, from the instruction after it)
             if binary_addr + length in is_instruction and not classification.get_classification(binary_addr).is_block_end():
                 nexts.append((binary_addr + length, None))
             if opcode in _BRANCH_OPCODES:
@@ -1060,22 +1272,30 @@ def _flow_ranges(writes, banking):
         referred = label is not None and any(ref.binary_addr not in predecessors[binary_addr] for ref in label.references)
         if binary_addr in cpu.explicit_entry_points or not predecessors[binary_addr] or referred:
             seeds[binary_addr] = UNKNOWN
+    # A JSRFAR or JMPFAR target (see pre_trace_far_call()) starts with its
+    # bank's configuration, even if it's one of the above (e.g. code with
+    # nothing before it)
     for binary_addr, configuration in session.current().extras.get(banking.far_targets_key, {}).items():
         if binary_addr in is_instruction:
             seeds[binary_addr] = configuration if seeds.get(binary_addr, configuration) is UNKNOWN or binary_addr not in seeds else seeds[binary_addr]
 
+    # The ranges the control file gives (c128_bank() or c64_configuration())
     banks = list(session.current().extras.get(banking.fixed_key, []))
     def bank_range(binary_addr):
-        """The c128_bank() range binary_addr is in, or None"""
+        """The c128_bank() or c64_configuration() range (binary start,
+        binary end, configuration) that binary_addr is in (the first given,
+        if there's more than one), or None"""
         for r in banks:
             if r[0] <= binary_addr < r[1]:
                 return r
         return None
 
+    # {binary address: what the instruction sets the configuration to}
     write_values = {binary_loc.binary_addr: configuration for binary_loc, _, configuration in writes}
 
     # Work out the configuration each instruction runs with (its 'in'),
     # merging what reaches it: a known configuration if every way in agrees
+    # (None is nothing yet)
     def merge(a, b):
         if a is None:
             return b
@@ -1090,21 +1310,29 @@ def _flow_ranges(writes, banking):
     def propagate(seeds, follow_calls):
         """{binary address: the configuration it runs with} for the code
         reached from the seeds ({binary address: configuration}), following
-        calls into subroutines (and using the c128_bank() ranges) if
-        follow_calls. (Without, it's for summary(), which only counts the
-        configurations the subroutine sets itself.)"""
+        calls into subroutines (and using the c128_bank() and
+        c64_configuration() ranges) if follow_calls. (Without, it's for
+        summary(), which only counts the configurations the subroutine sets
+        itself: a call within it returns with its summary(), and the
+        subroutine isn't followed into.)
+
+        This is a work list: an instruction whose 'in' changes is looked at
+        again, until nothing changes."""
         def bank_range_used(binary_addr):
             return bank_range(binary_addr) if follow_calls else None
         configuration_in = {}
         work = collections.deque()
         for binary_addr, value in seeds.items():
             if bank_range_used(binary_addr) is not None:
-                # (c128_bank() says what it runs with)
+                # (The c128_bank() or c64_configuration() range says what it
+                # runs with)
                 value = bank_range_used(binary_addr)[2]
             configuration_in[binary_addr] = merge(configuration_in.get(binary_addr), value)
             work.append(binary_addr)
         while work:
             binary_addr = work.popleft()
+            # The configuration after the instruction: its 'in', unless it
+            # sets it
             value = configuration_in[binary_addr]
             if binary_addr in write_values:
                 written = write_values[binary_addr]
@@ -1123,8 +1351,9 @@ def _flow_ranges(writes, banking):
                     effect = summary(call)
                     out = value if effect is CALLER else effect
                 r = bank_range_used(n)
-                # (Code in a c128_bank() range runs with its configuration
-                # when it's reached from outside the range)
+                # (Code in a c128_bank() or c64_configuration() range runs
+                # with its configuration when it's reached from outside the
+                # range)
                 new = merge(configuration_in.get(n), r[2] if r is not None and r is not bank_range_used(binary_addr) else out)
                 if new is not configuration_in.get(n) and new != configuration_in.get(n):
                     configuration_in[n] = new
@@ -1132,10 +1361,12 @@ def _flow_ranges(writes, banking):
         return configuration_in
 
     def summary(target):
-        """What the subroutine at target does to the configuration: CALLER
-        if every RTS it reaches has the one it was called with, a
-        configuration if they all have that one (e.g. 'lda #$3f : sta $ff00
-        : rts'), else UNKNOWN."""
+        """What the subroutine at target (a binary address) does to the
+        configuration: CALLER if every RTS it reaches has the one it was
+        called with (or it reaches none), a configuration if they all have
+        that one (e.g. 'lda #$3f : sta $ff00 : rts'), else UNKNOWN. Worked
+        out once for each subroutine; a recursive call, while it's being
+        worked out, is taken to be CALLER."""
         if target in summaries:
             return summaries[target]
         if target in in_progress:
@@ -1152,6 +1383,9 @@ def _flow_ranges(writes, banking):
     configuration_in = propagate(seeds, follow_calls=True)
     known = {binary_addr: value for binary_addr, value in configuration_in.items() if utils.is_integer_type(value)}
 
+    # The ranges: each run of consecutive instructions with the same known
+    # configuration (code in a range the control file gives, but not
+    # reached, has the range's)
     result = []
     for binary_addr, length in instructions:
         value = configuration_in.get(binary_addr)
@@ -1166,9 +1400,11 @@ def _flow_ranges(writes, banking):
     return result, known
 
 def _c128_configuration_at(binary_addr, ranges):
-    """The MMU configuration the code at binary_addr runs with, from the
-    ranges [(binary start, binary end, configuration)] (the first that
-    covers it), or None if it's not known (so it's taken to be bank 15)."""
+    """The memory configuration the code at binary_addr runs with (the
+    C128's MMU configuration, or the C64's port at $01: this is used for
+    both), from the ranges [(binary start, binary end, configuration)] (the
+    first that covers it), or None if it's not known (so it's taken to be
+    the usual one, e.g. the C128's bank 15)."""
     for start, end, configuration in ranges:
         if start <= binary_addr < end:
             return configuration
@@ -1183,15 +1419,18 @@ def _name_by_configuration(ranges, banking):
     """Where code that runs with another memory configuration (in the
     ranges, see _c128_configuration_at()) uses an address that's something
     else in that configuration than in the usual one (e.g. the C128's bank
-    15: RAM rather than I/O or a ROM), give the address a plain name there
-    (e.g. 'ld020'), as a local label, rather than its usual name (e.g.
-    'vic_border_colour'). Only names commodore.py gives are replaced, not the
-    control file's."""
+    15, or the C64's $37: RAM rather than I/O or a ROM, as banking.memory
+    says), give the address a plain name there (e.g. 'ld020'), as a local
+    label for that instruction, rather than its usual name (e.g.
+    'vic_border_colour'). These names are listed under banking.heading in
+    the "Memory locations" list. Only names commodore.py gives are
+    replaced (the optional labels, and the names of the ROM routines and
+    Kernal calls), not the control file's."""
     if not ranges:
         return
     machine = _machine()
     optional_labels = session.current().disassembly.optional_labels
-    # The names c128() gives that can be replaced: the ROM routines' and
+    # The names c128() etc. give that can be replaced: the ROM routines' and
     # the Kernal's jump table's (whose calls aren't commented there either,
     # see _unless_mapped_out())
     routine_names = collections.defaultdict(set)
@@ -1203,9 +1442,12 @@ def _name_by_configuration(ranges, banking):
     for runtime_addr, label in sorted(session.current().labels.labels.items()):
         if runtime_addr not in optional_labels and runtime_addr not in routine_names:
             continue
+        # (Any other explicit name is the control file's, so it's kept)
         given = {name.text for names in label.explicit_names.values() for name in names}
         if not given <= routine_names.get(runtime_addr, set()):
             continue
+        # Each use of the address from code that runs with a configuration
+        # in which it's something else
         for reference in label.references:
             configuration = _c128_configuration_at(reference.binary_addr, ranges)
             if configuration is None or banking.memory(configuration, runtime_addr) == banking.memory(usual, runtime_addr):
@@ -1218,13 +1460,17 @@ def _name_by_configuration(ranges, banking):
 # ************************************************************************************************
 # Drive code in another machine's program (see drive1541_code())
 
+# Each piece of drive code drive1541_code() is given: where it is in the
+# binary, how long it is, where it runs in the drive, its move ID and the
+# drive's ROM ("1541" or "1541-ii"). They're kept in the session's extras,
+# as "commodore.drive_code".
 DriveCode = collections.namedtuple("DriveCode", ["binary_start", "length", "runtime_start", "move_id", "rom"])
 
 # The heading for the drive's names in the "Memory locations" list
 DRIVE_CODE_HEADING = "1541 drive"
 
 def _drive_code_at(binary_addr):
-    """The DriveCode that binary_addr is in, or None"""
+    """The DriveCode that binary_addr (a binary address) is in, or None"""
     for drive_code in session.current().extras.get("commodore.drive_code", []):
         if drive_code.binary_start <= binary_addr < drive_code.binary_start + drive_code.length:
             return drive_code
@@ -1234,9 +1480,10 @@ def _drive_code_names():
     """Where drive code (see drive1541_code()) uses an address outside the
     drive code itself, it gets the 1541's name (e.g. 'job_queue', rather
     than the machine's name for the address), with '_drive' added to a name
-    that's also the machine's (see disassembly.add_range_optional_labels()).
-    Calls from it to the DOS ROM's routines are commented. (Run once the
-    code has been traced, as one of the CPU's code analysis functions.)"""
+    that's also the machine's or the control file's (see
+    disassembly.add_range_optional_labels()). Calls from it to the DOS
+    ROM's routines are commented with their titles. (Run once the code has
+    been traced, as one of the CPU's code analysis functions.)"""
     drive_codes = session.current().extras.get("commodore.drive_code", [])
     if not drive_codes:
         return
@@ -1255,9 +1502,13 @@ def _drive_code_names():
 
     for drive_code in drive_codes:
         start, end = drive_code.binary_start, drive_code.binary_start + drive_code.length
-        # (A buffer the drive code is in isn't named)
+        # (A buffer the drive code is in isn't named: one with drive code at
+        # its first or last byte)
         buffers = [n for n in range(5) if not any(_drive_loaded(addr)[0] for addr in (0x0300 + 0x100 * n, 0x03ff + 0x100 * n))]
         machine = drive1541_machine(drive_code.rom, buffers)
+        # The 1541's names, except for the addresses in drive code. (A name
+        # with a base address, e.g. 'buffer_2+1', is made from its base's
+        # name where it's used, so only the base names need '_drive'.)
         names = {}
         for addr, name, base in location_names(machine, names_style, rom_labels):
             if addr in names or _drive_loaded(addr)[0]:
@@ -1271,7 +1522,7 @@ def _drive_code_names():
             names[addr] = (name, base)
         disassembly.add_range_optional_labels(start, end, names, DRIVE_CODE_HEADING)
 
-        # Calls to the DOS ROM's routines
+        # Calls to the DOS ROM's routines (JSRs and JMPs from the drive code)
         titles = {routine.addr: routine.title for routine in machine.rom_routines}
         for runtime_addr, title in titles.items():
             label_ = labels.get(runtime_addr)
@@ -1297,7 +1548,12 @@ def drive1541_code(runtime_addr, binary_addr, length, rom="1541"):
     are commented, and not taken to be calls to the machine's ROM (whose
     hooks don't run there). Its jobs are commented, and a JUMP or EXECUTE
     job's code is traced if it's in drive code too (see drive1541()). rom is
-    as for drive1541()."""
+    as for drive1541().
+
+    The first call adds _drive_code_names() and _drive1541_analysis() to
+    the CPU's code analysis functions, and registers the job queue's effect
+    patterns. Stops with an error if there's no machine yet, or it's the
+    1541's own disassembly."""
     if _machine().name == "1541":
         utils.die("commodore.drive1541_code(): this is already the 1541's disassembly (drive1541())")
     if session.current().extras.get("commodore.machine") is None:
@@ -1322,9 +1578,12 @@ def _mapped_out(binary_addr, runtime_addr):
     runtime_addr is something else than usual (e.g. RAM rather than the
     Kernal ROM or I/O), so a call to a ROM routine there, or a store to an
     I/O register, isn't one. (Always False for the other machines.) During
-    tracing, only c128_bank()'s and c64_configuration()'s configurations are
-    known; once the code has been traced, those the code sets too (see
-    _banking_analysis())."""
+    tracing, only c128_bank()'s and c64_configuration()'s configurations
+    are known; once the code has been traced, those the code sets too (see
+    _banking_analysis()).
+
+    It's always True for drive code (see drive1541_code()), which runs in
+    the drive, so the machine's ROM routines and I/O aren't there."""
     if _drive_code_at(binary_addr) is not None:
         # (Drive code, see drive1541_code(), runs in the drive)
         return True
@@ -1332,6 +1591,8 @@ def _mapped_out(binary_addr, runtime_addr):
     if banking is None:
         return False
     extras = session.current().extras
+    # (The ranges _banking_analysis() found, once it's run; until then, the
+    # control file's)
     ranges = extras.get("commodore.banking_ranges")
     if ranges is None:
         ranges = extras.get(banking.fixed_key, [])
@@ -1339,8 +1600,9 @@ def _mapped_out(binary_addr, runtime_addr):
     return configuration is not None and banking.memory(configuration, runtime_addr) != banking.memory(banking.usual, runtime_addr)
 
 def _unless_mapped_out(hook):
-    """A subroutine hook for a ROM routine, that does nothing for a call
-    from code that runs with the ROM mapped out (see _mapped_out())."""
+    """A subroutine hook for a ROM routine or Kernal call that runs hook,
+    except for a call from code that runs with the ROM mapped out, or from
+    drive code (see _mapped_out()), where it does nothing."""
     def wrapper(runtime_addr, state, subroutine):
         binary_addr, _ = movemanager.r2b(runtime_addr)
         if binary_addr is not None and _mapped_out(binary_addr, subroutine.runtime_addr):
@@ -1349,9 +1611,12 @@ def _unless_mapped_out(hook):
     return wrapper
 
 def _inline_string_hook(target, caller):
-    """The hook for a call that prints the string after it (PRIMM): tracing
-    continues after the string, unless the call is from code that runs with
-    the Kernal ROM mapped out (see _mapped_out())."""
+    """The tracing hook (see Cpu.subroutine_hooks) for a call that prints
+    the string after it (PRIMM): it marks the zero-terminated string after
+    the JSR at caller, and returns the address after it, where tracing
+    continues. For a call from code that runs with the Kernal ROM mapped
+    out (see _mapped_out()), it's an ordinary call, and tracing continues
+    after the JSR."""
     binary_addr, _ = movemanager.r2b(caller)
     if binary_addr is not None and _mapped_out(binary_addr, target):
         return caller + 3
@@ -1363,7 +1628,9 @@ def _banking_analysis():
     uses according to the configuration it runs with: after the code sets it
     (see _flow_ranges()), or as c128_bank() or c64_configuration() says.
     (Run once the code has been traced, as one of the CPU's code analysis
-    functions.)"""
+    functions, before the calls are commented and the colours substituted.)
+    The ranges are kept in the session's extras, as
+    "commodore.banking_ranges", for _mapped_out()."""
     banking = _banking()
     writes = banking.writes()
     ranges, known = _flow_ranges(writes, banking)
@@ -1378,14 +1645,19 @@ def c128_bank(start, end, bank=None, *, configuration=None):
     """Say that the code from start to end (runtime addresses, end exclusive)
     runs with the C128's MMU set to the given bank (0-15, as the Kernal
     numbers them, see c128_bank_configurations), or configuration (the value
-    of its configuration register, at &ff00), rather than the usual bank 15.
+    of its configuration register, at $ff00), rather than the usual bank 15.
     An address it uses that's something else there (e.g. in bank 0, RAM
     rather than I/O or a ROM) isn't given its name in bank 15: e.g. 'lda
     $d020' is 'lda ld020', not 'lda vic_border_colour'. (Only the names
-    c128() gives; and &0000-&03ff is RAM 0 in every bank.) A call to a ROM
+    c128() gives; and $0000-$03ff is RAM 0 in every bank.) A call to a ROM
     routine that's mapped out isn't commented as one, and a call to PRIMM
     isn't followed by a string (see _mapped_out()). Call it after
-    c128()."""
+    c128().
+
+    The range is recorded, as binary addresses, in the session's extras
+    (see _flow_ranges(), which uses it). It stops with an error if c128()
+    hasn't been called, if it isn't given either a bank or a configuration
+    (or is given both), or for a bad bank, configuration or range."""
     command = "c128_bank"
     if _machine().name != "c128":
         utils.die("commodore.c128_bank(): call commodore.c128() first")
@@ -1402,10 +1674,11 @@ def c128_bank(start, end, bank=None, *, configuration=None):
 
 
 def _far_call(p):
-    """For a match of the JSRFAR/JMPFAR effect pattern: (bank, target address,
-    whether it's JMPFAR, whether the target is traced). The target is traced
-    if it's in the program, i.e. loaded, and RAM 0 in that bank (RAM 2 is
-    RAM 0 on a C128 with 128K)."""
+    """For a match of the JSRFAR/JMPFAR effect pattern (see
+    register_snippets()): (bank, target address, whether it's JMPFAR,
+    whether the target is traced). The target is traced if it's in the
+    program, i.e. loaded, and RAM 0 in that bank (RAM 2 is RAM 0 on a C128
+    with 128K), with the bank one of the Kernal's 16."""
     bank = p.value('bank')
     target = p.value('lo') + 256*p.value('hi')
     is_jump = p.memory_binary[p.get_binary_address('call')] == 0x4c
@@ -1414,9 +1687,11 @@ def _far_call(p):
 
 def pre_trace_far_call(p):
     """A C128 program setting up JSRFAR or JMPFAR's bank and address at
-    &02-&04 with known values, then calling it (an effect pattern): before
+    $02-$04 with known values, then calling it (an effect pattern): before
     tracing, if the address is in the program (see _far_call()), name it
-    (e.g. 'far_call_target') and trace it."""
+    (e.g. 'far_call_target', unless it has a name already) and trace it,
+    and record that it runs with its bank's configuration (see
+    _flow_ranges())."""
     bank, target, is_jump, traced = _far_call(p)
     if not traced:
         return
@@ -1435,7 +1710,9 @@ def pre_trace_far_call(p):
 
 def post_trace_far_call(p):
     """After tracing: comment the set-up of a JSRFAR or JMPFAR (e.g. 'Call
-    far_call_target in bank 0'), and use the target's name in it."""
+    far_call_target in bank 0'), before it and set off by blank lines, and
+    if the target is traced, write the address's loads as its name's low
+    and high bytes (unless they're written another way already)."""
     bank, target, is_jump, traced = _far_call(p)
     start, end = p.extent()
     if traced:
@@ -1447,6 +1724,7 @@ def post_trace_far_call(p):
     else:
         target_text = "$%04x" % target
 
+    # (A blank line before it, unless it starts at a label with a name)
     labels = session.current().labels.labels
     runtime_addr = movemanager.b2r(start.binary_addr)
     if not (runtime_addr in labels and labels[runtime_addr].explicit_names.get(start.move_id)):
@@ -1459,11 +1737,12 @@ def post_trace_far_call(p):
 # The 1541's job queue
 
 def _drive1541_job(p):
-    """For a match of a job pattern (see register_snippets()): (job number,
-    job code name, track, sector), the track and sector None if they're not
-    known, or None if the value stored isn't a job code, or the code isn't
-    the 1541's (in a disassembly for another machine, only the drive code
-    given by drive1541_code() is)."""
+    """For a match of a job pattern (see _register_job_patterns()): (job
+    number, job code name, track, sector), the track and sector None if
+    they're not known, or None if the value stored isn't a job code, or the
+    code isn't the 1541's (in a disassembly for another machine, only the
+    drive code given by drive1541_code() is). The job number is the job
+    queue's address that's written ($00-$05)."""
     code = p.value('code')
     if code not in drive1541_job_codes:
         return None
@@ -1486,12 +1765,13 @@ def _drive_loaded(runtime_addr):
 def pre_trace_drive1541_job(p):
     """Code writing a job code to the 1541's job queue (an effect pattern):
     before tracing, for a job that runs the code in its buffer (JUMP or
-    EXECUTE), label and trace that code (e.g. 'job_3_code'), if it's
-    loaded."""
+    EXECUTE), label and trace that code (e.g. 'job_3_code', unless it has a
+    name already), if it's loaded."""
     job = _drive1541_job(p)
     if job is None:
         return
     n, name, _, _ = job
+    # (Job n's buffer is at $0300 + $100 * n)
     code = 0x0300 + 0x100 * n
     loaded, move_id = _drive_loaded(code)
     if name in ("job_jump", "job_execute") and loaded:
@@ -1501,7 +1781,9 @@ def pre_trace_drive1541_job(p):
 
 def post_trace_drive1541_job(p):
     """After tracing: comment the job (e.g. 'Job 0: read track 18, sector 1
-    into buffer 0 ($0300)'), and name its code (e.g. 'job_read')."""
+    into buffer 0 ($0300)'), before the code that sets it up and set off by
+    blank lines, and name its job code as a constant where it's loaded
+    (e.g. 'lda #job_read')."""
     job = _drive1541_job(p)
     if job is None:
         return
@@ -1538,7 +1820,11 @@ def post_trace_drive1541_job(p):
 
 def _register_job_patterns():
     """Register the effect patterns for jobs written to the 1541's job queue
-    (see register_snippets())."""
+    (see register_snippets()): one for each of the six jobs, n, matching a
+    store to its place in the queue ($00 + n, the 'store' line), with the
+    optional stores of its track and sector ($06 + 2n and $07 + 2n) before
+    it. (Called by register_snippets() for the 1541, and by
+    drive1541_code() for drive code in another machine's program.)"""
     for n in range(6):
         register_snippet(pre_trace_drive1541_job, post_trace_drive1541_job, """
 track
@@ -1562,7 +1848,8 @@ def _drive1541_in_scope(binary_addr):
 
 def _a_set_by(run, k):
     """The binary address of the instruction before run[k] in the straight
-    run of code that last changed A, or None"""
+    run of code that last changed A (one that does more than read it), or
+    None"""
     for binary_addr in reversed(run[:k]):
         if classification.get_classification(binary_addr).reg_changes['a'] not in "-U":
             return binary_addr
@@ -1570,7 +1857,12 @@ def _a_set_by(run, k):
 
 def _via_bits_text(register, set_mask, clear_mask):
     """What setting and clearing the bits of a 1541 VIA port does, e.g.
-    'Turn the LED on', or None if none of them are outputs it knows."""
+    'Turn the LED on', or None if none of them are outputs it knows.
+    register is the port's address ($1800 or $1c00, see
+    drive1541_via_bits), and set_mask and clear_mask the bits that are
+    known to be set and cleared. A two-bit field of VIA 2's port B (the
+    stepper motor's phase, or the bit rate) is described only if both its
+    bits are known."""
     phrases = []
     for bit, (_, output) in sorted(drive1541_via_bits[register].items()):
         if output is not None:
@@ -1579,8 +1871,9 @@ def _via_bits_text(register, set_mask, clear_mask):
             elif clear_mask & (1 << bit):
                 phrases.append(output[1])
     if register == 0x1c00:
-        # Two-bit fields: the head stepper's phase, and the bit rate (3 for
-        # tracks 1-17, 2 for 18-24, 1 for 25-30, 0 for 31 on)
+        # Two-bit fields: the head stepper's phase (bits 0-1), and the bit
+        # rate (bits 5-6: 3 for tracks 1-17, 2 for 18-24, 1 for 25-30, 0 for
+        # 31 on)
         mask = 3
         if (set_mask | clear_mask) & mask == mask:
             phrases.append("set the stepper motor's phase to {0}".format(set_mask & mask))
@@ -1610,6 +1903,8 @@ def _drive1541_analysis():
                                    align=Align.INLINE, auto_generated=True)
 
     def name_result(operand_addr):
+        """Name the job result at the operand as a constant (e.g. 'job_ok'),
+        commented with the error the DOS reports for it."""
         value = memory_binary[operand_addr]
         if value in drive1541_job_results:
             name, description = drive1541_job_results[value]
@@ -1617,6 +1912,7 @@ def _drive1541_analysis():
             classification.add_expression(operand_addr, name, force=False)
 
     def absolute(binary_addr):
+        """The 16-bit operand of the instruction at binary_addr."""
         return memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
 
     for run in cpu.straight_runs():
@@ -1625,17 +1921,20 @@ def _drive1541_analysis():
                 continue
             opcode = memory_binary[binary_addr]
             if opcode == 0xc9:
-                # 'cmp #n' after reading the job queue
+                # 'cmp #n' after reading the job queue: A was last set by
+                # 'lda zp', 'lda zp,x', 'lda addr' or 'lda addr,x' of $00-$05
                 source = _a_set_by(run, k)
                 if source is not None and ((memory_binary[source] in (0xa5, 0xb5) and memory_binary[source + 1] <= 5) or
                                            (memory_binary[source] in (0xad, 0xbd) and absolute(source) <= 5)):
                     name_result(binary_addr + 1)
             elif opcode in (0x20, 0x4c) and absolute(binary_addr) == _DRIVE1541_END_JOB:
-                # 'lda #n : jmp end_job'
+                # 'lda #n : jmp end_job' (or JSR)
                 source = _a_set_by(run, k)
                 if source is not None and memory_binary[source] == 0xa9:
                     name_result(source + 1)
             elif opcode in (0x8d, 0x8e, 0x8c) and absolute(binary_addr) in drive1541_via_bits:
+                # STA, STX or STY addr to a VIA port: work out which bits are
+                # known to be set and cleared
                 register = absolute(binary_addr)
                 set_mask = clear_mask = 0
                 # 'lda register', then 'ora #n' and 'and #n', then 'sta register'
@@ -1652,7 +1951,8 @@ def _drive1541_analysis():
                             clear_mask |= ~n & 0xff
                             set_mask &= n
                 elif k > 0:
-                    # A known value
+                    # A known value (of the register stored, from the state
+                    # after the instruction before the store)
                     value = cpu.cpu_states[run[k - 1]].pessimistic["axy"[(0x8d, 0x8e, 0x8c).index(opcode)]].value
                     if value is None:
                         continue
@@ -1663,7 +1963,8 @@ def _drive1541_analysis():
                 if text is not None:
                     comment(binary_addr, text)
             elif opcode == 0x29 and k > 0 and memory_binary[run[k - 1]] == 0xad and absolute(run[k - 1]) in drive1541_via_bits:
-                # 'lda register : and #n', testing bits
+                # 'lda register : and #n', testing bits (only if every bit
+                # tested is one it knows)
                 bits = drive1541_via_bits[absolute(run[k - 1])]
                 n = memory_binary[binary_addr + 1]
                 names = [bits[bit][0] for bit in range(8) if n & (1 << bit) and bit in bits]
@@ -1675,14 +1976,16 @@ def _drive1541_analysis():
 
 def register_snippets():
     """Register commodore's snippets with the current session (once per
-    session)"""
+    session; _set_up() calls it): the effect patterns for the machine's
+    JSRFAR and JMPFAR calls (if it has them), the 1541's jobs (for the
+    1541) and the vectors a program can set."""
     extras = session.current().extras
     if extras.get("commodore.snippets_registered"):
         return
     extras["commodore.snippets_registered"] = True
 
     # On the C128, a call to JSRFAR or JMPFAR with its bank and address set at
-    # &02-&04, e.g. 'lda #0 : sta $02 : lda #>target : sta $03 : lda #<target
+    # $02-$04, e.g. 'lda #0 : sta $02 : lda #>target : sta $03 : lda #<target
     # : sta $04 : jsr jsrfar' (an effect pattern, so in any order, with any
     # registers and other instructions between)
     if any(call.name == "jsrfar" for call in _machine().jump_table):
@@ -1697,8 +2000,8 @@ call
     jsr $ff6e | jmp $ff71
 """)
 
-    # In the 1541, code writing a job code to the job queue (&00-&05, one for
-    # each buffer), with the job's track and sector (&06-&11) if they're set
+    # In the 1541, code writing a job code to the job queue ($00-$05, one for
+    # each buffer), with the job's track and sector ($06-$11) if they're set
     # too (an effect pattern for each job)
     if _machine().name == "1541":
         _register_job_patterns()
@@ -1710,17 +2013,22 @@ call
 # ************************************************************************************************
 # The VIC-II's interrupts (C64 and C128)
 
+# The VIC-II's registers for its interrupts: its control register 1 (whose
+# bit 7 is bit 8 of the raster line), the raster line to interrupt at, and
+# its interrupt status and enable registers
 _VIC_CONTROL_1 = 0xd011
 _VIC_RASTER_LINE = 0xd012
 _VIC_INTERRUPT_STATUS = 0xd019
 _VIC_INTERRUPT_ENABLE = 0xd01a
 _VIC_REGISTERS = (_VIC_CONTROL_1, _VIC_RASTER_LINE, _VIC_INTERRUPT_STATUS, _VIC_INTERRUPT_ENABLE)
 
-# The VIC-II's interrupts, by bit (of &d019 and &d01a)
+# The VIC-II's interrupts, by bit (of $d019 and $d01a)
 _VIC_INTERRUPTS = ("raster", "sprite-background collision", "sprite-sprite collision", "light pen")
 
 def _vic_interrupts_text(value):
-    """e.g. 'raster interrupt', 'raster and light pen interrupts'"""
+    """The VIC-II's interrupts whose bits are set in value (bits 0-3, at
+    least one of them), e.g. 'raster interrupt', 'raster and light pen
+    interrupts'"""
     names = [name for bit, name in enumerate(_VIC_INTERRUPTS) if value & (1 << bit)]
     if len(names) == 1:
         return names[0] + " interrupt"
@@ -1728,14 +2036,15 @@ def _vic_interrupts_text(value):
 
 def _vic_interrupt_analysis():
     """Comment the code that sets up the VIC-II's interrupts: a store of a
-    known value to its raster line register (&d012), e.g. 'Raster interrupt
-    at line 100', with bit 8 from a store to &d011 that runs with it, if it's
-    known; to its interrupt enable register (&d01a), e.g. 'Enable only the
-    VIC-II's raster interrupt'; and to its interrupt status register (&d019),
-    e.g. 'Acknowledge the VIC-II's raster interrupt', as does a
-    read-modify-write instruction (e.g. 'asl $d019'). (Not where a C128's
-    MMU maps the I/O out: see _mapped_out(). Run once the code has been
-    traced, as one of the CPU's code analysis functions.)"""
+    known value to its raster line register ($d012), e.g. 'Raster interrupt
+    at line 100', with bit 8 from a store to $d011 in the same straight run
+    of code, if it's known; to its interrupt enable register ($d01a), e.g.
+    'Enable only the VIC-II's raster interrupt'; and to its interrupt status
+    register ($d019), e.g. 'Acknowledge the VIC-II's raster interrupt', as
+    does a read-modify-write instruction (e.g. 'asl $d019'). (Not where the
+    C128's MMU or the C64's port at $01 maps the I/O out: see
+    _mapped_out(). Run once the code has been traced, as one of the CPU's
+    code analysis functions, for the C64 and C128.)"""
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
 
@@ -1750,8 +2059,9 @@ def _vic_interrupt_analysis():
         if not accesses:
             continue
 
-        # Bit 8 of the raster line: bit 7 of what's stored to &d011, if
-        # that's known, or set by an 'and #n' or 'ora #n' just before
+        # Bit 8 of the raster line: bit 7 of what's stored to $d011, if
+        # that's known, or set by an 'and #n' or 'ora #n' just before (and
+        # only if every store to $d011 in the run agrees)
         high_bits = set()
         for write in accesses:
             if write.target != _VIC_CONTROL_1 or write.read_modify_write:
@@ -1769,6 +2079,8 @@ def _vic_interrupt_analysis():
                 high_bits.add(None)
         high_bit = high_bits.pop() if len(high_bits) == 1 else None
 
+        # Comment each write (bits 0-3 of the enable and status registers
+        # are the interrupts)
         for write in accesses:
             binary_addr, register, value = write.binary_addr, write.target, write.value
             if write.read_modify_write:
@@ -1801,8 +2113,10 @@ def _vic_interrupt_analysis():
 # BASIC programs
 
 def _basic_line_text(data):
-    """A tokenised BASIC line's text as LIST shows it (in the C64's upper
-    case/graphics character set), with other codes as e.g. {$93}"""
+    """A tokenised BASIC line's text (data, its bytes) as LIST shows it (in
+    the C64's upper case/graphics character set), with the machine's BASIC
+    keywords for the tokens (except in quotes or after REM), {pi} for pi,
+    and other codes as e.g. {$93}"""
     result = ""
     in_quotes = False
     in_rem = False
@@ -1828,8 +2142,15 @@ def _basic_line_text(data):
 def _basic_lines(runtime_addr):
     """The lines of the BASIC program at the address, as a list of (address,
     link, line number, text bytes), followed by the address of the two zero
-    bytes that end it; or None if there isn't a valid BASIC program there."""
+    bytes that end it; or None if there isn't a valid BASIC program there.
+
+    Each line is a link to the next line (the address after its zero byte),
+    its line number, then its text, ending with a zero. It's valid if all of
+    it is loaded, each link is beyond its line's number (so the lines go up
+    through memory), each line number is at most 63999, each line's only
+    zero is at its end, and there are at most 1000 lines."""
     def u8(addr):
+        """The byte at a runtime address, or None if it isn't loaded."""
         if addr > 0xffff:
             return None
         binary_addr, _ = movemanager.r2b(RuntimeAddr(addr))
@@ -1837,6 +2158,7 @@ def _basic_lines(runtime_addr):
             return None
         return memory_binary[binary_addr]
     def u16(addr):
+        """The word (low byte first) at a runtime address, or None."""
         low, high = u8(addr), u8(addr + 1)
         return None if low is None or high is None else low + 256*high
 
@@ -1865,9 +2187,10 @@ def _basic_lines(runtime_addr):
 
 def basic_program(runtime_addr=None):
     """Classify the tokenised BASIC program at the address (by default where
-    BASIC programs start: &0801 on the C64, and on the VIC-20 &1001, or &0401
-    or &1201 with a RAM expansion), e.g. the one-line 'SYS' program at the start
-    of most machine code programs. Each line is labelled (e.g.
+    BASIC programs start on the machine: $0801 on the C64; $1001 on the
+    VIC-20, or $0401 or $1201 with a RAM expansion; $1c01 on the C128;
+    $1001 on the Plus/4; $0401 on the PET), e.g. the one-line 'SYS' program
+    at the start of most machine code programs. Each line is labelled (e.g.
     'basic_line_10'), its link to the next line and its line number are
     words, and its text is bytes for the tokens and PETSCII strings, listed
     in a comment, e.g. '; 10 SYS2061'. An address SYS calls in the loaded
@@ -1882,14 +2205,19 @@ def basic_program(runtime_addr=None):
     if found is None:
         return None
     lines, end = found
+    # Each line's label, e.g. 'basic_line_10' (or 'basic_line_10_2' for a
+    # second line 10), and 'basic_end' for the two zeros at the end
     names = {}
     def line_name(number):
+        """The label for the next line with this line number."""
         name = "basic_line_%d" % number
         names[name] = names.get(name, 0) + 1
         return name if names[name] == 1 else "%s_%d" % (name, names[name])
     line_names = [line_name(number) for _, _, number, _ in lines] + ["basic_end"]
 
     for i, (addr, link, number, text) in enumerate(lines):
+        # The line's label and listing, its link (written as the next line's
+        # label) and its line number (in decimal)
         label(addr, line_names[i])
         auto_comment(addr, "%d %s" % (number, _basic_line_text(text)))
         word(addr)
@@ -1897,12 +2225,15 @@ def basic_program(runtime_addr=None):
         word(addr + 2)
         decimal(addr + 2)
         # The text: runs of characters as strings, the rest (tokens and
-        # other codes) as bytes
+        # other codes) as bytes. (Bytes from $80 are characters in quotes or
+        # after REM, and tokens elsewhere.)
         a = addr + 4
         in_quotes = False
         in_rem = False
         run_start = None
         def end_run(run_end):
+            """Mark the run of characters up to run_end, if any, as a
+            PETSCII string."""
             if run_start is not None:
                 string(run_start, run_end - run_start, encoding="petscii")
         for c in text:
@@ -1922,7 +2253,8 @@ def basic_program(runtime_addr=None):
         end_run(a)
         byte(a)     # (the zero at the end of the line)
 
-        # SYS to an address in the loaded data
+        # SYS to an address in the loaded data: the digits after the first
+        # SYS token (after any spaces or '(')
         if BASIC_TOKEN_SYS in text:
             digits = bytes(text[text.index(BASIC_TOKEN_SYS) + 1:]).decode("latin-1").lstrip(" (")
             number_text = ""
@@ -1952,19 +2284,24 @@ def _is_loaded(runtime_addr):
 def is_cartridge():
     """For a cartridge: name its header, and trace its code.
 
-    On the C64 a cartridge is at &8000, and on the VIC-20 at &a000, starting
+    On the C64 a cartridge is at $8000, and on the VIC-20 at $a000, starting
     with the addresses of its cold and warm start code, then a signature in
     PETSCII ('CBM80' on the C64, 'A0CBM' on the VIC-20). On the C128 and the
-    Plus/4 a function ROM is at &8000 (or &c000 for the C128's internal
+    Plus/4 a function ROM is at $8000 (or $c000 for the C128's internal
     one), starting with its cold and warm start code (usually JMPs), then an
     ID byte (1 to start it automatically) and 'CBM' in ASCII. (The PET's
-    expansion ROMs have no standard header.)"""
+    expansion ROMs have no standard header.) The header is taken to be at
+    the machine's Machine.cartridge address, $8000 on the C128.
+
+    Stops with an error for the 1541 and the PET. Call it after c64()
+    etc."""
     if _machine().name == "1541":
         utils.die("commodore.is_cartridge(): the 1541 has no cartridges")
     if _machine().cartridge is None:
         utils.die("commodore.is_cartridge(): the PET's expansion ROMs have no standard header")
     addr, signature = _machine().cartridge
     if signature == "CBM":
+        # The C128's and Plus/4's: code at +0 and +3, then the ID and 'CBM'
         label(addr, "cartridge_cold_start")
         entry(addr)
         label(addr + 3, "cartridge_warm_start")
@@ -1974,6 +2311,8 @@ def is_cartridge():
         label(addr + 7, "cartridge_signature")
         string(addr + 7, 3, encoding="ascii")
     else:
+        # The C64's and VIC-20's: vectors at +0 and +2 (their targets named,
+        # unless they have names already), then the signature
         label(addr, "cartridge_cold_start_vector")
         code_ptr(addr, label_name=None if _has_name(memorymanager.get_u16_runtime(RuntimeAddr(addr))) else "cartridge_cold_start")
         label(addr + 2, "cartridge_warm_start_vector")
@@ -1983,14 +2322,17 @@ def is_cartridge():
     auto_comment(addr, "Cartridge header")
 
 def _has_name(runtime_addr):
+    """Whether the runtime address has an explicit name (e.g. from label()
+    or entry(), not just an optional label)"""
     labels = session.current().labels.labels
     return runtime_addr in labels and bool(labels[runtime_addr].explicit_names)
 
 def kernal_rom():
-    """For a disassembly of a Kernal ROM (loaded at &e000, or &c000 on the
+    """For a disassembly of a Kernal ROM (loaded at $e000, or $c000 on the
     C128 and Plus/4): trace the code from the Kernal's jump table (each entry
-    named, e.g. 'CHROUT') and the 6502's NMI, reset and IRQ vectors. (For the
-    1541's DOS ROM, use dos_rom().)"""
+    named, e.g. 'CHROUT') and the 6502's NMI, reset and IRQ vectors (each
+    target named, e.g. 'reset_entry', unless it has a name already). (For
+    the 1541's DOS ROM, use dos_rom().) Call it after c64() etc."""
     if _machine().name == "1541":
         utils.die("commodore.kernal_rom(): the 1541 has no Kernal (use dos_rom())")
     for call in _machine().jump_table:
@@ -2002,9 +2344,11 @@ def kernal_rom():
         code_ptr(addr, label_name=None if has_name else name)
 
 def basic_rom():
-    """For a disassembly of a BASIC ROM (loaded at &a000 on the C64, &c000 on
-    the VIC-20, &4000 on the C128 and &8000 on the Plus/4): trace the code
-    from its cold and warm start vectors (or JMPs), and name its signature."""
+    """For a disassembly of a BASIC ROM (loaded at $a000 on the C64, $c000 on
+    the VIC-20, $4000 on the C128 and $8000 on the Plus/4): trace the code
+    from its cold and warm start vectors (or JMPs), and name its signature.
+    Stops with an error for the 1541 and the PET. Call it after c64()
+    etc."""
     machine = _machine()
     base = machine.basic_rom_addr
     if _machine().name == "1541":
@@ -2012,8 +2356,8 @@ def basic_rom():
     if base is None:
         utils.die("commodore.basic_rom(): the PET's BASIC ROM has no vectors to trace from (use entry())")
     if machine.cartridge[1] == "CBM":
-        # JMPs to the cold and warm start code (and on the C128 the IRQ
-        # code), then on the Plus/4 an ID byte and 'CBM'
+        # The C128's and Plus/4's: JMPs to the cold and warm start code (and
+        # on the C128 the IRQ code), then on the Plus/4 an ID byte and 'CBM'
         for offset, name in ((0, "basic_cold_start"), (3, "basic_warm_start"), (6, "basic_irq")):
             if memory[RuntimeAddr(base + offset)] == 0x4c:
                 label(base + offset, name)
@@ -2024,6 +2368,8 @@ def basic_rom():
             label(base + 7, "basic_signature")
             string(base + 7, 3, encoding="ascii")
         return
+    # The C64's and VIC-20's: the cold and warm start vectors (their targets
+    # named, unless they have names already), then the signature
     for offset, name in ((0, "basic_cold_start"), (2, "basic_warm_start")):
         target = memorymanager.get_u16_runtime(RuntimeAddr(base + offset))
         label(base + offset, name + "_vector")
@@ -2032,11 +2378,12 @@ def basic_rom():
     string(base + 4, encoding="petscii")
 
 def dos_rom():
-    """For a disassembly of the 1541's DOS ROM (loaded at &c000, after
+    """For a disassembly of the 1541's DOS ROM (loaded at $c000, after
     drive1541()): trace the code from the vectors at its end (the format
     routine, turning off the motor, and the user commands U1 and U2, each
-    named, e.g. 'format'; U3-U8's, to &0500-&050f in buffer 2, are named but
-    not traced) and the 6502's NMI, reset and IRQ vectors."""
+    named, e.g. 'format'; U3-U8's, to $0500-$050f in buffer 2, are named but
+    not traced) and the 6502's NMI, reset and IRQ vectors. Only the vectors
+    that are loaded are used, and a target with a name already keeps it."""
     if _machine().name != "1541":
         utils.die("commodore.dos_rom(): call drive1541() first")
     for addr, vector_name, name in drive1541_rom_vectors:
@@ -2061,13 +2408,25 @@ def dos_rom():
 
 def _set_up(command, machine, names, rom_labels):
     """What c64(), vic20(), c128(), plus4(), pet() and drive1541() do, for
-    the machine"""
+    the Machine: command is the command's name (for the errors), and names
+    and rom_labels are as for c64().
+
+    It records the machine for the session (stopping with an error if one
+    has been chosen already), sets PETSCII as the text encoding, registers
+    the snippets, and names the memory regions, the I/O and the memory
+    locations (as optional labels). It makes the Kernal calls and (with
+    rom_labels) the ROM routines subroutines, with hooks that comment their
+    calls, and sets up the colours' names, the code analysis functions for
+    the memory configuration, the 1541 and the VIC-II's interrupts, and the
+    BASIC program at the start, if one is loaded there."""
     if names not in NAMES:
         utils.die("commodore.{0}(): names must be one of {1}, not {2!r}".format(command, ", ".join(repr(n) for n in NAMES), names))
     extras = session.current().extras
     if extras.get("commodore.machine") is not None:
         utils.die("commodore.{0}(): this session's machine has already been chosen".format(command))
     extras["commodore.machine"] = machine
+    # (So config.set_upper_case_os_calls() can't be called after this, since
+    # the names are made now)
     extras["os_calls_named"] = True
     extras["commodore.names"] = names
     extras["commodore.rom_labels"] = rom_labels
@@ -2079,9 +2438,13 @@ def _set_up(command, machine, names, rom_labels):
     for start, end in machine.io_ranges:
         io_range(start, end)
 
+    # The memory locations' names (not defined inline in the I/O)
     for addr, name, base in location_names(machine, names, rom_labels):
         optional_label(addr, name, base, definable_inline=not any(start <= addr < end for start, end in machine.io_ranges))
 
+    # The Kernal's jump table, as subroutines with hooks that comment the
+    # calls (named with optional labels, not traced as entry points: for a
+    # Kernal ROM, see kernal_rom())
     for call in machine.jump_table:
         hooks = _hooks if machine.call_hooks is None else machine.call_hooks
         subroutine(call.addr, official_name(call.name), call.title, None, call.on_entry, call.on_exit, hook=_unless_mapped_out(hooks.get(call.name, default_hook)), is_entry_point=False)
@@ -2092,12 +2455,14 @@ def _set_up(command, machine, names, rom_labels):
         if cpu is None:
             utils.die("commodore.{0}(): call load() first".format(command))
         cpu.subroutine_hooks[RuntimeAddr(addr)] = _inline_string_hook
+    # The ROM routines, likewise (STROUT's hook marks its string)
     if rom_labels:
         for routine in machine.rom_routines:
             subroutine(routine.addr, _routine_name(routine, names), routine.title, None, routine.on_entry, routine.on_exit,
                        hook=_unless_mapped_out(strout_hook if routine.commodore_name == "strout" else default_hook), is_entry_point=False)
 
-    # Colours stored in the colour registers
+    # Colours stored in the colour registers (e.g. 'lda #colour_black : sta
+    # vic_border_colour'), but not where the register is mapped out
     for addr in machine.colour_registers:
         for reg in "axy":
             session.current().trace.substitute_constant_list.append(cpu6502.SubConst("st%s $%04x" % (reg, addr), reg, machine.colours, True,
@@ -2116,6 +2481,7 @@ def _set_up(command, machine, names, rom_labels):
     if machine.name in ("c64", "c128"):
         session.current().cpu.code_analysis_fns.append(_vic_interrupt_analysis)
 
+    # The BASIC program at the start, if there is one
     if machine.basic_start is not None and _is_loaded(machine.basic_start):
         basic_program(machine.basic_start)
 
@@ -2124,22 +2490,25 @@ def c64(names="descriptive", rom_labels=True):
     the memory locations used by the OS and BASIC:
 
     - memory regions, for the list of memory locations at the top;
-    - names for the memory locations (only output if used): zero page, the
-      OS and BASIC workspace, the vectors, the screen, the VIC-II, the SID,
-      the CIAs and the colour RAM; with names="commodore", Commodore's names
-      (e.g. 'EXTCOL' rather than 'vic_border_colour');
+    - names for the memory locations (only output if used): the 6510's I/O
+      port, zero page, the OS and BASIC workspace, the vectors, the screen
+      and sprite pointers, the VIC-II, the SID, the CIAs and the colour RAM;
+      with names="commodore", Commodore's names (e.g. 'EXTCOL' rather than
+      'vic_border_colour');
     - the Kernal's jump table, e.g. 'CHROUT', with comments where it's
       called (e.g. 'Output $93 (clear screen)'), and where the registers are
       set for it and used after it;
     - with rom_labels (the default), names for the routines in the C64's
-      ROMs that programs call (e.g. 'kernal_irq_handler' at &ea31), and the
+      ROMs that programs call (e.g. 'kernal_irq_handler' at $ea31), and the
       labels in Commodore's source for the Kernal and BASIC ROMs. (Use
       rom_labels=False for a program that replaces the ROMs.)
-    - names for the colours stored in the VIC-II's colour registers (e.g.
-      'colour_black');
-    - code that sets a vector (e.g. the IRQ vector at &0314) to an address in
+    - names for the colours stored in the VIC-II's colour registers and the
+      text colour (e.g. 'colour_black');
+    - code that sets a vector (e.g. the IRQ vector at $0314) to an address in
       the program: the address is traced and named (e.g. 'irq_handler');
-    - a BASIC program loaded at &0801 (see basic_program());
+    - comments on the code that sets up the VIC-II's interrupts (see
+      _vic_interrupt_analysis());
+    - a BASIC program loaded at $0801 (see basic_program());
     - PETSCII as the text encoding (see config.set_text_encoding());
     - the memory configuration the code sets with the 6510's port at $01
       (switching the ROMs and the I/O out and in), followed through the
@@ -2149,6 +2518,10 @@ def c64(names="descriptive", rom_labels=True):
       than 'vic_border_colour', where the I/O is switched out). See
       c64_configuration() for code whose configuration isn't known from the
       code.
+
+    Call it after loading the program, and before marking any strings
+    (since it sets the text encoding). It stops with an error if the
+    session's machine has been chosen already.
     """
     _set_up("c64", c64_machine(), names, rom_labels)
 
@@ -2156,13 +2529,13 @@ def vic20(expansion=None, names="descriptive", rom_labels=True):
     """As c64(), for the VIC-20: its Kernal and BASIC are the C64's, with
     its own hardware (the VIC, two VIAs and the colour RAM) and memory map.
 
-    expansion is the RAM expansion: "none", "3k" (in block 0, &0400-&0fff)
-    or "8k" (8K or more, from &2000). It decides where BASIC programs start
-    (&1001, &0401 or &1201), and where the screen and its colour RAM are
-    (&1e00 and &9600, or with 8K or more, &1000 and &9400). By default (None)
+    expansion is the RAM expansion: "none", "3k" (in block 0, $0400-$0fff)
+    or "8k" (8K or more, from $2000). It decides where BASIC programs start
+    ($1001, $0401 or $1201), and where the screen and its colour RAM are
+    ($1e00 and $9600, or with 8K or more, $1000 and $9400). By default (None)
     it's worked out from where the program is loaded: "3k" if there's data at
-    &0401, else "none" if there's data at &1001, else "8k" if there's data at
-    &1201, else "none"."""
+    $0401, else "none" if there's data at $1001, else "8k" if there's data at
+    $1201, else "none"."""
     if expansion is None:
         if _is_loaded(0x0401):
             expansion = "3k"
@@ -2178,39 +2551,46 @@ def vic20(expansion=None, names="descriptive", rom_labels=True):
 
 def c128(names="descriptive", rom_labels=True):
     """As c64(), for the C128 in C128 mode, with the usual bank 15 (the ROMs
-    and the I/O at &d000): its workspace, the MMU, the VDC, the VIC-II's and
+    and the I/O at $d000): its workspace, the MMU, the VDC, the VIC-II's and
     the C64's other hardware, its jump table (the C64's and 19 more, e.g.
     JSRFAR and PRIMM, whose string is skipped when tracing), its ROM routines
     and the labels in Commodore's source for its BASIC, monitor, screen
-    editor and Kernal, and a BASIC program at &1c01.
+    editor and Kernal, and a BASIC program at $1c01.
 
     Its workspace has Commodore's names from its source, with descriptive
     names for the most used ones, and those that are the C64's (see
     commodoretables.py); the rest have Commodore's names either way. (A C128
-    program in C64 mode is a C64 program: use c64().)"""
+    program in C64 mode is a C64 program: use c64().)
+
+    The MMU's configuration is followed through the code, as the C64's port
+    at $01 is (see c128_bank()), and calls to other banks with JSRFAR and
+    JMPFAR are commented and their targets traced (see
+    pre_trace_far_call())."""
     _set_up("c128", c128_machine(), names, rom_labels)
 
 def plus4(names="descriptive", rom_labels=True):
     """As c64(), for the Plus/4 (and the C16 and C116, which have the same
     ROMs): its workspace, the TED (video, sound, timers and the ROM switch at
-    &ff3e/&ff3f), the ACIA, the 6529 ports, its jump table (the C64's and
+    $ff3e/$ff3f), the ACIA, the 6529 ports, its jump table (the C64's and
     PRINT, PRIMM and the monitor), its ROM routines and the labels in
     Commodore's source for its BASIC and Kernal, and a BASIC program at
-    &1001. Its workspace's names are as for c128()."""
+    $1001. Its workspace's names are as for c128(). The TED's colours
+    include their luminance, so they aren't named."""
     _set_up("plus4", plus4_machine(), names, rom_labels)
 
 def pet(basic=4, columns=40, names="descriptive", rom_labels=True):
     """As c64(), for the PET (and the CBM 3000, 4000 and 8000 series), with
     BASIC 1 (the original 1977 ROMs), 2 or 4, and a 40 or 80 column screen
-    (columns=80, BASIC 4's 8000 series, with a CRTC at &e880): its workspace
+    (columns=80, BASIC 4's 8000 series, with a CRTC at $e880): its workspace
     (which depends on the BASIC version), the PIAs, the VIA, the screen at
-    &8000, its jump table at &ffc0 (where only CHROUT has a hook: its LOAD,
+    $8000, its jump table at $ffc0 (where only CHROUT has a hook: its LOAD,
     SAVE, VERIFY and SYS are BASIC's commands, not the C64's calls), its ROM
     routines and the labels in Commodore's source for its BASIC and Kernal
     (not BASIC 4's screen editor, which is different for each model), and a
-    BASIC program at &0401, listed with that version's keywords (BASIC 4's
+    BASIC program at $0401, listed with that version's keywords (BASIC 4's
     disk commands too). The PET has no colours. Its workspace's names are as
-    for c128()."""
+    for c128(). Stops with an error for another BASIC version or width, or
+    80 columns without BASIC 4."""
     if basic not in PET_BASIC_VERSIONS:
         utils.die("commodore.pet(): basic must be 1, 2 or 4, not {0!r}".format(basic))
     if columns not in PET_COLUMNS:
@@ -2222,17 +2602,19 @@ def pet(basic=4, columns=40, names="descriptive", rom_labels=True):
 def drive1541(rom="1541", names="descriptive", rom_labels=True):
     """As c64(), for code that runs in the 1541 disk drive (e.g. a fast
     loader's drive code, sent with M-W and run with M-E or a job), or its
-    DOS ROM (see dos_rom()): the DOS's workspace (the job queue at &00-&05,
-    each job's track and sector at &06-&11 and so on) and its five buffers at
-    &0300-&07ff ('buffer_0' to 'buffer_4'), the two VIAs (the serial bus at
-    &1800, and the disk controller at &1c00), the DOS ROM's routines that
-    drive code calls (e.g. 'wait_for_sync' at &f556) and the labels in
-    Commodore's source for the DOS ROM, and the NMI vector at &0065.
+    DOS ROM (see dos_rom()): the DOS's workspace (the job queue at $00-$05,
+    each job's track and sector at $06-$11 and so on) and its five buffers at
+    $0300-$07ff ('buffer_0' to 'buffer_4'), the two VIAs (the serial bus at
+    $1800, and the disk controller at $1c00), the DOS ROM's routines that
+    drive code calls (e.g. 'wait_for_sync' at $f556) and the labels in
+    Commodore's source for the DOS ROM, and the NMI vector at $0065.
 
     Code that writes a job code to the job queue is commented (e.g. 'Job 0:
     read track 18, sector 1 into buffer 0 ($0300)'), with the job code named
     (e.g. 'job_read'), and for a JUMP or EXECUTE job, the code in the job's
-    buffer is traced, if it's loaded.
+    buffer is traced, if it's loaded. The job results the code compares or
+    gives to ERRR are named, and stores to the VIAs' ports and tests of
+    their bits are commented (see _drive1541_analysis()).
 
     rom is "1541" (DOS 325302-01 and 901229-05, the default) or "1541-ii"
     (251968-03, the 1541-II's and the 1541C's), which only changes a few ROM

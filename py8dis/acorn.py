@@ -1,5 +1,44 @@
 """
-Acorn specific functions.
+Acorn
+
+Knowledge of Acorn's 6502 machines (the BBC Micro, B+, Master and Electron)
+and their operating system, the MOS. A control file calls bbc(), b_plus(),
+master() or electron() after load() (see docs/machines/acorn.md), and
+is_sideways_rom() for a paged ROM. These:
+- name the MOS's entry points (OSWRCH, OSBYTE etc., see mos_labels()), and
+  give each a subroutine hook (osfile_hook() etc.) that comments the calls
+  to it, e.g. 'Read system clock', with the OSWORD number named where A is
+  set and the parameter block's label where X and Y are;
+- decode the characters written with OSWRCH as VDU commands
+  (comment_vdu_sequences(), an analysis hook, run once the code is traced);
+- recognise some common pieces of code (register_snippets()): printing a
+  message, printing a character several times, tables of screen addresses,
+  and code that sets an OS vector, whose handler is then named and traced;
+- name the OS vectors, some OS workspace, the hardware in FRED, JIM and
+  SHEILA (&fc00-&feff) for each machine (hardware()), and the regions of
+  memory, which group the list of memory locations at the top of the
+  output (memory_regions()).
+
+The data (the OS calls' numbers, names and descriptions, the hardware
+addresses and so on) is in acorntables.py, the OSBYTE hook in acornosbyte.py,
+and helpers the hooks share in acornhelpers.py. This module imports them all,
+so a control file can use them as e.g. acorn.inkey_enum.
+
+The CPU calls a subroutine hook (Cpu6502.find_subroutine_calls()) for each
+call to the subroutine, once the code has been traced, with the call's
+runtime address and the CPU state just before it. The state has two views
+of each register: 'optimistic', what's known if the call is reached by
+running straight through the code before it, and 'pessimistic', what's
+known for certain (forgotten at each label, since other code could jump
+there). Mostly a hook names a value where it's set if it's known
+optimistically, but says what the call does only if it's known
+pessimistically. For a register, get_previous_load_imm_operand() is the
+binary address of the operand of the immediate load that set it (e.g. the
+nn of 'ldx #nn'), if it hasn't changed since; previous_adjust is the binary
+address of the instruction that last set or changed it; and
+state.next_use[reg] is the binary address of the first instruction after
+the call that reads it before anything changes it, where the hook can say
+what the call returned.
 """
 
 from commands import *
@@ -30,12 +69,14 @@ from acornosbyte import osbyte_hook
 # ************************************************************************************************
 def pre_trace_writing_to_vector(p):
     """Code setting one of the vectors (an effect pattern, see
-    snippethelper.vector_pattern()): before tracing, label the handler (e.g.
-    'handle_brkv', then 'handle_brkv_2' etc) and trace it."""
+    snippethelper.vector_pattern()): before tracing, if both bytes are set
+    to known values, label the handler (e.g. 'handle_brkv', then
+    'handle_brkv_2' etc, unless it has a name already) and trace it."""
     vector = p.binding('vector')
     # The number of handlers found so far for each vector, for naming them
     vector_handler_count = session.current().extras.setdefault("acorn.vector_handler_count", {})
 
+    # (Called by vector_handler() only if the handler hasn't a name already)
     def new_name():
         if vector not in vector_handler_count:
             vector_handler_count[vector] = 2
@@ -60,6 +101,8 @@ def post_trace_writing_to_vector(p):
         text = half_set_vector_text(p, description, config.get_assembler().hex2)
         # A vector set to its extended vector entry (&ff00 + 3 * its number),
         # which calls the routine in the extended vector table for a paged ROM
+        # (Only the low byte is known here, so the comment says it's that
+        # entry if the high byte is &ff)
         extended = 0xff00 + 3 * ((vector - 0x200) // 2)
         if p.matched('lo') and not p.matched('hi') and p.value('lo_value') == extended & 0xff:
             text += " (its extended vector entry, {0}, if the high byte is {1})".format(
@@ -72,7 +115,9 @@ def post_trace_writing_to_vector(p):
 # commands
 
 # OSWRCH and the other calls that write characters: their addresses, and the
-# characters each writes (None for A's)
+# characters each writes (None for A's): OSWRCH, NVWRCH and OSASCI write A
+# (OSASCI writes 13 as a new line, which comment_vdu_sequences() allows for),
+# and OSNEWL writes LF and CR
 _VDU_CALLS = {0xffee: [None], 0xffcb: [None], 0xffe3: [None], 0xffe7: [10, 13]}
 
 def _vdu_streams():
@@ -81,7 +126,11 @@ def _vdu_streams():
     call between them, as lists of VduChar. A character is a number if it's
     known; 'X' or 'Y' if it's that register's, from TXA or TYA with the
     register unchanged since; or None. (OSWRCH preserves A, so A is the same
-    for the next call unless an instruction between them changes it.)"""
+    for the next call unless an instruction between them changes it.)
+
+    Each stream is within one of cpu.straight_runs(), which end where other
+    code jumps or branches in, and A's value comes from the pessimistic CPU
+    state (what's known for certain)."""
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     streams = []
@@ -90,6 +139,7 @@ def _vdu_streams():
         previous_char = None
         previous_call = None    # the index in the run of the previous call
         for k, binary_addr in enumerate(run):
+            # Only a JSR or JMP (absolute) can be a call
             opcode = memory_binary[binary_addr]
             if opcode not in (0x20, 0x4c):
                 continue
@@ -102,10 +152,17 @@ def _vdu_streams():
                     stream = []
                     previous_call = None
                 continue
+            # The instructions since the previous call (or the start of the
+            # run), and the state just before this call (the state after the
+            # instruction before it). set_at is where A was last set or
+            # changed, if that's since the previous call.
             between = run[previous_call + 1:k] if previous_call is not None else run[:k]
             state = cpu.cpu_states[run[k - 1]] if k > 0 else None
             a = None if state is None else state.pessimistic['a']
             set_at = a.previous_adjust if a is not None and a.previous_adjust in between else None
+            # The character: A's value if it's known; X or Y, if A was
+            # transferred from one that hasn't changed since; or, if A hasn't
+            # changed since the previous call, the same character again
             if a is not None and a.value is not None:
                 char = a.value
             elif set_at is not None and memory_binary[set_at] in (OPCODE_TXA, OPCODE_TYA):
@@ -123,6 +180,8 @@ def _vdu_streams():
             start = set_at if set_at is not None else binary_addr
             if a is not None and a.previous_load_imm in between:
                 start = min(start, a.previous_load_imm)
+            # One VduChar for each character the call writes (two for
+            # OSNEWL, whose second starts at the call itself)
             for written in _VDU_CALLS[target]:
                 stream.append(VduChar(binary_addr, start, char if written is None else written, target))
                 start = binary_addr
@@ -133,9 +192,11 @@ def _vdu_streams():
     return streams
 
 class VduChar:
-    """A character written by a call (see _vdu_streams()): the call's binary
-    address, where the code that sets up the character starts, the character,
-    and the address called (e.g. &ffee for OSWRCH)."""
+    """A character written by a call (see _vdu_streams()): 'call', the call's
+    binary address; 'start', the binary address where the code that sets up
+    the character starts (where its comment goes); 'char', the character (a
+    number, 'X', 'Y' or None); and 'target', the address called (e.g. &ffee
+    for OSWRCH)."""
 
     __slots__ = ("call", "start", "char", "target")
 
@@ -152,10 +213,12 @@ _VDU_NO_OPS = (0, 27)
 
 def _vdu_parse(chars, start):
     """Parse the characters (see _vdu_streams()) as VDU commands, from index
-    start: [(index, length)] for each command, and the number of characters
-    covered by the commands that are known (their first character is), other
-    than VDU 0 and 27. A
-    character that isn't known where a command starts is taken to be one
+    'start'. Returns [(index, length)], the index in chars and the number of
+    characters of each command, and the number of characters covered by the
+    commands that are known (their first character is), other than VDU 0 and
+    27.
+
+    A character that isn't known where a command starts is taken to be one
     character (written as itself, e.g. a digit). Parsing stops at a command
     that runs past the end."""
     commands = []
@@ -167,6 +230,8 @@ def _vdu_parse(chars, start):
             commands.append((i, 1))
             i += 1
             continue
+        # (Codes 32 and up, and 127, are characters to print, with no
+        # parameters)
         length = 1 + (vdu_parameter_counts.get(code, 0) if code < 32 else 0)
         if i + length > len(chars):
             break
@@ -182,9 +247,9 @@ def _vdu_best_parse(chars):
     tries starting at each of the first ten characters (a command has at most
     nine parameters), and takes the parse that explains the most characters
     (see _vdu_parse()): longer runs of commands that fit are more likely to
-    be right. Of those, it takes the one with fewer, so longer, known commands, and
-    then the earliest start. Returns (start, commands, characters
-    explained)."""
+    be right. Of those, it takes the one with fewer, so longer, known
+    commands, and then the earliest start. Returns (start, commands,
+    characters explained), as _vdu_parse() does."""
     best = None
     for start in range(0, min(10, len(chars))):
         commands, covered = _vdu_parse(chars, start)
@@ -195,10 +260,14 @@ def _vdu_best_parse(chars):
     return best[1], best[2], best[3]
 
 def _vdu_description(code, params):
-    """What a VDU command does, e.g. 'Select mode 4', from its code and
-    parameters (numbers, 'X', 'Y' or None)."""
+    """What a VDU command does, e.g. 'Select mode 4', from its code (0-31 or
+    127) and parameters (numbers, 'X', 'Y' or None). Returns None for VDU 0
+    and 27, which do nothing."""
+    # A parameter as text: '?' if it isn't known
     def p(v):
         return "?" if v is None else str(v)
+    # A two byte parameter (e.g. a coordinate), low byte first, as a signed
+    # number
     def word(lo, hi):
         if isinstance(lo, int) and isinstance(hi, int):
             v = lo + 256 * hi
@@ -208,6 +277,7 @@ def _vdu_description(code, params):
         return vdu_descriptions[code]
     if code == 1:
         return "Send character {0} to the printer only".format(p(params[0]))
+    # (For COLOUR and GCOL, a colour of 128 or more is a background colour)
     if code == 17:
         c = params[0]
         if isinstance(c, int) and c >= 128:
@@ -223,6 +293,8 @@ def _vdu_description(code, params):
     if code == 22:
         return "Select mode {0}".format(p(params[0]))
     if code == 23:
+        # VDU 23,n,... does many things, chosen by n: 0 sets a CRTC register,
+        # 1 turns the cursor on or off, and 32-255 define that character
         n = params[0]
         if n == 0:
             return "Set CRTC register {0} to {1}".format(p(params[1]), p(params[2]))
@@ -248,7 +320,8 @@ def _vdu_description(code, params):
 
 def _vdu_text(chars):
     """A comment for printable characters (all known numbers), e.g. 'Print
-    "Hello"', or 'Print characters 32, 224, 225'."""
+    "Hello"', or 'Print characters 32, 224, 225' if any isn't ASCII or is a
+    double quote (which can't go in the quotes)."""
     if all(32 <= c < 127 and c != 34 for c in chars):
         return 'Print "{0}"'.format("".join(chr(c) for c in chars))
     return "Print characters {0}".format(", ".join(str(c) for c in chars))
@@ -261,9 +334,14 @@ def comment_vdu_sequences():
     the parse used is the one that explains the most characters (see
     _vdu_best_parse()); if that skips some first characters, they're
     commented as the end of an earlier sequence. (Run once the code has been
-    traced, as an analysis hook.)"""
+    traced, as an analysis hook.)
+
+    Each comment goes on a line of its own before the code that sets up the
+    command's first character. A single printable character isn't commented
+    here, since OSWRCH's hook already says e.g. 'Write character 65'."""
     moves = session.current().moves.move_id_for_binary_addr
 
+    # Comment the code at binary_addr, in the move it's in
     def comment(binary_addr, text):
         disassembly.comment_binary(BinaryLocation(BinaryAddr(binary_addr), moves[binary_addr]), text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
@@ -271,16 +349,20 @@ def comment_vdu_sequences():
         chars = [c.char for c in stream]
         start, commands, covered = _vdu_best_parse(chars)
         if covered == 0:
+            # (Nothing known to describe)
             continue
         if start > 0:
             comment(stream[0].start, "The end of a VDU sequence that earlier code started")
         printable = []      # (index, char) of the run of printable characters so far
 
+        # Comment the run of printable characters so far, if there are two
+        # or more, and start a new run
         def end_printable():
             if len(printable) >= 2:
                 comment(stream[printable[0][0]].start, _vdu_text([c for _, c in printable]))
             printable.clear()
 
+        # The indexes of characters already commented with the one before
         skip = set()
         for n, (index, length) in enumerate(commands):
             code = chars[index]
@@ -290,6 +372,7 @@ def comment_vdu_sequences():
             if code >= 32 and code != 127:
                 printable.append((index, code))
                 continue
+            # A VDU command (0-31, or 127 for delete)
             end_printable()
             if stream[index].target == 0xffe7:
                 # (OSNEWL, whose hook comments it)
@@ -299,7 +382,8 @@ def comment_vdu_sequences():
                 comment(stream[index].start, "Start a new line")
                 continue
             if code in (10, 13) and n + 1 < len(commands) and chars[commands[n + 1][0]] == 23 - code and stream[commands[n + 1][0]].target != 0xffe7:
-                # CR and LF, or LF and CR
+                # CR and LF, or LF and CR (23 - code is the other one), as
+                # one comment
                 comment(stream[index].start, "Start a new line")
                 skip.add(commands[n + 1][0])
                 continue
@@ -310,6 +394,9 @@ def comment_vdu_sequences():
 
 # ************************************************************************************************
 def comment_print_message(p):
+    """For a match of a loop that prints a message with OSWRCH, a character
+    at a time (see register_snippets()), after tracing: comment it 'print
+    message'."""
     # Make sure the branch instruction's operand jumps to the definition of the label as expected
     if not p.check_branch_matches('loop'):
         return
@@ -318,6 +405,10 @@ def comment_print_message(p):
 
 # ************************************************************************************************
 def comment_print_repeated_character(p):
+    """For a match of a loop that prints the same character several times
+    with OSWRCH, counting down X (see register_snippets()), after tracing:
+    comment it, e.g. 'print character 32 repeatedly', or 'A' for the
+    character if it isn't loaded with an immediate value."""
     if not p.check_branch_matches('loop1') and not p.check_branch_matches('loop2'):
         return
     cc = p.get_memory('nn1')
@@ -328,6 +419,13 @@ def comment_print_repeated_character(p):
 
 # ************************************************************************************************
 def comment_screen_addresses(p):
+    """For a match of a table of the screen address of each of the 32
+    character rows (see register_snippets()): mark the table as bytes (a
+    table of low bytes and one of high bytes) or words, write each entry as
+    an expression, e.g. '<(&5800 + 3 * &0140)', and comment the table.
+    Entries already classified are left alone."""
+    # The 'low' and 'high' lines of the snippet name the two tables of
+    # bytes; a table of words has neither
     low_addr = p.get_binary_address('low')
     high_addr = p.get_binary_address('high')
 
@@ -339,6 +437,7 @@ def comment_screen_addresses(p):
     else:
         offset_to_next_entry = 1
 
+    # The first row's address, and the distance from one row to the next
     start = p.get_memory(low_addr) + 256*p.get_memory(high_addr)
     second = p.get_memory(low_addr+offset_to_next_entry) + 256*p.get_memory(high_addr+offset_to_next_entry)
     offset = second - start
@@ -370,6 +469,10 @@ def comment_screen_addresses(p):
 
 # ************************************************************************************************
 def comment_screen_offsets(p):
+    """For a match of a table of the offset from the start of the screen of
+    each of the 32 character rows, as tables of low and high bytes (see
+    register_snippets()): comment the tables. (A table of words matches too,
+    but has no 'low' or 'high' line, so it isn't commented.)"""
     low_addr = p.get_binary_address('low')
     high_addr = p.get_binary_address('high')
     if low_addr:
@@ -382,12 +485,17 @@ def comment_screen_offsets(p):
 # ************************************************************************************************
 def register_snippets():
     """Register acorn's snippets with the current session (called by
-    mos_labels(), once per session)."""
+    mos_labels(), once per session): loops that print a message or a
+    character several times with OSWRCH (code snippets, which are traced
+    too), tables of the screen address or offset of each character row
+    (data snippets), and code that sets one of the OS vectors (an effect
+    pattern). See docs/snippets-and-hooks.md."""
     extras = session.current().extras
     if extras.get("acorn.snippets_registered"):
         return
     extras["acorn.snippets_registered"] = True
 
+    # Printing a message, a character at a time: indexed by Y or by X
     register_code_snippet(comment_print_message, """
 ?   ldy #nn1 | ldy zp | ldy zp,x | ldy addr | ldy addr,x
 loop
@@ -410,6 +518,7 @@ loop
     bne loop | bpl loop
 """)
 
+    # Printing the same character X times
     register_code_snippet(comment_print_repeated_character, """
 loop1
 ?   lda #nn1 | lda addr | lda zp | ldx #nn | ldx addr | ldx zp
@@ -420,12 +529,20 @@ loop2
     bne loop1 | bne loop2 | bpl loop1 | bpl loop2
 """)
 
-    # e.g.:
+    # Tables of the 32 character rows' screen addresses: for the screen at
+    # &3000, with &280 bytes a row (modes 0-2), and at &5800, with &140 (modes
+    # 4 and 5); and of their offsets from the start of the screen (start 0).
+    # Each is a data snippet of the table's bytes, in one of three layouts:
+    # a table of high bytes then one of low bytes, the other way round, or a
+    # table of words. 'order' is (the directive, the index in 'order' of the
+    # first table's name, and the names of the tables), so the word table
+    # has a single table, with no name.
+    #
+    # e.g. (the screen at &5800, low bytes first):
     #low
     #    !byte $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0, $00, $40, $80, $c0
     #high
     #    !byte $58, $59, $5a, $5b, $5d, $5e, $5f, $60, $62, $63, $64, $65, $67, $68, $69, $6a, $6c, $6d, $6e, $6f, $71, $72, $73, $74, $76, $77, $78, $79, $7b, $7c, $7d, $7e
-
     for pair in [(0x3000, 0x280), (0x5800, 0x140), (0x0, 0x280), (0x0, 0x140)]:
         start = pair[0]
         offset = pair[1]
@@ -453,11 +570,17 @@ loop2
     # ********************************************************************************************
     # ********************************************************************************************
     # Code setting one of the vectors at &0200-&0235, in any order, with any
-    # registers (an effect pattern)
+    # registers (an effect pattern). (Every vector is at an even address.)
     register_snippet(pre_trace_writing_to_vector, post_trace_writing_to_vector, vector_pattern(addr for addr in vectors if addr % 2 == 0))
 
 # ************************************************************************************************
+# The subroutine hooks for the OS calls (see the top of this module), each
+# called with the address of a call, the CPU state before it, and the
+# subroutine.Subroutine for the OS call.
+
 def oswrsc_hook(runtime_addr, state, subroutine):
+    """OSWRSC (&ffb3, B+ and Master): write A to the screen, at offset Y
+    from a base address. Comments where A and Y are set, and the call."""
     a_adjust_addr = state.optimistic['a'].previous_adjust
     a_runtime_adjust = None if a_adjust_addr is None else movemanager.b2r(a_adjust_addr)
     y_adjust_addr = state.optimistic['y'].previous_adjust
@@ -468,6 +591,9 @@ def oswrsc_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, "Write byte to screen", align=Align.INLINE)
 
 def osrdsc_hook(runtime_addr, state, subroutine):
+    """OSRDSC (&ffb9): read the byte at the address in &f6/&f7 (osrdsc_ptr)
+    from paged ROM Y, or from the screen. Comments where Y is set, the call,
+    and where A (the byte) is next used."""
     y_adjust_addr = state.optimistic['y'].previous_adjust
     y_runtime_adjust = None if y_adjust_addr is None else movemanager.b2r(y_adjust_addr)
     auto_comment(y_runtime_adjust, "Y=ROM number", align=Align.INLINE)
@@ -478,6 +604,9 @@ def osrdsc_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, "Read byte from ROM Y or screen", align=Align.INLINE)
 
 def oseven_hook(runtime_addr, state, subroutine):
+    """OSEVEN (&ffbf): generate event Y. Names the event number where Y is
+    set (from event_enum), and comments the call, with the event's name if
+    Y is known for certain."""
     y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
     y_addr_pessimistic = state.pessimistic['y'].get_previous_load_imm_operand()
 
@@ -498,6 +627,13 @@ def oseven_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, com, align=Align.INLINE)
 
 def osfind_hook(runtime_addr, state, subroutine):
+    """OSFIND (&ffce): open a file (A=&40 for input, &80 for output, &c0 for
+    both, with X and Y the address of its name), or close file Y (A=0; Y=0
+    closes them all). Names A where it's set (from osfind_enum), and
+    comments the call. If A is known for certain and isn't 0 (so the call
+    opens a file), the name's address is written as its label where X and Y
+    are set, and the handle returned in A is commented where it's next
+    used."""
     a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
     x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
     y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
@@ -535,6 +671,8 @@ def osfind_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, com, align=Align.INLINE)
 
 def osrdch_hook(runtime_addr, state, subroutine):
+    """OSRDCH (&ffe0) and NVRDCH (&ffc8): read a character into A. Comments
+    the call, and where A is next used."""
     auto_comment(runtime_addr, "Read a character from the current input stream", align=Align.INLINE)
 
     # Post-exit
@@ -542,6 +680,10 @@ def osrdch_hook(runtime_addr, state, subroutine):
     auto_comment(a_runtime_next_use, "A=character read", align=Align.INLINE)
 
 def osgbpb_hook(runtime_addr, state, subroutine):
+    """OSGBPB (&ffd1): read or write a block of bytes or filenames, as A says
+    (osgbpb_enum), with a 13 byte parameter block at the address in X and Y.
+    Names A where it's set, comments each field of the parameter block (if
+    X and Y are known for certain), and comments the call."""
     a_addr_optimistic  = state.optimistic['a'].get_previous_load_imm_operand()
     #x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
     #y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
@@ -558,6 +700,7 @@ def osgbpb_hook(runtime_addr, state, subroutine):
     block_addr = xy_addr(x_addr_pessimistic, y_addr_pessimistic)
 
     if block_addr is not None:
+        # (A=8, read filenames, uses the first fields differently)
         if action_pessimistic == 8:
             auto_comment(block_addr, os_call_name("osgbpb") + " block: disc cycle number", align=Align.INLINE)
             auto_comment(RuntimeAddr(block_addr + 1), "address for returned data (4 bytes)", align=Align.INLINE)
@@ -577,6 +720,9 @@ def osgbpb_hook(runtime_addr, state, subroutine):
         auto_comment(runtime_addr, "Read or write multiple bytes to an open file", align=Align.INLINE)
 
 def osbput_hook(runtime_addr, state, subroutine):
+    """OSBPUT (&ffd4): write the byte in A to the file whose handle is in Y.
+    Comments the call (with A's value, if it's known for certain to be
+    loaded with an immediate value), and where Y is set."""
     a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
     y_addr_optimistic  = state.optimistic['y'].previous_adjust
     y_runtime_addr_optimistic = None if y_addr_optimistic is None else movemanager.b2r(y_addr_optimistic)
@@ -591,6 +737,8 @@ def osbput_hook(runtime_addr, state, subroutine):
     auto_comment(y_runtime_addr_optimistic, "Y=file handle", align=Align.INLINE)
 
 def osbget_hook(runtime_addr, state, subroutine):
+    """OSBGET (&ffd7): read a byte into A from the file whose handle is in
+    Y. Comments the call, and where Y is set."""
     y_addr = state.optimistic['y'].previous_adjust
     y_runtime_addr_optimistic = None if y_addr is None else movemanager.b2r(y_addr)
 
@@ -598,6 +746,12 @@ def osbget_hook(runtime_addr, state, subroutine):
     auto_comment(y_runtime_addr_optimistic, "Y=file handle", align=Align.INLINE)
 
 def osargs_hook(runtime_addr, state, subroutine):
+    """OSARGS (&ffda): read or write an open file's attributes (e.g. its
+    sequential pointer or length), or with Y=0 the filing system's, as A
+    says, with X the zero page address of a four byte block and Y the file
+    handle. Comments the call, where X and Y are set, and for A=0, Y=0 (read
+    the filing system number) where A is next used. A and Y count as zero
+    only when they're known for certain to be loaded with zero."""
     a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
     x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
     y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
@@ -670,12 +824,19 @@ def osargs_hook(runtime_addr, state, subroutine):
         auto_comment(runtime_addr, "Read or write a file's attributes", align=Align.INLINE)
 
 def osnewl_hook(runtime_addr, state, subroutine):
+    """OSNEWL (&ffe7): comment the call."""
     auto_comment(runtime_addr, "Write newline (characters 10 and 13)", align=Align.INLINE)
 
 def oswrcr_hook(runtime_addr, state, subroutine):
+    """OSWRCR (&ffec): comment the call."""
     auto_comment(runtime_addr, "Write carriage return (character 13)", align=Align.INLINE)
 
 def oswrch_hook(runtime_addr, state, subroutine):
+    """OSWRCH (&ffee), and OSASCI (&ffe3), NVWRCH (&ffcb) and VDUCHR
+    (&ffbc): write the character in A. Comments the call, e.g. 'Write
+    character 65' if A is known for certain, or for OSASCI with A=13 (which
+    writes a new line) as OSNEWL. (comment_vdu_sequences() describes what a
+    run of characters does.)"""
     a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
     # A's value, from an immediate load, or otherwise known (e.g. after 'cmp
     # #13 : bne skip')
@@ -692,6 +853,10 @@ def oswrch_hook(runtime_addr, state, subroutine):
     auto_comment(runtime_addr, "Write character%s" % a, align=Align.INLINE)
 
 def osfile_hook(runtime_addr, state, subroutine):
+    """OSFILE (&ffdd): load, save or otherwise act on a whole file, as A says
+    (osfile_enum), with an 18 byte parameter block at the address in X and
+    Y. Names A where it's set, writes the block's address as its label where
+    X and Y are set, and if A is known for certain, comments the call."""
     a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
     x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
     y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
@@ -716,6 +881,13 @@ def osfile_hook(runtime_addr, state, subroutine):
         auto_comment(runtime_addr, "unknown OSFILE call (A=%d)" % action_pessimistic, align=Align.INLINE)
 
 def osword_hook(runtime_addr, state, subroutine):
+    """OSWORD (&fff1): the call A says (osword_enum), with a parameter block
+    at the address in X and Y. Names A where it's set, writes the block's
+    address as its label where X and Y are set, and if A is known for
+    certain, comments the call and each field of the block (from
+    osword_block_descriptions). For OSWORD 0 (read a line), the address of
+    the buffer in the block's first two bytes is written as its label too,
+    and the line length returned in Y is commented where Y is next used."""
     a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
     x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
     y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
@@ -735,6 +907,7 @@ def osword_hook(runtime_addr, state, subroutine):
     action_pessimistic = memory_binary[a_addr_pessimistic]
     if action_pessimistic in osword_descriptions:
         com = osword_descriptions[action_pessimistic]
+        # (The MOS's own OSWORDs are 0-15; the others are other ROMs')
         if action_pessimistic >= 16:
             com += " (see https://beebwiki.mdfs.net/OSWORDs)"
         auto_comment(runtime_addr, com, align=Align.INLINE)
@@ -757,6 +930,8 @@ def osword_hook(runtime_addr, state, subroutine):
         auto_comment(y_runtime_next_use, "Y contains line length, including carriage return if used.", align=Align.INLINE)
 
 def oscli_hook(runtime_addr, state, subroutine):
+    """OSCLI (&fff7): run the * command at the address in X and Y. Writes
+    the command's address as its label where X and Y are set."""
     x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
     y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
     xy_addr(x_addr_optimistic, y_addr_optimistic)
@@ -793,7 +968,16 @@ def os_call_name(name):
     return name.upper() if config.get_upper_case_os_calls() else name
 
 def mos_labels():
-    # (bbc(), electron(), b_plus() and master() all call this)
+    """Set up what all the Acorn machines share: name the MOS's entry points
+    (each with a subroutine hook to comment the calls to it), the OS vectors
+    and some OS workspace, and register the snippets, the VDU sequence
+    analysis hook and the memory regions. (bbc(), electron(), b_plus() and
+    master() all call this, then name their own hardware.)
+
+    The names are optional labels, so they're only in the output if the
+    program uses them, and the entry points aren't traced. After this,
+    config.set_upper_case_os_calls() can't be changed (it stops with an
+    error), since the OS calls have been named."""
     session.current().extras["os_calls_named"] = True
     register_snippets()
     if comment_vdu_sequences not in session.current().trace.analysis_hooks:
@@ -804,6 +988,7 @@ def mos_labels():
     optional_label(0x00f4, "romsel_copy")
     optional_label(0x00f6, "osrdsc_ptr")
 
+    # Name a two byte vector and its high byte, e.g. 'userv' and 'userv+1'
     def ol2(addr, name):
         optional_label(addr    , name)
         optional_label(addr + 1, "%s+1" % name, addr)
@@ -811,6 +996,7 @@ def mos_labels():
     for vector in vectors:
         ol2(vector, vectors[vector])
 
+    # (GSINIT and GSREAD have no hook)
     optional_label(0xffc2, os_call_name("gsinit"))
     optional_label(0xffc5, os_call_name("gsread"))
 
@@ -835,8 +1021,20 @@ def mos_labels():
     subroutine(0xfff7, os_call_name("oscli"),   None, None, hook=oscli_hook,  is_entry_point=False)
 
 def is_sideways_rom():
+    """Name and classify the header of a sideways (paged) ROM loaded at
+    &8000, and trace its entry points.
+
+    The header is: at &8000 and &8003, the language and service entries
+    (each a JMP, if the ROM has one); &8006, the ROM type; &8007, the offset
+    from &8000 of the zero byte before the copyright string; &8008, the
+    binary version number; then from &8009 the title, a zero byte, an
+    optional version string and zero byte, and the copyright string (which
+    starts "(C)"), ending in a zero byte."""
     auto_comment(0x8000, "Sideways ROM header")
     label(0x8000, "rom_header")
+
+    # If there's a JMP at the entry, label it (e.g. 'service_entry'), trace
+    # it, and label its target (e.g. 'service_handler')
     def check_entry(runtime_addr, entry_type):
         runtime_addr = RuntimeAddr(runtime_addr)
         jmp_abs_opcode = 0x4c
@@ -852,6 +1050,9 @@ def is_sideways_rom():
     auto_expr(0x8007, "copyright - rom_header - 1")
     label(0x8008, "binary_version")
     label(0x8009, "title")
+    # (The title's zero byte isn't part of the string.) What follows it is
+    # the version string, if that's before the copyright string; otherwise
+    # the title's zero byte is the one before the copyright string.
     version_address = stringz(0x8009, True)
     if version_address < (0x8000 + copyright_offset + 1):
         label(version_address, "version")
@@ -863,6 +1064,9 @@ def is_sideways_rom():
     # follows the copyright string, which could be labelled.
 
 def label_tube(base, name):
+    """Name the Tube's eight registers from 'base' (a status and a data
+    register for each of R1 to R4), e.g. 'tube_parasite_r1_status'. Like the
+    other hardware, they're always defined as 'name = value', never inline."""
     optional_label(base + 0, "tube_%s_r1_status" % name, definable_inline=False)
     optional_label(base + 1, "tube_%s_r1_data" % name, definable_inline=False)
     optional_label(base + 2, "tube_%s_r2_status" % name, definable_inline=False)
@@ -873,8 +1077,15 @@ def label_tube(base, name):
     optional_label(base + 7, "tube_%s_r4_data" % name, definable_inline=False)
 
 def hardware(machine):
-    """Name the hardware addresses of the given machine (see hardware_labels in
-    acorntables.py), or the Tube registers for the 6502 second processor."""
+    """Name the hardware addresses of the given machine (a
+    machinetype.MachineType; see hardware_labels in acorntables.py), and say
+    that FRED, JIM and SHEILA (&fc00-&feff) are I/O (see io_range()). For a
+    machine with a 6845 CRTC (all but the Electron), the register numbers
+    stored to crtc_address_register are named too (from
+    crtc_registers_enum).
+
+    For the 6502 second processor, it names only its side of the Tube's
+    registers, at &fef8-&feff, and marks only those as I/O."""
     if machine == machinetype.MachineType.MACHINE_6502SP:
         label_tube(0xfef8, "parasite")
         io_range(0xfef8, 0xff00)
@@ -889,41 +1100,58 @@ def hardware(machine):
 
     if machine != machinetype.MachineType.MACHINE_ELECTRON:
         # Name the CRTC register numbers stored to crtc_address_register
+        # (e.g. 'lda #crtc_cursor_start : sta crtc_address_register'),
+        # defining the constants used
         for instruction, reg in [("sta crtc_address_register", 'a'), ("stx crtc_address_register", 'x'), ("sty crtc_address_register", 'y')]:
             session.current().trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, crtc_registers_enum, True))
 
 def add_oswrsc():
+    """Name OSWRSC (&ffb3), which only the B+ and Master have, with its
+    hook."""
     subroutine(0xffb3, os_call_name("oswrsc"),  None, None, hook=oswrsc_hook, is_entry_point=False)
 
 def hardware_bbc():
+    """Name the BBC Micro's hardware (see hardware())."""
     hardware(machinetype.MachineType.MACHINE_BBC)
 
 def hardware_b_plus():
+    """Name the B+'s hardware (see hardware())."""
     hardware(machinetype.MachineType.MACHINE_BPLUS)
 
 def hardware_master():
+    """Name the Master's hardware (see hardware())."""
     hardware(machinetype.MachineType.MACHINE_MASTER)
 
 def hardware_electron():
+    """Name the Electron's hardware (see hardware())."""
     hardware(machinetype.MachineType.MACHINE_ELECTRON)
 
 def hardware_6502sp():
+    """Name the 6502 second processor's Tube registers (see hardware())."""
     hardware(machinetype.MachineType.MACHINE_6502SP)
 
 def electron():
+    """Set up for a program for the Electron: the MOS (see mos_labels())
+    and the Electron's hardware."""
     mos_labels()
     hardware_electron()
 
 def bbc():
+    """Set up for a program for the BBC Micro: the MOS (see mos_labels())
+    and the BBC Micro's hardware."""
     mos_labels()
     hardware_bbc()
 
 def b_plus():
+    """Set up for a program for the B+: the MOS (see mos_labels()), with
+    OSWRSC, and the B+'s hardware."""
     mos_labels()
     add_oswrsc()
     hardware_b_plus()
 
 def master():
+    """Set up for a program for the Master: the MOS (see mos_labels()), with
+    OSWRSC, and the Master's hardware."""
     mos_labels()
     add_oswrsc()
     hardware_master()

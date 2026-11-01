@@ -1,18 +1,23 @@
 """
 OSBYTE (&FFF4): the comments py8dis adds to a call to OSBYTE, and where.
 
-osbyte_calls (at the end) maps each OSBYTE number, the value of A at the call,
-to an Osbyte saying what to say. Most OSBYTEs are described by their text
-alone; the few that need more work have a function to do it (the
-"Irregular OSBYTEs" below).
+acorn.mos_labels() makes osbyte_hook() (at the end) OSBYTE's subroutine
+hook, so it's called for each call to OSBYTE once the code has been traced.
+It names the OSBYTE number where A is set (with acorn.osbyte_enum), then
+looks the number up in osbyte_calls, which maps each OSBYTE number to an
+Osbyte saying what to say. Most OSBYTEs are described by their texts alone;
+the few that need more work have a function to do it (the "Irregular
+OSBYTEs" below). An OsbyteCall holds what's known at the call.
 
 A call is commented in three places:
 - where X and Y are set (e.g. "X=buffer number", or the X value named as a
-  constant). This is done when any path to the call sets A to the OSBYTE
-  number (the "optimistic" register state);
-- the call itself (e.g. "Flush keyboard buffer (X=0)"), when every path to the
-  call sets A to it (the "pessimistic" state), so the call is surely that
-  OSBYTE;
+  constant). This is done when the code before the call sets A to the
+  OSBYTE number, if the call is reached by running straight through that
+  code (the "optimistic" register state, which isn't forgotten at a
+  label);
+- the call itself (e.g. "Flush keyboard buffer (X=0)"), when A is known for
+  certain (the "pessimistic" state, which is forgotten at a label, since
+  other code could jump there), so the call is surely that OSBYTE;
 - where X and Y are next used after the call, saying what OSBYTE returned in
   them (e.g. "X is the previous value of the user flag byte"), also only when
   the call is surely that OSBYTE.
@@ -22,8 +27,11 @@ Texts can use these fields, filled in at the call:
                     it isn't known
     {xe}, {ye}      "X=5" (say), or "X" if it isn't known
     {name}          the name of X's value (with x_names)
-    {hex2[0xff]}    &FF, $ff etc, in the assembler's format
+    {hex2[0xff]}    &ff, $ff etc, in the assembler's format
 A text can also be a function, taking the OsbyteCall and returning the text.
+
+The names and descriptions (of the buffers, events, OS variables and so on)
+are in acorntables.py.
 """
 
 from commands import auto_comment, auto_expr, binary, char, decimal, constant
@@ -40,8 +48,12 @@ from memorymanager import memory_binary
 class OsbyteCall:
     """What is known at one call to OSBYTE, and ways to comment on it.
 
-    Addresses ending _addr are binary addresses (of the immediate operand that
-    sets the register); the rest are runtime addresses."""
+    runtime_addr is the call's address, and 'state' the CPU state just
+    before it (as a subroutine hook is given them). Attributes with _addr in
+    their names (a_addr, x_addr, x_addr_optimistic etc.) are binary
+    addresses, of the operand of the immediate load that set the register
+    (e.g. the nn of 'ldx #nn'), or None; the rest of the addresses are
+    runtime addresses, or None if there isn't one."""
 
     def __init__(self, runtime_addr, state):
         self.runtime_addr = runtime_addr
@@ -49,6 +61,7 @@ class OsbyteCall:
 
         self.a_addr = optimistic['a'].get_previous_load_imm_operand()
         a_addr_pessimistic = pessimistic['a'].get_previous_load_imm_operand()
+        # (What's known for certain is also known optimistically)
         assert (a_addr_pessimistic == self.a_addr) or (a_addr_pessimistic is None)
         # The OSBYTE number (optimistically), and whether every path to the
         # call sets A to it
@@ -82,25 +95,33 @@ class OsbyteCall:
 
     @property
     def xy_next_use(self):
-        """The first use of X or Y after the call"""
+        """The first use of X or Y after the call (the lower address of the
+        two), or None."""
         uses = [z for z in [self.x_next_use, self.y_next_use] if z is not None]
         return min(uses) if uses else None
 
     def comment(self, text, **kwargs):
-        """Comment on the call itself"""
+        """Comment on the call itself, at the end of its line (kwargs go to
+        auto_comment(), e.g. show_blank=True)."""
         auto_comment(self.runtime_addr, text, align=Align.INLINE, **kwargs)
 
     def exit_comment(self, runtime_addr, text):
-        """Comment on where a result of the call is used"""
+        """Comment on where a result of the call is used: at the end of the
+        line, or for a Block, before it. Does nothing if runtime_addr is
+        None."""
         if isinstance(text, Block):
             auto_comment(runtime_addr, text, indent=1, show_blank=True)
         else:
             auto_comment(runtime_addr, text, align=Align.INLINE)
 
     def text(self, template, name=None):
-        """Fill in a text's fields (see above)"""
+        """Fill in a text's fields (see the top of this module), or call it
+        if it's a function. 'name' is for {name}."""
         if callable(template):
             return template(self)
+        # (A Block keeps its type only because str.format() returns the
+        # string itself when it has no fields: one with fields would come
+        # back as a plain str)
         return template.format(
             x  = "X" if self.x is None else self.x,
             y  = "Y" if self.y is None else self.y,
@@ -110,21 +131,26 @@ class OsbyteCall:
             hex2 = _Hex2())
 
 def hex2(n):
-    """A byte in the assembler's hex format, e.g. &FF"""
+    """A byte in the assembler's hex format, e.g. &ff or $ff."""
     return config.get_assembler().hex2(n)
 
 class _Hex2:
-    """So that a text can say {hex2[0xff]}"""
+    """So that a text can say {hex2[0xff]}: str.format() passes the index
+    to __getitem__() as the string "0xff"."""
     def __getitem__(self, n):
         return hex2(int(n, 0))
 
 class Block(str):
-    """A comment of several lines, output before the line it's on (with a
-    blank line before it), rather than at the end of the line"""
+    """A comment of several lines, output before the line it's on (indented,
+    with a blank line before it), rather than at the end of the line. Only
+    exit comments (x_exit etc.) can be Blocks; see OsbyteCall.text() for why
+    a Block can't have any fields."""
 
 
 class Osbyte:
-    """How to comment a call to one OSBYTE.
+    """How to comment a call to one OSBYTE (an entry in osbyte_calls). Each
+    text is a string with fields, or a function (see the top of this
+    module).
 
     The call itself:
         call        the comment (when X isn't known, or none of the below apply)
@@ -170,7 +196,10 @@ class Osbyte:
         self.handler = handler
 
     def describe(self, call):
-        """Comment on the call"""
+        """Comment on the call (an OsbyteCall): where X and Y are set, if A
+        is known optimistically (which osbyte_hook() has checked); and the
+        call and its results, only if A is known for certain. A handler does
+        all of it instead, and checks call.sure itself."""
         if self.handler is not None:
             self.handler(call)
             return
@@ -194,6 +223,10 @@ class Osbyte:
                 call.exit_comment(runtime_addr, call.text(text))
 
     def call_comment(self, call):
+        """The comment for the call itself, chosen by X's value (if it's
+        known for certain): from x_choices, then x_names (with x_named),
+        then x_other, otherwise 'call'. Its fields are filled in, and the
+        suffix added."""
         x = call.x
         name = None
         if x is None:
@@ -210,6 +243,8 @@ class Osbyte:
 
 
 def count(n, singular, plural):
+    """A number with its unit, e.g. '1 line' or '3 lines' (n can be a
+    string, e.g. 'Y lines')."""
     return utils.count_with_units(n, singular, plural)
 
 
@@ -219,7 +254,12 @@ def count(n, singular, plural):
 
 def osbyte_rw(x_binary_addr, y_binary_addr):
     """For the OSBYTEs that read or write an OS variable: whether the call
-    reads, writes or does both, and the value written (if known)."""
+    reads, writes or does both ("Read", "Write" or "Read/Write"), and the
+    value written (if known, otherwise None), from the binary addresses of
+    the immediate operands that set X and Y (or None).
+
+    These OSBYTEs set the variable to (its old value AND Y) EOR X, so Y=0
+    writes X, and X=0 with Y=&FF only reads it."""
     com = "Read/Write"
     write_value=None
     if y_binary_addr is not None:
@@ -234,6 +274,9 @@ def osbyte_rw(x_binary_addr, y_binary_addr):
     return (com, write_value)
 
 def format_osbyte_rw(x_addr, y_addr, comment_name):
+    """The comment for a call that reads or writes an OS variable (see
+    osbyte_rw()), e.g. 'Write user flag byte, value X=5', for the
+    variable's description."""
     com, write_value = osbyte_rw(x_addr, y_addr)
     result = com + " " + comment_name
     if write_value is not None:
@@ -242,11 +285,16 @@ def format_osbyte_rw(x_addr, y_addr, comment_name):
     return result
 
 def key_name(key):
+    """The name of a key, in quotes, from its INKEY number as a byte (see
+    inkey_enum), e.g. "'SPACE'"; or "an unknown" (for "an unknown key")."""
     if key in inkey_enum:
+        # (Without the 'inkey_key_' at the start of the name)
         return "'" + inkey_enum[key][10:].upper() + "'"
     return "an unknown"
 
 def append_bit_string(str, x, bit, result1, result0):
+    """Add to 'str' (separated by '; ') result1 if the bit of x is set, or
+    result0 if it's clear, and return it."""
     if len(str) > 0:
         str += "; "
     if (x & (1<<bit)) == 0:
@@ -256,6 +304,9 @@ def append_bit_string(str, x, bit, result1, result0):
     return str
 
 def read_os_version(call):
+    """OSBYTE 0: with X=0, BRK with the OS version as the error message;
+    otherwise, read the OS version into X, which is explained where it's
+    next used."""
     if not call.sure:
         return
     com = "Read OS version number (if X non-zero), or BRK and print OS version (if X=0)"
@@ -275,6 +326,9 @@ def read_os_version(call):
     call.comment(com, show_blank=True)
 
 def select_output_stream(call):
+    """OSBYTE 3: choose where characters written with OSWRCH go. Each bit of
+    X turns an output on or off, so X is shown in binary, and its bits are
+    described if it's known."""
     if not call.sure:
         return
     com = "Select output stream based on X"
@@ -284,6 +338,7 @@ def select_output_stream(call):
     if call.x is not None:
         x = call.x
         com += ": "
+        # (Bits 5 and 7 aren't described)
         bit_str = ""
         bit_str = append_bit_string(bit_str, x, 0, "enable RS232 output", "disable RS232 output")
         bit_str = append_bit_string(bit_str, x, 1, "disable VDU driver", "enable VDU driver")
@@ -299,6 +354,8 @@ def select_output_stream(call):
     call.exit_comment(call.x_next_use, "X is the previous output stream status byte")
 
 def set_printer_ignore_character(call):
+    """OSBYTE 6: set the character the printer ignores to X, which is shown
+    as a character."""
     if not call.sure:
         return
     com = "Set printer ignore character to "
@@ -314,10 +371,19 @@ def set_printer_ignore_character(call):
     call.exit_comment(call.x_next_use, "X is the previous printer ignore character")
 
 def keyboard_scan(call):
+    """OSBYTE &79: with X >= &80, test whether the key with internal key
+    number X EOR &80 is pressed; otherwise, scan the keyboard from internal
+    key number X.
+
+    Where X is set, the key is named with its INKEY constant (see
+    inkey_enum), e.g. 'ldx #(255 - inkey_key_space) EOR 128': the INKEY
+    number of the key with internal key number k is -(k+1), which is 255-k
+    as a byte."""
     # Where X is set (optimistically): name the key
     if call.x_addr_optimistic is not None:
         key = memory_binary[call.x_addr_optimistic]
         if key >= 0x80:
+            # (255-key is 127-k, so the EOR adds 128 back, giving 255-k)
             inkey_key = (255-key) ^ 0x80
             if inkey_key in inkey_enum:
                 constant(inkey_key, inkey_enum[inkey_key])
@@ -359,6 +425,11 @@ def keyboard_scan(call):
         call.exit_comment(call.x_next_use, com)
 
 def read_buffer_status_or_adc(call):
+    """OSBYTE &80: with X=0, read the last ADC channel converted and the
+    joystick fire buttons; with X=1 to 127, read ADC channel X; with X >= &80,
+    read how full buffer 255-X is (see negative_buffer_actions): the number
+    of characters in an input buffer (X=&FF or &FE), or of spaces left in an
+    output buffer."""
     if not call.sure:
         return
     com = "Read buffer status or ADC channel"
@@ -402,6 +473,9 @@ def read_buffer_status_or_adc(call):
             call.exit_comment(call.xy_next_use, "X and Y contain the ADC value read (low,high)")
 
 def read_key(call):
+    """OSBYTE &81 (INKEY): with Y >= &80, test the key whose INKEY number (as
+    a byte) is X, or with X=0, read the machine type; otherwise, wait up to
+    X+256*Y centiseconds for a key press."""
     # Comment on setting X: an INKEY key number, unless X=0 (read machine type)
     if call.y_addr_optimistic is not None:
         if memory_binary[call.y_addr_optimistic] >= 0x80:
@@ -460,6 +534,8 @@ def read_key(call):
             call.exit_comment(call.xy_next_use, "X and Y contain " + hex2(0xff) + " if the key is pressed")
 
 def opt(call):
+    """OSBYTE &8B: *OPT X,Y, described from opt_descriptions (keyed by e.g.
+    "1,2"), or for *OPT 0 and *OPT 3 here."""
     if not call.sure:
         return
     x = "X" if call.x is None else str(call.x)
@@ -475,6 +551,8 @@ def opt(call):
     call.comment(com)
 
 def tv(call):
+    """OSBYTE &90: *TV X,Y. X is the number of lines to move the display (a
+    signed byte: &80 or more moves it down), and Y=0 turns interlace on."""
     if not call.sure:
         return
     suffix = ""
@@ -508,7 +586,9 @@ def tv(call):
     call.exit_comment(call.y_next_use, "Y is the previous interlace option (0=interlace on, 1=off)")
 
 def read_or_write_memory_mapped_io(call):
-    """OSBYTEs &92 to &97: read or write FRED, JIM or SHEILA"""
+    """OSBYTEs &92 to &97: read (the even ones) or write (the odd ones) the
+    byte at offset X in FRED (&FC00), JIM (&FD00) or SHEILA (&FE00). The value
+    written is Y, and the value read is returned in Y."""
     if not call.sure:
         return
     com = read_or_write_memory_mapped_device[call.a]
@@ -534,7 +614,11 @@ def read_or_write_memory_mapped_io(call):
         call.exit_comment(call.y_next_use, "Y is the byte read")
 
 def video_ula_control(call):
-    """The comment for OSBYTE &9A with a known X"""
+    """The comment for OSBYTE &9A with a known X (its x_other): X's bits
+    described as the cassette motor (bit 7), whether RS423 or the cassette
+    is in charge (bit 6), and the receive (bits 3-5) and transmit (bits 0-2)
+    baud rates. (That's the layout of the serial ULA's control register, as
+    in OSBYTE 7 and 8's results.)"""
     val = call.x
     transmit_baud = baud_rates[8 - (val & 7)]
     receive_baud = baud_rates[8 - ((val//8) & 7)]
@@ -547,6 +631,9 @@ def video_ula_control(call):
     return com
 
 def acia_control(call):
+    """OSBYTE &9C: read or write the 6850 ACIA's control register (and the
+    OS's copy of it), as for an OS variable (see osbyte_rw()). X is shown in
+    binary, and the value written is described if it's known."""
     if call.x_addr_optimistic is not None:
         binary(call.x_operand)
     if not call.sure:
@@ -554,6 +641,9 @@ def acia_control(call):
     _, write_value = osbyte_rw(call.x_addr, call.y_addr)
     com = format_osbyte_rw(call.x_addr, call.y_addr, "6850 (ACIA) control register")
     if write_value is not None:
+        # The control register's fields: bits 0-1 the counter divide
+        # (or master reset), bits 2-4 the word format, bits 5-6 the
+        # transmit control, and bit 7 the receive interrupt enable
         com += ": "
         com += { 0: "divide counter by 1",
                  1: "divide counter by 16",
@@ -584,6 +674,8 @@ def acia_control(call):
     call.exit_comment(call.x_next_use, "X is the previous value of the control register")
 
 def read_vdu_variable(call):
+    """OSBYTE &A0: read VDU variable X into X, and the next one into Y,
+    named from vdu_variables."""
     if not call.sure:
         return
     com = "Read VDU variable X"
@@ -605,6 +697,9 @@ def read_vdu_variable(call):
     call.exit_comment(call.y_next_use, "Y is the " + var2)
 
 def read_cmos(call):
+    """OSBYTE &A1 (Master and Compact): read CMOS RAM (or EEPROM) byte X
+    into Y, named from cmos_ram; on the Compact, X=255 reads the EEPROM's
+    size instead."""
     if not call.sure:
         return
     com = "Master and Compact: Read CMOS RAM/EEPROM byte X"
@@ -636,6 +731,8 @@ def read_cmos(call):
                 call.exit_comment(call.y_next_use, "Y is the %s byte read from the CMOS RAM/EEPROM" % name_of_byte)
 
 def write_cmos(call):
+    """OSBYTE &A2 (Master and Compact): write Y to CMOS RAM (or EEPROM) byte
+    X, named from cmos_ram."""
     if not call.sure:
         return
     com = "Master and Compact: Write to CMOS RAM/EEPROM byte X"
@@ -653,7 +750,12 @@ def write_cmos(call):
     call.comment(com)
 
 def os_variable(call):
-    """OSBYTEs &A6 to &FF: read or write an OS variable"""
+    """OSBYTEs &A6 to &FF: read or write an OS variable (see osbyte_rw()),
+    named from os_variable_names. X returns the variable's value (its old
+    value, for a write), and Y the next variable's (OSBYTE number+1's).
+    A few have comments of their own: &C8 (ESCAPE and BREAK effects), &C9
+    (keyboard disable), &E5 (ESCAPE key status) and &FF (the startup
+    options, shown in binary and explained where X is next used)."""
     # Where X is set (optimistically)
     if call.a in (0xc6, 0xc7):
         auto_comment(call.x_adjust, "X=File handle", align=Align.INLINE)
@@ -671,9 +773,11 @@ def os_variable(call):
     next_name = os_variable_names.get(call.a + 1)
     next_next_name = os_variable_names.get(call.a + 2)
 
-    # Exceptions
+    # Exceptions. (For &C8 and &E5 the description is changed, and it's used
+    # for the comments on X after the call too.)
     skip_normal_comment = False
     if call.a == 0xc8:
+        # Bit 0 disables ESCAPE; any other bit set clears memory on BREAK
         if write_value is not None:
             if write_value & 1:
                 name = "Disable ESCAPE action, "
@@ -704,7 +808,9 @@ def os_variable(call):
         call.comment(format_osbyte_rw(call.x_addr, call.y_addr, name))
 
     # Post exit:
-    # Exit parameters specify low byte for a corresponding high byte.
+    # Exit parameters specify low byte for a corresponding high byte (e.g.
+    # OSBYTE &A6 returns the address of the OS variables, low byte in X and
+    # high byte in Y).
     if next_name == name + " (high byte)":
         name += " (low byte)"
     if next_name and (next_next_name == next_name + " (high byte)"):
@@ -744,6 +850,11 @@ Disc drive timing links:
 # The OSBYTEs
 # ****************************************************************************
 
+# How to comment each OSBYTE, by number (the value of A at the call). An
+# OSBYTE that isn't here but is in osbyte_extra_descriptions (mostly those of
+# other ROMs and add-ons) gets just a one-line description, when A is known
+# for certain; others get no comment, though their number is still named if
+# it's in osbyte_enum.
 osbyte_calls = {
     0x00: Osbyte(handler=read_os_version),
 
@@ -1087,7 +1198,10 @@ osbyte_calls = {
 
 
 def osbyte_hook(runtime_addr, state, subroutine):
-    """The subroutine hook for OSBYTE: comment on a call to it"""
+    """The subroutine hook for OSBYTE: comment on a call to it at
+    runtime_addr, given the CPU state before it (see the top of this
+    module). Does nothing if A isn't loaded with an immediate value before
+    the call."""
     call = OsbyteCall(runtime_addr, state)
     if call.a is None:
         return

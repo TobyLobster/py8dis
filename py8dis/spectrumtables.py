@@ -1,7 +1,12 @@
 """
+ZX Spectrum tables
+
 The ZX Spectrum's data tables, for spectrum.py: names for the system
-variables, the screen and the ROM's routines and tables, and what the
-commonly called ROM routines do.
+variables, the screen and the ROM's routines and tables; what the commonly
+called ROM routines do; the memory regions; and the text for the comments
+spectrum.py adds (the error reports, the keywords, the colours and the
+keyboard's half rows). There's no code here: spectrum.py imports it all
+with 'from spectrumtables import *'.
 
 The system variables' names are those of the ZX Spectrum BASIC Programming
 manual (Sinclair Research, 1982, chapter 25), in lower case. The ROM's
@@ -14,6 +19,15 @@ than letters and digits are written as '_', except for '$' ('_str'), '&'
 '@' ('_at_'): e.g. 'PRINT-A-2' is 'print_a_2', and 'S-INKEY$' 's_inkey_str'.
 The calculator's ABS, NOT and OR are 'fp_abs', 'fp_not' and 'fp_or', since
 sjasmplus takes 'abs', 'not' and 'or' to be its operators.
+
+How they're used: spectrum.spectrum48() makes system_variables,
+screen_locations and (unless rom_labels=False) rom_names into optional
+labels, which are only output if the program uses them; names the memory
+regions; and defines each of rom_routines with subroutine(), so that calls
+to it are commented. spectrum.rom(), for a disassembly of the ROM itself,
+gives every one of rom_names as a label. The other tables are for the
+comments, e.g. 'Report 6 Number too big', 'Border blue' and 'Read the
+keyboard (SPACE-B)'.
 """
 
 from collections import namedtuple
@@ -22,7 +36,9 @@ from collections import namedtuple
 # first is named as an offset, e.g. 'frames+1') and its name
 Location = namedtuple("Location", ["addr", "size", "name"])
 
-# The system variables
+# The system variables, $5C00 to $5CB5, in address order. Each byte is named
+# (see location_names() in spectrum.py), and an (IY+d) that addresses one is
+# written as an offset from err_nr (see IY_BASE).
 system_variables = [
     Location(0x5c00, 8, "kstate"),
     Location(0x5c08, 1, "last_k"),
@@ -95,17 +111,22 @@ system_variables = [
 ]
 
 # The address IY holds, for the ROM's (and BASIC's) use: ERR_NR. The system
-# variables are written as offsets from it, e.g. 'ld (iy+flags-err_nr),a'.
+# variables are written as offsets from it, e.g. 'ld (iy+flags - err_nr),a'
+# (see _analysis() in spectrum.py).
 IY_BASE = 0x5c3a
 
-# The screen, the attributes and the printer buffer
+# The screen's bitmap, the attributes and the printer buffer, named in the
+# same way as the system variables (e.g. 'screen', 'screen+1')
 screen_locations = [
     Location(0x4000, 0x1800, "screen"),
     Location(0x5800, 0x300, "attributes"),
     Location(0x5b00, 0x100, "printer_buffer"),
 ]
 
-# The memory regions, for the list of memory locations at the top
+# The memory regions, as (start, end, name), for the list of memory locations
+# at the top of the output: spectrum48() names them with memory_region() (see
+# commands.py), and the labels defined as 'name = value' are grouped under
+# them as headings
 regions = [
     (0x0000, 0x4000, "ROM"),
     (0x4000, 0x5800, "Screen"),
@@ -117,15 +138,22 @@ regions = [
 # The I/O port the ULA answers (any even port): writing sets the border
 # colour (bits 0-2), MIC (bit 3) and the speaker (bit 4); reading gives the
 # keyboard (bits 0-4, for the half rows whose bits are 0 in the port's high
-# byte) and EAR (bit 6)
+# byte) and EAR (bit 6). spectrum.py writes it as 'ula_port' and comments what
+# the code writes to it and reads from it.
 ULA_PORT = 0xfe
 
+# The colours, by number (0 to 7), for the border colour in the comments on
+# what's written to the ULA's port (see border_description() in spectrum.py)
 colours = ("black", "blue", "red", "magenta", "green", "cyan", "yellow", "white")
 
-# The keyboard's half rows, by the bit that's 0 in the port's high byte
+# The keyboard's half rows, by the bit that's 0 in the port's high byte (bit
+# 0, $FE, for CAPS SHIFT to V, up to bit 7, $7F, for SPACE to B), for the
+# comments on reading the keyboard (see keyboard_description() in spectrum.py)
 keyboard_half_rows = ("CAPS SHIFT-V", "A-G", "Q-T", "1-5", "0-6", "P-Y", "ENTER-H", "SPACE-B")
 
-# The error reports, by report code (0 to 9, then A to R), as in the ROM
+# The error reports, by report code (0 to 9, then A to R), as in the ROM, for
+# the comment on the error number after an RST $08 (one less than the code:
+# see error_hook() in spectrum.py)
 error_reports = [
     'OK', 'NEXT without FOR', 'Variable not found', 'Subscript wrong',
     'Out of memory', 'Out of screen', 'Number too big', 'RETURN without GOSUB',
@@ -136,7 +164,9 @@ error_reports = [
     'Invalid stream', 'FN without DEF', 'Parameter error', 'Tape loading error',
 ]
 
-# The keywords, by token from $A5 (RND), as in the ROM (with their spaces)
+# The keywords, by token from $A5 (RND) to $FF (COPY), as in the ROM (with
+# their spaces), for the comments on the characters printed (see
+# character_description() in spectrum.py)
 keywords = [
     'RND', 'INKEY$', 'PI', 'FN', 'POINT', 'SCREEN$', 'ATTR', 'AT',
     'TAB', 'VAL$', 'CODE', 'VAL', 'LEN', 'SIN', 'COS', 'TAN',
@@ -152,10 +182,16 @@ keywords = [
     'CLEAR', 'RETURN', 'COPY',
 ]
 
-# The ROM routines that programs commonly call: (address, title, on entry,
-# on exit). (Their names are in rom_names.)
+# A ROM routine that programs commonly call: (address, title, on entry, on
+# exit). The title is what a call to it is commented with; on_entry and
+# on_exit are dictionaries from a register to what it holds (or None), as
+# subroutine() in commands.py takes them. (Its name is in rom_names.)
 RomRoutine = namedtuple("RomRoutine", ["addr", "title", "on_entry", "on_exit"])
 
+# The ROM routines that programs commonly call. Unless rom_labels=False,
+# spectrum48() defines each with subroutine(), so that calls to it are
+# commented, e.g. 'call cls ; Clear the screen' (RST $10's with what's
+# printed instead, see print_hook() in spectrum.py)
 rom_routines = [
     RomRoutine(0x0010, "Print a character", {"a": "the character"}, None),
     RomRoutine(0x0018, "Get the current BASIC character", None, {"a": "the character, at CH_ADD"}),
@@ -188,7 +224,10 @@ rom_routines = [
     RomRoutine(0x2de3, "Print the number on the calculator stack", None, None),
 ]
 
-# The names of the ROM's routines and tables (see the docs at the top)
+# The names of the ROM's routines and tables, by address (see the module
+# docstring for where they come from and how they're written). Unless
+# rom_labels=False, spectrum48() makes them optional labels, and
+# spectrum.rom() gives every one as a label.
 rom_names = {
     0x0000: "start",
     0x0008: "error_1",

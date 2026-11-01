@@ -1,7 +1,14 @@
-"""Make py8dis/commodoresource.py: the labels in Commodore's source for the
+"""
+Make commodoresource.py
+
+Makes py8dis/commodoresource.py: the labels in Commodore's source for the
 C64's, VIC-20's, C128's, Plus/4's and PET's ROMs and the 1541's DOS ROM, and
 the C128's, Plus/4's, PET's and 1541's workspace (the RAM locations their
 source declares), from the listings made by assembling that source.
+commodore.py names the ROMs' addresses with the labels (see
+commodore.location_names()), and commodoretables.py makes the machines'
+workspace locations from the workspace, adding descriptive names. py8dis
+doesn't run this: it only uses the module this makes.
 
 The source is in https://github.com/mist64/cbmsrc, whose build.sh assembles
 it (with Commodore's own assembler under https://github.com/mist64/kernalemu
@@ -62,17 +69,25 @@ import os
 import re
 import sys
 
+# The 6502's mnemonics: a line that starts with one, rather than a label,
+# has no label
 MNEMONICS = set("adc and asl bcc bcs beq bit bmi bne bpl brk bvc bvs clc cld cli clv cmp cpx cpy dec dex dey eor inc inx iny "
                 "jmp jsr lda ldx ldy lsr nop ora pha php pla plp rol ror rti rts sbc sec sed sei sta stx sty tax tay tsx txa txs tya".split())
 
 # The two listing formats: Commodore's assembler under kernalemu (the C64 and
 # VIC-20), e.g. '00344  E50A  B0 07       PLOT   BCS PLOT10'; and cbm6502asm,
-# e.g. '     E00C   BD E04B      2375   10$\tlda mmutbl,x'
+# e.g. '     E00C   BD E04B      2375   10$\tlda mmutbl,x'. Each matches the
+# address, the 12 columns of code (what's assembled, or for cbm6502asm '='
+# and the location counter after a '*=*+n'), and the source line.
 KERNALEMU_LINE = re.compile(r"^\d{5}  ([0-9A-F]{4})  (.{12})(.*)$")
 CBM6502ASM_LINE = re.compile(r"^.{5}([0-9A-F]{4})   (.{12}) *\d+   (.*)$")
 
 def listing_lines(path):
-    """[(address, code, source)] for the listing's lines with an address"""
+    """[(address, code, source)] for the listing's lines with an address, in
+    either format: code is the code column, without the spaces around it
+    (e.g. 'B0 07', or '' if there's none), and source is the source line.
+    (The listing is read with any line ends, and undecodable bytes
+    replaced.)"""
     text = open(path, errors="replace").read().replace("\r\n", "\n").replace("\r", "\n")
     result = []
     for line in text.split("\n"):
@@ -81,8 +96,9 @@ def listing_lines(path):
             result.append((int(m.group(1), 16), m.group(2).strip(), m.group(3)))
     return result
 
-# The ROMs: (variable in the module, listing, what it is, ranges of addresses
-# to take labels from, ranges to leave out)
+# The ROMs: (variable in the module, listing, what it is (for the variable's
+# comment in the module), ranges of addresses to take labels from, ranges to
+# leave out)
 ROM_LISTINGS = [
     ("c64_kernal_rom_labels",    "KERNAL_C64_03.lst",  "the C64's Kernal ROM (901227-03)",            [(0xe000, 0x10000)], []),
     ("c64_basic_rom_labels",     "BASIC_C64.lst",      "the C64's BASIC ROM (901226-01, &a000-&bfff and &e000-&e4d2)", [(0xa000, 0xc000), (0xe000, 0xe4d3)], []),
@@ -105,7 +121,8 @@ ROM_LISTINGS = [
 ]
 
 # The workspace: (variable, listings in order of preference with the suffix
-# for each, what it is, ranges)
+# for each (added to a name another listing gives a different address),
+# what it is, ranges of addresses to take declarations from)
 WORKSPACE_LISTINGS = [
     ("c128_workspace", [("KERNAL_C128_06.lst", ""), ("EDITOR_C128.lst", "_editor"), ("BASIC_C128_04.lst", "_basic"), ("MONITOR_C128.lst", "_monitor")],
      "the C128's workspace", [(0x0000, 0x0100), (0x0200, 0x1400)]),
@@ -124,14 +141,24 @@ WORKSPACE_LISTINGS = [
 ]
 
 def rom_labels(path, ranges, excluded):
-    """{address: name} for the labels in the listing"""
+    """{address: name} for the labels in the listing at path, at the
+    addresses in the ranges and not in the excluded ranges (each [(start,
+    end)], end exclusive), as the module docstring describes. Names are in
+    lower case. A name at two addresses stops it with an assertion."""
+    # The labels found at each address: [(1 for a label alone on a line, 0
+    # for one on an instruction or data, name)], in the listing's order
     candidates = collections.defaultdict(list)
     for addr, code, source in listing_lines(path):
+        # (A label starts the line: a line starting with a space, a tab,
+        # ';', '.' or '*' has none)
         if source[:1] in ("\t", " ", ";", ".", "*"):
             continue
         tokens = source.split(";")[0].split()
+        # (Not a local label, e.g. '10$', or an instruction)
         if not tokens or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tokens[0]) or tokens[0].lower() in MNEMONICS:
             continue
+        # (Not a constant, 'NAME = value', or a workspace declaration, 'NAME
+        # *=*+n')
         if len(tokens) > 1 and (tokens[1].startswith("=") or tokens[1].startswith("*=")):
             continue
         if not any(lo <= addr < hi for lo, hi in ranges) or any(lo <= addr < hi for lo, hi in excluded):
@@ -147,7 +174,10 @@ def rom_labels(path, ranges, excluded):
     return labels
 
 def workspace(build_dir, listings, ranges):
-    """[(address, size, name)] for the workspace declared in the listings"""
+    """[(address, size, name)] for the workspace declared in the listings
+    (in build_dir, [(listing, suffix)] in order of preference), in address
+    order: each 'name *=*+n' declaration at an address in the ranges, as the
+    module docstring describes. Names are in lower case."""
     declared = {}           # address -> (name, size)
     names = {}              # name -> address
     for listing, suffix in listings:
@@ -165,6 +195,9 @@ def workspace(build_dir, listings, ranges):
             else:
                 continue
             name = m.group(1).lower()
+            # (The first declaration of an address is taken; a name declared
+            # again at the same address is skipped, and at another address,
+            # gets the listing's suffix)
             if addr in declared or size <= 0:
                 continue
             if name in names:
@@ -174,6 +207,7 @@ def workspace(build_dir, listings, ranges):
                 assert name not in names, name
             declared[addr] = (name, size)
             names[name] = addr
+    # Each location stops where the next one starts
     result = []
     addrs = sorted(declared)
     for i, addr in enumerate(addrs):
@@ -184,6 +218,11 @@ def workspace(build_dir, listings, ranges):
     return result
 
 def main():
+    """Read the listings in the build directory (the first argument) and
+    write the module (the second): its docstring, then for each ROM a dict
+    {address: name} and for each workspace a list [(address, size, name)],
+    each with a comment saying what it is and how many there are. The
+    counts are printed too."""
     build_dir, out = sys.argv[1], sys.argv[2]
     with open(out, "w") as f:
         f.write('''"""

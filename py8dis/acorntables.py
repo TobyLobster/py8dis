@@ -1,10 +1,35 @@
 """
-Acorn data tables: the names and descriptions of the MOS vectors, OS call
-reason codes (OSBYTE, OSWORD, OSFILE etc.), INKEY key numbers, VDU variables,
-CMOS RAM and so on. These are constant data, used by acorn.py (which makes
-them all available as e.g. acorn.inkey_enum, as before).
+Acorn tables
+
+The Acorn machines' data, for acorn.py and acornosbyte.py: the names and
+descriptions of the MOS's vectors, of the numbers the OS calls take
+(OSBYTE, OSWORD, OSFILE, OSFIND, OSGBPB and their arguments, such as the
+buffer, event and baud rate numbers), the INKEY key numbers, the VDU codes
+and variables, the CMOS RAM bytes, the OS variables, and the hardware
+addresses in FRED, JIM and SHEILA for each machine. It's all constant data;
+nothing here changes as a program is disassembled.
+
+Most tables are dictionaries from a number to a name or a description.
+Those named '..._enum' map a number to a constant's name (e.g.
+osbyte_enum[0x81] is 'osbyte_inkey'): the OS call hooks write the number as
+that name where a register is loaded with it (mostly with
+acornhelpers.enum_lookup()), and a control file can use them with expr()
+and constant() (see docs/machines/acorn.md). The others give the text of
+the comments. The hardware addresses are a list of HardwareLabel, near the
+end, followed by the VDU codes' tables.
+
+The OSBYTEs and OSWORDs that other ROMs and add-ons use are from beebwiki
+(https://beebwiki.mdfs.net/OSBYTEs and /OSWORDs), and the hardware
+addresses from mdfs.net's lists of FRED, JIM and SHEILA addresses (linked
+from the table) and the New Advanced User Guide.
+
+acorn.py imports everything here, so a control file can use the tables as
+e.g. acorn.inkey_enum.
 """
 
+# The OS vectors (two bytes each, at &0200-&0235), by address: their names,
+# which acorn.mos_labels() gives them (and 'name+1' to the high byte), and
+# which name the handlers that code sets them to (e.g. 'handle_brkv')
 vectors = {
     0x0200: "userv",
     0x0202: "brkv" ,
@@ -35,6 +60,8 @@ vectors = {
     0x0234: "ind3v"
 }
 
+# What each vector is, for the comment on code that sets it (e.g. "Set BRK
+# vector to 'handle_brkv'"; see acorn.post_trace_writing_to_vector())
 vector_descriptions = {
     0x0200: "user vector",
     0x0202: "BRK vector",
@@ -65,6 +92,7 @@ vector_descriptions = {
     0x0234: "spare vector 3"
 }
 
+# OSFIND's values of A: names for the constants (see acorn.osfind_hook())
 osfind_enum = {
       0: "osfind_close",
      64: "osfind_open_input",
@@ -72,6 +100,8 @@ osfind_enum = {
     192: "osfind_open_random_access",
 }
 
+# OSGBPB's values of A: osgbpb_enum names the constants, and osgbpb_desc says
+# what each does, for the comment on the call (see acorn.osgbpb_hook())
 osgbpb_enum = {
     0x01: "osgbpb_write_bytes",
     0x02: "osgbpb_append_bytes",
@@ -94,6 +124,8 @@ osgbpb_desc = {
     0x08: "read file names from the current directory",
 }
 
+# OSFILE's values of A: names for the constants (see acorn.osfile_hook(); the
+# descriptions are in osfile_descriptions, below)
 osfile_enum = {
     0x00: "osfile_save",
     0x01: "osfile_write_catalogue_info",
@@ -106,6 +138,8 @@ osfile_enum = {
     0xff: "osfile_load",
 }
 
+# The MOS's OSWORDs (values of A): names for the constants (see
+# acorn.osword_hook())
 osword_enum = {
     0x00: "osword_read_line",
     0x01: "osword_read_clock",
@@ -125,6 +159,9 @@ osword_enum = {
     0x0f: "osword_write_cmos_clock",
 }
 
+# What each OSWORD does, for the comment on the call: the MOS's (0-&0F), then
+# other ROMs' and add-ons' (where a number has several uses, they're
+# separated by ';')
 osword_descriptions = {
     0x00: "Read line from input stream (exits with C=1 if ESCAPE pressed)",
     0x01: "Read system clock",
@@ -248,6 +285,9 @@ osword_descriptions = {
     0xFF: "DOS fast screen control; Z80 Data transfer over Tube",
 }
 
+# The parameter blocks of the MOS's OSWORDs: {OSWORD number: {offset in the
+# block: comment}}, for comments on the block's bytes, when it's in the
+# program
 osword_block_descriptions = {
     0x00: { 0: "Buffer address for input (2 bytes)",
             2: "Maximum line length",
@@ -288,6 +328,8 @@ osword_block_descriptions = {
     0x0f: {0: "write clock time format (8,15,24)" },
 }
 
+# The OSBYTEs (values of A): names for the constants (see
+# acornosbyte.osbyte_hook(), and osbyte_calls there for their comments)
 osbyte_enum = {
     0x00: "osbyte_read_os_version",
     0x01: "osbyte_set_user_flag",
@@ -467,6 +509,9 @@ osbyte_enum = {
 }
 
 # Extra OSBYTES - see https://beebwiki.mdfs.net/OSBYTEs
+# These are other ROMs' and add-ons' OSBYTEs, which acornosbyte.py has no
+# Osbyte for: a one-line description each, for the comment on the call
+# (with that link)
 osbyte_extra_descriptions = {
     0x1A: "Handset detection (Communicator); BASIC Editor toggle configuration",
     0x1E: "Enable SLAVE ROM commands",
@@ -503,6 +548,8 @@ osbyte_extra_descriptions = {
     0x6F: "Read/Write shadow RAM switch",
 }
 
+# The 6845 CRTC's register numbers: names for the constants, for a number
+# stored to crtc_address_register (see acorn.hardware())
 crtc_registers_enum =  {
        0: "crtc_horz_total",
        1: "crtc_horz_displayed",
@@ -524,6 +571,11 @@ crtc_registers_enum =  {
       17: "crtc_light_pen_pos_low",
 }
 
+# The keys' INKEY numbers (the negative numbers that BASIC's INKEY uses to
+# test a key): names for the constants, for OSBYTE &79 and &81 (see
+# acornosbyte.py) and for control files. They're written here as negative
+# numbers, then (just below) keyed by the number as a byte, e.g. -99 (SPACE)
+# as &9D, the value in the register.
 inkey_enum = {
       -1: "inkey_key_shift",
       -2: "inkey_key_ctrl",
@@ -619,6 +671,8 @@ inkey_enum = {
 }
 inkey_enum = {k & 0xff: v for k, v in inkey_enum.items()}
 
+# The paged ROM service call numbers (X for OSBYTE &8F), for the comment on
+# the call
 paged_rom_reasons = {
     0: "Reason X=0 - No operation",
     1: "Reason X=1 - Absolute public workspace claim",
@@ -661,6 +715,7 @@ paged_rom_reasons = {
     255: "Reason X=255 - Tube system main initialisation",
 }
 
+# What each OSFILE (value of A) does, for the comment on the call
 osfile_descriptions = {
     0: "Save a block of memory (returning file length and attributes)",
     1: "Write catalogue information for a named file",
@@ -673,6 +728,9 @@ osfile_descriptions = {
     255: "Load named file (if XY+6 contains 0, use specified address)"
 }
 
+# The OS's buffers, by number (X for OSBYTE &15, &8A, &98 etc.; see
+# acornosbyte.py): buffer_names for the comments, and buffer_enum for the
+# constants
 buffer_names = {
     0: "the keyboard buffer",
     1: "the RS423 input buffer",
@@ -697,6 +755,8 @@ buffer_enum = {
     8: "buffer_speech"
 }
 
+# OSBYTE &80 with X=&F7 to &FF (255 minus the buffer number): what each
+# reads, for the comment on the call
 negative_buffer_actions = {
     255: "Read number of characters in keyboard buffer (X=255)",
     254: "Read number of characters in RS423 input buffer (X=254)",
@@ -709,6 +769,8 @@ negative_buffer_actions = {
     247: "Read number of spaces remaining in speech buffer (X=247)"
 }
 
+# The events, by number (Y for OSEVEN, X for OSBYTE 13 and 14): event_names
+# for the comments, and event_enum for the constants
 event_names = {
     0: "Output buffer empty",
     1: "Input buffer full",
@@ -735,6 +797,9 @@ event_enum = {
     9: "event_user",
 }
 
+# The serial baud rates, by number (X for OSBYTE 7 and 8): baud_rates for
+# the comments (acornosbyte.video_ula_control() uses it too), and
+# baud_rate_enum for the constants
 baud_rates = {
     0: "default 9600 baud",
     1: "75 baud",
@@ -759,6 +824,8 @@ baud_rate_enum = {
     8: "baud_rate_19200",
 }
 
+# What *OPT X,Y (OSBYTE &8B) does, keyed by "X,Y", for the comment on the
+# call (acornosbyte.opt() describes *OPT 0 and 3 itself)
 opt_descriptions = {
     "1,0": "no messages issued",
     "1,1": "short messages issued",
@@ -772,6 +839,10 @@ opt_descriptions = {
     "4,3": "set disk to *EXEC the !BOOT file on auto-start",
 }
 
+# OSBYTE &92-&97, which read or write FRED, JIM or SHEILA: what each does
+# (read_or_write_memory_mapped_device), and the start of the page it reads or
+# writes (read_or_write_memory_mapped_address), for the comment on the call
+# (see acornosbyte.read_or_write_memory_mapped_io())
 read_or_write_memory_mapped_device = {
     0x92: "Read from FRED",
     0x93: "Write to FRED",
@@ -790,6 +861,9 @@ read_or_write_memory_mapped_address = {
     0x97: 0xfe00,
 }
 
+# The VDU variables, by number (X for OSBYTE &A0, which reads one into X and
+# the next into Y): what each is, for the comments. A two byte variable's
+# second byte is "... (high byte)".
 vdu_variables = {
     0x00: "graphics window left coordinate in pixels",
     0x01: "graphics window left coordinate in pixels (high byte)",
@@ -921,6 +995,7 @@ vdu_variables = {
     0x7f: "unused byte",
 }
 
+# OSBYTE &19 (Master): the comment on the call for each value of X
 font_definitions = { 0: "Restore all character font definitions 32-255 (X=0)",
                      1: "Restore character font definitions 32-63 (X=1)",
                      2: "Restore character font definitions 64-95 (X=2)",
@@ -931,6 +1006,8 @@ font_definitions = { 0: "Restore all character font definitions 32-255 (X=0)",
                      7: "Restore character font definitions 224-255 (X=7)" }
 
 
+# The Master's and Compact's CMOS RAM (or EEPROM) bytes, by number (X for
+# OSBYTE &A1 and &A2): what each holds, for the comments
 cmos_ram = {
     0: "Econet station number",
     1: "File server station number",
@@ -984,6 +1061,10 @@ cmos_ram = {
     49: "Allocated for user applications #3",
 }
 
+# The OS variables read and written by OSBYTE &A6-&FF, by OSBYTE number: what
+# each is, for the comments (see acornosbyte.os_variable()). The second byte
+# of a two byte value is "... (high byte)", which os_variable() looks for to
+# say "(low byte)" on the first.
 os_variable_names = {
     0xa6: "address of OS variables",
     0xa7: "address of OS variables (high byte)",
@@ -1083,18 +1164,24 @@ os_variable_names = {
 # by bbc(), b_plus(), master() and electron().
 #
 # Each entry is (address, name, machines) or (address, name, machines, True).
-# The label is defined (with optional_label()) for each of the machines. The
-# True (only on a few, as before) lets the label be defined inline, which the
-# hardware labels otherwise never are. Entries for the same address on
-# different machines are alternatives; entries for the same address on the
-# same machine are all defined, in this order.
+# The label is defined (with optional_label(), so it's only in the output if
+# it's used) for each of the machines. The True (only on a few) lets the
+# label be defined inline, which the hardware labels otherwise never are: a
+# hardware label is otherwise always defined as 'name = value', even when
+# the program (e.g. the MOS ROM) is loaded over the I/O addresses. Entries
+# for the same address on different machines are alternatives. There can't
+# be two entries for the same address on the same machine: optional_label()
+# stops with an error if an address is given two different names.
 # ----------------------------------------------------------------------------
 
 from collections import namedtuple
 from machinetype import MachineType
 
+# One hardware label: the address, the name, the machines (a set of
+# MachineType) it's named on, and whether it can be defined inline
 HardwareLabel = namedtuple("HardwareLabel", "addr name machines definable_inline", defaults=(False,))
 
+# Sets of machines, for the entries
 _BBC_B_PLUS    = frozenset({MachineType.MACHINE_BBC, MachineType.MACHINE_BPLUS})
 _MASTER        = frozenset({MachineType.MACHINE_MASTER})
 _B_PLUS_MASTER = frozenset({MachineType.MACHINE_BPLUS, MachineType.MACHINE_MASTER})
@@ -1103,16 +1190,22 @@ _ELECTRON      = frozenset({MachineType.MACHINE_ELECTRON})
 _ALL           = _NOT_ELECTRON | _ELECTRON
 
 def _numbered(addr, count, name, machines, definable_inline=False):
-    """count entries from addr, named name.format(0), name.format(1), ..."""
+    """'count' entries (for hardware_labels) from addr, named name.format(0),
+    name.format(1), ..."""
     return [(addr + i, name.format(i), machines, definable_inline) for i in range(count)]
 
+# The names of a 6522 VIA's 16 registers, in order
 _via_registers = ["register_b", "register_a", "ddrb", "ddra", "t1c_l", "t1c_h", "t1l_l", "t1l_h",
                   "t2c_l", "t2c_h", "sr", "acr", "pcr", "ifr", "ier", "register_a_no_handshake"]
 
 def _via(addr, name, machines):
-    """The 16 registers of a 6522 VIA, e.g. system_via_register_b."""
+    """The entries (for hardware_labels) for the 16 registers of a 6522 VIA
+    at addr, e.g. system_via_register_b."""
     return [(addr + i, name + "_via_" + register, machines) for i, register in enumerate(_via_registers)]
 
+# The hardware labels, as a list of HardwareLabel (see above). The entries
+# that are commented out are hardware that isn't named (most share their
+# addresses with entries that are).
 hardware_labels = [HardwareLabel(*entry) for entry in [
     #######################################################################
     # FRED: see p404 of NAUG and https://mdfs.net/Docs/Comp/BBC/Hardware/FREDAddrs
@@ -1570,11 +1663,13 @@ hardware_labels = [HardwareLabel(*entry) for entry in [
 
 
 # The number of parameter bytes after each VDU code (0-31; the others have
-# none)
+# none), for decoding the characters written with OSWRCH (see
+# acorn.comment_vdu_sequences())
 vdu_parameter_counts = {1: 1, 17: 1, 18: 2, 19: 5, 22: 1, 23: 9, 24: 8, 25: 5, 28: 4, 29: 4, 31: 2}
 
 # What the VDU codes without parameters do (other than VDU 0 and 27, which
-# do nothing)
+# do nothing), for the comments; acorn._vdu_description() describes the
+# ones with parameters
 vdu_descriptions = {
     2: "Enable the printer",
     3: "Disable the printer",

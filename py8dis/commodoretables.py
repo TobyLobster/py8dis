@@ -1,21 +1,43 @@
 """
+Commodore tables
+
 The Commodore machines' data tables, for commodore.py: names for the memory
-locations, hardware registers and Kernal calls, the Kernal's control codes,
-the colours, the device numbers and the BASIC tokens, for the C64, the
-VIC-20, the C128, the Plus/4 and the PET, and the 1541 disk drive's.
+locations, hardware registers and Kernal calls, the routines in the ROMs
+that programs call, the vectors a program can set, the Kernal's control
+codes, the colours, the device numbers and the BASIC tokens, for the C64,
+the VIC-20, the C128, the Plus/4 and the PET, and the 1541 disk drive's
+workspace, VIAs, DOS ROM routines, job codes and job results.
+
+commodore.py imports everything here, and its c64_machine() etc. put each
+machine's tables together in a Machine, which commodore.c64() etc. use to
+name and comment a program. The tables are made of these records:
+
+- Location: a memory location or hardware register, with its size and its
+  two names;
+- VectorLocation: a vector a program can set (e.g. the IRQ vector), with
+  the description and handler name used when it does;
+- KernalCall: an entry in the Kernal's jump table, with what it takes and
+  returns in the registers (as for commands.subroutine());
+- RomRoutine: a routine in a ROM that programs call (e.g. BASIC's STROUT),
+  likewise.
 
 Each memory location has two names: a descriptive one (the default, e.g.
 'vic_border_colour') and the one Commodore's documentation uses (from the
 Commodore 64 Programmer's Reference Guide and Commodore's own source, or for
 the C64's I/O registers from "Mapping the Commodore 64", e.g. 'extcol'),
-chosen with commodore.c64(names=...) or vic20(names=...). The Kernal calls
-have Commodore's names (e.g. 'chrout') either way.
+chosen with commodore.c64(names=...), vic20(names=...) etc. The Kernal calls
+have Commodore's names (e.g. 'chrout') either way. All the names here are in
+lower case: commodore.official_name() gives Commodore's in capitals.
 
 The C64's names, addresses and Kernal calling conventions are from Michael
 Steil's c64ref (https://github.com/mist64/c64ref): src/c64mem/symbols.txt,
 src/c64io, src/kernal and src/charset. The VIC-20's are from Commodore's
-source for its Kernal and BASIC (https://github.com/mist64/cbmsrc). c64ref's
-licence:
+source for its Kernal and BASIC (https://github.com/mist64/cbmsrc). The
+C128's, Plus/4's, PET's and 1541's workspace (and the 1541's VIAs) are from
+Commodore's source too, by way of commodoresource.py (made by
+tools/make_commodoresource.py), with descriptive names given here for the
+most used locations; the addresses of their ROM routines are from the labels
+there. c64ref's licence:
 
     BSD 2-Clause License
 
@@ -55,6 +77,9 @@ Location = namedtuple("Location", ["addr", "size", "commodore_name", "name"])
 # ************************************************************************************************
 # C64 RAM: zero page, the OS and BASIC workspace, the vectors and the screen
 
+# The C64's RAM locations up to $0312. (The VIC-20's are made from these, and
+# the C128's, Plus/4's and PET's descriptive names come from them where
+# Commodore's names are the same: see _c64_descriptive_names.)
 c64_ram_locations = [
     # The 6510's I/O port
     Location(0x0000, 1, "d6510",  "cpu_port_direction"),
@@ -201,7 +226,7 @@ c64_ram_locations = [
     Location(0x026d, 10, "sat",   "secondary_address_table"),
     Location(0x0277, 10, "keyd",  "keyboard_buffer"),
     Location(0x0281, 2, "memstr", "os_memory_start"),
-    # (Commodore's name for this is MEMSIZ, as for BASIC's &0037, so
+    # (Commodore's name for this is MEMSIZ, as for BASIC's $0037, so
     # BASIC's has that name here)
     Location(0x0283, 2, "memsiz_kernal", "os_memory_end"),
     Location(0x0285, 1, "timout", "serial_timeout_flag"),
@@ -250,11 +275,16 @@ c64_ram_locations = [
     Location(0x0311, 2, "usradd", "usr_address"),
 ]
 
-# The Kernal's vectors (in RAM), each with a description for comments, e.g.
-# when a program sets the IRQ vector. (Those used for a snippet that sets a
-# vector, along with BASIC's above.)
+# A vector a program can set (see commodore.pre_trace_writing_to_vector()):
+# its address, Commodore's name and the descriptive name (both None for the
+# 6502's own vectors, which are named in c64_cpu_vectors), its description
+# for comments (e.g. 'Set the IRQ vector to irq_handler') and the name for
+# a handler it's set to (e.g. 'irq_handler').
 VectorLocation = namedtuple("VectorLocation", ["addr", "commodore_name", "name", "description", "handler"])
 
+# The vectors a C64 (or VIC-20) program can set: the Kernal's (in RAM, at
+# $0314-$0333, which commodore._kernal_vectors() also names as Locations),
+# BASIC's (also in c64_ram_locations) and the 6502's NMI and IRQ vectors
 c64_vectors = [
     VectorLocation(0x0314, "cinv",   "irq_vector",          "IRQ vector",              "irq_handler"),
     VectorLocation(0x0316, "cbinv",  "brk_vector",          "BRK vector",              "brk_handler"),
@@ -284,6 +314,8 @@ c64_vectors = [
     VectorLocation(0xfffe, None, None, "IRQ hardware vector",   "irq_handler"),
 ]
 
+# The rest of the C64's RAM locations, after the Kernal's vectors: the tape
+# buffer, the screen and the sprite pointers (the VIC-20 has only the first)
 c64_more_ram_locations = [
     Location(0x033c, 192, "tbuffr", "tape_buffer"),
     Location(0x0400, 1000, "vicscn", "screen_memory"),
@@ -291,7 +323,7 @@ c64_more_ram_locations = [
 ]
 
 # The 6502's vectors (in the Kernal ROM, or in RAM when a program switches
-# the ROM out)
+# the ROM out), for every machine
 c64_cpu_vectors = [
     Location(0xfffa, 2, None, "hardware_nmi_vector"),
     Location(0xfffc, 2, None, "hardware_reset_vector"),
@@ -309,6 +341,7 @@ c64_rom_locations = [
 # C64 hardware: the VIC-II, the SID, the colour RAM and the two CIAs
 
 def _vic_ii():
+    """The VIC-II's registers ($d000-$d02e)"""
     result = []
     for n in range(8):
         result.append(Location(0xd000 + 2*n, 1, "sp%dx" % n, "vic_sprite%d_x" % n))
@@ -341,6 +374,8 @@ def _vic_ii():
     return result
 
 def _sid():
+    """The SID's registers ($d400-$d41c): seven for each of its three
+    voices, then the filter, the volume and the inputs"""
     result = []
     for n in range(3):
         base = 0xd400 + 7*n
@@ -367,12 +402,15 @@ def _sid():
     return result
 
 def _cia(base, n, commodore_names):
+    """CIA n's 16 registers at base (e.g. 'cia1_port_a'), with the given
+    Commodore names"""
     names = ["port_a", "port_b", "data_direction_a", "data_direction_b",
              "timer_a_low", "timer_a_high", "timer_b_low", "timer_b_high",
              "tod_tenths", "tod_seconds", "tod_minutes", "tod_hours",
              "serial_data", "interrupt_control", "control_a", "control_b"]
     return [Location(base + i, 1, commodore_names[i], "cia%d_%s" % (n, names[i])) for i in range(16)]
 
+# The C64's hardware (the C128's is made from it too)
 c64_hardware_locations = (
     _vic_ii() +
     _sid() +
@@ -383,14 +421,16 @@ c64_hardware_locations = (
                      "to2ten", "to2sec", "to2min", "to2hrs", "ci2sdr", "ci2icr", "ci2cra", "ci2crb"])
 )
 
-# The registers whose value is a colour (see colours below), so a colour
-# stored in one is named, e.g. 'lda #colour_black : sta vic_border_colour'
+# The registers whose value is a colour (see colours below): the VIC-II's,
+# and the text colour at $0286. A colour stored in one is named, e.g. 'lda
+# #colour_black : sta vic_border_colour'.
 c64_colour_registers = [0xd020, 0xd021, 0xd022, 0xd023, 0xd024, 0xd025, 0xd026] + list(range(0xd027, 0xd02f)) + [0x0286]
 
 # ************************************************************************************************
-# The Kernal's jump table. Each entry: its address, name, title, and what it
-# takes and returns in registers (as for subroutine()). (The VIC-20 has the
-# same jump table, without the first three.)
+# The Kernal's jump table. Each entry: its address, name (Commodore's), title
+# (the comment on a call to it), and what it takes and returns in registers
+# (as for subroutine()). (The VIC-20 has the same jump table, without the
+# first three; the C128's and Plus/4's add to it, and the PET has its own.)
 
 KernalCall = namedtuple("KernalCall", ["addr", "name", "title", "on_entry", "on_exit"])
 
@@ -468,7 +508,10 @@ kernal_jump_table = [
 # Well known routines inside the C64's ROMs that programs call, with
 # Commodore's names (from the Kernal source, and Microsoft's for BASIC) and
 # descriptive names. Each: (address, Commodore's name (None if the source has
-# no label there), descriptive name, title, on_entry, on_exit).
+# no label there), descriptive name, title, on_entry, on_exit). With
+# rom_labels, c64() etc. make these subroutines, so their calls are
+# commented, and the other machines have the same routines at their own
+# addresses.
 
 RomRoutine = namedtuple("RomRoutine", ["addr", "commodore_name", "name", "title", "on_entry", "on_exit"])
 
@@ -498,7 +541,8 @@ c64_rom_routines = [
 # ************************************************************************************************
 # Values
 
-# The C64's colours, for the VIC-II's colour registers and the colour RAM
+# The C64's colours, for the VIC-II's colour registers and the colour RAM,
+# as constants' names (the C128 has the same)
 colours = {
     0: "colour_black",
     1: "colour_white",
@@ -518,7 +562,8 @@ colours = {
     15: "colour_light_grey",
 }
 
-# Device numbers, e.g. for SETLFS
+# Device numbers, as constants' names, for where X is loaded for SETLFS
+# (e.g. 'ldx #device_disk_8')
 device_numbers = {
     0: "device_keyboard",
     1: "device_datasette",
@@ -532,6 +577,8 @@ device_numbers = {
     11: "device_disk_11",
 }
 
+# What each device is, for SETLFS's comment (e.g. 'Set logical file 15 to
+# device 8 (disk drive), ...')
 device_descriptions = {
     0: "keyboard",
     1: "datasette",
@@ -546,7 +593,8 @@ device_descriptions = {
 }
 
 # The control codes CHROUT acts on (PETSCII), from c64ref's
-# control_codes_c64.txt, described
+# control_codes_c64.txt, described, for CHROUT's comment (e.g. 'Output $93
+# (clear screen)'). The C128 and Plus/4 use these too.
 control_codes = {
     0x03: "STOP",
     0x05: "white",
@@ -592,7 +640,9 @@ control_codes = {
     0x9f: "cyan",
 }
 
-# BASIC V2's keywords, by token ($80 upwards)
+# BASIC V2's keywords, by token ($80 upwards), for listing a BASIC program
+# (see commodore.basic_program()). The C64 and VIC-20 have BASIC V2, and the
+# C128 and Plus/4 use these too.
 basic_v2_tokens = [
     "END", "FOR", "NEXT", "DATA", "INPUT#", "INPUT", "DIM", "READ",
     "LET", "GOTO", "RUN", "IF", "RESTORE", "GOSUB", "RETURN", "REM",
@@ -605,6 +655,8 @@ basic_v2_tokens = [
     "TAN", "ATN", "PEEK", "LEN", "STR$", "VAL", "ASC", "CHR$",
     "LEFT$", "RIGHT$", "MID$", "GO",
 ]
+# The tokens commodore.basic_program() looks for: SYS (whose address is
+# traced), REM (after which the rest of the line is text) and pi
 BASIC_TOKEN_SYS = 0x9e
 BASIC_TOKEN_REM = 0x8f
 BASIC_TOKEN_PI = 0xff
@@ -614,11 +666,13 @@ BASIC_TOKEN_PI = 0xff
 # The VIC-20. Its Kernal and BASIC are the C64's, for a different machine:
 # the same jump table (without its first three entries), and the same
 # workspace, with these differences (from Commodore's source): the USR
-# function's jump at &0000-&0002 (where the C64 has the 6510's I/O port, and
-# &0310-&0312 instead); a shorter screen line link table (25 bytes, for 23
-# lines), with LINTMP after it at &00f2; and nothing at &02a1-&02a6.
+# function's jump at $0000-$0002 (where the C64 has the 6510's I/O port, and
+# $0310-$0312 instead); a shorter screen line link table (25 bytes, for 23
+# lines), with LINTMP after it at $00f2; and nothing at $02a1-$02a6.
 
 def _vic20_ram_locations():
+    """The VIC-20's RAM locations: the C64's, with the differences above, in
+    address order"""
     result = [
         Location(0x0000, 1, "usrpok", "usr_jmp"),
         Location(0x0001, 2, "usradd", "usr_address"),
@@ -635,11 +689,13 @@ def _vic20_ram_locations():
 vic20_ram_locations = _vic20_ram_locations()
 
 # The screen and its colour RAM move with the RAM expansion: with 8K or more
-# in block 1 (&2000), the screen is at &1000 and the colour RAM at &9400;
-# otherwise at &1e00 and &9600. (22 columns by 23 rows.)
+# in block 1 ($2000), the screen is at $1000 and the colour RAM at $9400;
+# otherwise at $1e00 and $9600. (22 columns by 23 rows.)
 VIC20_SCREEN_SIZE = 22 * 23
 
 def vic20_screen_locations(expanded_8k):
+    """The VIC-20's screen and colour RAM, with 8K or more of expansion RAM
+    or without"""
     screen = 0x1000 if expanded_8k else 0x1e00
     colour = 0x9400 if expanded_8k else 0x9600
     return [
@@ -648,12 +704,16 @@ def vic20_screen_locations(expanded_8k):
     ]
 
 def _vic():
+    """The VIC's 16 registers at $9000. Commodore's source names only the
+    first, VICREG, so the others' Commodore names are 'vicreg+1' etc."""
     names = ["horizontal_position", "vertical_position", "columns", "rows", "raster_line", "memory_setup",
              "light_pen_x", "light_pen_y", "paddle_x", "paddle_y", "voice1_frequency", "voice2_frequency",
              "voice3_frequency", "noise_frequency", "volume_aux_colour", "background_border_colour"]
     return [Location(0x9000 + i, 1, "vicreg" if i == 0 else "vicreg+%d" % i, "vic_" + names[i]) for i in range(16)]
 
 def _via(base, n):
+    """The VIC-20's VIA n's 16 registers at base (e.g. 'via1_port_b'), with
+    the names in Commodore's source (e.g. 'd1orb')"""
     names = ["port_b", "port_a", "data_direction_b", "data_direction_a",
              "timer1_low", "timer1_high", "timer1_latch_low", "timer1_latch_high", "timer2_low", "timer2_high",
              "shift_register", "auxiliary_control", "peripheral_control", "interrupt_flags", "interrupt_enable",
@@ -662,6 +722,8 @@ def _via(base, n):
                        "sr", "acr", "pcr", "ifr", "ier", "ora"]
     return [Location(base + i, 1, "d%d%s" % (n, commodore_names[i]), "via%d_%s" % (n, names[i])) for i in range(16)]
 
+# The VIC-20's hardware: the character ROM, the VIC and the two VIAs (the
+# colour RAM moves with the RAM expansion: see vic20_screen_locations())
 vic20_hardware_locations = (
     [Location(0x8000, 4096, None, "character_rom")] +
     _vic() +
@@ -669,11 +731,14 @@ vic20_hardware_locations = (
     _via(0x9120, 2)
 )
 
+# Data in the VIC-20's BASIC ROM that programs use (as for the C64's)
 vic20_rom_locations = [
     Location(0xc000, 2, None, "basic_cold_start_vector"),
     Location(0xc002, 2, None, "basic_warm_start_vector"),
 ]
 
+# The routines in the VIC-20's ROMs that programs call: the C64's, at the
+# VIC-20's addresses
 vic20_rom_routines = [
     # BASIC
     RomRoutine(0xc474, "ready",  "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
@@ -697,7 +762,7 @@ vic20_rom_routines = [
     RomRoutine(0xff72, "puls",   "kernal_irq_entry", "The Kernal's IRQ and BRK entry point (saves the registers and jumps through the IRQ or BRK vector)", None, None),
 ]
 
-# The VIC-20's colours (the text colour at &0286 can be the first 8)
+# The VIC-20's colours (the text colour at $0286 can be the first 8)
 vic20_colours = {
     0: "colour_black",
     1: "colour_white",
@@ -716,6 +781,7 @@ vic20_colours = {
     14: "colour_light_blue",
     15: "colour_light_yellow",
 }
+# The VIC-20's colour register: only the text colour
 vic20_colour_registers = [0x0286]
 
 # The VIC-20's control codes: the C64's, without its extra colours (from
@@ -736,14 +802,19 @@ vic20_control_codes = {c: d for c, d in control_codes.items() if c not in (0x81,
 
 import commodoresource
 
+# The C64's descriptive names, by Commodore's name (e.g. 'txttab':
+# 'basic_program_start')
 _c64_descriptive_names = dict(
     [(l.commodore_name, l.name) for l in c64_ram_locations if l.commodore_name] +
     [(v.commodore_name, v.name) for v in c64_vectors if v.commodore_name] +
     [(l.commodore_name, l.name) for l in c64_more_ram_locations if l.commodore_name])
 
 def _workspace(declarations, descriptive_names):
-    """Locations for the workspace declared in Commodore's source, with the
-    descriptive names (None in descriptive_names means Commodore's)"""
+    """Locations for the workspace declared in Commodore's source
+    (declarations, [(address, size, Commodore's name)] from
+    commodoresource.py), with the descriptive names: descriptive_names
+    ({address: name}, None meaning Commodore's) first, then the C64's for
+    the same Commodore name, then Commodore's"""
     result = []
     for addr, size, commodore_name in declarations:
         if addr in descriptive_names:
@@ -753,8 +824,8 @@ def _workspace(declarations, descriptive_names):
         result.append(Location(addr, size, commodore_name, name))
     return result
 
-# The C128's: its own locations, and those whose Commodore name is the C64's
-# for something else
+# The C128's descriptive names, by address: for its own locations, and those
+# whose Commodore name is the C64's for something else
 c128_descriptive_names = {
     # JSRFAR/JMPFAR's (and the monitor's) registers
     0x0002: "far_call_bank",
@@ -816,7 +887,7 @@ c128_descriptive_names = {
     0x100a: "function_key_strings",
 }
 
-# The Plus/4's
+# The Plus/4's, likewise
 plus4_descriptive_names = {
     0x0000: "cpu_port_direction",
     0x0001: "cpu_port",
@@ -829,16 +900,21 @@ plus4_descriptive_names = {
     0x0567: "function_key_buffer",
 }
 
+# The C128's and Plus/4's workspace (zero page, and $0200 up)
 c128_workspace_locations = _workspace(commodoresource.c128_workspace, c128_descriptive_names)
 plus4_workspace_locations = _workspace(commodoresource.plus4_workspace, plus4_descriptive_names)
 
-# The Kernal's RAM vectors, for the snippet that recognises a program setting
-# one: (address, description, handler name)
 def _vectors(locations, descriptions):
+    """VectorLocations for the RAM vectors, for the snippet that recognises
+    a program setting one: descriptions is [(address, description, handler
+    name)], and each vector's names are those of its Location in
+    locations"""
     by_addr = {l.addr: l for l in locations}
     return [VectorLocation(addr, by_addr[addr].commodore_name, by_addr[addr].name, description, handler)
             for addr, description, handler in descriptions]
 
+# The vectors a C128 program can set: the Kernal's (with the monitor's),
+# BASIC's, the screen editor's and the 6502's
 c128_vectors = _vectors(c128_workspace_locations, [
     (0x0314, "IRQ vector", "irq_handler"),
     (0x0316, "BRK vector", "brk_handler"),
@@ -873,6 +949,9 @@ c128_vectors = _vectors(c128_workspace_locations, [
 ]) + [VectorLocation(0xfffa, None, None, "NMI hardware vector", "nmi_handler"),
       VectorLocation(0xfffe, None, None, "IRQ hardware vector", "irq_handler")]
 
+# The vectors a Plus/4 program can set: the Kernal's (with no NMI vector, so
+# those after the BRK vector are two bytes earlier than the C64's), BASIC's
+# and the 6502's
 plus4_vectors = _vectors(plus4_workspace_locations, [
     (0x0314, "IRQ vector", "irq_handler"),
     (0x0316, "BRK vector", "brk_handler"),
@@ -901,10 +980,11 @@ plus4_vectors = _vectors(plus4_workspace_locations, [
 ]) + [VectorLocation(0xfffa, None, None, "NMI hardware vector", "nmi_handler"),
       VectorLocation(0xfffe, None, None, "IRQ hardware vector", "irq_handler")]
 
-# The C128's hardware: the C64's VIC-II, SID and CIAs (with Commodore's
-# names in its C128 source: 'vicreg+n', 'sidreg+n', 'd1pra'), the VIC-II's two
-# new registers, the MMU, the VDC and the colour RAM
 def _c128_hardware():
+    """The C128's hardware: the C64's VIC-II, SID and CIAs (with Commodore's
+    names in its C128 source: 'vicreg+n', 'sidreg+n', 'd1pra'), the VIC-II's
+    two new registers, the MMU (at $d500, and its configuration registers at
+    $ff00-$ff04), the VDC and the colour RAM"""
     result = []
     vic_ii = [l for l in c64_hardware_locations if 0xd000 <= l.addr < 0xd400]
     for l in vic_ii:
@@ -1001,10 +1081,9 @@ plus4_screen_locations = [
     Location(0x0c00, 1000, "tedscn", "screen_memory"),
 ]
 
-# The C128's and Plus/4's additions to the Kernal's jump table
-# The MMU configuration (the value of its configuration register, at &ff00)
-# for each of the Kernal's 16 banks (its table 'config', at &f7f0, which
-# GETCFG reads)
+# The MMU configuration (the value of its configuration register, at $ff00)
+# for each of the Kernal's 16 banks (its table 'config', at $f7f0, which
+# GETCFG reads). commodore.c128_memory() says what each maps.
 c128_bank_configurations = [
     0x3f, 0x7f, 0xbf, 0xff,     # 0-3: RAM 0-3 only
     0x16, 0x56, 0x96, 0xd6,     # 4-7: internal function ROM, RAM 0-3, I/O
@@ -1015,6 +1094,9 @@ c128_bank_configurations = [
     0x00,                       # 15: Kernal and BASIC, RAM 0, I/O
 ]
 
+# The C128's and Plus/4's additions to the Kernal's jump table, which
+# commodore.c128_machine() and plus4_machine() add to the C64's (the C128's
+# at $ff47-$ff7d)
 c128_jump_table_additions = [
     KernalCall(0xff47, "spin_spout", "Set up the fast serial port for input (carry clear) or output (carry set)", None, None),
     KernalCall(0xff4a, "close_all", "Close all files on a device",
@@ -1048,6 +1130,7 @@ c128_jump_table_additions = [
     KernalCall(0xff7d, "primm", "Print the zero-terminated string that follows the JSR", None, None),
 ]
 
+# (The Plus/4's, at $ff4c-$ff52)
 plus4_jump_table_additions = [
     KernalCall(0xff4c, "print", "Output a character to the screen",
                {'a': "character to output"}, None),
@@ -1055,6 +1138,8 @@ plus4_jump_table_additions = [
     KernalCall(0xff52, "monitr", "Enter the machine code monitor", None, None),
 ]
 
+# The routines in the C128's and Plus/4's ROMs that programs call (as for the
+# C64's)
 c128_rom_routines = [
     # BASIC
     RomRoutine(0x4db7, "readyx", "basic_ready", "Print READY. and return to BASIC's main loop", None, None),
@@ -1095,7 +1180,7 @@ plus4_rom_routines = [
 ]
 
 # The C128's colour registers: the VIC-II's, as on the C64. (The text colour
-# at &00f1 isn't one, since in 80 columns it's a VDC attribute, not a colour
+# at $00f1 isn't one, since in 80 columns it's a VDC attribute, not a colour
 # number.)
 c128_colour_registers = [0xd020, 0xd021, 0xd022, 0xd023, 0xd024, 0xd025, 0xd026] + list(range(0xd027, 0xd02f))
 
@@ -1137,9 +1222,12 @@ _pet_descriptive_names = {
 }
 
 def _pet_workspace(declarations):
+    """Locations for a PET's workspace (see _workspace()), with the
+    descriptive names in _pet_descriptive_names"""
     by_name = {commodore_name: addr for addr, size, commodore_name in declarations}
     return _workspace(declarations, {by_name[n]: d for n, d in _pet_descriptive_names.items() if n in by_name})
 
+# The PET's workspace, by (BASIC version, columns)
 pet_workspace_locations = {
     (1, 40): _pet_workspace(commodoresource.pet1_workspace),
     (2, 40): _pet_workspace(commodoresource.pet2_workspace),
@@ -1148,8 +1236,9 @@ pet_workspace_locations = {
 }
 
 def pet_vectors(locations):
-    """The PET's RAM vectors (in its workspace, which depends on the BASIC
-    version), and the 6502's"""
+    """The vectors a PET program can set: its RAM vectors (in its
+    workspace, locations, which depends on the BASIC version: those it has
+    of the IRQ, BRK, NMI and monitor command vectors), and the 6502's"""
     by_name = {l.commodore_name: l.addr for l in locations}
     descriptions = [("cinv", "IRQ vector", "irq_handler"), ("cbinv", "BRK vector", "brk_handler"),
                     ("nminv", "NMI vector", "nmi_handler"), ("usrcmd", "monitor command vector", "monitor_command_handler")]
@@ -1158,6 +1247,7 @@ def pet_vectors(locations):
         VectorLocation(0xfffe, None, None, "IRQ hardware vector", "irq_handler")]
 
 def pet_screen_locations(columns):
+    """The PET's screen at $8000, 25 lines of 40 or 80 columns"""
     return [Location(0x8000, 40 * 25 if columns == 40 else 80 * 25, None, "screen_memory")]
 
 # The PET's hardware: two PIAs (the keyboard, and the IEEE-488 bus), the VIA
@@ -1189,6 +1279,7 @@ pet_hardware_locations = [
     Location(0xe84f, 1, "sync1", "via_port_a_no_handshake"),
 ]
 
+# The 80-column PET's CRTC (the 8000 series)
 pet_crtc_locations = [
     Location(0xe880, 1, "crtca", "crtc_address"),
     Location(0xe881, 1, "crtcb", "crtc_data"),
@@ -1235,7 +1326,7 @@ def pet_rom_routines(basic):
                    {'a': "number to print (high byte)", 'x': "number to print (low byte)"}, None),
     ]
     if basic == 4:
-        # (The screen editor at &e000 is different for each BASIC 4 model, so
+        # (The screen editor at $e000 is different for each BASIC 4 model, so
         # its labels aren't known, but these are the same in every one)
         editor = {"puls": 0xe442, "key": 0xe455, "prend": 0xe600}
     else:
@@ -1275,6 +1366,7 @@ pet_control_codes = {
     0x94: "insert",
     0x9d: "cursor left",
 }
+# (The 80-column editor's: those, and more)
 pet_80_column_control_codes = {**pet_control_codes, **{
     0x07: "bell",
     0x09: "tab",
@@ -1301,8 +1393,8 @@ basic_v4_tokens = basic_v2_tokens + [
 
 # ************************************************************************************************
 # The 1541 disk drive: its own 6502, with 2K of RAM (the DOS's workspace,
-# and five 256-byte buffers at &0300-&07ff), two VIAs (the serial bus at
-# &1800, and the disk controller at &1c00) and the DOS ROM at &c000-&ffff.
+# and five 256-byte buffers at $0300-$07ff), two VIAs (the serial bus at
+# $1800, and the disk controller at $1c00) and the DOS ROM at $c000-$ffff.
 # Its workspace, VIA and ROM names are from Commodore's source (cbmsrc's
 # DOS_1541_05_REC), with descriptive names for the most used.
 
@@ -1341,16 +1433,24 @@ _drive1541_descriptive_names = {
     "errbuf": "error_buffer",
 }
 
-# The workspace (RAM) and the VIAs
+# The workspace (RAM) and the VIAs: commodoresource.drive1541_workspace has
+# both (the source declares the VIAs' registers as it does the workspace),
+# so they're split here at $0800
 _drive1541_declarations = [d for d in commodoresource.drive1541_workspace if d[0] < 0x0800]
 _drive1541_via_names = {addr: name for addr, size, name in commodoresource.drive1541_workspace if addr >= 0x0800}
 
+# The DOS's workspace, and its five buffers, 'buffer_0' to 'buffer_4'
+# (commodore.drive1541_machine() names only those the program isn't loaded
+# in)
 drive1541_workspace_locations = [
     Location(addr, size, commodore_name, _drive1541_descriptive_names.get(commodore_name, commodore_name))
     for addr, size, commodore_name in _drive1541_declarations]
 drive1541_buffer_locations = [Location(0x0300 + 0x100 * n, 0x100, None, "buffer_%d" % n) for n in range(5)]
 
 def _drive1541_via(base, n, port_names):
+    """VIA n's 16 registers at base (e.g. 'via1_serial_bus'), with the
+    names in Commodore's source; port_names are the descriptive names'
+    endings for port B and port A"""
     names = ["port_b", "port_a", "data_direction_b", "data_direction_a",
              "timer1_low", "timer1_high", "timer1_latch_low", "timer1_latch_high", "timer2_low", "timer2_high",
              "shift_register", "auxiliary_control", "peripheral_control", "interrupt_flags", "interrupt_enable",
@@ -1374,7 +1474,9 @@ drive1541_vectors = _vectors(drive1541_workspace_locations, [(0x0065, "NMI vecto
 
 # The vectors at the end of the DOS ROM: the format routine (which runs in
 # buffer 0), turning off the motor, the user commands U1 and U2 (block read
-# and write), and the user commands U3-U8 (&0500-&050f, in buffer 2)
+# and write), and the user commands U3-U8 ($0500-$050f, in buffer 2). Each:
+# (address, the vector's name, its target's name, or None for one that
+# commodore.dos_rom() doesn't trace).
 drive1541_rom_vectors = [
     (0xffe6, "format_vector", "format"),
     (0xffe8, "motor_off_vector", "motor_off"),
@@ -1388,6 +1490,7 @@ def drive1541_rom_routines(rom):
     both)"""
     labels = {n: a for a, n in getattr(commodoresource, "drive%s_rom_labels" % rom.replace("-", "")).items()}
     def routine(commodore_name, name, title, on_entry=None, on_exit=None):
+        """A RomRoutine at the address of the label in the source"""
         return RomRoutine(labels[commodore_name], commodore_name, name, title, on_entry, on_exit)
     return [
         routine("setlds", "drive_led_on", "Turn on the activity LED"),
@@ -1423,7 +1526,8 @@ def drive1541_rom_routines(rom):
 
 # The job codes (written to the job queue for a buffer, and run by the disk
 # controller), in Commodore's source READ, WRITE, WVERFY, SEEK, BUMP, JUMPC
-# and EXEC
+# and EXEC. commodore.post_trace_drive1541_job() names them as constants
+# where code writes one, e.g. 'lda #job_read'.
 drive1541_job_codes = {
     0x80: "job_read",
     0x90: "job_write",
@@ -1436,8 +1540,9 @@ drive1541_job_codes = {
 
 # The results of a job, which the disk controller writes to the job queue
 # in place of the job code (bit 7 clear), and the DOS turns into the error
-# numbers it reports (e.g. 3 into 21 READ ERROR; see ERROR at &e60a in
-# Commodore's source)
+# numbers it reports (e.g. 3 into 21 READ ERROR; see ERROR at $e60a in
+# Commodore's source). Each: (constant name, the error, for the constant's
+# comment), for commodore._drive1541_analysis().
 drive1541_job_results = {
     0x01: ("job_ok",                    "OK"),
     0x02: ("job_header_not_found",      "20 READ ERROR: header block not found"),
@@ -1456,7 +1561,10 @@ drive1541_job_results = {
 # The bits of the 1541's VIA ports that code sets and tests: for each
 # register, {bit: (name, output: (set, clear) or None if it's an input)}.
 # VIA 1's port B is the serial bus (an output bit set pulls the line low);
-# VIA 2's port B controls the drive.
+# VIA 2's port B controls the drive. commodore._drive1541_analysis() uses
+# the name for a test (e.g. 'Test CLOCK IN') and the output phrases for a
+# store (e.g. 'Turn the LED on'); VIA 2's two-bit fields are described in
+# commodore._via_bits_text().
 drive1541_via_bits = {
     0x1800: {
         0: ("DATA IN", None),

@@ -1,6 +1,16 @@
 """
-Helpers shared by acorn.py's OS call hooks (and acornosbyte.py's OSBYTE hook).
-acorn.py imports them, so control files can still use acorn.enum_lookup etc.
+Acorn helpers
+
+Helpers for the subroutine hooks that comment calls to an OS: acorn.py's
+(and acornosbyte.py's OSBYTE hook), and commodore.py's too. Given where a
+register is loaded with an immediate value before a call, they write that
+value as a name: xy_addr() as the label of the address that two registers
+hold (e.g. 'ldx #<block : ldy #>block' for the address of an OSWORD
+parameter block), and enum_lookup() as a constant's name from a dictionary
+(e.g. 'lda #osbyte_read_os_version').
+
+acorn.py imports them, so control files can use them as acorn.xy_addr and
+acorn.enum_lookup too.
 """
 
 from commands import *
@@ -10,8 +20,17 @@ from memorymanager import BinaryAddr, RuntimeAddr
 from maker import make_lo, make_hi
 
 def xy_addr(x_addr, y_addr):
-    """Given two binary addresses holding the low byte and high byte of an address,
-    output expressions for each and return the address."""
+    """The address whose low byte is at binary address x_addr and high byte at
+    y_addr (usually the operands of 'ldx #lo' and 'ldy #hi' before an OS
+    call), as a RuntimeAddr, with those bytes written as the label of that
+    address. Returns None if either binary address is None, or nothing is
+    loaded there.
+
+    The label is found with get_label(), so one is made (auto-generated) if
+    there isn't one. If x_addr is classified as a word and y_addr is the next
+    byte, the word is written as the label; otherwise each byte that's byte
+    data or part of an instruction is written as the label's low or high
+    byte (e.g. 'ldx #<block')."""
 
     if x_addr is not None and y_addr is not None:
         assert isinstance(x_addr, BinaryAddr)
@@ -37,10 +56,14 @@ def xy_addr(x_addr, y_addr):
 
 
 def enum_lookup(reg_binary_addr, e, comment=None):
-    """Given a binary_addr (e.g. the operand of an LDX #) and a dictionary, read
-    the byte at the address and look it up in the dictionary and use the result
-    to create a constant and use it as an expression. The comment, if given, is
-    put on the same line. Returns the byte."""
+    """Name the byte at reg_binary_addr (e.g. the operand of 'ldx #nn') from
+    the dictionary 'e' ({value: name}, e.g. acorn.osbyte_enum), and return
+    the byte, or None if reg_binary_addr is None.
+
+    If the byte is in the dictionary, its name is defined as a constant
+    (listed at the top of the output) and the byte is written as the name.
+    The comment, if given, is added at the end of the line, whether or not
+    the byte has a name."""
 
     if reg_binary_addr is None:
         return None

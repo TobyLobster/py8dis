@@ -1,4 +1,6 @@
 """
+CP/M
+
 CP/M specific functions: cpm.cpm() names and comments a CP/M program's use of
 page zero and the BDOS, for the Z80 or the 8080, as acorn.bbc() and
 commodore.c64() do for those machines.
@@ -8,7 +10,7 @@ commodore.c64() do for those machines.
     cpm.cpm()
 
 A call to the BDOS (CALL 5, or JP 5) with the function number in C known is
-commented with what it does (e.g. 'Print the string at DE, up to a "$"'),
+commented with what it does (e.g. "Print the string at DE, up to a '$'"),
 and the 'ld c,n' that sets C is given the function's name (e.g. 'ld
 c,C_WRITESTR'). A program that calls the BDOS through a routine of its own
 can say so with bdos_wrapper().
@@ -17,6 +19,17 @@ The functions' names are those of Digital Research's CP/M 3 documentation
 (see https://www.seasip.info/Cpm/bdos.html), in capitals unless
 config.set_upper_case_os_calls(False) is used first, as is the name of the
 BDOS's entry point (BDOS).
+
+How it works: cpm() gives page zero's names as optional labels (see
+page_zero_names()), and adds _analysis() to the session's analysis hooks
+(trace.analysis_hooks), which run once the code is traced and the CPU
+states are known. _analysis() goes through the code looking for calls and
+jumps to the BDOS, or to a wrapper, and _bdos_call() comments each one from
+bdos_functions, names the function number, and names the address in DE.
+The BDOS's entry point and the wrappers, with the register each takes the
+function number in, are kept in the session's extras ('cpm.wrappers'). The
+same code serves the Z80 and the 8080, since the instructions it looks for
+have the same bytes on both. docs/machines/cpm.md describes this for users.
 """
 
 from commands import *
@@ -43,7 +56,10 @@ FCB = "fcb"                     # DE is the address of a file control block
 DMA = "dma"                     # DE is the address of the buffer for reading and writing records
 
 # The BDOS functions of CP/M 2.2 and CP/M 3, by number: the name, a
-# description, and what DE (or E) is, if it's used (see above)
+# description, and what DE (or E) is, if it's used (see above). The name is
+# written in capitals or lower case by function_name(). The description is
+# the comment on a call; for a CHARACTER function, 'the character in E' in
+# it is replaced by the character when E is known (see _bdos_call()).
 bdos_functions = {
       0: ("P_TERMCPM",    "End the program (warm boot)", None),
       1: ("C_READ",       "Read a character from the console (into A)", None),
@@ -108,20 +124,23 @@ bdos_functions = {
     112: ("L_WRITEBLK",   "Write a block of characters to the printer (the parameters at DE)", None),
 }
 
-# C_RAWIO (function 6)'s E, other than a character to write
+# C_RAWIO (function 6)'s E, other than a character to write: the comments for
+# the values that read a character or get the status instead
 _RAWIO = {
     0xff: "Read a character from the console without echoing it (0 if none)",
     0xfe: "Get the console status (A is not 0 if a key is waiting)",
     0xfd: "Read a character from the console without echoing it (waiting for one)",
 }
 
-# F_ERRMODE (function 45)'s E
+# F_ERRMODE (function 45)'s E, and the comments for them (any other value sets
+# the default mode)
 _ERRMODE = {
     0xff: "Set the BDOS error mode to return errors",
     0xfe: "Set the BDOS error mode to return and display errors",
 }
 
-# The control characters with names (for the characters written)
+# The control characters with names (for the characters written: see
+# character_description())
 _CONTROL_CHARACTERS = {
     0x07: "bell",
     0x08: "backspace",
@@ -134,8 +153,9 @@ _CONTROL_CHARACTERS = {
 }
 
 def character_description(c):
-    """A description of a character written to the console, e.g. "'A'" or
-    "$0D (carriage return)"."""
+    """A description of a character written to the console (or the punch or
+    the printer), for a BDOS call's comment, e.g. "'A'" or "$0D (carriage
+    return)"."""
     if utils.isprint(c):
         return "'%s'" % chr(c)
     if c in _CONTROL_CHARACTERS:
@@ -156,12 +176,21 @@ def function_name(number):
     return _os_name(bdos_functions[number][0])
 
 def _os_name(name):
+    """The name in capitals, or in lower case with
+    config.set_upper_case_os_calls(False)."""
     return name.upper() if config.get_upper_case_os_calls() else name.lower()
 
 def page_zero_names():
     """The names of the addresses in page zero, as a list of (address, name,
     the address of the name it's based on, or None), e.g. (0x0006,
-    'BDOS+1', 0x0005)."""
+    'BDOS+1', 0x0005), in address order. cpm() makes them optional labels,
+    so they're only output if the program uses them.
+
+    Each byte after the first of the warm boot jump, the BDOS jump, the two
+    FCBs and the default DMA buffer is named as an offset from it. The
+    default FCB's bytes 16 to 31 are the second FCB, so they're named from
+    that instead (second_fcb+n), and its bytes 32 to 35 (the current record
+    and the random record) are the default FCB's again."""
     bdos = bdos_name()
     result = [
         (0x0000, "warm_boot", None),            # (JP to the BIOS's warm boot)
@@ -187,6 +216,8 @@ def page_zero_names():
 
 
 def _set_up_done():
+    """Whether cpm() has been called in this session (it sets up the
+    wrappers, in the session's extras)."""
     return session.current().extras.get("cpm.wrappers") is not None
 
 def cpm():
@@ -198,8 +229,8 @@ def cpm():
       it (BDOS+1, which holds the top of the memory for programs), output
       only if used;
     - each call or jump to the BDOS (CALL 5) with the function number in C
-      known commented with what the function does (e.g. 'Print the string
-      at DE, up to a "$"', or "Write 'A' to the console" when E is known
+      known commented with what the function does (e.g. "Print the string
+      at DE, up to a '$'", or "Write 'A' to the console" when E is known
       too), and the 'ld c,n' that sets C given the function's name (e.g.
       'ld c,C_WRITESTR'), defined as a constant;
     - for a function that takes an address in DE, the 'ld de,nn' that sets
@@ -211,6 +242,9 @@ def cpm():
 
     See bdos_wrapper() for a routine of the program's own that calls the
     BDOS.
+
+    This stops with an error if the CPU isn't the Z80 or the 8080, or if it
+    has been called already.
     """
     cpu = session.current().cpu
     if not isinstance(cpu, (cpuz80.CpuZ80, cpu8080.Cpu8080)):
@@ -218,19 +252,26 @@ def cpm():
     if _set_up_done():
         utils.die("cpm.cpm(): this has already been called")
     extras = session.current().extras
+    # The routines that call the BDOS, by runtime address, with the register
+    # each takes the function number in: the BDOS itself, so far (see
+    # bdos_wrapper())
     extras["cpm.wrappers"] = {RuntimeAddr(BDOS_ENTRY): "c"}
-    # (So that config.set_upper_case_os_calls() can't be called now)
+    # (So that config.set_upper_case_os_calls() can't be called now, since
+    # page zero's names are chosen below)
     extras["os_calls_named"] = True
 
     for addr, name, base in page_zero_names():
         optional_label(addr, name, base)
 
+    # The calls are commented once the code is traced
     session.current().trace.analysis_hooks.append(_analysis)
 
 def bdos_wrapper(runtime_addr, register="c"):
     """Say that the routine at runtime_addr calls the BDOS (see cpm()), with
-    the function number in the register (C, as the BDOS has it, or A), so
-    that calls to it are commented as calls to the BDOS are."""
+    the function number in the register ("c", as the BDOS has it, or "a"),
+    so that calls to it are commented as calls to the BDOS are. (Saying it
+    again for the same routine changes the register.) This stops with an
+    error if cpm() hasn't been called, or the register isn't "a" or "c"."""
     if not _set_up_done():
         utils.die("cpm.bdos_wrapper(): call cpm.cpm() first")
     if register not in ("a", "c"):
@@ -242,18 +283,30 @@ def bdos_wrapper(runtime_addr, register="c"):
 # The analysis, once the code is traced: the same bytes for the Z80 and the
 # 8080
 
-# The opcodes that call or jump to a 16 bit address (unconditionally or not)
+# The opcodes that call or jump to a 16 bit address (unconditionally or not):
+# 'call nn' and 'jp nn', then 'call cc,nn' and 'jp cc,nn' (on the 8080: CALL,
+# JMP, Ccc and Jcc)
 _CALLS_AND_JUMPS = {0xcd, 0xc3,
                     0xc4, 0xcc, 0xd4, 0xdc, 0xe4, 0xec, 0xf4, 0xfc,
                     0xc2, 0xca, 0xd2, 0xda, 0xe2, 0xea, 0xf2, 0xfa}
 
-# The opcodes that load a register with an 8 bit value ('ld r,n')
+# The opcodes that load a register with an 8 bit value ('ld r,n', on the
+# 8080 MVI), for the registers that matter here: A or C for a function number,
+# and E
 _LD_R_N = {0x3e: "a", 0x0e: "c", 0x1e: "e"}
+# 'ld de,nn' (on the 8080, LXI D)
 _LD_DE_NN = 0x11
 
 def _analysis():
     """Comment each call to the BDOS (or a wrapper), name the function
-    number and the address in DE (see cpm())."""
+    number and the address in DE (see cpm() and _bdos_call()).
+
+    cpm() adds this to the session's analysis hooks, which run once the code
+    is traced and the CPU states are known. It goes through the code in
+    address order, keeping the CPU state before each instruction and where
+    each register was last loaded ('ld c,n' etc.). Both are forgotten after
+    data, at a label (since code can come there from elsewhere) and after
+    the end of a block (e.g. JP or RET)."""
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     labels = session.current().labels.labels
@@ -265,6 +318,7 @@ def _analysis():
         while binary_addr < range_end:
             c = classification.get_classification(binary_addr)
             if c is None or not c.is_code(binary_addr):
+                # (Not code: nothing is known after it)
                 state = cpu.CpuState()
                 loads = {}
                 binary_addr += 1 if c is None else c.length()
@@ -292,7 +346,10 @@ def _analysis():
 
 def _load_operand(loads, register, value):
     """The binary address of the operand of the last 'ld r,n' (or 'ld
-    de,nn') that loaded the register with the value, or None."""
+    de,nn') that loaded the register (as 'loads' has it, see _analysis()),
+    if it loaded it with 'value', the value the register holds at the
+    call; or else None (e.g. if the register was changed after it, or
+    loaded some other way)."""
     binary_addr = loads.get(register)
     if binary_addr is None:
         return None
@@ -304,8 +361,25 @@ def _load_operand(loads, register, value):
     return BinaryAddr(binary_addr + 1)
 
 def _bdos_call(binary_addr, runtime_addr, register, state, loads):
-    """A call (or jump) to the BDOS (or a wrapper) with the function number
-    in the register: comment it, and name the function number and DE."""
+    """Comment a call (or jump) to the BDOS (or a wrapper), at binary_addr
+    and runtime_addr, with the function number in 'register' ("c" or "a"),
+    if 'state' (the CPU state before it) says what the number is and it's
+    one of bdos_functions. 'loads' is where each register was last loaded
+    (see _analysis()).
+
+    - The 'ld c,n' (or 'ld a,n') that set the number is written with the
+      function's name (e.g. C_WRITESTR), which is defined as a constant the
+      first time it's used, unless the operand has an expression already.
+    - The call is commented with what the function does, in more detail
+      when E is known (e.g. the character to write, or C_RAWIO's and
+      F_ERRMODE's modes).
+    - For a function that takes the address of a string, a buffer, an FCB
+      or a DMA buffer in DE, the 'ld de,nn' that set it is written with the
+      address's label. If the address is in the program, it's named
+      'message', 'input_buffer', 'fcb' or 'dma_buffer' if it has no name
+      (see _name_data()), and a string is classified as '$' terminated, if
+      it isn't classified already. (A string that's classified already
+      isn't named.)"""
     number = state[register]
     if number is None or number not in bdos_functions:
         return
@@ -322,7 +396,8 @@ def _bdos_call(binary_addr, runtime_addr, register, state, loads):
                 constants.add(number)
                 constant(number, name)
 
-    # What it does, with E if it's known
+    # What it does, with E if it's known (a character, a mode, a drive or
+    # $FF to get the user number)
     e = state["e"]
     if e is not None:
         if de_use == CHARACTER:
@@ -337,7 +412,8 @@ def _bdos_call(binary_addr, runtime_addr, register, state, loads):
             description = "Get the user number (into A)"
     disassembly.comment(runtime_addr, description, align=Align.INLINE, word_wrap=False, auto_generated=True)
 
-    # The address in DE
+    # The address in DE, if the function takes one, it's known, and an 'ld
+    # de,nn' loaded it
     if de_use not in (STRING, BUFFER, FCB, DMA) or state["d"] is None or e is None:
         return
     de = state["d"] << 8 | e
@@ -358,8 +434,10 @@ def _bdos_call(binary_addr, runtime_addr, register, state, loads):
     classification.add_expression(operand, label, force=False, auto_generated=True)
 
 def _name_data(runtime_addr, name):
-    """Label the address, if it has no name yet, with the name (or name_2
-    etc. if that's taken)"""
+    """Label runtime_addr with 'name' (e.g. 'fcb'), or with name_2, name_3
+    etc. for the second and later addresses given that name (the session's
+    extras count them), unless it already has an explicit name (e.g. from
+    label(), or an earlier call of this)."""
     labels = session.current().labels.labels
     if runtime_addr in labels and labels[runtime_addr].explicit_names:
         return
