@@ -1,13 +1,65 @@
 """
+Classification
+
 Classifies every byte of a binary file.
 
-Bytes that are loaded from a binary file are classified by type. Data
-is marked with a Byte, Word or String object, and code is marked with
-an Opcode* object, as defined by the configured CPU.
+A 'classification' says what a byte of the binary is: the start of an
+instruction, or of some data bytes, words or a string. Bytes that are
+loaded from a binary file are classified by type. Data is marked with a
+Byte, Word or String object, and code is marked with an Opcode* object,
+as defined by the configured CPU.
 
+By the end of go() every loaded byte is classified, and the output is
+made by asking each classification for its lines of output, in binary
+address order (see disassembly.emit()). So the classifications decide
+what the assembler is given for each byte, and between them they cover
+the whole binary, so the output assembles back to the same bytes.
+
+The classifications are kept by binary address, in
+session.current().classifications.classifications (see Classifications).
 Each classification object has a length, so the object is stored in the
 first address of the classification, and the remainder are set to the
-'INSIDE_A_CLASSIFICATION' constant so it's known to be classified.
+'INSIDE_A_CLASSIFICATION' constant so it's known to be classified. A
+byte that isn't classified (yet) is None.
+
+The kinds of classification:
+
+Byte      some bytes of data, e.g. 'equb 1, 2, 3' (in beebasm): data
+          marked by byte(), the bytes left over once everything else is
+          classified (see classify_leftovers()), and an included binary
+          file (see include_binary_file()).
+Word      some 16 bit words of data, low byte first, e.g. a table of
+          addresses, marked by word() (and wordentry() and code_ptr()).
+String    a string of characters in a text encoding, e.g. 'equs "Hello"',
+          marked by the string commands (below), or found by
+          autostring().
+Opcode    an instruction: an object from the CPU's table of opcodes (the
+          Opcode class in cpu6502.py, cpu8080.py or cpuz80.py, or a
+          subclass), classified by tracing (see
+          cpu.Cpu.disassemble_instruction()).
+
+They all have the same few methods:
+
+length()            the number of bytes it covers
+set_length(n)       changes that, when it's split (Byte, Word and String
+                    only; see split_classification())
+is_code(addr)       True for an instruction
+as_lines(binary_loc, annotations)
+                    its output, as a list of line objects (see output.py),
+                    given its binary location (see
+                    memorymanager.BinaryLocation) and the annotations (for
+                    its inline comments, or None)
+
+as_lines() is how each kind turns its bytes into output. A Byte or Word
+gives an output.DataBlock, which writes the values in a table, so many to
+a line; each value is a label, an expression or a formatted number, from
+get_constant8() or get_constant16(). A String gives an output.StringData,
+which writes the characters in quotes with the assembler's string
+directive (or as bytes, if the assembler can't write the string's
+encoding), over several lines if need be. An Opcode gives an
+output.Instruction, whose operand comes from get_constant8(),
+get_address16() etc., and a blank line after e.g. a jump (see
+config.set_blank_line_at_block_end()).
 
 Users can mark data as Byte, Word or String. They use functions
 byte() and word() for the first two types. For strings there are a
@@ -24,6 +76,11 @@ stringhi()    the string terminates at a top-bit-set character,
 stringhiz()   as stringhi, but also terminates at zero
 stringn()     the first byte holds the length, followed by the string
 
+(These commands are in commands.py. They convert the runtime address and
+call the *_binary() functions here: stringterm_binary() (for stringterm(),
+stringcr() and stringz()), string_binary(), stringhi_binary(),
+stringhiz_binary() and stringn_binary().)
+
 An included binary file is marked as type Byte.
 
 This module also manages 'Expressions'. Expressions are user defined
@@ -34,6 +91,13 @@ instructions, or to data.
 e.g. An expression 'initial_lives + 1' could be used to output an
 instruction 'LDA #initial_lives + 1'. The address supplied for the
 expression must be of the operand, not the opcode.
+
+Expressions are kept by binary address (add_expression()). When the
+output is made, get_constant8() etc. write an operand or a data value as
+its expression if it has one, and get_expression() checks the expression's
+value: py8dis works it out itself where it can (see
+prepare_expression_checks()), and also adds an assertion to the output for
+the assembler to check (see check_expr()).
 """
 
 import collections
@@ -56,22 +120,31 @@ from memorymanager import BinaryAddr, RuntimeAddr
 from format import Format
 from binaryaddrtype import BinaryAddrType
 
+# (A function: assembler() is the current session's assembler)
 assembler     = config.get_assembler
 
 class Classifications:
     """The classifications (and expressions) of one session (see session.py)."""
 
     def __init__(self):
-        # `classifications` stores classifications indexed by binary address.
+        # `classifications` stores classifications indexed by binary address:
+        # for each of the 65536 bytes, a classification object (at its first
+        # byte), INSIDE_A_CLASSIFICATION (at the rest of its bytes) or None
+        # (not classified).
         self.classifications = [None] * 64*1024
 
-        # The expression for each binary address that has one
+        # The expression for each binary address that has one (an
+        # expression.Expr, see add_expression())
         self.expressions = {}
 
-        # Dictionary of binary files to include in the output, keyed by binary address
+        # Dictionary of binary files to include in the output, keyed by binary
+        # address (see include_binary_file()). The Byte classification there
+        # isn't output: an 'include binary' directive is, instead.
         self.include_binary_files = dict()
 
         # Remember the addresses where a split_classification is requested
+        # (see split_classification()), so that a classification added there
+        # later is split
         self.split_classifications = set()
 
         # The values of names (constants and labels), for evaluating
@@ -86,13 +159,19 @@ class Classifications:
 # have been classified. Compare with it using 'is'. (Being a unique object, it
 # can't be confused with 0, False or None.)
 class _InsideAClassification:
+    """The type of INSIDE_A_CLASSIFICATION (there's only the one)."""
     def __repr__(self):
         return "INSIDE_A_CLASSIFICATION"
 
 INSIDE_A_CLASSIFICATION = _InsideAClassification()
 
 class Byte:
-    """Object used to mark part of the binary data as bytes."""
+    """Object used to mark part of the binary data as bytes.
+
+    'length' is the number of bytes, and 'cols' the number of values on
+    each line of output (None for as many as fit). 'auto_generated' is True
+    for the bytes classify_leftovers() makes, which py8dis can split without
+    a warning (see split_classification())."""
 
     def __init__(self, length, cols=None, auto_generated=False):
         assert length > 0
@@ -103,21 +182,29 @@ class Byte:
         self.auto_generated = auto_generated
 
     def length(self):
+        """The number of bytes."""
         return self._length
 
     def set_length(self, length):
+        """Change the number of bytes (when it's split)."""
         assert length > 0
         self._length = length
 
     def is_code(self, binary_addr):
+        """Data isn't code."""
         return False
 
     def as_lines(self, binary_loc, annotations):
+        """An output.DataBlock of byte values (each from get_constant8())."""
         return [output.DataBlock(binary_loc, self._length, self._cols, 1, annotations)]
 
 
 class Word:
-    """Object used to mark part of the binary data as words (16 bit)."""
+    """Object used to mark part of the binary data as words (16 bit, low
+    byte first).
+
+    'length' is in bytes, so it's twice the number of words. 'cols' is the
+    number of values on each line of output (None for as many as fit)."""
 
     def __init__(self, length, cols=None):
         assert cols is None or cols > 0
@@ -125,23 +212,32 @@ class Word:
         self._cols = cols
 
     def length(self):
+        """The number of bytes (not words)."""
         return self._length
 
     def set_length(self, length):
+        """Change the number of bytes, which must be even (when it's split)."""
         assert length > 0
         assert length % 2 == 0
         self._length = length
 
     def is_code(self, binary_addr):
+        """Data isn't code."""
         return False
 
     def as_lines(self, binary_loc, annotations):
+        """An output.DataBlock of word values (each from get_constant16())."""
         return [output.DataBlock(binary_loc, self._length, self._cols, 2, annotations)]
 
 
 class String:
     """Object used to mark part of the binary data as a string, in the given
-    text encoding (a textencoding.Encoding; by default the session's)."""
+    text encoding (a textencoding.Encoding; by default the session's).
+
+    'length' is the number of bytes. 'auto_generated' is True for a string
+    py8dis found itself, which it can split without a warning (see
+    split_classification()). '_caller' is the call stack (outside py8dis)
+    where it was made, for messages (see __str__())."""
 
     def __init__(self, length, encoding=None):
         import textencoding
@@ -153,18 +249,28 @@ class String:
         self.auto_generated = False
 
     def length(self):
+        """The number of bytes."""
         return self._length
 
     def set_length(self, length):
+        """Change the number of bytes (when it's split)."""
         assert length > 0
         self._length = length
 
     def is_code(self, binary_addr):
+        """Data isn't code."""
         return False
 
     def as_lines(self, binary_loc, annotations):
+        """An output.StringData, which writes the string in quotes with the
+        assembler's string directive (or as bytes, if the assembler has no
+        directive for its encoding), split over several lines if it's too
+        long for one."""
         return [output.StringData(binary_loc, self._length, annotations, self.encoding)]
 
+        # (Nothing from here on is run, since it returns above:
+        # output.StringData does this job. This code also uses names that
+        # aren't set here, e.g. 'state', 's' and 'result'.)
         i = 0
         while(i < self._length):
             c = memorymanager.get_u8_binary(binary_loc.binary_addr + i)
@@ -218,6 +324,8 @@ class String:
         return result
 
     def __str__(self):
+        """A description, with the call stack where it was made, e.g. for
+        add_classification()'s 'already classified' assertion."""
         #formatted_string = pprint.pformat(self._caller, indent=0)
         formatted_string = ""
         for i in self._caller:
@@ -229,6 +337,10 @@ class String:
 
 def add_expression(binary_addr, s, *, force=True, auto_generated=True):
     """Add an expression for the given binary address.
+
+    `s` is the expression: an expression.Expr, or anything
+    expression.to_expr() makes into one (e.g. an int, a string or a
+    LazyString), but not a Label.
 
     If `force` is False, an existing expression at the address is kept.
 
@@ -251,7 +363,14 @@ def add_expression(binary_addr, s, *, force=True, auto_generated=True):
 
 def prepare_expression_checks():
     """Get ready to check expressions by evaluating them (see check_expr()).
-    Called once all the labels are named, just before the output is emitted."""
+    Called once all the labels are named, just before the output is emitted.
+
+    This collects the value of every name an expression can use, in
+    Classifications.name_values: the constants with integer values, the
+    labels' names (including local labels), and the optional labels that
+    are simple names (not e.g. 'irq_vector+1'). A name with more than one
+    value is left out, so expressions that use it aren't evaluated. Until
+    this is called, get_expression() doesn't check anything."""
 
     values = {}
     ambiguous = set()
@@ -280,7 +399,14 @@ def prepare_expression_checks():
     session.current().classifications.name_values = values
 
 def check_expr(expr, value, message, width=None):
-    """Add an assert to the output based on an expression.
+    """Add an assert to the output based on an expression: an assertion for
+    the assembler that 'expr' is 'value' (see Assembler.assert_expr()).
+
+    If 'expr' is just a constant's name, there's no assertion (it would only
+    say 'constant = value'): instead py8dis stops with an error if the
+    constant's value isn't 'value' ('message' says where, e.g. "at $2001"),
+    unless it's a CHAR or STRING constant, which isn't checked. ('width'
+    isn't used.)
 
     (py8dis also checks the value itself where it can, see
     _evaluate_and_check(). The assertions are kept as well, since the
@@ -331,7 +457,13 @@ def get_expression(binary_addr, expected_value, is_address=False, width=8):
     Once the output is being made (see prepare_expression_checks()), the
     expression is also checked, and an assertion added to the output. (Before
     then, e.g. when label names are being chosen, it isn't, since the values
-    of names aren't all known yet.)"""
+    of names aren't all known yet.) For an expression at the start of a
+    String, the expected value is the string's text instead (e.g. for a
+    STRING constant), and only the assertion checks it.
+
+    Returns the expression, with a mask added if it needs one (see
+    _evaluate_and_check()). Stops with an error if py8dis can work out its
+    value and it's wrong. ('is_address' isn't used.)"""
 
     expressions = session.current().classifications.expressions
     memory_binary = session.current().memory.binary
@@ -354,6 +486,19 @@ def add_classification(binary_addr, c):
     A classification has a length in bytes. The first byte is
     classified with the given classification and all following bytes
     are marked with `INSIDE_A_CLASSIFICATION`.
+
+    A copy of `c` is stored, so that changing it (e.g. its length, when
+    it's split) doesn't change `c` itself, which may be shared: e.g. an
+    opcode from the CPU's table is used for every instruction with that
+    opcode.
+
+    If a split has been asked for at an address inside it (see
+    split_classification()), it's split there: each part is a copy of `c`
+    with its own length. (That needs set_length(), which only Byte, Word
+    and String have.)
+
+    It's an assertion error if any of the bytes is already classified, so
+    callers check that first (see is_classified()).
     """
 
     split_classifications = session.current().classifications.split_classifications
@@ -367,6 +512,8 @@ def add_classification(binary_addr, c):
     for i in range(1, c.length()):
         current_addr = binary_addr+i
         if current_addr in split_classifications:
+            # End the part that started at prev_addr here, and start a new
+            # part, for the rest of the bytes
             classifications[prev_addr].set_length(current_addr-prev_addr)
             classifications[current_addr] = copy.copy(c)
             classifications[current_addr].set_length(c.length() - i)
@@ -375,17 +522,22 @@ def add_classification(binary_addr, c):
             classifications[current_addr] = INSIDE_A_CLASSIFICATION
 
 def get_classification(binary_addr):
+    """The classification at a binary address: the classification object at
+    the first byte of one, INSIDE_A_CLASSIFICATION at its other bytes, or
+    None if the byte isn't classified."""
     classifications = session.current().classifications.classifications
     return classifications[binary_addr]
 
 def is_classified(binary_addr, length=1):
-    """Is any address in the given range classified?"""
+    """Is any address in the given range classified? (The range is the
+    'length' bytes from binary_addr. A byte inside a classification counts.)"""
 
     classifications = session.current().classifications.classifications
     return any(x is not None for x in classifications[binary_addr:binary_addr+length])
 
 def is_code(binary_addr):
-    """Is the given `binary_addr` classified as an instruction opcode?"""
+    """Is the given `binary_addr` classified as an instruction opcode? (Only
+    its first byte is: this is False for the operand bytes.)"""
 
     classifications = session.current().classifications.classifications
     c = classifications[binary_addr]
@@ -394,7 +546,20 @@ def is_code(binary_addr):
     return c.is_code(binary_addr)
 
 def split_classification(binary_addr, *, warn):
-    """If e.g. a move boundary is in the middle of an instruction, then split the classification."""
+    """If e.g. a move boundary is in the middle of an instruction, then split the classification.
+
+    This makes binary_addr the start of a classification: for a move
+    boundary (see disassembly.isolate_range()), or where the user asks with
+    the split_classification() command (in commands.py).
+
+    The address is remembered, so that a classification added across it
+    later is split there (see add_classification()). If one already covers
+    it, it's replaced by two Byte classifications, one before binary_addr
+    and one from it, so e.g. an instruction or a string becomes bytes. With
+    'warn' (for a move boundary), py8dis warns about this, unless py8dis
+    made the classification itself (bytes left over, or a string found by
+    autostring()). Nothing is done at the top of memory ($10000).
+    """
 
     split_classifications = session.current().classifications.split_classifications
     classifications = session.current().classifications.classifications
@@ -402,11 +567,13 @@ def split_classification(binary_addr, *, warn):
         return
 
     # Remember the split addresses for later, so that we can avoid adding a string across the split.
+    # (add_classification() splits any classification added across it.)
     split_classifications.add(binary_addr)
 
     if classifications[binary_addr] is not INSIDE_A_CLASSIFICATION:
         return
 
+    # Find the start of the classification that covers it
     split_addr = binary_addr
     while classifications[binary_addr] is INSIDE_A_CLASSIFICATION:
         binary_addr -= 1
@@ -416,13 +583,20 @@ def split_classification(binary_addr, *, warn):
     if warn and not getattr(classifications[binary_addr], "auto_generated", False):
         utils.warn("move boundary at binary address {0} splits a classification".format(config.get_assembler().hex(split_addr)))
 
-    # classify as bytes
+    # classify as bytes: the part before split_addr, and the part from it
+    # (whose later bytes are still marked INSIDE_A_CLASSIFICATION)
     first_split_length = split_addr - binary_addr
     classifications[split_addr] = Byte(classifications[binary_addr].length() - first_split_length)
     classifications[binary_addr] = Byte(first_split_length)
 
 def classify_leftovers():
-    """Classify everything not already classified, as bytes."""
+    """Classify everything not already classified, as bytes.
+
+    go() calls this once tracing and the search for strings are done, so
+    that every loaded byte is classified. Each run of unclassified bytes
+    becomes an auto-generated Byte classification, but a run ends before
+    each address with a label, so that each label starts a new
+    classification."""
 
     # (For speed, this loop uses plain integer addresses.)
     classifications = session.current().classifications.classifications
@@ -450,7 +624,9 @@ def _is_loaded(binary_addr):
 
 def _runtime_addr_after(binary_addr):
     """Return the runtime address for `binary_addr`, the address just after
-    a string, allowing for a string that ends at the very top of memory."""
+    a string, allowing for a string that ends at the very top of memory.
+    (b2r() can't convert $10000, so that's the runtime address after the
+    last byte's.)"""
 
     memory_binary = session.current().memory.binary
     if binary_addr >= len(memory_binary):
@@ -458,13 +634,16 @@ def _runtime_addr_after(binary_addr):
     return movemanager.b2r(BinaryAddr(binary_addr))
 
 def _string_error(binary_addr, message):
-    """Stop with an error about a string at the given binary address."""
+    """Stop with an error (utils.die()) about a string at the given binary
+    address (shown as its runtime address)."""
 
     runtime_addr = movemanager.b2r(BinaryAddr(binary_addr))
     utils.die("String at {0}: {1}".format(assembler().hex(runtime_addr), message))
 
 def _check_string_start(binary_addr):
-    """Check there is unclassified data at the start of a string."""
+    """Check there is unclassified data at the start of a string: stop with
+    an error if nothing is loaded at binary_addr, or it's already
+    classified."""
 
     if not _is_loaded(binary_addr):
         _string_error(binary_addr, "no data is loaded there ({0})".format(memorymanager.describe_loaded_files()))
@@ -472,7 +651,8 @@ def _check_string_start(binary_addr):
         _string_error(binary_addr, "it is already classified as {0}".format(describe_classification_at(binary_addr)))
 
 def _check_string_bytes(binary_addr, length, *, report_addr=None):
-    """Check `length` bytes from `binary_addr` are loaded and unclassified.
+    """Check `length` bytes from `binary_addr` are loaded and unclassified,
+    stopping with an error if not.
     Any error is reported at `report_addr` (default `binary_addr`)."""
 
     if report_addr is None:
@@ -484,7 +664,8 @@ def _check_string_bytes(binary_addr, length, *, report_addr=None):
             _string_error(report_addr, "the string is {0} bytes long but byte {1} of it is already classified as {2}".format(length, i, describe_classification_at(binary_addr + i)))
 
 def describe_classification_at(binary_addr):
-    """A short description of the classification covering the binary address, for messages."""
+    """A short description of the classification covering the binary
+    address, for messages, e.g. "byte data" or "code"."""
 
     classifications = session.current().classifications.classifications
     while classifications[binary_addr] is INSIDE_A_CLASSIFICATION and binary_addr > 0:
@@ -502,9 +683,17 @@ def describe_classification_at(binary_addr):
 
 def stringterm_binary(binary_addr, terminator, exclude_terminator=False, encoding=None):
     """Classifies part of the binary as a string followed by a given
-    terminator byte.
+    terminator byte, for the stringterm(), stringcr() and stringz()
+    commands.
 
-    Returns the next available memory address after the string."""
+    The string is in 'encoding' (by default the session's), and includes
+    the terminator unless 'exclude_terminator' is set (then the terminator
+    is left unclassified). Stops with an error if nothing is loaded at
+    binary_addr or it's already classified, or if the loaded data ends, or
+    something already classified is reached, before the terminator.
+
+    Returns the next available memory address after the string (a runtime
+    address: the one after the terminator, even if it's excluded)."""
 
     memory_binary = session.current().memory.binary
     _check_string_start(binary_addr)
@@ -531,9 +720,14 @@ def string_binary(binary_addr, n, encoding=None):
     """Classifies part of the binary as a string of length `n`, or if `n`
     is None up to the next non-printable character (in the string's
     encoding: by default the session's) (or the end of the loaded data, or
-    something already classified).
+    something already classified). For the string() command, and for
+    autostring().
 
-    Returns the next available memory address after the string."""
+    Stops with an error if the start isn't loaded or is already classified,
+    or, with 'n', if any of the n bytes isn't loaded or is classified.
+
+    Returns the next available memory address after the string (a runtime
+    address)."""
 
     import textencoding
     memory_binary = session.current().memory.binary
@@ -558,7 +752,14 @@ def stringhi_binary(binary_addr, include_terminator_fn=None, encoding=None):
     the top bit. The string also ends if it reaches something already
     classified or the end of the loaded data.
 
-    Returns the next available memory address after the string."""
+    The terminator is included if include_terminator_fn(terminator) is
+    True (by default it isn't, and the string ends before it). Then it's
+    written as an expression for the character with bit 7 set, e.g.
+    &80+'O' (see below). For the stringhi() command. Stops with an error
+    if the start isn't loaded or is already classified.
+
+    Returns the next available memory address after the string (a runtime
+    address)."""
 
     memory_binary = session.current().memory.binary
     _check_string_start(binary_addr)
@@ -587,7 +788,12 @@ def stringhi_binary(binary_addr, include_terminator_fn=None, encoding=None):
 def stringhiz_binary(binary_addr, include_terminator_fn=None, encoding=None):
     """Classifies a part of the binary as a string up to the next bit 7 set
     character or zero character. The string also ends if it reaches
-    something already classified or the end of the loaded data."""
+    something already classified or the end of the loaded data.
+
+    As stringhi_binary(), for the stringhiz() command: the terminator is
+    included if include_terminator_fn(terminator) is True, but it isn't
+    given an expression. Returns the next available memory address after
+    the string (a runtime address)."""
 
     memory_binary = session.current().memory.binary
     _check_string_start(binary_addr)
@@ -608,6 +814,13 @@ def stringn_binary(runtime_addr, binary_addr, encoding=None):
     """Classifies a part of the binary as a string with the first byte
     giving the length.
 
+    For the stringn() command. The length byte is a Byte, written as an
+    expression 'end - start', from labels at the start of the characters
+    and just after them, and the characters (if any) are a String.
+    'runtime_addr' is binary_addr's runtime address, which the labels need.
+    Stops with an error if the length byte or any of the characters isn't
+    loaded or is already classified.
+
     Returns the next available memory address after the string."""
 
     memory_binary = session.current().memory.binary
@@ -624,7 +837,14 @@ def stringn_binary(runtime_addr, binary_addr, encoding=None):
     return RuntimeAddr(runtime_addr + 1 + length)
 
 def autostring(min_length=3):
-    """Attempt to automatically find and classify strings through the entire binary."""
+    """Attempt to automatically find and classify strings through the entire binary.
+
+    A string is a run of at least 'min_length' bytes that aren't classified
+    and are printable in the session's text encoding. A run ends before an
+    address with a label (but not a label that's only an expression, e.g.
+    from expr_label()). The strings found are marked auto-generated. go()
+    calls this after tracing, unless the control file gives its own
+    post_trace_steps."""
 
     import textencoding
     classifications = session.current().classifications.classifications
@@ -662,7 +882,15 @@ def autostring(min_length=3):
 
 def include_binary_file(binary_addr, relative_filepath):
     """Add an 'include binary' command in the assembly output. The contents are
-    verified to be identical to our current file contents."""
+    verified to be identical to our current file contents.
+
+    For the include_binary_file() command: the bytes at binary_addr are
+    written as a directive to include 'relative_filepath' (e.g. beebasm's
+    incbin), rather than as data. They're classified as a single Byte,
+    whose lines disassembly.emit() replaces with the directive (see
+    Classifications.include_binary_files). Stops with an error if the file
+    can't be read, is empty, runs past the top of memory, doesn't match the
+    loaded data, or some of it is already classified."""
     include_binary_files = session.current().classifications.include_binary_files
     memory_binary = session.current().memory.binary
     h = config.get_assembler().hex
@@ -702,6 +930,11 @@ def get_constant8(binary_addr):
     This could return the name of a constant, an expression or failing
     that just a constant hex value. Used by CPU Opcodes to format
     output, e.g. for converting 'LDA #3' into 'LDA #num_lives'
+
+    (It's the expression given for the address, if there is one (see
+    get_expression()); otherwise the number, formatted as asked for, e.g.
+    by decimal() (see mainformatter.constant8()). Data uses it too, for
+    each byte of a Byte classification.)
     """
 
     expressions = session.current().classifications.expressions
@@ -717,6 +950,9 @@ def get_constant16(binary_addr):
     that just a constant hex value. Used by CPU Opcodes to format
     output, e.g. for converting 'LXI BC,$1234' into
     'LXI BC,my_special_constant'.
+
+    (As get_constant8(), for the 16 bit number, low byte first; data uses
+    it for each word of a Word classification.)
     """
 
     expressions = session.current().classifications.expressions
@@ -730,6 +966,10 @@ def get_address8(binary_addr, offset=0):
     This could return a label name, an expression or failing that just
     a constant hex address. Used by CPU Opcodes to format output,
     e.g. for converting 'LDA $12' into 'LDA num_lives'.
+
+    (It's the expression given for the address, if there is one;
+    otherwise the label for the address (see disassembly.get_label()).
+    'offset' is added to the byte first, wrapping round within 8 bits.)
     """
 
     expressions = session.current().classifications.expressions
@@ -744,6 +984,12 @@ def get_address16(binary_addr, offset=0):
     This could return a label name, an expression or failing that just
     a constant hex address. Used by CPU Opcodes to format output, e.g.
     for converting 'JSR $1234' into 'JSR my_label'.
+
+    (As get_address8(), for the 16 bit address, low byte first, with
+    'offset' added, wrapping round within 16 bits. With an 'offset' other
+    than 0, any expression for the address is ignored. An expression must
+    be at a Word, or at the operand of a 3 byte instruction: it's an
+    assertion error otherwise.)
     """
 
     expressions = session.current().classifications.expressions
@@ -756,6 +1002,12 @@ def get_address16(binary_addr, offset=0):
 
 
 def get_stats():
+    """How many bytes are classified as each kind (a stats.Stats), for the
+    statistics at the end of the output (see config.set_show_stats()).
+
+    Each byte is counted (by the kind of the classification it's in), so
+    'num_data_words' is a number of bytes too. 'num_instructions' and
+    'num_strings' count the classifications themselves."""
     classifications = session.current().classifications.classifications
     memory_binary = session.current().memory.binary
     result = stats.Stats()
@@ -776,6 +1028,7 @@ def get_stats():
                 result.num_instructions += 1
                 result.num_code_bytes += 1
             elif c is INSIDE_A_CLASSIFICATION:
+                # (A later byte of the classification 'oldc' started)
                 if isinstance(oldc, Byte):
                     result.num_data_bytes += 1
                 elif isinstance(oldc, Word):
@@ -791,6 +1044,15 @@ def get_stats():
     return result
 
 def get_classification_map():
+    """A text map of how each byte of memory is classified, for debugging.
+
+    After the headings (two lines giving the low byte of each column's
+    address, one hex digit above the other, then a line of dashes), there's
+    a line for each page of memory (e.g. '20|' for $2000-$20ff), with a
+    character for each byte: a capital letter for the first byte of
+    a classification ('B' bytes, 'W' words, 'S' a string, 'I' an
+    instruction), the small letter for the rest of its bytes, and '.' for a
+    byte that isn't classified."""
     result = ""
     oldc = None
 

@@ -1,16 +1,31 @@
 """
-The session: the state of one disassembly.
+Session
 
-Commands act on the current session, returned by current(). The first time
-it's needed, a default session is made using the options on the command line
-(e.g. --acme), unless use_command_line(False) has been called. reset() starts
-a new session.
+The session: the state of one disassembly. A Session object holds everything
+py8dis knows about the program being disassembled: the loaded data, the
+moves, the classification of each byte (as code or data), the labels, the
+comments and constants, the state of the tracing, the CPU, the settings, the
+assembler to write the output for, and where to write it. Each module keeps
+its part of the state in an object of its own (e.g. labelmanager.Labels),
+which the session holds (see Session).
+
+Commands act on the current session, returned by current(), and so does the
+rest of py8dis: a module reaches the state it needs through
+session.current() each time, e.g. session.current().memory.binary. The first
+time it's needed, a default session is made using the options on the command
+line (e.g. --acme), unless use_command_line(False) has been called. reset()
+(in commands.py) starts a new session, with new_session(). A program that
+uses py8dis as a library can make sessions of its own with new_session(), and
+switch between them with set_current() (see docs/commands.md).
 
 Nothing should keep a reference to the session's state (e.g. its settings)
-from one call to the next, since it will be out of date after a reset.
+from one call to the next, since it will be out of date after a reset or
+set_current(). Keeping all the state in one object, rather than in global
+variables in each module, is what lets a reset start again from nothing, and
+lets one program work on several disassemblies.
 
-(See "One state object instead of module-level globals" in
-claude/architecture-notes-2026-10-21.md in the project.)
+This module also reads the command line (see options_from_command_line()),
+and makes the assembler object for the assembler chosen (make_assembler()).
 """
 
 import argparse
@@ -19,9 +34,34 @@ import config
 import utils
 
 class Session:
+    """The state of one disassembly (see the top of this file).
+
+    The state is in these attributes, most of them objects from the module
+    that deals with that part of it:
+
+        settings         the settings (config.Settings), see config.py
+        assembler        the assembler object (e.g. acme.Acme), which writes
+                         the output in that assembler's syntax
+        memory           the loaded data (memorymanager.Memory)
+        moves            the moves (movemanager.Moves)
+        classifications  what each byte is, and the expressions to write
+                         in place of values (classification.Classifications)
+        labels           the labels (labelmanager.Labels)
+        disassembly      constants, comments, optional labels, memory
+                         regions etc. (disassembly.DisassemblyState)
+        trace            subroutines, hooks, references etc.
+                         (trace.TraceState)
+        cpu              the CPU (a cpu.Cpu), None until load() chooses it
+        snippets         the snippets in use (see snippets6502.py)
+        extras           the state of other modules, e.g. acorn.py
+
+    and where go() writes its output (asm_filename etc., see __init__())."""
+
     def __init__(self, *, assembler="beebasm", lower_case=True, asm_filename=None, json_filename=None,
                  symbols_filename=None, symbols_format="plain", xref_filename=None):
-        """Make a new session.
+        """Make a new session, with nothing loaded and the default settings.
+        The arguments are the options the command line gives (see
+        options_from_command_line()).
 
         'assembler' is the assembler to produce output for: its name (beebasm,
         baron, acme, xa, 64tass, ca65, z88dk or sjasmplus, or z88dk-8080, the
@@ -38,7 +78,10 @@ class Session:
         'symbols_filename' is a file to write the labels and their addresses
         to as well (a symbol file, see symbols.py), in 'symbols_format':
         'plain', 'vice', 'beebasm' or 'mame'. 'xref_filename' is a file to
-        write a cross-reference listing to as well. None for neither."""
+        write a cross-reference listing to as well. None for neither.
+
+        Stops with an error (utils.die()) for an unknown assembler name or
+        symbol file format."""
 
         # (These modules are imported here rather than at the top of this
         # file, since they import this module themselves.)
@@ -50,6 +93,8 @@ class Session:
         import snippets6502
         import trace
 
+        # The settings start at their defaults, except the case of the
+        # output, which is a command line option
         self.settings = config.Settings()
         self.settings.lower_case = lower_case
         self.assembler = make_assembler(assembler) if utils.is_string_type(assembler) else assembler
@@ -94,10 +139,16 @@ class Session:
 
         # State kept by other modules, e.g. acorn.py, keyed by a name
         # starting with the module name (e.g. "acorn.vector_handler_count").
+        # (One key is shared: "os_calls_named" is set by acorn.py,
+        # commodore.py and cpm.py once they've named the OS calls, and checked
+        # by config.set_upper_case_os_calls().) Being in the session, this
+        # state is forgotten by reset() with everything else.
         self.extras = {}
 
 def make_assembler(name):
-    """Make a new assembler object, given the assembler's name."""
+    """Make a new assembler object (e.g. acme.Acme()), given the assembler's
+    name as Session() takes it (e.g. "acme"; "z88dk-8080" is the same as
+    "z88dk"). Stops with an error (utils.die()) for an unknown name."""
 
     # (The assembler modules are only imported when needed.)
     if name == "beebasm":
@@ -127,7 +178,9 @@ def make_assembler(name):
     utils.die("Unknown assembler '{0}' (expected beebasm, baron, acme, xa, 64tass, ca65, z88dk or sjasmplus)".format(name))
 
 
-# The command line
+# The command line: the options a control file takes when it's run (see
+# "Command line options" in README.md). They're read when the default session
+# is made, and again by reset(), by options_from_command_line().
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--beebasm", action="store_true", help="generate beebasm-style output (default)")
@@ -148,7 +201,12 @@ parser.add_argument("--symbols-format", default="plain", choices=["plain", "vice
 parser.add_argument("--xref", metavar="FILE", help="also output a cross-reference listing (each label and what refers to it) to FILE")
 
 def options_from_command_line():
-    """Read the command line, returning the options for a new session."""
+    """Read the command line, returning the options for a new session (a
+    dictionary of the keyword arguments for Session()).
+
+    Stops with an error (utils.die()) if it asks for more than one assembler,
+    or for both --lower and --upper. With no assembler option, the assembler
+    is beebasm."""
 
     # (Other arguments are allowed, for the control file's own use.)
     args = parser.parse_known_args()[0]
@@ -182,21 +240,27 @@ def options_from_command_line():
 
 # The current session
 
-_current = None
+_current = None                        # The current session (see current())
 _use_command_line = True               # See use_command_line()
 
 def current():
-    """The session that commands act on. The default session is made on
-    first use."""
+    """The current session: the one that commands, and the rest of py8dis,
+    act on. If there isn't one yet, the default session is made (see
+    new_session()), with the options on the command line unless
+    use_command_line(False) has been called."""
     if _current is None:
         new_session()
     return _current
 
 def new_session(**options):
-    """Start a new session (this is what reset() does), and return it.
+    """Start a new session (this is what reset() does), make it the current
+    one, and return it.
 
     The options are as for Session(). If none are given, they come from the
-    command line (unless use_command_line(False) has been called)."""
+    command line (unless use_command_line(False) has been called, when
+    Session()'s defaults are used: beebasm, lower case, output printed). The
+    session remembers whether it was made from the command line, for
+    use_command_line()."""
 
     global _current
     from_command_line = (not options) and _use_command_line
@@ -216,6 +280,8 @@ def set_current(s):
         load(...)                       # (commands act on 'b')
         session.set_current(a)
         go()                            # disassembles 'a'
+
+    Stops with an error (utils.die()) if 's' isn't a Session.
     """
 
     global _current
@@ -227,7 +293,9 @@ def use_command_line(enabled=True):
     """Choose whether new sessions use the options on the command line (e.g.
     --acme). This is on by default. A program that uses py8dis as a library,
     and has its own command line, can turn it off. This must be done before
-    any other command."""
+    any other command: turning it off once a session has been made from the
+    command line stops with an error (utils.die()), since the command line's
+    options are already in use."""
 
     global _use_command_line
     if not enabled and _current is not None and _current.made_from_command_line:

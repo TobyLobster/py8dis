@@ -1,5 +1,25 @@
 """
 Utility functions
+
+Small helpers used all through py8dis:
+
+- reporting problems: die() for an error (e.g. a mistake in the control
+  file), which stops py8dis, warn() for a warning, and debug();
+- text: force_case(), plainhex2() and plainhex4() write in the case chosen
+  with config.set_lower_case(); tab_to() and make_indent() lay out lines;
+  and_list(), count_with_units() and format_strings_in_a_table() make text
+  for comments and data;
+- numbers and types: signed8(), round_up(), is_integer_type() etc.;
+- LazyString, text that isn't worked out until the output is made (e.g. a
+  comment containing a label, whose name isn't chosen until after tracing);
+- keydefaultdict, a defaultdict that passes the key to its factory;
+- sorted_annotations(), the order the annotations (comments etc.) at an
+  address are output in;
+- the call stack (get_callstack(), find_external_callstack()), used to say
+  which line of a control file made something, for debugging.
+
+Of py8dis's own modules, this one uses only config (for the case of the
+output and the indent); almost every other module uses this one.
 """
 
 import collections
@@ -11,11 +31,16 @@ import traceback
 
 import config
 
-# Path to this library
+# The folder py8dis's own code is in (see find_external_callstack())
 library_path = os.path.dirname(os.path.abspath(__file__))
 
 def die(s):
-    """Print an error message and halt execution."""
+    """Print the error message s (to stderr) and stop, with exit status 1.
+
+    This is how py8dis reports a problem with the control file or the
+    program being disassembled, so the user sees just the message, not a
+    traceback. (Checks of the user's input use this rather than 'assert',
+    which 'python -O' removes.)"""
 
     # Alternative: Raise exception (which reports the callstack too)
     #raise ValueError(s)
@@ -25,7 +50,7 @@ def die(s):
     sys.exit(1)
 
 def warn(s):
-    """Print a warning message but don't halt execution."""
+    """Print a warning message, 'warning: ...' (to stderr), and carry on."""
     print("warning: %s" % (s), file=sys.stderr)
 
 def and_list(items):
@@ -36,38 +61,46 @@ def and_list(items):
     return ", ".join(items[:-1]) + " and " + items[-1]
 
 def debug(s):
-    """Print a debug message but don't halt execution."""
+    """Print a debug message, 'debug: ...' (to stderr), and carry on. For
+    debugging py8dis itself."""
     print("debug: %s" % (s), file=sys.stderr)
 
 def force_case(s):
-    """Change string to upper or lower case as configured."""
+    """The string s in lower or upper case, as set by
+    config.set_lower_case(): used for mnemonics, directives, register names
+    and py8dis's own labels (e.g. 'l1234')."""
 
     return s.lower() if config.get_lower_case() else s.upper()
 
 def plainhex2(i):
-    """Return a two character (one byte) hex string in the appropriate case."""
+    """i as two hex digits, with no prefix, in the case of the output, e.g.
+    '1f'. (An assembler's hex2() adds its prefix, e.g. '&1f' or '$1f'.)"""
 
     return ("%02x" if config.get_lower_case() else "%02X") % i
 
 def plainhex4(i):
-    """Return a four character (two byte) hex string in the appropriate case."""
+    """i as four hex digits, with no prefix, in the case of the output, e.g.
+    '201f'."""
 
     return ("%04x" if config.get_lower_case() else "%04X") % i
 
 def tab_to(s, n):
-    """Right padding to column n for a string s."""
+    """s padded with spaces on the right to n characters, to line up the
+    next thing in column n. (s is left as it is if it's already that long.)"""
 
     assert n >= 0
     return "%-*s" % (n, s)
 
 def make_indent(n):
-    """Make an indent string."""
+    """n levels of indent: n copies of the indent string (see
+    config.set_indent_string())."""
 
     assert n >= 0
     return (config.get_indent_string()) * n
 
 def signed8(i):
-    """Convert an integer to a signed byte sized value."""
+    """The byte i (0 to 255) as a signed number (-128 to 127), e.g. for a
+    branch's offset."""
 
     assert 0 <= i <= 255
     if i >= 0x80:
@@ -77,13 +110,15 @@ def signed8(i):
 
 # https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
 def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
+    """Yield successive n-sized chunks from lst (the last may be shorter)."""
 
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
 def isprint(c):
-    """Is the character a printable ASCII character?"""
+    """Is the byte value c a printable ASCII character (space to '~')? (This
+    is ASCII only: for a string's own text encoding, see
+    textencoding.Encoding.is_printable().)"""
 
     return 32 <= c <= 126
 
@@ -91,7 +126,8 @@ def count_with_units(n, unit_name_singular, unit_name_plural):
     """Describes a count of a given unit e.g. "3 apples".
 
     Returns a string with the amount given and the unit name either
-    in singular or plural form.
+    in singular or plural form. 'n' can be a number, or text, which takes
+    the plural unless it's "1".
     """
     if is_string_type(n) and (n == "1"):
         n = 1
@@ -101,12 +137,22 @@ def count_with_units(n, unit_name_singular, unit_name_plural):
         return "%s %s" % (n, unit_name_plural)
 
 def is_string_type(item):
+    """Is item a string?"""
     return isinstance(item, str)
 
 def is_integer_type(item):
+    """Is item an integer? (This includes BinaryAddr and RuntimeAddr, which
+    are ints, and also True and False, since bool is a kind of int.)"""
     return isinstance(item, int)
 
 def is_integer_string(s):
+    """Does the text s look like a whole number: digits, optionally with a
+    sign and a '$' or '&' hex prefix, e.g. '12', '-$1f' or '&ff'?
+
+    Bare hex digits match too, so e.g. 'ff', and words such as 'add' or
+    'dead', do. That's harmless for its use in expression._text_level(),
+    where it decides that text needn't be bracketed, since a simple name
+    needn't be either."""
     assert s is not None
     if s is None:
         return False
@@ -116,6 +162,9 @@ def is_integer_string(s):
 
 # See https://stackoverflow.com/a/11150413
 def natural_sort(l):
+    """The strings in l, sorted in 'natural' order: runs of digits compare
+    as numbers, and the rest without regard to case, so e.g. 'l2' comes
+    before 'l10'. (disassembly.sorted_constants() sorts the same way.)"""
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key=alphanum_key)
@@ -144,19 +193,28 @@ class LazyString:
         return self.resolved
 
     def __add__(self, other):
+        """A new LazyString of this text followed by 'other' (still not
+        worked out), e.g. get_label(...) + " table"."""
         if isinstance(other, LazyString):
             return LazyString(self._fmt + other._fmt, *(self._args + other._args))
         return LazyString(self._fmt + "%s", *(list(self._args) + [other]))
 
     def __radd__(self, other):
+        """A new LazyString of 'other' followed by this text."""
         # e.g. "jump to " + get_label(...)
         return LazyString("%s" + self._fmt, *([other] + list(self._args)))
 
     def __len__(self):
+        """The length of the text. This works the text out (and keeps it), so
+        it mustn't be used until the labels in it can be named."""
         return len(str(self))
 
 # https://stackoverflow.com/questions/2912231/is-there-a-clever-way-to-pass-the-key-to-defaultdicts-default-factory
 class keydefaultdict(collections.defaultdict):
+    """A defaultdict whose default_factory is given the missing key, e.g.
+    labelmanager.Labels.labels, where looking up a new runtime address makes
+    a Label for that address."""
+
     def __missing__(self, key):
         if self.default_factory is None:
             raise KeyError( key )
@@ -165,6 +223,11 @@ class keydefaultdict(collections.defaultdict):
             return ret
 
 def remove_consecutive_duplicates(binary_loc, annotations):
+    """The annotations (comments etc., see comment.py), without each
+    auto-generated one whose text, as output at binary_loc, is the same as
+    the one kept before it. This stops py8dis repeating a comment it has
+    added twice. The user's own annotations are always kept, and the order
+    is unchanged."""
     if not annotations:
         return []
 
@@ -182,6 +245,11 @@ def remove_consecutive_duplicates(binary_loc, annotations):
     return result
 
 def sorted_annotations(binary_loc, annotations):
+    """The annotations at binary_loc in the order they're output: by where
+    they go (their align.Align value, e.g. BEFORE_LABEL before INLINE), then
+    by priority, then in the order they were added (the sort is stable),
+    without repeated auto-generated ones (see
+    remove_consecutive_duplicates())."""
     result = remove_consecutive_duplicates(binary_loc, sorted(annotations, key=lambda x: (x.align, x.priority)))
     return result
 
@@ -212,7 +280,9 @@ def format_strings_in_a_table(strings, max_width, items_per_line_already_known, 
     """
     Format a list of strings into lines with equal number of items per line.
     Entries are comma separated. Entries are aligned vertically by padding
-    with spaces.
+    with spaces. This lays out the values of a block of data (e.g. the
+    bytes after an 'equb', see output.py), as many to a line as fit, in
+    columns.
 
     Just before each line is added to the result, a formatter is called:
         formatter_for_line(line, start_index, end_index)
@@ -221,6 +291,16 @@ def format_strings_in_a_table(strings, max_width, items_per_line_already_known, 
     Args:
         strings (list): List of strings to format
         max_width (int): Maximum width of each line
+        items_per_line_already_known (int or None): the number of items per
+            line to use (e.g. the 'cols' given to byte()), however wide the
+            lines are; or None (or 0) for the most that fit in max_width
+            (at least one)
+        formatter_for_line (function): called as above for each line, with
+            the line's text and the indexes of its first item and of the
+            item after its last; returns the final text for the line (e.g.
+            with the directive and hex dump added)
+        right_align (bool): pad each item on the left, so that numbers line
+            up on the right (the default), or on the right
 
     Returns:
         list: List of formatted lines
@@ -282,6 +362,10 @@ def format_strings_in_a_table(strings, max_width, items_per_line_already_known, 
     return [formatter_for_line(str(item), i, i + 1) for i, item in enumerate(strings)]
 
 class StackEntry:
+    """One frame of the call stack (see get_callstack()): its 'index' (0
+    for the innermost), the 'function' it's in, and its 'filename' and line
+    number ('lineno')."""
+
     def __init__(self, index, function, filename, lineno):
         self.index = index
         self.function = function
@@ -323,6 +407,8 @@ def get_callstack():
     return library_frames
 
 def show_callstack():
+    """Print the call stack that led here, innermost first, as debug messages
+    (leaving out this function and get_callstack()). For debugging py8dis."""
     callstack = get_callstack()[2:]
     for entry in callstack:
         debug(entry)
@@ -330,6 +416,14 @@ def show_callstack():
 def find_external_callstack():
     """
     Return the callstack as a list of 'StackEntry' objects, taking out any calls within this library
+
+    What's left is the control file's part of the call stack, i.e. the
+    lines of the control file that led here. classification.String keeps
+    this, to say which command made a string (in its str(), for
+    debugging). A frame is taken to be
+    py8dis's own if its file's path contains library_path, so a control file
+    kept in py8dis's own folder (which README.md suggests as a way round
+    setting PYTHONPATH) is left out too.
     """
     frames = get_callstack()
     return [f for f in frames if library_path not in f.filename]

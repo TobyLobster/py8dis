@@ -1,14 +1,73 @@
 """
 Disassembling code (and data).
 
-Classifies bytes of binary data as code.
+This module holds what's known about the disassembly besides the
+classifications (labels, optional labels, constants, comments and other
+annotations, memory regions), chooses the labels' names, and makes the
+output. Its state for a session is a DisassemblyState. go() (in
+commands.py) drives it, and the other modules use its functions to add
+labels and comments.
 
 Classifications are effectively "things in the assembler input which
-generate direct output", like instructions or data.
+generate direct output", like instructions or data (see classification.py).
 
 There is at most one classification for any address; in practice by
 the end of disassembly there will be exactly one for all addresses in
 the target range, because we'll classify anything left over as data.
+
+The stages
+
+Before go(), the control file's commands record what's known: the loaded
+data and moves, entry points, labels (add_label(), add_optional_label(),
+add_local_label()), constants (add_constant()), comments and other
+annotations (comment(), annotate_binary()), and data (byte(), string() etc.,
+see classification.py). Then go() works in these stages, in this order:
+
+1. Tracing (cpu.trace(), see cpu.py and trace.py). go() first adds the
+   labels pydis_start and pydis_end at the start and end of the loaded
+   data. Then the CPU follows the code from the entry points, classifying
+   each instruction it reaches as code, and making a Label for each address
+   an instruction refers to, recording the reference (see label.py). Then
+   snippets (see snippets6502.py) can add more entry points, and so can
+   what the code is found to do (e.g. an address stored in a vector, from
+   the CPU states: what's known about the registers at each instruction),
+   and those are traced too. Then the references are sorted out by binary
+   location (cpu.generate_references()).
+
+2. The analysis hooks, at the end of tracing, once the CPU states are
+   known: the CPU's own code analysis functions (cpu.code_analysis_fns, e.g.
+   naming constant arguments to subroutines, or commenting redundant
+   instructions), then the session's analysis hooks (trace.analysis_hooks,
+   e.g. from acorn.py or cpm.py), then the snippets matched after tracing.
+   These add comments, expressions and labels.
+
+3. Making labels. define_forward_zero_page_labels_first() decides which
+   zero page labels mustn't be defined inline,
+   labelmanager.assign_local_label_output_names() makes sure local label
+   names don't clash, and fix_label_names() chooses the name of each label
+   used by the instructions and data so far. (A name is chosen when a
+   label reference, a LabelRef from get_label(), is first turned into text:
+   label_maker() asks suggest_label_name() for a name, then lets the CPU and
+   the control file's label maker hook change it.) Then, if wanted, each
+   label gets a comment saying what refers to it
+   (cpu.add_references_comments()).
+
+4. Classifying the rest: the strings in the data not yet classified are
+   found (classification.autostring(), or go()'s post_trace_steps instead),
+   and everything left is classified as bytes
+   (classification.classify_leftovers()). Then fix_label_names() runs again
+   to name the labels used by those, and by comments and other annotations.
+
+5. Writing the output (emit()): the constants (emit_constants()), then the
+   main disassembly (each range of the loaded data in turn, a moved one in
+   a block of its own, with each label defined inline at its address where
+   it can be: see emit_addr() and emit_labels()), then the "Memory
+   locations" list ('name = value' definitions of the labels that weren't
+   defined inline, see memory_location_definitions(), which goes near the
+   top), and the end of the output (the assertions, and tables of labels and
+   statistics). go() then prints the text or writes it to a file, and
+   writes the JSON, symbol file and cross-reference listing, if wanted (see
+   jsonoutput.py and symbols.py).
 """
 
 import classification
@@ -101,7 +160,10 @@ class DisassemblyState:
         self.annotations = collections.defaultdict(list)
 
 def set_user_label_maker_hook(hook):
-    """Set the user supplied 'hook' function that makes label names."""
+    """Set the user supplied 'hook' function that makes label names.
+
+    (See _label_maker() for how it's called. It can only be set once:
+    commands.set_label_maker_hook() checks.)"""
 
     state = session.current().disassembly
     assert state.user_label_maker_hook is None
@@ -114,6 +176,12 @@ def comment(runtime_addr, text, *, word_wrap=True, indent=0, align=Align.BEFORE_
     given address in the output. The comment can be inlined (added
     to the end of the line), or standalone (a separate line of output).
     The comment can be automatically word wrapped.
+
+    The runtime address must have one binary location (see
+    movemanager.r2b_checked()), where data is loaded. 'align' says where
+    the comment goes (see Align), and 'indent' is its indent level.
+    'auto_generated' is True for a comment py8dis makes rather than one the
+    control file asks for (see comment_binary()).
     """
 
     binary_loc = movemanager.r2b_checked(runtime_addr)
@@ -122,7 +190,14 @@ def comment(runtime_addr, text, *, word_wrap=True, indent=0, align=Align.BEFORE_
     comment_binary(binary_loc, text, word_wrap=word_wrap, indent=indent, align=align, auto_generated=auto_generated)
 
 def comment_binary(binary_loc, text, *, word_wrap=False, indent=0, align=Align.BEFORE_LABEL, auto_generated=True, priority=None):
-    """Add a comment, either inline or standalone."""
+    """Add a comment, either inline or standalone.
+
+    As comment(), but at a binary location: a BinaryLocation, or a binary
+    address (taken to be in the innermost active move, see
+    movemanager.make_binloc()). An auto_generated comment isn't added at an
+    address marked with no_automatic_comment(). 'priority' orders it among
+    the annotations with the same 'align' at the same place (lowest
+    first)."""
 
     annotations = session.current().disassembly.annotations
     binary_loc = movemanager.make_binloc(binary_loc)
@@ -134,12 +209,21 @@ def comment_binary(binary_loc, text, *, word_wrap=False, indent=0, align=Align.B
     annotations[binary_loc].append(new_comment)
 
 def add_raw_annotation(binary_loc, text, *, align=Align.BEFORE_LABEL, priority=None):
-    """Add a raw string to the output."""
+    """Add a raw string to the output.
+
+    (Output as it is, e.g. "" for a blank line, at the binary location: see
+    add_annotation().)"""
 
     add_annotation(binary_loc, Annotation(text, align, priority))
 
 def add_annotation(binary_loc, annotation):
-    """Add an annotation (see comment.py) to the output."""
+    """Add an annotation (see comment.py) to the output.
+
+    It's output at the binary location (a BinaryLocation, or a binary
+    address, see movemanager.make_binloc()), where its 'align' says: before
+    or after the label, before or after the line, or inline. (One at an
+    address inside a multi-byte instruction or data item that isn't inline
+    is output after the item, see emit_addr().)"""
 
     annotations = session.current().disassembly.annotations
     binary_loc = movemanager.make_binloc(binary_loc)
@@ -147,7 +231,11 @@ def add_annotation(binary_loc, annotation):
 
 def annotate_binary(binary_loc, s, *, align=Align.BEFORE_LABEL, priority=None, once_only=False):
     """Add a raw string directly to the assembly code output at the
-    given address."""
+    given address.
+
+    (The binary location, see add_raw_annotation().) With 'once_only', it
+    isn't added if the same raw string is already there, e.g. for a blank
+    line that several snippets might ask for."""
 
     # Check if it's already been added
     annotations = session.current().disassembly.annotations
@@ -159,7 +247,12 @@ def annotate_binary(binary_loc, s, *, align=Align.BEFORE_LABEL, priority=None, o
     add_raw_annotation(binary_loc, s, align=align, priority=priority)
 
 def add_constant(value, name, comment=None, align=Align.INLINE, format=Format.DEFAULT):
-    """Create a named constant value."""
+    """Create a named constant value.
+
+    It's defined as 'name = value' near the top of the output (see
+    emit_constants()), with its comment placed by 'align', and its value
+    written in 'format' (see constant_value_to_string()). It's only used
+    where an expression uses its name (e.g. from expr())."""
 
     # Make sure we don't add the same constant twice. Stop with an error if
     # trying to redefine a constant with a different value.
@@ -179,7 +272,12 @@ def define_forward_zero_page_labels_first():
     has to choose an instruction's size when it first sees it, and for a
     label it doesn't know yet it chooses an absolute address, so the
     instruction would be a byte longer: acme and xa warn, and beebasm
-    stops.) Called once the code has been traced."""
+    stops.) Called once the code has been traced.
+
+    (By go(), at the start of stage 3 in the module docstring, before any
+    label names are chosen. It sets each such label's definable_inline to
+    False. A CPU without zero page instructions, i.e. without an OpcodeZp
+    class, has nothing to do.)"""
 
     cpu = session.current().cpu
     zp_opcode = getattr(cpu, "OpcodeZp", None)
@@ -194,7 +292,9 @@ def define_forward_zero_page_labels_first():
             continue
 
         # Where it would be defined inline: before the classification its
-        # address is in (in any move whose data covers it)
+        # address is in (in any move whose data covers it). (A label inside
+        # a classification is defined just before it, relative to its
+        # start, so step back to the start.)
         definition_addrs = []
         for move_id in range(len(moves.move_definitions)):
             binary_addr, _ = movemanager.r2b(runtime_addr, move_id)
@@ -221,7 +321,11 @@ def is_simple_name(s):
     """Check the name is a simple valid label name.
 
     Must be a single letter or underscore followed by any number of
-    alphanumerics or underscores"""
+    alphanumerics or underscores
+
+    (Anything else, e.g. 'table+1', is taken to be an expression.) 's' must
+    be a non-empty string, or an expression tree, which is never a simple
+    name."""
 
     # (An expression made by e.g. make_add() is never a simple name)
     if isinstance(s, expression.Expr):
@@ -236,7 +340,15 @@ def is_simple_name(s):
     return valid_first(s[0]) and all(valid_later(c) for c in s)
 
 def add_label(runtime_addr, s, move_id, *, is_autogenerated=False, definable_inline=True, priority=None):
-    """Add a label at the given runtime address and move_id."""
+    """Add a label at the given runtime address and move_id.
+
+    A simple name 's' is added as an explicit name (with 'priority', see
+    Label.ExplicitName), and anything else as an expression (if
+    'is_autogenerated', only if the label doesn't have it already). With
+    's' None the label is just made, if it doesn't exist (e.g. for an entry
+    point, so that it's named later). definable_inline=False makes all the
+    label's names be defined in the "Memory locations" list (it can't be
+    turned back on). Returns the Label."""
 
     memorymanager.is_valid_runtime_addr(runtime_addr, True) # 0x10000 is valid for labels
 
@@ -259,7 +371,18 @@ def add_optional_label(runtime_addr, s, *, base_addr=None, definable_inline=True
     """Add a label at the given runtime address, but only output if used.
 
     When two consecutive bytes share a base label name (e.g. `userv`
-    and `userv+1`) then `base_runtime_addr` points to the first byte."""
+    and `userv+1`) then `base_addr` points to the first byte.
+
+    The name is only added to the address's label when something refers to
+    the address (see suggest_label_name()), and only if no other address
+    has been given the name (see optional_name_is_taken()). Without a base
+    address it must be a simple name; with one it's an expression, e.g.
+    'userv+1', and the base address must already have an optional label of
+    its own (with no base address). Adding the same optional label again
+    does nothing; a different one at the same address stops with
+    utils.die(), as does any other problem. definable_inline=False makes
+    the name always be defined in the "Memory locations" list (e.g. for
+    hardware registers)."""
 
     optional_labels = session.current().disassembly.optional_labels
     h = config.get_assembler().hex
@@ -330,6 +453,9 @@ def _range_optional_label(lmd, runtime_addr, binary_addr, binary_addr_type):
         return True, None
 
     def define(addr, name):
+        """The name to use for the address in this range: it's added as a
+        local label for the range, if it isn't already, and its output name
+        is returned."""
         # (As a local label for the range, once)
         label = session.current().labels.labels[addr]
         for local_label in label.local_labels[movemanager.BASE_MOVE_ID]:
@@ -349,7 +475,11 @@ def _range_optional_label(lmd, runtime_addr, binary_addr, binary_addr_type):
 def add_local_label(runtime_addr, name, start_addr, end_addr, move_id=None, heading=None):
     """Add a label at the given runtime address, valid only if referenced in the region specified.
 
-    start_addr, end_addr are runtime addresses.
+    start_addr, end_addr are binary addresses: the name is used where the
+    label is referred to from code or data from start_addr up to (but not
+    including) end_addr (see suggest_label_name()). (Without moves, binary
+    and runtime addresses are the same.) `move_id` is the move the name is
+    for (the base move if None).
 
     `heading` is the heading to define it under in the "Memory locations"
     list, if not its memory region's (see memory_location_definitions()).
@@ -363,7 +493,11 @@ def get_label(runtime_addr, binary_addr, *, binary_addr_type: BinaryAddrType, mo
 
     `binary_addr` is the binary address where the label is being used, or the binary address of the label definition.
     `binary_addr_type` says which type of binary_addr we have: a usage or the definition.
-    `move_id` is the move, for the definition."""
+    `move_id` is the move, for the definition.
+
+    This is how code that writes an address (e.g. an instruction's operand)
+    gets the label for it. It returns a LabelRef, whose name isn't chosen
+    until it's first turned into text, once tracing is done."""
 
     runtime_addr = RuntimeAddr(runtime_addr)
     binary_addr = BinaryAddr(binary_addr)
@@ -423,9 +557,12 @@ def get_emitted_label(runtime_addr):
     """Get the name of an existing, emitted label name for the given runtime address, or just
     return the address as a string.
 
-    `binary_addr` is the binary address where the label is being used, or the binary address of the label definition.
-    `binary_addr_type` says which type of binary_addr we have: a usage or the definition.
-    `move_id` is for the active move."""
+    i.e. one of the label's explicit names that has already been defined in
+    the output (see Label.get_already_emitted_name()), so no new name is
+    chosen. Otherwise it's the address as a number (see
+    mainformatter.uint_formatter()), or in hex for &10000. (Used for
+    beebasm's COPYBLOCK and CLEAR around a moved block, see
+    beebasm.pseudopc_start().)"""
 
     runtime_addr = RuntimeAddr(runtime_addr)
 
@@ -471,6 +608,23 @@ def optional_name_is_taken(runtime_addr):
 
 def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: BinaryAddrType):
     """Return a suggestion for a label name as a LabelMakingData object.
+
+    The label is at runtime_addr, and it's used or defined at binary_addr,
+    as binary_addr_type says. move_id is the move for the definition, if
+    it's known (otherwise None). The suggestion is, in order of preference:
+
+    - a name from add_range_optional_labels(), for a label used in such a
+      range;
+    - a name the label already has (a local label for where it's used, an
+      explicit name, or an expression), for the best move (see the rules
+      below);
+    - the address's optional label's name, if it has one;
+    - otherwise, a new name made from the address (auto-generated): e.g.
+      'l1234' for data, 'c1234' for code, 'sub_c1234' for code that's only
+      called as a subroutine (or an entry point no instruction refers to),
+      or 'loop_c1234' for code only reached by a branch back from up to
+      config.get_loop_limit() bytes later (which also indents the loop with
+      config.set_indent_loops(True)).
     """
 
     optional_labels = session.current().disassembly.optional_labels
@@ -500,19 +654,24 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
     #
     # The actual rules are:
     #
-    # 1. If a move ID is already specified, use that.
+    # 1. If a move ID is already specified, use that. (Otherwise start
+    #    with the move ID of binary_addr.)
     # 2. Choose the move ID of the binary_address if it's the same
     #    as a move ID of the runtime address.
     # 3. Look for any label at the runtime address that has a
     #    `move_id` that matches one at either the runtime address or
     #    binary address. If found, we have got our ideal label so
-    #    return that ((name, move ID), False) tuple.
+    #    return it (the LabelMakingData with that name and move ID).
     #    We look in order through the local labels, then the explicit
     #    labels, then the expressions.
     # 4. If there is only one valid move_id at the runtime address,
     #    select that move ID. (It makes more sense to create a label
     #    there than in the base move ID).
     # 5. All else has failed, so use the base move ID.
+    #
+    # (move_ids_for_runtime_addr() only gives the moves other than the base
+    # move, so without any moves, rule 3 looks in the base move, and rule 5
+    # chooses it.)
 
     # Rule 1
     if move_id is None:
@@ -647,6 +806,7 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
         binary_loc_refs = session.current().trace.references.get(movemanager.BinaryLocation(binary_addr, move_id), [])
 
         if binary_loc_refs:
+            # A subroutine if every reference is a call (e.g. JSR)
             is_subroutine = all(session.current().cpu.is_subroutine_call(ref_binary_loc.binary_addr) for ref_binary_loc in binary_loc_refs)
         else:
             # There are no references recorded. Code given as an entry point
@@ -676,6 +836,9 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
                     if 0 <= ref_runtime_addr - runtime_addr < config.get_loop_limit():
                         label = "loop_" + label
                         if config.get_indent_loops():
+                            # Indent the code from here to the branch back
+                            # (an extra indent level each time, so a loop
+                            # inside another is indented further)
                             while binary_addr <= ref_binary_addr:
                                 c = classification.get_classification(binary_addr)
                                 if c is not None:
@@ -692,8 +855,10 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
 def label_maker(runtime_addr, binary_addr, move_id, binary_addr_type: BinaryAddrType):
     """Get a label name via calling a user hook (see _label_maker()).
 
-    If the name chosen is an optional label's that's relative to another
-    address's (e.g. 'tape_buffer+1'), that address gets a label too."""
+    Returns the LabelMakingData with the name chosen. If the name chosen is
+    an optional label's that's relative to another address's (e.g.
+    'tape_buffer+1'), that address gets a label too (the base address's
+    optional label's name, added as auto-generated)."""
 
     lmd = _label_maker(runtime_addr, binary_addr, move_id, binary_addr_type)
     optional_base = lmd.optional_base
@@ -709,7 +874,13 @@ def _label_maker(runtime_addr, binary_addr, move_id, binary_addr_type: BinaryAdd
 
     `binary_addr` is the associated binary address using the `move_id`.
 
-    Returns the tuple (label_name, move_id)."""
+    Returns a LabelMakingData with the name chosen, and the move ID it's
+    for. The name is chosen in three steps: suggest_label_name() suggests
+    one, the CPU's label_maker() can change it (e.g. to 'return_1' for an
+    RTS), then the control file's label maker hook, if there is one, can
+    change the name or the move ID (and then the name doesn't count as
+    auto-generated). Otherwise an auto-generated name is recorded for the
+    list of auto-generated labels at the end of the output."""
 
     autogenerated_labels = session.current().disassembly.autogenerated_labels
     user_label_maker_hook = session.current().disassembly.user_label_maker_hook
@@ -733,12 +904,15 @@ def _label_maker(runtime_addr, binary_addr, move_id, binary_addr_type: BinaryAdd
 
         sig = inspect.signature(user_label_maker_hook)
         if len(sig.parameters) == 1:
-            # New style hook function
+            # New style hook function: it changes the LabelMakingData itself
+            # (e.g. with replace(), see docs/snippets-and-hooks.md)
             user_label_maker_hook(lmd)
         else:
             # Handle *legacy* hook function. This takes the suggestion as a
             # (name, move_id) tuple, and can return a new name, a new
             # (name, move_id) tuple, or the suggestion unchanged.
+            # (It's called as hook(runtime address, binary address,
+            # (name, move_id)), and can also return None for no change.)
             user_suggestion = user_label_maker_hook(lmd.defined_as_runtime_addr, binary_addr, (lmd.name, lmd.defined_in_move_id))
             if user_suggestion:
                 if utils.is_string_type(user_suggestion):
@@ -766,7 +940,14 @@ def _label_maker(runtime_addr, binary_addr, move_id, binary_addr_type: BinaryAdd
 def get_final_label(runtime_addr, binary_addr, move_id, *, binary_addr_type: BinaryAddrType):
     """Create a final label name for the given location.
 
-    Returns the final label name"""
+    Returns the final label name
+
+    (The name chosen by label_maker(): a string, or an expression.) A
+    simple name is also added to the label as an explicit name for its
+    move, so that it's defined in the output, and so that the next
+    suggest_label_name() for the label finds it. Only used once tracing is
+    done: LabelRef calls it the first time a reference is turned into
+    text."""
     assert session.current().cpu.trace_done
     assert memorymanager.is_valid_runtime_addr(runtime_addr)
     assert memorymanager.is_valid_binary_addr(binary_addr)
@@ -786,10 +967,11 @@ def fix_label_names(*, include_annotations=False):
     referred to by an instruction or data item (in the order they would be
     output), so that we have a full set of label definitions ready to emit.
 
-    This is done twice (see go()): first after tracing, and then again once
-    everything is classified, with include_annotations, to name the labels
-    used by data classified since (e.g. strings) and by comments and other
-    annotations. (Labels named the first time keep their names.)
+    This is done twice (see go(), and stages 3 and 4 in the module
+    docstring): first after tracing, and then again once everything is
+    classified, with include_annotations, to name the labels used by data
+    classified since (e.g. strings) and by comments and other annotations.
+    (Labels named the first time keep their names.)
 
     After that, making the output only has to decide where label definitions
     go (see emit()). The one kind of label still named then is one that a
@@ -832,7 +1014,12 @@ def fix_label_names(*, include_annotations=False):
 
 
 def calculate_move_ranges():
-    """Calculate contiguous memory ranges with a shared move ID."""
+    """Calculate contiguous memory ranges with a shared move ID.
+
+    As a list of (start, end) binary addresses, 'end' exclusive, in address
+    order: each a run of loaded data in one move. Together they cover all
+    the loaded data. emit() outputs each range in turn, a moved one in a
+    block of its own."""
 
     move_ranges = []
     current_range_start = None
@@ -859,7 +1046,14 @@ def calculate_move_ranges():
     return move_ranges
 
 def constant_value_to_string(value, format):
-    """Convert the given value of a constant, return the string value used to define the constant as specified by the format parameter"""
+    """Convert the given value of a constant, return the string value used to define the constant as specified by the format parameter
+
+    'format' is a Format. DEFAULT is decimal or hex, as
+    config.set_constants_are_decimal() says (or STRING, for a string
+    value). DECIMAL_SIGNED takes the value to be a signed byte (128 to 255
+    are -128 to -1). BINARY and PICTURE_BINARY give 8 bits for a value from
+    0 to 255, otherwise 16. STRING and CHAR put the value in double or
+    single quotes."""
 
     # If given a string with no format specified, treat it as a string
     if isinstance(value, str) and (format == Format.DEFAULT):
@@ -895,7 +1089,7 @@ def effective_memory_regions():
     """The memory regions in effect (see memory_region_for()): the CPU's,
     then those named by acorn.py or the control file, with each range named
     as it was last named, and those named "" left out. As (start, end, name),
-    by start address, larger first."""
+    by start address, larger first. (For the JSON output.)"""
     cpu = session.current().cpu
     regions = (cpu.memory_regions() if cpu is not None else []) + session.current().disassembly.memory_regions
     names = {}
@@ -905,7 +1099,13 @@ def effective_memory_regions():
                   key=lambda r: (r[0], -(r[1] - r[0])))
 
 def emit_constants():
-    """The constant definitions, as a list of line objects (see output.py)."""
+    """The constant definitions, as a list of line objects (see output.py).
+
+    Under the heading 'Constants', in sorted_constants() order, as 'name =
+    value' with the '=' signs and the inline comments lined up (each column
+    rounded up to a whole number of indents). Each constant's comment goes
+    where its 'align' says: on the line before, inline, or on the line
+    after. Empty if there are no constants."""
     constants = session.current().disassembly.constants
     lines = []
 
@@ -950,10 +1150,22 @@ def emit_constants():
 def emit(print_output=True):
     """Outputs the disassembly.
 
+    i.e. makes the whole output and returns it as text. (This is the last
+    stage of go(), stage 5 in the module docstring, once everything is
+    classified and the labels are named. 'print_output' isn't used: go()
+    prints the text.)
+
     The output is built as a list of line objects (see output.py), each
     resolved as it's made (naming any labels used for the first time, and
     choosing which label definitions go where), in output order. Then the
-    lines are rendered and joined to make the text."""
+    lines are rendered and joined to make the text.
+
+    It's made in three parts: the header (the assembler's prologue, the
+    constants, and the "Memory locations" list), the main disassembly, and
+    the footer (the assembler's epilogue, e.g. assertions, then tables of
+    label references, auto-generated labels and statistics). The main
+    disassembly is made first, since the "Memory locations" list has the
+    names that it didn't define inline."""
 
     autogenerated_labels = session.current().disassembly.autogenerated_labels
     formatter = config.get_assembler()
@@ -998,11 +1210,19 @@ def emit(print_output=True):
     d = []
 
     def record_emit_point(binary_addr, move_id):
+        """Record that labels for the move can be defined inline at the
+        binary address (at its runtime address in that move)."""
         md = session.current().moves.move_definitions[move_id]
         runtime_addr = md.convert_binary_to_runtime_addr(binary_addr)
         labelmanager.notify_emit_opportunity(runtime_addr, move_id)
 
     # Calculate the move_ids that will emit output?
+    # (i.e. record, before anything is output, where each move's labels can
+    # be defined inline: at every address of each range and just after its
+    # end, in its move, and for a moved range, in the base move just before
+    # and after its block. See Label.gather_inline_label_definitions(),
+    # which uses these to define labels for a move that isn't output at
+    # their address somewhere else.)
     for start_addr, end_addr in move_ranges:
         move_id = session.current().moves.move_id_for_binary_addr[start_addr]
         if move_id != movemanager.BASE_MOVE_ID:
@@ -1096,7 +1316,8 @@ def emit(print_output=True):
         old_end_addr = end_addr
 
     # Emit labels which haven't been emitted inline with the disassembly.
-    # (The heading is only output if there are any.)
+    # (The heading is only output if there are any.) These go in the header,
+    # before the main disassembly.
     definitions = memory_location_definitions(indent_len)
     if definitions:
         header.append(output.CommentLine("Memory locations").resolve())
@@ -1105,7 +1326,8 @@ def emit(print_output=True):
     # The lines at the end: the assertions, and tables of information
     footer = []
 
-    # Finish off disassembly
+    # Finish off disassembly (the assembler's epilogue, e.g. beebasm's
+    # 'save', and the assertions)
     footer.append(output.Blank().resolve())
     footer.append(output.Directive("disassembly_end").resolve())
 
@@ -1202,7 +1424,14 @@ def memory_location_definitions(indent_len):
     disassembly, as a list of line objects (see output.py): in address order,
     grouped by memory region (see add_memory_region()), each group with a
     heading and its own alignment. (With config.set_memory_region_headings(False)
-    they're one list, as without any regions.)"""
+    they're one list, as without any regions.)
+
+    Called by emit() once the main disassembly is made, so the names left
+    to define are those that weren't defined inline (see
+    Label.gather_explicit_definitions(), which marks them as defined). The
+    local labels with a heading of their own come after the regions, under
+    that heading. Each label's heading is also recorded, for the JSON
+    output."""
 
     labels = session.current().labels.labels
     formatter = config.get_assembler()
@@ -1263,7 +1492,10 @@ def memory_location_definitions(indent_len):
 # ends of our range; if so, split them so we can output the precise range wanted.
 def isolate_range(start_addr, end_addr):
     """If a move boundary is in the middle of an instruction etc, then
-    split the classification."""
+    split the classification.
+
+    (At the binary addresses start_addr and end_addr, with a warning, see
+    classification.split_classification().)"""
 
     classification.split_classification(start_addr, warn=True)
     classification.split_classification(end_addr, warn=True)
@@ -1272,7 +1504,13 @@ def emit_labels(binary_loc, output_annotations, at_boundary=True):
     """Emit labels and non-inline annotations for the given address, as a
     list of line objects (see output.py). 'at_boundary' is True for the
     labels at the start or end of a range of the output (rather than for an
-    item, see emit_addr()), which are recorded for the JSON output."""
+    item, see emit_addr()), which are recorded for the JSON output.
+
+    The label definitions are those of the label at the binary location's
+    runtime address (in its move) that can be defined inline and haven't
+    been yet. With 'output_annotations', the annotations at the binary
+    location that go before the label come first, and those that go after
+    it come after."""
 
     annotations = session.current().disassembly.annotations
     binary_loc = movemanager.make_binloc(binary_loc)
@@ -1300,7 +1538,15 @@ def emit_labels(binary_loc, output_annotations, at_boundary=True):
 def emit_addr(binary_loc):
     """Emit labels, the output for the classification, any remaining
     annotations in the range of the classification, as a list of line
-    objects (see output.py)."""
+    objects (see output.py).
+
+    For the classification at the binary location, in this order: the
+    labels at its address with their annotations (see emit_labels()), the
+    definitions of labels at addresses inside it (relative to its start,
+    e.g. 'l1235 = c1234+1'), the annotations before the line, the
+    classification's own lines (with any inline comments), the annotations
+    after the line, then the other annotations at addresses inside it. It's
+    also recorded for the JSON output."""
     annotations = session.current().disassembly.annotations
     result = []
     classification_length = classification.get_classification(binary_loc.binary_addr).length()

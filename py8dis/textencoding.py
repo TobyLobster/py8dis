@@ -19,6 +19,11 @@ default upper case/graphics character set, both show as upper case letters
 or graphics.) Bytes whose ACME character would be misleading (e.g. PETSCII
 $5C, which is a pound sign on the C64 but backslash in ACME) aren't shown as
 text, so they're written as numbers.
+
+Each encoding is an Encoding object (ASCII, PETSCII and SCREEN), found by
+name with get(). classification.py uses them to find strings and to mark
+each String with its encoding; output.py and the assemblers write the
+strings and character literals with them (see docs/text-encodings.md).
 """
 
 import utils
@@ -26,7 +31,7 @@ import utils
 
 class Encoding:
     """A text encoding: 'chars' maps each byte shown as text to its
-    character."""
+    character. 'name' is the encoding's name, e.g. "petscii"."""
 
     def __init__(self, name, chars):
         self.name = name
@@ -37,6 +42,8 @@ class Encoding:
         return self.chars.get(byte)
 
     def is_printable(self, byte):
+        """Whether the byte is shown as text. (e.g. string() with no length
+        ends at the first byte that isn't.)"""
         return byte in self.chars
 
     def __repr__(self):
@@ -44,9 +51,12 @@ class Encoding:
 
 
 def _ascii():
+    """The characters for ASCII: the printable ones, space to '~'."""
     return {c: chr(c) for c in range(32, 127)}
 
 def _petscii():
+    """The characters for PETSCII, as ACME's !pet writes them (see the
+    module docstring)."""
     # Space, digits and punctuation ($20-$40), [ and ], and the letters
     chars = {c: chr(c) for c in range(0x20, 0x41)}
     chars[0x5b] = "["
@@ -57,6 +67,8 @@ def _petscii():
     return chars
 
 def _screen():
+    """The characters for Commodore screen codes, as ACME's !scr writes
+    them (see the module docstring)."""
     # @, the letters, [ and ], and space, digits and punctuation ($20-$3f)
     chars = {0x00: "@", 0x1b: "[", 0x1d: "]"}
     chars.update({c: chr(c) for c in range(0x20, 0x40)})
@@ -69,6 +81,7 @@ ASCII   = Encoding("ascii", _ascii())
 PETSCII = Encoding("petscii", _petscii())
 SCREEN  = Encoding("screen", _screen())
 
+# The encodings, by name
 ENCODINGS = {e.name: e for e in (ASCII, PETSCII, SCREEN)}
 
 def get(name):

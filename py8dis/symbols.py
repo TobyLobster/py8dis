@@ -22,6 +22,9 @@ that ends there), so such names are left out of those.
 
 A cross-reference listing gives each label, where the asm defines it, and
 each instruction or piece of data that refers to it.
+
+go() writes these (with write_symbols() and write_xref()) after the asm, if
+--symbols or --xref is given on the command line (see docs/output-files.md).
 """
 
 import config
@@ -31,13 +34,18 @@ FORMATS = ("plain", "vice", "beebasm", "mame")
 
 def _hex4(addr):
     """An address in the assembler's hex syntax, always with four digits
-    (or five, for &10000)."""
+    (or five, for &10000).
+
+    (The assembler's hex4() can't be used for this, since for acme and
+    z88dk it gives fewer digits where it can. Only its prefix, e.g. '&' or
+    '$', is used.)"""
     prefix = config.get_assembler().hex4(0xffff)[:-4]
     return prefix + ("%04x" % addr if config.get_lower_case() else "%04X" % addr)
 
 def symbols(doc):
     """Each (runtime address, name) pair, in address order, then name
-    order."""
+    order. (From the JSON document's labels: their names and local names,
+    as output.)"""
     result = set()
     for label in doc["labels"]:
         for n in label.get("names", []):
@@ -47,7 +55,8 @@ def symbols(doc):
     return sorted(result)
 
 def symbols_text(format, doc):
-    """The symbol file, as text, in the given format."""
+    """The symbol file, as text, in the given format (one of FORMATS, see
+    the module docstring). Stops with utils.die() for an unknown format."""
     pairs = symbols(doc)
     if format == "plain":
         width = max((len(name) for _, name in pairs), default=0)
@@ -61,6 +70,7 @@ def symbols_text(format, doc):
     utils.die("Unknown symbol file format '{0}' (expected {1})".format(format, ", ".join(FORMATS)))
 
 def write_symbols(filename, format, doc):
+    """Write the symbol file (see symbols_text()) to the file."""
     with open(filename, "w") as f:
         f.write(symbols_text(format, doc))
 
@@ -97,11 +107,14 @@ def xref_text(doc):
         return name if offset == 0 else "%s+%d" % (name, offset)
 
     def text(ref):
+        """The first line of the asm text of the item a reference is in."""
         i = item_index.get(ref["binary_addr"])
         return "" if i is None else items[i]["text"][0]
 
     lines = ["Cross-reference listing: each label, where it's defined, and what refers to it.", ""]
     for label in doc["labels"]:
+        # The label's line: its address, then each name, local name and
+        # expression, with where the asm defines it
         addr = label["runtime_addr"]
         names = []
         for n in label.get("names", []):
@@ -115,6 +128,10 @@ def xref_text(doc):
         for e in label.get("expressions", []):
             names.append("%s (expression)" % e["text"])
         lines.append("%s  %s" % (hex_addr(addr), ", ".join(names)))
+
+        # Then a line for each reference, by runtime address, e.g.
+        # '&2005[1]  loop_c2002+3  jsr lffe3' ('[1]' is the move ID, for a
+        # reference from code in a move)
         refs = label.get("references", [])
         if not refs:
             lines.append("    (not referenced)")
@@ -125,5 +142,6 @@ def xref_text(doc):
     return "\n".join(lines)
 
 def write_xref(filename, doc):
+    """Write the cross-reference listing (see xref_text()) to the file."""
     with open(filename, "w") as f:
         f.write(xref_text(doc))

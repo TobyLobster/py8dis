@@ -1,12 +1,41 @@
 """
 Memory Manager
 
-Loads binary data into memory ready to disassemble, and provides access to this
-memory.
+Loads the binary data to disassemble into memory, and gives access to that
+memory. It also defines the types py8dis uses for addresses, which the rest
+of py8dis depends on.
 
-Code can sometimes be assembled at one address (the 'binary address') but will
-be executed at another (the 'runtime address'). We define classes that help
-distinguish these types of addresses.
+Each session (see session.py) has 64K of memory, a Memory object. load()
+puts a file's bytes there (for the load() and load_prg() commands in
+commands.py), at their 'binary address': where the bytes are when the file
+is loaded. A byte that nothing is loaded at is None.
+
+A program can copy part of itself somewhere else before running it. A
+'move' (see move() in docs/commands.md, and movemanager.py) says so, and
+then a byte also has a 'runtime address': where it is when the code runs.
+Without any moves, the two are the same. Each move has a 'move ID' (0 for
+the base move: the bytes that aren't moved). Every binary address is in
+exactly one move, so it has one runtime address; but several moves can put
+bytes at the same runtime address (e.g. the banks of a cartridge, which all
+run at the same address), so a runtime address can have more than one binary
+address. movemanager.b2r() and r2b() convert between them.
+
+The memory, classifications (see classification.py) and expressions are
+kept by binary address; labels, and the addresses users give most commands,
+are by runtime address.
+
+The main pieces:
+
+BinaryAddr, RuntimeAddr  ints that say which kind of address they are, so
+                         that mixing the two up is caught by an assertion.
+BinaryLocation           a binary address with a move ID, which says which
+                         move's runtime address it stands for. Annotations
+                         and references are kept by BinaryLocation.
+get_u8_binary() etc.     read a byte or a word, by binary or runtime
+                         address.
+memory, memory_binary    for control files: memory[runtime_addr] and
+                         memory_binary[binary_addr].
+load()                   loads (part of) a file at a binary address.
 """
 
 import session
@@ -14,15 +43,23 @@ import utils
 
 # We make one class to hold a runtime address, and another for a binary address.
 # They are just integers underneath, but storing them in classes means we can
-# check they are of the correct type.
+# check they are of the correct type: making a BinaryAddr from a RuntimeAddr,
+# or a RuntimeAddr from a BinaryAddr, is an assertion error. (A plain int can
+# be made into either. Some functions, e.g. movemanager.b2r() and r2b(), insist
+# on the right type, rather than a plain int.)
+#
+# Adding to one keeps its type (e.g. BinaryAddr + 1 is a BinaryAddr), but any
+# other arithmetic, e.g. subtracting, or 1 + BinaryAddr, gives a plain int.
 #
 # (These are created very often, so they are written to be quick: no
 # per-instance __dict__, and no super() calls.)
 class BinaryAddr(int):
-    """Address of data at load time"""
+    """A binary address: where a byte is in py8dis's memory, i.e. where it is
+    when the file is loaded (see the module docs)."""
     __slots__ = ()
 
     def __new__(cls, value):
+        # (A runtime address is converted with movemanager.r2b() instead)
         assert not isinstance(value, RuntimeAddr)
         return int.__new__(cls, value)
 
@@ -30,10 +67,12 @@ class BinaryAddr(int):
         return BinaryAddr(int.__add__(self, other))
 
 class RuntimeAddr(int):
-    """Address of data at execution time"""
+    """A runtime address: where a byte is when the code runs, after any moves
+    (see the module docs)."""
     __slots__ = ()
 
     def __new__(cls, value):
+        # (A binary address is converted with movemanager.b2r() instead)
         assert not isinstance(value, BinaryAddr)
         return int.__new__(cls, value)
 
@@ -42,7 +81,11 @@ class RuntimeAddr(int):
 
 # Address validation
 def is_valid_runtime_addr(runtime_addr, allow_final_address = False):
-    """Validate a runtime address."""
+    """True if runtime_addr is in memory, i.e. &0000-&ffff.
+
+    With 'allow_final_address', &10000, the address just past the top of
+    memory, is valid too: e.g. for the end of a range, or a label just after
+    the last byte. (Passing a BinaryAddr is an assertion error.)"""
 
     assert not isinstance(runtime_addr, BinaryAddr)
     if allow_final_address:
@@ -50,7 +93,9 @@ def is_valid_runtime_addr(runtime_addr, allow_final_address = False):
     return 0 <= runtime_addr < 0x10000
 
 def is_valid_binary_addr(binary_addr, allow_final_address = False):
-    """Validate a binary address."""
+    """True if binary_addr is in memory, i.e. &0000-&ffff (or &10000 too,
+    with 'allow_final_address'), as is_valid_runtime_addr(). (Passing a
+    RuntimeAddr is an assertion error.)"""
 
     assert not isinstance(binary_addr, RuntimeAddr)
     if allow_final_address:
@@ -59,15 +104,20 @@ def is_valid_binary_addr(binary_addr, allow_final_address = False):
 
 
 # Memory access by binary address
+#
+# (These are for py8dis itself: it's an assertion error if nothing is loaded
+# there. The commands of the same names in commands.py check the address
+# for control files, and stop with a proper error.)
 def get_u8_binary(binary_addr):
-    """Get 8 bit number given a binary address"""
+    """The byte at a binary address."""
 
     memory_binary = session.current().memory.binary
     assert memory_binary[binary_addr] is not None, "Bad address {0}".format(hex(binary_addr))
     return memory_binary[binary_addr]
 
 def get_u16_binary(binary_addr):
-    """Get 16 bit number (little-endian) given a binary address"""
+    """The 16 bit number (little-endian: low byte first) at a binary
+    address."""
 
     memory_binary = session.current().memory.binary
     assert memory_binary[binary_addr] is not None, "Nothing loaded at address {0}".format(hex(binary_addr))
@@ -75,7 +125,7 @@ def get_u16_binary(binary_addr):
     return memory_binary[binary_addr] + (memory_binary[binary_addr+1] << 8)
 
 def get_u16_be_binary(binary_addr):
-    """Get 16 bit number (big-endian) given a binary address"""
+    """The 16 bit number (big-endian: high byte first) at a binary address."""
 
     memory_binary = session.current().memory.binary
     assert memory_binary[binary_addr] is not None and memory_binary[binary_addr+1] is not None
@@ -84,29 +134,52 @@ def get_u16_be_binary(binary_addr):
 
 
 # Memory access by runtime address
+#
+# (These convert the runtime address with movemanager.r2b_checked(), which
+# stops with an error if more than one move puts a byte there and none of them
+# is active. For a word, the second byte is the one after the first in the
+# binary.)
 def get_u8_runtime(runtime_addr):
-    """Get 8 bit number given a runtime address"""
+    """The byte at a runtime address."""
 
     import movemanager
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return get_u8_binary(binary_loc.binary_addr)
 
 def get_u16_runtime(runtime_addr):
-    """Get 16 bit number (little-endian) given a runtime address"""
+    """The 16 bit number (little-endian: low byte first) at a runtime
+    address."""
 
     import movemanager
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return get_u16_binary(binary_loc.binary_addr)
 
 def get_u16_be_runtime(runtime_addr):
-    """Get 16 bit number (big-endian) given a runtime address"""
+    """The 16 bit number (big-endian: high byte first) at a runtime
+    address."""
 
     import movemanager
     binary_loc = movemanager.r2b_checked(runtime_addr)
     return get_u16_be_binary(binary_loc.binary_addr)
 
 class BinaryLocation:
-    """BinaryLocation holds a binary address and move id"""
+    """A binary address ('binary_addr', a BinaryAddr) and a move ID
+    ('move_id'), which together say which runtime address is meant: the
+    binary address's runtime address in that move (see
+    movedefinition.MoveDefinition.convert_binary_to_runtime_addr()).
+
+    Usually the move is the one the byte is in (see
+    movemanager.Moves.move_id_for_binary_addr), but at either end of a moved
+    block it can be another: e.g. a label for the address the block is
+    loaded at is output just before the block, at the block's first binary
+    address in the base move, while the labels inside the block are at its
+    runtime addresses, in its own move. (movemanager.make_binloc() makes one
+    from a plain binary address.)
+
+    BinaryLocations are used as dictionary keys (e.g. for annotations, and
+    for the references to labels), so two are equal when both the address
+    and the move ID are. It's shown as e.g. '0x2000[1]' (or just '0x2000'
+    in the base move)."""
 
     def __init__(self, binary_addr, move_id):
         assert binary_addr is not None
@@ -124,19 +197,24 @@ class BinaryLocation:
         return self.__str__()
 
     def __eq__(self, other):
-        """Overrides the default implementation"""
+        """Equal if both the binary address and the move ID are."""
         if isinstance(other, BinaryLocation):
             return (self.binary_addr == other.binary_addr) and (self.move_id == other.move_id)
         return NotImplemented
 
     def __hash__(self):
-        """Overrides the default implementation"""
+        """A hash of the binary address and the move ID (to match __eq__)."""
         return hash((self.binary_addr, self.move_id))
 
 class MemoryRuntime:
-    """Class for reading runtime memory with address validation"""
+    """Reads the current session's memory by runtime address, with the
+    address checked, for control files (see 'memory' below)."""
 
     def __getitem__(self, runtime_addr):
+        """The byte at a runtime address, or None if nothing is loaded there.
+        Stops with an error (utils.die()) if the address isn't an int in
+        memory, or if more than one move puts a byte there and none of them
+        is active (see movemanager.r2b_checked())."""
         import movemanager
         if not (isinstance(runtime_addr, int) and is_valid_runtime_addr(runtime_addr)):
             import config
@@ -148,7 +226,9 @@ class MemoryRuntime:
 
 class MemoryBinary:
     """Class for reading (and writing) the current session's memory by binary
-    address, for control files (see 'memory_binary' below)."""
+    address, for control files (see 'memory_binary' below). It works as the
+    session's Memory.binary list does, with no checks: a byte nothing is
+    loaded at is None."""
 
     def __getitem__(self, binary_addr):
         return session.current().memory.binary[binary_addr]
@@ -163,15 +243,20 @@ class MemoryBinary:
         return iter(session.current().memory.binary)
 
 class Memory:
-    """The memory of one session (see session.py)."""
+    """The memory of one session (see session.py), by binary address, and
+    what's been loaded into it."""
 
     def __init__(self):
-        # We store 64K of memory. Some portion of this will hold the binary
-        # file(s) to disassemble. Use the get_u*() functions above to access
-        # this memory since this includes proper address validation.
+        # We store 64K of memory, as a list of 65536 bytes (ints), by binary
+        # address. Some portion of this will hold the binary file(s) to
+        # disassemble; the rest is None. The get_u*() functions above assert
+        # that something is loaded where they read. (Code that reads a lot
+        # uses this list directly, which is quicker.)
         self.binary = [None] * 64*1024
 
         # Stores a (start_binary_addr, end_binary_addr) pair for each load()
+        # ('end' exclusive), in the order loaded. They can overlap: see
+        # loaded_ranges().
         self.load_ranges = []
 
         # The files loaded, in the order loaded: a LoadedFile for each load()
@@ -209,9 +294,9 @@ def describe_loaded_files():
 # acorn.py: these always use the current session's memory.
 #
 # 'memory' reads memory by runtime address, with the address conversion and
-# validation. (This perhaps should more properly be called memory_runtime, but
-# earlier versions just had 'memory' and this is the main memory access for
-# user code so probably reasonable to use a short name for it.)
+# validation. (A more exact name would be memory_runtime, but control files
+# already use 'memory', and it's the main way they read memory, so it has the
+# short name.)
 #
 # 'memory_binary' reads memory by binary address. Code in py8dis itself uses
 # session.current().memory.binary instead, which is quicker.
@@ -233,7 +318,12 @@ def loaded_ranges():
     return result
 
 def get_entire_load_range():
-    """Get the whole binary address range for any loaded data"""
+    """The binary address range from the lowest loaded byte to the highest,
+    as (start, end), 'end' exclusive. (Any gaps between the files loaded are
+    included.) go() puts the labels pydis_start and pydis_end there.
+
+    Something must have been loaded: it fails (with a ValueError) if
+    nothing has."""
 
     load_ranges = session.current().memory.load_ranges
     pydis_start = min(start_addr for start_addr, end_addr in load_ranges)
@@ -252,10 +342,19 @@ def read_file(filename, die):
 
 def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False, command=None):
     """Load a binary file (or the part of it from 'offset', for 'length'
-    bytes or to the end) into memory at the given address.
+    bytes or to the end) into memory at the given binary address. This does
+    the work of the load() and load_prg() commands (in commands.py).
 
     Checks the md5 checksum (of the whole file) matches if given. 'command'
-    describes the command for messages, e.g. "load(&2000, 'file')"."""
+    describes the command for messages, e.g. "load(&2000, 'file')". 'prg'
+    is True for load_prg(), so the output can start with the PRG file's
+    load address (see prg_header_addr()).
+
+    Stops with an error (utils.die()) if the file can't be read, is empty,
+    is shorter than 'offset' and 'length' need, doesn't match the md5sum,
+    or runs past the top of memory. Warns if it replaces data loaded
+    earlier. Records the load in Memory.load_ranges and
+    Memory.loaded_files."""
 
     import config
     binary_addr = BinaryAddr(binary_addr)
@@ -287,8 +386,8 @@ def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False
             die("the file ({0} bytes) runs past the top of memory".format(len(data)))
         die("the {0} bytes loaded run past the top of memory".format(len(data)))
 
-    # Loading over data loaded earlier replaces it, as it always has, but is
-    # probably a mistake
+    # Loading over data loaded earlier replaces it. That's still allowed, but
+    # it's probably a mistake, so py8dis warns
     end_addr = binary_addr + len(data)
     for earlier in memory.loaded_files:
         if earlier.start < end_addr and binary_addr < earlier.end:
@@ -302,7 +401,8 @@ def prg_header_addr():
     """If the output starts with a PRG file's two-byte load address (see
     load_prg()), so that it assembles to the whole PRG file, the load address;
     otherwise None. That's when a PRG file is loaded at the lowest address
-    loaded (and at &0002 or above)."""
+    loaded (and at &0002 or above, so that the two bytes fit below it).
+    disassembly.emit() and beebasm.py use this to output the header."""
     memory = session.current().memory
     if not memory.load_ranges:
         return None
@@ -313,6 +413,9 @@ def prg_header_addr():
     return None
 
 def is_data_loaded_at_binary_addr(binary_addr, n=1):
+    """True if data is loaded at all the 'n' bytes from binary_addr. (They
+    must all be in memory: it's an assertion error if they run past the top,
+    so callers check that first.)"""
     assert all(is_valid_binary_addr(x) for x in range(binary_addr, binary_addr+n))
     memory_binary = session.current().memory.binary
     return all(memory_binary[binary_addr + i] is not None for i in range(n))
