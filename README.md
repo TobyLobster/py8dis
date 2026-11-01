@@ -21,7 +21,7 @@ py8dis finds the code by *tracing* it: starting from the entry points you give, 
 
 ## Getting started
 
-py8dis needs [Python 3](https://www.python.org). There's nothing to install: download or clone this repository, and tell Python where py8dis's code is by setting `PYTHONPATH` to its `py8dis` folder. On Linux or macOS:
+py8dis needs [Python 3](https://www.python.org). There's nothing else to install: download or clone this repository, and tell Python where py8dis's code is by setting `PYTHONPATH` to its `py8dis` folder. On Linux or macOS:
 
 ``` sh
 export PYTHONPATH=/home/you/src/py8dis/py8dis

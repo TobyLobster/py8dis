@@ -1,0 +1,14 @@
+al 000070 .l0070
+al 000071 .l0071
+al 000072 .l0072
+al 000073 .l0073
+al 000074 .l0074
+al 000075 .l0075
+al 000076 .l0076
+al 000077 .l0077
+al 002000 .pydis_start
+al 002000 .start
+al 002002 .loop_c2002
+al 00201D .c201d
+al 002029 .return_1
+al 00202A .pydis_end

@@ -49,6 +49,7 @@ INTERLEAVED = [
     (("pet4_test",        "ca65"),   ("subroutine_test",        "xa")),
     (("trace_z80",        "z88dk"),  ("undocumented_8080",      "z88dk-8080")),
     (("spectrum_test",    "sjasmplus"), ("undocumented_z80",    "z88dk")),
+    (("include_binary_file", "baron"), ("planb",                "beebasm")),
 ]
 
 # Module level names that are allowed to change
@@ -115,7 +116,10 @@ def run_control_file(name, assembler, stop_before_go=False):
     import commands
     import session
 
-    s = session.new_session(assembler=assembler)
+    # (Baron's output is written to a file, as run_tests.py does, since it
+    # depends on the asm file's name and folder)
+    asm_filename = baron_asm_filename(name, assembler)
+    s = session.new_session(assembler=assembler, asm_filename=asm_filename)
     real_go = commands.go
     def deferred_go(*args, **kwargs):
         raise DeferredGo()
@@ -129,7 +133,7 @@ def run_control_file(name, assembler, stop_before_go=False):
         return s, out.getvalue()
     finally:
         commands.go = real_go
-    return out.getvalue()
+    return Path(asm_filename).read_text() if asm_filename else out.getvalue()
 
 def go_in(s):
     """Run go() in the given session, returning its output."""
@@ -139,7 +143,12 @@ def go_in(s):
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
         commands.go()
-    return out.getvalue()
+    return Path(s.asm_filename).read_text() if s.asm_filename else out.getvalue()
+
+def baron_asm_filename(name, assembler):
+    """For Baron, the asm file to write (as run_tests.py writes it), else
+    None"""
+    return f"build/{name}_{assembler}.asm" if assembler == "baron" else None
 
 def check(results, label, output, name, assembler):
     expected = (EXAMPLES_DIR / "known_good" / f"{name}_{assembler}.asm").read_text()

@@ -76,73 +76,73 @@ TESTS = [
     ("opense",                   ["z88dk", "sjasmplus"],       "OpenSE BASIC, a replacement ZX Spectrum ROM, with spectrum.spectrum48() and the spectrum module's tables"),
 
     # 6502 code: tests
-    ("include_binary_file",      ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for including a binary file"),
-    ("char_literals",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for all character literals"),
-    ("align_test",               ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for formatting"),
-    ("cycles",                   ["acme", "beebasm", "xa", "64tass", "ca65"],    "cycle counts for branches near page boundaries"),
-    ("redundant_test",           ["acme", "beebasm", "xa", "64tass", "ca65"],    "redundant instructions (whose results aren't used), with io_range() and the BIT trick"),
-    ("branch_state",             ["acme", "beebasm", "xa", "64tass", "ca65"],    "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
-    ("string_stuff1",            ["acme", "beebasm", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
+    ("include_binary_file",      ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for including a binary file"),
+    ("char_literals",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for all character literals"),
+    ("align_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for formatting"),
+    ("cycles",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "cycle counts for branches near page boundaries"),
+    ("redundant_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "redundant instructions (whose results aren't used), with io_range() and the BIT trick"),
+    ("branch_state",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
+    ("string_stuff1",            ["acme", "beebasm", "baron", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
-    ("string_stuff3",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "testing py8dis string commands"),
-    ("moving1",                  ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for the move() command"),
-    ("moving2",                  ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for the move() command"),
-    ("moving3",                  ["acme", "beebasm", "xa", "64tass", "ca65"],    "tests for the move() command"),
-    ("helloworld",               ["acme", "beebasm", "xa", "64tass", "ca65"],    "the basic hello world test"),
-    ("local_labels",             ["acme", "beebasm", "xa", "64tass", "ca65"],    "labels defined as local to one move region"),
-    ("move",                     ["acme", "beebasm", "xa", "64tass", "ca65"],    "a move() test"),
-    ("move2",                    ["acme", "beebasm", "xa", "64tass", "ca65"],    "another move() test"),
-    ("move2_legacy_label_maker", ["acme", "beebasm", "xa", "64tass", "ca65"],    "move2 with a legacy label maker hook choosing a move"),
-    ("move_from_top_of_memory",  ["acme", "beebasm", "xa", "64tass", "ca65"],    "a move() whose source ends at &10000"),
-    ("move_to_top_of_memory",    ["acme", "beebasm", "xa", "64tass", "ca65"],    "a move() whose destination ends at &10000"),
-    ("top_of_memory",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "code at the top of memory, and a branch that wraps round to zero page"),
-    ("top_of_memory_string",     ["acme", "beebasm", "xa", "64tass", "ca65"],    "a string found by autostring() that runs up to &ffff"),
-    ("bottom_of_memory",         ["acme", "beebasm", "xa", "64tass", "ca65"],    "a branch that wraps round below &0000"),
-    ("split",                    ["acme", "beebasm", "xa", "64tass", "ca65"],    "loads *two* binary files to disassemble"),
-    ("subroutine_test",          ["acme", "beebasm", "xa", "64tass", "ca65"],    "demonstrates the use of the subroutine() command"),
-    ("regression_tests",         ["acme", "beebasm", "xa", "64tass", "ca65"],    "regression tests for fixed bugs"),
-    ("expressions",              ["acme", "beebasm", "xa", "64tass", "ca65"],    "how expressions are bracketed for each assembler"),
-    ("acorn_os_calls",           ["acme", "beebasm", "xa", "64tass", "ca65"],    "test all the os calls for acorn machines"),
-    ("acorn_vectors",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "the ways of setting an Acorn OS vector that acorn.py recognises"),
-    ("acorn_vdu",                ["acme", "beebasm", "xa", "64tass", "ca65"],    "VDU sequences written with OSWRCH, decoded by acorn.py"),
-    ("acorn_lower_case_os_calls", ["acme", "beebasm", "xa", "64tass", "ca65"],   "Acorn OS calls named in lower case, with config.set_upper_case_os_calls(False)"),
-    ("effect_patterns",          ["acme", "beebasm", "xa", "64tass", "ca65"],    "effect patterns: snippets matching the values code stores, and the registers at a call"),
-    ("prg_test",                 ["acme", "beebasm", "xa", "64tass", "ca65"],    "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
-    ("p00_test",                 ["acme", "beebasm", "xa", "64tass", "ca65"],    "a PC64 P00 file loaded with load_prg()"),
-    ("load_offset",              ["acme", "beebasm", "xa", "64tass", "ca65"],    "loading parts of a file with load(..., offset=..., length=...)"),
-    ("undocumented_6502",        ["acme", "beebasm", "xa", "64tass", "ca65"],    "every undocumented 6502 opcode, with load(..., \"6510\")"),
-    ("petscii_test",             ["acme", "beebasm", "xa", "64tass", "ca65"],    "PETSCII and screen code strings, with config.set_text_encoding()"),
-    ("c64_test",                 ["acme", "beebasm", "xa", "64tass", "ca65"],    "a C64 program (a PRG file with a BASIC SYS line), with commodore.c64()"),
-    ("c64_names_test",           ["acme", "beebasm", "xa", "64tass", "ca65"],    "c64_test with commodore.c64(names=\"commodore\"), and a name clash"),
-    ("cartridge_test",           ["acme", "beebasm", "xa", "64tass", "ca65"],    "a C64 cartridge, with commodore.is_cartridge()"),
-    ("vic20_test",               ["acme", "beebasm", "xa", "64tass", "ca65"],    "a VIC-20 program, with commodore.vic20()"),
-    ("vic20_8k_test",            ["acme", "beebasm", "xa", "64tass", "ca65"],    "vic20_test for a VIC-20 with 8K or more RAM"),
-    ("vic20_cartridge_test",     ["acme", "beebasm", "xa", "64tass", "ca65"],    "a VIC-20 cartridge, with commodore.is_cartridge()"),
-    ("c128_test",                ["acme", "beebasm", "xa", "64tass", "ca65"],    "a C128 program, with commodore.c128(): the MMU, the VDC, PRIMM and JSRFAR"),
-    ("plus4_test",               ["acme", "beebasm", "xa", "64tass", "ca65"],    "a Plus/4 program, with commodore.plus4(): the TED, the ACIA and PRIMM"),
-    ("pet4_test",                ["acme", "beebasm", "xa", "64tass", "ca65"],    "a PET program for BASIC 4 with 80 columns (commodore.pet())"),
-    ("pet2_test",                ["acme", "beebasm", "xa", "64tass", "ca65"],    "the PET program for BASIC 2"),
-    ("pet1_test",                ["acme", "beebasm", "xa", "64tass", "ca65"],    "the PET program for BASIC 1, with Commodore's names"),
-    ("drive1541_test",           ["acme", "beebasm", "xa", "64tass", "ca65"],    "code for the 1541 disk drive (commodore.drive1541()): its job queue, buffers, VIAs and DOS ROM"),
-    ("drive1541_names_test",     ["acme", "beebasm", "xa", "64tass", "ca65"],    "drive1541_test for the 1541-II's DOS ROM, with Commodore's names"),
-    ("fastload_test",            ["acme", "beebasm", "xa", "64tass", "ca65"], "a C64 program with code for the 1541 in it (commodore.drive1541_code())"),
-    ("c128_banks_test",          ["acme", "beebasm", "xa", "64tass", "ca65"],    "a C128 program that changes the MMU's configuration"),
+    ("string_stuff3",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "testing py8dis string commands"),
+    ("moving1",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
+    ("moving2",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
+    ("moving3",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
+    ("helloworld",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the basic hello world test"),
+    ("local_labels",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "labels defined as local to one move region"),
+    ("move",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a move() test"),
+    ("move2",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "another move() test"),
+    ("move2_legacy_label_maker", ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "move2 with a legacy label maker hook choosing a move"),
+    ("move_from_top_of_memory",  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a move() whose source ends at &10000"),
+    ("move_to_top_of_memory",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a move() whose destination ends at &10000"),
+    ("top_of_memory",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "code at the top of memory, and a branch that wraps round to zero page"),
+    ("top_of_memory_string",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a string found by autostring() that runs up to &ffff"),
+    ("bottom_of_memory",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a branch that wraps round below &0000"),
+    ("split",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loads *two* binary files to disassemble"),
+    ("subroutine_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "demonstrates the use of the subroutine() command"),
+    ("regression_tests",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "regression tests for fixed bugs"),
+    ("expressions",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "how expressions are bracketed for each assembler"),
+    ("acorn_os_calls",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "test all the os calls for acorn machines"),
+    ("acorn_vectors",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the ways of setting an Acorn OS vector that acorn.py recognises"),
+    ("acorn_vdu",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "VDU sequences written with OSWRCH, decoded by acorn.py"),
+    ("acorn_lower_case_os_calls", ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Acorn OS calls named in lower case, with config.set_upper_case_os_calls(False)"),
+    ("effect_patterns",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "effect patterns: snippets matching the values code stores, and the registers at a call"),
+    ("prg_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
+    ("p00_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a PC64 P00 file loaded with load_prg()"),
+    ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loading parts of a file with load(..., offset=..., length=...)"),
+    ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
+    ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "PETSCII and screen code strings, with config.set_text_encoding()"),
+    ("c64_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program (a PRG file with a BASIC SYS line), with commodore.c64()"),
+    ("c64_names_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "c64_test with commodore.c64(names=\"commodore\"), and a name clash"),
+    ("cartridge_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 cartridge, with commodore.is_cartridge()"),
+    ("vic20_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a VIC-20 program, with commodore.vic20()"),
+    ("vic20_8k_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "vic20_test for a VIC-20 with 8K or more RAM"),
+    ("vic20_cartridge_test",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a VIC-20 cartridge, with commodore.is_cartridge()"),
+    ("c128_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C128 program, with commodore.c128(): the MMU, the VDC, PRIMM and JSRFAR"),
+    ("plus4_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Plus/4 program, with commodore.plus4(): the TED, the ACIA and PRIMM"),
+    ("pet4_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a PET program for BASIC 4 with 80 columns (commodore.pet())"),
+    ("pet2_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the PET program for BASIC 2"),
+    ("pet1_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the PET program for BASIC 1, with Commodore's names"),
+    ("drive1541_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "code for the 1541 disk drive (commodore.drive1541()): its job queue, buffers, VIAs and DOS ROM"),
+    ("drive1541_names_test",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "drive1541_test for the 1541-II's DOS ROM, with Commodore's names"),
+    ("fastload_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program with code for the 1541 in it (commodore.drive1541_code())"),
+    ("c128_banks_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C128 program that changes the MMU's configuration"),
 
     # 6502 code: real programs
-    ("os12",                     ["acme", "beebasm", "xa", "64tass", "ca65"],    "MOS 1.20"),
-    ("basic4",                   ["acme", "beebasm", "xa", "64tass", "ca65"],    "BASIC 4"),
-    ("dfs226",                   ["acme", "beebasm", "xa", "64tass", "ca65"],    "DFS 2.26"),
-    ("dfs226b",                  ["acme", "beebasm", "xa", "64tass", "ca65"],    "DFS with an artificially added move() just for testing"),
-    ("anfs418",                  ["acme", "beebasm", "xa", "64tass", "ca65"],    "Network filing system 4.18"),
-    ("lisp406",                  ["acme", "beebasm", "64tass", "ca65"],"Lisp 4.06 (xa is excluded since it can't cope with: 'ldx #(>(LISPEN-LISVAL-1))+1'; for 64tass its '_AND' is 'AND_', since 64tass takes a label starting with '_' to be local)"),
-    ("chuckie",                  ["acme", "beebasm", "xa", "64tass", "ca65"],    "Chuckie Egg"),
-    ("planb",                    ["acme", "beebasm", "xa", "64tass", "ca65"],    "Plan B with the old style label_maker function"),
-    ("planb_new_label_maker",    ["acme", "beebasm", "xa", "64tass", "ca65"],    "Plan B with a new style label_maker function"),
-    ("starship",                 ["acme", "beebasm", "xa", "64tass", "ca65"],    "Starship Command"),
-    ("open_roms_kernal",         ["acme", "beebasm", "xa", "64tass", "ca65"],    "the Kernal ROM of MEGA65's Open ROMs, a free replacement for the C64's"),
-    ("open_roms_basic",          ["acme", "beebasm", "xa", "64tass", "ca65"],    "the BASIC ROM of MEGA65's Open ROMs"),
-    ("quikman2k8",               ["acme", "beebasm", "xa", "64tass", "ca65"],    "Quikman 2K8, a VIC-20 game"),
-    ("memory128",                ["acme", "beebasm", "xa", "64tass", "ca65"],    "memory128, a C128 game for the 80 column screen"),
+    ("os12",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "MOS 1.20"),
+    ("basic4",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "BASIC 4"),
+    ("dfs226",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS 2.26"),
+    ("dfs226b",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS with an artificially added move() just for testing"),
+    ("anfs418",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Network filing system 4.18"),
+    ("lisp406",                  ["acme", "beebasm", "baron", "64tass", "ca65"],"Lisp 4.06 (xa is excluded since it can't cope with: 'ldx #(>(LISPEN-LISVAL-1))+1'; for 64tass its '_AND' is 'AND_', since 64tass takes a label starting with '_' to be local)"),
+    ("chuckie",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Chuckie Egg"),
+    ("planb",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Plan B with the old style label_maker function"),
+    ("planb_new_label_maker",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Plan B with a new style label_maker function"),
+    ("starship",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Starship Command"),
+    ("open_roms_kernal",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Kernal ROM of MEGA65's Open ROMs, a free replacement for the C64's"),
+    ("open_roms_basic",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the BASIC ROM of MEGA65's Open ROMs"),
+    ("quikman2k8",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Quikman 2K8, a VIC-20 game"),
+    ("memory128",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "memory128, a C128 game for the 80 column screen"),
 ]
 
 # The tests whose other outputs are also compared with known_good: the JSON
@@ -155,7 +155,7 @@ EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", 
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)
-SYMBOLS_FORMATS = {"beebasm": "beebasm", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "z88dk-8080": "plain", "z88dk": "plain", "sjasmplus": "plain"}
+SYMBOLS_FORMATS = {"beebasm": "beebasm", "baron": "vice", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "z88dk-8080": "plain", "z88dk": "plain", "sjasmplus": "plain"}
 
 # Each error test is (name, expected error message). The control file is
 # python/errors/<name>.py (which describes the test), and py8dis must stop with
@@ -185,6 +185,7 @@ ERROR_TESTS = [
     ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
     ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
     ("pet_80_columns_basic_2",  "commodore.pet(): only BASIC 4 PETs have 80 columns"),
+    ("baron_reserved_label",    "Baron doesn't accept 'pi' as a label, since it's one of its constants: rename it"),
     ("tass64_local_label_name", "64tass takes a label starting with '_' to be local to the label before it, so '_count' can't be used: rename it"),
     ("ca65_register_label",     "ca65 doesn't accept 'x' as a label, since it's a register's name: rename it"),
     ("ca65_mnemonic_label",     "ca65 doesn't accept 'lax' as a label, since it's an instruction's mnemonic: rename it"),
@@ -214,6 +215,7 @@ WARNING_TESTS = [
 ASSEMBLER_PROGRAMS = {
     "acme":       "acme",
     "beebasm":    "beebasm",
+    "baron":      "baron",
     "xa":         "xa",
     "64tass":     "64tass",
     "ca65":       "cl65",
@@ -247,6 +249,7 @@ class Paths:
         self.assembler_symbols = Path("build")  / f"{name}_{assembler}_assembler_symbols.txt"
         self.report        = Path("build")      / f"{name}_{assembler}_report.txt"
         self.symbols       = Path("build")      / f"{name}_{assembler}_symbols.txt"
+        self.output_dir    = Path("build")      / f"{name}_{assembler}_output"
 
 
 class Result:
@@ -279,6 +282,14 @@ def assemble_command(assembler, p, make_extras):
     if assembler == "beebasm":
         # (-d writes beebasm's own symbol dump, to check py8dis's against)
         return ["beebasm", "-v", "-o", str(p.binary), "-i", str(p.asm), "-d", "-labels", str(p.beebasm_symbols)]
+    if assembler == "baron":
+        # (-p: write the program, as the file named in its section, in the
+        # output folder. --symbols writes Baron's own symbols, as JSON, to
+        # check py8dis's against. -v writes a listing, to stdout.)
+        cmd = ["baron", "-p", str(p.output_dir), "--symbols", str(p.assembler_symbols)]
+        if make_extras:
+            cmd += ["-v"]
+        return cmd + [str(p.asm)]
     if assembler == "xa":
         cmd = ["xa", str(p.asm), "-o", str(p.binary)]
         if make_extras:
@@ -660,20 +671,38 @@ def sjasmplus_symbols(text):
     return {name: int(value, 16) for name, value in re.findall(r"^(\S+): EQU 0x([0-9A-Fa-f]+)$", text, re.MULTILINE)}
 
 
+def baron_symbols(text):
+    """The labels in Baron's symbol dump (JSON: each assembly's sections,
+    each with its 'labels', not counting its 'assignments'), as a
+    dictionary."""
+    result = {}
+    for assembly in json.loads(text)["assemblies"]:
+        for section in assembly["sections"]:
+            for name, symbol in section.get("labels", {}).items():
+                result[name] = int(symbol["value"])
+    return result
+
+
 def run_test(name, assembler, options, env):
     """Run one test with one assembler, returning a Result."""
     result = Result(name, assembler)
     p = Paths(name, assembler)
 
     # 1. Run py8dis
+    # (For Baron, the asm is written with -o, since its output depends on the
+    # asm file's name and folder: the name of the file Baron saves, and the
+    # path of an included binary file, which Baron finds relative to the asm
+    # file)
+    output = ["-o", str(p.asm)] if assembler == "baron" else []
     proc = subprocess.run([sys.executable, str(p.control_file), "--" + assembler, "--json", str(p.json),
-                           "--symbols", str(p.py8dis_symbols), "--symbols-format", SYMBOLS_FORMATS[assembler], "--xref", str(p.xref)],
+                           "--symbols", str(p.py8dis_symbols), "--symbols-format", SYMBOLS_FORMATS[assembler], "--xref", str(p.xref)] + output,
                           capture_output=True, text=True, env=env)
     result.stderr = proc.stderr.strip()
     if proc.returncode != 0:
         result.failure = "py8dis failed"
         return result
-    p.asm.write_text(proc.stdout)
+    if not output:
+        p.asm.write_text(proc.stdout)
 
     # 2. Check the asm against known good
     if options.check_disassembly:
@@ -704,12 +733,26 @@ def run_test(name, assembler, options, env):
             result.notes.append("known good not made, since the output wasn't assembled")
         return result
 
+    if assembler == "baron":
+        shutil.rmtree(p.output_dir, ignore_errors=True)
+        p.output_dir.mkdir(parents=True)
     proc = subprocess.run(assemble_command(assembler, p, options.make_extras), capture_output=True, text=True)
-    if assembler == "beebasm" and options.make_extras:
+    if assembler in ("beebasm", "baron") and options.make_extras:
         p.report.write_text(proc.stdout)
     if proc.returncode != 0:
         result.failure = f"{program} failed:\n" + (proc.stderr or proc.stdout).strip()
         return result
+    if assembler == "baron":
+        if proc.stderr.strip():
+            # (e.g. a warning that nothing was saved)
+            result.failure = f"{program} gave a warning:\n" + proc.stderr.strip()
+            return result
+        # (The one file Baron saved, named in the section)
+        saved = list(p.output_dir.iterdir())
+        if len(saved) != 1:
+            result.failure = f"{program} saved {len(saved)} files in {p.output_dir}, not one"
+            return result
+        shutil.move(str(saved[0]), str(p.binary))
     if assembler == "ca65" and "Warning" in proc.stderr:
         # (e.g. "Didn't use zeropage addressing", for a zero page label used
         # before it's defined, which is assembled with the wrong bytes)
@@ -743,6 +786,19 @@ def run_test(name, assembler, options, env):
                 # out)
                 continue
             if symbol not in ours and re.search(r"^" + re.escape(symbol) + r"\s*=", asm_text, re.MULTILINE):
+                continue
+            if ours.get(symbol) != value:
+                result.failure = f"{assembler} gives {symbol} the value {value}, but py8dis's symbol file {p.py8dis_symbols} gives {ours.get(symbol)}"
+                return result
+
+    # Baron's own symbols (its labels, not those defined with '=') must all be
+    # in py8dis's symbol file, with the same values
+    if assembler == "baron":
+        ours = vice_symbols(p.py8dis_symbols.read_text())
+        for symbol, value in baron_symbols(p.assembler_symbols.read_text()).items():
+            if value == 0x10000 and symbol not in ours:
+                # (A label at &10000, after code at the top of memory, which
+                # py8dis's VICE symbols leave out)
                 continue
             if ours.get(symbol) != value:
                 result.failure = f"{assembler} gives {symbol} the value {value}, but py8dis's symbol file {p.py8dis_symbols} gives {ours.get(symbol)}"

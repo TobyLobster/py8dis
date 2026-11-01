@@ -1,0 +1,7 @@
+al 000801 .pydis_start
+al 00080D .start
+al 00080F .loop_c080f
+al 00081A .return_1
+al 00081B .l081b
+al 000822 .pydis_end
+al 00FFD2 .chrout

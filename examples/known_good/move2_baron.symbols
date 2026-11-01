@@ -1,0 +1,14 @@
+al 000900 .low_a
+al 000901 .low_b
+al 000903 .c0903
+al 000905 .loop_c0905
+al 000909 .c0909
+al 00090A .l090a
+al 00090C .c090c
+al 00090D .l090d
+al 00090D .low_b_baz
+al 002000 .pydis_start
+al 002022 .sub_c2022
+al 002039 .sub_c2039
+al 002040 .pydis_end
+al 00FFEE .lffee

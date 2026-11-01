@@ -1,0 +1,128 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+&0070  l0070 (Memory locations: Zero page)
+    &2000     pydis_start                  equb &03, l0070
+    &2002     pydis_start+2                equb &07, l0070
+    &2007     pydis_start+7                equb &13, l0070
+    &2009     pydis_start+9                equb &17, l0070
+    &2011     pydis_start+17               equb &23, l0070
+    &2013     pydis_start+19               equb &27, l0070
+    &2018     pydis_start+24               equb &33, l0070
+    &201a     pydis_start+26               equb &37, l0070
+    &2022     pydis_start+34               equb &43, l0070
+    &2024     pydis_start+36               equb &47, l0070
+    &2029     pydis_start+41               equb &53, l0070
+    &202b     pydis_start+43               equb &57, l0070
+    &2033     pydis_start+51               equb &63, l0070
+    &2035     pydis_start+53               equb &67, l0070
+    &203a     pydis_start+58               equb &73, l0070
+    &203c     pydis_start+60               equb &77, l0070
+    &2066     pydis_start+102              equb &83, l0070
+    &2068     pydis_start+104              equb &87, l0070
+    &206d     pydis_start+109              equb &97, l0070
+    &207d     pydis_start+125              equb &0f, <l0070, >l0070
+    &2083     pydis_start+131              equb &1c, <l0070, >l0070
+    &20aa     pydis_start+170              equb &04, l0070
+    &20ac     pydis_start+172              equb &44, l0070
+    &20ae     pydis_start+174              equb &64, l0070
+    &20b0     pydis_start+176              equb &14, l0070
+    &20b2     pydis_start+178              equb &34, l0070
+    &20b4     pydis_start+180              equb &54, l0070
+    &20b6     pydis_start+182              equb &74, l0070
+    &20b8     pydis_start+184              equb &d4, l0070
+    &20ba     pydis_start+186              equb &f4, l0070
+    &20db     pydis_start+219              equb &93, l0070
+
+&0072  l0072 (Memory locations: Zero page)
+    &2044     pydis_start+68               equb &c3, l0072
+    &2046     pydis_start+70               equb &c7, l0072
+    &204b     pydis_start+75               equb &d3, l0072
+    &204d     pydis_start+77               equb &d7, l0072
+    &2055     pydis_start+85               equb &e3, l0072
+    &2057     pydis_start+87               equb &e7, l0072
+    &205c     pydis_start+92               equb &f3, l0072
+    &205e     pydis_start+94               equb &f7, l0072
+    &206f     pydis_start+111              equb &a3, l0072
+    &2071     pydis_start+113              equb &a7, l0072
+    &2076     pydis_start+118              equb &b3, l0072
+    &2078     pydis_start+120              equb &b7, l0072
+    &2080     pydis_start+128              equb &bf, <l0072, >l0072
+
+&2000  pydis_start (inline), start (inline)
+    (not referenced)
+
+&20e9  c20e9 (inline)
+    &20e6     pydis_start+230              beq c20e9
+
+&20ec  c20ec (inline)
+    &20e9     c20e9                        beq c20ec
+
+&20ef  c20ef (inline)
+    &20ec     c20ec                        beq c20ef
+
+&20f2  c20f2 (inline)
+    &20ef     c20ef                        beq c20f2
+
+&20f5  c20f5 (inline)
+    &20f2     c20f2                        beq c20f5
+
+&20f8  c20f8 (inline)
+    &20f5     c20f5                        beq c20f8
+
+&20fb  c20fb (inline)
+    &20f8     c20f8                        beq c20fb
+
+&20fe  c20fe (inline)
+    &20fb     c20fb                        beq c20fe
+
+&2101  c2101 (inline)
+    &20fe     c20fe                        beq c2101
+
+&2104  c2104 (inline)
+    &2101     c2101                        beq c2104
+
+&2107  c2107 (inline)
+    &2104     c2104                        beq c2107
+
+&210a  return_1 (inline)
+    &2107     c2107                        beq return_1
+
+&210b  pydis_end (inline)
+    (not referenced)
+
+&3000  l3000 (Memory locations: Other)
+    &2004     pydis_start+4                equb &0f, <l3000, >l3000
+    &200b     pydis_start+11               equb &1b, <l3000, >l3000
+    &200e     pydis_start+14               equb &1f, <l3000, >l3000
+    &2015     pydis_start+21               equb &2f, <l3000, >l3000
+    &201c     pydis_start+28               equb &3b, <l3000, >l3000
+    &201f     pydis_start+31               equb &3f, <l3000, >l3000
+    &2026     pydis_start+38               equb &4f, <l3000, >l3000
+    &202d     pydis_start+45               equb &5b, <l3000, >l3000
+    &2030     pydis_start+48               equb &5f, <l3000, >l3000
+    &2037     pydis_start+55               equb &6f, <l3000, >l3000
+    &203e     pydis_start+62               equb &7b, <l3000, >l3000
+    &2041     pydis_start+65               equb &7f, <l3000, >l3000
+    &206a     pydis_start+106              equb &8f, <l3000, >l3000
+    &20bc     pydis_start+188              equb &0c, <l3000, >l3000
+    &20bf     pydis_start+191              equb &1c, <l3000, >l3000
+    &20c2     pydis_start+194              equb &3c, <l3000, >l3000
+    &20c5     pydis_start+197              equb &5c, <l3000, >l3000
+    &20c8     pydis_start+200              equb &7c, <l3000, >l3000
+    &20cb     pydis_start+203              equb &dc, <l3000, >l3000
+    &20ce     pydis_start+206              equb &fc, <l3000, >l3000
+    &20d5     pydis_start+213              equb &bb, <l3000, >l3000
+    &20d8     pydis_start+216              equb &9b, <l3000, >l3000
+    &20dd     pydis_start+221              equb &9f, <l3000, >l3000
+    &20e0     pydis_start+224              equb &9e, <l3000, >l3000
+    &20e3     pydis_start+227              equb &9c, <l3000, >l3000
+
+&3456  l3456 (Memory locations: Other)
+    &2048     pydis_start+72               equb &cf, <l3456, >l3456
+    &204f     pydis_start+79               equb &db, <l3456, >l3456
+    &2052     pydis_start+82               equb &df, <l3456, >l3456
+    &2059     pydis_start+89               equb &ef, <l3456, >l3456
+    &2060     pydis_start+96               equb &fb, <l3456, >l3456
+    &2063     pydis_start+99               equb &ff, <l3456, >l3456
+    &2073     pydis_start+115              equb &af, <l3456, >l3456
+    &207a     pydis_start+122              equb &bf, <l3456, >l3456

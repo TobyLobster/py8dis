@@ -24,9 +24,8 @@ class Session:
         """Make a new session.
 
         'assembler' is the assembler to produce output for: its name (beebasm,
-        acme, xa, 64tass, ca65, z88dk or sjasmplus, or z88dk-8080, the same as
-        z88dk) or an
-        assembler object.
+        baron, acme, xa, 64tass, ca65, z88dk or sjasmplus, or z88dk-8080, the
+        same as z88dk) or an assembler object.
 
         'lower_case' is True for lower case output, False for upper case.
 
@@ -104,6 +103,9 @@ def make_assembler(name):
     if name == "beebasm":
         import beebasm
         return beebasm.Beebasm()
+    if name == "baron":
+        import baron
+        return baron.Baron()
     if name == "acme":
         import acme
         return acme.Acme()
@@ -122,13 +124,14 @@ def make_assembler(name):
     if name == "sjasmplus":
         import sjasmplus
         return sjasmplus.Sjasmplus()
-    utils.die("Unknown assembler '{0}' (expected beebasm, acme, xa, 64tass, ca65, z88dk or sjasmplus)".format(name))
+    utils.die("Unknown assembler '{0}' (expected beebasm, baron, acme, xa, 64tass, ca65, z88dk or sjasmplus)".format(name))
 
 
 # The command line
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--beebasm", action="store_true", help="generate beebasm-style output (default)")
+parser.add_argument("-r", "--baron", action="store_true", help="generate Baron-style output")
 parser.add_argument("-a", "--acme", action="store_true", help="generate acme-style output")
 parser.add_argument("-x", "--xa", action="store_true", help="generate xa-style output")
 parser.add_argument("-t", "--64tass", dest="tass64", action="store_true", help="generate 64tass-style output")
@@ -150,13 +153,15 @@ def options_from_command_line():
     # (Other arguments are allowed, for the control file's own use.)
     args = parser.parse_known_args()[0]
 
-    assembler_count = sum(1 for x in (args.beebasm, args.acme, args.xa, args.tass64, args.ca65, args.z88dk or args.z88dk_8080, args.sjasmplus) if x)
+    assembler_count = sum(1 for x in (args.beebasm, args.baron, args.acme, args.xa, args.tass64, args.ca65, args.z88dk or args.z88dk_8080, args.sjasmplus) if x)
     if assembler_count > 1:
-        utils.die("--beebasm, --acme, --xa, --64tass, --ca65, --z88dk and --sjasmplus arguments are incompatible")
+        utils.die("--beebasm, --baron, --acme, --xa, --64tass, --ca65, --z88dk and --sjasmplus arguments are incompatible")
     if args.lower and args.upper:
         utils.die("--lower and --upper arguments are incompatible")
 
-    if args.acme:
+    if args.baron:
+        assembler = "baron"
+    elif args.acme:
         assembler = "acme"
     elif args.xa:
         assembler = "xa"

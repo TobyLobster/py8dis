@@ -20,7 +20,7 @@ from pathlib import Path
 EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
 
-ASSEMBLERS_6502 = ["acme", "beebasm", "xa", "64tass", "ca65"]
+ASSEMBLERS_6502 = ["acme", "beebasm", "baron", "xa", "64tass", "ca65"]
 ASSEMBLERS_Z80 = ["z88dk", "sjasmplus"]
 
 # The bytes at &2000 onwards: 'lda #&41' (with 'A' as a character), 'lda
@@ -171,6 +171,20 @@ def with_assertions():
     config.get_assembler().assert_expr("target - $", 3)
     return output.Directive("disassembly_end")
 
+def with_assertions_6502():
+    """The end of the output, with assertions, for the 6502: a name's value,
+    a negative value, one that's AND (which binds less tightly than '=' in
+    Baron) and one that uses the current address ('P%' for beebasm and
+    Baron), which Baron leaves out"""
+    import config
+    import expression
+    import output
+    config.get_assembler().assert_expr("table", 0x1234)
+    config.get_assembler().assert_expr("delta", -0x36)
+    config.get_assembler().assert_expr(expression.Binary(expression.Name("flags"), "AND", expression.Num(0xf0, "hex")), 0x80)
+    config.get_assembler().assert_expr("target - P%", 3)
+    return output.Directive("disassembly_end")
+
 # "Hello", '"', 13 in PETSCII (shifted H), and "@ab[" in screen codes
 PETSCII_HELLO = [0xc8, 0x45, 0x4c, 0x4c, 0x4f, 0x22, 0x0d]
 SCREEN_TEXT = [0x00, 0x01, 0x02, 0x1b]
@@ -201,7 +215,7 @@ def make_tests():
         ("force absolute addressing, indexed *",
          ["acme", "xa", "64tass", "ca65"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
         ("absolute addressing as data *",
-         ["beebasm"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.AS_DATA,
+         ["beebasm", "baron"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.AS_DATA,
                                           data_byte=Num(0xad, "hex"), listing_operand=Name("zp_value"))),
         ("8080 instruction",
          ["z88dk-8080"], lambda: instruction(0x2000, 2, "mvi a,", Num(0x41, "hex"), char_literal="'A'")),
@@ -258,7 +272,7 @@ def make_tests():
         ("ASCII string with PETSCII the session's encoding",
          ASSEMBLERS_6502, text_string([0x48, 0x69, 0x21, 0x0d], "ascii", "petscii")),
         ("PETSCII string over two lines",
-         ["beebasm"], text_string(PETSCII_HELLO * 2, "petscii", "petscii")),
+         ["beebasm", "baron"], text_string(PETSCII_HELLO * 2, "petscii", "petscii")),
         ("byte data with PETSCII the session's encoding",
          ASSEMBLERS_6502, data_with_text_encoding("petscii")),
         ("blank",
@@ -274,7 +288,7 @@ def make_tests():
         ("code start *",
          ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
         ("code start, after other code *",
-         ["xa", "ca65", "sjasmplus"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
+         ["xa", "ca65", "sjasmplus", "baron"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
         ("include binary file *",
          ASSEMBLERS_6502 + ASSEMBLERS_Z80, lambda: output.Directive("include_binary_file", "data.bin")),
         ("6510 undocumented opcode, immediate *",
@@ -292,7 +306,7 @@ def make_tests():
         ("6510 JAM, with cycles",
          ASSEMBLERS_6502, with_6510([0x02], show_cycles=True)),
         ("6510 undocumented opcode as data, zero page operand *",
-         ["beebasm", "xa"], undocumented_zp),
+         ["beebasm", "baron", "xa"], undocumented_zp),
         ("start, for the 6510 *",
          ["acme", "64tass", "ca65"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
         ("start, for the 65C02 *",
@@ -309,6 +323,28 @@ def make_tests():
          ASSEMBLERS_Z80, with_assertions),
         ("end, saving to a file *",
          ["acme", "beebasm"], lambda: (setattr(session.current(), "output_filename", "Out.bin"), output.Directive("disassembly_end"))[1]),
+        ("operand starting with a bracket, not indirect",
+         ASSEMBLERS_6502, lambda: instruction(0x2000, 3, "lda", expression.Binary(expression.Binary(Name("table"), "+", Num(1)), "*", Num(2)), suffix=",y")),
+        ("6502 character literals",
+         ASSEMBLERS_6502, lambda: instruction(0x2000, 2, "lda", expression.Binary(expression.Binary(Num(0x27, "char"), "+", Num(0x5c, "char")), "+", Num(0x22, "char")), prefix="#")),
+        ("6502 operand with a low byte of an expression",
+         ASSEMBLERS_6502, lambda: instruction(0x2000, 2, "lda", expression.Unary("<", expression.Binary(Name("table"), "+", Num(1))), prefix="#")),
+        ("6502 move start and end *",
+         ["baron"], lambda: MultiLine(output.Directive("pseudopc_start", 0x0900, 0x2000, 0x10, 1), output.Directive("pseudopc_end", 0x0900, 0x2000, 0x10, 1))),
+        ("6502 move start and end, 65C02",
+         ["baron"], lambda: (config.set_cmos(True), MultiLine(output.Directive("pseudopc_start", 0x0900, 0x2000, 0x10, 1), output.Directive("pseudopc_end", 0x0900, 0x2000, 0x10, 1)))[1]),
+        ("code start, 65C02 *",
+         ["baron"], lambda: (config.set_cmos(True), output.Directive("code_start", 0x2000, 0x2014, True))[1]),
+        ("code start, saving to a file *",
+         ["baron"], lambda: (setattr(session.current(), "output_filename", "Out.bin"), output.Directive("code_start", 0x2000, 0x2014, True))[1]),
+        ("code start, the asm file's name",
+         ["baron"], lambda: (setattr(session.current(), "asm_filename", "build/game.6502"), output.Directive("code_start", 0x2000, 0x2014, True))[1]),
+        ("constant definition, a keyword's name *",
+         ["baron"], lambda: output.ConstantDefinition("next", "3", 12, None, 24)),
+        ("start, for Baron *",
+         ["baron"], lambda: output.Directive("disassembly_start")),
+        ("end, with 6502 assertions *",
+         ["beebasm", "baron"], with_assertions_6502),
     ]
 
 # What each test should render, for each assembler (one string per line of
@@ -324,6 +360,12 @@ EXPECTED = {
         '    rts                                                               ; 2007: 60          `',
     ],
     'implied, beebasm, upper case': [
+        '    RTS                                                               ; 2007: 60          `',
+    ],
+    'implied, baron': [
+        '    rts                                                               ; 2007: 60          `',
+    ],
+    'implied, baron, upper case': [
         '    RTS                                                               ; 2007: 60          `',
     ],
     'implied, xa': [
@@ -350,6 +392,9 @@ EXPECTED = {
     'immediate with a character, beebasm': [
         "    lda #&41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
+    'immediate with a character, baron': [
+        "    lda #&41 ; 'A'                                                    ; 2000: a9 41       .A",
+    ],
     'immediate with a character, xa': [
         "    lda #$41 // 'A'                                                   // 2000: a9 41       .A",
     ],
@@ -369,6 +414,12 @@ EXPECTED = {
         '    lda (ptr),y                                                       ; 2002: b1 70       .p',
     ],
     'operand prefix and suffix, beebasm, upper case': [
+        '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
+    ],
+    'operand prefix and suffix, baron': [
+        '    lda (ptr),y                                                       ; 2002: b1 70       .p',
+    ],
+    'operand prefix and suffix, baron, upper case': [
         '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
     ],
     'operand prefix and suffix, xa': [
@@ -393,6 +444,9 @@ EXPECTED = {
         '    lda ptr + 1                                                       ; 2002: b1 70       .p',
     ],
     'operand expression, beebasm': [
+        '    lda ptr + 1                                                       ; 2002: b1 70       .p',
+    ],
+    'operand expression, baron': [
         '    lda ptr + 1                                                       ; 2002: b1 70       .p',
     ],
     'operand expression, xa': [
@@ -444,6 +498,12 @@ EXPECTED = {
         '    equb &ad, <(zp_value), >(zp_value) ; lda+2 zp_value,x             ; 2004: ad 70 00    .p.',
     ],
     'absolute addressing as data, beebasm, upper case': [
+        '    EQUB &AD, <(zp_value), >(zp_value) ; LDA+2 zp_value,X             ; 2004: AD 70 00    .p.',
+    ],
+    'absolute addressing as data, baron': [
+        '    equb &ad, <(zp_value), >(zp_value) ; lda+2 zp_value,x             ; 2004: ad 70 00    .p.',
+    ],
+    'absolute addressing as data, baron, upper case': [
         '    EQUB &AD, <(zp_value), >(zp_value) ; LDA+2 zp_value,X             ; 2004: AD 70 00    .p.',
     ],
     '8080 instruction, z88dk-8080': [
@@ -542,6 +602,9 @@ EXPECTED = {
     '6502 CPU state, beebasm': [
         '    lda #&41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
     ],
+    '6502 CPU state, baron': [
+        '    lda #&41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
+    ],
     '6502 CPU state, xa': [
         '    lda #$41                                                          // 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
     ],
@@ -573,6 +636,12 @@ EXPECTED = {
         '    equb 1, 2, 3, &ff                                                 ; 2008: 01 02 03... ...',
     ],
     'byte data, beebasm, upper case': [
+        '    EQUB 1, 2, 3, &FF                                                 ; 2008: 01 02 03... ...',
+    ],
+    'byte data, baron': [
+        '    equb 1, 2, 3, &ff                                                 ; 2008: 01 02 03... ...',
+    ],
+    'byte data, baron, upper case': [
         '    EQUB 1, 2, 3, &FF                                                 ; 2008: 01 02 03... ...',
     ],
     'byte data, xa': [
@@ -613,6 +682,10 @@ EXPECTED = {
         '    equb 1,   2                                                       ; 2008: 01 02       ..',
         '    equb 3, &ff                                                       ; 200a: 03 ff       ..',
     ],
+    'byte data, two per line, baron': [
+        '    equb 1,   2                                                       ; 2008: 01 02       ..',
+        '    equb 3, &ff                                                       ; 200a: 03 ff       ..',
+    ],
     'byte data, two per line, xa': [
         '    .byt 1,   2                                                       // 2008: 01 02       ..',
         '    .byt 3, $ff                                                       // 200a: 03 ff       ..',
@@ -629,6 +702,9 @@ EXPECTED = {
         '    !word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
     'word data, beebasm': [
+        '    equw &1234, &5678                                                 ; 200c: 34 12 78... 4.x',
+    ],
+    'word data, baron': [
         '    equw &1234, &5678                                                 ; 200c: 34 12 78... 4.x',
     ],
     'word data, xa': [
@@ -656,6 +732,12 @@ EXPECTED = {
         '    equs "Hi!", &0d                                                   ; 2010: 48 69 21... Hi!',
     ],
     'string, beebasm, upper case': [
+        '    EQUS "Hi!", &0D                                                   ; 2010: 48 69 21... Hi!',
+    ],
+    'string, baron': [
+        '    equs "Hi!", &0d                                                   ; 2010: 48 69 21... Hi!',
+    ],
+    'string, baron, upper case': [
         '    EQUS "Hi!", &0D                                                   ; 2010: 48 69 21... Hi!',
     ],
     'string, xa': [
@@ -688,6 +770,12 @@ EXPECTED = {
     'ASCII string with a quote, beebasm, upper case': [
         '    EQUS "H", \'"\', "i", \'"\'                                           ; 2010: 48 22 69... H"i',
     ],
+    'ASCII string with a quote, baron': [
+        '    equs "H""i"""                                                     ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, baron, upper case': [
+        '    EQUS "H""i"""                                                     ; 2010: 48 22 69... H"i',
+    ],
     'ASCII string with a quote, xa': [
         '    .asc "H", 34, "i", 34, ""                                         // 2010: 48 22 69... H"i',
     ],
@@ -712,6 +800,9 @@ EXPECTED = {
     'operand with a low byte in an expression, beebasm': [
         '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
     ],
+    'operand with a low byte in an expression, baron': [
+        '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
+    ],
     'operand with a low byte in an expression, xa': [
         '    lda #(table & $ff) + 1                                            // 2000: a9 41       .A',
     ],
@@ -732,6 +823,14 @@ EXPECTED = {
         '    equb &0d ; petscii &0d                                            ; 2016: 0d          .',
     ],
     'PETSCII string, beebasm, upper case': [
+        '    EQUB &C8, &45, &4C, &4C, &4F, &22 ; petscii "Hello", &22          ; 2010: C8 45 4C... Hel',
+        '    EQUB &0D ; petscii &0D                                            ; 2016: 0D          .',
+    ],
+    'PETSCII string, baron': [
+        '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',
+        '    equb &0d ; petscii &0d                                            ; 2016: 0d          .',
+    ],
+    'PETSCII string, baron, upper case': [
         '    EQUB &C8, &45, &4C, &4C, &4F, &22 ; petscii "Hello", &22          ; 2010: C8 45 4C... Hel',
         '    EQUB &0D ; petscii &0D                                            ; 2016: 0D          .',
     ],
@@ -767,6 +866,12 @@ EXPECTED = {
     'screen code string, beebasm, upper case': [
         '    EQUB 0, 1, 2, &1B ; screen "@ab["                                 ; 2010: 00 01 02... @ab',
     ],
+    'screen code string, baron': [
+        '    equb 0, 1, 2, &1b ; screen "@ab["                                 ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, baron, upper case': [
+        '    EQUB 0, 1, 2, &1B ; screen "@ab["                                 ; 2010: 00 01 02... @ab',
+    ],
     'screen code string, xa': [
         '    .byt 0, 1, 2, $1b // screen "@ab["                                // 2010: 00 01 02... @ab',
     ],
@@ -795,6 +900,9 @@ EXPECTED = {
     "ASCII string with PETSCII the session's encoding, beebasm": [
         '    equs "Hi!", &0d                                                   ; 2010: 48 69 21... Hi!',
     ],
+    "ASCII string with PETSCII the session's encoding, baron": [
+        '    equs "Hi!", &0d                                                   ; 2010: 48 69 21... Hi!',
+    ],
     "ASCII string with PETSCII the session's encoding, xa": [
         '    .asc "Hi!", $0d                                                   // 2010: 48 69 21... Hi!',
     ],
@@ -811,10 +919,18 @@ EXPECTED = {
         '    equb &0d, &c8, &45, &4c, &4c, &4f ; petscii &0d, "Hello"          ; 2016: 0d c8 45... .He',
         '    equb &22, &0d ; petscii &22, &0d                                  ; 201c: 22 0d       ".',
     ],
+    'PETSCII string over two lines, baron': [
+        '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',
+        '    equb &0d, &c8, &45, &4c, &4c, &4f ; petscii &0d, "Hello"          ; 2016: 0d c8 45... .He',
+        '    equb &22, &0d ; petscii &22, &0d                                  ; 201c: 22 0d       ".',
+    ],
     "byte data with PETSCII the session's encoding, acme": [
         '    !byte $48, $69, $21, $0d                                          ; 2010: 48 69 21... h.!',
     ],
     "byte data with PETSCII the session's encoding, beebasm": [
+        '    equb &48, &69, &21, &0d                                           ; 2010: 48 69 21... h.!',
+    ],
+    "byte data with PETSCII the session's encoding, baron": [
         '    equb &48, &69, &21, &0d                                           ; 2010: 48 69 21... h.!',
     ],
     "byte data with PETSCII the session's encoding, xa": [
@@ -832,6 +948,9 @@ EXPECTED = {
     'blank, beebasm': [
         '',
     ],
+    'blank, baron': [
+        '',
+    ],
     'blank, xa': [
         '',
     ],
@@ -845,6 +964,9 @@ EXPECTED = {
         '; Memory locations',
     ],
     'one line comment, beebasm': [
+        '; Memory locations',
+    ],
+    'one line comment, baron': [
         '; Memory locations',
     ],
     'one line comment, xa': [
@@ -868,6 +990,9 @@ EXPECTED = {
     'empty one line comment, beebasm': [
         ';',
     ],
+    'empty one line comment, baron': [
+        ';',
+    ],
     'empty one line comment, xa': [
         '//',
     ],
@@ -881,6 +1006,9 @@ EXPECTED = {
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
     'word wrapped comment, beebasm': [
+        '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
+    ],
+    'word wrapped comment, baron': [
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
     'word wrapped comment, xa': [
@@ -902,6 +1030,12 @@ EXPECTED = {
         'lives       = 3         ; Starting number of lives',
     ],
     'constant definition, beebasm, upper case': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, baron': [
+        'lives       = 3         ; Starting number of lives',
+    ],
+    'constant definition, baron, upper case': [
         'lives       = 3         ; Starting number of lives',
     ],
     'constant definition, xa': [
@@ -952,6 +1086,16 @@ EXPECTED = {
     'code start, beebasm, upper case': [
         '',
         '    ORG &2000',
+        '',
+    ],
+    'code start, baron': [
+        '',
+        'section pydis, org = &2000, filename = "pydis"',
+        '',
+    ],
+    'code start, baron, upper case': [
+        '',
+        'SECTION pydis, org = &2000, filename = "pydis"',
         '',
     ],
     'code start, xa': [
@@ -1042,6 +1186,16 @@ EXPECTED = {
         '    ORG $3000',
         '',
     ],
+    'code start, after other code, baron': [
+        '',
+        '    skipto &3000',
+        '',
+    ],
+    'code start, after other code, baron, upper case': [
+        '',
+        '    SKIPTO &3000',
+        '',
+    ],
     'include binary file, acme': [
         '    !binary "data.bin"',
     ],
@@ -1052,6 +1206,12 @@ EXPECTED = {
         '    incbin "data.bin"',
     ],
     'include binary file, beebasm, upper case': [
+        '    INCBIN "data.bin"',
+    ],
+    'include binary file, baron': [
+        '    incbin "data.bin"',
+    ],
+    'include binary file, baron, upper case': [
         '    INCBIN "data.bin"',
     ],
     'include binary file, xa': [
@@ -1096,6 +1256,12 @@ EXPECTED = {
     '6510 undocumented opcode, immediate, beebasm, upper case': [
         '    EQUB &0B, &81 ; ANC #&81 (undocumented)                           ; 2000: 0B 81       ..',
     ],
+    '6510 undocumented opcode, immediate, baron': [
+        '    equb &0b, &81 ; anc #&81 (undocumented)                           ; 2000: 0b 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, baron, upper case': [
+        '    EQUB &0B, &81 ; ANC #&81 (undocumented)                           ; 2000: 0B 81       ..',
+    ],
     '6510 undocumented opcode, immediate, xa': [
         '    .byt $0b, $81 // anc #$81 (undocumented)                          // 2000: 0b 81       ..',
     ],
@@ -1118,6 +1284,9 @@ EXPECTED = {
         '    asr #$0f                                                          ; 2000: 4b 0f       K.',
     ],
     '6510 ALR, which acme calls ASR, beebasm': [
+        '    equb &4b, &0f ; alr #&0f (undocumented)                           ; 2000: 4b 0f       K.',
+    ],
+    '6510 ALR, which acme calls ASR, baron': [
         '    equb &4b, &0f ; alr #&0f (undocumented)                           ; 2000: 4b 0f       K.',
     ],
     '6510 ALR, which acme calls ASR, xa': [
@@ -1153,6 +1322,9 @@ EXPECTED = {
     "6510 undocumented opcode acme doesn't use, beebasm": [
         '    equb &2b, &81 ; anc #&81 (undocumented)                           ; 2000: 2b 81       +.',
     ],
+    "6510 undocumented opcode acme doesn't use, baron": [
+        '    equb &2b, &81 ; anc #&81 (undocumented)                           ; 2000: 2b 81       +.',
+    ],
     "6510 undocumented opcode acme doesn't use, xa": [
         '    .byt $2b, $81 // anc #$81 (undocumented)                          // 2000: 2b 81       +.',
     ],
@@ -1166,6 +1338,9 @@ EXPECTED = {
         '    !byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
     ],
     '6510 undocumented opcode, implied, beebasm': [
+        '    equb &1a ; nop (undocumented)                                     ; 2000: 1a          .',
+    ],
+    '6510 undocumented opcode, implied, baron': [
         '    equb &1a ; nop (undocumented)                                     ; 2000: 1a          .',
     ],
     '6510 undocumented opcode, implied, xa': [
@@ -1183,6 +1358,9 @@ EXPECTED = {
     '6510 JAM, with cycles, beebasm': [
         '    equb &02 ; jam (undocumented)                                     ; 2000: 02          .   halts',
     ],
+    '6510 JAM, with cycles, baron': [
+        '    equb &02 ; jam (undocumented)                                     ; 2000: 02          .   halts',
+    ],
     '6510 JAM, with cycles, xa': [
         '    .byt $02 // jam (undocumented)                                    // 2000: 02          .   halts',
     ],
@@ -1196,6 +1374,12 @@ EXPECTED = {
         '    equb &b3, ptr ; lax (ptr),y (undocumented)                        ; 2000: a9 41       .A',
     ],
     '6510 undocumented opcode as data, zero page operand, beebasm, upper case': [
+        '    EQUB &B3, ptr ; LAX (ptr),Y (undocumented)                        ; 2000: A9 41       .A',
+    ],
+    '6510 undocumented opcode as data, zero page operand, baron': [
+        '    equb &b3, ptr ; lax (ptr),y (undocumented)                        ; 2000: a9 41       .A',
+    ],
+    '6510 undocumented opcode as data, zero page operand, baron, upper case': [
         '    EQUB &B3, ptr ; LAX (ptr),Y (undocumented)                        ; 2000: A9 41       .A',
     ],
     '6510 undocumented opcode as data, zero page operand, xa': [
@@ -1361,6 +1545,148 @@ EXPECTED = {
     'end, saving to a file, beebasm, upper case': [
         '',
         'SAVE "Out.bin", pydis_start, pydis_end',
+    ],
+    'operand starting with a bracket, not indirect, acme': [
+        '    lda (table + 1) * 2,y                                             ; 2000: a9 41 b1    .A.',
+    ],
+    'operand starting with a bracket, not indirect, beebasm': [
+        '    lda (table + 1) * 2,y                                             ; 2000: a9 41 b1    .A.',
+    ],
+    'operand starting with a bracket, not indirect, baron': [
+        '    lda +(table + 1) * 2,y                                            ; 2000: a9 41 b1    .A.',
+    ],
+    'operand starting with a bracket, not indirect, xa': [
+        '    lda 0+(table + 1) * 2,y                                           // 2000: a9 41 b1    .A.',
+    ],
+    'operand starting with a bracket, not indirect, 64tass': [
+        '    lda (table + 1) * 2,y                                             ; 2000: a9 41 b1    .A.',
+    ],
+    'operand starting with a bracket, not indirect, ca65': [
+        '    lda 0+(table + 1) * 2,y                                           ; 2000: a9 41 b1    .A.',
+    ],
+    '6502 character literals, acme': [
+        '    lda #\'\\\'\' + \'\\\\\' + \'"\'                                            ; 2000: a9 41       .A',
+    ],
+    '6502 character literals, beebasm': [
+        "    lda #''' + '\\' + &22                                              ; 2000: a9 41       .A",
+    ],
+    '6502 character literals, baron': [
+        '    lda #&27 + \'\\\' + \'"\'                                              ; 2000: a9 41       .A',
+    ],
+    '6502 character literals, xa': [
+        '    lda #$27 + $5c + $22                                              // 2000: a9 41       .A',
+    ],
+    '6502 character literals, 64tass': [
+        '    lda #"\'" + \'\\\' + \'"\'                                              ; 2000: a9 41       .A',
+    ],
+    '6502 character literals, ca65': [
+        '    lda #\'\'\' + \'\\\' + \'"\'                                              ; 2000: a9 41       .A',
+    ],
+    '6502 operand with a low byte of an expression, acme': [
+        '    lda #<(table + 1)                                                 ; 2000: a9 41       .A',
+    ],
+    '6502 operand with a low byte of an expression, beebasm': [
+        '    lda #<(table + 1)                                                 ; 2000: a9 41       .A',
+    ],
+    '6502 operand with a low byte of an expression, baron': [
+        '    lda #<(table + 1)                                                 ; 2000: a9 41       .A',
+    ],
+    '6502 operand with a low byte of an expression, xa': [
+        '    lda #<(table + 1)                                                 // 2000: a9 41       .A',
+    ],
+    '6502 operand with a low byte of an expression, 64tass': [
+        '    lda #<(table + 1)                                                 ; 2000: a9 41       .A',
+    ],
+    '6502 operand with a low byte of an expression, ca65': [
+        '    lda #<(table + 1)                                                 ; 2000: a9 41       .A',
+    ],
+    '6502 move start and end, baron': [
+        '    section move_1, org = &0900',
+        '    endsection',
+        '',
+    ],
+    '6502 move start and end, baron, upper case': [
+        '    SECTION move_1, org = &0900',
+        '    ENDSECTION',
+        '',
+    ],
+    '6502 move start and end, 65C02, baron': [
+        '    section move_1, org = &0900, cmos = true',
+        '    endsection',
+        '',
+    ],
+    'code start, 65C02, baron': [
+        '',
+        'section pydis, org = &2000, filename = "pydis", cmos = true',
+        '',
+    ],
+    'code start, 65C02, baron, upper case': [
+        '',
+        'SECTION pydis, org = &2000, filename = "pydis", cmos = TRUE',
+        '',
+    ],
+    'code start, saving to a file, baron': [
+        '',
+        'section pydis, org = &2000, filename = "Out.bin"',
+        '',
+    ],
+    'code start, saving to a file, baron, upper case': [
+        '',
+        'SECTION pydis, org = &2000, filename = "Out.bin"',
+        '',
+    ],
+    "code start, the asm file's name, baron": [
+        '',
+        'section pydis, org = &2000, filename = "game"',
+        '',
+    ],
+    "constant definition, a keyword's name, baron": [
+        '@next       = 3',
+    ],
+    "constant definition, a keyword's name, baron, upper case": [
+        '@next       = 3',
+    ],
+    'start, for Baron, baron': [
+        '; Assemble with Baron, which writes the program to the file named in its',
+        '; section (pydis), in the folder given with -p:',
+        ';     baron -p . this_file',
+        '',
+    ],
+    'start, for Baron, baron, upper case': [
+        '; Assemble with Baron, which writes the program to the file named in its',
+        '; section (pydis), in the folder given with -p:',
+        ';     baron -p . this_file',
+        '',
+    ],
+    'end, with 6502 assertions, beebasm': [
+        '    assert -&36 == delta',
+        '    assert &80 == (flags AND &f0)',
+        '    assert &1234 == table',
+        '    assert &03 == target - P%',
+        '',
+        'save pydis_start, pydis_end',
+    ],
+    'end, with 6502 assertions, beebasm, upper case': [
+        '    ASSERT -&36 == delta',
+        '    ASSERT &80 == (flags AND &F0)',
+        '    ASSERT &1234 == table',
+        '    ASSERT &03 == target - P%',
+        '',
+        'SAVE pydis_start, pydis_end',
+    ],
+    'end, with 6502 assertions, baron': [
+        '    assert (delta) = -&36',
+        '    assert (flags AND &f0) = &80',
+        '    assert (table) = &1234',
+        '',
+        'endsection',
+    ],
+    'end, with 6502 assertions, baron, upper case': [
+        '    ASSERT (delta) = -&36',
+        '    ASSERT (flags AND &F0) = &80',
+        '    ASSERT (table) = &1234',
+        '',
+        'ENDSECTION',
     ],
 }
 

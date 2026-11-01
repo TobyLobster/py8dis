@@ -1,0 +1,5 @@
+al 002000 .pydis_start
+al 002002 .loop_c2002
+al 00200E .l200e
+al 00201C .pydis_end
+al 00FFE3 .lffe3
