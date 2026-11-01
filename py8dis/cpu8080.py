@@ -708,6 +708,11 @@ class Cpu8080(cpu.Cpu):
             """True: an instruction is code (unlike a data classification)."""
             return True
 
+        def indent(self, binary_addr):
+            """Indent the instruction at binary_addr one more level (for a
+            loop, with config.set_indent_loops(True))."""
+            session.current().cpu.indent_level_dict[binary_addr] += 1
+
         def update_cpu_state(self, binary_addr, state):
             """Update 'state' (a CpuState) for this instruction at
             binary_addr, with update_state()."""
@@ -999,8 +1004,8 @@ class Cpu8080(cpu.Cpu):
                     # address. It's highly likely the 'CALL' is returning to the immediately following
                     # instruction, so if binary_addr+3 maps to the return runtime address, use that,
                     # otherwise give up and don't trace anything "after" the 'CALL'.
-                    simple_return_binary_addr = binary_addr + 3
-                    if return_runtime_addr == movemanager.b2r(simple_return_binary_addr):
+                    simple_return_binary_addr = binary_loc.binary_addr + 3
+                    if simple_return_binary_addr < 0x10000 and return_runtime_addr == movemanager.b2r(simple_return_binary_addr):
                         result = [simple_return_binary_addr]
                     else:
                         result = [None]

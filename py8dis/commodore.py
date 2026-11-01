@@ -2198,9 +2198,12 @@ def basic_program(runtime_addr=None):
     (so to give it another, name it before calling this, or c64()).
 
     Returns the address after the program, or None (classifying nothing) if
-    there isn't a valid BASIC program there."""
+    there isn't a valid BASIC program there. Stops with an error if no
+    address is given for the 1541, which has no BASIC."""
     if runtime_addr is None:
         runtime_addr = _machine().basic_start
+        if runtime_addr is None:
+            utils.die("commodore.basic_program(): the {0} has no BASIC, so give the program's address".format(_machine().name))
     found = _basic_lines(runtime_addr)
     if found is None:
         return None

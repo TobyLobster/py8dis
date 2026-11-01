@@ -219,7 +219,7 @@ For disassembling the 1541's DOS ROM (loaded at $c000, after `drive1541()`): tra
 
 `commodore.basic_program(runtime_addr=None)`
 
-Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` etc. do this), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
+Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` etc. do this; the 1541 has no BASIC, so give the address there), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
 
 ```
 ; 10 SYS2061

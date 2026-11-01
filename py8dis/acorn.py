@@ -918,8 +918,11 @@ def osword_hook(runtime_addr, state, subroutine):
             desc_dict = osword_block_descriptions[action_pessimistic]
 
             if action_pessimistic == 0:
+                # (Not if more than one move puts data at the block, so it
+                # can't be told which)
                 input_buffer_addr, _ = movemanager.r2b(block_addr)
-                xy_addr(input_buffer_addr, input_buffer_addr+1)
+                if input_buffer_addr is not None:
+                    xy_addr(input_buffer_addr, input_buffer_addr+1)
 
             for i in desc_dict:
                 auto_comment(RuntimeAddr(block_addr + i), desc_dict[i], align=Align.INLINE)

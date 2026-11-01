@@ -494,8 +494,11 @@ def add_classification(binary_addr, c):
 
     If a split has been asked for at an address inside it (see
     split_classification()), it's split there: each part is a copy of `c`
-    with its own length. (That needs set_length(), which only Byte, Word
-    and String have.)
+    with its own length. That needs set_length(), which only Byte, Word
+    and String have, and a Word's parts must each be a whole number of
+    words. Anything else (e.g. an instruction, or words split at an odd
+    byte) is classified as bytes instead, split there, as
+    split_classification() does to one that's already classified.
 
     It's an assertion error if any of the bytes is already classified, so
     callers check that first (see is_classified()).
@@ -506,6 +509,10 @@ def add_classification(binary_addr, c):
     binary_addr = BinaryAddr(binary_addr)
     assert c is not None
     assert not is_classified(binary_addr, c.length()), "Binary address {0} is already classified as {1}".format(hex(binary_addr), get_classification(binary_addr))
+
+    splits = [i for i in range(1, c.length()) if binary_addr + i in split_classifications]
+    if splits and not (hasattr(c, "set_length") and (not isinstance(c, Word) or all(i % 2 == 0 for i in splits))):
+        c = Byte(c.length())
 
     prev_addr = binary_addr
     classifications[binary_addr] = copy.copy(c)
@@ -988,8 +995,9 @@ def get_address16(binary_addr, offset=0):
     (As get_address8(), for the 16 bit address, low byte first, with
     'offset' added, wrapping round within 16 bits. With an 'offset' other
     than 0, any expression for the address is ignored. An expression must
-    be at a Word, or at the operand of a 3 byte instruction: it's an
-    assertion error otherwise.)
+    be at a Word, or at the address in an instruction, its last two bytes
+    (e.g. a 6502 'lda $1234', or a Z80 'ld ix,($1234)', which has a prefix
+    byte too): it's an assertion error otherwise.)
     """
 
     expressions = session.current().classifications.expressions
@@ -997,7 +1005,16 @@ def get_address16(binary_addr, offset=0):
     if binary_addr not in expressions or (offset != 0):
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
 
-    assert isinstance(get_classification(binary_addr), Word) or (isinstance(get_classification(binary_addr - 1), session.current().cpu.Opcode) and get_classification(binary_addr - 1).length() == 3), "Address: %s" % hex(binary_addr)
+    def is_instruction_address(binary_addr):
+        """True if binary_addr is the address in an instruction: its last two
+        bytes, after one to three bytes of opcode (and prefix)."""
+        for opcode_length in (1, 2, 3):
+            c = get_classification(binary_addr - opcode_length)
+            if c is not INSIDE_A_CLASSIFICATION:
+                return isinstance(c, session.current().cpu.Opcode) and c.length() == opcode_length + 2
+        return False
+
+    assert isinstance(get_classification(binary_addr), Word) or is_instruction_address(binary_addr), "Address: %s" % hex(binary_addr)
     return get_expression(binary_addr, operand, is_address=True, width=16)
 
 

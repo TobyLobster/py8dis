@@ -250,8 +250,9 @@ class SnippetHelper:
         """Add an entry point to trace from: runtime_addr, or by default the
         start of the match. For the match itself, raise SnippetRejected if
         it can't be code there (see starts_mid_instruction()). Nothing is
-        added where no data is loaded. Unlike Cpu.add_entry(), it adds no
-        label."""
+        added where no data is loaded, or where more than one move puts
+        code at runtime_addr (so it can't be told which). Unlike
+        Cpu.add_entry(), it adds no label."""
         if runtime_addr is not None:
             assert not isinstance(runtime_addr, BinaryAddr)
             binary_addr, move_id = movemanager.r2b(RuntimeAddr(runtime_addr), None)
@@ -265,7 +266,7 @@ class SnippetHelper:
             if self.memory_binary[binary_addr] is not None and starts_mid_instruction(binary_addr):
                 raise SnippetRejected()
 
-        if self.memory_binary[binary_addr] is not None:
+        if binary_addr is not None and self.memory_binary[binary_addr] is not None:
             # We add the entry point, but we don't call trace.cpu.add_entry() because this
             # also adds a label (even if without a name) which we don't want since this causes 
             # optimistic state tracking to restart at the label.

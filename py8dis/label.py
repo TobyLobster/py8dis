@@ -333,9 +333,13 @@ class Label:
     def add_expression(self, s, move_id, *, force=True):
         """Add an expression to use when referencing a runtime address
 
-        (e.g. 'table+1', from expr_label()), for the move ID. With 'force'
-        it's added even if the label already has it (or a name the same);
-        otherwise it's only added if it's new."""
+        (e.g. 'table+1', from expr_label()), for the move ID (the base move
+        if it's None, as for add_explicit_name()). With 'force' it's added
+        even if the label already has it (or a name the same); otherwise
+        it's only added if it's new."""
+
+        if move_id is None:
+            move_id = movemanager.BASE_MOVE_ID
 
         assert not disassembly.is_simple_name(s)
         assert movemanager.is_valid_move_id(move_id)

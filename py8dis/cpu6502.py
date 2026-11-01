@@ -135,8 +135,9 @@ class SubConst:
         if self._opcode is not None:
             return self._opcode
 
-        runtime_addr = self.get_operand_value()
-        if len(self.addr_modes) > 1 and runtime_addr >= 0x100:
+        # (Only an operand that could be either needs its value. An
+        # instruction may have no operand at all, e.g. 'rts'.)
+        if len(self.addr_modes) > 1 and self.get_operand_value() >= 0x100:
             self.addr_mode = self.addr_modes[1]
         else:
             self.addr_mode = self.addr_modes[0]
@@ -1791,7 +1792,7 @@ class Cpu6502(cpu.Cpu):
                     # instruction, so if binary_addr+3 maps to the return runtime address, use that,
                     # otherwise give up and don't trace anything "after" the JSR.
                     simple_return_binary_addr = binary_loc.binary_addr + 3
-                    if return_runtime_addr == movemanager.b2r(simple_return_binary_addr, binary_loc.move_id):
+                    if simple_return_binary_addr < 0x10000 and return_runtime_addr == movemanager.b2r(simple_return_binary_addr):
                         result = [simple_return_binary_addr]
                     else:
                         result = [None]

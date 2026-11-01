@@ -82,6 +82,8 @@ with bank1:
     entry(0x8000, "bank1_start")
 ```
 
+In the same way, give a bank's labels with `label()` or `expr_label()` in a `with` block for its move. Outside one, a label at an address that more than one bank has is for the code that isn't moved (e.g. the main program's `lda &8000`).
+
 The output assembles to all the loaded files, at their load addresses, with the gaps between them filled with zeroes. See `examples/python/banks_test.py`.
 
 ### include_binary_file
@@ -286,6 +288,8 @@ finds each `sta sprite_number`, then the `lda #` before it, and writes its value
     sta sprite_number
 ```
 
+The instruction needn't have an operand: `substitute_constants("rts", 'a', results)` names the value a subroutine returns in A.
+
 `define_all_constants` is `None` to define no constants (the default), `False` to define the ones used, or `True` to define them all. (6502 only.)
 
 ### Making expressions
@@ -344,7 +348,7 @@ Each also takes `encoding=`, e.g. `stringz(addr, encoding="screen")`, for a stri
 
 `split_classification(runtime_addr)`
 
-Splits the data at `runtime_addr` from the data before it, e.g. to start a new line part way through a string.
+Splits the data at `runtime_addr` from the data before it, e.g. to start a new line part way through a string. Call it before the data is classified (e.g. before `stringz()`): what's classified across the address afterwards is split into two parts of the same kind, but what's already classified there becomes two blocks of bytes. An instruction, or words split at an odd byte, can't be split, so they become bytes either way.
 
 ## Number formats
 

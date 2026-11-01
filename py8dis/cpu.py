@@ -191,11 +191,8 @@ class Cpu:
                     # data, if the byte after it is loaded. The bytes left
                     # unclassified become data at the end anyway: see
                     # classification.classify_leftovers().)
-                    for i in range(1, 1 + opcode.operand_length):
-                        if memory_binary[binary_addr + i] is not None:
-                            classification.add_classification(binary_addr, classification.Byte(1))
-                        else:
-                            break
+                    if memory_binary[binary_addr + 1] is not None:
+                        classification.add_classification(binary_addr, classification.Byte(1))
                     return [None]
 
                 # Classify the address as code

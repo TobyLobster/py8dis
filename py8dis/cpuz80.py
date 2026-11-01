@@ -1092,7 +1092,9 @@ class CpuZ80(cpu.Cpu):
                 if return_runtime_addr == caller_runtime_addr + self.length():
                     result = [next_addr]
                 else:
-                    result = cpu.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id)
+                    # (If it can't be found, because more than one move puts
+                    # code there, nothing is traced after the call)
+                    result = cpu.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id) or [None]
             else:
                 result = [None]
 

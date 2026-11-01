@@ -1133,16 +1133,17 @@ def emit_constants():
     for c in sorted_constants():
         value = constant_value_to_string(c.value, c.format)
 
-        # output a comment on the line before the definition
-        if (c.align == Align.BEFORE_LINE) or (c.align == Align.BEFORE_LABEL):
+        # output a comment on the line before the definition (if there's a
+        # comment: 'align' can be given without one)
+        if c.comment and ((c.align == Align.BEFORE_LINE) or (c.align == Align.BEFORE_LABEL)):
             lines.append(output.Comment(c.comment, indent=0).resolve())
 
         # output the definition with an optional inline comment
         lines.append(output.ConstantDefinition(c.name, value, max_name_len,
             c.comment if c.align == Align.INLINE else None, comment_column).resolve())
 
-        # output a comment on the line after the definition
-        if (c.align == Align.AFTER_LINE) or (c.align == Align.AFTER_LABEL):
+        # output a comment on the line after the definition (if there's one)
+        if c.comment and ((c.align == Align.AFTER_LINE) or (c.align == Align.AFTER_LABEL)):
             lines.append(output.Comment(c.comment, indent=0).resolve())
     lines.append(output.Blank().resolve())
     return lines
