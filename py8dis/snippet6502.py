@@ -22,7 +22,7 @@ The main pieces:
   and 'labels', which gives the regex groups for each name;
 - parse_line() parses one line (effectpattern.py uses it too, for an effect
   pattern's instruction lines), and parse_instruction() one instruction;
-- parse_integer() reads a number ('31', '$1f', '&1f' or '%00011111');
+- parse_integer() reads a number ('31', '$1f', '&1f', '0x1f' or '%00011111');
 - the tables: 'opcodes' (the opcode for each mnemonic and addressing mode),
   'addressing_mode_patterns' (what each addressing mode's operand looks
   like) and 'any_valid_instruction' (a regex for any one instruction, for
@@ -374,16 +374,15 @@ mnemonics = {
 
 # Regular expressions for the parts of an operand, for the addressing modes'
 # patterns below:
-# - hex_or_decimal: a number, decimal with an optional sign, or hex after '$'
-#   or '&' ('0x1f' matches too, but parse_integer() can't read it, and '%'
-#   binary isn't accepted in an operand);
+# - hex_or_decimal: a number (as parse_integer() reads it), with an optional
+#   sign: decimal, hex after '$', '&' or '0x', or binary after '%';
 # - label_name: a name, which matches any value;
 # - braced_index: a number in braces, e.g. '{0}', which is taken as a name;
 # - zp_label_name: a name starting with 'zp', the only kind of name that can
 #   be a zero page address (a name in an immediate or relative operand is
 #   always one byte);
 # - zp and expr: what a zero page operand, and any other operand, can be.
-hex_or_decimal = r'[-+]?\d+|0x[0-9A-Fa-f]+|[$&][0-9A-Fa-f]+'
+hex_or_decimal = r'[-+]?(?:0[xX][0-9A-Fa-f]+|\d+|[$&][0-9A-Fa-f]+|%[01.#]+)'
 label_name     = r'[a-zA-Z_][a-zA-Z0-9_]*'
 braced_index   = r'\{[0-9]+\}'
 zp_label_name  = r'zp[a-zA-Z0-9_]*'
@@ -404,7 +403,7 @@ class Details:
 # page modes come before the absolute ones: a number below 256, or a 'zp'
 # name, gives the zero page form.
 addressing_mode_patterns = {
-    'immediate':                Details(re.compile(r'^#(' + expr + r')$'), 2),                # e.g. #$10, #20 or #nn1 (a negative number matches, but parse_instruction() rejects it)
+    'immediate':                Details(re.compile(r'^#(' + expr + r')$'), 2),                # e.g. #$10, #20, #-1 (the byte $ff) or #nn1
     'zeropagex':                Details(re.compile(r'^(' + zp + r'),[Xx]$'), 2),              # e.g. $FF,X (zero-page) or zp1,X
     'zeropagey':                Details(re.compile(r'^(' + zp + r'),[Yy]$'), 2),              # e.g. $FF,y (zero-page) or zp1,y
     'zeropageindexedindirectx': Details(re.compile(r'^\((' + zp + r'),[Xx]\)$'), 2),          # e.g. (zp1,X)
@@ -416,8 +415,8 @@ addressing_mode_patterns = {
     'absolutex':                Details(re.compile(r'^(' + expr + r'),[Xx]$'), 3),            # e.g. $ab12,X
     'absolutey':                Details(re.compile(r'^(' + expr + r'),[Yy]$'), 3),            # e.g. $123c,Y
     'absolute':                 Details(re.compile(r'^(' + expr + r')$'), 3),                 # e.g. $1000 (absolute) or addr1
-    'relative':                 Details(re.compile(r'^([-+]?\d+|' + label_name + r')$'), 2),  # e.g. loop (any offset), or 12, the offset byte itself (a negative or hex number isn't accepted)
-    'accumulator':              Details(re.compile(r'^A?$'), 1),                              # e.g. A or the empty string (but parse_instruction() deals with no operand itself, and 'absolute' takes 'A' as a name first)
+    'relative':                 Details(re.compile(r'^(' + hex_or_decimal + '|' + label_name + r')$'), 2),  # e.g. loop (any offset), or a number, the offset itself: 12, -7 or $f9
+    'accumulator':              Details(re.compile(r'^A?$'), 1),                              # A or nothing (parse_instruction() deals with these itself: 'A' is never a name)
 }
 
 # The addressing modes of each mnemonic (from 'opcodes'), in the order
@@ -441,16 +440,6 @@ order_dict = {mode: index for index, mode in enumerate(reference_order)}
 for mnem in addr_modes_for_mnemonics:
     addr_modes_for_mnemonics[mnem] = sorted(addr_modes_for_mnemonics[mnem], key=lambda mode: order_dict.get(mode, float('inf')))
 
-def int_to_hex2(two_digit_int):
-    """A regex escape for a byte, e.g. '\\x1f'."""
-    return f"\\x{two_digit_int:02x}"
-
-def int_to_hex4(four_digit_int):
-    """'\\x' and a 16 bit number in four hex digits, e.g. '\\x1234'. (A
-    regex reads that as the byte $12 followed by the characters '34', not as
-    two bytes.)"""
-    return f"\\x{four_digit_int:04x}"
-
 def parse_line(line, group_number):
     """Parse one line of a snippet (see parse_snippet()), numbering its
     regex groups from group_number. Returns (pattern, labels, the next group
@@ -458,12 +447,16 @@ def parse_line(line, group_number):
     blank line); and the names in it, {name: [(group, is_position)]} as in
     Snippet, or None for an empty line or just a comment.
 
-    A name at the very start of the line marks a position: its pattern is
-    an empty group, and anything after the name is ignored (so an
-    instruction must be indented, or it's taken as a name). Otherwise the
-    line is one or more alternatives separated by '|', each an instruction or
-    a sequence of instructions separated by ':'. A '?' first makes the line
-    optional (but not a position: that's always there)."""
+    A name at the very start of the line marks a position: an empty group.
+    (So an instruction must be indented, or it's taken as a name: a
+    mnemonic there is an error.) After the name, or if there's no name, the
+    line can have one or more alternatives separated by '|', each an
+    instruction or a sequence of instructions separated by ':'. A '?' first
+    makes the alternatives optional (but not a position: that's always
+    there).
+
+    Raises ValueError (from parse_instruction()) for an instruction it can't
+    parse."""
     line = line.split(';')[0]   # Remove comments
 
     if not line:                # skip empty lines
@@ -479,13 +472,18 @@ def parse_line(line, group_number):
 
     labels = collections.defaultdict(list)
 
-    # A position: an empty group, recorded as (group, True)
+    # A position: an empty group, recorded as (group, True), followed by the
+    # rest of the line, if any (e.g. 'loop lda #1', or 'loop: lda #1')
+    position = b""
     m = re.match(r'^('+label_name + ')', line)
     if m:
         label = m.group(1)
+        if label.lower() in mnemonics:
+            raise ValueError("'{0}' at the start of a line is taken as a name (indent an instruction)".format(label))
         labels[label].append((group_number, True))
         group_number += 1
-        return (b"()", labels, group_number)
+        position = b"()"
+        line = line[m.end():]
 
     # The line's alternatives, separated by '|', each an instruction or a
     # sequence of instructions separated by ':' (e.g. 'lda #nn : sta $70 |
@@ -503,7 +501,7 @@ def parse_line(line, group_number):
             alternatives.append(bytes(inst_result))
 
     if not alternatives:
-        return (None, labels, group_number)
+        return (bytearray(position) if position else None, labels, group_number)
     pattern = bytearray(alternatives[0]) if len(alternatives) == 1 else bytearray(b"(?:" + b"|".join(alternatives) + b")")
 
     # An optional line matches if it can (the '?' is greedy): if its bytes
@@ -512,38 +510,57 @@ def parse_line(line, group_number):
     if optional:
         pattern = bytearray(b"(?:" + pattern + b")?")
 
-    return(pattern, labels, group_number)
+    return(bytearray(position) + pattern, labels, group_number)
 
 def parse_integer(s):
-    """Parse a string as an integer, with an optional sign: hex after '$'
-    or '&', binary after '%' (where '.' and '#' can be used for 0 and 1,
-    e.g. '%..#.....'), otherwise decimal. Spaces and commas around it are
-    ignored (so '!byte 1, 2' works). Raises ValueError (or IndexError, for
-    an empty string) if it isn't a number; '0x1f' isn't one."""
+    """Parse a string as an integer, with an optional sign: hex after '$',
+    '&' or '0x', binary after '%' (where '.' and '#' can be used for 0 and
+    1, e.g. '%..#.....'), otherwise decimal. Spaces and commas around it are
+    ignored (so '!byte 1, 2' works). Raises ValueError if it isn't a
+    number."""
     assert s is not None
-    if s is None:
-        return 0
-
-    s = s.strip().strip(',')
+    text = s.strip().strip(',')
 
     sign = 1
-    if s[0] == '-':
-        sign = -1
-        s = s[1:]
-    elif s[0] == '+':
-        s = s[1:]
+    digits = text
+    if digits[:1] in ('-', '+'):
+        sign = -1 if digits[0] == '-' else 1
+        digits = digits[1:]
 
-    if s[0] in '$&':
-        # hexadecimal number
-        s = int(s[1:], 16)
-    elif s[0] == '%':
-        # binary number
-        s = s[1:].replace('.', '0').replace('#', '1')
-        s = int(s, 2)
-    else:
-        # decimal number
-        s = int(s)
-    return sign * s
+    try:
+        if digits[:1] in ('$', '&'):
+            # hexadecimal number
+            value = int(digits[1:], 16)
+        elif digits[:2] in ('0x', '0X'):
+            value = int(digits[2:], 16)
+        elif digits[:1] == '%':
+            # binary number
+            value = int(digits[1:].replace('.', '0').replace('#', '1'), 2)
+        else:
+            # decimal number
+            if not digits.isdigit():
+                raise ValueError()
+            value = int(digits)
+    except ValueError:
+        raise ValueError("'{0}' isn't a number".format(text)) from None
+    return sign * value
+
+def _parse_values(directive, text, size):
+    """The numbers after '!byte' (size 1) or '!word' (size 2), as a list,
+    checked to fit: from 0 up to 255 or 65535, or a negative number down to
+    -128 or -32768 (written as its two's complement, e.g. -1 as $ff). Raises
+    ValueError if there are none, or one isn't a number or doesn't fit."""
+    entries = text.replace(',', ' ').split()
+    if not entries:
+        raise ValueError("{0} needs one or more numbers".format(directive))
+    limit = 1 << (8 * size)
+    values = []
+    for entry in entries:
+        value = parse_integer(entry)
+        if not (-(limit >> 1) <= value < limit):
+            raise ValueError("'{0}' doesn't fit in {1}".format(entry, "a byte" if size == 1 else "a word"))
+        values.append(value & (limit - 1))
+    return values
 
 def parse_instruction(inst, group_number):
     """Parse one instruction of a snippet into a regex, numbering its groups
@@ -557,7 +574,10 @@ def parse_instruction(inst, group_number):
     operand matches just that value, and a name matches any one or two
     bytes (a group, recorded in labels as (group, False)). A number too big
     for one byte goes on to the next mode, so '$12' is zero page and '$1234'
-    absolute.
+    absolute. An immediate value or a branch's offset can be negative, e.g.
+    '#-1' (the byte $ff). 'A' (or no operand) is the accumulator, for ASL,
+    LSR, ROL, ROR, INA and DEA (and INC and DEC, which are INA and DEA with
+    'A'), never a name. Spaces in the operand are ignored ('$70, x').
 
     Raises ValueError for an unknown mnemonic, or an operand that doesn't fit
     any of its addressing modes."""
@@ -579,94 +599,75 @@ def parse_instruction(inst, group_number):
     # '!byte': the bytes given, e.g. '!byte $01, $02'
     if mnemonic == "!byte":
         result = bytearray()
-        for entry in parts[1].split():
-            by = parse_integer(entry)
+        for by in _parse_values("!byte", parts[1] if len(parts) > 1 else "", 1):
             result += re.escape(bytearray([by]))
         return (result, labels, group_number)
 
     # '!word': the 16 bit values given, each low byte first
     if mnemonic == "!word":
         result = bytearray()
-        for entry in parts[1].split():
-            by = parse_integer(entry)
+        for by in _parse_values("!word", parts[1] if len(parts) > 1 else "", 2):
             result += re.escape(bytearray([by & 255, by >> 8]))
         return (result, labels, group_number)
 
     if mnemonic not in mnemonics:
-        raise ValueError(f"Unknown mnemonic: {mnemonic}")
+        raise ValueError("'{0}' isn't an instruction".format(parts[0]))
 
-    operand = parts[1].strip() if len(parts) > 1 else None
+    operand = "".join(parts[1].split()) if len(parts) > 1 else ""
 
     # Identify addressing mode and parse operand
-    details = None
-    operand_expr = None
-    match_groups = None
     result_operand = bytearray()
-    instruction_template = mnemonic
     if not operand:
         # No operand: the implicit form, or failing that the accumulator one
-        details = Details(re.compile(""), 1)
         instruction_template = mnemonic + " implicit"
         if not instruction_template in opcodes:
-            details = Details(re.compile("[Aa]|"), 1)
             instruction_template = mnemonic + " accumulator"
+            if not instruction_template in opcodes:
+                raise ValueError("{0} needs an operand".format(mnemonic.upper()))
+    elif operand.upper() == "A":
+        # The accumulator (the 65C02's 'inc a' and 'dec a' are INA and DEA)
+        instruction_template = {"inc": "ina", "dec": "dea"}.get(mnemonic, mnemonic) + " accumulator"
+        if not instruction_template in opcodes:
+            raise ValueError("{0} can't have the operand '{1}'".format(mnemonic.upper(), operand))
     else:
         for addressing_mode in addr_modes_for_mnemonics[mnemonic]:
+            # (No operand, and 'A', are dealt with above)
+            if addressing_mode in ("implicit", "accumulator"):
+                continue
             details = addressing_mode_patterns[addressing_mode]
             m = re.match(details.pattern, operand)
-            if m:
-                match_groups = m.group()
-                # (Only an operand of more than one character is read. One
-                # of just one character, e.g. 'A', 'sta 7' or 'lda n', is
-                # skipped, leaving just the opcode in the pattern.)
-                if len(m.group()) > 1:
-                    # Record the matches if they are labels, or check the values if they are integers.
-                    # (A number starts with a sign, '&', '$' or a digit; anything else is a name.)
-                    operand_expr = m.group(1)
-                    is_integer = operand_expr and (operand_expr[0] in '+-&$0123456789')
-                    if is_integer:
-                        operand_expr = parse_integer(operand_expr)
-
-                    # check instruction length
-                    if details.length == 2:
-                        # A one byte operand: a number from 0 to 255, or a
-                        # name, which is any byte, in a group of its own
-                        if is_integer:
-                            if (operand_expr >= 0) and (operand_expr < 256):
-                                result_operand += re.escape(bytearray([operand_expr]))
-                            else:
-                                # Too big (or negative) for one byte, so try
-                                # the mnemonic's next addressing mode (e.g.
-                                # absolute rather than zero page)
-                                continue
-                        else:
-                            labels[operand_expr] = [(group_number, False)]
-                            result_operand += "(.)".encode()
-                            group_number += 1
-                    elif details.length == 3:
-                        # A two byte operand: a number (low byte first), or
-                        # a name, which is any two bytes, in a group
-                        if is_integer:
-                            result_operand += re.escape(bytearray([operand_expr & 255, operand_expr >> 8]))
-                        else:
-                            labels[operand_expr] = [(group_number, False)]
-                            result_operand += "(..)".encode()
-                            group_number += 1
-                    else:
-                        assert False
-                # found match_groups, labels, mnemonic, and details: (addressing_mode and length)
-                # look up the opcode based on the mnemonic and the addressing_mode
-                instruction_template = mnemonic + " " + addressing_mode
-                break
-
-    # (details is None only if the mnemonic has no addressing modes to try.
-    # An operand that fits none of them leaves instruction_template as just
-    # the mnemonic, which the check after this catches.)
-    if details is None:
-        raise ValueError(f"Invalid operand format: {operand}")
-
-    if not instruction_template in opcodes:
-        raise ValueError(f"Invalid operand for instruction: {instruction_template}, operand {operand}")
+            if not m:
+                continue
+            # Record the matches if they are labels, or check the values if they are integers.
+            # (A number starts with a sign, '&', '$', '%' or a digit; anything else is a name.)
+            operand_expr = m.group(1)
+            if operand_expr[0] in '+-&$%0123456789':
+                value = parse_integer(operand_expr)
+                if details.length == 2:
+                    # A one byte operand: a number from 0 to 255 (or down
+                    # to -128 for an immediate value or a branch's offset)
+                    lowest = -128 if addressing_mode in ("immediate", "relative") else 0
+                    if not (lowest <= value < 256):
+                        # Too big (or negative) for one byte, so try the
+                        # mnemonic's next addressing mode (e.g. absolute
+                        # rather than zero page)
+                        continue
+                    result_operand += re.escape(bytearray([value & 255]))
+                else:
+                    # A two byte operand, low byte first
+                    if not (0 <= value < 0x10000):
+                        continue
+                    result_operand += re.escape(bytearray([value & 255, value >> 8]))
+            else:
+                # A name, which is any byte (or two bytes), in a group of its own
+                labels[operand_expr] = [(group_number, False)]
+                result_operand += b"(.)" if details.length == 2 else b"(..)"
+                group_number += 1
+            # look up the opcode based on the mnemonic and the addressing_mode
+            instruction_template = mnemonic + " " + addressing_mode
+            break
+        else:
+            raise ValueError("{0} can't have the operand '{1}'".format(mnemonic.upper(), operand))
 
     opcode = opcodes[instruction_template]
     result = re.escape(bytearray([opcode]))+result_operand
@@ -692,15 +693,15 @@ def parse_snippet(program):
     - a name, not indented, records the position (e.g. a loop's start);
     - ';' starts a comment.
 
-    A number in an operand is decimal, or hex after '$' or '&'. The lines'
-    patterns are joined, so the snippet matches only where its instructions
+    A number in an operand is decimal, hex after '$', '&' or '0x', or binary
+    after '%'. The lines' patterns are joined, so the snippet matches only where its instructions
     are one after another in the binary. An optional line is matched if its
     bytes are there and the rest of the snippet still matches after them. A
     name used more than once (e.g. 'nn1' in two alternatives) isn't checked
     to have the same value each time: SnippetHelper gives the first place it
     matched.
 
-    Raises ValueError (from parse_instruction()) for an instruction it can't
+    Stops with an error (utils.die(), with the line) for a line it can't
     parse."""
     # parse the program into a whole_pattern
     whole_pattern = bytearray()
@@ -709,7 +710,10 @@ def parse_snippet(program):
     group_number = 1
 
     for line in program.splitlines():
-        pattern, labels, group_number = parse_line(line, group_number)
+        try:
+            pattern, labels, group_number = parse_line(line, group_number)
+        except ValueError as e:
+            utils.die("register_snippet(): {0}: '{1}'".format(e, line.split(';')[0].strip()))
         if pattern:
             whole_pattern += pattern
         if labels:

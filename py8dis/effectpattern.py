@@ -207,7 +207,10 @@ class EffectPattern:
                 group = position()
                 if pending_label is not None:
                     self.regex_labels[pending_label].append((group, True))
-                pattern, labels, group_number = snippet6502.parse_line(line, group_number)
+                try:
+                    pattern, labels, group_number = snippet6502.parse_line(line, group_number)
+                except ValueError as e:
+                    self._error(str(e), raw)
                 if pattern is None:
                     self._error("not an effect or an instruction", raw)
                 whole.extend(pattern)

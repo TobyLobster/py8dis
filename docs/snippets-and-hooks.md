@@ -27,12 +27,15 @@ loop
 
 Each line is:
 
-- an instruction (an operand that's a name matches any value);
+- an instruction, indented (an operand that's a name matches any value: a name starting `zp` is a zero page address, and any other name in an address is two bytes);
 - `.` (any instruction);
+- `!byte` or `!word` and numbers;
 - alternatives separated by `|`;
 - or a sequence separated by `:`.
 
-`?` at the start of a line makes it optional, and a name at the start of a line names that position. See `snippet6502.parse_snippet()`.
+A number is decimal, hex after `$`, `&` or `0x`, or binary after `%`, where `.` and `#` can stand for 0 and 1 (`%..##....`). An immediate value or a branch's offset can be negative (`lda #-1` is `lda #$ff`), and a number after a branch is its offset, not its target. `A` is the accumulator (`asl A`), never a name.
+
+`?` at the start of a line makes it optional. A name at the start of a line, not indented, names that position, and can have an instruction after it (`loop lda (zp1),y`). A line py8dis can't read stops it with an error saying why. See `snippet6502.parse_snippet()`.
 
 ## Effect patterns
 
