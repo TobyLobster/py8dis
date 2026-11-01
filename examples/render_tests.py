@@ -339,6 +339,8 @@ def make_tests():
          ASSEMBLERS_6502, lambda: output.CommentLine("")),
         ("word wrapped comment",
          ASSEMBLERS_6502, lambda: output.Comment("This is a long comment which is word wrapped, since it is much too long to fit on one line of the output.", 1)),
+        ("word wrapped comment with an indented line",
+         ["beebasm", "xa"], lambda: output.Comment("On Entry:\n    A: the character to print, which is looked up in the table of the characters this can print", 0)),
         ("constant definition *",
          ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.ConstantDefinition("lives", "3", 12, "Starting number of lives", 24)),
         # Directives: the start of the code at an address, and including a
@@ -1135,6 +1137,14 @@ EXPECTED = {
     ],
     'word wrapped comment, ca65': [
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
+    ],
+    # A line that starts with spaces (e.g. a subroutine header's registers)
+    # keeps them when it's wrapped, and lines up after its 'A: '
+    'word wrapped comment with an indented line, beebasm': [
+        '; On Entry:\n;     A: the character to print, which is looked up in the table of the characters this\n;        can print',
+    ],
+    'word wrapped comment with an indented line, xa': [
+        '// On Entry:\n//     A: the character to print, which is looked up in the table of the characters\n//        this can print',
     ],
     # Constants: 'name = value' for the 6502 assemblers, 'name equ value'
     # for z88dk-z80asm and sjasmplus, aligned to the given columns (the name

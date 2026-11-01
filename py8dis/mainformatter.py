@@ -31,6 +31,7 @@ import classification
 import config
 import disassembly
 import movemanager
+import re
 import textwrap
 import trace
 import utils
@@ -313,15 +314,22 @@ def format_comment(text, indent):
 
     Text is word wrapped, at config.get_word_wrap_comment_column(). Each
     line starts with the indent ('indent' levels) and the comment prefix.
-    Each paragraph of the text (each line of it) is wrapped separately.
-    Returns the lines as one string, with newlines between them.
+    Each paragraph of the text (each line of it) is wrapped separately. A
+    paragraph that starts with spaces keeps them on its wrapped lines, which
+    also line up after a 'name: ' at its start (e.g. a subroutine header's
+    '    A: the value'). Returns the lines as one string, with newlines
+    between them.
     """
 
     prefix = config.get_indent_string() * indent + config.get_assembler().comment_prefix() + " "
     text_width = config.get_word_wrap_comment_column() - len(prefix)
     result = ""
     for paragraph in text.split("\n"):
-        result += "\n".join([prefix + line for line in textwrap.fill(paragraph, text_width).split("\n")]) + "\n"
+        m = re.match(r"(\s+)(\S+: )?", paragraph)
+        hanging_indent = m.group(1) + " " * len(m.group(2) or "") if m else ""
+        if len(hanging_indent) > text_width // 2:
+            hanging_indent = ""
+        result += "\n".join([prefix + line for line in textwrap.fill(paragraph, text_width, subsequent_indent=hanging_indent).split("\n")]) + "\n"
     return result[:-1]
 
 def explicit_label_with_inline_comment(name, value, offset=None, align_value_column=0, inline_comment=None, align_comment_column=0):

@@ -374,7 +374,7 @@ By default a number is written in decimal if it's a single digit, otherwise in h
 
 `comment(runtime_addr, text, inline=False, indent=0, word_wrap=True, *, align=None)`
 
-Adds a comment at the address. With `inline=True` it goes at the end of the line; otherwise it's a line (or lines) of its own, word wrapped unless `word_wrap=False`, and indented by `indent` levels.
+Adds a comment at the address. With `inline=True` it goes at the end of the line; otherwise it's a line (or lines) of its own, word wrapped unless `word_wrap=False`, and indented by `indent` levels. Each line of the text is wrapped on its own; one that starts with spaces keeps them on its wrapped lines, which also line up after a `name: ` at its start (as a subroutine header's registers do).
 
 `align` says where it goes:
 
