@@ -794,7 +794,7 @@ def _c128_mmu_writes():
                 result.append((memorymanager.BinaryLocation(BinaryAddr(write.binary_addr), move_id), register, configuration))
     return result
 
-def _c128_comment_mmu_writes(writes):
+def _c128_comment_mmu_writes(writes, known):
     """Comment each instruction that sets the MMU configuration, e.g. 'Set
     the MMU to bank 0 (RAM 0 only)'."""
     for binary_loc, register, configuration in writes:
@@ -806,14 +806,177 @@ def _c128_comment_mmu_writes(writes):
             continue
         disassembly.comment_binary(binary_loc, text, align=Align.INLINE, auto_generated=True)
 
+# ************************************************************************************************
+# The C64's memory configuration: the 6510's port at $01
+
+# The usual value of the port: the BASIC and Kernal ROMs, and the I/O
+C64_USUAL_CONFIGURATION = 0x37
+
+# The heading for the names of addresses in another configuration than the
+# usual one in the "Memory locations" list (since their memory regions are
+# the usual configuration's)
+C64_OTHER_CONFIGURATIONS_HEADING = "Other memory configurations"
+
+def c64_memory(configuration, addr):
+    """What the C64 has at addr with the 6510's port at $01 set to the given
+    configuration (its bits 0-2: LORAM, HIRAM and CHAREN): 'BASIC ROM'
+    ($a000-$bfff), 'Kernal ROM' ($e000-$ffff), 'I/O' or 'character ROM'
+    ($d000-$dfff), or 'RAM'. (Without a cartridge, which changes these.)"""
+    mode = configuration & 7
+    if 0xa000 <= addr < 0xc000:
+        return "BASIC ROM" if mode & 3 == 3 else "RAM"
+    if 0xd000 <= addr < 0xe000:
+        if mode & 3 == 0:
+            return "RAM"
+        return "I/O" if mode & 4 else "character ROM"
+    if addr >= 0xe000:
+        return "Kernal ROM" if mode & 2 else "RAM"
+    return "RAM"
+
+def c64_configuration_description(configuration):
+    """A description of a C64 memory configuration (the value of the 6510's
+    port at $01), e.g. 'RAM, I/O' ($35), 'RAM only' ($34), or for the usual
+    one ($37), 'the usual one (RAM, BASIC ROM, Kernal ROM, I/O)'."""
+    parts = [part for part in (c64_memory(configuration, 0xa000), c64_memory(configuration, 0xe000), c64_memory(configuration, 0xd000)) if part != "RAM"]
+    text = "RAM" + (", " + ", ".join(parts) if parts else " only")
+    if configuration & 7 == C64_USUAL_CONFIGURATION & 7:
+        text = "the usual one (" + text + ")"
+    return text
+
+# The 6510's port (its data register), and the opcodes that read-modify-write
+# it in zero page or absolute: INC and DEC
+C64_PORT = 0x01
+_INC_DEC = {0xe6: 1, 0xee: 1, 0xc6: -1, 0xce: -1}
+_STA = (0x85, 0x8d)
+_LDA_PORT = ((0xa5, 0x01), (0xad, 0x01, 0x00))
+_ACCUMULATOR_LOGIC = {0x29: lambda a, n: a & n, 0x09: lambda a, n: a | n, 0x49: lambda a, n: a ^ n}     # AND, ORA, EOR #n
+
+def _c64_port_writes():
+    """[(binary location, $01, value)] for each instruction that writes the
+    6510's port at $01: the value, if it's known; else a function of the
+    port's value before it, for INC and DEC, and for a store of A after 'lda
+    $01' and immediate ANDs, ORAs and EORs (e.g. 'lda $01 : and #$f8 : ora
+    #$05 : sta $01'); else None."""
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+    result = []
+    for run in cpu.straight_runs():
+        for write in cpu.memory_writes(run):
+            if write.target != C64_PORT:
+                continue
+            binary_addr = write.binary_addr
+            opcode = memory_binary[binary_addr]
+            value = None
+            if write.read_modify_write:
+                if opcode in _INC_DEC:
+                    value = lambda before, step=_INC_DEC[opcode]: (before + step) & 0xff
+            elif write.value is not None:
+                value = write.value
+            elif opcode in _STA:
+                value = _c64_port_logic(run, run.index(binary_addr))
+            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
+            result.append((memorymanager.BinaryLocation(BinaryAddr(binary_addr), move_id), C64_PORT, value))
+    return result
+
+def _c64_port_logic(run, index):
+    """For a store of A to $01 at run[index]: if A is the port's value with
+    immediate ANDs, ORAs or EORs ('lda $01', then e.g. 'and #$f8 : ora
+    #$05'), a function of the port's value before it, giving the value
+    stored; else None."""
+    memory_binary = session.current().memory.binary
+    steps = []
+    for binary_addr in reversed(run[:index]):
+        opcode = memory_binary[binary_addr]
+        if opcode in _ACCUMULATOR_LOGIC:
+            steps.insert(0, (_ACCUMULATOR_LOGIC[opcode], memory_binary[binary_addr + 1]))
+            continue
+        if any(tuple(memory_binary[binary_addr:binary_addr + len(lda)]) == lda for lda in _LDA_PORT):
+            def value(before, steps=steps):
+                for operation, n in steps:
+                    before = operation(before, n)
+                return before & 0xff
+            return value
+        return None
+    return None
+
+def _c64_comment_port_writes(writes, known):
+    """Comment each instruction that sets the C64's memory configuration to
+    a known value, e.g. 'Set the memory configuration to RAM, I/O': a value
+    stored, or for INC, DEC etc., the configuration after it, where the one
+    before it is known (see _flow_ranges())."""
+    cpu = session.current().cpu
+    for binary_loc, _, value in writes:
+        if callable(value):
+            before = known.get(binary_loc.binary_addr)
+            value = value(before) if before is not None else None
+        if value is None:
+            continue
+        disassembly.comment_binary(binary_loc, "Set the memory configuration to {0} (${1:02x})".format(c64_configuration_description(value), value),
+                                   align=Align.INLINE, auto_generated=True)
+
+def c64_configuration(start, end, configuration):
+    """Say that the code from start to end (runtime addresses, end exclusive)
+    runs with the C64's memory configuration (the value of the 6510's port at
+    $01) set to the given one, e.g. $35 for RAM and the I/O (with BASIC and
+    the Kernal switched out), rather than the usual $37: e.g. a routine
+    whose caller switches the ROMs out. An address it uses that's something
+    else there (e.g. RAM rather than a ROM or the I/O) isn't given its usual
+    name, and a call to a ROM routine that's switched out isn't commented as
+    one (see c64_memory()). (The configuration the code sets with $01 is
+    followed by itself: see c64().) Call it after c64()."""
+    if _machine().name != "c64":
+        utils.die("commodore.c64_configuration(): call commodore.c64() first")
+    if not utils.is_integer_type(configuration) or not 0 <= configuration < 0x100:
+        utils.die("commodore.c64_configuration(): the configuration must be 0-255, not {0!r}".format(configuration))
+    binary_start, binary_end = _checked_range("c64_configuration", start, end)
+    session.current().extras.setdefault("commodore.c64_configurations", []).append((binary_start, binary_end, configuration))
+
+def _checked_range(command, start, end):
+    """The binary start and end of the runtime addresses start to end (end
+    exclusive), stopping with an error for bad addresses."""
+    for addr in (start, end):
+        if not utils.is_integer_type(addr) or not 0 <= addr <= 0x10000:
+            utils.die("commodore.{0}(): the addresses must be between 0 and &10000, not {1!r}".format(command, addr))
+    if not start < end:
+        utils.die("commodore.{0}(): the start ({1}) must be before the end ({2})".format(command, _hex4(start), _hex4(end)))
+    binary_start = movemanager.r2b_checked(start).binary_addr
+    binary_end = movemanager.r2b_checked(end - 1).binary_addr + 1
+    return binary_start, binary_end
+
+# ************************************************************************************************
+# Memory configurations: the C128's MMU, and the C64's port at $01
+
+# How a machine's memory configuration is set and what it maps (see
+# _banking()): 'writes' gives the code that sets it, 'memory' what's at an
+# address in a configuration, 'usual' the configuration the names are for
+# (e.g. the C128's bank 15), 'comment' comments the code that sets it,
+# 'heading' is the heading for the names in other configurations,
+# 'fixed_key' the session's extras for the ranges given by the control file
+# (c128_bank() or c64_configuration()), and 'far_targets_key' those for the
+# code that starts with a configuration (the C128's JSRFAR targets)
+Banking = collections.namedtuple("Banking", ["writes", "memory", "usual", "comment", "heading", "fixed_key", "far_targets_key"])
+
+def _banking():
+    """The Banking for the machine, or None if it has none"""
+    name = _machine().name
+    if name == "c128":
+        return Banking(_c128_mmu_writes, c128_memory, c128_bank_configurations[15], _c128_comment_mmu_writes,
+                       C128_OTHER_BANKS_HEADING, "commodore.c128_banks", "commodore.c128_far_targets")
+    if name == "c64":
+        return Banking(_c64_port_writes, c64_memory, C64_USUAL_CONFIGURATION, _c64_comment_port_writes,
+                       C64_OTHER_CONFIGURATIONS_HEADING, "commodore.c64_configurations", "commodore.c64_far_targets")
+    return None
+
 # The 6502's opcodes that end a block of code (RTS, RTI, BRK, JMP (ind)),
 # and its conditional branches
 _BLOCK_END_OPCODES = (0x60, 0x40, 0x00, 0x6c)
 _BRANCH_OPCODES = (0x10, 0x30, 0x50, 0x70, 0x90, 0xb0, 0xd0, 0xf0)
 
-def _c128_flow_ranges(writes):
+def _flow_ranges(writes, banking):
     """[(binary start, binary end, configuration)] for the code that runs
-    with a known MMU configuration, following the configuration through the
+    with a known memory configuration (the C128's MMU configuration, or the
+    C64's port at $01, see _banking()), and {binary address: configuration}
+    for each instruction that runs with a known one, following the configuration through the
     code as it runs: from an instruction that sets it to a known value (see
     _c128_mmu_writes()), to the next instruction, the target of a branch or
     JMP, and a subroutine called with JSR (whose return comes back with the
@@ -822,10 +985,14 @@ def _c128_flow_ranges(writes):
     the code after the string), up to the next instruction that sets it. Where code can be reached with different
     configurations (or from an entry point, or code the program refers to
     another way, e.g. a vector it sets, which aren't known), it isn't known
-    (so it's taken to be bank 15). Code in a c128_bank() range whose
-    configuration isn't known from the code before it has the range's; a
-    JSRFAR or JMPFAR target (see pre_trace_far_call()) starts with its
-    bank's."""
+    (so it's taken to be the usual one, e.g. the C128's bank 15). Code in a
+    c128_bank() or c64_configuration() range whose configuration isn't known
+    from the code before it has the range's; a JSRFAR or JMPFAR target (see
+    pre_trace_far_call()) starts with its bank's.
+
+    A write's value is a configuration, None if it isn't known, or a
+    function of the configuration before it (e.g. for INC $01), which is
+    only known where that is."""
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     labels = session.current().labels.labels
@@ -893,11 +1060,11 @@ def _c128_flow_ranges(writes):
         referred = label is not None and any(ref.binary_addr not in predecessors[binary_addr] for ref in label.references)
         if binary_addr in cpu.explicit_entry_points or not predecessors[binary_addr] or referred:
             seeds[binary_addr] = UNKNOWN
-    for binary_addr, configuration in session.current().extras.get("commodore.c128_far_targets", {}).items():
+    for binary_addr, configuration in session.current().extras.get(banking.far_targets_key, {}).items():
         if binary_addr in is_instruction:
             seeds[binary_addr] = configuration if seeds.get(binary_addr, configuration) is UNKNOWN or binary_addr not in seeds else seeds[binary_addr]
 
-    banks = list(session.current().extras.get("commodore.c128_banks", []))
+    banks = list(session.current().extras.get(banking.fixed_key, []))
     def bank_range(binary_addr):
         """The c128_bank() range binary_addr is in, or None"""
         for r in banks:
@@ -940,7 +1107,12 @@ def _c128_flow_ranges(writes):
             binary_addr = work.popleft()
             value = configuration_in[binary_addr]
             if binary_addr in write_values:
-                value = write_values[binary_addr] if write_values[binary_addr] is not None else UNKNOWN
+                written = write_values[binary_addr]
+                if callable(written):
+                    # (e.g. INC $01: only known if the value before it is)
+                    value = written(value) if utils.is_integer_type(value) else UNKNOWN
+                else:
+                    value = written if written is not None else UNKNOWN
             for n, call in successors[binary_addr]:
                 if call == "call" and not follow_calls:
                     continue
@@ -978,6 +1150,7 @@ def _c128_flow_ranges(writes):
         return summaries[target]
 
     configuration_in = propagate(seeds, follow_calls=True)
+    known = {binary_addr: value for binary_addr, value in configuration_in.items() if utils.is_integer_type(value)}
 
     result = []
     for binary_addr, length in instructions:
@@ -990,7 +1163,7 @@ def _c128_flow_ranges(writes):
             result[-1] = (result[-1][0], binary_addr + length, value)
         else:
             result.append((binary_addr, binary_addr + length, value))
-    return result
+    return result, known
 
 def _c128_configuration_at(binary_addr, ranges):
     """The MMU configuration the code at binary_addr runs with, from the
@@ -1006,13 +1179,14 @@ def _c128_configuration_at(binary_addr, ranges):
 # 15's)
 C128_OTHER_BANKS_HEADING = "Other banks"
 
-def _c128_name_by_configuration(ranges):
-    """Where code that runs with another MMU configuration (in the ranges,
-    see _c128_configuration_at()) uses an address that's something else in
-    that configuration than in bank 15 (e.g. RAM rather than I/O or a ROM),
-    give the address a plain name there (e.g. 'ld020'), as a local label,
-    rather than its name in bank 15 (e.g. 'vic_border_colour'). Only names
-    commodore.py gives are replaced, not the control file's."""
+def _name_by_configuration(ranges, banking):
+    """Where code that runs with another memory configuration (in the
+    ranges, see _c128_configuration_at()) uses an address that's something
+    else in that configuration than in the usual one (e.g. the C128's bank
+    15: RAM rather than I/O or a ROM), give the address a plain name there
+    (e.g. 'ld020'), as a local label, rather than its usual name (e.g.
+    'vic_border_colour'). Only names commodore.py gives are replaced, not the
+    control file's."""
     if not ranges:
         return
     machine = _machine()
@@ -1025,7 +1199,7 @@ def _c128_name_by_configuration(ranges):
         routine_names[routine.addr].update({routine.name, _routine_name(routine, "commodore")})
     for call in machine.jump_table:
         routine_names[call.addr].add(official_name(call.name))
-    bank_15 = c128_bank_configurations[15]
+    usual = banking.usual
     for runtime_addr, label in sorted(session.current().labels.labels.items()):
         if runtime_addr not in optional_labels and runtime_addr not in routine_names:
             continue
@@ -1034,12 +1208,12 @@ def _c128_name_by_configuration(ranges):
             continue
         for reference in label.references:
             configuration = _c128_configuration_at(reference.binary_addr, ranges)
-            if configuration is None or c128_memory(configuration, runtime_addr) == c128_memory(bank_15, runtime_addr):
+            if configuration is None or banking.memory(configuration, runtime_addr) == banking.memory(usual, runtime_addr):
                 continue
             c = classification.get_classification(reference.binary_addr)
             length = c.length() if c is not None and c is not classification.INSIDE_A_CLASSIFICATION else 1
             disassembly.add_local_label(RuntimeAddr(runtime_addr), utils.force_case("l%04x" % runtime_addr),
-                                        reference.binary_addr, reference.binary_addr + length, heading=C128_OTHER_BANKS_HEADING)
+                                        reference.binary_addr, reference.binary_addr + length, heading=banking.heading)
 
 # ************************************************************************************************
 # Drive code in another machine's program (see drive1541_code())
@@ -1143,24 +1317,26 @@ def drive1541_code(runtime_addr, binary_addr, length, rom="1541"):
     return move_id
 
 def _mapped_out(binary_addr, runtime_addr):
-    """Whether the code at binary_addr runs with a C128 MMU configuration in
-    which runtime_addr is something else than in bank 15 (e.g. RAM rather
-    than the Kernal ROM or I/O), so a call to a ROM routine there, or a store
-    to an I/O register, isn't one. (Always False for the other machines.)
-    During tracing, only c128_bank()'s configurations are known; once the
-    code has been traced, those the code sets too (see
-    _c128_mmu_analysis())."""
+    """Whether the code at binary_addr runs with a memory configuration (the
+    C128's MMU, or the C64's port at $01, see _banking()) in which
+    runtime_addr is something else than usual (e.g. RAM rather than the
+    Kernal ROM or I/O), so a call to a ROM routine there, or a store to an
+    I/O register, isn't one. (Always False for the other machines.) During
+    tracing, only c128_bank()'s and c64_configuration()'s configurations are
+    known; once the code has been traced, those the code sets too (see
+    _banking_analysis())."""
     if _drive_code_at(binary_addr) is not None:
         # (Drive code, see drive1541_code(), runs in the drive)
         return True
-    if _machine().name != "c128":
+    banking = _banking()
+    if banking is None:
         return False
     extras = session.current().extras
-    ranges = extras.get("commodore.c128_ranges")
+    ranges = extras.get("commodore.banking_ranges")
     if ranges is None:
-        ranges = extras.get("commodore.c128_banks", [])
+        ranges = extras.get(banking.fixed_key, [])
     configuration = _c128_configuration_at(binary_addr, ranges)
-    return configuration is not None and c128_memory(configuration, runtime_addr) != c128_memory(c128_bank_configurations[15], runtime_addr)
+    return configuration is not None and banking.memory(configuration, runtime_addr) != banking.memory(banking.usual, runtime_addr)
 
 def _unless_mapped_out(hook):
     """A subroutine hook for a ROM routine, that does nothing for a call
@@ -1181,19 +1357,22 @@ def _inline_string_hook(target, caller):
         return caller + 3
     return stringz_hook(target, caller)
 
-def _c128_mmu_analysis():
-    """The C128's MMU: comment the code that sets its configuration, and name
-    the addresses code uses according to the configuration it runs with:
-    after the code sets it (see _c128_flow_ranges()), or as
-    c128_bank() says. (Run once the code has been traced, as one of the CPU's
-    code analysis functions.)"""
-    writes = _c128_mmu_writes()
-    _c128_comment_mmu_writes(writes)
+def _banking_analysis():
+    """The C128's MMU, or the C64's port at $01 (see _banking()): comment the
+    code that sets the memory configuration, and name the addresses code
+    uses according to the configuration it runs with: after the code sets it
+    (see _flow_ranges()), or as c128_bank() or c64_configuration() says.
+    (Run once the code has been traced, as one of the CPU's code analysis
+    functions.)"""
+    banking = _banking()
+    writes = banking.writes()
+    ranges, known = _flow_ranges(writes, banking)
+    banking.comment(writes, known)
     # (The configuration the code sets comes first, since it changes the one
-    # c128_bank() gives)
-    ranges = _c128_flow_ranges(writes) + list(session.current().extras.get("commodore.c128_banks", []))
-    session.current().extras["commodore.c128_ranges"] = ranges
-    _c128_name_by_configuration(ranges)
+    # c128_bank() or c64_configuration() gives)
+    ranges += list(session.current().extras.get(banking.fixed_key, []))
+    session.current().extras["commodore.banking_ranges"] = ranges
+    _name_by_configuration(ranges, banking)
 
 def c128_bank(start, end, bank=None, *, configuration=None):
     """Say that the code from start to end (runtime addresses, end exclusive)
@@ -1218,13 +1397,7 @@ def c128_bank(start, end, bank=None, *, configuration=None):
         configuration = c128_bank_configurations[bank]
     elif not utils.is_integer_type(configuration) or not 0 <= configuration < 0x100:
         utils.die("commodore.c128_bank(): the configuration must be 0-255, not {0!r}".format(configuration))
-    for addr in (start, end):
-        if not utils.is_integer_type(addr) or not 0 <= addr <= 0x10000:
-            utils.die("commodore.c128_bank(): the addresses must be between 0 and &10000, not {0!r}".format(addr))
-    if not start < end:
-        utils.die("commodore.c128_bank(): the start ({0}) must be before the end ({1})".format(_hex4(start), _hex4(end)))
-    binary_start = movemanager.r2b_checked(start).binary_addr
-    binary_end = movemanager.r2b_checked(end - 1).binary_addr + 1
+    binary_start, binary_end = _checked_range(command, start, end)
     session.current().extras.setdefault("commodore.c128_banks", []).append((binary_start, binary_end, configuration))
 
 
@@ -1255,7 +1428,7 @@ def pre_trace_far_call(p):
         counts[base_name] = count
         label(target, base_name if count == 1 else "%s_%d" % (base_name, count))
     p.entry(target)
-    # (The target runs with its bank's configuration, see _c128_flow_ranges())
+    # (The target runs with its bank's configuration, see _flow_ranges())
     binary_addr, _ = movemanager.r2b(RuntimeAddr(target))
     if binary_addr is not None:
         session.current().extras.setdefault("commodore.c128_far_targets", {})[binary_addr] = c128_bank_configurations[bank]
@@ -1930,12 +2103,12 @@ def _set_up(command, machine, names, rom_labels):
             session.current().trace.substitute_constant_list.append(cpu6502.SubConst("st%s $%04x" % (reg, addr), reg, machine.colours, True,
                                                                                      condition=lambda binary_addr, addr=addr: not _mapped_out(binary_addr, addr)))
 
-    # The C128's MMU (see _c128_mmu_analysis()), before the calls are
-    # commented and the colours substituted, since they depend on it (see
-    # _mapped_out())
-    if machine.name == "c128":
+    # The C128's MMU, or the C64's port at $01 (see _banking_analysis()),
+    # before the calls are commented and the colours substituted, since they
+    # depend on it (see _mapped_out())
+    if _banking() is not None:
         code_analysis_fns = session.current().cpu.code_analysis_fns
-        code_analysis_fns.insert(code_analysis_fns.index(session.current().cpu.substitute_constants), _c128_mmu_analysis)
+        code_analysis_fns.insert(code_analysis_fns.index(session.current().cpu.substitute_constants), _banking_analysis)
     # The 1541's job results and VIAs (see _drive1541_analysis())
     if machine.name == "1541":
         session.current().cpu.code_analysis_fns.append(_drive1541_analysis)
@@ -1967,7 +2140,15 @@ def c64(names="descriptive", rom_labels=True):
     - code that sets a vector (e.g. the IRQ vector at &0314) to an address in
       the program: the address is traced and named (e.g. 'irq_handler');
     - a BASIC program loaded at &0801 (see basic_program());
-    - PETSCII as the text encoding (see config.set_text_encoding()).
+    - PETSCII as the text encoding (see config.set_text_encoding());
+    - the memory configuration the code sets with the 6510's port at $01
+      (switching the ROMs and the I/O out and in), followed through the
+      code: the code that sets it is commented (e.g. 'Set the memory
+      configuration to RAM, I/O ($35)'), and an address used where it's
+      something else than usual is given a plain name (e.g. 'ld020' rather
+      than 'vic_border_colour', where the I/O is switched out). See
+      c64_configuration() for code whose configuration isn't known from the
+      code.
     """
     _set_up("c64", c64_machine(), names, rom_labels)
 

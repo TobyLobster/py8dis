@@ -116,6 +116,7 @@ TESTS = [
     ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "PETSCII and screen code strings, with config.set_text_encoding()"),
     ("c64_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program (a PRG file with a BASIC SYS line), with commodore.c64()"),
     ("c64_names_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "c64_test with commodore.c64(names=\"commodore\"), and a name clash"),
+    ("c64_memory_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the C64's memory configuration (the 6510's port at $01), followed through the code, with c64_configuration()"),
     ("cartridge_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 cartridge, with commodore.is_cartridge()"),
     ("vic20_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a VIC-20 program, with commodore.vic20()"),
     ("vic20_8k_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "vic20_test for a VIC-20 with 8K or more RAM"),
@@ -153,7 +154,7 @@ TESTS = [
 # test is checked, see check_json(), and every beebasm symbol file is checked
 # against beebasm's own, but these show any change to the outputs
 # themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
 
 # The symbol file format made for each assembler's tests, so that each format
 # is tested (see py8dis/symbols.py)
@@ -184,6 +185,7 @@ ERROR_TESTS = [
     ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
     ("upper_case_os_calls_too_late", "config.set_upper_case_os_calls(): call it before acorn.bbc(), commodore.c64() etc., which name the OS calls"),
+    ("c64_configuration_without_c64", "commodore.c64_configuration(): call commodore.c64() first"),
     ("c128_bank_without_c128",  "commodore.c128_bank(): call commodore.c128() first"),
     ("c128_bank_bad_bank",      "commodore.c128_bank(): the bank must be 0-15, not 16"),
     ("pet_80_columns_basic_2",  "commodore.pet(): only BASIC 4 PETs have 80 columns"),
@@ -543,7 +545,7 @@ def check_json_annotations(path, doc, asm):
     # (A local name can have a heading of its own: commodore.py's 'Other
     # banks', for the C128's names in other banks, and '1541 drive', for the
     # names in drive code)
-    own_headings = {"Other banks", "1541 drive"}
+    own_headings = {"Other banks", "Other memory configurations", "1541 drive"}
     region_names = {r["name"] for r in regions} | {"Other"} | own_headings
     # The headings in the asm, e.g. '; Zero page (&0000-&00ff)' or '; Other'
     # (z88dk writes an address below &100 with two digits, e.g. '; ROM ($00-$3fff)')

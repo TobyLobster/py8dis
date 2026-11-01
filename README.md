@@ -241,7 +241,7 @@ commodore.c64()
 go()
 ```
 
-gives names such as `vic_border_colour` and `CHROUT`, comments such as `jsr SETNAM ; Set the filename to "i0"`, and lists the BASIC program at the start, if there is one (such as `10 SYS2061`), tracing the code it runs.
+gives names such as `vic_border_colour` and `CHROUT`, comments such as `jsr SETNAM ; Set the filename to "i0"` and `sta cpu_port ; Set the memory configuration to RAM, I/O ($35)`, and lists the BASIC program at the start, if there is one (such as `10 SYS2061`), tracing the code it runs.
 
 ## Examples
 

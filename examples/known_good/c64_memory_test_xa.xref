@@ -1,0 +1,68 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0001  cpu_port (Memory locations: 6510 I/O port)
+    $0810     sys_entry+3                  sta cpu_port
+    $0820     sys_entry+19                 dec cpu_port
+    $0830     loop_c0824+12                inc cpu_port
+    $0837     loop_c0824+19                lda cpu_port
+    $083d     loop_c0824+25                sta cpu_port
+    $084c     loop_c0824+40                sta cpu_port
+    $085c     sub_c085a+2                  sta cpu_port
+
+$0801  pydis_start (inline), basic_line_10 (inline)
+    (not referenced)
+
+$080b  basic_end (inline)
+    (not referenced)
+
+$080d  sys_entry (inline)
+    (not referenced)
+
+$0824  loop_c0824 (inline)
+    $082b     loop_c0824+7                 bne loop_c0824
+
+$0853  sub_c0853 (inline)
+    $082d     loop_c0824+9                 jsr sub_c0853
+
+$085a  sub_c085a (inline)
+    $0844     loop_c0824+32                jsr sub_c085a
+
+$085f  kernal_out_routine_entry (inline)
+    (not referenced)
+
+$0863  sub_c0863 (inline)
+    $084e     loop_c0824+42                jsr sub_c0863
+
+$0867  pydis_end (inline)
+    (not referenced)
+
+$4000  l4000 (Memory locations: BASIC program area)
+    $0827     loop_c0824+3                 sta l4000,x
+
+$a000  la000 (local to $081a-$081c)
+    $081a     sys_entry+13                 sta la000
+
+$d000  ld000 (local to $0824-$0826)
+    $0824     loop_c0824                   lda ld000,x
+
+$d020  vic_border_colour (Memory locations: VIC-II), ld020 (local to $0853-$0855)
+    $0814     sys_entry+7                  sta vic_border_colour
+    $0853     sub_c0853                    lda ld020
+
+$d021  vic_background_colour_0 (Memory locations: VIC-II)
+    $0834     loop_c0824+16                sta vic_background_colour_0
+
+$e000  le000 (local to $0817-$0819), le000 (local to $0856-$0858), le000 (local to $0847-$0849)
+    $0817     sys_entry+10                 lda le000
+    $0847     loop_c0824+35                lda le000
+    $0856     sub_c0853+3                  sta le000
+
+$e010  le010 (Memory locations: Kernal ROM)
+    $085f     kernal_out_routine_entry     lda le010
+
+$ffd2  CHROUT (Memory locations: Kernal entry points), lffd2 (local to $081d-$081f)
+    $081d     sys_entry+16                 jsr lffd2
+    $0841     loop_c0824+29                jsr CHROUT
+
+$fffe  hardware_irq_vector (Memory locations: 6502 vectors)
+    $0863     sub_c0863                    lda hardware_irq_vector

@@ -253,7 +253,7 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
 ; &e1db referenced 1 time by &e1c4
 .ce1db
     lda #&27 ; '''                                                    ; e1db: a9 27       .'
-    sta cpu_port                                                      ; e1dd: 85 01       ..
+    sta cpu_port                                                      ; e1dd: 85 01       .. ; Set the memory configuration to the usual one (RAM, BASIC ROM, Kernal ROM, I/O) ($27)
     plp                                                               ; e1df: 28          (
     rts                                                               ; e1e0: 60          .
 
@@ -4459,7 +4459,7 @@ lfc8a = cfc89+1
 ; &fda3 referenced 1 time by &ff84
 .cfda3
     ldx #&27 ; '''                                                    ; fda3: a2 27       .'
-    stx cpu_port                                                      ; fda5: 86 01       ..
+    stx cpu_port                                                      ; fda5: 86 01       .. ; Set the memory configuration to the usual one (RAM, BASIC ROM, Kernal ROM, I/O) ($27)
     ldx #&2f ; '/'                                                    ; fda7: a2 2f       ./
     stx cpu_port_direction                                            ; fda9: 86 00       ..
     ldx #&7f                                                          ; fdab: a2 7f       ..

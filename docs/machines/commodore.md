@@ -23,6 +23,7 @@ go()
 (A C128 program in C64 mode is a C64 program: use `c64()`.) Load the program with the CPU `"6510"` if it uses the 6502's undocumented opcodes (see [cpus.md](../cpus.md)), or `"6502"`.
 
 - [What it does (the C64)](#what-it-does-the-c64)
+- [The C64's memory configuration](#the-c64s-memory-configuration)
 - [Names](#names)
 - [VIC-20](#vic-20)
 - [C128](#c128)
@@ -67,6 +68,24 @@ Some calls get more:
 **Lists the BASIC program** at $0801, if there is one (see [BASIC programs](#basic-programs)).
 
 **Uses PETSCII** as the text encoding (see [text-encodings.md](../text-encodings.md)). Call `c64()` before marking any strings.
+
+**Follows the memory configuration** the program sets with the 6510's port at $01 (see [below](#the-c64s-memory-configuration)).
+
+## The C64's memory configuration
+
+Many C64 programs switch the BASIC and Kernal ROMs, and the I/O, out of the memory map, to use the RAM underneath, by writing to the 6510's port at $01. `c64()` follows this through the code, much as `c128()` follows the C128's MMU:
+
+- **The code that sets it is commented** with the configuration, when its value is known: e.g. `lda #$35 : sta cpu_port ; Set the memory configuration to RAM, I/O ($35)`. An `inc $01` or `dec $01`, or `lda $01` with immediate ANDs, ORAs and EORs then `sta $01` (e.g. `lda $01 : and #$f8 : ora #$05 : sta $01`), is commented too, where the configuration before it is known.
+- **The code after it uses that configuration's names.** An address it uses that's something else in that configuration than usual gets a plain name there: e.g. after `lda #$34 : sta $01` (RAM only), `lda $d020` is `lda ld020` rather than `lda vic_border_colour`, and `lda $e000` is `lda le000`. These names are listed under their own heading, `; Other memory configurations`, at the end of the memory locations. A call to a Kernal or BASIC routine that's switched out isn't commented as one (e.g. `jsr lffd2`, not `jsr CHROUT`), and a store to a colour register that's switched out doesn't store a colour.
+- **The configuration is followed as the code runs:** to the next instruction, the targets of branches and JMPs, and a subroutine called with JSR. The code after a JSR continues with the configuration the call was made with, unless the subroutine always returns with one it sets itself. Where code can be reached with different configurations, or from an entry point or another way that isn't known (e.g. an interrupt handler whose address the program stores in a vector), its configuration isn't known, so it's taken to be the usual one, $37 (BASIC, the Kernal and the I/O).
+
+The configurations are those of bits 0-2 of $01 (LORAM, HIRAM and CHAREN), without a cartridge, which changes them.
+
+`commodore.c64_configuration(start, end, configuration)`
+
+Says that the code from `start` to `end` (runtime addresses, `end` not included) runs with the given configuration (the value of $01), e.g. an interrupt handler that runs with $35, which the code that sets $01 before enabling the interrupt gives it. The addresses it uses are named as above. Call it after `c64()`.
+
+`commodore.c64_memory(configuration, addr)` says what's at an address in a configuration (`"RAM"`, `"BASIC ROM"`, `"Kernal ROM"`, `"I/O"` or `"character ROM"`), and `commodore.c64_configuration_description(configuration)` describes a configuration, as in the comments.
 
 ## Names
 

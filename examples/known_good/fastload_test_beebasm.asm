@@ -52,7 +52,7 @@ end_job             = &f969
 
 .sys_entry
     lda #&37 ; '7'                                                    ; 080d: a9 37       .7
-    sta cpu_port                                                      ; 080f: 85 01       ..
+    sta cpu_port                                                      ; 080f: 85 01       ..             ; Set the memory configuration to the usual one (RAM, BASIC ROM, Kernal ROM, I/O) ($37)
     lda #colour_black                                                 ; 0811: a9 00       ..
     sta vic_border_colour                                             ; 0813: 8d 20 d0    . P
     lda #&0f                                                          ; 0816: a9 0f       ..             ; A=logical file number
