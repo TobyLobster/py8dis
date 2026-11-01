@@ -1830,31 +1830,31 @@ section pydis, org = &1100, filename = "acorn_os_calls_baron"
     jsr OSBYTE                                                        ; 1cfa: 20 f4 ff     .. ; Write X to video ULA control register and OS copy (BBC and Master only), and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1cfd: a9 9a       ..
     ldx #%11111111                                                    ; 1cff: a2 ff       ..
-    jsr OSBYTE                                                        ; 1d01: 20 f4 ff     .. ; Set cassette motor on, RS423 in charge, receive at 75 baud, transmit at 75 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d01: 20 f4 ff     .. ; Set video ULA control: 80 columns, 2 MHz clock, cursor segments 0, 1 and 2, teletext, flashing colours inverted, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d04: a9 9a       ..
     ldx #%00111000                                                    ; 1d06: a2 38       .8
-    jsr OSBYTE                                                        ; 1d08: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 75 baud, transmit at 19200 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d08: 20 f4 ff     .. ; Set video ULA control: 40 columns, 2 MHz clock, cursor segment 2, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d0b: a9 9a       ..
     ldx #%00110001                                                    ; 1d0d: a2 31       .1
-    jsr OSBYTE                                                        ; 1d0f: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 150 baud, transmit at 9600 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d0f: 20 f4 ff     .. ; Set video ULA control: 10 columns, 2 MHz clock, cursor segment 2, flashing colours inverted, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d12: a9 9a       ..
     ldx #%00101010                                                    ; 1d14: a2 2a       .*
-    jsr OSBYTE                                                        ; 1d16: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 300 baud, transmit at 4800 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d16: 20 f4 ff     .. ; Set video ULA control: 40 columns, 1 MHz clock, cursor segment 2, teletext, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d19: a9 9a       ..
     ldx #%00100011                                                    ; 1d1b: a2 23       .#
-    jsr OSBYTE                                                        ; 1d1d: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 1200 baud, transmit at 2400 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d1d: 20 f4 ff     .. ; Set video ULA control: 10 columns, 1 MHz clock, cursor segment 2, teletext, flashing colours inverted, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d20: a9 9a       ..
     ldx #%00011100                                                    ; 1d22: a2 1c       ..
-    jsr OSBYTE                                                        ; 1d24: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 2400 baud, transmit at 1200 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d24: 20 f4 ff     .. ; Set video ULA control: 80 columns, 2 MHz clock, no cursor, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d27: a9 9a       ..
     ldx #%00010101                                                    ; 1d29: a2 15       ..
-    jsr OSBYTE                                                        ; 1d2b: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 4800 baud, transmit at 300 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d2b: 20 f4 ff     .. ; Set video ULA control: 20 columns, 2 MHz clock, no cursor, flashing colours inverted, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d2e: a9 9a       ..
     ldx #%00001110                                                    ; 1d30: a2 0e       ..
-    jsr OSBYTE                                                        ; 1d32: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 9600 baud, transmit at 150 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d32: 20 f4 ff     .. ; Set video ULA control: 80 columns, 1 MHz clock, no cursor, teletext, and reset flash cycle
     lda #osbyte_write_video_ula_control                               ; 1d35: a9 9a       ..
     ldx #%00000111                                                    ; 1d37: a2 07       ..
-    jsr OSBYTE                                                        ; 1d39: 20 f4 ff     .. ; Set cassette motor off, cassette system in charge, receive at 19200 baud, transmit at 75 baud, and reset flash cycle
+    jsr OSBYTE                                                        ; 1d39: 20 f4 ff     .. ; Set video ULA control: 20 columns, 1 MHz clock, no cursor, teletext, flashing colours inverted, and reset flash cycle
 
     ; *************** Test OSBYTE 0x9b ***************
     lda #osbyte_write_video_ula_palette                               ; 1d3c: a9 9b       ..
@@ -3607,8 +3607,8 @@ section pydis, org = &1100, filename = "acorn_os_calls_baron"
     lda #osbyte_read_write_escape_break_effect                        ; 2b6a: a9 c8       ..
     ldx #&2a ; '*'                                                    ; 2b6c: a2 2a       .*
     ldy #0                                                            ; 2b6e: a0 00       ..
-    jsr OSBYTE                                                        ; 2b70: 20 f4 ff     .. ; Write Set normal ESCAPE action, clear memory on BREAK, value X=42
-    stx mem                                                           ; 2b73: 86 70       .p ; X=old value of Set normal ESCAPE action, clear memory on BREAK
+    jsr OSBYTE                                                        ; 2b70: 20 f4 ff     .. ; Set normal ESCAPE action, clear memory on BREAK (X=42)
+    stx mem                                                           ; 2b73: 86 70       .p ; X=old value of ESCAPE+BREAK effects
     sty mem                                                           ; 2b75: 84 70       .p ; Y=value of keyboard disable (for Econet)
     lda #osbyte_read_write_escape_break_effect                        ; 2b77: a9 c8       ..
     ldx #0                                                            ; 2b79: a2 00       ..
@@ -4014,7 +4014,7 @@ section pydis, org = &1100, filename = "acorn_os_calls_baron"
     ldx #&2a ; '*'                                                    ; 2e5e: a2 2a       .*
     ldy #0                                                            ; 2e60: a0 00       ..
     jsr OSBYTE                                                        ; 2e62: 20 f4 ff     .. ; Set ESCAPE key to produce ASCII code 42
-    stx mem                                                           ; 2e65: 86 70       .p ; X=old value of Set ESCAPE key to produce ASCII code 42
+    stx mem                                                           ; 2e65: 86 70       .p ; X=old value of ESCAPE key status
     sty mem                                                           ; 2e67: 84 70       .p ; Y=value of ESCAPE effects
     lda #osbyte_read_write_escape_status                              ; 2e69: a9 e5       ..
     ldx #0                                                            ; 2e6b: a2 00       ..

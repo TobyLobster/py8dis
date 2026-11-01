@@ -119,16 +119,15 @@ class OsbyteCall:
         if it's a function. 'name' is for {name}."""
         if callable(template):
             return template(self)
-        # (A Block keeps its type only because str.format() returns the
-        # string itself when it has no fields: one with fields would come
-        # back as a plain str)
-        return template.format(
+        # (str.format() gives a plain str, so a Block is made a Block again)
+        result = template.format(
             x  = "X" if self.x is None else self.x,
             y  = "Y" if self.y is None else self.y,
             xe = "X" if self.x is None else "X=%d" % self.x,
             ye = "Y" if self.y is None else "Y=%d" % self.y,
             name = name,
             hex2 = _Hex2())
+        return Block(result) if isinstance(template, Block) else result
 
 def hex2(n):
     """A byte in the assembler's hex format, e.g. &ff or $ff."""
@@ -143,8 +142,8 @@ class _Hex2:
 class Block(str):
     """A comment of several lines, output before the line it's on (indented,
     with a blank line before it), rather than at the end of the line. Only
-    exit comments (x_exit etc.) can be Blocks; see OsbyteCall.text() for why
-    a Block can't have any fields."""
+    exit comments (x_exit etc.) can be Blocks. Its fields are filled in as
+    for any text (see OsbyteCall.text())."""
 
 
 class Osbyte:
@@ -614,19 +613,29 @@ def read_or_write_memory_mapped_io(call):
         call.exit_comment(call.y_next_use, "Y is the byte read")
 
 def video_ula_control(call):
-    """The comment for OSBYTE &9A with a known X (its x_other): X's bits
-    described as the cassette motor (bit 7), whether RS423 or the cassette
-    is in charge (bit 6), and the receive (bits 3-5) and transmit (bits 0-2)
-    baud rates. (That's the layout of the serial ULA's control register, as
-    in OSBYTE 7 and 8's results.)"""
+    """The comment for OSBYTE &9A with a known X (its x_other): what X sets
+    in the video ULA's control register (at &FE20): the number of columns
+    (bits 2-3: 10, 20, 40 or 80), the clock rate (bit 4: 1 or 2 MHz, for
+    modes 4-7 or 0-3), the cursor's segments (bits 5-7, each drawn if its
+    bit is set: segment 0 is bit 7), teletext (bit 1) and whether the
+    flashing colours are inverted (bit 0). E.g. for mode 0's &9C: 'Set video
+    ULA control: 80 columns, 2 MHz clock, cursor segment 0, and reset flash
+    cycle'."""
     val = call.x
-    transmit_baud = baud_rates[8 - (val & 7)]
-    receive_baud = baud_rates[8 - ((val//8) & 7)]
-    rs423_in_charge = (val & 64) != 0
-    cassette_motor_on = (val & 128) != 0
-    com = "Set cassette motor " + {False: "off", True: "on" }[cassette_motor_on]
-    com += ", " + {False: "cassette system in charge", True: "RS423 in charge"}[rs423_in_charge]
-    com += ", receive at " + receive_baud + ", transmit at " + transmit_baud
+    columns = (10, 20, 40, 80)[(val >> 2) & 3]
+    clock = 2 if val & 0x10 else 1
+    segments = [str(segment) for segment, bit in ((0, 0x80), (1, 0x40), (2, 0x20)) if val & bit]
+    if not segments:
+        cursor = "no cursor"
+    elif len(segments) == 1:
+        cursor = "cursor segment " + segments[0]
+    else:
+        cursor = "cursor segments " + ", ".join(segments[:-1]) + " and " + segments[-1]
+    com = "Set video ULA control: {0} columns, {1} MHz clock, {2}".format(columns, clock, cursor)
+    if val & 2:
+        com += ", teletext"
+    if val & 1:
+        com += ", flashing colours inverted"
     com += ", and reset flash cycle"
     return com
 
@@ -773,20 +782,23 @@ def os_variable(call):
     next_name = os_variable_names.get(call.a + 1)
     next_next_name = os_variable_names.get(call.a + 2)
 
-    # Exceptions. (For &C8 and &E5 the description is changed, and it's used
-    # for the comments on X after the call too.)
+    # Exceptions: for a write of a known value, &C8, &C9 and &E5 say what it
+    # does instead (the comments on X after the call still name the
+    # variable)
     skip_normal_comment = False
     if call.a == 0xc8:
         # Bit 0 disables ESCAPE; any other bit set clears memory on BREAK
         if write_value is not None:
             if write_value & 1:
-                name = "Disable ESCAPE action, "
+                result = "Disable ESCAPE action, "
             else:
-                name = "Set normal ESCAPE action, "
+                result = "Set normal ESCAPE action, "
             if (write_value & 0xfe) == 0:
-                name += "set normal BREAK action"
+                result += "set normal BREAK action"
             else:
-                name += "clear memory on BREAK"
+                result += "clear memory on BREAK"
+            call.comment(result + " (X=%d)" % write_value)
+            skip_normal_comment = True
     elif call.a == 0xc9:
         result = "Enable/Disable keyboard (for Econet)"
         if write_value is not None:
@@ -798,10 +810,10 @@ def os_variable(call):
         skip_normal_comment = True
     elif call.a == 0xe5 and write_value is not None:
         if write_value == 0:
-            name = "Set ESCAPE key status to normal action"
+            result = "Set ESCAPE key status to normal action"
         else:
-            name = "Set ESCAPE key to produce ASCII code " + str(write_value)
-        call.comment(name)
+            result = "Set ESCAPE key to produce ASCII code " + str(write_value)
+        call.comment(result)
         skip_normal_comment = True
 
     if not skip_normal_comment:

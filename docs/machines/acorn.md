@@ -43,7 +43,7 @@ The output is for beebasm by default; for Baron, its successor, run the control 
 
 **Names some of the OS workspace** (`os_text_ptr`, `romsel_copy`, `osrdsc_ptr`), and groups the memory locations at the top of the disassembly by region (zero page, the stack, the OS vectors, the OS and language workspace, user memory, paged ROM, the MOS ROM, the hardware and the MOS entry points).
 
-**Recognises some common pieces of code** (see [snippets](../snippets-and-hooks.md#snippets)), and comments them: a loop that prints a message (`; print message`), a loop that prints the same character several times (`; print character 32 repeatedly`), and tables of the screen address of each character row.
+**Recognises some common pieces of code** (see [snippets](../snippets-and-hooks.md#snippets)), and comments them: a loop that prints a message (`; print message`), a loop that prints the same character several times (`; print character 32 repeatedly`), and tables of the screen address (or the offset from the start of the screen) of each character row.
 
 ## Sideways ROMs
 

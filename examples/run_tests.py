@@ -158,6 +158,7 @@ TESTS = [
     ("acorn_os_calls",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "test all the os calls for acorn machines"),
     ("acorn_vectors",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the ways of setting an Acorn OS vector that acorn.py recognises"),
     ("acorn_vdu",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "VDU sequences written with OSWRCH, decoded by acorn.py"),
+    ("acorn_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "acorn.bbc()'s comments: VDU 31 with the column from X and the row from A after X changes, and a table of character row offsets as words"),
     ("acorn_lower_case_os_calls", ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Acorn OS calls named in lower case, with config.set_upper_case_os_calls(False)"),
     ("effect_patterns",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "effect patterns: snippets matching the values code stores, and the registers at a call"),
     ("prg_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),

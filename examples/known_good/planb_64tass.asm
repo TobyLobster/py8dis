@@ -12513,7 +12513,7 @@ title_and_game_loop
     lda #osbyte_read_write_escape_break_effect                        ; 4ceb: a9 c8       ..
     ldy #0                                                            ; 4ced: a0 00       ..
     ldx #2                                                            ; 4cef: a2 02       ..
-    jsr OSBYTE                                                        ; 4cf1: 20 f4 ff     .. ; Write Set normal ESCAPE action, clear memory on BREAK, value X=2
+    jsr OSBYTE                                                        ; 4cf1: 20 f4 ff     .. ; Set normal ESCAPE action, clear memory on BREAK (X=2)
     jsr show_title_and_play_game                                      ; 4cf4: 20 86 4e     .N
     jsr wait_for_key                                                  ; 4cf7: 20 55 4e     UN
     lda #0                                                            ; 4cfa: a9 00       ..
@@ -12637,7 +12637,7 @@ show_title_and_play_game
     lda #osbyte_read_write_escape_break_effect                        ; 4ebb: a9 c8       ..
     ldx #3                                                            ; 4ebd: a2 03       ..
     ldy #0                                                            ; 4ebf: a0 00       ..
-    jsr OSBYTE                                                        ; 4ec1: 20 f4 ff     .. ; Write Disable ESCAPE action, clear memory on BREAK, value X=3
+    jsr OSBYTE                                                        ; 4ec1: 20 f4 ff     .. ; Disable ESCAPE action, clear memory on BREAK (X=3)
     pla                                                               ; 4ec4: 68          h
     cmp #1                                                            ; 4ec5: c9 01       ..
     beq pull_and_reset                                                ; 4ec7: f0 b8       ..

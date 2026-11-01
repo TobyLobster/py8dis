@@ -126,7 +126,9 @@ def _vdu_streams():
     call between them, as lists of VduChar. A character is a number if it's
     known; 'X' or 'Y' if it's that register's, from TXA or TYA with the
     register unchanged since; or None. (OSWRCH preserves A, so A is the same
-    for the next call unless an instruction between them changes it.)
+    for the next call unless an instruction between them changes it: it's
+    the same character again, though not still X or Y if that register has
+    changed.)
 
     Each stream is within one of cpu.straight_runs(), which end where other
     code jumps or branches in, and A's value comes from the pessimistic CPU
@@ -172,6 +174,10 @@ def _vdu_streams():
                 char = reg.upper() if unchanged else None
             elif stream and previous_call is not None and all(classification.get_classification(b).reg_changes['a'] in "-U" for b in between):
                 char = previous_char
+                # (A holds what it held then, which is only still X or Y if
+                # that register hasn't changed since either)
+                if char in ('X', 'Y') and not all(classification.get_classification(b).reg_changes[char.lower()] in "-U" for b in between):
+                    char = None
             else:
                 char = None
             # Where the set-up starts: where A was set (or, for a value
@@ -448,14 +454,16 @@ def comment_screen_addresses(p):
 
     for i in range(0,32):
         exp = make_add(make_hex(start), make_multiply(i, make_hex(offset)))
+        # (Whether it's classified is looked up by binary address; the
+        # commands take the runtime address, which differs in moved code)
         if not is_word:
-            if classification.get_classification(low_addr_runtime+i) is None and classification.get_classification(high_addr_runtime+i) is None:
+            if classification.get_classification(low_addr+i) is None and classification.get_classification(high_addr+i) is None:
                 byte(low_addr_runtime+i, 1)
                 byte(high_addr_runtime+i, 1)
                 expr(low_addr_runtime+i, make_lo(exp))
                 expr(high_addr_runtime+i, make_hi(exp))
         else:
-            if classification.get_classification(low_addr_runtime+i*2) is None:
+            if classification.get_classification(low_addr+i*2) is None:
                 word(low_addr_runtime+i*2, 1)
                 expr(low_addr_runtime+i*2, exp)
 
@@ -470,11 +478,13 @@ def comment_screen_addresses(p):
 # ************************************************************************************************
 def comment_screen_offsets(p):
     """For a match of a table of the offset from the start of the screen of
-    each of the 32 character rows, as tables of low and high bytes (see
-    register_snippets()): comment the tables. (A table of words matches too,
-    but has no 'low' or 'high' line, so it isn't commented.)"""
+    each of the 32 character rows (see register_snippets()): comment the
+    table, or the tables of low and high bytes."""
     low_addr = p.get_binary_address('low')
     high_addr = p.get_binary_address('high')
+    if low_addr is None and high_addr is None:
+        # A table of words, which has neither line
+        disassembly.comment_binary(p.get_start_loc(), "table of offsets for each character row", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
     if low_addr:
         disassembly.comment_binary(low_addr, "table of offsets for each character row (low bytes)", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
     if high_addr:
