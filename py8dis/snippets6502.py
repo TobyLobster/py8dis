@@ -1,3 +1,52 @@
+"""
+Snippets (6502)
+
+Snippets recognise common pieces of 6502 code or data (e.g. a loop that
+copies memory) and comment them, name things in them, or trace the code they
+lead to (see docs/snippets-and-hooks.md). This module has the functions for
+registering a snippet (register_snippet() and the shortcuts after it), and
+the built in snippets, which are registered at the end of the file.
+
+A snippet is described by its text, which is one of:
+- a regex snippet: lines of 6502 assembly in which a name matches any value
+  (see snippet6502.parse_snippet()), matched as a regular expression on the
+  binary's bytes;
+- an effect pattern: what the code does, e.g. the values it stores (see
+  effectpattern.py), matched using the CPU states.
+parse_snippet() works out which it is. A registered snippet is a
+snippethelper.SnippetDetails: the parsed pattern, and the functions to call
+for each match, before and after tracing.
+
+How a regex snippet is matched (see Cpu.trace() in cpu.py, and
+pre_trace_with_regex() and post_trace_with_regex() in cpu6502.py):
+- Before tracing is finished: once the code has been traced from the entry
+  points given, py8dis searches all the loaded bytes (not just the code
+  found so far) for each snippet in turn, in the order they were
+  registered, and calls its pre-trace function for each match. That can add
+  entry points (p.entry()), which are traced before the next match is
+  looked at, so a match that starts inside an instruction found that way is
+  rejected (see snippethelper.SnippetRejected).
+- After tracing and the code analysis, when the CPU states (what's known of
+  the registers at each instruction) and the references to each label are
+  known, it searches again and calls each post-trace function, which can
+  use them, e.g. to say how many bytes a loop copies.
+In each search, a match that overlaps an earlier match (of this snippet or
+an earlier one) is skipped. Each function is given a
+snippethelper.SnippetHelper ('p'), which says where each name in the
+snippet matched. A function can also be a string, which is added as an
+inline comment at the start of each match.
+
+Effect patterns are matched once the CPU states are known, and again after
+each time the entry points they add are traced (see
+find_entry_points_from_effects() in cpu6502.py). Their functions are given
+a snippethelper.EffectHelper.
+
+Only the 6502 family (cpu6502.py and the CPUs derived from it) uses
+snippets. The built in ones are in BUILTIN_SNIPPETS; each session's list of
+snippets starts as a copy of it (see session.py), and machine modules such
+as acorn.py and commodore.py, and control files, add their own.
+"""
+
 import classification
 import disassembly
 import effectpattern
@@ -10,7 +59,8 @@ from align import Align
 from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
 from snippethelper import *
 
-# Opcodes
+# Opcodes the snippets' functions look for in a match's bytes, e.g. to tell
+# which branch or which register a loop uses
 OPCODE_LDA_ZP_COMMA_X           = 0xb5      # lda zp,x
 OPCODE_STA_ZP_COMMA_X           = 0x95      # sta zp,x
 OPCODE_DEX                      = 0xca      # dex
@@ -19,17 +69,10 @@ OPCODE_BNE                      = 0xd0      # bne loop
 OPCODE_TXA                      = 0x8a      # txa
 OPCODE_TYA                      = 0x98      # tya
 
-# Snippets are 'SnippetDetails' which contain a regex for binary data to find common code tropes,
-# and two associated functions (for commenting, adding expressions etc).
-# One function is executed before the code is traced (or rather, once the code has been traced from the
-# entry points given, so that a match in the middle of an instruction can be ignored: see
-# snippethelper.SnippetRejected), allowing new entry points to be added for the trace.
-# The other happens after tracing which allows for more detailed comments to be added because we know the
-# cpu_state of registers.
-#
-# The snippets in use are the session's 'snippets' list (see session.py), which
-# starts as a copy of the built in snippets below. The register_*() functions
-# add to it.
+# The built in snippets (SnippetDetails, see the module docstring), registered
+# at the end of this file when it's first imported. The snippets in use are
+# the session's 'snippets' list (see session.py), which starts as a copy of
+# these. After that, the register_*() functions add to it.
 BUILTIN_SNIPPETS = []
 
 # True while this module is registering the built in snippets, when it's first
@@ -37,6 +80,9 @@ BUILTIN_SNIPPETS = []
 _registering_builtins = True
 
 def _add(details):
+    """Add a snippet (a SnippetDetails): to BUILTIN_SNIPPETS while this
+    module registers the built in ones, otherwise to the current session's
+    snippets."""
     if _registering_builtins:
         BUILTIN_SNIPPETS.append(details)
     else:
@@ -44,18 +90,27 @@ def _add(details):
 
 # ************************************************************************************************
 def add_entry(p):
+    """A pre-trace function: trace the match as code, from its start (or
+    reject it if it can't be code there, see SnippetHelper.entry())."""
     p.entry()
 
 def add_code_comment(p, comment):
+    """A pre-trace function (with the comment as its parameter): trace the
+    match as code, as add_entry() does, and comment its start with the text,
+    on a line of its own after any label."""
     p.entry()
     disassembly.comment_binary(p.get_start_loc(), comment, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 def add_data_comment(p, comment):
+    """A pre-trace function (with the comment as its parameter): comment the
+    start of the match inline (at the end of its line), without tracing
+    it."""
     disassembly.comment_binary(p.get_start_loc(), comment, align=Align.INLINE, auto_generated=True)
 
 
 def parse_snippet(snippet):
-    """A regex snippet (snippet6502.Snippet) or, if it describes effects, an
+    """The snippet's text, parsed: a regex snippet (snippet6502.Snippet) or,
+    if it has an effect line (see effectpattern.is_effect_pattern()), an
     effect pattern (effectpattern.EffectPattern)."""
     if effectpattern.is_effect_pattern(snippet):
         return effectpattern.EffectPattern(snippet)
@@ -64,28 +119,63 @@ def parse_snippet(snippet):
 def register_snippet(pre_trace_fn, post_trace_fn, snippet):
     """Register a snippet: a regex snippet (see snippet6502.parse_snippet())
     or an effect pattern (see effectpattern.py), with the functions to call
-    for each match, before and after tracing (or None). For an effect
-    pattern, the pre-trace function is called once for each match found
-    while tracing (it can add entry points and labels), and the post-trace
-    function once for each match in the code as finally traced, after the
-    code has been analysed (for comments and expressions)."""
+    for each match, before and after tracing (or None). Each is called with
+    the match's SnippetHelper (an EffectHelper for an effect pattern), or
+    can be a string, which is added as an inline comment at the start of
+    each match.
+
+    For a regex snippet, the pre-trace function is called for each match in
+    the loaded bytes once the code from the entry points given has been
+    traced (it can add entry points, or reject the match), and the
+    post-trace function for each match once the code is traced and analysed
+    (for comments and expressions). For an effect pattern, the pre-trace
+    function is called once for each match found while tracing (it can add
+    entry points and labels), and the post-trace function once for each
+    match in the code as finally traced, after the code has been analysed
+    (for comments and expressions). See the module docstring."""
     _add(SnippetDetails(pre_trace_fn, None, post_trace_fn, None, parse_snippet(snippet)))
 
 def register_code_snippet(post_trace_fn, snippet):
+    """Register a snippet for code: before tracing, each match is traced as
+    code (see add_entry()), and after tracing post_trace_fn(p) is called
+    for it (unless it's None)."""
     _add(SnippetDetails(add_entry, None, post_trace_fn, None, parse_snippet(snippet)))
 
 def register_data_snippet(post_trace_fn, snippet):
+    """Register a snippet for data: the matches aren't traced, and after
+    tracing post_trace_fn(p) is called for each (e.g. to classify and
+    comment a table)."""
     _add(SnippetDetails(None, None, post_trace_fn, None, parse_snippet(snippet)))
 
 def register_comment_code_snippet(comment, snippet):
+    """Register a snippet for code that just needs a comment: before
+    tracing, each match is traced as code and its start commented with the
+    text (see add_code_comment())."""
     _add(SnippetDetails(add_code_comment, comment, None, None, parse_snippet(snippet)))
 
 def register_comment_data_snippet(comment, snippet):
+    """Register a snippet for data that just needs a comment: before
+    tracing, the start of each match is commented inline with the text, and
+    it isn't traced (see add_data_comment())."""
     _add(SnippetDetails(add_data_comment, comment, None, None, parse_snippet(snippet)))
 
 # ************************************************************************************************
 def comment_memory_copy_loop(p):
-    # e.g. "This loop copies 8 bytes from source to dest"
+    """Post-trace function for a loop that copies memory, counting X or Y
+    down to zero ('dex : bne loop') or past it ('dex : bpl loop'): comment
+    it, e.g. 'Copy 8 bytes of memory from source to dest'.
+
+    The count is the register's value before the loop: from the CPU state
+    after the snippet's first instruction (the LDX or LDY, if there is one),
+    or failing that the LDX or LDY's operand. With BNE, a count of N copies
+    the N bytes from addr+1 to addr+N (a count of 0 copies 256), so the
+    source and destination are named by the label for addr+1, and the
+    operands are written as that minus 1. With BPL, it copies the N+1 bytes
+    from addr (or just one if N is over 128, since the first DEX or DEY then
+    leaves the register negative). If the count isn't known, the comment
+    gives it in terms of the register (e.g. 'X bytes'). An indirect load or
+    store (e.g. '(zp1),y') isn't named. Nothing is commented if the branch
+    doesn't go back to the loop's start."""
 
     # Make sure the branch instruction's operand jumps to the definition of the label
     if not p.check_branch_matches('loop'):
@@ -105,6 +195,10 @@ def comment_memory_copy_loop(p):
     if bytes_to_copy is None:
         bytes_to_copy = p.get_memory("start_count")
 
+    # Name the source by the lowest byte copied (addr+offset). With an offset,
+    # the load's operand (the byte after its opcode) is written as that label
+    # minus the offset, unless it already has an expression, when the source
+    # is that expression plus 1.
     if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=offset)
 
@@ -118,6 +212,7 @@ def comment_memory_copy_loop(p):
         #if bytes_to_copy is None:
         #    source_label = utils.LazyString("%s+%s", source_label, reg.upper())
 
+    # The same for the destination
     if is_store_indirect is None:
         dest_label = p.get_expr('other', label_offset=0, final_offset=offset)
 
@@ -131,6 +226,8 @@ def comment_memory_copy_loop(p):
         #if bytes_to_copy is None:
         #    dest_label = utils.LazyString("%s+%s", dest_label, reg.upper())
 
+    # Work out the number of bytes from the count (or, if it isn't known,
+    # what to add to the register's name: "X+1" for BPL)
     offset_string = ""
 
     if bytes_to_copy is not None:
@@ -163,7 +260,14 @@ def comment_memory_copy_loop(p):
 
 # ************************************************************************************************
 def comment_memory_copy_with_limited_end_loop(p):
-    # e.g. "This loop copies 8 bytes from source to dest"
+    """Post-trace function for a loop that copies memory, counting X or Y
+    down to a limit ('dey : cpy #end_count : bcs loop'): comment it as
+    comment_memory_copy_loop() does, e.g. 'Copy 8 bytes of memory from
+    source to dest'. The loop copies from start_count down to end_count, so
+    the source and destination are named by the label for addr+end_count,
+    and the operands are written as that minus end_count. Nothing is
+    commented if the branch doesn't go back to the loop's start, or if
+    end_count is zero."""
 
     # Make sure the branch instruction's operand jumps to the definition of the label
     if not p.check_branch_matches('loop'):
@@ -188,14 +292,19 @@ def comment_memory_copy_with_limited_end_loop(p):
     if end_count == 0:
         return
 
-    # The loop counts down from start_count to end_count inclusive, wrapping
-    # round from 0 to 255 if start_count is lower than end_count. (A
-    # start_count of zero is valid.)
+    # The loop counts down from start_count to end_count inclusive. A
+    # start_count of zero wraps round (the first DEX or DEY makes it 255), so
+    # the loop copies at 0, then from 255 down to end_count, and this counts
+    # those too. (With a start_count above zero but below end_count, the
+    # loop runs just once, which this doesn't allow for.)
     if start_count is not None:
         bytes_to_copy = ((start_count - end_count) & 0xff) + 1
     else:
         bytes_to_copy = None
 
+    # Name the source by the lowest byte copied (addr+end_count), with the
+    # load's operand written as that label minus end_count, unless it
+    # already has an expression, when the source is that expression plus 1
     if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=end_count)
 
@@ -209,6 +318,7 @@ def comment_memory_copy_with_limited_end_loop(p):
         #if bytes_to_copy is None:
         #    source_label = utils.LazyString("%s+%s", source_label, reg.upper())
 
+    # The same for the destination
     if is_store_indirect is None:
         dest_label = p.get_expr('other', label_offset=0, final_offset=end_count)
 
@@ -238,7 +348,14 @@ def comment_memory_copy_with_limited_end_loop(p):
 
 # ************************************************************************************************
 def comment_memory_copy_increment(p):
-    # e.g. "This loop copies 8 bytes from source to dest"
+    """Post-trace function for a loop that copies memory, counting X or Y
+    up to a limit ('inx : cpx #end_count : bne loop', or BCC): comment it
+    as comment_memory_copy_loop() does, e.g. 'Copy 8 bytes of memory from
+    source to dest'. The loop copies end_count - start_count bytes from
+    addr+start_count, so the source and destination are named by the label
+    for that address, and the operands are written as that minus
+    start_count. Nothing is commented if the branch doesn't go back to the
+    loop's start, or if start_count isn't known."""
 
     # Make sure the branch instruction's operand jumps to the definition of the label as expected
     if not p.check_branch_matches('loop'):
@@ -261,6 +378,10 @@ def comment_memory_copy_increment(p):
 
     bytes_to_copy = end_count - start_count
 
+    # Name the source by the first byte copied (addr+start_count), with the
+    # load's operand written as that label minus start_count, unless it
+    # already has an expression, when the source is that expression minus
+    # start_count
     if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=start_count)
 
@@ -271,6 +392,7 @@ def comment_memory_copy_increment(p):
             source_label = p.make_subtract_wrapped(new_expression, 'addr', start_count)
         source_label = utils.LazyString(" from %s", source_label)
 
+    # The same for the destination
     if is_store_indirect is None:
         dest_label = p.get_expr('other', label_offset=0, final_offset=start_count)
 
@@ -281,6 +403,8 @@ def comment_memory_copy_increment(p):
             dest_label = p.make_subtract_wrapped(new_expression, 'other', start_count)
         dest_label = utils.LazyString(" to %s", dest_label)
 
+    # (start_count and end_count are both known by now, so bytes_to_copy is
+    # always known)
     if bytes_to_copy is not None:
         bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
     else:
@@ -292,14 +416,32 @@ def comment_memory_copy_increment(p):
 
 # ************************************************************************************************
 def comment_add_to_y(p):
+    """Post-trace function for 'tya : clc : adc #nn : tay': comment it 'add
+    nn to Y' (nn in decimal)."""
     disassembly.comment_binary(p.get_start_loc(), "add {0} to Y".format(p.get_memory("nn")), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_add_to_x(p):
+    """Post-trace function for 'txa : clc : adc #nn : tax': comment it 'add
+    nn to X' (nn in decimal)."""
     disassembly.comment_binary(p.get_start_loc(), "add {0} to X".format(p.get_memory("nn")), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_set_memory_r_loop(p, reg, other_reg):
+    """Comment a loop that stores A in a run of bytes, counting 'reg' down
+    to zero (BNE) or past it (BPL) and stepping 'other_reg' up as the index:
+    e.g. 'Set 18 bytes of memory at l20e1+Y to 255', or 'Clear 18 bytes of
+    memory at l20e1+Y' if A is 0.
+
+    The count and A's value are what they are on entering the loop: from
+    the CPU state after the last of the (up to three, optional) loads just
+    before it, or, if none of those matched, py8dis's guess at the state at
+    the loop's start (the 'optimistic' state, which, unlike the
+    'pessimistic' one, isn't cleared at a label). They're only used if the
+    loop's start has just one reference (the branch back to it). With an
+    indirect store ('(zp),y'), the address isn't named. Nothing is commented
+    if the branch doesn't go back to the loop's start."""
+
     # Make sure the branch instruction's operand jumps to the definition of the label as expected
     if not p.check_branch_matches('loop'):
         return
@@ -309,7 +451,8 @@ def comment_set_memory_r_loop(p, reg, other_reg):
 
     loop_addr               = p.get_binary_address('loop')
 
-    # Find instruction just before 'loop'
+    # Find instruction just before 'loop': the last of the optional loads
+    # that matched (one that didn't is an empty match, at the loop's start)
     load_addr               = p.get_binary_address('load3')
     if load_addr == loop_addr:
         load_addr           = p.get_binary_address('load2')
@@ -363,14 +506,19 @@ def comment_set_memory_r_loop(p, reg, other_reg):
 
 # ************************************************************************************************
 def comment_set_memory_x_loop(p):
+    """Post-trace function for a loop that counts X down and Y up, e.g.
+    'sta addr,y : iny : dex : bne loop' (see comment_set_memory_r_loop())."""
     comment_set_memory_r_loop(p, 'x', 'y')
 
 # ************************************************************************************************
 def comment_set_memory_y_loop(p):
+    """Post-trace function for a loop that counts Y down and X up, e.g.
+    'sta addr,x : inx : dey : bne loop' (see comment_set_memory_r_loop())."""
     comment_set_memory_r_loop(p, 'y', 'x')
 
 
 # ************************************************************************************************
+# More opcodes, for the push and pull snippets
 OPCODE_PHP                      = 0x08      # php
 OPCODE_PHA                      = 0x48      # pha
 OPCODE_PLP                      = 0x28      # plp
@@ -379,17 +527,20 @@ OPCODE_TAX                      = 0xaa      # tax
 OPCODE_TAY                      = 0xa8      # tay
 
 def _comment_stack(p, names, verb):
-    """Comment a push or pull of the registers named (e.g. ['flags', 'A',
-    'X']), if it's at least two of A, X and Y, each once; otherwise ignore the
-    match."""
+    """Trace and comment a push or pull of the registers named (e.g.
+    ['flags', 'A', 'X'], and verb 'push' or 'pull'), e.g. 'push flags,A,X
+    onto the stack', if it's at least two of A, X and Y, each once;
+    otherwise reject the match (see SnippetHelper.reject())."""
     registers = [name for name in names if name != "flags"]
     if len(registers) < 2 or len(set(registers)) != len(registers):
         p.reject()
     add_code_comment(p, "{0} {1} {2} the stack".format(verb, ",".join(names), "onto" if verb == "push" else "from"))
 
 def comment_push(p):
-    """e.g. 'php : pha : txa : pha' pushes the flags, A, then X (each PHA
-    pushes what was transferred to A just before it, if anything)"""
+    """Pre-trace function for code that pushes registers: trace it and
+    comment it (see _comment_stack()). E.g. 'php : pha : txa : pha' pushes
+    the flags, A, then X (each PHA pushes what was transferred to A just
+    before it, if anything)."""
     memory = p.memory_binary
     start = p.match.start()
     names = []
@@ -402,8 +553,11 @@ def comment_push(p):
     _comment_stack(p, names, "push")
 
 def comment_pull(p):
-    """e.g. 'pla : tax : pla : plp' pulls X, then A, then the flags. They're
-    named in the order they were pushed: 'flags,A,X'."""
+    """Pre-trace function for code that pulls registers: trace it and
+    comment it (see _comment_stack()). E.g. 'pla : tax : pla : plp' pulls
+    X, then A, then the flags (each PLA pulls into what A is transferred to
+    just after it, if anything). They're named in the order they were
+    pushed: 'flags,A,X'."""
     memory = p.memory_binary
     end = p.match.end()
     names = []
@@ -418,6 +572,12 @@ def comment_pull(p):
 # ************************************************************************************************
 # ************************************************************************************************
 # ************************************************************************************************
+# The built in snippets
+
+# Memory copy loops counting X or Y down to zero (BNE) or past it (BPL), e.g.
+# 'ldx #7 : loop lda source,x : sta dest,x : dex : bpl loop'. Traced as code,
+# and commented e.g. 'Copy 8 bytes of memory from source to dest' (see
+# comment_memory_copy_loop()).
 register_code_snippet(comment_memory_copy_loop, """
 ; memory copy, using X as the loop counter
 
@@ -450,6 +610,9 @@ branch
     bpl loop | bne loop
 """)
 
+# Memory copy loops counting X or Y down to a limit, e.g. 'ldy #9 : loop lda
+# source,y : sta dest,y : dey : cpy #2 : bcs loop'. Traced as code, and
+# commented as above (see comment_memory_copy_with_limited_end_loop()).
 register_code_snippet(comment_memory_copy_with_limited_end_loop, """
 ; memory copy with final counter check, using Y as the loop counter
 
@@ -485,6 +648,9 @@ branch
     bcs loop
 """)
 
+# Memory copy loops counting X or Y up to a limit, e.g. 'ldx #0 : loop lda
+# source,x : sta dest,x : inx : cpx #8 : bne loop'. Traced as code, and
+# commented as above (see comment_memory_copy_increment()).
 register_code_snippet(comment_memory_copy_increment, """
 ; memory copy increasing loop counter, using X as the loop counter
 comment
@@ -519,7 +685,8 @@ branch
 
 # Pushing and pulling at least two of A, X and Y (and perhaps the flags), e.g.
 # 'php : pha : txa : pha : tya : pha' ("push flags,A,X,Y onto the stack"), and
-# the reverse, 'pla : tay : pla : tax : pla : plp'
+# the reverse, 'pla : tay : pla : tax : pla : plp'. Traced as code and
+# commented before tracing (see comment_push() and comment_pull()).
 register_snippet(comment_push, None, """
 ?   php
 ?   pha
@@ -534,6 +701,8 @@ register_snippet(comment_pull, None, """
 ?   plp
 """)
 
+# Adding a number to Y or X through A. Traced as code, and commented e.g.
+# 'add 4 to Y' (see comment_add_to_y() and comment_add_to_x()).
 register_code_snippet(comment_add_to_y, """
     tya
     clc
@@ -548,6 +717,11 @@ register_code_snippet(comment_add_to_x, """
     tax
 """)
 
+# Loops that store A in a run of bytes, counting one index register down and
+# stepping the other up, after up to three loads that set them up, e.g. 'lda
+# #0 : ldy #0 : ldx #18 : loop sta table,y : iny : dex : bne loop'. Traced as
+# code, and commented e.g. 'Clear 18 bytes of memory at table+Y' (see
+# comment_set_memory_r_loop()).
 register_code_snippet(comment_set_memory_x_loop, """
 comment
 load1
@@ -580,6 +754,8 @@ branch
     bne loop | bpl loop
 """)
 
+# Tables of the eight one-bit masks, $01 up to $80 or $80 down to $01. Not
+# traced, but commented 'bitmask' inline at the start (before tracing).
 register_comment_data_snippet("bitmask", """
     !byte 1
     !byte 2

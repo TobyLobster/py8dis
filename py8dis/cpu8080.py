@@ -1,3 +1,36 @@
+"""
+The Intel 8080 CPU
+
+Cpu8080 decodes, traces and follows the state of 8080 code. It's chosen with
+load(..., "8080") (see commands.py), and its output is for z88dk-z80asm with
+-m8080 (see z88dk.py).
+
+Decoding. The 8080 has no prefixes, so each instruction is one opcode byte
+followed by none, one or two operand bytes. The opcode table ('opcodes', made
+in Cpu8080.__init__()) has an entry for each of the 256 opcodes, each an
+object of one of the Opcode classes below, chosen by how the instruction is
+traced and written: e.g. OpcodeImplied for one with no operand,
+OpcodeImmediate16 for LXI, OpcodeCall for CALL and the conditional calls.
+Every instruction with that opcode shares the object, which reads the
+instruction's operand from memory by its binary address when it needs it.
+
+Tracing. cpu.Cpu, the base class, follows the code from the entry points: it
+finds the opcode at each address (cpu.Cpu.opcode_at()), classifies its bytes
+as code, calls its update_references() to record the labels its operand
+refers to, and its disassemble() for the binary addresses to trace next (the
+next instruction, if the code can continue there, then any jump or call
+target). The undocumented opcodes (e.g. $CB, another JMP) are traced as what
+they run as, but written as data bytes (see Cpu8080.Undocumented), since the
+assembler doesn't accept them.
+
+The CPU state. What's known for certain about the registers and flags after
+each instruction (see Cpu8080.CpuState and docs/cpus.md) is worked out by
+update_state(), which decodes the opcode from its bits again rather than
+using the opcode objects. cpu.Cpu.calculate_cpu_states() calls it for each
+instruction, through Opcode.update_cpu_state(). CYCLES gives the clock cycles
+each opcode takes, for config.set_show_cycles().
+"""
+
 import collections
 
 import config
@@ -17,6 +50,8 @@ from memorymanager import BinaryAddr, RuntimeAddr
 from binaryaddrtype import BinaryAddrType
 
 
+# RET, whose labels can be named return_1, return_2 etc. (see
+# Cpu8080.label_maker())
 OPCODE_RET = 0xc9
 
 # The number of clock cycles (states) each opcode takes, from Intel's 8080
@@ -43,23 +78,27 @@ CYCLES = [
 ]
 
 # A conditional return or call takes 6 more cycles if it's taken, e.g. RNZ
-# takes 5, or 11 if it returns
+# takes 5, or 11 if it returns. (CYCLES has the cycles when it isn't taken.)
 CONDITIONAL_RETURNS = { 0xc0, 0xc8, 0xd0, 0xd8, 0xe0, 0xe8, 0xf0, 0xf8 }
 CONDITIONAL_CALLS   = { 0xc4, 0xcc, 0xd4, 0xdc, 0xe4, 0xec, 0xf4, 0xfc }
 
 def cycles_description(opcode):
     """The cycles an opcode takes, as text, e.g. "7", or "5/11" for a
-    conditional return (not taken, or taken)."""
+    conditional return or call (not taken, or taken). Cpu8080.__init__()
+    gives each opcode object its own."""
     if opcode in CONDITIONAL_RETURNS or opcode in CONDITIONAL_CALLS:
         return "%d/%d" % (CYCLES[opcode], CYCLES[opcode] + 6)
     return str(CYCLES[opcode])
 
 # Tracking what's known about the registers and flags (see Cpu8080.CpuState)
 
-# The registers in the order the opcodes number them ('m' is the memory at HL)
+# The registers in the order the opcodes number them, in bits 5-3 (a
+# destination) or bits 2-0 (a source) ('m' is the memory at HL, which isn't
+# tracked)
 REGISTER_ORDER = ("b", "c", "d", "e", "h", "l", "m", "a")
 
-# The register pairs, as the opcodes number them (for PUSH and POP, 3 is PSW)
+# The register pairs, as the opcodes number them in bits 5-4 (for PUSH and
+# POP, 3 is PSW, A and the flags, rather than SP)
 REGISTER_PAIRS = (("b", "c"), ("d", "e"), ("h", "l"), "sp")
 
 def _parity(value):
@@ -67,20 +106,27 @@ def _parity(value):
     return bin(value).count("1") % 2 == 0
 
 def _set_szp(state, value):
+    """Set S, Z and P for an 8 bit result that's known."""
     state["s"] = value >= 0x80
     state["z"] = value == 0
     state["p"] = _parity(value)
 
 def _forget_szp(state):
+    """Forget S, Z and P (for a result that isn't known)."""
     state["s"] = state["z"] = state["p"] = None
 
 def _get_pair(state, pair):
+    """The 16 bit value of a register pair (an entry of REGISTER_PAIRS), or
+    None if either half isn't known."""
     if pair == "sp":
         return state["sp"]
     hi, lo = state[pair[0]], state[pair[1]]
     return None if hi is None or lo is None else (hi << 8) | lo
 
 def _set_pair(state, pair, value):
+    """Set a register pair (an entry of REGISTER_PAIRS) to a value, which
+    wraps round to 16 bits (e.g. after INX of $FFFF), or forget it if the
+    value is None."""
     if pair == "sp":
         state["sp"] = None if value is None else value & 0xffff
     elif value is None:
@@ -90,12 +136,18 @@ def _set_pair(state, pair, value):
         state[pair[1]] = value & 0xff
 
 def _alu(state, op, value):
-    """ADD, ADC, SUB, SBB, ANA, XRA, ORA or CMP (op 0 to 7) of A with
-    'value' (None if not known)."""
+    """Update the state for ADD, ADC, SUB, SBB, ANA, XRA, ORA or CMP (op 0
+    to 7, as bits 5-3 of the opcode number them) of A with 'value' (None if
+    not known). CMP sets the flags as SUB does, but leaves A alone.
+
+    'value' is the string "a" for an operation on A itself when A isn't
+    known (see update_state()), so that XRA A is known to give 0. (The other
+    operations on A with an unknown A are taken to be unknown.)"""
     a = state["a"]
     cy = state["cy"]
     if op in (0, 1, 2, 3, 7):
-        # Addition, or subtraction (as A + NOT value + 1)
+        # Addition, or subtraction (as A + NOT value + 1). The carry in is 0
+        # for ADD, CY for ADC, 1 for SUB and CMP, and NOT CY for SBB.
         subtract = op in (2, 3, 7)
         carry_in = 0 if op in (0, 7, 2) else cy
         if op in (2, 7):
@@ -111,6 +163,8 @@ def _alu(state, op, value):
         b = (value ^ 0xff) if subtract else value
         total = a + b + carry_in
         result = total & 0xff
+        # AC is the carry out of bit 3 of the addition. CY is the carry out
+        # of bit 7, or for a subtraction the borrow, which is its inverse.
         state["ac"] = bool((a ^ b ^ total) & 0x10)
         state["cy"] = (total > 0xff) != subtract
         _set_szp(state, result)
@@ -118,7 +172,8 @@ def _alu(state, op, value):
             state["a"] = result
         return
 
-    # ANA, XRA, ORA: the carry is cleared
+    # ANA, XRA, ORA: the carry is cleared. AC is cleared too, except that
+    # the 8080's ANA sets it to the OR of bit 3 of the two values.
     state["cy"] = False
     if op == 4:
         state["ac"] = None if a is None or value is None else bool((a | value) & 0x08)
@@ -141,7 +196,12 @@ def update_state(state, opcode, operands):
     instruction with the given opcode and operand bytes, so that it's what's
     known once the instruction has run (assuming a conditional jump, call or
     return isn't taken: if it is, the code doesn't continue to the next
-    instruction)."""
+    instruction).
+
+    'operands' are the bytes after the opcode (none, one, or two, low byte
+    first). The instruction is decoded from the opcode's bits (see the
+    comments below) rather than from its opcode object. Called by
+    Opcode.update_cpu_state()."""
 
     def reg(index):
         """The value of a register (by its number in the opcode), or None."""
@@ -149,18 +209,23 @@ def update_state(state, opcode, operands):
         return None if name == "m" else state[name]
 
     def set_reg(index, value):
+        """Set a register (by its number in the opcode). M, the memory at
+        HL, isn't tracked."""
         name = REGISTER_ORDER[index]
         if name != "m":
             state[name] = value
 
     imm8 = operands[0] if len(operands) >= 1 else None
     imm16 = (operands[0] | (operands[1] << 8)) if len(operands) == 2 else None
+    # (The register pair in bits 5-4, for LXI, INX, DCX, DAD and POP)
     pair = REGISTER_PAIRS[(opcode >> 4) & 3]
 
     if 0x40 <= opcode <= 0x7f:
         if opcode != 0x76:                              # MOV (0x76 is HLT)
             set_reg((opcode >> 3) & 7, reg(opcode & 7))
     elif 0x80 <= opcode <= 0xbf:                        # ADD ... CMP with a register
+        # (An operation on A itself, when A isn't known, passes "a", so
+        # that _alu() knows XRA A gives 0)
         src = opcode & 7
         _alu(state, (opcode >> 3) & 7, "a" if (src == 7 and state["a"] is None) else reg(src))
     elif (opcode & 0xc7) == 0xc6:                       # ADI ... CPI
@@ -178,6 +243,9 @@ def update_state(state, opcode, operands):
             result = (v + (1 if (opcode & 1) == 0 else -1)) & 0xff
             set_reg(index, result)
             _set_szp(state, result)
+            # AC is the carry out of bit 3: for INR, when the low four bits
+            # are now 0; for DCR (which the 8080 does by adding $FF), unless
+            # they were 0, so are now $F. (CY isn't changed.)
             state["ac"] = (result & 0xf) == 0 if (opcode & 1) == 0 else (result & 0xf) != 0xf
     elif (opcode & 0xcf) == 0x01:                       # LXI
         _set_pair(state, pair, imm16)
@@ -185,6 +253,7 @@ def update_state(state, opcode, operands):
         v = _get_pair(state, pair)
         _set_pair(state, pair, None if v is None else v + (1 if (opcode & 8) == 0 else -1))
     elif (opcode & 0xcf) == 0x09:                       # DAD
+        # (Of the flags, only CY is changed)
         hl, v = _get_pair(state, ("h", "l")), _get_pair(state, pair)
         if hl is None or v is None:
             _set_pair(state, ("h", "l"), None)
@@ -193,10 +262,13 @@ def update_state(state, opcode, operands):
             _set_pair(state, ("h", "l"), hl + v)
             state["cy"] = hl + v > 0xffff
     elif opcode in (0x0a, 0x1a, 0x3a, 0xdb):            # LDAX, LDA, IN
+        # (Memory and I/O aren't tracked)
         state["a"] = None
     elif opcode == 0x2a:                                # LHLD
         _set_pair(state, ("h", "l"), None)
     elif opcode in (0x07, 0x0f, 0x17, 0x1f):            # RLC, RRC, RAL, RAR
+        # (RLC and RRC rotate A, with the bit that goes round copied to CY;
+        # RAL and RAR rotate A and CY together. Only CY is changed.)
         a, cy = state["a"], state["cy"]
         if opcode == 0x07:
             state["cy"] = None if a is None else a >= 0x80
@@ -216,6 +288,10 @@ def update_state(state, opcode, operands):
             state["a"] = state["cy"] = state["ac"] = None
             _forget_szp(state)
         else:
+            # Add 6 if the low four bits are over 9 (or AC), and $60 if the
+            # high four bits are (allowing for the carry from adding the 6)
+            # or CY, as one addition, which sets the flags; then CY is set if
+            # it was, or if $60 was added.
             correction = 0
             lsb, msb = a & 0x0f, a >> 4
             if ac or lsb > 9:
@@ -234,6 +310,7 @@ def update_state(state, opcode, operands):
     elif opcode == 0xeb:                                # XCHG
         state["d"], state["e"], state["h"], state["l"] = state["h"], state["l"], state["d"], state["e"]
     elif opcode == 0xe3:                                # XTHL
+        # (HL now holds what was on the stack, which isn't known)
         _set_pair(state, ("h", "l"), None)
     elif opcode == 0xf9:                                # SPHL
         state["sp"] = _get_pair(state, ("h", "l"))
@@ -241,6 +318,7 @@ def update_state(state, opcode, operands):
         _set_pair(state, "sp", None if state["sp"] is None else state["sp"] - 2)
     elif (opcode & 0xcf) == 0xc1:                       # POP
         if opcode == 0xf1:
+            # POP PSW: A and the flags
             state["a"] = None
             for name in Cpu8080.CpuState.FLAGS:
                 state[name] = None
@@ -248,14 +326,18 @@ def update_state(state, opcode, operands):
             _set_pair(state, pair, None)
         _set_pair(state, "sp", None if state["sp"] is None else state["sp"] + 2)
     elif (opcode & 0xc7) in (0xc0, 0xc2):               # Rcc, Jcc (when not taken)
+        # (Unlike the Z80, the condition isn't then taken to be false)
         pass
     elif opcode in (0xc3, 0xcb, 0xe9):                  # JMP, PCHL
+        # (and $CB, the undocumented JMP)
         state.block_end = True
     elif opcode in (0xc9, 0xd9):                        # RET
+        # (and $D9, the undocumented RET)
         _set_pair(state, "sp", None if state["sp"] is None else state["sp"] + 2)
         state.block_end = True
     elif (opcode & 0xc7) == 0xc4 or opcode in (0xcd, 0xdd, 0xed, 0xfd) or (opcode & 0xc7) == 0xc7:
-        # Ccc, CALL, RST: the subroutine called could change anything
+        # Ccc, CALL (and $DD, $ED and $FD, the undocumented CALLs), RST: the
+        # subroutine called could change anything
         state.clear()
         if (opcode & 0xc7) == 0xc7:
             state.block_end = True              # (RST isn't traced past)
@@ -263,18 +345,33 @@ def update_state(state, opcode, operands):
     # SHLD, STA, MOV M,r, MVI M, OUT, EI, DI, HLT
 
 class Cpu8080(cpu.Cpu):
-    """Class representing an 8080 CPU"""
+    """The Intel 8080 CPU (see the module docstring).
+
+    'opcodes' is the opcode table: an Opcode object for each opcode byte.
+    'return_index' and 'return_array' number the RET instructions' labels
+    (see label_maker()), and 'indent_level_dict' gives an instruction's extra
+    indent (see Opcode.as_lines())."""
 
     def __init__(self):
+        """Make the opcode table, and give each opcode its cycles."""
         super().__init__()
 
-        # For labelling ret instructions numerically
+        # For labelling ret instructions numerically: the number of the
+        # last one named, and each one's number by binary address
         self.return_index = 0
         self.return_array = {}
 
         # indent_level_dict has binary addresses as the keys, and indent amounts as the values.
         self.indent_level_dict = collections.defaultdict(int)
 
+        # The opcodes, each an object that says how the instruction is
+        # traced and written. The mnemonic is written up to the operand
+        # (e.g. 'MVI B,', then the operand), in Intel's mnemonics, except
+        # that LXI names its register pair in full (e.g. 'LXI BC,', where
+        # the others have 'B'), and $F2 and $F4 are written 'JP P,' and
+        # 'CALL P,', as on the Z80, rather than Intel's JP and CP. The
+        # undocumented opcodes are $08, $10, $18, $20, $28, $30 and $38
+        # (NOP), $CB (JMP), $D9 (RET), and $DD, $ED and $FD (CALL).
         self.opcodes = {
             0x00: self.OpcodeImplied("NOP"),
             0x01: self.OpcodeImmediate16("LXI BC,"),
@@ -555,15 +652,22 @@ class Cpu8080(cpu.Cpu):
             op.cycles = cycles_description(opcode)
 
     def hook_subroutine(self, runtime_addr, name, hook):
+        """Add a subroutine hook (see commands.hook_subroutine()): the
+        subroutine at runtime_addr becomes an explicit entry point called
+        'name', and a call to it asks hook(target, caller) for the runtime
+        address the code carries on at (see OpcodeCall.disassemble())."""
         runtime_addr = RuntimeAddr(runtime_addr)
         binary_loc = movemanager.r2b_checked(runtime_addr)
         self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name, explicit=True)
         self.subroutine_hooks[runtime_addr] = hook
 
     def get_target_binary_addr_preferring_given_move_id(self, runtime_addr, specific_move_id):
-        """Given an instruction's operand address (a runtime address), find it's most likely
-        binary address, for the current set of active move ids.
-        """
+        """Given an instruction's operand address (a runtime address), find
+        its most likely binary address, for the current set of active move
+        ids, as a list (empty if there isn't one): in specific_move_id (the
+        instruction's own move) if that move has the address, otherwise
+        wherever movemanager.r2b() finds it. Used for the address a call
+        returns to (see OpcodeCall.disassemble())."""
         # Try the specific move id first...
         binary_addr, _ = movemanager.r2b(runtime_addr, specific_move_id)
         if binary_addr is None:
@@ -574,6 +678,20 @@ class Cpu8080(cpu.Cpu):
         return [binary_addr]
 
     class Opcode:
+        """An opcode: how an instruction with this opcode byte is traced and
+        written. It's also the instruction's classification (see
+        classification.py), as code. The subclasses below add disassemble(),
+        which gives the binary addresses to trace next (see
+        cpu.Cpu.disassemble_instruction()), and write the operand.
+
+        'mnemonic' is the instruction as written up to its operand (e.g.
+        'MVI B,'), and 'operand_length' the number of bytes after the
+        opcode (0 to 2). 'suffix' and 'prefix' are written after and before
+        the operand ('prefix' is '(' if the suffix has a ')'): no 8080
+        opcode has them. 'update' is kept but not used, since the CPU state
+        is followed by update_state(). 'cycles' is the text shown with
+        config.set_show_cycles(True)."""
+
         def __init__(self, mnemonic, operand_length, suffix = None, update=None):
             self.mnemonic = mnemonic
             self.suffix = suffix if suffix is not None else ""
@@ -583,12 +701,16 @@ class Cpu8080(cpu.Cpu):
             self.cycles = "???"         # (Set by Cpu8080.__init__())
 
         def length(self):
+            """The instruction's length in bytes."""
             return 1 + self.operand_length
 
         def is_code(self, binary_addr):
+            """True: an instruction is code (unlike a data classification)."""
             return True
 
         def update_cpu_state(self, binary_addr, state):
+            """Update 'state' (a CpuState) for this instruction at
+            binary_addr, with update_state()."""
             # Nothing is known after an instruction the code can't continue
             # from (e.g. JMP), or where code can come from elsewhere (at a
             # label)
@@ -600,9 +722,14 @@ class Cpu8080(cpu.Cpu):
             update_state(state, memory_binary[binary_addr], operands)
 
         def update_references(self, binary_loc):
+            """Record the references to labels that the instruction at
+            binary_loc makes (none by default)."""
             pass
 
         def is_block_end(self):
+            """True if the code can't continue to the next instruction (e.g.
+            JMP or RET): it ends a block, which gets a blank line after it
+            unless config.set_blank_line_at_block_end(False)."""
             return False
 
         def cycles_description(self, binary_addr):
@@ -611,11 +738,17 @@ class Cpu8080(cpu.Cpu):
             return self.cycles
 
         def instruction(self, binary_addr):
-            """The instruction (see output.Instruction)."""
+            """The instruction (see output.Instruction): just the mnemonic,
+            for an opcode with no operand."""
             return output.Instruction(self.mnemonic)
 
         def address_operand(self, binary_addr):
-            """The 16 bit address operand (following the opcode at binary_addr) as a string."""
+            """The 16 bit address operand (following the opcode at
+            binary_addr) as a string: its label or expression (see
+            classification.get_address16()). Unless it's in brackets, it's
+            rendered as an operand (expression.OPERAND), since z88dk-z80asm
+            takes an operand that starts with a bracket to be indirect (see
+            Z88DK.expression_in_context())."""
             operand = classification.get_address16(binary_addr + 1)
             if self.prefix:
                 # Already in brackets, e.g. an indirect address
@@ -634,21 +767,36 @@ class Cpu8080(cpu.Cpu):
 
 
     class OpcodeImplied(Opcode):
+        """An opcode with no operand, after which the code continues to the
+        next instruction. (This includes the conditional returns, which
+        may not return.)"""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 0, update=update)
 
         def disassemble(self, binary_loc):
+            """The next instruction."""
             return [binary_loc.binary_addr + 1]
 
 
     class OpcodeImmediate(Opcode):
+        """An opcode with an 8 bit immediate operand: MVI, the arithmetic
+        and logic operations with a value (ADI ... CPI), and IN and OUT (a
+        port number)."""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 1, update=update)
 
         def disassemble(self, binary_loc):
+            """The next instruction."""
             return [binary_loc.binary_addr + 2]
 
         def instruction(self, binary_addr):
+            """The instruction, with its operand as a constant or expression
+            (see classification.get_constant8()). If the operand is a
+            printable character, and has no expression or format hint, it's
+            also shown as a character in a comment (e.g. 'A'), unless
+            config.set_show_char_literals(False)."""
             memory_binary = session.current().memory.binary
             operand = expression.in_context(classification.get_constant8(binary_addr + 1), expression.OPERAND)
             char_literal = None
@@ -660,13 +808,21 @@ class Cpu8080(cpu.Cpu):
 
 
     class OpcodeImmediate16(Opcode):
+        """An opcode with a 16 bit immediate operand: LXI. The value isn't
+        taken to be an address (it may not be one), so it doesn't get a
+        label unless an expression gives it one."""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 2, update=update)
 
         def disassemble(self, binary_loc):
+            """The next instruction."""
             return [binary_loc.binary_addr + 3]
 
         def instruction(self, binary_addr):
+            """The instruction, with its operand as a constant or expression
+            (see classification.get_constant16()), and a character in a
+            comment as for OpcodeImmediate (from the operand's low byte)."""
             memory_binary = session.current().memory.binary
             operand = expression.in_context(classification.get_constant16(binary_addr + 1), expression.OPERAND)
             char_literal = None
@@ -677,89 +833,136 @@ class Cpu8080(cpu.Cpu):
             return output.Instruction(self.mnemonic, operand, char_literal=char_literal)
 
     class OpcodeAddr16(Opcode):
+        """An opcode with a 16 bit address operand that's read or written:
+        SHLD, LHLD, STA and LDA. The address gets a label."""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 2, update=update)
 
         def abs_operand(self, binary_addr):
+            """The address operand (a runtime address)."""
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
         def instruction(self, binary_addr):
+            """The instruction, with the address as its label or expression."""
             return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)
 
         def update_references(self, binary_loc):
+            """Record the reference to the address's label."""
             session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
+            """The next instruction."""
             return [binary_loc.binary_addr + 3]
 
     class OpcodeJmp(Opcode):
+        """JMP (and $CB, the undocumented JMP): a jump to a 16 bit address,
+        which is traced. The code doesn't continue after it."""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 2, update=update)
 
         def _target(self, binary_addr):
+            """The runtime address jumped to."""
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
         def abs_operand(self, binary_addr):
+            """The runtime address jumped to."""
             return self._target(binary_addr)
 
         def instruction(self, binary_addr):
+            """The instruction, with the target as its label or expression."""
             return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)
 
         def update_references(self, binary_loc):
+            """Record the reference to the target's label."""
             session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def is_block_end(self):
+            """True: the code doesn't continue after a JMP."""
             return True
 
         def disassemble(self, binary_loc):
+            """No next instruction, then the target (see
+            cpu.Cpu.jump_target())."""
             # Get the destination location of the JMP
             return [None] + session.current().cpu.jump_target(self._target(binary_loc.binary_addr), binary_loc)
 
     class OpcodeJmpInd(Opcode):
+        """PCHL, a jump to the address in HL. The address isn't known, so
+        nothing is traced from it."""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 0, update=update)
 
         def is_block_end(self):
+            """True: the code doesn't continue after PCHL."""
             return True
 
         def disassemble(self, binary_loc):
+            """Nothing to trace."""
             return [None]
 
 
     class OpcodeConditionalBranch(Opcode):
+        """A conditional jump (JNZ, JZ, JNC, JC, JPO, JPE, JP P, JM) to a 16
+        bit address. The code may continue to the next instruction or to
+        the target, which are both traced."""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 2, update=update)
 
         def _target(self, binary_addr):
+            """The runtime address jumped to."""
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
         def abs_operand(self, binary_addr):
+            """The runtime address jumped to."""
             return self._target(binary_addr)
 
         def update_references(self, binary_loc):
+            """Record the reference to the target's label."""
             session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
+            """The next instruction, then the target, which is looked for
+            in the jump's own move first (as for a branch: see
+            cpu.Cpu.jump_target())."""
             return [binary_loc.binary_addr + 3] + session.current().cpu.jump_target(self._target(binary_loc.binary_addr), binary_loc, prefer_own_move=True)
 
         def instruction(self, binary_addr):
+            """The instruction, with the target's label. (Unlike JMP and
+            CALL, an expression for the operand isn't used.)"""
             label = disassembly.get_label(self._target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
             return output.Instruction(self.mnemonic, label)
 
     class OpcodeCall(Opcode):
+        """CALL, the conditional calls (CNZ etc.), and $DD, $ED and $FD, the
+        undocumented CALLs: a call to a 16 bit address, which is traced, as
+        is where the subroutine returns to (normally the next instruction,
+        but a subroutine hook can say otherwise)."""
+
         def __init__(self, mnemonic, update=None):
             super().__init__(mnemonic, 2, update=update)
 
         def _target(self, binary_addr):
+            """The runtime address called."""
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
         def abs_operand(self, binary_addr):
+            """The runtime address called."""
             return self._target(binary_addr)
 
         def update_references(self, binary_loc):
+            """Record the reference to the subroutine's label."""
             session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
+            """The binary addresses to trace next: where the call returns to
+            (or None if it doesn't), then the subroutine. A subroutine hook
+            (see Cpu8080.hook_subroutine()) for the subroutine gives the
+            runtime address it returns to, e.g. after data that follows the
+            call, or None if it doesn't return."""
             assert isinstance(binary_loc.binary_addr, BinaryAddr)
 
             # Get the destination location of the CALL
@@ -774,11 +977,15 @@ class Cpu8080(cpu.Cpu):
             # and call entry() itself for the labelled entry points.
 
             def simple_call_hook(target_runtime_addr, caller_runtime_addr):
+                """The default hook: the call returns to the next
+                instruction."""
                 assert isinstance(target_runtime_addr, RuntimeAddr)
                 assert isinstance(caller_runtime_addr, RuntimeAddr)
 
                 return caller_runtime_addr + 3
 
+            # (The hook is called with the call's move active, so that the
+            # addresses it uses, e.g. with entry(), are looked for there)
             call_hook = session.current().cpu.subroutine_hooks.get(target_runtime_addr, simple_call_hook)
             caller_runtime_addr = movemanager.b2r(binary_loc.binary_addr)
             with session.current().moves.move_id_for_binary_addr[binary_loc.binary_addr]:
@@ -802,54 +1009,76 @@ class Cpu8080(cpu.Cpu):
             return result + target_binary_addrs
 
         def instruction(self, binary_addr):
+            """The instruction, with the subroutine as its label or
+            expression."""
             return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)
 
     class OpcodeReturn(Opcode):
+        """RET (and $D9, the undocumented RET). The code doesn't continue
+        after it. (The conditional returns are OpcodeImplied, since it may
+        continue after them.)"""
+
         def __init__(self, mnemonic):
             super().__init__(mnemonic, 0)
 
         def disassemble(self, binary_loc):
+            """Nothing to trace."""
             return [None]
 
         def is_block_end(self):
+            """True: the code doesn't continue after a RET."""
             return True
 
-    # The undocumented opcodes: &08, &10, &18, &20, &28, &30 and &38 run as
-    # NOP, &CB as JMP, &D9 as RET, and &DD, &ED and &FD as CALL. They're
+    # The undocumented opcodes: $08, $10, $18, $20, $28, $30 and $38 run as
+    # NOP, $CB as JMP, $D9 as RET, and $DD, $ED and $FD as CALL. They're
     # traced as what they run as, but output as data bytes (see
     # output.Instruction.UNDOCUMENTED), since assemblers don't accept them.
 
     class Undocumented:
         """Outputs an undocumented opcode as data bytes (the opcode, then
         the operand's low and high bytes, if any), with the instruction it
-        runs as in a comment."""
+        runs as in a comment. It's mixed in before the class of the opcode
+        it runs as, e.g. OpcodeUndocumentedJmp(Undocumented, OpcodeJmp),
+        which does the rest."""
 
         def instruction(self, binary_addr):
+            """The instruction it runs as, marked to be written as data
+            bytes."""
             instruction = super().instruction(binary_addr)
             instruction.form = output.Instruction.UNDOCUMENTED
             instruction.data_byte = expression.Num(session.current().memory.binary[binary_addr], "hex2")
             return instruction
 
     class OpcodeUndocumentedImplied(Undocumented, OpcodeImplied):
+        """An undocumented NOP ($08, $10, $18, $20, $28, $30 or $38)."""
         pass
 
     class OpcodeUndocumentedJmp(Undocumented, OpcodeJmp):
+        """$CB, an undocumented JMP."""
         pass
 
     class OpcodeUndocumentedReturn(Undocumented, OpcodeReturn):
+        """$D9, an undocumented RET."""
         pass
 
     class OpcodeUndocumentedCall(Undocumented, OpcodeCall):
+        """$DD, $ED or $FD, an undocumented CALL."""
         pass
 
     class OpcodeReset(Opcode):
+        """RST n, a call to address n * 8. Unlike the Z80's, it ends a
+        block: the code isn't traced past it, nor at the address it
+        calls."""
+
         def __init__(self, mnemonic):
             super().__init__(mnemonic, 0)
 
         def disassemble(self, binary_loc):
+            """Nothing to trace."""
             return [None]
 
         def is_block_end(self):
+            """True: RST isn't traced past."""
             return True
 
     class CpuState:
@@ -857,7 +1086,12 @@ class Cpu8080(cpu.Cpu):
         update_state()): each register's value (A, B, C, D, E, H, L as 8 bit
         numbers, SP as a 16 bit number) and each flag's (S, Z, AC (the
         auxiliary or half carry), P and CY, as True or False), or None if
-        it's not known."""
+        it's not known. They're in 'values', by name (as in REGISTERS and
+        FLAGS), and are read and written as state["a"] etc.
+
+        'block_end' is True after an instruction the code can't continue
+        from (see clear()). There's only one state, unlike the 6502's
+        optimistic and pessimistic ones."""
 
         REGISTERS = ("a", "b", "c", "d", "e", "h", "l", "sp")
         FLAGS     = ("s", "z", "ac", "p", "cy")
@@ -876,6 +1110,8 @@ class Cpu8080(cpu.Cpu):
             self.block_end = False
 
         def copy(self):
+            """A copy of the state (much faster than copy.deepcopy(), which
+            cpu.Cpu.calculate_cpu_states() would use otherwise)."""
             result = type(self).__new__(type(self))
             result.values = dict(self.values)
             result.block_end = self.block_end
@@ -885,6 +1121,7 @@ class Cpu8080(cpu.Cpu):
             return self.values[key]
 
         def __setitem__(self, key, value):
+            # (Only the registers and flags that are tracked can be set)
             assert key in self.values
             self.values[key] = value
 
@@ -893,22 +1130,31 @@ class Cpu8080(cpu.Cpu):
             'A:41 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- sZ-pc': each register
             in hex ('--' if not known), then each flag (S, Z, AC, P, CY) as
             an upper case letter if set, lower case if clear, or '-' if not
-            known."""
+            known (AC is shown as 'a')."""
             def reg(name):
+                """A register in hex, or dashes."""
                 v = self.values[name]
                 if name == "sp":
                     return "----" if v is None else utils.plainhex4(v)
                 return "--" if v is None else utils.plainhex2(v)
             def flag(name, letter):
+                """A flag's letter, or '-'."""
                 v = self.values[name]
                 return "-" if v is None else (letter.upper() if v else letter)
             return " ".join("%s:%s" % (name.upper(), reg(name)) for name in self.REGISTERS) + " " + \
                    "".join(flag(name, letter) for name, letter in zip(self.FLAGS, "szapc"))
 
     def is_subroutine_call(self, binary_addr):
+        """Whether the instruction at binary_addr is a subroutine call, for
+        naming the label of the code it calls 'sub_...' (see
+        disassembly.suggest_label_name()). Always False for the 8080, so
+        code reached by CALL keeps its 'c...' label."""
         return False
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
+        """Whether the instruction at binary_addr is a conditional jump to
+        target_runtime_addr, for naming a loop's label 'loop_...' (see
+        disassembly.suggest_label_name())."""
         c = classification.get_classification(binary_addr)
 
         if isinstance(c, self.OpcodeConditionalBranch):
@@ -916,7 +1162,13 @@ class Cpu8080(cpu.Cpu):
         return False
 
     def label_maker(self, lmd):
-        # Label return1, return2 etc
+        """Name an auto-generated label on a RET instruction ($C9)
+        return_1, return_2 etc. (numbered in the order they're first
+        named), unless config.set_label_return_instructions_numerically(False).
+        'lmd' is the label's LabelMakingData, with the name chosen so far:
+        this is called for each label as it's named, after the default name
+        is chosen (see disassembly._label_maker())."""
+        # Label return_1, return_2 etc
         memory_binary = session.current().memory.binary
         if config.get_label_return_instructions_numerically():
             # Only if the current label is autogenerated

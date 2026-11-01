@@ -1,3 +1,29 @@
+"""
+CPU
+
+The base class of the CPUs (Cpu). The session's CPU does most of the work of
+tracing: following ('tracing') the code from its entry points to find which
+bytes are code, classifying each instruction it reaches as code, and then
+working out what's known about the registers and flags after each
+instruction (the 'CPU state'), which the analysis after tracing uses to add
+comments, find more code and name things.
+
+Each CPU is a class derived from Cpu, in its own module: cpu6502.py (with
+cpu6510.py and cpu65C02.py derived from it), cpu8080.py and cpuz80.py.
+load() (see commands.py) makes the session's CPU (session.current().cpu)
+from the name it's given, and go() calls its trace(). After that,
+disassembly.py asks it how to name labels (label_maker(),
+is_subroutine_call(), is_branch_to()), and go() has it add the 'referenced
+by' comments.
+
+Two kinds of address are used: a binary address is where a byte is in the
+loaded binary (memorymanager.BinaryAddr), and a runtime address is where it
+is when the code runs (memorymanager.RuntimeAddr). They differ for code
+that's moved, i.e. copied elsewhere to run (see movemanager.py), and then a
+move ID says which move a runtime address is in. Tracing works with binary
+addresses, and labels are at runtime addresses.
+"""
+
 import assembler
 import classification
 import collections
@@ -21,29 +47,81 @@ from memorymanager import BinaryAddr, RuntimeAddr
 
 
 class Cpu:
-    """Abstract base class representing a CPU"""
+    """The base class of the CPUs. A CPU is responsible for:
+
+    - decoding instructions: 'opcodes' maps each opcode to an opcode object
+      (see opcode_at()). The same object is the classification of every
+      instruction with that opcode (see classification.py), so its methods
+      take the instruction's binary address. It says how long the
+      instruction is, where the code goes after it (disassemble()), which
+      addresses it refers to (update_references()), how it's written in the
+      output (as_lines()) and what it does to the CPU state
+      (update_cpu_state());
+    - tracing: trace() follows the code from the entry points (add_entry()),
+      classifying each instruction as code. A subroutine hook
+      (hook_subroutine()) can say where a call to a subroutine returns to,
+      for a subroutine that doesn't return normally;
+    - following the CPU state: calculate_cpu_states() works out what's known
+      after each instruction (e.g. known register values), as a CpuState in
+      'cpu_states';
+    - analysing the code once it's traced: the functions in
+      'code_analysis_fns' use the CPU states to add comments and name
+      constants (e.g. Cpu6502.substitute_constants()), and the snippets'
+      functions (pre_trace_with_regex(), post_trace_with_regex()) and
+      find_entry_points_from_effects() find more code;
+    - naming: label_maker() can give some labels names of the CPU's own
+      (e.g. 'return_1'), and the references to labels found while tracing
+      give the 'referenced by' comments and the frequency table at the end.
+
+    A CPU class provides 'opcodes' (in its __init__()) and its opcode
+    classes; a CpuState class (with a copy() method if it can be copied
+    faster than with copy.deepcopy()); 'indent_level_dict' ({binary address:
+    extra indent}, for indenting loops: see config.set_indent_loops()); and
+    the methods hook_subroutine(),
+    get_target_binary_addr_preferring_given_move_id() (used by the opcode
+    classes and commodore.py), is_subroutine_call() and is_branch_to() (used
+    to name labels 'sub_...' and 'loop_...'). It can also provide
+    default_subroutine_hook() (for subroutine()) and straight_runs() (used
+    by effect patterns and the machine modules), and override opcode_at(),
+    memory_regions() and the methods here that do nothing by default
+    (find_entry_points_from_effects(), label_maker(),
+    pre_trace_with_regex() and post_trace_with_regex())."""
 
     def __init__(self):
+        """Start with no opcodes, entry points or hooks."""
         # (The CPU belongs to the session: see session.py and load(). It must
         # not read the session here, since it may be made before load() is
         # called.)
+
+        # The subroutine hooks, by runtime address (see hook_subroutine())
         self.subroutine_hooks = {}
+        # The opcode objects, by opcode (filled in by the derived class)
         self.opcodes = {}
+        # The binary addresses still to trace, in the order they'll be traced
+        # (see trace_entry_points())
         self.entry_points = []
         self.explicit_entry_points = set()  # binary addresses given as entry points by the user (or a helper like code_ptr()), not just found by tracing
+        # The binary addresses already traced, which aren't traced again. (So
+        # nonentry() adds an address here to stop tracing there.)
         self.traced_entry_points = set()
         # Snippet matches ignored because they start in the middle of an
-        # instruction, as (snippet index, binary address): see
-        # snippethelper.SnippetRejected
+        # instruction (or a snippet's function rejected them), as (snippet
+        # index, binary address), or (snippet index, match key) for an effect
+        # pattern's: see snippethelper.SnippetRejected
         self.rejected_snippet_matches = set()
+        # The functions to call (with no arguments) to analyse the code once
+        # it's traced and the CPU states are known (see analyse_code())
         self.code_analysis_fns = []
+        # True once trace() has finished, after which labels can be named
+        # (see disassembly.py)
         self.trace_done = False
 
         # After we have traced to classify where the code is, we record what we
         # know about the CPU state after each instruction. This is used to
         # analyse the code. e.g. We look to see if we set a register with an
         # immediate mode constant before a subroutine call so that we can give
-        # that constant a proper symbol name.
+        # that constant a proper symbol name. (By binary address: the state
+        # after the instruction there, or None if it isn't code.)
         self.cpu_states = [None] * 64*1024
 
 
@@ -59,21 +137,33 @@ class Cpu:
 
     def disassemble_instruction(self, binary_addr):
         """
-        Disassemble an instruction at the binary address.
+        Trace the instruction at binary_addr, returning what to trace next.
 
-        Identifies the opcode and calls into the opcode object to do
-        the actual disassembly.
+        Finds the opcode (opcode_at()), classifies the instruction as code
+        and records the addresses it refers to (the opcode's
+        update_references()), then asks the opcode object where the code
+        goes next (its disassemble()). This is all done in the
+        instruction's own move, so that runtime addresses are looked up
+        there first.
 
-        Returns a list of possible new addresses, the first entry
-        being the address of the next instruction, and the next
-        entry being the destination of a jump or branch instruction.
+        Returns a list of binary addresses: the first is the next instruction
+        (or None if the code doesn't run on to it, e.g. after a return or a
+        jump), and any others are the targets of a jump, call or branch.
+        Returns [None] if there's no instruction here: an unknown opcode, the
+        top of memory, or the end of the loaded data part way through the
+        instruction.
+
+        If any of the instruction's bytes are already classified (e.g. as
+        data, or as part of another instruction), it isn't classified (and
+        its references aren't recorded): it's shown in a comment there
+        instead, and tracing carries on from it.
         """
 
         memory_binary = session.current().memory.binary
         assert isinstance(binary_addr, memorymanager.BinaryAddr)
 
         # Tracing stops at the top of memory (rather than wrapping round to
-        # &0000), as it does at the end of the loaded data
+        # $0000), as it does at the end of the loaded data
         if binary_addr >= 0x10000:
             return [None]
         opcode = self.opcode_at(binary_addr)
@@ -96,7 +186,11 @@ class Cpu:
             else:
                 # Check if we run out of binary within this instruction
                 if not memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1 + opcode.operand_length):
-                    # Mark the final partial instruction as being data, not code
+                    # Mark the final partial instruction as being data, not
+                    # code. (This classifies the opcode byte as a byte of
+                    # data, if the byte after it is loaded. The bytes left
+                    # unclassified become data at the end anyway: see
+                    # classification.classify_leftovers().)
                     for i in range(1, 1 + opcode.operand_length):
                         if memory_binary[binary_addr + i] is not None:
                             classification.add_classification(binary_addr, classification.Byte(1))
@@ -123,7 +217,7 @@ class Cpu:
         there's only one (e.g. a jump from the main code to code that's
         copied elsewhere to run), or else in the instruction's own move
         anyway. If more than one move puts code there (e.g. several banks of
-        code that all run at &8000), and the instruction isn't in one of
+        code that all run at $8000), and the instruction isn't in one of
         them, which one it reaches isn't known: it isn't traced from here,
         with a warning."""
         own_binary_addr = None
@@ -143,10 +237,18 @@ class Cpu:
         return []
 
     def add_entry(self, binary_addr, runtime_addr, move_id, name, *, explicit=False):
-        """Add code entry point.
+        """Add a code entry point: the code at binary_addr is traced the next
+        time trace_entry_points() runs, and gets a label in move_id, named
+        'name' (or an auto-generated name, if it's None).
 
         `explicit` is True for an entry point given by the user (e.g. via
-        entry()), rather than one found by tracing."""
+        entry()), rather than one found by tracing. Its label is then named
+        as a subroutine's ('sub_...'), and code is taken to come there from
+        elsewhere (e.g. it ends a straight run: see
+        Cpu6502.straight_runs()).
+
+        (The label's runtime address is worked out from binary_addr: the
+        runtime_addr given is only checked not to be a binary address.)"""
 
         assert not isinstance(binary_addr, memorymanager.RuntimeAddr)
         assert not isinstance(runtime_addr, memorymanager.BinaryAddr)
@@ -161,8 +263,17 @@ class Cpu:
     MAX_EFFECT_PASSES = 20
 
     def calculate_cpu_states(self):
-        """Calculate what we know about the CPU state for each instruction
-        (in cpu_states)."""
+        """Calculate what we know about the CPU state after each instruction
+        (in cpu_states).
+
+        This goes through the code in binary address order, passing one
+        CpuState from each instruction to the next, and each instruction's
+        update_cpu_state() changes it for what that instruction does. So the
+        state after an instruction is worked out from the code before it in
+        memory: it's up to the instruction to forget what may not be true,
+        e.g. at a label (since code can jump there from elsewhere) or after
+        a jump. Anything that isn't code (data) starts a new, empty
+        state."""
         binary_addr = 0
         state = self.CpuState()
         # (Only the loaded data can be classified, so just loop over that)
@@ -191,9 +302,10 @@ class Cpu:
     def analyse_code(self, *, calculate_states=True):
         """Calculates what we know about the CPU state for each instruction
         (unless calculate_states is False, when it's already known) then
-        runs code analysis. e.g. We look to see if we set a register with an
-        immediate mode constant before a subroutine call so that we can give
-        that constant a proper symbol name."""
+        runs code analysis: each of code_analysis_fns, then the session's
+        analysis hooks (trace.analysis_hooks). e.g. We look to see if we set
+        a register with an immediate mode constant before a subroutine call
+        so that we can give that constant a proper symbol name."""
 
         if calculate_states:
             self.calculate_cpu_states()
@@ -206,7 +318,15 @@ class Cpu:
             f()
 
     def trace(self):
-        """Trace all the code from the entry points."""
+        """Trace all the code from the entry points, then analyse it (called
+        by go()).
+
+        This traces from the entry points given, then from those that the
+        snippets find, then (repeatedly) from those found from what the code
+        does. Then it records which labels each instruction refers to
+        (generate_references()), works out the comments and names from what
+        the code does (analyse_code() and the snippets' post-trace
+        functions), and sets trace_done."""
 
         # First trace from the entry points given so far
         self.trace_entry_points()
@@ -241,8 +361,9 @@ class Cpu:
         self.analyse_code(calculate_states=False)
         
         # Now we have traced and analysed the code we can again look for regex matches
-        # and comment in more detail, knowing the cpu_cache for the state of registers 
-        # at each instruction can tell us for example how many times we execute a loop.
+        # and comment in more detail: knowing the state of the registers at
+        # each instruction (cpu_states) can tell us for example how many times
+        # we execute a loop.
         self.post_trace_with_regex()
 
         # We defer final label name generating (using LazyString) until tracing
@@ -254,7 +375,12 @@ class Cpu:
 
     def trace_entry_points(self):
         """Trace the code from each entry point in 'entry_points', and the
-        entry points found by doing so, until there are none left."""
+        entry points found by doing so, until there are none left.
+
+        Each address is traced once (see traced_entry_points), as a queue:
+        the addresses each instruction leads to are added to the end of the
+        list. The target of a jump, call or branch gets a label (with
+        add_entry()), but the next instruction doesn't."""
 
         # As each instruction is processed, the next possible instructions
         # are added to the 'entry_points' list. The first of these will be
@@ -281,9 +407,19 @@ class Cpu:
                     self.add_entry(new_entry_point, runtime_addr, move_id=move_id, name=None)
 
     def generate_references(self):
-        """Generate references from the label data.
+        """Generate references from the label data, as
+        trace.references: {the binary location referred to: [the binary
+        locations of the instructions that refer to it]}.
 
-        A label holds the binary_address of each location that references the label."""
+        A label holds the binary location of each instruction that refers to
+        its runtime address (see each opcode's update_references()). Here
+        each of those is matched to the binary location it reaches: the
+        copy of the address in the instruction's own move, if that move has
+        it, and otherwise a default for the label. The default is the copy
+        in the label's first relevant move (or, if it has none, the one
+        move with the address); failing that, the copy in the lowest
+        numbered move that an instruction referring to it is in; and
+        failing that, the one move with the address."""
 
         # DEBUG
         #for runtime_addr, label in session.current().labels.labels.items():
@@ -295,7 +431,9 @@ class Cpu:
         def reached_in_move(runtime_addr, ref_binary_loc):
             """If the runtime address is in the same move as the referring
             instruction, and the binary data there is loaded and belongs to
-            that move, return the binary address, otherwise None."""
+            that move, return the binary address, otherwise None. (Also None
+            for a jump, call or branch into the middle of an instruction:
+            see below.)"""
 
             move_id = ref_binary_loc.move_id
             md = session.current().moves.move_definitions[move_id]
@@ -350,16 +488,25 @@ class Cpu:
         #    utils.debug("label {0} at runtime_addr: {1} has references: {2}".format(label.all_names(), hex(runtime_addr), [hex(x.binary_addr) for x in label.references]))
 
     def format_runtime_location(self, runtime_addr, move_id):
+        """A runtime address in hex, for a 'referenced by' comment, with the
+        move ID after it in brackets if it isn't the base move, e.g.
+        '$0902[1]'."""
         result = config.get_assembler().hex4(runtime_addr)
         if move_id != movemanager.BASE_MOVE_ID:
             result += "[{0}]".format(move_id)
         return result
 
     def format_binary_location(self, binary_loc):
+        """The binary address of binary_loc in hex, for the start of a
+        'referenced by' comment."""
         return config.get_assembler().hex4(binary_loc.binary_addr)
 
     def add_references_comments(self):
-        """Add comments showing the references"""
+        """Add comments showing the references (from
+        generate_references()): before each location that's referred to,
+        e.g. '$2002 referenced 2 times by $200b, $2010', with the binary
+        address referred to and the runtime addresses of the instructions
+        that refer to it. (Called by go() if config.get_label_references().)"""
 
         for binary_loc, ref_binary_locs in session.current().trace.references.items():
             count = utils.count_with_units(len(ref_binary_locs), "time", "times")
@@ -369,7 +516,10 @@ class Cpu:
             disassembly.comment_binary(binary_loc, comment, word_wrap=False, align=Align.BEFORE_LABEL, auto_generated=True)
 
     def add_reference_frequency_table(self):
-        """Output a frequency table of label references."""
+        """Output a frequency table of label references: the lines of
+        comments for the end of the output, listing each name of each label
+        that's referred to, with the number of references to its address,
+        most first (and then by name). Empty if nothing is referred to."""
 
         if len(session.current().trace.references) == 0:
             return []
@@ -396,16 +546,27 @@ class Cpu:
         return result
 
     def label_maker(self, d):
+        """Change the label name suggested in 'd' (a LabelMakingData: see
+        disassembly.suggest_label_name()), if this CPU names some labels its
+        own way, e.g. 'return_1' for a return instruction. Called for each
+        label name chosen, before the user's label maker hook. (Does nothing
+        by default.)"""
         pass
 
     #
     # Regex style analysis
     #
     def pre_trace_with_regex(self):
+        """Run the snippets' pre-trace functions, which can add entry points
+        (see Cpu6502.pre_trace_with_regex()). Called by trace() once the
+        entry points given have been traced."""
         # Do nothing by default
         pass
 
     def post_trace_with_regex(self):
+        """Run the snippets' post-trace functions, which can add comments and
+        expressions using the CPU states (see
+        Cpu6502.post_trace_with_regex()). Called by trace() at the end."""
         # Do nothing by default
         pass
 

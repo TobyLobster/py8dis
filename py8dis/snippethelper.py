@@ -1,3 +1,35 @@
+"""
+Snippet helpers
+
+What a snippet's functions are given for each match, and the pieces shared
+by the snippets that recognise code setting a vector. (See snippets6502.py
+for how snippets are registered and matched, and docs/snippets-and-hooks.md.)
+
+- SnippetDetails is a registered snippet: its pattern and its functions.
+- SnippetHelper ('p' in a snippet's functions) describes one match of a
+  regex snippet. Its methods take a name from the snippet and give where it
+  matched (get_binary_address(), get_binary_location()), the value there
+  (get_memory()), the operand as a label or expression (get_expr()), the
+  CPU state there (get_state()) and so on; and make changes for the match:
+  entry() adds an entry point, reject() ignores the match.
+- EffectHelper does the same for a match of an effect pattern (see
+  effectpattern.py), with more methods for its effect lines (matched(),
+  value(), store() etc.).
+- SnippetRejected is raised to ignore a match.
+- vector_pattern(), vector_handler(), comment_vector() and the others at
+  the end are for code that sets a vector (a two byte address in memory) to
+  a handler's address. acorn.py and commodore.py use them.
+
+A name in a regex snippet can be a position (a name on a line of its own,
+e.g. a loop's start), called its 'definition' here, or be in an operand
+(e.g. 'loop' in 'bne loop'), and it can be in several places. The addresses
+are binary addresses (where the bytes are in the binary), since the match is
+on the binary's bytes; get_binary_location() adds the move ID.
+
+cpu6502.py makes the helper for each match and calls the snippet's
+functions; snippets6502.py and cpu6502.py import everything here.
+"""
+
 import classification
 import movemanager
 import session
@@ -15,13 +47,16 @@ class SnippetRejected(Exception):
     starts_mid_instruction()), or by SnippetHelper.reject() when a snippet's
     function finds the match isn't what it's looking for. The match is then
     ignored: the snippet's functions do nothing more with it, before or after
-    tracing, and other snippets can match its bytes."""
+    tracing, and other snippets can match its bytes. It's only caught around
+    a pre-trace function."""
 
 def starts_mid_instruction(binary_addr):
     """Would an instruction at binary_addr overlap one already traced (or
     other classified data) without starting where it does? That is, is
     binary_addr inside another instruction or data, or does an instruction or
-    data start in this instruction's operand?"""
+    data start in this instruction's operand? Also True if the byte there
+    isn't an opcode of the CPU, and False if an instruction already starts
+    there."""
     c = classification.get_classification(binary_addr)
     if c is not None:
         # Fine if an instruction already starts here (it's the same one)
@@ -32,6 +67,14 @@ def starts_mid_instruction(binary_addr):
     return classification.is_classified(binary_addr + 1, opcode.length() - 1)
 
 class SnippetDetails:
+    """A registered snippet (see snippets6502.register_snippet()): 'pattern'
+    (a snippet6502.Snippet or an effectpattern.EffectPattern), and the
+    functions to call for each match before and after tracing. Each function
+    is None, a string (added as an inline comment at the start of the
+    match), or a function called with the match's helper, and with its
+    parameter as well if that isn't None (e.g. the comment for
+    snippets6502.add_code_comment())."""
+
     def __init__(self, pre_trace_function, pre_trace_parameter, post_trace_function, post_trace_parameter, pattern):
         self.pre_trace_function = pre_trace_function
         self.pre_trace_parameter = pre_trace_parameter
@@ -40,6 +83,16 @@ class SnippetDetails:
         self.pattern = pattern
 
 class SnippetHelper:
+    """What a regex snippet's functions are given for one match ('p').
+
+    'memory_binary' is the session's memory (a byte, or None where nothing is
+    loaded, for each binary address); 'binary_loc' the binary location of
+    the start of the match; 'match' the re.Match, made on all the binary's
+    bytes, so that its positions are binary addresses; and 'labels' the
+    snippet's names, {name: [(group, is_definition)]} (see
+    snippet6502.Snippet), where is_definition is True for a position and
+    False for an operand."""
+
     def __init__(self, memory_binary, binary_loc, match, labels):
         self.memory_binary = memory_binary
         self.binary_loc    = binary_loc
@@ -47,16 +100,24 @@ class SnippetHelper:
         self.labels        = labels
 
     def get_start_loc(self):
+        """The binary location of the start of the match."""
         return self.binary_loc
 
     def get_binary_address_and_length(self, label_name, prioritise_definition=False):
-        # Look for the 'declaration' of the label
+        """(binary address, length) of where the name matched, or (None,
+        None) if it didn't (e.g. it's only in an alternative or an optional
+        line that didn't match). The length is 0 for a position, and 1 or 2
+        for an operand. A name in several places gives the first that
+        matched: positions first with 'prioritise_definition', otherwise
+        operands first."""
+        # Look at the places with the priority first, then the others
         for priority in [prioritise_definition, not prioritise_definition]:
             for label in self.labels[label_name]:
                 if label[1] == priority:
                     start, end = self.match.span(label[0])
                     if start is None or (start < 0):
                         # Match not found, could have been one of the '|' options that are not present... keep trying
+                        # (re gives (-1, -1) for a group that didn't take part)
                         continue
                     length = end - start
                     assert 0 <= start < 0x10000, "label='{0}' index={1} start={2}".format(label_name, label[0], start)
@@ -65,15 +126,24 @@ class SnippetHelper:
         return (None, None)
 
     def get_binary_address(self, label_name, prioritise_definition=True):
+        """The binary address where the name matched (a position first,
+        unless prioritise_definition is False), or None."""
         binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=prioritise_definition)
         return binary_addr
 
     def get_binary_location(self, label_name, prioritise_definition=True):
+        """As get_binary_address(), as a BinaryLocation (with the move ID of
+        the address). The name must have matched."""
         binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=prioritise_definition)
         move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
         return BinaryLocation(binary_addr, move_id)
 
     def get_memory(self, label_name, offset=0):
+        """The value where the name matched (an operand first), or None if it
+        didn't match: a two byte operand's 16 bit value, a one byte
+        operand's byte, or the byte at a position (e.g. the opcode of the
+        instruction it names). label_name can also be a binary address, for
+        the byte there. 'offset' is added to the address first."""
         if isinstance(label_name, str):
             binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
         else:
@@ -91,6 +161,14 @@ class SnippetHelper:
         return None
 
     def get_expr(self, label_name, *, label_offset=0, final_offset=0):
+        """The operand where the name matched, as a label or expression (as
+        classification.get_address16() or get_address8() gives it, e.g.
+        for a comment), or None if the name didn't match. 'label_offset' is
+        added to the operand's binary address. For a two byte operand,
+        'final_offset' is added to its value, and it's then the label for
+        that address (e.g. for the first byte a loop copies, when that isn't
+        the operand's address), not any expression at the operand. A one
+        byte operand ignores final_offset."""
         binary_addr, length = self.get_binary_address_and_length(label_name, prioritise_definition=False)
         if binary_addr is not None:
             binary_addr += label_offset
@@ -104,6 +182,11 @@ class SnippetHelper:
         return None
 
     def get_state(self, label_name, offset=0):
+        """The CPU state after the instruction at the name's position (or an
+        operand, if it has no position), or at a binary address, plus
+        'offset'. It's from the CPU's cpu_states, so it's only known after
+        tracing (in a post-trace function); None if there's no instruction
+        there, or the name didn't match."""
         if isinstance(label_name, str):
             binary_addr, _ = self.get_binary_address_and_length(label_name, prioritise_definition=True)
         else:
@@ -114,6 +197,10 @@ class SnippetHelper:
             return(session.current().cpu.cpu_states[binary_addr])
 
     def num_references(self, label_name):
+        """How many references there are to the name's position, e.g. just
+        one to a loop's start (the branch back to it) if nothing else jumps
+        there. Only after tracing, once the references have been worked out
+        (it stops with an assertion before that)."""
         binary_loc = self.get_binary_location(label_name, prioritise_definition=True)
 
         assert session.current().trace.references is not None, "trying to get the number of references before we've calculated it"
@@ -123,11 +210,17 @@ class SnippetHelper:
         return 0
 
     def check_branch_matches(self, label_name):
+        """Whether the branch with the name as its operand goes to the
+        name's position, e.g. for 'loop' and 'bne loop', that the BNE goes
+        back to 'loop'. (The regex matches any operand byte, so the
+        snippet's function has to check.)"""
         branch_operand_value = self.get_memory(label_name)
         branch_operand_addr = self.get_binary_address(label_name, prioritise_definition=False)
         definition_binary_addr = self.get_binary_address(label_name, prioritise_definition=True)
 
         # Check the branch operand will take us to the loop definition address
+        # (a branch's offset is from the address after it, which is just
+        # after its operand)
         expected_branch_operand = definition_binary_addr - branch_operand_addr-1
         if -128 <= expected_branch_operand <= 127:
             # bring into range 0-255
@@ -136,6 +229,12 @@ class SnippetHelper:
         return False
 
     def make_subtract_wrapped(self, source_label, snippet_label, offset):
+        """The expression 'source_label - offset', for the operand that
+        matched snippet_label when source_label is the label for its value
+        plus offset (e.g. a loop's 'lda addr,x' written as 'lda source-1,x',
+        where source is the first byte it copies). If the value plus offset
+        is above $ffff, the label has wrapped round to the bottom of memory,
+        so the expression is '$ffff AND (source_label - offset)' instead."""
         # To cope with an instruction like 'lda l0000-1,x' where the result operand wraps around
         # a 64k boundary e.g. equivalent to 'lda $ffff,x' we encode it as e.g. 'lda (l0000-1) & 0xffff,x'
         # to appease the assembler.
@@ -148,6 +247,11 @@ class SnippetHelper:
         return make_subtract(source_label, offset)
 
     def entry(self, runtime_addr = None):
+        """Add an entry point to trace from: runtime_addr, or by default the
+        start of the match. For the match itself, raise SnippetRejected if
+        it can't be code there (see starts_mid_instruction()). Nothing is
+        added where no data is loaded. Unlike Cpu.add_entry(), it adds no
+        label."""
         if runtime_addr is not None:
             assert not isinstance(runtime_addr, BinaryAddr)
             binary_addr, move_id = movemanager.r2b(RuntimeAddr(runtime_addr), None)
@@ -169,13 +273,20 @@ class SnippetHelper:
 
     def reject(self):
         """Ignore this match (see SnippetRejected). Call it before making any
-        changes for the match."""
+        changes for the match, and only in a pre-trace function: nothing
+        catches it after tracing."""
         raise SnippetRejected()
 
     def blank_once(self, binary_loc):
+        """Add a blank line before the labels at binary_loc, unless there's
+        one there already (e.g. to set off a piece of code from what's
+        around it)."""
         disassembly.annotate_binary(binary_loc, "", align=Align.BEFORE_LABEL, once_only=True)
 
     def has_explicit_label(self, binary_loc):
+        """Whether the start of the match has an explicit label (one given a
+        name, rather than auto-generated) in its move. (binary_loc isn't
+        used: it's always the start of the match.)"""
         binary_addr = self.get_start_loc().binary_addr
         runtime_addr = movemanager.b2r(binary_addr)
         move_id = self.get_start_loc().move_id
@@ -193,7 +304,11 @@ class SnippetHelper:
 
 def match_extent(match):
     """The (start, end) binary locations of an effect pattern's match (see
-    EffectHelper.extent())."""
+    EffectHelper.extent()): from the first of its stores, the immediate
+    loads of their values and the instruction lines' match, to just after
+    the last of them."""
+    # The stores, and the loads ('lda #nn' etc.) of the values, whose
+    # opcode is just before the operand that value_operand gives
     addrs = []
     for i, item in match.satisfied.items():
         if match.pattern.lines[i].kind == 'memory':
@@ -205,6 +320,7 @@ def match_extent(match):
     if addrs:
         last = max(addrs)
         end = last + classification.get_classification(last).length()
+    # And the instruction lines, if there are any
     if match.regex_match is not None:
         start = match.regex_match.start() if start is None else min(start, match.regex_match.start())
         end = match.regex_match.end() if end is None else max(end, match.regex_match.end())
@@ -215,8 +331,13 @@ class EffectHelper(SnippetHelper):
     """The SnippetHelper for a match of an effect pattern (see
     effectpattern.py). Its labels are those of the pattern's lines: an
     effect line's location is that of the store that satisfies it (none if
-    it doesn't hold, e.g. an optional line), the anchor's is the anchor's.
-    The start is the first of these locations, in address order."""
+    it doesn't hold, e.g. an optional line, or for a register line), and an
+    instruction line's is where it matched, as for a regex snippet. The
+    start is the first of the stores and the start of the instruction
+    lines' match (the anchor), in address order.
+
+    'effect_match' is the effectpattern.EffectMatch, and 'match' its
+    instruction lines' re.Match (None if there are none)."""
 
     def __init__(self, memory_binary, match, pattern_matches=()):
         self.effect_match = match
@@ -238,6 +359,10 @@ class EffectHelper(SnippetHelper):
         raise KeyError("the effect pattern has no label '{0}'".format(label_name))
 
     def get_binary_address_and_length(self, label_name, prioritise_definition=False):
+        """For an effect line's name, the address and length of the store
+        instruction that satisfies it, or (None, None) if it doesn't hold or
+        is a register line. For an instruction line's name, as for a regex
+        snippet."""
         i = self._line(label_name)
         if i is None:
             return super().get_binary_address_and_length(label_name, prioritise_definition)
@@ -271,7 +396,8 @@ class EffectHelper(SnippetHelper):
         return self.effect_match.values.get(name)
 
     def binding(self, variable):
-        """The address the variable was bound to (e.g. 'vec')."""
+        """The address the variable (e.g. 'vec' in '[vec = $0200 | $0202]')
+        was bound to, for this match."""
         return self.effect_match.binding[variable]
 
     def target(self, label_name):
@@ -311,9 +437,10 @@ hi
 
 def vector_handler(p, name_for_new_handler):
     """For a match of vector_pattern() with both bytes set, before tracing:
-    the handler's address, which is labelled (with its first explicit name if
-    it has one, otherwise name_for_new_handler(), called only then) and
-    traced. Returns None for a half-set vector."""
+    label the handler (unless it already has an explicit name, with
+    name_for_new_handler(), which is only called then) and trace it. Returns
+    the handler's runtime address, or None for a half-set vector (when it
+    does nothing)."""
     if not (p.matched('lo') and p.matched('hi')):
         return None
     handler = p.value('lo_value') + 256 * p.value('hi_value')
@@ -324,8 +451,9 @@ def vector_handler(p, name_for_new_handler):
     return handler
 
 def vector_handler_name(handler):
-    """The handler's first explicit name (as vector_handler() labels it), or
-    None."""
+    """The first explicit name of the runtime address 'handler' (as
+    vector_handler() labels it), in the first move it has one in, or None.
+    (commodore.py uses it for other code addresses too.)"""
     labels = session.current().labels.labels
     if handler in labels and labels[handler].explicit_names:
         for move_id, name_list in labels[handler].explicit_names.items():
@@ -339,14 +467,16 @@ def comment_vector(p, text):
     its name (unless a load is already written otherwise, e.g. for two
     vectors set with the same high byte). The code is set off with a blank
     line before and after, around all the vector settings it overlaps, if
-    any. If only one byte is set: inline, on the store."""
+    any (but no blank line before it where the code starts at an explicit
+    label). If only one byte is set: inline, on the store."""
     if not (p.matched('lo') and p.matched('hi')):
         disassembly.comment_binary(p.get_binary_location('lo' if p.matched('lo') else 'hi'), text, align=Align.INLINE, auto_generated=True)
         return
     start, end = p.extent()
     disassembly.comment_binary(start, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
-    # The vector settings that overlap this one (with both bytes set)
+    # The vector settings that overlap this one (with both bytes set): widen
+    # (first, last) to take in each one that overlaps it, until none does
     first, last = start, end
     others = [match_extent(m) for m in p.pattern_matches if len(m.satisfied) == 2]
     changed = True
@@ -364,6 +494,9 @@ def comment_vector(p, text):
         p.blank_once(first)
     p.blank_once(last)
 
+    # Write the immediate loads of the handler's address as its name's low
+    # and high bytes (e.g. 'lda #<handler'), unless they already have an
+    # expression
     name = vector_handler_name(p.value('lo_value') + 256 * p.value('hi_value'))
     for line, maker in (('lo', make_lo), ('hi', make_hi)):
         operand = p.store(line).value_operand

@@ -1,8 +1,58 @@
+"""
+Regex snippets (6502)
+
+Turns a regex snippet, a few lines of 6502 assembly describing a common piece
+of code or data (see docs/snippets-and-hooks.md), into a regular expression
+that matches its bytes in the binary. For example
+
+    loop
+        lda (zp1),y
+        sta (zp2),y
+        dey
+        bne loop
+
+becomes a regex for the bytes $b1 ?? $91 ?? $88 $d0 ??, where each ?? is any
+byte. A name in an operand ('zp1', or 'loop' in 'bne loop') matches any
+value, and a name on a line of its own ('loop') marks a position. Each
+becomes a group in the regex, so that for a match, the snippet's functions
+can find where each name is (see snippethelper.SnippetHelper).
+
+The main pieces:
+- parse_snippet() parses a whole snippet into a Snippet: the compiled regex,
+  and 'labels', which gives the regex groups for each name;
+- parse_line() parses one line (effectpattern.py uses it too, for an effect
+  pattern's instruction lines), and parse_instruction() one instruction;
+- parse_integer() reads a number ('31', '$1f', '&1f' or '%00011111');
+- the tables: 'opcodes' (the opcode for each mnemonic and addressing mode),
+  'addressing_mode_patterns' (what each addressing mode's operand looks
+  like) and 'any_valid_instruction' (a regex for any one instruction, for
+  '.').
+
+snippets6502.py parses each snippet registered with this, and cpu6502.py
+searches the binary's bytes for its regex, before and after tracing (see
+snippets6502.py for how a match is used).
+
+The instructions are the 65C02's (the 6502's, plus e.g. BRA, PHX, STZ, TSB
+and '(zp)' addressing), not the 6502's undocumented ones. The regex only
+looks at bytes, so a snippet matches wherever its bytes are, whether they
+turn out to be code or data, and a name used in two places isn't checked to
+have the same value in both.
+"""
+
 import re
 import collections
 import utils
 
 class Snippet:
+    """A parsed regex snippet. 'whole_pattern' is the compiled regex for its
+    bytes (with re.DOTALL, so that '.' matches any byte, including $0a).
+    'labels' is {name: [(group, is_position)]}: for each name in the
+    snippet, the regex group for each place it's used, with is_position
+    True for a name on a line of its own (an empty group, marking where the
+    next line starts) and False for a name in an operand (a group of its one
+    or two bytes). A name can have several groups, e.g. 'loop' for 'loop'
+    and for 'bne loop', or one in each of several alternatives."""
+
     def __init__(self, whole_pattern, labels):
         self.whole_pattern = re.compile(bytes(whole_pattern), re.DOTALL | re.MULTILINE)
         self.labels = labels
@@ -10,6 +60,13 @@ class Snippet:
     def __repr__(self):
         return f"{self.whole_pattern} {self.labels}"
 
+# The opcode of each instruction a snippet can use, keyed by mnemonic and
+# addressing mode (a name from addressing_mode_patterns, or 'implicit' for an
+# instruction with no operand). These are the 65C02's instructions, laid out
+# by the opcode's low nibble, then its high nibble; the commented out entries
+# are opcodes with no instruction here. The instructions that can work on A
+# (ASL, INA etc.) have an 'implicit' entry as well as an 'accumulator' one,
+# so they can be written with no operand.
 opcodes = {
         "brk implicit":  0x00,
         "bpl relative":  0x10,
@@ -284,6 +341,12 @@ opcodes = {
         #"": 0xFF,
 }
 
+# A regex for any one instruction in 'opcodes' (for '.' in a snippet): its
+# opcode, then a '.' for each operand byte. The opcodes that are special
+# characters in a regex ($24 '$', $28 '(', $29 ')', $2a '*', $2e '.', $5d ']',
+# $5e '^', $7c '|' and $7d '}') are written with a doubled backslash
+# ('\\x24' etc.), so that the regex sees the escape \x24 rather than the
+# character itself. This must agree with 'opcodes'.
 any_valid_instruction = \
     b'(?:\x00|\x10.|\x20..|\x30.|\x40|\x50.|\x60|\x70.|\x80.|\x90.|\xa0.|\xb0.|\xc0.|\xd0.|\xe0.|\xf0.|'+\
     b'\x01.|\x11.|\x21.|\x31.|\x41.|\x51.|\x61.|\x71.|\x81.|\x91.|\xa1.|\xb1.|\xc1.|\xd1.|\xe1.|\xf1.|'+\
@@ -299,6 +362,7 @@ any_valid_instruction = \
     b'\x0e..|\x1e..|\\x2e..|\x3e..|\x4e..|\\x5e..|\x6e..|\x7e..|\x8e..|\x9e..|\xae..|\xbe..|\xce..|\xde..|\xee..|\xfe..)'
 
 
+# The mnemonics a snippet can use (those in 'opcodes')
 mnemonics = {
     "adc", "and", "asl", "bcc", "bcs", "beq", "bit", "bmi", "bne", "bpl", "bra",
     "brk", "bvc", "bvs", "clc", "cld", "cli", "clv", "cmp", "cpx", "cpy", "dea",
@@ -308,7 +372,17 @@ mnemonics = {
     "stx", "sty", "stz", "tax", "tay", "trb", "tsb", "tsx", "txa", "txs", "tya"
 }
 
-# Regular expression patterns for different addressing modes
+# Regular expressions for the parts of an operand, for the addressing modes'
+# patterns below:
+# - hex_or_decimal: a number, decimal with an optional sign, or hex after '$'
+#   or '&' ('0x1f' matches too, but parse_integer() can't read it, and '%'
+#   binary isn't accepted in an operand);
+# - label_name: a name, which matches any value;
+# - braced_index: a number in braces, e.g. '{0}', which is taken as a name;
+# - zp_label_name: a name starting with 'zp', the only kind of name that can
+#   be a zero page address (a name in an immediate or relative operand is
+#   always one byte);
+# - zp and expr: what a zero page operand, and any other operand, can be.
 hex_or_decimal = r'[-+]?\d+|0x[0-9A-Fa-f]+|[$&][0-9A-Fa-f]+'
 label_name     = r'[a-zA-Z_][a-zA-Z0-9_]*'
 braced_index   = r'\{[0-9]+\}'
@@ -317,12 +391,20 @@ zp             = hex_or_decimal + '|' + zp_label_name + '|' + braced_index
 expr           = hex_or_decimal + '|' + label_name + '|' + braced_index
 
 class Details:
+    """An addressing mode's operand: 'pattern', the regex its text must
+    match (group 1 is the number or name in it), and 'length', the length of
+    the instruction in bytes."""
+
     def __init__(self, pattern, length):
         self.pattern = pattern
         self.length = length
 
+# The operand of each addressing mode. parse_instruction() tries a mnemonic's
+# addressing modes in this order and takes the first that fits, so the zero
+# page modes come before the absolute ones: a number below 256, or a 'zp'
+# name, gives the zero page form.
 addressing_mode_patterns = {
-    'immediate':                Details(re.compile(r'^#(' + expr + r')$'), 2),                # e.g. #$10, #-20, or #label_name_name
+    'immediate':                Details(re.compile(r'^#(' + expr + r')$'), 2),                # e.g. #$10, #20 or #nn1 (a negative number matches, but parse_instruction() rejects it)
     'zeropagex':                Details(re.compile(r'^(' + zp + r'),[Xx]$'), 2),              # e.g. $FF,X (zero-page) or zp1,X
     'zeropagey':                Details(re.compile(r'^(' + zp + r'),[Yy]$'), 2),              # e.g. $FF,y (zero-page) or zp1,y
     'zeropageindexedindirectx': Details(re.compile(r'^\((' + zp + r'),[Xx]\)$'), 2),          # e.g. (zp1,X)
@@ -334,10 +416,14 @@ addressing_mode_patterns = {
     'absolutex':                Details(re.compile(r'^(' + expr + r'),[Xx]$'), 3),            # e.g. $ab12,X
     'absolutey':                Details(re.compile(r'^(' + expr + r'),[Yy]$'), 3),            # e.g. $123c,Y
     'absolute':                 Details(re.compile(r'^(' + expr + r')$'), 3),                 # e.g. $1000 (absolute) or addr1
-    'relative':                 Details(re.compile(r'^([-+]?\d+|' + label_name + r')$'), 2),  # e.g. -7 (signed byte offset) or label1
-    'accumulator':              Details(re.compile(r'^A?$'), 1),                              # e.g. A or the empty string
+    'relative':                 Details(re.compile(r'^([-+]?\d+|' + label_name + r')$'), 2),  # e.g. loop (any offset), or 12, the offset byte itself (a negative or hex number isn't accepted)
+    'accumulator':              Details(re.compile(r'^A?$'), 1),                              # e.g. A or the empty string (but parse_instruction() deals with no operand itself, and 'absolute' takes 'A' as a name first)
 }
 
+# The addressing modes of each mnemonic (from 'opcodes'), in the order
+# parse_instruction() tries them: that of addressing_mode_patterns, with
+# 'implicit' (which isn't in it) last. E.g. for 'ldx': 'immediate',
+# 'zeropagey', 'zeropage', 'absolutey', 'absolute'.
 addr_modes_for_mnemonics = collections.defaultdict(list)
 
 for m in mnemonics:
@@ -356,13 +442,28 @@ for mnem in addr_modes_for_mnemonics:
     addr_modes_for_mnemonics[mnem] = sorted(addr_modes_for_mnemonics[mnem], key=lambda mode: order_dict.get(mode, float('inf')))
 
 def int_to_hex2(two_digit_int):
+    """A regex escape for a byte, e.g. '\\x1f'."""
     return f"\\x{two_digit_int:02x}"
 
 def int_to_hex4(four_digit_int):
+    """'\\x' and a 16 bit number in four hex digits, e.g. '\\x1234'. (A
+    regex reads that as the byte $12 followed by the characters '34', not as
+    two bytes.)"""
     return f"\\x{four_digit_int:04x}"
 
-# Parse a line of 6502 assembly
 def parse_line(line, group_number):
+    """Parse one line of a snippet (see parse_snippet()), numbering its
+    regex groups from group_number. Returns (pattern, labels, the next group
+    number): the line's regex, or None if it has no instructions (e.g. a
+    blank line); and the names in it, {name: [(group, is_position)]} as in
+    Snippet, or None for an empty line or just a comment.
+
+    A name at the very start of the line marks a position: its pattern is
+    an empty group, and anything after the name is ignored (so an
+    instruction must be indented, or it's taken as a name). Otherwise the
+    line is one or more alternatives separated by '|', each an instruction or
+    a sequence of instructions separated by ':'. A '?' first makes the line
+    optional (but not a position: that's always there)."""
     line = line.split(';')[0]   # Remove comments
 
     if not line:                # skip empty lines
@@ -378,6 +479,7 @@ def parse_line(line, group_number):
 
     labels = collections.defaultdict(list)
 
+    # A position: an empty group, recorded as (group, True)
     m = re.match(r'^('+label_name + ')', line)
     if m:
         label = m.group(1)
@@ -404,16 +506,20 @@ def parse_line(line, group_number):
         return (None, labels, group_number)
     pattern = bytearray(alternatives[0]) if len(alternatives) == 1 else bytearray(b"(?:" + b"|".join(alternatives) + b")")
 
-    # An optional line matches if it can (it's greedy). (It used to have an
-    # empty alternative first, so it matched nothing unless what followed
-    # needed it, and an optional last line never matched anything.)
+    # An optional line matches if it can (the '?' is greedy): if its bytes
+    # are there and the rest of the snippet still matches after them. So an
+    # optional last line matches whenever its bytes follow.
     if optional:
         pattern = bytearray(b"(?:" + pattern + b")?")
 
     return(pattern, labels, group_number)
 
 def parse_integer(s):
-    """Parse a string as an integer, decimal, hex or binary, with optional sign"""
+    """Parse a string as an integer, with an optional sign: hex after '$'
+    or '&', binary after '%' (where '.' and '#' can be used for 0 and 1,
+    e.g. '%..#.....'), otherwise decimal. Spaces and commas around it are
+    ignored (so '!byte 1, 2' works). Raises ValueError (or IndexError, for
+    an empty string) if it isn't a number; '0x1f' isn't one."""
     assert s is not None
     if s is None:
         return 0
@@ -440,6 +546,21 @@ def parse_integer(s):
     return sign * s
 
 def parse_instruction(inst, group_number):
+    """Parse one instruction of a snippet into a regex, numbering its groups
+    from group_number. Returns (pattern, labels, the next group number), as
+    parse_line() does (the pattern is None if 'inst' is blank).
+
+    The instruction is a mnemonic and its operand, '.' (any instruction), or
+    '!byte' or '!word' and numbers (those bytes, low byte first for a
+    word). The addressing mode is the first of the mnemonic's (see
+    addr_modes_for_mnemonics) whose operand pattern fits. A number in the
+    operand matches just that value, and a name matches any one or two
+    bytes (a group, recorded in labels as (group, False)). A number too big
+    for one byte goes on to the next mode, so '$12' is zero page and '$1234'
+    absolute.
+
+    Raises ValueError for an unknown mnemonic, or an operand that doesn't fit
+    any of its addressing modes."""
     labels = collections.defaultdict(list)
 
     inst = inst.strip()         # Remove any extra spaces and newlines
@@ -450,10 +571,12 @@ def parse_instruction(inst, group_number):
     parts = inst.split(maxsplit=1)
     mnemonic = parts[0].lower()
 
+    # '.': any one instruction
     if mnemonic == '.':
         result = any_valid_instruction
         return (result, labels, group_number)
 
+    # '!byte': the bytes given, e.g. '!byte $01, $02'
     if mnemonic == "!byte":
         result = bytearray()
         for entry in parts[1].split():
@@ -461,6 +584,7 @@ def parse_instruction(inst, group_number):
             result += re.escape(bytearray([by]))
         return (result, labels, group_number)
 
+    # '!word': the 16 bit values given, each low byte first
     if mnemonic == "!word":
         result = bytearray()
         for entry in parts[1].split():
@@ -480,6 +604,7 @@ def parse_instruction(inst, group_number):
     result_operand = bytearray()
     instruction_template = mnemonic
     if not operand:
+        # No operand: the implicit form, or failing that the accumulator one
         details = Details(re.compile(""), 1)
         instruction_template = mnemonic + " implicit"
         if not instruction_template in opcodes:
@@ -491,8 +616,12 @@ def parse_instruction(inst, group_number):
             m = re.match(details.pattern, operand)
             if m:
                 match_groups = m.group()
+                # (Only an operand of more than one character is read. One
+                # of just one character, e.g. 'A', 'sta 7' or 'lda n', is
+                # skipped, leaving just the opcode in the pattern.)
                 if len(m.group()) > 1:
-                    # Record the matches if they are labels, or check the values if they are integers
+                    # Record the matches if they are labels, or check the values if they are integers.
+                    # (A number starts with a sign, '&', '$' or a digit; anything else is a name.)
                     operand_expr = m.group(1)
                     is_integer = operand_expr and (operand_expr[0] in '+-&$0123456789')
                     if is_integer:
@@ -500,19 +629,23 @@ def parse_instruction(inst, group_number):
 
                     # check instruction length
                     if details.length == 2:
-                        # get single byte operand
+                        # A one byte operand: a number from 0 to 255, or a
+                        # name, which is any byte, in a group of its own
                         if is_integer:
                             if (operand_expr >= 0) and (operand_expr < 256):
                                 result_operand += re.escape(bytearray([operand_expr]))
                             else:
-                                # Not a 2 byte instruction length, so try the three instruction length
+                                # Too big (or negative) for one byte, so try
+                                # the mnemonic's next addressing mode (e.g.
+                                # absolute rather than zero page)
                                 continue
                         else:
                             labels[operand_expr] = [(group_number, False)]
                             result_operand += "(.)".encode()
                             group_number += 1
                     elif details.length == 3:
-                        # get a two byte operand
+                        # A two byte operand: a number (low byte first), or
+                        # a name, which is any two bytes, in a group
                         if is_integer:
                             result_operand += re.escape(bytearray([operand_expr & 255, operand_expr >> 8]))
                         else:
@@ -526,6 +659,9 @@ def parse_instruction(inst, group_number):
                 instruction_template = mnemonic + " " + addressing_mode
                 break
 
+    # (details is None only if the mnemonic has no addressing modes to try.
+    # An operand that fits none of them leaves instruction_template as just
+    # the mnemonic, which the check after this catches.)
     if details is None:
         raise ValueError(f"Invalid operand format: {operand}")
 
@@ -535,10 +671,9 @@ def parse_instruction(inst, group_number):
     opcode = opcodes[instruction_template]
     result = re.escape(bytearray([opcode]))+result_operand
 
-    # Return the pattern, any labels defined here and the length of the instruction
+    # Return the pattern, the names in it and the next group number
     return (result, labels, group_number)
 
-# Parse a full snippet (list of assembly lines)
 def parse_snippet(program):
     """Make a Snippet (a regular expression for the bytes) from a snippet's
     lines of 6502 assembly, one per line:
@@ -555,10 +690,22 @@ def parse_snippet(program):
       alternative, e.g. '    lda #nn1 : sta $70 | ldx #nn1 : stx $70';
     - '?' at the start of the line makes the line optional;
     - a name, not indented, records the position (e.g. a loop's start);
-    - ';' starts a comment."""
+    - ';' starts a comment.
+
+    A number in an operand is decimal, or hex after '$' or '&'. The lines'
+    patterns are joined, so the snippet matches only where its instructions
+    are one after another in the binary. An optional line is matched if its
+    bytes are there and the rest of the snippet still matches after them. A
+    name used more than once (e.g. 'nn1' in two alternatives) isn't checked
+    to have the same value each time: SnippetHelper gives the first place it
+    matched.
+
+    Raises ValueError (from parse_instruction()) for an instruction it can't
+    parse."""
     # parse the program into a whole_pattern
     whole_pattern = bytearray()
     whole_labels = collections.defaultdict(list)
+    # (Group 0 is the whole match, so the names' groups start at 1)
     group_number = 1
 
     for line in program.splitlines():

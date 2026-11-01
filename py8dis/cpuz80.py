@@ -1,10 +1,42 @@
 """
 The Z80 CPU.
 
-The opcode table is made from the fields of each opcode (as described in
-"Decoding Z80 opcodes": x = bits 7-6, y = bits 5-3, z = bits 2-0, p = bits
-5-4, q = bit 3), for each prefix: none, CB, ED, DD and FD (IX and IY in place
-of HL), and DD CB and FD CB (the CB instructions on (IX+d) and (IY+d)).
+CpuZ80 decodes, traces and follows the state of Z80 code. It's chosen with
+load(..., "Z80") (see commands.py), and its output is for z88dk-z80asm or
+sjasmplus.
+
+Decoding. The Z80 has prefixes: CB (rotates, shifts, BIT, RES and SET), ED
+(the extra instructions, e.g. the block moves, IN r,(C) and 16 bit ADC and
+SBC), and DD and FD, which make the next instruction use IX or IY in place of
+HL, and (IX+d) or (IY+d), with a displacement byte d, in place of (HL). DD CB
+and FD CB are the CB instructions on (IX+d) and (IY+d), with the
+displacement before the opcode: DD CB d op.
+
+Rather than listing them all, the opcode table is made from the fields of
+each opcode (as described in "Decoding Z80 opcodes": x = bits 7-6, y = bits
+5-3, z = bits 2-0, p = bits 5-4, q = bit 3), for each prefix: none (_main()),
+CB (_cb()), ED (_ed()), DD and FD (_main() with IX or IY), and DD CB and FD CB
+(_index_cb()). Each gives a Spec: the opcode's length, mnemonic and operands
+(text, and Part objects for the bytes that come from the instruction, e.g.
+Imm8 for an immediate value), how control continues after it (FLOW_...), its
+cycles, and whether it's undocumented. opcode_specs() collects them, and
+CpuZ80 makes an Opcode object from each, in a table for each prefix;
+CpuZ80.opcode_at() finds the right one from the prefix and opcode bytes.
+
+Tracing. cpu.Cpu, the base class, follows the code from the entry points:
+it finds each instruction's Opcode with opcode_at(), classifies its bytes as
+code, and calls the Opcode's update_references() and disassemble(), which
+gives the binary addresses to trace next from its kind (FLOW_...). A CALL or
+RST is traced as a call: on at the return address (unless a subroutine hook
+says otherwise) and at the subroutine. CpuZ80 also finds code from what the
+code does (find_entry_points_from_effects(), e.g. a return address pushed
+onto the stack), comments calls to subroutines (find_subroutine_calls()),
+and comments instructions whose results are never used
+(find_redundant_instructions()).
+
+The CPU state. What's known for certain about the registers and flags after
+each instruction is followed by cpuz80state.py (see Opcode.update_cpu_state()
+and cpuz80state.update_state(), which decodes each opcode's fields again).
 
 The undocumented opcodes are traced as what they do. Whether each is written
 as an instruction or as data bytes is up to the assembler (see
@@ -30,6 +62,8 @@ from memorymanager import RuntimeAddr
 from align import Align
 
 
+# RET, whose labels can be named return_1, return_2 etc. (see
+# CpuZ80.label_maker())
 OPCODE_RET = 0xc9
 
 # The kinds of undocumented opcode (see Assembler.undocumented_z80_accepted())
@@ -44,7 +78,8 @@ IGNORED_PREFIX      = "ignored_prefix"       # DD or FD before an instruction th
 
 UNDOCUMENTED_KINDS = (INDEX_HALVES, SLL, INDEXED_CB_REGISTER, IN_F_C, OUT_C_0, DUPLICATE, NOP, IGNORED_PREFIX)
 
-# How control continues after an instruction (Opcode.kind)
+# How control continues after an instruction (Opcode.kind). (RET cc is
+# FLOW_NEXT, since the code may continue after it.)
 FLOW_NEXT    = "next"       # to the next instruction
 FLOW_JP      = "jp"         # jp nn
 FLOW_JP_CC   = "jp_cc"      # jp cc,nn
@@ -58,33 +93,52 @@ FLOW_JP_IND  = "jp_ind"     # jp (hl), jp (ix), jp (iy)
 # Operand parts (in Opcode.operands, as well as plain text such as 'a,')
 class Part:
     """A part of an operand that comes from the instruction's bytes, at
-    'offset' from its first byte."""
+    'offset' from its first byte (counting any prefix). Each subclass is a
+    kind of part, with its 'size' in bytes."""
     def __init__(self, offset):
         self.offset = offset
 
-class Imm8(Part):       # an 8 bit immediate value, e.g. 'ld a,n'
+class Imm8(Part):
+    """An 8 bit immediate value, e.g. 'ld a,n'."""
     size = 1
-class Imm16(Part):      # a 16 bit immediate value, e.g. 'ld hl,nn'
+class Imm16(Part):
+    """A 16 bit immediate value, e.g. 'ld hl,nn'."""
     size = 2
-class Addr(Part):       # a 16 bit address in brackets, e.g. 'ld a,(nn)'
+class Addr(Part):
+    """A 16 bit address in brackets, e.g. 'ld a,(nn)'."""
     size = 2
-class Target(Part):     # a 16 bit jump or call address, e.g. 'jp nn'
+class Target(Part):
+    """A 16 bit jump or call address, e.g. 'jp nn'."""
     size = 2
-class Rel(Part):        # a relative jump, e.g. 'jr e'
+class Rel(Part):
+    """A relative jump's offset, e.g. 'jr e'."""
     size = 1
-class Port(Part):       # an I/O port in brackets, e.g. 'in a,(n)'
+class Port(Part):
+    """An I/O port in brackets, e.g. 'in a,(n)'."""
     size = 1
-class Index(Part):      # an indexed address, e.g. '(ix+d)'
+class Index(Part):
+    """An indexed address, e.g. '(ix+d)': the displacement d, and the
+    'register' ("ix" or "iy")."""
     size = 1
     def __init__(self, offset, register):
         super().__init__(offset)
         self.register = register
 
 def _signed(n):
+    """A byte as a signed number (-128 to 127), e.g. a relative jump's
+    offset or an index register's displacement."""
     return n - 0x100 if n >= 0x80 else n
 
 class Spec:
-    """An opcode, as made by the decoding functions below."""
+    """An opcode, as made by the decoding functions below: its 'length' in
+    bytes (including any prefix, displacement or immediate value); its
+    'mnemonic' (the first word of 'text'); its 'operands', which are the rest
+    of 'text' and then 'operands', a mix of text and Part objects that are
+    written one after the other (e.g. "ld a,(" with [Addr(1), ")"] has the
+    operands ['a,(', Addr(1), ')']); its 'kind' (FLOW_...); its 'cycles', as
+    text (e.g. "7/12" for a conditional jump, not taken or taken); and
+    'undocumented', None or the kind of undocumented opcode it is (see
+    UNDOCUMENTED_KINDS), or a tuple of kinds."""
     def __init__(self, length, text, operands=(), kind=FLOW_NEXT, cycles="", undocumented=None):
         self.length = length
         words = text.split(" ", 1)
@@ -94,6 +148,12 @@ class Spec:
         self.cycles = cycles
         self.undocumented = undocumented
 
+# The tables of "Decoding Z80 opcodes", by the opcode's fields: R, the 8 bit
+# registers (by y or z); RP and RP2, the register pairs (by p; RP2 for PUSH
+# and POP); CC, the conditions (by y); ALU, the arithmetic and logic
+# operations on A, with any first operand (by y); ROT, the CB opcodes'
+# rotates and shifts (by y); and BLOCK, the ED opcodes' block instructions
+# (by y - 4, then z)
 R   = ("b", "c", "d", "e", "h", "l", "(hl)", "a")
 RP  = ("bc", "de", "hl", "sp")
 RP2 = ("bc", "de", "hl", "af")
@@ -106,22 +166,31 @@ BLOCK = (("ldi", "cpi", "ini", "outi"), ("ldd", "cpd", "ind", "outd"),
 
 def _main(op, index=None):
     """The unprefixed opcode 'op', or with an index register (index "ix"
-    after DD, or "iy" after FD) in place of HL. With an index register,
-    returns None if the opcode doesn't use HL, H, L or (HL), since the prefix
-    then has no effect."""
+    after DD, or "iy" after FD) in place of HL, as a Spec. With an index
+    register, returns None if the opcode doesn't use HL, H, L or (HL), since
+    the prefix then has no effect. Also returns None for the prefixes
+    themselves (CB, DD, ED and FD).
+
+    With an index register, (HL) becomes (IX+d), with the displacement after
+    the opcode, and H and L become the undocumented IXH and IXL (or IYH and
+    IYL)."""
 
     x, y, z = op >> 6, (op >> 3) & 7, op & 7
     p, q = y >> 1, y & 1
     o = 1 if index else 0               # the offset of the opcode byte
 
     def plain(text, length=1, cycles=4, kind=FLOW_NEXT, operands=()):
+        """An instruction that doesn't use HL: None after a prefix, which
+        has no effect on it."""
         if index:
             return None
         return Spec(length, text, operands, kind, str(cycles))
 
     def with_hl(text, length, cycles, index_cycles, operands=(), kind=FLOW_NEXT):
         """An instruction that uses HL (as written in 'text'), with IX or IY
-        in its place after a prefix."""
+        in its place after a prefix, which makes it a byte longer and take
+        'index_cycles'. (Every "hl" in the text is replaced, so e.g. 'add
+        hl,hl' becomes 'add ix,ix'.)"""
         if index:
             operands = [x.replace("hl", index) if isinstance(x, str) else x for x in operands]
             return Spec(o + length, text.replace("hl", index), operands, kind, str(index_cycles))
@@ -133,6 +202,8 @@ def _main(op, index=None):
             return index + "hl"[i - 4]
         return R[i]
 
+    # x == 0: NOP, EX AF,AF', DJNZ and JR; LD rp,nn and ADD HL,rp; the loads
+    # through (BC), (DE) and (nn); INC and DEC; LD r,n; and RLCA ... CCF
     if x == 0:
         if z == 0:
             if y == 0:
@@ -185,6 +256,7 @@ def _main(op, index=None):
             return plain("ld " + R[y] + ",", 2, 7, operands=[Imm8(1)])
         return plain(("rlca", "rrca", "rla", "rra", "daa", "cpl", "scf", "ccf")[y])
 
+    # x == 1: LD r,r' (HALT is in place of LD (HL),(HL))
     if x == 1:
         if y == 6 and z == 6:
             return plain("halt")
@@ -199,6 +271,7 @@ def _main(op, index=None):
             return Spec(2, "ld %s,%s" % (reg8(y), reg8(z)), cycles="8", undocumented=INDEX_HALVES)
         return plain("ld %s,%s" % (R[y], R[z]))
 
+    # x == 2: the arithmetic and logic operations on A with a register
     if x == 2:
         if z == 6:
             if index:
@@ -208,7 +281,10 @@ def _main(op, index=None):
             return Spec(2, ALU[y] + reg8(z), cycles="8", undocumented=INDEX_HALVES)
         return plain(ALU[y] + R[z])
 
-    # x == 3
+    # x == 3: RET cc; POP, RET, EXX, JP (HL) and LD SP,HL; JP cc; JP, OUT
+    # (n),A, IN A,(n), EX (SP),HL, EX DE,HL, DI and EI (and the CB prefix);
+    # CALL cc; PUSH and CALL (and the DD, ED and FD prefixes); the
+    # arithmetic and logic operations with an immediate value; and RST
     if z == 0:
         return plain("ret " + CC[y], 1, "5/11")
     if z == 1:
@@ -253,7 +329,9 @@ def _main(op, index=None):
 
 
 def _cb(op):
-    """The opcode CB op."""
+    """The opcode CB op: a rotate or shift (x = 0, which y chooses), BIT (x
+    = 1), RES (2) or SET (3) of bit y, of register z (6 is (HL)). CB 30-37
+    is the undocumented SLL."""
     x, y, z = op >> 6, (op >> 3) & 7, op & 7
     hl = z == 6
     if x == 0:
@@ -263,7 +341,11 @@ def _cb(op):
 
 
 def _index_cb(op, index):
-    """The opcode DD CB d op (index "ix") or FD CB d op ("iy")."""
+    """The opcode DD CB d op (index "ix") or FD CB d op ("iy"): the CB
+    instruction on (IX+d) or (IY+d), with the displacement at offset 2. The
+    documented ones have register field z = 6; with any other, the result is
+    also copied to that register (undocumented), except for BIT, where it's
+    a duplicate."""
     x, y, z = op >> 6, (op >> 3) & 7, op & 7
     if x == 1:
         # (Every register field is the same instruction)
@@ -280,7 +362,11 @@ def _index_cb(op, index):
 
 
 def _ed(op):
-    """The opcode ED op."""
+    """The opcode ED op: x = 1 is IN and OUT with (C), 16 bit ADC and SBC,
+    16 bit loads with (nn), NEG, RETN, RETI, IM, the loads of I and R, RRD
+    and RLD; x = 2 the block instructions (LDI, CPIR etc.). Many have
+    undocumented duplicates (e.g. ED 4C, another NEG), and the opcodes that
+    aren't instructions do nothing (an undocumented NOP)."""
     x, y, z = op >> 6, (op >> 3) & 7, op & 7
     p, q = y >> 1, y & 1
     if x == 1:
@@ -319,7 +405,9 @@ def _ed(op):
 def opcode_specs():
     """All the opcodes, as a dictionary from their bytes (a tuple of the
     prefix and opcode bytes, without any displacement or immediate value:
-    e.g. (0xdd, 0xcb, 0x06) for DD CB d 06) to Spec."""
+    e.g. (0xdd, 0xcb, 0x06) for DD CB d 06) to Spec. The prefixes on their
+    own (CB, DD, ED and FD) aren't in it, nor are DD and FD before an opcode
+    they have no effect on (see CpuZ80.ignored_prefix)."""
     result = {}
     for op in range(256):
         spec = _main(op)
@@ -336,12 +424,25 @@ def opcode_specs():
 
 
 class CpuZ80(cpu.Cpu):
-    """The Z80 CPU"""
+    """The Z80 CPU (see the module docstring).
+
+    Its opcode tables, each of Opcode objects by opcode byte, are:
+    'opcodes' (unprefixed), 'cb_opcodes', 'ed_opcodes', 'index_opcodes'
+    and 'index_cb_opcodes' (each by DD or FD, then the opcode); and
+    'ignored_prefix' (by DD or FD) is the Opcode for a prefix that has no
+    effect on the instruction after it, which is traced as a one byte
+    instruction of its own. 'return_index' and 'return_array' number the
+    RET instructions' labels (see label_maker()), and 'indent_level_dict'
+    gives an instruction's extra indent (see Opcode.indent())."""
 
     def __init__(self):
+        """Make the opcode tables, and add the Z80's code analysis (see
+        find_subroutine_calls(), find_redundant_instructions() and
+        find_entry_points_from_effects())."""
         super().__init__()
 
-        # For labelling ret instructions numerically
+        # For labelling ret instructions numerically: the number of the
+        # last one named, and each one's number by binary address
         self.return_index = 0
         self.return_array = {}
 
@@ -349,7 +450,9 @@ class CpuZ80(cpu.Cpu):
         self.indent_level_dict = collections.defaultdict(int)
 
         # The opcodes, by prefix: self.opcodes has the unprefixed ones (the
-        # prefixes aren't in it)
+        # prefixes aren't in it). Each key from opcode_specs() says which
+        # table it goes in: one byte unprefixed, two bytes after CB, ED, DD
+        # or FD, and three bytes after DD CB or FD CB.
         self.opcodes = {}
         self.cb_opcodes = {}
         self.ed_opcodes = {}
@@ -395,7 +498,12 @@ class CpuZ80(cpu.Cpu):
         each instruction that calls it (CALL, RST or JP, conditional or
         not), or that is at its address, with the runtime address of the
         instruction, the CPU state before it (a CpuState) and the
-        subroutine."""
+        subroutine. (See the 'hook' of commands.subroutine(), and
+        default_subroutine_hook().)
+
+        It goes through the code in address order, taking the state before
+        each instruction from cpu_states (the state after the one before),
+        with nothing known after data, a block end, or at a label."""
         subroutines = collections.defaultdict(list)
         for subroutine in session.current().trace.subroutines_list:
             if subroutine.hook_function is not None:
@@ -465,7 +573,9 @@ class CpuZ80(cpu.Cpu):
 
     class _TrackingState(cpuz80state.CpuState):
         """A CpuState that records which registers and flags an instruction
-        reads and writes (see _effects())."""
+        reads and writes (see _effects()): 'reads' and 'writes' are sets of
+        their names, and 'cleared' is True if the instruction forgot
+        everything (a CALL or RST)."""
         def __init__(self):
             super().__init__()
             self.reads = set()
@@ -473,23 +583,31 @@ class CpuZ80(cpu.Cpu):
             self.cleared = False
 
         def clear(self, *, pessimistic_only=False):
+            """Forget everything, noting that update_state() did. (Not when
+            CpuState.__init__() clears the new state, before 'reads' is
+            made.)"""
             super().clear()
             if hasattr(self, "reads"):
                 self.cleared = True
 
         def __getitem__(self, key):
+            """A register or flag's value, noting that it's read."""
             self.reads.add(key)
             return super().__getitem__(key)
 
         def __setitem__(self, key, value):
+            """Set a register or flag, noting that it's written."""
             self.writes.add(key)
             super().__setitem__(key, value)
 
     def _effects(self, c, binary_addr):
-        """What the instruction does to the registers and flags, for
-        find_redundant_instructions(): (reads, writes, whether it could be
-        redundant). These are found by running it with nothing known (see
-        cpuz80state.update_state()), noting what's read and written."""
+        """What the instruction c (an Opcode) at binary_addr does to the
+        registers and flags, for find_redundant_instructions(): (reads,
+        writes, whether it could be redundant), with reads and writes sets
+        of names from cpuz80state.ALL. These are found by running it with
+        nothing known (see cpuz80state.update_state()), noting what's read
+        and written, and adding the registers its operands name (see
+        _operand_reads()). A jump, call or return reads everything."""
         all_resources = set(cpuz80state.ALL)
         if c.kind != FLOW_NEXT or c.mnemonic == "ret":
             # (A jump, call or return, including RET cc: what comes after
@@ -498,6 +616,7 @@ class CpuZ80(cpu.Cpu):
         memory_binary = session.current().memory.binary
         state = self._TrackingState()
         if len(c.key) == 3:
+            # (DD CB d op: the displacement)
             operands = [memory_binary[binary_addr + 2]]
         else:
             operands = [memory_binary[binary_addr + i] for i in range(len(c.key), c.length())]
@@ -538,20 +657,26 @@ class CpuZ80(cpu.Cpu):
             return reads, writes, False
         return reads, writes, True
 
-    # The registers named in an operand, and what they are
+    # The registers named in an operand, and what they are, as names in
+    # cpuz80state.ALL (e.g. 'hl' is H and L, and 'af' is A and the flags)
     _OPERAND_REGISTERS = {
         "a": ("a",), "b": ("b",), "c": ("c",), "d": ("d",), "e": ("e",), "h": ("h",), "l": ("l",),
         "af": ("a",) + cpuz80state.FLAGS, "bc": ("b", "c"), "de": ("d", "e"), "hl": ("h", "l"), "sp": ("sp",),
         "ix": ("ixh", "ixl"), "iy": ("iyh", "iyl"), "ixh": ("ixh",), "ixl": ("ixl",), "iyh": ("iyh",), "iyl": ("iyl",),
         "i": ("i",),
     }
+    # The block instructions, which use BC, DE and HL (and A, for CPI etc.)
     _BLOCK_MNEMONICS = {"ldi", "ldir", "ldd", "lddr", "cpi", "cpir", "cpd", "cpdr",
                         "ini", "inir", "ind", "indr", "outi", "otir", "outd", "otdr"}
 
     def _operand_reads(self, c):
         """The registers (and flags) the instruction reads, from its operands:
         each register named, except the one a load (LD, POP or IN) writes,
-        and the registers it uses implicitly (e.g. SP for PUSH)."""
+        and the registers it uses implicitly (e.g. SP for PUSH).
+
+        It writes the operand as text (an (IX+d) as '(ix+d)', and any other
+        part as 'n'), splits it at the commas, and looks up each name in
+        each piece in _OPERAND_REGISTERS."""
         import re
         text = "".join(x if isinstance(x, str) else ("(%s+d)" % x.register if isinstance(x, Index) else "n") for x in c.operands).lower()
         operands = text.split(",") if text else []
@@ -568,6 +693,9 @@ class CpuZ80(cpu.Cpu):
             result.add("sp")
         if c.mnemonic in self._BLOCK_MNEMONICS:
             result |= {"a", "b", "c", "d", "e", "h", "l"}
+        # (RLD and RRD use A and (HL). For IN this is more than it reads (H
+        # and L, and A for IN r,(C)), which only means that fewer
+        # instructions before it are found to be redundant.)
         if c.mnemonic in ("rld", "rrd", "in"):
             result |= {"a", "h", "l"}           # (IN A,(n) puts A on the address bus)
         return result
@@ -583,6 +711,9 @@ class CpuZ80(cpu.Cpu):
         config.set_redundant_instruction_comments().)"""
         if not config.get_redundant_instruction_comments():
             return
+        # Go backwards through each run, keeping the registers and flags
+        # whose values may be read later ('live'): all of them at the end of
+        # the run.
         for run in self.straight_runs():
             live = set(cpuz80state.ALL)
             for binary_addr in reversed(run):
@@ -599,7 +730,15 @@ class CpuZ80(cpu.Cpu):
     def find_entry_points_from_effects(self):
         """Trace the code addresses that code_pointer_finders find (e.g. a
         return address pushed with 'ld hl,nn : push hl'), each naming the
-        address in the instruction that loads it."""
+        address in the instruction that loads it.
+
+        An address that's loaded, and isn't data or inside an instruction,
+        is added as an explicit entry point (if it isn't already code), and
+        the operand gets the address's label as an expression (unless it
+        has one already), with the finder's comment, if any, on the
+        instruction. Each operand is only done once, since this is called
+        again after each time the entry points found are traced (see
+        cpu.Cpu.trace())."""
         for finder in self.code_pointer_finders:
             for instruction_binary_addr, operand_binary_addr, target, description in finder():
                 if operand_binary_addr in self.code_pointer_operands:
@@ -640,7 +779,11 @@ class CpuZ80(cpu.Cpu):
         as the ZX Spectrum's ROM does with ERR_SP), and no path takes it
         off the stack another way first (POP, EX (SP), or a change to SP).
         A value that's pushed to be popped later is data, not an
-        address."""
+        address.
+
+        Only an 'ld rr,nn' just before its 'push rr', in the same straight
+        run, is looked for. The result is as code_pointer_finders wants it
+        (with no comment for the instruction)."""
         result = []
         for run in self.straight_runs():
             for first, second in zip(run, run[1:]):
@@ -657,7 +800,15 @@ class CpuZ80(cpu.Cpu):
     def _returns_to_pushed_value(self, start):
         """Following the code from the binary address 'start', with a value
         just pushed, does it return to that value (see
-        pushed_return_addresses())?"""
+        pushed_return_addresses())?
+
+        It searches every path from 'start', keeping the number of values
+        pushed on top of it ('depth'): a PUSH adds one (up to
+        _RETURN_SEARCH_DEPTH, beyond which the path isn't followed), and a
+        POP takes one off, or at depth 0 pops the value itself. Calls aren't
+        followed (they're taken to return), nor is JP (HL), whose target
+        isn't known. It stops looking once _RETURN_SEARCH_LIMIT (address,
+        depth) pairs have been seen, with the answer so far."""
         todo = [(memorymanager.BinaryAddr(start), 0)]
         seen = set()
         returns = False
@@ -701,6 +852,9 @@ class CpuZ80(cpu.Cpu):
                 continue                    # (The stack isn't followed any further)
             if c.kind == FLOW_JP_IND:
                 continue
+            # Follow a jump to its target, and a conditional one on to the
+            # next instruction too. (Anything else, including a call or RST,
+            # goes on to the next instruction.)
             if c.kind in (FLOW_JP, FLOW_JR, FLOW_JP_CC, FLOW_JR_CC):
                 target_binary_addr = movemanager.r2b(c.target(binary_addr))[0]
                 if target_binary_addr is not None:
@@ -712,15 +866,23 @@ class CpuZ80(cpu.Cpu):
 
     def default_subroutine_hook(self, runtime_addr, state, subroutine):
         """Comment a call to a subroutine (defined with subroutine()) with
-        its title."""
+        its title: the hook commands.subroutine() uses when it's given
+        none (see find_subroutine_calls()). The subroutine's own first
+        instruction isn't commented."""
         if subroutine.title and subroutine.runtime_addr != runtime_addr:
             disassembly.comment(runtime_addr, subroutine.title, align=Align.INLINE, word_wrap=False, auto_generated=True)
 
     def opcode_at(self, binary_addr):
-        """The opcode at binary_addr (an Opcode), or None if there isn't one
-        (or its bytes aren't all there)."""
+        """The opcode at binary_addr (an Opcode), found from its prefix and
+        opcode bytes, or None if those bytes aren't loaded. (The operand
+        bytes are checked by cpu.Cpu.disassemble_instruction().) For DD CB
+        d op, the opcode is the fourth byte. A DD or FD before an opcode it
+        has no effect on (including another prefix, other than CB) is the
+        ignored_prefix Opcode, a one byte instruction of its own."""
         memory_binary = session.current().memory.binary
         def byte(offset):
+            """The byte at the offset, or None if it isn't loaded (or is
+            past the top of memory)."""
             addr = binary_addr + offset
             return memory_binary[addr] if addr < 0x10000 else None
 
@@ -743,6 +905,10 @@ class CpuZ80(cpu.Cpu):
         return self.index_opcodes[op].get(op1, self.ignored_prefix[op])
 
     def hook_subroutine(self, runtime_addr, name, hook):
+        """Add a subroutine hook (see commands.hook_subroutine()): the
+        subroutine at runtime_addr becomes an explicit entry point called
+        'name', and a CALL or RST to it asks hook(target, caller) for the
+        runtime address the code carries on at (see Opcode.disassemble())."""
         runtime_addr = RuntimeAddr(runtime_addr)
         binary_loc = movemanager.r2b_checked(runtime_addr)
         self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name, explicit=True)
@@ -751,7 +917,12 @@ class CpuZ80(cpu.Cpu):
     def get_target_binary_addr_preferring_given_move_id(self, runtime_addr, specific_move_id):
         """Given an instruction's operand address (a runtime address), find
         its most likely binary address, for the current set of active move
-        ids."""
+        ids, as a list (empty if there isn't one). It's in specific_move_id
+        (the instruction's own move) if data is loaded there; otherwise
+        where movemanager.r2b() finds it, if that's loaded (or the
+        instruction's move doesn't have the address at all); otherwise in
+        the instruction's move anyway. Used for the address a call returns
+        to (see Opcode.disassemble())."""
         binary_addr, _ = movemanager.r2b(runtime_addr, specific_move_id)
         if binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1):
             # (e.g. a jump from the main code to code that's copied
@@ -769,7 +940,15 @@ class CpuZ80(cpu.Cpu):
     class Opcode:
         """An opcode, with its prefix (if any): 'key' is its bytes, without
         any displacement or immediate value (see opcode_specs()), and 'spec'
-        says what it is (a Spec)."""
+        says what it is (a Spec), from which it keeps the 'mnemonic',
+        'operands', 'kind', 'cycles' and 'undocumented'. 'operand_length' is
+        the number of bytes after the first, including any prefix's second
+        byte, displacement or immediate value.
+
+        One Opcode is shared by every instruction with those bytes, and
+        reads the rest of the instruction from memory by its binary address.
+        It's also the instruction's classification (see classification.py),
+        as code."""
 
         def __init__(self, key, spec):
             self.key = key
@@ -781,15 +960,23 @@ class CpuZ80(cpu.Cpu):
             self.operand_length = spec.length - 1
 
         def length(self):
+            """The instruction's length in bytes, including any prefix."""
             return 1 + self.operand_length
 
         def is_code(self, binary_addr):
+            """True: an instruction is code (unlike a data classification)."""
             return True
 
         def indent(self, binary_addr):
+            """Indent the instruction at binary_addr one more level (for a
+            loop, with config.set_indent_loops(True))."""
             session.current().cpu.indent_level_dict[binary_addr] += 1
 
         def update_cpu_state(self, binary_addr, state):
+            """Update 'state' (a CpuState) for this instruction at
+            binary_addr, with cpuz80state.update_state(). The runtime
+            address of the next instruction is passed too, since a jump to
+            it says nothing about its condition."""
             # Nothing is known after an instruction the code can't continue
             # from (e.g. JP), or where code can come from elsewhere (at a
             # label)
@@ -811,6 +998,10 @@ class CpuZ80(cpu.Cpu):
             return self.cycles
 
         def is_block_end(self):
+            """True if the code can't continue to the next instruction: JP,
+            JR, RET, RETI, RETN and JP (HL). (Not a conditional jump or
+            return, a call or RST.) It ends a block, which gets a blank line
+            after it unless config.set_blank_line_at_block_end(False)."""
             return self.kind in (FLOW_JP, FLOW_JR, FLOW_RET, FLOW_JP_IND)
 
         def part(self, cls):
@@ -818,7 +1009,10 @@ class CpuZ80(cpu.Cpu):
             return next((x for x in self.operands if isinstance(x, cls)), None)
 
         def target(self, binary_addr):
-            """The runtime address a jump, call or RST goes to."""
+            """The runtime address a jump, call or RST goes to: for RST, the
+            address in its opcode (bits 5-3, times 8); for a relative jump,
+            the address after the instruction plus the offset (wrapping
+            round at 16 bits); otherwise the 16 bit operand."""
             if self.kind == FLOW_RST:
                 return RuntimeAddr(session.current().memory.binary[binary_addr] & 0x38)
             rel = self.part(Rel)
@@ -828,9 +1022,15 @@ class CpuZ80(cpu.Cpu):
             return RuntimeAddr(memorymanager.get_u16_binary(binary_addr + self.part(Target).offset))
 
         def is_call(self):
+            """True for CALL (conditional or not) and RST."""
             return self.kind in (FLOW_CALL, FLOW_RST)
 
         def update_references(self, binary_loc):
+            """Record the references to labels that the instruction at
+            binary_loc makes: to a jump or call's target, to the code an RST
+            calls (if it's loaded), and to an address in brackets (e.g. 'ld
+            a,(nn)'). An immediate value isn't taken to be an address, so
+            it isn't a reference."""
             binary_addr = binary_loc.binary_addr
             labels = session.current().labels.labels
             if self.part(Target) is not None or self.part(Rel) is not None:
@@ -848,7 +1048,17 @@ class CpuZ80(cpu.Cpu):
 
         def disassemble(self, binary_loc):
             """The binary addresses to trace next: the next instruction (or
-            None), then any other."""
+            None, if the code doesn't continue to it), then any other (a
+            jump's target, or the subroutine a call or RST calls). A jump's
+            target is looked for in its own move first, except for JP (see
+            cpu.Cpu.jump_target()).
+
+            A call or RST returns to the next instruction, unless a
+            subroutine hook (see CpuZ80.hook_subroutine()) gives another
+            runtime address, e.g. after data that follows the call, or None
+            if it doesn't return. The code an RST calls is only traced if
+            it's loaded (it's then named, e.g. rst_08: see
+            CpuZ80.label_maker())."""
             binary_addr = binary_loc.binary_addr
             next_addr = binary_addr + self.length()
             cpu = session.current().cpu
@@ -867,8 +1077,12 @@ class CpuZ80(cpu.Cpu):
             # A call or RST: a hook can say where it returns to (e.g. after
             # data following the call), or None if it doesn't
             def simple_call_hook(target_runtime_addr, caller_runtime_addr):
+                """The default hook: the call returns to the next
+                instruction."""
                 return caller_runtime_addr + self.length()
 
+            # (The hook is called with the call's move active, so that the
+            # addresses it uses, e.g. with entry(), are looked for there)
             call_hook = cpu.subroutine_hooks.get(target, simple_call_hook)
             caller_runtime_addr = movemanager.b2r(binary_addr)
             with session.current().moves.move_id_for_binary_addr[binary_addr]:
@@ -892,13 +1106,18 @@ class CpuZ80(cpu.Cpu):
             return result + cpu.jump_target(target, binary_loc)
 
         def _part_text(self, binary_addr, part, in_context=True):
-            """The text of an operand part (e.g. a label or number). Unless
+            """The text of an operand part (e.g. a label or number), as a
+            label, constant or expression (see classification.py). Unless
             'in_context' is False (for the JSON), a value that isn't in
-            brackets is as an operand, which some assemblers take to be in
-            brackets if it starts with one."""
+            brackets (an immediate value, or a jump or call's target) is
+            rendered as an operand (expression.OPERAND), since z88dk-z80asm
+            takes an operand that starts with a bracket to be in brackets,
+            i.e. indirect (see Z88DK.expression_in_context())."""
             addr = binary_addr + part.offset
             expressions = session.current().classifications.expressions
             def operand(value):
+                """The value, rendered as an operand (unless not
+                'in_context')."""
                 return expression.in_context(value, expression.OPERAND) if in_context else value
             if isinstance(part, Imm8):
                 return operand(classification.get_constant8(addr))
@@ -911,6 +1130,8 @@ class CpuZ80(cpu.Cpu):
             if isinstance(part, Target):
                 return operand(classification.get_address16(addr))
             if isinstance(part, Rel):
+                # (The target's label: an expression for the offset isn't
+                # used)
                 label = disassembly.get_label(self.target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
                 runtime_addr = movemanager.b2r(binary_addr)
                 unwrapped = runtime_addr + self.length() + _signed(session.current().memory.binary[addr])
@@ -918,6 +1139,8 @@ class CpuZ80(cpu.Cpu):
                     # (The target wraps round the top or bottom of memory)
                     label = config.get_assembler().wrapped_branch_operand(label, unwrapped - runtime_addr)
                 return label
+            # An index register and its displacement, e.g. 'ix+2' or 'ix-3',
+            # or 'ix+' and the displacement's expression
             assert isinstance(part, Index)
             displacement = self._displacement(addr)
             if addr in expressions:
@@ -933,14 +1156,19 @@ class CpuZ80(cpu.Cpu):
             return str(value)
 
         def operand_part_text(self, binary_addr, part_addr):
-            """The text of the operand part whose bytes start at part_addr."""
+            """The text of the operand part whose bytes start at part_addr,
+            for the JSON (see jsonoutput.py): not rendered as an operand,
+            and for an index register just the displacement."""
             part = next(x for x in self.operands if isinstance(x, Part) and binary_addr + x.offset == part_addr)
             if isinstance(part, Index):
                 return self._displacement(part_addr)
             return self._part_text(binary_addr, part, in_context=False)
 
         def operand(self, binary_addr):
-            """The operand, as a LazyString (or None if there isn't one)."""
+            """The operand, as a LazyString (or None if there isn't one): its
+            text, in the output's case, with the text of each Part in its
+            place. (A LazyString, since the labels are only named once
+            tracing is done.)"""
             if not self.operands:
                 return None
             fmt = ""
@@ -954,7 +1182,10 @@ class CpuZ80(cpu.Cpu):
             return utils.LazyString(fmt, *args)
 
         def instruction(self, binary_addr):
-            """The instruction (see output.Instruction)."""
+            """The instruction (see output.Instruction). An undocumented
+            opcode that the assembler doesn't accept (see
+            Assembler.undocumented_z80_accepted()) is written as data bytes,
+            with the instruction in a comment."""
             cpu = session.current().cpu
             if self.kind == FLOW_RST and cpu.trace_done and self.target(binary_addr) in cpu.rst_targets:
                 # The code it calls gets a label (e.g. rst_08), although the
@@ -975,7 +1206,11 @@ class CpuZ80(cpu.Cpu):
 
         def data_items(self, binary_addr):
             """The instruction's bytes, as data items (a label or expression
-            where an operand has one)."""
+            where an operand has one), for an undocumented opcode written as
+            data: the prefix and opcode bytes in hex, a 16 bit operand as
+            the low and high bytes of its label, constant or expression, an
+            8 bit one as a constant or expression, and a displacement as a
+            signed number or its expression."""
             import maker
             memory_binary = session.current().memory.binary
             assembler = config.get_assembler()
@@ -1012,7 +1247,9 @@ class CpuZ80(cpu.Cpu):
         def json_operand(self, binary_addr):
             """The operand for the JSON: (mode, value, bits, target, the
             binary address of the operand's bytes), with None for those
-            there aren't."""
+            there aren't. If there's more than one part (e.g. 'ld
+            (ix+d),n'), the first in the order below is given (there, the
+            displacement). An RST's target is the address it calls."""
             for cls, mode, bits in ((Rel, "relative", 8), (Target, "address", 16), (Addr, "address", 16),
                                     (Imm16, "immediate16", 16), (Index, "indexed", 8), (Imm8, "immediate", 8), (Port, "port", 8)):
                 part = self.part(cls)
@@ -1032,16 +1269,29 @@ class CpuZ80(cpu.Cpu):
             return "implied", None, None, None, None
 
     def is_subroutine_call(self, binary_addr):
+        """Whether the instruction at binary_addr is a CALL (conditional or
+        not) or RST, for naming the label of the code it calls 'sub_...'
+        (see disassembly.suggest_label_name())."""
         c = classification.get_classification(binary_addr)
         return isinstance(c, self.Opcode) and c.is_call()
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
+        """Whether the instruction at binary_addr is a jump (JP, JR or DJNZ,
+        conditional or not) to target_runtime_addr, for naming a loop's
+        label 'loop_...' (see disassembly.suggest_label_name())."""
         c = classification.get_classification(binary_addr)
         if isinstance(c, self.Opcode) and c.kind in (FLOW_JP, FLOW_JP_CC, FLOW_JR, FLOW_JR_CC):
             return c.target(binary_addr) == target_runtime_addr
         return False
 
     def label_maker(self, lmd):
+        """Name an auto-generated label for code that an RST calls rst_NN
+        (e.g. rst_08), and one on a RET instruction ($C9) return_1,
+        return_2 etc. (numbered in the order they're first named), unless
+        config.set_label_return_instructions_numerically(False). 'lmd' is
+        the label's LabelMakingData, with the name chosen so far: this is
+        called for each label as it's named, after the default name is
+        chosen (see disassembly._label_maker())."""
         # Label code reached by RST 'rst_NN', and RET instructions return_1,
         # return_2 etc.
         if not lmd.is_autogenerated:

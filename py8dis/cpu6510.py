@@ -1,10 +1,19 @@
 """
 The 6510 (the Commodore 64's CPU): a 6502 with its undocumented opcodes.
 
-Every NMOS 6502 runs its 105 undocumented opcodes the same way, so this CPU
-suits any 6502 code that uses them (load(..., "6510")), e.g. C64 games and
-demos, and some BBC Micro games. Plain "6502" doesn't trace them, since
-treating unknown opcodes as code would turn data into nonsense instructions.
+Every NMOS 6502 runs its 105 undocumented opcodes the same way (apart from
+the unstable ones), so this CPU suits any 6502 code that uses them
+(load(..., "6510")), e.g. C64 games and demos, and some BBC Micro games.
+Plain "6502" doesn't trace them, since treating unknown opcodes as code
+would turn data into nonsense instructions.
+
+Cpu6510 is a Cpu6502 with the undocumented opcodes added to its opcode
+table, so that all 256 are known. They're traced, and change the CPU state,
+as the 6502's opcode classes do (e.g. SLO zp is traced like ORA zp), with
+update functions of their own for ANC, ALR and SBX, whose results are
+worked out. The rest of the 6502's analysis knows about them where it needs
+to (e.g. Cpu6502._STORE_MNEMONICS for SAX, and Cpu6502.z_source()). The
+opcode classes here add how they're written (see Undocumented).
 
 The names are those of "No More Secrets" (groepaz's "NMOS 6510 Unintended
 Opcodes"), which ACME also uses: SLO, RLA, SRE, RRA, SAX, LAX, DCP, ISC,
@@ -22,12 +31,15 @@ import output
 
 
 class Cpu6510(Cpu6502):
-    """A 6502 with its undocumented opcodes"""
+    """A 6502 with its undocumented opcodes (see the module's
+    description)."""
 
-    # (For assemblers that need to be told, e.g. acme's '!cpu 6510')
+    # (For assemblers that need to be told, e.g. acme's '!cpu 6510', 64tass's
+    # '.cpu "6502i"' and ca65's '.setcpu "6502X"')
     has_undocumented_opcodes = True
 
     def __init__(self):
+        """The 6502's opcode table, with the undocumented opcodes added."""
         super().__init__()
 
         # The register changes are described as for the 6502 (see Cpu6502):
@@ -158,11 +170,19 @@ class Cpu6510(Cpu6502):
         """An undocumented opcode: written as an instruction for assemblers
         that accept it (Assembler.undocumented_6502_opcodes()), otherwise as
         data bytes (the opcode, then the operand), with the instruction in a
-        comment."""
+        comment.
+
+        This is mixed in before one of the 6502's opcode classes (e.g.
+        OpcodeUndocumentedZp is Undocumented and Cpu6502.OpcodeZp), whose
+        instruction() it wraps. 'undocumented' marks the instruction as
+        undocumented in the JSON output (see jsonoutput.py)."""
 
         undocumented = True
 
         def instruction(self, binary_addr):
+            """The instruction as the 6502's opcode class writes it, with the
+            assembler's mnemonic for it (e.g. acme's ASR for ALR), or as data
+            if the assembler doesn't accept this opcode."""
             instruction = super().instruction(binary_addr)
             memory_binary = session.current().memory.binary
             opcode = memory_binary[binary_addr]
@@ -177,20 +197,24 @@ class Cpu6510(Cpu6502):
             return instruction
 
     class OpcodeUndocumentedImplied(Undocumented, Cpu6502.OpcodeImplied):
+        """An undocumented opcode with no operand (the one byte NOPs)."""
         pass
 
     class OpcodeUndocumentedImmediate(Undocumented, Cpu6502.OpcodeImmediate):
+        """An undocumented opcode with an immediate operand (e.g. ANC #imm)."""
         pass
 
     class OpcodeUndocumentedZp(Undocumented, Cpu6502.OpcodeZp):
+        """An undocumented opcode with a zero page operand (e.g. SLO zp)."""
         pass
 
     class OpcodeUndocumentedAbs(Undocumented, Cpu6502.OpcodeDataAbs):
+        """An undocumented opcode with an absolute operand (e.g. LAX addr)."""
         pass
 
     class OpcodeJam(Undocumented, Cpu6502.OpcodeReturn):
         """JAM (also called KIL or HLT): the CPU stops until it's reset, so
-        nothing follows it."""
+        nothing follows it. (Its cycle count is shown as 'halts'.)"""
 
         def __init__(self, instruction_template, reg_change):
             super().__init__(instruction_template, reg_change, cycles="halts")
@@ -245,9 +269,11 @@ class Cpu6510(Cpu6502):
 
 # The undocumented opcodes that acme (with '!cpu 6510') and 64tass (with
 # '.cpu "6502i"') assemble from their mnemonics: where an instruction has
-# several opcodes (e.g. ANC is &0b and &2b; JAM and the NOPs have many), each
+# several opcodes (e.g. ANC is $0b and $2b; JAM and the NOPs have many), each
 # uses only one, so the others are written as data. (Found by assembling each
 # with acme 0.97 of 31 Jan 2021 and 64tass 1.59.3120, which give the same 70.)
+# ca65 (with '.setcpu "6502X"') uses the same ones (see ca65.py). The
+# assemblers' undocumented_6502_opcodes() return this.
 ASSEMBLED_UNDOCUMENTED_OPCODES = frozenset([
     0x02, 0x03, 0x04, 0x07, 0x0b, 0x0c, 0x0f, 0x13, 0x14, 0x17, 0x1b, 0x1c, 0x1f, 0x23,
     0x27, 0x2f, 0x33, 0x37, 0x3b, 0x3f, 0x43, 0x47, 0x4b, 0x4f, 0x53, 0x57, 0x5b, 0x5f,

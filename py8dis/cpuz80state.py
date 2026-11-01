@@ -2,10 +2,33 @@
 What's known about the Z80's registers and flags (see CpuState), and how each
 instruction changes it (see update_state()).
 
-A register is an 8 bit number, or None if it's not known; a flag is True or
-False, or None. Memory isn't tracked, so a value read from memory (or an I/O
-port) isn't known. Undocumented flag bits 3 and 5, R, the interrupt mode and
-the interrupt flip-flops aren't tracked.
+This is the Z80's CPU state: what's known for certain about the registers
+and flags after each instruction, from the code before it, back to a label
+(where the code can come from somewhere else). It's used for comments (e.g.
+by a subroutine's hook, which is given the state before a call to it), and
+shown with config.set_show_cpu_state(True) (see docs/cpus.md).
+
+A register is an 8 bit number (SP a 16 bit one), or None if it's not known;
+a flag is True or False, or None. The register pairs are kept as their two
+halves, so e.g. B can be known when C isn't, and BC is known when both are.
+Memory isn't tracked, so a value read from memory (or an I/O port) isn't
+known. Undocumented flag bits 3 and 5, R, the interrupt mode and the
+interrupt flip-flops aren't tracked.
+
+update_state() runs one instruction on a CpuState. It decodes the opcode
+from its fields (x, y, z, p and q, as in cpuz80.py) in _main(), _cb() and
+_ed(), which use a _Machine to read and write the registers by their numbers
+in the opcode (with IX or IY in place of HL after a DD or FD prefix) and to
+work out the flags. Anything that can't be known for certain becomes None:
+e.g. a load from memory, or anything at all after a CALL or RST, since the
+subroutine could change it. After a conditional jump or return that isn't
+taken, its condition is known to be false, B is 0 after DJNZ, and BC after
+LDIR.
+
+cpuz80.py uses it: CpuZ80.Opcode.update_cpu_state() runs each instruction
+when cpu.Cpu.calculate_cpu_states() works out the state after each one, and
+CpuZ80._effects() runs an instruction on a state that notes what it reads
+and writes, to find redundant instructions.
 """
 
 import utils
@@ -22,12 +45,20 @@ ALTERNATE_REGISTERS = tuple(r + "'" for r in MAIN_REGISTERS)
 FLAGS           = ("s", "z", "hc", "pv", "n", "cy")
 ALTERNATE_FLAGS = tuple(f + "'" for f in FLAGS)
 
+# The names of all the registers and flags tracked (the keys of
+# CpuState.values)
 ALL = REGISTERS + FLAGS + ALTERNATE_REGISTERS + ALTERNATE_FLAGS
 
 
 class CpuState:
     """What's known for certain about the registers and flags (see the module
-    docs): CpuState()["a"] is A's value, or None if it's not known."""
+    docs): CpuState()["a"] is A's value, or None if it's not known.
+
+    'values' holds them all, by name (see ALL). 'block_end' is True after an
+    instruction the code can't continue from (see clear()). REGISTERS and
+    FLAGS name the registers and flags, with the alternate set (e.g.
+    jsonoutput.py writes the flags as True or False). There's only one
+    state, unlike the 6502's optimistic and pessimistic ones."""
 
     REGISTERS = REGISTERS + ALTERNATE_REGISTERS
     FLAGS     = FLAGS + ALTERNATE_FLAGS
@@ -45,6 +76,8 @@ class CpuState:
         self.block_end = False
 
     def copy(self):
+        """A copy of the state (much faster than copy.deepcopy(), which
+        cpu.Cpu.calculate_cpu_states() would use otherwise)."""
         result = type(self).__new__(type(self))
         result.values = dict(self.values)
         result.block_end = self.block_end
@@ -54,6 +87,7 @@ class CpuState:
         return self.values[key]
 
     def __setitem__(self, key, value):
+        # (Only the registers and flags that are tracked can be set)
         assert key in self.values
         self.values[key] = value
 
@@ -65,9 +99,11 @@ class CpuState:
         case if clear, or '-' if not known. (The alternate set and I aren't
         shown, but are in the JSON.)"""
         def byte(name):
+            """A register's two hex digits, or '--'."""
             v = self.values[name]
             return "--" if v is None else utils.plainhex2(v)
         def flag(name, letter):
+            """A flag's letter, or '-'."""
             v = self.values[name]
             return "-" if v is None else (letter.upper() if v else letter)
         sp = self.values["sp"]
@@ -83,19 +119,24 @@ def _parity(value):
     return bin(value).count("1") % 2 == 0
 
 def _signed8(value):
+    """A byte as a signed number (-128 to 127)."""
     return value - 0x100 if value >= 0x80 else value
 
 # The 8 bit registers as the opcodes number them (6 is (HL), in memory)
 R = ("b", "c", "d", "e", "h", "l", None, "a")
 
-# The condition codes, as (flag, value when the condition is true)
+# The condition codes, as (flag, value when the condition is true), as the
+# opcodes number them: NZ, Z, NC, C, PO, PE, P and M
 CONDITIONS = (("z", False), ("z", True), ("cy", False), ("cy", True),
               ("pv", False), ("pv", True), ("s", False), ("s", True))
 
 
 class _Machine:
     """Runs one instruction on a CpuState, with HL replaced by IX or IY
-    (index "ix" or "iy") after a DD or FD prefix."""
+    (index "ix" or "iy") after a DD or FD prefix. Its methods read and write
+    the registers by their numbers in the opcode, and do the operations
+    that set the flags, for _main(), _cb() and _ed(), with None for anything
+    that isn't known."""
 
     def __init__(self, state, index=None):
         self.state = state
@@ -111,22 +152,29 @@ class _Machine:
         return R[i]
 
     def get8(self, i, halves=True):
+        """The value of 8 bit register i (see reg_name()), or None (always
+        for (HL) or (IX+d), which are in memory)."""
         name = self.reg_name(i, halves)
         return None if name is None else self.state[name]
 
     def set8(self, i, value, halves=True):
+        """Set 8 bit register i (see reg_name()) to the value (None if not
+        known). Nothing is done for (HL) or (IX+d), which are in memory."""
         name = self.reg_name(i, halves)
         if name is not None:
             self.state[name] = None if value is None else value & 0xff
 
     def pair_names(self, p, af=False):
         """The names of register pair p's high and low bytes: BC, DE, HL (or
-        IX or IY after a prefix), then SP (or AF if 'af', for PUSH and POP)."""
+        IX or IY after a prefix), then SP (just "sp", a 16 bit register of
+        its own) or, if 'af' (for POP), AF (A, and None for the flags)."""
         if p == 2:
             return (self.index + "h", self.index + "l") if self.index else ("h", "l")
         return (("b", "c"), ("d", "e"), None, ("a", None) if af else "sp")[p]
 
     def get16(self, p):
+        """The 16 bit value of register pair p (BC, DE, HL or SP, see
+        pair_names()), or None if any of it isn't known."""
         names = self.pair_names(p)
         if names == "sp":
             return self.state["sp"]
@@ -134,6 +182,9 @@ class _Machine:
         return None if hi is None or lo is None else (hi << 8) | lo
 
     def set16(self, p, value):
+        """Set register pair p (BC, DE, HL or SP) to a value, which wraps
+        round to 16 bits (e.g. after INC of $FFFF), or forget it if the
+        value is None."""
         names = self.pair_names(p)
         if names == "sp":
             self.state["sp"] = None if value is None else value & 0xffff
@@ -144,12 +195,16 @@ class _Machine:
             self.state[names[1]] = value & 0xff
 
     def forget_pair(self, names):
+        """Forget the registers named (e.g. a pair's, from pair_names())."""
         for name in names:
             self.state[name] = None
 
     # Flags
 
     def set_flags(self, **flags):
+        """Set the flags given as keywords (e.g. cy=True, z=None) to True
+        or False (by the value's truth, so a value such as 'result & 0x80'
+        can be given), or to None if not known."""
         for name, value in flags.items():
             self.state[name] = None if value is None else bool(value)
 
@@ -168,8 +223,10 @@ class _Machine:
     # Instructions
 
     def alu(self, op, value, value_is_a=False):
-        """ADD, ADC, SUB, SBC, AND, XOR, OR or CP (op 0 to 7) of A with
-        'value' (None if not known; 'value_is_a' if it's A itself)."""
+        """ADD, ADC, SUB, SBC, AND, XOR, OR or CP (op 0 to 7, as y numbers
+        them) of A with 'value' (None if not known; 'value_is_a' if it's A
+        itself, so that e.g. XOR A is known to give 0 even if A isn't
+        known), setting A (except for CP) and the flags."""
         state = self.state
         a = state["a"]
         if op in (4, 5, 6):
@@ -187,6 +244,9 @@ class _Machine:
             self.set_szp(result)
             return
 
+        # ADD, ADC, SUB, SBC, CP: the carry in is CY for ADC and SBC. H is
+        # the carry (or borrow) out of bit 3, P/V the overflow, and C the
+        # carry (or borrow) out of bit 7.
         subtract = op in (2, 3, 7)
         carry_in = 0
         if op in (1, 3):
@@ -234,7 +294,8 @@ class _Machine:
     def rotate(self, op, value):
         """RLC, RRC, RL, RR, SLA, SRA, SLL or SRL (op 0 to 7, as CB
         numbers them) of a value (None if not known), setting the flags.
-        Returns the result."""
+        Returns the result. (RLCA, RRCA, RLA and RRA are these on A, but
+        leave S, Z and P/V alone: see _main().)"""
         self.set_flags(hc=False, n=False)
         cy_in = self.state["cy"]
         if value is None or (op in (2, 3) and cy_in is None):
@@ -262,7 +323,10 @@ class _Machine:
         return result
 
     def bit(self, b, value):
-        """BIT b of a value (None if not known)."""
+        """BIT b of a value (None if not known), which only sets the flags:
+        Z, and P/V the same, if the bit is clear; S if it's bit 7 and set
+        (so S is known to be clear for the other bits, even if the value
+        isn't known)."""
         self.set_flags(hc=True, n=False)
         if value is None:
             self.set_flags(z=None, pv=None, s=None if b == 7 else False)
@@ -273,7 +337,8 @@ class _Machine:
     def add16(self, p_dest, value, carry=None, subtract=False):
         """ADD (flags H, N and C), or ADC or SBC (all the flags, with
         'carry' as the carry in) of a 16 bit value to register pair
-        p_dest."""
+        p_dest. 'carry' is any value but None for ADC or SBC: the carry in
+        is CY. H is the carry (or borrow) out of bit 11."""
         state = self.state
         full = carry is not None
         dest = self.get16(p_dest)
@@ -304,6 +369,10 @@ class _Machine:
             self.set_flags(s=result & 0x8000, z=result == 0, pv=overflow)
 
     def daa(self):
+        """DAA: adjust A to BCD after an addition or subtraction (N says
+        which), as the Z80 does: add or subtract 6 if the low four bits are
+        over 9 (or H), and $60 if A is over $99 (or C), which then sets C.
+        Nothing is known unless A, N, H and C are."""
         state = self.state
         a, n, hc, cy = state["a"], state["n"], state["hc"], state["cy"]
         if a is None or n is None or hc is None or cy is None:
@@ -327,11 +396,14 @@ class _Machine:
         self.set_flags(hc=hc, cy=cy)
 
     def condition(self, y, met):
-        """Record that condition y is (if 'met') or isn't met."""
+        """Record that condition y (see CONDITIONS) is (if 'met') or isn't
+        met, e.g. Z is set if NZ isn't met."""
         flag, value = CONDITIONS[y]
         self.state[flag] = value if met else not value
 
     def swap(self, names):
+        """Swap each register or flag named with its alternate (e.g. "a"
+        with "a'"), for EX AF,AF' and EXX."""
         for name in names:
             self.state[name], self.state[name + "'"] = self.state[name + "'"], self.state[name]
 
@@ -344,7 +416,10 @@ def update_state(state, key, operands, next_addr=None):
     instruction has run, assuming it continues to the next instruction (a
     conditional jump or return not taken, or a repeated block instruction
     finished). 'next_addr' is the runtime address of the next instruction,
-    if known: a conditional jump to it says nothing about its condition."""
+    if known: a conditional jump to it says nothing about its condition.
+
+    Called by cpuz80.CpuZ80.Opcode.update_cpu_state() (and, with a state
+    that notes what's read and written, by CpuZ80._effects())."""
 
     if key[0] == 0xcb:
         _cb(_Machine(state), key[1], memory=key[1] & 7 == 6)
@@ -368,7 +443,8 @@ def update_state(state, key, operands, next_addr=None):
 def _main(m, op, operands, next_addr):
     """An unprefixed opcode (or, with m.index, after DD or FD), with the
     bytes after it (for (IX+d), starting with the displacement: an immediate
-    byte is always the last, and a 16 bit value never follows one)."""
+    byte is always the last, and a 16 bit value never follows one). It's
+    decoded by the same fields as cpuz80._main()'s."""
     state = m.state
     x, y, z = op >> 6, (op >> 3) & 7, op & 7
     p, q = y >> 1, y & 1
@@ -388,6 +464,8 @@ def _main(m, op, operands, next_addr):
             elif y == 3:                                # JR
                 state.block_end = True
             elif y >= 4 and imm8 != 0:                  # JR cc (not taken)
+                # (An offset of 0 is a jump to the next instruction, which
+                # says nothing about the condition)
                 m.condition(y - 4, False)
         elif z == 1:
             if q == 0:                                  # LD rp,nn
@@ -395,12 +473,15 @@ def _main(m, op, operands, next_addr):
             else:                                       # ADD HL,rp
                 m.add16(2, m.get16(p))
         elif z == 2:
+            # (The stores, LD (BC),A, LD (DE),A, LD (nn),HL and LD (nn),A,
+            # change nothing tracked)
             if q == 1:
                 if p == 2:                              # LD HL,(nn)
                     m.set16(2, None)
                 else:                                   # LD A,(BC), (DE) or (nn)
                     state["a"] = None
         elif z == 3:                                    # INC rp, DEC rp
+            # (No flags are changed)
             v = m.get16(p)
             m.set16(p, None if v is None else v + (1 if q == 0 else -1))
         elif z in (4, 5):                               # INC r, DEC r
@@ -411,6 +492,7 @@ def _main(m, op, operands, next_addr):
         elif z == 6:                                    # LD r,n
             m.set8(y, imm8)
         elif y < 4:                                     # RLCA, RRCA, RLA, RRA
+            # (As the CB rotates of A, but S, Z and P/V are kept)
             flags = {k: state[k] for k in ("s", "z", "pv")}
             state["a"] = m.rotate(y, state["a"])
             m.set_flags(**flags)
@@ -441,6 +523,7 @@ def _main(m, op, operands, next_addr):
         else:
             m.alu(y, m.get8(z), value_is_a=z == 7)
 
+    # x == 3
     elif z == 0:                                        # RET cc (not taken)
         m.condition(y, False)
     elif z == 1:
@@ -461,6 +544,7 @@ def _main(m, op, operands, next_addr):
         else:                                           # LD SP,HL
             state["sp"] = m.get16(2)
     elif z == 2:                                        # JP cc,nn (not taken)
+        # (Unless it's a jump to the next instruction)
         if next_addr is not None and imm16 != next_addr:
             m.condition(y, False)
     elif z == 3:
@@ -485,7 +569,9 @@ def _main(m, op, operands, next_addr):
 
 def _cb(m, op, memory):
     """CB op (on (HL) if 'memory', in which case the value isn't known), or
-    DD CB d op, FD CB d op."""
+    DD CB d op, FD CB d op: a rotate or shift (x = 0), BIT (1), RES (2) or
+    SET (3) of register z. Memory isn't tracked, so a rotate or shift of it
+    only changes the flags, and RES and SET of it change nothing."""
     x, y, z = op >> 6, (op >> 3) & 7, op & 7
     value = None if memory else m.get8(z)
     if x == 0:
@@ -500,7 +586,10 @@ def _cb(m, op, memory):
 
 
 def _ed(m, op):
-    """ED op."""
+    """ED op, decoded by the same fields as cpuz80._ed()'s: x = 1 is IN and
+    OUT with (C), 16 bit ADC and SBC, the 16 bit loads with (nn), NEG, RETN,
+    RETI, IM, the loads of I and R, RRD and RLD; x = 2 the block
+    instructions."""
     state = m.state
     x, y, z = op >> 6, (op >> 3) & 7, op & 7
     p, q = y >> 1, y & 1
@@ -534,6 +623,11 @@ def _ed(m, op):
                 m.set_flags(s=None, z=None, pv=None, hc=False, n=False)
         # (OUT (C),r, LD (nn),rp, IM n, LD R,A change nothing tracked)
     elif x == 2 and z <= 3 and y >= 4:
+        # The block instructions: y is 4 for LDI etc. (HL, and DE, go up), 5
+        # for LDD etc. (they go down), and 6 and 7 for the repeating ones
+        # (LDIR, LDDR etc.); z is LD, CP, IN or OUT. A repeating one is
+        # taken to have finished, since the code goes on to the next
+        # instruction.
         repeat = y >= 6
         step = 1 if y in (4, 6) else -1
         bc, hl, de = m.get16(0), m.get16(2), m.get16(1)

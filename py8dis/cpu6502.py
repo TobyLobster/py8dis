@@ -1,3 +1,53 @@
+"""
+The 6502 CPU
+
+Cpu6502 decodes, traces and follows the CPU state of 6502 code, and analyses
+it once it's traced, to add comments and names. The 6510 (with the 6502's
+undocumented opcodes, cpu6510.py) and the 65C02 (cpu65C02.py) are derived
+from it. (The base class, cpu.Cpu, has the parts that every CPU shares.)
+
+Opcodes. Cpu6502.opcodes maps each documented opcode to an opcode object,
+an instance of one of the Opcode classes nested in Cpu6502. Each is made
+from a template such as "LDA (zp),Y" (parsed by
+parse_instruction_template()), how the instruction affects A, X and Y, its
+cycle count, and a function that updates the CPU state for it. The class
+says how the instruction is traced (disassemble(): the addresses to trace
+next), which address it refers to (update_references()), how it's written
+(instruction()) and how it changes the CPU state (update_cpu_state()).
+
+Tracing (see Cpu.trace()). After most instructions the next one is traced.
+A conditional branch is traced both ways, and JMP at its target only.
+Tracing stops after RTS, RTI and BRK, and after JMP (addr), whose target
+isn't known until it runs. A JSR's target is traced, and tracing carries on
+after the JSR, unless a subroutine hook (see hook_subroutine()) says the
+subroutine returns somewhere else (e.g. after a string that follows the
+JSR) or doesn't return at all. Snippets (snippets6502.py) and effect
+patterns (effectpattern.py) recognise common pieces of code, and can add
+entry points.
+
+The CPU state. Once the code is traced, Cpu.calculate_cpu_states() goes
+through it working out what's known after each instruction: a CpuState,
+which holds what's known about A, X and Y (RegState: the value, and which
+instruction last loaded, changed or used the register) and the flags. It
+holds two versions of this (CpuStateDisposition): the pessimistic one is
+what's known for certain, which is forgotten at each label (code can come
+there from elsewhere); the optimistic one takes the code to have run
+straight through from the instruction before, even past a label. E.g. 'LDA
+#5' makes A 5; a conditional branch is taken not to have been taken, so its
+flag is known after it (and after BNE, the register that set Z: see
+z_source()); and nothing is known after a JSR, JMP or RTS. docs/cpus.md
+describes this for users.
+
+Analysis. The functions in code_analysis_fns use the CPU states to comment
+calls to subroutines described with subroutine() (find_subroutine_calls()),
+name constants given with substitute_constants() (substitute_constants(),
+SubConst), comment known register values and branches that are always
+taken (show_register_knowledge()), and comment redundant instructions
+(find_redundant_instructions()). straight_runs() and memory_writes() say
+what straight runs of code write to memory, for effect patterns and the
+machine modules (e.g. acorn.py and commodore.py).
+"""
+
 import classification
 import collections
 import config
@@ -23,6 +73,8 @@ from memorymanager import RuntimeAddr, BinaryAddr, BinaryLocation
 from snippethelper import *
 
 
+# Opcodes that the code below looks for (e.g. the ADC and SBC ones, to
+# comment them when the carry flag is known: see show_register_knowledge())
 OPCODE_JSR = 0x20
 OPCODE_JMP = 0x4c
 OPCODE_RTS = 0x60
@@ -48,10 +100,20 @@ OPCODE_SBC_ABSOLUTE_COMMA_X  = 0xfd
 class SubConst:
     """Data about a constant substitution.
 
-    These are stored in substitute_constant_list"""
+    These are stored in substitute_constant_list (in the session's trace
+    state: see trace.py), by substitute_constants() and machine modules
+    such as acorn.py and commodore.py. Cpu6502.substitute_constants() uses
+    them."""
 
     def __init__(self, instruction, reg, constants_dict, define_constant, condition=None):
-        """condition, if given, is called with the instruction's binary
+        """'instruction' is the instruction to look for, with its operand,
+        e.g. 'sta sprite_number' or 'jsr $ffee' (the operand is a label's
+        name or a hex address). 'reg' is the register ('a', 'x' or 'y')
+        whose immediate load before it is to be named, from constants_dict
+        ({value: name or expression}). If define_constant, the names used
+        are defined as constants.
+
+        condition, if given, is called with the instruction's binary
         address, and the substitution is made only if it returns True."""
         mnemonic, operand, operand_length, prefix, suffix, addr_modes = Cpu6502.parse_instruction(instruction)
         self.condition      = condition
@@ -64,6 +126,11 @@ class SubConst:
         self.define_constant = define_constant
 
     def get_opcode(self, opcodes):
+        """The opcode of the instruction, found in 'opcodes' (the CPU's
+        table) from its mnemonic and addressing mode, or None if there isn't
+        one. Where the operand could be zero page or absolute (e.g. 'sta
+        addr'), its value decides. (Worked out when it's first asked for,
+        after tracing, and kept. This also sets 'addr_mode'.)"""
         # If already calculated, return it
         if self._opcode is not None:
             return self._opcode
@@ -82,6 +149,9 @@ class SubConst:
                     return opcode_key
 
     def get_operand_value(self):
+        """The operand's address: the address of the label or optional
+        label with the name given, or the hex address given ('$ffee' or
+        '&ffee', or 'ffee' if no label has that name)."""
         # A hex address (no name starts with '&' or '$', so this is what the
         # lookups below would give, without searching the labels)
         if self.operand[0] in "&$":
@@ -133,10 +203,18 @@ class MemoryWrite:
 
 
 class RegState:
+    """What's known about one register (A, X or Y) at a point in the code:
+    its value, and the binary addresses of the instructions that last
+    loaded, changed and used it (see the attributes in clear()). The
+    addresses are what the analysis comments or names, e.g. the 'ldx #nn'
+    that sets X up for a call to a subroutine."""
+
     def __init__(self):
+        """Nothing is known to start with."""
         self.clear()
 
     def clear(self):
+        """Forget everything about the register."""
         self.value              = None      # Current value, if known
         self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
         self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
@@ -150,18 +228,38 @@ class RegState:
         return result
 
     def get_previous_load_imm_operand(self):
+        """The binary address of the immediate operand that the register's
+        value was loaded from (e.g. the 'nn' of 'lda #nn', perhaps followed
+        by 'tax' for X), if it hasn't changed since, otherwise None. Giving
+        that operand an expression names the value."""
         if self.previous_load_imm is not None:
             return self.previous_load_imm+1
         return None
 
     def __repl__(self):
+        """The register's value as text (for __str__())."""
         return "value: {0}".format(self.value)
 
     def __str__(self):
         return self.__repl__()
 
 class CpuStateDisposition:
+    """One version of what's known about the CPU after an instruction
+    (CpuState holds two: optimistic and pessimistic).
+
+    Indexed by register or flag: 'a', 'x' and 'y' give a RegState; 'n',
+    'v', 'd', 'i', 'z' and 'c' give the flag, True or False (or 1 or 0) if
+    it's known, otherwise None. Z and C can also be 'pending' after a
+    compare: unknown, but a branch on one of them that isn't taken says
+    something about the other (see update_transfer()). Anything else
+    counts 'pending' as unknown.
+
+    The update_*() methods (and decrement() etc.) change it for what an
+    instruction does to the flags and the registers' values; the
+    Cpu6502.update_*() functions call them for both versions."""
+
     def __init__(self):
+        """Nothing is known to start with."""
         self._d = {
             # For A/X/Y, value is RegState.
             "a": RegState(),
@@ -192,6 +290,7 @@ class CpuStateDisposition:
         return result
 
     def clear(self):
+        """Forget everything: no register or flag is known."""
         self._d["a"].clear()
         self._d["x"].clear()
         self._d["y"].clear()
@@ -208,6 +307,8 @@ class CpuStateDisposition:
         return self._d[key]
 
     def __setitem__(self, key, item):
+        """Set a register (a RegState, or None for one with nothing known)
+        or a flag (True, False, 0, 1, 'pending' or None)."""
         assert key in "axynvdizc"
         if key in "axy":
             if item is None:
@@ -218,27 +319,32 @@ class CpuStateDisposition:
         self._d[key] = item
 
     def update_clear_nz(self, binary_addr):
+        """N and Z become unknown."""
         self._d['n'] = None
         self._d['z'] = None
 
     def update_clear_nza(self, binary_addr):
+        """N, Z and A's value become unknown."""
         self._d['n'] = None
         self._d['z'] = None
         self._d['a'].value = None
 
     def update_clear_nzc(self, binary_addr):
+        """N, Z and C become unknown."""
         assert binary_addr is not None
         self._d['n'] = None
         self._d['z'] = None
         self._d['c'] = None
 
     def update_clear_nzca(self, binary_addr):
+        """N, Z, C and A's value become unknown."""
         self._d['n'] = None
         self._d['z'] = None
         self._d['c'] = None
         self._d['a'].value = None
 
     def update_clear_nz_pending_c(self, binary_addr):
+        """N becomes unknown, and Z and C 'pending' (for a compare)."""
         # This is used for comparison instructions.
         # Note c is set to 'pending' so that after "CMP blah:BNE addr" we can set C
         # Similarly z is set to 'pending' so that after "CMP blah:BCS addr" we can clear Z
@@ -247,6 +353,8 @@ class CpuStateDisposition:
         self._d['c'] = "pending"
 
     def update_rora(self, binary_addr):
+        """ROR A: if A and C are known, A, N, Z and C are worked out;
+        otherwise they become unknown."""
         # Note carry may be 'pending' (after a compare), which counts as unknown here.
         if self._d['a'].value is not None and self._d['c'] in (True, False):
             # We know that state of A and carry, so we can calculate the new value of A
@@ -267,12 +375,14 @@ class CpuStateDisposition:
         self._d['a'].value = None
 
     def update_bit(self, binary_addr):
+        """N, V and Z become unknown (BIT)."""
         assert binary_addr is not None
         self._d['n'] = None
         self._d['v'] = None
         self._d['z'] = None
 
     def update_adc_sbc(self, binary_addr):
+        """A's value, N, V, Z and C become unknown (ADC, SBC)."""
         assert binary_addr is not None
         self._d['a'].value = None
         self._d['n'] = None
@@ -281,6 +391,7 @@ class CpuStateDisposition:
         self._d['c'] = None
 
     def update_all_flags(self, binary_addr):
+        """All the flags become unknown (PLP)."""
         assert binary_addr is not None
         self._d['n'] = None
         self._d['v'] = None
@@ -290,6 +401,9 @@ class CpuStateDisposition:
         self._d['c'] = None
 
     def update_AND_immediate(self, binary_addr):
+        """AND #imm (the instruction at binary_addr): A, N and Z are worked
+        out if A is known, and otherwise as far as the operand says (e.g.
+        AND #0 makes A 0)."""
         memory_binary = session.current().memory.binary
         assert binary_addr is not None
         v = memory_binary[binary_addr+1]
@@ -314,6 +428,9 @@ class CpuStateDisposition:
             self._d['n'] = 0 if v < 0x80 else None
 
     def update_ORA_immediate(self, binary_addr):
+        """ORA #imm (the instruction at binary_addr): A, N and Z are worked
+        out if A is known, and otherwise as far as the operand says (e.g.
+        ORA #$ff makes A $ff)."""
         memory_binary = session.current().memory.binary
         assert binary_addr is not None
         v = memory_binary[binary_addr+1]
@@ -342,6 +459,9 @@ class CpuStateDisposition:
             self._d['z'] = None
 
     def decrement(self, addr, reg):
+        """DEX, DEY (or the 65C02's DEC A) at addr: if the register is
+        known, it's one less (wrapping round from 0 to $ff), with N and Z
+        from it; otherwise N and Z become unknown."""
         v = self[reg].value
         if v is not None:
             v -= 1
@@ -360,6 +480,8 @@ class CpuStateDisposition:
             self.update_clear_nz(addr)
 
     def increment(self, addr, reg):
+        """INX, INY (or the 65C02's INC A) at addr, as decrement() but one
+        more (wrapping round from $ff to 0)."""
         v = self[reg].value
         if v is not None:
             v += 1
@@ -376,7 +498,10 @@ class CpuStateDisposition:
             self.update_clear_nz(addr)
 
     def load_immediate(self, addr, reg, v):
-        # Move to operand
+        """LDA, LDX or LDY #v at addr: the register is v, with N and Z from
+        it, and the instruction at addr is where it was loaded."""
+        # (The instruction's address: get_previous_load_imm_operand() gives
+        # its operand's)
         addr = BinaryAddr(addr)
 
         self[reg].value = v
@@ -388,6 +513,9 @@ class CpuStateDisposition:
 
 
     def transfer(self, addr, src_reg, dest_reg):
+        """A transfer (TAX, TXA etc.) at addr: dest_reg gets src_reg's value
+        (if known), with N and Z from it, and the instruction at addr is
+        where it was loaded."""
         addr = BinaryAddr(addr)
         self[dest_reg].value = self[src_reg].value
 
@@ -413,6 +541,12 @@ class CpuStateDisposition:
             self['z'] = None
 
     def update_transfer(self, addr, flag, flag_state):
+        """A conditional branch at addr on 'flag' that isn't taken: the flag
+        is flag_state (if it wasn't known already). And what that says about
+        the rest: after a compare, Z set means C is set, and C clear means Z
+        is clear; and if Z is set, the registers whose result set it have
+        the value that sets it (see z_from), and N is clear. (Called by the
+        update functions that Cpu6502.make_branch() makes.)"""
         if self[flag] is None or self[flag] == 'pending':
             self[flag] = flag_state
 
@@ -441,6 +575,10 @@ class CpuStateDisposition:
             self['z'] = False
 
     def show(self):
+        """The state as text, e.g. 'A:05 X:-- Y:00 nvdIzc': '--' for a
+        register that isn't known, and each flag upper case if it's set,
+        lower case if it's clear, '-' if it isn't known, or '?' if it's
+        'pending'."""
         s = ""
         def reg(r):
             v = self._d[r].value
@@ -460,18 +598,21 @@ class CpuStateDisposition:
         return s
 
     def __repl__(self):
+        """The state as text (see show())."""
         return self.show()
     def __str__(self):
         return self.__repl__()
 
 def branch_target(binary_addr):
     """The target of the relative branch at binary_addr, without wrapping
-    round the top or bottom of memory (so it can be below 0 or above &ffff)."""
+    round the top or bottom of memory (so it can be below 0 or above $ffff)."""
     return movemanager.b2r(binary_addr) + 2 + utils.signed8(memorymanager.get_u8_binary(binary_addr + 1))
 
 def branch_operand(mnemonic, binary_addr, target):
     """The output for the relative branch at binary_addr to the (wrapped)
-    target."""
+    target: the target's label, or, for a branch that wraps round the top
+    or bottom of memory, the assembler's way of writing that (see
+    Assembler.wrapped_branch_operand())."""
     label = disassembly.get_label(target, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
     unwrapped = branch_target(binary_addr)
     if not 0 <= unwrapped < 0x10000:
@@ -479,9 +620,21 @@ def branch_operand(mnemonic, binary_addr, target):
     return output.Instruction(mnemonic, label)
 
 class Cpu6502(cpu.Cpu):
-    """Class representing a 6502 CPU"""
+    """Class representing a 6502 CPU (see the module's description).
 
-    # Addressing modes
+    'opcodes' maps each documented opcode to an instance of one of the
+    Opcode classes below. EMPTY_STATE is a CpuState with nothing known, used
+    by the analysis where nothing is known (e.g. before code that follows
+    data). The Cpu6510 and Cpu65C02
+    classes add to the opcode table, and can add their own opcode classes.
+
+    parse_instruction() and parse_instruction_template() are called on the
+    class, without an instance (they have no 'self')."""
+
+    # Addressing modes (an opcode's 'addr_mode'; also used by
+    # jsonoutput.py): e.g. mode_offset is a branch's, mode_indexed_indirect
+    # is (zp,X), mode_indirect_indexed is (zp),Y, mode_indirect_zp is the
+    # 65C02's (zp), and mode_indirect_addr is JMP (addr)
     mode_implied           = 0
     mode_immediate         = 1
     mode_accumulator       = 2
@@ -498,7 +651,10 @@ class Cpu6502(cpu.Cpu):
     mode_zp                = 13
     mode_indexed_abs       = 14     # for the 65C02: JMP (addr,X)
 
-    # Regex patterns that help identify the addressing modes
+    # Regex patterns that help identify the addressing modes (see
+    # parse_instruction(), which tries them in this order). The mnemonic
+    # must be three letters. Where zero page and absolute addressing are
+    # written the same way (e.g. 'lda foo,x'), one pattern matches both.
     implied_pattern             = re.compile(r"([A-Z][A-Z][A-Z])$", re.IGNORECASE)
     immediate_pattern           = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+#(.+)$", re.IGNORECASE)
     accumulator_pattern         = re.compile(r"([A-Z][A-Z][A-Z])[ \t]+A$", re.IGNORECASE)
@@ -512,7 +668,8 @@ class Cpu6502(cpu.Cpu):
 
     # How instructions set the Z flag (see z_source()): the mnemonics that
     # don't change it, and those whose result (in the given registers) sets
-    # it
+    # it. (They include the 65C02's and the 6510's undocumented opcodes, and
+    # some of other 65C02s, e.g. BBR0 and WAI, which py8dis doesn't trace.)
     Z_UNCHANGED = "unchanged"
     _Z_UNCHANGED_MNEMONICS = set("""
         sta stx sty stz sax sha shx shy tas jmp jsr bcc bcs beq bne bmi bpl bvc bvs bra
@@ -549,7 +706,28 @@ class Cpu6502(cpu.Cpu):
         return None
 
     class CpuState:
+        """What's known about the CPU after an instruction (see
+        Cpu.cpu_states), in two versions (CpuStateDispositions):
+
+        - 'pessimistic' is what's known for certain. It's forgotten at each
+          label, since code can come there from elsewhere. It's used for
+          what py8dis says as fact, e.g. 'Y=1' comments, 'ALWAYS branch'
+          and config.set_show_cpu_state(True);
+        - 'optimistic' takes the code to have run straight through from the
+          instruction before, even past a label. It's used to find where
+          registers were set up, e.g. for a call (subroutine()) or a
+          constant (substitute_constants()).
+
+        Both are forgotten after a jump, call or return (the subroutine
+        could change anything), and after a branch that's always taken.
+
+        'always_branch' is True after a conditional branch that's always
+        taken (its flag is known to make it branch). 'next_instruction' and
+        'next_use' are set for a subroutine's hook (see
+        find_subroutine_calls())."""
+
         def __init__(self):
+            """Nothing is known to start with."""
             self.optimistic  = CpuStateDisposition()
             self.pessimistic = CpuStateDisposition()
             self.always_branch = False
@@ -564,6 +742,8 @@ class Cpu6502(cpu.Cpu):
             return result
 
         def clear(self, *, pessimistic_only):
+            """Forget what's known: the pessimistic version only (e.g. at a
+            label), or both."""
             self.pessimistic.clear()
             self.always_branch = False
             self.next_instruction = None
@@ -576,12 +756,14 @@ class Cpu6502(cpu.Cpu):
             return self.pessimistic.show()
 
     def memory_regions(self):
-        # (The NMI, reset and IRQ/BRK vectors are at &fffa-&ffff.)
+        """The 6502's zero page, stack and vectors."""
+        # (The NMI, reset and IRQ/BRK vectors are at $fffa-$ffff.)
         return [(0x0000, 0x0100, "Zero page"),
                 (0x0100, 0x0200, "Stack"),
                 (0xfffa, 0x10000, "6502 vectors")]
 
     def __init__(self):
+        """Make the opcode table, and add the code analysis functions."""
         super().__init__()
 
         self.EMPTY_STATE = self.CpuState()
@@ -593,18 +775,31 @@ class Cpu6502(cpu.Cpu):
         self.effect_matches_seen = set()
 
         self.code_analysis_fns.append(self.subroutine_argument_finder)  # For trace.subroutine_argument_finder_hooks (see subroutine_argument_finder())
-        self.code_analysis_fns.append(self.substitute_constants)        # If a subroutine is being called, we can infer context of initialising registers beforehand.
+        self.code_analysis_fns.append(self.substitute_constants)        # For the substitute_constants() command
         self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
         self.code_analysis_fns.append(self.show_register_knowledge)     # Show places where we use an inferred value of a register.
         self.code_analysis_fns.append(self.find_redundant_instructions) # Comment instructions whose results are never used.
 
-        # For labelling rts instructions numerically
+        # For labelling rts instructions numerically (see label_maker()): the
+        # last number used, and the number of each RTS, by binary address
         self.return_index = 0
         self.return_array = {}
 
         # indent_level_dict has binary addresses as the keys, and indent values as the values.
         self.indent_level_dict = collections.defaultdict(int)
 
+        # The opcode table. Each opcode object is made from: the instruction
+        # template (the operand is 'zp' for a zero page address, 'addr' for
+        # an absolute one, 'imm' for an immediate value and 'offset' for a
+        # branch's); how it affects A, X and Y (see below); its cycle count
+        # (a letter at the end says how it can vary: see
+        # Opcode.cycles_description()); whether there's also an absolute
+        # version of a zero page instruction, or a zero page version of an
+        # absolute one; and the function that updates the CPU state for its
+        # effect on the flags and the registers' values (see
+        # Opcode.update_cpu_state()). Jumps, calls and returns have none,
+        # since nothing is known after them.
+        #
         # Each opcode is categorised by how it affects A:
         #
         # (-) Does not touch A                   (e.g. CLC, PHP, LDX)
@@ -770,8 +965,9 @@ class Cpu6502(cpu.Cpu):
 
     def get_target_binary_addr_preferring_given_move_id(self, runtime_addr, specific_move_id):
         """The binary address for the runtime address, in the given move if
-        that has the address, else in the one move that has it, as a list
-        (empty if more than one move has it)."""
+        that has the address, else in the one move that has it (or the
+        active one, if more than one has it: see movemanager.r2b()), as a
+        list (empty if neither is found). For where a JSR returns to."""
         binary_addr, _ = movemanager.r2b(runtime_addr, specific_move_id)
         if binary_addr is None:
             binary_addr, _ = movemanager.r2b(runtime_addr)
@@ -780,6 +976,17 @@ class Cpu6502(cpu.Cpu):
         return [binary_addr]
 
     def parse_instruction(instruction):
+        """Parse an instruction written in assembly language, e.g. 'sta
+        $d020', 'jsr sprite_plot' (for SubConst) or 'LDA (zp),Y' (an opcode
+        template), as (mnemonic, operand, operand length, prefix, suffix,
+        addressing modes). The prefix and suffix are what's written around
+        the operand (e.g. '(' and '),Y'). The addressing modes are a list of
+        one, or of two where the operand could be zero page or absolute (the
+        zero page one first): the operand length is then 1, to be decided
+        later (except for 'operand,X', where it's [1, 2]).
+
+        Stops with utils.die() if it can't parse it. (Called on the class,
+        as Cpu6502.parse_instruction().)"""
         instruction = instruction.strip()
         r = re.match(Cpu6502.implied_pattern, instruction)
         if r:
@@ -806,6 +1013,8 @@ class Cpu6502(cpu.Cpu):
             mnemonic        = r.groups(1)[0]
             operand         = ""
             operand_length  = 0
+            # (Some assemblers want 'asl a', others just 'asl': see
+            # Assembler.explicit_a)
             if config.get_assembler().explicit_a:
                 prefix = "A"
             else:
@@ -831,6 +1040,7 @@ class Cpu6502(cpu.Cpu):
             prefix          = "("
             suffix          = ",X)"
 
+            # (The 65C02's JMP (addr,X) has a two byte address, unlike (zp,X))
             if mnemonic == "JMP":
                 operand_length = 2
                 addr_mode      = [Cpu6502.mode_indexed_abs]
@@ -894,6 +1104,12 @@ class Cpu6502(cpu.Cpu):
         return None
 
     def parse_instruction_template(instruction):
+        """Parse an opcode template from the opcode table (e.g. 'LDA zp,X'
+        or 'JMP (addr)') as parse_instruction() does, but with one
+        addressing mode and operand length: where it could be zero page or
+        absolute, the operand's name says which ('zp', one byte, or 'addr',
+        two). Stops with utils.die() if it's neither. (Called on the class,
+        as Cpu6502.parse_instruction_template().)"""
         mnemonic, operand, operand_length, prefix, suffix, addr_mode = Cpu6502.parse_instruction(instruction)
 
         if len(addr_mode) == 1:
@@ -913,6 +1129,12 @@ class Cpu6502(cpu.Cpu):
         return (mnemonic, operand, operand_length, prefix, suffix, addr_mode)
 
     def hook_subroutine(self, runtime_addr, name, hook):
+        """Make runtime_addr an entry point, named 'name', and give it a
+        subroutine hook (see commands.hook_subroutine()). When a JSR to it is
+        traced, hook(target runtime address, JSR's runtime address) is
+        called to say where the code goes on after the call: it returns a
+        runtime address, or None if the subroutine doesn't return there
+        (see OpcodeJsr.disassemble())."""
         runtime_addr = memorymanager.RuntimeAddr(runtime_addr)
         binary_loc = movemanager.r2b_checked(runtime_addr)
         self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name, explicit=True)
@@ -925,6 +1147,16 @@ class Cpu6502(cpu.Cpu):
         return description.startswith("(") and description.endswith(")")
 
     def default_subroutine_hook(self, runtime_addr, state, subroutine):
+        """The hook used for a subroutine() that isn't given one, called by
+        find_subroutine_calls() with the runtime address of a call to the
+        subroutine (or of the subroutine itself, where code runs on into
+        it), the CPU state before it, and the Subroutine.
+
+        It comments the instruction that last set each register the
+        subroutine takes (e.g. 'X=channel', from its on_entry), the call
+        with the subroutine's title, and the next use after the call of each
+        register it returns (from its on_exit). Descriptions in brackets
+        aren't used (see is_private_register_description())."""
         # Look for where we set up registers before the subroutine call
         for reg in ('a', 'x', 'y'):
             reg_addr = state.optimistic[reg].previous_adjust
@@ -954,7 +1186,28 @@ class Cpu6502(cpu.Cpu):
 
 
     class Opcode:
+        """An opcode: the base class of the opcode classes. One object is
+        made for each opcode in the table, and it's also the classification
+        of every instruction with that opcode (see classification.py), so
+        its methods take the instruction's binary address.
+
+        The derived classes provide disassemble() (where the code goes after
+        the instruction, for tracing: see Cpu.disassemble_instruction()),
+        update_references() (the label it refers to, if any) and
+        instruction() (how it's written, as an output.Instruction).
+
+        'reg_changes' is {'a', 'x', 'y': how the instruction affects the
+        register (see regular_update())}. 'update' is the function that
+        updates the CPU state for its effect on the flags and the registers'
+        values (or None if nothing is known after it). 'cycles' is its cycle
+        count (see cycles_description()). 'operand' is the operand's name in
+        the template (e.g. 'zp'), and 'prefix' and 'suffix' what's written
+        around the operand. (indent_level isn't used: the indents are in the
+        CPU's indent_level_dict.)"""
+
         def __init__(self, instruction_template, reg_change, update=None, cycles="???"):
+            """'reg_change' is how the instruction affects A, X and Y, as three
+            letters (e.g. 'AU-': see regular_update())."""
 
             self.instruction_template = instruction_template
 
@@ -979,17 +1232,24 @@ class Cpu6502(cpu.Cpu):
 
 
         def length(self):
+            """The instruction's length in bytes."""
             return 1 + self.operand_length
 
         def is_code(self, binary_addr):
+            """True: an instruction is code."""
             return True
 
         def indent(self, binary_addr):
+            """Indent the instruction at binary_addr one more level in the
+            output (it's in a loop: see disassembly.suggest_label_name())."""
             session.current().cpu.indent_level_dict[binary_addr] += 1
 
         def regular_update(self, binary_addr, state):
             """
-            Update state based on reg_changes.
+            Update state based on reg_changes: which instruction last loaded,
+            changed and used each register (the RegState's previous_*), in
+            both versions of the state. (The update function deals with the
+            values and flags, after this.) Also clears state.always_branch.
 
             Each opcode is categorised in reg_changes['a'] by how it affects A:
 
@@ -1000,6 +1260,11 @@ class Cpu6502(cpu.Cpu):
             (T) Overwrites A with another register (e.g. TXA, TYA)
 
             ...and similarly for the X and Y registers.
+
+            'O' and 'T' make the register's value unknown and this
+            instruction the one that loaded it, 'A' makes this the one that
+            last changed it (forgetting where it was loaded), and 'U' makes
+            this its last use.
             """
             binary_addr = BinaryAddr(binary_addr)
             state.always_branch = False
@@ -1028,6 +1293,8 @@ class Cpu6502(cpu.Cpu):
                     state.pessimistic[reg].previous_use       = binary_addr # The address of the previous use of the register if present
 
         def clear_pessimistic_state_if_label_here(self, binary_addr, state):
+            """Forget what's known for certain if the instruction has a label
+            (whether or not anything refers to it)."""
             # if there's a label at this address, then we lose all known (pessimistic) state.
             # This is because somewhere will be jumping to the label with unknown state.
             runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
@@ -1036,6 +1303,17 @@ class Cpu6502(cpu.Cpu):
                     state.clear(pessimistic_only=True)
 
         def update_cpu_state(self, binary_addr, state):
+            """Change 'state' (a CpuState) from what's known before the
+            instruction at binary_addr to what's known after it (see
+            Cpu.calculate_cpu_states()).
+
+            At a label, what's known for certain is forgotten first. Then
+            regular_update() and the update function change the state, and
+            'z_from' says what Z now says about the registers (see
+            z_source()). If code can start in the middle of the instruction
+            (see is_entered_inside()), nothing is known for certain after
+            it. Without an update function (a jump, call or return), nothing
+            is known after the instruction."""
             # if there's a label at this address, then we lose all known pessimistic state.
             # This is because somewhere will be jumping to the label with unknown state.
             self.clear_pessimistic_state_if_label_here(binary_addr, state)
@@ -1058,12 +1336,23 @@ class Cpu6502(cpu.Cpu):
                 state.clear(pessimistic_only=False)
 
         def is_block_end(self):
+            """Whether the instruction ends a block of code, i.e. the code
+            doesn't run on into the next instruction (e.g. a jump or
+            return). A block end gets a blank line after it, and ends a
+            straight run (see Cpu6502.straight_runs()). False here."""
             return False
 
         def target(self, binary_addr):
+            """The runtime address the instruction at binary_addr refers to
+            (its operand's address, or a branch's target), or None if it has
+            none. None here."""
             return None
 
         def cycles_description(self, binary_addr):
+            """The instruction's cycle count, as text for the output (see
+            config.set_show_cycles()): e.g. '4', or '4/5' where it can take
+            an extra cycle. 'cycles' ends with a letter that says how it can
+            vary (see below), if it can."""
             # Letter suffix on self.cycles explains cycle adjustments:
             #
             # a: +1 if branch occurs to same page, +2 if branch occurs to different page
@@ -1074,8 +1363,13 @@ class Cpu6502(cpu.Cpu):
             # c: +1 cycle if in decimal mode, +1 more cycle if indexing across a page boundary
             # d: +1 if branch target is to a different page
             # e: +1 cycle if in decimal mode
+            #
+            # (Without a letter, e.g. '6', or the 6510's JAM's 'halts', the
+            # count is shown as it is.)
 
             def branch_is_to_same_page():
+                """Whether the branch's target is in the same page as the
+                next instruction."""
                 # A taken branch costs an extra cycle if the target is in a
                 # different page to the *next* instruction (where the program
                 # counter is when the branch is taken). Both are runtime
@@ -1102,7 +1396,7 @@ class Cpu6502(cpu.Cpu):
 
             if letter == "f":
                 # absolute address indexed by X or Y
-                # we only know the exact cycle count if it on a page boundary
+                # we only know the exact cycle count if it's on a page boundary
                 # since then we know it can't cross a page boundary.
                 result = int(self.cycles[:-1])
 
@@ -1134,14 +1428,25 @@ class Cpu6502(cpu.Cpu):
             return result
 
         def could_be_call_to_subroutine(self):
+            """Whether the instruction sends the code to its target (a JSR,
+            JMP or branch), so that the target could be a subroutine it
+            calls (see find_subroutine_calls()). Also used to tell a jump
+            into the middle of an instruction (see is_entered_inside()) from
+            a data reference. False here."""
             return False
 
         def is_unconditional_branch(self):
+            """Whether the instruction always sends the code somewhere else
+            first (JSR, JMP (addr) and the 65C02's BRA), which ends
+            scan_ahead_for_post_exit_state()'s search. False here (and for
+            JMP addr, which ends the search by ending a block)."""
             return False
 
         def as_lines(self, binary_loc, annotations):
             """The output for the instruction at binary_loc, as a list of
-            line objects (see output.py)."""
+            line objects (see output.py): the instruction (with its extra
+            indent, cycle count and annotations), and a blank line after the
+            end of a block if config.get_blank_line_at_block_end()."""
             binary_addr = binary_loc.binary_addr
             result = [self.instruction(binary_addr).placed(binary_loc, self.length(), session.current().cpu.indent_level_dict.get(binary_addr, 0),
                                                            self.cycles_description(binary_addr), annotations)]
@@ -1159,33 +1464,49 @@ class Cpu6502(cpu.Cpu):
             return self.__repr__()
 
     class OpcodeReturn(Opcode):
+        """An instruction after which tracing stops, since where the code
+        goes next isn't known from the instruction: RTS, RTI and BRK (and
+        the 6510's JAM). It has no update function, so nothing is known
+        after it."""
+
         def __init__(self, instruction_template, reg_change, cycles="???"):
             super().__init__(instruction_template, reg_change, cycles=cycles)
 
         def update_references(self, binary_loc):
+            """Nothing: there's no operand."""
             pass
 
         def disassemble(self, binary_loc):
+            """Nothing more to trace from here."""
             return [None]
 
         def is_block_end(self):
+            """True: the code doesn't run on."""
             return True
 
         def instruction(self, binary_addr):
+            """Just the mnemonic."""
             return output.Instruction(self.mnemonic)
 
 
     class OpcodeImplied(Opcode):
+        """An instruction with no operand (e.g. INX, CLC, PHA), or one that
+        works on A (e.g. ASL A)."""
+
         def __init__(self, instruction_template, reg_change, cycles="???", update=None):
             super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
 
         def update_references(self, binary_loc):
+            """Nothing: there's no operand."""
             pass
 
         def disassemble(self, binary_loc):
+            """The next instruction, one byte on."""
             return [binary_loc.binary_addr + 1]
 
         def instruction(self, binary_addr):
+            """The mnemonic, with ' A' after it for an instruction on A if
+            the assembler wants that (Assembler.explicit_a)."""
             mnemonic = self.mnemonic
             if config.get_assembler().explicit_a and (self.addr_mode == Cpu6502.mode_accumulator):
                 mnemonic += " A"
@@ -1193,16 +1514,27 @@ class Cpu6502(cpu.Cpu):
 
 
     class OpcodeImmediate(Opcode):
+        """An instruction with an immediate operand (e.g. LDA #imm)."""
+
         def __init__(self, instruction_template, reg_change, cycles="???", update=None):
             super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
 
         def update_references(self, binary_loc):
+            """Nothing: the operand isn't an address."""
             pass
 
         def disassemble(self, binary_loc):
+            """The next instruction, two bytes on."""
             return [binary_loc.binary_addr + 2]
 
         def instruction(self, binary_addr):
+            """The instruction, with its operand as a number, constant or
+            expression (see classification.get_constant8()). If the operand
+            is a printable character (in the session's text encoding) and
+            isn't given an expression or a format, the character is shown in
+            a comment too (see config.set_show_char_literals()). So is one
+            that char() asks for, if the assembler can't write it as a
+            character."""
             memory_binary = session.current().memory.binary
             operand = classification.get_constant8(binary_addr + 1)
             char_literal = None
@@ -1221,24 +1553,36 @@ class Cpu6502(cpu.Cpu):
 
 
     class OpcodeZp(Opcode):
+        """An instruction with a zero page address as its operand (one
+        byte): zp, zp,X, zp,Y, (zp,X), (zp),Y and the 65C02's (zp).
+        has_abs_version says whether there's an absolute version of the
+        instruction too (it isn't used)."""
+
         def __init__(self, instruction_template, reg_change, has_abs_version=True, cycles="???", update=None):
             super().__init__(instruction_template, reg_change, update=update, cycles=cycles)
             self._has_abs_version = has_abs_version
 
         def abs_operand(self, binary_addr):
+            """The operand: a zero page address, as a runtime address."""
             memory_binary = session.current().memory.binary
             return memorymanager.RuntimeAddr(memory_binary[binary_addr + 1])
 
         def target(self, binary_addr):
+            """The operand's address."""
             return memorymanager.RuntimeAddr(self.abs_operand(binary_addr))
 
         def update_references(self, binary_loc):
+            """The operand's address gets a label (if it hasn't one), which
+            this instruction refers to."""
             session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
+            """The next instruction, two bytes on."""
             return [binary_loc.binary_addr + 2]
 
         def instruction(self, binary_addr):
+            """The instruction, with its operand as a label, expression or
+            number (see classification.get_address8())."""
             # (A label used here must be defined before this instruction, or
             # the assembler would take it to be an absolute address: see
             # disassembly.define_forward_zero_page_labels_first())
@@ -1247,20 +1591,34 @@ class Cpu6502(cpu.Cpu):
 
 
     class OpcodeAbs(Opcode):
+        """An instruction with an absolute address as its operand (two
+        bytes): the base class of OpcodeDataAbs, OpcodeJmpAbs, OpcodeJmpInd
+        and OpcodeJsr. has_zp_version says whether there's a zero page
+        version of the instruction, which an assembler would choose for an
+        operand below $100 (see instruction())."""
+
         def __init__(self, instruction_template, reg_change, has_zp_version=True, cycles="???", update=None):
             super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
             self._has_zp_version = has_zp_version
 
         def abs_operand(self, binary_addr):
+            """The operand: an address, as a runtime address."""
             return memorymanager.RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
         def target(self, binary_addr):
+            """The operand's address."""
             return memorymanager.RuntimeAddr(self.abs_operand(binary_addr))
 
         def has_zp_version(self):
+            """Whether there's a zero page version of the instruction."""
             return self._has_zp_version
 
         def instruction(self, binary_addr):
+            """The instruction, with its operand as a label, expression or
+            number (see classification.get_address16()), written so that it
+            assembles to this opcode even if the operand is below $100: with
+            the assembler's way of forcing absolute addressing, or else as
+            data, with the instruction in a comment."""
             # We need to avoid misassembly of absolute instructions with zero-page
             # operands. (These are relatively rare in real code, but apart from the
             # fact we should still handle them even if they're rare, they can also
@@ -1287,69 +1645,116 @@ class Cpu6502(cpu.Cpu):
 
 
     class OpcodeDataAbs(OpcodeAbs):
+        """An instruction that reads or writes memory at an absolute address
+        (e.g. LDA addr,X or INC addr), rather than going there."""
+
         def __init__(self, instruction_template, reg_change, has_zp_version=True, cycles="???", update=None):
             super().__init__(instruction_template, reg_change, has_zp_version, cycles=cycles, update=update)
 
         def update_references(self, binary_loc):
+            """The operand's address gets a label (if it hasn't one), which
+            this instruction refers to."""
             ref = self.abs_operand(binary_loc.binary_addr)
             session.current().labels.labels[ref].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
+            """The next instruction, three bytes on."""
             return [binary_loc.binary_addr + 3]
 
 
     class OpcodeJmpAbs(OpcodeAbs):
+        """JMP addr: the code goes on at the target, not at the next
+        instruction. It has no update function, so nothing is known after
+        it. (A JMP to a subroutine counts as a call to it: see
+        find_subroutine_calls().)"""
+
         def __init__(self, instruction_template, reg_change, cycles="???"):
             super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
+            """The target gets a label (if it hasn't one), which this
+            instruction refers to."""
             session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def is_block_end(self):
+            """True: the code doesn't run on."""
             return True
 
         def could_be_call_to_subroutine(self):
+            """True: the target could be a subroutine (a tail call)."""
             return True
 
         def disassemble(self, binary_loc):
+            """The target (see Cpu.jump_target()), and no next instruction."""
             # Get the destination location of the JMP
             return [None] + session.current().cpu.jump_target(self.target(binary_loc.binary_addr), binary_loc)
 
 
     class OpcodeJmpInd(OpcodeAbs):
+        """JMP (addr): a jump to the address stored at addr (the vector).
+        That isn't known until the code runs, so tracing stops here (the
+        code it goes to can be given with entry(), or with code_ptr() on
+        the vector, if that's in the binary). The vector gets a label."""
+
         def __init__(self, instruction_template, reg_change, cycles="???"):
             super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def abs_operand(self, binary_addr):
+            """The vector's address."""
             return memorymanager.RuntimeAddr(memorymanager.get_u16_binary(binary_addr + 1))
 
         def update_references(self, binary_loc):
+            """The vector gets a label (if it hasn't one), which this
+            instruction refers to."""
             session.current().labels.labels[self.abs_operand(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def is_block_end(self):
+            """True: the code doesn't run on."""
             return True
 
         def is_unconditional_branch(self):
+            """True: the code goes elsewhere."""
             return True
 
         def disassemble(self, binary_loc):
+            """Nothing more to trace from here."""
             return [None]
 
 
     class OpcodeJsr(OpcodeAbs):
+        """JSR addr: the subroutine at the target is traced, and so is the
+        code after the JSR, where the subroutine returns to, unless a
+        subroutine hook says otherwise (see disassemble()). It has no update
+        function, so nothing is known after it (the subroutine could change
+        anything)."""
+
         def __init__(self, instruction_template, reg_change, cycles="???"):
             super().__init__(instruction_template, reg_change, has_zp_version=False, cycles=cycles)
 
         def update_references(self, binary_loc):
+            """The target gets a label (if it hasn't one), which this
+            instruction refers to."""
             session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def could_be_call_to_subroutine(self):
+            """True: it's a call."""
             return True
 
         def is_unconditional_branch(self):
+            """True: the code goes to the subroutine first."""
             return True
 
         def disassemble(self, binary_loc):
+            """Where the subroutine returns to (or None), then the target (see
+            Cpu.jump_target()).
+
+            Where it returns to is the next instruction, unless the target
+            has a subroutine hook (see hook_subroutine()). The hook is called
+            in the JSR's move, so its commands (e.g. stringz() for a string
+            after the JSR) work on the right copy of the code. It returns the
+            runtime address the code goes on at, or None if the subroutine
+            doesn't return (or if it adds the entry points itself, with
+            entry())."""
             assert isinstance(binary_loc.binary_addr, memorymanager.BinaryAddr)
 
             # Get the destination location of the JSR
@@ -1364,6 +1769,8 @@ class Cpu6502(cpu.Cpu):
             # and call entry() itself for the labelled entry points.
 
             def simple_subroutine_hook(target_runtime_addr, caller_runtime_addr):
+                """The hook for a subroutine without one: it returns to the
+                instruction after the JSR."""
                 assert isinstance(target_runtime_addr, memorymanager.RuntimeAddr)
                 assert isinstance(caller_runtime_addr, memorymanager.RuntimeAddr)
 
@@ -1394,26 +1801,46 @@ class Cpu6502(cpu.Cpu):
 
 
     class OpcodeConditionalBranch(Opcode):
+        """A conditional branch (BPL, BMI, BVC, BVS, BCC, BCS, BNE or BEQ):
+        both the next instruction and the target are traced. Its update
+        function (from make_branch()) sets the flag for the branch not being
+        taken, since the CPU state goes on to the next instruction."""
+
         def __init__(self, instruction_template, reg_change, cycles="???", update=None):
             super().__init__(instruction_template, reg_change, cycles=cycles, update=update)
 
         def target(self, binary_addr):
+            """The target's runtime address."""
             # (Like the 6502, wrapping round the top or bottom of memory)
             return memorymanager.RuntimeAddr(branch_target(binary_addr) & 0xffff)
 
         def abs_operand(self, binary_addr):
+            """The target's runtime address."""
             return self.target(binary_addr)
 
         def update_references(self, binary_loc):
+            """The target gets a label (if it hasn't one), which this
+            instruction refers to."""
             session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
+            """The next instruction, and the target, in the branch's own move
+            if it has one there (see Cpu.jump_target())."""
             return [binary_loc.binary_addr + 2] + session.current().cpu.jump_target(self.target(binary_loc.binary_addr), binary_loc, prefer_own_move=True)
 
         def could_be_call_to_subroutine(self):
+            """True: the target could be a subroutine (a tail call)."""
             return True
 
         def update_cpu_state(self, binary_addr, state):
+            """Change 'state' for the branch (see Opcode.update_cpu_state()).
+
+            If the flag is known for certain to make it branch, it's always
+            taken ('ALWAYS branch'), and nothing is known after it. A branch
+            to the next instruction says nothing. Otherwise the branch is
+            taken not to have been taken, so its flag (and what follows from
+            that: see CpuStateDisposition.update_transfer()) is known
+            after it."""
             # if there's a label at this address, then we lose all known pessimistic state.
             # This is because somewhere will be jumping to the label with unknown state.
             self.clear_pessimistic_state_if_label_here(binary_addr, state)
@@ -1456,28 +1883,43 @@ class Cpu6502(cpu.Cpu):
                     state.clear(pessimistic_only=False)
 
         def instruction(self, binary_addr):
+            """The instruction, with the target's label (see
+            branch_operand())."""
             return branch_operand(self.mnemonic, binary_addr, self.target(binary_addr))
 
 
+    # ********************************************************************************************
+    # The update functions for the opcode table: each is called as
+    # update(binary address of the instruction, CpuState), after
+    # Opcode.regular_update(), and changes both versions of the state
+
     def make_update_flag(self, flag, b):
+        """An update function that sets 'flag' to b (e.g. CLC, SEI)."""
         def update_flag(addr, state):
             state.optimistic[flag] = b
             state.pessimistic[flag] = b
         return update_flag
 
     def make_decrement(self, reg):
+        """An update function that decrements 'reg' (e.g. DEX: see
+        CpuStateDisposition.decrement())."""
         def decrement(addr, state):
             state.pessimistic.decrement(addr, reg)
             state.optimistic.decrement(addr, reg)
         return decrement
 
     def make_increment(self, reg):
+        """An update function that increments 'reg' (e.g. INX)."""
         def increment(addr, state):
             state.optimistic.increment(addr, reg)
             state.pessimistic.increment(addr, reg)
         return increment
 
     def make_load_immediate(self, reg):
+        """An update function that loads 'reg' with the instruction's
+        operand (e.g. LDA #imm)."""
+        # (The session's memory is looked up once, when the opcode table is
+        # made)
         memory_binary = session.current().memory.binary
         def load_immediate(addr, state):
             v = memory_binary[addr+1]
@@ -1486,16 +1928,20 @@ class Cpu6502(cpu.Cpu):
         return load_immediate
 
     def make_transfer(self, src_reg, dest_reg):
+        """An update function that copies src_reg to dest_reg (e.g. TAX)."""
         def transfer(addr, state):
             state.optimistic.transfer(addr, src_reg, dest_reg)
             state.pessimistic.transfer(addr, src_reg, dest_reg)
         return transfer
 
     def make_branch(self, flag, flag_state):
+        """An update function for a conditional branch on 'flag', which
+        branches unless the flag is flag_state (e.g. for BNE, 'z' and True:
+        see CpuStateDisposition.update_transfer())."""
         # If a flag state is not currently known, this sets the flag state *assuming the branch is
         # NOT taken*. e.g. if "BNE addr" then we set the Z flag assuming the branch is not taken
         # i.e. Z=1
-        # This let's us continue tracing with appropriate state from the next instruction after
+        # This lets us continue tracing with appropriate state from the next instruction after
         # the branch.
 
         # This also helps detect a pair of opposite conditional branches, marking 'ALWAYS branch':
@@ -1508,71 +1954,93 @@ class Cpu6502(cpu.Cpu):
         return update_branch
 
     def neutral(self, binary_addr, state):
+        """No flags or values change (e.g. STA, PHA, NOP)."""
         assert binary_addr is not None
         pass
 
     def update_clear_nz(self, binary_addr, state):
+        """N and Z become unknown (e.g. LDA from memory, PLA, INC memory)."""
         assert binary_addr is not None
         state.optimistic.update_clear_nz(binary_addr)
         state.pessimistic.update_clear_nz(binary_addr)
 
     def update_clear_nza(self, binary_addr, state):
+        """N, Z and A become unknown (e.g. ORA, AND and EOR from memory)."""
         assert binary_addr is not None
         state.optimistic.update_clear_nza(binary_addr)
         state.pessimistic.update_clear_nza(binary_addr)
 
     def update_clear_nzc(self, binary_addr, state):
+        """N, Z and C become unknown (shifts and rotates of memory)."""
         assert binary_addr is not None
         state.optimistic.update_clear_nzc(binary_addr)
         state.pessimistic.update_clear_nzc(binary_addr)
 
     def update_clear_nzca(self, binary_addr, state):
+        """N, Z, C and A become unknown (e.g. ASL A)."""
         assert binary_addr is not None
         state.optimistic.update_clear_nzca(binary_addr)
         state.pessimistic.update_clear_nzca(binary_addr)
 
     def update_compare(self, binary_addr, state):
+        """A compare (CMP, CPX, CPY): N becomes unknown, and Z and C
+        'pending'."""
         assert binary_addr is not None
         state.optimistic.update_clear_nz_pending_c(binary_addr)
         state.pessimistic.update_clear_nz_pending_c(binary_addr)
 
     def update_rora(self, binary_addr, state):
+        """ROR A (see CpuStateDisposition.update_rora())."""
         assert binary_addr is not None
         state.optimistic.update_rora(binary_addr)
         state.pessimistic.update_rora(binary_addr)
 
     def update_bit(self, binary_addr, state):
+        """BIT: N, V and Z become unknown."""
         assert binary_addr is not None
         state.optimistic.update_bit(binary_addr)
         state.pessimistic.update_bit(binary_addr)
 
     def update_adc_sbc(self, binary_addr, state):
+        """ADC or SBC: A, N, V, Z and C become unknown."""
         assert binary_addr is not None
         state.optimistic.update_adc_sbc(binary_addr)
         state.pessimistic.update_adc_sbc(binary_addr)
 
     def update_all_flags(self, binary_addr, state):
+        """PLP: all the flags become unknown."""
         assert binary_addr is not None
         state.optimistic.update_all_flags(binary_addr)
         state.pessimistic.update_all_flags(binary_addr)
 
     def update_AND_immediate(self, binary_addr, state):
+        """AND #imm (see CpuStateDisposition.update_AND_immediate())."""
         assert binary_addr is not None
         state.optimistic.update_AND_immediate(binary_addr)
         state.pessimistic.update_AND_immediate(binary_addr)
 
     def update_ORA_immediate(self, binary_addr, state):
+        """ORA #imm (see CpuStateDisposition.update_ORA_immediate())."""
         assert binary_addr is not None
         state.optimistic.update_ORA_immediate(binary_addr)
         state.pessimistic.update_ORA_immediate(binary_addr)
 
+    # ********************************************************************************************
+    # Analysis of the traced code
+
     def is_subroutine_call(self, binary_addr):
+        """Whether the instruction at binary_addr is a JSR. (A label that
+        only JSRs refer to is named 'sub_...': see
+        disassembly.suggest_label_name().)"""
         assert binary_addr is not None
         c = classification.get_classification(binary_addr)
         result = isinstance(c, self.Opcode) and c.mnemonic == "JSR"
         return result
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
+        """Whether the instruction at binary_addr is a branch or JMP to
+        target_runtime_addr. (A label that one backward branch refers to is
+        named 'loop_...': see disassembly.suggest_label_name().)"""
         assert binary_addr is not None
 
         c = classification.get_classification(binary_addr)
@@ -1590,8 +2058,10 @@ class Cpu6502(cpu.Cpu):
     # label doesn't invalidate that inference.
     def subroutine_argument_finder(self):
         """Call each of the hooks in trace.subroutine_argument_finder_hooks
-        for each JSR or JMP, with the target and the values of A, X and Y
-        if they were loaded with immediate values (or None), until one
+        for each JSR or JMP, with the target (a runtime address) and, for
+        each of A, X and Y, the binary address of the immediate operand it
+        was loaded from (e.g. the 'nn' of 'ldx #nn', so the hook can give it
+        an expression), or None, from the optimistic state, until one
         returns something other than None. There's no command for these
         hooks: a control file can append them to the list (which older
         control files may do), and none do in the examples."""
@@ -1626,13 +2096,25 @@ class Cpu6502(cpu.Cpu):
                     binary_addr += 1
 
     def scan_ahead_for_post_exit_state(self, binary_addr, state):
+        """Find where the code after the JSR at binary_addr first uses each
+        register, for a subroutine's hook (so a comment can say what the
+        subroutine returned in it). Sets state.next_use to {'a', 'x', 'y':
+        the binary address of that instruction, or None} and
+        state.next_instruction to the binary address after the JSR.
+
+        Each register's search stops at the first instruction that does
+        anything with it: if that only uses it (e.g. STA, CMP, TAX), that's
+        its next use; if it changes it (even after reading it, e.g. AND or
+        INX), there's none. The whole search stops at the end of the
+        straight line code: anything that isn't an instruction, the end of
+        a block, or a JSR, JMP (addr) or BRA after the first instruction."""
         assert binary_addr is not None
         scanning_for_register_usage = {'a': True, 'x': True, 'y': True }
 
         state.next_instruction = None
         state.next_use = {'a': None, 'x': None, 'y': None }
 
-        newstate = self.cpu_states[binary_addr]    # State after instruction following JSR
+        newstate = self.cpu_states[binary_addr]    # State after the JSR
 
         while binary_addr < 0x10000:
             c = classification.get_classification(binary_addr)
@@ -1641,7 +2123,7 @@ class Cpu6502(cpu.Cpu):
             if c is None:
                 return
 
-            # Stop at a nonentry point (i.e. not an instruction)
+            # Stop at an address that wasn't traced as an instruction
             if binary_addr not in self.traced_entry_points:
                 return
 
@@ -1658,7 +2140,7 @@ class Cpu6502(cpu.Cpu):
                 return
 
             if state.next_instruction is not None:
-                # Beyond the first instruction as the call to the subroutine, a JSR/BRA is enough to end any register use knowledge
+                # Beyond the first instruction (the call to the subroutine), a JSR/BRA is enough to end any register use knowledge
                 if c.is_unconditional_branch():
                     return
 
@@ -1678,7 +2160,13 @@ class Cpu6502(cpu.Cpu):
             newstate = self.cpu_states[binary_addr]            # State after instruction at addr has executed
 
     def show_register_knowledge(self):
-        """Adds comments to show any known state of the processor"""
+        """Adds comments to show any known state of the processor (what's
+        known for certain, from the pessimistic state): e.g. 'Y=1' on an
+        instruction that changes a register to a known value (e.g. INY,
+        TAX), 'Carry is set, so adding 6' or '+1 because carry is set' on an
+        ADC (and the same for an SBC with carry clear), and 'ALWAYS branch'
+        on a conditional branch that's always taken (with a blank line
+        after it)."""
         binary_addr = 0
         prev_state = self.EMPTY_STATE
         state = self.EMPTY_STATE
@@ -1716,7 +2204,7 @@ class Cpu6502(cpu.Cpu):
                                         r = formatter.hex(r)
                                     disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
 
-                    # Check for ADC# or SBC# with carry in it's opposite to normal state: auto comment it
+                    # Check for ADC or SBC with carry in its opposite to normal state: auto comment it
                     if isinstance(c, self.Opcode):
                         value = memorymanager.get_u8_binary(binary_addr)
                         if prev_state and prev_state.pessimistic['c'] == True:
@@ -1756,9 +2244,16 @@ class Cpu6502(cpu.Cpu):
         Subroutines will have been registered previously with calls
         to the subroutine() command.
 
+        A call is a JSR, JMP or branch to the subroutine's address. The
+        hook is also called for the instruction at the subroutine's own
+        address, since code may run on into it from the instruction before.
+
         The hook function receives the address, CPU state, and
         subroutine data and most likely uses it to label and/or comment
-        the calling code.
+        the calling code. (The address is the runtime address of the call,
+        or of the subroutine; the state is the one before that instruction.
+        For a JSR, the state's next_use says where the code after it uses
+        each register: see scan_ahead_for_post_exit_state().)
         """
 
         binary_addr = 0
@@ -1822,6 +2317,18 @@ class Cpu6502(cpu.Cpu):
                     state = self.EMPTY_STATE
 
     def substitute_constants(self):
+        """Name the immediate values loaded into registers before the
+        instructions given with substitute_constants() (each a SubConst in
+        trace.substitute_constant_list).
+
+        For each instruction that matches one (its opcode, and its operand's
+        address and condition, if it has them), where the register's value
+        is known and it was loaded with an immediate value (e.g. 'lda #5',
+        or 'lda #5 : tax' for X), that operand is given the name or
+        expression the SubConst's dictionary has for the value (if it has
+        one), which is defined as a constant if the SubConst says so. This
+        uses the optimistic state, so a label between the load and the
+        instruction doesn't stop it."""
         memory_binary = session.current().memory.binary
         if len(session.current().trace.substitute_constant_list) == 0:
             return
@@ -1886,7 +2393,10 @@ class Cpu6502(cpu.Cpu):
                 binary_addr += c.length()
 
     def label_maker(self, lmd):
-        # Label return1, return2 etc
+        """Name an auto-generated label on an RTS 'return_1', 'return_2' and
+        so on (each RTS gets the next number the first time it's named), if
+        config.get_label_return_instructions_numerically()."""
+        # Label return_1, return_2 etc
         memory_binary = session.current().memory.binary
         if config.get_label_return_instructions_numerically():
             # Only if the current label is autogenerated
@@ -1972,7 +2482,14 @@ class Cpu6502(cpu.Cpu):
     def _instruction_effects(self, c, binary_addr):
         """What the instruction does to the registers and flags, for
         find_redundant_instructions(): (reads, writes, whether it could be
-        redundant), with reads and writes as sets of 'axynvdizc'."""
+        redundant), with reads and writes as sets of 'axynvdizc'. An index
+        register counts as read.
+
+        One of _REDUNDANT_CANDIDATES could be redundant, unless it reads I/O
+        (see io_range()) or an address that isn't known (an indirect
+        operand). Anything that isn't one of those or of
+        _OTHER_INSTRUCTIONS (e.g. a JSR, a branch, or the end of a block)
+        reads everything and writes nothing."""
         mnemonic = c.mnemonic.lower()
         mode = c.addr_mode
         index = {self.mode_indexed_indirect: "x", self.mode_abs_indexed_x: "x", self.mode_zp_indexed_x: "x",
@@ -1993,12 +2510,13 @@ class Cpu6502(cpu.Cpu):
         return set(self._ALL_RESOURCES), set(), False
 
     def is_entered_inside(self, binary_addr, length):
-        """Whether code jumps, branches or calls into the middle of the
-        instruction at binary_addr (with the given length), e.g. the BIT
-        trick ('bit $02a9' skipping 'lda #2' for code that doesn't jump to
-        it), to an instruction there, or it's an entry point. (A reference to
-        its operand from data, or from code that modifies it, doesn't
-        count.)"""
+        """Whether code can start in the middle of the instruction at
+        binary_addr (with the given length): there's an explicit entry
+        point there (e.g. from entry(): see add_entry()), or a jump, branch
+        or call goes there, to a byte that is an opcode. E.g. the BIT trick:
+        'bit $02a9' hides 'lda #2' (a9 02), which other code jumps to, and
+        code that comes to the BIT skips it. (A reference to its operand
+        from data, or from code that modifies it, doesn't count.)"""
         labels = session.current().labels.labels
         memory_binary = session.current().memory.binary
         for i in range(1, length):
@@ -2028,6 +2546,8 @@ class Cpu6502(cpu.Cpu):
         as reading everything. (See config.set_redundant_instruction_comments().)"""
         if not config.get_redundant_instruction_comments():
             return
+        # Go backwards through each run, keeping the registers and flags
+        # that something after the instruction might read ('live')
         for run in self.straight_runs():
             live = set(self._ALL_RESOURCES)
             for binary_addr in reversed(run):
@@ -2045,7 +2565,8 @@ class Cpu6502(cpu.Cpu):
         the end of a block (e.g. RTS or JMP), or before an instruction that
         other code jumps or branches to (or an entry point), since that might
         come from code with other values in its registers and memory. (A JSR
-        doesn't end a run.)"""
+        doesn't end a run. Strictly, a run ends before any instruction
+        whose label something refers to, e.g. code that modifies it.)"""
         labels = session.current().labels.labels
         explicit_entry_points = self.explicit_entry_points
         run = []
@@ -2119,8 +2640,20 @@ class Cpu6502(cpu.Cpu):
             if write is not None:
                 yield write
 
-    # Regex searching (shared between 6502 and 65C02)
+    # Regex searching (shared by the 6502, 6510 and 65C02)
     def pre_trace_with_regex(self):
+        """Call the pre-trace function of each regex snippet (see
+        snippets6502.py) for each of its matches in the loaded data, e.g. to
+        add entry points for the code it recognises. A string in place of
+        the function is an inline comment for the start of the match.
+
+        The snippets are tried in order, and bytes one match covers aren't
+        matched again. Each match's entry points are traced before the next
+        match is looked at, so a match that turns out to start in the middle
+        of an instruction can be rejected (SnippetRejected), and is then
+        left for others to match, and ignored after tracing too (see
+        rejected_snippet_matches). Effect patterns are left for
+        find_entry_points_from_effects()."""
         # Make a byte array of memory
         memory_binary = session.current().memory.binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
@@ -2150,7 +2683,7 @@ class Cpu6502(cpu.Cpu):
                 found_already[binary_addr:binary_addr+length] = [True]*length
                 helper = SnippetHelper(memory_binary, binary_loc, match, details.pattern.labels)
                 if isinstance(details.pre_trace_function, str):
-                    # A string means just add an inline string
+                    # A string means just add an inline comment
                     disassembly.comment_binary(helper.get_start_loc(), details.pre_trace_function, align=Align.INLINE, auto_generated=True)
                 else:
                     try:
@@ -2160,7 +2693,9 @@ class Cpu6502(cpu.Cpu):
                             details.pre_trace_function(helper, details.pre_trace_parameter)
                     except SnippetRejected:
                         # It starts in the middle of an instruction (or data),
-                        # so the post trace function ignores it too
+                        # or the function rejected it, so the post trace
+                        # function ignores it too, and other snippets can
+                        # match its bytes
                         found_already[binary_addr:binary_addr+length] = [False]*length
                         self.rejected_snippet_matches.add((index, binary_addr))
                         continue
@@ -2170,6 +2705,12 @@ class Cpu6502(cpu.Cpu):
                 self.trace_entry_points()
 
     def post_trace_with_regex(self):
+        """Call the post-trace function of each regex snippet for each of its
+        matches (except those rejected before tracing), once the code is
+        traced and analysed, so it can use the CPU states (e.g. for comments
+        and expressions). As before tracing, bytes one match covers aren't
+        matched again. Then the same for the effect patterns
+        (post_trace_effects())."""
         # Make a byte array of memory
         memory_binary = session.current().memory.binary
         bytes_array = bytes([0 if x is None else x for x in memory_binary])
@@ -2204,7 +2745,7 @@ class Cpu6502(cpu.Cpu):
                 helper = SnippetHelper(memory_binary, binary_loc, match, details.pattern.labels)
 
                 if isinstance(details.post_trace_function, str):
-                    # A string means just add an inline string
+                    # A string means just add an inline comment
                     disassembly.comment_binary(helper.get_start_loc(), details.post_trace_function, align=Align.INLINE, auto_generated=True)
                 else:
                     if details.post_trace_parameter is None:
