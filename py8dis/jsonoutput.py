@@ -496,10 +496,11 @@ def _instruction_fields(binary_loc, c, instruction):
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     # (The opcode's mnemonic, without any operands that are part of it, e.g.
-    # the 8080's 'mvi b,'. It's py8dis's name, so for an undocumented 6502
-    # opcode it can differ from the asm's: see
-    # Assembler.undocumented_6502_mnemonic().)
-    result = { "mnemonic": utils.force_case(c.mnemonic.split()[0]) }
+    # the 8080's 'mvi b,'. For the 6502 it's the output instruction's, which
+    # for an undocumented opcode is the assembler's name for it, e.g. acme's
+    # ASR for ALR: see Assembler.undocumented_6502_mnemonic().)
+    mnemonic = instruction.mnemonic if isinstance(cpu, cpu6502.Cpu6502) else c.mnemonic
+    result = { "mnemonic": utils.force_case(mnemonic.split()[0]) }
 
     # The addressing mode, the operand's value (and its size in bits, for
     # how a number is shown) and the target of a branch, jump or call, which

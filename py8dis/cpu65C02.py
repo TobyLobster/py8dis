@@ -111,8 +111,8 @@ class Cpu65C02(Cpu6502):
     class OpcodeUnconditionalBranch(Cpu6502.Opcode):
         """BRA: a branch that's always taken, so only the target is traced,
         as for JMP. It has no update function, so nothing is known after
-        it. (Unlike JMP it isn't a block end, so it has no blank line after
-        it, and doesn't end a straight run.)"""
+        it, and like JMP it ends a block (with a blank line after it, and
+        the end of a straight run)."""
 
         def __init__(self, instruction_template, reg_change, cycles="???"):
             super().__init__(instruction_template, reg_change, cycles=cycles)
@@ -133,6 +133,10 @@ class Cpu65C02(Cpu6502):
 
         def could_be_call_to_subroutine(self):
             """True: the target could be a subroutine (a tail call)."""
+            return True
+
+        def is_block_end(self):
+            """True: the code doesn't run on."""
             return True
 
         def is_unconditional_branch(self):

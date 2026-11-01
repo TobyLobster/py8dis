@@ -415,6 +415,7 @@ sub_c8139
     beq c8151                                                         ; 8143: f0 0c       ..
     ldy #$f8                                                          ; 8145: a0 f8       ..
     bra c8151                                                         ; 8147: 80 08       ..
+
 ; $8149 referenced 4 times by $9638, $9a5c, $9aaf, $9acb
 sub_c8149
     sty l0039                                                         ; 8149: 84 39       .9
@@ -429,6 +430,7 @@ c8151
     sta l002b                                                         ; 8156: 85 2b       .+
     lda l0400,y                                                       ; 8158: b9 00 04    ...
     bra c8168                                                         ; 815b: 80 0b       ..
+
 ; $815d referenced 4 times by $8172, $8178, $817c, $8185
 c815d
     ldy #1                                                            ; 815d: a0 01       ..
@@ -446,6 +448,7 @@ c8168
     cpy l0039                                                         ; 8170: c4 39       .9
     bne c815d                                                         ; 8172: d0 e9       ..
     bra c8187                                                         ; 8174: 80 11       ..
+
 ; $8176 referenced 1 time by $8181
 loop_c8176
     lda (l002a),y                                                     ; 8176: b1 2a       .*
@@ -490,6 +493,7 @@ loop_c819f
     bcc c8197                                                         ; 81a7: 90 ee       ..
     inc l003e                                                         ; 81a9: e6 3e       .>
     bra c8197                                                         ; 81ab: 80 ea       ..
+
 ; $81ad referenced 1 time by $819d
 c81ad
     bne c81b9                                                         ; 81ad: d0 0a       ..
@@ -578,6 +582,7 @@ c8210
     beq return_2                                                      ; 822a: f0 e3       ..
     stz l003e                                                         ; 822c: 64 3e       d>
     bra return_2                                                      ; 822e: 80 df       ..
+
 ; $8230 referenced 1 time by $820a
 c8230
     cmp l002a,y                                                       ; 8230: d9 2a 00    .*.
@@ -680,6 +685,7 @@ loop_c82b2
     rol                                                               ; 82b9: 2a          *
     bpl loop_c82b2                                                    ; 82ba: 10 f6       ..
     bra c82fb                                                         ; 82bc: 80 3d       .=
+
 ; $82be referenced 1 time by $82a2
 c82be
     sty l0033                                                         ; 82be: 84 33       .3
@@ -687,6 +693,7 @@ c82be
     sty l0032                                                         ; 82c2: 84 32       .2
     ldy #$98                                                          ; 82c4: a0 98       ..
     bra c82ae                                                         ; 82c6: 80 e6       ..
+
 ; $82c8 referenced 1 time by $829a
 c82c8
     ldy l002c                                                         ; 82c8: a4 2c       .,
@@ -697,6 +704,7 @@ c82c8
     sty l0034                                                         ; 82d2: 84 34       .4
     ldy #$a0                                                          ; 82d4: a0 a0       ..
     bra c82ae                                                         ; 82d6: 80 d6       ..
+
 ; $82d8 referenced 1 time by $82a8
 c82d8
     stz l0032                                                         ; 82d8: 64 32       d2
@@ -767,6 +775,7 @@ loop_c8314
     pla                                                               ; 832a: 68          h
     beq loop_c8314                                                    ; 832b: f0 e7       ..
     bra c833b                                                         ; 832d: 80 0c       ..
+
 ; $832f referenced 1 time by $8306
 c832f
     ldy l0030                                                         ; 832f: a4 30       .0
@@ -799,6 +808,7 @@ sub_c8349
 sub_c834b
     ldy l0031                                                         ; 834b: a4 31       .1
     bra c8353                                                         ; 834d: 80 04       ..
+
 ; $834f referenced 1 time by $9788
 sub_c834f
     ldy l0031                                                         ; 834f: a4 31       .1
@@ -1004,6 +1014,7 @@ loop_c845b
     dec                                                               ; 8465: 3a          :
     bne loop_c845b                                                    ; 8466: d0 f3       ..
     bra c84a3                                                         ; 8468: 80 39       .9
+
 ; $846a referenced 1 time by $8434
 c846a
     eor #$ff                                                          ; 846a: 49 ff       I.
@@ -1513,6 +1524,7 @@ loop_c8a2a
     ldx #3                                                            ; 8a2d: a2 03       ..
     jsr cbdff                                                         ; 8a2f: 20 ff bd     ..
     bra loop_c8a2a                                                    ; 8a32: 80 f6       ..
+
 ; $8a34 referenced 1 time by $8a2b
 c8a34
     ldx #$0a                                                          ; 8a34: a2 0a       ..
@@ -1552,6 +1564,7 @@ loop_c8a5e
     jsr sub_cbd77                                                     ; 8a5e: 20 77 bd     w.
     iny                                                               ; 8a61: c8          .
     bra loop_c8a54                                                    ; 8a62: 80 f0       ..
+
 ; $8a64 referenced 1 time by $8a58
 c8a64
     cpy l000a                                                         ; 8a64: c4 0a       ..
@@ -1814,6 +1827,7 @@ c8bc4
     beq c8bde                                                         ; 8bd8: f0 04       ..
     inc l0029                                                         ; 8bda: e6 29       .)
     bra c8bb2                                                         ; 8bdc: 80 d4       ..
+
 ; $8bde referenced 1 time by $8bd8
 c8bde
     jsr c8f9d                                                         ; 8bde: 20 9d 8f     ..
@@ -1821,6 +1835,7 @@ c8bde
     cmp #$59 ; 'Y'                                                    ; 8be3: c9 59       .Y
     beq c8bb2                                                         ; 8be5: f0 cb       ..
     bra c8bf9                                                         ; 8be7: 80 10       ..
+
 ; $8be9 referenced 1 time by $8bd0
 c8be9
     cmp #$2c ; ','                                                    ; 8be9: c9 2c       .,
@@ -1861,6 +1876,7 @@ c8c1e
     lda l002b                                                         ; 8c1e: a5 2b       .+
     bne loop_c8c15                                                    ; 8c20: d0 f3       ..
     bra c8bb4                                                         ; 8c22: 80 90       ..
+
 ; $8c24 referenced 1 time by $8bbf
 c8c24
     cpx #$36 ; '6'                                                    ; 8c24: e0 36       .6
@@ -1880,6 +1896,7 @@ c8c31
 ; $8c41 referenced 1 time by $8c7d
 c8c41
     bra c8bf9                                                         ; 8c41: 80 b6       ..
+
 ; $8c43 referenced 1 time by $8c2f
 c8c43
     iny                                                               ; 8c43: c8          .
@@ -1899,6 +1916,7 @@ c8c57
     jsr sub_c8d8c                                                     ; 8c57: 20 8c 8d     ..
     ldy #1                                                            ; 8c5a: a0 01       ..
     bra c8cbd                                                         ; 8c5c: 80 5f       ._
+
 ; $8c5e referenced 1 time by $8c26
 c8c5e
     cpx #$38 ; '8'                                                    ; 8c5e: e0 38       .8
@@ -1926,6 +1944,7 @@ c8c74
 c8c84
     ply                                                               ; 8c84: 7a          z
     bra c8cbd                                                         ; 8c85: 80 36       .6
+
 ; $8c87 referenced 1 time by $8c60
 c8c87
     cpx #$3c ; '<'                                                    ; 8c87: e0 3c       .<
@@ -1941,6 +1960,7 @@ c8c96
 ; $8c99 referenced 2 times by $8d06, $8d14
 c8c99
     bra c8c1b                                                         ; 8c99: 80 80       ..
+
 ; $8c9b referenced 1 time by $8ca7
 loop_c8c9b
     jsr sub_c8d9c                                                     ; 8c9b: 20 9c 8d     ..
@@ -2005,6 +2025,7 @@ c8ce6
     bne c8cfd                                                         ; 8cf8: d0 03       ..
     pla                                                               ; 8cfa: 68          h
     bra c8ca4                                                         ; 8cfb: 80 a7       ..
+
 ; $8cfd referenced 1 time by $8cf8
 c8cfd
     jsr sub_c9330                                                     ; 8cfd: 20 30 93     0.
@@ -2018,6 +2039,7 @@ c8cfd
     bne c8ce3                                                         ; 8d0f: d0 d2       ..
     jsr sub_c8d86                                                     ; 8d11: 20 86 8d     ..
     bra c8c99                                                         ; 8d14: 80 83       ..
+
 ; $8d16 referenced 1 time by $8cf3
 c8d16
     jsr sub_c9332                                                     ; 8d16: 20 32 93     2.
@@ -2046,6 +2068,7 @@ c8d37
     sta l0028                                                         ; 8d3e: 85 28       .(
     ldy #0                                                            ; 8d40: a0 00       ..
     bra c8d6e                                                         ; 8d42: 80 2a       .*
+
 ; $8d44 referenced 1 time by $8d37
 c8d44
     ldx #1                                                            ; 8d44: a2 01       ..
@@ -2091,6 +2114,7 @@ c8d74
     jsr c9338                                                         ; 8d7f: 20 38 93     8.
     ldy #$ff                                                          ; 8d82: a0 ff       ..
     bra c8d6e                                                         ; 8d84: 80 e8       ..
+
 ; $8d86 referenced 8 times by $8bd2, $8c09, $8c39, $8cc0, $8cc3, $8cd4, $8d11, $8d2a
 sub_c8d86
     jsr sub_c8d89                                                     ; 8d86: 20 89 8d     ..
@@ -2324,6 +2348,7 @@ sub_c8ea4
 c8ea6
     stz l003c                                                         ; 8ea6: 64 3c       d<
     bra c8e6f                                                         ; 8ea8: 80 c5       ..
+
 ; $8eaa referenced 1 time by $8e9f
 c8eaa
     cmp #$2c ; ','                                                    ; 8eaa: c9 2c       .,
@@ -2338,6 +2363,7 @@ c8eb6
     stx l003b                                                         ; 8eb8: 86 3b       .;
     stz l003c                                                         ; 8eba: 64 3c       d<
     bra c8e6c                                                         ; 8ebc: 80 ae       ..
+
 ; $8ebe referenced 1 time by $8eb0
 c8ebe
     cmp #$2e ; '.'                                                    ; 8ebe: c9 2e       ..
@@ -2355,11 +2381,13 @@ c8ed0
     bcc c8edc                                                         ; 8ed5: 90 05       ..
     jsr sub_c8e5f                                                     ; 8ed7: 20 5f 8e     _.
     bra c8ed0                                                         ; 8eda: 80 f4       ..
+
 ; $8edc referenced 3 times by $8ed5, $8eec, $ab86
 c8edc
     ldx #$ff                                                          ; 8edc: a2 ff       ..
     stx l003b                                                         ; 8ede: 86 3b       .;
     bra c8ea6                                                         ; 8ee0: 80 c4       ..
+
 ; $8ee2 referenced 1 time by $8ef9
 loop_c8ee2
     jsr sub_c8e41                                                     ; 8ee2: 20 41 8e     A.
@@ -2371,6 +2399,7 @@ c8ee7
     bcc c8edc                                                         ; 8eec: 90 ee       ..
     jsr sub_c8e5f                                                     ; 8eee: 20 5f 8e     _.
     bra c8ee7                                                         ; 8ef1: 80 f4       ..
+
 ; $8ef3 referenced 1 time by $8ec5
 c8ef3
     cmp #$41 ; 'A'                                                    ; 8ef3: c9 41       .A
@@ -2417,6 +2446,7 @@ c8f26
     bne c8f26                                                         ; 8f2c: d0 f8       ..
     inc l003a                                                         ; 8f2e: e6 3a       .:
     bra c8f26                                                         ; 8f30: 80 f4       ..
+
 ; $8f32 referenced 1 time by $8f21
 c8f32
     sec                                                               ; 8f32: 38          8
@@ -2430,6 +2460,7 @@ c8f32
 c8f3d
     lda (l0037)                                                       ; 8f3d: b2 37       .7
     bra c8f03                                                         ; 8f3f: 80 c2       ..
+
 ; $8f41 referenced 2 times by $8f0e, $8f28
 c8f41
     tax                                                               ; 8f41: aa          .
@@ -2480,6 +2511,7 @@ loop_c8f7a
     bcc c8f86                                                         ; 8f7f: 90 05       ..
     jsr sub_c8e5f                                                     ; 8f81: 20 5f 8e     _.
     bra loop_c8f7a                                                    ; 8f84: 80 f4       ..
+
 ; $8f86 referenced 1 time by $8f7f
 c8f86
     pla                                                               ; 8f86: 68          h
@@ -2540,6 +2572,7 @@ c8fbb
 sub_c8fc0
     jsr sub_cbe17                                                     ; 8fc0: 20 17 be     ..
     bra c8fda                                                         ; 8fc3: 80 15       ..
+
 sub_c8fc5
     jsr c9c6a                                                         ; 8fc5: 20 6a 9c     j.
     lda l0018                                                         ; 8fc8: a5 18       ..
@@ -2549,6 +2582,7 @@ sub_c8fc5
     sta (l0037),y                                                     ; 8fd0: 91 37       .7
     jsr sub_cbe25                                                     ; 8fd2: 20 25 be     %.
     bra c9048                                                         ; 8fd5: 80 71       .q
+
 sub_c8fd7
     jsr c9c6a                                                         ; 8fd7: 20 6a 9c     j.
 ; $8fda referenced 1 time by $8fc3
@@ -2558,13 +2592,16 @@ c8fda
     sta l000c                                                         ; 8fdf: 85 0c       ..
     stz l000b                                                         ; 8fe1: 64 0b       d.
     bra c905c                                                         ; 8fe3: 80 77       .w
+
 sub_c8fe5
     jsr sub_cbe17                                                     ; 8fe5: 20 17 be     ..
     bra c9048                                                         ; 8fe8: 80 5e       .^
+
 sub_c8fea
     jsr c9c6a                                                         ; 8fea: 20 6a 9c     j.
     jsr sub_cbe25                                                     ; 8fed: 20 25 be     %.
     bra c904b                                                         ; 8ff0: 80 59       .Y
+
 ; $8ff2 referenced 1 time by $8136
 c8ff2
     lda #$f2                                                          ; 8ff2: a9 f2       ..
@@ -2613,6 +2650,7 @@ c9033
     bcs c9048                                                         ; 903b: b0 0b       ..
     jsr sub_cbb1b                                                     ; 903d: 20 1b bb     ..
     bra c901c                                                         ; 9040: 80 da       ..
+
 sub_c9042
     jsr c9c6a                                                         ; 9042: 20 6a 9c     j.
 ; $9045 referenced 4 times by $9005, $900c, $9017, $902b
@@ -2638,6 +2676,7 @@ c905c
     jsr sub_cbb1b                                                     ; 9062: 20 1b bb     ..
     bcs c9048                                                         ; 9065: b0 e1       ..
     bra c90e3                                                         ; 9067: 80 7a       .z
+
 ; $9069 referenced 1 time by $90b7
 c9069
     jsr c9c80                                                         ; 9069: 20 80 9c     ..
@@ -2658,6 +2697,7 @@ loop_c9078
 c907d
     jsr c9c80                                                         ; 907d: 20 80 9c     ..
     bra c9086                                                         ; 9080: 80 04       ..
+
 ; $9082 referenced 1 time by $90ce
 c9082
     cmp #$0d                                                          ; 9082: c9 0d       ..
@@ -2682,6 +2722,7 @@ c90a0
     ldy #4                                                            ; 90a0: a0 04       ..
     sty l000a                                                         ; 90a2: 84 0a       ..
     bra c90d2                                                         ; 90a4: 80 2c       .,
+
 ; $90a6 referenced 1 time by $90bb
 loop_c90a6
     lda #3                                                            ; 90a6: a9 03       ..
@@ -2770,6 +2811,7 @@ c9112
     bne c9155                                                         ; 911c: d0 37       .7
     jsr sub_c916e                                                     ; 911e: 20 6e 91     n.
     bra c90ca                                                         ; 9121: 80 a7       ..
+
 ; $9123 referenced 1 time by $90c3
 c9123
     tsx                                                               ; 9123: ba          .
@@ -2792,6 +2834,7 @@ c9135
     jsr c9c16                                                         ; 913e: 20 16 9c     ..
     jsr sub_cb365                                                     ; 9141: 20 65 b3     e.
     bra c90ca                                                         ; 9144: 80 84       ..
+
 ; $9146 referenced 1 time by $9110
 c9146
     jmp c9c2d                                                         ; 9146: 4c 2d 9c    L-.
@@ -2954,6 +2997,7 @@ loop_c9220
     dex                                                               ; 9225: ca          .
     bpl loop_c9220                                                    ; 9226: 10 f8       ..
     bra c9207                                                         ; 9228: 80 dd       ..
+
 ; $922a referenced 1 time by $921c
 c922a
     ldx #4                                                            ; 922a: a2 04       ..
@@ -2964,6 +3008,7 @@ loop_c922c
     dex                                                               ; 9232: ca          .
     bpl loop_c922c                                                    ; 9233: 10 f7       ..
     bra c9207                                                         ; 9235: 80 d0       ..
+
 ; $9237 referenced 1 time by $921a
 c9237
     lda l0036                                                         ; 9237: a5 36       .6
@@ -2977,6 +3022,7 @@ loop_c923f
     dex                                                               ; 9245: ca          .
     bne loop_c923f                                                    ; 9246: d0 f7       ..
     bra c9207                                                         ; 9248: 80 bd       ..
+
 ; $924a referenced 1 time by $920b
 c924a
     pla                                                               ; 924a: 68          h
@@ -2988,6 +3034,7 @@ sub_c9250
     beq c9204                                                         ; 9253: f0 af       ..
     dec l000a                                                         ; 9255: c6 0a       ..
     bra c926e                                                         ; 9257: 80 15       ..
+
 ; $9259 referenced 1 time by $92a4
 c9259
     lda l0400                                                         ; 9259: ad 00 04    ...
@@ -3088,6 +3135,7 @@ loop_c92e0
     cpy l0036                                                         ; 92e7: c4 36       .6
     bne loop_c92e0                                                    ; 92e9: d0 f5       ..
     bra c9276                                                         ; 92eb: 80 89       ..
+
 ; $92ed referenced 1 time by $930e
 c92ed
     jmp c8fbb                                                         ; 92ed: 4c bb 8f    L..
@@ -3103,6 +3151,7 @@ loop_c92f0
     jsr OSWRCH                                                        ; 92fc: 20 ee ff     .. ; Write character
     jsr sub_c990f                                                     ; 92ff: 20 0f 99     ..
     bra c932d                                                         ; 9302: 80 29       .)
+
 ; $9304 referenced 1 time by $934f
 c9304
     jsr sub_c9774                                                     ; 9304: 20 74 97     t.
@@ -3117,6 +3166,7 @@ c9304
     bcs c9325                                                         ; 9317: b0 0c       ..
     jsr sub_cbac2                                                     ; 9319: 20 c2 ba     ..
     bra c9321                                                         ; 931c: 80 03       ..
+
 ; $931e referenced 1 time by $9353
 c931e
     jsr sub_c9779                                                     ; 931e: 20 79 97     y.
@@ -3128,6 +3178,7 @@ c9321
 c9325
     jsr cbdff                                                         ; 9325: 20 ff bd     ..
     bra c932d                                                         ; 9328: 80 03       ..
+
 ; $932a referenced 1 time by $934b
 c932a
     jsr sub_cbac2                                                     ; 932a: 20 c2 ba     ..
@@ -3135,6 +3186,7 @@ c932a
 c932d
     clc                                                               ; 932d: 18          .
     bra c9338                                                         ; 932e: 80 08       ..
+
 ; $9330 referenced 3 times by $8c01, $8c31, $8cfd
 sub_c9330
     dec l000a                                                         ; 9330: c6 0a       ..
@@ -3199,6 +3251,7 @@ loop_c9368
 c937c
     jsr sub_cbdd8                                                     ; 937c: 20 d8 bd     ..
     bra loop_c9368                                                    ; 937f: 80 e7       ..
+
 sub_c9381
     jsr sub_c9df3                                                     ; 9381: 20 f3 9d     ..
     jsr sub_c9781                                                     ; 9384: 20 81 97     ..
@@ -3225,6 +3278,7 @@ c938f
     sta l0600,y                                                       ; 93ac: 99 00 06    ...
     inc l0600                                                         ; 93af: ee 00 06    ...
     bra c938f                                                         ; 93b2: 80 db       ..
+
 ; $93b4 referenced 1 time by $9393
 c93b4
     ply                                                               ; 93b4: 7a          z
@@ -3340,6 +3394,7 @@ c9469
     bcs c9476                                                         ; 946f: b0 05       ..
     jsr sub_c953d                                                     ; 9471: 20 3d 95     =.
     bra loop_c9455                                                    ; 9474: 80 df       ..
+
 ; $9476 referenced 1 time by $946f
 c9476
     brk                                                               ; 9476: 00          .
@@ -3376,6 +3431,7 @@ loop_c948a
     sta l003a                                                         ; 94a3: 85 3a       .:
     jsr sub_c953d                                                     ; 94a5: 20 3d 95     =.
     bra loop_c948a                                                    ; 94a8: 80 e0       ..
+
 ; $94aa referenced 1 time by $948c
 c94aa
     lda l0018                                                         ; 94aa: a5 18       ..
@@ -3414,6 +3470,7 @@ c94d5
     lda (l000b),y                                                     ; 94d7: b1 0b       ..
     jsr sub_c9cb8                                                     ; 94d9: 20 b8 9c     ..
     bra c94b0                                                         ; 94dc: 80 d2       ..
+
 ; $94de referenced 1 time by $94c2
 c94de
     jsr sub_c9bee                                                     ; 94de: 20 ee 9b     ..
@@ -3443,6 +3500,7 @@ c94e4
 c9509
     ldy l000a                                                         ; 9509: a4 0a       ..
     bra c94ba                                                         ; 950b: 80 ad       ..
+
 ; $950d referenced 2 times by $94ec, $94f2
 c950d
     clc                                                               ; 950d: 18          .
@@ -3453,9 +3511,11 @@ c950d
     bcc c94e4                                                         ; 9517: 90 cb       ..
     inc l003c                                                         ; 9519: e6 3c       .<
     bra c94e4                                                         ; 951b: 80 c7       ..
+
 ; $951d referenced 1 time by $94b4
 c951d
     bra c9579                                                         ; 951d: 80 5a       .Z
+
 ; $951f referenced 1 time by $94e6
 c951f
     jsr sub_cbf0f                                                     ; 951f: 20 0f bf     ..
@@ -3471,6 +3531,7 @@ c951f
     jsr sub_ca0e8                                                     ; 9535: 20 e8 a0     ..
     jsr sub_cbac2                                                     ; 9538: 20 c2 ba     ..
     bra c9509                                                         ; 953b: 80 cc       ..
+
 ; $953d referenced 3 times by $9471, $94a5, $950e
 sub_c953d
     iny                                                               ; 953d: c8          .
@@ -3744,6 +3805,7 @@ sub_c96d4
     sta l0007                                                         ; 96df: 85 07       ..
     sta l0005                                                         ; 96e1: 85 05       ..
     bra c9700                                                         ; 96e3: 80 1b       ..
+
 sub_c96e5
     jsr sub_c977e                                                     ; 96e5: 20 7e 97     ~.
     lda l002a                                                         ; 96e8: a5 2a       .*
@@ -3754,6 +3816,7 @@ sub_c96e5
     sta l0003                                                         ; 96f2: 85 03       ..
     jsr sub_cbbeb                                                     ; 96f4: 20 eb bb     ..
     bra c9700                                                         ; 96f7: 80 07       ..
+
 sub_c96f9
     jsr sub_c977e                                                     ; 96f9: 20 7e 97     ~.
     lda l002b                                                         ; 96fc: a5 2b       .+
@@ -3766,6 +3829,7 @@ sub_c9703
     jsr c9c6a                                                         ; 9703: 20 6a 9c     j.
     jsr sub_cbbdc                                                     ; 9706: 20 dc bb     ..
     bra c9700                                                         ; 9709: 80 f5       ..
+
 sub_c970b
     jsr sub_c9be2                                                     ; 970b: 20 e2 9b     ..
     bcs c971b                                                         ; 970e: b0 0b       ..
@@ -3788,6 +3852,7 @@ loop_c9724
 loop_c9728
     sta l0020                                                         ; 9728: 85 20       .
     bra c9700                                                         ; 972a: 80 d4       ..
+
 ; $972c referenced 1 time by $9712
 c972c
     inc l000a                                                         ; 972c: e6 0a       ..
@@ -3801,6 +3866,7 @@ c9735
     jsr c9c6a                                                         ; 9737: 20 6a 9c     j.
     lda #0                                                            ; 973a: a9 00       ..
     bra loop_c9728                                                    ; 973c: 80 ea       ..
+
 sub_c973e
     iny                                                               ; 973e: c8          .
     lda (l000b),y                                                     ; 973f: b1 0b       ..
@@ -3827,6 +3893,7 @@ c9753
     ldx #$ff                                                          ; 9763: a2 ff       ..
     ldy #5                                                            ; 9765: a0 05       ..
     bra loop_c9750                                                    ; 9767: 80 e7       ..
+
 ; $9769 referenced 2 times by $aca3, $aec8
 sub_c9769
     jsr cbc91                                                         ; 9769: 20 91 bc     ..
@@ -3834,6 +3901,7 @@ sub_c9769
 sub_c976c
     jsr cadee                                                         ; 976c: 20 ee ad     ..
     bra c9784                                                         ; 976f: 80 13       ..
+
 ; $9771 referenced 6 times by $9816, $9886, $988c, $b30e, $b32f, $bf01
 sub_c9771
     jsr sub_c8fb4                                                     ; 9771: 20 b4 8f     ..
@@ -3841,10 +3909,12 @@ sub_c9771
 sub_c9774
     jsr sub_c9dff                                                     ; 9774: 20 ff 9d     ..
     bra c9784                                                         ; 9777: 80 0b       ..
+
 ; $9779 referenced 10 times by $931e, $99a5, $99ad, $9a8b, $aa6e, $aaeb, $ab01, $ae34, $b269, $ba81
 sub_c9779
     jsr cad78                                                         ; 9779: 20 78 ad     x.
     bra c9784                                                         ; 977c: 80 06       ..
+
 ; $977e referenced 4 times by $96d4, $96e5, $96f9, $9745
 sub_c977e
     jsr sub_c9c0a                                                     ; 977e: 20 0a 9c     ..
@@ -3905,6 +3975,7 @@ loop_c97c0
     lda #$0d                                                          ; 97c0: a9 0d       ..
     sta (l002a)                                                       ; 97c2: 92 2a       .*
     bra c97ee                                                         ; 97c4: 80 28       .(
+
 ; $97c6 referenced 1 time by $97e1
 loop_c97c6
     cpy #$80                                                          ; 97c6: c0 80       ..
@@ -3968,11 +4039,13 @@ sub_c9810
     jsr OSWRCH                                                        ; 981e: 20 ee ff     .. ; Write character 18
     pla                                                               ; 9821: 68          h
     bra c986a                                                         ; 9822: 80 46       .F
+
 sub_c9824
     jsr sub_c9332                                                     ; 9824: 20 32 93     2.
     jsr c9c6a                                                         ; 9827: 20 6a 9c     j.
     lda #$11                                                          ; 982a: a9 11       ..
     bra c986a                                                         ; 982c: 80 3c       .<
+
 sub_c982e
     jsr sub_c9332                                                     ; 982e: 20 32 93     2.
     jsr c9c6a                                                         ; 9831: 20 6a 9c     j.
@@ -4011,9 +4084,11 @@ c986a
     jsr OSWRCH                                                        ; 986a: 20 ee ff     .. ; Write character 22
     lda l002a                                                         ; 986d: a5 2a       .*
     bra c98bd                                                         ; 986f: 80 4c       .L
+
 sub_c9871
     lda #4                                                            ; 9871: a9 04       ..
     bra c9877                                                         ; 9873: 80 02       ..
+
 sub_c9875
     lda #5                                                            ; 9875: a9 05       ..
 ; $9877 referenced 1 time by $9873
@@ -4022,6 +4097,7 @@ c9877
     jsr sub_c9df3                                                     ; 9878: 20 f3 9d     ..
     jsr sub_c9781                                                     ; 987b: 20 81 97     ..
     bra c9889                                                         ; 987e: 80 09       ..
+
 sub_c9880
     jsr sub_c9332                                                     ; 9880: 20 32 93     2.
     lda l002a                                                         ; 9883: a5 2a       .*
@@ -4044,10 +4120,12 @@ c9889
     jsr sub_c990f                                                     ; 98a8: 20 0f 99     ..
     lda l002b                                                         ; 98ab: a5 2b       .+
     bra c98bd                                                         ; 98ad: 80 0e       ..
+
 sub_c98af
     jsr c9c6a                                                         ; 98af: 20 6a 9c     j.
     lda #$10                                                          ; 98b2: a9 10       ..
     bra c98bd                                                         ; 98b4: 80 07       ..
+
 sub_c98b6
     jsr c9c6a                                                         ; 98b6: 20 6a 9c     j.
     stz l001e                                                         ; 98b9: 64 1e       d.
@@ -4071,6 +4149,7 @@ loop_c98cb
     iny                                                               ; 98d2: c8          .
     bne loop_c98cb                                                    ; 98d3: d0 f6       ..
     bra c98c0                                                         ; 98d5: 80 e9       ..
+
 ; $98d7 referenced 1 time by $98fa
 c98d7
     lda l002b                                                         ; 98d7: a5 2b       .+
@@ -4103,6 +4182,7 @@ loop_c9904
     dey                                                               ; 9907: 88          .
     bne loop_c9904                                                    ; 9908: d0 fa       ..
     bra c98dc                                                         ; 990a: 80 d0       ..
+
 ; $990c referenced 3 times by $98e1, $98e5, $98e9
 c990c
     jmp c90c5                                                         ; 990c: 4c c5 90    L..
@@ -4122,6 +4202,7 @@ sub_c9914
     beq c9928                                                         ; 991d: f0 09       ..
     lda #$f8                                                          ; 991f: a9 f8       ..
     bra c9928                                                         ; 9921: 80 05       ..
+
 ; $9923 referenced 3 times by $90fe, $963d, $9984
 sub_c9923
     ldy #1                                                            ; 9923: a0 01       ..
@@ -4139,6 +4220,7 @@ loop_c992a
     tax                                                               ; 9932: aa          .
     lda (l003a)                                                       ; 9933: b2 3a       .:
     bra loop_c992a                                                    ; 9935: 80 f3       ..
+
 ; $9937 referenced 1 time by $9930
 c9937
     lda l0003                                                         ; 9937: a5 03       ..
@@ -4212,6 +4294,7 @@ sub_c997d
     bne c997a                                                         ; 998b: d0 ed       ..
     inx                                                               ; 998d: e8          .  ; X=6
     bra c997a                                                         ; 998e: 80 ea       ..
+
 ; $9990 referenced 1 time by $99da
 c9990
     cmp #$21 ; '!'                                                    ; 9990: c9 21       .!
@@ -4309,6 +4392,7 @@ c99fa
     bcs c9a14                                                         ; 9a09: b0 09       ..
     dey                                                               ; 9a0b: 88          .
     bra c9a14                                                         ; 9a0c: 80 06       ..
+
 ; $9a0e referenced 1 time by $9a04
 c9a0e
     dec                                                               ; 9a0e: 3a          :
@@ -4339,6 +4423,7 @@ c9a28
     cmp #$3a ; ':'                                                    ; 9a34: c9 3a       .:
     bcc c9a28                                                         ; 9a36: 90 f0       ..
     bra c9a46                                                         ; 9a38: 80 0c       ..
+
 ; $9a3a referenced 2 times by $9a1e, $9a2e
 c9a3a
     cmp #$5b ; '['                                                    ; 9a3a: c9 5b       .[
@@ -4423,6 +4508,7 @@ c9a99
 c9aa0
     jsr sub_c9ac9                                                     ; 9aa0: 20 c9 9a     ..
     bra c9a63                                                         ; 9aa3: 80 be       ..
+
 ; $9aa5 referenced 1 time by $9a4c
 c9aa5
     dec l002c                                                         ; 9aa5: c6 2c       .,
@@ -4445,6 +4531,7 @@ loop_c9ab6
 c9abc
     jsr sub_c9ac9                                                     ; 9abc: 20 c9 9a     ..
     bra loop_c9ab6                                                    ; 9abf: 80 f5       ..
+
 ; $9ac1 referenced 2 times by $9ace, $9af0
 c9ac1
     brk                                                               ; 9ac1: 00          .
@@ -4551,6 +4638,7 @@ c9b5a
     adc l002b                                                         ; 9b72: 65 2b       e+
     sta l002b                                                         ; 9b74: 85 2b       .+
     bra c9b80                                                         ; 9b76: 80 08       ..
+
 ; $9b78 referenced 1 time by $9b5f
 c9b78
     asl l002a                                                         ; 9b78: 06 2a       .*
@@ -4734,10 +4822,12 @@ c9c55
     txa                                                               ; 9c55: 8a          .
     ldy l001b                                                         ; 9c56: a4 1b       ..
     bra c9c74                                                         ; 9c58: 80 1a       ..
+
 ; $9c5a referenced 9 times by $93b7, $97ba, $9819, $988f, $b315, $b336, $b354, $bef1, $bf04
 sub_c9c5a
     ldy l001b                                                         ; 9c5a: a4 1b       ..
     bra c9c6c                                                         ; 9c5c: 80 0e       ..
+
 sub_c9c5e
     tsx                                                               ; 9c5e: ba          .
     cpx #$fc                                                          ; 9c5f: e0 fc       ..
@@ -4910,6 +5000,7 @@ sub_c9d36
     bpl c9d57                                                         ; 9d3d: 10 18       ..
     asl l002e                                                         ; 9d3f: 06 2e       ..
     bra c9d79                                                         ; 9d41: 80 36       .6
+
 ; $9d43 referenced 1 time by $9db8
 c9d43
     sty l002d                                                         ; 9d43: 84 2d       .-
@@ -5042,6 +5133,7 @@ loop_c9dd7
     cmp l05ff,y                                                       ; 9dde: d9 ff 05    ...
     beq loop_c9dd7                                                    ; 9de1: f0 f4       ..
     bra c9de9                                                         ; 9de3: 80 04       ..
+
 ; $9de5 referenced 1 time by $9dd9
 c9de5
     lda (l0004)                                                       ; 9de5: b2 04       ..
@@ -5094,6 +5186,7 @@ loop_c9e23
     jsr cbd3a                                                         ; 9e23: 20 3a bd     :.
     lda #$40 ; '@'                                                    ; 9e26: a9 40       .@
     bra c9e02                                                         ; 9e28: 80 d8       ..
+
 ; $9e2a referenced 1 time by $9e08
 c9e2a
     jsr sub_c9e3f                                                     ; 9e2a: 20 3f 9e     ?.
@@ -5107,6 +5200,7 @@ loop_c9e32
     dey                                                               ; 9e3a: 88          .
     bpl loop_c9e32                                                    ; 9e3b: 10 f5       ..
     bra loop_c9e23                                                    ; 9e3d: 80 e4       ..
+
 ; $9e3f referenced 2 times by $9e10, $9e2a
 sub_c9e3f
     jsr sub_c9783                                                     ; 9e3f: 20 83 97     ..
@@ -5137,6 +5231,7 @@ loop_c9e5b
     jsr cbd3a                                                         ; 9e66: 20 3a bd     :.
     lda #$40 ; '@'                                                    ; 9e69: a9 40       .@
     bra c9e48                                                         ; 9e6b: 80 db       ..
+
 ; $9e6d referenced 2 times by $9e45, $9e53
 sub_c9e6d
     jsr sub_c9f07                                                     ; 9e6d: 20 07 9f     ..
@@ -5180,15 +5275,18 @@ c9e90
     bcc c9e85                                                         ; 9ea0: 90 e3       ..
     beq c9e85                                                         ; 9ea2: f0 e1       ..
     bra c9e83                                                         ; 9ea4: 80 dd       ..
+
 ; $9ea6 referenced 1 time by $9e97
 c9ea6
     jsr sub_c9d7f                                                     ; 9ea6: 20 7f 9d     ..
     bcc c9e85                                                         ; 9ea9: 90 da       ..
     bra c9e83                                                         ; 9eab: 80 d6       ..
+
 ; $9ead referenced 1 time by $9e9b
 c9ead
     jsr sub_c9d7f                                                     ; 9ead: 20 7f 9d     ..
     bra c9e85                                                         ; 9eb0: 80 d3       ..
+
 ; $9eb2 referenced 1 time by $9e7d
 c9eb2
     tax                                                               ; 9eb2: aa          .
@@ -5199,12 +5297,14 @@ c9eb2
     jsr sub_c9d81                                                     ; 9ebb: 20 81 9d     ..
     bcs c9e85                                                         ; 9ebe: b0 c5       ..
     bra c9e83                                                         ; 9ec0: 80 c1       ..
+
 ; $9ec2 referenced 1 time by $9eb9
 c9ec2
     jsr sub_c9d7f                                                     ; 9ec2: 20 7f 9d     ..
     bcc c9e83                                                         ; 9ec5: 90 bc       ..
     beq c9e83                                                         ; 9ec7: f0 ba       ..
     bra c9e85                                                         ; 9ec9: 80 ba       ..
+
 ; $9ecb referenced 2 times by $9eec, $afbe
 c9ecb
     brk                                                               ; 9ecb: 00          .
@@ -5240,6 +5340,7 @@ loop_c9ef2
     plx                                                               ; 9f02: fa          .
     lda #0                                                            ; 9f03: a9 00       ..
     bra c9f0a                                                         ; 9f05: 80 03       ..
+
 ; $9f07 referenced 4 times by $9d2c, $9d92, $9dc7, $9e6d
 sub_c9f07
     jsr sub_ca026                                                     ; 9f07: 20 26 a0     &.
@@ -5286,6 +5387,7 @@ c9f3b
     bcc c9f0a                                                         ; 9f46: 90 c2       ..
     inc l0005                                                         ; 9f48: e6 05       ..
     bra c9f0a                                                         ; 9f4a: 80 be       ..
+
 ; $9f4c referenced 5 times by $9ee4, $9f1e, $9f73, $9f7b, $9fbb
 c9f4c
     jmp c9155                                                         ; 9f4c: 4c 55 91    LU.
@@ -5298,11 +5400,13 @@ c9f4f
 c9f55
     ldx l0027                                                         ; 9f55: a6 27       .'
     bra c9f0a                                                         ; 9f57: 80 b1       ..
+
 ; $9f59 referenced 1 time by $9f71
 loop_c9f59
     jsr sub_cbc18                                                     ; 9f59: 20 18 bc     ..
     jsr ca704                                                         ; 9f5c: 20 04 a7     ..
     bra c9f55                                                         ; 9f5f: 80 f4       ..
+
 ; $9f61 referenced 1 time by $9f79
 loop_c9f61
     jsr cad10                                                         ; 9f61: 20 10 ad     ..
@@ -5313,6 +5417,7 @@ c9f64
     lda l003d                                                         ; 9f69: a5 3d       .=
     jsr sub_ca70d                                                     ; 9f6b: 20 0d a7     ..
     bra c9f55                                                         ; 9f6e: 80 e5       ..
+
 ; $9f70 referenced 1 time by $9f10
 c9f70
     tay                                                               ; 9f70: a8          .
@@ -5338,6 +5443,7 @@ c9f70
     lda (l0004),y                                                     ; 9f94: b1 04       ..
     sbc l002d                                                         ; 9f96: e5 2d       .-
     bra c9f3b                                                         ; 9f98: 80 a1       ..
+
 ; $9f9a referenced 2 times by $9fdb, $9fdf
 c9f9a
     jsr c828d                                                         ; 9f9a: 20 8d 82     ..
@@ -5347,6 +5453,7 @@ c9f9d
     and l003d                                                         ; 9fa0: 25 3d       %=
     jsr sub_ca6eb                                                     ; 9fa2: 20 eb a6     ..
     bra c9fb6                                                         ; 9fa5: 80 0f       ..
+
 ; $9fa7 referenced 2 times by $9fc4, $9fc8
 c9fa7
     jsr c828d                                                         ; 9fa7: 20 8d 82     ..
@@ -5359,6 +5466,7 @@ loop_c9faa
 ; $9fb6 referenced 1 time by $9fa5
 c9fb6
     bra ca029                                                         ; 9fb6: 80 71       .q
+
 ; $9fb8 referenced 1 time by $a02b
 c9fb8
     tay                                                               ; 9fb8: a8          .
@@ -5425,6 +5533,7 @@ ca00f
     sty l003d                                                         ; a01d: 84 3d       .=
     stx l003e                                                         ; a01f: 86 3e       .>
     bra ca04d                                                         ; a021: 80 2a       .*
+
 ; $a023 referenced 2 times by $9f18, $9f75
 sub_ca023
     jsr cbc66                                                         ; a023: 20 66 bc     f.
@@ -5453,6 +5562,7 @@ ca03c
     jsr sub_cbc1e                                                     ; a042: 20 1e bc     ..
     jsr ca634                                                         ; a045: 20 34 a6     4.
     bra ca05b                                                         ; a048: 80 11       ..
+
 ; $a04a referenced 1 time by $a035
 ca04a
     jsr sub_c81bd                                                     ; a04a: 20 bd 81     ..
@@ -5471,6 +5581,7 @@ loop_ca052
 ca05b
     ldx l0027                                                         ; a05b: a6 27       .'
     bra ca029                                                         ; a05d: 80 ca       ..
+
 ; $a05f referenced 1 time by $a039
 ca05f
     jsr sub_c81bd                                                     ; a05f: 20 bd 81     ..
@@ -5478,6 +5589,7 @@ ca05f
     php                                                               ; a064: 08          .
     ldx #$39 ; '9'                                                    ; a065: a2 39       .9
     bra loop_ca052                                                    ; a067: 80 e9       ..
+
 ; $a069 referenced 2 times by $81c8, $9fca
 sub_ca069
     jsr cbc66                                                         ; a069: 20 66 bc     f.
@@ -5552,6 +5664,7 @@ ca0c7
     lda l002a                                                         ; a0ca: a5 2a       .*
     jsr sub_ca5f9                                                     ; a0cc: 20 f9 a5     ..
     bra ca06f                                                         ; a0cf: 80 9e       ..
+
 ; $a0d1 referenced 4 times by $a0a5, $a0a9, $a0b4, $a0b9
 ca0d1
     lda #$71 ; 'q'                                                    ; a0d1: a9 71       .q
@@ -5563,10 +5676,12 @@ ca0d1
     jsr sub_ca9c3                                                     ; a0e0: 20 c3 a9     ..
     jsr sub_caa1a                                                     ; a0e3: 20 1a aa     ..
     bra ca06f                                                         ; a0e6: 80 87       ..
+
 ; $a0e8 referenced 3 times by $9535, $9d1e, $b505
 sub_ca0e8
     lda #0                                                            ; a0e8: a9 00       ..
     bra ca0ee                                                         ; a0ea: 80 02       ..
+
 ; $a0ec referenced 2 times by $9558, $b4c6
 sub_ca0ec
     lda #5                                                            ; a0ec: a9 05       ..
@@ -5590,6 +5705,7 @@ loop_ca0f5
     sty l002a                                                         ; a104: 84 2a       .*
     inc l003f,x                                                       ; a106: f6 3f       .?
     bra loop_ca0f5                                                    ; a108: 80 eb       ..
+
 ; $a10a referenced 1 time by $a100
 ca10a
     dex                                                               ; a10a: ca          .
@@ -5681,6 +5797,7 @@ ca174
     jsr sub_ca46b                                                     ; a17a: 20 6b a4     k.
     dec l0048                                                         ; a17d: c6 48       .H
     bra ca174                                                         ; a17f: 80 f3       ..
+
 ; $a181 referenced 2 times by $92c7, $af83
 sub_ca181
     ldx l0402                                                         ; a181: ae 02 04    ...
@@ -5695,6 +5812,7 @@ ca18a
     cmp #$0a                                                          ; a191: c9 0a       ..
     bcs ca19b                                                         ; a193: b0 06       ..
     bra ca19d                                                         ; a195: 80 06       ..
+
 ; $a197 referenced 1 time by $a18f
 ca197
     cpx #2                                                            ; a197: e0 02       ..
@@ -5726,6 +5844,7 @@ ca1af
 ca1bc
     jsr ca622                                                         ; a1bc: 20 22 a6     ".
     bra ca1d0                                                         ; a1bf: 80 0f       ..
+
 ; $a1c1 referenced 1 time by $a178
 ca1c1
     cmp #$84                                                          ; a1c1: c9 84       ..
@@ -5741,6 +5860,7 @@ ca1cd
 ca1d0
     inc l0048                                                         ; a1d0: e6 48       .H
     bra ca174                                                         ; a1d2: 80 a0       ..
+
 ; $a1d4 referenced 2 times by $a1c3, $a1cb
 ca1d4
     jsr sub_ca3ed                                                     ; a1d4: 20 ed a3     ..
@@ -5834,6 +5954,7 @@ loop_ca256
     beq ca25f                                                         ; a258: f0 05       ..
     jsr ca2cc                                                         ; a25a: 20 cc a2     ..
     bra loop_ca256                                                    ; a25d: 80 f7       ..
+
 ; $a25f referenced 1 time by $a258
 ca25f
     lda #$80                                                          ; a25f: a9 80       ..
@@ -5984,6 +6105,7 @@ ca303
     bcc ca2fb                                                         ; a31f: 90 da       ..
     stz l0049                                                         ; a321: 64 49       dI
     bra ca2fb                                                         ; a323: 80 d6       ..
+
 ; $a325 referenced 1 time by $a312
 ca325
     cpx #2                                                            ; a325: e0 02       ..
@@ -6000,10 +6122,12 @@ ca333
     bcc ca2fb                                                         ; a337: 90 c2       ..
     jsr sub_ca503                                                     ; a339: 20 03 a5     ..
     bra ca2fb                                                         ; a33c: 80 bd       ..
+
 ; $a33e referenced 1 time by $a327
 ca33e
     inc l0048                                                         ; a33e: e6 48       .H
     bra ca2fd                                                         ; a340: 80 bb       ..
+
 ; $a342 referenced 1 time by $a30c
 ca342
     eor #$fe                                                          ; a342: 49 fe       I.
@@ -6013,6 +6137,7 @@ ca342
 ca348
     inc l0047                                                         ; a348: e6 47       .G
     bra ca303                                                         ; a34a: 80 b7       ..
+
 ; $a34c referenced 1 time by $a308
 ca34c
     cmp #$45 ; 'E'                                                    ; a34c: c9 45       .E
@@ -6051,6 +6176,7 @@ ca37e
     jsr c828d                                                         ; a37e: 20 8d 82     ..
     bne ca393                                                         ; a381: d0 10       ..
     bra ca3aa                                                         ; a383: 80 25       .%
+
 ; $a385 referenced 3 times by $a35b, $a35f, $a369
 ca385
     lda #$a8                                                          ; a385: a9 a8       ..
@@ -6071,6 +6197,7 @@ loop_ca399
     dey                                                               ; a39c: 88          .
     bne loop_ca399                                                    ; a39d: d0 fa       ..
     bra ca3a7                                                         ; a39f: 80 06       ..
+
 ; $a3a1 referenced 2 times by $a395, $a3a5
 ca3a1
     jsr sub_ca4ba                                                     ; a3a1: 20 ba a4     ..
@@ -6200,6 +6327,7 @@ ca42c
     rol l0034                                                         ; a440: 26 34       &4
     rol l0033                                                         ; a442: 26 33       &3
     bra ca452                                                         ; a444: 80 0c       ..
+
 ; $a446 referenced 2 times by $a438, $a450
 ca446
     asl                                                               ; a446: 0a          .
@@ -6226,6 +6354,7 @@ ca452
     sta l0032                                                         ; a466: 85 32       .2
     pla                                                               ; a468: 68          h
     bra ca4a3                                                         ; a469: 80 38       .8
+
 ; $a46b referenced 3 times by $a17a, $a201, $a399
 sub_ca46b
     clc                                                               ; a46b: 18          .
@@ -6236,6 +6365,7 @@ sub_ca46b
     bcc ca426                                                         ; a474: 90 b0       ..
     inc l002f                                                         ; a476: e6 2f       ./
     bra ca426                                                         ; a478: 80 ac       ..
+
 ; $a47a referenced 2 times by $a436, $a484
 ca47a
     lsr l0031                                                         ; a47a: 46 31       F1
@@ -6247,6 +6377,7 @@ ca47a
     bne ca47a                                                         ; a484: d0 f4       ..
     dex                                                               ; a486: ca          .  ; X=$ff
     bra ca452                                                         ; a487: 80 c9       ..
+
 ; $a489 referenced 1 time by $84aa
 ca489
     lda l0035                                                         ; a489: a5 35       .5
@@ -6385,6 +6516,7 @@ ca53e
 sub_ca541
     lda #$76 ; 'v'                                                    ; a541: a9 76       .v
     bra ca547                                                         ; a543: 80 02       ..
+
 ; $a545 referenced 8 times by $9210, $a5c4, $a5ec, $a6cb, $a7ef, $a97b, $a9e9, $a9f2
 sub_ca545
     lda #$6c ; 'l'                                                    ; a545: a9 6c       .l
@@ -6418,10 +6550,12 @@ sub_ca54d
 sub_ca56d
     jsr sub_cbc24                                                     ; a56d: 20 24 bc     $.
     bra ca57e                                                         ; a570: 80 0c       ..
+
 ; $a572 referenced 1 time by $a1f9
 sub_ca572
     ldy #$bf                                                          ; a572: a0 bf       ..
     bra ca57a                                                         ; a574: 80 04       ..
+
 ; $a576 referenced 1 time by $b8d7
 sub_ca576
     lda #$6c ; 'l'                                                    ; a576: a9 6c       .l
@@ -6490,6 +6624,7 @@ sub_ca5bb
 sub_ca5bd
     ldy #4                                                            ; a5bd: a0 04       ..
     bra loop_ca5b6                                                    ; a5bf: 80 f5       ..
+
 ; $a5c1 referenced 1 time by $aa41
 sub_ca5c1
     jsr cad10                                                         ; a5c1: 20 10 ad     ..
@@ -6532,6 +6667,7 @@ sub_ca5f2
 sub_ca5f4
     jsr sub_ca5cf                                                     ; a5f4: 20 cf a5     ..
     bra ca634                                                         ; a5f7: 80 3b       .;
+
 ; $a5f9 referenced 1 time by $a0cc
 sub_ca5f9
     ldx #0                                                            ; a5f9: a2 00       ..
@@ -6557,6 +6693,7 @@ ca608
 ca612
     jsr ca6ce                                                         ; a612: 20 ce a6     ..
     bra loop_ca607                                                    ; a615: 80 f0       ..
+
 ; $a617 referenced 1 time by $a61e
 loop_ca617
     jsr sub_cbc24                                                     ; a617: 20 24 bc     $.
@@ -6696,6 +6833,7 @@ ca6c4
     bmi ca712                                                         ; a6c4: 30 4c       0L
     jsr c8306                                                         ; a6c6: 20 06 83     ..
     bra ca712                                                         ; a6c9: 80 47       .G
+
 ; $a6cb referenced 2 times by $a8bc, $a907
 sub_ca6cb
     jsr sub_ca545                                                     ; a6cb: 20 45 a5     E.
@@ -6711,6 +6849,7 @@ ca6ce
     bne ca6ed                                                         ; a6dd: d0 0e       ..
     jsr sub_ca50b                                                     ; a6df: 20 0b a5     ..
     bra ca6ed                                                         ; a6e2: 80 09       ..
+
 ; $a6e4 referenced 3 times by $9fb3, $a61a, $a9c7
 ca6e4
     lda l0031                                                         ; a6e4: a5 31       .1
@@ -6723,6 +6862,7 @@ sub_ca6eb
 ca6ed
     jsr sub_ca73e                                                     ; a6ed: 20 3e a7     >.
     bra ca712                                                         ; a6f0: 80 20       .
+
 ; $a6f2 referenced 2 times by $8362, $a729
 ca6f2
     brk                                                               ; a6f2: 00          .
@@ -6823,6 +6963,7 @@ loop_ca758
     stz l003b                                                         ; a765: 64 3b       d;
     stz l003a                                                         ; a767: 64 3a       d:
     bra ca79b                                                         ; a769: 80 30       .0
+
 ; $a76b referenced 1 time by $a79d
 ca76b
     phx                                                               ; a76b: da          .
@@ -7001,6 +7142,7 @@ ca857
     bcc ca878                                                         ; a86f: 90 07       ..
     inc l0040,x                                                       ; a871: f6 40       .@
     bra ca878                                                         ; a873: 80 03       ..
+
 ; $a875 referenced 1 time by $a857
 ca875
     tya                                                               ; a875: 98          .
@@ -7055,6 +7197,7 @@ sub_ca8b3
     ldx #$ca                                                          ; a8b3: a2 ca       ..
     dec l0030                                                         ; a8b5: c6 30       .0
     bra ca8bb                                                         ; a8b7: 80 02       ..
+
 ; $a8b9 referenced 2 times by $a7ea, $a938
 sub_ca8b9
     ldx #$e7                                                          ; a8b9: a2 e7       ..
@@ -7083,6 +7226,7 @@ loop_ca8cd
     jsr sub_ca631                                                     ; a8d8: 20 31 a6     1.
     jsr sub_ca541                                                     ; a8db: 20 41 a5     A.
     bra ca8ee                                                         ; a8de: 80 0e       ..
+
 ; $a8e0 referenced 1 time by $a8f6
 loop_ca8e0
     jsr sub_ca5ad                                                     ; a8e0: 20 ad a5     ..
@@ -7112,6 +7256,7 @@ sub_ca901
     jsr sub_ca80b                                                     ; a911: 20 0b a8     ..
     jsr ca634                                                         ; a914: 20 34 a6     4.
     bra ca91f                                                         ; a917: 80 06       ..
+
 sub_ca919
     jsr sub_c979f                                                     ; a919: 20 9f 97     ..
     lda l002e                                                         ; a91c: a5 2e       ..
@@ -7157,6 +7302,7 @@ ca94b
 sub_ca94f
     jsr sub_ca9d1                                                     ; a94f: 20 d1 a9     ..
     bra ca959                                                         ; a952: 80 05       ..
+
 sub_ca954
     jsr sub_ca9d1                                                     ; a954: 20 d1 a9     ..
     inc l0049                                                         ; a957: e6 49       .I
@@ -7166,6 +7312,7 @@ ca959
     bcc ca962                                                         ; a95b: 90 05       ..
     jsr sub_ca5c4                                                     ; a95d: 20 c4 a5     ..
     bra ca965                                                         ; a960: 80 03       ..
+
 ; $a962 referenced 1 time by $a95b
 ca962
     jsr sub_ca5f4                                                     ; a962: 20 f4 a5     ..
@@ -7223,6 +7370,7 @@ sub_ca9b5
     jsr sub_c979f                                                     ; a9b5: 20 9f 97     ..
     lda #$ca                                                          ; a9b8: a9 ca       ..
     bra ca9c1                                                         ; a9ba: 80 05       ..
+
 sub_ca9bc
     jsr sub_ca7ac                                                     ; a9bc: 20 ac a7     ..
     lda #$82                                                          ; a9bf: a9 82       ..
@@ -7239,6 +7387,7 @@ sub_ca9ca
     jsr sub_c979f                                                     ; a9ca: 20 9f 97     ..
     lda #$cf                                                          ; a9cd: a9 cf       ..
     bra ca9c1                                                         ; a9cf: 80 f0       ..
+
 ; $a9d1 referenced 3 times by $a94f, $a954, $a96b
 sub_ca9d1
     jsr sub_c979f                                                     ; a9d1: 20 9f 97     ..
@@ -7309,6 +7458,7 @@ caa33
     bcs caa3e                                                         ; aa37: b0 05       ..
     jsr sub_ca5cf                                                     ; aa39: 20 cf a5     ..
     bra caa44                                                         ; aa3c: 80 06       ..
+
 ; $aa3e referenced 1 time by $aa37
 caa3e
     jsr sub_ca8b3                                                     ; aa3e: 20 b3 a8     ..
@@ -7401,6 +7551,7 @@ caab0
     jsr sub_c9788                                                     ; aab9: 20 88 97     ..
     jsr sub_cbf2f                                                     ; aabc: 20 2f bf     /.
     bra caae8                                                         ; aabf: 80 27       .'
+
 ; $aac1 referenced 1 time by $aaa1
 caac1
     ldx #$0d                                                          ; aac1: a2 0d       ..
@@ -7442,6 +7593,7 @@ loop_caaf0
     dex                                                               ; aaf6: ca          .
     bpl loop_caaf0                                                    ; aaf7: 10 f7       ..
     bra caae8                                                         ; aaf9: 80 ed       ..
+
 sub_caafb
     jsr sub_cab14                                                     ; aafb: 20 14 ab     ..
     stx l002a                                                         ; aafe: 86 2a       .*
@@ -7458,6 +7610,7 @@ sub_cab01
     sta l002d                                                         ; ab0f: 85 2d       .-
     cld                                                               ; ab11: d8          .
     bra caae8                                                         ; ab12: 80 d4       ..
+
 ; $ab14 referenced 1 time by $aafb
 sub_cab14
     lda #osbyte_read_text_cursor_pos                                  ; ab14: a9 86       ..
@@ -7470,6 +7623,7 @@ cab1a
 sub_cab1d
     lda #2                                                            ; ab1d: a9 02       ..
     bra cab23                                                         ; ab1f: 80 02       ..
+
 sub_cab21
     lda #0                                                            ; ab21: a9 00       ..
 ; $ab23 referenced 1 time by $ab1f
@@ -7480,16 +7634,20 @@ cab23
     pla                                                               ; ab29: 68          h
     jsr OSARGS                                                        ; ab2a: 20 da ff     .. ; Read or write a file's attributes
     bra caae8                                                         ; ab2d: 80 b9       ..
+
 sub_cab2f
     jsr sub_cba7a                                                     ; ab2f: 20 7a ba     z.
     jsr OSBGET                                                        ; ab32: 20 d7 ff     .. ; Read a single byte from an open file Y
     bra cab1a                                                         ; ab35: 80 e3       ..
+
 sub_cab37
     lda #$40 ; '@'                                                    ; ab37: a9 40       .@
     bra cab41                                                         ; ab39: 80 06       ..
+
 sub_cab3b
     lda #$80                                                          ; ab3b: a9 80       ..
     bra cab41                                                         ; ab3d: 80 02       ..
+
 sub_cab3f
     lda #$c0                                                          ; ab3f: a9 c0       ..
 ; $ab41 referenced 2 times by $ab39, $ab3d
@@ -7503,6 +7661,7 @@ cab41
     pla                                                               ; ab4e: 68          h
     jsr OSFIND                                                        ; ab4f: 20 ce ff     .. ; Open or close file(s)
     bra cab1a                                                         ; ab52: 80 c6       ..
+
 sub_cab54
     stz l0031                                                         ; ab54: 64 31       d1
     jsr sub_ca6ff                                                     ; ab56: 20 ff a6     ..
@@ -7581,6 +7740,7 @@ cabc9
     dec l001b                                                         ; abc9: c6 1b       ..
     jsr sub_ca2dd                                                     ; abcb: 20 dd a2     ..
     bra cabdd                                                         ; abce: 80 0d       ..
+
 ; $abd0 referenced 1 time by $abc0
 cabd0
     jsr c8f92                                                         ; abd0: 20 92 8f     ..
@@ -7592,6 +7752,7 @@ cabd0
 cabdd
     sta l0027                                                         ; abdd: 85 27       .'
     bra cab91                                                         ; abdf: 80 b0       ..
+
 sub_cabe1
     jsr cad78                                                         ; abe1: 20 78 ad     x.
     beq cac1c                                                         ; abe4: f0 36       .6
@@ -7662,6 +7823,7 @@ cac35
 cac38
     ldx #0                                                            ; ac38: a2 00       ..
     bra cac2d                                                         ; ac3a: 80 f1       ..
+
 ; $ac3c referenced 1 time by $ac49
 loop_cac3c
     lda l0031                                                         ; ac3c: a5 31       .1
@@ -7669,6 +7831,7 @@ loop_cac3c
     lda l002e                                                         ; ac40: a5 2e       ..
     bpl cac59                                                         ; ac42: 10 15       ..
     bra cac2b                                                         ; ac44: 80 e5       ..
+
 sub_cac46
     jsr cad78                                                         ; ac46: 20 78 ad     x.
     bmi loop_cac3c                                                    ; ac49: 30 f1       0.
@@ -7685,6 +7848,7 @@ cac59
 ; $ac5b referenced 1 time by $ac7d
 cac5b
     bra cac0f                                                         ; ac5b: 80 b2       ..
+
 sub_cac5d
     jsr sub_c8fae                                                     ; ac5d: 20 ae 8f     ..
     jsr sub_c976c                                                     ; ac60: 20 6c 97     l.
@@ -7702,6 +7866,7 @@ sub_cac5d
     lda l002e                                                         ; ac79: a5 2e       ..
     bmi cac2b                                                         ; ac7b: 30 ae       0.
     bra cac5b                                                         ; ac7d: 80 dc       ..
+
 sub_cac7f
     jsr sub_c9dff                                                     ; ac7f: 20 ff 9d     ..
     bne cac1c                                                         ; ac82: d0 98       ..
@@ -7779,6 +7944,7 @@ cace8
 loop_caceb
     lda #0                                                            ; aceb: a9 00       ..
     bra loop_cace5                                                    ; aced: 80 f6       ..
+
 ; $acef referenced 1 time by $acdd
 cacef
     inc l002a                                                         ; acef: e6 2a       .*
@@ -7788,6 +7954,7 @@ cacef
     bne cacd2                                                         ; acf7: d0 d9       ..
     inc l0038                                                         ; acf9: e6 38       .8
     bra cacd2                                                         ; acfb: 80 d5       ..
+
 ; $acfd referenced 2 times by $ad05, $ad1c
 cacfd
     jmp c9155                                                         ; acfd: 4c 55 91    LU.
@@ -7801,6 +7968,7 @@ sub_cad07
     bit l002d                                                         ; ad07: 24 2d       $-
     bmi cad20                                                         ; ad09: 30 15       0.
     bra cad37                                                         ; ad0b: 80 2a       .*
+
 ; $ad0d referenced 1 time by $ad03
 cad0d
     stz l002e                                                         ; ad0d: 64 2e       d.
@@ -7955,6 +8123,7 @@ sub_cadc6
     lda l0440                                                         ; adc6: ad 40 04    .@.
     ldy l0441                                                         ; adc9: ac 41 04    .A.
     bra cae3f                                                         ; adcc: 80 71       .q
+
 ; $adce referenced 6 times by $93c4, $ad97, $adb9, $adc0, $adc2, $ae46
 cadce
     brk                                                               ; adce: 00          .
@@ -7989,6 +8158,7 @@ cadee
 cadf9
     jsr cac38                                                         ; adf9: 20 38 ac     8.
     bra cae00                                                         ; adfc: 80 02       ..
+
 ; $adfe referenced 1 time by $ae11
 loop_cadfe
     inx                                                               ; adfe: e8          .
@@ -8002,6 +8172,7 @@ cae00
     sbc #$37 ; '7'                                                    ; ae07: e9 37       .7
     cmp #$10                                                          ; ae09: c9 10       ..
     bra cae11                                                         ; ae0b: 80 04       ..
+
 ; $ae0d referenced 1 time by $ae05
 cae0d
     sbc #$2f ; '/'                                                    ; ae0d: e9 2f       ./
@@ -8046,6 +8217,7 @@ sub_cae34
 ; $ae3f referenced 1 time by $adcc
 cae3f
     bra cae62                                                         ; ae3f: 80 21       .!
+
 sub_cae41
     iny                                                               ; ae41: c8          .
     lda (l0019),y                                                     ; ae42: b1 19       ..
@@ -8055,10 +8227,12 @@ sub_cae41
     lda l0012                                                         ; ae4a: a5 12       ..
     ldy l0013                                                         ; ae4c: a4 13       ..
     bra cae62                                                         ; ae4e: 80 12       ..
+
 sub_cae50
     ldy l0018                                                         ; ae50: a4 18       ..
     lda #0                                                            ; ae52: a9 00       ..
     bra cae62                                                         ; ae54: 80 0c       ..
+
 ; $ae56 referenced 2 times by $ae5c, $aec0
 cae56
     jmp c9155                                                         ; ae56: 4c 55 91    LU.
@@ -8082,24 +8256,30 @@ cae62
 sub_cae6d
     lda l001e                                                         ; ae6d: a5 1e       ..
     bra cae60                                                         ; ae6f: 80 ef       ..
+
 sub_cae71
     lda l0000                                                         ; ae71: a5 00       ..
     ldy l0001                                                         ; ae73: a4 01       ..
     bra cae62                                                         ; ae75: 80 eb       ..
+
 sub_cae77
     lda l0006                                                         ; ae77: a5 06       ..
     ldy l0007                                                         ; ae79: a4 07       ..
     bra cae62                                                         ; ae7b: 80 e5       ..
+
 sub_cae7d
     ldy l0009                                                         ; ae7d: a4 09       ..
     lda l0008                                                         ; ae7f: a5 08       ..
     bra cae62                                                         ; ae81: 80 df       ..
+
 sub_cae83
     lda (l00fd)                                                       ; ae83: b2 fd       ..
     bra cae60                                                         ; ae85: 80 d9       ..
+
 sub_cae87
     jsr OSRDCH                                                        ; ae87: 20 e0 ff     .. ; Read a character from the current input stream
     bra cae60                                                         ; ae8a: 80 d4       ..
+
 sub_cae8c
     iny                                                               ; ae8c: c8          .
     lda (l0019),y                                                     ; ae8d: b1 19       ..
@@ -8122,6 +8302,7 @@ cae9f
     jsr OSWORD                                                        ; aeaa: 20 f1 ff     .. ; Read CMOS clock
     lda #$18                                                          ; aead: a9 18       ..
     bra caed7                                                         ; aeaf: 80 26       .&
+
 sub_caeb1
     jsr OSRDCH                                                        ; aeb1: 20 e0 ff     .. ; Read a character from the current input stream
 ; $aeb4 referenced 2 times by $af01, $b26e
@@ -8129,6 +8310,7 @@ caeb4
     sta l0600                                                         ; aeb4: 8d 00 06    ... ; A=character read
     lda #1                                                            ; aeb7: a9 01       ..
     bra caed7                                                         ; aeb9: 80 1c       ..
+
 sub_caebb
     clc                                                               ; aebb: 18          .
 sub_caebc
@@ -8175,6 +8357,7 @@ loop_caeed
     dec l002a                                                         ; aef5: c6 2a       .*
     bne loop_caeed                                                    ; aef7: d0 f4       ..
     bra caed9                                                         ; aef9: 80 de       ..
+
 sub_caefb
     jsr sub_caa6e                                                     ; aefb: 20 6e aa     n.
     txa                                                               ; aefe: 8a          .
@@ -8184,6 +8367,7 @@ sub_caefb
 caf03
     lda #0                                                            ; af03: a9 00       ..
     bra caed7                                                         ; af05: 80 d0       ..
+
 ; $af07 referenced 3 times by $aec4, $af11, $af2a
 caf07
     jmp c8fbb                                                         ; af07: 4c bb 8f    L..
@@ -8242,6 +8426,7 @@ loop_caf51
     bne loop_caf51                                                    ; af5b: d0 f4       ..
     sty l0036                                                         ; af5d: 84 36       .6
     bra cafb8                                                         ; af5f: 80 57       .W
+
 sub_caf61
     jsr c8f92                                                         ; af61: 20 92 8f     ..
     ldy #$ff                                                          ; af64: a0 ff       ..
@@ -8262,10 +8447,12 @@ caf6d
     sta l0037                                                         ; af7c: 85 37       .7
     jsr ca19b                                                         ; af7e: 20 9b a1     ..
     bra cafb8                                                         ; af81: 80 35       .5
+
 ; $af83 referenced 1 time by $af7a
 caf83
     jsr sub_ca181                                                     ; af83: 20 81 a1     ..
     bra cafb8                                                         ; af86: 80 30       .0
+
 ; $af88 referenced 3 times by $af0d, $af71, $af91
 caf88
     jmp c9155                                                         ; af88: 4c 55 91    LU.
@@ -8351,6 +8538,7 @@ cafee
     bcc cafdb                                                         ; aff7: 90 e2       ..
     inc l000c                                                         ; aff9: e6 0c       ..
     bra cafdb                                                         ; affb: 80 de       ..
+
 ; $affd referenced 1 time by $afec
 caffd
     iny                                                               ; affd: c8          .
@@ -8623,6 +8811,7 @@ cb17e
     jsr sub_cbc24                                                     ; b19b: 20 24 bc     $.
     jsr ca57e                                                         ; b19e: 20 7e a5     ~.
     bra cb1a6                                                         ; b1a1: 80 03       ..
+
 ; $b1a3 referenced 1 time by $b199
 cb1a3
     jsr sub_cbd26                                                     ; b1a3: 20 26 bd     &.
@@ -8630,6 +8819,7 @@ cb1a3
 cb1a6
     jsr sub_cb372                                                     ; b1a6: 20 72 b3     r.
     bra cb1b5                                                         ; b1a9: 80 0a       ..
+
 ; $b1ab referenced 1 time by $b18a
 cb1ab
     lda l002d                                                         ; b1ab: a5 2d       .-
@@ -8876,6 +9066,7 @@ loop_cb307
     ldy #7                                                            ; b320: a0 07       ..
     ldx #5                                                            ; b322: a2 05       ..
     bra cb341                                                         ; b324: 80 1b       ..
+
 sub_cb326
     jsr sub_c9332                                                     ; b326: 20 32 93     2.
     ldx #$0d                                                          ; b329: a2 0d       ..
@@ -8906,6 +9097,7 @@ cb341
 cb34c
     jsr OSWORD                                                        ; b34c: 20 f1 ff     ..
     bra cb35c                                                         ; b34f: 80 0b       ..
+
 sub_cb351
     jsr sub_c9332                                                     ; b351: 20 32 93     2.
     jsr sub_c9c5a                                                     ; b354: 20 5a 9c     Z.
@@ -9015,6 +9207,7 @@ cb3cf
     jsr cbc66                                                         ; b3ed: 20 66 bc     f.
     dec l000a                                                         ; b3f0: c6 0a       ..
     bra cb3fe                                                         ; b3f2: 80 0a       ..
+
 ; $b3f4 referenced 1 time by $b3e3
 cb3f4
     jsr sub_c8da2                                                     ; b3f4: 20 a2 8d     ..
@@ -9033,6 +9226,7 @@ cb3fe
     jsr c8f9d                                                         ; b40a: 20 9d 8f     ..
     jsr c9c80                                                         ; b40d: 20 80 9c     ..
     bra cb42b                                                         ; b410: 80 19       ..
+
 sub_cb412
     iny                                                               ; b412: c8          .
     lda (l000b),y                                                     ; b413: b1 0b       ..
@@ -9064,6 +9258,7 @@ cb42b
     bcs cb45d                                                         ; b440: b0 1b       ..
     dey                                                               ; b442: 88          .
     bra cb454                                                         ; b443: 80 0f       ..
+
 ; $b445 referenced 1 time by $b4b8
 cb445
     jsr cbdd4                                                         ; b445: 20 d4 bd     ..
@@ -9147,9 +9342,11 @@ loop_cb4a9
     iny                                                               ; b4b4: c8          .
     inx                                                               ; b4b5: e8          .
     bra loop_cb4a9                                                    ; b4b6: 80 f1       ..
+
 ; $b4b8 referenced 1 time by $b4e6
 cb4b8
     bra cb445                                                         ; b4b8: 80 8b       ..
+
 ; $b4ba referenced 1 time by $b4ae
 cb4ba
     sta l004d                                                         ; b4ba: 85 4d       .M
@@ -9158,6 +9355,7 @@ cb4bc
     inc l001b                                                         ; b4bc: e6 1b       ..
     ldy l001b                                                         ; b4be: a4 1b       ..
     bra cb485                                                         ; b4c0: 80 c3       ..
+
 ; $b4c2 referenced 1 time by $b489
 cb4c2
     lda l004d                                                         ; b4c2: a5 4d       .M
@@ -9192,6 +9390,7 @@ loop_cb4f2
     jsr cbdd4                                                         ; b4f2: 20 d4 bd     ..
     iny                                                               ; b4f5: c8          .
     bra cb4e2                                                         ; b4f6: 80 ea       ..
+
 ; $b4f8 referenced 1 time by $b4ea
 cb4f8
     ldx l004c                                                         ; b4f8: a6 4c       .L
@@ -9202,6 +9401,7 @@ cb4f8
     sty l000a                                                         ; b503: 84 0a       ..
     jsr sub_ca0e8                                                     ; b505: 20 e8 a0     ..
     bra cb4e0                                                         ; b508: 80 d6       ..
+
 ; $b50a referenced 1 time by $b4fe
 cb50a
     cmp #$e3                                                          ; b50a: c9 e3       ..
@@ -9222,6 +9422,7 @@ cb51c
     jsr sub_cbd77                                                     ; b51c: 20 77 bd     w.
     iny                                                               ; b51f: c8          .
     bra cb4e2                                                         ; b520: 80 c0       ..
+
 ; $b522 referenced 1 time by $b5ee
 cb522
     jsr sub_c99c4                                                     ; b522: 20 c4 99     ..
@@ -9317,6 +9518,7 @@ cb56a
     bpl cb5cd                                                         ; b5c7: 10 04       ..
     bcs cb5cf                                                         ; b5c9: b0 04       ..
     bra cb5df                                                         ; b5cb: 80 12       ..
+
 ; $b5cd referenced 1 time by $b5c7
 cb5cd
     bcs cb5df                                                         ; b5cd: b0 10       ..
@@ -9367,10 +9569,12 @@ cb5f1
     bmi cb622                                                         ; b61c: 30 04       0.
     bcs cb5cf                                                         ; b61e: b0 af       ..
     bra cb5df                                                         ; b620: 80 bd       ..
+
 ; $b622 referenced 1 time by $b61c
 cb622
     bcc cb5cf                                                         ; b622: 90 ab       ..
     bra cb5df                                                         ; b624: 80 b9       ..
+
 ; $b626 referenced 1 time by $b5ec
 cb626
     jmp c90c5                                                         ; b626: 4c c5 90    L..
@@ -9488,6 +9692,7 @@ cb6f7
     sta l004b                                                         ; b702: 85 4b       .K
     jsr sub_ca54d                                                     ; b704: 20 4d a5     M.
     bra cb6bf                                                         ; b707: 80 b6       ..
+
 sub_cb709
     jsr sub_cb85a                                                     ; b709: 20 5a b8     Z.
 ; $b70c referenced 1 time by $b802
@@ -9502,6 +9707,7 @@ cb70c
     sta l05e6,y                                                       ; b71c: 99 e6 05    ...
     inc l0025                                                         ; b71f: e6 25       .%
     bra cb753                                                         ; b721: 80 30       .0
+
 ; $b723 referenced 1 time by $b713
 cb723
     brk                                                               ; b723: 00          .
@@ -9554,6 +9760,7 @@ loop_cb769
     jsr c9c6a                                                         ; b769: 20 6a 9c     j.
     jsr sub_cb2e0                                                     ; b76c: 20 e0 b2     ..
     bra cb74a                                                         ; b76f: 80 d9       ..
+
 ; $b771 referenced 1 time by $b790
 loop_cb771
     jsr c8f9d                                                         ; b771: 20 9d 8f     ..
@@ -9774,6 +9981,7 @@ loop_cb8ac
 cb8b5
     jsr sub_c916e                                                     ; b8b5: 20 6e 91     n.
     bra cb87f                                                         ; b8b8: 80 c5       ..
+
 ; $b8ba referenced 1 time by $b89e
 cb8ba
     lda l0027                                                         ; b8ba: a5 27       .'
@@ -9787,6 +9995,7 @@ loop_cb8c2
     dex                                                               ; b8c7: ca          .
     bpl loop_cb8c2                                                    ; b8c8: 10 f8       ..
     bra cb8da                                                         ; b8ca: 80 0e       ..
+
 ; $b8cc referenced 1 time by $b8be
 cb8cc
     ldx #4                                                            ; b8cc: a2 04       ..
@@ -9802,11 +10011,13 @@ cb8da
     jsr sub_cbd46                                                     ; b8da: 20 46 bd     F.
     jsr sub_cb372                                                     ; b8dd: 20 72 b3     r.
     bra cb87f                                                         ; b8e0: 80 9d       ..
+
 ; $b8e2 referenced 1 time by $b922
 cb8e2
     pla                                                               ; b8e2: 68          h
     pla                                                               ; b8e3: 68          h
     bra cb874                                                         ; b8e4: 80 8e       ..
+
 sub_cb8e6
     jsr sub_c8d9c                                                     ; b8e6: 20 9c 8d     ..
     beq cb877                                                         ; b8e9: f0 8c       ..
@@ -9902,11 +10113,13 @@ cb968
 ; $b974 referenced 1 time by $b97b
 loop_cb974
     bra cb8fa                                                         ; b974: 80 84       ..
+
 ; $b976 referenced 1 time by $b969
 cb976
     stz l0027                                                         ; b976: 64 27       d'
     jsr sub_c9171                                                     ; b978: 20 71 91     q.
     bra loop_cb974                                                    ; b97b: 80 f7       ..
+
 sub_cb97d
     stz l003d                                                         ; b97d: 64 3d       d=
     ldy l0018                                                         ; b97f: a4 18       ..
@@ -9944,6 +10157,7 @@ cb9ad
     jsr sub_cbc83                                                     ; b9b7: 20 83 bc     ..
     jsr sub_cb362                                                     ; b9ba: 20 62 b3     b.
     bra cb9cd                                                         ; b9bd: 80 0e       ..
+
 ; $b9bf referenced 1 time by $b9b2
 cb9bf
     jsr sub_cb9dc                                                     ; b9bf: 20 dc b9     ..
@@ -9961,6 +10175,7 @@ cb9cd
     adc #0                                                            ; b9d6: 69 00       i.
     sta l001d                                                         ; b9d8: 85 1d       ..
     bra cb9a5                                                         ; b9da: 80 c9       ..
+
 ; $b9dc referenced 2 times by $b9b4, $b9bf
 sub_cb9dc
     jsr c9338                                                         ; b9dc: 20 38 93     8.
@@ -10005,6 +10220,7 @@ loop_cba0a
     bcc cb9ff                                                         ; ba1b: 90 e2       ..
     inc l001a                                                         ; ba1d: e6 1a       ..
     bra cb9ff                                                         ; ba1f: 80 de       ..
+
 ; $ba21 referenced 1 time by $ba03
 cba21
     brk                                                               ; ba21: 00          .
@@ -10097,6 +10313,7 @@ sub_cba88
 sub_cbaa0
     lda #6                                                            ; baa0: a9 06       ..
     bra cbaa6                                                         ; baa2: 80 02       ..
+
 ; $baa4 referenced 2 times by $9059, $955b
 sub_cbaa4
     lda #7                                                            ; baa4: a9 07       ..
@@ -10169,6 +10386,7 @@ cbb03
     inc l0038                                                         ; bb06: e6 38       .8
     inc l0013                                                         ; bb08: e6 13       ..
     bra cbae8                                                         ; bb0a: 80 dc       ..
+
 ; $bb0c referenced 1 time by $bafb
 cbb0c
     jmp cbe45                                                         ; bb0c: 4c 45 be    LE.
@@ -10501,6 +10719,7 @@ cbccd
 loop_cbcd1
     sta (l0037),y                                                     ; bcd1: 91 37       .7
     bra cbd21                                                         ; bcd3: 80 4c       .L
+
 ; $bcd5 referenced 1 time by $bcae
 cbcd5
     lda (l0004)                                                       ; bcd5: b2 04       ..
@@ -10548,6 +10767,7 @@ cbd0e
     tya                                                               ; bd0e: 98          .
     clc                                                               ; bd0f: 18          .
     bra cbd3d                                                         ; bd10: 80 2b       .+
+
 ; $bd12 referenced 5 times by $9efc, $aca6, $aecb, $af2f, $b1af
 sub_cbd12
     lda (l0004)                                                       ; bd12: b2 04       ..
@@ -10568,6 +10788,7 @@ cbd21
 cbd23
     sec                                                               ; bd23: 38          8
     bra cbd3d                                                         ; bd24: 80 17       ..
+
 ; $bd26 referenced 13 times by $8287, $916e, $93ba, $93f7, $9552, $955e, $9fed, $ac68, $af93, $b17e, $b1a3, $b3ea, $b432
 sub_cbd26
     ldy #3                                                            ; bd26: a0 03       ..
@@ -10612,6 +10833,7 @@ sub_cbd48
     lda (l0004)                                                       ; bd58: b2 04       ..
     sta l0000,x                                                       ; bd5a: 95 00       ..
     bra cbd3a                                                         ; bd5c: 80 dc       ..
+
 ; $bd5e referenced 4 times by $b05e, $bc3f, $bc6b, $bc96
 sub_cbd5e
     sta l0004                                                         ; bd5e: 85 04       ..
@@ -10664,6 +10886,7 @@ loop_cbd88
     bcc cbd86                                                         ; bd98: 90 ec       ..
     inc l0039                                                         ; bd9a: e6 39       .9
     bra cbd86                                                         ; bd9c: 80 e8       ..
+
 ; $bd9e referenced 1 time by $bd8f
 cbd9e
     ldy #0                                                            ; bd9e: a0 00       ..
@@ -10801,6 +11024,7 @@ loop_cbe2d
     clc                                                               ; be3d: 18          .
     jsr sub_cbe46                                                     ; be3e: 20 46 be     F.
     bra loop_cbe2d                                                    ; be41: 80 ea       ..
+
 ; $be43 referenced 1 time by $be35
 cbe43
     iny                                                               ; be43: c8          .
@@ -10893,6 +11117,7 @@ sub_cbe95
     ldx #<l0037                                                       ; bec0: a2 37       .7
     jsr OSFILE                                                        ; bec2: 20 dd ff     .. ; Save a block of memory (returning file length and attributes) (A=0)
     bra cbeeb                                                         ; bec5: 80 24       .$
+
 sub_cbec7
     jsr sub_cbe76                                                     ; bec7: 20 76 be     v.
     ldx #<l0600                                                       ; beca: a2 00       ..
@@ -10903,10 +11128,12 @@ lbecd = cbecc+1
 ; $becd referenced 1 time by $be59
     jsr OSCLI                                                         ; bece: 20 f7 ff     ..
     bra cbeeb                                                         ; bed1: 80 18       ..
+
 ; $bed3 referenced 1 time by $90ad
 cbed3
     lda #3                                                            ; bed3: a9 03       ..
     bra cbed9                                                         ; bed5: 80 02       ..
+
 sub_cbed7
     lda #1                                                            ; bed7: a9 01       ..
 ; $bed9 referenced 1 time by $bed5
@@ -10931,6 +11158,7 @@ sub_cbeee
     lda #osfind_close                                                 ; bef6: a9 00       ..
     jsr OSFIND                                                        ; bef8: 20 ce ff     .. ; Close one or all files
     bra cbeeb                                                         ; befb: 80 ee       ..
+
 sub_cbefd
 lbefe = sub_cbefd+1
     jsr sub_cba6e                                                     ; befd: 20 6e ba     n.
@@ -10944,6 +11172,7 @@ cbf00
     lda l002a                                                         ; bf08: a5 2a       .*
     jsr OSBPUT                                                        ; bf0a: 20 d4 ff     .. ; Write a single byte A to an open file Y
     bra cbeeb                                                         ; bf0d: 80 dc       ..
+
 ; $bf0f referenced 2 times by $951f, $be51
 sub_cbf0f
     pla                                                               ; bf0f: 68          h
@@ -10951,6 +11180,7 @@ sub_cbf0f
     pla                                                               ; bf12: 68          h
     sta l0038                                                         ; bf13: 85 38       .8
     bra cbf1a                                                         ; bf15: 80 03       ..
+
 ; $bf17 referenced 1 time by $bf1d
 loop_cbf17
     jsr OSASCI                                                        ; bf17: 20 e3 ff     .. ; Write character

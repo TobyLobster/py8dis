@@ -245,18 +245,24 @@ def move_ids_for_runtime_addr(runtime_addr):
 def make_binloc(binary_loc):
     """binary_loc as a memorymanager.BinaryLocation. A BinaryLocation is
     returned as it is. A plain binary address (an int or BinaryAddr) is
-    given the innermost active move ID (see MoveId), or the base move's if
-    no move is active.
+    given the innermost active move ID (see MoveId), or if no move is
+    active, the move the byte is in (Moves.move_id_for_binary_addr: the base
+    move's for a byte that isn't moved, or past the top of memory).
 
-    Note that the move chosen for a plain binary address isn't necessarily
-    the move the byte is in (Moves.move_id_for_binary_addr). While tracing,
-    the move of the instruction being traced is active, so they're the same
-    for that instruction's bytes; but after tracing no move is active, so a
-    plain binary address in a moved block gets the base move's ID."""
+    (While tracing, the move of the instruction being traced is active, so
+    that's the move of that instruction's bytes. After tracing no move is
+    active, so e.g. a comment the CPU's analysis gives a plain binary
+    address in a moved block goes with that block.)"""
     if utils.is_integer_type(binary_loc):
-        active_move_ids = session.current().moves.active_move_ids
-        last_move_id = active_move_ids[-1] if active_move_ids else BASE_MOVE_ID
-        return BinaryLocation(BinaryAddr(binary_loc), last_move_id)
+        moves = session.current().moves
+        active_move_ids = moves.active_move_ids
+        if active_move_ids:
+            move_id = active_move_ids[-1]
+        elif 0 <= binary_loc < 0x10000:
+            move_id = moves.move_id_for_binary_addr[binary_loc]
+        else:
+            move_id = BASE_MOVE_ID
+        return BinaryLocation(BinaryAddr(binary_loc), move_id)
     assert isinstance(binary_loc, BinaryLocation)
     return binary_loc
 

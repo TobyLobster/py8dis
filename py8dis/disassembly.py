@@ -193,11 +193,11 @@ def comment_binary(binary_loc, text, *, word_wrap=False, indent=0, align=Align.B
     """Add a comment, either inline or standalone.
 
     As comment(), but at a binary location: a BinaryLocation, or a binary
-    address (taken to be in the innermost active move, see
-    movemanager.make_binloc()). An auto_generated comment isn't added at an
-    address marked with no_automatic_comment(). 'priority' orders it among
-    the annotations with the same 'align' at the same place (lowest
-    first)."""
+    address (taken to be in the innermost active move, or if none is, the
+    move it's in: see movemanager.make_binloc()). An auto_generated comment
+    isn't added at an address marked with no_automatic_comment().
+    'priority' orders it among the annotations with the same 'align' at the
+    same place (lowest first)."""
 
     annotations = session.current().disassembly.annotations
     binary_loc = movemanager.make_binloc(binary_loc)
