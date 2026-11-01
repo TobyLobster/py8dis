@@ -14,6 +14,8 @@ go()
 
 Use `acorn.bbc()` for the BBC Micro, `acorn.b_plus()` for the B+, `acorn.master()` for the Master (load it with the CPU `"65C02"` if it uses the 65C02's instructions) and `acorn.electron()` for the Electron.
 
+The output is for beebasm by default; for Baron, its successor, run the control file with `--baron` (see [assemblers.md](../assemblers.md#baron)). Any of the other 6502 assemblers works too.
+
 ## What it does
 
 **Names the OS calls.** The MOS's entry points get their names, in capitals as in Acorn's documentation: `OSWRCH`, `OSBYTE`, `OSWORD`, `OSFILE`, `OSCLI`, `OSASCI`, `OSNEWL`, `OSRDCH`, `OSARGS`, `OSBGET`, `OSBPUT`, `OSGBPB`, `OSFIND`, `GSINIT`, `GSREAD` and the rest (with `OSWRSC` on the B+ and Master). `config.set_upper_case_os_calls(False)`, before `acorn.bbc()`, gives `oswrch` etc. Like all the machine names, they're only in the disassembly if the program uses them.

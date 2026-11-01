@@ -5,6 +5,7 @@ py8dis writes its output for one of these assemblers, chosen on the command line
 | Assembler                                                | CPUs           | Command line          | Tested with |
 | -------------------------------------------------------- | -------------- | --------------------- | ----------- |
 | [beebasm](https://github.com/stardot/beebasm)            | 6502, 65C02    | `--beebasm` or `-b` (the default) | |
+| [Baron](https://github.com/waitingforvsync/baron)        | 6502, 65C02    | `--baron` or `-r`     | v0.6.0 |
 | [acme](https://sourceforge.net/projects/acme-crossass/)  | 6502, 65C02    | `--acme` or `-a`      | |
 | [xa](https://www.floodgap.com/retrotech/xa/)             | 6502, 65C02    | `--xa` or `-x`        | |
 | [64tass](https://sourceforge.net/projects/tass64/)       | 6502, 65C02    | `--64tass` or `-t`    | 1.59.3120 |
@@ -20,7 +21,47 @@ A few things are worth knowing about each one.
 
 The output assembles with `beebasm -i program.asm -o program.bin`. It ends with a `save` command for the program (`pydis_start` to `pydis_end`); `set_output_filename()` puts a file name in it. A block that runs somewhere else (see `move()`) is assembled for its runtime address with `copyblock`.
 
-beebasm and xa have no directives for PETSCII or Commodore screen codes, so strings in those encodings are written as bytes, with the text in a comment (see [text-encodings.md](text-encodings.md)).
+beebasm, Baron and xa have no directives for PETSCII or Commodore screen codes, so strings in those encodings are written as bytes, with the text in a comment (see [text-encodings.md](text-encodings.md)).
+
+## Baron
+
+Baron is the spiritual successor to beebasm, by its author. Its syntax is mostly beebasm's, but its output is organised in *sections*, rather than with beebasm's `org` and `save`. So py8dis's output is one section, which holds the whole program:
+
+```
+SECTION pydis, org = &2000, filename = "game"
+    ...
+ENDSECTION
+```
+
+Assemble it with `baron -p . program.asm`, which writes the program to the file named in the section, in the folder given with `-p` (here, the current one). The output starts with a comment saying the command and the file. The file's name is the one given with `set_output_filename()`, or else the name of the asm file written with `-o`, without its extension (e.g. `game` for `-o game.asm`), or else `pydis`.
+
+The rest of the output differs from beebasm's in a few ways:
+
+- **65C02 code:** the section has `cmos = TRUE`, rather than beebasm's `cpu 1`.
+- **Another range of addresses:** a later range (from a second `load()`) is reached with `SKIPTO`, which pads with zeroes.
+- **Moved code:** a block that runs somewhere else (see `move()`) is a section inside the main one, with its own address, e.g. `SECTION move_1, org = &0900` … `ENDSECTION`. Its bytes go where it's written, and its labels have its runtime addresses.
+- **Assertions:** they're Baron's own, `ASSERT (expr) = value`, which it checks.
+- **Low and high bytes:** `<` and `>` apply to the whole of the rest of an expression in Baron (`<x+1` is the low byte of `x+1`), so py8dis adds brackets where they're part of a larger one, e.g. `(<table) + 1`.
+- **Operands starting with a bracket:** Baron takes one to be indirect, so an operand like `(table+1)*2,y` is written `+(table+1)*2,y`.
+- **Character literals:** a single quote can't be written as one, so it's a number, `&27`. A double quote in a string is written `""`.
+- **Included files:** Baron looks for an included file (see `include_binary_file()`) relative to the asm file, so with `-o`, py8dis writes its path relative to the asm file's folder.
+
+**Names:**
+
+- A label can have any name, but a name defined with `=` (e.g. in the memory locations at the top) can't start with one of Baron's mnemonics or directives. So for one of these, py8dis writes an `@` before the name, e.g. `@next = &70`; it's used without the `@`.
+- `TRUE`, `FALSE` and `PI` are Baron's constants, so py8dis stops with an error for a label with one of these names, in any case. Rename it.
+
+As with beebasm, the 6502's undocumented opcodes, and an absolute instruction with a zero page address, are written as data, since Baron has no way to write them.
+
+Baron isn't packaged, and its only release binary is for Windows, but it builds from [its source](https://github.com/waitingforvsync/baron) with CMake on Linux, macOS and Windows:
+
+``` sh
+git clone --recurse-submodules --branch v0.6.0 https://github.com/waitingforvsync/baron.git
+cmake -S baron -B baron/build -DCMAKE_BUILD_TYPE=Release
+cmake --build baron/build
+```
+
+which makes `baron/build/src/baron`.
 
 ## acme
 

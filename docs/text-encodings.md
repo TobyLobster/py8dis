@@ -47,6 +47,6 @@ A string in another encoding, e.g. ASCII in a C64 program, selects its own just 
 
 ca65's character map (`.charmap`, from a character in the source to a byte) applies to every string and character literal, and can't be switched for one string. So ca65's output is like acme's: if the session's encoding is PETSCII or screen codes and the output has text in it, the output starts with the character map for it (e.g. `.charmap $61, $41 ; 'a'`), and its strings and character literals are text (`.byte "Hello"`, `lda #'a'`). Strings in other encodings, ASCII included, are written as bytes with the text in a comment.
 
-### beebasm and xa
+### beebasm, Baron and xa
 
-beebasm and xa have no PETSCII or screen code directives, and no such character literals. So these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`, and characters are numbers with the character in a comment (`lda #$41 ; 'a'`).
+beebasm, Baron and xa have no PETSCII or screen code directives, and no such character literals. So these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"`, and characters are numbers with the character in a comment (`lda #$41 ; 'a'`).

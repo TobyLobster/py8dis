@@ -193,6 +193,7 @@ py8dis can write its output for any of these assemblers:
 | Assembler | CPUs | Command line |
 | --------- | ---- | ------------ |
 | [beebasm](https://github.com/stardot/beebasm) | 6502, 65C02 | `--beebasm` or `-b` (the default) |
+| [Baron](https://github.com/waitingforvsync/baron) | 6502, 65C02 | `--baron` or `-r` |
 | [acme](https://sourceforge.net/projects/acme-crossass/) | 6502, 65C02 | `--acme` or `-a` |
 | [xa](https://www.floodgap.com/retrotech/xa/) | 6502, 65C02 | `--xa` or `-x` |
 | [64tass](https://sourceforge.net/projects/tass64/) | 6502, 65C02 | `--64tass` or `-t` |

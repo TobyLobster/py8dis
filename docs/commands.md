@@ -51,7 +51,7 @@ Loads a Commodore PRG file. Its first two bytes are the address to load the rest
 start = load_prg("game.prg", "6510")
 ```
 
-The disassembly starts with the same two bytes (e.g. `!word $0801` just before the program), so that it assembles to the whole PRG file, with acme, beebasm, xa, 64tass or ca65. To disassemble just the data, use `load(address, "game.prg", offset=2)` instead. A PC64 `.p00` file (a PRG file after a 26 byte header starting `C64File`) is also accepted; its disassembly assembles to the PRG file.
+The disassembly starts with the same two bytes (e.g. `!word $0801` just before the program), so that it assembles to the whole PRG file, with acme, beebasm, Baron, xa, 64tass or ca65. To disassemble just the data, use `load(address, "game.prg", offset=2)` instead. A PC64 `.p00` file (a PRG file after a 26 byte header starting `C64File`) is also accepted; its disassembly assembles to the PRG file.
 
 ### move
 
@@ -432,7 +432,7 @@ rom2_asm = go(print_output=False)
 
 `set_output_filename(filename)`
 
-For assemblers that save the assembled program themselves (e.g. beebasm's `save` and acme's `!to`), the file name to save it as.
+For assemblers that save the assembled program themselves (beebasm's `save`, Baron's section `filename` and acme's `!to`), the file name to save it as.
 
 ### is_assembler
 
