@@ -68,6 +68,22 @@ with move(0x0900, 0x201e, 0x0f):
     label(0x0900, "print_and_inc_zp")
 ```
 
+**Banks.** Several moves can put code at the same runtime address, e.g. the banks of a cartridge or several sideways ROMs, which all run at &8000. Load each bank somewhere of its own (the banks together must fit in 64K), and move each to where it runs. Each bank's code has its own labels, and a branch, jump or call in a bank to an address in it goes to that bank's code. A call from elsewhere (e.g. the main program) to an address that more than one bank has can't be told the bank of, so py8dis warns, and doesn't trace it; trace each bank from its entry points with `entry()` in a `with` block for its move, and give the call's operand the right bank's label with `expr()` if need be:
+
+```python
+load(0x1000, "main.bin", "6502")
+load(0x2000, "bank0.bin", "6502")
+load(0x6000, "bank1.bin", "6502")
+bank0 = move(0x8000, 0x2000, 0x4000)
+bank1 = move(0x8000, 0x6000, 0x4000)
+with bank0:
+    entry(0x8000, "bank0_start")
+with bank1:
+    entry(0x8000, "bank1_start")
+```
+
+The output assembles to all the loaded files, at their load addresses, with the gaps between them filled with zeroes. See `examples/python/banks_test.py`.
+
 ### include_binary_file
 
 `include_binary_file(runtime_addr, relative_filepath)`

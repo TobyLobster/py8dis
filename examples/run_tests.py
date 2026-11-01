@@ -68,6 +68,7 @@ TESTS = [
     ("undocumented_z80",         ["z88dk", "sjasmplus"],       "the Z80's undocumented opcodes: those z88dk-z80asm accepts as instructions, the others as data"),
     ("redundant_z80",            ["z88dk", "sjasmplus"],       "redundant Z80 instructions (whose results aren't used)"),
     ("state_z80",                ["z88dk", "sjasmplus"],       "what's known about the Z80's registers and flags after each instruction"),
+    ("banks_z80",                ["z88dk", "sjasmplus"],       "two banks of Z80 code that both run at $8000, loaded separately (z88dk-z80asm's DEFS for a gap)"),
     ("spectrum48",               ["z88dk", "sjasmplus"],       "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
     ("spectrum_test",            ["z88dk", "sjasmplus"],       "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
     ("trace_z80",                ["z88dk", "sjasmplus"],       "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
@@ -85,6 +86,7 @@ TESTS = [
     ("string_stuff1",            ["acme", "beebasm", "baron", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
     ("string_stuff3",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "testing py8dis string commands"),
+    ("banks_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "two banks of code that both run at $8000 (moves to the same address), loaded separately, with a call that can't be told the bank of"),
     ("moving1",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
     ("moving2",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
     ("moving3",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
@@ -208,6 +210,7 @@ ERROR_TESTS = [
 # give this warning (as one line of its error output).
 WARNING_TESTS = [
     ("load_prg_file",           "warning: load(&07ff, 'build/load_prg_file.prg'): this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg('build/load_prg_file.prg') loads it at that address without them"),
+    ("jump_to_shared_address",  "warning: &1004: the jump or call to &8000 isn't traced, since more than one move puts code there (moves 1 and 2): trace the right one with entry() in a 'with' block for its move"),
     ("move_splits_data",        "warning: move boundary at binary address &3002 splits a classification"),
 ]
 

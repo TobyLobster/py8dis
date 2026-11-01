@@ -144,7 +144,7 @@ class Acme(assembler.Assembler):
                            ("PETSCII" if table == "pet" else "a screen code") + ")", ""])
         return result
 
-    def code_start(self, start_addr, end_addr, first):
+    def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code we provide the address at which to
         assemble."""
         return ["", "%s* = %s" % (utils.make_indent(1), self.hex4(start_addr)), ""]

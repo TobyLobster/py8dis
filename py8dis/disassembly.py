@@ -1038,6 +1038,11 @@ def emit(print_output=True):
 
         # Handle start of a new !pseudopc block
         if move_id != movemanager.BASE_MOVE_ID:
+            # (A gap before it, e.g. when it's another file loaded elsewhere,
+            # needs a new ORG first, as for code that isn't moved)
+            if start_addr != old_end_addr:
+                d.append(output.Directive("code_start", start_addr, end_addr, False, old_end_addr).resolve())
+
             # Output any base move labels just before starting a new !pseudopc block
             d.extend(emit_labels(BinaryLocation(start_addr, movemanager.BASE_MOVE_ID), False))
 
@@ -1051,7 +1056,7 @@ def emit(print_output=True):
         else:
             # If a new ORG is needed, output that
             if start_addr != old_end_addr:
-                d.append(output.Directive("code_start", start_addr, end_addr, False).resolve())
+                d.append(output.Directive("code_start", start_addr, end_addr, False, old_end_addr).resolve())
 
         # output at each address within the block
         was_code = None

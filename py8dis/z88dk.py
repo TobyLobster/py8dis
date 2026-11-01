@@ -148,9 +148,14 @@ class Z88DK(assembler.Assembler):
         # (A second org would start a separate section)
         return None
 
-    def code_start(self, start_addr, end_addr, first):
+    def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code we provide the address at which to
-        assemble."""
+        assemble. A later range (e.g. from another load()) is padded to its
+        address with DEFS, since z88dk-z80asm doesn't allow a second ORG.
+        (The padding is a number: in DEFS's operand, '$' and labels are
+        offsets from the start of the section, not addresses.)"""
+        if not first and previous_end is not None and start_addr > previous_end:
+            return ["", "%s%s %d %s (to %s)" % (utils.make_indent(1), utils.force_case("DEFS"), start_addr - previous_end, self.comment_prefix(), self.hex4(start_addr)), ""]
         return ["", "%s%s %s" % (utils.make_indent(1), utils.force_case("ORG"), self.hex4(start_addr)), ""]
 
     def code_end(self):

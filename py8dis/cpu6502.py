@@ -769,13 +769,13 @@ class Cpu6502(cpu.Cpu):
         }
 
     def get_target_binary_addr_preferring_given_move_id(self, runtime_addr, specific_move_id):
-        # Try the specific move id first...
+        """The binary address for the runtime address, in the given move if
+        that has the address, else in the one move that has it, as a list
+        (empty if more than one move has it)."""
         binary_addr, _ = movemanager.r2b(runtime_addr, specific_move_id)
         if binary_addr is None:
-            # If that doesn't work, try without a specific move id...
             binary_addr, _ = movemanager.r2b(runtime_addr)
             if binary_addr is None:
-                assert False
                 return []
         return [binary_addr]
 
@@ -1313,10 +1313,7 @@ class Cpu6502(cpu.Cpu):
 
         def disassemble(self, binary_loc):
             # Get the destination location of the JMP
-            target_runtime_addr = self.target(binary_loc.binary_addr)
-            target_binary_addr, target_move_id = movemanager.r2b(target_runtime_addr)
-
-            return [None, target_binary_addr]
+            return [None] + session.current().cpu.jump_target(self.target(binary_loc.binary_addr), binary_loc)
 
 
     class OpcodeJmpInd(OpcodeAbs):
@@ -1357,7 +1354,7 @@ class Cpu6502(cpu.Cpu):
 
             # Get the destination location of the JSR
             target_runtime_addr = self.target(binary_loc.binary_addr)
-            target_binary_addr, target_move_id = movemanager.r2b(target_runtime_addr)
+            target_binary_addrs = session.current().cpu.jump_target(target_runtime_addr, binary_loc)
 
             # A hook only gets to return the "straight line" address to continue
             # tracing from (if there is one; it can return None if it wishes). Some
@@ -1393,8 +1390,7 @@ class Cpu6502(cpu.Cpu):
                         result = [None]
             else:
                 result = [None]
-            result += [target_binary_addr]
-            return result
+            return result + target_binary_addrs
 
 
     class OpcodeConditionalBranch(Opcode):
@@ -1412,7 +1408,7 @@ class Cpu6502(cpu.Cpu):
             session.current().labels.labels[self.target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
-            return [binary_loc.binary_addr + 2] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
+            return [binary_loc.binary_addr + 2] + session.current().cpu.jump_target(self.target(binary_loc.binary_addr), binary_loc, prefer_own_move=True)
 
         def could_be_call_to_subroutine(self):
             return True

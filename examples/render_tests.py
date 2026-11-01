@@ -289,6 +289,8 @@ def make_tests():
          ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
         ("code start, after other code *",
          ["xa", "ca65", "sjasmplus", "baron"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
+        ("code start, after other code, padded from its end *",
+         ["z88dk-8080", "z88dk"], lambda: output.Directive("code_start", 0x3000, 0x3010, False, 0x2014)),
         ("include binary file *",
          ASSEMBLERS_6502 + ASSEMBLERS_Z80, lambda: output.Directive("include_binary_file", "data.bin")),
         ("6510 undocumented opcode, immediate *",
@@ -1194,6 +1196,26 @@ EXPECTED = {
     'code start, after other code, baron, upper case': [
         '',
         '    SKIPTO &3000',
+        '',
+    ],
+    'code start, after other code, padded from its end, z88dk-8080': [
+        '',
+        '    defs 4076 ; (to $3000)',
+        '',
+    ],
+    'code start, after other code, padded from its end, z88dk-8080, upper case': [
+        '',
+        '    DEFS 4076 ; (to $3000)',
+        '',
+    ],
+    'code start, after other code, padded from its end, z88dk': [
+        '',
+        '    defs 4076 ; (to $3000)',
+        '',
+    ],
+    'code start, after other code, padded from its end, z88dk, upper case': [
+        '',
+        '    DEFS 4076 ; (to $3000)',
         '',
     ],
     'include binary file, acme': [

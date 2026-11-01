@@ -570,7 +570,6 @@ class Cpu8080(cpu.Cpu):
             # If that doesn't work, try without a specific move id...
             binary_addr, _ = movemanager.r2b(runtime_addr)
             if binary_addr is None:
-                assert False
                 return []
         return [binary_addr]
 
@@ -714,10 +713,7 @@ class Cpu8080(cpu.Cpu):
 
         def disassemble(self, binary_loc):
             # Get the destination location of the JMP
-            target_runtime_addr = self._target(binary_loc.binary_addr)
-            target_binary_addr, target_move_id = movemanager.r2b(target_runtime_addr)
-
-            return [None, target_binary_addr]
+            return [None] + session.current().cpu.jump_target(self._target(binary_loc.binary_addr), binary_loc)
 
     class OpcodeJmpInd(Opcode):
         def __init__(self, mnemonic, update=None):
@@ -744,7 +740,7 @@ class Cpu8080(cpu.Cpu):
             session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
-            return [binary_loc.binary_addr + 3] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self._target(binary_loc.binary_addr), binary_loc.move_id)
+            return [binary_loc.binary_addr + 3] + session.current().cpu.jump_target(self._target(binary_loc.binary_addr), binary_loc, prefer_own_move=True)
 
         def instruction(self, binary_addr):
             label = disassembly.get_label(self._target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
@@ -768,7 +764,7 @@ class Cpu8080(cpu.Cpu):
 
             # Get the destination location of the CALL
             target_runtime_addr = self._target(binary_loc.binary_addr)
-            target_binary_addr, target_move_id = movemanager.r2b(target_runtime_addr)
+            target_binary_addrs = session.current().cpu.jump_target(target_runtime_addr, binary_loc)
 
             # A hook only gets to return the "straight line" address to continue
             # tracing from (if there is one; it can return None if it wishes). Some
@@ -803,8 +799,7 @@ class Cpu8080(cpu.Cpu):
                         result = [None]
             else:
                 result = [None]
-            result += [target_binary_addr]
-            return result
+            return result + target_binary_addrs
 
         def instruction(self, binary_addr):
             return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)

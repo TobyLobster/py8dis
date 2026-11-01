@@ -759,7 +759,8 @@ class CpuZ80(cpu.Cpu):
             other_binary_addr, _ = movemanager.r2b(runtime_addr)
             if other_binary_addr is not None and (binary_addr is None or memorymanager.is_data_loaded_at_binary_addr(other_binary_addr, 1)):
                 binary_addr = other_binary_addr
-            assert binary_addr is not None
+            if binary_addr is None:
+                return []
         return [binary_addr]
 
     # What's known about the registers and flags (see cpuz80state.py)
@@ -857,11 +858,11 @@ class CpuZ80(cpu.Cpu):
                 return [None]
             target = self.target(binary_addr)
             if self.kind == FLOW_JP:
-                return [None, movemanager.r2b(target)[0]]
+                return [None] + cpu.jump_target(target, binary_loc)
             if self.kind == FLOW_JR:
-                return [None] + cpu.get_target_binary_addr_preferring_given_move_id(target, binary_loc.move_id)
+                return [None] + cpu.jump_target(target, binary_loc, prefer_own_move=True)
             if self.kind in (FLOW_JP_CC, FLOW_JR_CC):
-                return [next_addr] + cpu.get_target_binary_addr_preferring_given_move_id(target, binary_loc.move_id)
+                return [next_addr] + cpu.jump_target(target, binary_loc, prefer_own_move=True)
 
             # A call or RST: a hook can say where it returns to (e.g. after
             # data following the call), or None if it doesn't
@@ -881,13 +882,14 @@ class CpuZ80(cpu.Cpu):
             else:
                 result = [None]
 
-            target_binary_addr = movemanager.r2b(target)[0]
             if self.kind == FLOW_RST:
                 # (Only traced if it's loaded, since its operand isn't a label)
+                target_binary_addr = movemanager.r2b(target)[0]
                 if target_binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(target_binary_addr, 1):
                     return result
                 cpu.rst_targets.add(target)
-            return result + [target_binary_addr]
+                return result + [target_binary_addr]
+            return result + cpu.jump_target(target, binary_loc)
 
         def _part_text(self, binary_addr, part, in_context=True):
             """The text of an operand part (e.g. a label or number). Unless

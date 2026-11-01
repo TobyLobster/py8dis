@@ -112,6 +112,36 @@ class Cpu:
             result = opcode.disassemble(binary_loc)
             return result
 
+    def jump_target(self, target_runtime_addr, binary_loc, *, prefer_own_move=False):
+        """The binary address to trace for a jump, call or branch to
+        target_runtime_addr from the instruction at binary_loc, as a list
+        (empty if there isn't one).
+
+        With 'prefer_own_move' (for a branch), the target is in the
+        instruction's own move if that move has the address and data is
+        loaded there. Otherwise it's in the one move that puts code there, if
+        there's only one (e.g. a jump from the main code to code that's
+        copied elsewhere to run), or else in the instruction's own move
+        anyway. If more than one move puts code there (e.g. several banks of
+        code that all run at &8000), and the instruction isn't in one of
+        them, which one it reaches isn't known: it isn't traced from here,
+        with a warning."""
+        own_binary_addr = None
+        if prefer_own_move:
+            own_binary_addr, _ = movemanager.r2b(target_runtime_addr, binary_loc.move_id)
+            if own_binary_addr is not None and memorymanager.is_data_loaded_at_binary_addr(own_binary_addr, 1):
+                return [own_binary_addr]
+        binary_addr, _ = movemanager.r2b(target_runtime_addr)
+        if binary_addr is not None and (own_binary_addr is None or memorymanager.is_data_loaded_at_binary_addr(binary_addr, 1)):
+            return [binary_addr]
+        if own_binary_addr is not None:
+            return [own_binary_addr]
+        h = config.get_assembler().hex
+        move_ids = sorted(movemanager.move_ids_for_runtime_addr(target_runtime_addr))
+        utils.warn("{0}: the jump or call to {1} isn't traced, since more than one move puts code there (moves {2}): trace the right one with entry() in a 'with' block for its move".format(
+            h(movemanager.b2r(binary_loc.binary_addr)), h(target_runtime_addr), utils.and_list([str(m) for m in move_ids])))
+        return []
+
     def add_entry(self, binary_addr, runtime_addr, move_id, name, *, explicit=False):
         """Add code entry point.
 

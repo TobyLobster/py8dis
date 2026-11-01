@@ -112,7 +112,7 @@ class Xa(assembler.Assembler):
         """Preamble to be output at the start of the disassembly."""
         return []
 
-    def code_start(self, start_addr, end_addr, first):
+    def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code we provide the address at which to
         assemble."""
         # The first code block is just a "* = $xxxx" style line

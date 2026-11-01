@@ -119,7 +119,7 @@ class Sjasmplus(z88dk.Z88DK):
                                     utils.make_indent(1) + utils.force_case("OPT") + " -Wno-out0"] + lines[i:]
         return lines
 
-    def code_start(self, start_addr, end_addr, first):
+    def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code we provide the address at which to
         assemble."""
         # (A second 'org' doesn't pad the binary, so a gap after the code

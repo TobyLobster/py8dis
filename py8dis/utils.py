@@ -28,6 +28,13 @@ def warn(s):
     """Print a warning message but don't halt execution."""
     print("warning: %s" % (s), file=sys.stderr)
 
+def and_list(items):
+    """The items (strings) as English: 'a', 'a and b', or 'a, b and c'."""
+    items = list(items)
+    if len(items) <= 1:
+        return "".join(items)
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
 def debug(s):
     """Print a debug message but don't halt execution."""
     print("debug: %s" % (s), file=sys.stderr)

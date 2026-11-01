@@ -128,7 +128,7 @@ class Baron(beebasm.Beebasm):
         return ["", self.comment_prefix() + " The PRG file's header: the address to load it at", self._section_start(load_addr - 2),
                 utils.make_indent(1) + self.word_prefix() + self.hex4(load_addr)]
 
-    def code_start(self, start_addr, end_addr, first):
+    def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code, the section that holds it all, starting
         at the address at which to assemble (unless a PRG file's header has
         started it); a later range pads the section to its address."""

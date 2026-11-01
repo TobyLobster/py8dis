@@ -121,7 +121,7 @@ class Beebasm(assembler.Assembler):
             return [utils.make_indent(1) + utils.force_case("cpu 1"), ""]
         return []
 
-    def code_start(self, start_addr, end_addr, first):
+    def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code we provide the address at which to
         assemble."""
         result = ["", utils.make_indent(1) + "{0} {1}".format(utils.force_case("org"), self.hex4(start_addr))]

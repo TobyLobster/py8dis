@@ -101,7 +101,7 @@ class Cpu65C02(Cpu6502):
             return True
 
         def disassemble(self, binary_loc):
-            return [None] + session.current().cpu.get_target_binary_addr_preferring_given_move_id(self.target(binary_loc.binary_addr), binary_loc.move_id)
+            return [None] + session.current().cpu.jump_target(self.target(binary_loc.binary_addr), binary_loc, prefer_own_move=True)
 
         def instruction(self, binary_addr):
             return branch_operand(self.mnemonic, binary_addr, self.target(binary_addr))
