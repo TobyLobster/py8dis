@@ -153,6 +153,7 @@ TESTS = [
     ("regression_tests",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "regression tests for fixed bugs"),
     ("crash_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "things that used to crash py8dis: splits inside an instruction and a word, substitute_constants() with RTS, a constant's align without a comment, expr_label() where moves overlap"),
     ("regex_snippets",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "regex snippets with one character operands, A, negative and binary values, a branch's offset in hex, and a name and an instruction on one line"),
+    ("copy_loops",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loops that copy or set memory, counting up or down, past zero or to a limit, with the comments from the built in snippets"),
     ("expressions",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "how expressions are bracketed for each assembler"),
     ("acorn_os_calls",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "test all the os calls for acorn machines"),
     ("acorn_vectors",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the ways of setting an Acorn OS vector that acorn.py recognises"),

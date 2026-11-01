@@ -108,7 +108,6 @@ evntv   = $0220
 
 // Language workspace ($0400-$07ff)
 current_room_cache      = $0400
-l0401                   = $0401
 dying_items             = $0500
 arrow_slots             = $0580
 highscore_table_names   = $0600
@@ -12275,10 +12274,10 @@ update_key_count
     beq plot_updated_number                                           // 4b5d: f0 2c       .,
     lda current_room_cache + 3,y                                      // 4b5f: b9 03 04    ...
     pha                                                               // 4b62: 48          H
-    // Copy 256 bytes of memory from l0401
+    // Copy 256 bytes of memory from current_room_cache
     ldy #0                                                            // 4b63: a0 00       ..
 copy_cache_back_to_room_definition
-    lda l0401 - 1,y                                                   // 4b65: b9 00 04    ...
+    lda current_room_cache,y                                          // 4b65: b9 00 04    ...
     sta (current_room_low),y                                          // 4b68: 91 08       ..
     dey                                                               // 4b6a: 88          .
     bne copy_cache_back_to_room_definition                            // 4b6b: d0 f8       ..
@@ -12293,11 +12292,11 @@ copy_cache_back_to_room_definition
     and #$f8                                                          // 4b7d: 29 f8       ).
     sta (temp_addr_low),y                                             // 4b7f: 91 1d       ..
 skip_reset_door_animation
-    // Copy 256 bytes of memory to l0401
+    // Copy 256 bytes of memory to current_room_cache
     ldy #0                                                            // 4b81: a0 00       ..
 copy_room_definition_to_cache_loop
     lda (current_room_low),y                                          // 4b83: b1 08       ..
-    sta l0401 - 1,y                                                   // 4b85: 99 00 04    ...
+    sta current_room_cache,y                                          // 4b85: 99 00 04    ...
     dey                                                               // 4b88: 88          .
     bne copy_room_definition_to_cache_loop                            // 4b89: d0 f8       ..
 plot_updated_number
@@ -12353,10 +12352,10 @@ no_teleport_destination_found
 change_room
     ldx stack_ptr                                                     // 4bee: a6 36       .6
     txs                                                               // 4bf0: 9a          .
-    // Copy 256 bytes of memory from l0401
+    // Copy 256 bytes of memory from current_room_cache
     ldy #0                                                            // 4bf1: a0 00       ..
 copy_current_room_cache_back_to_definition_loop
-    lda l0401 - 1,y                                                   // 4bf3: b9 00 04    ...
+    lda current_room_cache,y                                          // 4bf3: b9 00 04    ...
     sta (current_room_low),y                                          // 4bf6: 91 08       ..
     dey                                                               // 4bf8: 88          .
     bne copy_current_room_cache_back_to_definition_loop               // 4bf9: d0 f8       ..
@@ -13958,15 +13957,11 @@ pydis_end
 #if (initial_highscore_table - $70) <> $53a7
 #error Assertion failed: initial_highscore_table - $70 == $53a7
 #endif
-#if (l0401 - 1) <> $0400
-#error Assertion failed: l0401 - 1 == $0400
-#endif
 #if (score_digits_0 - 1) <> $27
 #error Assertion failed: score_digits_0 - 1 == $27
 #endif
 
 // Automatically generated labels:
-//     l0401
 //     l0f00
 //     l1000
 //     l1100

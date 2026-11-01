@@ -66,6 +66,7 @@ OPCODE_STA_ZP_COMMA_X           = 0x95      # sta zp,x
 OPCODE_DEX                      = 0xca      # dex
 OPCODE_INX                      = 0xe8      # inx
 OPCODE_BNE                      = 0xd0      # bne loop
+OPCODE_BCC                      = 0x90      # bcc loop
 OPCODE_TXA                      = 0x8a      # txa
 OPCODE_TYA                      = 0x98      # tya
 
@@ -160,6 +161,38 @@ def register_comment_data_snippet(comment, snippet):
     _add(SnippetDetails(add_data_comment, comment, None, None, parse_snippet(snippet)))
 
 # ************************************************************************************************
+# The bytes a loop works on, from its index register's values
+
+def _loop_indices(start, step, keep_going):
+    """The values of a loop's index register in each pass, as a list: from
+    'start', adding 'step' (1 or -1, for INX or DEX etc.) after each pass,
+    wrapping round within a byte, while keep_going(the new value) is True
+    (the loop's branch back). None if the loop doesn't end within 256
+    passes (e.g. 'dex : cpx #0 : bcs loop', since CPX #0 always sets the
+    carry)."""
+    values = []
+    value = start
+    for _ in range(256):
+        values.append(value)
+        value = (value + step) & 0xff
+        if not keep_going(value):
+            return values
+    return None
+
+def _loop_run(start, step, keep_going):
+    """The bytes a loop indexes (see _loop_indices()), as (the lowest index,
+    the number of bytes), or None if the loop doesn't end, or the bytes
+    aren't one run (e.g. a count up that wraps round from 255 to 0, so the
+    bytes are at both ends of the 256 the register can index)."""
+    values = _loop_indices(start, step, keep_going)
+    if values is None:
+        return None
+    lowest = min(values)
+    if sorted(values) != list(range(lowest, lowest + len(values))):
+        return None
+    return lowest, len(values)
+
+# ************************************************************************************************
 def comment_memory_copy_loop(p):
     """Post-trace function for a loop that copies memory, counting X or Y
     down to zero ('dex : bne loop') or past it ('dex : bpl loop'): comment
@@ -168,12 +201,14 @@ def comment_memory_copy_loop(p):
     The count is the register's value before the loop: from the CPU state
     after the snippet's first instruction (the LDX or LDY, if there is one),
     or failing that the LDX or LDY's operand. With BNE, a count of N copies
-    the N bytes from addr+1 to addr+N (a count of 0 copies 256), so the
-    source and destination are named by the label for addr+1, and the
-    operands are written as that minus 1. With BPL, it copies the N+1 bytes
-    from addr (or just one if N is over 128, since the first DEX or DEY then
-    leaves the register negative). If the count isn't known, the comment
-    gives it in terms of the register (e.g. 'X bytes'). An indirect load or
+    the N bytes from addr+1 to addr+N, and a count of 0 the 256 from addr.
+    With BPL, it copies the N+1 bytes from addr, or for a count of 129 or
+    more just the one at addr+N (the first DEX or DEY then leaves the
+    register negative). The source and destination are named by the label
+    for the lowest byte copied, and if that isn't addr, the operands are
+    written as that label minus the difference. If the count isn't known,
+    the comment gives it in terms of the register (e.g. 'X bytes', from
+    addr+1, for BNE). An indirect load or
     store (e.g. '(zp1),y') isn't named. Nothing is commented if the branch
     doesn't go back to the loop's start."""
 
@@ -195,10 +230,19 @@ def comment_memory_copy_loop(p):
     if bytes_to_copy is None:
         bytes_to_copy = p.get_memory("start_count")
 
+    # The lowest byte copied, and how many: the loop goes on while the
+    # register isn't zero (BNE), or isn't negative (BPL). (Without a known
+    # count, it's taken to start above zero.)
+    if bytes_to_copy is not None:
+        run = _loop_run(bytes_to_copy, -1, (lambda r: r != 0) if is_stop_at_zero else (lambda r: r < 0x80))
+        if run is None:
+            return
+        offset, bytes_to_copy = run
+
     # Name the source by the lowest byte copied (addr+offset). With an offset,
     # the load's operand (the byte after its opcode) is written as that label
     # minus the offset, unless it already has an expression, when the source
-    # is that expression plus 1.
+    # is that expression plus the offset.
     if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=offset)
 
@@ -207,10 +251,8 @@ def comment_memory_copy_loop(p):
             proposed_expression = p.make_subtract_wrapped(source_label, 'addr', offset)
             new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
             if new_expression is not None and new_expression != proposed_expression:
-                source_label = make_add(new_expression, 1)
+                source_label = make_add(new_expression, offset)
         source_label = utils.LazyString(" from %s", source_label)
-        #if bytes_to_copy is None:
-        #    source_label = utils.LazyString("%s+%s", source_label, reg.upper())
 
     # The same for the destination
     if is_store_indirect is None:
@@ -221,36 +263,15 @@ def comment_memory_copy_loop(p):
             proposed_expression = p.make_subtract_wrapped(dest_label, 'other', offset)
             new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
             if new_expression is not None and new_expression != proposed_expression:
-                dest_label = make_add(new_expression, 1)
+                dest_label = make_add(new_expression, offset)
         dest_label = utils.LazyString(" to %s", dest_label)
-        #if bytes_to_copy is None:
-        #    dest_label = utils.LazyString("%s+%s", dest_label, reg.upper())
 
-    # Work out the number of bytes from the count (or, if it isn't known,
-    # what to add to the register's name: "X+1" for BPL)
-    offset_string = ""
+    # If the count isn't known, what to add to the register's name: "X+1"
+    # for BPL
+    offset_string = "+1" if bytes_to_copy is None and not is_stop_at_zero else ""
 
     if bytes_to_copy is not None:
-        if not is_stop_at_zero:
-            # "bpl loop"
-            if bytes_to_copy > 128:
-                # "bpl loop" and initial value is 129 or higher then the loop will only happen once.
-                # This is for completeness/correctness only - why you would write a loop like this?
-                bytes_to_copy = 1
-            else:
-                # Stop when reg becomes 255
-                bytes_to_copy += 1
-
-        # with a loop counter initialised to zero, we actually loop 256 times
-        if is_stop_at_zero and (bytes_to_copy == 0):
-            # "bne loop"
-            bytes_to_copy = 256
-    else:
-        if not is_stop_at_zero:
-            offset_string = "+1"
-
-    if bytes_to_copy is not None:
-        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
+        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte of memory", "bytes of memory")
     else:
         bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
 
@@ -263,11 +284,14 @@ def comment_memory_copy_with_limited_end_loop(p):
     """Post-trace function for a loop that copies memory, counting X or Y
     down to a limit ('dey : cpy #end_count : bcs loop'): comment it as
     comment_memory_copy_loop() does, e.g. 'Copy 8 bytes of memory from
-    source to dest'. The loop copies from start_count down to end_count, so
-    the source and destination are named by the label for addr+end_count,
-    and the operands are written as that minus end_count. Nothing is
-    commented if the branch doesn't go back to the loop's start, or if
-    end_count is zero."""
+    source to dest'. The loop copies from start_count down to end_count (or
+    just start_count, if that's below end_count), so the source and
+    destination are named by the label for the lowest byte copied, and the
+    operands are written as that minus its offset from addr. Nothing is
+    commented if the branch doesn't go back to the loop's start, if the
+    loop never ends (end_count is zero), or if the bytes aren't one run (a
+    start_count of zero wraps round to 255, so the loop copies at 0 and then
+    from 255 down)."""
 
     # Make sure the branch instruction's operand jumps to the definition of the label
     if not p.check_branch_matches('loop'):
@@ -292,52 +316,50 @@ def comment_memory_copy_with_limited_end_loop(p):
     if end_count == 0:
         return
 
-    # The loop counts down from start_count to end_count inclusive. A
-    # start_count of zero wraps round (the first DEX or DEY makes it 255), so
-    # the loop copies at 0, then from 255 down to end_count, and this counts
-    # those too. (With a start_count above zero but below end_count, the
-    # loop runs just once, which this doesn't allow for.)
+    # The lowest byte copied (offset), and how many: the loop goes on while
+    # the register is at least end_count (BCS, after CPX or CPY). (Without a
+    # known start_count, the lowest is taken to be end_count.)
+    offset = end_count
+    bytes_to_copy = None
     if start_count is not None:
-        bytes_to_copy = ((start_count - end_count) & 0xff) + 1
-    else:
-        bytes_to_copy = None
+        run = _loop_run(start_count, -1, lambda r: r >= end_count)
+        if run is None:
+            return
+        offset, bytes_to_copy = run
 
-    # Name the source by the lowest byte copied (addr+end_count), with the
-    # load's operand written as that label minus end_count, unless it
-    # already has an expression, when the source is that expression plus 1
+    # Name the source by the lowest byte copied (addr+offset), with the
+    # load's operand written as that label minus the offset, unless it
+    # already has an expression, when the source is that expression plus the
+    # offset
     if is_load_indirect is None:
-        source_label = p.get_expr('addr', label_offset=0, final_offset=end_count)
+        source_label = p.get_expr('addr', label_offset=0, final_offset=offset)
 
-        if end_count:
+        if offset:
             source_binary_addr = p.get_binary_address('load')+1
-            proposed_expression = p.make_subtract_wrapped(source_label,'addr',end_count)
+            proposed_expression = p.make_subtract_wrapped(source_label,'addr',offset)
             new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
             if new_expression is not None and new_expression != proposed_expression:
-                source_label = make_add(new_expression, 1)
+                source_label = make_add(new_expression, offset)
         source_label = utils.LazyString(" from %s", source_label)
-        #if bytes_to_copy is None:
-        #    source_label = utils.LazyString("%s+%s", source_label, reg.upper())
 
     # The same for the destination
     if is_store_indirect is None:
-        dest_label = p.get_expr('other', label_offset=0, final_offset=end_count)
+        dest_label = p.get_expr('other', label_offset=0, final_offset=offset)
 
-        if end_count:
+        if offset:
             dest_binary_addr = p.get_binary_address('store')+1
-            proposed_expression = p.make_subtract_wrapped(dest_label, 'other', end_count)
+            proposed_expression = p.make_subtract_wrapped(dest_label, 'other', offset)
             new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
             if new_expression is not None and new_expression != proposed_expression:
-                dest_label = make_add(new_expression, 1)
+                dest_label = make_add(new_expression, offset)
         dest_label = utils.LazyString(" to %s", dest_label)
-        #if bytes_to_copy is None:
-        #    dest_label = utils.LazyString("%s+%s", dest_label, reg.upper())
 
     # If start_count isn't known, the number of bytes is the initial value of
     # the register minus (end_count - 1)
     offset_string = "" if end_count == 1 else "-%d" % (end_count - 1)
 
     if bytes_to_copy is not None:
-        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
+        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte of memory", "bytes of memory")
     else:
         bytes_to_copy_string = " " + reg.upper() + offset_string + " bytes of memory"
 
@@ -352,10 +374,13 @@ def comment_memory_copy_increment(p):
     up to a limit ('inx : cpx #end_count : bne loop', or BCC): comment it
     as comment_memory_copy_loop() does, e.g. 'Copy 8 bytes of memory from
     source to dest'. The loop copies end_count - start_count bytes from
-    addr+start_count, so the source and destination are named by the label
-    for that address, and the operands are written as that minus
+    addr+start_count (or with BCC, just the one at start_count if that's
+    at least end_count), so the source and destination are named by the
+    label for that address, and the operands are written as that minus
     start_count. Nothing is commented if the branch doesn't go back to the
-    loop's start, or if start_count isn't known."""
+    loop's start, if start_count isn't known, or if the bytes aren't one
+    run (the register wraps round from 255 to 0, e.g. 'ldx #$f0 ... cpx
+    #$10 : bne loop')."""
 
     # Make sure the branch instruction's operand jumps to the definition of the label as expected
     if not p.check_branch_matches('loop'):
@@ -369,6 +394,7 @@ def comment_memory_copy_increment(p):
     source_label        = ""
     dest_label          = ""
     reg                 = 'x' if p.get_memory('update') == OPCODE_INX else 'y'
+    is_bcc              = p.get_memory('branch') == OPCODE_BCC      # BCC or BNE
     state               = p.get_state('comment')
     start_count         = state.pessimistic[reg].value if state and state.pessimistic[reg] else None
     if start_count is None:
@@ -376,11 +402,17 @@ def comment_memory_copy_increment(p):
         if start_count is None:
             return
 
-    bytes_to_copy = end_count - start_count
+    # The first byte copied, and how many: the loop goes on while the
+    # register is below end_count (BCC, after CPX or CPY), or isn't
+    # end_count (BNE)
+    run = _loop_run(start_count, 1, (lambda r: r < end_count) if is_bcc else (lambda r: r != end_count))
+    if run is None:
+        return
+    start_count, bytes_to_copy = run
 
     # Name the source by the first byte copied (addr+start_count), with the
     # load's operand written as that label minus start_count, unless it
-    # already has an expression, when the source is that expression minus
+    # already has an expression, when the source is that expression plus
     # start_count
     if is_load_indirect is None:
         source_label = p.get_expr('addr', label_offset=0, final_offset=start_count)
@@ -389,7 +421,7 @@ def comment_memory_copy_increment(p):
         proposed_expression = p.make_subtract_wrapped(source_label, 'addr', start_count)
         new_expression = classification.add_expression(source_binary_addr, proposed_expression, force=False)
         if new_expression is not None and new_expression != proposed_expression:
-            source_label = p.make_subtract_wrapped(new_expression, 'addr', start_count)
+            source_label = make_add(new_expression, start_count)
         source_label = utils.LazyString(" from %s", source_label)
 
     # The same for the destination
@@ -400,15 +432,10 @@ def comment_memory_copy_increment(p):
         proposed_expression = p.make_subtract_wrapped(dest_label, 'other', start_count)
         new_expression = classification.add_expression(dest_binary_addr, proposed_expression, force=False)
         if new_expression is not None and new_expression != proposed_expression:
-            dest_label = p.make_subtract_wrapped(new_expression, 'other', start_count)
+            dest_label = make_add(new_expression, start_count)
         dest_label = utils.LazyString(" to %s", dest_label)
 
-    # (start_count and end_count are both known by now, so bytes_to_copy is
-    # always known)
-    if bytes_to_copy is not None:
-        bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte", "bytes"+ " of memory")
-    else:
-        bytes_to_copy_string = " some bytes of memory"
+    bytes_to_copy_string = " " + utils.count_with_units(bytes_to_copy, "byte of memory", "bytes of memory")
 
     # (The labels aren't named yet, so the text is a LazyString)
     text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
@@ -438,9 +465,11 @@ def comment_set_memory_r_loop(p, reg, other_reg):
     before it, or, if none of those matched, py8dis's guess at the state at
     the loop's start (the 'optimistic' state, which, unlike the
     'pessimistic' one, isn't cleared at a label). They're only used if the
-    loop's start has just one reference (the branch back to it). With an
-    indirect store ('(zp),y'), the address isn't named. Nothing is commented
-    if the branch doesn't go back to the loop's start."""
+    loop's start has just one reference (the branch back to it). With BNE,
+    a count of 0 sets 256 bytes; with BPL, a count of N sets N+1, or just
+    one for a count of 129 or more. With an indirect store ('(zp),y'), the
+    address isn't named. Nothing is commented if the branch doesn't go back
+    to the loop's start."""
 
     # Make sure the branch instruction's operand jumps to the definition of the label as expected
     if not p.check_branch_matches('loop'):
@@ -477,11 +506,12 @@ def comment_set_memory_r_loop(p, reg, other_reg):
     dest_label              = ""
     to_value_string         = ""
 
-    bytes_to_set = loop_counter
+    # How many bytes: the loop goes on while the counter isn't zero (BNE), or
+    # isn't negative (BPL)
+    bytes_to_set = None
+    if loop_counter is not None:
+        bytes_to_set = len(_loop_indices(loop_counter, -1, (lambda r: r != 0) if is_stop_at_zero else (lambda r: r < 0x80)))
     plus_reg = "+"+other_reg.upper()
-    if bytes_to_set is not None:
-        if not is_stop_at_zero:
-            bytes_to_set += 1
 
     if to_value is not None:
         to_value_string = " to {0}".format(to_value)
@@ -491,7 +521,7 @@ def comment_set_memory_r_loop(p, reg, other_reg):
         dest_label = utils.LazyString(" at %s%s", dest_label, plus_reg)
 
     if bytes_to_set is not None:
-        bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte", "bytes"+ " of memory")
+        bytes_to_set_string = " " + utils.count_with_units(bytes_to_set, "byte of memory", "bytes of memory")
     else:
         bytes_to_set_string = " {0} bytes of memory".format(reg.upper())
 
@@ -668,7 +698,7 @@ branch
 """)
 
 register_code_snippet(comment_memory_copy_increment, """
-; memory copy increasing loop counter, using X as the loop counter
+; memory copy increasing loop counter, using Y as the loop counter
 comment
 ?    ldy #start_count
 loop
@@ -721,15 +751,16 @@ register_code_snippet(comment_add_to_x, """
 # stepping the other up, after up to three loads that set them up, e.g. 'lda
 # #0 : ldy #0 : ldx #18 : loop sta table,y : iny : dex : bne loop'. Traced as
 # code, and commented e.g. 'Clear 18 bytes of memory at table+Y' (see
-# comment_set_memory_r_loop()).
+# comment_set_memory_r_loop()). The loads' operands have names of their own
+# (load_addr, zp_load), so that 'addr' and 'zp' are the store's.
 register_code_snippet(comment_set_memory_x_loop, """
 comment
 load1
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
+?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda load_addr | lda load_addr,x | lda load_addr,y | lda zp_load | lda zp_load,x | lda zp_load,y | ldx zp_load | ldx load_addr | ldx zp_load,y | ldy zp_load | ldy zp_load,x | ldy load_addr | ldy load_addr,x
 load2
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
+?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda load_addr | lda load_addr,x | lda load_addr,y | lda zp_load | lda zp_load,x | lda zp_load,y | ldx zp_load | ldx load_addr | ldx zp_load,y | ldy zp_load | ldy zp_load,x | ldy load_addr | ldy load_addr,x
 load3
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
+?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda load_addr | lda load_addr,x | lda load_addr,y | lda zp_load | lda zp_load,x | lda zp_load,y | ldx zp_load | ldx load_addr | ldx zp_load,y | ldy zp_load | ldy zp_load,x | ldy load_addr | ldy load_addr,x
 loop
     sta addr,y | sta (zp),y
     iny
@@ -741,11 +772,11 @@ branch
 register_code_snippet(comment_set_memory_y_loop, """
 comment
 load1
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
+?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda load_addr | lda load_addr,x | lda load_addr,y | lda zp_load | lda zp_load,x | lda zp_load,y | ldx zp_load | ldx load_addr | ldx zp_load,y | ldy zp_load | ldy zp_load,x | ldy load_addr | ldy load_addr,x
 load2
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
+?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda load_addr | lda load_addr,x | lda load_addr,y | lda zp_load | lda zp_load,x | lda zp_load,y | ldx zp_load | ldx load_addr | ldx zp_load,y | ldy zp_load | ldy zp_load,x | ldy load_addr | ldy load_addr,x
 load3
-?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda addr | lda addr,x | lda addr,y | lda zp | lda zp,x | lda zp,y | ldx zp | ldx addr | ldx zp,y | ldy zp | ldy zp,x | ldy addr | ldy addr,x
+?   lda #nn1 | ldx #nn2 | ldy #nn3 | lda load_addr | lda load_addr,x | lda load_addr,y | lda zp_load | lda zp_load,x | lda zp_load,y | ldx zp_load | ldx load_addr | ldx zp_load,y | ldy zp_load | ldy zp_load,x | ldy load_addr | ldy load_addr,x
 loop
     sta addr,x | sta (zp,x)
     inx
