@@ -1,3 +1,9 @@
+"""local_label(): zero page &70 is 'char_to_print' everywhere except in the
+bit counting loop (&2017-&2021), where the code reuses it, and it's
+'bit_value'. The program also has a CRTC register number stored to the
+CRTC's address register, which acorn.bbc() names (crtc_vert_total_adjust),
+and a subroutine header."""
+
 from commands import *
 import config
 import acorn
@@ -10,7 +16,7 @@ config.set_memory_region_headings(False)
 
 
 
-# Load the program to be disassembled into the debugger's memory.
+# Load the program to be disassembled into py8dis's memory.
 # The md5sum is optional but helps avoid confusion if there are
 # multiple versions of the same program.
 load(0x2000, "orig/local_labels.orig", "6502", "ac64dbf0050be82f97f01b22262406a8")
@@ -35,6 +41,8 @@ label(0x201e, "skip_add_to_bit_count")
 label(0x2026, "crtc_substitution_test")
 
 # TEST LOCAL LABELS:
+# &70 is char_to_print, except where it's used in the code from &2017 up to
+# (but not including) &2022, where it's bit_value
 
 label(0x70, "char_to_print")
 local_label(0x70, "bit_value", 0x2017, 0x2022)

@@ -1,3 +1,11 @@
+"""subroutine() (see asm_to_create_test_binaries/subroutine_test.asm):
+routines described with a title, a description, and what's in the registers
+on entry and exit. py8dis writes a header comment before each, comments each
+call with its title, and comments the instructions that set or use the
+registers around a call (e.g. '; A=number to print'). A description in
+brackets, such as '(preserved)', goes in the header but not in the comments
+on calls. It also uses char(), decimal() and an inline comment()."""
+
 from commands import *
 import acorn
 import config
@@ -19,6 +27,7 @@ subroutine(0x2010,
 label(0x2012, "print_loop")
 label(0x201e, "welcome_message")
 
+# (No title, so calls to it aren't commented with one)
 subroutine(0x2029, "print_decimal_number", None, "Print a byte as a decimal number 000-255", on_entry={'a': "number to print"})
 label(0x202b, "loop_next_decimal_digit")
 char(0x202c)

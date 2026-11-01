@@ -1,11 +1,13 @@
-# The 8080's undocumented opcodes (October 2026). See
-# asm_to_create_test_binaries/undocumented_8080.asm.
-#
-# &08, &10, &18, &20, &28, &30 and &38 run as NOP, &CB as JMP, &D9 as RET, and
-# &DD, &ED and &FD as CALL. They used to be disassembled as 'nop' (or 'rim'
-# and 'sim', for &20 and &30, which are 8085 instructions), which assembles
-# to &00, and the calls and jump weren't followed. Now they're traced as what
-# they run as, and output as data bytes with the instruction in a comment.
+"""The 8080's undocumented opcodes (see
+asm_to_create_test_binaries/undocumented_8080.asm).
+
+&08, &10, &18, &20, &28, &30 and &38 run as NOP, &CB as JMP, &D9 as RET, and
+&DD, &ED and &FD as CALL. They're traced as what they run as (so the calls
+and the jump are followed), and output as data bytes with the instruction in
+a comment. (A regression test: written as 'nop', which assembles to &00, or
+as the 8085's 'rim' and 'sim', for &20 and &30, they wouldn't reassemble to
+the original bytes.) The cycles and what's known about the registers are
+shown too."""
 
 from commands import *
 

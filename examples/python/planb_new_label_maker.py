@@ -1,9 +1,11 @@
-#########################################################################################
-#
-# Plan B disassembler
-# By TobyLobster
-#
-#########################################################################################
+"""Plan B disassembler, by TobyLobster
+
+The disassembly of planb.py (Plan B, a BBC Micro game), with a new style
+label maker hook, which is given a LabelMakingData and changes its name,
+rather than the old style hook planb.py uses. It also calls the two parts
+of acorn.bbc(), acorn.mos_labels() and acorn.hardware_bbc(), separately,
+and has a few small differences from planb.py in how the data is laid
+out."""
 
 
 
@@ -54,21 +56,31 @@ config.set_show_char_literals(False)
 config.set_label_return_instructions_numerically(True)
 
 memory_binary = memorymanager.memory_binary
+# The INKEY numbers inkey_expr() has named, to define as constants at the end
 found_keys = {}
 
 def eprint(*args, **kwargs):
+    """print(), to stderr, so that it's not in the output. (Not used.)"""
     print(*args, file=sys.stderr, **kwargs)
 
 def include_terminator_fn(by):
+    """For stringhi(): the character with bit 7 set, at the end, is part of
+    the string."""
     return True
 
 def hook(subroutine_addr, addr):
+    """The hook for print_following_string: mark the string after the call
+    (whose last character has bit 7 set), and carry on after it."""
     return stringhi(addr + 3, include_terminator_fn)
 
 def get_u8(addr):
+    """The byte at a binary address."""
     return memory_binary[addr]
 
 def my_label_maker(d):
+    """Rename three zero page locations where the code from &4192 to &41ff,
+    or from &4600 to &464e, uses them for something else (door information
+    or temporary values)."""
     if d.in_range(0x4192, 0x4200):
         d.replace("room_decode_rect_width", "current_room_door_info")
         d.replace("room_decode_sprite_height", "current_room_door_celly")
@@ -78,6 +90,8 @@ def my_label_maker(d):
         d.replace("room_decode_rect_width", "temp_door_byte")
 
 def inkey_expr(addr):
+    """Write the INKEY number at addr as its name from acorn.inkey_enum, and
+    remember it, so that it's defined as a constant at the end."""
     key = get_u8(addr)
     if key in acorn.inkey_enum:
         expr(addr, acorn.inkey_enum[key])
@@ -86,6 +100,8 @@ def inkey_expr(addr):
         assert("inkey not found")
 
 def picture_sprite(addr, lab, width, height):
+    """Name a sprite 'lab', and write its bytes in picture binary, one row of
+    width pixels (a bit each) on each line."""
     label(addr, lab)
     bytes_per_line = (width + 7) // 8
     byte(addr, height * bytes_per_line, bytes_per_line)
@@ -95,6 +111,8 @@ def picture_sprite(addr, lab, width, height):
 set_label_maker_hook(my_label_maker)
 load(0x1210, "orig/planb.orig", "6502")
 
+# The two halves of acorn.bbc(): the OS's names, comments and memory regions,
+# then the BBC Micro's hardware
 acorn.mos_labels()
 acorn.hardware_bbc()
 no_automatic_comment(0x533b)
@@ -215,12 +233,18 @@ label(0x0e00, "clock")
 comment(0x1210, "There are 85 sprites. Sprites are stored 8x8 character cells which are ordered upside down and from right to left. The first 32 sprites can be specified in the commands of the room definition.")
 
 def get_addr(addr, x, y, w, h):
+    """The address of the byte with pixel (x, y) in it, in the sprite at addr,
+    which is w pixels wide (h isn't used): the sprite's 8x8 cells are stored
+    from right to left, 8 bytes each, with each cell's rows upside down (see
+    the comment at &1210)."""
     y = y ^ 7
     #y = h - 1 - y
     x = (w - 1) - x
     return addr + int(y/8)*w + int(x/8)*8 + (y & 7)
 
 def centre_row(row):
+    """'row', with each of its lines centred in 80 columns (and without
+    spaces at the ends)."""
     split_row = row.splitlines()
     max_width = 0
     for entry in split_row:
@@ -260,8 +284,11 @@ def append_string(row, row_width, string):
     return "\n".join(split_row)
 
 def setc(string, i, val):
+    """'string' with the character at index i replaced by val."""
     return string[:i] + val + string[i+1:]
 
+# Mark each sprite as picture binary, and draw it as ASCII art: the sprites
+# are drawn in frames, several to a row, in comments at &1210 (a gallery)
 gallery_gap = 6
 
 i = 0
@@ -337,9 +364,15 @@ label(0x6fa, "highscore_table_scores")
 label(0x394b, "room_definition_low")
 label(0x3982, "room_definition_high")
 
+# The rooms: each room's definition is decoded as the game does it, marking
+# and commenting its bytes, and drawing the room's map, a grid of 32 rows of
+# 40 cells, each the number of the sprite there (or -1 for nothing), which
+# end_room() writes as a comment before the room's definition.
 room = [[]]
 
 def start_room():
+    """Start decoding a room: an empty map, and the decoder's starting
+    position, direction and sprite."""
     global room
     global deltax
     global deltay
@@ -364,6 +397,11 @@ def start_room():
     skip_first_sprite_plot = False
 
 def end_room(addr, room_title):
+    """Write the room's map as a comment at addr, under its title, with a
+    character for each cell: e.g. 'D' for a door, '1' to '4' for the type
+    of a door or key, 'K' for a key, 'C', 'c', 'X' and 'x' for computers,
+    '*' for most other sprites and '.' for nothing (the first six rows, if
+    they're empty, are left out)."""
     global room
 
     comment_str = "\n"
@@ -423,6 +461,8 @@ def end_room(addr, room_title):
     formatted_comment(addr, comment_str)
 
 def plot_sprite(addr, sprite, x, y):
+    """Put the sprite in the room's map, in the cells it covers, from (x, y).
+    (Sprite number 256 is a key, one cell.)"""
     global room
 
     if sprite == 256:
@@ -434,6 +474,8 @@ def plot_sprite(addr, sprite, x, y):
             room[y+h][x+w] = sprite
 
 def add_door(addr,door_type,doorx,doory,vertical,visible):
+    """Put a door in the room's map, with the sprites for its type at each
+    end (unless it's invisible)."""
 
     if not visible:
         if vertical:
@@ -457,16 +499,24 @@ def add_door(addr,door_type,doorx,doory,vertical,visible):
             plot_sprite(addr, 32 + door_type, doorx + 5, doory)
 
 def add_key(addr,keyx,keyy,key_index):
+    """Put a key in the room's map, with its type's sprite below it."""
     plot_sprite(addr, 256, keyx, keyy)
     plot_sprite(addr, 32+key_index, keyx, keyy + 1)
 
 def add_computer(addr,x,y,index):
+    """Put a computer in the room's map."""
     plot_sprite(addr, 0x39+index, x, y)
 
 def add_collectible(addr,x,y,index):
+    """Put a collectible in the room's map."""
     plot_sprite(addr, 0x25+index, x, y)
 
+# The room commands. Each marks and comments the command's bytes at addr,
+# draws what it does in the room's map, and returns its length in bytes.
+
 def command_plot_strip(addr):
+    """Commands 0 and 1: a strip of the sprite, the byte's value long, from
+    the position, moving by the delta each time."""
     global cellx
     global celly
     global sprite
@@ -490,6 +540,8 @@ def command_plot_strip(addr):
     return 1
 
 def command_set_deltax_or_y(addr):
+    """Command 3: set the delta, the direction to move in: bits 0-2 are the
+    distance, bit 3 makes it negative, and bit 4 says it's in Y, not X."""
     global deltax
     global deltay
 
@@ -509,6 +561,8 @@ def command_set_deltax_or_y(addr):
     return 1
 
 def command_set_cellxy(addr):
+    """Command 4: set the position, Y in bits 0-4 of the first byte and X in
+    the second byte."""
     global cellx
     global celly
     global skip_first_sprite_plot
@@ -521,6 +575,8 @@ def command_set_cellxy(addr):
     return 2
 
 def command_move_in_delta_direction(addr):
+    """Command 5: move the position by the delta times bits 0-4, without
+    drawing."""
     global cellx
     global celly
 
@@ -531,6 +587,8 @@ def command_move_in_delta_direction(addr):
     return 1
 
 def command_set_sprite(addr):
+    """Commands 2 and 6: set the sprite to draw with (bits 0-4). Bit 7, and
+    the sprite, choose a collision byte, which is only commented."""
     global sprite
 
     byt = get_u8(addr)
@@ -546,6 +604,9 @@ def command_set_sprite(addr):
     return 1
 
 def command_move_draw_rect(addr):
+    """Command 7: fill a rectangle with the sprite, from the position: its
+    height is in bits 0-4 of the first byte, and its width in the second
+    byte. The position moves down to the row below it."""
     global skip_first_sprite_plot
     global celly
 
@@ -561,6 +622,8 @@ def command_move_draw_rect(addr):
     return 2
 
 def execute_command(command, addr):
+    """Decode the room command at addr ('command' is its byte's top three
+    bits), and return its length in bytes."""
     if command == 0:
         return command_plot_strip(addr)
     elif command == 1:
@@ -580,6 +643,11 @@ def execute_command(command, addr):
 
     return 1
 
+# The 55 rooms' definitions, from the table of their addresses (the low bytes
+# at &394b and the high bytes at &3982): a header (the offset to the doors,
+# four enemy types and the most enemies to show), the commands, then the
+# doors, keys, computers and collectibles, each list ending with a zero, and
+# the room's title
 addr_low = 0x394b
 addr_high = 0x3982
 for i in range(0,55):
@@ -731,6 +799,8 @@ for i in range(0,55):
 divider = "***************************************************************************************"
 
 def sublabel(addr, lab, com = ""):
+    """Name a routine at addr 'lab', with a line of stars before it, and the
+    comment 'com', if given."""
     formatted_comment(addr, divider)
     if com != "":
         comment(addr, com)
@@ -941,6 +1011,9 @@ expr(0x4098, ">sound7")
 expr(0x4099, ">sound8")
 
 def sound(a, lab):
+    """Name and mark an OSWORD 7 (SOUND) parameter block, four words, with
+    the amplitude (negative) or envelope number (positive) as a signed
+    number."""
     label(a, lab)
     word(a, 4)
     sint(a + 2)
@@ -1483,6 +1556,7 @@ expr(0x4b59, "current_room_cache + 4")
 expr(0x4c15, "current_room_cache + 4")
 
 # **************************************************************************************
+# Rooms' titles, each ending with a character with bit 7 set
 stringhi(0x2193, include_terminator_fn)
 stringhi(0x21d6, include_terminator_fn)
 stringhi(0x2253, include_terminator_fn)
@@ -1522,6 +1596,7 @@ string(0x3ea5)
 string(0x3eab)
 string(0x3eb8)
 
+# The INKEY numbers of the keys the game reads (e.g. 'ldx #inkey_key_q')
 inkey_expr(0x401e)
 inkey_expr(0x4029)
 inkey_expr(0x4035)

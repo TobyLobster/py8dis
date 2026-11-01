@@ -1,5 +1,6 @@
-# The same binary as move2, testing that an old style (legacy) label maker
-# hook can choose which move a label is defined in. This used to be ignored.
+"""The same binary as move2.py, testing that an old style (legacy) label maker
+hook can choose which move a label is defined in. (A regression test: the
+move the hook returns mustn't be ignored.) See move2.py for the moves."""
 
 from commands import *
 
@@ -21,6 +22,9 @@ with low_b_move_id:
 # The 'jmp &090d' at &090f in the first move really jumps into the code from
 # the second move, so name that label and define it in the second move.
 def my_label_maker(addr, context, suggestion):
+    """Name the label for the 'jmp &090d' (whose operand is at binary address
+    &2020) 'enter_low_b_baz', defined in the second move. Any other label
+    keeps its suggested name and move."""
     if addr == 0x90d and context == 0x2020:
         return ("enter_low_b_baz", low_b_move_id)
     return suggestion

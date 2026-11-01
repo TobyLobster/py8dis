@@ -4,6 +4,7 @@ the P00 header). (Made by asm_to_create_test_binaries/go.)"""
 
 from commands import *
 
+# load_prg() returns the address the PRG file loads at (its first two bytes)
 start = load_prg("orig/p00_test.p00", "6502", "2759154d1c3724cc7a3be208033cb8d8")
 assert start == 0x0801
 

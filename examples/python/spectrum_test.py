@@ -15,6 +15,8 @@ spectrum.spectrum48()
 
 entry(0x8000, "start")
 label(0x8076, "message")
+# The message's address and length, loaded into DE and BC ('ld de,message',
+# 'ld bc,message_end - message')
 expr(0x8012, "message")
 expr(0x8015, "message_end - message")
 label(0x807c, "message_end")

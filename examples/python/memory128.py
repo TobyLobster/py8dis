@@ -103,6 +103,9 @@ for addr, name in {
 byte(0x2000, 1, 0x12)
 word(0x2012)
 
+# The jump through handler_table copies a routine's address to jump_addr, a
+# byte at a time: so these two operands, the addresses of the high bytes, are
+# written as the byte after each label (rather than as labels of their own)
 expr(0x2134, "handler_table+1")
 expr(0x2137, "jump_addr+1")
 
@@ -119,6 +122,8 @@ label(0x4000, "chr_dat3")       # "You Win!"
 byte(0x3000, 0x3800 - 0x3000, cols=16)
 byte(0x3800, 0x4000 - 0x3800, cols=16)
 byte(0x4000, 0x47d0 - 0x4000, cols=16)
+# Its tables of words: card_pos_array, special_card_face_array and
+# card_face_origin
 word(0x251f, 17, 1)
 word(0x2541, 2, 1)
 word(0x2545, 32, 2)

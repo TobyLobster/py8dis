@@ -1,8 +1,25 @@
+"""DFS 2.26, a disc filing system sideways ROM for the BBC Micro, as a test on
+a large real program: a disassembly in progress (the XXX and TODO comments
+are open questions). It uses acorn.bbc() and acorn.is_sideways_rom(), moves
+for the Tube host code and the NMI handlers that the ROM copies into RAM
+(two of them to the same address), hooks for subroutines followed by a
+string to print or an OS error, self-modifying code (operands the code
+changes at runtime, and patched_branch() for branch offsets it changes),
+tables of commands, and most of the number format commands, some of them
+only to test them. dfs226b.py is the same ROM loaded somewhere else and
+moved to &8000."""
+
 from commands import *
 import acorn
 
 # TODO: Use this everywhere relevant
 def patched_branch(base_label, offset_addr, target_label, label_only=False):
+    """For a branch at base_label whose offset the code changes at runtime:
+    the offset byte stored is at offset_addr (e.g. the operand of the 'lda #'
+    that loads it). Label the branch's target, with the offset, as
+    target_label, and trace it (or just label it, if label_only), and write
+    the offset byte as the expression target_label-(base_label+2). Only for
+    a branch forwards."""
     base_addr = addr(base_label)
     offset = memory[offset_addr]
     assert offset < 0x80
@@ -19,13 +36,15 @@ acorn.bbc()
 # This is a sideways ROM, so it has a header and standard entry points we can label.
 acorn.is_sideways_rom()
 
+# The Tube host code, which the ROM copies into RAM to run: from &af79 to
+# &0400, from &acdb to &0500, and from &af38 to &16 in zero page.
 # TODO: Would we in fact get away with just moving 0x100 bytes at each of 0x400/500/600 as the actual assembler code does? I am going to be as precise as I can for now, but it would be interesting to try this.
 tube_host_move_id1 = move(0x400, 0xaf79, 0xb075 - 0xaf79)
 tube_host_move_id2 = move(0x500, 0xacdb, 0xaea9 - 0xacdb)
-# The code at &af2b copies &42 bytes from &af38to &16, but &af38+&42=&af7a, so this would steal the first byte of the move() to 0x400 above. XXX: I don't know if the byte copied from &af79 to zero page is done deliberately or is just the copy loop harmlessly but unnecessarily copying at an extra byte.
+# The code at &af2b copies &42 bytes from &af38 to &16, but &af38+&42=&af7a, so this would steal the first byte of the move() to 0x400 above. XXX: I don't know if the byte copied from &af79 to zero page is done deliberately or is just the copy loop harmlessly but unnecessarily copying at an extra byte.
 tube_host_move_id3 = move(0x16, 0xaf38, 0x41)
 label(0xaf79, "tube_host_code1")
-# XXX: I wonder if some of the code at tube_host_code2 is not actually tube related. Maybe it is, it's just that the osbpu/osbget stuff at l0520 for example doesn't look very tube host code-ish.
+# XXX: I wonder if some of the code at tube_host_code2 is not actually tube related. Maybe it is, it's just that the osbput/osbget stuff at l0520 for example doesn't look very tube host code-ish.
 label(0xacdb, "tube_host_code2")
 label(0xaf38, "tube_host_code3")
 expr_label(0xacdb + 0x100, "tube_host_code2+256")
@@ -139,6 +158,10 @@ to partially construct an error (on the stack) and continue executing
 always clear on exit.""")
 
 def generate_error_hook(target, addr):
+    """The hook for the routines that generate an error (see the comment
+    above): mark the message after the call and its error number, and return
+    where the code carries on: nowhere after a whole error (ending with a
+    zero), or at the instruction after a partial one."""
     # addr + 3 is the error number
     pc = stringhiz(addr + 4)
     if memory[pc] == 0:
@@ -161,10 +184,15 @@ stringcr(0x9546)
 stringcr(0x954e)
 
 
+# The tables of * commands: each command's name, the address of its routine
+# minus 1 (for an RTS jump), high byte first (its bit 7 set ends the name),
+# then a byte
 pc = 0x861c
 label(pc, "command_table")
 expr_label(pc + 1, "command_table+1")
 def command_table_entries(n):
+    """Mark n entries of the command table, starting at the global pc, and
+    leave pc after them."""
     global pc
     for i in range(n):
         pc = stringhi(pc)
@@ -176,6 +204,7 @@ command_table_entries(7)
 pc += 2 # XXX
 command_table_entries(2)
 
+# The same for the sideways RAM commands, without the byte after the address
 pc = 0xba30
 label(pc, "sram_table")
 expr_label(pc + 1, "sram_table+1")
@@ -190,6 +219,9 @@ for i in range(7):
         rts_code_ptr(pc + 1, pc)
     pc += 2
 
+# The NMI handler, which the ROM copies from &8fd2 to &0d00, and which the
+# code changes at runtime (so the labels on its operands, and the offsets of
+# its branches written with patched_branch())
 nmi_move_id = move(0xd00, 0x8fd2, 0x5e)
 label(0x8fd2, "nmi_handler_rom_start")
 label(0x8fd2 + 0x5d + 1, "nmi_handler_rom_end")
@@ -238,6 +270,7 @@ expr_label(0xd40, "nmi_XXX6+1")
 patched_branch("nmi_XXX6", 0x8fcd, "nmi_XXX7")
 patched_branch("nmi_beq", 0x8fa6, "nmi_XXX8")
 
+# Code the ROM copies from &9030 to &0d39, over part of the NMI handler above.
 # The loop at &8fac doesn't make a pass with X=0.
 nmi3_move_id = move(0xd39, 0x9030, 0xe)
 label(0x9030, "nmi3_handler_rom_start")
@@ -254,6 +287,7 @@ with nmi3_move_id:
     expr_label(0xd3a, "nmi_lda_abs+1")
     expr_label(0xd3b, "nmi_lda_abs+2")
 
+# Another NMI handler, which the ROM copies from &9067 to &0d00 too.
 # The loop at &9047 doesn't make a pass with Y=0.
 nmi2_move_id = move(0xd00, 0x9067, 0x94)
 label(0x9067, "nmi_handler2_rom_start")

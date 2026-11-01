@@ -1,8 +1,8 @@
 """Code at the bottom of memory (see asm_to_create_test_binaries/bottom_of_memory.asm):
-the branch at &0002 wraps round below &0000 to &fff2, as on the 6502. This
-used to fail with an assertion. It's shown as 'bmi lfff2' for acme and xa,
-which wrap a branch's target too, and as 'bmi P%-16' for beebasm, which
-doesn't."""
+the branch at &0002 wraps round below &0000 to &fff2, as on the 6502. (A
+regression test: py8dis mustn't fail an assertion on this.) It's shown as
+'bmi lfff2' for acme and xa, which wrap a branch's target too, and as 'bmi
+P%-16' for beebasm, which doesn't."""
 
 from commands import *
 

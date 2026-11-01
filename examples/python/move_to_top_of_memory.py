@@ -1,5 +1,7 @@
-# A move whose destination ends exactly at the top of memory (&10000) used to fail.
-# See asm_to_create_test_binaries/move_to_top_of_memory.asm.
+"""A move() whose destination ends exactly at the top of memory (&10000): the
+file is 32 bytes loaded at &2000, and its last 16 bytes, &2010-&201f, run at
+&fff0-&ffff (see asm_to_create_test_binaries/move_to_top_of_memory.asm). A
+regression test: py8dis mustn't fail on this."""
 
 from commands import *
 

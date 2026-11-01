@@ -87,6 +87,7 @@ entry(0x2269)
 # The * commands (COMDS): each name, ending with a character with bit 7 set,
 # then its routine's address, until &FF
 def with_terminator(c):
+    """For stringhi(): the character with bit 7 set is part of the name."""
     return True
 addr = 0x3928
 while get_u8_runtime(addr) != 0xff:

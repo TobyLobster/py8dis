@@ -1,8 +1,9 @@
-# Regression tests for the z88dk-8080 expression operators (October 2026).
-# See asm_to_create_test_binaries/regression_tests_8080.asm.
-#
-# make_op1('NOT', ...) used to produce '!x', which is logical NOT in
-# z88dk-z80asm, and all the binary operators (AND, OR, ...) were rejected.
+"""Regression tests for the z88dk-z80asm expression operators, for the 8080
+(see asm_to_create_test_binaries/regression_tests_8080.asm): each immediate
+operand is written as an expression with the same value. make_op1('NOT',
+...) must give '~x', not '!x', which is logical NOT in z88dk-z80asm, and the
+binary operators (AND, OR, ...) must be accepted. The comment after each
+expr() is the value."""
 
 from commands import *
 
@@ -10,7 +11,7 @@ load(0x1000, "orig/regression_tests_8080.orig", "8080", "169ba41a435c2a733dc1a12
 entry(0x1000)
 
 # Show the cycles each instruction takes, and the registers and flags known
-# after it (October 2026: neither used to be shown for the 8080)
+# after it (for the 8080 too)
 config.set_show_cycles(True)
 config.set_show_cpu_state(True)
 
@@ -26,7 +27,8 @@ expr(0x1009, make_divide('x_val', 16))                                      # $0
 expr(0x100b, make_modulo('x_val', 7))                                       # $02
 
 # z88dk-z80asm has no '<' and '>' operators, and warns about an operand that
-# is in brackets
+# is in brackets (so the low and high bytes are written with '& $ff' and
+# '>> 8', and an operand that starts with a bracket has a '+' before it)
 constant(0x1234, "addr_val")
 expr(0x100d, make_lo('addr_val'))                                           # $34
 expr(0x100f, make_hi('addr_val'))                                           # $12

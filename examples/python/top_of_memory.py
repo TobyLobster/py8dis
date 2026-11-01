@@ -1,5 +1,5 @@
 """Code at the top of memory (see asm_to_create_test_binaries/top_of_memory.asm).
-These used to crash py8dis:
+Regression tests: py8dis mustn't crash on any of these:
 - the branch at &ffe2 wraps round to &0020 (shown as 'bmi l0020', since acme
   and xa wrap a branch's target as the 6502 does, and for beebasm, which
   doesn't, as 'bmi P%+62');

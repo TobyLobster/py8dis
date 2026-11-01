@@ -23,7 +23,8 @@ label(0x209d, "print")
 label(0x209e, "write")
 
 def trace_vector_handler(p):
-    # Before tracing: trace the handler, and name it
+    """Before tracing: trace the handler, and name it (if both bytes of the
+    vector are set)."""
     if p.matched('lo') and p.matched('hi'):
         handler = p.value('lo_value') + 256 * p.value('hi_value')
         name = "handler_{0:04x}".format(handler)
@@ -31,13 +32,16 @@ def trace_vector_handler(p):
         p.entry(handler)
 
 def comment_vector(p):
-    # After tracing: comment the code, and write the bytes as the handler's
+    """After tracing: comment the code, and write the bytes as the handler's
+    (or, with only one byte set, say which)."""
     vector = p.binding('vec')
     if p.matched('lo') and p.matched('hi'):
         handler = p.value('lo_value') + 256 * p.value('hi_value')
         name = "handler_{0:04x}".format(handler)
         text = "Set the vector at ${0:04x} to {1}".format(vector, name)
         for line, maker in (('lo', make_lo), ('hi', make_hi)):
+            # Where the byte stored was loaded, e.g. the operand of 'lda #',
+            # if it was (a binary address: expr() wants a runtime one)
             operand = p.store(line).value_operand
             if operand is not None:
                 expr(movemanager.b2r(operand), maker(name))
@@ -49,6 +53,8 @@ def comment_vector(p):
         text = "Set the high byte of the vector at ${0:04x} to ${1:02x}".format(vector, p.value('hi_value'))
     disassembly.comment_binary(p.get_start_loc(), text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
+# Two optional lines: a known value stored at &0300 or &0302 ('vec'), and a
+# known value stored in the byte after it
 snippets6502.register_snippet(trace_vector_handler, comment_vector, """
 lo
 ?   [vec = $0300 | $0302] = lo_value
@@ -57,11 +63,15 @@ hi
 """)
 
 def comment_print(p):
+    """After tracing: comment the call to print with the value at &70 (and
+    whether something was stored at &71)."""
     text = "Print with {0} at &70, X=5".format(p.value('n'))
     if p.matched('flag'):
         text += ", and something at &71"
     disassembly.comment_binary(p.get_binary_location('call'), text, align=Align.INLINE, auto_generated=True)
 
+# An instruction line, the JSR, which the lines before it are conditions on:
+# a known value at &70, X=5, and optionally anything stored at &71
 snippets6502.register_snippet(None, comment_print, """
     [$70] = n
     x = 5
@@ -72,6 +82,8 @@ call
 """)
 
 def comment_mode(p):
+    """After tracing: comment the two calls to write as selecting a mode, and
+    name the mode as a constant where it's loaded."""
     # (Before the first of the instructions, including the loads of the
     # values the registers hold)
     disassembly.comment_binary(p.extent()[0], "Select mode {0}".format(p.value('mode')), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
@@ -80,6 +92,8 @@ def comment_mode(p):
         constant(p.value('mode'), "mode_{0}".format(p.value('mode')))
         expr(movemanager.b2r(p.value_operand('mode_value')), "mode_{0}".format(p.value('mode')))
 
+# Two calls to write, the first with A=22 and the second with A known, with
+# up to two instructions ('?   .') between them
 snippets6502.register_snippet(None, comment_mode, """
     a = 22
     jsr $209e

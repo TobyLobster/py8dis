@@ -11,6 +11,8 @@ import commodore
 
 load_prg("orig/fastload_test.orig", "6510", "e943c9c532bea6bc50170d6fb9a40d93")
 commodore.c64()
+# drive1541_code() returns the drive code's move ID, which says that the label
+# is for &0500 in the drive code
 drive_move = commodore.drive1541_code(0x0500, 0x083b, 0x0111)
 label(0x0500, "drive_code", drive_move)
 go()

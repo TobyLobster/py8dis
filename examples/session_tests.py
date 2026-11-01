@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
-Tests for py8dis sessions (see py8dis/session.py), run by run_tests.py -c.
+Session tests
 
-All the state of a disassembly belongs to a session, so these run several
-disassemblies in this one process, using py8dis as a library (with
-use_command_line(False)), and check:
+Tests for py8dis sessions (see py8dis/session.py), run by run_tests.py -c
+when all the tests are run.
+
+All the state of a disassembly (its memory, labels, classifications,
+settings and so on) belongs to a session, so that a program can use py8dis
+as a library and make several disassemblies in one process. These tests do
+that: they run control files from python/ in this one process, each in a
+new session made with session.new_session() (with use_command_line(False),
+so that py8dis doesn't read this script's command line), and check:
 
   1. Disassemblies can be interleaved: one control file runs up to its go(),
      then another runs completely in a new session, then the first session is
@@ -20,7 +26,19 @@ use_command_line(False)), and check:
      importing it has no side effects: in particular no session is made, so
      the command line isn't read.
 
-Usage: ./session_tests.py      (exits with 1 if anything fails)
+Usage: ./session_tests.py      (there are no options; it prints a line for
+                                each check, and exits with 1 if anything
+                                fails)
+
+The outputs are compared with the known_good/ files that run_tests.py
+checks. Baron's output is written to build/ (as run_tests.py writes it), so
+that folder must exist: run_tests.py makes it.
+
+To check another disassembly in 1, add a pair to INTERLEAVED (its
+known_good file must exist already). Check 3 covers every module in
+py8dis/ with no change here. A value at module level that's allowed to
+change (as the session module's pointer to the current session must) goes
+in ALLOWED_TO_CHANGE.
 """
 
 import contextlib
@@ -52,12 +70,15 @@ INTERLEAVED = [
     (("include_binary_file", "baron"), ("planb",                "beebasm")),
 ]
 
-# Module level names that are allowed to change
+# Module level names that are allowed to change, as (module, name): the
+# session module's pointer to the current session, and its setting from
+# use_command_line()
 ALLOWED_TO_CHANGE = {("session", "_current"), ("session", "_use_command_line")}
 
 
 def py8dis_modules():
-    """The py8dis modules imported so far, by name."""
+    """The py8dis modules imported so far, by name: those whose file is in
+    the py8dis folder itself."""
     result = {}
     for name, m in list(sys.modules.items()):
         f = getattr(m, "__file__", None)
@@ -66,7 +87,19 @@ def py8dis_modules():
     return result
 
 def fingerprint(value, seen, depth=0):
-    """A comparable summary of a value (and what it contains)."""
+    """A comparable summary of a value (and what it contains).
+
+    Plain values (None, numbers, strings and bytes) are themselves;
+    functions, methods, classes and modules are their names; lists, tuples
+    and dictionaries are summaries of their contents (a dictionary's sorted
+    by key); sets are their contents' repr()s, sorted; and other objects
+    are summaries of their attributes, or their repr() if they have no
+    __dict__. Each but a plain value comes with its type's name.
+
+    'seen' is the ids of the values this one is inside, so that a value
+    that contains itself isn't followed round for ever; 'depth' is how deep
+    inside the first value this is, and a value more than 8 levels down
+    isn't followed either. Both give ('<seen>', its type's name)."""
     if value is None or isinstance(value, (bool, int, float, str, bytes)):
         return value
     if isinstance(value, (types.FunctionType, types.BuiltinFunctionType, types.MethodType, type, types.ModuleType)):
@@ -86,7 +119,12 @@ def fingerprint(value, seen, depth=0):
 
 def module_state():
     """A fingerprint of every value held at module level, or in a class
-    attribute, by the py8dis modules."""
+    attribute, by the py8dis modules, as a dictionary from (module name,
+    name) to the value's fingerprint(). For a class attribute the name is
+    'class.attribute'.
+
+    Imported modules, enums, the names in ALLOWED_TO_CHANGE and names
+    starting with '__' are left out, and so are methods and properties."""
     state = {}
     for mod_name, m in py8dis_modules().items():
         for name, value in vars(m).items():
@@ -107,12 +145,22 @@ def module_state():
 
 
 class DeferredGo(Exception):
+    """Raised by the stand-in for go() that run_control_file() uses, to stop
+    a control file where it calls go()."""
     pass
 
 def run_control_file(name, assembler, stop_before_go=False):
     """Run a control file in a new session, returning its output. If
     stop_before_go, return the session and what the control file printed
-    before its go() instead."""
+    before its go() instead.
+
+    The control file python/<name>.py is run as a script (with runpy), and
+    acts on the new session, since that's the current one. To stop it at
+    go(), commands.go is replaced while it runs by a function that raises
+    DeferredGo: the control file's 'from commands import *' picks up that
+    function. (So anything after go() in the control file isn't run, even
+    when go_in() runs go() later.) What it prints (the asm, except for
+    Baron) is captured rather than printed."""
     import commands
     import session
 
@@ -122,6 +170,7 @@ def run_control_file(name, assembler, stop_before_go=False):
     s = session.new_session(assembler=assembler, asm_filename=asm_filename)
     real_go = commands.go
     def deferred_go(*args, **kwargs):
+        """Stop the control file (see DeferredGo)."""
         raise DeferredGo()
     if stop_before_go:
         commands.go = deferred_go
@@ -136,7 +185,8 @@ def run_control_file(name, assembler, stop_before_go=False):
     return Path(asm_filename).read_text() if asm_filename else out.getvalue()
 
 def go_in(s):
-    """Run go() in the given session, returning its output."""
+    """Run go() in the given session, returning its output. This makes it
+    the current session, which it stays afterwards."""
     import commands
     import session
     session.set_current(s)
@@ -147,10 +197,15 @@ def go_in(s):
 
 def baron_asm_filename(name, assembler):
     """For Baron, the asm file to write (as run_tests.py writes it), else
-    None"""
+    None (for the asm to be printed). Baron's output depends on the asm
+    file's name and folder, so it must be written to the same file to be
+    the same as known_good."""
     return f"build/{name}_{assembler}.asm" if assembler == "baron" else None
 
 def check(results, label, output, name, assembler):
+    """Compare the asm 'output' with known_good/<name>_<assembler>.asm, and
+    add (label, whether it's the same) to 'results'. If it isn't, the label
+    says where they first differ."""
     expected = (EXAMPLES_DIR / "known_good" / f"{name}_{assembler}.asm").read_text()
     ok = (output == expected)
     if not ok:
@@ -161,6 +216,12 @@ def check(results, label, output, name, assembler):
 
 
 def main():
+    """Run the checks described at the top of this file, print a line for
+    each, then the totals, and return the exit code: 1 if any failed, else
+    0."""
+    # (The control files' file names are relative to the examples folder,
+    # and they import py8dis's modules by name, e.g. 'from commands import
+    # *')
     os.chdir(EXAMPLES_DIR)
     sys.path.insert(0, str(PY8DIS_DIR))
     sys.argv = [sys.argv[0]]            # (no assembler options on the command line)
@@ -178,25 +239,32 @@ def main():
 
     # 3. Each module imports on its own, with no session made. (These are
     # started first, in other processes, while this one does the
-    # disassemblies below.)
+    # disassemblies below.) Each process runs in the py8dis folder, so it
+    # imports py8dis's modules, and exits with 2 if importing the module
+    # made a session, or with another non-zero code (and an error message)
+    # if importing it failed.
     import_checks = {}
     for f in sorted(PY8DIS_DIR.glob("*.py")):
         code = "import sys, {0}, session; sys.exit(0 if session._current is None else 2)".format(f.stem)
         import_checks[f.stem] = subprocess.Popen([sys.executable, "-c", code], cwd=PY8DIS_DIR,
                                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-    # 1. Interleaved
+    # 1. Interleaved: the first control file stops at go(), the second runs
+    # completely, then the first's go() runs. (The first's output is what it
+    # printed before go(), then what go() gives.)
     for (name_a, asm_a), (name_b, asm_b) in INTERLEAVED:
         session_a, printed_a = run_control_file(name_a, asm_a, stop_before_go=True)
         check(results, f"{name_b}_{asm_b} (while {name_a} waits)", run_control_file(name_b, asm_b), name_b, asm_b)
         check(results, f"{name_a}_{asm_a} (after {name_b})", printed_a + go_in(session_a), name_a, asm_a)
 
-    # 2. No state at module level
+    # 2. No state at module level: every value module_state() covers is the
+    # same as before the disassemblies
     after = module_state()
     changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
     results.append(("no state kept at module level" + ("".join(f"\n      changed: {m}.{n}" for m, n in changed)), not changed))
 
-    # 3. (The results)
+    # 3. (The results: one check for all the modules, listing any that
+    # failed)
     problems = []
     for module_name, proc in import_checks.items():
         output = proc.communicate()[0].strip()

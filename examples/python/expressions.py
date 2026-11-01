@@ -1,9 +1,11 @@
-# Regression tests for how expressions are written (October 2026): brackets
-# are only used where they are needed, or where assemblers disagree about how
-# tightly operators bind (around a compound operand of '<', '>' or NOT, round
-# a low or high byte used in a larger expression, and where a bitwise or shift
-# operator is mixed with a different operator).
-# See asm_to_create_test_binaries/expressions.asm for the expected values.
+"""Regression tests for how expressions are written for each assembler (see
+asm_to_create_test_binaries/expressions.asm for the expected values):
+brackets are only used where they are needed, or where assemblers disagree
+about how tightly operators bind (around a compound operand of '<', '>' or
+NOT, round a low or high byte used in a larger expression, and where a
+bitwise or shift operator is mixed with a different operator). The comment
+after each test is the expression it should give, in a general form (each
+assembler has its own operators)."""
 
 from commands import *
 
@@ -25,6 +27,7 @@ constant(5, X)
 constant(10, "ten")
 
 def test(addr, e):
+    """Mark the byte at addr as data, and write it as the expression e."""
     byte(addr)
     expr(addr, e)
 

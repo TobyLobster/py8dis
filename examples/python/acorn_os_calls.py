@@ -1,12 +1,23 @@
+"""Calls to the OS of Acorn's machines (see
+asm_to_create_test_binaries/acorn_os_calls.asm): every OSBYTE, then the
+OSWORDs and the other OS calls, with the registers set up in various ways.
+acorn.master() names each call and comments it with what it does, naming the
+number in A and writing the address of a parameter block in X and Y as its
+label. The control file puts a heading before each OSBYTE's test, names the
+parameter blocks (whose bytes acorn.py comments), and renames the heading of
+one of the memory regions."""
+
 from commands import *
 import acorn
 
 def mycom(addr, com):
+    """Put a blank line and a heading ('Test OSBYTE 0x..', for OSBYTE 'com')
+    before the code at addr."""
     blank(addr)
     comment(addr, "*************** Test OSBYTE " + '0x%02x' % com + " ***************", indent=1)
 
 
-# Load the program to be disassembled into the debugger's memory.
+# Load the program to be disassembled into py8dis's memory.
 # The md5sum is optional but helps avoid confusion if there are multiple versions
 # of the same program.
 load(0x1100, "orig/acorn_os_calls.orig", "6502")
@@ -23,6 +34,8 @@ label(0x70, "mem")
 # Start tracing instructions.
 entry(0x1100)
 
+# Where the test of each OSBYTE starts: {OSBYTE number: address}. (The tests
+# of OSBYTE &a6-&ff are &1a bytes each.)
 dict = {
      0: 0x1109,
      1: 0x1126,
@@ -196,12 +209,17 @@ dict = {
 
 label(0x1be5, "buffer_empty")
 
+# A heading before each OSBYTE's test. (The loop variable hides the entry()
+# command, so entry() can't be used after this.)
 for entry in dict:
     mycom(dict[entry], entry)
 
 comment(0x3123, "OSWORD")
 comment(0x31b3, "Misc other calls")
 
+# Some of the parameter blocks, a byte at a time, so that each byte is on a
+# line of its own, with the comment acorn.py gives it (e.g. 'Maximum line
+# length')
 for i in range(0,5):
     byte(0x4000+i)
 
@@ -213,6 +231,8 @@ for i in range(0,13):
     byte(0x411d+i)
     byte(0x412a+i)
 
+# The parameter blocks' names. acorn.py writes the X and Y that point to a
+# block before a call as its label, e.g. 'ldx #<osword1block'.
 label(0x4000, "osword0block")
 label(0x4005, "input_buffer")
 label(0x4085, "osword1block")

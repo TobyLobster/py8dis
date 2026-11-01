@@ -1,10 +1,20 @@
+"""Microcosm Associates' 8080/8085 CPU Diagnostic (1980), a CP/M program
+that tests the whole 8080 instruction set, as a test of py8dis's 8080
+support on a real program. Its routines and tests are named and commented
+by hand; there's no cpm.cpm(), so CP/M's warm boot and BDOS entry points are
+labelled here too. It also uses picture_binary(), expressions for the
+addresses the code loads, and a header printed before the disassembly."""
+
 from commands import *
 
 def my_comment(addr, comment):
+    """A blank line, then 'comment' as a comment of its own, with an empty
+    comment line above and below it."""
     blank(addr)
     formatted_comment(addr, "\n" + comment + "\n")
 
 def my_label(addr, lab, comm):
+    """Name addr 'lab', with 'comm' as a comment at the end of its line."""
     label(addr, lab)
     comment(addr, comm, inline=True)
 
@@ -27,6 +37,8 @@ label(0x0154, "byte0")
 label(0x0164, "byto1")
 label(0x0168, "byto2")
 label(0x0171, "byto3")
+# The three control characters (12, 13 and 10) at the start of the OK
+# message, in picture binary
 picture_binary(0x0174, 3)
 label(0x01ab, "cpu")
 my_label(0x01b6, "j010", 'test "jnc"')
@@ -72,11 +84,13 @@ my_comment(0x031d, 'test "mov","inr",and "dcr" instructions')
 label(0x031d, "movi")
 my_comment(0x035c, "test arithmetic and logic instructions")
 
+# The two messages, and the 'lxi h' instructions that load their addresses
 label(0x0174, "cpu_ok_message")
 expr(0x069c, "cpu_ok_message")
 blank(0x018b)
 label(0x018b, "cpu_error_message")
 expr(0x068a, "cpu_error_message")
+# The workspace: tempp holds the address of temp0
 label(0x06a4, "tempp")
 word(0x06a4)
 expr(0x06a4, "temp0")
@@ -93,6 +107,9 @@ label(0x0689, "cpuer")
 entry(0x069b, "cpuok")
 label(0x07ad, "stack")
 
+# A header for the output, as comments. It's printed before go() prints the
+# disassembly, so it's only at the top of the output when that's printed, not
+# when it's written to a file with -o.
 print(";")
 print("; Microcosm Associates  8080/8085 CPU Diagnostic Version 1.0  (C) 1980")
 print(";")
