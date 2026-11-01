@@ -1,5 +1,42 @@
 """
 ca65 assembler (from cc65)
+
+Writes the output for ca65 (https://cc65.github.io/doc/ca65.html), for the
+6502, the 65C02 and the 6510 (the 6502 with its undocumented opcodes). ca65
+makes an object file, which its linker, ld65, makes into a binary with a
+configuration file. So the output starts with a comment saying how to
+assemble it, with a configuration (LINKER_CONFIG, as in examples/ca65.cfg)
+that gives a plain binary of the bytes in order.
+
+Its syntax: 'name:' defines a label, '$' starts a hex number, '.byte' and
+'.word' are the data directives (strings are '.byte' too), MOD is '.mod',
+'=' and '<>' are the comparisons, and the bitwise operators bind as tightly
+as the arithmetic ones (see binary_precedence()).
+
+What py8dis writes for it:
+
+- The output starts with '.setcpu "65C02"' for the 65C02, or
+  '.setcpu "6502X"' for the 6510, whose undocumented opcodes ca65 assembles
+  (but for an instruction with several opcodes, only one, as acme; and two
+  have other names, see undocumented_6502_mnemonic()).
+
+- '.org' sets the address the code is assembled for, but the bytes still
+  follow on in the output, so a gap before a later range of addresses is
+  padded with '.res', and a moved block (see move()) is just a '.org' with
+  its runtime address, then another back to its binary address after it.
+
+- An absolute instruction with an operand in zero page is forced with 'a:'
+  (e.g. 'lda a:addr,x'). The assertions at the end use '.assert'.
+
+- Text: ca65's character map ('.charmap') applies to every string and
+  character literal, so it's for the session's text encoding; strings in
+  other encodings are written as bytes, with their text in a comment (see
+  the comments before _main_encoding()).
+
+- ca65 doesn't accept a register's name, 'z' or one of the CPU's mnemonics
+  as a label, so py8dis stops with an error for one (see _check_name()).
+
+- A data byte or word can't be negative, so sint() is written unsigned.
 """
 
 import config
@@ -34,37 +71,40 @@ class Ca65(assembler.Assembler):
     """This class encapsulates ca65-specific syntax and features. (Tested
     with ca65 and ld65 V2.18, as in Ubuntu's cc65 2.19-1. ca65 makes an
     object file, which its linker, ld65, makes into a binary with a
-    configuration file: see disassembly_start().)"""
+    configuration file: see disassembly_start(). See assembler.Assembler
+    for what each method is for.)"""
 
     def __init__(self):
         super().__init__()
 
     def get_name(self):
+        """'ca65'."""
         return "ca65"
 
     def cpus_supported(self):
+        """The 6502, 65C02 and 6510."""
         return ["6502", "65c02", "6510"]
 
     def hex2(self, n):
-        """format a two digit hex number"""
+        """A byte in hex, e.g. $1f."""
         return "${0}".format(utils.plainhex2(n))
 
     def hex4(self, n):
-        """format a four digit hex number"""
+        """A four digit hex number, e.g. $001f."""
         # (ca65 chooses zero page or absolute addressing from an operand's
         # value, not how it's written, so '$0012' is zero page, if it's
         # defined before it's used)
         return "${0}".format(utils.plainhex4(n))
 
     def hex(self, n):
-        """format a hex number"""
+        """A hex number, with two digits up to $ff (e.g. $1f), otherwise
+        four."""
         if n <= 0xff:
             return self.hex2(n)
         return self.hex4(n)
 
     def binary_operators(self):
-        """Returns a dictionary that translates generic binary operator names
-        into the assembler specific versions"""
+        """'|', '&', '^', '/', '.mod', and '=' and '<>' for '==' and '!='."""
         # 'generic name: assembler specific name'
         return { 'OR': '|',
                   '|': '|',
@@ -82,6 +122,7 @@ class Ca65(assembler.Assembler):
         }
 
     def binary_precedence(self):
+        """AND, EOR and the shifts as tightly as '*', and OR as '+'."""
         # Measured by assembling test expressions with ca65 V2.18: unlike C,
         # the bitwise operators are at the arithmetic levels (e.g. '6&3+1' is
         # 3, '1+2<<1' is 5, '1|2*3' is 7)
@@ -90,19 +131,22 @@ class Ca65(assembler.Assembler):
         }
 
     def unary_precedence(self):
+        """'<', '>' and NOT bind more tightly than any binary operator."""
         # '<' and '>' (low and high byte) bind more tightly than any binary
         # operator, so '>ab+1' is '(>ab)+1', as in beebasm
         return { '<': 90, '>': 90, 'NOT': 90 }
 
     def unary_operators(self):
-        """Returns a dictionary that translates generic unary operator names
-        into the assembler specific versions"""
+        """NOT is '~'."""
         # 'generic name: assembler specific name'
         return { 'NOT': '~',
                    '!': '~',
         }
 
     def _reserved(self):
+        """The names (in lower case) ca65 doesn't accept as labels, for the
+        CPU: the registers, 'z', and the CPU's mnemonics (including the
+        6510's undocumented ones)."""
         if config.get_cmos():
             return _RESERVED_NAMES | _MNEMONICS_65C02
         if getattr(session.current().cpu, "has_undocumented_opcodes", False):
@@ -110,6 +154,8 @@ class Ca65(assembler.Assembler):
         return _RESERVED_NAMES | _MNEMONICS_6502
 
     def _check_name(self, name):
+        """Stops with utils.die() if ca65 doesn't accept the name as a label
+        (see _reserved()), in any case."""
         # ca65 doesn't accept a register's name, 'z' or a mnemonic as a label
         name = str(name)
         if name.lower() in self._reserved():
@@ -117,7 +163,8 @@ class Ca65(assembler.Assembler):
             utils.die("ca65 doesn't accept '{0}' as a label, since it's {1}: rename it".format(name, what))
 
     def inline_label(self, name):
-        """Returns the string for defining a label in the first column."""
+        """Returns the string for defining a label in the first column:
+        'name:' (checked, see _check_name())."""
         self._check_name(name)
         return "%s:" % name
 
@@ -127,11 +174,13 @@ class Ca65(assembler.Assembler):
            i.e. 'label = value'
 
         with an optional offset (e.g. '+1') added to the value, with optional
-        column alignment at the equals sign."""
+        column alignment at the equals sign. (The name is checked, see
+        _check_name().)"""
         self._check_name(name)
         return "%s= %s%s" % (utils.tab_to(name + " ", align_column), value, "" if offset is None else "+%d" % offset)
 
     def comment_prefix(self):
+        """';'."""
         return ";"
 
     def disassembly_start(self):
@@ -185,24 +234,31 @@ class Ca65(assembler.Assembler):
         c = self.comment_prefix()
         result = [c + " The character map for " + {"petscii": "PETSCII", "screen": "screen codes"}[main.name] +
                   " (for strings and character literals)"]
+        # (In the order of the characters, each with a comment showing it)
         for byte, char in sorted(main.chars.items(), key=lambda item: ord(item[1])):
             if ord(char) != byte:
                 result.append("%s%s %s, %s %s '%s'" % (utils.make_indent(1), utils.force_case(".charmap"), self.hex2(ord(char)), self.hex2(byte), c, char))
         return result + [""]
 
     def text_directive(self, encoding):
+        """'.byte ' for a string in the session's encoding; None (so it's
+        written as bytes) for any other."""
         # (See above)
         if encoding.name == self._main_encoding().name:
             return utils.force_case(".byte ")
         return None
 
     def text_chr(self, n, encoding):
+        """The encoding's character for the byte (None if it has none, or
+        for a double quote)."""
         if encoding.name == "ascii":
             return self.string_chr(n)
         c = encoding.char(n)
         return None if c == '"' else c
 
     def encoded_char_literal(self, n, encoding):
+        """A character literal in single quotes, only in the session's
+        encoding."""
         # Only in the session's encoding (see above)
         if encoding.name != self._main_encoding().name:
             return None
@@ -213,7 +269,8 @@ class Ca65(assembler.Assembler):
 
     def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code we provide the address at which to
-        assemble."""
+        assemble: '.org $2000', after '.res' to pad a gap before a later
+        range."""
         # ('.org' sets the address, but the bytes still follow on in the
         # output, so a gap after the code before needs padding)
         result = [""]
@@ -222,19 +279,22 @@ class Ca65(assembler.Assembler):
         return result + ["%s%s %s" % (utils.make_indent(1), utils.force_case(".org"), self.hex4(start_addr)), ""]
 
     def code_end(self):
+        """Nothing."""
         return []
 
     def pseudopc_start(self, dest, source, length, move_id):
         """Used when assembling code at a different address to where it will
-        actually execute."""
+        actually execute: '.org' with the runtime address."""
         # (The bytes follow on in the output, so '.org' does this)
         return [utils.make_indent(1) + utils.force_case(".org %s" % self.hex4(dest))]
 
     def pseudopc_end(self, dest, source, length, move_id):
+        """'.org' with the binary address after the block."""
         return [utils.make_indent(1) + utils.force_case(".org %s" % self.hex4(source + length)), ""]
 
     def disassembly_end(self):
-        """Output assertions at the end of the disassembly"""
+        """Output assertions at the end of the disassembly, as '.assert'
+        lines."""
         result = []
 
         # ca65's '.assert condition, error, "message"' stops with the message
@@ -243,6 +303,7 @@ class Ca65(assembler.Assembler):
             spa = sorted((str(expr), self.assertion_value(value)) for expr, value in self.pending_assertions.items())
             old = ("", 0)
             for expr, value in spa:
+                # (The same expression can be used at more than one address)
                 if old != (expr, value):
                     message = ("Assertion failed: %s = %s" % (expr, value)).replace('"', "'")
                     result.append('%s (%s) = %s, %s, "%s"' % (utils.force_case(".assert"), expr, value, utils.force_case("error"), message))
@@ -251,6 +312,7 @@ class Ca65(assembler.Assembler):
         return result
 
     def undocumented_6502_opcodes(self):
+        """cpu6510.ASSEMBLED_UNDOCUMENTED_OPCODES, as acme."""
         # With '.setcpu "6502X"' ca65 assembles the undocumented mnemonics,
         # but where an instruction has several opcodes it uses only one, the
         # same as acme and 64tass (found by assembling each with ca65 V2.18),
@@ -258,42 +320,52 @@ class Ca65(assembler.Assembler):
         return cpu6510.ASSEMBLED_UNDOCUMENTED_OPCODES
 
     def undocumented_6502_mnemonic(self, mnemonic):
+        """ca65's names for LXA and SBX (see _UNDOCUMENTED_MNEMONICS)."""
         # ca65 calls LXA 'lax #imm', and SBX 'axs'
         return _UNDOCUMENTED_MNEMONICS.get(mnemonic, mnemonic)
 
     def wrapped_branch_operand(self, label, offset):
+        """Relative to the branch's address, e.g. '*-16'."""
         # ca65 doesn't wrap a branch's target round the top or bottom of
         # memory, so give it relative to the branch ('*' is its address)
         return "*{0:+d}".format(offset)
 
     def force_abs_instruction(self, instruction, prefix, operand, suffix):
+        """'a:' before the operand, e.g. 'lda a:addr,x'."""
         # Ensure the instruction uses an absolute address rather than a zero
         # page address. e.g. 'lda a:addr,x'
         return "%s%s %s%s%s%s" % (utils.make_indent(1), instruction, prefix, utils.force_case("a:"), operand, suffix)
 
     def force_zp_label_prefix(self):
+        """'<' (the low byte)."""
         # Prefix to take the low byte of a label, used in control files
         # (e.g. dfs226.py) to make sure an instruction uses zero page addressing
         return "<"
 
     def direct_operand(self, operand):
+        """'0+' before the operand, e.g. 'lda 0+(table+1) - 1,y'."""
         # ca65 takes an operand starting with a bracket to be indirect, so
         # 'lda (table+1) - 1,y' is an error
         return "0+" + operand
 
     def byte_prefix(self):
+        """'.byte '."""
         # For outputting bytes
         return utils.force_case(".byte ")
 
     def word_prefix(self):
+        """'.word '."""
         # For outputting words
         return utils.force_case(".word ")
 
     def string_prefix(self):
+        """'.byte ', which takes strings too."""
         # For outputting strings
         return utils.force_case(".byte ")
 
     def char_literal(self, n):
+        """A printable character in single quotes, only if the session's
+        encoding is ASCII."""
         # When composing a literal character, this returns a character string
         # from an integer, or None if not possible (only if the session's
         # encoding is ASCII, see above)
@@ -304,6 +376,7 @@ class Ca65(assembler.Assembler):
         return None
 
     def string_chr(self, n):
+        """A printable character as it is, except a double quote."""
         # When composing a literal string, this returns a character string
         # from an integer, or None if not possible. (A '"' can't be written in
         # a string; a backslash is an ordinary character.)
@@ -314,20 +387,25 @@ class Ca65(assembler.Assembler):
         return None
 
     def binary_format(self, s):
+        """'%' then the digits, e.g. %00101100."""
         # For outputting a value as binary
         return "%" + s
 
     def picture_binary(self, s):
+        """The binary digits as they are."""
         # Converts a string of '0' and '1's into '.' and '#'s for visualising
         # data. ca65 doesn't support this.
         return s
 
     def sanitise_line(self, s):
+        """The line as it is."""
         return s
 
     def supports_signed_integers(self):
+        """False."""
         # '.byte -1' is a range error, so don't use signed integers
         return False
 
     def include_binary_file(self, binary_filepath):
+        """'.incbin "file"'."""
         return utils.make_indent(1) + utils.force_case(".incbin") + ' "' + binary_filepath + '"'

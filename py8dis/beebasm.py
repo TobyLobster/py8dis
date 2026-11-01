@@ -1,5 +1,38 @@
 """
 Beebasm assembler
+
+Writes the output for beebasm (https://github.com/stardot/beebasm), py8dis's
+default assembler, for the 6502, the 65C02 and the 6510 (the 6502 with its
+undocumented opcodes, which beebasm doesn't assemble, so they're written as
+data bytes, with the instruction in a comment).
+
+Its syntax is reminiscent of BBC BASIC's built-in assembler: '.name' defines
+a label, '&' starts a hex number, 'equb', 'equw' and 'equs' are the data
+directives, 'P%' is the current address, and AND, OR, EOR, DIV, MOD and
+NOT(...) are words. The output starts with 'cpu 1' for the 65C02, and the
+main disassembly ends with the assertions (beebasm's 'assert', which it
+checks), then a 'save' command for the whole program, from pydis_start to
+pydis_end (with the file name from set_output_filename(), if any).
+
+py8dis works round a few things beebasm can't do:
+
+- There's no way to force absolute addressing for an operand in zero page,
+  so such an instruction is written as data bytes, with the instruction in
+  a comment (see can_force_absolute()).
+
+- There's no directive to assemble code for one address while placing it
+  at another, so a moved block (see move()) is assembled at its runtime
+  address, then copied to its binary address with 'copyblock', and the area
+  it was assembled in is cleared with 'clear', so that it can be assembled
+  at again. If the block's runtime addresses overlap the output before it,
+  that output is copied out of the way first, then back again (see
+  find_temporary_area(), pseudopc_start() and pseudopc_end()). The output
+  has comments explaining each step.
+
+- A relative branch whose target wraps round the top or bottom of memory is
+  given relative to the branch, e.g. 'P%-16', since beebasm doesn't wrap it.
+
+baron.py's Baron class is derived from this one.
 """
 
 import re
@@ -17,7 +50,8 @@ import utils
 from binaryaddrtype import BinaryAddrType
 
 class Beebasm(assembler.Assembler):
-    """This class encapsulates beebasm-specific syntax and features."""
+    """This class encapsulates beebasm-specific syntax and features. (See
+    assembler.Assembler for what each method is for.)"""
 
     def __init__(self):
         super().__init__()
@@ -25,29 +59,33 @@ class Beebasm(assembler.Assembler):
         self.explicit_a = True          # e.g. Output 'ROR A', not just 'ROR'
 
     def get_name(self):
+        """'beebasm'."""
         return "beebasm"
 
     def cpus_supported(self):
+        """The 6502, 65C02 and 6510 (whose undocumented opcodes are written
+        as data)."""
         return ["6502", "65c02", "6510"]
 
     def hex2(self, n):
-        """format a two digit hex number"""
+        """A byte in hex, e.g. &1f."""
         return "&{0}".format(utils.plainhex2(n))
 
     def hex4(self, n):
-        """format a four digit hex number"""
+        """A four digit hex number, e.g. &001f."""
         return "&{0}".format(utils.plainhex4(n))
 
     def hex(self, n):
-        """format a hex number"""
+        """A hex number, with two digits up to &ff (e.g. &1f), otherwise
+        four."""
         if n <= 0xff:
             return self.hex2(n)
         else:
             return self.hex4(n)
 
     def binary_operators(self):
-        """Returns a dictionary that translates generic binary operator names
-        into the assembler specific versions"""
+        """The operators that are words in beebasm: OR, AND, EOR, DIV and
+        MOD."""
         # 'generic name: assembler specific name'
         return { 'OR': 'OR',
                   '|': 'OR',
@@ -64,6 +102,7 @@ class Beebasm(assembler.Assembler):
         }
 
     def binary_precedence(self):
+        """beebasm's precedence, including '==' (for the assertions)."""
         # Measured by assembling test expressions with beebasm. (Note that the
         # shifts bind as tightly as '*'.)
         return { '*': 6, 'DIV': 6, 'MOD': 6, '<<': 6, '>>': 6,
@@ -74,11 +113,14 @@ class Beebasm(assembler.Assembler):
         }
 
     def unary_precedence(self):
+        """'<' and '>' bind more tightly than any binary operator."""
         # '<' and '>' (low and high byte) bind more tightly than any binary
         # operator, so '<x + 1' is '(<x) + 1'. (NOT is 'NOT(...)', see below.)
         return { '<': 90, '>': 90 }
 
     def expression_in_context(self, expr, text, level, context):
+        """In an assertion, brackets round an expression that binds no more
+        tightly than '=='; otherwise the text as it is."""
         if context == expression.ASSERTION:
             # An assertion is 'assert value == expr', so the expression needs
             # brackets if it binds no more tightly than '==' (e.g. AND).
@@ -92,15 +134,15 @@ class Beebasm(assembler.Assembler):
         return text
 
     def unary_operators(self):
-        """Returns a dictionary that translates generic unary operator names
-        into the assembler specific versions"""
+        """NOT is 'NOT(...)'. ('<' and '>' are as they are.)"""
         # 'generic name: assembler specific name'
         return { 'NOT': 'NOT(%s)',      # beebasm needs the brackets, 'NOTx' or 'NOT x' is an error
                    '!': 'NOT(%s)',
         }
 
     def inline_label(self, name):
-        """Returns the string for defining a label in the first column."""
+        """Returns the string for defining a label in the first column:
+        '.name'."""
         return ".{0}".format(name)
 
     def explicit_label(self, name, value, offset=None, align_column=0):
@@ -113,28 +155,54 @@ class Beebasm(assembler.Assembler):
         return "%s= %s%s" % (utils.tab_to(name + " ", align_column), value, "" if offset is None else "+%d" % offset)
 
     def comment_prefix(self):
+        """';'."""
         return ";"
 
     def disassembly_start(self):
-        """Preamble to be output at the start of the disassembly."""
+        """Preamble to be output at the start of the disassembly: 'cpu 1',
+        which selects the 65C02's instructions, for the 65C02."""
         if config.get_cmos():
             return [utils.make_indent(1) + utils.force_case("cpu 1"), ""]
         return []
 
     def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code we provide the address at which to
-        assemble."""
+        assemble: 'org &2000'. (Nothing fills the gap before a later range:
+        'save' saves the zeroes in it.)"""
         result = ["", utils.make_indent(1) + "{0} {1}".format(utils.force_case("org"), self.hex4(start_addr))]
         result.append("")
         return result
 
     def code_end(self):
+        """Nothing."""
         return []
 
     def format_comment(self, s, indent=1):
+        """A word wrapped comment (see mainformatter.format_comment()), for
+        the comments explaining the steps of a move."""
         return mainformatter.format_comment(s, indent)
 
     def find_temporary_area(self, dest, source, length):
+        """How to assemble the moved block of 'length' bytes at binary
+        address 'source' and runtime address 'dest' (see pseudopc_start()):
+        (temp_start, overlap_start, overlap_length, area_to_clear_start,
+        area_to_clear_end).
+
+        The block is assembled at its runtime address, then copied to its
+        binary address. If it runs lower in memory than it's stored, and its
+        runtime addresses overlap the output before it (which starts at
+        pydis_start), the output from overlap_start up to the block's binary
+        address (overlap_length bytes) is in the way, so it's copied to a
+        temporary area at temp_start first, and back afterwards. Otherwise
+        those three are -1.
+
+        The area from area_to_clear_start up to area_to_clear_end is the
+        part of the block's runtime addresses that its copy at its binary
+        address doesn't cover. It's cleared after the copy, so that it can
+        be assembled at again.
+
+        Stops with utils.die() if there isn't room in memory for the
+        temporary area."""
         pydis_start, pydis_end = memorymanager.get_entire_load_range()
         if memorymanager.prg_header_addr() is not None:
             # The output starts with the two-byte PRG header (see prg_header())
@@ -165,9 +233,12 @@ class Beebasm(assembler.Assembler):
                         utils.die("move({0}, {1}, {2}): there isn't enough free memory for beebasm to temporarily hold the {3} bytes of existing code/data the move's destination overlaps. Use acme or xa instead.".format(
                             self.hex(dest), self.hex(source), length, overlap_length))
 
+            # (The part of the runtime area below the binary address)
             area_to_clear_start = dest
             area_to_clear_end   = min(dest + length, source)
         else:
+            # (The part of the runtime area above the block's binary
+            # addresses)
             area_to_clear_start = max(dest, source + length)
             area_to_clear_end   = dest + length
 
@@ -175,7 +246,11 @@ class Beebasm(assembler.Assembler):
 
     def pseudopc_start(self, dest, source, length, move_id):
         """Used when assembling code at a different address to where it will
-        actually execute."""
+        actually execute: 'org' with the runtime address, so that the block
+        is assembled there, after copying any output in the way somewhere
+        else and clearing it (steps 1 to 3 in the comments it writes, see
+        find_temporary_area()). pseudopc_end() copies the block to its
+        binary address."""
 
         result = []
 
@@ -206,6 +281,11 @@ class Beebasm(assembler.Assembler):
         return result
 
     def pseudopc_end(self, dest, source, length, move_id):
+        """The end of a moved block: 'copyblock' to copy it from its runtime
+        address to its binary address, 'clear' for the rest of the area it
+        was assembled in, and if output was in the way, copying that back
+        and clearing the temporary area (steps 4 to 7). Then 'org' sets the
+        address to the binary address after the block again."""
         memory_binary = session.current().memory.binary
         assert isinstance(dest, memorymanager.RuntimeAddr)
         assert isinstance(source, memorymanager.BinaryAddr)
@@ -286,14 +366,20 @@ class Beebasm(assembler.Assembler):
         return result
 
     def disassembly_end(self):
-        """Output assertions at the end of the disassembly"""
+        """Output assertions at the end of the disassembly ('assert value ==
+        expr', which beebasm checks), then 'save' for the whole program:
+        from pydis_start (or two bytes before it, for a PRG file's header)
+        to pydis_end, with the file name from set_output_filename(), if
+        any."""
         result = []
 
         if config.get_include_assertions():
+            # (Sorted by the expression's text and value)
             spa = sorted(((str(expr), self.assertion_value(value), expr) for expr, value in self.pending_assertions.items()), key=lambda x: x[:2])
 
             old = ("", 0)
             for expr_text, value, expr in spa:
+                # (The same expression can be used at more than one address)
                 if (expr_text != old[0]) or (value != old[1]):
                     result.append(utils.make_indent(1) + utils.force_case("assert ") + "%s == %s" % (value, expression.render(expr, expression.ASSERTION)))
                 old = (expr_text, value)
@@ -311,32 +397,40 @@ class Beebasm(assembler.Assembler):
         return result
 
     def wrapped_branch_operand(self, label, offset):
+        """Relative to the branch's address, e.g. 'P%-16'."""
         # beebasm doesn't wrap a branch's target, but takes an address past
         # the top or bottom of memory, so give it relative to the branch
         return "P%{0:+d}".format(offset)
 
     def can_force_absolute(self):
+        """False: such an instruction is written as data bytes."""
         # Sadly beebasm doesn't currently have a way to do this.
         return False
 
     def force_zp_label_prefix(self):
+        """No prefix (an empty string)."""
         # Prefix to take the low byte of a label, used in control files
         # (e.g. dfs226.py) to make sure an instruction uses zero page addressing
         return ""
 
     def byte_prefix(self):
+        """'equb '."""
         # For outputting bytes
         return utils.force_case("equb ")
 
     def word_prefix(self):
+        """'equw '."""
         # For outputting words
         return utils.force_case("equw ")
 
     def string_prefix(self):
+        """'equs '."""
         # For outputting strings
         return utils.force_case("equs ")
 
     def char_literal(self, n):
+        """A printable character in single quotes, e.g. 'a', except a double
+        quote."""
         # When composing a literal character, this returns a character string
         # from an integer, or None if not possible
         quote = "'"
@@ -345,6 +439,8 @@ class Beebasm(assembler.Assembler):
         return None
 
     def string_chr(self, n):
+        """A printable character as it is, except a double quote (which
+        output.StringData writes as '"', outside the string's quotes)."""
         # When composing a literal string, this returns a character string
         # from an integer, or None if not possible
         if utils.isprint(n) and chr(n) not in ('"'):
@@ -352,19 +448,24 @@ class Beebasm(assembler.Assembler):
         return None
 
     def binary_format(self, s):
+        """'%' then the digits, e.g. %00101100."""
         # For outputting a value as binary
         return "%" + s
 
     def picture_binary(self, s):
+        """The binary digits as they are."""
         # Converts a string of '0' and '1's into '.' and '#'s for visualising
         # data. Sadly, beebasm does not support this.
         return s
 
     def sanitise_line(self, s):
+        """The line as it is."""
         return s
 
     def supports_signed_integers(self):
+        """True: e.g. 'equb -2'."""
         return True
 
     def include_binary_file(self, binary_filepath):
+        """'incbin "file"'."""
         return utils.make_indent(1) + utils.force_case("incbin") + ' "' + binary_filepath + '"'

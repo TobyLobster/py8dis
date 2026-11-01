@@ -3,14 +3,38 @@ Output
 
 The disassembly is described by a list of line objects, which say what to
 output rather than holding text: an instruction (its mnemonic and operand), a
-block of data bytes or words, a string, a blank line. render_lines() turns
-them into text for the current assembler.
+block of data bytes or words, a string, a comment, label definitions, an
+assembler directive, a blank line. render_lines() turns them into text for
+the current assembler (see assembler.py), whose methods say how each part is
+written.
 
-disassembly.emit() builds the whole output as a list of these lines. Each
-line is resolved as it's made (see Line.resolve()): this makes any decisions
-that depend on what's been output so far, e.g. naming labels used for the
-first time (in e.g. comments), and choosing which label definitions are
-output where. Then the lines are rendered.
+disassembly.emit() builds the whole output as a list of these lines: a
+header (the assembler's disassembly_start(), the constants and the "Memory
+locations"), the main disassembly, then a footer (the assembler's
+disassembly_end(), with the assertions, and tables such as the label
+references). In the main disassembly, each classification (an instruction,
+bytes, words or a string, see classification.py) makes its own lines with
+its as_lines() method: an Instruction (made by the CPU's Opcode class),
+a DataBlock or a StringData. emit() adds the labels and comments around
+them, and a Directive wherever the assembler needs one (e.g. code_start(),
+which sets the address to assemble at).
+
+Each line is resolved as it's made (see Line.resolve()): this makes any
+decisions that depend on what's been output so far, e.g. naming labels used
+for the first time (in e.g. comments), and choosing which label definitions
+are output where. Then the lines are rendered, and emit() joins the text
+(after the assembler's tidy_output() and sanitise_line()).
+
+Layout: a line of an instruction, data or a string is indented, and padded
+to the inline comment column (config.set_inline_comment_column()), where
+there's a comment with its hex dump (its binary address, bytes and their
+characters, the cycle count and CPU state if they're shown, and the runtime
+address of moved code) and any inline comments: see
+mainformatter.add_inline_comment_including_hexdump(). A comment on a line of
+its own is word wrapped (see Comment, and comment.py).
+
+The JSON output (see jsonoutput.py) uses the same line objects:
+plain_text() gives a line's text as in the asm, without its layout.
 
 (This is being introduced in steps: see "Structure the output before
 rendering" in claude/architecture-notes-2026-10-21.md in the project. For
@@ -30,14 +54,16 @@ import utils
 
 
 class Line:
-    """A line (or several lines) of output."""
+    """A line (or several lines) of output: the base class of the kinds of
+    line below."""
 
     # The text, once rendered by resolve()
     _text = None
 
     def render(self):
         """The text for the current assembler, as a list of lines (each a
-        string or a LazyString)."""
+        string or a LazyString). A string can hold more than one line,
+        separated by newlines (e.g. a word wrapped comment)."""
         raise NotImplementedError
 
     def resolve(self):
@@ -51,25 +77,29 @@ class Line:
 
     def name_labels(self):
         """Name the labels the line refers to (see disassembly.LabelRef), in
-        the order they appear in its text."""
+        the order they appear in its text. (Naming a label fixes its name the
+        first time it's used. By default there are none.)"""
         pass
 
     def text_lines(self):
-        """The text (as rendered by resolve(), if it has been)."""
+        """The text, as a list of lines (as rendered by resolve(), if it has
+        been, otherwise rendered now)."""
         text = self._text
         return self.render() if text is None else text
 
     def plain_text(self):
         """The text without its layout (no indent, hex dump or inline
         comments), as a list of strings, one for each line. (For the JSON
-        output.)"""
+        output.) By default this is the text with the spaces at each end
+        taken off."""
         return [str(line).strip() for line in self.text_lines()]
 
 
 def label_refs(value):
     """The label references (see disassembly.LabelRef) in a value (an
     expression, LazyString, string or number), in the order they appear in
-    its text."""
+    its text. (A generator: it looks inside expressions and LazyStrings for
+    them.)"""
     if isinstance(value, disassembly.LabelRef):
         yield value
     elif isinstance(value, expression.InContext):
@@ -86,52 +116,62 @@ def label_refs(value):
         yield from label_refs(value.right)
 
 def name_labels_in(value):
-    """Name the labels in a value (see label_refs())."""
+    """Name the labels in a value (see label_refs()), in order."""
     for ref in label_refs(value):
+        # (Making its text names the label, if it isn't named yet)
         str(ref)
 
 
 class Text(Line):
-    """Lines of text, e.g. a table made by a function that produces text."""
+    """Lines of text, already made, e.g. a table made by a function that
+    produces text (such as the label references at the end). 'lines' is a
+    list of strings."""
 
     def __init__(self, lines):
         self.lines = lines
 
     def render(self):
+        """The lines as they are."""
         return list(self.lines)
 
 
 class CommentLine(Line):
-    """A one line comment (not word wrapped), e.g. '; Constants'."""
+    """A one line comment (not word wrapped), e.g. '; Constants'. With no
+    text, it's just the comment prefix."""
 
     def __init__(self, text=""):
         self.text = text
 
     def render(self):
+        """The comment prefix, then the text."""
         prefix = config.get_assembler().comment_prefix()
         return [prefix + " " + self.text if self.text else prefix]
 
 
 class Comment(Line):
-    """A comment, word wrapped, at the given indent level."""
+    """A comment, word wrapped (see mainformatter.format_comment()), at the
+    given indent level."""
 
     def __init__(self, text, indent=0):
         self.text = text
         self.indent = indent
 
     def render(self):
+        """The word wrapped comment, as one string with newlines."""
         return [mainformatter.format_comment(self.text, self.indent)]
 
 
 class AnnotationLine(Line):
     """An annotation (e.g. a comment, see comment.py) that has a line of its
-    own, at a binary address."""
+    own, at a binary address. The annotation formats itself (see its
+    as_string())."""
 
     def __init__(self, annotation, binary_addr):
         self.annotation = annotation
         self.binary_addr = binary_addr
 
     def render(self):
+        """The annotation's text."""
         return [self.annotation.as_string(self.binary_addr)]
 
 
@@ -140,21 +180,26 @@ class Directive(Line):
     the start of a block that's moved at run time.
 
     'name' is the name of the assembler method that writes it (e.g.
-    'code_start'), and 'args' its arguments."""
+    'code_start', see assembler.py), and 'args' its arguments. The method is
+    called when the line is resolved (i.e. as soon as it's made)."""
 
     def __init__(self, name, *args):
         self.name = name
         self.args = args
 
     def render(self):
+        """The lines the assembler's method gives."""
         result = getattr(config.get_assembler(), self.name)(*self.args)
-        # (Some methods return a single line)
+        # (Some methods return a single line, e.g. include_binary_file())
         return result if isinstance(result, list) else [result]
 
 
 class ConstantDefinition(Line):
-    """A 'name = value' definition of a constant, with an optional inline
-    comment, aligned to the given columns."""
+    """A 'name = value' definition of a constant (see
+    mainformatter.explicit_label_with_inline_comment()), with an optional
+    inline comment, aligned to the given columns: the name is padded to
+    'align_value_column' (so that the values of a list of them line up), and
+    the comment starts at 'align_comment_column'."""
 
     def __init__(self, name, value, align_value_column, inline_comment, align_comment_column):
         self.name = name
@@ -164,6 +209,7 @@ class ConstantDefinition(Line):
         self.align_comment_column = align_comment_column
 
     def render(self):
+        """The definition, with its comment."""
         return [mainformatter.explicit_label_with_inline_comment(self.name, self.value, None,
             align_value_column=self.align_value_column, inline_comment=self.inline_comment,
             align_comment_column=self.align_comment_column)]
@@ -173,7 +219,11 @@ class InlineLabelDefinitions(Line):
     """The definitions of a label's names that are output where the label
     is, at the runtime address 'emit_addr' (the label's own address, or an
     address just before it, for a label inside an instruction or data), for
-    binary location 'binary_loc'. (Names already output aren't output again.)"""
+    binary location 'binary_loc'. (Names already output aren't output again.)
+
+    The label works out its definitions (see
+    Label.gather_inline_label_definitions()) when the line is resolved, which
+    marks the names as output, so it has to happen in output order."""
 
     def __init__(self, label, emit_addr, binary_loc):
         self.label = label
@@ -181,12 +231,16 @@ class InlineLabelDefinitions(Line):
         self.binary_loc = binary_loc
 
     def render(self):
+        """The definitions (e.g. '.loop'), marking the names as output."""
         return self.label.gather_inline_label_definitions(self.emit_addr, self.binary_loc)
 
 
 class ExplicitLabelDefinitions(Line):
     """'name = value' definitions of some of a label's names (see
-    Label.gather_explicit_definitions()), aligned to the given column."""
+    Label.gather_explicit_definitions()), aligned to the given column, with
+    the label's runtime address as the value (in hex, see hex4()). These are
+    the "Memory locations" at the top of the output (see
+    disassembly.memory_location_definitions())."""
 
     def __init__(self, label, names, align_value_column):
         self.label = label
@@ -194,6 +248,7 @@ class ExplicitLabelDefinitions(Line):
         self.align_value_column = align_value_column
 
     def render(self):
+        """A 'name = value' line for each name."""
         assembler = config.get_assembler()
         return [assembler.explicit_label(name, assembler.hex4(self.label.runtime_addr), offset=None, align_column=self.align_value_column)
                 for name in self.names]
@@ -203,6 +258,7 @@ class Blank(Line):
     """A blank line."""
 
     def render(self):
+        """An empty line."""
         return [""]
 
 
@@ -235,8 +291,10 @@ class Instruction(Line):
 
     The rest place the instruction in the output: its binary location and
     length (for the hex dump), its extra indent level, a description of its
-    cycle count, and the annotations (for inline comments). Without a binary
-    location only text() is available."""
+    cycle count, and the annotations (the session's, see disassembly.py, for
+    the inline comments on its bytes). Without a binary location only text()
+    is available. (The CPU modules make an Instruction for an opcode, then
+    give these with placed().)"""
 
     PLAIN          = "plain"
     FORCE_ABSOLUTE = "force absolute"
@@ -274,7 +332,8 @@ class Instruction(Line):
         self.annotations = annotations
 
     def placed(self, binary_loc, length, indent_level, cycles_description, annotations):
-        """Set where the instruction is in the output (see the class docs)."""
+        """Set where the instruction is in the output (see the class docs).
+        Returns the instruction."""
         self.binary_loc = binary_loc
         self.length = length
         self.indent_level = indent_level
@@ -297,6 +356,8 @@ class Instruction(Line):
         indent = "" if plain else utils.make_indent(1)
 
         if self.form == Instruction.UNDOCUMENTED:
+            # Data bytes (all the instruction's, as data items, or the opcode
+            # then the operand's), then the instruction in a comment
             if self.data_items is not None:
                 items = [str(x) for x in self.data_items]
             else:
@@ -323,8 +384,11 @@ class Instruction(Line):
             return result.strip() if plain else result
 
         if self.form == Instruction.AS_DATA:
-            # (The comment includes an acme-style '+2' suffix to help show
-            # what's going on.)
+            # The opcode, then the operand's low and high bytes. (The comment
+            # includes an acme-style '+2' suffix to help show what's going
+            # on. Its ';' is fixed, rather than the assembler's
+            # comment_prefix(): only beebasm and Baron, whose prefix is ';',
+            # can't force absolute addressing.)
             data_byte = str(self.data_byte)
             operand = str(self.operand)
             result = "%s%s%s, <(%s), >(%s)" % (indent, assembler.byte_prefix(), data_byte, operand, operand)
@@ -332,6 +396,7 @@ class Instruction(Line):
                 return result
             return result + " ; %s+2 %s%s%s" % (mnemonic, self.prefix, self.listing_operand, suffix)
 
+        # PLAIN
         operand = str(self.operand)
         if self.prefix == "" and operand.startswith("("):
             # (Not indirect, which some assemblers would take it to be)
@@ -342,6 +407,8 @@ class Instruction(Line):
         return result
 
     def name_labels(self):
+        """Name the labels in the opcode byte (for AS_DATA), the operand and
+        the instruction in the comment (for AS_DATA)."""
         # (In the order of text(): e.g. for AS_DATA, the data byte comes first)
         if self.form == Instruction.AS_DATA:
             name_labels_in(self.data_byte)
@@ -350,27 +417,33 @@ class Instruction(Line):
             name_labels_in(self.listing_operand)
 
     def resolve(self):
-        # Name the labels in the instruction, then in any inline comments (in
-        # the order they're output). It's rendered later.
+        """Name the labels in the instruction, then in any inline comments
+        (in the order they're output). It's rendered later."""
         self.name_labels()
+        # (Getting the comments' text names their labels)
         mainformatter.inline_annotation_texts(self.binary_loc, self.length, self.annotations)
         return self
 
     def render(self):
+        """The instruction, at its extra indent level, then its inline
+        comment: the hex dump and any inline comments."""
         line = utils.make_indent(self.indent_level) + self.text()
         return [mainformatter.add_inline_comment_including_hexdump(self.binary_loc, self.length, self.cycles_description, self.annotations, line)]
 
     def plain_text(self):
+        """The text(plain=True): no indent or comments."""
         return [self.text(plain=True)]
 
 
 class DataBlock(Line):
     """A block of data bytes or words, laid out as a table (e.g. several
-    '!byte' lines, each with some number of values).
+    '!byte' lines, each with some number of values), each line with its own
+    hex dump.
 
-    'element_size' is 1 for bytes or 2 for words; 'length' is in bytes.
-    'cols' is the number of values per line, or None to fit as many as
-    possible."""
+    'binary_loc' is where it starts, 'element_size' is 1 for bytes or 2 for
+    words, and 'length' is in bytes. 'cols' is the number of values per line,
+    or None to fit as many as possible before the inline comment column.
+    'annotations' are the session's (for the inline comments)."""
 
     def __init__(self, binary_loc, length, cols, element_size, annotations):
         assert isinstance(binary_loc.binary_addr, memorymanager.BinaryAddr)
@@ -398,38 +471,48 @@ class DataBlock(Line):
         return self._items
 
     def name_labels(self):
+        """Name the labels in the values, in order."""
         for item in self.items():
             name_labels_in(item)
 
     def resolve(self):
-        # Name the labels in the data, then in any inline comments (in the
-        # order they're output). It's rendered later.
+        """Name the labels in the data, then in any inline comments (in the
+        order they're output). It's rendered later."""
         self.name_labels()
+        # (Getting the comments' text names their labels)
         mainformatter.inline_annotation_texts(self.binary_loc, self.length, self.annotations)
         return self
 
     def render(self):
+        """The lines of the table: the values, comma separated and lined up
+        in columns (see utils.format_strings_in_a_table()), each line with
+        the hex dump and inline comments for its own bytes."""
         data = self.items()
         assembler = config.get_assembler()
         data_prefix = assembler.byte_prefix() if self.element_size == 1 else assembler.word_prefix()
 
         prefix = utils.make_indent(1) + data_prefix         # (e.g. prefix="    !byte" for example)
+        # (The room for the values, leaving a space before the inline comment)
         data_width = config.get_inline_comment_column() - len(prefix) - 1
 
         def format_line(text, start_index, end_index):
+            """The line for the values from start_index up to end_index (as
+            'text'), with the hex dump and inline comments for their bytes."""
             line_binary_loc = movemanager.BinaryLocation(self.binary_loc.binary_addr + start_index*self.element_size, self.binary_loc.move_id)
             return mainformatter.add_inline_comment_including_hexdump(line_binary_loc, (end_index - start_index)*self.element_size, "", self.annotations, prefix + text)
 
         return utils.format_strings_in_a_table(data, data_width, self.cols, format_line)
 
     def plain_text(self):
-        # The lines as the asm splits them, but without the padding that
-        # lines up the values
+        """The lines as the asm splits them, but without the indent, the
+        padding that lines up the values, or the comments."""
         data = self.items()
         assembler = config.get_assembler()
         data_prefix = assembler.byte_prefix() if self.element_size == 1 else assembler.word_prefix()
         data_width = config.get_inline_comment_column() - len(utils.make_indent(1) + data_prefix) - 1
         def format_line(text, start_index, end_index):
+            """The values from start_index up to end_index, without the
+            padding in 'text'."""
             return data_prefix + ", ".join(str(x) for x in data[start_index:end_index])
         return utils.format_strings_in_a_table(data, data_width, self.cols, format_line)
 
@@ -444,7 +527,12 @@ class StringData(Line):
     written as bytes, with its text in a comment.
 
     If there's an expression for its first byte (given by expr()), the
-    expression is output instead of the bytes."""
+    expression is output instead of the bytes.
+
+    A string is written as runs of characters in double quotes, with the
+    bytes that can't be in them (see Assembler.text_chr()) as numbers
+    between, e.g. '"Hello", 13'. Each line has its own hex dump (for its
+    own bytes)."""
 
     def __init__(self, binary_loc, length, annotations, encoding=None):
         import textencoding
@@ -465,8 +553,11 @@ class StringData(Line):
         return directive, lambda c: assembler.text_chr(c, self.encoding)
 
     def name_labels(self):
+        """Name the labels in the string's expression, or in the bytes
+        written as numbers."""
         # (The labels can only be in an expression for the whole string, or
-        # for a byte that's not shown as a character, see render())
+        # for a byte that's not shown as a character, see render(). A double
+        # quote is written as a character literal, see _render().)
         binary_addr = self.binary_loc.binary_addr
         if binary_addr in session.current().classifications.expressions:
             name_labels_in(classification.get_expression(binary_addr, session.current().memory.binary[binary_addr]))
@@ -478,9 +569,10 @@ class StringData(Line):
                 name_labels_in(classification.get_constant8(binary_addr + i))
 
     def text_comment(self, start, end):
-        """The text of bytes start to end of the string (in its encoding),
-        for a comment when it's written as bytes: printable runs in quotes,
-        the others as numbers, e.g. '"hello", $0d'."""
+        """The text of bytes start to end (not included) of the string, for a
+        comment when it's written as bytes: the encoding's name, then the
+        runs of characters it has in quotes, and the other bytes (and double
+        quotes) as hex numbers, e.g. 'petscii "hello", $0d'."""
         assembler = config.get_assembler()
         parts = []
         run = ""
@@ -499,6 +591,9 @@ class StringData(Line):
         return "%s %s" % (self.encoding.name, ", ".join(parts))
 
     def render(self, plain=False):
+        """The lines of the string (see _render()), with any lines the
+        assembler wants before and after a string in its encoding (unless
+        'plain')."""
         result = self._render(plain)
         directive, _ = self._text_form()
         if plain or directive is None:
@@ -508,6 +603,10 @@ class StringData(Line):
         return before + result + after
 
     def _render(self, plain):
+        """The lines of the string: the directive, then its characters and
+        numbers, starting a new line before one would reach the inline
+        comment column. If 'plain', the lines have no indent or comments
+        (for the JSON output)."""
         expressions = session.current().classifications.expressions
         memory_binary = session.current().memory.binary
         assembler = config.get_assembler()
@@ -517,7 +616,9 @@ class StringData(Line):
         as_bytes = directive is None
 
         def finish(start, end, text):
-            """The line for bytes start to end of the string"""
+            """The line for bytes start to end (not included) of the string,
+            whose text so far is 'text': with the text in a comment if it's
+            written as bytes, then its hex dump and inline comments."""
             line_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start, binary_loc.move_id)
             if plain:
                 return text.strip()
@@ -531,11 +632,15 @@ class StringData(Line):
         state = 0       # 0=not started first string yet, 1=within string, 2=finished string
         start_line_i = 0
 
+        # An expression for the whole string (e.g. a constant's name) is
+        # written in place of its bytes, on one line
         if binary_loc.binary_addr in expressions:
             s = classification.get_expression(binary_loc.binary_addr, memory_binary[binary_loc.binary_addr])
             result.append(finish(0, self.length, utils.make_indent(1) + (directive if directive is not None else assembler.string_prefix()) + s))
             return result
 
+        # Add each byte to the line in turn, until the next one wouldn't fit
+        # (start_line_i is the index of the line's first byte)
         i = 0
         while(i < self.length):
             c = memorymanager.get_u8_binary(binary_loc.binary_addr + i)
@@ -545,6 +650,7 @@ class StringData(Line):
             next_char = ""
             next_state = state
             if c_in_string is not None:
+                # A character in the quotes, opening them if needed
                 if state == 0:
                     next_char += '"'
                 elif state == 2:
@@ -552,12 +658,14 @@ class StringData(Line):
                 next_state = 1
                 next_char += c_in_string
             else:
+                # A number, closing the quotes if needed
                 if state == 1:
                     next_char += '", '
                 elif state == 2:
                     next_char += ", "
                 next_state = 2
                 if c == ord('"') and not as_bytes:
+                    # (A double quote as a character literal)
                     next_char += "'\"'"
                 else:
                     next_char += classification.get_constant8(binary_loc.binary_addr + i)
@@ -565,13 +673,16 @@ class StringData(Line):
             new_s = s + next_char
             len_new_s = len(new_s)
             if next_state == 1:
+                # (Leaving room for the closing quote)
                 len_new_s += 1
             if as_bytes:
                 # (Leaving room for the comment with the text)
                 len_new_s += 2 + len(assembler.comment_prefix()) + len(self.text_comment(start_line_i, i + 1))
 
+            # (A line always gets at least one byte, even if it's too long)
             if len_new_s > (config.get_inline_comment_column() - 1) and i > start_line_i:
-                # Save out the line before the next char
+                # Save out the line before the next char, which is added
+                # again on a new line
                 if state == 1:
                     s += '"'
                 result.append(finish(start_line_i, i, s))
@@ -583,6 +694,7 @@ class StringData(Line):
                 state = next_state
                 i += 1
 
+        # The last line
         if s != prefix:
             if state == 1:
                 s += '"'
@@ -590,11 +702,14 @@ class StringData(Line):
         return result
 
     def plain_text(self):
+        """The lines as render(plain=True) makes them: without the indent,
+        comments or encoding lines."""
         return [str(line) for line in self.render(plain=True)]
 
 
 def render_lines(lines):
-    """The text for a list of line objects, as a list of lines."""
+    """The text for a list of line objects, as a list of lines (strings or
+    LazyStrings; a string can hold several lines, separated by newlines)."""
     result = []
     for line in lines:
         result.extend(line.text_lines())

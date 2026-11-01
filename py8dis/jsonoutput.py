@@ -6,7 +6,22 @@ tools to read.
 go() writes it, after the asm, if the session has a json_filename (e.g. from
 --json on the command line). It's made from the session once emit() has made
 the output, so the names are exactly those in the asm, and nothing in the
-asm output is changed by making it.
+asm output is changed by making it. (symbols.py makes the symbol file and
+the cross-reference listing from the same document.)
+
+document() makes the JSON as a dictionary, from the session's state: the
+loads, moves, constants, memory regions and subroutines, then the labels
+(_labels()), the items (_items(): one for each instruction or piece of data)
+and the range boundaries (_range_boundaries()). dumps() and write() turn it
+into text, laid out to be easy to read and compare.
+
+The items come from what disassembly.emit() recorded as it made the output:
+each classification's line objects (see output.py), whose plain_text() is
+the item's text as in the asm, and the places it defined labels with no
+item for them. An instruction's mnemonic, addressing mode, operand, target,
+cycles and CPU state come from the CPU's opcode objects (see
+_instruction_fields()). An expression is given as its text and as a tree
+(see _expr() and _tree()).
 """
 
 import json
@@ -26,6 +41,9 @@ import output
 import session
 import utils
 
+# The "format" and "version" at the top of the JSON. The version only changes
+# if a reader of the old format could misread the new one (see
+# docs/json-format.md).
 FORMAT  = "py8dis"
 VERSION = 1
 
@@ -41,13 +59,17 @@ def dumps(doc):
     easy to read and compare. (This is also much quicker than json.dumps()
     with indent, which can't use the json module's C encoder.)"""
     def value_text(value):
+        """A top level value's text: a list with each entry on its own line,
+        or anything else on one line."""
         if isinstance(value, list) and value:
             return "[\n  " + ",\n  ".join(json.dumps(entry) for entry in value) + "\n]"
         return json.dumps(value)
     return "{\n" + ",\n".join(json.dumps(key) + ": " + value_text(value) for key, value in doc.items()) + "\n}\n"
 
 def document():
-    """The JSON for the current session's disassembly, as a dictionary."""
+    """The JSON for the current session's disassembly, as a dictionary (in
+    the order of the keys in the file). Called after emit(), since it uses
+    what emit() recorded."""
     s = session.current()
     return {
         "format":         FORMAT,
@@ -65,13 +87,20 @@ def document():
     }
 
 def _cpu_name(cpu):
+    """The CPU's name, as load() takes it (e.g. '6502' or 'z80'), or its
+    class's name if it isn't one of those."""
     import commands
     for name, cpu_class in commands.cpu_names.items():
+        # (The exact class: e.g. Cpu6510 is derived from Cpu6502)
         if type(cpu) is cpu_class:
             return name
     return type(cpu).__name__
 
 def _loads():
+    """The files loaded (see load() and load_prg()), in the order they were
+    loaded: each one's filename, the binary addresses it's loaded at (from
+    'start' up to 'end'), the 'offset' in the file of the data loaded (if
+    it isn't 0), and 'prg' for a PRG file."""
     result = []
     for f in session.current().memory.loaded_files:
         entry = { "filename": f.filename, "start": f.start, "end": f.end }
@@ -83,11 +112,17 @@ def _loads():
     return result
 
 def _moves():
+    """The moves (see move()), by move ID, apart from the base move (ID 0,
+    for code that isn't moved): each one's ID, binary address, runtime
+    address and length."""
     move_definitions = session.current().moves.move_definitions
     return [{ "id": move_id, "binary_addr": int(md.src_binary_addr), "runtime_addr": int(md.dest_runtime_addr), "length": md.length }
             for move_id, md in enumerate(move_definitions) if move_id != movemanager.BASE_MOVE_ID]
 
 def _item_type(c, binary_addr):
+    """The JSON's 'type' for the item at binary_addr, whose classification
+    is c: 'include_binary', 'bytes', 'words', 'string' or 'instruction'."""
+    # (An included file is checked first: its data is classified as a Byte)
     if binary_addr in session.current().classifications.include_binary_files:
         return "include_binary"
     if isinstance(c, classification.Byte):
@@ -101,7 +136,9 @@ def _item_type(c, binary_addr):
 
 def _inline_names():
     """The names defined inline, for each binary location, in the order
-    they're defined."""
+    they're defined: a dictionary from (binary address, move ID) to a list
+    of names. (Label.gather_inline_label_definitions() records where each
+    name is defined, as it's output.)"""
     result = {}
     for label in session.current().labels.labels.values():
         for name_list in label.explicit_names.values():
@@ -113,6 +150,12 @@ def _inline_names():
              for loc, names in result.items() }
 
 def _items():
+    """The items: one for each classification in the output (an
+    instruction, bytes, words, a string or an included file), in binary
+    address order, made from what emit() recorded in output_items (each
+    classification's binary location and line objects). Each has its
+    addresses, length, bytes, the labels defined there, its comments, its
+    type, its text as in the asm, and the fields for its type."""
     memory_binary = session.current().memory.binary
     move_definitions = session.current().moves.move_definitions
     inline_names = _inline_names()
@@ -138,6 +181,8 @@ def _items():
         item["type"] = _item_type(c, binary_addr)
         # (Blank lines, e.g. after an RTS, are layout, so they're left out)
         item["text"] = [text for line in lines for text in line.plain_text() if text != ""]
+        # The fields for the type (the first line object is the
+        # output.Instruction or output.DataBlock)
         if item["type"] == "instruction":
             item.update(_instruction_fields(binary_loc, c, lines[0]))
         elif item["type"] in ("bytes", "words"):
@@ -153,11 +198,15 @@ def _items():
 # Comments, constants and subroutines
 
 def _align(align):
+    """A comment's alignment (an Align, see align.py) as the JSON names it,
+    e.g. 'before_label' or 'inline'."""
     return align.name.lower()
 
 def _comment(annotation):
     """A comment (or other annotation) for the JSON, or None for one that
-    only adds layout (a blank line)."""
+    only adds layout (a blank line). An overlapping instruction (found while
+    tracing, see comment.OverlappingInstruction) and raw text (from
+    annotate()) say which they are with a 'kind'."""
     import comment
     if isinstance(annotation, comment.OverlappingInstruction):
         result = { "text": "overlapping: " + annotation.text.text(plain=True), "align": _align(annotation.align), "kind": "overlapping" }
@@ -187,6 +236,9 @@ def _comments(binary_loc, length):
     return result
 
 def _constants():
+    """The constants (see constant()), in the order the asm defines them:
+    each one's name, value, its value as the asm shows it ('text'), and its
+    comment, if any."""
     result = []
     for c in disassembly.sorted_constants():
         entry = { "name": c.name, "value": c.value, "text": disassembly.constant_value_to_string(c.value, c.format) }
@@ -205,6 +257,8 @@ def _subroutines():
         binary_addr, _ = movemanager.r2b(runtime_addr, sub.move_id)
         in_data = binary_addr is not None and memorymanager.is_data_loaded_at_binary_addr(binary_addr)
         label = labels.get(runtime_addr)
+        # (A subroutine outside the loaded data is only listed if the label
+        # at its address has the subroutine's name)
         named = label is not None and any(name.text == sub.label_name for name_list in label.explicit_names.values() for name in name_list)
         if not (in_data or named):
             continue
@@ -224,14 +278,21 @@ def _subroutines():
 # Labels
 
 def _labels():
+    """The labels, by runtime address: one for each address with a name, a
+    local name or an expression (see docs/json-format.md), with the code and
+    data that refer to it."""
     s = session.current()
     move_definitions = s.moves.move_definitions
+    # (The "Memory locations" heading each label's definitions are under, as
+    # disassembly.memory_location_definitions() recorded them)
     headings = s.disassembly.memory_location_headings
     result = []
     for runtime_addr in sorted(s.labels.labels):
         label = s.labels.labels[runtime_addr]
         entry = { "runtime_addr": int(runtime_addr) }
 
+        # The label's names, for each move in turn, in the order the asm
+        # defines them, and where it defines them
         names = []
         for move_id, name_list in sorted(label.explicit_names.items()):
             for name in sorted(name_list, key=lambda name: name.definition_order()):
@@ -246,6 +307,8 @@ def _labels():
         if names:
             entry["names"] = names
 
+        # Its local names (see local_label()), with a heading of their own
+        # (e.g. commodore.py's 'Other banks'), or else the label's
         local_names = []
         for move_id, local_list in sorted(label.local_labels.items()):
             for local in local_list:
@@ -264,6 +327,7 @@ def _labels():
         if local_names:
             entry["local_names"] = local_names
 
+        # Its expressions (see expr_label())
         expressions = []
         for move_id, expression_list in sorted(label.expressions.items()):
             for text in expression_list:
@@ -277,6 +341,8 @@ def _labels():
         if not (names or local_names or expressions):
             continue
 
+        # The code and data that refer to it, each binary location once, in
+        # order
         references = []
         for loc in sorted(set((int(r.binary_addr), r.move_id) for r in label.references)):
             binary_addr, move_id = loc
@@ -423,12 +489,21 @@ _ZP_MODES = { "zp", "zp_x", "zp_y", "zp_indirect", "zp_x_indirect", "zp_indirect
 
 def _instruction_fields(binary_loc, c, instruction):
     """The JSON fields of an instruction (opcode 'c', output as the
-    output.Instruction 'instruction')."""
+    output.Instruction 'instruction'): its mnemonic, addressing mode,
+    operand (its value and expression), target, whether it's undocumented,
+    its cycles and the CPU state after it."""
     binary_addr = binary_loc.binary_addr
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
+    # (The opcode's mnemonic, without any operands that are part of it, e.g.
+    # the 8080's 'mvi b,'. It's py8dis's name, so for an undocumented 6502
+    # opcode it can differ from the asm's: see
+    # Assembler.undocumented_6502_mnemonic().)
     result = { "mnemonic": utils.force_case(c.mnemonic.split()[0]) }
 
+    # The addressing mode, the operand's value (and its size in bits, for
+    # how a number is shown) and the target of a branch, jump or call, which
+    # each CPU works out in its own way
     if isinstance(cpu, cpu6502.Cpu6502):
         mode = _MODES_6502[c.addr_mode]
         target = None
@@ -437,6 +512,7 @@ def _instruction_fields(binary_loc, c, instruction):
         if mode in ("implied", "accumulator"):
             value = None
         elif mode == "relative":
+            # (The value of a branch's operand is its target's address)
             value = target
         elif mode == "immediate" or mode in _ZP_MODES:
             value = memory_binary[binary_addr + 1]
@@ -444,8 +520,11 @@ def _instruction_fields(binary_loc, c, instruction):
             value = memorymanager.get_u16_binary(binary_addr + 1)
         bits = 16 if mode not in _ZP_MODES and mode not in ("immediate", "relative") else 8
     elif isinstance(cpu, cpuz80.CpuZ80):
+        # (operand_addr is the binary address of the value's bytes)
         mode, value, bits, target, operand_addr = c.json_operand(binary_addr)
     else:
+        # The 8080, whose operand (if any) is the one or two bytes after the
+        # opcode
         assert isinstance(cpu, cpu8080.Cpu8080)
         target = None
         if isinstance(c, cpu8080.Cpu8080.OpcodeImmediate):
@@ -460,6 +539,10 @@ def _instruction_fields(binary_loc, c, instruction):
             mode, value, bits = "implied", None, None
 
     result["mode"] = mode
+    # (Undocumented whether or not the assembler accepts it: the 6510's
+    # undocumented opcodes have 'undocumented' True, and the Z80's opcodes
+    # their kind of undocumented opcode, or None. The 8080's are always
+    # written as data.)
     if instruction.form == output.Instruction.UNDOCUMENTED or getattr(c, "undocumented", False):
         result["undocumented"] = True
     if isinstance(cpu, cpuz80.CpuZ80):
@@ -467,27 +550,34 @@ def _instruction_fields(binary_loc, c, instruction):
         if value is not None:
             result["operand"] = { "value": value, "expr": _expr(c.operand_part_text(binary_addr, operand_addr), operand_addr, value, bits) }
     elif value is not None and instruction.operand is not None:
+        # (The 6502's and 8080's operand is just after the opcode)
         result["operand"] = { "value": value, "expr": _expr(instruction.operand, binary_addr + 1, value, bits) }
     if target is not None:
         result["target"] = target
 
+    # The cycles, and what's known about the registers and flags after it
+    # (if it was traced)
     result["cycles"] = c.cycles_description(binary_addr)
     state = cpu.cpu_states[binary_addr]
     if state is not None:
         if isinstance(cpu, cpu6502.Cpu6502):
             result["cpu_state"] = _cpu_state(state.pessimistic)
         else:
+            # (The 8080's and Z80's: each register as a number, and each
+            # flag as True or False, or None where it isn't known)
             result["cpu_state"] = { name: (None if value is None else bool(value) if name in state.FLAGS else value)
                                     for name, value in state.values.items() }
     return result
 
 def _cpu_state(disposition):
     """The 6502's state (a CpuStateDisposition) for the JSON: what's known,
-    with None where it isn't."""
+    with None where it isn't: A, X and Y as numbers, and the flags N, V, D,
+    I, Z and C as True or False."""
     result = {}
     for reg in "axy":
         result[reg] = disposition[reg].value
     for flag in "nvdizc":
+        # (Anything else, e.g. None, means the flag isn't known)
         value = disposition[flag]
         result[flag] = bool(value) if value in (True, False, 0, 1) else None
     return result
@@ -497,7 +587,9 @@ def _cpu_state(disposition):
 
 def _data_fields(binary_addr, length, element_size, data_block):
     """The JSON fields of bytes or words (output as the output.DataBlock
-    'data_block')."""
+    'data_block'): their 'values' (the numbers in the binary), and 'exprs'
+    (an expression, or None, for each value), if any of them has an
+    expression (e.g. from expr())."""
     expressions = session.current().classifications.expressions
     memory_binary = session.current().memory.binary
     if element_size == 1:
