@@ -74,7 +74,6 @@ import classification
 import collections
 import config
 import constant
-import copy
 import expression
 import inspect
 import labelmanager
@@ -86,11 +85,9 @@ import session
 import optionallabel
 import output
 import re
-import trace
 import utils
 from binaryaddrtype import BinaryAddrType
 from comment import Annotation, Comment
-from align import Align
 
 from movemanager import BinaryLocation
 from memorymanager import BinaryAddr, RuntimeAddr
@@ -707,8 +704,8 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
 
             # Rule 3: Expressions
             if candidate_move_id in label.expressions:
-                for expression in label.expressions[candidate_move_id]:
-                    lmd.name = expression
+                for expression_text in label.expressions[candidate_move_id]:
+                    lmd.name = expression_text
                     lmd.defined_in_move_id = candidate_move_id
                     lmd.is_expression = True
                     return lmd
@@ -746,8 +743,8 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
         return lmd
 
     # return with the first expression name, if there is one
-    for expression in label.expressions[move_id]:
-        lmd.name = expression
+    for expression_text in label.expressions[move_id]:
+        lmd.name = expression_text
         lmd.defined_in_move_id = move_id
         lmd.is_expression = True
         return lmd
@@ -765,8 +762,8 @@ def suggest_label_name(runtime_addr, binary_addr, move_id, binary_addr_type: Bin
         lmd.defined_in_move_id = movemanager.BASE_MOVE_ID
         return lmd
 
-    for expression in label.expressions[movemanager.BASE_MOVE_ID]:
-        lmd.name = expression
+    for expression_text in label.expressions[movemanager.BASE_MOVE_ID]:
+        lmd.name = expression_text
         lmd.defined_in_move_id = movemanager.BASE_MOVE_ID
         lmd.is_expression = True
         return lmd

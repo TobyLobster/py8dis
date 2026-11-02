@@ -65,13 +65,11 @@ name once, see gather_explicit_definitions()).
 """
 
 import collections
-import memorymanager
 import movemanager
 import session
 import disassembly
 import config
-import utils
-from memorymanager import BinaryAddr, RuntimeAddr
+from memorymanager import RuntimeAddr
 from binaryaddrtype import BinaryAddrType
 
 _empty_set = frozenset()
@@ -394,7 +392,6 @@ class Label:
         address, rather than in each Label, so that there's no need to create
         a Label object for every address in the binary.)"""
 
-        import labelmanager
         return session.current().labels.emit_opportunities.get(self.runtime_addr, _empty_set)
 
     def gather_inline_label_definitions(self, emit_addr, binary_loc):

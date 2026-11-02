@@ -42,16 +42,12 @@ what the call returned.
 """
 
 from commands import *
-from classification import INSIDE_A_CLASSIFICATION
 import config
 import session
-import trace
-import utils
 import classification
 import machinetype
-import sys
 from memorymanager import BinaryAddr, BinaryLocation, RuntimeAddr
-from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
+from maker import make_hex, make_lo, make_hi, make_add, make_multiply
 from snippets6502 import register_snippet, register_code_snippet, register_data_snippet, OPCODE_TXA, OPCODE_TYA
 from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
 

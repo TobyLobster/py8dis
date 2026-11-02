@@ -83,12 +83,9 @@ this would not be very readable or useful output.)
 import collections
 
 import config
-import disassembly
 import movemanager
 import session
-import memorymanager
 import utils
-from memorymanager import BinaryAddr, RuntimeAddr
 import label as label_module       # (not 'from label import Label', since label imports this module, indirectly)
 
 class Labels:

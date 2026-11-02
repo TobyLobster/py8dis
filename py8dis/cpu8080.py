@@ -38,15 +38,12 @@ import collections
 import config
 import expression
 import classification
-import config
 import disassembly
-import mainformatter
 import output
 import memorymanager
 import movemanager
 import session
 import cpu
-import trace
 import utils
 from memorymanager import BinaryAddr, RuntimeAddr
 from binaryaddrtype import BinaryAddrType
