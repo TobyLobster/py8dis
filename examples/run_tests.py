@@ -129,6 +129,7 @@ TESTS = [
     ("char_literals",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for all character literals"),
     ("align_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for formatting"),
     ("cycles",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "cycle counts for branches near page boundaries"),
+    ("cycles_65c02",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "65C02 cycle counts: ADC and SBC in decimal mode, and absolute indexed BIT and shifts"),
     ("redundant_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "redundant instructions (whose results aren't used), with io_range() and the BIT trick"),
     ("branch_state",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
     ("string_stuff1",            ["acme", "beebasm", "baron", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),

@@ -386,15 +386,13 @@ class Instruction(Line):
         if self.form == Instruction.AS_DATA:
             # The opcode, then the operand's low and high bytes. (The comment
             # includes an acme-style '+2' suffix to help show what's going
-            # on. Its ';' is fixed, rather than the assembler's
-            # comment_prefix(): only beebasm and Baron, whose prefix is ';',
-            # can't force absolute addressing.)
+            # on.)
             data_byte = str(self.data_byte)
             operand = str(self.operand)
             result = "%s%s%s, <(%s), >(%s)" % (indent, assembler.byte_prefix(), data_byte, operand, operand)
             if plain:
                 return result
-            return result + " ; %s+2 %s%s%s" % (mnemonic, self.prefix, self.listing_operand, suffix)
+            return result + " %s %s+2 %s%s%s" % (assembler.comment_prefix(), mnemonic, self.prefix, self.listing_operand, suffix)
 
         # PLAIN
         operand = str(self.operand)
