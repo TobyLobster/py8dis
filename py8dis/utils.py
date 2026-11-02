@@ -27,7 +27,6 @@ import linecache
 import os
 import re
 import sys
-import traceback
 
 import config
 

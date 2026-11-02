@@ -268,61 +268,6 @@ class String:
         long for one."""
         return [output.StringData(binary_loc, self._length, annotations, self.encoding)]
 
-        # (Nothing from here on is run, since it returns above:
-        # output.StringData does this job. This code also uses names that
-        # aren't set here, e.g. 'state', 's' and 'result'.)
-        i = 0
-        while(i < self._length):
-            c = memorymanager.get_u8_binary(binary_loc.binary_addr + i)
-            c_in_string = assembler().string_chr(c)
-
-            # Calculate how to add 'c' to  the current assembly string in 'next_char'
-            next_char = ""
-            next_state = state
-            if c_in_string is not None:
-                if state == 0:
-                    next_char += '"'
-                elif state == 2:
-                    next_char += ', "'
-                next_state = 1
-                next_char += c_in_string
-            else:
-                if state == 1:
-                    next_char += '", '
-                elif state == 2:
-                    next_char += ", "
-                next_state = 2
-                if c == ord('"'):
-                    next_char += "'\"'"
-                else:
-                    next_char += get_constant8(binary_loc.binary_addr + i)
-
-            new_s = s + next_char
-            len_new_s = len(new_s)
-            if next_state == 1:
-                len_new_s += 1
-
-            if len_new_s > (config.get_inline_comment_column() - 1):
-                # Save out the line before the next char
-                if state == 1:
-                    s += '"'
-                temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
-                result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, i - start_line_i, "", annotations, s))
-                s = prefix
-                start_line_i = i
-                state = 0
-            else:
-                s = new_s
-                state = next_state
-                i += 1
-
-        if s != prefix:
-            if state == 1:
-                s += '"'
-            temp_binary_loc = movemanager.BinaryLocation(binary_loc.binary_addr + start_line_i, binary_loc.move_id)
-            result.append(mainformatter.add_inline_comment_including_hexdump(temp_binary_loc, self._length - start_line_i, "", annotations, s))
-        return result
-
     def __str__(self):
         """A description, with the call stack where it was made, e.g. for
         add_classification()'s 'already classified' assertion."""

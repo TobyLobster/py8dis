@@ -171,23 +171,6 @@ def add_move(dest_runtime_addr, src_binary_addr, length):
     #utils.debug("Move {0} added. Dest = {1}, Src = {2}, Len = {3}".format(move_id, hex(dest_runtime_addr), hex(source), length))
     return move_id
 
-def is_valid_runtime_addr_for_move_id(runtime_addr, move_id):
-    """True if runtime_addr is in the destination of the move move_id
-    (including the address just after its end). runtime_addr must be a
-    valid RuntimeAddr and move_id a valid move ID: it's an assertion error
-    otherwise."""
-
-    assert isinstance(runtime_addr, RuntimeAddr)
-    assert memorymanager.is_valid_runtime_addr(runtime_addr)
-    assert is_valid_move_id(move_id)
-
-    # Find the move definition
-    md = session.current().moves.move_definitions[move_id]
-
-    # We *include* the end address here; this accounts for the fact that a label can be
-    # defined after the last classification in a move.
-    return md.is_in_move_dest(runtime_addr, include_end_address=True)
-
 def b2r(binary_addr):
     """
     Convert a binary address to a runtime address.

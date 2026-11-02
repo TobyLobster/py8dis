@@ -1513,7 +1513,6 @@ ROMTOP  C000
 HILISP  D700
 HILISP+1  D701
 HILISP+2  D702
-HIWARM  DO78
 """
 
 # word(0x823e)
@@ -1957,7 +1956,6 @@ expr(0x815b, "'L'")
 expr(0x8162, "'I'")
 expr(0x8169, "'S'")
 expr(0x8170, "'P'")
-constant(42, "WARMST")
 constant(0, "COLDST")
 expr(0x8187, "COLDST")
 expr(0x827f, "WARMST")
@@ -2163,7 +2161,6 @@ expr(0x90f4, "RELBS")
 expr(0x911d, "RELBS")
 expr(0x9130, "RELBS")
 expr(0x9138, "RELBS")
-expr(0x9142, "RELBS")
 expr(0x9142, "RELBS")
 expr(0x9144, "RELBS")
 expr(0x9148, "RELBS+1")

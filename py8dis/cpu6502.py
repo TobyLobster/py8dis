@@ -237,12 +237,12 @@ class RegState:
             return self.previous_load_imm+1
         return None
 
-    def __repl__(self):
+    def __repr__(self):
         """The register's value as text (for __str__())."""
         return "value: {0}".format(self.value)
 
     def __str__(self):
-        return self.__repl__()
+        return self.__repr__()
 
 class CpuStateDisposition:
     """One version of what's known about the CPU after an instruction
@@ -598,11 +598,11 @@ class CpuStateDisposition:
         s += " %s%s%s%s%s%s" % (flag('n'), flag('v'), flag('d'), flag('i'), flag('z'), flag('c'))
         return s
 
-    def __repl__(self):
+    def __repr__(self):
         """The state as text (see show())."""
         return self.show()
     def __str__(self):
-        return self.__repl__()
+        return self.__repr__()
 
 def branch_target(binary_addr):
     """The target of the relative branch at binary_addr, without wrapping
