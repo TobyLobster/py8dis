@@ -119,6 +119,7 @@ TESTS = [
     ("crash_fixes_z80",          ["z88dk", "sjasmplus"],       "Z80 code that used to crash py8dis: expr() on the address in an instruction with a prefix, and an instruction cut off by the end of the data"),
     ("spectrum48",               ["z88dk", "sjasmplus"],       "the ZX Spectrum 48K ROM, with spectrum.spectrum48() and spectrum.rom()"),
     ("spectrum_test",            ["z88dk", "sjasmplus"],       "a ZX Spectrum program, with spectrum.spectrum48(): ROM calls, system variables, RST $10, $28 and $08, the border and keyboard"),
+    ("spectrum_no_rom",          ["z88dk", "sjasmplus"],       "a ZX Spectrum program, with spectrum.spectrum48(rom_labels=False): IY partly known, and no GEN-ENT-1 hook"),
     ("trace_z80",                ["z88dk", "sjasmplus"],       "tracing Z80 code: RST with a hook, JP (IX), relative jumps round the top and bottom of memory, moves, expressions"),
     ("bbcbasic",                 ["z88dk", "sjasmplus"],       "BBC BASIC (Z80) for CP/M, with cpm.cpm(), labels from its map file, hooks for inline data and tables of routines"),
     ("zexdoc",                   ["z88dk", "sjasmplus"],       "ZEXDOC, the Z80 instruction exerciser for CP/M, with cpm.cpm(): mostly tables, with self-modifying code"),

@@ -209,10 +209,9 @@ dict = {
 
 label(0x1be5, "buffer_empty")
 
-# A heading before each OSBYTE's test. (The loop variable hides the entry()
-# command, so entry() can't be used after this.)
-for entry in dict:
-    mycom(dict[entry], entry)
+# A heading before each OSBYTE's test.
+for ent in dict:
+    mycom(dict[ent], ent)
 
 comment(0x3123, "OSWORD")
 comment(0x31b3, "Misc other calls")

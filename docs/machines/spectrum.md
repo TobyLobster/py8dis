@@ -16,7 +16,7 @@ go()
 
 **Names the system variables**, if the program uses them, as in the Spectrum's manual, in lower case (e.g. `frames`, `last_k`, `err_sp`; `frames+1` etc. for the bytes after the first), and the screen, the attributes and the printer buffer (`screen`, `attributes`, `printer_buffer`), under headings by region.
 
-The ROM keeps IY at ERR_NR's address, $5C3A, so a system variable addressed with IY is written as an offset from it, e.g. `res 5,(iy+flags - err_nr)` (unless the code is known to have set IY to something else).
+The ROM keeps IY at ERR_NR's address, $5C3A, so a system variable addressed with IY is written as an offset from it, e.g. `res 5,(iy+flags - err_nr)` (unless the code is known to have set IY, or either half of it, to something else).
 
 **Names the ROM's routines and tables**, by the names in *The Complete Spectrum ROM Disassembly* (e.g. `cls`, `chan_open`, `pr_string`, `print_fp`, from CLS, CHAN-OPEN etc.). The calculator's ABS, NOT and OR are `fp_abs`, `fp_not` and `fp_or`, since sjasmplus takes `abs`, `not` and `or` to be its operators. Calls to the commonly used ones are commented, e.g. `call cls ; Clear the screen`. `spectrum48(rom_labels=False)` leaves these out (e.g. for a replacement ROM, whose routines are elsewhere).
 
@@ -24,7 +24,7 @@ The ROM keeps IY at ERR_NR's address, $5C3A, so a system variable addressed with
 
 **RST $08** (an error) is followed by the error number, which is marked as a byte with the report in a comment (`Report 9 STOP statement`). The code doesn't continue after it.
 
-**RST $28** (the floating point calculator), and calls to GEN-ENT-1 and GEN-ENT-2, are followed by the calculator's bytecode. This is marked as bytes, each with its instruction's name in a comment (`multiply`, `stk-data`, `end-calc`), its jumps as `label - $`, and its numbers (in the calculator's compressed format) with their values. The code continues after the end-calc.
+**RST $28** (the floating point calculator), and calls to GEN-ENT-1 and GEN-ENT-2 (only with the ROM's labels; with `rom_labels=False`, a replacement ROM's can be hooked with `hook_subroutine(addr, name, spectrum.calculator_hook)`), are followed by the calculator's bytecode. This is marked as bytes, each with its instruction's name in a comment (`multiply`, `stk-data`, `end-calc`), its jumps as `label - $`, and its numbers (in the calculator's compressed format) with their values. The code continues after the end-calc.
 
 **The ULA's port**, $FE, is named `ula_port`, with what's written to it commented when it's known (`out (ula_port),a ; Border blue`, with MIC and the speaker), and which keyboard half rows are read (`in a,(ula_port) ; Read the keyboard (SPACE-B)`). This is for `out (n),a` and `in a,(n)`, and for `out (c),r` and `in r,(c)` when C is even.
 

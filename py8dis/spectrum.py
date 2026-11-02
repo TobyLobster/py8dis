@@ -285,8 +285,11 @@ def calculator_hook(target, caller):
     return calculator(int(caller) + (1 if target == 0x0028 else 3))
 
 # The ROM routines followed by data, not code, by address, with their hooks
-# (spectrum48() makes them the CPU's subroutine hooks)
-_DATA_CALLS = {0x0008: error_hook, 0x0028: calculator_hook, 0x335e: calculator_hook, 0x3362: calculator_hook}
+# (spectrum48() makes them the CPU's subroutine hooks): the restarts, which
+# are at the same addresses in any ROM, and GEN-ENT-1 and GEN-ENT-2, which
+# are only where they are in Sinclair's ROM (so not with rom_labels=False)
+_DATA_CALLS = {0x0008: error_hook, 0x0028: calculator_hook}
+_ROM_DATA_CALLS = {0x335e: calculator_hook, 0x3362: calculator_hook}
 
 
 # ************************************************************************************************
@@ -426,13 +429,14 @@ def _analysis():
             state = _previous_state(cpu, binary_addr, previous)
             runtime_addr = movemanager.b2r(BinaryAddr(binary_addr))
 
-            # (IY+d): IY holds ERR_NR's address. (It's taken to, unless both
-            # IYH and IYL are known and say otherwise.)
+            # (IY+d): IY holds ERR_NR's address. (It's taken to, unless
+            # either half of IY is known and isn't that half of it.)
             index = c.part(cpuz80.Index)
             if index is not None and index.register == "iy":
                 iyh, iyl = state["iyh"], state["iyl"]
                 d_addr = binary_addr + index.offset
-                if (iyh is None or iyl is None or (iyh << 8 | iyl) == IY_BASE) and d_addr not in expressions:
+                iy_is_base = iyh in (None, IY_BASE >> 8) and iyl in (None, IY_BASE & 0xff)
+                if iy_is_base and d_addr not in expressions:
                     # (d is signed)
                     d = memory_binary[d_addr]
                     target = IY_BASE + (d - 0x100 if d >= 0x80 else d)
@@ -610,9 +614,11 @@ def spectrum48(rom_labels=True):
       is traced, named in the 'ld de' and commented ('Set the current
       channel's output routine to routine').
 
-    The RST $08 and RST $28 hooks, and the GEN-ENT-1 and GEN-ENT-2 ones, are
-    set up with rom_labels=False too, but RST $10's comments, like the other
-    ROM routines', aren't. This stops with an error if the CPU isn't the
+    The RST $08 and RST $28 hooks are set up with rom_labels=False too (the
+    restarts are at the same addresses in any ROM), but the GEN-ENT-1 and
+    GEN-ENT-2 ones, and RST $10's comments, like the other ROM routines',
+    aren't (a replacement ROM's routines are elsewhere: see
+    examples/python/opense.py). This stops with an error if the CPU isn't the
     Z80, or if it has been called already.
     """
     cpu = session.current().cpu
@@ -634,6 +640,9 @@ def spectrum48(rom_labels=True):
     # hook_subroutine(), which would also make the addresses entry points.)
     for addr, hook in _DATA_CALLS.items():
         cpu.subroutine_hooks[RuntimeAddr(addr)] = hook
+    if rom_labels:
+        for addr, hook in _ROM_DATA_CALLS.items():
+            cpu.subroutine_hooks[RuntimeAddr(addr)] = hook
 
     # The commonly called ROM routines, so that calls to them are commented
     # (with what's printed, for RST $10). Their names are optional labels,
