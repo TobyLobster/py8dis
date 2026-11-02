@@ -642,7 +642,7 @@ control_codes = {
 
 # BASIC V2's keywords, by token ($80 upwards), for listing a BASIC program
 # (see commodore.basic_program()). The C64 and VIC-20 have BASIC V2, and the
-# C128 and Plus/4 use these too.
+# PET's, Plus/4's and C128's BASICs add to them (see basic_v4_tokens etc.).
 basic_v2_tokens = [
     "END", "FOR", "NEXT", "DATA", "INPUT#", "INPUT", "DIM", "READ",
     "LET", "GOTO", "RUN", "IF", "RESTORE", "GOSUB", "RETURN", "REM",
@@ -1389,6 +1389,34 @@ basic_v4_tokens = basic_v2_tokens + [
     "CONCAT", "DOPEN", "DCLOSE", "RECORD", "HEADER", "COLLECT", "BACKUP", "COPY",
     "APPEND", "DSAVE", "DLOAD", "CATALOG", "RENAME", "SCRATCH", "DIRECTORY",
 ]
+
+# BASIC 3.5's keywords (the Plus/4's and C16's: V2's, then $cc-$fd), and
+# BASIC 7.0's (the C128's: the same, but with $ce and $fe the first bytes of
+# two-byte tokens, whose keywords are in basic_v7_prefixed_tokens), by
+# token ($80 upwards). (From C64-Wiki's 'BASIC token' page, and Commodore's
+# source as given in cbm-basic-tokens.txt.)
+basic_v35_tokens = basic_v2_tokens + [
+    "RGR", "RCLR", "RLUM", "JOY", "RDOT", "DEC", "HEX$", "ERR$",
+    "INSTR", "ELSE", "RESUME", "TRAP", "TRON", "TROFF", "SOUND", "VOL",
+    "AUTO", "PUDEF", "GRAPHIC", "PAINT", "CHAR", "BOX", "CIRCLE", "GSHAPE",
+    "SSHAPE", "DRAW", "LOCATE", "COLOR", "SCNCLR", "SCALE", "HELP", "DO",
+    "LOOP", "EXIT", "DIRECTORY", "DSAVE", "DLOAD", "HEADER", "SCRATCH", "COLLECT",
+    "COPY", "RENAME", "BACKUP", "DELETE", "RENUMBER", "KEY", "MONITOR", "USING",
+    "UNTIL", "WHILE",
+]
+basic_v7_tokens = basic_v35_tokens[:0xce - 0x80] + [None] + basic_v35_tokens[0xcf - 0x80:] + [None]
+# {first byte: {second byte: keyword}}
+basic_v7_prefixed_tokens = {
+    0xce: {0x02: "POT", 0x03: "BUMP", 0x04: "PEN", 0x05: "RSPPOS", 0x06: "RSPRITE",
+           0x07: "RSPCOLOR", 0x08: "XOR", 0x09: "RWINDOW", 0x0a: "POINTER"},
+    0xfe: {0x02: "BANK", 0x03: "FILTER", 0x04: "PLAY", 0x05: "TEMPO", 0x06: "MOVSPR",
+           0x07: "SPRITE", 0x08: "SPRCOLOR", 0x09: "RREG", 0x0a: "ENVELOPE", 0x0b: "SLEEP",
+           0x0c: "CATALOG", 0x0d: "DOPEN", 0x0e: "APPEND", 0x0f: "DCLOSE", 0x10: "BSAVE",
+           0x11: "BLOAD", 0x12: "RECORD", 0x13: "CONCAT", 0x14: "DVERIFY", 0x15: "DCLEAR",
+           0x16: "SPRSAV", 0x17: "COLLISION", 0x18: "BEGIN", 0x19: "BEND", 0x1a: "WINDOW",
+           0x1b: "BOOT", 0x1c: "WIDTH", 0x1d: "SPRDEF", 0x1e: "QUIT", 0x1f: "STASH",
+           0x21: "FETCH", 0x23: "SWAP", 0x24: "OFF", 0x25: "FAST", 0x26: "SLOW"},
+}
 
 
 # ************************************************************************************************

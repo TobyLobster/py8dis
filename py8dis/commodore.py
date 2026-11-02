@@ -91,9 +91,10 @@ class Machine:
     def __init__(self, name, *, locations, hardware_locations, rom_locations, rom_routines,
                  rom_label_tables, jump_table, inline_string_calls, vectors, colours, colour_registers,
                  control_codes, io_ranges, basic_start, cartridge, basic_rom_addr, regions,
-                 basic_tokens=None, call_hooks=None):
+                 basic_tokens=None, basic_prefixed_tokens=None, call_hooks=None):
         self.name = name
-        self.basic_tokens = basic_tokens or basic_v2_tokens   # BASIC's keywords, by token from $80
+        self.basic_tokens = basic_tokens or basic_v2_tokens   # BASIC's keywords, by token from $80 (None for a prefix)
+        self.basic_prefixed_tokens = basic_prefixed_tokens or {}  # {prefix: {second byte: keyword}}, for two-byte tokens
         self.call_hooks = call_hooks                # {jump table name: hook}, if not the C64's (see _hooks)
         self.locations = locations                  # RAM, the vectors and the 6502's vectors
         self.hardware_locations = hardware_locations    # the I/O registers, the colour RAM etc.
@@ -238,6 +239,8 @@ def c128_machine():
         basic_start=0x1c01,
         cartridge=(0x8000, "CBM"),
         basic_rom_addr=0x4000,
+        basic_tokens=basic_v7_tokens,
+        basic_prefixed_tokens=basic_v7_prefixed_tokens,
         regions=[
             (0x0200, 0x0400, "OS workspace"),
             (0x0400, 0x0800, "Screen memory"),
@@ -289,6 +292,7 @@ def plus4_machine():
         basic_start=0x1001,
         cartridge=(0x8000, "CBM"),
         basic_rom_addr=0x8000,
+        basic_tokens=basic_v35_tokens,
         regions=[
             (0x0200, 0x0300, "OS workspace"),
             (0x0300, 0x0333, "Vectors"),
@@ -870,8 +874,8 @@ def c128_memory(configuration, addr):
     editor), 'internal ROM', 'external ROM' (the function ROMs), or 'RAM 0' to
     'RAM 3' (RAM 2 and 3 are RAM 0 and 1 on a C128 with 128K). $0000-$03ff is
     always RAM 0, since the Kernal makes it common RAM."""
-    # The configuration register's bits: 0 is the I/O at $d000-$dfff (0 for
-    # I/O); 1 is $4000-$7fff (0 for BASIC's ROM, 1 for RAM); 2-3 are
+    # The configuration register's bits: 0 is $d000-$dfff (0 for I/O, 1 for
+    # what bits 4-5 choose, with the character ROM for the Kernal's); 1 is $4000-$7fff (0 for BASIC's ROM, 1 for RAM); 2-3 are
     # $8000-$bfff, and 4-5 $c000-$ffff (0 for BASIC's ROM or the Kernal's, 1
     # for the internal function ROM, 2 for the external one, 3 for RAM); and
     # 6-7 are the RAM bank
@@ -888,9 +892,11 @@ def c128_memory(configuration, addr):
         return ("BASIC ROM", "internal ROM", "external ROM", ram)[(configuration >> 2) & 3]
     high = ("Kernal ROM", "internal ROM", "external ROM", ram)[(configuration >> 4) & 3]
     if 0xd000 <= addr < 0xe000:
+        # (Bit 0 set: what bits 4-5 choose, but the character ROM rather
+        # than the Kernal's)
         if not configuration & 0x01:
             return "I/O"
-        return ram if high == ram else "character ROM"
+        return "character ROM" if high == "Kernal ROM" else high
     return high
 
 def c128_configuration_description(configuration):
@@ -1116,7 +1122,7 @@ def _checked_range(command, start, end):
     unambiguous runtime address (see movemanager.r2b_checked())."""
     for addr in (start, end):
         if not utils.is_integer_type(addr) or not 0 <= addr <= 0x10000:
-            utils.die("commodore.{0}(): the addresses must be between 0 and &10000, not {1!r}".format(command, addr))
+            utils.die("commodore.{0}(): the addresses must be between 0 and $10000, not {1!r}".format(command, addr))
     if not start < end:
         utils.die("commodore.{0}(): the start ({1}) must be before the end ({2})".format(command, _hex4(start), _hex4(end)))
     binary_start = movemanager.r2b_checked(start).binary_addr
@@ -1502,9 +1508,9 @@ def _drive_code_names():
 
     for drive_code in drive_codes:
         start, end = drive_code.binary_start, drive_code.binary_start + drive_code.length
-        # (A buffer the drive code is in isn't named: one with drive code at
-        # its first or last byte)
-        buffers = [n for n in range(5) if not any(_drive_loaded(addr)[0] for addr in (0x0300 + 0x100 * n, 0x03ff + 0x100 * n))]
+        # (A buffer the drive code is in isn't named: one with drive code in
+        # any of its bytes)
+        buffers = [n for n in range(5) if not any(_drive_loaded(addr)[0] for addr in range(0x0300 + 0x100 * n, 0x0400 + 0x100 * n))]
         machine = drive1541_machine(drive_code.rom, buffers)
         # The 1541's names, except for the addresses in drive code. (A name
         # with a base address, e.g. 'buffer_2+1', is made from its base's
@@ -1742,7 +1748,7 @@ def _drive1541_job(p):
     they're not known, or None if the value stored isn't a job code, or the
     code isn't the 1541's (in a disassembly for another machine, only the
     drive code given by drive1541_code() is). The job number is the job
-    queue's address that's written ($00-$05)."""
+    queue's address that's written ($00-$04)."""
     code = p.value('code')
     if code not in drive1541_job_codes:
         return None
@@ -1820,12 +1826,13 @@ def post_trace_drive1541_job(p):
 
 def _register_job_patterns():
     """Register the effect patterns for jobs written to the 1541's job queue
-    (see register_snippets()): one for each of the six jobs, n, matching a
+    (see register_snippets()): one for each of the five jobs, n, matching a
     store to its place in the queue ($00 + n, the 'store' line), with the
     optional stores of its track and sector ($06 + 2n and $07 + 2n) before
-    it. (Called by register_snippets() for the 1541, and by
+    it. (The DOS's workspace has room for a sixth, at $05 with its track and
+    sector at $10-$11, but the 1541 has no buffer 5, so they're unused.) (Called by register_snippets() for the 1541, and by
     drive1541_code() for drive code in another machine's program.)"""
-    for n in range(6):
+    for n in range(5):
         register_snippet(pre_trace_drive1541_job, post_trace_drive1541_job, """
 track
 ?   [${0:02x}] = track
@@ -1922,10 +1929,10 @@ def _drive1541_analysis():
             opcode = memory_binary[binary_addr]
             if opcode == 0xc9:
                 # 'cmp #n' after reading the job queue: A was last set by
-                # 'lda zp', 'lda zp,x', 'lda addr' or 'lda addr,x' of $00-$05
+                # 'lda zp', 'lda zp,x', 'lda addr' or 'lda addr,x' of $00-$04
                 source = _a_set_by(run, k)
-                if source is not None and ((memory_binary[source] in (0xa5, 0xb5) and memory_binary[source + 1] <= 5) or
-                                           (memory_binary[source] in (0xad, 0xbd) and absolute(source) <= 5)):
+                if source is not None and ((memory_binary[source] in (0xa5, 0xb5) and memory_binary[source + 1] <= 4) or
+                                           (memory_binary[source] in (0xad, 0xbd) and absolute(source) <= 4)):
                     name_result(binary_addr + 1)
             elif opcode in (0x20, 0x4c) and absolute(binary_addr) == _DRIVE1541_END_JOB:
                 # 'lda #n : jmp end_job' (or JSR)
@@ -2000,8 +2007,8 @@ call
     jsr $ff6e | jmp $ff71
 """)
 
-    # In the 1541, code writing a job code to the job queue ($00-$05, one for
-    # each buffer), with the job's track and sector ($06-$11) if they're set
+    # In the 1541, code writing a job code to the job queue ($00-$04, one for
+    # each buffer), with the job's track and sector ($06-$0f) if they're set
     # too (an effect pattern for each job)
     if _machine().name == "1541":
         _register_job_patterns()
@@ -2115,19 +2122,28 @@ def _vic_interrupt_analysis():
 def _basic_line_text(data):
     """A tokenised BASIC line's text (data, its bytes) as LIST shows it (in
     the C64's upper case/graphics character set), with the machine's BASIC
-    keywords for the tokens (except in quotes or after REM), {pi} for pi,
+    keywords for the tokens (except in quotes or after REM), including the
+    C128's two-byte ones ($ce or $fe, then a second byte), {pi} for pi,
     and other codes as e.g. {$93}"""
+    tokens = _machine().basic_tokens
+    prefixed_tokens = _machine().basic_prefixed_tokens
     result = ""
     in_quotes = False
     in_rem = False
-    for c in data:
+    i = 0
+    while i < len(data):
+        c = data[i]
+        i += 1
         if c == ord('"'):
             in_quotes = not in_quotes
         if c >= 0x80 and not in_quotes and not in_rem:
             if c == BASIC_TOKEN_PI:
                 result += "{pi}"
-            elif c - 0x80 < len(_machine().basic_tokens):
-                result += _machine().basic_tokens[c - 0x80]
+            elif c in prefixed_tokens and i < len(data) and data[i] in prefixed_tokens[c]:
+                result += prefixed_tokens[c][data[i]]
+                i += 1
+            elif c - 0x80 < len(tokens) and tokens[c - 0x80] is not None:
+                result += tokens[c - 0x80]
                 in_rem = (c == BASIC_TOKEN_REM)
             else:
                 result += "{%s}" % _hex2(c)
@@ -2605,8 +2621,8 @@ def pet(basic=4, columns=40, names="descriptive", rom_labels=True):
 def drive1541(rom="1541", names="descriptive", rom_labels=True):
     """As c64(), for code that runs in the 1541 disk drive (e.g. a fast
     loader's drive code, sent with M-W and run with M-E or a job), or its
-    DOS ROM (see dos_rom()): the DOS's workspace (the job queue at $00-$05,
-    each job's track and sector at $06-$11 and so on) and its five buffers at
+    DOS ROM (see dos_rom()): the DOS's workspace (the job queue at $00-$04,
+    each job's track and sector at $06-$0f and so on) and its five buffers at
     $0300-$07ff ('buffer_0' to 'buffer_4'), the two VIAs (the serial bus at
     $1800, and the disk controller at $1c00), the DOS ROM's routines that
     drive code calls (e.g. 'wait_for_sync' at $f556) and the labels in

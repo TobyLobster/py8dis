@@ -174,7 +174,7 @@ The same for code that runs in the 1541 disk drive's own 6502, e.g. a fast loade
 - the two VIAs: VIA 1 at $1800, the serial bus (`via1_serial_bus`, ...), and VIA 2 at $1c00, the disk controller (`via2_disk_control`, for the motors, LED, write protect sensor, bit rate and sync; `via2_disk_data`, the GCR data from or to the disk), with Commodore's names (`PB`, `DSKCNT`, `DATA2`...) with `names="commodore"`;
 - the DOS ROM's routines that drive code calls (`wait_for_sync`, `gcr_to_binary`, `end_job`, `dos_idle_loop`...) and the labels in Commodore's source for the ROM, and code that sets the NMI vector at $0065.
 
-**Jobs are commented.** Code that writes a job code to the job queue ($00-$05, one for each buffer), however it does it, is commented with the job, with its track and sector ($06-$11) if they're set too, and the job code is named, e.g.:
+**Jobs are commented.** Code that writes a job code to the job queue ($00-$04, one for each buffer; the 1541 has no buffer for a sixth at $05), however it does it, is commented with the job, with its track and sector ($06-$0f) if they're set too, and the job code is named, e.g.:
 
 ```
     ; Job 0: read track 18, sector 1 into buffer 0 ($0300)
@@ -219,7 +219,7 @@ For disassembling the 1541's DOS ROM (loaded at $c000, after `drive1541()`): tra
 
 `commodore.basic_program(runtime_addr=None)`
 
-Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` etc. do this; the 1541 has no BASIC, so give the address there), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment:
+Marks the tokenised BASIC program at `runtime_addr`, by default where BASIC programs start on the machine (`c64()` etc. do this; the 1541 has no BASIC, so give the address there), such as the one-line `10 SYS2061` most machine code programs start with. Each line is labelled (`basic_line_10`), its link to the next line and its line number are words, and its text is bytes for the tokens and PETSCII strings, with the line listed in a comment, with the machine's BASIC's keywords (V2's; BASIC 1's, 2's or 4's on the PET; 3.5's on the Plus/4; and 7.0's on the C128, including its two-byte ones, e.g. `BANK`, $fe $02):
 
 ```
 ; 10 SYS2061
