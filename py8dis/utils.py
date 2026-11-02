@@ -420,10 +420,16 @@ def find_external_callstack():
     What's left is the control file's part of the call stack, i.e. the
     lines of the control file that led here. classification.String keeps
     this, to say which command made a string (in its str(), for
-    debugging). A frame is taken to be
-    py8dis's own if its file's path contains library_path, so a control file
-    kept in py8dis's own folder (which README.md suggests as a way round
-    setting PYTHONPATH) is left out too.
+    debugging). A frame is taken to be py8dis's own if its file is in
+    library_path (py8dis's folder), unless it's the script being run: a
+    control file can be kept in py8dis's own folder (which README.md
+    suggests as a way round setting PYTHONPATH).
     """
+    main_file = getattr(sys.modules.get("__main__"), "__file__", None)
+    main_file = os.path.abspath(main_file) if main_file is not None else None
+    def is_py8dis_file(filename):
+        """Whether filename is one of py8dis's own files."""
+        path = os.path.abspath(filename)
+        return os.path.dirname(path) == library_path and path != main_file
     frames = get_callstack()
-    return [f for f in frames if library_path not in f.filename]
+    return [f for f in frames if not is_py8dis_file(f.filename)]

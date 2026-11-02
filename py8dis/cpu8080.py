@@ -50,6 +50,7 @@ import trace
 import utils
 from memorymanager import BinaryAddr, RuntimeAddr
 from binaryaddrtype import BinaryAddrType
+from align import Align
 
 
 # RET, whose labels can be named return_1, return_2 etc. (see
@@ -368,12 +369,18 @@ class Cpu8080(cpu.Cpu):
         # indent_level_dict has binary addresses as the keys, and indent amounts as the values.
         self.indent_level_dict = collections.defaultdict(int)
 
+        # Once the code is traced: call the hooks of the subroutines defined
+        # with subroutine() (see find_subroutine_calls())
+        self.code_analysis_fns.append(self.find_subroutine_calls)
+
         # The opcodes, each an object that says how the instruction is
         # traced and written. The mnemonic is written up to the operand
         # (e.g. 'MVI B,', then the operand), in Intel's mnemonics, except
         # that LXI names its register pair in full (e.g. 'LXI BC,', where
-        # the others have 'B'), and $F2 and $F4 are written 'JP P,' and
-        # 'CALL P,', as on the Z80, rather than Intel's JP and CP. The
+        # the others have 'B'), $F2 and $F4 are written 'JP P,' and
+        # 'CALL P,', as on the Z80, rather than Intel's JP and CP (which
+        # z88dk-z80asm takes to be the Z80's JP and CP), and RST is
+        # written with its address (e.g. 'RST $08' for RST 1). The
         # undocumented opcodes are $08, $10, $18, $20, $28, $30 and $38
         # (NOP), $CB (JMP), $D9 (RET), and $DD, $ED and $FD (CALL).
         self.opcodes = {
@@ -1186,6 +1193,53 @@ class Cpu8080(cpu.Cpu):
                 return "-" if v is None else (letter.upper() if v else letter)
             return " ".join("%s:%s" % (name.upper(), reg(name)) for name in self.REGISTERS) + " " + \
                    "".join(flag(name, letter) for name, letter in zip(self.FLAGS, "szapc"))
+
+    def find_subroutine_calls(self):
+        """Call the hook of each subroutine defined with subroutine() for
+        each instruction that calls it (CALL, RST or JMP, conditional or
+        not, documented or not), or that is at its address, with the
+        runtime address of the instruction, the CPU state before it (a
+        CpuState) and the subroutine, as the Z80 does. (See the 'hook' of
+        commands.subroutine(), and default_subroutine_hook().)
+
+        It goes through the code in address order, taking the state before
+        each instruction from cpu_states (the state after the one before),
+        with nothing known after data, a block end, or at a label."""
+        subroutines = collections.defaultdict(list)
+        for subroutine in session.current().trace.subroutines_list:
+            if subroutine.hook_function is not None:
+                subroutines[subroutine.runtime_addr].append(subroutine)
+        if not subroutines:
+            return
+        calls = (self.OpcodeCall, self.OpcodeReset, self.OpcodeJmp, self.OpcodeConditionalBranch)
+        state = self.CpuState()
+        for range_start, range_end in memorymanager.loaded_ranges():
+            binary_addr = range_start
+            while binary_addr < range_end:
+                c = classification.get_classification(binary_addr)
+                if c is None or not c.is_code(binary_addr):
+                    state = self.CpuState()
+                    binary_addr += 1 if c is None else c.length()
+                    continue
+                runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
+                if runtime_addr in session.current().labels.labels:
+                    # (Code can come here from elsewhere)
+                    state = self.CpuState()
+                found = list(subroutines.get(runtime_addr, []))
+                if isinstance(c, calls):
+                    found += subroutines.get(c._target(binary_addr), [])
+                for subroutine in found:
+                    subroutine.hook_function(runtime_addr, state, subroutine)
+                state = self.CpuState() if c.is_block_end() else (self.cpu_states[binary_addr] or self.CpuState())
+                binary_addr += c.length()
+
+    def default_subroutine_hook(self, runtime_addr, state, subroutine):
+        """Comment a call to a subroutine (defined with subroutine()) with
+        its title: the hook commands.subroutine() uses when it's given
+        none (see find_subroutine_calls()). The subroutine's own first
+        instruction isn't commented."""
+        if subroutine.title and subroutine.runtime_addr != runtime_addr:
+            disassembly.comment(runtime_addr, subroutine.title, align=Align.INLINE, word_wrap=False, auto_generated=True)
 
     def is_subroutine_call(self, binary_addr):
         """Whether the instruction at binary_addr is a CALL (conditional or

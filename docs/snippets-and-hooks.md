@@ -94,7 +94,7 @@ The instruction lines' names work as in a regex snippet. See `effectpattern.py`.
 Two kinds of hook can be given for a subroutine:
 
 - `hook_subroutine(addr, name, hook)` says where the code carries on after a call, e.g. after the string that follows it (see [commands.md](commands.md#hook_subroutine));
-- `subroutine(addr, ..., hook=my_hook)` comments the calls. `my_hook(runtime_addr, state, subroutine)` is called for each call to the subroutine (for the Z80, a CALL, RST or JP to it) and for the code at its address, with the CPU's state before the instruction (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)) and the subroutine's details (its `title`, `on_entry` and so on). The OS call comments in `acorn.py` and `commodore.py` are hooks like this.
+- `subroutine(addr, ..., hook=my_hook)` comments the calls. `my_hook(runtime_addr, state, subroutine)` is called for each call to the subroutine (for the 8080 and Z80, a CALL, RST or jump to it) and for the code at its address, with the CPU's state before the instruction (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)) and the subroutine's details (its `title`, `on_entry` and so on). The OS call comments in `acorn.py` and `commodore.py` are hooks like this.
 
 ## Label maker hook
 

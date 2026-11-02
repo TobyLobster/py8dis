@@ -107,7 +107,7 @@ TESTS = [
     ("test8080",                 ["z88dk-8080"],               "testing the whole 8080 instruction set"),
     ("regression_tests_8080",    ["z88dk-8080"],               "regression tests for z88dk expression operators"),
     ("undocumented_8080",        ["z88dk-8080"],               "the 8080's undocumented opcodes, traced as what they run as and output as data"),
-    ("fixes_8080",               ["z88dk-8080"],               "8080 code: RST traced as a call, sub_ labels, LXI's character comment, and a conditional jump's expression"),
+    ("fixes_8080",               ["z88dk-8080"],               "8080 code: RST traced as a call, sub_ labels, LXI's character comment, a conditional jump's expression, and subroutine() hooks"),
     ("move_8080",                ["z88dk-8080"],               "move() and include_binary_file() with z88dk-z80asm (PHASE and BINARY)"),
     ("cpm_8080",                 ["z88dk-8080"],               "a CP/M program, with cpm.cpm(): BDOS calls, their function numbers, page zero, strings to print and FCBs"),
 

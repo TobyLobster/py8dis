@@ -20,7 +20,7 @@ The ROM keeps IY at ERR_NR's address, $5C3A, so a system variable addressed with
 
 **Names the ROM's routines and tables**, by the names in *The Complete Spectrum ROM Disassembly* (e.g. `cls`, `chan_open`, `pr_string`, `print_fp`, from CLS, CHAN-OPEN etc.). The calculator's ABS, NOT and OR are `fp_abs`, `fp_not` and `fp_or`, since sjasmplus takes `abs`, `not` and `or` to be its operators. Calls to the commonly used ones are commented, e.g. `call cls ; Clear the screen`. `spectrum48(rom_labels=False)` leaves these out (e.g. for a replacement ROM, whose routines are elsewhere).
 
-**RST $10** (print a character) is commented with what's printed, when A is known: `Print 'A'`, `Print $0D (ENTER)`, `Print $16 (AT)`, then `Print 10 (AT's line)` and `Print 5 (AT's column)` for its parameters.
+**RST $10** (print a character) is commented with what's printed, when A is known (with the ROM's labels, so not with `rom_labels=False`): `Print 'A'`, `Print $0D (ENTER)`, `Print $16 (AT)`, then `Print 10 (AT's line)` and `Print 5 (AT's column)` for its parameters.
 
 **RST $08** (an error) is followed by the error number, which is marked as a byte with the report in a comment (`Report 9 STOP statement`). The code doesn't continue after it.
 

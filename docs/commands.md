@@ -166,7 +166,7 @@ Describes a subroutine. All but the address are optional. py8dis writes a header
 
 - `on_entry` and `on_exit` are dictionaries of a description for each register, e.g. `on_entry={'a': "number to print"}`. A description in brackets, e.g. `{'x': "(preserved)"}`, goes in the header but not in the comments on calls.
 - `is_entry_point` (True by default) traces the subroutine as code.
-- `hook` decides how calls are commented. By default, each call is commented with the title, and for the 6502, the instructions that set the registers before each call are commented with the descriptions (e.g. `; A=number to print`). (The 8080 has no default hook.) `hook=False` turns this off. A hook of your own is called as `hook(runtime_addr, state, subroutine)` for each call to the subroutine (for the Z80, a CALL, RST or JP to it) and for the code at its address, with the CPU's state before the instruction (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)).
+- `hook` decides how calls are commented. By default, each call is commented with the title, and for the 6502, the instructions that set the registers before each call are commented with the descriptions (e.g. `; A=number to print`). `hook=False` turns this off. A hook of your own is called as `hook(runtime_addr, state, subroutine)` for each call to the subroutine (for the 8080 and Z80, a CALL, RST or jump to it) and for the code at its address, with the CPU's state before the instruction (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)).
 
 The dividing lines of stars can be changed with `config.set_subroutine_header()` and `config.set_subroutine_footer()`.
 
@@ -201,7 +201,7 @@ Names the address only where it's used in the code from `start_addr` up to (but 
 
 `expr_label(runtime_addr, s)`
 
-Writes the expression `s` wherever an instruction refers to `runtime_addr`, e.g. `expr_label(0x1ee4, "level_data+1")` makes `lda $1ee4,x` into `lda level_data+1,x`.
+Writes the expression `s` wherever an instruction refers to `runtime_addr`, e.g. `expr_label(0x1ee4, "level_data+1")` makes `lda $1ee4,x` into `lda level_data+1,x`. Unlike `expr()`, the expression isn't checked: py8dis doesn't work out its value, and no assertion is added to the output, so a wrong one assembles to a different program.
 
 ### memory_region
 

@@ -595,9 +595,8 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
     comment, so no_automatic_comment() at the address leaves it out. Then
     the subroutine is recorded (trace.add_subroutine()), and after tracing
     the CPU calls the hook as hook(runtime_addr, state, subroutine) for each
-    call to it, and for the code at its address. (The 6502 and the Z80 do
-    this, in find_subroutine_calls(); the 8080 doesn't call the hooks.) See
-    docs/commands.md for the arguments.
+    call to it, and for the code at its address (in the CPU's
+    find_subroutine_calls()). See docs/commands.md for the arguments.
     """
     runtime_addr = _check_addr("subroutine", runtime_addr)
     _check_move_id("subroutine", runtime_addr, move_id)
