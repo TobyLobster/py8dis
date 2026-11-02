@@ -13,14 +13,14 @@ loop_c0108:
     inx d                                                             ; 010b: 13          .
     dcr b                                                             ; 010c: 05          .
     jnz loop_c0108                                                    ; 010d: c2 08 01    ...
-    call c8000                                                        ; 0110: cd 00 80    ...
+    call sub_c8000                                                    ; 0110: cd 00 80    ...
     hlt                                                               ; 0113: 76          v
 
 ; Move 1: $0114 to $8000 for length 12
     phase $8000
 ; $0114 referenced 1 time by $0110
-c8000:
-    lxi hl, $0120 ; ' '                                               ; 0114: 21 20 01    ! . :8000[1]
+sub_c8000:
+    lxi hl, $0120                                                     ; 0114: 21 20 01    ! . :8000[1]
     mvi b, 4                                                          ; 0117: 06 04       ..  :8003[1]
 ; $0119 referenced 1 time by $8008[1]
 loop_c8005:
@@ -37,14 +37,14 @@ pydis_end:
 
 
 ; Label references by decreasing frequency:
-;     c8000:        1
 ;     loop_c0108:   1
 ;     loop_c8005:   1
+;     sub_c8000:    1
 
 ; Automatically generated labels:
-;     c8000
 ;     loop_c0108
 ;     loop_c8005
+;     sub_c8000
 
 ; Stats:
 ;

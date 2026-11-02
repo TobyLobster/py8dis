@@ -538,6 +538,9 @@ def _instruction_fields(binary_loc, c, instruction):
                 target = value
         else:
             mode, value, bits = "implied", None, None
+            if isinstance(c, cpu8080.Cpu8080.OpcodeReset):
+                # (RST's target is its address, as for the Z80)
+                target = int(c._target(binary_addr))
 
     result["mode"] = mode
     # (Undocumented whether or not the assembler accepts it: the 6510's

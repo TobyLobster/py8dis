@@ -1,0 +1,19 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0000  pydis_start (inline), start (inline)
+    (not referenced)
+
+$0008  rst_08 (inline)
+    $000b     c000b                        rst $08
+
+$000b  c000b (inline)
+    $0000     pydis_start                  jmp c000b
+
+$001a  finish (inline)
+    $0014     c000b+9                      jz start + finish_offset
+
+$001b  sub_c001b (inline)
+    $0017     c000b+12                     call sub_c001b
+
+$001d  pydis_end (inline)
+    (not referenced)

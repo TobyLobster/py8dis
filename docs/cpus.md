@@ -26,6 +26,10 @@ Where an instruction has several opcodes and the assembler uses another one for 
 
 With `"6502"` they aren't traced: tracing stops at one, since taking unknown opcodes to be code would turn data into nonsense instructions.
 
+## The 8080
+
+**RST** is traced as a call, as on the Z80 (see below), and written with its address, e.g. `rst $08` for RST 1, since z88dk-z80asm takes the operand to be the address. Code called by CALL or RST gets a `sub_` label.
+
 ## The Z80
 
 **Undocumented opcodes.** `"Z80"` includes the Z80's undocumented opcodes, since Z80 code often uses them, and they're traced as what they do (with their cycle counts). The ones the assembler accepts are written as instructions: those that use IXH, IXL, IYH and IYL (e.g. `ld ixh,a`), SLL, the indexed rotates, shifts, SET and RES that copy the result to a register (e.g. `rlc (ix+2),b`), `in f,(c)` and `out (c),0`. The others are written as data bytes with the instruction in a comment, e.g. `db $ed, $4c ; neg (undocumented)`:

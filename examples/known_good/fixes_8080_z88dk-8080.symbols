@@ -1,0 +1,7 @@
+pydis_start = $0000
+start       = $0000
+rst_08      = $0008
+c000b       = $000b
+finish      = $001a
+sub_c001b   = $001b
+pydis_end   = $001d

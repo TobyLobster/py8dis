@@ -107,6 +107,7 @@ TESTS = [
     ("test8080",                 ["z88dk-8080"],               "testing the whole 8080 instruction set"),
     ("regression_tests_8080",    ["z88dk-8080"],               "regression tests for z88dk expression operators"),
     ("undocumented_8080",        ["z88dk-8080"],               "the 8080's undocumented opcodes, traced as what they run as and output as data"),
+    ("fixes_8080",               ["z88dk-8080"],               "8080 code: RST traced as a call, sub_ labels, LXI's character comment, and a conditional jump's expression"),
     ("move_8080",                ["z88dk-8080"],               "move() and include_binary_file() with z88dk-z80asm (PHASE and BINARY)"),
     ("cpm_8080",                 ["z88dk-8080"],               "a CP/M program, with cpm.cpm(): BDOS calls, their function numbers, page zero, strings to print and FCBs"),
 
@@ -214,7 +215,7 @@ TESTS = [
 # made with beebasm, Baron, 64tass, ca65 or sjasmplus is checked against the
 # labels that assembler reports, see run_test(), but these show any change
 # to the outputs themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "fixes_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
 
 # The symbol file format made for each assembler's tests (py8dis's
 # --symbols-format), so that each format is tested (see py8dis/symbols.py).

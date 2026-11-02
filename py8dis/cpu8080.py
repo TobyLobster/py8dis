@@ -19,7 +19,9 @@ finds the opcode at each address (cpu.Cpu.opcode_at()), classifies its bytes
 as code, calls its update_references() to record the labels its operand
 refers to, and its disassemble() for the binary addresses to trace next (the
 next instruction, if the code can continue there, then any jump or call
-target). The undocumented opcodes (e.g. $CB, another JMP) are traced as what
+target). A CALL or RST is traced as a call: on at the return address (unless
+a subroutine hook says otherwise) and at the subroutine (for RST, only if
+it's loaded). The undocumented opcodes (e.g. $CB, another JMP) are traced as what
 they run as, but written as data bytes (see Cpu8080.Undocumented), since the
 assembler doesn't accept them.
 
@@ -339,8 +341,6 @@ def update_state(state, opcode, operands):
         # Ccc, CALL (and $DD, $ED and $FD, the undocumented CALLs), RST: the
         # subroutine called could change anything
         state.clear()
-        if (opcode & 0xc7) == 0xc7:
-            state.block_end = True              # (RST isn't traced past)
     # Otherwise the instruction changes nothing that's tracked: NOP, STAX,
     # SHLD, STA, MOV M,r, MVI M, OUT, EI, DI, HLT
 
@@ -360,6 +360,10 @@ class Cpu8080(cpu.Cpu):
         # last one named, and each one's number by binary address
         self.return_index = 0
         self.return_array = {}
+
+        # The runtime addresses called by RST that have been traced (see
+        # OpcodeReset.disassemble()), whose labels are named e.g. rst_08
+        self.rst_targets = set()
 
         # indent_level_dict has binary addresses as the keys, and indent amounts as the values.
         self.indent_level_dict = collections.defaultdict(int)
@@ -584,7 +588,7 @@ class Cpu8080(cpu.Cpu):
             0xc4: self.OpcodeCall("CNZ"),
             0xc5: self.OpcodeImplied("PUSH B"),
             0xc6: self.OpcodeImmediate("ADI"),
-            0xc7: self.OpcodeReset("RST 0"),
+            0xc7: self.OpcodeReset("RST $00", 0),
             0xc8: self.OpcodeImplied("RZ"),
             0xc9: self.OpcodeReturn("RET"),
             0xca: self.OpcodeConditionalBranch("JZ"),
@@ -592,7 +596,7 @@ class Cpu8080(cpu.Cpu):
             0xcc: self.OpcodeCall("CZ"),
             0xcd: self.OpcodeCall("CALL"),
             0xce: self.OpcodeImmediate("ACI"),
-            0xcf: self.OpcodeReset("RST 1"),
+            0xcf: self.OpcodeReset("RST $08", 1),
 
             0xd0: self.OpcodeImplied("RNC"),
             0xd1: self.OpcodeImplied("POP D"),
@@ -601,7 +605,7 @@ class Cpu8080(cpu.Cpu):
             0xd4: self.OpcodeCall("CNC"),
             0xd5: self.OpcodeImplied("PUSH D"),
             0xd6: self.OpcodeImmediate("SUI"),
-            0xd7: self.OpcodeReset("RST 2"),
+            0xd7: self.OpcodeReset("RST $10", 2),
             0xd8: self.OpcodeImplied("RC"),
             0xd9: self.OpcodeUndocumentedReturn("RET"),
             0xda: self.OpcodeConditionalBranch("JC"),
@@ -609,7 +613,7 @@ class Cpu8080(cpu.Cpu):
             0xdc: self.OpcodeCall("CC"),
             0xdd: self.OpcodeUndocumentedCall("CALL"),
             0xde: self.OpcodeImmediate("SBI"),
-            0xdf: self.OpcodeReset("RST 3"),
+            0xdf: self.OpcodeReset("RST $18", 3),
 
             0xe0: self.OpcodeImplied("RPO"),
             0xe1: self.OpcodeImplied("POP H"),
@@ -618,7 +622,7 @@ class Cpu8080(cpu.Cpu):
             0xe4: self.OpcodeCall("CPO"),
             0xe5: self.OpcodeImplied("PUSH H"),
             0xe6: self.OpcodeImmediate("ANI"),
-            0xe7: self.OpcodeReset("RST 4"),
+            0xe7: self.OpcodeReset("RST $20", 4),
             0xe8: self.OpcodeImplied("RPE"),
             0xe9: self.OpcodeJmpInd("PCHL"),
             0xea: self.OpcodeConditionalBranch("JPE"),
@@ -626,7 +630,7 @@ class Cpu8080(cpu.Cpu):
             0xec: self.OpcodeCall("CPE"),
             0xed: self.OpcodeUndocumentedCall("CALL"),
             0xee: self.OpcodeImmediate("XRI"),
-            0xef: self.OpcodeReset("RST 5"),
+            0xef: self.OpcodeReset("RST $28", 5),
 
             0xf0: self.OpcodeImplied("RP"),
             0xf1: self.OpcodeImplied("POP PSW"),
@@ -635,7 +639,7 @@ class Cpu8080(cpu.Cpu):
             0xf4: self.OpcodeCall("CALL P,"),
             0xf5: self.OpcodeImplied("PUSH PSW"),
             0xf6: self.OpcodeImmediate("ORI"),
-            0xf7: self.OpcodeReset("RST 6"),
+            0xf7: self.OpcodeReset("RST $30", 6),
             0xf8: self.OpcodeImplied("RM"),
             0xf9: self.OpcodeImplied("SPHL"),
             0xfa: self.OpcodeConditionalBranch("JM"),
@@ -643,7 +647,7 @@ class Cpu8080(cpu.Cpu):
             0xfc: self.OpcodeCall("CM"),
             0xfd: self.OpcodeUndocumentedCall("CALL"),
             0xfe: self.OpcodeImmediate("CPI"),
-            0xff: self.OpcodeReset("RST 7"),
+            0xff: self.OpcodeReset("RST $38", 7),
         }
 
         # The cycles each opcode takes
@@ -660,6 +664,48 @@ class Cpu8080(cpu.Cpu):
         binary_loc = movemanager.r2b_checked(runtime_addr)
         self.add_entry(binary_loc.binary_addr, runtime_addr, binary_loc.move_id, name, explicit=True)
         self.subroutine_hooks[runtime_addr] = hook
+
+    def return_binary_addrs(self, opcode, binary_loc, target_runtime_addr):
+        """Where a call (CALL or RST: 'opcode', at binary_loc) to
+        target_runtime_addr returns to, as a list of one binary address, or
+        [None] if it doesn't. That's the next instruction, unless a
+        subroutine hook (see hook_subroutine()) for the subroutine gives
+        another runtime address (e.g. after data that follows the call), or
+        None if it doesn't return.
+
+        A hook only gets to return the "straight line" address to continue
+        tracing from. Some subroutines might have no "straight line" case
+        and want to return some labelled entry points: the hook can return
+        None and call entry() itself for those."""
+        binary_addr = binary_loc.binary_addr
+        next_addr = binary_addr + opcode.length()
+
+        def simple_call_hook(target_runtime_addr, caller_runtime_addr):
+            """The default hook: the call returns to the next
+            instruction."""
+            return caller_runtime_addr + opcode.length()
+
+        # (The hook is called with the call's move active, so that the
+        # addresses it uses, e.g. with entry(), are looked for there)
+        call_hook = self.subroutine_hooks.get(target_runtime_addr, simple_call_hook)
+        caller_runtime_addr = movemanager.b2r(binary_addr)
+        with session.current().moves.move_id_for_binary_addr[binary_addr]:
+            return_runtime_addr = call_hook(target_runtime_addr, caller_runtime_addr)
+        if return_runtime_addr is None:
+            return [None]
+        return_runtime_addr = RuntimeAddr(return_runtime_addr)
+        result = self.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id)
+        if len(result) == 0:
+            # The return runtime address could not be unambiguously
+            # converted into a binary address. It's highly likely the call
+            # is returning to the immediately following instruction, so if
+            # next_addr maps to the return runtime address, use that,
+            # otherwise give up and don't trace anything after the call.
+            if next_addr < 0x10000 and return_runtime_addr == movemanager.b2r(next_addr):
+                result = [next_addr]
+            else:
+                result = [None]
+        return result
 
     def get_target_binary_addr_preferring_given_move_id(self, runtime_addr, specific_move_id):
         """Given an instruction's operand address (a runtime address), find
@@ -827,13 +873,14 @@ class Cpu8080(cpu.Cpu):
         def instruction(self, binary_addr):
             """The instruction, with its operand as a constant or expression
             (see classification.get_constant16()), and a character in a
-            comment as for OpcodeImmediate (from the operand's low byte)."""
+            comment as for OpcodeImmediate, if the operand is a printable
+            character (its high byte 0)."""
             memory_binary = session.current().memory.binary
             operand = expression.in_context(classification.get_constant16(binary_addr + 1), expression.OPERAND)
             char_literal = None
             if (binary_addr + 1) not in session.current().classifications.expressions and session.current().disassembly.format_hint.get(binary_addr + 1) is None:
                 c = memory_binary[binary_addr + 1]
-                if config.get_show_char_literals() and utils.isprint(c):
+                if config.get_show_char_literals() and memory_binary[binary_addr + 2] == 0 and utils.isprint(c):
                     char_literal = "'%s'" % chr(c)
             return output.Instruction(self.mnemonic, operand, char_literal=char_literal)
 
@@ -936,10 +983,9 @@ class Cpu8080(cpu.Cpu):
             return [binary_loc.binary_addr + 3] + session.current().cpu.jump_target(self._target(binary_loc.binary_addr), binary_loc, prefer_own_move=True)
 
         def instruction(self, binary_addr):
-            """The instruction, with the target's label. (Unlike JMP and
-            CALL, an expression for the operand isn't used.)"""
-            label = disassembly.get_label(self._target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-            return output.Instruction(self.mnemonic, label)
+            """The instruction, with the target as its label or expression,
+            as for JMP."""
+            return output.Instruction(self.mnemonic, self.address_operand(binary_addr), prefix=self.prefix, suffix=self.suffix)
 
     class OpcodeCall(Opcode):
         """CALL, the conditional calls (CNZ etc.), and $DD, $ED and $FD, the
@@ -964,54 +1010,12 @@ class Cpu8080(cpu.Cpu):
 
         def disassemble(self, binary_loc):
             """The binary addresses to trace next: where the call returns to
-            (or None if it doesn't), then the subroutine. A subroutine hook
-            (see Cpu8080.hook_subroutine()) for the subroutine gives the
-            runtime address it returns to, e.g. after data that follows the
-            call, or None if it doesn't return."""
+            (or None if it doesn't: see Cpu8080.return_binary_addrs()), then
+            the subroutine."""
             assert isinstance(binary_loc.binary_addr, BinaryAddr)
-
-            # Get the destination location of the CALL
             target_runtime_addr = self._target(binary_loc.binary_addr)
-            target_binary_addrs = session.current().cpu.jump_target(target_runtime_addr, binary_loc)
-
-            # A hook only gets to return the "straight line" address to continue
-            # tracing from (if there is one; it can return None if it wishes). Some
-            # subroutines (e.g. jsr is_yx_zero:equw target_if_true, target_if_false)
-            # might have no "straight line" case and want to return some labelled
-            # entry points. This is supported by having the hook simply return None
-            # and call entry() itself for the labelled entry points.
-
-            def simple_call_hook(target_runtime_addr, caller_runtime_addr):
-                """The default hook: the call returns to the next
-                instruction."""
-                assert isinstance(target_runtime_addr, RuntimeAddr)
-                assert isinstance(caller_runtime_addr, RuntimeAddr)
-
-                return caller_runtime_addr + 3
-
-            # (The hook is called with the call's move active, so that the
-            # addresses it uses, e.g. with entry(), are looked for there)
-            call_hook = session.current().cpu.subroutine_hooks.get(target_runtime_addr, simple_call_hook)
-            caller_runtime_addr = movemanager.b2r(binary_loc.binary_addr)
-            with session.current().moves.move_id_for_binary_addr[binary_loc.binary_addr]:
-                return_runtime_addr = call_hook(target_runtime_addr, caller_runtime_addr)
-
-            if return_runtime_addr is not None:
-                return_runtime_addr = RuntimeAddr(return_runtime_addr)
-                result = session.current().cpu.get_target_binary_addr_preferring_given_move_id(return_runtime_addr, binary_loc.move_id)
-                if len(result) == 0:
-                    # The return runtime address could not be unambiguously converted into a binary
-                    # address. It's highly likely the 'CALL' is returning to the immediately following
-                    # instruction, so if binary_addr+3 maps to the return runtime address, use that,
-                    # otherwise give up and don't trace anything "after" the 'CALL'.
-                    simple_return_binary_addr = binary_loc.binary_addr + 3
-                    if simple_return_binary_addr < 0x10000 and return_runtime_addr == movemanager.b2r(simple_return_binary_addr):
-                        result = [simple_return_binary_addr]
-                    else:
-                        result = [None]
-            else:
-                result = [None]
-            return result + target_binary_addrs
+            cpu = session.current().cpu
+            return cpu.return_binary_addrs(self, binary_loc, target_runtime_addr) + cpu.jump_target(target_runtime_addr, binary_loc)
 
         def instruction(self, binary_addr):
             """The instruction, with the subroutine as its label or
@@ -1071,20 +1075,54 @@ class Cpu8080(cpu.Cpu):
         pass
 
     class OpcodeReset(Opcode):
-        """RST n, a call to address n * 8. Unlike the Z80's, it ends a
-        block: the code isn't traced past it, nor at the address it
-        calls."""
+        """RST n, a one byte call to address n * 8, traced as a call (as the
+        Z80's is): on at the return address, unless a subroutine hook says
+        otherwise, and at the address it calls, if that's loaded (whose
+        label is then named e.g. rst_08: see Cpu8080.label_maker())."""
 
-        def __init__(self, mnemonic):
+        def __init__(self, mnemonic, n):
+            # (The mnemonic has the address, e.g. 'RST $08' for RST 1, since
+            # z88dk-z80asm takes the operand to be the address, as for the
+            # Z80)
             super().__init__(mnemonic, 0)
+            self.n = n
+
+        def _target(self, binary_addr):
+            """The runtime address called."""
+            return RuntimeAddr(self.n * 8)
+
+        def _target_loaded(self, binary_addr):
+            """Whether the address called is loaded (it's only traced, and
+            referred to, if it is)."""
+            target_binary_addr = movemanager.r2b(self._target(binary_addr))[0]
+            return target_binary_addr is not None and memorymanager.is_data_loaded_at_binary_addr(target_binary_addr, 1)
+
+        def update_references(self, binary_loc):
+            """Record the reference to the code it calls, if it's loaded."""
+            if self._target_loaded(binary_loc.binary_addr):
+                session.current().labels.labels[self._target(binary_loc.binary_addr)].add_reference(binary_loc)
 
         def disassemble(self, binary_loc):
-            """Nothing to trace."""
-            return [None]
+            """The binary addresses to trace next: where the call returns to
+            (or None if it doesn't: see Cpu8080.return_binary_addrs()), then
+            the code it calls, if it's loaded."""
+            target_runtime_addr = self._target(binary_loc.binary_addr)
+            cpu = session.current().cpu
+            result = cpu.return_binary_addrs(self, binary_loc, target_runtime_addr)
+            if not self._target_loaded(binary_loc.binary_addr):
+                return result
+            cpu.rst_targets.add(target_runtime_addr)
+            return result + [movemanager.r2b(target_runtime_addr)[0]]
 
-        def is_block_end(self):
-            """True: RST isn't traced past."""
-            return True
+        def instruction(self, binary_addr):
+            """The instruction. The code it calls gets a label (e.g. rst_08),
+            although the operand is a number: naming the label here means
+            it's output. (Not while tracing, for an overlapping
+            instruction's comment, which is formatted later.)"""
+            cpu = session.current().cpu
+            if cpu.trace_done and self._target(binary_addr) in cpu.rst_targets:
+                str(disassembly.get_label(self._target(binary_addr), binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE))
+            return super().instruction(binary_addr)
 
     class CpuState:
         """What's known for certain about the registers and flags (see
@@ -1150,11 +1188,11 @@ class Cpu8080(cpu.Cpu):
                    "".join(flag(name, letter) for name, letter in zip(self.FLAGS, "szapc"))
 
     def is_subroutine_call(self, binary_addr):
-        """Whether the instruction at binary_addr is a subroutine call, for
-        naming the label of the code it calls 'sub_...' (see
-        disassembly.suggest_label_name()). Always False for the 8080, so
-        code reached by CALL keeps its 'c...' label."""
-        return False
+        """Whether the instruction at binary_addr is a CALL (conditional or
+        not, documented or not) or RST, for naming the label of the code it
+        calls 'sub_...' (see disassembly.suggest_label_name())."""
+        c = classification.get_classification(binary_addr)
+        return isinstance(c, (self.OpcodeCall, self.OpcodeReset))
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
         """Whether the instruction at binary_addr is a conditional jump to
@@ -1167,12 +1205,18 @@ class Cpu8080(cpu.Cpu):
         return False
 
     def label_maker(self, lmd):
-        """Name an auto-generated label on a RET instruction ($C9)
-        return_1, return_2 etc. (numbered in the order they're first
-        named), unless config.set_label_return_instructions_numerically(False).
+        """Name an auto-generated label for code that an RST calls rst_NN
+        (e.g. rst_08), and one on a RET instruction ($C9) return_1,
+        return_2 etc. (numbered in the order they're first named), unless
+        config.set_label_return_instructions_numerically(False).
         'lmd' is the label's LabelMakingData, with the name chosen so far:
         this is called for each label as it's named, after the default name
         is chosen (see disassembly._label_maker())."""
+        # Label code reached by RST 'rst_NN'
+        if lmd.is_autogenerated and lmd.defined_as_runtime_addr in self.rst_targets:
+            lmd.name = utils.force_case("rst_%02x" % lmd.defined_as_runtime_addr)
+            return
+
         # Label return_1, return_2 etc
         memory_binary = session.current().memory.binary
         if config.get_label_return_instructions_numerically():
