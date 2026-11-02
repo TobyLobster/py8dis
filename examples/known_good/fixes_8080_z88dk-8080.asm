@@ -20,8 +20,8 @@ rst_08:
 ; $0b referenced 1 time by $00
 c000b:
     rst $08                                                           ; 000b: cf          .  ; Set A to 1
-    lxi hl, $0120                                                     ; 000c: 21 20 01    ! .
-    lxi bc, $41 ; 'A'                                                 ; 000f: 01 41 00    .A.
+    lxi h, $0120                                                      ; 000c: 21 20 01    ! .
+    lxi b, $41 ; 'A'                                                  ; 000f: 01 41 00    .A.
     cpi 0                                                             ; 0012: fe 00       ..
     jz start + finish_offset                                          ; 0014: ca 1a 00    ... ; Finish, with Z unknown
     call sub_c001b                                                    ; 0017: cd 1b 00    ... ; Increment A

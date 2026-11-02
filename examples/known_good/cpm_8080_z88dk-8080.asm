@@ -19,7 +19,7 @@ default_dma equ $80
 pydis_start:
     lhld BDOS+1                                                       ; 0100: 2a 06 00    *..
     sphl                                                              ; 0103: f9          .
-    lxi de, message                                                   ; 0104: 11 68 01    .h.
+    lxi d, message                                                    ; 0104: 11 68 01    .h.
     mvi c, C_WRITESTR                                                 ; 0107: 0e 09       ..
     call BDOS                                                         ; 0109: cd 05 00    ... ; Print the string at DE, up to a '$'
     mvi e, $41 ; 'A'                                                  ; 010c: 1e 41       .A
@@ -33,22 +33,22 @@ pydis_start:
     call BDOS                                                         ; 011e: cd 05 00    ... ; Read a character from the console without echoing it (0 if none)
     mvi c, DRV_GET                                                    ; 0121: 0e 19       ..
     call BDOS                                                         ; 0123: cd 05 00    ... ; Get the current drive (into A, 0 is A:)
-    lxi de, default_dma                                               ; 0126: 11 80 00    ...
+    lxi d, default_dma                                                ; 0126: 11 80 00    ...
     mvi c, F_DMAOFF                                                   ; 0129: 0e 1a       ..
     call BDOS                                                         ; 012b: cd 05 00    ... ; Set the DMA address (for reading and writing records) to DE
-    lxi de, default_fcb                                               ; 012e: 11 5c 00    .\.
+    lxi d, default_fcb                                                ; 012e: 11 5c 00    .\.
     mvi a, F_OPEN                                                     ; 0131: 3e 0f       >.
     call file                                                         ; 0133: cd 5a 01    .Z. ; Open the file whose FCB is at DE
-    lxi de, dma_buffer                                                ; 0136: 11 cc 01    ...
+    lxi d, dma_buffer                                                 ; 0136: 11 cc 01    ...
     mvi c, F_DMAOFF                                                   ; 0139: 0e 1a       ..
     call BDOS                                                         ; 013b: cd 05 00    ... ; Set the DMA address (for reading and writing records) to DE
-    lxi de, fcb                                                       ; 013e: 11 86 01    ...
+    lxi d, fcb                                                        ; 013e: 11 86 01    ...
     mvi a, F_READ                                                     ; 0141: 3e 14       >.
     call file                                                         ; 0143: cd 5a 01    .Z. ; Read the next record of the file whose FCB is at DE
     lda default_dma                                                   ; 0146: 3a 80 00    :..
     ora a                                                             ; 0149: b7          .
     jz c0155                                                          ; 014a: ca 55 01    .U.
-    lxi de, input_buffer                                              ; 014d: 11 aa 01    ...
+    lxi d, input_buffer                                               ; 014d: 11 aa 01    ...
     mvi c, C_READSTR                                                  ; 0150: 0e 0a       ..
     call BDOS                                                         ; 0152: cd 05 00    ... ; Read a line from the console into the buffer at DE
 ; $0155 referenced 1 time by $014a
@@ -62,7 +62,7 @@ file:
     call BDOS                                                         ; 015b: cd 05 00    ...
     inr a                                                             ; 015e: 3c          <
     rnz                                                               ; 015f: c0          .
-    lxi de, message_2                                                 ; 0160: 11 77 01    .w.
+    lxi d, message_2                                                  ; 0160: 11 77 01    .w.
     mvi c, C_WRITESTR                                                 ; 0163: 0e 09       ..
     jmp BDOS                                                          ; 0165: c3 05 00    ... ; Print the string at DE, up to a '$'
 

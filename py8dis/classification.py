@@ -900,8 +900,8 @@ def get_constant16(binary_addr):
 
     This could return the name of a constant, an expression or failing
     that just a constant hex value. Used by CPU Opcodes to format
-    output, e.g. for converting 'LXI BC,$1234' into
-    'LXI BC,my_special_constant'.
+    output, e.g. for converting 'LXI B,$1234' into
+    'LXI B,my_special_constant'.
 
     (As get_constant8(), for the 16 bit number, low byte first; data uses
     it for each word of a Word classification.)

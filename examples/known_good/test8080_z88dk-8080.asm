@@ -531,9 +531,9 @@ movi:
     add m                                                             ; 04a0: 86          .
     cpi $5a                                                           ; 04a1: fe 5a       .Z
     cnz cpuer                                                         ; 04a3: c4 89 06    ...
-    lxi bc, $12ff                                                     ; 04a6: 01 ff 12    ...
-    lxi de, $12ff                                                     ; 04a9: 11 ff 12    ...
-    lxi hl, $12ff                                                     ; 04ac: 21 ff 12    !..
+    lxi b, $12ff                                                      ; 04a6: 01 ff 12    ...
+    lxi d, $12ff                                                      ; 04a9: 11 ff 12    ...
+    lxi h, $12ff                                                      ; 04ac: 21 ff 12    !..
     inx b                                                             ; 04af: 03          .
     inx d                                                             ; 04b0: 13          .
     inx h                                                             ; 04b1: 23          #
@@ -601,7 +601,7 @@ movi:
     mvi a, $77                                                        ; 052d: 3e 77       >w
     sta temp0                                                         ; 052f: 32 a6 06    2..
     lhld tempp                                                        ; 0532: 2a a4 06    *..
-    lxi de, 0                                                         ; 0535: 11 00 00    ...
+    lxi d, 0                                                          ; 0535: 11 00 00    ...
     xchg                                                              ; 0538: eb          .
     xra a                                                             ; 0539: af          .
     ldax d                                                            ; 053a: 1a          .
@@ -619,15 +619,15 @@ movi:
     lda temp0                                                         ; 054f: 3a a6 06    :..
     cpi $cc                                                           ; 0552: fe cc       ..
     cnz cpuer                                                         ; 0554: c4 89 06    ...
-    lxi hl, $7777                                                     ; 0557: 21 77 77    !ww
+    lxi h, $7777                                                      ; 0557: 21 77 77    !ww
     dad h                                                             ; 055a: 29          )
     mvi a, $ee                                                        ; 055b: 3e ee       >.
     cmp h                                                             ; 055d: bc          .
     cnz cpuer                                                         ; 055e: c4 89 06    ...
     cmp l                                                             ; 0561: bd          .
     cnz cpuer                                                         ; 0562: c4 89 06    ...
-    lxi hl, $5555                                                     ; 0565: 21 55 55    !UU
-    lxi bc, $ffff                                                     ; 0568: 01 ff ff    ...
+    lxi h, $5555                                                      ; 0565: 21 55 55    !UU
+    lxi b, $ffff                                                      ; 0568: 01 ff ff    ...
     dad b                                                             ; 056b: 09          .
     mvi a, $55                                                        ; 056c: 3e 55       >U
     cnc cpuer                                                         ; 056e: d4 89 06    ...
@@ -636,8 +636,8 @@ movi:
     mvi a, $54                                                        ; 0575: 3e 54       >T
     cmp l                                                             ; 0577: bd          .
     cnz cpuer                                                         ; 0578: c4 89 06    ...
-    lxi hl, $aaaa                                                     ; 057b: 21 aa aa    !..
-    lxi de, $3333                                                     ; 057e: 11 33 33    .33
+    lxi h, $aaaa                                                      ; 057b: 21 aa aa    !..
+    lxi d, $3333                                                      ; 057e: 11 33 33    .33
     dad d                                                             ; 0581: 19          .
     mvi a, $dd                                                        ; 0582: 3e dd       >.
     cmp h                                                             ; 0584: bc          .
@@ -695,17 +695,17 @@ movi:
     cc cpuer                                                          ; 05e8: dc 89 06    ...
     cpi 2                                                             ; 05eb: fe 02       ..
     cnz cpuer                                                         ; 05ed: c4 89 06    ...
-    lxi bc, $1234                                                     ; 05f0: 01 34 12    .4.
-    lxi de, $aaaa                                                     ; 05f3: 11 aa aa    ...
-    lxi hl, $5555                                                     ; 05f6: 21 55 55    !UU
+    lxi b, $1234                                                      ; 05f0: 01 34 12    .4.
+    lxi d, $aaaa                                                      ; 05f3: 11 aa aa    ...
+    lxi h, $5555                                                      ; 05f6: 21 55 55    !UU
     xra a                                                             ; 05f9: af          .
     push b                                                            ; 05fa: c5          .
     push d                                                            ; 05fb: d5          .
     push h                                                            ; 05fc: e5          .
     push psw                                                          ; 05fd: f5          .
-    lxi bc, 0                                                         ; 05fe: 01 00 00    ...
-    lxi de, 0                                                         ; 0601: 11 00 00    ...
-    lxi hl, 0                                                         ; 0604: 21 00 00    !..
+    lxi b, 0                                                          ; 05fe: 01 00 00    ...
+    lxi d, 0                                                          ; 0601: 11 00 00    ...
+    lxi h, 0                                                          ; 0604: 21 00 00    !..
     mvi a, $c0                                                        ; 0607: 3e c0       >.
     adi $f0                                                           ; 0609: c6 f0       ..
     pop psw                                                           ; 060b: f1          .
@@ -732,7 +732,7 @@ movi:
     cnz cpuer                                                         ; 0634: c4 89 06    ...
     cmp l                                                             ; 0637: bd          .
     cnz cpuer                                                         ; 0638: c4 89 06    ...
-    lxi hl, 0                                                         ; 063b: 21 00 00    !..
+    lxi h, 0                                                          ; 063b: 21 00 00    !..
     dad sp                                                            ; 063e: 39          9
     shld savstk                                                       ; 063f: 22 ab 06    "..
     lxi sp, $06aa                                                     ; 0642: 31 aa 06    1..
@@ -750,9 +750,9 @@ movi:
     cma                                                               ; 0657: 2f          /
     cmp c                                                             ; 0658: b9          .
     cnz cpuer                                                         ; 0659: c4 89 06    ...
-    lxi hl, $06aa                                                     ; 065c: 21 aa 06    !..
+    lxi h, $06aa                                                      ; 065c: 21 aa 06    !..
     sphl                                                              ; 065f: f9          .
-    lxi hl, $7733                                                     ; 0660: 21 33 77    !3w
+    lxi h, $7733                                                      ; 0660: 21 33 77    !3w
     dcx sp                                                            ; 0663: 3b          ;
     dcx sp                                                            ; 0664: 3b          ;
     xthl                                                              ; 0665: e3          .
@@ -770,11 +770,11 @@ movi:
     cnz cpuer                                                         ; 067e: c4 89 06    ...
     lhld savstk                                                       ; 0681: 2a ab 06    *..
     sphl                                                              ; 0684: f9          .
-    lxi hl, $069b                                                     ; 0685: 21 9b 06    !..
+    lxi h, $069b                                                      ; 0685: 21 9b 06    !..
     pchl                                                              ; 0688: e9          .
 
 cpuer:
-    lxi hl, cpu_error_message                                         ; 0689: 21 8b 01    !..
+    lxi h, cpu_error_message                                          ; 0689: 21 8b 01    !..
     call msg                                                          ; 068c: cd 45 01    .E.
     xthl                                                              ; 068f: e3          .
     mov a, h                                                          ; 0690: 7c          |
@@ -784,7 +784,7 @@ cpuer:
     jmp wboot                                                         ; 0698: c3 00 00    ...
 
 cpuok:
-    lxi hl, cpu_ok_message                                            ; 069b: 21 74 01    !t.
+    lxi h, cpu_ok_message                                             ; 069b: 21 74 01    !t.
     call msg                                                          ; 069e: cd 45 01    .E.
     jmp wboot                                                         ; 06a1: c3 00 00    ...
 

@@ -376,8 +376,7 @@ class Cpu8080(cpu.Cpu):
         # The opcodes, each an object that says how the instruction is
         # traced and written. The mnemonic is written up to the operand
         # (e.g. 'MVI B,', then the operand), in Intel's mnemonics, except
-        # that LXI names its register pair in full (e.g. 'LXI BC,', where
-        # the others have 'B'), $F2 and $F4 are written 'JP P,' and
+        # that $F2 and $F4 are written 'JP P,' and
         # 'CALL P,', as on the Z80, rather than Intel's JP and CP (which
         # z88dk-z80asm takes to be the Z80's JP and CP), and RST is
         # written with its address (e.g. 'RST $08' for RST 1). The
@@ -385,7 +384,7 @@ class Cpu8080(cpu.Cpu):
         # (NOP), $CB (JMP), $D9 (RET), and $DD, $ED and $FD (CALL).
         self.opcodes = {
             0x00: self.OpcodeImplied("NOP"),
-            0x01: self.OpcodeImmediate16("LXI BC,"),
+            0x01: self.OpcodeImmediate16("LXI B,"),
             0x02: self.OpcodeImplied("STAX B"),
             0x03: self.OpcodeImplied("INX B"),
             0x04: self.OpcodeImplied("INR B"),
@@ -402,7 +401,7 @@ class Cpu8080(cpu.Cpu):
             0x0f: self.OpcodeImplied("RRC"),
 
             0x10: self.OpcodeUndocumentedImplied("NOP"),
-            0x11: self.OpcodeImmediate16("LXI DE,"),
+            0x11: self.OpcodeImmediate16("LXI D,"),
             0x12: self.OpcodeImplied("STAX D"),
             0x13: self.OpcodeImplied("INX D"),
             0x14: self.OpcodeImplied("INR D"),
@@ -419,7 +418,7 @@ class Cpu8080(cpu.Cpu):
             0x1f: self.OpcodeImplied("RAR"),
 
             0x20: self.OpcodeUndocumentedImplied("NOP"),
-            0x21: self.OpcodeImmediate16("LXI HL,"),
+            0x21: self.OpcodeImmediate16("LXI H,"),
             0x22: self.OpcodeAddr16("SHLD"),
             0x23: self.OpcodeImplied("INX H"),
             0x24: self.OpcodeImplied("INR H"),

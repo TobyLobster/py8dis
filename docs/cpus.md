@@ -28,10 +28,9 @@ With `"6502"` they aren't traced: tracing stops at one, since taking unknown opc
 
 ## The 8080
 
-**Mnemonics.** The output uses Intel's mnemonics, for z88dk-z80asm's `-m8080`, with three exceptions that z88dk-z80asm needs or allows:
+**Mnemonics.** The output uses Intel's mnemonics, for z88dk-z80asm's `-m8080`, with two exceptions that z88dk-z80asm needs:
 
 - $F2 and $F4 (jump and call if plus) are written `jp p,` and `call p,`, as on the Z80, since z88dk-z80asm takes Intel's `jp` and `cp` to be the Z80's (an unconditional jump, and a compare);
-- LXI names its register pair in full, e.g. `lxi hl,` (the other instructions have Intel's `b`, `d` and `h`);
 - RST is written with its address, e.g. `rst $08` for RST 1, since z88dk-z80asm takes the operand to be the address.
 
 **RST** is traced as a call, as on the Z80 (see below). Code called by CALL or RST gets a `sub_` label.

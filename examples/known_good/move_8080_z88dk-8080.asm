@@ -2,8 +2,8 @@
 
 pydis_start:
 start:
-    lxi hl, $0114                                                     ; 0100: 21 14 01    !..
-    lxi de, $8000                                                     ; 0103: 11 00 80    ...
+    lxi h, $0114                                                      ; 0100: 21 14 01    !..
+    lxi d, $8000                                                      ; 0103: 11 00 80    ...
     mvi b, $0c                                                        ; 0106: 06 0c       ..
 ; $0108 referenced 1 time by $010d
 loop_c0108:
@@ -20,7 +20,7 @@ loop_c0108:
     phase $8000
 ; $0114 referenced 1 time by $0110
 sub_c8000:
-    lxi hl, $0120                                                     ; 0114: 21 20 01    ! . :8000[1]
+    lxi h, $0120                                                      ; 0114: 21 20 01    ! . :8000[1]
     mvi b, 4                                                          ; 0117: 06 04       ..  :8003[1]
 ; $0119 referenced 1 time by $8008[1]
 loop_c8005:

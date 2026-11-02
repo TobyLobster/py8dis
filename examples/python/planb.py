@@ -126,7 +126,7 @@ def inkey_expr(addr):
         expr(addr, acorn.inkey_enum[key])
         found_keys[key] = True
     else:
-        assert("inkey not found")
+        assert(False, "inkey not found")
 
 def picture_sprite(addr, lab, width, height):
     """Name a sprite 'lab', and write its bytes in picture binary, one row of
