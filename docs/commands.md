@@ -265,7 +265,7 @@ expr(0x2011, make_hi("screen_address"))     # lda #$30 becomes lda #>screen_addr
 An expression is a string of labels, constants and arithmetic that the assembler works out. It's checked in two ways:
 
 - When py8dis can work out its value itself (an expression made with the `make_...()` functions below, from labels and constants it knows), it checks it, and stops with an error if it's wrong, e.g. `expr() at &200a: 'length + 2' is &0f, but the byte there is &0e`.
-- Otherwise (e.g. an expression you've written as text, or one that uses a name py8dis doesn't know), the output ends with assertions that make the assembler stop with an error if the value is wrong. (`config.set_include_assertions(False)` leaves them out.)
+- Otherwise (e.g. an expression you've written as text, or one that uses a name py8dis doesn't know), the output ends with assertions that make the assembler stop with an error if the value is wrong. (`config.set_include_assertions(False)` leaves them out.) An expression that uses the current address (e.g. beebasm's `P%`, or `$` for z88dk-z80asm) isn't checked, since its value at the end of the output isn't the one it had where it was used.
 
 So a careless `expr()` gives an error, rather than output that assembles to a different program.
 

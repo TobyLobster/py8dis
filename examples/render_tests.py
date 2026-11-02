@@ -214,7 +214,8 @@ def with_assertions_6502():
     """The end of the output, with assertions, for the 6502: a name's value,
     a negative value, one that's AND (which binds less tightly than '=' in
     Baron) and one that uses the current address ('P%' for beebasm and
-    Baron), which Baron leaves out (and beebasm doesn't)"""
+    Baron), which they leave out, since its value at the end of the file
+    isn't the one it had where it was used"""
     import config
     import expression
     import output
@@ -1785,10 +1786,11 @@ EXPECTED = {
     # file to save (set_output_filename()'s, or the asm file's name without
     # its extension, or 'pydis'). A constant named like one of Baron's
     # keywords is written with an '@'. Then Baron's note on how to assemble
-    # its output, and the assertions at the end for beebasm and Baron:
-    # Baron's always put the expression in brackets, since its '=' binds
-    # more tightly than AND, OR and EOR, and leave out the one that uses the
-    # current address ('P%'), and Baron's output then ends its section.
+    # its output, and the assertions at the end for beebasm and Baron, which
+    # both leave out the one that uses the current address ('P%'): Baron's
+    # always put the expression in brackets, since its '=' binds more
+    # tightly than AND, OR and EOR, and Baron's output then ends its
+    # section.
     '6502 move start and end, baron': [
         '    section move_1, org = &0900',
         '    endsection',
@@ -1851,7 +1853,6 @@ EXPECTED = {
         '    assert -&36 == delta',
         '    assert &80 == (flags AND &f0)',
         '    assert &1234 == table',
-        '    assert &03 == target - P%',
         '',
         'save pydis_start, pydis_end',
     ],
@@ -1859,7 +1860,6 @@ EXPECTED = {
         '    ASSERT -&36 == delta',
         '    ASSERT &80 == (flags AND &F0)',
         '    ASSERT &1234 == table',
-        '    ASSERT &03 == target - P%',
         '',
         'SAVE pydis_start, pydis_end',
     ],

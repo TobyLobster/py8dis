@@ -191,10 +191,11 @@ class Beebasm(assembler.Assembler):
         The block is assembled at its runtime address, then copied to its
         binary address. If it runs lower in memory than it's stored, and its
         runtime addresses overlap the output before it (which starts at
-        pydis_start), the output from overlap_start up to the block's binary
-        address (overlap_length bytes) is in the way, so it's copied to a
-        temporary area at temp_start first, and back afterwards. Otherwise
-        those three are -1.
+        pydis_start), the output from overlap_start up to the end of the
+        block's runtime addresses, or its binary address if that's lower
+        (overlap_length bytes), is in the way, so it's copied to a temporary
+        area at temp_start first, and back afterwards. Otherwise those three
+        are -1.
 
         The area from area_to_clear_start up to area_to_clear_end is the
         part of the block's runtime addresses that its copy at its binary
@@ -213,9 +214,11 @@ class Beebasm(assembler.Assembler):
         overlap_start = -1
         if dest < source:
             if dest + length > pydis_start:
-                # What area is overlapping?
+                # What area is overlapping? (The output the block is
+                # assembled over: not the output after the block's runtime
+                # addresses, which it doesn't touch)
                 overlap_start  = max(dest, pydis_start)
-                overlap_length = source - overlap_start
+                overlap_length = min(dest + length, source) - overlap_start
 
                 # Find an area of the memory map to temporarily hold the overlapping
                 # code/data. It mustn't overlap the binary assembled so far, or the
@@ -396,6 +399,14 @@ class Beebasm(assembler.Assembler):
         result.append(s)
         return result
 
+    def uses_current_address(self, text):
+        """True if the text has 'P%' outside its strings and character
+        literals."""
+        # 'P%' (or '*') is the current address; py8dis only writes 'P%'. An
+        # assertion with it would be checked at the end of the file, where
+        # P% has another value (so beebasm would stop with an error)
+        return re.search(r"P%", _without_quoted_text(text), re.IGNORECASE) is not None
+
     def wrapped_branch_operand(self, label, offset):
         """Relative to the branch's address, e.g. 'P%-16'."""
         # beebasm doesn't wrap a branch's target, but takes an address past
@@ -469,3 +480,9 @@ class Beebasm(assembler.Assembler):
     def include_binary_file(self, binary_filepath):
         """'incbin "file"'."""
         return utils.make_indent(1) + utils.force_case("incbin") + ' "' + binary_filepath + '"'
+
+def _without_quoted_text(text):
+    """The text without its strings and character literals, e.g. for 'P%'
+    in an expression. (A string can have a double quote in it as two, as
+    Baron allows.)"""
+    return re.sub(r"\"(?:[^\"]|\"\")*\"|'[^']'", "", text)

@@ -47,7 +47,7 @@ for i in range(0xe5df, 0xe637, 2):
     expr(i, name)
     n += 1
 
-# OSBYTE 161-255
+# OSBYTE 166-255
 entry(0xe99c, "osbyte166to255EntryPoint")
 word(0xe637)
 expr(0xe637, "osbyte166to255EntryPoint")

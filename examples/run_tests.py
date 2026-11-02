@@ -135,6 +135,7 @@ TESTS = [
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
     ("string_stuff3",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "testing py8dis string commands"),
     ("banks_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "two banks of code that both run at $8000 (moves to the same address), loaded separately, with a call that can't be told the bank of"),
+    ("beebasm_moves",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a moved block that runs over the end of the program, for which beebasm's output moves only the bytes in the way"),
     ("moving1",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
     ("moving2",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
     ("moving3",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),

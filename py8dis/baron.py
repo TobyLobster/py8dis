@@ -38,7 +38,6 @@ How the output differs from beebasm's (see also docs/assemblers.md):
 """
 
 import os
-import re
 
 import beebasm
 import config
@@ -123,12 +122,6 @@ class Baron(beebasm.Beebasm):
         if str(name).lower() in _KEYWORDS:
             name = "@" + str(name)
         return super().explicit_label(name, value, offset, align_column)
-
-    def uses_current_address(self, text):
-        """True if the text has 'P%' outside its strings and character
-        literals."""
-        # 'P%' (or '*') is the current address; py8dis only writes 'P%'
-        return re.search(r"P%", _without_quoted_text(text), re.IGNORECASE) is not None
 
     def _filename(self):
         """The file name of the output's section: the name given with
@@ -245,9 +238,3 @@ class Baron(beebasm.Beebasm):
             binary_filepath = os.path.relpath(binary_filepath, os.path.dirname(os.path.abspath(asm_filename)))
             binary_filepath = binary_filepath.replace(os.sep, "/")
         return utils.make_indent(1) + utils.force_case("INCBIN") + ' "' + binary_filepath + '"'
-
-
-def _without_quoted_text(text):
-    """The text without its strings and character literals, e.g. for 'P%'
-    in an expression."""
-    return re.sub(r"\"(?:[^\"]|\"\")*\"|'[^']'", "", text)
