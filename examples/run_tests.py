@@ -163,6 +163,7 @@ TESTS = [
     ("acorn_vectors",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the ways of setting an Acorn OS vector that acorn.py recognises"),
     ("acorn_vdu",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "VDU sequences written with OSWRCH, decoded by acorn.py"),
     ("acorn_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "acorn.bbc()'s comments: VDU 31 with the column from X and the row from A after X changes, and a table of character row offsets as words"),
+    ("atom_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom program, with acorn.atom(): OS calls, what OSWRCH writes, #F7D1's string, kernel routines, a vector, the hardware"),
     ("acorn_lower_case_os_calls", ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Acorn OS calls named in lower case, with config.set_upper_case_os_calls(False)"),
     ("effect_patterns",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "effect patterns: snippets matching the values code stores, and the registers at a call"),
     ("prg_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
@@ -215,7 +216,7 @@ TESTS = [
 # made with beebasm, Baron, 64tass, ca65 or sjasmplus is checked against the
 # labels that assembler reports, see run_test(), but these show any change
 # to the outputs themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "fixes_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "atom_test", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "fixes_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
 
 # The symbol file format made for each assembler's tests (py8dis's
 # --symbols-format), so that each format is tested (see py8dis/symbols.py).
@@ -245,6 +246,8 @@ ERROR_TESTS = [
     ("load_past_top",           "load(&fff0, 'orig/helloworld.orig'): the file (28 bytes) runs past the top of memory"),
     ("go_without_load",         "go(): nothing has been loaded to disassemble (use load() first)"),
     ("entry_before_load",       "entry(): call load() first (it chooses the CPU)"),
+    ("atom_before_load",        'acorn.atom(): call load(..., "6502") first'),
+    ("atom_after_bbc",          "acorn.atom(): this session's machine has already been chosen"),
     ("load_offset_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset (28) is past the end of the file (28 bytes)"),
     ("load_length_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset and length (20 + 10) run past the end of the file (28 bytes)"),
     ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),

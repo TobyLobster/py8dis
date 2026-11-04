@@ -1,0 +1,110 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+&0012  text_space_page (Memory locations: Zero page)
+    &29a2     loop_c2940+98                lda text_space_page
+
+&0070  l0070 (Memory locations: Zero page)
+    &2968     loop_c2940+40                sta l0070
+
+&0071  l0071 (Memory locations: Zero page)
+    &296d     loop_c2940+45                sta l0071
+
+&0072  l0072 (Memory locations: Zero page)
+    &2975     loop_c2940+53                sta l0072
+    &2977     loop_c2940+55                ldy l0072
+    &2980     loop_c2940+64                ldy l0072
+
+&0073  l0073 (Memory locations: Zero page)
+    &297c     loop_c2940+60                sta l0073
+
+&00e0  cursor_column (Memory locations: Zero page)
+    &29a0     loop_c2940+96                ldx cursor_column
+
+&0202  brkvec (Memory locations: OS vectors)
+    &2962     loop_c2940+34                sta brkvec
+
+&0208  wrcvec (Memory locations: OS vectors)
+    &2958     loop_c2940+24                sta wrcvec
+
+&2900  pydis_start (inline), start (inline)
+    (not referenced)
+
+&2940  loop_c2940 (inline)
+    &2949     loop_c2940+9                 bne loop_c2940
+
+&29a5  handle_wrcvec (inline)
+    (not referenced)
+
+&29a8  l29a8 (inline)
+    &2940     loop_c2940                   lda l29a8,x
+
+&29ac  pydis_end (inline)
+    (not referenced)
+
+&b001  ppi_port_b (Memory locations: I/O)
+    &2997     loop_c2940+87                lda ppi_port_b
+
+&b002  ppi_port_c (Memory locations: I/O)
+    &299d     loop_c2940+93                lda ppi_port_c
+
+&b801  via_register_a (Memory locations: I/O)
+    &299a     loop_c2940+90                sta via_register_a
+
+&f7d1  print_inline_string (Memory locations: Kernel ROM)
+    &2930     pydis_start+48               jsr print_inline_string
+
+&f7fd  print_space (Memory locations: Kernel ROM)
+    &2950     loop_c2940+16                jsr print_space
+
+&f802  print_hex (Memory locations: Kernel ROM)
+    &294d     loop_c2940+13                jsr print_hex
+
+&fe52  kernel_wrch (Memory locations: Kernel ROM)
+    &29a5     handle_wrcvec                jmp kernel_wrch
+
+&fe66  wait_for_flyback (Memory locations: Kernel ROM)
+    &2953     loop_c2940+19                jsr wait_for_flyback
+
+&ffcb  OSSHUT (Memory locations: OS entry points)
+    &2987     loop_c2940+71                jsr OSSHUT
+
+&ffce  OSFIND (Memory locations: OS entry points)
+    &2972     loop_c2940+50                jsr OSFIND
+
+&ffd1  OSBPUT (Memory locations: OS entry points)
+    &2982     loop_c2940+66                jsr OSBPUT
+
+&ffd4  OSBGET (Memory locations: OS entry points)
+    &2979     loop_c2940+57                jsr OSBGET
+
+&ffdd  OSSAVE (Memory locations: OS entry points)
+    &2991     loop_c2940+81                jsr OSSAVE
+
+&ffe0  OSLOAD (Memory locations: OS entry points)
+    &298c     loop_c2940+76                jsr OSLOAD
+
+&ffe3  OSRDCH (Memory locations: OS entry points)
+    &2965     loop_c2940+37                jsr OSRDCH
+
+&ffe6  OSECHO (Memory locations: OS entry points)
+    &296a     loop_c2940+42                jsr OSECHO
+
+&ffe9  OSASCI (Memory locations: OS entry points)
+    &291e     pydis_start+30               jsr OSASCI
+    &2923     pydis_start+35               jsr OSASCI
+
+&ffed  OSCRLF (Memory locations: OS entry points)
+    &290f     pydis_start+15               jsr OSCRLF
+
+&fff4  OSWRCH (Memory locations: OS entry points)
+    &2902     pydis_start+2                jsr OSWRCH
+    &2907     pydis_start+7                jsr OSWRCH
+    &290c     pydis_start+12               jsr OSWRCH
+    &2914     pydis_start+20               jsr OSWRCH
+    &2919     pydis_start+25               jsr OSWRCH
+    &2928     pydis_start+40               jsr OSWRCH
+    &292d     pydis_start+45               jsr OSWRCH
+    &2943     loop_c2940+3                 jsr OSWRCH
+
+&fff7  OSCLI (Memory locations: OS entry points)
+    &2994     loop_c2940+84                jsr OSCLI

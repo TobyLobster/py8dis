@@ -4,7 +4,8 @@ Acorn
 Knowledge of Acorn's 6502 machines (the BBC Micro, B+, Master and Electron)
 and their operating system, the MOS. A control file calls bbc(), b_plus(),
 master() or electron() after load() (see docs/machines/acorn.md), and
-is_sideways_rom() for a paged ROM. These:
+is_sideways_rom() for a paged ROM. (For the Acorn Atom, atom() is here too,
+but its OS is a different design, so the work is in acornatom.py.) These:
 - name the MOS's entry points (OSWRCH, OSBYTE etc., see mos_labels()), and
   give each a subroutine hook (osfile_hook() etc.) that comments the calls
   to it, e.g. 'Read system clock', with the OSWORD number named where A is
@@ -48,7 +49,7 @@ import classification
 import machinetype
 from memorymanager import BinaryAddr, BinaryLocation, RuntimeAddr
 from maker import make_hex, make_lo, make_hi, make_add, make_multiply
-from snippets6502 import register_snippet, register_code_snippet, register_data_snippet, OPCODE_TXA, OPCODE_TYA
+from snippets6502 import register_snippet, register_data_snippet
 from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
 
 # The data tables (OS call names, INKEY numbers etc), which control files can
@@ -56,10 +57,13 @@ from snippethelper import vector_pattern, vector_handler, vector_handler_name, c
 from acorntables import *
 
 # Helpers shared by the OS call hooks
-from acornhelpers import xy_addr, enum_lookup
+from acornhelpers import xy_addr, enum_lookup, os_call_name, character_streams, register_print_snippets
 
 # OSBYTE (its descriptions, and the hook that uses them)
 from acornosbyte import osbyte_hook
+
+# The Acorn Atom (see atom() below)
+import acornatom
 
 
 # ************************************************************************************************
@@ -116,105 +120,13 @@ def post_trace_writing_to_vector(p):
 # and OSNEWL writes LF and CR
 _VDU_CALLS = {0xffee: [None], 0xffcb: [None], 0xffe3: [None], 0xffe7: [10, 13]}
 
-def _vdu_streams():
-    """The streams of characters the code writes: for each straight run of
-    code, the calls to OSWRCH (and OSASCI, OSNEWL and NVWRCH) with no other
-    call between them, as lists of VduChar. A character is a number if it's
-    known; 'X' or 'Y' if it's that register's, from TXA or TYA with the
-    register unchanged since; or None. (OSWRCH preserves A, so A is the same
-    for the next call unless an instruction between them changes it: it's
-    the same character again, though not still X or Y if that register has
-    changed.)
-
-    Each stream is within one of cpu.straight_runs(), which end where other
-    code jumps or branches in, and A's value comes from the pessimistic CPU
-    state (what's known for certain)."""
-    cpu = session.current().cpu
-    memory_binary = session.current().memory.binary
-    streams = []
-    for run in cpu.straight_runs():
-        stream = []
-        previous_char = None
-        previous_call = None    # the index in the run of the previous call
-        for k, binary_addr in enumerate(run):
-            # Only a JSR or JMP (absolute) can be a call
-            opcode = memory_binary[binary_addr]
-            if opcode not in (0x20, 0x4c):
-                continue
-            target = memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
-            if target not in _VDU_CALLS:
-                if opcode == 0x20:
-                    # Another call: it could write characters too
-                    if stream:
-                        streams.append(stream)
-                    stream = []
-                    previous_call = None
-                continue
-            # The instructions since the previous call (or the start of the
-            # run), and the state just before this call (the state after the
-            # instruction before it). set_at is where A was last set or
-            # changed, if that's since the previous call.
-            between = run[previous_call + 1:k] if previous_call is not None else run[:k]
-            state = cpu.cpu_states[run[k - 1]] if k > 0 else None
-            a = None if state is None else state.pessimistic['a']
-            set_at = a.previous_adjust if a is not None and a.previous_adjust in between else None
-            # The character: A's value if it's known; X or Y, if A was
-            # transferred from one that hasn't changed since; or, if A hasn't
-            # changed since the previous call, the same character again
-            if a is not None and a.value is not None:
-                char = a.value
-            elif set_at is not None and memory_binary[set_at] in (OPCODE_TXA, OPCODE_TYA):
-                reg = 'x' if memory_binary[set_at] == OPCODE_TXA else 'y'
-                after = between[between.index(set_at) + 1:]
-                unchanged = all(classification.get_classification(b).reg_changes[reg] in "-U" for b in after)
-                char = reg.upper() if unchanged else None
-            elif stream and previous_call is not None and all(classification.get_classification(b).reg_changes['a'] in "-U" for b in between):
-                char = previous_char
-                # (A holds what it held then, which is only still X or Y if
-                # that register hasn't changed since either)
-                if char in ('X', 'Y') and not all(classification.get_classification(b).reg_changes[char.lower()] in "-U" for b in between):
-                    char = None
-            else:
-                char = None
-            # Where the set-up starts: where A was set (or, for a value
-            # transferred from another register, loaded), if that's since the
-            # previous call, otherwise the call
-            start = set_at if set_at is not None else binary_addr
-            if a is not None and a.previous_load_imm in between:
-                start = min(start, a.previous_load_imm)
-            # One VduChar for each character the call writes (two for
-            # OSNEWL, whose second starts at the call itself)
-            for written in _VDU_CALLS[target]:
-                stream.append(VduChar(binary_addr, start, char if written is None else written, target))
-                start = binary_addr
-            previous_char = char
-            previous_call = k
-        if stream:
-            streams.append(stream)
-    return streams
-
-class VduChar:
-    """A character written by a call (see _vdu_streams()): 'call', the call's
-    binary address; 'start', the binary address where the code that sets up
-    the character starts (where its comment goes); 'char', the character (a
-    number, 'X', 'Y' or None); and 'target', the address called (e.g. &ffee
-    for OSWRCH)."""
-
-    __slots__ = ("call", "start", "char", "target")
-
-    def __init__(self, call, start, char, target):
-        self.call = call
-        self.start = start
-        self.char = char
-        self.target = target
-
 # VDU 0 and 27 do nothing, so a zero in a stream is much more likely to be a
 # parameter of an earlier command than a command, and they don't count as
 # explaining any characters (see _vdu_parse())
 _VDU_NO_OPS = (0, 27)
 
 def _vdu_parse(chars, start):
-    """Parse the characters (see _vdu_streams()) as VDU commands, from index
+    """Parse the characters (see acornhelpers.character_streams()) as VDU commands, from index
     'start'. Returns [(index, length)], the index in chars and the number of
     characters of each command, and the number of characters covered by the
     commands that are known (their first character is), other than VDU 0 and
@@ -347,7 +259,7 @@ def comment_vdu_sequences():
     def comment(binary_addr, text):
         disassembly.comment_binary(BinaryLocation(BinaryAddr(binary_addr), moves[binary_addr]), text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
 
-    for stream in _vdu_streams():
+    for stream in character_streams(_VDU_CALLS):
         chars = [c.char for c in stream]
         start, commands, covered = _vdu_best_parse(chars)
         if covered == 0:
@@ -395,30 +307,6 @@ def comment_vdu_sequences():
         end_printable()
 
 # ************************************************************************************************
-def comment_print_message(p):
-    """For a match of a loop that prints a message with OSWRCH, a character
-    at a time (see register_snippets()), after tracing: comment it 'print
-    message'."""
-    # Make sure the branch instruction's operand jumps to the definition of the label as expected
-    if not p.check_branch_matches('loop'):
-        return
-
-    disassembly.comment_binary(p.get_start_loc(), "print message", indent=1, align=Align.AFTER_LABEL, auto_generated=True)
-
-# ************************************************************************************************
-def comment_print_repeated_character(p):
-    """For a match of a loop that prints the same character several times
-    with OSWRCH, counting down X (see register_snippets()), after tracing:
-    comment it, e.g. 'print character 32 repeatedly', or 'A' for the
-    character if it isn't loaded with an immediate value."""
-    if not p.check_branch_matches('loop1') and not p.check_branch_matches('loop2'):
-        return
-    cc = p.get_memory('nn1')
-    if cc is None:
-        cc = 'A'
-
-    disassembly.comment_binary(p.get_start_loc(), "print character {0} repeatedly".format(cc), indent=1, align=Align.AFTER_LABEL, auto_generated=True)
-
 # ************************************************************************************************
 def comment_screen_addresses(p):
     """For a match of a table of the screen address of each of the 32
@@ -501,39 +389,7 @@ def register_snippets():
         return
     extras["acorn.snippets_registered"] = True
 
-    # Printing a message, a character at a time: indexed by Y or by X
-    register_code_snippet(comment_print_message, """
-?   ldy #nn1 | ldy zp | ldy zp,x | ldy addr | ldy addr,x
-loop
-    lda message,y | lda zp,y | lda (zp1),y
-?   bmi other | beq other
-    jsr $ffee
-    iny | dey
-?   cpy #nn2
-    bne loop | bpl loop
-""")
-
-    register_code_snippet(comment_print_message, """
-?   ldx #nn1 | ldx zp | ldx zp,y | ldx addr | ldx addr,y
-loop
-    lda message,x | lda zp,x | lda (zp1,x)
-?   bmi other | beq other
-    jsr $ffee
-    inx | dex
-?   cpx #nn2
-    bne loop | bpl loop
-""")
-
-    # Printing the same character X times
-    register_code_snippet(comment_print_repeated_character, """
-loop1
-?   lda #nn1 | lda addr | lda zp | ldx #nn | ldx addr | ldx zp
-?   lda #nn1 | lda addr | lda zp | ldx #nn | ldx addr | ldx zp
-loop2
-    jsr $ffee
-    dex
-    bne loop1 | bne loop2 | bpl loop1 | bpl loop2
-""")
+    register_print_snippets(0xffee)
 
     # Tables of the 32 character rows' screen addresses: for the screen at
     # &3000, with &280 bytes a row (modes 0-2), and at &5800, with &140 (modes
@@ -971,11 +827,6 @@ def memory_regions():
     # by the CPU).
     memory_region(0xffb3, 0xfffa, "MOS entry points")
 
-def os_call_name(name):
-    """The name of an OS call, e.g. 'osbyte', in capitals (OSBYTE) unless
-    config.set_upper_case_os_calls(False)."""
-    return name.upper() if config.get_upper_case_os_calls() else name
-
 def mos_labels():
     """Set up what all the Acorn machines share: name the MOS's entry points
     (each with a subroutine hook to comment the calls to it), the OS vectors
@@ -1164,3 +1015,9 @@ def master():
     mos_labels()
     add_oswrsc()
     hardware_master()
+
+def atom():
+    """Set up for a program for the Acorn Atom: its OS calls, vectors,
+    kernel routines, workspace and hardware. The Atom's OS is a different
+    design from the MOS, so this is in acornatom.py (see acornatom.atom())."""
+    acornatom.atom()

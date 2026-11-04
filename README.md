@@ -226,6 +226,7 @@ Call one of these after `load()`, and py8dis names the machine's operating syste
 | Machine | Set-up | Details |
 | ------- | ------ | ------- |
 | BBC Micro, B+, Master, Electron | `acorn.bbc()`, `acorn.b_plus()`, `acorn.master()`, `acorn.electron()` | [machines/acorn.md](docs/machines/acorn.md) |
+| Acorn Atom | `acorn.atom()` | [machines/acorn.md](docs/machines/acorn.md#the-acorn-atom) |
 | Commodore 64, VIC-20, C128, Plus/4, PET, 1541 disk drive | `commodore.c64()`, `commodore.vic20()`, `commodore.c128()`, `commodore.plus4()`, `commodore.pet()`, `commodore.drive1541()` | [machines/commodore.md](docs/machines/commodore.md) |
 | ZX Spectrum 48K | `spectrum.spectrum48()` | [machines/spectrum.md](docs/machines/spectrum.md) |
 | CP/M | `cpm.cpm()` | [machines/cpm.md](docs/machines/cpm.md) |
@@ -280,6 +281,7 @@ If you have a problem or a suggestion, raise an issue or make a pull request on 
 * The Commodore 64's names and Kernal calls in `commodore.py` come from Michael Steil's [c64ref](https://github.com/mist64/c64ref) (BSD 2-clause licence; see `commodoretables.py`), and the ROM labels (and the C128's and Plus/4's workspace) from Commodore's source in his [cbmsrc](https://github.com/mist64/cbmsrc) (see `commodoresource.py`, made by `tools/make_commodoresource.py`).
 * The PET's ROM labels and workspace are from Martin Hoffmann-Vetter's reconstructions of Commodore's source, in cbmsrc, and the 1541's DOS ROM labels and workspace from the reconstructions of its source there.
 * The ZX Spectrum's ROM routine names in `spectrumtables.py` are those of *The Complete Spectrum ROM Disassembly* (Ian Logan and Frank O'Hara, Melbourne House, 1983), with their addresses from Geoff Wearmouth's assembly listing of the ROM. The 48K ROM used as a test is copyright Amstrad plc, who have kindly given their permission for its redistribution but retain that copyright (see `examples/orig/spectrum48`).
+* The Acorn Atom's OS calls, vectors and workspace in `acornatomtables.py` are from Acorn's *Atomic Theory and Practice* (chapter 25, as on [mdfs.net](https://mdfs.net/Docs/Comp/Acorn/Atom/atap25.htm)) and the commented Atom kernel disassembly in Andre Weissflog's [emu-info](https://github.com/floooh/emu-info), checked against the kernel ROM.
 * The CP/M BDOS functions' names, in `cpm.py`, are Digital Research's, as listed in John Elliott's [CP/M information archive](https://www.seasip.info/Cpm/bdos.html).
 * The Z80 test programs are R.T. Russell's [BBC BASIC (Z80)](https://github.com/jblang/bbcbasic-z80) for CP/M (zlib licence; see `examples/orig/bbcbasic`), Frank D. Cringle's Z80 instruction exerciser [ZEXDOC](https://github.com/agn453/ZEXALL) (GPL 2; see `examples/orig/zexdoc`) and [OpenSE BASIC](https://zxdesign.itch.io/opense), a replacement ZX Spectrum ROM by Source Solutions, Inc. (GPL 2 or CC BY-SA 3.0; see `examples/orig/opense`).
 * The VIC-20 test game is Robert Hurst's [Quikman 2K8](https://github.com/theflyingape/quikman2k8) (Artistic License 2.0; see `examples/orig/quikman2k8`).

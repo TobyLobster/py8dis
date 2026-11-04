@@ -1,4 +1,4 @@
-# Acorn: BBC Micro, B+, Master and Electron
+# Acorn: BBC Micro, B+, Master, Electron and Atom
 
 For a program for one of Acorn's 6502 machines, add this after `load()`:
 
@@ -12,7 +12,7 @@ entry(0x1900)
 go()
 ```
 
-Use `acorn.bbc()` for the BBC Micro, `acorn.b_plus()` for the B+, `acorn.master()` for the Master (load it with the CPU `"65C02"` if it uses the 65C02's instructions) and `acorn.electron()` for the Electron.
+Use `acorn.bbc()` for the BBC Micro, `acorn.b_plus()` for the B+, `acorn.master()` for the Master (load it with the CPU `"65C02"` if it uses the 65C02's instructions) and `acorn.electron()` for the Electron. For the Atom, see [below](#the-acorn-atom).
 
 The output is for beebasm by default; for Baron, its successor, run the control file with `--baron` (see [assemblers.md](../assemblers.md#baron)). Any of the other 6502 assemblers works too.
 
@@ -67,3 +67,43 @@ expr(0x2101, acorn.inkey_enum)       # lda #inkey_key_space, rather than lda #&9
 `acorn.os_call_name("osbyte")` gives an OS call's name in the case chosen with `config.set_upper_case_os_calls()`.
 
 See `examples/python/acorn_os_calls.py`, `acorn_vdu.py` and `acorn_vectors.py` for small examples, and `planb.py`, `dfs226.py` and `anfs418.py` for real programs.
+
+## The Acorn Atom
+
+For a program for the Acorn Atom, use `acorn.atom()` after `load()`:
+
+```python
+from commands import *
+import acorn
+
+load(0x2900, "game.bin", "6502")
+acorn.atom()
+entry(0x2900)
+go()
+```
+
+The Atom's operating system is a different design from the BBC Micro's MOS (it has no OSBYTE or OSWORD, and its own entry points, vectors and hardware), so `acorn.atom()` sets up its own names and comments:
+
+**Names the OS calls**, in capitals as in Acorn's *Atomic Theory and Practice*: `OSSHUT`, `OSFIND`, `OSBPUT`, `OSBGET`, `OSSTAR`, `OSRDAR`, `OSSAVE`, `OSLOAD`, `OSRDCH`, `OSECHO`, `OSASCI`, `OSCRLF`, `OSWRCH` and `OSCLI` (#FFCB-#FFF7). `config.set_upper_case_os_calls(False)`, before `acorn.atom()`, gives `oswrch` etc.
+
+**Comments the OS calls**, e.g. `; Write character 65`, `; Open file for input (C=1)` (with the carry, if it's known), `; Close all files (Y=0)` or `; Load a file`, and where the registers they use are set (e.g. `; Y=file handle`, `; X=zero page address of the load parameter block`) and where what they return is used (`; A=character read`).
+
+**Comments what's written with OSWRCH**, OSASCI and OSCRLF, however A is set: runs of printable characters (`; Print "HELLO"`), and the control codes OSWRCH acts on, e.g. `; Clear the screen` (12), `; Page mode on` (14), `; Sound the bell` (7), `; Stop screen output` (21), with CR and LF together (or OSASCI's CR) as `; Start a new line`.
+
+**Names the kernel routines** that programs call, and comments the calls with what they do: `print_inline_string` (#F7D1), `print_hex` (#F802), `print_hex_space`, `print_hex_2_bytes`, `print_hex_4_bytes`, `print_space`, `wait_for_flyback` (#FE66), `wait_for_flyback_or_now` and `scan_keyboard` (#FE71), and the kernel's own handlers that the vectors point to by default, e.g. `kernel_wrch` (#FE52, as in `jmp kernel_wrch` at the end of a replacement OSWRCH). After a call to #F7D1, the string it prints is marked, and tracing carries on at the first byte with bit 7 set, where the kernel continues:
+
+```
+    jsr print_inline_string     ; Print the string after the JSR, up to a byte with bit 7 set, and carry on there
+    equs "HELLO ATOM"
+    nop
+```
+
+**Names the vectors** at #0200-#021F (`nmivec`, `brkvec`, `irqvec`, `comvec`, `wrcvec`, `rdcvec`, `lodvec`, `savvec`, `rdrvec`, `strvec`, `bgtvec`, `bptvec`, `fndvec`, `shtvec`, and Econet's `in1vec` and `in2vec`), and **follows the code that sets them**, as for the BBC Micro: the handler is traced and named (e.g. `handle_wrcvec`), and the code is commented, e.g. `; Set write character vector to 'handle_wrcvec'`.
+
+**Names the hardware**: the 8255 PPI at #B000-#B003 (`ppi_port_a`, the keyboard row and the 6847's mode; `ppi_port_b`, the keyboard columns; `ppi_port_c`, the tape, speaker and sync; `ppi_control`), the VIA at #B800 (`via_register_a` etc., as on the BBC Micro) and the ROM latch at #BFFF (`rom_latch`). #B000-#BFFF is marked as I/O.
+
+**Names some of the workspace**: the OS's (`screen_line_address`, `cursor_column`, `cursor_mask`, `page_mode_count`, `lock_flag`, `nomon_flag`, `printer_ignore_char`, `irq_save_a`, `input_buffer` at #0100, `string_buffer` at #0140 and `plot_vector` at #03FE) and BASIC's (`basic_error_number`, `basic_line_number`, `rnd_seed`, `basic_error_handler` and `text_space_page`), and groups the memory locations at the top of the disassembly by region (zero page, the input and string buffers, the stack, the OS vectors, the workspace, extension and user memory, the screen, the utility, BASIC, floating point, DOS and kernel ROMs, the I/O and the OS entry points).
+
+**Recognises loops that print** a message, or the same character several times, with OSWRCH, as for the BBC Micro.
+
+The tables are in `acornatom` (e.g. `acornatom.atom_vectors`, `acornatom.atom_control_codes`). See `examples/python/atom_test.py`.
