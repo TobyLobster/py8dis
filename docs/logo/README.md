@@ -6,7 +6,8 @@ The mark is the digit 8 drawn on an 8×8 pixel grid, the way 8-bit machines stor
 
 | File | Use |
 |---|---|
-| `py8dis-banner.svg` / `.png` | 1280×640 banner on blue: top of the README, GitHub social preview |
+| `py8dis-banner-slim.svg` | 1280×260 strip on blue, used at the top of the main README |
+| `py8dis-banner.svg` / `.png` | 1280×640 banner on blue, for the GitHub social preview |
 | `py8dis-logo-on-light.svg` | Full logo, transparent background, for light pages |
 | `py8dis-logo-on-dark.svg` | Full logo, transparent background, for dark pages |
 | `py8dis-mark.svg` | Square app icon: white 8 on a blue rounded tile |

@@ -1,4 +1,4 @@
-<h1><img src="docs/logo/py8dis-banner.svg" alt="py8dis" width="100%"></h1>
+<h1><img src="docs/logo/py8dis-banner-slim.svg" alt="py8dis" width="100%"></h1>
 
 py8dis is a disassembler for 8-bit programs: it turns a machine code program back into assembly language that you can read, change and assemble again. It handles 6502, 65C02, 8080 and Z80 code, and knows about the BBC Micro and other Acorn machines, the Commodore 64 and other Commodore machines, the ZX Spectrum and CP/M.
 
