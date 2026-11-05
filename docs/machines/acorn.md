@@ -177,4 +177,8 @@ It classifies and names the tables, and names every OS entry point and kernel ro
 
 `examples/python/atom_basic_rom.py` disassembles the Atom's BASIC ROM, loaded at #C000, with `acorn.atom()`. Atom BASIC isn't tokenised: it finds each keyword in the program's text as it runs it, with two matchers, which it calls with a starting index in X (`ldx #n : jmp #C233`, or `jmp #C27B` for single characters). The control file finds those calls, then decodes the matchers' tables, to trace every routine they give and name it after its keyword (e.g. `statement_print`, `function_rnd`, `op_add`), and marks the tables as text and the routines' high and low bytes. It also traces and names the routines the kernel calls, and the BASIC ROM's calls to the floating point ROM's handlers (through #D002 and #D004), and marks its other data: the powers of ten for printing numbers, and its default error handler, which is a line of BASIC.
 
+### The Atom's floating point ROM
+
+`examples/python/atom_float_rom.py` disassembles the Atom's floating point ROM, loaded at #D000, with `acorn.atom()`. It names the ROM's workspace (the two floating point accumulators, `float8A` and `float8B`, and the temporary values at #03C5-#03D8) and its keyword table at #D006 (each keyword, then its routine's address, high byte first), traces each keyword's routine, and marks the series of coefficients that LOG, ATN and EXP evaluate, and the COLOUR statement's tables of plot routines.
+
 The tables are in `acornatom` (e.g. `acornatom.atom_vectors`, `acornatom.atom_control_codes`). See `examples/python/atom_test.py`.
