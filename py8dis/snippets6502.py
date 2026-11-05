@@ -299,7 +299,6 @@ def comment_memory_copy_with_limited_end_loop(p):
     comment_loc         = p.get_start_loc()
     is_load_indirect    = p.get_memory('zp1')   # This is treated as a flag, being None if 'zp1' isn't found
     is_store_indirect   = p.get_memory('zp2')   # This is treated as a flag, being None if 'zp2' isn't found
-    is_stop_at_zero     = p.get_memory('branch') == OPCODE_BNE      # BNE or BPL
     end_count           = p.get_memory('end_count')
     source_label        = ""
     dest_label          = ""

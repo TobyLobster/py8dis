@@ -497,8 +497,6 @@ def osfind_hook(runtime_addr, state, subroutine):
     are set, and the handle returned in A is commented where it's next
     used."""
     a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
-    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
-    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
 
     a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
     x_addr_pessimistic = state.pessimistic['x'].get_previous_load_imm_operand()
@@ -614,12 +612,7 @@ def osargs_hook(runtime_addr, state, subroutine):
     handle. Comments the call, where X and Y are set, and for A=0, Y=0 (read
     the filing system number) where A is next used. A and Y count as zero
     only when they're known for certain to be loaded with zero."""
-    a_addr_optimistic = state.optimistic['a'].get_previous_load_imm_operand()
-    x_addr_optimistic = state.optimistic['x'].get_previous_load_imm_operand()
-    y_addr_optimistic = state.optimistic['y'].get_previous_load_imm_operand()
-
     a_addr_pessimistic = state.pessimistic['a'].get_previous_load_imm_operand()
-    x_addr_pessimistic = state.pessimistic['x'].get_previous_load_imm_operand()
     y_addr_pessimistic = state.pessimistic['y'].get_previous_load_imm_operand()
 
     x_adjust_addr_optimistic = state.optimistic['x'].previous_adjust
@@ -634,7 +627,6 @@ def osargs_hook(runtime_addr, state, subroutine):
     a_runtime_next_use = None if a_next_use is None else movemanager.b2r(a_next_use)
 
     a = None if a_addr_pessimistic is None else memory_binary[a_addr_pessimistic]
-    x = None if x_addr_pessimistic is None else memory_binary[x_addr_pessimistic]
     y = None if y_addr_pessimistic is None else memory_binary[y_addr_pessimistic]
 
     if (a == 0) and (y == 0):

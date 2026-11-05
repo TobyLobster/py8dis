@@ -252,11 +252,10 @@ class SnippetHelper:
         Cpu.add_entry(), it adds no label."""
         if runtime_addr is not None:
             assert not isinstance(runtime_addr, BinaryAddr)
-            binary_addr, move_id = movemanager.r2b(RuntimeAddr(runtime_addr), None)
+            binary_addr, _ = movemanager.r2b(RuntimeAddr(runtime_addr), None)
         else:
             binary_addr = self.get_start_loc().binary_addr
             runtime_addr = movemanager.b2r(binary_addr)
-            move_id = self.get_start_loc().move_id
             # The match itself must be able to be code: not starting inside
             # an instruction already traced (snippets are matched after
             # tracing from the other entry points), or inside data

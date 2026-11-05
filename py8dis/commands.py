@@ -688,7 +688,6 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
         # a blank line), then the bottom dividing line if there was any text
         if config.get_subroutine_header() is not None:
             auto_comment(runtime_addr, config.get_subroutine_header(), word_wrap=False)
-        com = ""
         middle = ""
         if title is not None and len(title)>0:
             middle += title + "\n"

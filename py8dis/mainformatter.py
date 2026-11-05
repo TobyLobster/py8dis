@@ -124,7 +124,6 @@ def add_inline_comment_including_hexdump(binary_loc, length, cycles_description,
     assert isinstance(binary_loc, movemanager.BinaryLocation)
 
     binary_loc = movemanager.make_binloc(binary_loc)
-    first_binary_loc = binary_loc
 
     assert isinstance(binary_loc.binary_addr, BinaryAddr)
     # Add spaces up to the comment column

@@ -1025,6 +1025,7 @@ def calculate_move_ranges():
 
     move_ranges = []
     current_range_start = None
+    current_range_end = None
     current_range_move_id = None
     move_id_for_binary_addr = session.current().moves.move_id_for_binary_addr
     for start_addr, end_addr in sorted(session.current().memory.load_ranges):

@@ -391,7 +391,7 @@ def _evaluate_and_check(binary_addr, expr, expected_value, width):
     utils.die("expr() at {0}: '{1}' is {2}, but the {3} there is {4}".format(
         h(movemanager.b2r(binary_addr)), expr, show(value), "byte" if width == 8 else "word", h(expected_value)))
 
-def get_expression(binary_addr, expected_value, is_address=False, width=8):
+def get_expression(binary_addr, expected_value, width=8):
     """Get the previously supplied expression for the given address, whose
     value should be 'expected_value', a 'width' bit number.
 
@@ -404,7 +404,7 @@ def get_expression(binary_addr, expected_value, is_address=False, width=8):
 
     Returns the expression, with a mask added if it needs one (see
     _evaluate_and_check()). Stops with an error if py8dis can work out its
-    value and it's wrong. ('is_address' isn't used.)"""
+    value and it's wrong."""
 
     expressions = session.current().classifications.expressions
     memory_binary = session.current().memory.binary
@@ -924,7 +924,7 @@ def get_address8(binary_addr, offset=0):
     operand = (memorymanager.get_u8_binary(binary_addr) + offset) & 255
     if binary_addr not in expressions:
         return disassembly.get_label(operand, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-    return get_expression(binary_addr, operand, is_address=True)
+    return get_expression(binary_addr, operand)
 
 def get_address16(binary_addr, offset=0):
     """Get a string representing the 16 bit address at binary_addr.
@@ -956,7 +956,7 @@ def get_address16(binary_addr, offset=0):
         return False
 
     assert isinstance(get_classification(binary_addr), Word) or is_instruction_address(binary_addr), "Address: %s" % hex(binary_addr)
-    return get_expression(binary_addr, operand, is_address=True, width=16)
+    return get_expression(binary_addr, operand, width=16)
 
 
 def get_stats():

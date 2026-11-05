@@ -169,7 +169,6 @@ def vic20_machine(expansion="none"):
     vic20())."""
     expanded_8k = (expansion == "8k")
     basic_start = {"none": 0x1001, "3k": 0x0401, "8k": 0x1201}[expansion]
-    screen = 0x1000 if expanded_8k else 0x1e00
     colour_ram = 0x9400 if expanded_8k else 0x9600
     # The RAM's regions: BASIC's program area is after the screen with 8K or
     # more, and before it otherwise. (The regions of RAM an expansion would
@@ -737,7 +736,7 @@ def save_hook(runtime_addr, state, subroutine):
     if a_addr is not None:
         auto_expr(movemanager.b2r(a_addr), get_label(memory_binary[a_addr], a_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE))
     # (xy_addr() writes the expressions; the address itself isn't used)
-    end_addr = xy_addr(state.pessimistic['x'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
+    xy_addr(state.pessimistic['x'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
     _comment_call(runtime_addr, subroutine, subroutine.title)
 
 def _carry_hook(read_text, set_text):
@@ -1083,7 +1082,6 @@ def _c64_comment_port_writes(writes, known):
     stored, or for INC, DEC etc., the configuration after it, where the one
     before it is known ('known' is {binary address: configuration} for the
     instructions that run with a known one, see _flow_ranges())."""
-    cpu = session.current().cpu
     for binary_loc, _, value in writes:
         if callable(value):
             before = known.get(binary_loc.binary_addr)
