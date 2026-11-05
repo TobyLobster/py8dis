@@ -199,6 +199,7 @@ apple2_vectors = {
     0x03f9: ("ctrl_y_handler",    "the Monitor's Ctrl-Y JMP"),
     0x03fc: ("nmi_handler",       "the NMI JMP"),
     0x03fe: ("irq_handler",       "the IRQ vector"),
+    0x000b: ("usr_handler",       "the USR() function's JMP"),
 }
 
 # What the Monitor's screen output (COUT1, through COUT) does with the
@@ -412,6 +413,169 @@ apple2_disk2_switches = {
 
 # The heading for the Disk II's names in the list of memory locations
 APPLE2_DISK2_HEADING = "Disk II (indexed by the slot times 16)"
+
+# Applesoft's routines in ROM that machine code calls (e.g. a CALL or &
+# handler, or a program that prints with STROUT): (address, Apple's name,
+# descriptive name, title, on_entry, on_exit), as for the Monitor's. The
+# names are those of Applesoft's source (as in S-C DocuMentor and "What's
+# Where in the Apple"), except that ABS, INT and RND are FABS, FINT and
+# FRND, since some assemblers take those names to be their functions;
+# CHRGET and CHRGOT are in zero page.
+apple2_applesoft_routines = [
+    (0x00b1, "CHRGET",   "basic_next_char",          "Get the program's next character (C clear for a digit)", None, {'a': "character"}),
+    (0x00b7, "CHRGOT",   "basic_this_char",          "Get the program's character again (C clear for a digit)", None, {'a': "character"}),
+    (0xd412, "ERROR",    "basic_error",              "Give an Applesoft error",                        {'x': "error number"}, None),
+    (0xd43c, "RESTART",  "basic_restart",            "Applesoft's warm start (the ] prompt)",          None, None),
+    (0xd52c, "INLIN",    "basic_input_line",         "Input a line into IN",                           None, None),
+    (0xd7d2, "NEWSTT",   "basic_next_statement",     "Run the next statement",                         None, None),
+    (0xdb3a, "STROUT",   "basic_print_string",       "Print the zero-terminated string at A (low) and Y (high)", {'a': "string's address (low)", 'y': "string's address (high)"}, None),
+    (0xdb3d, "STRPRT",   "basic_print_fac_string",   "Print the string FAC holds",                     None, None),
+    (0xdb57, "OUTSP",    "basic_print_space",        "Print a space",                                  None, None),
+    (0xdb5a, "OUTQUES",  "basic_print_question",     "Print a question mark",                          None, None),
+    (0xdb5c, "OUTDO",    "basic_print_char",         "Print a character (with bit 7 set, and the FLASH mask)", {'a': "character"}, None),
+    (0xdd67, "FRMNUM",   "basic_eval_number",        "Evaluate a numeric expression into FAC",         None, None),
+    (0xdd7b, "FRMEVL",   "basic_eval",               "Evaluate an expression into FAC",                None, None),
+    (0xdeb8, "CHKCLS",   "basic_check_close",        "Check for a ')' (or give SYNTAX ERROR)",         None, None),
+    (0xdebb, "CHKOPN",   "basic_check_open",         "Check for a '(' (or give SYNTAX ERROR)",         None, None),
+    (0xdebe, "CHKCOM",   "basic_check_comma",        "Check for a comma (or give SYNTAX ERROR)",       None, None),
+    (0xdec0, "SYNCHR",   "basic_check_char",         "Check for the character in A (or give SYNTAX ERROR)", {'a': "character"}, None),
+    (0xdec9, "SYNERR",   "basic_syntax_error",       "Give SYNTAX ERROR",                              None, None),
+    (0xdfe3, "PTRGET",   "basic_find_variable",      "Find (or make) the variable named next in the program", None, None),
+    (0xe000, "BASIC",    "basic_cold_start",         "Applesoft's cold start",                         None, None),
+    (0xe003, "BASIC2",   "basic_warm_start",         "Applesoft's warm start",                         None, None),
+    (0xe199, "IQERR",    "basic_illegal_quantity",   "Give ILLEGAL QUANTITY ERROR",                    None, None),
+    (0xe2f2, "GIVAYF",   "basic_float_ay",           "Put the signed number in A (high) and Y (low) in FAC", None, None),
+    (0xe301, "SNGFLT",   "basic_float_y",            "Put the number in Y in FAC",                     None, None),
+    (0xe6f8, "GETBYT",   "basic_get_byte",           "Evaluate a byte (0-255) into X",                 None, {'x': "byte"}),
+    (0xe6fb, "CONINT",   "basic_fac_to_byte",        "Convert FAC to a byte (0-255) in X",             None, {'x': "byte"}),
+    (0xe746, "GETNUM",   "basic_get_address_byte",   "Evaluate an address into LINNUM, a comma, then a byte into X", None, {'x': "byte"}),
+    (0xe74c, "COMBYTE",  "basic_get_comma_byte",     "Check for a comma, then evaluate a byte into X", None, {'x': "byte"}),
+    (0xe752, "GETADR",   "basic_fac_to_address",     "Convert FAC to an address (0-65535) in LINNUM",  None, None),
+    (0xe7a7, "FSUB",     "basic_fp_subtract",        "FAC = the number at A (low) and Y (high) - FAC", None, None),
+    (0xe7be, "FADD",     "basic_fp_add",             "FAC = the number at A (low) and Y (high) + FAC", None, None),
+    (0xe97f, "FMULT",    "basic_fp_multiply",        "FAC = the number at A (low) and Y (high) * FAC", None, None),
+    (0xe9e3, "CONUPK",   "basic_load_arg",           "Load ARG with the number at A (low) and Y (high)", None, None),
+    (0xea39, "MUL10",    "basic_fp_times_10",        "FAC = FAC * 10",                                 None, None),
+    (0xea66, "FDIV",     "basic_fp_divide",          "FAC = the number at A (low) and Y (high) / FAC", None, None),
+    (0xeaf9, "MOVFM",    "basic_load_fac",           "Load FAC with the number at A (low) and Y (high)", None, None),
+    (0xeb2b, "MOVMF",    "basic_store_fac",          "Store FAC, rounded, at X (low) and Y (high)",    None, None),
+    (0xeb82, "SIGN",     "basic_fp_sign",            "Get FAC's sign in A (-1, 0 or 1)",               None, {'a': "sign"}),
+    (0xeb93, "FLOAT",    "basic_float_a",            "Put the signed number in A in FAC",              None, None),
+    (0xebaf, "FABS",     "basic_fp_abs",             "FAC = ABS(FAC)",                                 None, None),
+    (0xebb2, "FCOMP",    "basic_fp_compare",         "Compare FAC with the number at A (low) and Y (high), into A (-1, 0 or 1)", None, {'a': "result"}),
+    (0xebf2, "QINT",     "basic_fac_to_integer",     "Convert FAC to a 32-bit integer (in FAC+1 to FAC+4, high byte first)", None, None),
+    (0xec23, "FINT",     "basic_fp_int",             "FAC = INT(FAC)",                                 None, None),
+    (0xed24, "LINPRT",   "basic_print_number",       "Print the number in A (high byte) and X (low byte)", {'a': "number (high byte)", 'x': "number (low byte)"}, None),
+    (0xed2e, "PRNTFAC",  "basic_print_fac",          "Print the number in FAC",                        None, None),
+    (0xee97, "FPWRT",    "basic_fp_power",           "FAC = ARG ^ FAC",                                None, None),
+    (0xeed0, "NEGOP",    "basic_fp_negate",          "FAC = -FAC",                                     None, None),
+    (0xefae, "FRND",     "basic_fp_rnd",             "FAC = RND(FAC)",                                 None, None),
+    (0xf3d8, "HGR2",     "hires_page_2",             "Show hi-res page 2 (full screen), and clear it", None, None),
+    (0xf3e2, "HGR",      "hires_page_1",             "Show hi-res page 1 (mixed), and clear it",       None, None),
+    (0xf3f2, "HCLR",     "hires_clear",              "Clear the hi-res page HPAG to black",            None, None),
+    (0xf3f4, "BKGND",    "hires_fill",               "Fill the hi-res page HPAG with a colour",        {'a': "colour's bit pattern"}, None),
+    (0xf411, "HPOSN",    "hires_position",           "Move the hi-res position (without plotting)",    {'x': "x (low byte)", 'y': "x (high byte)", 'a': "y"}, None),
+    (0xf457, "HPLOT0",   "hires_plot",               "Plot a hi-res point",                            {'x': "x (low byte)", 'y': "x (high byte)", 'a': "y"}, None),
+    (0xf53a, "HGLIN",    "hires_line",               "Draw a hi-res line from the hi-res position",   {'a': "x (low byte)", 'x': "x (high byte)", 'y': "y"}, None),
+    (0xf5cb, "HFIND",    "hires_find_position",      "Work out the hi-res position's coordinates",    None, None),
+    (0xf601, "DRAW0",    "hires_draw_shape",         "Draw a shape at the hi-res position",           {'x': "shape's address (low)", 'y': "shape's address (high)", 'a': "rotation"}, None),
+    (0xf65d, "XDRAW0",   "hires_xdraw_shape",        "Draw a shape at the hi-res position, by XORing", {'x': "shape's address (low)", 'y': "shape's address (high)", 'a': "rotation"}, None),
+    (0xf6b9, "HFNS",     "hires_get_coordinates",    "Evaluate hi-res coordinates (for HPLOT)",        None, None),
+    (0xf6f0, "SETHCOL",  "hires_set_colour",         "Set the hi-res colour",                          {'x': "colour (0-7)"}, None),
+]
+
+# Applesoft's zero page and other workspace: (address, Apple's name,
+# descriptive name, length), as apple2_workspace, with None for Apple's name
+# where its source's name isn't a usable label (e.g. FLASH.BIT) or isn't
+# certain, so the descriptive name is used in both styles. (The Monitor's
+# names for $20-$4F are used where Applesoft shares them, e.g. GBASL for its
+# HBASL.)
+apple2_applesoft_workspace = [
+    (0x0a, None,       "usr_jump",            3),
+    (0x0d, "CHARAC",   "basic_delimiter",     1),
+    (0x0e, "ENDCHR",   "basic_delimiter_2",   1),
+    (0x10, "DIMFLG",   "basic_dim_flag",      1),
+    (0x11, "VALTYP",   "basic_value_type",    2),
+    (0x14, "SUBFLG",   "basic_subscript_flag", 1),
+    (0x15, "INPUTFLG", "basic_input_flag",    1),
+    (0x1c, "HCOLOR1",  "hires_colour_mask",   1),
+    (0x1d, "COUNTH",   "hires_line_count",    1),
+    (0x50, "LINNUM",   "basic_line_number",   2),
+    (0x52, "TEMPPT",   "basic_temp_pointer",  1),
+    (0x5e, "INDEX",    "basic_index",         2),
+    (0x67, "TXTTAB",   "basic_program_start", 2),
+    (0x69, "VARTAB",   "basic_variables",     2),
+    (0x6b, "ARYTAB",   "basic_arrays",        2),
+    (0x6d, "STREND",   "basic_arrays_end",    2),
+    (0x6f, "FRETOP",   "basic_strings_bottom", 2),
+    (0x73, "MEMSIZ",   "basic_himem",         2),
+    (0x75, "CURLIN",   "basic_current_line",  2),
+    (0x77, "OLDLIN",   "basic_stopped_line",  2),
+    (0x79, "OLDTEXT",  "basic_stopped_text",  2),
+    (0x7b, "DATLIN",   "basic_data_line",     2),
+    (0x7d, "DATPTR",   "basic_data_pointer",  2),
+    (0x81, "VARNAM",   "basic_variable_name", 2),
+    (0x83, "VARPNT",   "basic_variable_pointer", 2),
+    (0x85, "FORPNT",   "basic_for_pointer",   2),
+    (0x90, "JMPADRS",  "basic_jump",          3),
+    (0x94, "HIGHDS",   "basic_move_dest",     2),
+    (0x96, "HIGHTR",   "basic_move_source",   2),
+    (0x9b, "LOWTR",    "basic_pointer",       2),
+    (0x9d, "FAC",      "fac",                 6),
+    (0xa5, "ARG",      "arg",                 6),
+    (0xab, "STRNG1",   "basic_string_1",      2),
+    (0xad, "STRNG2",   "basic_string_2",      2),
+    (0xaf, "PRGEND",   "basic_program_end",   2),
+    (0xb8, "TXTPTR",   "basic_text_pointer",  2),
+    (0xc9, None,       "basic_random_seed",   5),
+    (0xd6, "LOCK",     "basic_lock_flag",     1),
+    (0xd8, "ERRFLG",   "basic_onerr_flag",    1),
+    (0xda, "ERRLIN",   "basic_error_line",    2),
+    (0xdc, "ERRPOS",   "basic_error_text",    2),
+    (0xde, "ERRNUM",   "basic_error_number",  1),
+    (0xdf, "ERRSTK",   "basic_error_stack",   1),
+    (0xe6, "HPAG",     "hires_page",          1),
+    (0xe7, "SCALE",    "hires_scale",         1),
+    (0xe8, "SHAPEL",   "hires_shape_table",   2),
+    (0xf1, "SPEEDZ",   "basic_speed",         1),
+    (0xf2, "TRCFLG",   "basic_trace_flag",    1),
+    (0xf3, None,       "basic_flash_mask",    1),
+    (0xf8, "REMSTK",   "basic_statement_stack", 1),
+    (0xf9, "ROT",      "hires_rotation",      1),
+]
+
+# Apple's names for the high bytes of Applesoft's two-byte locations, where
+# they have their own (as apple2_workspace_high_bytes)
+apple2_applesoft_high_bytes = {
+    0xe9: "SHAPEH",
+}
+
+# The hi-res colours (HCOLOR= 0-7), for the comments on SETHCOL
+apple2_hires_colours = ["black", "green", "violet", "white", "black (2)", "orange", "blue", "white (2)"]
+
+# Applesoft's keywords, by token from $80 to $EA
+applesoft_tokens = [
+    "END", "FOR", "NEXT", "DATA", "INPUT", "DEL", "DIM", "READ",
+    "GR", "TEXT", "PR#", "IN#", "CALL", "PLOT", "HLIN", "VLIN",
+    "HGR2", "HGR", "HCOLOR=", "HPLOT", "DRAW", "XDRAW", "HTAB", "HOME",
+    "ROT=", "SCALE=", "SHLOAD", "TRACE", "NOTRACE", "NORMAL", "INVERSE", "FLASH",
+    "COLOR=", "POP", "VTAB", "HIMEM:", "LOMEM:", "ONERR", "RESUME", "RECALL",
+    "STORE", "SPEED=", "LET", "GOTO", "RUN", "IF", "RESTORE", "&",
+    "GOSUB", "RETURN", "REM", "STOP", "ON", "WAIT", "LOAD", "SAVE",
+    "DEF", "POKE", "PRINT", "CONT", "LIST", "CLEAR", "GET", "NEW",
+    "TAB(", "TO", "FN", "SPC(", "THEN", "AT", "NOT", "STEP",
+    "+", "-", "*", "/", "^", "AND", "OR", ">",
+    "=", "<", "SGN", "INT", "ABS", "USR", "FRE", "SCRN(",
+    "PDL", "POS", "SQR", "RND", "LOG", "EXP", "COS", "SIN",
+    "TAN", "ATN", "PEEK", "LEN", "STR$", "VAL", "ASC", "CHR$",
+    "LEFT$", "RIGHT$", "MID$",
+]
+APPLESOFT_TOKEN_REM = 0xb2
+APPLESOFT_TOKEN_DATA = 0x83
+APPLESOFT_TOKEN_CALL = 0x8c
+
+# Where Applesoft programs start, by default
+APPLESOFT_START = 0x0801
 
 # The lo-res colours, for the comments on SETCOL
 apple2_lores_colours = ["black", "magenta", "dark blue", "purple", "dark green", "grey", "medium blue", "light blue",

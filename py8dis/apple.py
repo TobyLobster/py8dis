@@ -25,8 +25,16 @@ file calls apple2() after load() (or load_apple_file() etc.). It:
   the keyboard) where they're written, e.g. 'sta SET80VID', and the Disk
   II's, indexed by the slot times 16, where they're used, e.g. 'lda
   Q6L,x' (comment_soft_switches());
+- names Applesoft's routines (STROUT, CHRGET, the hi-res routines etc.),
+  whose calls are commented in the same way (e.g. STROUT's string is
+  marked, 'Print 4660' for LINPRT, 'Plot a hi-res point at (140, 96)' for
+  HPLOT0), and its zero page, and traces the handlers code sets the USR
+  function's and the & command's JMPs to;
 - makes the Apple II's high ASCII (ASCII with bit 7 set) the session's text
   encoding (see textencoding.py).
+
+applesoft_program() marks an Applesoft program, listing its lines in
+comments, and traces the machine code its CALLs call.
 
 The names are Apple's, in capitals (unless
 config.set_upper_case_os_calls(False)), or with names="descriptive",
@@ -42,17 +50,21 @@ import copy
 
 from commands import *
 import config
+import classification
 import cpu6502
 import disassembly
 import mainformatter
+import memorymanager
+import movemanager
 import session
 import textencoding
 import utils
 from align import Align
 from memorymanager import BinaryAddr, BinaryLocation, RuntimeAddr
+import msbasic
 from snippets6502 import register_snippet
 from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
-from acornhelpers import character_streams, register_print_snippets
+from acornhelpers import character_streams, register_print_snippets, xy_addr
 
 # The data tables, which control files can use as e.g.
 # apple.apple2_monitor_routines
@@ -156,6 +168,47 @@ def _wait_text(a):
     cycles = wait_cycles(a)
     return "Wait {0:,} cycles (about {1:.1f} ms)".format(cycles, cycles / 1023.0)
 
+def _hires_colour_text(x):
+    """SETHCOL's comment, e.g. 'Set the hi-res colour to 3 (white)'."""
+    if x < 8:
+        return "Set the hi-res colour to {0} ({1})".format(x, apple2_hires_colours[x])
+    return None
+
+def _xy_hook(describe, regs):
+    """A hook like _call_hook()'s, for values in several registers: the text
+    is describe(values), with the values of the registers in 'regs' (e.g.
+    'xya'), if they're all known."""
+    def hook(runtime_addr, state, subroutine):
+        values = [_known(state, reg) for reg in regs]
+        text = describe(*values) if None not in values else None
+        if text is not None:
+            subroutine = copy.copy(subroutine)
+            subroutine.title = text
+            subroutine.on_entry = {reg: description for reg, description in subroutine.on_entry.items() if reg not in regs}
+        session.current().cpu.default_subroutine_hook(runtime_addr, state, subroutine)
+    return hook
+
+def _strout_hook(runtime_addr, state, subroutine):
+    """STROUT's hook: where A and Y are loaded, write them as the low and
+    high bytes of the string's label (see acornhelpers.xy_addr()), and mark
+    the string as a zero-terminated one, if it's loaded and isn't classified
+    yet: in high ASCII, or in ASCII if its first byte has bit 7 clear
+    (STROUT prints either). Then comment the call as the default hook does
+    (without the comments on A and Y, if they're the string's label)."""
+    string_addr = None
+    if subroutine.runtime_addr != runtime_addr:
+        string_addr = xy_addr(state.pessimistic['a'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
+    if string_addr is not None:
+        binary_addr, _ = movemanager.r2b(string_addr)
+        if (binary_addr is not None and memorymanager.is_data_loaded_at_binary_addr(binary_addr)
+                and classification.get_classification(binary_addr) is None):
+            stringz(string_addr, encoding="apple" if memory_binary[binary_addr] >= 0x80 else "ascii")
+        # (The loads of A and Y are the string's label, so they need no
+        # comments)
+        subroutine = copy.copy(subroutine)
+        subroutine.on_entry = {}
+    session.current().cpu.default_subroutine_hook(runtime_addr, state, subroutine)
+
 def _colour_text(a):
     """SETCOL's comment, e.g. 'Set the lo-res colour to 9 (orange)'."""
     if a < 16:
@@ -177,6 +230,13 @@ _HOOKS = {
     0xfe8b: _call_hook(lambda a: "Take input from slot {0} (IN#{0})".format(a) if a < 8 else None, 'a'),  # INPORT
     0xfe95: _call_hook(lambda a: "Send output to slot {0} (PR#{0})".format(a) if a < 8 else None, 'a'),   # OUTPORT
     0xfb1e: _call_hook(lambda x: "Read paddle {0}".format(x) if x < 4 else None, 'x'),          # PREAD
+    # Applesoft's
+    0xdb3a: _strout_hook,                                                                       # STROUT
+    0xed24: _xy_hook(lambda a, x: "Print {0}".format(a * 256 + x), "ax"),                       # LINPRT
+    0xf411: _xy_hook(lambda x, y, a: "Move the hi-res position to ({0}, {1})".format(y * 256 + x, a), "xya"),  # HPOSN
+    0xf457: _xy_hook(lambda x, y, a: "Plot a hi-res point at ({0}, {1})".format(y * 256 + x, a), "xya"),      # HPLOT0
+    0xf53a: _xy_hook(lambda a, x, y: "Draw a hi-res line to ({0}, {1})".format(x * 256 + a, y), "axy"),       # HGLIN
+    0xf6f0: _call_hook(_hires_colour_text, 'x'),                                                # SETHCOL
 }
 
 
@@ -358,6 +418,125 @@ def post_trace_setting_vector(p):
 
 
 # ************************************************************************************************
+# Applesoft programs
+
+def _applesoft_line_text(data):
+    """A tokenised Applesoft line's text (data, its bytes) as LIST shows it,
+    with a space either side of each keyword (except in quotes, or after
+    REM or DATA), e.g. 'HOME : PRINT "HELLO"'. Other codes are shown as
+    e.g. {$80}."""
+    result = ""
+    space_due = False   # (A space is due after a keyword)
+    in_quotes = in_rem = False
+    for c in data:
+        if c == ord('"') and not in_rem:
+            in_quotes = not in_quotes
+        if c >= 0x80 and not in_quotes and not in_rem and c - 0x80 < len(applesoft_tokens):
+            if result and not result.endswith(" "):
+                result += " "
+            result += applesoft_tokens[c - 0x80]
+            space_due = True
+            in_rem = c == APPLESOFT_TOKEN_REM
+            continue
+        char = chr(c) if 32 <= c < 127 else textencoding.APPLE.char(c)
+        if char is None:
+            char = "{%s}" % _hex2(c)
+        if space_due and char != " ":
+            result += " "
+        space_due = False
+        result += char
+    return result
+
+def _call_addresses(text):
+    """The addresses that CALLs in a line call (text, its bytes): each CALL
+    token's number, which can be negative (e.g. CALL -936 for $FC58)."""
+    result = []
+    for i, c in enumerate(text):
+        if c != APPLESOFT_TOKEN_CALL:
+            continue
+        digits = ""
+        for d in bytes(text[i + 1:]).decode("latin-1"):
+            if d.isdigit() or (d == "-" and not digits):
+                digits += d
+            else:
+                break
+        if digits.lstrip("-"):
+            n = int(digits)
+            if -65535 <= n <= 65535:
+                result.append(n % 65536)
+    return result
+
+def applesoft_program(runtime_addr=APPLESOFT_START):
+    """Classify the tokenised Applesoft program at the address (by default
+    $0801, where Applesoft programs start). Each line is labelled (e.g.
+    'basic_line_10'), its link to the next line and its line number are
+    words, and its text is bytes for the keywords and ASCII strings, listed
+    in a comment, e.g. '; 10 HOME : PRINT "HELLO"'. An address a CALL calls
+    in the loaded data is an entry point, named 'call_entry' (then
+    'call_entry_2' etc.) unless it already has a name. Returns the address
+    after the program, or None (classifying nothing) if there isn't a valid
+    program there (see msbasic.basic_lines())."""
+    found = msbasic.basic_lines(runtime_addr)
+    if found is None:
+        return None
+    lines, end = found
+    # Each line's label, e.g. 'basic_line_10' (or 'basic_line_10_2' for a
+    # second line 10), and 'basic_end' for the two zeros at the end
+    names = {}
+    def line_name(number):
+        """The label for the next line with this line number."""
+        name = "basic_line_%d" % number
+        names[name] = names.get(name, 0) + 1
+        return name if names[name] == 1 else "%s_%d" % (name, names[name])
+    line_names = [line_name(number) for _, _, number, _ in lines] + ["basic_end"]
+
+    calls = []
+    for i, (addr, link, number, text) in enumerate(lines):
+        # The line's label and listing, its link (written as the next line's
+        # label) and its line number (in decimal)
+        label(addr, line_names[i])
+        auto_comment(addr, "%d %s" % (number, _applesoft_line_text(text)))
+        word(addr)
+        expr(addr, line_names[i + 1])
+        word(addr + 2)
+        decimal(addr + 2)
+        # The text: runs of ASCII characters as strings, the rest (keywords
+        # and other codes) as bytes
+        a = addr + 4
+        run_start = None
+        for c in text:
+            if 32 <= c < 127:
+                if run_start is None:
+                    run_start = a
+            else:
+                if run_start is not None:
+                    string(run_start, a - run_start, encoding="ascii")
+                    run_start = None
+                byte(a)
+            a += 1
+        if run_start is not None:
+            string(run_start, a - run_start, encoding="ascii")
+        byte(a)     # (the zero at the end of the line)
+        calls += _call_addresses(text)
+
+    label(end, "basic_end")
+    word(end)
+
+    # The machine code that CALLs call, if it's loaded
+    count = 0
+    for call_addr in calls:
+        binary_addr, _ = movemanager.r2b(RuntimeAddr(call_addr))
+        if binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr):
+            continue
+        entry(call_addr)
+        labels = session.current().labels.labels
+        if not (call_addr in labels and labels[call_addr].explicit_names):
+            count += 1
+            label(call_addr, "call_entry" if count == 1 else "call_entry_%d" % count)
+    return end + 2
+
+
+# ************************************************************************************************
 # The set-up
 
 def _routine(addr, apple_name, descriptive_name, title, on_entry, on_exit):
@@ -366,22 +545,26 @@ def _routine(addr, apple_name, descriptive_name, title, on_entry, on_exit):
     subroutine(addr, _name(apple_name, descriptive_name), title, None, on_entry, on_exit, hook=_HOOKS.get(addr), is_entry_point=False)
 
 def _workspace():
-    """Name the workspace (see apple2_workspace and apple2_page3_vectors):
-    each byte of a location of more than one byte is named from its start
-    (e.g. 'IN+1', 'output_hook+1'), except that Apple's names for the high
-    bytes of the Monitor's zero page pointers are their own (e.g. 'CSWH')."""
-    for addr, apple_name, descriptive_name, length in apple2_workspace + apple2_page3_vectors:
+    """Name the workspace (see apple2_workspace, apple2_page3_vectors and
+    apple2_applesoft_workspace): each byte of a location of more than one
+    byte is named from its start (e.g. 'IN+1', 'output_hook+1'), except that
+    Apple's names for the high bytes of some pointers are their own (e.g.
+    'CSWH')."""
+    high_bytes = dict(apple2_workspace_high_bytes)
+    high_bytes.update(apple2_applesoft_high_bytes)
+    for addr, apple_name, descriptive_name, length in apple2_workspace + apple2_page3_vectors + apple2_applesoft_workspace:
         name = _name(apple_name, descriptive_name)
         optional_label(addr, name)
         for i in range(1, length):
-            if _names() == "apple" and addr + i in apple2_workspace_high_bytes:
-                optional_label(addr + i, official_name(apple2_workspace_high_bytes[addr + i]))
+            if _names() == "apple" and apple_name is not None and addr + i in high_bytes:
+                optional_label(addr + i, official_name(high_bytes[addr + i]))
             else:
                 optional_label(addr + i, "{0}+{1}".format(name, i), addr)
 
 def apple2(model="ii+", names="apple"):
     """Set up for a program for the Apple II+ or IIe (see the module
-    docstring): the Monitor's routines, with hooks to comment their calls,
+    docstring): the Monitor's and Applesoft's routines, with hooks to
+    comment their calls,
     the comments on what's printed, the print loops, the zero page and other
     workspace, the vectors and the code that sets them, the soft switches,
     the memory regions, and high ASCII as the session's text encoding.
@@ -417,7 +600,7 @@ def apple2(model="ii+", names="apple"):
 
     # The Monitor's routines (and the IIe's firmware's), and other places in
     # the ROM
-    for entry_ in apple2_monitor_routines:
+    for entry_ in apple2_monitor_routines + apple2_applesoft_routines:
         _routine(*entry_)
     if model == "iie":
         for entry_ in apple2e_firmware_routines:

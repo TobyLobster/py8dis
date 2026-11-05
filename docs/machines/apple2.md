@@ -84,6 +84,43 @@ loop
 
 These names are only for those instructions (the same addresses without an index are the language card's), and they're listed under their own heading, `; Disk II (indexed by the slot times 16)`. Another card used the same way gets the Disk II's names too.
 
+**Names Applesoft's routines and zero page.** The II+ and IIe have Applesoft in ROM, and machine code called from BASIC (with CALL, `&` or USR) often uses its routines, so these are named too, by the names in Applesoft's source: `CHRGET` and `CHRGOT` (in zero page), `ERROR`, `RESTART`, `INLIN`, `NEWSTT`, `STROUT`, `STRPRT`, `OUTSP`, `OUTQUES`, `OUTDO`, `FRMNUM`, `FRMEVL`, `CHKCLS`, `CHKOPN`, `CHKCOM`, `SYNCHR`, `SYNERR`, `PTRGET`, `BASIC` and `BASIC2` (the cold and warm starts), `IQERR`, `GIVAYF`, `SNGFLT`, `GETBYT`, `CONINT`, `GETNUM`, `COMBYTE`, `GETADR`, the floating point routines (`FADD`, `FSUB`, `FMULT`, `FDIV`, `MOVFM`, `MOVMF`, `FCOMP`, `FINT`, `FABS`, `FRND` etc.: `INT`, `ABS` and `RND` get an `F`, since some assemblers take those names to be their functions), `LINPRT`, `PRNTFAC`, and the hi-res routines (`HGR`, `HGR2`, `HCLR`, `BKGND`, `HPOSN`, `HPLOT0`, `HGLIN`, `HFIND`, `DRAW0`, `XDRAW0`, `HFNS`, `SETHCOL`). Their descriptive names start `basic_` or `hires_`, e.g. `basic_print_string` for `STROUT`. Their calls are commented as the Monitor's are, and some say more:
+
+| Routine | Comment |
+| ------- | ------- |
+| `STROUT` | The string at A (low) and Y (high) is marked as a zero-terminated string (in high ASCII, or ASCII if its first byte has bit 7 clear), and A and Y are written as its label's low and high bytes: `lda #<message`, `ldy #>message` |
+| `LINPRT` | `Print 4660` (A is the high byte, X the low) |
+| `HPOSN`, `HPLOT0` | `Plot a hi-res point at (140, 96)` (X and Y are x's low and high bytes, A is y) |
+| `HGLIN` | `Draw a hi-res line to (279, 191)` (A and X are x's low and high bytes, Y is y) |
+| `SETHCOL` | `Set the hi-res colour to 3 (white)` |
+
+Applesoft's zero page is named too, where the Monitor's names don't cover it: `LINNUM`, `TXTTAB`, `VARTAB`, `ARYTAB`, `STREND`, `FRETOP`, `MEMSIZ`, `CURLIN`, `DATPTR`, `VARPNT`, `FAC`, `ARG`, `TXTPTR`, `ERRFLG`, `ERRLIN`, `ERRNUM`, `HPAG`, `SCALE`, `SHAPEL`/`SHAPEH`, `ROT` and others, and `usr_jump` ($0A, the USR function's JMP). Code that sets the USR function's address, or the `&` command's, has its handler traced and named (`usr_handler`, `ampersand_handler`).
+
 **Groups the memory locations** in the output by region: zero page, the stack, the input buffer, page 3, the DOS vectors, the vectors, the text and lo-res pages, the hi-res pages, the soft switches, the language card, the slots' I/O and ROMs, the expansion ROM, and the Applesoft and Monitor ROMs.
 
 The tables are in `py8dis/appletables.py`, and a control file can use them as e.g. `apple.apple2_monitor_routines`. Apple's names were checked against the symbol files of Andy McFadden's [6502bench SourceGen](https://github.com/fadden/6502bench).
+
+## Applesoft programs
+
+`apple.applesoft_program(runtime_addr=0x0801)` marks the tokenised Applesoft program at the address ($0801, where Applesoft programs start, by default), after `apple.apple2()`:
+
+```python
+load_apple_file("HELLO#fc0801")
+apple.apple2()
+apple.applesoft_program()
+```
+
+Each line is labelled (`basic_line_10`), its link to the next line is written as that line's label, its line number is in decimal, and its keywords are bytes and its other text ASCII strings. A comment lists the line as LIST shows it, with a space either side of each keyword:
+
+```
+; 30 FOR I = 1 TO 3: CALL 2304: NEXT
+basic_line_30
+    !word basic_line_40
+    !word 30
+    !byte $81
+    !text "I"
+    ...
+```
+
+The address a CALL calls (which can be negative, e.g. `CALL -936`, $FC58) is traced if it's in the loaded data, and named `call_entry` (then `call_entry_2` etc.) unless it has a name. It returns the address after the program (after the two zeros that end it, labelled `basic_end`), or None if there isn't a valid program at the address. It isn't called by `apple.apple2()`, since a program at $0801 is often machine code.
+
