@@ -1446,11 +1446,17 @@ print_hex:
     lsr                                                               ; f803: 4a          J
     lsr                                                               ; f804: 4a          J
     lsr                                                               ; f805: 4a          J
-    lsr                                                               ; f806: 4a          J
-    jsr sub_cf80b                                                     ; f807: 20 0b f8     ..
-    pla                                                               ; f80a: 68          h
+    lsr                                                               ; f806: 4a          J  ; A=value to print (bits 0-3)
+    jsr print_hex_digit                                               ; f807: 20 0b f8     .. ; Print the low four bits of A as a hex digit
+    pla                                                               ; f80a: 68          h  ; A=value to print (bits 0-3)
+; ***************************************************************************************
+; Print the low four bits of A as a hex digit
+; 
+; On Entry:
+;     A: value to print (bits 0-3)
+; ***************************************************************************************
 ; $f80b referenced 1 time by $f807
-sub_cf80b:
+print_hex_digit:
     and #$0f                                                          ; f80b: 29 0f       ).
     cmp #$0a                                                          ; f80d: c9 0a       ..
     bcc cf813                                                         ; f80f: 90 02       ..
@@ -1462,7 +1468,7 @@ cf813:
 
 ; $f818 referenced 2 times by $f958, $fabb
 sub_cf818:
-    jsr sub_cf876                                                     ; f818: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; f818: 20 76 f8     v. ; Skip spaces in the input buffer from #0100+Y (A is the next character)
     ldx #0                                                            ; f81b: a2 00       ..
     cmp #$22 ; '"'                                                    ; f81d: c9 22       ."
     beq cf827                                                         ; f81f: f0 06       ..
@@ -1531,9 +1537,15 @@ cf86c:
 
 ; $f875 referenced 1 time by $f87b
 loop_cf875:
-    iny                                                               ; f875: c8          .
+    iny                                                               ; f875: c8          .  ; Y=offset in the input buffer
+; ***************************************************************************************
+; Skip spaces in the input buffer from #0100+Y (A is the next character)
+; 
+; On Entry:
+;     Y: offset in the input buffer
+; ***************************************************************************************
 ; $f876 referenced 4 times by $f818, $f89b, $f8f6, $fa76
-sub_cf876:
+skip_input_buffer_spaces:
     lda input_buffer,y                                                ; f876: b9 00 01    ...
     cmp #$20 ; ' '                                                    ; f879: c9 20       .
     beq loop_cf875                                                    ; f87b: f0 f8       ..
@@ -1567,7 +1579,7 @@ sub_cf893:
     sta basic_error_number,x                                          ; f895: 95 00       ..
     sta basic_line_number,x                                           ; f897: 95 01       ..
     sta basic_line_number+1,x                                         ; f899: 95 02       ..
-    jsr sub_cf876                                                     ; f89b: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; f89b: 20 76 f8     v. ; Skip spaces in the input buffer from #0100+Y (A is the next character)
 ; $f89e referenced 1 time by $f8b9
 loop_cf89e:
     lda input_buffer,y                                                ; f89e: b9 00 01    ...
@@ -1633,9 +1645,9 @@ kernel_cli:
     cld                                                               ; f8f1: d8          .
 ; $f8f2 referenced 1 time by $f913
 cf8f2:
-    ldy #0                                                            ; f8f2: a0 00       ..
+    ldy #0                                                            ; f8f2: a0 00       .. ; Y=offset in the input buffer
     sty l00dd                                                         ; f8f4: 84 dd       ..
-    jsr sub_cf876                                                     ; f8f6: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; f8f6: 20 76 f8     v. ; Skip spaces in the input buffer from #0100+Y (A is the next character)
     dey                                                               ; f8f9: 88          .
 ; $f8fa referenced 1 time by $f904
 loop_cf8fa:
@@ -1919,7 +1931,7 @@ cfa73:
 
 ; $fa76 referenced 5 times by $f966, $fa1a, $fa2b, $fa70, $fadd
 sub_cfa76:
-    jsr sub_cf876                                                     ; fa76: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; fa76: 20 76 f8     v. ; Skip spaces in the input buffer from #0100+Y (A is the next character)
     cmp #$0d                                                          ; fa79: c9 0d       ..
     beq return_6                                                      ; fa7b: f0 a2       ..
 ; $fa7d referenced 2 times by $f824, $fa68
@@ -2110,8 +2122,11 @@ cfb83:
     bne cfb83                                                         ; fb87: d0 fa       ..
     rts                                                               ; fb89: 60          `
 
+; ***************************************************************************************
+; Wait for six field flybacks (a tenth of a second)
+; ***************************************************************************************
 ; $fb8a referenced 1 time by $fea4
-sub_cfb8a:
+wait_tenth_second:
     ldx #6                                                            ; fb8a: a2 06       ..
     bne cfb83                                                         ; fb8c: d0 f5       .. ; ALWAYS branch
 
@@ -2401,10 +2416,10 @@ sub_cfcea:
     cmp #$1b                                                          ; fcf6: c9 1b       ..
     beq cfd0b                                                         ; fcf8: f0 11       ..
     cmp #7                                                            ; fcfa: c9 07       ..
-    beq cfd1a                                                         ; fcfc: f0 1c       ..
+    beq wrch_bell                                                     ; fcfc: f0 1c       .. ; Sound the bell (as OSWRCH does for character 7)
     jsr wrch_invert_cursor                                            ; fcfe: 20 44 fd     D.
-    ldx #$0a                                                          ; fd01: a2 0a       ..
-    jsr sub_cfec5                                                     ; fd03: 20 c5 fe     ..
+    ldx #$0a                                                          ; fd01: a2 0a       .. ; X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
+    jsr find_control_code                                             ; fd03: 20 c5 fe     .. ; Find A in the table of control codes and keys at #FECB, from X down (X is its index)
     bne cfd29                                                         ; fd06: d0 21       .!
     jmp cfeb7                                                         ; fd08: 4c b7 fe    L..
 
@@ -2426,8 +2441,11 @@ sub_cfd13:
 return_10:
     rts                                                               ; fd19: 60          `
 
+; ***************************************************************************************
+; Sound the bell (as OSWRCH does for character 7)
+; ***************************************************************************************
 ; $fd1a referenced 1 time by $fcfc
-cfd1a:
+wrch_bell:
     lda #5                                                            ; fd1a: a9 05       ..
     tay                                                               ; fd1c: a8          .  ; Y=5
 ; $fd1d referenced 1 time by $fd26
@@ -2582,7 +2600,7 @@ rdch_keys_8_to_13:
     and #$1f                                                          ; fde7: 29 1f       ).
 ; $fde9 referenced 3 times by $fdbd, $fdc4, $fde5
 cfde9:
-    jmp cfe60                                                         ; fde9: 4c 60 fe    L`.
+    jmp restore_xy_and_return                                         ; fde9: 4c 60 fe    L`. ; Restore X and Y from #E4 and #E5, pull the flags and return (as OSWRCH and OSRDCH end)
 
 ; $fdec referenced 2 times by $fd3d, $fd62
 sub_cfdec:
@@ -2670,7 +2688,7 @@ return_12:
 ; Write character A (the kernel's OSWRCH, WRCVEC's default)
 ; ***************************************************************************************
 kernel_wrch:
-    jsr sub_cfefb                                                     ; fe52: 20 fb fe     ..
+    jsr send_to_printer                                               ; fe52: 20 fb fe     .. ; Send A to the printer if it's on (2 turns it on and 3 off; the character at #FE isn't sent)
     php                                                               ; fe55: 08          .
     pha                                                               ; fe56: 48          H
     cld                                                               ; fe57: d8          .
@@ -2678,8 +2696,12 @@ kernel_wrch:
     stx l00e4                                                         ; fe5a: 86 e4       ..
     jsr sub_cfcea                                                     ; fe5c: 20 ea fc     ..
     pla                                                               ; fe5f: 68          h
+; ***************************************************************************************
+; Restore X and Y from #E4 and #E5, pull the flags and return (as OSWRCH and OSRDCH
+; end)
+; ***************************************************************************************
 ; $fe60 referenced 1 time by $fde9
-cfe60:
+restore_xy_and_return:
     ldx l00e4                                                         ; fe60: a6 e4       ..
     ldy l00e5                                                         ; fe62: a4 e5       ..
     plp                                                               ; fe64: 28          (
@@ -2750,16 +2772,16 @@ cfe9a:
     bcc cfe9a                                                         ; fea2: 90 f6       ..
 ; $fea4 referenced 1 time by $fe9d
 cfea4:
-    jsr sub_cfb8a                                                     ; fea4: 20 8a fb     ..
+    jsr wait_tenth_second                                             ; fea4: 20 8a fb     .. ; Wait for six field flybacks (a tenth of a second)
 ; $fea7 referenced 2 times by $feaa, $feaf
 cfea7:
     jsr scan_keyboard                                                 ; fea7: 20 71 fe     q. ; Scan the keyboard: if a key is pressed, carry is clear and Y is its ASCII code minus 32
     bcs cfea7                                                         ; feaa: b0 fb       ..
     jsr scan_keyboard                                                 ; feac: 20 71 fe     q. ; Scan the keyboard: if a key is pressed, carry is clear and Y is its ASCII code minus 32
     bcs cfea7                                                         ; feaf: b0 f6       ..
-    tya                                                               ; feb1: 98          .
-    ldx #$17                                                          ; feb2: a2 17       ..
-    jsr sub_cfec5                                                     ; feb4: 20 c5 fe     ..
+    tya                                                               ; feb1: 98          .  ; A=character
+    ldx #$17                                                          ; feb2: a2 17       .. ; X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
+    jsr find_control_code                                             ; feb4: 20 c5 fe     .. ; Find A in the table of control codes and keys at #FECB, from X down (X is its index)
 ; $feb7 referenced 1 time by $fd08
 cfeb7:
     lda wrch_control_code_handlers,x                                  ; feb7: bd e3 fe    ...
@@ -2771,9 +2793,17 @@ cfeb7:
 
 ; $fec4 referenced 1 time by $fec8
 loop_cfec4:
-    dex                                                               ; fec4: ca          .
+    dex                                                               ; fec4: ca          .  ; X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
+; ***************************************************************************************
+; Find A in the table of control codes and keys at #FECB, from X down (X is its index)
+; 
+; On Entry:
+;     A: character
+;     X: index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's
+;        keys)
+; ***************************************************************************************
 ; $fec5 referenced 2 times by $fd03, $feb4
-sub_cfec5:
+find_control_code:
     cmp wrch_control_codes,x                                          ; fec5: dd cb fe    ...
     bcc loop_cfec4                                                    ; fec8: 90 fa       ..
     rts                                                               ; feca: 60          `
@@ -2811,8 +2841,15 @@ rdch_key_handlers:
     .byte <rdch_letters                                               ; fef9: c6          .
     .byte <rdch_keys_59_to_63                                         ; fefa: c2          .
 
+; ***************************************************************************************
+; Send A to the printer if it's on (2 turns it on and 3 off; the character at #FE isn't
+; sent)
+; 
+; On Entry:
+;     A: character
+; ***************************************************************************************
 ; $fefb referenced 1 time by $fe52
-sub_cfefb:
+send_to_printer:
     pha                                                               ; fefb: 48          H
     cmp #2                                                            ; fefc: c9 02       ..
     beq cff27                                                         ; fefe: f0 27       .'
@@ -3168,7 +3205,7 @@ pydis_end:
 ;     lock_flag:                    4
 ;     nomon_flag:                   4
 ;     scan_keyboard:                4
-;     sub_cf876:                    4
+;     skip_input_buffer_spaces:     4
 ;     text_space_page:              4
 ;     wait_for_flyback:             4
 ;     cf048:                        3
@@ -3237,6 +3274,7 @@ pydis_end:
 ;     cff36:                        2
 ;     cff97:                        2
 ;     cos_command_table:            2
+;     find_control_code:            2
 ;     irqvec:                       2
 ;     l0056:                        2
 ;     l0061:                        2
@@ -3282,7 +3320,6 @@ pydis_end:
 ;     sub_cfcea:                    2
 ;     sub_cfdec:                    2
 ;     sub_cfe35:                    2
-;     sub_cfec5:                    2
 ;     via_register_a:               2
 ;     assembler_mode_masks_high:    1
 ;     assembler_mode_masks_low:     1
@@ -3374,7 +3411,6 @@ pydis_end:
 ;     cfc9c:                        1
 ;     cfcaf:                        1
 ;     cfd11:                        1
-;     cfd1a:                        1
 ;     cfd29:                        1
 ;     cfd33:                        1
 ;     cfd65:                        1
@@ -3383,7 +3419,6 @@ pydis_end:
 ;     cfdcf:                        1
 ;     cfe06:                        1
 ;     cfe08:                        1
-;     cfe60:                        1
 ;     cfe85:                        1
 ;     cfea4:                        1
 ;     cfeb7:                        1
@@ -3504,11 +3539,13 @@ pydis_end:
 ;     parsing_ptr_high:             1
 ;     plot_routines_high:           1
 ;     plot_routines_low:            1
+;     print_hex_digit:              1
 ;     print_space:                  1
 ;     pydis_start:                  1
 ;     rdch_at:                      1
 ;     rdcvec:                       1
 ;     rdrvec:                       1
+;     restore_xy_and_return:        1
 ;     return_1:                     1
 ;     return_10:                    1
 ;     return_11:                    1
@@ -3517,23 +3554,23 @@ pydis_end:
 ;     return_6:                     1
 ;     return_8:                     1
 ;     return_9:                     1
+;     send_to_printer:              1
 ;     shtvec:                       1
 ;     star_load:                    1
 ;     string_buffer:                1
 ;     strvec:                       1
 ;     sub_cf08e:                    1
 ;     sub_cf38e:                    1
-;     sub_cf80b:                    1
 ;     sub_cf87e:                    1
 ;     sub_cfb3b:                    1
 ;     sub_cfb81:                    1
-;     sub_cfb8a:                    1
 ;     sub_cfc23:                    1
 ;     sub_cfcda:                    1
 ;     sub_cfd13:                    1
 ;     sub_cfe3a:                    1
-;     sub_cfefb:                    1
 ;     via_ddra:                     1
+;     wait_tenth_second:            1
+;     wrch_bell:                    1
 ;     wrch_control_code_handlers:   1
 ;     wrch_control_codes:           1
 ;     wrcvec:                       1
@@ -3662,7 +3699,6 @@ pydis_end:
 ;     cfcdc
 ;     cfd0b
 ;     cfd11
-;     cfd1a
 ;     cfd29
 ;     cfd33
 ;     cfd42
@@ -3675,7 +3711,6 @@ pydis_end:
 ;     cfe08
 ;     cfe2c
 ;     cfe49
-;     cfe60
 ;     cfe85
 ;     cfe9a
 ;     cfea4
@@ -3889,10 +3924,8 @@ pydis_end:
 ;     sub_cf655
 ;     sub_cf678
 ;     sub_cf7ec
-;     sub_cf80b
 ;     sub_cf818
 ;     sub_cf84f
-;     sub_cf876
 ;     sub_cf87e
 ;     sub_cf893
 ;     sub_cf992
@@ -3902,7 +3935,6 @@ pydis_end:
 ;     sub_cfb3b
 ;     sub_cfb7a
 ;     sub_cfb81
-;     sub_cfb8a
 ;     sub_cfbc9
 ;     sub_cfbe2
 ;     sub_cfc23
@@ -3916,8 +3948,6 @@ pydis_end:
 ;     sub_cfdec
 ;     sub_cfe35
 ;     sub_cfe3a
-;     sub_cfec5
-;     sub_cfefb
 
 ; Stats:
 ;

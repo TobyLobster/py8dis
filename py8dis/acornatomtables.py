@@ -86,9 +86,16 @@ atom_kernel_routines = [
     (0xf7fa, "print_hex_space", "Print A in hex, and a space", {'a': "byte to print"}),
     (0xf7fd, "print_space", "Print a space", None),
     (0xf802, "print_hex", "Print A in hex", {'a': "byte to print"}),
+    (0xf80b, "print_hex_digit", "Print the low four bits of A as a hex digit", {'a': "value to print (bits 0-3)"}),
+    (0xf876, "skip_input_buffer_spaces", "Skip spaces in the input buffer from #0100+Y (A is the next character)", {'y': "offset in the input buffer"}),
+    (0xfb8a, "wait_tenth_second", "Wait for six field flybacks (a tenth of a second)", None),
+    (0xfd1a, "wrch_bell", "Sound the bell (as OSWRCH does for character 7)", None),
+    (0xfe60, "restore_xy_and_return", "Restore X and Y from #E4 and #E5, pull the flags and return (as OSWRCH and OSRDCH end)", None),
     (0xfe66, "wait_for_flyback", "Wait for the start of the next field flyback", None),
     (0xfe6b, "wait_for_flyback_or_now", "Wait for the field flyback, unless it's under way", None),
     (0xfe71, "scan_keyboard", "Scan the keyboard: if a key is pressed, carry is clear and Y is its ASCII code minus 32", None),
+    (0xfec5, "find_control_code", "Find A in the table of control codes and keys at #FECB, from X down (X is its index)", {'a': "character", 'x': "index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)"}),
+    (0xfefb, "send_to_printer", "Send A to the printer if it's on (2 turns it on and 3 off; the character at #FE isn't sent)", {'a': "character"}),
     # The kernel's own handlers, the vectors' defaults (copied from #FF9A on
     # reset), which code that replaces one often passes calls on to
     (0xf8ef, "kernel_cli", "Run the command in the input buffer (the kernel's OSCLI, COMVEC's default)", None),

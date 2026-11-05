@@ -138,27 +138,27 @@ ppi_port_b  = $b001
 ppi_port_c  = $b002
 
 ; Kernel ROM ($f000-$ffca)
-print_hex           = $f802
-lf80b               = $f80b
-lf876               = $f876
-lfb8a               = $fb8a
-lfd1a               = $fd1a
-rdch_lock           = $fd9a
-rdch_delete         = $fdc0
-rdch_keys_59_to_63  = $fdc2
-rdch_letters        = $fdc6
-rdch_at             = $fdc8
-rdch_keys_1_to_4    = $fdd2
-rdch_keys_28_to_31  = $fdd6
-rdch_digits         = $fdd8
-rdch_space_or_zero  = $fddf
-rdch_keys_8_to_13   = $fde2
-kernel_wrch         = $fe52
-lfe60               = $fe60
-scan_keyboard       = $fe71
-kernel_rdch         = $fe94
-lfec5               = $fec5
-lfefb               = $fefb
+print_hex               = $f802
+print_hex_digit         = $f80b
+skip_input_buffer_spaces = $f876
+wait_tenth_second       = $fb8a
+wrch_bell               = $fd1a
+rdch_lock               = $fd9a
+rdch_delete             = $fdc0
+rdch_keys_59_to_63      = $fdc2
+rdch_letters            = $fdc6
+rdch_at                 = $fdc8
+rdch_keys_1_to_4        = $fdd2
+rdch_keys_28_to_31      = $fdd6
+rdch_digits             = $fdd8
+rdch_space_or_zero      = $fddf
+rdch_keys_8_to_13       = $fde2
+kernel_wrch             = $fe52
+restore_xy_and_return   = $fe60
+scan_keyboard           = $fe71
+kernel_rdch             = $fe94
+find_control_code       = $fec5
+send_to_printer         = $fefb
 
 ; OS entry points ($ffcb-$fff9)
 OSSHUT  = $ffcb
@@ -225,7 +225,7 @@ sub_ce041
     ldx #$40 ; '@'                                                    ; e041: a2 40       .@
 ; $e043 referenced 1 time by $e03f
 ce043
-    jsr lf876                                                         ; e043: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; e043: 20 76 f8     v.            ; Skip spaces in the input buffer from #0100+Y (A is the next character)
     stx l009a                                                         ; e046: 86 9a       ..
     cmp #$22 ; '"'                                                    ; e048: c9 22       ."
     beq ce08f                                                         ; e04a: f0 43       .C
@@ -315,7 +315,7 @@ sub_ce0b6
     sta basic_error_number,x                                          ; e0b8: 95 00       ..
     sta basic_line_number,x                                           ; e0ba: 95 01       ..
     sta basic_line_number+1,x                                         ; e0bc: 95 02       ..
-    jsr lf876                                                         ; e0be: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; e0be: 20 76 f8     v.            ; Skip spaces in the input buffer from #0100+Y (A is the next character)
 ; $e0c1 referenced 1 time by $e0e7
 ce0c1
     lda input_buffer,y                                                ; e0c1: b9 00 01    ...
@@ -565,14 +565,14 @@ loop_ce1e0
     jsr sub_ce0ec                                                     ; e1f9: 20 ec e0     ..
     lda l2103,y                                                       ; e1fc: b9 03 21    ..!
     jsr sub_ce0fb                                                     ; e1ff: 20 fb e0     ..
-    jsr lf80b                                                         ; e202: 20 0b f8     ..
+    jsr print_hex_digit                                               ; e202: 20 0b f8     ..            ; Print the low four bits of A as a hex digit
     lda l2102,y                                                       ; e205: b9 02 21    ..!            ; A=byte to print
     jsr print_hex                                                     ; e208: 20 02 f8     ..            ; Print A in hex
     lda l2101,y                                                       ; e20b: b9 01 21    ..!            ; A=byte to print
     jsr print_hex                                                     ; e20e: 20 02 f8     ..            ; Print A in hex
     jsr sub_ce0ec                                                     ; e211: 20 ec e0     ..
-    lda l2103,y                                                       ; e214: b9 03 21    ..!
-    jsr lf80b                                                         ; e217: 20 0b f8     ..
+    lda l2103,y                                                       ; e214: b9 03 21    ..!            ; A=value to print (bits 0-3)
+    jsr print_hex_digit                                               ; e217: 20 0b f8     ..            ; Print the low four bits of A as a hex digit
     lda l2104,y                                                       ; e21a: b9 04 21    ..!            ; A=byte to print
     jsr print_hex                                                     ; e21d: 20 02 f8     ..            ; Print A in hex
     jsr OSCRLF                                                        ; e220: 20 ed ff     ..            ; Write newline (characters 10 and 13)
@@ -613,8 +613,8 @@ ce248
     jsr print_inline_string                                           ; e250: 20 16 e0     ..
     !text " DRIVE "                                                   ; e253: 20 44 52...  DR
 
-    lda l00ee                                                         ; e25a: a5 ee       ..
-    jsr lf80b                                                         ; e25c: 20 0b f8     ..
+    lda l00ee                                                         ; e25a: a5 ee       ..             ; A=value to print (bits 0-3)
+    jsr print_hex_digit                                               ; e25c: 20 0b f8     ..            ; Print the low four bits of A as a hex digit
     jsr print_inline_string                                           ; e25f: 20 16 e0     ..
     !text " QUAL "                                                    ; e262: 20 51 55...  QU
 
@@ -860,8 +860,8 @@ dos_cli
     cld                                                               ; e3e7: d8          .
 ; $e3e8 referenced 1 time by $e407
 loop_ce3e8
-    ldy #0                                                            ; e3e8: a0 00       ..
-    jsr lf876                                                         ; e3ea: 20 76 f8     v.
+    ldy #0                                                            ; e3e8: a0 00       ..             ; Y=offset in the input buffer
+    jsr skip_input_buffer_spaces                                      ; e3ea: 20 76 f8     v.            ; Skip spaces in the input buffer from #0100+Y (A is the next character)
     dey                                                               ; e3ed: 88          .
 ; $e3ee referenced 1 time by $e3f8
 loop_ce3ee
@@ -906,7 +906,7 @@ star_delete
 
 ; $e42a referenced 1 time by $e231
 star_drive
-    jsr lf876                                                         ; e42a: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; e42a: 20 76 f8     v.            ; Skip spaces in the input buffer from #0100+Y (A is the next character)
     cmp #$0d                                                          ; e42d: c9 0d       ..
     beq return_5                                                      ; e42f: f0 1d       ..
     iny                                                               ; e431: c8          .
@@ -1198,7 +1198,7 @@ sub_ce5c9
     jsr sub_ce041                                                     ; e5c9: 20 41 e0     A.
 ; $e5cc referenced 6 times by $e433, $e45b, $e569, $e5b4, $e60a, $e6bc
 sub_ce5cc
-    jsr lf876                                                         ; e5cc: 20 76 f8     v.
+    jsr skip_input_buffer_spaces                                      ; e5cc: 20 76 f8     v.            ; Skip spaces in the input buffer from #0100+Y (A is the next character)
     cmp #$0d                                                          ; e5cf: c9 0d       ..
     beq return_7                                                      ; e5d1: f0 f5       ..
 ; $e5d3 referenced 2 times by $e5ec, $e5f3
@@ -2481,16 +2481,16 @@ ced28
     bcc ced28                                                         ; ed30: 90 f6       ..
 ; $ed32 referenced 1 time by $ed2b
 ced32
-    jsr lfb8a                                                         ; ed32: 20 8a fb     ..
+    jsr wait_tenth_second                                             ; ed32: 20 8a fb     ..            ; Wait for six field flybacks (a tenth of a second)
 ; $ed35 referenced 2 times by $ed38, $ed3d
 ced35
     jsr scan_keyboard                                                 ; ed35: 20 71 fe     q.            ; Scan the keyboard: if a key is pressed, carry is clear and Y is its ASCII code minus 32
     bcs ced35                                                         ; ed38: b0 fb       ..
     jsr scan_keyboard                                                 ; ed3a: 20 71 fe     q.            ; Scan the keyboard: if a key is pressed, carry is clear and Y is its ASCII code minus 32
     bcs ced35                                                         ; ed3d: b0 f6       ..
-    tya                                                               ; ed3f: 98          .
-    ldx #$17                                                          ; ed40: a2 17       ..
-    jsr lfec5                                                         ; ed42: 20 c5 fe     ..
+    tya                                                               ; ed3f: 98          .              ; A=character
+    ldx #$17                                                          ; ed40: a2 17       ..             ; X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
+    jsr find_control_code                                             ; ed42: 20 c5 fe     ..            ; Find A in the table of control codes and keys at #FECB, from X down (X is its index)
     lda vdu_rdch_handlers_low-11,x                                    ; ed45: bd 48 ed    .H.
 ; $ed48 referenced 1 time by $ed45
     sta l00e2                                                         ; ed48: 85 e2       ..
@@ -2549,7 +2549,7 @@ ced7b
 vdu_rdch_copy
     ldy #0                                                            ; ed81: a0 00       ..
     lda (l00d2),y                                                     ; ed83: b1 d2       ..
-    jmp lfe60                                                         ; ed85: 4c 60 fe    L`.
+    jmp restore_xy_and_return                                         ; ed85: 4c 60 fe    L`.            ; Restore X and Y from #E4 and #E5, pull the flags and return (as OSWRCH and OSRDCH end)
 
 vdu_rdch_cursor
     and #5                                                            ; ed88: 29 05       ).
@@ -2559,7 +2559,7 @@ vdu_rdch_cursor
     jmp ced28                                                         ; ed91: 4c 28 ed    L(.
 
 vdu_wrch
-    jsr lfefb                                                         ; ed94: 20 fb fe     ..
+    jsr send_to_printer                                               ; ed94: 20 fb fe     ..            ; Send A to the printer if it's on (2 turns it on and 3 off; the character at #FE isn't sent)
 ; $ed97 referenced 1 time by $ed7b
 sub_ced97
     php                                                               ; ed97: 08          .
@@ -2797,7 +2797,7 @@ loop_ceec3
 ; $eeda referenced 1 time by $ee7d
 ceeda
     stx l00d2                                                         ; eeda: 86 d2       ..
-    jsr lfd1a                                                         ; eedc: 20 1a fd     ..
+    jsr wrch_bell                                                     ; eedc: 20 1a fd     ..            ; Sound the bell (as OSWRCH does for character 7)
     ldx l00d2                                                         ; eedf: a6 d2       ..
     rts                                                               ; eee1: 60          `
 
@@ -3233,7 +3233,7 @@ pydis_end
 ;     l220d:                          5
 ;     l2215:                          5
 ;     l2216:                          5
-;     lf876:                          5
+;     skip_input_buffer_spaces:       5
 ;     sub_ce041:                      5
 ;     sub_ce15d:                      5
 ;     OSCRLF:                         4
@@ -3286,9 +3286,9 @@ pydis_end
 ;     l221d:                          3
 ;     l221f:                          3
 ;     le95a:                          3
-;     lf80b:                          3
 ;     nmi_buffer_address:             3
 ;     print_disk_and_inline_string:   3
+;     print_hex_digit:                3
 ;     scan_keyboard:                  3
 ;     sub_ce068:                      3
 ;     sub_ce149:                      3
@@ -3480,6 +3480,7 @@ pydis_end
 ;     dos_bput:                       1
 ;     drive_control_bits:             1
 ;     fdc_send_commands:              1
+;     find_control_code:              1
 ;     irq_save_a:                     1
 ;     l009f:                          1
 ;     l00a4:                          1
@@ -3500,11 +3501,6 @@ pydis_end
 ;     le6f9:                          1
 ;     le6fa:                          1
 ;     le98b:                          1
-;     lfb8a:                          1
-;     lfd1a:                          1
-;     lfe60:                          1
-;     lfec5:                          1
-;     lfefb:                          1
 ;     lodvec:                         1
 ;     loop_ce01e:                     1
 ;     loop_ce04c:                     1
@@ -3574,6 +3570,7 @@ pydis_end
 ;     ppi_port_b:                     1
 ;     ppi_port_c:                     1
 ;     read_catalogue:                 1
+;     restore_xy_and_return:          1
 ;     return_1:                       1
 ;     return_10:                      1
 ;     return_11:                      1
@@ -3584,6 +3581,7 @@ pydis_end
 ;     return_6:                       1
 ;     return_7:                       1
 ;     return_8:                       1
+;     send_to_printer:                1
 ;     star_drive:                     1
 ;     string_buffer:                  1
 ;     sub_ce075:                      1
@@ -3612,6 +3610,8 @@ pydis_end
 ;     sub_cedb4:                      1
 ;     vdu_rdch:                       1
 ;     vdu_vectors:                    1
+;     wait_tenth_second:              1
+;     wrch_bell:                      1
 
 ; Automatically generated labels:
 ;     c00f5
@@ -3843,13 +3843,6 @@ pydis_end
 ;     le6fa
 ;     le95a
 ;     le98b
-;     lf80b
-;     lf876
-;     lfb8a
-;     lfd1a
-;     lfe60
-;     lfec5
-;     lfefb
 ;     loop_ce01e
 ;     loop_ce04c
 ;     loop_ce06a
