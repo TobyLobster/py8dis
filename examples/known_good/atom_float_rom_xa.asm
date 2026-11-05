@@ -219,8 +219,8 @@ pydis_start
     .word $55aa                                                       // d000: aa 55       .U
     // Entry address for unknown statement
     .word entry_point_unrecognised_statement                          // d002: 0e d1       ..
-    // Entry address for unknown command
-    .word entry_point_unrecognised_command                            // d004: 5e d1       ^.
+    // Entry address for unknown function
+    .word entry_point_unrecognised_function                           // d004: 5e d1       ^.
 keyword_table
     .asc "("                                                          // d006: 28          (
     .byt >open_bracket_function                                       // d007: d0          .
@@ -497,7 +497,9 @@ found_end_of_group
     // We found $ff in the table. This is an error.
     brk                                                               // d15d: 00          .
 
-entry_point_unrecognised_command
+entry_point_unrecognised_function
+    // An operand BASIC doesn't know, in an integer expression: evaluate it in floating
+    // point, and push it onto the workspace stack as an integer
     sty parsing_ptr_offset                                            // d15e: 84 03       ..
     // carry is set at this point
     jsr evaluate_operand_but_flt_is_error_if_carry_set                // d160: 20 ec d0     ..
@@ -3098,8 +3100,8 @@ pydis_end
 #if (((val_function) >> 8) & $ff) <> $d2
 #error Assertion failed: >val_function == $d2
 #endif
-#if (entry_point_unrecognised_command) <> $d15e
-#error Assertion failed: entry_point_unrecognised_command == $d15e
+#if (entry_point_unrecognised_function) <> $d15e
+#error Assertion failed: entry_point_unrecognised_function == $d15e
 #endif
 #if (entry_point_unrecognised_statement) <> $d10e
 #error Assertion failed: entry_point_unrecognised_statement == $d10e

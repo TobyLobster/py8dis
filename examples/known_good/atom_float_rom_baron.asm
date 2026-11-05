@@ -223,8 +223,8 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
     equw &55aa                                                        ; d000: aa 55       .U
     ; Entry address for unknown statement
     equw entry_point_unrecognised_statement                           ; d002: 0e d1       ..
-    ; Entry address for unknown command
-    equw entry_point_unrecognised_command                             ; d004: 5e d1       ^.
+    ; Entry address for unknown function
+    equw entry_point_unrecognised_function                            ; d004: 5e d1       ^.
 .keyword_table
     equs "("                                                          ; d006: 28          (
     equb >open_bracket_function                                       ; d007: d0          .
@@ -501,7 +501,9 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
     ; We found $ff in the table. This is an error.
     brk                                                               ; d15d: 00          .
 
-.entry_point_unrecognised_command
+.entry_point_unrecognised_function
+    ; An operand BASIC doesn't know, in an integer expression: evaluate it in floating
+    ; point, and push it onto the workspace stack as an integer
     sty parsing_ptr_offset                                            ; d15e: 84 03       ..
     ; carry is set at this point
     jsr evaluate_operand_but_flt_is_error_if_carry_set                ; d160: 20 ec d0     ..
@@ -2844,7 +2846,7 @@ error3 = dummy+1
     assert (>tan_function) = &da
     assert (>unary_plus_operator) = &d1
     assert (>val_function) = &d2
-    assert (entry_point_unrecognised_command) = &d15e
+    assert (entry_point_unrecognised_function) = &d15e
     assert (entry_point_unrecognised_statement) = &d10e
     assert (float8A_man1 - 1) = &59
     assert (float8A_sign - 1) = &56
