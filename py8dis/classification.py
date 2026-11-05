@@ -100,7 +100,6 @@ prepare_expression_checks()), and also adds an assertion to the output for
 the assembler to check (see check_expr()).
 """
 
-import collections
 import config
 import copy
 import disassembly
@@ -111,10 +110,7 @@ import memorymanager
 import movemanager
 import output
 import session
-import pprint
 import stats
-import trace
-import traceback
 import utils
 from memorymanager import BinaryAddr, RuntimeAddr
 from format import Format

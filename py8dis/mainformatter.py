@@ -27,17 +27,14 @@ use it, as do comment.py and classification.py.
   line.
 """
 
-import classification
 import config
-import disassembly
 import movemanager
 import re
 import textwrap
-import trace
 import utils
 import memorymanager
 import session
-from memorymanager import BinaryAddr, RuntimeAddr
+from memorymanager import BinaryAddr
 from align import Align
 
 def add_hex_dump(binary_addr, length, cycles_description, s, encoding=None):

@@ -24,25 +24,18 @@ move ID says which move a runtime address is in. Tracing works with binary
 addresses, and labels are at runtime addresses.
 """
 
-import assembler
 import classification
 import collections
 import copy
 import config
 import disassembly
-import labelmanager
-import mainformatter
 import memorymanager
 import movemanager
 import session
-import re
-import trace
 import utils
 from memorymanager import BinaryLocation
 from comment import OverlappingInstruction
 from align import Align
-from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
-from memorymanager import BinaryAddr, RuntimeAddr
 
 
 

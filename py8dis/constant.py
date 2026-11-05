@@ -9,11 +9,9 @@ given with expr() (see classification.py, which also checks them). Unlike a
 label, a constant isn't put into any instruction by itself.
 """
 
-from typing import Optional
 from align import Align
 from format import Format
 
-import utils
 
 class Constant:
     """A class representing a constant with its value, name, comment and alignment.

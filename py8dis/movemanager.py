@@ -45,7 +45,6 @@ runtime address.
 """
 
 import collections
-import contextlib
 
 import config
 import utils

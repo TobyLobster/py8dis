@@ -36,7 +36,6 @@ baron.py's Baron class is derived from this one.
 """
 
 import re
-import sys
 
 import assembler
 import config

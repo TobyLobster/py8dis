@@ -24,7 +24,6 @@ made, name_labels() names any labels the text uses (see
 disassembly.fix_label_names()).
 """
 
-import utils
 import config
 from align import Align
 

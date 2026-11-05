@@ -36,7 +36,6 @@ sjasmplus.py's Sjasmplus class is derived from this one.
 """
 
 import re
-import sys
 
 import config
 import expression

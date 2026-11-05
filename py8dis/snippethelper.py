@@ -33,12 +33,9 @@ functions; snippets6502.py and cpu6502.py import everything here.
 import classification
 import movemanager
 import session
-import trace
-import utils
-import labelmanager
 from align import Align
 import disassembly
-from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
+from maker import make_hex, make_lo, make_hi, make_and, make_subtract
 from memorymanager import BinaryLocation, BinaryAddr, RuntimeAddr
 
 class SnippetRejected(Exception):

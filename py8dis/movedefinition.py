@@ -11,7 +11,6 @@ The first, the base move, covers the whole of memory, with each runtime
 address the same as its binary address; move() adds the others.
 """
 
-import memorymanager
 from memorymanager import BinaryAddr, RuntimeAddr
 
 class MoveDefinition:

@@ -26,8 +26,7 @@ assemblers that need to be told (see commands._select_cpu()).
 """
 
 from cpu6502 import *
-from memorymanager import BinaryAddr, RuntimeAddr
-import output
+from memorymanager import RuntimeAddr
 import session
 
 class Cpu65C02(Cpu6502):

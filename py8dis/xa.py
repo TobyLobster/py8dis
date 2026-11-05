@@ -36,12 +36,9 @@ What py8dis writes for it:
 - A data byte or word can't be negative, so sint() is written unsigned.
 """
 
-import sys
 
 import config
 import expression
-import disassembly
-import movemanager
 import utils
 import assembler
 

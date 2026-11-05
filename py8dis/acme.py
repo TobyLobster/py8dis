@@ -33,7 +33,6 @@ What py8dis writes for it:
   that a character literal is in that encoding (see conversion_table()).
 """
 
-import sys
 
 import config
 import session
@@ -41,7 +40,6 @@ import utils
 import assembler
 import textencoding
 import cpu6510
-import traceback
 
 class Acme(assembler.Assembler):
     """This class encapsulates acme-specific syntax and features. (See

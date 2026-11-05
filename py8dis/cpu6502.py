@@ -54,7 +54,6 @@ import config
 import disassembly
 import effectpattern
 import labelmanager
-import optionallabel
 import mainformatter
 import output
 import memorymanager
@@ -62,14 +61,11 @@ import movemanager
 import session
 import re
 import cpu
-import trace
 import utils
-import snippets6502
 import textencoding
-import sys
 from align import Align
 from binaryaddrtype import BinaryAddrType
-from memorymanager import RuntimeAddr, BinaryAddr, BinaryLocation
+from memorymanager import BinaryAddr
 from snippethelper import *
 
 

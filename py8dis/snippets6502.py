@@ -52,11 +52,9 @@ import disassembly
 import effectpattern
 import snippet6502
 import utils
-import labelmanager
 import session
-import sys
 from align import Align
-from maker import make_hex, make_lo, make_hi, make_or, make_and, make_eor, make_xor, make_add, make_subtract, make_multiply, make_divide, make_modulo
+from maker import make_add
 from snippethelper import *
 
 # Opcodes the snippets' functions look for in a match's bytes, e.g. to tell
