@@ -198,6 +198,7 @@ TESTS = [
     # 6502 code: real programs
     ("os12",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "MOS 1.20"),
     ("atom_kernel",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's kernel ROM, with acorn.atom()"),
+    ("atom_basic_rom",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's BASIC ROM, with acorn.atom(), decoding its keyword tables"),
     ("basic4",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "BASIC 4"),
     ("dfs226",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS 2.26"),
     ("dfs226b",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS with an artificially added move() just for testing"),
