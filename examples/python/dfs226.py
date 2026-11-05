@@ -240,10 +240,14 @@ expr_label(0xd22, "nmi_lda_immXXX4+1")
 comment(0xd08, 'The operand of this "beq" is modified at runtime.')
 label(0xd08, "nmi_beq")
 expr_label(0xd09, "nmi_beq+1")
+# (The offsets nmi_beq is patched with: two in the ROM's own code, and two
+# in the NMI handler itself, the operands of nmi_lda_immXXX4 and
+# nmi_lda_immXXX3, given by their addresses there rather than in the ROM,
+# &8ff4 and &901e)
 patched_branch("nmi_beq", 0x8e49, "nmi_XXX1")
 patched_branch("nmi_beq", 0x8eb0, "nmi_XXX1")
-patched_branch("nmi_beq", 0x8ff4, "nmi_XXX1")
-patched_branch("nmi_beq", 0x901e, "nmi_XXX2")
+patched_branch("nmi_beq", 0xd22, "nmi_XXX1")
+patched_branch("nmi_beq", 0xd4c, "nmi_XXX2")
 constant(0x40, "opcode_rti")
 expr(0x8e8e, "opcode_rti")
 comment(0xd04, "The operand of this and is modified at runtime.")

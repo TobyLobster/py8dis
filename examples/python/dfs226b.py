@@ -244,12 +244,12 @@ with move(0x8000, 0x2000, 0x4000):
         comment(0xd08, 'The operand of this "beq" is modified at runtime.')
         label(0xd08, "nmi_beq")
         expr_label(0xd09, "nmi_beq+1")
-        # (These offsets' addresses are given as their binary addresses, &6000
-        # below their addresses in the ROM, unlike those after this 'with')
-        patched_branch("nmi_beq", 0x8e49-0x6000, "nmi_XXX1")
-        patched_branch("nmi_beq", 0x8eb0-0x6000, "nmi_XXX1")
-        patched_branch("nmi_beq", 0x8ff4-0x6000, "nmi_XXX1")
-        patched_branch("nmi_beq", 0x901e-0x6000, "nmi_XXX2")
+        # (Two of the offsets nmi_beq is patched with are in the NMI handler
+        # itself: the operands of nmi_lda_immXXX4 and nmi_lda_immXXX3, which
+        # are &8ff4 and &901e in the ROM. The other two, in the ROM's own
+        # code, are after this 'with'.)
+        patched_branch("nmi_beq", 0xd22, "nmi_XXX1")
+        patched_branch("nmi_beq", 0xd4c, "nmi_XXX2")
         constant(0x40, "opcode_rti")
         expr(0x8e8e, "opcode_rti")
         comment(0xd04, "The operand of this and is modified at runtime.")
@@ -262,6 +262,11 @@ with move(0x8000, 0x2000, 0x4000):
         comment(0xd18, "This instruction is patched at runtime to toggle between cmp #/bcs.")
         entry(0xd18, "nmi_cmp_imm_or_bcs")
         expr_label(0xd19, "nmi_cmp_imm_or_bcs+1")
+    # (The other offsets nmi_beq is patched with, in the ROM's own code: the
+    # branch's targets are in the NMI handler's move, the only one at &0D00
+    # so far)
+    patched_branch("nmi_beq", 0x8e49, "nmi_XXX1")
+    patched_branch("nmi_beq", 0x8eb0, "nmi_XXX1")
     constant(0xb0, "opcode_bcs")
     expr(0x9056, "opcode_bcs")
     comment(0xd18+2+6,
