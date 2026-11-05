@@ -181,4 +181,8 @@ It classifies and names the tables, and names every OS entry point and kernel ro
 
 `examples/python/atom_float_rom.py` disassembles the Atom's floating point ROM, loaded at #D000, with `acorn.atom()`. It names the ROM's workspace (the two floating point accumulators, `float8A` and `float8B`, and the temporary values at #03C5-#03D8) and its keyword table at #D006 (each keyword, then its routine's address, high byte first), traces each keyword's routine, and marks the series of coefficients that LOG, ATN and EXP evaluate, and the COLOUR statement's tables of plot routines.
 
+### The Atom's DOS ROM
+
+`examples/python/atom_dos_rom.py` disassembles the Atom's DOS ROM, loaded at #E000, with `acorn.atom()`. It traces the code from the vectors the DOS sets up (OSCLI, NMI, and LODVEC to SHTVEC), its command table (in the same format as the kernel's), and the vectors that *VDU, *EXEC and *SPOOL set. It names the 8271 disc controller's registers at #0A00 and the routines that drive it, and comments the commands the DOS sends to it when it starts. The NMI routines that move each byte to or from the 8271 run in zero page, at #F2, where one of two is copied, so they're disassembled there with two `move()`s to the same address; py8dis warns that the NMI handler's jump to #F2 isn't traced, since it can't tell which is there. *VDU's screen driver uses a 6845 CRTC at #0800, and the assembler source of its keyboard routine is left over at the end of the ROM.
+
 The tables are in `acornatom` (e.g. `acornatom.atom_vectors`, `acornatom.atom_control_codes`). See `examples/python/atom_test.py`.

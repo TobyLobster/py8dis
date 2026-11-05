@@ -200,6 +200,7 @@ TESTS = [
     ("atom_kernel",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's kernel ROM, with acorn.atom()"),
     ("atom_basic_rom",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's BASIC ROM, with acorn.atom(), decoding its keyword tables"),
     ("atom_float_rom",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's floating point ROM, with acorn.atom() (Toby Nelson's names and comments)"),
+    ("atom_dos_rom",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's DOS ROM, with acorn.atom(): its 8271 disc controller, and the NMI routines it copies to zero page (two moves to the same address)"),
     ("basic4",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "BASIC 4"),
     ("dfs226",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS 2.26"),
     ("dfs226b",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS with an artificially added move() just for testing"),
