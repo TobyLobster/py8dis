@@ -66,8 +66,13 @@ before_banks = &7fff
     ; Set the program counter to the next position in the binary file.
     org &2019 + (* - &8000)
 
+    equs "G", &80 + 'O'                                               ; 201d: 47 cf       G.
+    equb >start, <start                                               ; 201f: 20 00        .
 .pydis_end
 
+    assert &cf == &80 + 'O'
+    assert &00 == <start
+    assert &20 == >start
 
 save pydis_start, pydis_end
 
@@ -84,13 +89,13 @@ save pydis_start, pydis_end
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 29 bytes
-;     Code                     = 15 bytes (52%)
-;     Data                     = 14 bytes (48%)
+;     Total size (Code + Data) = 33 bytes
+;     Code                     = 15 bytes (45%)
+;     Data                     = 18 bytes (55%)
 ;
 ;     Number of instructions   = 7
-;     Number of data bytes     = 14 bytes
+;     Number of data bytes     = 16 bytes
 ;     Number of data words     = 0 bytes
-;     Number of string bytes   = 0 bytes
-;     Number of strings        = 0
+;     Number of string bytes   = 2 bytes
+;     Number of strings        = 1
 

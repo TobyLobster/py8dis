@@ -183,6 +183,13 @@ def _cpu(command):
         utils.die("{0}(): call load() first (it chooses the CPU)".format(command))
     return cpu
 
+def _binary_addr(binary_addr):
+    """A binary address given by the user (already checked), as a
+    BinaryAddr. It's converted from a plain int first, as it may be a
+    RuntimeAddr a command returned (e.g. stringhi()'s), which with no moves is
+    the same address."""
+    return memorymanager.BinaryAddr(int(binary_addr))
+
 # Reading the binary. (These check the user's address, then use the
 # memorymanager functions of the same name. Each stops with an error if
 # nothing is loaded at the bytes it reads. The _runtime ones convert the
@@ -192,19 +199,19 @@ def get_u8_binary(binary_addr):
     """Read a single byte of data from the specified binary address."""
     _check_address_range("get_u8_binary", binary_addr)
     _check_data_loaded("get_u8_binary", binary_addr, binary_addr, 1)
-    return memorymanager.get_u8_binary(memorymanager.BinaryAddr(binary_addr))
+    return memorymanager.get_u8_binary(_binary_addr(binary_addr))
 
 def get_u16_binary(binary_addr):
     """Read a 16 bit value (little endian) from the specified binary address."""
     _check_address_range("get_u16_binary", binary_addr)
     _check_data_loaded("get_u16_binary", binary_addr, binary_addr, 2)
-    return memorymanager.get_u16_binary(memorymanager.BinaryAddr(binary_addr))
+    return memorymanager.get_u16_binary(_binary_addr(binary_addr))
 
 def get_u16_be_binary(binary_addr):
     """Read a 16 bit value (big endian) from the specified binary address."""
     _check_address_range("get_u16_be_binary", binary_addr)
     _check_data_loaded("get_u16_be_binary", binary_addr, binary_addr, 2)
-    return memorymanager.get_u16_be_binary(memorymanager.BinaryAddr(binary_addr))
+    return memorymanager.get_u16_be_binary(_binary_addr(binary_addr))
 
 def get_u8_runtime(runtime_addr):
     """Read a single byte of data from the specified runtime address."""
@@ -432,7 +439,7 @@ def move(dest_runtime_addr, src_binary_addr, length):
             utils.die("{0}: no data is loaded at {1} ({2})".format(describe(), config.get_assembler().hex(i), memorymanager.describe_loaded_files()))
 
     dest_runtime_addr = memorymanager.RuntimeAddr(dest_runtime_addr)
-    src_binary_addr = memorymanager.BinaryAddr(src_binary_addr)
+    src_binary_addr = _binary_addr(src_binary_addr)
     return movemanager.add_move(dest_runtime_addr, src_binary_addr, length)
 
 def constant(value, name, comment=None, *, align=Align.INLINE, format=Format.DEFAULT):

@@ -48,8 +48,13 @@ section pydis, org = &2000, filename = "crash_fixes_baron"
     equb 5, 6, 7, 8                                                   ; 2019: 05 06 07... ... :8000[2]
     endsection
 
+    equs "G", &80 + 'O'                                               ; 201d: 47 cf       G.
+    equb >start, <start                                               ; 201f: 20 00        .
 .pydis_end
 
+    assert (&80 + 'O') = &cf
+    assert (<start) = &00
+    assert (>start) = &20
 
 endsection
 
@@ -66,12 +71,12 @@ endsection
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 29 bytes
-;     Code                     = 15 bytes (52%)
-;     Data                     = 14 bytes (48%)
+;     Total size (Code + Data) = 33 bytes
+;     Code                     = 15 bytes (45%)
+;     Data                     = 18 bytes (55%)
 ;
 ;     Number of instructions   = 7
-;     Number of data bytes     = 14 bytes
+;     Number of data bytes     = 16 bytes
 ;     Number of data words     = 0 bytes
-;     Number of string bytes   = 0 bytes
-;     Number of strings        = 0
+;     Number of string bytes   = 2 bytes
+;     Number of strings        = 1

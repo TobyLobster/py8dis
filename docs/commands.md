@@ -441,7 +441,7 @@ Turns off the comments and expressions py8dis adds by itself at the address (e.g
 | `get_u16_runtime(addr)`    | the word (low byte first) at a runtime address       |
 | `get_u16_be_runtime(addr)` | the word (high byte first) at a runtime address      |
 
-Without moves, binary and runtime addresses are the same. A hook is given runtime addresses, so it uses the `_runtime` versions.
+Without moves, binary and runtime addresses are the same, so the `_binary` versions also take an address a command returned (e.g. `stringhi()`'s, which is a runtime address). A hook is given runtime addresses, so it uses the `_runtime` versions.
 
 ## Making the disassembly
 
