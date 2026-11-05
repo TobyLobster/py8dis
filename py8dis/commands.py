@@ -1518,6 +1518,10 @@ def stringhi(runtime_addr, include_terminator_fn=None, *, encoding=None):
     it. The string also ends at the end of the loaded data, or at something
     already classified.
 
+    In the Apple II's high ASCII (the "apple" encoding), whose characters
+    all have bit 7 set, it's the other way round: the string ends at a
+    character with bit 7 clear (written as a number, if it's included).
+
     Returns the next available memory address after the string."""
 
     runtime_addr = _check_addr("stringhi", runtime_addr)
@@ -1530,7 +1534,8 @@ def stringhiz(runtime_addr, include_terminator_fn=None, *, encoding=None):
 
     As stringhi(), except that a zero ends the string too, and the
     terminator, if include_terminator_fn says it's part of the string, is
-    written as it is (not as e.g. $80+'O').
+    written as it is (not as e.g. $80+'O'). (In high ASCII, a zero has bit
+    7 clear, so it ends the string as for stringhi().)
 
     Returns the next available memory address after the string."""
 

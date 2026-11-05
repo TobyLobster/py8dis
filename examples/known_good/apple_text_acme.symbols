@@ -1,0 +1,12 @@
+al 000800 .pydis_start
+al 000800 .start
+al 000802 .loop_c0802
+al 00080D .c080d
+al 00081E .loop_c081e
+al 000835 .message
+al 00084D .dci_message
+al 000851 .line
+al 000856 .ascii_message
+al 000860 .found_by_itself
+al 000870 .pydis_end
+al 00FDED .cout

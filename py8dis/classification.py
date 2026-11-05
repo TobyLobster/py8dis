@@ -693,6 +693,17 @@ def string_binary(binary_addr, n, encoding=None):
         add_classification(binary_addr, String(n, encoding))
     return _runtime_addr_after(binary_addr + n)
 
+def _is_high_ascii(encoding):
+    """Whether the encoding's characters have bit 7 set (the Apple II's high
+    ASCII), so that for stringhi() and stringhiz() a byte with bit 7 clear
+    ends a string, rather than one with it set."""
+    return encoding is not None and encoding.ascii_xor == 0x80
+
+def _bit_7_ends_string(byte, encoding):
+    """Whether the byte's bit 7 ends a string for stringhi() and stringhiz():
+    if it's set, or, in high ASCII (see _is_high_ascii()), if it's clear."""
+    return ((byte & 0x80) != 0) != _is_high_ascii(encoding)
+
 def stringhi_binary(binary_addr, include_terminator_fn=None, encoding=None):
     """Classifies a part of the binary as a string up to the next bit 7 set character.
 
@@ -706,6 +717,10 @@ def stringhi_binary(binary_addr, include_terminator_fn=None, encoding=None):
     &80+'O' (see below). For the stringhi() command. Stops with an error
     if the start isn't loaded or is already classified.
 
+    In an encoding whose characters have bit 7 set (the Apple II's high
+    ASCII), it's the other way round: the string ends at a byte with bit 7
+    clear, and a terminator included is written as a number.
+
     Returns the next available memory address after the string (a runtime
     address)."""
 
@@ -715,8 +730,13 @@ def stringhi_binary(binary_addr, include_terminator_fn=None, encoding=None):
     while True:
         if not _is_loaded(binary_addr) or is_classified(binary_addr, 1):
             break
-        if memory_binary[binary_addr] & 0x80 != 0:
-            if include_terminator_fn is not None and include_terminator_fn(memory_binary[binary_addr]):
+        if _bit_7_ends_string(memory_binary[binary_addr], encoding):
+            if include_terminator_fn is None or not include_terminator_fn(memory_binary[binary_addr]):
+                pass
+            elif _is_high_ascii(encoding):
+                # (In high ASCII, the terminator is written as a number)
+                binary_addr += 1
+            else:
                 c = memory_binary[binary_addr] & 0x7f
                 # The terminator is shown as e.g. &80+'A' (in ASCII; a
                 # character literal is always ASCII)
@@ -749,7 +769,7 @@ def stringhiz_binary(binary_addr, include_terminator_fn=None, encoding=None):
     while True:
         if not _is_loaded(binary_addr) or is_classified(binary_addr, 1):
             break
-        if memory_binary[binary_addr] == 0 or (memory_binary[binary_addr] & 0x80) != 0:
+        if memory_binary[binary_addr] == 0 or _bit_7_ends_string(memory_binary[binary_addr], encoding):
             if include_terminator_fn is not None and include_terminator_fn(memory_binary[binary_addr]):
                 binary_addr += 1
             break

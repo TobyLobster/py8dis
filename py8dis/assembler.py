@@ -297,8 +297,16 @@ class Assembler:
         which case it's written as a number. Used for data given with char()
         (see mainformatter.char_formatter()), in the session's encoding (see
         config.set_text_encoding()). By default only ASCII has character
-        literals (see char_literal())."""
-        return self.char_literal(n) if encoding.name == "ascii" else None
+        literals (see char_literal()), and an encoding that's ASCII with bit
+        7 set (the Apple II's) has an ASCII one with bit 7 set: "'a' | $80"
+        (in the assembler's syntax)."""
+        if encoding.name == "ascii":
+            return self.char_literal(n)
+        if encoding.ascii_xor == 0x80 and encoding.char(n) is not None:
+            literal = self.char_literal(n & 0x7f)
+            if literal is not None:
+                return "%s %s %s" % (literal, utils.force_case(self.binary_operators().get("|") or "|"), self.hex2(0x80))
+        return None
 
     def text_directive(self, encoding):
         """The directive (with a space after it) for a string in the given
@@ -322,6 +330,15 @@ class Assembler:
         change nothing. disassembly.emit() calls it once, on the finished
         text, before sanitise_line(). By default the lines are unchanged."""
         return lines
+
+    def string_number(self, binary_addr, encoding):
+        """How the byte at binary_addr, in a string in the given encoding, is
+        written when it isn't a character in the string's quotes: by
+        default, as other data (see classification.get_constant8()), e.g.
+        '$0d', or a constant's name. (acme's high ASCII strings XOR it, see
+        acme.py.)"""
+        import classification
+        return classification.get_constant8(binary_addr)
 
     def text_chr(self, n, encoding):
         """How the byte n is written inside the double quotes of a string in

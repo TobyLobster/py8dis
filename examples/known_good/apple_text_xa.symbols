@@ -1,0 +1,12 @@
+comadd 800,pydis_start
+comadd 800,start
+comadd 802,loop_c0802
+comadd 80d,c080d
+comadd 81e,loop_c081e
+comadd 835,message
+comadd 84d,dci_message
+comadd 851,line
+comadd 856,ascii_message
+comadd 860,found_by_itself
+comadd 870,pydis_end
+comadd fded,cout

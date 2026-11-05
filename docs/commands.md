@@ -426,6 +426,8 @@ Strings end in different ways, so there's a command for each. Each marks the str
 
 For `stringhi()`, the character with bit 7 set can be the last character of the string (e.g. "HELLO" with the O's bit 7 set, written as `"HELL", &80+'O'`) or something else that follows it. `include_terminator_fn` is a function that's given that byte and says whether it's part of the string; by default it isn't, and the string ends before it.
 
+In the Apple II's high ASCII (the `"apple"` encoding), where every character has bit 7 set, `stringhi()` and `stringhiz()` work the other way round: the string ends at a byte with bit 7 clear (e.g. "DONE" with the E's bit 7 clear, as Merlin's `DCI` writes it), which is written as a number if it's included.
+
 Each also takes `encoding=`, e.g. `stringz(addr, encoding="screen")`, for a string in another text encoding than the session's (see [text-encodings.md](text-encodings.md)).
 
 ### split_classification

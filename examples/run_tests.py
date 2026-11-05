@@ -176,6 +176,7 @@ TESTS = [
     ("apple_applesingle_test",   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Apple II AppleSingle file loaded with load_apple_file(), which reassembles to the whole file"),
     ("apple_sys_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a ProDOS SYS file loaded with load_apple_file(), its name giving its type and aux type"),
     ("apple_dos33_test",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Apple II DOS 3.3 binary file loaded with load_dos33_binary(), which reassembles to the whole file"),
+    ("apple_text",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Apple II's high ASCII text encoding: strings ending in various ways, character literals, and a string found by autostring"),
     ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loading parts of a file with load(..., offset=..., length=...)"),
     ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
     ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "PETSCII and screen code strings, with config.set_text_encoding()"),
@@ -228,7 +229,7 @@ TESTS = [
 # made with beebasm, Baron, 64tass, ca65 or sjasmplus is checked against the
 # labels that assembler reports, see run_test(), but these show any change
 # to the outputs themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "atom_test", "apple_applesingle_test", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "fixes_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "atom_test", "apple_applesingle_test", "apple_text", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "fixes_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
 
 # The symbol file format made for each assembler's tests (py8dis's
 # --symbols-format), so that each format is tested (see py8dis/symbols.py).

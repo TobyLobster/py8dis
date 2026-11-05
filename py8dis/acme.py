@@ -31,6 +31,8 @@ What py8dis writes for it:
   the session's text encoding is one of these, and the output has character
   literals, it starts with a conversion table ('!ct pet' or '!ct scr'), so
   that a character literal is in that encoding (see conversion_table()).
+  Strings in the Apple II's high ASCII are ASCII in an '!xor $80' block, so
+  the numbers in them are XORed too (see string_number()).
 """
 
 
@@ -167,7 +169,7 @@ class Acme(assembler.Assembler):
         # (Only if some data's formatter is char(): see mainformatter.py)
         if not any(formatter is mainformatter.char_formatter for formatter in session.current().disassembly.format_hint.values()):
             return None
-        return {"petscii": "pet", "screen": "scr"}[name]
+        return {"petscii": "pet", "screen": "scr"}.get(name)
 
     def disassembly_start(self):
         """Preamble to be output at the start of the disassembly: '!cpu
@@ -323,7 +325,34 @@ class Acme(assembler.Assembler):
             return utils.force_case("!pet ")
         if encoding.name == "screen":
             return utils.force_case("!scr ")
+        # The Apple II's high ASCII is ASCII in an '!xor $80' block (see
+        # text_encoding_lines())
+        if encoding.ascii_xor is not None:
+            return self.string_prefix()
         return super().text_directive(encoding)
+
+    def text_encoding_lines(self, encoding):
+        """For a string in an encoding that's ASCII XORed with a value (the
+        Apple II's high ASCII), an '!xor' block around it: '!xor $80 {' and
+        '}'."""
+        if encoding.ascii_xor is None:
+            return [], []
+        indent = utils.make_indent(1)
+        return [indent + utils.force_case("!xor ") + self.hex2(encoding.ascii_xor) + " {"], [indent + "}"]
+
+    def string_number(self, binary_addr, encoding):
+        """In an '!xor' block (see text_encoding_lines()), a number is XORed
+        too, so it's written XORed with the block's value (e.g. $0d for $8d,
+        a CR with bit 7 set), and an expression given for the byte is
+        written as '(expression) XOR $80'. Otherwise as the base class."""
+        if encoding.ascii_xor is None:
+            return super().string_number(binary_addr, encoding)
+        import classification
+        import mainformatter
+        if binary_addr in session.current().classifications.expressions:
+            return "(%s) %s %s" % (classification.get_constant8(binary_addr), utils.force_case("XOR"), self.hex2(encoding.ascii_xor))
+        n = session.current().memory.binary[binary_addr] ^ encoding.ascii_xor
+        return mainformatter.constant(binary_addr, n, 8)
 
     def text_chr(self, n, encoding):
         """The encoding's character for the byte, with a backslash doubled

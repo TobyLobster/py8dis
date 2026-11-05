@@ -227,6 +227,9 @@ def with_assertions_6502():
 
 # "Hello", '"', 13 in PETSCII (shifted H), and "@ab[" in screen codes
 PETSCII_HELLO = [0xc8, 0x45, 0x4c, 0x4c, 0x4f, 0x22, 0x0d]
+# "Hi!", a double quote, then a CR, in the Apple II's high ASCII (with bit 7
+# set)
+APPLE_HI = [0xc8, 0xe9, 0xa1, 0xa2, 0x8d]
 SCREEN_TEXT = [0x00, 0x01, 0x02, 0x1b]
 
 def make_tests():
@@ -331,6 +334,8 @@ def make_tests():
          ["beebasm", "baron"], text_string(PETSCII_HELLO * 2, "petscii", "petscii")),
         ("byte data with PETSCII the session's encoding",
          ASSEMBLERS_6502, data_with_text_encoding("petscii")),
+        ("high ASCII string *",
+         ASSEMBLERS_6502, text_string(APPLE_HI, "apple", "apple")),
         # Blank lines, comments and constants
         ("blank",
          ASSEMBLERS_6502, lambda: output.Blank()),
@@ -1057,6 +1062,51 @@ EXPECTED = {
     ],
     "byte data with PETSCII the session's encoding, ca65": [
         '    .byte $48, $69, $21, $0d                                          ; 2010: 48 69 21... h.!',
+    ],
+    # The Apple II's high ASCII (ASCII with bit 7 set). acme writes it as
+    # ASCII in an '!xor $80' block, so the numbers in it are XORed too ($0d
+    # for $8d); 64tass and ca65 as text in the session's encoding (defined
+    # at the start of the output); the others as bytes, with the text in a
+    # comment.
+    'high ASCII string, acme': [
+        '    !xor $80 {',
+        '    !text "Hi!", \'"\', $0d                                             ; 2010: c8 e9 a1... Hi!',
+        '    }',
+    ],
+    'high ASCII string, acme, upper case': [
+        '    !XOR $80 {',
+        '    !TEXT "Hi!", \'"\', $0D                                             ; 2010: C8 E9 A1... Hi!',
+        '    }',
+    ],
+    'high ASCII string, beebasm': [
+        '    equb &c8, &e9, &a1, &a2, &8d ; apple "Hi!", &a2, &8d              ; 2010: c8 e9 a1... Hi!',
+    ],
+    'high ASCII string, beebasm, upper case': [
+        '    EQUB &C8, &E9, &A1, &A2, &8D ; apple "Hi!", &A2, &8D              ; 2010: C8 E9 A1... Hi!',
+    ],
+    'high ASCII string, baron': [
+        '    equb &c8, &e9, &a1, &a2, &8d ; apple "Hi!", &a2, &8d              ; 2010: c8 e9 a1... Hi!',
+    ],
+    'high ASCII string, baron, upper case': [
+        '    EQUB &C8, &E9, &A1, &A2, &8D ; apple "Hi!", &A2, &8D              ; 2010: C8 E9 A1... Hi!',
+    ],
+    'high ASCII string, xa': [
+        '    .byt $c8, $e9, $a1, $a2, $8d // apple "Hi!", $a2, $8d             // 2010: c8 e9 a1... Hi!',
+    ],
+    'high ASCII string, xa, upper case': [
+        '    .BYT $C8, $E9, $A1, $A2, $8D // apple "Hi!", $A2, $8D             // 2010: C8 E9 A1... Hi!',
+    ],
+    'high ASCII string, 64tass': [
+        '    .text "Hi!""", $8d                                                ; 2010: c8 e9 a1... Hi!',
+    ],
+    'high ASCII string, 64tass, upper case': [
+        '    .TEXT "Hi!""", $8D                                                ; 2010: C8 E9 A1... Hi!',
+    ],
+    'high ASCII string, ca65': [
+        '    .byte "Hi!", \'"\', $8d                                             ; 2010: c8 e9 a1... Hi!',
+    ],
+    'high ASCII string, ca65, upper case': [
+        '    .BYTE "Hi!", \'"\', $8D                                             ; 2010: C8 E9 A1... Hi!',
     ],
     # Blank lines and comments. A word wrapped comment is wrapped at the
     # same column for each assembler, so xa's longer '//' moves a word onto

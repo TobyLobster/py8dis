@@ -5,6 +5,9 @@ column, and in character comments) are shown as text.
 - "ascii" (the default): bytes 32-126 are their ASCII characters.
 - "petscii": the Commodore machines' character codes (e.g. for CHROUT).
 - "screen": Commodore screen codes (as stored in screen memory).
+- "apple": ASCII with bit 7 set ("high ASCII"), as the Apple II's ROM,
+  keyboard and screen use it: bytes $A0-$FE are the characters space to
+  '~'.
 
 The session's encoding is set with config.set_text_encoding() (e.g. by a
 Commodore module), and a string command can be given another, e.g.
@@ -20,8 +23,8 @@ or graphics.) Bytes whose ACME character would be misleading (e.g. PETSCII
 $5C, which is a pound sign on the C64 but backslash in ACME) aren't shown as
 text, so they're written as numbers.
 
-Each encoding is an Encoding object (ASCII, PETSCII and SCREEN), found by
-name with get(). classification.py uses them to find strings and to mark
+Each encoding is an Encoding object (ASCII, PETSCII, SCREEN and APPLE),
+found by name with get(). classification.py uses them to find strings and to mark
 each String with its encoding; output.py and the assemblers write the
 strings and character literals with them (see docs/text-encodings.md).
 """
@@ -31,11 +34,16 @@ import utils
 
 class Encoding:
     """A text encoding: 'chars' maps each byte shown as text to its
-    character. 'name' is the encoding's name, e.g. "petscii"."""
+    character. 'name' is the encoding's name, e.g. "petscii", and 'title'
+    how it's described in the output, e.g. "PETSCII". 'ascii_xor' is, for an
+    encoding that's ASCII with every byte XORed with a value (the Apple II's
+    high ASCII, with $80), that value, and otherwise None."""
 
-    def __init__(self, name, chars):
+    def __init__(self, name, chars, title, ascii_xor=None):
         self.name = name
         self.chars = chars
+        self.title = title
+        self.ascii_xor = ascii_xor
 
     def char(self, byte):
         """The character for the byte, or None if it isn't shown as text."""
@@ -77,12 +85,18 @@ def _screen():
         chars[0x41 + i] = chr(ord("A") + i)
     return chars
 
-ASCII   = Encoding("ascii", _ascii())
-PETSCII = Encoding("petscii", _petscii())
-SCREEN  = Encoding("screen", _screen())
+def _apple():
+    """The characters for the Apple II's high ASCII: ASCII's printable
+    characters with bit 7 set."""
+    return {c | 0x80: chr(c) for c in range(32, 127)}
+
+ASCII   = Encoding("ascii", _ascii(), "ASCII")
+PETSCII = Encoding("petscii", _petscii(), "PETSCII")
+SCREEN  = Encoding("screen", _screen(), "screen codes")
+APPLE   = Encoding("apple", _apple(), "high ASCII", ascii_xor=0x80)
 
 # The encodings, by name
-ENCODINGS = {e.name: e for e in (ASCII, PETSCII, SCREEN)}
+ENCODINGS = {e.name: e for e in (ASCII, PETSCII, SCREEN, APPLE)}
 
 def get(name):
     """The encoding with the given name (stopping with an error if there's

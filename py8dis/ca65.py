@@ -232,7 +232,7 @@ class Ca65(assembler.Assembler):
         if not used:
             return []
         c = self.comment_prefix()
-        result = [c + " The character map for " + {"petscii": "PETSCII", "screen": "screen codes"}[main.name] +
+        result = [c + " The character map for " + main.title +
                   " (for strings and character literals)"]
         # (In the order of the characters, each with a comment showing it)
         for byte, char in sorted(main.chars.items(), key=lambda item: ord(item[1])):

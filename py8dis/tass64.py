@@ -43,10 +43,10 @@ import assembler
 import cpu6510
 import textencoding
 
-# The names of the encodings the output defines for PETSCII and screen codes
-# (not 64tass's own 'screen', which '64tass -a' changes, as it does 'none',
-# which is ASCII without it)
-_ENCODING_NAMES = {"ascii": "none", "petscii": "petscii", "screen": "screencodes"}
+# The names of the encodings the output defines for PETSCII, screen codes and
+# the Apple II's high ASCII (not 64tass's own 'screen', which '64tass -a'
+# changes, as it does 'none', which is ASCII without it)
+_ENCODING_NAMES = {"ascii": "none", "petscii": "petscii", "screen": "screencodes", "apple": "apple"}
 
 class Tass64(assembler.Assembler):
     """This class encapsulates 64tass-specific syntax and features. (Tested

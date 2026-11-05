@@ -563,7 +563,7 @@ class StringData(Line):
         _, text_chr = self._text_form()
         for i in range(self.length):
             c = memorymanager.get_u8_binary(binary_addr + i)
-            if text_chr is None or (text_chr(c) is None and c != ord('"')):
+            if text_chr is None or (text_chr(c) is None and self.encoding.char(c) != '"'):
                 name_labels_in(classification.get_constant8(binary_addr + i))
 
     def text_comment(self, start, end):
@@ -662,11 +662,13 @@ class StringData(Line):
                 elif state == 2:
                     next_char += ", "
                 next_state = 2
-                if c == ord('"') and not as_bytes:
+                if self.encoding.char(c) == '"' and not as_bytes:
                     # (A double quote as a character literal)
                     next_char += "'\"'"
-                else:
+                elif as_bytes:
                     next_char += classification.get_constant8(binary_loc.binary_addr + i)
+                else:
+                    next_char += assembler.string_number(binary_loc.binary_addr + i, self.encoding)
 
             new_s = s + next_char
             len_new_s = len(new_s)
