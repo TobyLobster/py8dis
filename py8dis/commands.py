@@ -27,7 +27,8 @@ does the whole disassembly.
 
 The commands, in the groups docs/commands.md uses (see it for the details):
 
-    Loading      load(), load_prg(), load_atm(), move(), include_binary_file()
+    Loading      load(), load_prg(), load_atm(), load_apple_file(),
+                 load_dos33_binary(), move(), include_binary_file()
     Code         entry(), nonentry(), wordentry(), code_ptr(),
                  rts_code_ptr(), hook_subroutine() (and the ready-made
                  hooks stringz_hook etc.), subroutine()
@@ -54,6 +55,7 @@ no_automatic_comment() can turn off.
 """
 
 import memorymanager
+import re as _re
 
 # These functions are directly exposed to the user.
 from disassembly import get_label
@@ -248,9 +250,9 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, 
     session's memory (see memorymanager.load(), which reads the file and
     checks the md5sum). Stops with an error if the arguments are wrong, the
     file can't be read, or the data runs past the top of memory; warns if
-    the file looks like a PRG or ATM file loaded from its start (see
-    load_prg() and load_atm()), or if it replaces data loaded earlier. See
-    docs/commands.md."""
+    the file looks like a PRG, ATM or AppleSingle file loaded from its start
+    (see load_prg(), load_atm() and load_apple_file()), or if it replaces
+    data loaded earlier. See docs/commands.md."""
 
     _check_address_range("load", binary_load_addr)
     command = "load({0}, {1!r})".format(_hex(binary_load_addr), filename)
@@ -266,8 +268,20 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, 
     # An ATM file's first 22 bytes are its header
     if offset == 0 and filename.lower().endswith(".atm"):
         utils.warn("{0}: this looks like an Acorn Atom ATM file, whose first 22 bytes are a header (its name, addresses and length), not data; load_atm({1!r}) loads it at its load address without them".format(command, filename))
+    # An AppleSingle file starts with a header
+    if offset == 0 and _file_start(filename, 4) == memorymanager.AppleSingleHeader.MAGIC.to_bytes(4, "big"):
+        utils.warn("{0}: this is an AppleSingle file, which starts with a header (its parts and their file information), not data; load_apple_file({1!r}) loads its data at its load address".format(command, filename))
 
     memorymanager.load(filename, binary_load_addr, md5sum, offset, length, command=command)
+
+def _file_start(filename, length):
+    """The first 'length' bytes of a file, or None if it can't be read (for
+    load()'s warnings; reading it properly reports any problem)."""
+    try:
+        with open(filename, "rb") as f:
+            return f.read(length)
+    except OSError:
+        return None
 
 def load_prg(filename, cpu_name="6502", md5sum=None):
     """Loads a Commodore PRG file: its first two bytes are the address to load
@@ -333,7 +347,7 @@ def load_atm(filename, cpu_name="6502", md5sum=None):
     data_length = len(data) - header_length
     if atm.length != data_length:
         utils.warn("{0}: the header says the data is {1} bytes long, but there are {2} bytes after it (all of which are loaded)".format(command, atm.length, data_length))
-    memorymanager.load(filename, atm.load_addr, md5sum, header_length, atm=atm, command=command)
+    memorymanager.load(filename, atm.load_addr, md5sum, header_length, header=atm, command=command)
 
     # Trace the code at the execution address, if it's in the data, with a
     # comment saying it's where the file is run from (an automatic comment,
@@ -342,6 +356,116 @@ def load_atm(filename, cpu_name="6502", md5sum=None):
         entry(atm.exec_addr)
         auto_comment(atm.exec_addr, "The ATM file's execution address")
     return atm.load_addr
+
+def _apple_load_addr(file_type, aux_type, die, use_load):
+    """The address an Apple II file with the given ProDOS file type and aux
+    type is loaded at: the aux type for a BIN file ($06) or an Applesoft
+    program ($FC), and $2000 for a SYS file ($FF). For another type, 'die'
+    is called, with 'use_load' (how to load the file with load()) in the
+    message."""
+    fmt = config.get_assembler()
+    if file_type in (0x06, 0xfc, 0xff):
+        load_addr = 0x2000 if file_type == 0xff else aux_type
+        if load_addr <= 0xffff:
+            return load_addr
+        die("its aux type ({0}) isn't an address, so its load address isn't known: {1}".format(_hex(aux_type), use_load))
+    die("its ProDOS file type is {0}, so its load address isn't known (only BIN, BAS and SYS files have one): {1}".format(memorymanager.prodos_file_type(file_type, fmt), use_load))
+
+def load_apple_file(filename, cpu_name="6502", md5sum=None):
+    """Loads an Apple II file whose load address the file or its name gives:
+
+    - an AppleSingle file (the format of cc65's Apple II programs, and of
+      AppleCommander's -as option), recognised by its magic number. Its
+      header's ProDOS file information gives the file type and aux type,
+      and its data fork is loaded;
+    - a file whose name ends with '#', then the ProDOS file type and aux
+      type in hex (e.g. 'GAME#062000', as CiderPress and NuLib2 name the
+      files they extract). The whole file is loaded.
+
+    A BIN file ($06) or an Applesoft program ($FC) is loaded at its aux
+    type, and a SYS file ($FF) at $2000, where ProDOS runs it from, so a SYS
+    file is traced from there, with a comment. (A BIN file isn't traced,
+    since it may be data: use entry().) Returns the load address.
+
+    An AppleSingle file's disassembly starts with its header (everything
+    before the data fork), so that it assembles to the whole file. (To load
+    the data without it, use load(address, filename, offset=...).) The
+    md5sum, if given, is that of the whole file.
+
+    Stops with an error if the file is neither, if its type isn't one of
+    those, or if its AppleSingle header is wrong. Warns if the data fork
+    isn't at the end of the file (then the output assembles to the data
+    without the header)."""
+
+    command = "load_apple_file({0!r})".format(filename)
+    def die(problem):
+        """Stop with an error about the file, naming the command."""
+        utils.die("{0}: {1}".format(command, problem))
+    _select_cpu(cpu_name)
+
+    data = memorymanager.read_file(filename, die)
+    magic = memorymanager.AppleSingleHeader.magic(data)
+    if magic == memorymanager.AppleSingleHeader.APPLEDOUBLE_MAGIC:
+        die("this is an AppleDouble header file, which holds the file's information but not its data (that's in a file of its own)")
+    if magic == memorymanager.AppleSingleHeader.MAGIC:
+        header = memorymanager.AppleSingleHeader(data, die)
+        use_load = "use load(address, {0!r}, offset={1}, length={2})".format(filename, header.data_offset, header.data_length)
+        if header.file_type is None:
+            die("the AppleSingle file has no ProDOS file information (entry ID 11), so its load address isn't known: " + use_load)
+        load_addr = _apple_load_addr(header.file_type, header.aux_type, die, use_load)
+        if header.data_fork_is_last():
+            memorymanager.load(filename, load_addr, md5sum, header.data_offset, header=header, command=command)
+        else:
+            utils.warn("{0}: the data fork isn't at the end of the file, so the output assembles to the data without the AppleSingle header".format(command))
+            memorymanager.load(filename, load_addr, md5sum, header.data_offset, header.data_length, command=command)
+        file_type = header.file_type
+    else:
+        match = _re.search(r"#([0-9a-fA-F]{2})([0-9a-fA-F]{4})$", filename)
+        if match is None:
+            die("this isn't an AppleSingle file, and its name doesn't end with '#' and its ProDOS file type and aux type (e.g. 'GAME#062000'), so its load address isn't known: use load(address, {0!r})".format(filename))
+        file_type, aux_type = int(match.group(1), 16), int(match.group(2), 16)
+        load_addr = _apple_load_addr(file_type, aux_type, die, "use load(address, {0!r})".format(filename))
+        memorymanager.load(filename, load_addr, md5sum, command=command)
+
+    # ProDOS runs a SYS file from its start (an automatic comment, so
+    # no_automatic_comment() leaves it out)
+    if file_type == 0xff:
+        entry(load_addr)
+        auto_comment(load_addr, "ProDOS runs a SYS file from here")
+    return load_addr
+
+def load_dos33_binary(filename, cpu_name="6502", md5sum=None):
+    """Loads an Apple II DOS 3.3 binary file with its 4-byte header, as it
+    is on the disk: its load address and its length, each a word, then the
+    data, which is loaded at the load address. Returns the load address.
+    (The data isn't traced, since it may not be code: use entry().)
+
+    The disassembly starts with the header, so that it assembles to the
+    whole file. (To load the data without it, use load(address, filename,
+    offset=4).) The md5sum, if given, is that of the whole file.
+
+    Stops with an error if the file is too short; warns if the length in
+    the header isn't the length of the data after it (all of which is
+    loaded)."""
+
+    command = "load_dos33_binary({0!r})".format(filename)
+    def die(problem):
+        """Stop with an error about the file, naming the command."""
+        utils.die("{0}: {1}".format(command, problem))
+    _select_cpu(cpu_name)
+
+    data = memorymanager.read_file(filename, die)
+    header_length = memorymanager.Dos33Header.LENGTH
+    if len(data) < header_length + 1:
+        die("the file ({0} bytes) is too short to be a DOS 3.3 binary file (a 4-byte header, the load address and length, then the data)".format(len(data)))
+    header = memorymanager.Dos33Header(data)
+    data_length = len(data) - header_length
+    if header.length < data_length:
+        utils.warn("{0}: the header says the data is {1} bytes long, but there are {2} bytes after it (all of which are loaded; load({3}, {4!r}, offset=4, length={1}) loads just the {1})".format(command, header.length, data_length, _hex(header.load_addr), filename))
+    elif header.length > data_length:
+        utils.warn("{0}: the header says the data is {1} bytes long, but there are only {2} bytes after it (all of which are loaded)".format(command, header.length, data_length))
+    memorymanager.load(filename, header.load_addr, md5sum, header_length, header=header, command=command)
+    return header.load_addr
 
 def _select_cpu(cpu_name):
     """Check the CPU asked for by load() or load_prg() is supported by the

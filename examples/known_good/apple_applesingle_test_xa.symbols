@@ -1,0 +1,7 @@
+comadd 803,pydis_start
+comadd 803,start
+comadd 805,loop_c0805
+comadd 810,return_1
+comadd 811,l0811
+comadd 818,pydis_end
+comadd fded,lfded

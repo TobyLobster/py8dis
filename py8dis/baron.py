@@ -166,10 +166,10 @@ class Baron(beebasm.Beebasm):
         return ["", self.comment_prefix() + " The PRG file's header: the address to load it at", self._section_start(load_addr - 2),
                 utils.make_indent(1) + self.word_prefix() + self.hex4(load_addr)]
 
-    def atm_header(self, load_addr, atm):
-        """An ATM file's 22-byte header, which starts the section (22 bytes
-        before the data), as for prg_header()."""
-        return ["", self.comment_prefix() + " The ATM file's header", self._section_start(load_addr - 22)] + self.atm_header_body(atm)
+    def loaded_file_header(self, load_addr, header):
+        """The header of a file loaded with load_atm() etc., which starts the
+        section (just before the data), as for prg_header()."""
+        return ["", self.comment_prefix() + " The " + header.what, self._section_start(load_addr - header.header_length)] + self.header_lines(header)
 
     def code_start(self, start_addr, end_addr, first, previous_end=None):
         """At the start of the code, the section that holds it all, starting
@@ -177,7 +177,8 @@ class Baron(beebasm.Beebasm):
         started it); a later range pads the section to its address."""
         if first:
             if memorymanager.file_header() is not None:
-                # (A PRG or ATM file's header has started the section)
+                # (A PRG file's header, or another file's, has started the
+                # section)
                 return [""]
             return ["", self._section_start(start_addr), ""]
         # (The address only moves forwards in a section, padding with zeroes,

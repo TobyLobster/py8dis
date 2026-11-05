@@ -262,12 +262,30 @@ class Memory:
         # The files loaded, in the order loaded: a LoadedFile for each load()
         self.loaded_files = []
 
+# The headers of the file formats whose loading commands make the output
+# start with the header, so that it assembles to the whole file (see
+# file_header()). Each has:
+#
+#   'what'           what it is, for messages and the output's comment, e.g.
+#                    "ATM file's header"
+#   'header_length'  its length in bytes (the data follows it)
+#   fields(fmt)      its contents, as a list of (kind, values, comment): kind
+#                    "bytes" or "words" (little-endian), the values, and what
+#                    they are. 'fmt' is the assembler, for numbers in the
+#                    comments. (See Assembler.header_lines().)
+#   json()           what the JSON's entry for the load gains (see
+#                    jsonoutput._loads()), e.g. {"atm": {...}}
+#
+# A PRG file's two-byte header is simpler, and LoadedFile.prg says it's one.
+
 class AtmHeader:
     """The 22-byte header of an Acorn Atom ATM file (see load_atm()): its
     'name' (16 bytes, zero-padded), its 'load_addr' and 'exec_addr', and the
     'length' of the data it says follows."""
 
     LENGTH = 22
+    what = "ATM file's header"
+    header_length = LENGTH
 
     def __init__(self, data):
         """Read the header from the start of 'data' (the file's bytes)."""
@@ -278,20 +296,199 @@ class AtmHeader:
         self.exec_addr = word(18)
         self.length = word(20)
 
-class LoadedFile:
-    """A file loaded with load(), load_prg() or load_atm(): its filename (as
-    given), and the binary addresses it's loaded at, from 'start' up to (but
-    not including) 'end'. 'offset' is where in the file the data loaded
-    starts, 'prg' is True for a PRG file loaded with load_prg(), and 'atm' is
-    the AtmHeader of an ATM file loaded with load_atm() (or None)."""
+    def fields(self, fmt):
+        """Its name's 16 bytes, then its load address, execution address and
+        length."""
+        shown = "".join(chr(c) if 32 <= c < 127 else "." for c in self.name.rstrip(b"\0"))
+        return [("bytes", list(self.name), 'Name: "{0}"'.format(shown)),
+                ("words", [self.load_addr], "Load address"),
+                ("words", [self.exec_addr], "Execution address"),
+                ("words", [self.length], "Length")]
 
-    def __init__(self, filename, start, end, offset=0, prg=False, atm=None):
+    def json(self):
+        """Its name and execution address."""
+        return { "atm": { "name": self.name.rstrip(b"\0").decode("latin-1"), "exec": self.exec_addr } }
+
+class Dos33Header:
+    """The 4-byte header of an Apple II DOS 3.3 binary file (see
+    load_dos33_binary()): its 'load_addr' and the 'length' of the data it
+    says follows, each a little-endian word."""
+
+    LENGTH = 4
+    what = "DOS 3.3 file's header"
+    header_length = LENGTH
+
+    def __init__(self, data):
+        """Read the header from the start of 'data' (the file's bytes)."""
+        self.load_addr = data[0] | (data[1] << 8)
+        self.length = data[2] | (data[3] << 8)
+
+    def fields(self, fmt):
+        """The load address and length."""
+        return [("words", [self.load_addr], "Load address"),
+                ("words", [self.length], "Length")]
+
+    def json(self):
+        """The length the header gives."""
+        return { "dos33": { "length": self.length } }
+
+# ProDOS's names for the file types py8dis mentions in messages
+PRODOS_FILE_TYPES = { 0x04: "TXT", 0x06: "BIN", 0x0f: "DIR", 0xfa: "INT", 0xfc: "BAS", 0xfd: "VAR", 0xfe: "REL", 0xff: "SYS" }
+
+def prodos_file_type(file_type, fmt):
+    """A ProDOS file type for messages and comments, e.g. '$06 (BIN)', using
+    the assembler 'fmt''s hex."""
+    name = PRODOS_FILE_TYPES.get(file_type)
+    return fmt.hex2(file_type) + (" ({0})".format(name) if name else "")
+
+class AppleSingleHeader:
+    """The header of an AppleSingle file (see load_apple_file()), version 1
+    or 2: a magic number, the version, 16 bytes of filler (in version 1, the
+    name of the file system the file came from), the number of entries, and
+    an ID, offset and length for each entry (all big-endian). The entries
+    are the file's parts: its data fork (ID 1), its real name (3), its
+    ProDOS file information (11) and so on, each at its offset in the file.
+
+    The header, for the output, is everything before the data fork, whose
+    'data_offset' is its 'header_length'. 'name' is the real name (bytes, or
+    None if there isn't one), and 'access', 'file_type' and 'aux_type' are
+    from the ProDOS file information (None if there isn't any). 'entries' is
+    a list of (ID, offset, length)."""
+
+    MAGIC = 0x00051600
+    APPLEDOUBLE_MAGIC = 0x00051607
+    what = "AppleSingle file's header"
+
+    # The entry IDs' meanings
+    ENTRY_NAMES = { 1: "data fork", 2: "resource fork", 3: "real name", 4: "comment", 5: "black and white icon",
+                    6: "colour icon", 8: "file dates", 9: "Finder info", 10: "Macintosh file info",
+                    11: "ProDOS file info", 12: "MS-DOS file info", 13: "short name", 14: "AFP file info",
+                    15: "directory ID" }
+
+    @staticmethod
+    def magic(data):
+        """The magic number at the start of 'data', or None if it's too
+        short."""
+        return int.from_bytes(data[0:4], "big") if len(data) >= 4 else None
+
+    def __init__(self, data, die):
+        """Read the header of the AppleSingle file 'data' (its bytes, which
+        start with the magic number). 'die' is called with a description of
+        any problem."""
+        def be(offset, length):
+            return int.from_bytes(data[offset:offset + length], "big")
+        self.data = bytes(data)
+        if len(data) < 26:
+            die("the file ({0} bytes) is too short to be an AppleSingle file (its header is at least 26 bytes)".format(len(data)))
+        self.version = be(4, 4)
+        if self.version not in (0x00010000, 0x00020000):
+            die("this is an AppleSingle file of version {0:08x}, but py8dis only knows versions 1 and 2".format(self.version))
+        count = be(24, 2)
+        if len(data) < 26 + 12 * count:
+            die("the file ({0} bytes) is too short for the AppleSingle header's {1} entries".format(len(data), count))
+        self.entries = []
+        for i in range(count):
+            entry_id, offset, length = be(26 + 12 * i, 4), be(30 + 12 * i, 4), be(34 + 12 * i, 4)
+            if offset + length > len(data):
+                die("the AppleSingle header's entry {0} ({1}) runs past the end of the file ({2} bytes)".format(i + 1, self._entry_name(entry_id), len(data)))
+            self.entries.append((entry_id, offset, length))
+        self.entries_end = 26 + 12 * count
+
+        data_forks = [(offset, length) for entry_id, offset, length in self.entries if entry_id == 1]
+        if not data_forks:
+            die("the AppleSingle file has no data fork")
+        self.data_offset, self.data_length = data_forks[0]
+        if self.data_length == 0:
+            die("the AppleSingle file's data fork is empty")
+        self.header_length = self.data_offset
+
+        self.name = None
+        self.access = self.file_type = self.aux_type = None
+        for entry_id, offset, length in self.entries:
+            if entry_id == 3:
+                self.name = bytes(data[offset:offset + length])
+            elif entry_id == 11 and length >= 8:
+                self.access, self.file_type, self.aux_type = be(offset, 2), be(offset + 2, 2), be(offset + 4, 4)
+
+    def data_fork_is_last(self):
+        """True if the data fork is at the end of the file, after all of the
+        header and the other entries, so the output can be the header then
+        the data."""
+        if self.data_offset + self.data_length != len(self.data) or self.data_offset < self.entries_end:
+            return False
+        return all(offset + length <= self.data_offset for entry_id, offset, length in self.entries if entry_id != 1)
+
+    def _entry_name(self, entry_id):
+        return self.ENTRY_NAMES.get(entry_id, "ID {0}".format(entry_id))
+
+    def fields(self, fmt):
+        """The header's fixed fields, its entries, then the entries' contents
+        (other than the data fork's), in the order they're in the file, with
+        any bytes between them that no entry uses. (Only when
+        data_fork_is_last().)"""
+        data = self.data
+        def shown(text):
+            return "".join(chr(c) if 32 <= c < 127 else "." for c in text)
+        result = [("bytes", list(data[0:4]), "AppleSingle's magic number"),
+                  ("bytes", list(data[4:8]), "Version {0}".format(self.version >> 16))]
+        filler = data[8:24]
+        if self.version == 0x00010000 and filler.rstrip(b" \0"):
+            result.append(("bytes", list(filler), 'Home file system: "{0}"'.format(shown(filler.rstrip(b" \0")))))
+        else:
+            result.append(("bytes", list(filler), "Filler"))
+        count = len(self.entries)
+        result.append(("bytes", list(data[24:26]), "{0} entr{1}".format(count, "y" if count == 1 else "ies")))
+        for i, (entry_id, offset, length) in enumerate(self.entries):
+            result.append(("bytes", list(data[26 + 12 * i:38 + 12 * i]),
+                           "Entry {0}: {1}, at offset {2}, {3} byte{4}".format(i + 1, self._entry_name(entry_id), offset, length, "" if length == 1 else "s")))
+
+        # The entries' contents, other than the data fork's, in order
+        addr = self.entries_end
+        for entry_id, offset, length in sorted((e for e in self.entries if e[0] != 1), key=lambda e: e[1]):
+            if length == 0:
+                continue
+            if offset > addr:
+                result.append(("bytes", list(data[addr:offset]), "Not used"))
+            content = data[offset:offset + length]
+            if entry_id == 11 and length == 8:
+                result.append(("bytes", list(content[0:2]), "Access: {0}".format(fmt.hex2(self.access))))
+                result.append(("bytes", list(content[2:4]), "File type: {0}".format(prodos_file_type(self.file_type, fmt))))
+                result.append(("bytes", list(content[4:8]), "Aux type: {0}".format(fmt.hex4_for_comment(self.aux_type))))
+            elif entry_id == 3:
+                result.append(("bytes", list(content), 'Real name: "{0}"'.format(shown(content))))
+            else:
+                result.append(("bytes", list(content), self._entry_name(entry_id)[0].upper() + self._entry_name(entry_id)[1:]))
+            addr = offset + length
+        if self.data_offset > addr:
+            result.append(("bytes", list(data[addr:self.data_offset]), "Not used"))
+        return result
+
+    def json(self):
+        """The real name, file type and aux type, if it has them."""
+        result = {}
+        if self.name is not None:
+            result["name"] = self.name.decode("latin-1")
+        if self.file_type is not None:
+            result["file_type"] = self.file_type
+            result["aux_type"] = self.aux_type
+        return { "applesingle": result }
+
+class LoadedFile:
+    """A file loaded with load(), load_prg(), load_atm(), load_apple_file()
+    or load_dos33_binary(): its filename (as given), and the binary
+    addresses it's loaded at, from 'start' up to (but not including) 'end'.
+    'offset' is where in the file the data loaded starts, 'prg' is True for
+    a PRG file loaded with load_prg(), and 'header' is the header of a file
+    whose output can start with it (AtmHeader, Dos33Header or
+    AppleSingleHeader; or None)."""
+
+    def __init__(self, filename, start, end, offset=0, prg=False, header=None):
         self.filename = filename
         self.start = start
         self.end = end
         self.offset = offset
         self.prg = prg
-        self.atm = atm
+        self.header = header
 
     def describe(self):
         """e.g. "'orig/helloworld.orig' at &2000-&201b", for messages."""
@@ -358,17 +555,17 @@ def read_file(filename, die):
     except OSError as e:
         die("can't read the file ({0})".format(e.strerror))
 
-def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False, atm=None, command=None):
+def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False, header=None, command=None):
     """Load a binary file (or the part of it from 'offset', for 'length'
     bytes or to the end) into memory at the given binary address. This does
-    the work of the load(), load_prg() and load_atm() commands (in
-    commands.py).
+    the work of the load(), load_prg(), load_atm(), load_apple_file() and
+    load_dos33_binary() commands (in commands.py).
 
     Checks the md5 checksum (of the whole file) matches if given. 'command'
     describes the command for messages, e.g. "load(&2000, 'file')". 'prg'
-    is True for load_prg(), and 'atm' the ATM file's AtmHeader for
-    load_atm(), so the output can start with the file's header (see
-    file_header()).
+    is True for load_prg(), and 'header' the file's header (an AtmHeader
+    etc.) for the other commands that read one, so the output can start
+    with it (see file_header()).
 
     Stops with an error (utils.die()) if the file can't be read, is empty,
     is shorter than 'offset' and 'length' need, doesn't match the md5sum,
@@ -415,13 +612,13 @@ def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False
 
     memory.binary[binary_addr:end_addr] = data
     memory.load_ranges.append((binary_addr, end_addr))
-    memory.loaded_files.append(LoadedFile(filename, int(binary_addr), int(end_addr), offset, prg, atm))
+    memory.loaded_files.append(LoadedFile(filename, int(binary_addr), int(end_addr), offset, prg, header))
 
 class FileHeader:
     """The header of a loaded file that the output starts with (see
     file_header()): the LoadedFile, the 'load_addr' its data is at, and the
-    header's 'length' in bytes, which is just below it (2 for a PRG file, 22
-    for an ATM file)."""
+    header's 'length' in bytes, which is just below it (2 for a PRG file,
+    or its header's header_length)."""
 
     def __init__(self, loaded_file, length):
         self.loaded_file = loaded_file
@@ -430,8 +627,9 @@ class FileHeader:
 
 def file_header():
     """If the output starts with the header of a file loaded with load_prg()
-    (its two-byte load address) or load_atm() (its 22-byte header), so that
-    it assembles to the whole file, a FileHeader; otherwise None. That's when
+    (its two-byte load address), or with load_atm(), load_apple_file() or
+    load_dos33_binary() (its LoadedFile.header), so that it assembles to the
+    whole file, a FileHeader; otherwise None. That's when
     the file is loaded at the lowest address loaded, high enough for the
     header to fit below it. disassembly.emit(), beebasm.py and baron.py use
     this to output the header."""
@@ -442,7 +640,7 @@ def file_header():
     for loaded_file in memory.loaded_files:
         if loaded_file.start != start:
             continue
-        length = 2 if loaded_file.prg else AtmHeader.LENGTH if loaded_file.atm is not None else 0
+        length = 2 if loaded_file.prg else loaded_file.header.header_length if loaded_file.header is not None else 0
         if length and start >= length:
             return FileHeader(loaded_file, length)
     return None

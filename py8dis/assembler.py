@@ -369,36 +369,41 @@ class Assembler:
         org = [line for line in self.code_start(load_addr - 2, load_addr, True) if line.strip()]
         return ["", self.comment_prefix() + " The PRG file's header: the address to load it at"] + org + [utils.make_indent(1) + self.word_prefix() + self.hex4(load_addr)]
 
-    def atm_header(self, load_addr, atm):
-        """The lines at the start of the output for an Acorn Atom ATM file
-        loaded with load_atm(), as a list of strings, or None if the
-        assembler can't do this (then py8dis warns that the output assembles
-        to the data without it). disassembly.emit() calls it, as for
-        prg_header(), if the lowest load is an ATM file (see
-        memorymanager.file_header()).
+    def loaded_file_header(self, load_addr, header):
+        """The lines at the start of the output for a file loaded with its
+        header, by load_atm(), load_apple_file() or load_dos33_binary(), as
+        a list of strings, or None if the assembler can't do this (then
+        py8dis warns that the output assembles to the data without it).
+        disassembly.emit() calls it, as for prg_header(), if the lowest load
+        is such a file (see memorymanager.file_header()).
 
-        The lines assemble the file's 22-byte header ('atm', a
+        The lines assemble the file's header ('header', e.g. a
         memorymanager.AtmHeader) just before the data at 'load_addr', so
-        that the output assembles to the whole ATM file: by default,
-        code_start() at load_addr - 22, then the header (see
-        atm_header_body())."""
+        that the output assembles to the whole file: by default,
+        code_start() at the header's start, then its contents (see
+        header_lines())."""
         # (Without code_start()'s blank lines)
-        org = [line for line in self.code_start(load_addr - 22, load_addr, True) if line.strip()]
-        return ["", self.comment_prefix() + " The ATM file's header"] + org + self.atm_header_body(atm)
+        org = [line for line in self.code_start(load_addr - header.header_length, load_addr, True) if line.strip()]
+        return ["", self.comment_prefix() + " The " + header.what] + org + self.header_lines(header)
 
-    def atm_header_body(self, atm):
-        """The lines of an ATM file's header (see atm_header()): its name's 16
-        bytes (zero-padded), then its load address, execution address and
-        length, as words, each with a comment saying what it is."""
-        name = atm.name.rstrip(b"\0")
-        shown = "".join(chr(c) if 32 <= c < 127 else "." for c in name)
-        name_bytes = ", ".join(self.hex2(c) if c else "0" for c in atm.name)
+    def header_lines(self, header):
+        """The lines of a file's header (see loaded_file_header()): each of
+        its fields (see memorymanager.py) as bytes or words, with a comment
+        saying what it is. A field of more than 16 bytes is split over
+        lines, with the comment on the first."""
         indent = utils.make_indent(1)
-        return [
-            indent + self.byte_prefix() + name_bytes + " " + self.comment_prefix() + ' Name: "{0}"'.format(shown),
-            indent + self.word_prefix() + self.hex4(atm.load_addr) + " " + self.comment_prefix() + " Load address",
-            indent + self.word_prefix() + self.hex4(atm.exec_addr) + " " + self.comment_prefix() + " Execution address",
-            indent + self.word_prefix() + self.hex4(atm.length) + " " + self.comment_prefix() + " Length"]
+        result = []
+        for kind, values, comment in header.fields(self):
+            if kind == "words":
+                prefix, items = self.word_prefix(), [self.hex4(v) for v in values]
+            else:
+                prefix, items = self.byte_prefix(), [self.hex2(c) if c else "0" for c in values]
+            for i in range(0, len(items), 16):
+                line = indent + prefix + ", ".join(items[i:i + 16])
+                if i == 0:
+                    line += " " + self.comment_prefix() + " " + comment
+                result.append(line)
+        return result
 
     def hex4_for_comment(self, n):
         """A four digit hex number, for use in a comment (e.g. the memory

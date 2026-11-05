@@ -22,7 +22,8 @@ What py8dis writes for it:
 
 - A moved block (see move()) is in a PHASE ... DEPHASE block. A later range
   of addresses is padded with DEFS, rather than given a second ORG (see
-  code_start()), and a PRG file's header isn't written (see prg_header()).
+  code_start()), and a file's header (a PRG file's, or another loaded with
+  its header) isn't written (see prg_header() and loaded_file_header()).
 
 - It has no assertions, so those at the end are comments.
 
@@ -191,6 +192,10 @@ class Z88DK(assembler.Assembler):
         """None: a PRG file's header isn't written (the default would need a
         second ORG)."""
         # (A second org would start a separate section)
+        return None
+
+    def loaded_file_header(self, load_addr, header):
+        """None: a file's header isn't written, as for prg_header()."""
         return None
 
     def code_start(self, start_addr, end_addr, first, previous_end=None):

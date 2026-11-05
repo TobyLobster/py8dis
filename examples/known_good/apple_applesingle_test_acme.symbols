@@ -1,0 +1,7 @@
+al 000803 .pydis_start
+al 000803 .start
+al 000805 .loop_c0805
+al 000810 .return_1
+al 000811 .l0811
+al 000818 .pydis_end
+al 00FDED .lfded

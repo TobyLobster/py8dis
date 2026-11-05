@@ -1247,9 +1247,9 @@ def emit(print_output=True):
     for start_addr, end_addr in move_ranges:
         if old_end_addr is None:
             # A PRG file's two-byte header (its load address), if it was
-            # loaded with load_prg(), or an ATM file's 22-byte header, if it
-            # was loaded with load_atm(), so the output assembles to the
-            # whole file
+            # loaded with load_prg(), or the header of a file loaded with
+            # load_atm(), load_apple_file() or load_dos33_binary(), so the
+            # output assembles to the whole file
             file_header = memorymanager.file_header()
             if file_header is not None and file_header.loaded_file.prg:
                 if config.get_assembler().prg_header(file_header.load_addr) is None:
@@ -1257,11 +1257,11 @@ def emit(print_output=True):
                 else:
                     d.append(output.Directive("prg_header", file_header.load_addr).resolve())
             elif file_header is not None:
-                atm = file_header.loaded_file.atm
-                if config.get_assembler().atm_header(file_header.load_addr, atm) is None:
-                    utils.warn("the ATM file's header isn't output with this assembler, so the output assembles to the data without it")
+                loaded_header = file_header.loaded_file.header
+                if config.get_assembler().loaded_file_header(file_header.load_addr, loaded_header) is None:
+                    utils.warn("the {0} isn't output with this assembler, so the output assembles to the data without it".format(loaded_header.what))
                 else:
-                    d.append(output.Directive("atm_header", file_header.load_addr, atm).resolve())
+                    d.append(output.Directive("loaded_file_header", file_header.load_addr, loaded_header).resolve())
             # Output an ORG at the beginning
             d.append(output.Directive("code_start", start_addr, end_addr, True).resolve())
             old_end_addr = start_addr

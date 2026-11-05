@@ -164,7 +164,7 @@ A real disassembly goes the same way, a step at a time: run the control file, re
 
 | Command | What it does |
 | ------- | ------------ |
-| `load(addr, filename, cpu)` | Loads the program (`load_prg()` for a Commodore PRG file, `load_atm()` for an Acorn Atom ATM file). |
+| `load(addr, filename, cpu)` | Loads the program (`load_prg()` for a Commodore PRG file, `load_atm()` for an Acorn Atom ATM file, `load_apple_file()` and `load_dos33_binary()` for Apple II files). |
 | `entry(addr)` | Says there's code at the address, to trace from. |
 | `label(addr, name)` | Names an address. |
 | `comment(addr, text)` | Adds a comment (`inline=True` puts it at the end of the line). |

@@ -12,7 +12,7 @@
     "assembler": { "description": "The assembler the asm was written for (as given by the assembler's get_name()). Every 'text' field uses its syntax.",
                    "enum": ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "z88dk", "sjasmplus"] },
     "loads": {
-      "description": "The files loaded with load() or load_prg(), in the order loaded: the filename as given, the binary addresses the data is loaded at, where in the file the data loaded starts (if not at the start), and whether it's a PRG file loaded with load_prg().",
+      "description": "The files loaded with load(), load_prg(), load_atm(), load_apple_file() or load_dos33_binary(), in the order loaded: the filename as given, the binary addresses the data is loaded at, where in the file the data loaded starts (if not at the start), whether it's a PRG file loaded with load_prg(), and what the header of a file loaded with its header gives.",
       "type": "array",
       "items": {
         "allOf": [ { "$ref": "#/$defs/range" } ],
@@ -20,7 +20,20 @@
         "properties": {
           "filename": { "type": "string" },
           "offset":   { "type": "integer", "minimum": 1 },
-          "prg":      { "const": true }
+          "prg":      { "const": true },
+          "atm":      { "description": "An ATM file loaded with load_atm(): its name and execution address.",
+                        "type": "object",
+                        "required": ["name", "exec"],
+                        "properties": { "name": { "type": "string" }, "exec": { "$ref": "#/$defs/addr" } } },
+          "dos33":    { "description": "A DOS 3.3 binary file loaded with load_dos33_binary(): the length its header gives.",
+                        "type": "object",
+                        "required": ["length"],
+                        "properties": { "length": { "type": "integer", "minimum": 0, "maximum": 65535 } } },
+          "applesingle": { "description": "An AppleSingle file loaded with load_apple_file(): its real name, ProDOS file type and aux type, if it has them.",
+                           "type": "object",
+                           "properties": { "name": { "type": "string" },
+                                           "file_type": { "type": "integer", "minimum": 0, "maximum": 65535 },
+                                           "aux_type": { "type": "integer", "minimum": 0 } } }
         }
       }
     },

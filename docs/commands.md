@@ -33,13 +33,13 @@ Commands that take `runtime_addr` want the runtime address. Without any moves, t
 
 `load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, length=None)`
 
-Loads the file into py8dis's memory at `binary_load_addr`. Every control file starts with this (or `load_prg()` or `load_atm()`).
+Loads the file into py8dis's memory at `binary_load_addr`. Every control file starts with this (or `load_prg()`, `load_atm()`, `load_apple_file()` or `load_dos33_binary()`).
 
 - `cpu_name` is `"6502"`, `"65C02"`, `"6510"` (the 6502 with its undocumented opcodes), `"8080"` or `"Z80"`. See [cpus.md](cpus.md).
 - `md5sum`, if given, is checked against the file's md5sum, and py8dis stops if they differ. This catches the mistake of using the control file with a different version of the program.
 - `offset` and `length` load only part of the file (e.g. to skip a header): `offset` is where in the file to start, and `length` is how many bytes to load (by default, the rest of the file). The `md5sum` is still that of the whole file.
 
-A file whose name ends `.prg` or `.p00`, loaded from its start, gives a warning, since `load_prg()` is probably what's wanted, and the same for `.atm` and `load_atm()`.
+A file whose name ends `.prg` or `.p00`, loaded from its start, gives a warning, since `load_prg()` is probably what's wanted, and the same for `.atm` and `load_atm()`, and for an AppleSingle file (recognised by its first four bytes) and `load_apple_file()`.
 
 ### load_prg
 
@@ -78,6 +78,64 @@ If the execution address is in the data, the code there is traced, with the comm
 To disassemble just the data, use `load(address, "game.atm", offset=22)` instead. If the length in the header isn't the length of the data after it, py8dis warns, and loads all of the data.
 
 For an Atom BASIC program (whose execution address is BASIC's, #C2B2), see [`acorn.atom_basic_program()`](machines/acorn.md#atom-basic-programs).
+
+### load_apple_file
+
+`load_apple_file(filename, cpu_name="6502", md5sum=None)`
+
+Loads an Apple II file whose load address is given by the file or its name, and returns the load address:
+
+- **An AppleSingle file**, the format cc65 makes for the Apple II (and that AppleCommander's `-as` option reads and writes). It's recognised by its first four bytes. Its header lists the file's parts, and its ProDOS file information gives the file type and aux type. The data fork is loaded.
+- **A file whose name ends with `#` and six hex digits**, the ProDOS file type and aux type, as CiderPress and NuLib2 name the files they extract, e.g. `GAME#062000`. The whole file is loaded.
+
+A BIN file (type $06) or an Applesoft program ($FC) is loaded at its aux type, and a SYS file ($FF) at $2000:
+
+```python
+start = load_apple_file("GAME#062000")        # a BIN file at $2000
+load_apple_file("hello")                      # e.g. cc65's output: a BIN file at $0803
+```
+
+ProDOS runs a SYS file from $2000, so the code there is traced, with the comment `; ProDOS runs a SYS file from here`. A BIN file isn't traced, since it may be data (a picture, say): use `entry()`. Other file types have no load address, so `load_apple_file()` stops with an error; use `load()` for them.
+
+An AppleSingle file's disassembly starts with its header (everything before the data fork), so that it assembles to the whole file, with acme, beebasm, Baron, xa, 64tass or ca65:
+
+```
+; The AppleSingle file's header
+    * = $07c9
+    !byte 0, $05, $16, 0 ; AppleSingle's magic number
+    !byte 0, $02, 0, 0 ; Version 2
+    !byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ; Filler
+    !byte 0, $02 ; 2 entries
+    !byte 0, 0, 0, $0b, 0, 0, 0, $32, 0, 0, 0, $08 ; Entry 1: ProDOS file info, at offset 50, 8 bytes
+    !byte 0, 0, 0, $01, 0, 0, 0, $3a, 0, 0, $12, $34 ; Entry 2: data fork, at offset 58, 4660 bytes
+    !byte 0, $c3 ; Access: $c3
+    !byte 0, $06 ; File type: $06 (BIN)
+    !byte 0, 0, $08, $03 ; Aux type: $0803
+```
+
+If the data fork isn't at the end of the file, py8dis warns, and the output assembles to the data alone. To disassemble just the data anyway, use `load(address, filename, offset=...)`, with the data fork's offset. An AppleDouble file (a header file without the data) gives an error.
+
+### load_dos33_binary
+
+`load_dos33_binary(filename, cpu_name="6502", md5sum=None)`
+
+Loads an Apple II DOS 3.3 binary file as it is on the disk, with its 4-byte header: the address to load the data at, then the data's length (each a word). It returns the load address:
+
+```python
+start = load_dos33_binary("game.bin")
+entry(start)
+```
+
+The data isn't traced, since a binary file may not be code: use `entry()` (BRUN runs the file from its load address). The disassembly starts with the header, so that it assembles to the whole file:
+
+```
+; The DOS 3.3 file's header
+    org &5ffc
+    equw &6000 ; Load address
+    equw &0015 ; Length
+```
+
+Tools that extract files from disk images don't all keep this header. A file without it can be loaded with `load()`, or with `load_apple_file()` if its name gives its type and address. Some tools also keep the rest of the file's last sector, so if the length in the header isn't the length of the data after it, py8dis warns, loads all of the data, and says how to load just the length the header gives.
 
 ### move
 

@@ -202,8 +202,8 @@ class Beebasm(assembler.Assembler):
         pydis_start, pydis_end = memorymanager.get_entire_load_range()
         header = memorymanager.file_header()
         if header is not None:
-            # The output starts with a PRG or ATM file's header (see
-            # prg_header() and atm_header())
+            # The output starts with a PRG file's header, or another file's
+            # (see prg_header() and loaded_file_header())
             pydis_start -= header.length
 
         temp_start = -1
@@ -386,8 +386,8 @@ class Beebasm(assembler.Assembler):
         result.append("")
         s = utils.force_case("save")
         output_filename = session.current().output_filename
-        # (Starting with the header of a PRG or ATM file, see prg_header()
-        # and atm_header())
+        # (Starting with the header of a PRG file, or another file's, see
+        # prg_header() and loaded_file_header())
         header = memorymanager.file_header()
         start = "pydis_start - {0}".format(header.length) if header is not None else "pydis_start"
         if output_filename is None:

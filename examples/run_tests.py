@@ -173,6 +173,9 @@ TESTS = [
     ("prg_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
     ("p00_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a PC64 P00 file loaded with load_prg()"),
     ("atm_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom ATM file loaded with load_atm(), which reassembles to the whole file"),
+    ("apple_applesingle_test",   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Apple II AppleSingle file loaded with load_apple_file(), which reassembles to the whole file"),
+    ("apple_sys_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a ProDOS SYS file loaded with load_apple_file(), its name giving its type and aux type"),
+    ("apple_dos33_test",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Apple II DOS 3.3 binary file loaded with load_dos33_binary(), which reassembles to the whole file"),
     ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loading parts of a file with load(..., offset=..., length=...)"),
     ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
     ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "PETSCII and screen code strings, with config.set_text_encoding()"),
@@ -225,7 +228,7 @@ TESTS = [
 # made with beebasm, Baron, 64tass, ca65 or sjasmplus is checked against the
 # labels that assembler reports, see run_test(), but these show any change
 # to the outputs themselves.)
-EXTRAS_KNOWN_GOOD = ["helloworld", "atom_test", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "fixes_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
+EXTRAS_KNOWN_GOOD = ["helloworld", "atom_test", "apple_applesingle_test", "regression_tests", "move2", "local_labels", "subroutine_test", "test8080", "undocumented_8080", "fixes_8080", "prg_test", "undocumented_6502", "petscii_test", "c64_test", "c64_memory_test", "vic20_test", "c128_test", "test_z80", "undocumented_z80", "trace_z80", "state_z80", "spectrum_test", "branch_state", "redundant_z80"]
 
 # The symbol file format made for each assembler's tests (py8dis's
 # --symbols-format), so that each format is tested (see py8dis/symbols.py).
@@ -262,6 +265,12 @@ ERROR_TESTS = [
     ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
     ("load_atm_too_short",      "load_atm('build/too_short.atm'): the file (22 bytes) is too short to be an ATM file (a 22-byte header, then the data)"),
+    ("load_apple_file_unknown", "load_apple_file('orig/helloworld.orig'): this isn't an AppleSingle file, and its name doesn't end with '#' and its ProDOS file type and aux type (e.g. 'GAME#062000'), so its load address isn't known: use load(address, 'orig/helloworld.orig')"),
+    ("load_apple_file_type",    "load_apple_file('build/notes#040000'): its ProDOS file type is &04 (TXT), so its load address isn't known (only BIN, BAS and SYS files have one): use load(address, 'build/notes#040000')"),
+    ("load_applesingle_no_file_info", "load_apple_file('build/no_file_info.as'): the AppleSingle file has no ProDOS file information (entry ID 11), so its load address isn't known: use load(address, 'build/no_file_info.as', offset=38, length=28)"),
+    ("load_applesingle_truncated", "load_apple_file('build/truncated.as'): the file (40 bytes) is too short for the AppleSingle header's 3 entries"),
+    ("load_appledouble",        "load_apple_file('build/appledouble.as'): this is an AppleDouble header file, which holds the file's information but not its data (that's in a file of its own)"),
+    ("load_dos33_too_short",    "load_dos33_binary('build/too_short.dos33'): the file (4 bytes) is too short to be a DOS 3.3 binary file (a 4-byte header, the load address and length, then the data)"),
     ("upper_case_os_calls_too_late", "config.set_upper_case_os_calls(): call it before acorn.bbc(), commodore.c64() etc., which name the OS calls"),
     ("c64_configuration_without_c64", "commodore.c64_configuration(): call commodore.c64() first"),
     ("c64_configuration_bad_address", "commodore.c64_configuration(): the addresses must be between 0 and $10000, not 74565"),
@@ -297,6 +306,9 @@ WARNING_TESTS = [
     ("load_prg_file",           "warning: load(&07ff, 'build/load_prg_file.prg'): this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg('build/load_prg_file.prg') loads it at that address without them"),
     ("load_atm_file",           "warning: load(&28ea, 'build/load_atm_file.atm'): this looks like an Acorn Atom ATM file, whose first 22 bytes are a header (its name, addresses and length), not data; load_atm('build/load_atm_file.atm') loads it at its load address without them"),
     ("load_atm_length",         "warning: load_atm('build/load_atm_length.atm'): the header says the data is 20 bytes long, but there are 8 bytes after it (all of which are loaded)"),
+    ("load_applesingle_file",   "warning: load(&07b8, 'build/load_applesingle_file'): this is an AppleSingle file, which starts with a header (its parts and their file information), not data; load_apple_file('build/load_applesingle_file') loads its data at its load address"),
+    ("load_applesingle_data_not_last", "warning: load_apple_file('build/data_not_last.as'): the data fork isn't at the end of the file, so the output assembles to the data without the AppleSingle header"),
+    ("load_dos33_length",       "warning: load_dos33_binary('build/load_dos33_length.dos33'): the header says the data is 21 bytes long, but there are 32 bytes after it (all of which are loaded; load(&6000, 'build/load_dos33_length.dos33', offset=4, length=21) loads just the 21)"),
     ("jump_to_shared_address",  "warning: &1004: the jump or call to &8000 isn't traced, since more than one move puts code there (moves 1 and 2): trace the right one with entry() in a 'with' block for its move"),
     ("move_splits_data",        "warning: move boundary at binary address &3002 splits a classification"),
 ]
