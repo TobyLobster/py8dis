@@ -417,10 +417,13 @@ class Binary(Expr):
             return left // right if right != 0 else None
         if op == 'MOD':
             return left % right if right != 0 else None
+        # (A shift by 32 or more isn't worked out either: xa and sjasmplus
+        # take the count modulo 32, e.g. '$1234 >> 32' is $1234, where the
+        # others give 0)
         if op == '<<':
             return left << right if right < 32 else None
         if op == '>>':
-            return left >> right
+            return left >> right if right < 32 else None
         return None
 
     def is_lazy(self):

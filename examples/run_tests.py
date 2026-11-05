@@ -136,6 +136,7 @@ TESTS = [
     ("branch_state",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
     ("string_stuff1",            ["acme", "beebasm", "baron", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
+    ("shift_by_32",              ["xa"],                       "an expression for xa with a shift by 32, which py8dis doesn't work out (xa takes the count modulo 32)"),
     ("string_stuff3",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "testing py8dis string commands"),
     ("banks_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "two banks of code that both run at $8000 (moves to the same address), loaded separately, with a call that can't be told the bank of"),
     ("beebasm_moves",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a moved block that runs over the end of the program, for which beebasm's output moves only the bytes in the way"),
@@ -503,7 +504,8 @@ def json_sample(doc):
 # The operators in expression trees, as py8dis evaluates them (see
 # expression.py). Each gives None where the value can't be worked out,
 # since assemblers differ there (e.g. DIV and MOD of a negative number, or
-# a shift of one), and then the value isn't checked.
+# a shift by 32 or more, which xa and sjasmplus take modulo 32), and then
+# the value isn't checked.
 JSON_BINARY_OPERATORS = {
     "+":   lambda a, b: a + b,
     "-":   lambda a, b: a - b,
