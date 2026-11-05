@@ -159,6 +159,7 @@ TESTS = [
     ("crash_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "things that used to crash py8dis: splits inside an instruction and a word, substitute_constants() with RTS, a constant's align without a comment, expr_label() where moves overlap, get_u16_be_binary() at the address stringhi() returns"),
     ("regex_snippets",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "regex snippets with one character operands, A, negative and binary values, a branch's offset in hex, and a name and an instruction on one line"),
     ("copy_loops",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loops that copy or set memory, counting up or down, past zero or to a limit, with the comments from the built in snippets"),
+    ("overlapping_moves",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "six moved blocks laid out like Revs's, some running over the others' sources, the rest of the program and their own"),
     ("expressions",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "how expressions are bracketed for each assembler"),
     ("acorn_os_calls",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "test all the os calls for acorn machines"),
     ("acorn_vectors",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the ways of setting an Acorn OS vector that acorn.py recognises"),
