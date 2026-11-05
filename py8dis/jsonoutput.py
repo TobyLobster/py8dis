@@ -97,10 +97,11 @@ def _cpu_name(cpu):
     return type(cpu).__name__
 
 def _loads():
-    """The files loaded (see load() and load_prg()), in the order they were
-    loaded: each one's filename, the binary addresses it's loaded at (from
-    'start' up to 'end'), the 'offset' in the file of the data loaded (if
-    it isn't 0), and 'prg' for a PRG file."""
+    """The files loaded (see load(), load_prg() and load_atm()), in the
+    order they were loaded: each one's filename, the binary addresses it's
+    loaded at (from 'start' up to 'end'), the 'offset' in the file of the
+    data loaded (if it isn't 0), 'prg' for a PRG file, and 'atm' for an ATM
+    file (its name and execution address)."""
     result = []
     for f in session.current().memory.loaded_files:
         entry = { "filename": f.filename, "start": f.start, "end": f.end }
@@ -108,6 +109,8 @@ def _loads():
             entry["offset"] = f.offset
         if f.prg:
             entry["prg"] = True
+        if f.atm is not None:
+            entry["atm"] = { "name": f.atm.name.rstrip(b"\0").decode("latin-1"), "exec": f.atm.exec_addr }
         result.append(entry)
     return result
 

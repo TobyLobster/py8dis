@@ -33,13 +33,13 @@ Commands that take `runtime_addr` want the runtime address. Without any moves, t
 
 `load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, length=None)`
 
-Loads the file into py8dis's memory at `binary_load_addr`. Every control file starts with this (or `load_prg()`).
+Loads the file into py8dis's memory at `binary_load_addr`. Every control file starts with this (or `load_prg()` or `load_atm()`).
 
 - `cpu_name` is `"6502"`, `"65C02"`, `"6510"` (the 6502 with its undocumented opcodes), `"8080"` or `"Z80"`. See [cpus.md](cpus.md).
 - `md5sum`, if given, is checked against the file's md5sum, and py8dis stops if they differ. This catches the mistake of using the control file with a different version of the program.
 - `offset` and `length` load only part of the file (e.g. to skip a header): `offset` is where in the file to start, and `length` is how many bytes to load (by default, the rest of the file). The `md5sum` is still that of the whole file.
 
-A file whose name ends `.prg` or `.p00`, loaded from its start, gives a warning, since `load_prg()` is probably what's wanted.
+A file whose name ends `.prg` or `.p00`, loaded from its start, gives a warning, since `load_prg()` is probably what's wanted, and the same for `.atm` and `load_atm()`.
 
 ### load_prg
 
@@ -52,6 +52,30 @@ start = load_prg("game.prg", "6510")
 ```
 
 The disassembly starts with the same two bytes (e.g. `!word $0801` just before the program), so that it assembles to the whole PRG file, with acme, beebasm, Baron, xa, 64tass or ca65. To disassemble just the data, use `load(address, "game.prg", offset=2)` instead. A PC64 `.p00` file (a PRG file after a 26 byte header starting `C64File`) is also accepted; its disassembly assembles to the PRG file.
+
+### load_atm
+
+`load_atm(filename, cpu_name="6502", md5sum=None)`
+
+Loads an Acorn Atom ATM file, the format of the Atom's emulators and its AtoMMC card. Its 22-byte header gives the file's name (16 bytes, padded with zeroes), the address to load the data at, the address to run it from and the data's length, so no address is given; `load_atm()` returns the load address:
+
+```python
+start = load_atm("game.atm")
+acorn.atom()
+```
+
+If the execution address is in the data, the code there is traced, with the comment `; The ATM file's execution address` (give it a name with `label()` or `entry()`). The disassembly starts with the header, so that it assembles to the whole ATM file, with acme, beebasm, Baron, xa, 64tass or ca65:
+
+```
+; The ATM file's header
+    org &28ea
+    equb &47, &41, &4d, &45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ; Name: "GAME"
+    equw &2900 ; Load address
+    equw &2a00 ; Execution address
+    equw &0400 ; Length
+```
+
+To disassemble just the data, use `load(address, "game.atm", offset=22)` instead. If the length in the header isn't the length of the data after it, py8dis warns, and loads all of the data.
 
 ### move
 

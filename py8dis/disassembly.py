@@ -1246,13 +1246,21 @@ def emit(print_output=True):
     for start_addr, end_addr in move_ranges:
         if old_end_addr is None:
             # A PRG file's two-byte header (its load address), if it was
-            # loaded with load_prg(), so the output assembles to the whole file
-            prg_addr = memorymanager.prg_header_addr()
-            if prg_addr is not None:
-                if config.get_assembler().prg_header(prg_addr) is None:
+            # loaded with load_prg(), or an ATM file's 22-byte header, if it
+            # was loaded with load_atm(), so the output assembles to the
+            # whole file
+            file_header = memorymanager.file_header()
+            if file_header is not None and file_header.loaded_file.prg:
+                if config.get_assembler().prg_header(file_header.load_addr) is None:
                     utils.warn("the PRG file's load address isn't output with this assembler, so the output assembles to the data without it")
                 else:
-                    d.append(output.Directive("prg_header", prg_addr).resolve())
+                    d.append(output.Directive("prg_header", file_header.load_addr).resolve())
+            elif file_header is not None:
+                atm = file_header.loaded_file.atm
+                if config.get_assembler().atm_header(file_header.load_addr, atm) is None:
+                    utils.warn("the ATM file's header isn't output with this assembler, so the output assembles to the data without it")
+                else:
+                    d.append(output.Directive("atm_header", file_header.load_addr, atm).resolve())
             # Output an ORG at the beginning
             d.append(output.Directive("code_start", start_addr, end_addr, True).resolve())
             old_end_addr = start_addr

@@ -362,7 +362,7 @@ class Assembler:
         this (then py8dis warns that the output assembles to the data
         without it). disassembly.emit() calls it, before the first
         code_start(), if the lowest load is a PRG file (see
-        memorymanager.prg_header_addr()).
+        memorymanager.file_header()).
 
         The lines assemble the file's two-byte load address, 'load_addr',
         just before the data, so that the output assembles to the whole PRG
@@ -372,6 +372,37 @@ class Assembler:
         # (Without code_start()'s blank lines)
         org = [line for line in self.code_start(load_addr - 2, load_addr, True) if line.strip()]
         return ["", self.comment_prefix() + " The PRG file's header: the address to load it at"] + org + [utils.make_indent(1) + self.word_prefix() + self.hex4(load_addr)]
+
+    def atm_header(self, load_addr, atm):
+        """The lines at the start of the output for an Acorn Atom ATM file
+        loaded with load_atm(), as a list of strings, or None if the
+        assembler can't do this (then py8dis warns that the output assembles
+        to the data without it). disassembly.emit() calls it, as for
+        prg_header(), if the lowest load is an ATM file (see
+        memorymanager.file_header()).
+
+        The lines assemble the file's 22-byte header ('atm', a
+        memorymanager.AtmHeader) just before the data at 'load_addr', so
+        that the output assembles to the whole ATM file: by default,
+        code_start() at load_addr - 22, then the header (see
+        atm_header_body())."""
+        # (Without code_start()'s blank lines)
+        org = [line for line in self.code_start(load_addr - 22, load_addr, True) if line.strip()]
+        return ["", self.comment_prefix() + " The ATM file's header"] + org + self.atm_header_body(atm)
+
+    def atm_header_body(self, atm):
+        """The lines of an ATM file's header (see atm_header()): its name's 16
+        bytes (zero-padded), then its load address, execution address and
+        length, as words, each with a comment saying what it is."""
+        name = atm.name.rstrip(b"\0")
+        shown = "".join(chr(c) if 32 <= c < 127 else "." for c in name)
+        name_bytes = ", ".join(self.hex2(c) if c else "0" for c in atm.name)
+        indent = utils.make_indent(1)
+        return [
+            indent + self.byte_prefix() + name_bytes + " " + self.comment_prefix() + ' Name: "{0}"'.format(shown),
+            indent + self.word_prefix() + self.hex4(atm.load_addr) + " " + self.comment_prefix() + " Load address",
+            indent + self.word_prefix() + self.hex4(atm.exec_addr) + " " + self.comment_prefix() + " Execution address",
+            indent + self.word_prefix() + self.hex4(atm.length) + " " + self.comment_prefix() + " Length"]
 
     def hex4_for_comment(self, n):
         """A four digit hex number, for use in a comment (e.g. the memory

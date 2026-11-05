@@ -82,6 +82,13 @@ entry(0x2900)
 go()
 ```
 
+An ATM file (the format of the Atom's emulators and AtoMMC) can be loaded with [`load_atm()`](../commands.md#load_atm), which reads its load and execution addresses from its header, and makes the output assemble to the whole file:
+
+```python
+start = load_atm("game.atm")
+acorn.atom()
+```
+
 The Atom's operating system is a different design from the BBC Micro's MOS (it has no OSBYTE or OSWORD, and its own entry points, vectors and hardware), so `acorn.atom()` sets up its own names and comments:
 
 **Names the OS calls**, in capitals as in Acorn's *Atomic Theory and Practice*: `OSSHUT`, `OSFIND`, `OSBPUT`, `OSBGET`, `OSSTAR`, `OSRDAR`, `OSSAVE`, `OSLOAD`, `OSRDCH`, `OSECHO`, `OSASCI`, `OSCRLF`, `OSWRCH` and `OSCLI` (#FFCB-#FFF7). `config.set_upper_case_os_calls(False)`, before `acorn.atom()`, gives `oswrch` etc.

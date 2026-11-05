@@ -262,18 +262,36 @@ class Memory:
         # The files loaded, in the order loaded: a LoadedFile for each load()
         self.loaded_files = []
 
-class LoadedFile:
-    """A file loaded with load() or load_prg(): its filename (as given), and
-    the binary addresses it's loaded at, from 'start' up to (but not
-    including) 'end'. 'offset' is where in the file the data loaded starts,
-    and 'prg' is True for a PRG file loaded with load_prg()."""
+class AtmHeader:
+    """The 22-byte header of an Acorn Atom ATM file (see load_atm()): its
+    'name' (16 bytes, zero-padded), its 'load_addr' and 'exec_addr', and the
+    'length' of the data it says follows."""
 
-    def __init__(self, filename, start, end, offset=0, prg=False):
+    LENGTH = 22
+
+    def __init__(self, data):
+        """Read the header from the start of 'data' (the file's bytes)."""
+        def word(offset):
+            return data[offset] | (data[offset + 1] << 8)
+        self.name = bytes(data[0:16])
+        self.load_addr = word(16)
+        self.exec_addr = word(18)
+        self.length = word(20)
+
+class LoadedFile:
+    """A file loaded with load(), load_prg() or load_atm(): its filename (as
+    given), and the binary addresses it's loaded at, from 'start' up to (but
+    not including) 'end'. 'offset' is where in the file the data loaded
+    starts, 'prg' is True for a PRG file loaded with load_prg(), and 'atm' is
+    the AtmHeader of an ATM file loaded with load_atm() (or None)."""
+
+    def __init__(self, filename, start, end, offset=0, prg=False, atm=None):
         self.filename = filename
         self.start = start
         self.end = end
         self.offset = offset
         self.prg = prg
+        self.atm = atm
 
     def describe(self):
         """e.g. "'orig/helloworld.orig' at &2000-&201b", for messages."""
@@ -340,15 +358,17 @@ def read_file(filename, die):
     except OSError as e:
         die("can't read the file ({0})".format(e.strerror))
 
-def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False, command=None):
+def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False, atm=None, command=None):
     """Load a binary file (or the part of it from 'offset', for 'length'
     bytes or to the end) into memory at the given binary address. This does
-    the work of the load() and load_prg() commands (in commands.py).
+    the work of the load(), load_prg() and load_atm() commands (in
+    commands.py).
 
     Checks the md5 checksum (of the whole file) matches if given. 'command'
     describes the command for messages, e.g. "load(&2000, 'file')". 'prg'
-    is True for load_prg(), so the output can start with the PRG file's
-    load address (see prg_header_addr()).
+    is True for load_prg(), and 'atm' the ATM file's AtmHeader for
+    load_atm(), so the output can start with the file's header (see
+    file_header()).
 
     Stops with an error (utils.die()) if the file can't be read, is empty,
     is shorter than 'offset' and 'length' need, doesn't match the md5sum,
@@ -395,21 +415,44 @@ def load(filename, binary_addr, md5sum=None, offset=0, length=None, *, prg=False
 
     memory.binary[binary_addr:end_addr] = data
     memory.load_ranges.append((binary_addr, end_addr))
-    memory.loaded_files.append(LoadedFile(filename, int(binary_addr), int(end_addr), offset, prg))
+    memory.loaded_files.append(LoadedFile(filename, int(binary_addr), int(end_addr), offset, prg, atm))
 
-def prg_header_addr():
-    """If the output starts with a PRG file's two-byte load address (see
-    load_prg()), so that it assembles to the whole PRG file, the load address;
-    otherwise None. That's when a PRG file is loaded at the lowest address
-    loaded (and at &0002 or above, so that the two bytes fit below it).
-    disassembly.emit() and beebasm.py use this to output the header."""
+class FileHeader:
+    """The header of a loaded file that the output starts with (see
+    file_header()): the LoadedFile, the 'load_addr' its data is at, and the
+    header's 'length' in bytes, which is just below it (2 for a PRG file, 22
+    for an ATM file)."""
+
+    def __init__(self, loaded_file, length):
+        self.loaded_file = loaded_file
+        self.load_addr = int(loaded_file.start)
+        self.length = length
+
+def file_header():
+    """If the output starts with the header of a file loaded with load_prg()
+    (its two-byte load address) or load_atm() (its 22-byte header), so that
+    it assembles to the whole file, a FileHeader; otherwise None. That's when
+    the file is loaded at the lowest address loaded, high enough for the
+    header to fit below it. disassembly.emit(), beebasm.py and baron.py use
+    this to output the header."""
     memory = session.current().memory
     if not memory.load_ranges:
         return None
     start, _ = get_entire_load_range()
     for loaded_file in memory.loaded_files:
-        if loaded_file.prg and loaded_file.start == start and start >= 2:
-            return int(start)
+        if loaded_file.start != start:
+            continue
+        length = 2 if loaded_file.prg else AtmHeader.LENGTH if loaded_file.atm is not None else 0
+        if length and start >= length:
+            return FileHeader(loaded_file, length)
+    return None
+
+def prg_header_addr():
+    """If the output starts with a PRG file's two-byte load address (see
+    load_prg() and file_header()), the load address; otherwise None."""
+    header = file_header()
+    if header is not None and header.loaded_file.prg:
+        return header.load_addr
     return None
 
 def is_data_loaded_at_binary_addr(binary_addr, n=1):

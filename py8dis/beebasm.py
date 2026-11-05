@@ -205,9 +205,11 @@ class Beebasm(assembler.Assembler):
         Stops with utils.die() if there isn't room in memory for the
         temporary area."""
         pydis_start, pydis_end = memorymanager.get_entire_load_range()
-        if memorymanager.prg_header_addr() is not None:
-            # The output starts with the two-byte PRG header (see prg_header())
-            pydis_start -= 2
+        header = memorymanager.file_header()
+        if header is not None:
+            # The output starts with a PRG or ATM file's header (see
+            # prg_header() and atm_header())
+            pydis_start -= header.length
 
         temp_start = -1
         overlap_length = -1
@@ -390,8 +392,10 @@ class Beebasm(assembler.Assembler):
         result.append("")
         s = utils.force_case("save")
         output_filename = session.current().output_filename
-        # (Starting with the two-byte header of a PRG file, see prg_header())
-        start = "pydis_start - 2" if memorymanager.prg_header_addr() is not None else "pydis_start"
+        # (Starting with the header of a PRG or ATM file, see prg_header()
+        # and atm_header())
+        header = memorymanager.file_header()
+        start = "pydis_start - {0}".format(header.length) if header is not None else "pydis_start"
         if output_filename is None:
             s += " %s, pydis_end" % start
         else:

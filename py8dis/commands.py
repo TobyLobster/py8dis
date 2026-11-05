@@ -27,7 +27,7 @@ does the whole disassembly.
 
 The commands, in the groups docs/commands.md uses (see it for the details):
 
-    Loading      load(), load_prg(), move(), include_binary_file()
+    Loading      load(), load_prg(), load_atm(), move(), include_binary_file()
     Code         entry(), nonentry(), wordentry(), code_ptr(),
                  rts_code_ptr(), hook_subroutine() (and the ready-made
                  hooks stringz_hook etc.), subroutine()
@@ -241,8 +241,9 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, 
     session's memory (see memorymanager.load(), which reads the file and
     checks the md5sum). Stops with an error if the arguments are wrong, the
     file can't be read, or the data runs past the top of memory; warns if
-    the file looks like a PRG file loaded from its start (see load_prg()), or
-    if it replaces data loaded earlier. See docs/commands.md."""
+    the file looks like a PRG or ATM file loaded from its start (see
+    load_prg() and load_atm()), or if it replaces data loaded earlier. See
+    docs/commands.md."""
 
     _check_address_range("load", binary_load_addr)
     command = "load({0}, {1!r})".format(_hex(binary_load_addr), filename)
@@ -255,6 +256,9 @@ def load(binary_load_addr, filename, cpu_name="6502", md5sum=None, *, offset=0, 
     # A PRG file's first two bytes are its load address, not part of the data
     if offset == 0 and filename.lower().endswith((".prg", ".p00")):
         utils.warn("{0}: this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg({1!r}) loads it at that address without them".format(command, filename))
+    # An ATM file's first 22 bytes are its header
+    if offset == 0 and filename.lower().endswith(".atm"):
+        utils.warn("{0}: this looks like an Acorn Atom ATM file, whose first 22 bytes are a header (its name, addresses and length), not data; load_atm({1!r}) loads it at its load address without them".format(command, filename))
 
     memorymanager.load(filename, binary_load_addr, md5sum, offset, length, command=command)
 
@@ -270,7 +274,7 @@ def load_prg(filename, cpu_name="6502", md5sum=None):
 
     The file is loaded as a PRG file (see memorymanager.LoadedFile), which
     is what makes the output start with the two bytes (see
-    memorymanager.prg_header_addr()). Stops with an error if the file is too
+    memorymanager.file_header()). Stops with an error if the file is too
     short to be a PRG file."""
 
     command = "load_prg({0!r})".format(filename)
@@ -288,6 +292,49 @@ def load_prg(filename, cpu_name="6502", md5sum=None):
     binary_load_addr = data[header_length] | (data[header_length + 1] << 8)
     memorymanager.load(filename, binary_load_addr, md5sum, header_length + 2, prg=True, command=command)
     return binary_load_addr
+
+def load_atm(filename, cpu_name="6502", md5sum=None):
+    """Loads an Acorn Atom ATM file (the format of the Atom's emulators and
+    its AtoMMC card): a 22-byte header (the file's name, in 16 bytes padded
+    with zeroes; then its load address, execution address and length, each
+    a word), then the data, which is loaded at the load address. If the
+    execution address is in the data, it's traced (see entry()), with a
+    comment, but without a name (give it one with label() or entry()).
+    Returns the load address.
+
+    The disassembly starts with the header, so that it assembles to the
+    whole ATM file. (To load the data without it, use load(address,
+    filename, offset=22).) The md5sum, if given, is that of the whole file.
+
+    The file is loaded with its header (see memorymanager.LoadedFile and
+    AtmHeader), which is what makes the output start with it (see
+    memorymanager.file_header()). Stops with an error if the file is too
+    short to be an ATM file; warns if the length in the header isn't the
+    length of the data after it (all of which is loaded)."""
+
+    command = "load_atm({0!r})".format(filename)
+    def die(problem):
+        """Stop with an error about the file, naming the command."""
+        utils.die("{0}: {1}".format(command, problem))
+    _select_cpu(cpu_name)
+
+    data = memorymanager.read_file(filename, die)
+    header_length = memorymanager.AtmHeader.LENGTH
+    if len(data) < header_length + 1:
+        die("the file ({0} bytes) is too short to be an ATM file (a 22-byte header, then the data)".format(len(data)))
+    atm = memorymanager.AtmHeader(data)
+    data_length = len(data) - header_length
+    if atm.length != data_length:
+        utils.warn("{0}: the header says the data is {1} bytes long, but there are {2} bytes after it (all of which are loaded)".format(command, atm.length, data_length))
+    memorymanager.load(filename, atm.load_addr, md5sum, header_length, atm=atm, command=command)
+
+    # Trace the code at the execution address, if it's in the data, with a
+    # comment saying it's where the file is run from (an automatic comment,
+    # so no_automatic_comment() leaves it out)
+    if atm.load_addr <= atm.exec_addr < atm.load_addr + data_length:
+        entry(atm.exec_addr)
+        auto_comment(atm.exec_addr, "The ATM file's execution address")
+    return atm.load_addr
 
 def _select_cpu(cpu_name):
     """Check the CPU asked for by load() or load_prg() is supported by the

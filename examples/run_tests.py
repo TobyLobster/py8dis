@@ -168,6 +168,7 @@ TESTS = [
     ("effect_patterns",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "effect patterns: snippets matching the values code stores, and the registers at a call"),
     ("prg_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
     ("p00_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a PC64 P00 file loaded with load_prg()"),
+    ("atm_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom ATM file loaded with load_atm(), which reassembles to the whole file"),
     ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loading parts of a file with load(..., offset=..., length=...)"),
     ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
     ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "PETSCII and screen code strings, with config.set_text_encoding()"),
@@ -252,6 +253,7 @@ ERROR_TESTS = [
     ("load_length_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset and length (20 + 10) run past the end of the file (28 bytes)"),
     ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),
     ("load_prg_too_short",      "load_prg('build/too_short.prg'): the file (2 bytes) is too short to be a PRG file (two bytes of load address, then the data)"),
+    ("load_atm_too_short",      "load_atm('build/too_short.atm'): the file (22 bytes) is too short to be an ATM file (a 22-byte header, then the data)"),
     ("upper_case_os_calls_too_late", "config.set_upper_case_os_calls(): call it before acorn.bbc(), commodore.c64() etc., which name the OS calls"),
     ("c64_configuration_without_c64", "commodore.c64_configuration(): call commodore.c64() first"),
     ("c64_configuration_bad_address", "commodore.c64_configuration(): the addresses must be between 0 and $10000, not 74565"),
@@ -284,6 +286,8 @@ ERROR_TESTS = [
 # give this warning (as one line of its error output).
 WARNING_TESTS = [
     ("load_prg_file",           "warning: load(&07ff, 'build/load_prg_file.prg'): this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg('build/load_prg_file.prg') loads it at that address without them"),
+    ("load_atm_file",           "warning: load(&28ea, 'build/load_atm_file.atm'): this looks like an Acorn Atom ATM file, whose first 22 bytes are a header (its name, addresses and length), not data; load_atm('build/load_atm_file.atm') loads it at its load address without them"),
+    ("load_atm_length",         "warning: load_atm('build/load_atm_length.atm'): the header says the data is 20 bytes long, but there are 8 bytes after it (all of which are loaded)"),
     ("jump_to_shared_address",  "warning: &1004: the jump or call to &8000 isn't traced, since more than one move puts code there (moves 1 and 2): trace the right one with entry() in a 'with' block for its move"),
     ("move_splits_data",        "warning: move boundary at binary address &3002 splits a classification"),
 ]
