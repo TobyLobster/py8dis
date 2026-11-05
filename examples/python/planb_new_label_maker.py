@@ -97,7 +97,7 @@ def inkey_expr(addr):
         expr(addr, acorn.inkey_enum[key])
         found_keys[key] = True
     else:
-        assert("inkey not found")
+        assert False, "inkey not found"
 
 def picture_sprite(addr, lab, width, height):
     """Name a sprite 'lab', and write its bytes in picture binary, one row of
@@ -618,7 +618,7 @@ def command_move_draw_rect(addr):
     for y in range(celly, celly + rect_height):
         for x in range(cellx, cellx + rect_width):
             plot_sprite(addr, sprite, x, y)
-    celly = y+1
+    celly += rect_height
     return 2
 
 def execute_command(command, addr):
