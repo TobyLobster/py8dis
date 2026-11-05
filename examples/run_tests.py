@@ -179,7 +179,7 @@ TESTS = [
     ("c64_names_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "c64_test with commodore.c64(names=\"commodore\"), and a name clash"),
     ("c64_memory_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the C64's memory configuration (the 6510's port at $01), followed through the code, with c64_configuration()"),
     ("drive_code_names",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program and its drive code both using $0300, each with its own machine's name for it (the C64 code's first)"),
-    ("drive_code_fixes",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program's drive code in the middle of buffer 0 (which isn't named), storing to $05 (not a job) and job 1"),
+    ("drive_code_fixes",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program's drive code in the middle of buffer 0 (which isn't named, and whose addresses are listed under '1541 drive'), storing to $05 (not a job) and job 1"),
     ("cartridge_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 cartridge, with commodore.is_cartridge()"),
     ("vic20_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a VIC-20 program, with commodore.vic20()"),
     ("vic20_8k_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "vic20_test for a VIC-20 with 8K or more RAM"),

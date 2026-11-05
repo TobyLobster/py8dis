@@ -1430,6 +1430,25 @@ def memory_region_for(runtime_addr):
             result = (start, end, name)
     return result
 
+def _range_heading(label):
+    """The heading of the ranges with optional labels of their own (see
+    add_range_optional_labels()) that the label is used in, if it's used
+    only in such ranges, all with the same heading, else None. Such a label
+    is listed under that heading, rather than under its memory region's:
+    e.g. an address that only a C64 program's drive code uses, with no 1541
+    name, is the drive's, so it goes under '1541 drive', not under the C64's
+    region for the address."""
+    ranges = [r for r in session.current().disassembly.range_optional_labels if r.heading is not None]
+    if not ranges or not label.references:
+        return None
+    heading = None
+    for reference in label.references:
+        r = next((r for r in ranges if r.start_addr <= reference.binary_addr < r.end_addr), None)
+        if r is None or (heading is not None and r.heading != heading):
+            return None
+        heading = r.heading
+    return heading
+
 def memory_location_definitions(indent_len):
     """The 'name = value' definitions of the labels not defined in the main
     disassembly, as a list of line objects (see output.py): in address order,
@@ -1446,10 +1465,13 @@ def memory_location_definitions(indent_len):
 
     labels = session.current().labels.labels
     formatter = config.get_assembler()
+    headings = session.current().disassembly.memory_location_headings
 
     # The names to define for each label, grouped by region (in address
     # order), then the local labels with a heading of their own (see
-    # Label.LocalLabelName), grouped by heading (in the order they come)
+    # Label.LocalLabelName), and the labels used only in a range with a
+    # heading of its own (see _range_heading()), grouped by heading (in the
+    # order they come)
     groups = []         # (region, [(label, names)])
     own_headings = {}   # heading: [(label, names)]
     use_regions = config.get_memory_region_headings()
@@ -1463,6 +1485,11 @@ def memory_location_definitions(indent_len):
         names = [name for name in names if name not in local_headings]
         if not names:
             continue
+        range_heading = _range_heading(label) if use_regions else None
+        if range_heading is not None:
+            own_headings.setdefault(range_heading, []).append((label, names))
+            headings[int(label.runtime_addr)] = range_heading
+            continue
         region = memory_region_for(addr) if use_regions else None
         if not groups or groups[-1][0] != region:
             groups.append((region, []))
@@ -1475,7 +1502,6 @@ def memory_location_definitions(indent_len):
     use_headings = any(region is not None for region, _ in groups)
 
     lines = []
-    headings = session.current().disassembly.memory_location_headings
     for region, definitions in groups:
         if use_headings:
             if region is None:

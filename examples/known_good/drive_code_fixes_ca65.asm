@@ -65,12 +65,10 @@ job_read    = $80
 
 ; Memory locations
 
-; Vectors ($0300-$0333)
-l0300   = $0300
-l0301   = $0301
-
 ; 1541 drive
 job_queue   = $0000
+l0300       = $0300
+l0301       = $0301
 
 ; The PRG file's header: the address to load it at
     .org $07ff
