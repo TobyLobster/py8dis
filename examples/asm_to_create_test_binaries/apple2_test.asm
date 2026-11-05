@@ -2,8 +2,9 @@
 ; apple.apple2()) and python/apple2e_names_test.py (with model="iie" and
 ; names="descriptive"): calls to the Monitor's routines, printing with COUT
 ; (a message, characters, and a DOS command after a Ctrl-D), the zero page,
-; vectors set to handlers, soft switches, and the IIe's AUXMOVE and status
-; switches. Assemble with:
+; vectors set to handlers, soft switches, the language card, the IIe's
+; switches, AUXMOVE and status switches, and the Disk II, indexed by the
+; slot. Assemble with:
 ;
 ;   acme -o ../orig/apple2_test.orig apple2_test.asm
 ;
@@ -52,6 +53,7 @@ hires    = $c057
 butn0    = $c061
 rdvblbar = $c019
 auxmove  = $c311
+lcbank2  = $c083
 
 * = $0803
 
@@ -176,6 +178,37 @@ wait_for_vbl
     sta a4l+1
     sec
     jsr auxmove
+
+    ; Wait for the vertical blank to start
+wait_for_vbl_start
+    lda rdvblbar
+    bmi wait_for_vbl_start
+
+    ; The language card: read and write RAM bank 2 (two reads), read the
+    ; ROM, then read the ROM and write RAM bank 1 (two reads)
+    lda lcbank2
+    lda lcbank2
+    lda $c082
+    lda $c089
+    lda $c089
+
+    ; The IIe's 80 columns, and auxiliary memory
+    sta $c00d
+    sta $c001
+    sta $c000
+    sta $c005
+    sta $c004
+
+    ; The Disk II in slot 6: the motor on, drive 1, read mode, wait for a
+    ; byte, then the motor off
+    ldx #$60
+    lda $c089,x
+    lda $c08a,x
+    lda $c08e,x
+read_disk_byte
+    lda $c08c,x
+    bpl read_disk_byte
+    lda $c088,x
 
     ; Find this code's address
     jsr iorts

@@ -270,6 +270,149 @@ apple2e_soft_switches = {
     0xc01f: ("RD80VID",   "is_80_columns"),
 }
 
+# The language card's switches (all models), as accessed without an index:
+# {address: (Apple's name, descriptive name)}. Where Apple's documentation
+# has no name (only ROMIN, LCBANK2 and LCBANK1 are well known, as in cc65's
+# apple2.inc), it's None, and the descriptive name is used in both styles. $C084-$C087 and
+# $C08C-$C08F act as $C080-$C083 and $C088-$C08B, and aren't named.
+apple2_language_card = {
+    0xc080: (None,      "lc_read_ram_2"),
+    0xc081: ("ROMIN",   "lc_read_rom_write_ram_2"),
+    0xc082: (None,      "lc_read_rom"),
+    0xc083: ("LCBANK2", "lc_read_write_ram_2"),
+    0xc088: (None,      "lc_read_ram_1"),
+    0xc089: (None,      "lc_read_rom_write_ram_1"),
+    0xc08a: (None,      "lc_read_rom_1"),
+    0xc08b: ("LCBANK1", "lc_read_write_ram_1"),
+}
+
+# What accessing each of the language card's switches does (the low 3 bits
+# of the address, and bit 3 for the bank), for the comments: reading one of
+# the odd ones twice in a row enables writing to the RAM
+def apple2_language_card_action(addr):
+    """What accessing the language card's switch at addr ($C080-$C08F)
+    does, e.g. 'Language card: read ROM, write RAM bank 2 (two reads enable
+    writing)'."""
+    bank = 1 if addr & 0x08 else 2
+    return "Language card: " + [
+        "read RAM bank {0}, no writing",
+        "read ROM, write RAM bank {0} (two reads in a row enable writing)",
+        "read ROM, no writing",
+        "read and write RAM bank {0} (two reads in a row enable writing)"][addr & 0x03].format(bank)
+
+# What accessing each soft switch does, read or written (the 6502's STA
+# without an index writes once, so it's the same as a read), for the
+# comments: {address: text}
+apple2_switch_actions = {
+    0xc010: "Clear the keyboard strobe",
+    0xc020: "Toggle the tape output",
+    0xc030: "Click the speaker",
+    0xc040: "Pulse the game I/O strobe",
+    0xc050: "Show graphics",
+    0xc051: "Show text",
+    0xc052: "Show graphics on the full screen",
+    0xc053: "Show text on the bottom 4 lines (mixed mode)",
+    0xc054: "Show page 1",
+    0xc055: "Show page 2",
+    0xc056: "Show lo-res graphics",
+    0xc057: "Show hi-res graphics",
+    0xc058: "Turn annunciator 0 off",
+    0xc059: "Turn annunciator 0 on",
+    0xc05a: "Turn annunciator 1 off",
+    0xc05b: "Turn annunciator 1 on",
+    0xc05c: "Turn annunciator 2 off",
+    0xc05d: "Turn annunciator 2 on",
+    0xc05e: "Turn annunciator 3 off",
+    0xc05f: "Turn annunciator 3 on",
+    0xc070: "Start the paddles' timers",
+    0xcfff: "Release the expansion ROM ($C800-$CFFF)",
+}
+
+# What reading each input tests, in bit 7, for the comments: {address:
+# text}. The comment is 'Test ' and the text, e.g. 'Test button 0 (bit 7
+# set if it's pressed)'.
+apple2_inputs = {
+    0xc000: "for a key (bit 7 set if one has been pressed)",
+    0xc060: "the tape input (bit 7)",
+    0xc061: "button 0 (bit 7 set if it's pressed)",
+    0xc062: "button 1 (bit 7 set if it's pressed)",
+    0xc063: "button 2 (bit 7 set if it's pressed)",
+    0xc064: "paddle 0's timer (bit 7 set until it runs out)",
+    0xc065: "paddle 1's timer (bit 7 set until it runs out)",
+    0xc066: "paddle 2's timer (bit 7 set until it runs out)",
+    0xc067: "paddle 3's timer (bit 7 set until it runs out)",
+}
+
+# The IIe's: its buttons 0 and 1 are the Open Apple and Solid Apple keys,
+# and its status switches
+apple2e_inputs = {
+    0xc061: "the Open Apple key (bit 7 set if it's pressed)",
+    0xc062: "the Solid Apple key (bit 7 set if it's pressed)",
+    0xc011: "whether the language card's bank 2 is selected (bit 7)",
+    0xc012: "whether the language card's RAM is being read (bit 7)",
+    0xc013: "whether auxiliary memory is being read (bit 7)",
+    0xc014: "whether auxiliary memory is being written (bit 7)",
+    0xc015: "whether the internal $C100-$CFFF ROM is selected (bit 7)",
+    0xc016: "whether the auxiliary zero page and stack are selected (bit 7)",
+    0xc017: "whether slot 3's ROM is selected (bit 7)",
+    0xc018: "whether 80STORE is on (bit 7)",
+    0xc019: "for the vertical blank (bit 7 clear during it)",
+    0xc01a: "whether text is shown (bit 7)",
+    0xc01b: "whether mixed mode is on (bit 7)",
+    0xc01c: "whether page 2 is shown (bit 7)",
+    0xc01d: "whether hi-res is shown (bit 7)",
+    0xc01e: "whether the alternate character set is selected (bit 7)",
+    0xc01f: "whether 80 columns are shown (bit 7)",
+}
+
+# The IIe's switches at $C000-$C00F, which act when written (reading them
+# reads the keyboard): {address: (Apple's name, descriptive name, what it
+# does)}. They're named only where they're written (see apple.py).
+apple2e_write_switches = {
+    0xc000: ("CLR80STORE",   "store_80_off",       "Use RAMRD and RAMWRT for auxiliary memory (80STORE off)"),
+    0xc001: ("SET80STORE",   "store_80_on",        "Use page 2 for auxiliary memory (80STORE on)"),
+    0xc002: ("RDMAINRAM",    "read_main_ram",      "Read main memory ($0200-$BFFF)"),
+    0xc003: ("RDCARDRAM",    "read_aux_ram",       "Read auxiliary memory ($0200-$BFFF)"),
+    0xc004: ("WRMAINRAM",    "write_main_ram",     "Write main memory ($0200-$BFFF)"),
+    0xc005: ("WRCARDRAM",    "write_aux_ram",      "Write auxiliary memory ($0200-$BFFF)"),
+    0xc006: ("SETSLOTCXROM", "slot_cx_rom",        "Use the slots' ROMs at $C100-$CFFF"),
+    0xc007: ("SETINTCXROM",  "internal_cx_rom",    "Use the internal ROM at $C100-$CFFF"),
+    0xc008: ("SETSTDZP",     "main_zero_page",     "Use the main zero page, stack and language card"),
+    0xc009: ("SETALTZP",     "aux_zero_page",      "Use the auxiliary zero page, stack and language card"),
+    0xc00a: ("SETINTC3ROM",  "internal_c3_rom",    "Use the internal ROM at $C300"),
+    0xc00b: ("SETSLOTC3ROM", "slot_c3_rom",        "Use slot 3's ROM at $C300"),
+    0xc00c: ("CLR80VID",     "show_40_columns",    "Show 40 columns"),
+    0xc00d: ("SET80VID",     "show_80_columns",    "Show 80 columns"),
+    0xc00e: ("CLRALTCHAR",   "primary_charset",    "Use the primary character set"),
+    0xc00f: ("SETALTCHAR",   "alt_charset",        "Use the alternate character set (with MouseText)"),
+}
+
+# The Disk II controller's switches, used with the slot times 16 as the index
+# (e.g. 'lda Q6L,x' with X=$60 for slot 6), as in DOS 3.3's RWTS: {offset:
+# (Apple's name, descriptive name, what it does)}. The stepper's phases 1-3
+# are at offsets 2-7, which RWTS reaches by adding the phase times 2 to X.
+apple2_disk2_switches = {
+    0x0: ("PHASEOFF",  "disk_phase_off",   "Disk II: turn a stepper phase off"),
+    0x1: ("PHASEON",   "disk_phase_on",    "Disk II: turn a stepper phase on"),
+    0x2: ("PHASE1OFF", "disk_phase_1_off", "Disk II: turn the stepper's phase 1 off"),
+    0x3: ("PHASE1ON",  "disk_phase_1_on",  "Disk II: turn the stepper's phase 1 on"),
+    0x4: ("PHASE2OFF", "disk_phase_2_off", "Disk II: turn the stepper's phase 2 off"),
+    0x5: ("PHASE2ON",  "disk_phase_2_on",  "Disk II: turn the stepper's phase 2 on"),
+    0x6: ("PHASE3OFF", "disk_phase_3_off", "Disk II: turn the stepper's phase 3 off"),
+    0x7: ("PHASE3ON",  "disk_phase_3_on",  "Disk II: turn the stepper's phase 3 on"),
+    0x8: ("MOTOROFF",  "disk_motor_off",   "Disk II: turn the motor off"),
+    0x9: ("MOTORON",   "disk_motor_on",    "Disk II: turn the motor on"),
+    0xa: ("DRV0EN",    "disk_drive_1",     "Disk II: select drive 1"),
+    0xb: ("DRV1EN",    "disk_drive_2",     "Disk II: select drive 2"),
+    0xc: ("Q6L",       "disk_q6_low",      "Disk II: Q6 low (read the data latch)"),
+    0xd: ("Q6H",       "disk_q6_high",     "Disk II: Q6 high (sense write protect, or load the data latch)"),
+    0xe: ("Q7L",       "disk_q7_low",      "Disk II: Q7 low (read mode)"),
+    0xf: ("Q7H",       "disk_q7_high",     "Disk II: Q7 high (write mode)"),
+}
+
+# The heading for the Disk II's names in the list of memory locations
+APPLE2_DISK2_HEADING = "Disk II (indexed by the slot times 16)"
+
 # The lo-res colours, for the comments on SETCOL
 apple2_lores_colours = ["black", "magenta", "dark blue", "purple", "dark green", "grey", "medium blue", "light blue",
                         "brown", "orange", "grey", "pink", "green", "yellow", "aquamarine", "white"]

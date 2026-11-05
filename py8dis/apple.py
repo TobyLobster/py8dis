@@ -16,8 +16,15 @@ file calls apple2() after load() (or load_apple_file() etc.). It:
   and the page 3 vectors, and follows the code that sets a vector or the
   output or input hook (CSW, KSW): the handler is named (e.g.
   'output_handler') and traced;
-- names the soft switches (KBD, SPKR, TXTCLR etc.), which are I/O, and the
-  regions of memory;
+- names the soft switches (KBD, SPKR, TXTCLR etc.) and the language card's
+  (LCBANK2 etc.), which are I/O, and the regions of memory;
+- comments what the code does with them, e.g. 'Show graphics', 'Click the
+  speaker', 'Wait for a key' or 'Language card: read and write RAM bank 2
+  (two reads in a row enable writing)', as an analysis hook; and names the
+  IIe's switches that act when written (at $C000-$C00F, which reading reads
+  the keyboard) where they're written, e.g. 'sta SET80VID', and the Disk
+  II's, indexed by the slot times 16, where they're used, e.g. 'lda
+  Q6L,x' (comment_soft_switches());
 - makes the Apple II's high ASCII (ASCII with bit 7 set) the session's text
   encoding (see textencoding.py).
 
@@ -42,7 +49,7 @@ import session
 import textencoding
 import utils
 from align import Align
-from memorymanager import BinaryAddr, BinaryLocation
+from memorymanager import BinaryAddr, BinaryLocation, RuntimeAddr
 from snippets6502 import register_snippet
 from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
 from acornhelpers import character_streams, register_print_snippets
@@ -75,8 +82,9 @@ def _names():
 
 def _name(apple_name, descriptive_name):
     """The name in the session's style (Apple's, as official_name() gives
-    it, or the descriptive one)."""
-    return official_name(apple_name) if _names() == "apple" else descriptive_name
+    it, or the descriptive one). Where Apple has no name (apple_name is
+    None), it's the descriptive one in both styles."""
+    return official_name(apple_name) if _names() == "apple" and apple_name is not None else descriptive_name
 
 
 # ************************************************************************************************
@@ -220,6 +228,102 @@ def comment_printing():
 
 
 # ************************************************************************************************
+# The soft switches: what code does with them
+
+# The 6502's instructions with an absolute operand, by what they do to the
+# address: read it, write it, or both (read-modify-write); and those indexed
+# by X or Y
+_ABSOLUTE_READS = {0xad, 0xae, 0xac, 0x2c, 0xcd, 0xec, 0xcc, 0x6d, 0xed, 0x2d, 0x0d, 0x4d}
+_ABSOLUTE_WRITES = {0x8d, 0x8e, 0x8c}
+_ABSOLUTE_RMW = {0xee, 0xce, 0x0e, 0x4e, 0x2e, 0x6e}
+_INDEXED = {0xbd, 0xbc, 0xdd, 0x7d, 0xfd, 0x3d, 0x1d, 0x5d, 0x9d, 0xfe, 0xde, 0x1e, 0x5e, 0x3e, 0x7e,
+            0xb9, 0xbe, 0xd9, 0x79, 0xf9, 0x39, 0x19, 0x59, 0x99}
+
+# The branches on bit 7 (N), which wait loops use: BPL and BMI
+_BPL, _BMI = 0x10, 0x30
+
+def comment_soft_switches():
+    """Comment what the code does with the soft switches, the language card
+    and the Disk II (see the tables in appletables.py), and name the IIe's
+    write-only switches and the Disk II's, where they're used:
+    - an access to a switch that acts when it's read or written, e.g. 'Show
+      graphics' for TXTCLR, 'Click the speaker' for SPKR, or 'Language card:
+      read and write RAM bank 2 (two reads in a row enable writing)';
+    - a read of an input, e.g. 'Test button 0 (bit 7 set if it's pressed)',
+      or 'Wait for a key' for a loop reading KBD until bit 7 is set (and on
+      the IIe, 'Wait for the vertical blank' or 'Wait for the vertical blank
+      to end' for RDVBLBAR);
+    - on the IIe, a write to $C000-$C00F (which reading reads the keyboard),
+      e.g. 'Show 80 columns', with the address named for that write (e.g.
+      'sta SET80VID'; see apple2e_write_switches);
+    - an access to $C080-$C08F indexed by X or Y, which is the slot whose
+      number times 16 is in the register (usually a Disk II), e.g. 'lda
+      Q6L,x ; Disk II: Q6 low (read the data latch)', named for that
+      instruction (see apple2_disk2_switches).
+    The names for one instruction are local labels (see
+    disassembly.add_local_label()). (Run once the code has been traced, as
+    an analysis hook.)"""
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+    moves = session.current().moves.move_id_for_binary_addr
+    iie = session.current().extras.get("apple.model") == "iie"
+    inputs = dict(apple2_inputs)
+    if iie:
+        inputs.update(apple2e_inputs)
+
+    def comment(binary_addr, text):
+        """Comment the instruction at binary_addr, in the move it's in."""
+        disassembly.comment_binary(BinaryLocation(BinaryAddr(binary_addr), moves[binary_addr]), text,
+                                   align=Align.INLINE, auto_generated=True)
+
+    def name(binary_addr, addr, apple_name, descriptive_name, heading=None):
+        """Name addr as used by the instruction at binary_addr (only there)."""
+        disassembly.add_local_label(RuntimeAddr(addr), _name(apple_name, descriptive_name), binary_addr, binary_addr + 3, heading=heading)
+
+    def branches_back(run, k, branch):
+        """Whether the instruction after run[k] is the branch 'branch' (an
+        opcode) back to run[k]."""
+        if k + 1 >= len(run) or memory_binary[run[k + 1]] != branch:
+            return False
+        offset = memory_binary[run[k + 1] + 1]
+        target = run[k + 1] + 2 + (offset - 256 if offset >= 128 else offset)
+        return target == run[k]
+
+    for run in cpu.straight_runs():
+        for k, binary_addr in enumerate(run):
+            opcode = memory_binary[binary_addr]
+            if opcode not in _ABSOLUTE_READS and opcode not in _ABSOLUTE_WRITES and opcode not in _ABSOLUTE_RMW and opcode not in _INDEXED:
+                continue
+            addr = memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
+            if opcode in _INDEXED:
+                # The Disk II (or another card) in the slot whose number
+                # times 16 is in X or Y
+                if 0xc080 <= addr <= 0xc08f:
+                    apple_name, descriptive_name, text = apple2_disk2_switches[addr & 0x0f]
+                    name(binary_addr, addr, apple_name, descriptive_name, APPLE2_DISK2_HEADING)
+                    comment(binary_addr, text)
+                continue
+            if 0xc080 <= addr <= 0xc08f:
+                comment(binary_addr, apple2_language_card_action(addr))
+            elif addr in apple2_switch_actions:
+                comment(binary_addr, apple2_switch_actions[addr])
+            elif iie and opcode in _ABSOLUTE_WRITES and addr in apple2e_write_switches:
+                apple_name, descriptive_name, text = apple2e_write_switches[addr]
+                name(binary_addr, addr, apple_name, descriptive_name)
+                comment(binary_addr, text)
+            elif opcode in _ABSOLUTE_READS and addr in inputs:
+                if addr == 0xc000 and branches_back(run, k, _BPL):
+                    text = "Wait for a key"
+                elif iie and addr == 0xc019 and branches_back(run, k, _BMI):
+                    text = "Wait for the vertical blank"
+                elif iie and addr == 0xc019 and branches_back(run, k, _BPL):
+                    text = "Wait for the vertical blank to end"
+                else:
+                    text = "Test " + inputs[addr]
+                comment(binary_addr, text)
+
+
+# ************************************************************************************************
 # Code that sets one of the vectors, or the output or input hook
 
 def pre_trace_setting_vector(p):
@@ -327,6 +431,7 @@ def apple2(model="ii+", names="apple"):
     # inline
     io_range(0xc000, 0xc100)
     switches = dict(apple2_soft_switches)
+    switches.update(apple2_language_card)
     if model == "iie":
         switches.update(apple2e_soft_switches)
     for addr, (apple_name, descriptive_name) in switches.items():
@@ -339,5 +444,7 @@ def apple2(model="ii+", names="apple"):
     register_print_snippets(COUT)
     register_snippet(pre_trace_setting_vector, post_trace_setting_vector, vector_pattern(apple2_vectors))
 
-    # The comments on what's printed (once the code is traced)
+    # The comments on what's printed, and on the soft switches (once the code
+    # is traced)
     session.current().trace.analysis_hooks.append(comment_printing)
+    session.current().trace.analysis_hooks.append(comment_soft_switches)

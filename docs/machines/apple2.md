@@ -54,7 +54,35 @@ A character printed with `COUT` is written as one where it's loaded: `lda #'A' |
     sta CSWH
 ```
 
-**Names the soft switches** at $C000-$C0FF (`KBD`, `KBDSTRB`, `TAPEOUT`, `SPKR`, `STROBE`, `TXTCLR`, `TXTSET`, `MIXCLR`, `MIXSET`, `TXTPAGE1`, `TXTPAGE2`, `LORES`, `HIRES`, `CLRAN0` to `SETAN3`, `TAPEIN`, `BUTN0` to `BUTN2`, `PADDL0` to `PADDL3`, `PTRIG`) and `CLRROM` ($CFFF), and on the IIe its status switches (`RDLCBNK2`, `RDLCRAM`, `RDRAMRD`, `RDRAMWRT`, `RDCXROM`, `RDALTZP`, `RDC3ROM`, `RD80STORE`, `RDVBLBAR`, `RDTEXT`, `RDMIXED`, `RDPAGE2`, `RDHIRES`, `RDALTCHAR`, `RD80VID`). $C000-$C0FF is marked as I/O, so these are always defined as `name = value`.
+**Names the soft switches** at $C000-$C0FF (`KBD`, `KBDSTRB`, `TAPEOUT`, `SPKR`, `STROBE`, `TXTCLR`, `TXTSET`, `MIXCLR`, `MIXSET`, `TXTPAGE1`, `TXTPAGE2`, `LORES`, `HIRES`, `CLRAN0` to `SETAN3`, `TAPEIN`, `BUTN0` to `BUTN2`, `PADDL0` to `PADDL3`, `PTRIG`) and `CLRROM` ($CFFF), and on the IIe its status switches (`RDLCBNK2`, `RDLCRAM`, `RDRAMRD`, `RDRAMWRT`, `RDCXROM`, `RDALTZP`, `RDC3ROM`, `RD80STORE`, `RDVBLBAR`, `RDTEXT`, `RDMIXED`, `RDPAGE2`, `RDHIRES`, `RDALTCHAR`, `RD80VID`). The language card's switches are `ROMIN` ($C081), `LCBANK2` ($C083) and `LCBANK1` ($C08B), and, since Apple's documentation has no names for the others, `lc_read_ram_2` ($C080), `lc_read_rom` ($C082), `lc_read_ram_1` ($C088), `lc_read_rom_write_ram_1` ($C089) and `lc_read_rom_1` ($C08A). $C000-$C0FF is marked as I/O, so these are always defined as `name = value`.
+
+**Comments what the code does with them**:
+
+- An access to a switch that acts whether it's read or written: `bit TXTCLR ; Show graphics`, `lda SPKR ; Click the speaker`, `sta KBDSTRB ; Clear the keyboard strobe`, `Show page 2`, `Show hi-res graphics`, `Turn annunciator 0 on`, `Start the paddles' timers`, `Release the expansion ROM ($C800-$CFFF)`.
+- The language card: `lda LCBANK2 ; Language card: read and write RAM bank 2 (two reads in a row enable writing)`, `Language card: read ROM, no writing` and so on.
+- A read of an input: `Test button 0 (bit 7 set if it's pressed)` (on the IIe, `Test the Open Apple key`), `Test paddle 0's timer (bit 7 set until it runs out)`, and on the IIe `Test whether 80 columns are shown (bit 7)` etc. A loop reading `KBD` until bit 7 is set is `Wait for a key`, and on the IIe, one reading `RDVBLBAR` is `Wait for the vertical blank` or `Wait for the vertical blank to end`.
+
+**Names the IIe's switches at $C000-$C00F where they're written.** Reading these addresses reads the keyboard, but writing them sets the IIe's memory and display switches, so each write gets the switch's name, with a comment, while reads keep `KBD`:
+
+```
+    sta SET80VID            ; Show 80 columns
+    sta SET80STORE          ; Use page 2 for auxiliary memory (80STORE on)
+    sta WRCARDRAM           ; Write auxiliary memory ($0200-$BFFF)
+```
+
+The names are `CLR80STORE`, `SET80STORE`, `RDMAINRAM`, `RDCARDRAM`, `WRMAINRAM`, `WRCARDRAM`, `SETSLOTCXROM`, `SETINTCXROM`, `SETSTDZP`, `SETALTZP`, `SETINTC3ROM`, `SETSLOTC3ROM`, `CLR80VID`, `SET80VID`, `CLRALTCHAR` and `SETALTCHAR` (with descriptive names such as `store_80_on`, `write_aux_ram` and `show_80_columns`). (The newer manuals call the first `80STOREOFF` and so on, which can't be a label, since it starts with a digit.)
+
+**Names the Disk II's switches where they're indexed by the slot.** A card's I/O is at $C080 plus the slot number times 16, so code reaches the Disk II in any slot with the slot times 16 in X or Y (e.g. `ldx #$60` for slot 6). An access to $C080-$C08F indexed by X or Y is taken to be the Disk II's, and named, with a comment, as in DOS 3.3's RWTS: `PHASEOFF`, `PHASEON` (and `PHASE1OFF` to `PHASE3ON`), `MOTOROFF`, `MOTORON`, `DRV0EN`, `DRV1EN`, `Q6L`, `Q6H`, `Q7L` and `Q7H`:
+
+```
+    lda MOTORON,x           ; Disk II: turn the motor on
+    lda Q7L,x               ; Disk II: Q7 low (read mode)
+loop
+    lda Q6L,x               ; Disk II: Q6 low (read the data latch)
+    bpl loop
+```
+
+These names are only for those instructions (the same addresses without an index are the language card's), and they're listed under their own heading, `; Disk II (indexed by the slot times 16)`. Another card used the same way gets the Disk II's names too.
 
 **Groups the memory locations** in the output by region: zero page, the stack, the input buffer, page 3, the DOS vectors, the vectors, the text and lo-res pages, the hi-res pages, the soft switches, the language card, the slots' I/O and ROMs, the expansion ROM, and the Applesoft and Monitor ROMs.
 

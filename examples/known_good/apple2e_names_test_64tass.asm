@@ -27,12 +27,22 @@ irq_vector  = $03fe
 
 ; Soft switches ($c000-$c07f)
 keyboard                = $c000
+store_80_off            = $c000
+store_80_on             = $c001
+write_main_ram          = $c004
+write_aux_ram           = $c005
+show_80_columns         = $c00d
 keyboard_strobe         = $c010
 is_not_vertical_blank   = $c019
 speaker                 = $c030
 show_graphics           = $c050
 show_hires              = $c057
 button_0                = $c061
+
+; Language card ($c080-$c08f)
+lc_read_rom             = $c082
+lc_read_write_ram_2     = $c083
+lc_read_rom_write_ram_1 = $c089
 
 ; Slot ROMs ($c100-$c7ff)
 aux_move = $c311
@@ -60,6 +70,13 @@ bell                = $ff3a
 known_rts           = $ff58
 monitor_no_beep     = $ff69
 
+; Disk II (indexed by the slot times 16)
+disk_motor_off  = $c088
+disk_motor_on   = $c089
+disk_drive_1    = $c08a
+disk_q6_low     = $c08c
+disk_q7_low     = $c08e
+
     * = $0803
 
 pydis_start
@@ -69,7 +86,7 @@ start
     ldx #0                                                            ; 0806: a2 00       ".
 ; $0808 referenced 1 time by $0811
 loop_c0808
-    lda l08fb,x                                                       ; 0808: bd fb 08    ={. ; A=character
+    lda l0931,x                                                       ; 0808: bd 31 09    =.. ; A=character
     beq c0813                                                         ; 080b: f0 06       p.
     jsr print_char                                                    ; 080d: 20 ed fd    .m} ; Print a character (through CSW)
     inx                                                               ; 0810: e8          h
@@ -134,38 +151,38 @@ c0887
     jsr set_normal                                                    ; 0891: 20 84 fe    ..~ ; Print in normal text
 
     ; Set the reset vector to 'reset_handler'
-    lda #<reset_handler                                               ; 0894: a9 f4       )t
+    lda #<reset_handler                                               ; 0894: a9 2a       ).
     sta reset_vector                                                  ; 0896: 8d f2 03    .r.
-    lda #>reset_handler                                               ; 0899: a9 08       ).
+    lda #>reset_handler                                               ; 0899: a9 09       ).
     sta reset_vector+1                                                ; 089b: 8d f3 03    .s.
 
     jsr set_power_up_byte                                             ; 089e: 20 6f fb    ..{ ; Set PWREDUP to match SOFTEV, so that reset uses it
 
     ; Set the output hook (CSW) to 'output_handler'
-    lda #<output_handler                                              ; 08a1: a9 f7       )w
+    lda #<output_handler                                              ; 08a1: a9 2d       ).
     sta output_hook                                                   ; 08a3: 85 36       ..
-    lda #>output_handler                                              ; 08a5: a9 08       ).
+    lda #>output_handler                                              ; 08a5: a9 09       ).
     sta output_hook+1                                                 ; 08a7: 85 37       ..
 
     ; Set the IRQ vector to 'irq_handler'
-    lda #<irq_handler                                                 ; 08a9: a9 fa       )z
+    lda #<irq_handler                                                 ; 08a9: a9 30       ).
     sta irq_vector                                                    ; 08ab: 8d fe 03    .~.
-    lda #>irq_handler                                                 ; 08ae: a9 08       ).
+    lda #>irq_handler                                                 ; 08ae: a9 09       ).
     sta irq_vector+1                                                  ; 08b0: 8d ff 03    ...
 
-    bit show_graphics                                                 ; 08b3: 2c 50 c0    ..@
-    bit show_hires                                                    ; 08b6: 2c 57 c0    ..@
-    lda speaker                                                       ; 08b9: ad 30 c0    -.@
+    bit show_graphics                                                 ; 08b3: 2c 50 c0    ..@ ; Show graphics
+    bit show_hires                                                    ; 08b6: 2c 57 c0    ..@ ; Show hi-res graphics
+    lda speaker                                                       ; 08b9: ad 30 c0    -.@ ; Click the speaker
 ; $08bc referenced 1 time by $08bf
 loop_c08bc
-    lda keyboard                                                      ; 08bc: ad 00 c0    -.@
+    lda keyboard                                                      ; 08bc: ad 00 c0    -.@ ; Wait for a key
     bpl loop_c08bc                                                    ; 08bf: 10 fb       .{
-    sta keyboard_strobe                                               ; 08c1: 8d 10 c0    ..@
-    lda button_0                                                      ; 08c4: ad 61 c0    -.@
+    sta keyboard_strobe                                               ; 08c1: 8d 10 c0    ..@ ; Clear the keyboard strobe
+    lda button_0                                                      ; 08c4: ad 61 c0    -.@ ; Test the Open Apple key (bit 7 set if it's pressed)
     bmi c08c9                                                         ; 08c7: 30 00       ..
 ; $08c9 referenced 2 times by $08c7, $08cc
 c08c9
-    lda is_not_vertical_blank                                         ; 08c9: ad 19 c0    -.@
+    lda is_not_vertical_blank                                         ; 08c9: ad 19 c0    -.@ ; Wait for the vertical blank to end
     bpl c08c9                                                         ; 08cc: 10 fb       .{
     lda #0                                                            ; 08ce: a9 00       ).
     sta monitor_a1                                                    ; 08d0: 85 3c       ..
@@ -181,82 +198,120 @@ c08c9
     sta monitor_a4+1                                                  ; 08e4: 85 43       ..
     sec                                                               ; 08e6: 38          .
     jsr aux_move                                                      ; 08e7: 20 11 c3    ..C ; Copy A1 to A2 to A4 in the other memory (C set: main to auxiliary)
-    jsr known_rts                                                     ; 08ea: 20 58 ff    ... ; Return (an RTS: code calls it to find its own address on the stack)
-    tsx                                                               ; 08ed: ba          :
-    lda l0100,x                                                       ; 08ee: bd 00 01    =..
-    jmp monitor_no_beep                                               ; 08f1: 4c 69 ff    ... ; Enter the Monitor
+; $08ea referenced 1 time by $08ed
+loop_c08ea
+    lda is_not_vertical_blank                                         ; 08ea: ad 19 c0    -.@ ; Wait for the vertical blank
+    bmi loop_c08ea                                                    ; 08ed: 30 fb       .{
+    lda lc_read_write_ram_2                                           ; 08ef: ad 83 c0    -.@ ; Language card: read and write RAM bank 2 (two reads in a row enable writing)
+    lda lc_read_write_ram_2                                           ; 08f2: ad 83 c0    -.@ ; Language card: read and write RAM bank 2 (two reads in a row enable writing)
+    lda lc_read_rom                                                   ; 08f5: ad 82 c0    -.@ ; Language card: read ROM, no writing
+    lda lc_read_rom_write_ram_1                                       ; 08f8: ad 89 c0    -.@ ; Language card: read ROM, write RAM bank 1 (two reads in a row enable writing)
+    lda lc_read_rom_write_ram_1                                       ; 08fb: ad 89 c0    -.@ ; Language card: read ROM, write RAM bank 1 (two reads in a row enable writing)
+    sta show_80_columns                                               ; 08fe: 8d 0d c0    ..@ ; Show 80 columns
+    sta store_80_on                                                   ; 0901: 8d 01 c0    ..@ ; Use page 2 for auxiliary memory (80STORE on)
+    sta store_80_off                                                  ; 0904: 8d 00 c0    ..@ ; Use RAMRD and RAMWRT for auxiliary memory (80STORE off)
+    sta write_aux_ram                                                 ; 0907: 8d 05 c0    ..@ ; Write auxiliary memory ($0200-$BFFF)
+    sta write_main_ram                                                ; 090a: 8d 04 c0    ..@ ; Write main memory ($0200-$BFFF)
+    ldx #$60                                                          ; 090d: a2 60       ".
+    lda disk_motor_on,x                                               ; 090f: bd 89 c0    =.@ ; Disk II: turn the motor on
+    lda disk_drive_1,x                                                ; 0912: bd 8a c0    =.@ ; Disk II: select drive 1
+    lda disk_q7_low,x                                                 ; 0915: bd 8e c0    =.@ ; Disk II: Q7 low (read mode)
+; $0918 referenced 1 time by $091b
+loop_c0918
+    lda disk_q6_low,x                                                 ; 0918: bd 8c c0    =.@ ; Disk II: Q6 low (read the data latch)
+    bpl loop_c0918                                                    ; 091b: 10 fb       .{
+    lda disk_motor_off,x                                              ; 091d: bd 88 c0    =.@ ; Disk II: turn the motor off
+    jsr known_rts                                                     ; 0920: 20 58 ff    ... ; Return (an RTS: code calls it to find its own address on the stack)
+    tsx                                                               ; 0923: ba          :
+    lda l0100,x                                                       ; 0924: bd 00 01    =..
+    jmp monitor_no_beep                                               ; 0927: 4c 69 ff    ... ; Enter the Monitor
 
 reset_handler
-    jmp monitor_no_beep                                               ; 08f4: 4c 69 ff    ... ; Enter the Monitor
+    jmp monitor_no_beep                                               ; 092a: 4c 69 ff    ... ; Enter the Monitor
 
 output_handler
-    jmp print_char_to_screen                                          ; 08f7: 4c f0 fd    .p} ; Print a character on the screen
+    jmp print_char_to_screen                                          ; 092d: 4c f0 fd    .p} ; Print a character on the screen
 
 irq_handler
-    rti                                                               ; 08fa: 40          .
+    rti                                                               ; 0930: 40          .
 
-; $08fb referenced 1 time by $0808
-l08fb
-    .text "HELLO, WORLD"                                              ; 08fb: c8 c5 cc... HEL
-    .byte $8d, 0                                                      ; 0907: 8d 00       ..
+; $0931 referenced 1 time by $0808
+l0931
+    .text "HELLO, WORLD"                                              ; 0931: c8 c5 cc... HEL
+    .byte $8d, 0                                                      ; 093d: 8d 00       ..
 pydis_end
 
-.cerror (<irq_handler) != $fa, "Assertion failed: <irq_handler == $fa"
-.cerror (<output_handler) != $f7, "Assertion failed: <output_handler == $f7"
-.cerror (<reset_handler) != $f4, "Assertion failed: <reset_handler == $f4"
-.cerror (>irq_handler) != $08, "Assertion failed: >irq_handler == $08"
-.cerror (>output_handler) != $08, "Assertion failed: >output_handler == $08"
-.cerror (>reset_handler) != $08, "Assertion failed: >reset_handler == $08"
+.cerror (<irq_handler) != $30, "Assertion failed: <irq_handler == $30"
+.cerror (<output_handler) != $2d, "Assertion failed: <output_handler == $2d"
+.cerror (<reset_handler) != $2a, "Assertion failed: <reset_handler == $2a"
+.cerror (>irq_handler) != $09, "Assertion failed: >irq_handler == $09"
+.cerror (>output_handler) != $09, "Assertion failed: >output_handler == $09"
+.cerror (>reset_handler) != $09, "Assertion failed: >reset_handler == $09"
 
 ; Label references by decreasing frequency:
-;     print_char:             10
-;     c08c9:                   2
-;     monitor_no_beep:         2
-;     aux_move:                1
-;     bell:                    1
-;     button_0:                1
-;     c0813:                   1
-;     c0887:                   1
-;     clear_screen:            1
-;     cursor_column:           1
-;     cursor_row:              1
-;     input_buffer:            1
-;     input_line:              1
-;     irq_vector:              1
-;     is_not_vertical_blank:   1
-;     keyboard:                1
-;     keyboard_strobe:         1
-;     known_rts:               1
-;     l0006:                   1
-;     l0007:                   1
-;     l0100:                   1
-;     l08fb:                   1
-;     loop_c0808:              1
-;     loop_c08bc:              1
-;     monitor_a1:              1
-;     monitor_a2:              1
-;     monitor_a4:              1
-;     move_cursor_to_row:      1
-;     output_hook:             1
-;     output_to_screen:        1
-;     output_to_slot:          1
-;     plot_lores_block:        1
-;     print_char_to_screen:    1
-;     print_cr:                1
-;     print_hex_byte:          1
-;     print_spaces:            1
-;     read_key:                1
-;     read_paddle:             1
-;     reset_vector:            1
-;     set_lores_colour:        1
-;     set_lores_mode:          1
-;     set_normal:              1
-;     set_power_up_byte:       1
-;     show_graphics:           1
-;     show_hires:              1
-;     speaker:                 1
-;     text_mask:               1
-;     wait:                    1
+;     print_char:               10
+;     disk_motor_on:             3
+;     lc_read_rom_write_ram_1:   3
+;     c08c9:                     2
+;     is_not_vertical_blank:     2
+;     keyboard:                  2
+;     lc_read_write_ram_2:       2
+;     monitor_no_beep:           2
+;     store_80_off:              2
+;     aux_move:                  1
+;     bell:                      1
+;     button_0:                  1
+;     c0813:                     1
+;     c0887:                     1
+;     clear_screen:              1
+;     cursor_column:             1
+;     cursor_row:                1
+;     disk_drive_1:              1
+;     disk_motor_off:            1
+;     disk_q6_low:               1
+;     disk_q7_low:               1
+;     input_buffer:              1
+;     input_line:                1
+;     irq_vector:                1
+;     keyboard_strobe:           1
+;     known_rts:                 1
+;     l0006:                     1
+;     l0007:                     1
+;     l0100:                     1
+;     l0931:                     1
+;     lc_read_rom:               1
+;     loop_c0808:                1
+;     loop_c08bc:                1
+;     loop_c08ea:                1
+;     loop_c0918:                1
+;     monitor_a1:                1
+;     monitor_a2:                1
+;     monitor_a4:                1
+;     move_cursor_to_row:        1
+;     output_hook:               1
+;     output_to_screen:          1
+;     output_to_slot:            1
+;     plot_lores_block:          1
+;     print_char_to_screen:      1
+;     print_cr:                  1
+;     print_hex_byte:            1
+;     print_spaces:              1
+;     read_key:                  1
+;     read_paddle:               1
+;     reset_vector:              1
+;     set_lores_colour:          1
+;     set_lores_mode:            1
+;     set_normal:                1
+;     set_power_up_byte:         1
+;     show_80_columns:           1
+;     show_graphics:             1
+;     show_hires:                1
+;     speaker:                   1
+;     store_80_on:               1
+;     text_mask:                 1
+;     wait:                      1
+;     write_aux_ram:             1
+;     write_main_ram:            1
 
 ; Automatically generated labels:
 ;     c0813
@@ -265,17 +320,19 @@ pydis_end
 ;     l0006
 ;     l0007
 ;     l0100
-;     l08fb
+;     l0931
 ;     loop_c0808
 ;     loop_c08bc
+;     loop_c08ea
+;     loop_c0918
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 262 bytes
-;     Code                     = 248 bytes (95%)
-;     Data                     = 14 bytes (5%)
+;     Total size (Code + Data) = 316 bytes
+;     Code                     = 302 bytes (96%)
+;     Data                     = 14 bytes (4%)
 ;
-;     Number of instructions   = 103
+;     Number of instructions   = 122
 ;     Number of data bytes     = 2 bytes
 ;     Number of data words     = 0 bytes
 ;     Number of string bytes   = 12 bytes

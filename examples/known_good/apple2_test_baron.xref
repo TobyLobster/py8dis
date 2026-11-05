@@ -40,7 +40,7 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
     &08e4     c08c9+27                     sta A4H
 
 &0100  l0100 (Memory locations: Stack)
-    &08ee     c08c9+37                     lda l0100,x
+    &0924     loop_c0918+12                lda l0100,x
 
 &0200  IN (Memory locations: Input buffer)
     &0884     c0813+113                    lda IN
@@ -70,29 +70,49 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
     &08c7     loop_c08bc+11                bmi c08c9
     &08cc     c08c9+3                      bpl c08c9
 
-&08f4  reset_handler (inline)
+&08ea  loop_c08ea (inline)
+    &08ed     loop_c08ea+3                 bmi loop_c08ea
+
+&0918  loop_c0918 (inline)
+    &091b     loop_c0918+3                 bpl loop_c0918
+
+&092a  reset_handler (inline)
     (not referenced)
 
-&08f7  output_handler (inline)
+&092d  output_handler (inline)
     (not referenced)
 
-&08fa  irq_handler (inline)
+&0930  irq_handler (inline)
     (not referenced)
 
-&08fb  l08fb (inline)
-    &0808     loop_c0808                   lda l08fb,x
+&0931  l0931 (inline)
+    &0808     loop_c0808                   lda l0931,x
 
-&0909  pydis_end (inline)
+&093f  pydis_end (inline)
     (not referenced)
 
 &c000  KBD (Memory locations: Soft switches)
     &08bc     loop_c08bc                   lda KBD
+    &0904     loop_c08ea+26                sta KBD
+
+&c001  lc001 (Memory locations: Soft switches)
+    &0901     loop_c08ea+23                sta lc001
+
+&c004  lc004 (Memory locations: Soft switches)
+    &090a     loop_c08ea+32                sta lc004
+
+&c005  lc005 (Memory locations: Soft switches)
+    &0907     loop_c08ea+29                sta lc005
+
+&c00d  lc00d (Memory locations: Soft switches)
+    &08fe     loop_c08ea+20                sta lc00d
 
 &c010  KBDSTRB (Memory locations: Soft switches)
     &08c1     loop_c08bc+5                 sta KBDSTRB
 
 &c019  lc019 (Memory locations: Soft switches)
     &08c9     c08c9                        lda lc019
+    &08ea     loop_c08ea                   lda lc019
 
 &c030  SPKR (Memory locations: Soft switches)
     &08b9     c0887+50                     lda SPKR
@@ -105,6 +125,30 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
 
 &c061  BUTN0 (Memory locations: Soft switches)
     &08c4     loop_c08bc+8                 lda BUTN0
+
+&c082  lc_read_rom (Memory locations: Language card)
+    &08f5     loop_c08ea+11                lda lc_read_rom
+
+&c083  LCBANK2 (Memory locations: Language card)
+    &08ef     loop_c08ea+5                 lda LCBANK2
+    &08f2     loop_c08ea+8                 lda LCBANK2
+
+&c088  MOTOROFF (local to &091d-&091f)
+    &091d     loop_c0918+5                 lda MOTOROFF,x
+
+&c089  lc_read_rom_write_ram_1 (Memory locations: Language card), MOTORON (local to &090f-&0911)
+    &08f8     loop_c08ea+14                lda lc_read_rom_write_ram_1
+    &08fb     loop_c08ea+17                lda lc_read_rom_write_ram_1
+    &090f     loop_c08ea+37                lda MOTORON,x
+
+&c08a  DRV0EN (local to &0912-&0914)
+    &0912     loop_c08ea+40                lda DRV0EN,x
+
+&c08c  Q6L (local to &0918-&091a)
+    &0918     loop_c0918                   lda Q6L,x
+
+&c08e  Q7L (local to &0915-&0917)
+    &0915     loop_c08ea+43                lda Q7L,x
 
 &c311  lc311 (Memory locations: Slot ROMs)
     &08e7     c08c9+30                     jsr lc311
@@ -161,7 +205,7 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
     &0840     c0813+45                     jsr COUT
 
 &fdf0  COUT1 (Memory locations: Monitor ROM)
-    &08f7     output_handler               jmp COUT1
+    &092d     output_handler               jmp COUT1
 
 &fe84  SETNORM (Memory locations: Monitor ROM)
     &0891     c0887+10                     jsr SETNORM
@@ -176,8 +220,8 @@ Cross-reference listing: each label, where it's defined, and what refers to it.
     &085f     c0813+76                     jsr BELL
 
 &ff58  IORTS (Memory locations: Monitor ROM)
-    &08ea     c08c9+33                     jsr IORTS
+    &0920     loop_c0918+8                 jsr IORTS
 
 &ff69  MONZ (Memory locations: Monitor ROM)
-    &08f1     c08c9+40                     jmp MONZ
-    &08f4     reset_handler                jmp MONZ
+    &0927     loop_c0918+15                jmp MONZ
+    &092a     reset_handler                jmp MONZ

@@ -735,8 +735,9 @@ def check_json_annotations(path, doc, asm):
     # (A local name can have a heading of its own: commodore.py's 'Other
     # banks', for the C128's names in other banks, 'Other memory
     # configurations', for the C64's names in other memory configurations,
-    # and '1541 drive', for the 1541's names in drive code)
-    own_headings = {"Other banks", "Other memory configurations", "1541 drive"}
+    # and '1541 drive', for the 1541's names in drive code; and apple.py's
+    # Disk II heading, for its names indexed by the slot)
+    own_headings = {"Other banks", "Other memory configurations", "1541 drive", "Disk II (indexed by the slot times 16)"}
     region_names = {r["name"] for r in regions} | {"Other"} | own_headings
     # The headings in the asm, e.g. '; Zero page (&0000-&00ff)' or '; Other'
     # (z88dk writes an address below &100 with two digits, e.g. '; ROM ($00-$3fff)')
