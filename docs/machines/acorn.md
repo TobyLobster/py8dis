@@ -161,4 +161,25 @@ acorn.atom_basic_program()
 go()
 ```
 
+### The Atom's kernel ROM
+
+`acorn.atom_kernel_rom()`, after `acorn.atom()`, for a disassembly of the Atom's kernel ROM (its OS, and the BASIC statements and COS commands it adds), loaded at #F000:
+
+```python
+load(0xf000, "akernel.rom", "6502")
+acorn.atom()
+acorn.atom_kernel_rom()
+go()
+```
+
+It traces the code from:
+- the 6502's vectors (`reset`, `nmi_handler`, `irq_handler`);
+- the default vectors it copies to #0204 on reset (`default_vectors`, pointing to e.g. `kernel_wrch`);
+- its two command tables (`basic_command_table` at #F000, for PLOT, DRAW, MOVE, CLEAR, DIM, `[`, OLD and WAIT, whose routines are named e.g. `command_plot`, and `cos_command_table`, for *CAT, *LOAD, *SAVE, *RUN, *MON, *NOMON, *FLOAD and *DOS, e.g. `star_load`);
+- the plot routine for each graphics mode (`plot_mode_0` to `plot_mode_4`);
+- OSWRCH's control code handlers (e.g. `wrch_clear_screen`) and OSRDCH's key handlers (e.g. `rdch_copy`), whose addresses' low bytes are in tables;
+- the routines BASIC calls (e.g. `interpret_command`).
+
+It classifies and names the tables (the assembler's, the graphics modes', the control codes' and the keys'), and names every OS entry point and kernel routine, whether it's used or not. See `examples/python/atom_kernel.py`.
+
 The tables are in `acornatom` (e.g. `acornatom.atom_vectors`, `acornatom.atom_control_codes`). See `examples/python/atom_test.py`.

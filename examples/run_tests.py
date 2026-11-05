@@ -197,6 +197,7 @@ TESTS = [
 
     # 6502 code: real programs
     ("os12",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "MOS 1.20"),
+    ("atom_kernel",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's kernel ROM, with acorn.atom() and acorn.atom_kernel_rom()"),
     ("basic4",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "BASIC 4"),
     ("dfs226",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS 2.26"),
     ("dfs226b",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS with an artificially added move() just for testing"),
@@ -251,6 +252,7 @@ ERROR_TESTS = [
     ("entry_before_load",       "entry(): call load() first (it chooses the CPU)"),
     ("atom_before_load",        'acorn.atom(): call load(..., "6502") first'),
     ("atom_after_bbc",          "acorn.atom(): this session's machine has already been chosen"),
+    ("atom_kernel_rom_without_atom", "acorn.atom_kernel_rom(): call acorn.atom() first"),
     ("load_offset_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset (28) is past the end of the file (28 bytes)"),
     ("load_length_past_end",    "load(&2000, 'orig/helloworld.orig'): the offset and length (20 + 10) run past the end of the file (28 bytes)"),
     ("load_bad_offset",         "load(&2000, 'orig/helloworld.orig'): the offset must be a whole number, 0 or more, not -1"),

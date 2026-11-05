@@ -1028,3 +1028,9 @@ def atom_basic_program(runtime_addr=acornatom.ATOM_BASIC_START):
     call. Returns the address after it, or None if there isn't a valid
     program there. (See acornatom.basic_program().)"""
     return acornatom.basic_program(runtime_addr)
+
+def atom_kernel_rom():
+    """For a disassembly of the Atom's kernel ROM, loaded at #F000 after
+    atom(): trace its code and classify its tables. (See
+    acornatom.kernel_rom().)"""
+    acornatom.kernel_rom()
