@@ -25,6 +25,9 @@ which calls atom() here. It:
   the VIA at #B800 and the ROM latch at #BFFF, which are I/O) and the
   regions of memory.
 
+basic_program() (acorn.atom_basic_program()) marks an Atom BASIC program,
+listing its lines in comments.
+
 The Atom's OS is a different design from the BBC Micro's MOS, so this module
 shares only a few helpers with acorn.py (in acornhelpers.py). Its data is in
 acornatomtables.py.
@@ -37,6 +40,7 @@ from commands import *
 import config
 import cpu6502
 import disassembly
+import memorymanager
 import movemanager
 import session
 import utils
@@ -501,6 +505,142 @@ def post_trace_writing_to_atom_vector(p):
     else:
         text = half_set_vector_text(p, description, config.get_assembler().hex2)
     comment_vector(p, text)
+
+
+# ************************************************************************************************
+# BASIC programs
+
+# Where Atom BASIC programs start (the text space, at ?18 * 256)
+ATOM_BASIC_START = 0x2900
+
+def _basic_lines(runtime_addr):
+    """The lines of the Atom BASIC program at runtime_addr, as a list of
+    (address, line number, text bytes), and the address of the byte with bit
+    7 set that ends it; or None if there isn't a valid BASIC program there.
+
+    Atom BASIC isn't tokenised: a program is a CR, then each line's number
+    (high byte first), its text and a CR, ending with a byte with bit 7 set
+    where the next line's number would be (#FF; NEW puts it in the first
+    line's place, and OLD clears it). It's valid if all of it is loaded,
+    and there are at most 10000 lines, each at most 255 characters long."""
+    def u8(addr):
+        """The byte at a runtime address, or None if it isn't loaded."""
+        if addr > 0xffff:
+            return None
+        binary_addr, _ = movemanager.r2b(RuntimeAddr(addr))
+        if binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr):
+            return None
+        return memory_binary[binary_addr]
+
+    if u8(runtime_addr) != 13:
+        return None
+    lines = []
+    addr = runtime_addr + 1
+    while True:
+        high = u8(addr)
+        if high is None:
+            return None
+        if high & 0x80:
+            return lines, addr
+        low = u8(addr + 1)
+        if low is None or len(lines) >= 10000:
+            return None
+        text = []
+        a = addr + 2
+        while True:
+            c = u8(a)
+            if c is None or len(text) > 255:
+                return None
+            if c == 13:
+                break
+            text.append(c)
+            a += 1
+        lines.append((addr, high * 256 + low, text))
+        addr = a + 1
+
+def _basic_line_text(text):
+    """A line's text (its bytes) as a listing, with the characters that aren't
+    printable ASCII as e.g. {#80} (in the assembler's hex)."""
+    return "".join(chr(c) if 32 <= c < 127 else "{%s}" % config.get_assembler().hex2(c) for c in text)
+
+def _link_address(text):
+    """The address after the first LINK in a line's text (outside quotes),
+    as # and hex digits or as decimal digits, or None."""
+    s = bytes(text).decode("latin-1")
+    in_quotes = False
+    for i, c in enumerate(s):
+        if c == '"':
+            in_quotes = not in_quotes
+        elif not in_quotes and s.startswith("LINK", i):
+            rest = s[i + 4:].lstrip(" ")
+            if rest.startswith("#"):
+                digits = ""
+                for d in rest[1:]:
+                    if d not in "0123456789ABCDEF":
+                        break
+                    digits += d
+                return int(digits, 16) if digits else None
+            digits = ""
+            for d in rest:
+                if not d.isdigit():
+                    break
+                digits += d
+            return int(digits) if digits else None
+    return None
+
+def basic_program(runtime_addr=ATOM_BASIC_START):
+    """Classify the Atom BASIC program at runtime_addr (by default #2900,
+    where BASIC's text space starts), e.g. one loaded with load_atm(). The CR
+    it starts with is labelled 'basic_start', and each line is labelled
+    (e.g. 'basic_line_10'), with its line number as two bytes (high byte
+    first, in decimal), its text as a string and its CR as a byte, and
+    listed in a comment, e.g. '; 10 PRINT "HELLO"'. The byte with bit 7 set
+    that ends it is labelled 'basic_end'. An address that LINK calls (# and
+    hex digits, or decimal) in the loaded data is an entry point, named
+    'link_entry' (then 'link_entry_2' etc.) unless it already has a name.
+
+    Returns the address after the program, or None (classifying nothing) if
+    there isn't a valid BASIC program there (see _basic_lines())."""
+    found = _basic_lines(runtime_addr)
+    if found is None:
+        return None
+    lines, end = found
+    labels = session.current().labels.labels
+
+    # Each line's label, e.g. 'basic_line_10' (or 'basic_line_10_2' for a
+    # second line 10)
+    names = {}
+    def line_name(number):
+        """The label for the next line with this line number."""
+        name = "basic_line_%d" % number
+        names[name] = names.get(name, 0) + 1
+        return name if names[name] == 1 else "%s_%d" % (name, names[name])
+
+    label(runtime_addr, "basic_start")
+    byte(runtime_addr)
+    link_count = 0
+    for addr, number, text in lines:
+        label(addr, line_name(number))
+        auto_comment(addr, "%d %s" % (number, _basic_line_text(text)))
+        byte(addr, 2)
+        decimal(addr, 2)
+        if text:
+            string(addr + 2, len(text))
+        byte(addr + 2 + len(text))
+
+        # LINK to an address in the loaded data
+        link = _link_address(text)
+        if link is not None and link <= 0xffff:
+            binary_addr, _ = movemanager.r2b(RuntimeAddr(link))
+            if binary_addr is not None and memorymanager.is_data_loaded_at_binary_addr(binary_addr):
+                entry(link)
+                if not (link in labels and labels[link].explicit_names):
+                    link_count += 1
+                    label(link, "link_entry" if link_count == 1 else "link_entry_%d" % link_count)
+
+    label(end, "basic_end")
+    byte(end)
+    return end + 1
 
 
 # ************************************************************************************************

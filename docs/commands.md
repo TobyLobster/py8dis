@@ -77,6 +77,8 @@ If the execution address is in the data, the code there is traced, with the comm
 
 To disassemble just the data, use `load(address, "game.atm", offset=22)` instead. If the length in the header isn't the length of the data after it, py8dis warns, and loads all of the data.
 
+For an Atom BASIC program (whose execution address is BASIC's, #C2B2), see [`acorn.atom_basic_program()`](machines/acorn.md#atom-basic-programs).
+
 ### move
 
 `move(dest_runtime_addr, src_binary_addr, length)`

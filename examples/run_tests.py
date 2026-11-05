@@ -164,6 +164,7 @@ TESTS = [
     ("acorn_vdu",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "VDU sequences written with OSWRCH, decoded by acorn.py"),
     ("acorn_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "acorn.bbc()'s comments: VDU 31 with the column from X and the row from A after X changes, and a table of character row offsets as words"),
     ("atom_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom program, with acorn.atom(): OS calls, what OSWRCH writes, #F7D1's string, kernel routines, a vector, the hardware"),
+    ("atom_basic",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom BASIC program in an ATM file, listed by acorn.atom_basic_program(), with the machine code its LINK calls traced"),
     ("atom_hardware",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom program's writes to the 8255 (graphics mode, keyboard row, speaker, colour set) and tests of its inputs, commented by acorn.atom()"),
     ("acorn_lower_case_os_calls", ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Acorn OS calls named in lower case, with config.set_upper_case_os_calls(False)"),
     ("effect_patterns",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "effect patterns: snippets matching the values code stores, and the registers at a call"),

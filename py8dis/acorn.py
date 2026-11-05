@@ -1021,3 +1021,10 @@ def atom():
     kernel routines, workspace and hardware. The Atom's OS is a different
     design from the MOS, so this is in acornatom.py (see acornatom.atom())."""
     acornatom.atom()
+
+def atom_basic_program(runtime_addr=acornatom.ATOM_BASIC_START):
+    """Classify the Atom BASIC program at runtime_addr (by default #2900),
+    listing its lines in comments, and trace the machine code its LINKs
+    call. Returns the address after it, or None if there isn't a valid
+    program there. (See acornatom.basic_program().)"""
+    return acornatom.basic_program(runtime_addr)

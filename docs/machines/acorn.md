@@ -138,4 +138,27 @@ It **comments tests of the inputs** too:
 
 **Recognises loops that print** a message, or the same character several times, with OSWRCH, as for the BBC Micro.
 
+### Atom BASIC programs
+
+`acorn.atom_basic_program(runtime_addr=0x2900)`
+
+Marks the Atom BASIC program at `runtime_addr`, by default #2900, where BASIC's text space starts. Atom BASIC isn't tokenised: a program is a CR, then each line's number (high byte first), its text and a CR, ending with #FF. The CR at the start is labelled `basic_start`, and each line is labelled (`basic_line_10`), with its number as two bytes, its text as a string and its CR, and listed in a comment. The #FF at the end is labelled `basic_end`:
+
+```
+; 20 P."HELLO, WORLD"
+.basic_line_20
+    equb 0, 20
+    equs "P.", '"', "HELLO, WORLD", '"'
+    equb &0d
+```
+
+An address that a LINK calls (`LINK #2950`, or in decimal), in the loaded data, is traced as code, and named `link_entry` (then `link_entry_2` etc.) unless it already has a name. It returns the address after the program, or None if there isn't a valid program there. For a program saved as an ATM file (whose execution address is BASIC's, #C2B2):
+
+```python
+load_atm("game.atm")
+acorn.atom()
+acorn.atom_basic_program()
+go()
+```
+
 The tables are in `acornatom` (e.g. `acornatom.atom_vectors`, `acornatom.atom_control_codes`). See `examples/python/atom_test.py`.
