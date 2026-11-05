@@ -736,9 +736,13 @@ def rom():
     character set); and name every routine and table, whether it's used or
     not. The addresses are the 48K ROM's: see offset_table() etc. for
     another ROM's. This stops with an error if spectrum48() hasn't been
-    called."""
+    called, or was called with rom_labels=False (which leaves out the 48K
+    ROM's hooks for GEN-ENT-1 and GEN-ENT-2, so its calculator code wouldn't
+    be traced right)."""
     if not _set_up_done():
         utils.die("spectrum.rom(): call spectrum48() first")
+    if not session.current().extras["spectrum.rom_labels"]:
+        utils.die("spectrum.rom(): it's for the 48K ROM, so call spectrum48() without rom_labels=False")
 
     # The restarts, the interrupt and the NMI
     for addr in (0x0000, 0x0008, 0x0010, 0x0018, 0x0020, 0x0028, 0x0030, 0x0038, 0x0066):

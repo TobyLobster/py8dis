@@ -274,6 +274,7 @@ ERROR_TESTS = [
     ("sjasmplus_register_label", "sjasmplus doesn't accept 'hl' as a label, since it's a register's name: rename it"),
     ("sjasmplus_operator_label", "sjasmplus doesn't accept 'LOW' as a label, since it's an operator's name: rename it"),
     ("sjasmplus_long_label",    "sjasmplus doesn't accept 'a_label_name_that_is_much_too_long_for_sjasmplus_which_allows_64_chars' as a label, since it's longer than 64 characters: rename it"),
+    ("spectrum_rom_without_rom_labels", "spectrum.rom(): it's for the 48K ROM, so call spectrum48() without rom_labels=False"),
     ("cpm_wrong_cpu",           "cpm.cpm(): call load(..., \"z80\") or load(..., \"8080\") first"),
     ("cpm_wrapper_without_cpm", "cpm.bdos_wrapper(): call cpm.cpm() first"),
     ("cpm_wrapper_bad_register", "cpm.bdos_wrapper($015a, 'b'): the register must be \"a\" or \"c\""),
