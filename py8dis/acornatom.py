@@ -17,6 +17,10 @@ which calls atom() here. It:
 - names the vectors at #0200-#021F, and follows the code that sets them:
   the handler is named and traced (an effect pattern, as on the BBC Micro);
 - recognises loops that print a message or a character with OSWRCH;
+- comments what code writes to the 8255's ports (e.g. 'Select graphics mode
+  4 (256x192, 2 colours)' for #B000, 'Toggle the speaker' for #B002), and
+  its tests of their input bits (e.g. 'Test the REPT key'), as an analysis
+  hook (comment_hardware());
 - names some OS and BASIC workspace, the hardware (the 8255 PPI at #B000,
   the VIA at #B800 and the ROM latch at #BFFF, which are I/O) and the
   regions of memory.
@@ -279,6 +283,191 @@ def comment_characters():
 
 
 # ************************************************************************************************
+# The 8255 PPI's ports: what code writes to them, and tests of their inputs
+
+_PORT_A = 0xb000        # the 6847's mode, and the keyboard row
+_PORT_C = 0xb002        # the tape, speaker and colour set
+_PPI_CONTROL = 0xb003   # the 8255's modes, or set or clear a bit of port C
+
+def _sentence(phrases):
+    """The phrases (each starting with a capital) as one, e.g. 'Speaker high,
+    select colour set 0', or None if there are none."""
+    if not phrases:
+        return None
+    return ", ".join([phrases[0]] + [p[0].lower() + p[1:] for p in phrases[1:]])
+
+def _port_a_text(set_mask, clear_mask):
+    """What a write to #B000 selects, given the bits known to be set and
+    cleared (see comment_hardware()): the 6847's mode, from bits 4-7 (text
+    mode if bit 4 is clear, or a graphics mode, see atom_graphics_modes, if
+    all four are known), and the keyboard row, from bits 0-3 (if they're all
+    known, and it isn't row 0 after the mode), e.g. 'Select graphics mode 4
+    (256x192, 2 colours)' or 'Select text mode, keyboard row 5'. None if
+    neither is known."""
+    known = set_mask | clear_mask
+    parts = []
+    mode_known = False
+    if clear_mask & 0x10:
+        parts.append("text mode")
+        mode_known = True
+    elif set_mask & 0x10 and known & 0xe0 == 0xe0:
+        parts.append(atom_graphics_modes[(set_mask >> 5) & 7])
+        mode_known = True
+    if known & 0x0f == 0x0f and (set_mask & 0x0f or not mode_known):
+        parts.append("keyboard row {0}".format(set_mask & 0x0f))
+    if not parts:
+        return None
+    return "Select " + ", ".join(parts)
+
+def _port_c_text(set_mask, clear_mask, toggle_mask):
+    """What a write to #B002 does to its output bits (see
+    atom_port_c_outputs), given the bits known to be set, cleared and
+    toggled (see comment_hardware()), e.g. 'Toggle the speaker', or None if
+    none of them is known."""
+    phrases = []
+    for bit, (set_text, clear_text, toggle_text) in sorted(atom_port_c_outputs.items()):
+        if toggle_mask & (1 << bit):
+            phrases.append(toggle_text)
+        elif set_mask & (1 << bit):
+            phrases.append(set_text)
+        elif clear_mask & (1 << bit):
+            phrases.append(clear_text)
+    return _sentence(phrases)
+
+def _ppi_control_text(value):
+    """What writing 'value' to #B003, the 8255's control register, does. With
+    bit 7 set, it sets the ports' modes, e.g. 'Set the 8255's modes: port A
+    output, port B input, port C bits 4-7 input, bits 0-3 output'; with it
+    clear, it sets or clears a bit of port C (bit 0: set; bits 1-3: which),
+    e.g. 'Set port C bit 2 (speaker high)'."""
+    if value & 0x80:
+        def direction(bit):
+            return "input" if value & bit else "output"
+        return "Set the 8255's modes: port A {0}, port B {1}, port C bits 4-7 {2}, bits 0-3 {3}".format(
+            direction(0x10), direction(0x02), direction(0x08), direction(0x01))
+    bit = (value >> 1) & 7
+    text = "{0} port C bit {1}".format("Set" if value & 1 else "Clear", bit)
+    if bit in atom_port_c_outputs:
+        what = atom_port_c_outputs[bit][0 if value & 1 else 1]
+        text += " ({0})".format(what[0].lower() + what[1:])
+    return text
+
+def comment_hardware():
+    """Comment what the code writes to the 8255's ports, and its tests of
+    their input bits (see the tables in acornatomtables.py):
+    - a store to #B000 (port A), #B002 (port C) or #B003 (the control
+      register) of a known value, or to #B000 or #B002 after 'lda port',
+      then 'ora #n', 'and #n' and 'eor #n' (which set, clear and toggle
+      bits), e.g. 'Select graphics mode 4 (256x192, 2 colours)', 'Select
+      keyboard row 3', 'Toggle the speaker', 'Select colour set 1' or 'Set
+      port C bit 2 (speaker high)';
+    - 'inc #B000': 'Select the next keyboard row';
+    - 'bit #B001' or 'bit #B002': bit 7 (N) for a BPL or BMI after it, e.g.
+      'Test the field sync', bit 6 (V) for a BVC or BVS, the bits in A (if
+      it's known) for a BEQ or BNE, or otherwise both, e.g. 'Test the field
+      sync (N) and the REPT key (V)';
+    - 'lda #B001' or 'lda #B002' then 'and #n', testing known input bits,
+      e.g. 'Test the CTRL key'.
+    A value is known only if it's known for certain (the pessimistic CPU
+    state). (Run once the code has been traced, as an analysis hook.)"""
+    cpu = session.current().cpu
+    memory_binary = session.current().memory.binary
+    moves = session.current().moves.move_id_for_binary_addr
+
+    def comment(binary_addr, text):
+        """Comment the instruction at binary_addr, in the move it's in."""
+        disassembly.comment_binary(BinaryLocation(BinaryAddr(binary_addr), moves[binary_addr]), text,
+                                   align=Align.INLINE, auto_generated=True)
+
+    def absolute(binary_addr):
+        """The 16-bit operand of the instruction at binary_addr."""
+        return memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
+
+    for run in cpu.straight_runs():
+        for k, binary_addr in enumerate(run):
+            opcode = memory_binary[binary_addr]
+            if opcode in (0x8d, 0x8e, 0x8c) and absolute(binary_addr) in (_PORT_A, _PORT_C, _PPI_CONTROL):
+                # STA, STX or STY to a port: work out which bits are known
+                # to be set, cleared and toggled
+                register = absolute(binary_addr)
+                set_mask = clear_mask = toggle_mask = 0
+                value = None
+                # 'lda register', then 'ora #n', 'and #n' and 'eor #n', then
+                # 'sta register'
+                i = k - 1
+                while opcode == 0x8d and i >= 0 and memory_binary[run[i]] in (0x09, 0x29, 0x49):
+                    i -= 1
+                if register != _PPI_CONTROL and opcode == 0x8d and 0 <= i < k - 1 and memory_binary[run[i]] == 0xad and absolute(run[i]) == register:
+                    for j in range(i + 1, k):
+                        n = memory_binary[run[j] + 1]
+                        if memory_binary[run[j]] == 0x09:
+                            # ORA sets the bits
+                            set_mask |= n
+                            clear_mask &= ~n
+                            toggle_mask &= ~n
+                        elif memory_binary[run[j]] == 0x29:
+                            # AND clears the others
+                            clear_mask |= ~n & 0xff
+                            set_mask &= n
+                            toggle_mask &= n
+                        else:
+                            # EOR flips the bits: a known one changes, and
+                            # an unknown one is toggled (or untoggled)
+                            set_mask, clear_mask = (set_mask & ~n) | (clear_mask & n), (clear_mask & ~n) | (set_mask & n)
+                            toggle_mask ^= n & ~(set_mask | clear_mask)
+                elif k > 0 and cpu.cpu_states[run[k - 1]] is not None:
+                    # A known value (of the register stored, from the state
+                    # after the instruction before the store)
+                    value = cpu.cpu_states[run[k - 1]].pessimistic["axy"[(0x8d, 0x8e, 0x8c).index(opcode)]].value
+                    if value is None:
+                        continue
+                    set_mask, clear_mask = value, ~value & 0xff
+                else:
+                    continue
+                if register == _PORT_A:
+                    text = _port_a_text(set_mask, clear_mask)
+                elif register == _PORT_C:
+                    text = _port_c_text(set_mask, clear_mask, toggle_mask)
+                else:
+                    text = _ppi_control_text(value)
+                if text is not None:
+                    comment(binary_addr, text)
+            elif opcode == 0xee and absolute(binary_addr) == _PORT_A:
+                # 'inc #B000'
+                comment(binary_addr, "Select the next keyboard row")
+            elif opcode == 0x2c and absolute(binary_addr) in atom_port_inputs:
+                # 'bit port': N is bit 7 and V bit 6, and Z is set if none of
+                # the bits set in A is set in the port. What it tests depends
+                # on the branch after it, if there is one.
+                bits = atom_port_inputs[absolute(binary_addr)]
+                following = memory_binary[run[k + 1]] if k + 1 < len(run) else None
+                if following in (0x10, 0x30):
+                    # BPL or BMI
+                    text = "Test " + bits[7]
+                elif following in (0x50, 0x70):
+                    # BVC or BVS
+                    text = "Test " + bits[6]
+                elif following in (0xd0, 0xf0):
+                    # BNE or BEQ: the bits in A, if it's known for certain
+                    a = cpu.cpu_states[run[k - 1]].pessimistic['a'].value if k > 0 and cpu.cpu_states[run[k - 1]] is not None else None
+                    names = None if a is None else [bits[bit] for bit in range(8) if a & (1 << bit) and bit in bits]
+                    if not names or any(a & (1 << bit) and bit not in bits for bit in range(8)):
+                        continue
+                    text = "Test " + " and ".join(names)
+                else:
+                    text = "Test {0} (N) and {1} (V)".format(bits[7], bits[6])
+                comment(binary_addr, text)
+            elif opcode == 0x29 and k > 0 and memory_binary[run[k - 1]] == 0xad and absolute(run[k - 1]) in atom_port_inputs:
+                # 'lda port : and #n', testing bits (only if every bit tested
+                # is one it knows)
+                bits = atom_port_inputs[absolute(run[k - 1])]
+                n = memory_binary[binary_addr + 1]
+                names = [bits[bit] for bit in range(8) if n & (1 << bit) and bit in bits]
+                if names and all(n & (1 << bit) == 0 or bit in bits for bit in range(8)):
+                    comment(binary_addr, "Test " + " and ".join(names))
+
+
+# ************************************************************************************************
 # Code that sets one of the vectors
 
 def pre_trace_writing_to_atom_vector(p):
@@ -328,7 +517,8 @@ def atom():
     the OS's entry points, with hooks to comment their calls, the comments
     on what's written with OSWRCH, the kernel routines (and the string after
     a call to #F7D1), the vectors and the code that sets them, the print
-    loops, the workspace, the hardware and the memory regions. The names
+    loops, the workspace, the hardware (and the comments on what's written
+    to it) and the memory regions. The names
     are optional labels, so they're only in the output if the program uses
     them, and the entry points aren't traced.
 
@@ -382,5 +572,7 @@ def atom():
     register_print_snippets(ATOM_OSWRCH)
     register_snippet(pre_trace_writing_to_atom_vector, post_trace_writing_to_atom_vector, vector_pattern(atom_vectors))
 
-    # The comments on what's written with OSWRCH (once the code is traced)
+    # The comments on what's written with OSWRCH, and to the 8255 (once the
+    # code is traced)
     session.current().trace.analysis_hooks.append(comment_characters)
+    session.current().trace.analysis_hooks.append(comment_hardware)

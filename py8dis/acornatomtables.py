@@ -141,6 +141,43 @@ atom_hardware = {
     0xbfff: "rom_latch",
 }
 
+# What #B000 (the 8255's port A) selects: the 6847's mode in bits 4-7 (bit 4
+# is A/G, graphics rather than text; bits 5-7 are GM0-GM2), and the keyboard
+# row to read at #B001 in bits 0-3. The graphics modes, by bits 5-7, when bit
+# 4 is set: CLEAR 1 to 4 write #30, #70, #B0 and #F0 (the 2-colour modes,
+# from the kernel's table at #F6DD), and the others are the 6847's 4-colour
+# modes. (With bit 4 clear, it's text mode, as CLEAR 0 writes #00.)
+atom_graphics_modes = {
+    0: "64x64 graphics, 4 colours",
+    1: "graphics mode 1 (128x64, 2 colours)",
+    2: "128x64 graphics, 4 colours",
+    3: "graphics mode 2 (128x96, 2 colours)",
+    4: "128x96 graphics, 4 colours",
+    5: "graphics mode 3 (128x192, 2 colours)",
+    6: "128x192 graphics, 4 colours",
+    7: "graphics mode 4 (256x192, 2 colours)",
+}
+
+# The output bits of #B002 (the 8255's port C, bits 0-3): {bit: (what
+# setting it does, what clearing it does, what toggling it does)}. The
+# speaker is toggled to make a sound; bit 3 is the 6847's CSS, which chooses
+# the colour set (#B002 OR 8 is the other set).
+atom_port_c_outputs = {
+    0: ("Tape output high", "Tape output low", "Toggle the tape output"),
+    1: ("Turn the 2.4 kHz tape tone on", "Turn the 2.4 kHz tape tone off", "Toggle the 2.4 kHz tape tone"),
+    2: ("Speaker high", "Speaker low", "Toggle the speaker"),
+    3: ("Select colour set 1", "Select colour set 0", "Toggle the colour set"),
+}
+
+# The input bits of #B001 (port B) and #B002 (port C) that the comments on
+# tests name (each is clear when its key is pressed; the field sync is clear
+# during the flyback). Bits 0-5 of #B001 are the keys in the keyboard row
+# selected at #B000, one for each column.
+atom_port_inputs = {
+    0xb001: {**{bit: "keyboard column {0}".format(bit) for bit in range(6)}, 6: "the CTRL key", 7: "the SHIFT key"},
+    0xb002: {4: "the 2.4 kHz tape tone input", 5: "the tape input", 6: "the REPT key", 7: "the field sync"},
+}
+
 # The regions of memory, to group the memory locations at the top of the
 # output: (start, end, name). The 6502's vectors at #FFFA are named by the
 # CPU.
