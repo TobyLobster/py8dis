@@ -1,0 +1,183 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+&0006  l0006 (Memory locations: Zero page)
+    &0876     c0813+99                     sty l0006
+
+&0007  l0007 (Memory locations: Zero page)
+    &0882     c0813+111                    stx l0007
+
+&0024  CH (Memory locations: Zero page)
+    &0889     c0887+2                      sta CH
+
+&0025  CV (Memory locations: Zero page)
+    &088b     c0887+4                      sta CV
+
+&0032  INVFLG (Memory locations: Zero page)
+    &088f     c0887+8                      sta INVFLG
+
+&0036  CSWL (Memory locations: Zero page)
+    &08a3     c0887+28                     sta CSWL
+
+&0037  CSWH (Memory locations: Zero page)
+    &08a7     c0887+32                     sta CSWH
+
+&003c  A1L (Memory locations: Zero page)
+    &08d0     c08c9+7                      sta A1L
+
+&003d  A1H (Memory locations: Zero page)
+    &08d4     c08c9+11                     sta A1H
+
+&003e  A2L (Memory locations: Zero page)
+    &08d8     c08c9+15                     sta A2L
+
+&003f  A2H (Memory locations: Zero page)
+    &08dc     c08c9+19                     sta A2H
+
+&0042  A4L (Memory locations: Zero page)
+    &08e0     c08c9+23                     sta A4L
+
+&0043  A4H (Memory locations: Zero page)
+    &08e4     c08c9+27                     sta A4H
+
+&0100  l0100 (Memory locations: Stack)
+    &08ee     c08c9+37                     lda l0100,x
+
+&0200  IN (Memory locations: Input buffer)
+    &0884     c0813+113                    lda IN
+
+&03f2  SOFTEV (Memory locations: Vectors)
+    &0896     c0887+15                     sta SOFTEV
+
+&03fe  IRQLOC (Memory locations: Vectors)
+    &08ab     c0887+36                     sta IRQLOC
+
+&0803  pydis_start (inline), start (inline)
+    (not referenced)
+
+&0808  loop_c0808 (inline)
+    &0811     loop_c0808+9                 bne loop_c0808
+
+&0813  c0813 (inline)
+    &080b     loop_c0808+3                 beq c0813
+
+&0887  c0887 (inline)
+    &087d     c0813+106                    beq c0887
+
+&08bc  loop_c08bc (inline)
+    &08bf     loop_c08bc+3                 bpl loop_c08bc
+
+&08c9  c08c9 (inline)
+    &08c7     loop_c08bc+11                bmi c08c9
+    &08cc     c08c9+3                      bpl c08c9
+
+&08f4  reset_handler (inline)
+    (not referenced)
+
+&08f7  output_handler (inline)
+    (not referenced)
+
+&08fa  irq_handler (inline)
+    (not referenced)
+
+&08fb  l08fb (inline)
+    &0808     loop_c0808                   lda l08fb,x
+
+&0909  pydis_end (inline)
+    (not referenced)
+
+&c000  KBD (Memory locations: Soft switches)
+    &08bc     loop_c08bc                   lda KBD
+
+&c010  KBDSTRB (Memory locations: Soft switches)
+    &08c1     loop_c08bc+5                 sta KBDSTRB
+
+&c019  lc019 (Memory locations: Soft switches)
+    &08c9     c08c9                        lda lc019
+
+&c030  SPKR (Memory locations: Soft switches)
+    &08b9     c0887+50                     lda SPKR
+
+&c050  TXTCLR (Memory locations: Soft switches)
+    &08b3     c0887+44                     bit TXTCLR
+
+&c057  HIRES (Memory locations: Soft switches)
+    &08b6     c0887+47                     bit HIRES
+
+&c061  BUTN0 (Memory locations: Soft switches)
+    &08c4     loop_c08bc+8                 lda BUTN0
+
+&c311  lc311 (Memory locations: Slot ROMs)
+    &08e7     c08c9+30                     jsr lc311
+
+&f800  PLOT (Memory locations: Monitor ROM)
+    &086e     c0813+91                     jsr PLOT
+
+&f864  SETCOL (Memory locations: Monitor ROM)
+    &0867     c0813+84                     jsr SETCOL
+
+&f94a  PRBL2 (Memory locations: Monitor ROM)
+    &084a     c0813+55                     jsr PRBL2
+
+&fb1e  PREAD (Memory locations: Monitor ROM)
+    &0873     c0813+96                     jsr PREAD
+
+&fb40  SETGR (Memory locations: Monitor ROM)
+    &0862     c0813+79                     jsr SETGR
+
+&fb5b  TABV (Memory locations: Monitor ROM)
+    &084f     c0813+60                     jsr TABV
+
+&fb6f  SETPWRC (Memory locations: Monitor ROM)
+    &089e     c0887+23                     jsr SETPWRC
+
+&fc58  HOME (Memory locations: Monitor ROM)
+    &0803     pydis_start                  jsr HOME
+
+&fca8  WAIT (Memory locations: Monitor ROM)
+    &0854     c0813+65                     jsr WAIT
+
+&fd0c  RDKEY (Memory locations: Monitor ROM)
+    &0878     c0813+101                    jsr RDKEY
+
+&fd6a  GETLN (Memory locations: Monitor ROM)
+    &087f     c0813+108                    jsr GETLN
+
+&fd8e  CROUT (Memory locations: Monitor ROM)
+    &0822     c0813+15                     jsr CROUT
+
+&fdda  PRBYTE (Memory locations: Monitor ROM)
+    &0845     c0813+50                     jsr PRBYTE
+
+&fded  COUT (Memory locations: Monitor ROM)
+    &080d     loop_c0808+5                 jsr COUT
+    &0815     c0813+2                      jsr COUT
+    &081a     c0813+7                      jsr COUT
+    &081f     c0813+12                     jsr COUT
+    &0827     c0813+20                     jsr COUT
+    &082c     c0813+25                     jsr COUT
+    &0831     c0813+30                     jsr COUT
+    &0836     c0813+35                     jsr COUT
+    &083b     c0813+40                     jsr COUT
+    &0840     c0813+45                     jsr COUT
+
+&fdf0  COUT1 (Memory locations: Monitor ROM)
+    &08f7     output_handler               jmp COUT1
+
+&fe84  SETNORM (Memory locations: Monitor ROM)
+    &0891     c0887+10                     jsr SETNORM
+
+&fe93  SETVID (Memory locations: Monitor ROM)
+    &085c     c0813+73                     jsr SETVID
+
+&fe95  OUTPORT (Memory locations: Monitor ROM)
+    &0859     c0813+70                     jsr OUTPORT
+
+&ff3a  BELL (Memory locations: Monitor ROM)
+    &085f     c0813+76                     jsr BELL
+
+&ff58  IORTS (Memory locations: Monitor ROM)
+    &08ea     c08c9+33                     jsr IORTS
+
+&ff69  MONZ (Memory locations: Monitor ROM)
+    &08f1     c08c9+40                     jmp MONZ
+    &08f4     reset_handler                jmp MONZ

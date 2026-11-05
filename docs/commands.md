@@ -14,7 +14,7 @@ These are the commands you use in a control file, after `from commands import *`
 - [Making the disassembly](#making-the-disassembly)
 - [Sessions: using py8dis as a library](#sessions-using-py8dis-as-a-library)
 
-The settings (`config.set_...()`) are in [configuration.md](configuration.md). Commands for particular machines are in the [Acorn](machines/acorn.md), [Commodore](machines/commodore.md), [ZX Spectrum](machines/spectrum.md) and [CP/M](machines/cpm.md) pages. Snippets, effect patterns and hooks are in [snippets-and-hooks.md](snippets-and-hooks.md).
+The settings (`config.set_...()`) are in [configuration.md](configuration.md). Commands for particular machines are in the [Acorn](machines/acorn.md), [Apple II](machines/apple2.md), [Commodore](machines/commodore.md), [ZX Spectrum](machines/spectrum.md) and [CP/M](machines/cpm.md) pages. Snippets, effect patterns and hooks are in [snippets-and-hooks.md](snippets-and-hooks.md).
 
 If a command doesn't do quite what you want, you can copy it and change it: the commands are ordinary Python functions in `py8dis/commands.py`. Suggestions and contributions of new commands are welcome.
 
