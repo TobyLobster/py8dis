@@ -84,30 +84,39 @@ for i in range(6):
     pc = stringhi(pc)
     pc += 3
 
-# XXX: At &864D there's some code to patch an address (probably a JMP/JSR
-# operand) at &D3E/D3F using a pair of tables at &8869 (low byte) and &8861
-# (high byte). abs,Y addressing is used and I don't currently know what range of
-# values Y can have. The fact &8869 and &8861 are eight bytes apart suggests
-# there are 8 possible values of Y. There's a table of RTS-compatible low bytes
-# accessed via &8600,Y as well and looking at the data in the disassembly seems
-# to suggest 8 possible values again and allows us to infer the first acceptable
-# Y value is &81.
-min_y = 0x81
-for i in range(8):
-    # There's a split table of code pointers for use via LDA:PHA:LDA:PHA:RTS at
-    # &8869+x (low byte) and &8861+x (high byte).
-    # XXX: Is this right? These code pointers appear to point into main RAM,
-    # admittedly at locations which are potentially open for us to copy code to.
-    code_ptr(0x8869 + min_y + i, 0x8861 + min_y + i)
-    # There's also a low byte only table of code pointers at &8600+x; the high
-    # byte of &86 is hard-coded at &8679. We manually do half of what code_ptr()
-    # does; this could obviously be moved into commands.py as a standard
-    # function but I am not sure it's useful enough.
-    addr = 0x8600 + min_y + i
-    code_at = (0x8600 + memory[addr]) + 1
-    entry(code_at)
-    lab = get_label(code_at, addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-    expr(addr, make_lo(make_subtract(lab, 1)))
+# Econet's immediate operations, &81 to &88 (PEEK, POKE, JSR, user
+# procedure, OS procedure, HALT, CONTINUE and machine peek): at &866A, with
+# Y the received control byte (from &0D24), the code copies two bytes for the
+# operation to &0D3E and &0D3F, then jumps to its routine with an RTS. So the
+# tables are indexed from &81: two tables of bytes (not addresses, as these
+# were once marked), and the routines' low bytes (minus 1, for the RTS jump),
+# whose high byte is &86 (loaded at &8679).
+IMMEDIATE_OPS = ["peek", "poke", "jsr", "user_procedure", "os_procedure", "halt", "continue", "machine_peek"]
+# (Each operation's routine: JSR and the procedure calls share one, as do
+# HALT and CONTINUE)
+IMMEDIATE_OP_ROUTINES = ["immediate_op_peek", "immediate_op_poke", "immediate_op_procedure_call", "immediate_op_procedure_call",
+                         "immediate_op_procedure_call", "immediate_op_halt_or_continue", "immediate_op_halt_or_continue",
+                         "immediate_op_machine_peek"]
+FIRST_IMMEDIATE_OP = 0x81
+for addr, name, text in (
+        (0x8861 + FIRST_IMMEDIATE_OP, "immediate_op_frame_ends",
+         "For each immediate operation, &81-&88: copied to &0D3F, the offset in &0D20 at which the frame the code then sends ends (see &8703)"),
+        (0x8869 + FIRST_IMMEDIATE_OP, "immediate_op_flags",
+         "For each immediate operation, &81-&88: copied to &0D3E, whose bits the code tests (e.g. with BIT at &8160)")):
+    label(addr, name)
+    byte(addr, len(IMMEDIATE_OPS), cols=1)
+    comment(addr, text)
+expr(0x866e, make_subtract("immediate_op_flags", make_hex(FIRST_IMMEDIATE_OP)))
+expr(0x8674, make_subtract("immediate_op_frame_ends", make_hex(FIRST_IMMEDIATE_OP)))
+label(0x8600 + FIRST_IMMEDIATE_OP, "immediate_op_routines_low")
+byte(0x8600 + FIRST_IMMEDIATE_OP, len(IMMEDIATE_OPS), cols=1)
+expr(0x867d, make_subtract("immediate_op_routines_low", make_hex(FIRST_IMMEDIATE_OP)))
+for i, op in enumerate(IMMEDIATE_OPS):
+    addr = 0x8600 + FIRST_IMMEDIATE_OP + i
+    code_at = 0x8600 + memory[addr] + 1
+    entry(code_at, IMMEDIATE_OP_ROUTINES[i])
+    comment(addr, "&{0:02X}: {1}".format(FIRST_IMMEDIATE_OP + i, op.replace("_", " ").upper()), inline=True)
+    expr(addr, make_lo(make_subtract(IMMEDIATE_OP_ROUTINES[i], 1)))
 
 
 #entry((0x421-0x400)+0xbf04, "copied_to_421")

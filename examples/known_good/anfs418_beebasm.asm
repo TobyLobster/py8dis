@@ -138,7 +138,6 @@ l0582       = &0582
 l059c       = &059c
 l059e       = &059e
 l0600       = &0600
-l0601       = &0601
 l0695       = &0695
 l069e       = &069e
 handle_evntv = &06ad
@@ -147,8 +146,6 @@ l06c5       = &06c5
 l0700       = &0700
 
 ; OS workspace (&0800-&0dff)
-l0a00   = &0a00
-l0a81   = &0a81
 l0d00   = &0d00
 l0d07   = &0d07
 l0d0c   = &0d0c
@@ -215,7 +212,6 @@ l0e30   = &0e30
 l0e31   = &0e31
 l0e32   = &0e32
 l0e38   = &0e38
-l0e81   = &0e81
 l0ef7   = &0ef7
 l0f00   = &0f00
 l0f01   = &0f01
@@ -1265,8 +1261,6 @@ l8004 = service_entry+1
     lda #4                                                            ; 85fb: a9 04       ..
     php                                                               ; 85fd: 08          .
     sei                                                               ; 85fe: 78          x
-.c85ff
-l8600 = c85ff+1
     bit station_id_disable_net_nmis                                   ; 85ff: 2c 18 fe    ,..
 ; &8600 referenced 1 time by &867c
     bit station_id_disable_net_nmis                                   ; 8602: 2c 18 fe    ,..
@@ -1334,29 +1328,35 @@ l8600 = c85ff+1
     lda l0d25                                                         ; 8665: ad 25 0d    .%.
     bne c86ac                                                         ; 8668: d0 42       .B
     ldy l0d24                                                         ; 866a: ac 24 0d    .$.
-    lda l8869,y                                                       ; 866d: b9 69 88    .i.
+    lda immediate_op_flags - &81,y                                    ; 866d: b9 69 88    .i.
     sta l0d3e                                                         ; 8670: 8d 3e 0d    .>.
-    lda l8861,y                                                       ; 8673: b9 61 88    .a.
+    lda immediate_op_frame_ends - &81,y                               ; 8673: b9 61 88    .a.
     sta l0d3f                                                         ; 8676: 8d 3f 0d    .?.
     lda #&86                                                          ; 8679: a9 86       ..
     pha                                                               ; 867b: 48          H
-    lda l8600,y                                                       ; 867c: b9 00 86    ...
+    lda immediate_op_routines_low - &81,y                             ; 867c: b9 00 86    ...
     pha                                                               ; 867f: 48          H
     rts                                                               ; 8680: 60          `
 
-    equb <(sub_c868d - 1), <(sub_c8691 - 1), <(sub_c86d3 - 1)         ; 8681: 8c 90 d2    ...
-    equb <(sub_c86d3 - 1), <(sub_c86d3 - 1),     <(c86e3 - 1)         ; 8684: d2 d2 e2    ...
-    equb     <(c86e3 - 1), <(sub_c8689 - 1)                           ; 8687: e2 88       ..
+.immediate_op_routines_low
+    equb             <(immediate_op_peek - 1)                         ; 8681: 8c          .              ; &81: PEEK
+    equb             <(immediate_op_poke - 1)                         ; 8682: 90          .              ; &82: POKE
+    equb   <(immediate_op_procedure_call - 1)                         ; 8683: d2          .              ; &83: JSR
+    equb   <(immediate_op_procedure_call - 1)                         ; 8684: d2          .              ; &84: USER PROCEDURE
+    equb   <(immediate_op_procedure_call - 1)                         ; 8685: d2          .              ; &85: OS PROCEDURE
+    equb <(immediate_op_halt_or_continue - 1)                         ; 8686: e2          .              ; &86: HALT
+    equb <(immediate_op_halt_or_continue - 1)                         ; 8687: e2          .              ; &87: CONTINUE
+    equb     <(immediate_op_machine_peek - 1)                         ; 8688: 88          .              ; &88: MACHINE PEEK
 
-.sub_c8689
+.immediate_op_machine_peek
     lda #3                                                            ; 8689: a9 03       ..
     bne c86d5                                                         ; 868b: d0 48       .H             ; ALWAYS branch
 
-.sub_c868d
+.immediate_op_peek
     lda #3                                                            ; 868d: a9 03       ..
     bne c8693                                                         ; 868f: d0 02       ..             ; ALWAYS branch
 
-.sub_c8691
+.immediate_op_poke
     lda #2                                                            ; 8691: a9 02       ..
 ; &8693 referenced 1 time by &868f
 .c8693
@@ -1395,13 +1395,13 @@ l8600 = c85ff+1
     iny                                                               ; 86c7: c8          .
     cpy #&0c                                                          ; 86c8: c0 0c       ..
     bcc loop_c86c2                                                    ; 86ca: 90 f6       ..
-    bcs c86e3                                                         ; 86cc: b0 15       ..             ; ALWAYS branch
+    bcs immediate_op_halt_or_continue                                 ; 86cc: b0 15       ..             ; ALWAYS branch
 
 ; &86ce referenced 1 time by &86b4
 .c86ce
     lda #0                                                            ; 86ce: a9 00       ..
     sta l0d3e                                                         ; 86d0: 8d 3e 0d    .>.
-.sub_c86d3
+.immediate_op_procedure_call
     lda #2                                                            ; 86d3: a9 02       ..
 ; &86d5 referenced 1 time by &868b
 .c86d5
@@ -1414,7 +1414,7 @@ l8600 = c85ff+1
     sta l00a7                                                         ; 86de: 85 a7       ..
     jsr sub_c88f2                                                     ; 86e0: 20 f2 88     ..
 ; &86e3 referenced 1 time by &86cc
-.c86e3
+.immediate_op_halt_or_continue
     plp                                                               ; 86e3: 28          (
     pla                                                               ; 86e4: 68          h
     pla                                                               ; 86e5: 68          h
@@ -1639,8 +1639,6 @@ l8600 = c85ff+1
     bne c8868                                                         ; 885a: d0 0c       ..
     inc l00a3                                                         ; 885c: e6 a3       ..
     bne c8868                                                         ; 885e: d0 08       ..
-.c8860
-l8861 = c8860+1
     inc l00a4                                                         ; 8860: e6 a4       ..
 ; &8861 referenced 1 time by &8673
     bne c8868                                                         ; 8862: d0 04       ..
@@ -1648,7 +1646,6 @@ l8861 = c8860+1
     beq c881d                                                         ; 8866: f0 b5       ..
 ; &8868 referenced 3 times by &885a, &885e, &8862
 .c8868
-l8869 = c8868+1
     bit econet_control1_or_status1                                    ; 8868: 2c a0 fe    ,..
 ; &8869 referenced 1 time by &866d
     bmi c883a                                                         ; 886b: 30 cd       0.
@@ -1721,22 +1718,28 @@ l8869 = c8868+1
     sta l0d60                                                         ; 88dc: 8d 60 0d    .`.
     jmp c83f5                                                         ; 88df: 4c f5 83    L..
 
-    equb >l0e81                                                       ; 88e2: 0e          .
-    equb >l0e00                                                       ; 88e3: 0e          .
-    equb >l0a00                                                       ; 88e4: 0a          .
-    equb >l0a00                                                       ; 88e5: 0a          .
-    equb >l0a00                                                       ; 88e6: 0a          .
-    equb >l0601                                                       ; 88e7: 06          .
-    equb >l0601                                                       ; 88e8: 06          .
-    equb >l0a81                                                       ; 88e9: 0a          .
-    equb <l0e81                                                       ; 88ea: 81          .
-    equb <l0e00                                                       ; 88eb: 00          .
-    equb <l0a00                                                       ; 88ec: 00          .
-    equb <l0a00                                                       ; 88ed: 00          .
-    equb <l0a00                                                       ; 88ee: 00          .
-    equb <l0601                                                       ; 88ef: 01          .
-    equb <l0601                                                       ; 88f0: 01          .
-    equb <l0a81                                                       ; 88f1: 81          .
+; For each immediate operation, &81-&88: copied to &0D3F, the offset in &0D20 at which
+; the frame the code then sends ends (see &8703)
+.immediate_op_frame_ends
+    equb &0e                                                          ; 88e2: 0e          .
+    equb &0e                                                          ; 88e3: 0e          .
+    equb &0a                                                          ; 88e4: 0a          .
+    equb &0a                                                          ; 88e5: 0a          .
+    equb &0a                                                          ; 88e6: 0a          .
+    equb   6                                                          ; 88e7: 06          .
+    equb   6                                                          ; 88e8: 06          .
+    equb &0a                                                          ; 88e9: 0a          .
+; For each immediate operation, &81-&88: copied to &0D3E, whose bits the code tests
+; (e.g. with BIT at &8160)
+.immediate_op_flags
+    equb &81                                                          ; 88ea: 81          .
+    equb   0                                                          ; 88eb: 00          .
+    equb   0                                                          ; 88ec: 00          .
+    equb   0                                                          ; 88ed: 00          .
+    equb   0                                                          ; 88ee: 00          .
+    equb   1                                                          ; 88ef: 01          .
+    equb   1                                                          ; 88f0: 01          .
+    equb &81                                                          ; 88f1: 81          .
 
 ; &88f2 referenced 3 times by &81bf, &84d8, &86e0
 .sub_c88f2
@@ -10712,19 +10715,19 @@ lbd94 = cbd93+1
 .pydis_end
 
     assert &81 == ((255 - inkey_key_ctrl) EOR 128)
-    assert &e2 == <(c86e3 - 1)
     assert &13 == <(ca114 - 1)
     assert &c0 == <(ca1c1 - 1)
     assert &f3 == <(ca2f4 - 1)
+    assert &e2 == <(immediate_op_halt_or_continue - 1)
+    assert &88 == <(immediate_op_machine_peek - 1)
+    assert &8c == <(immediate_op_peek - 1)
+    assert &90 == <(immediate_op_poke - 1)
+    assert &d2 == <(immediate_op_procedure_call - 1)
     assert &57 == <(just_rts - 1)
     assert &a4 == <(service_handler_claim_absolute_workspace - 1)
     assert &b7 == <(service_handler_claim_private_workspace - 1)
     assert &27 == <(sub_c8028 - 1)
     assert &8f == <(sub_c8090 - 1)
-    assert &88 == <(sub_c8689 - 1)
-    assert &8c == <(sub_c868d - 1)
-    assert &90 == <(sub_c8691 - 1)
-    assert &d2 == <(sub_c86d3 - 1)
     assert &82 == <(sub_c8983 - 1)
     assert &0c == <(sub_c8b0d - 1)
     assert &4d == <(sub_c8c4e - 1)
@@ -10753,11 +10756,6 @@ lbd94 = cbd93+1
     assert &ad == <handle_evntv
     assert &b4 == <l00b4
     assert &28 == <l0128
-    assert &01 == <l0601
-    assert &00 == <l0a00
-    assert &81 == <l0a81
-    assert &00 == <l0e00
-    assert &81 == <l0e81
     assert &a1 == >(ca114 - 1)
     assert &a1 == >(ca1c1 - 1)
     assert &a2 == >(ca2f4 - 1)
@@ -10794,14 +10792,12 @@ lbd94 = cbd93+1
     assert &06 == >handle_evntv
     assert &00 == >l00b4
     assert &01 == >l0128
-    assert &06 == >l0601
-    assert &0a == >l0a00
-    assert &0a == >l0a81
-    assert &0e == >l0e00
-    assert &0e == >l0e81
     assert &8dbb == c8dbc - 1
     assert &8e14 == c8e15 - 1
     assert &19 == copyright - rom_header - 1
+    assert &8869 == immediate_op_flags - &81
+    assert &8861 == immediate_op_frame_ends - &81
+    assert &8600 == immediate_op_routines_low - &81
     assert &ae == l00b0 - 2
     assert &bd == l00be - 1
     assert &0cff == l0d00 - 1
@@ -11435,7 +11431,6 @@ save pydis_start, pydis_end
 ;     c86ce:                                    1
 ;     c86d5:                                    1
 ;     c86d8:                                    1
-;     c86e3:                                    1
 ;     c8710:                                    1
 ;     c8714:                                    1
 ;     c871b:                                    1
@@ -11836,6 +11831,7 @@ save pydis_start, pydis_end
 ;     filev:                                    1
 ;     fscv:                                     1
 ;     handle_brkv:                              1
+;     immediate_op_halt_or_continue:            1
 ;     jump_table_high:                          1
 ;     jump_table_low:                           1
 ;     l0013:                                    1
@@ -11892,9 +11888,6 @@ save pydis_start, pydis_end
 ;     l8001:                                    1
 ;     l8002:                                    1
 ;     l8004:                                    1
-;     l8600:                                    1
-;     l8861:                                    1
-;     l8869:                                    1
 ;     l8e61:                                    1
 ;     l9022:                                    1
 ;     l9122:                                    1
@@ -12335,7 +12328,6 @@ save pydis_start, pydis_end
 ;     c85cf
 ;     c85e3
 ;     c85fb
-;     c85ff
 ;     c8619
 ;     c862f
 ;     c8633
@@ -12347,7 +12339,6 @@ save pydis_start, pydis_end
 ;     c86ce
 ;     c86d5
 ;     c86d8
-;     c86e3
 ;     c8710
 ;     c8714
 ;     c871b
@@ -12367,7 +12358,6 @@ save pydis_start, pydis_end
 ;     c882e
 ;     c883a
 ;     c8852
-;     c8860
 ;     c8868
 ;     c8870
 ;     c8878
@@ -12994,14 +12984,11 @@ save pydis_start, pydis_end
 ;     l059c
 ;     l059e
 ;     l0600
-;     l0601
 ;     l0695
 ;     l069e
 ;     l06bc
 ;     l06c5
 ;     l0700
-;     l0a00
-;     l0a81
 ;     l0d00
 ;     l0d07
 ;     l0d0c
@@ -13066,7 +13053,6 @@ save pydis_start, pydis_end
 ;     l0e31
 ;     l0e32
 ;     l0e38
-;     l0e81
 ;     l0ef7
 ;     l0f00
 ;     l0f01
@@ -13136,9 +13122,6 @@ save pydis_start, pydis_end
 ;     l8001
 ;     l8002
 ;     l8004
-;     l8600
-;     l8861
-;     l8869
 ;     l8d38
 ;     l8e54
 ;     l8e61
@@ -13468,10 +13451,6 @@ save pydis_start, pydis_end
 ;     sub_c8449
 ;     sub_c852f
 ;     sub_c858c
-;     sub_c8689
-;     sub_c868d
-;     sub_c8691
-;     sub_c86d3
 ;     sub_c88f2
 ;     sub_c8969
 ;     sub_c8983
