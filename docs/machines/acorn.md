@@ -130,6 +130,7 @@ For #B000, that's the 6847's mode in bits 4-7 (text mode, CLEAR 1-4's 2-colour g
 It **comments tests of the inputs** too:
 - `bit ppi_port_c` before `bpl` or `bmi` is `Test the field sync`, and before `bvc` or `bvs`, `Test the REPT key`.
 - For #B001, the same are `Test the SHIFT key` and `Test the CTRL key`.
+- Before one of each (e.g. `bpl` then `bvc`, as the kernel waits for SHIFT and CTRL to be let go), it's both, e.g. `Test the SHIFT key and the CTRL key`.
 - Before `beq` or `bne`, the comment names the bits in A, if A is known (e.g. `Test the 2.4 kHz tape tone input`).
 - With no branch after it, it names both bits 7 and 6.
 - `lda ppi_port_b : and #&40` is `Test the CTRL key`, and the same for the other input bits (#B001's bits 0-5 are the keyboard row's columns).

@@ -6,13 +6,14 @@ row 3', 'Toggle the speaker', 'Select colour set 1', 'Set port C bit 2
 read-modify-writes, and so are its tests of their input bits ('Test the
 field sync' for 'bit #B002 : bpl', 'Test the CTRL key' for 'bit #B001 :
 bvc' or 'lda #B001 : and #$40', 'Test the 2.4 kHz tape tone input' for
-'lda #$10 : bit #B002 : beq', and both bits 7 and 6 for a BIT with no
-branch after it)."""
+'lda #$10 : bit #B002 : beq', both for one of each, e.g. 'Test the SHIFT
+key and the CTRL key' for 'bit #B001 : bpl : bvc', and both bits 7 and 6
+for a BIT with no branch after it)."""
 
 from commands import *
 import acorn
 
-load(0x2900, "orig/atom_hardware.orig", "6502", "898362579b82ecfb9f6e9ee135dc0050")
+load(0x2900, "orig/atom_hardware.orig", "6502", "a220abd9bb48c3f1b1747a993c328d65")
 acorn.atom()
 entry(0x2900, "start")
 go()

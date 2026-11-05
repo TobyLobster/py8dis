@@ -367,9 +367,10 @@ def comment_hardware():
       port C bit 2 (speaker high)';
     - 'inc #B000': 'Select the next keyboard row';
     - 'bit #B001' or 'bit #B002': bit 7 (N) for a BPL or BMI after it, e.g.
-      'Test the field sync', bit 6 (V) for a BVC or BVS, the bits in A (if
-      it's known) for a BEQ or BNE, or otherwise both, e.g. 'Test the field
-      sync (N) and the REPT key (V)';
+      'Test the field sync', bit 6 (V) for a BVC or BVS, both for one of
+      each after it (in either order), e.g. 'Test the SHIFT key and the CTRL
+      key', the bits in A (if it's known) for a BEQ or BNE, or otherwise
+      both, e.g. 'Test the field sync (N) and the REPT key (V)';
     - 'lda #B001' or 'lda #B002' then 'and #n', testing known input bits,
       e.g. 'Test the CTRL key'.
     A value is known only if it's known for certain (the pessimistic CPU
@@ -445,10 +446,18 @@ def comment_hardware():
                 # on the branch after it, if there is one.
                 bits = atom_port_inputs[absolute(binary_addr)]
                 following = memory_binary[run[k + 1]] if k + 1 < len(run) else None
-                if following in (0x10, 0x30):
+                then = memory_binary[run[k + 2]] if k + 2 < len(run) else None
+                n_branches, v_branches = (0x10, 0x30), (0x50, 0x70)
+                if following in n_branches and then in v_branches:
+                    # BPL or BMI, then BVC or BVS
+                    text = "Test {0} and {1}".format(bits[7], bits[6])
+                elif following in v_branches and then in n_branches:
+                    # BVC or BVS, then BPL or BMI
+                    text = "Test {0} and {1}".format(bits[6], bits[7])
+                elif following in n_branches:
                     # BPL or BMI
                     text = "Test " + bits[7]
-                elif following in (0x50, 0x70):
+                elif following in v_branches:
                     # BVC or BVS
                     text = "Test " + bits[6]
                 elif following in (0xd0, 0xf0):

@@ -51,6 +51,13 @@ start
 wait_sync
     bit PORT_C              ; wait for the field sync
     bpl wait_sync
+wait_keys
+    bit PORT_B              ; wait for SHIFT and CTRL to be let go
+    bpl wait_keys
+    bvc wait_keys
+    bit PORT_C              ; REPT, then the field sync
+    bvs wait_keys
+    bmi wait_keys
     bit PORT_B              ; SHIFT and CTRL
     bit PORT_B              ; CTRL
     bvc ctrl_pressed

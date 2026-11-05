@@ -54,48 +54,58 @@ start:
 loop_c2948:
     bit ppi_port_c                                                    ; 2948: 2c 02 b0    ,.. ; Test the field sync
     bpl loop_c2948                                                    ; 294b: 10 fb       ..
-    bit ppi_port_b                                                    ; 294d: 2c 01 b0    ,.. ; Test the SHIFT key (N) and the CTRL key (V)
-    bit ppi_port_b                                                    ; 2950: 2c 01 b0    ,.. ; Test the CTRL key
-    bvc c295c                                                         ; 2953: 50 07       P.
-    lda #$10                                                          ; 2955: a9 10       ..
-    bit ppi_port_c                                                    ; 2957: 2c 02 b0    ,.. ; Test the 2.4 kHz tape tone input
-    beq c295c                                                         ; 295a: f0 00       ..
-; $295c referenced 2 times by $2953, $295a
-c295c:
-    lda ppi_port_b                                                    ; 295c: ad 01 b0    ...
-    and #$40 ; '@'                                                    ; 295f: 29 40       )@ ; Test the CTRL key
-    sta l0070                                                         ; 2961: 85 70       .p
-    lda ppi_port_c                                                    ; 2963: ad 02 b0    ...
-    and #$40 ; '@'                                                    ; 2966: 29 40       )@ ; Test the REPT key
-    sta l0071                                                         ; 2968: 85 71       .q
-    rts                                                               ; 296a: 60          `
+; $294d referenced 4 times by $2950, $2952, $2957, $2959
+c294d:
+    bit ppi_port_b                                                    ; 294d: 2c 01 b0    ,.. ; Test the SHIFT key and the CTRL key
+    bpl c294d                                                         ; 2950: 10 fb       ..
+    bvc c294d                                                         ; 2952: 50 f9       P.
+    bit ppi_port_c                                                    ; 2954: 2c 02 b0    ,.. ; Test the REPT key and the field sync
+    bvs c294d                                                         ; 2957: 70 f4       p.
+    bmi c294d                                                         ; 2959: 30 f2       0.
+    bit ppi_port_b                                                    ; 295b: 2c 01 b0    ,.. ; Test the SHIFT key (N) and the CTRL key (V)
+    bit ppi_port_b                                                    ; 295e: 2c 01 b0    ,.. ; Test the CTRL key
+    bvc c296a                                                         ; 2961: 50 07       P.
+    lda #$10                                                          ; 2963: a9 10       ..
+    bit ppi_port_c                                                    ; 2965: 2c 02 b0    ,.. ; Test the 2.4 kHz tape tone input
+    beq c296a                                                         ; 2968: f0 00       ..
+; $296a referenced 2 times by $2961, $2968
+c296a:
+    lda ppi_port_b                                                    ; 296a: ad 01 b0    ...
+    and #$40 ; '@'                                                    ; 296d: 29 40       )@ ; Test the CTRL key
+    sta l0070                                                         ; 296f: 85 70       .p
+    lda ppi_port_c                                                    ; 2971: ad 02 b0    ...
+    and #$40 ; '@'                                                    ; 2974: 29 40       )@ ; Test the REPT key
+    sta l0071                                                         ; 2976: 85 71       .q
+    rts                                                               ; 2978: 60          `
 
 pydis_end:
 
 
 ; Label references by decreasing frequency:
-;     ppi_port_c:    9
+;     ppi_port_c:   10
 ;     ppi_port_a:    7
+;     c294d:         4
+;     ppi_port_b:    4
 ;     ppi_control:   3
-;     ppi_port_b:    3
-;     c295c:         2
+;     c296a:         2
 ;     l0070:         1
 ;     l0071:         1
 ;     loop_c2948:    1
 
 ; Automatically generated labels:
-;     c295c
+;     c294d
+;     c296a
 ;     l0070
 ;     l0071
 ;     loop_c2948
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 107 bytes
-;     Code                     = 107 bytes (100%)
+;     Total size (Code + Data) = 121 bytes
+;     Code                     = 121 bytes (100%)
 ;     Data                     = 0 bytes (0%)
 ;
-;     Number of instructions   = 43
+;     Number of instructions   = 49
 ;     Number of data bytes     = 0 bytes
 ;     Number of data words     = 0 bytes
 ;     Number of string bytes   = 0 bytes

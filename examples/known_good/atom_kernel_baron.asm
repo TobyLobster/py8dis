@@ -2128,7 +2128,7 @@ lf9a3 = cf9a2+1
 
 ; &fb8e referenced 5 times by &f92f, &f9a6, &fa31, &fb91, &fb93
 .cfb8e
-    bit ppi_port_b                                                    ; fb8e: 2c 01 b0    ,.. ; Test the SHIFT key
+    bit ppi_port_b                                                    ; fb8e: 2c 01 b0    ,.. ; Test the SHIFT key and the CTRL key
     bpl cfb8e                                                         ; fb91: 10 fb       ..
     bvc cfb8e                                                         ; fb93: 50 f9       P.
 ; &fb95 referenced 1 time by &fba7
@@ -2139,7 +2139,7 @@ lf9a3 = cf9a2+1
     sta l00c2                                                         ; fb9b: 85 c2       ..
 ; &fb9d referenced 2 times by &fbab, &fbaf
 .cfb9d
-    bit ppi_port_b                                                    ; fb9d: 2c 01 b0    ,.. ; Test the SHIFT key
+    bit ppi_port_b                                                    ; fb9d: 2c 01 b0    ,.. ; Test the SHIFT key and the CTRL key
     bpl cfbb1                                                         ; fba0: 10 0f       ..
     bvc cfbb1                                                         ; fba2: 50 0d       P.
     jsr sub_cfcbd                                                     ; fba4: 20 bd fc     ..
