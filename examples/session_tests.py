@@ -31,8 +31,11 @@ Usage: ./session_tests.py      (there are no options; it prints a line for
                                 fails)
 
 The outputs are compared with the known_good/ files that run_tests.py
-checks. Baron's output is written to build/ (as run_tests.py writes it), so
-that folder must exist: run_tests.py makes it.
+checks. Baron's output depends on the asm file's name and folder, so it's
+written to a file of the same name as run_tests.py's, but in a temporary
+folder beside build/ (at the same depth, so the paths in it are the same),
+which is removed afterwards. (run_tests.py runs this script at the same
+time as its own tests, so writing to build/ too could clash with them.)
 
 To check another disassembly in 1, add a pair to INTERLEAVED (its
 known_good file must exist already). Check 3 covers every module in
@@ -48,6 +51,7 @@ import os
 import runpy
 import subprocess
 import sys
+import tempfile
 import types
 from pathlib import Path
 
@@ -69,6 +73,10 @@ INTERLEAVED = [
     (("spectrum_test",    "sjasmplus"), ("undocumented_z80",    "z88dk")),
     (("include_binary_file", "baron"), ("planb",                "beebasm")),
 ]
+
+# The temporary folder for Baron's output (see baron_asm_filename()), which
+# main() makes
+baron_dir = None
 
 # Module level names that are allowed to change, as (module, name): the
 # session module's pointer to the current session, and its setting from
@@ -196,11 +204,13 @@ def go_in(s):
     return Path(s.asm_filename).read_text() if s.asm_filename else out.getvalue()
 
 def baron_asm_filename(name, assembler):
-    """For Baron, the asm file to write (as run_tests.py writes it), else
-    None (for the asm to be printed). Baron's output depends on the asm
-    file's name and folder, so it must be written to the same file to be
-    the same as known_good."""
-    return f"build/{name}_{assembler}.asm" if assembler == "baron" else None
+    """For Baron, the asm file to write, else None (for the asm to be
+    printed). Baron's output depends on the asm file's name and folder, so
+    for it to be the same as known_good, the file has the name run_tests.py
+    gives it, in a folder at the same depth as build/ (baron_dir, rather
+    than build/ itself, where run_tests.py may be writing the same file at
+    the same time)."""
+    return str(Path(baron_dir) / f"{name}_{assembler}.asm") if assembler == "baron" else None
 
 def check(results, label, output, name, assembler):
     """Compare the asm 'output' with known_good/<name>_<assembler>.asm, and
@@ -218,7 +228,14 @@ def check(results, label, output, name, assembler):
 def main():
     """Run the checks described at the top of this file, print a line for
     each, then the totals, and return the exit code: 1 if any failed, else
-    0."""
+    0. (Baron's output goes in a temporary folder in the examples folder,
+    removed afterwards: see baron_asm_filename().)"""
+    global baron_dir
+    with tempfile.TemporaryDirectory(prefix="session_tests_", dir=EXAMPLES_DIR) as baron_dir:
+        return run_checks()
+
+def run_checks():
+    """main()'s checks."""
     # (The control files' file names are relative to the examples folder,
     # and they import py8dis's modules by name, e.g. 'from commands import
     # *')
