@@ -1,51 +1,37 @@
 // Memory locations
 
 // Zero page ($0000-$00ff)
-basic_error_number  = $0000
-basic_line_number   = $0001
-l0003               = $0003
-l0004               = $0004
-l0005               = $0005
-l0006               = $0006
-l0007               = $0007
-rnd_seed            = $0008
-l000d               = $000d
-l000e               = $000e
-l000f               = $000f
-basic_error_handler = $0010
-text_space_page     = $0012
-l0013               = $0013
-l0014               = $0014
-l0015               = $0015
-l0016               = $0016
-l0017               = $0017
-l0023               = $0023
-l0024               = $0024
-l0025               = $0025
-l0026               = $0026
-l0027               = $0027
-l0032               = $0032
-l0033               = $0033
-l0034               = $0034
-l0035               = $0035
-l0041               = $0041
-l0042               = $0042
-l0043               = $0043
-l0044               = $0044
-l0045               = $0045
-l0052               = $0052
-l0053               = $0053
-l0054               = $0054
-l0055               = $0055
-l0056               = $0056
-l0057               = $0057
-l0058               = $0058
-l0059               = $0059
-l005a               = $005a
-l005b               = $005b
-l005c               = $005c
-l005d               = $005d
-l005e               = $005e
+basic_error_number      = $0000
+basic_line_number       = $0001
+parsing_ptr_offset      = $0003
+workspace_stack_pointer = $0004
+parsing_ptr_low         = $0005
+parsing_ptr_high        = $0006
+l0007                   = $0007
+rnd_seed                = $0008
+l000d                   = $000d
+l000e                   = $000e
+l000f                   = $000f
+basic_error_handler     = $0010
+text_space_page         = $0012
+l0013                   = $0013
+int_workspace_stack_low = $0016
+int_workspace_stack_mid1 = $0025
+int_workspace_stack_mid2 = $0034
+int_workspace_stack_high = $0043
+l0052                   = $0052
+l0053                   = $0053
+l0054                   = $0054
+l0055                   = $0055
+l0056                   = $0056
+l0057                   = $0057
+l0058                   = $0058
+l0059                   = $0059
+l005a                   = $005a
+l005b                   = $005b
+l005c                   = $005c
+l005d                   = $005d
+l005e                   = $005e
 
 // Input buffer ($0100-$013f)
 input_buffer = $0100
@@ -589,12 +575,12 @@ skip_comma
     ldx #$ed                                                          // c231: a2 ed       ..
 // $c233 referenced 14 times by $c318, $c322, $c33c, $c572, $c711, $c72e, $c758, $c8be, $c8ff, $cb7e, $cb9f, $cc8b, $ccb3, $ceb3
 match_keyword
-    ldy l0003                                                         // c233: a4 03       ..
+    ldy parsing_ptr_offset                                            // c233: a4 03       ..
     dey                                                               // c235: 88          .
 // $c236 referenced 1 time by $c23b
 loop_cc236
     iny                                                               // c236: c8          .
-    lda (l0005),y                                                     // c237: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c237: b1 05       ..
     cmp #$20 // ' '                                                   // c239: c9 20       .
     beq loop_cc236                                                    // c23b: f0 f9       ..
     sty l005e                                                         // c23d: 84 5e       .^
@@ -616,9 +602,9 @@ loop_cc24f
     iny                                                               // c250: c8          .
     lda keywords-1,x                                                  // c251: bd ff bf    ...
     bmi cc26b                                                         // c254: 30 15       0.
-    cmp (l0005),y                                                     // c256: d1 05       ..
+    cmp (parsing_ptr_low),y                                           // c256: d1 05       ..
     beq loop_cc24f                                                    // c258: f0 f5       ..
-    lda (l0005),y                                                     // c25a: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c25a: b1 05       ..
     cmp #$2e // '.'                                                   // c25c: c9 2e       ..
     beq cc264                                                         // c25e: f0 04       ..
     ldy l005e                                                         // c260: a4 5e       .^
@@ -639,7 +625,7 @@ cc26b
 
 // $c276 referenced 1 time by $c2aa
 cc276
-    ldx l0004                                                         // c276: a6 04       ..
+    ldx workspace_stack_pointer                                       // c276: a6 04       ..
 basic_rts
     rts                                                               // c278: 60          `
 
@@ -648,12 +634,12 @@ expect_equals
     ldx #$0e                                                          // c279: a2 0e       ..
 // $c27b referenced 6 times by $c32c, $c331, $c374, $c797, $c810, $c949
 match_character
-    ldy l0003                                                         // c27b: a4 03       ..
+    ldy parsing_ptr_offset                                            // c27b: a4 03       ..
     dey                                                               // c27d: 88          .
 // $c27e referenced 1 time by $c283
 loop_cc27e
     iny                                                               // c27e: c8          .
-    lda (l0005),y                                                     // c27f: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c27f: b1 05       ..
     cmp #$20 // ' '                                                   // c281: c9 20       .
     beq loop_cc27e                                                    // c283: f0 f9       ..
     cmp characters,x                                                  // c285: dd dd c1    ...
@@ -675,8 +661,8 @@ cc296
 // $c29f referenced 1 time by $c274
 cc29f
     sta l0052                                                         // c29f: 85 52       .R
-    sty l0003                                                         // c2a1: 84 03       ..
-    ldx l0004                                                         // c2a3: a6 04       ..
+    sty parsing_ptr_offset                                            // c2a1: 84 03       ..
+    ldx workspace_stack_pointer                                       // c2a3: a6 04       ..
 // $c2a5 referenced 1 time by $c3c1
 sub_cc2a5
     jmp (l0052)                                                       // c2a5: 6c 52 00    lR.
@@ -717,9 +703,9 @@ cc2cf
     cld                                                               // c2d1: d8          .
     jsr sub_ccd0f                                                     // c2d2: 20 0f cd     ..
     ldx #1                                                            // c2d5: a2 01       ..
-    stx l0006                                                         // c2d7: 86 06       ..
+    stx parsing_ptr_high                                              // c2d7: 86 06       ..
     dex                                                               // c2d9: ca          .  // X=0
-    stx l0005                                                         // c2da: 86 05       ..
+    stx parsing_ptr_low                                               // c2da: 86 05       ..
     stx basic_line_number                                             // c2dc: 86 01       ..
     stx basic_line_number+1                                           // c2de: 86 02       ..
 
@@ -738,11 +724,11 @@ cc2f2
     ldx #$ff                                                          // c2f2: a2 ff       ..
     txs                                                               // c2f4: 9a          .
     lda #0                                                            // c2f5: a9 00       ..
-    sta l0004                                                         // c2f7: 85 04       ..
-    sta l0003                                                         // c2f9: 85 03       ..
-    sta l0015                                                         // c2fb: 85 15       ..
+    sta workspace_stack_pointer                                       // c2f7: 85 04       ..
+    sta parsing_ptr_offset                                            // c2f9: 85 03       ..
+    sta int_workspace_stack_low-1                                     // c2fb: 85 15       ..
     sta l0013                                                         // c2fd: 85 13       ..
-    sta l0014                                                         // c2ff: 85 14       ..
+    sta int_workspace_stack_low-2                                     // c2ff: 85 14       ..
     ldx #$34 // '4'                                                   // c301: a2 34       .4
 // $c303 referenced 1 time by $c307
 loop_cc303
@@ -794,21 +780,21 @@ sub_cc33f
     lda l000f                                                         // c345: a5 0f       ..
     bmi cc36a                                                         // c347: 30 21       0!
     ldx #0                                                            // c349: a2 00       ..
-    stx l0027                                                         // c34b: 86 27       .'
+    stx int_workspace_stack_mid1+2                                    // c34b: 86 27       .'
     ldy #0                                                            // c34d: a0 00       ..
 // $c34f referenced 1 time by $c363
 loop_cc34f
     lda l0052,y                                                       // c34f: b9 52 00    .R.
     pha                                                               // c352: 48          H
     and #$0f                                                          // c353: 29 0f       ).
-    sta l0045,x                                                       // c355: 95 45       .E
+    sta int_workspace_stack_high+2,x                                  // c355: 95 45       .E
     pla                                                               // c357: 68          h
     lsr                                                               // c358: 4a          J
     lsr                                                               // c359: 4a          J
     lsr                                                               // c35a: 4a          J
     lsr                                                               // c35b: 4a          J
     inx                                                               // c35c: e8          .
-    sta l0045,x                                                       // c35d: 95 45       .E
+    sta int_workspace_stack_high+2,x                                  // c35d: 95 45       .E
     inx                                                               // c35f: e8          .
     iny                                                               // c360: c8          .
     cpy #4                                                            // c361: c0 04       ..
@@ -830,14 +816,14 @@ cc372
 cc377
     jsr print_character                                               // c377: 20 4c ca     L.
 print_quoted_string
-    lda (l0005),y                                                     // c37a: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c37a: b1 05       ..
     iny                                                               // c37c: c8          .
     cmp #$0d                                                          // c37d: c9 0d       ..
     beq cc39d                                                         // c37f: f0 1c       ..
-    sty l0003                                                         // c381: 84 03       ..
+    sty parsing_ptr_offset                                            // c381: 84 03       ..
     cmp #$22 // '"'                                                   // c383: c9 22       ."
     bne cc377                                                         // c385: d0 f0       ..
-    lda (l0005),y                                                     // c387: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c387: b1 05       ..
     cmp #$22 // '"'                                                   // c389: c9 22       ."
     bne cc372                                                         // c38b: d0 e5       ..
     iny                                                               // c38d: c8          .
@@ -889,15 +875,15 @@ pop_to_52
 // $c3cd referenced 4 times by $c66f, $c67b, $ccbb, $cd64
 sub_cc3cd
     dex                                                               // c3cd: ca          .
-    stx l0004                                                         // c3ce: 86 04       ..
-    lda l0016,x                                                       // c3d0: b5 16       ..
+    stx workspace_stack_pointer                                       // c3ce: 86 04       ..
+    lda int_workspace_stack_low,x                                     // c3d0: b5 16       ..
     sta basic_error_number,y                                          // c3d2: 99 00 00    ...
-    lda l0025,x                                                       // c3d5: b5 25       .%
+    lda int_workspace_stack_mid1,x                                    // c3d5: b5 25       .%
     sta basic_line_number,y                                           // c3d7: 99 01 00    ...
-    lda l0034,x                                                       // c3da: b5 34       .4
+    lda int_workspace_stack_mid2,x                                    // c3da: b5 34       .4
     sta basic_line_number+1,y                                         // c3dc: 99 02 00    ...
-    lda l0043,x                                                       // c3df: b5 43       .C
-    sta l0003,y                                                       // c3e1: 99 03 00    ...
+    lda int_workspace_stack_high,x                                    // c3df: b5 43       .C
+    sta parsing_ptr_offset,y                                          // c3e1: 99 03 00    ...
     rts                                                               // c3e4: 60          `
 
 sub_cc3e5
@@ -910,14 +896,14 @@ statement_word_store
 // $c3f1 referenced 1 time by $cd78
 assign_expression
     jsr sub_cce93                                                     // c3f1: 20 93 ce     ..
-    lda l0026,x                                                       // c3f4: b5 26       .&
+    lda int_workspace_stack_mid1+1,x                                  // c3f4: b5 26       .&
     iny                                                               // c3f6: c8          .
     sta (l0052),y                                                     // c3f7: 91 52       .R
     iny                                                               // c3f9: c8          .
-    lda l0035,x                                                       // c3fa: b5 35       .5
+    lda int_workspace_stack_mid2+1,x                                  // c3fa: b5 35       .5
     sta (l0052),y                                                     // c3fc: 91 52       .R
     iny                                                               // c3fe: c8          .
-    lda l0044,x                                                       // c3ff: b5 44       .D
+    lda int_workspace_stack_high+1,x                                  // c3ff: b5 44       .D
     sta (l0052),y                                                     // c401: 91 52       .R
     jmp next_statement_no_check                                       // c403: 4c 5b c5    L[.
 
@@ -932,9 +918,9 @@ statement_os_command
     ldx #0                                                            // c40f: a2 00       ..
 // $c411 referenced 1 time by $c41c
 loop_cc411
-    lda (l0005),y                                                     // c411: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c411: b1 05       ..
     sta input_buffer,x                                                // c413: 9d 00 01    ...
-    sty l0003                                                         // c416: 84 03       ..
+    sty parsing_ptr_offset                                            // c416: 84 03       ..
     iny                                                               // c418: c8          .
     inx                                                               // c419: e8          .
     cmp #$0d                                                          // c41a: c9 0d       ..
@@ -958,25 +944,25 @@ lc425 = check_fp_rom+1
 
 // $c434 referenced 8 times by $c309, $c31b, $c325, $c465, $c8dc, $cacd, $cb57, $cc84
 skip_spaces
-    ldy l0003                                                         // c434: a4 03       ..
+    ldy parsing_ptr_offset                                            // c434: a4 03       ..
     bpl cc43b                                                         // c436: 10 03       ..
 // $c438 referenced 1 time by $c43f
 loop_cc438
     iny                                                               // c438: c8          .
-    sty l0003                                                         // c439: 84 03       ..
+    sty parsing_ptr_offset                                            // c439: 84 03       ..
 // $c43b referenced 1 time by $c436
 cc43b
-    lda (l0005),y                                                     // c43b: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c43b: b1 05       ..
     cmp #$20 // ' '                                                   // c43d: c9 20       .
     beq loop_cc438                                                    // c43f: f0 f7       ..
     cmp #$5b // '['                                                   // c441: c9 5b       .[
     bcs cc463                                                         // c443: b0 1e       ..
     sbc #$3f // '?'                                                   // c445: e9 3f       .? // Carry is clear, so subtracting 64
     bcc return_1                                                      // c447: 90 1b       ..
-    ldx l0004                                                         // c449: a6 04       ..
-    sta l0016,x                                                       // c44b: 95 16       ..
+    ldx workspace_stack_pointer                                       // c449: a6 04       ..
+    sta int_workspace_stack_low,x                                     // c44b: 95 16       ..
     iny                                                               // c44d: c8          .
-    lda (l0005),y                                                     // c44e: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c44e: b1 05       ..
     cmp #$2e // '.'                                                   // c450: c9 2e       ..
     beq cc463                                                         // c452: f0 0f       ..
     cmp #$5b // '['                                                   // c454: c9 5b       .[
@@ -986,9 +972,9 @@ cc43b
 // $c45c referenced 1 time by $c456
 cc45c
     inx                                                               // c45c: e8          .
-    stx l0004                                                         // c45d: 86 04       ..
+    stx workspace_stack_pointer                                       // c45d: 86 04       ..
     sec                                                               // c45f: 38          8
-    sty l0003                                                         // c460: 84 03       ..
+    sty parsing_ptr_offset                                            // c460: 84 03       ..
     rts                                                               // c462: 60          `
 
 // $c463 referenced 6 times by $c429, $c42f, $c443, $c452, $c45a, $c4d4
@@ -1008,7 +994,7 @@ lc46b = sub_cc46a+1
     ldx #0                                                            // c46a: a2 00       ..
 // overlapping: brk                                                   // c46b: 00          .
 // $c46b referenced 4 times by $c495, $c49e, $c4b8, $c4cd
-    ldy l0003                                                         // c46c: a4 03       ..
+    ldy parsing_ptr_offset                                            // c46c: a4 03       ..
     stx l0052                                                         // c46e: 86 52       .R
     stx l0053                                                         // c470: 86 53       .S
     stx l0054                                                         // c472: 86 54       .T
@@ -1017,7 +1003,7 @@ lc46b = sub_cc46a+1
 // $c477 referenced 1 time by $c4d1
 cc477
     iny                                                               // c477: c8          .
-    lda (l0005),y                                                     // c478: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c478: b1 05       ..
     sec                                                               // c47a: 38          8
     sbc #$30 // '0'                                                   // c47b: e9 30       .0
     bmi cc4d3                                                         // c47d: 30 54       0T
@@ -1078,7 +1064,7 @@ cc4d3
 // $c4d6 referenced 1 time by $c941
 cc4d6
     sec                                                               // c4d6: 38          8
-    sty l0003                                                         // c4d7: 84 03       ..
+    sty parsing_ptr_offset                                            // c4d7: 84 03       ..
     ldy #$52 // 'R'                                                   // c4d9: a0 52       .R
     jmp cc99f                                                         // c4db: 4c 9f c9    L..
 
@@ -1090,12 +1076,12 @@ sub_cc4e1
     jsr sub_cc78b                                                     // c4e1: 20 8b c7     ..
 // $c4e4 referenced 12 times by $c2ad, $c3b5, $c50c, $c558, $ca72, $cbec, $cc08, $cd98, $ce83, $cefd, $cfb9, $cfcb
 check_end_of_statement
-    ldy l0003                                                         // c4e4: a4 03       ..
+    ldy parsing_ptr_offset                                            // c4e4: a4 03       ..
     dey                                                               // c4e6: 88          .
 // $c4e7 referenced 1 time by $c4ec
 loop_cc4e7
     iny                                                               // c4e7: c8          .
-    lda (l0005),y                                                     // c4e8: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c4e8: b1 05       ..
     cmp #$20 // ' '                                                   // c4ea: c9 20       .
     beq loop_cc4e7                                                    // c4ec: f0 f9       ..
     cmp #$3b // ';'                                                   // c4ee: c9 3b       .;
@@ -1108,14 +1094,14 @@ consolidate_text_pointer
 // $c4f7 referenced 1 time by $c52e
 cc4f7
     tya                                                               // c4f7: 98          .
-    adc l0005                                                         // c4f8: 65 05       e.
-    sta l0005                                                         // c4fa: 85 05       ..
+    adc parsing_ptr_low                                               // c4f8: 65 05       e.
+    sta parsing_ptr_low                                               // c4fa: 85 05       ..
     bcc cc500                                                         // c4fc: 90 02       ..
-    inc l0006                                                         // c4fe: e6 06       ..
+    inc parsing_ptr_high                                              // c4fe: e6 06       ..
 // $c500 referenced 2 times by $c4fc, $ceab
 cc500
     ldy #1                                                            // c500: a0 01       ..
-    sty l0003                                                         // c502: 84 03       ..
+    sty parsing_ptr_offset                                            // c502: 84 03       ..
     lda ppi_port_b                                                    // c504: ad 01 b0    ...
     and #$20 // ' '                                                   // c507: 29 20       )  // Test keyboard column 5
     beq cc547                                                         // c509: f0 3c       .<
@@ -1127,23 +1113,23 @@ return_2
 sub_cc50c
     jsr check_end_of_statement                                        // c50c: 20 e4 c4     ..
     dey                                                               // c50f: 88          .
-    lda (l0005),y                                                     // c510: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c510: b1 05       ..
     cmp #$3b // ';'                                                   // c512: c9 3b       .;
     beq return_2                                                      // c514: f0 f5       ..
-    lda l0006                                                         // c516: a5 06       ..
+    lda parsing_ptr_high                                              // c516: a5 06       ..
     cmp #1                                                            // c518: c9 01       ..
     beq lc596                                                         // c51a: f0 7a       .z
 // $c51c referenced 1 time by $c583
 sub_cc51c
     iny                                                               // c51c: c8          .
-    lda (l0005),y                                                     // c51d: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c51d: b1 05       ..
     bmi lc55c                                                         // c51f: 30 3b       0;
     sta basic_line_number+1                                           // c521: 85 02       ..
     iny                                                               // c523: c8          .
-    lda (l0005),y                                                     // c524: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c524: b1 05       ..
     sta basic_line_number                                             // c526: 85 01       ..
     iny                                                               // c528: c8          .
-    lda (l0005),y                                                     // c529: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c529: b1 05       ..
     dey                                                               // c52b: 88          .
     cmp #$61 // 'a'                                                   // c52c: c9 61       .a
     bcc cc4f7                                                         // c52e: 90 c7       ..
@@ -1154,9 +1140,9 @@ sub_cc51c
     asl                                                               // c537: 0a          .
     tax                                                               // c538: aa          .
     jsr consolidate_text_pointer                                      // c539: 20 f6 c4     ..
-    lda l0005                                                         // c53c: a5 05       ..
+    lda parsing_ptr_low                                               // c53c: a5 05       ..
     sta l038d,x                                                       // c53e: 9d 8d 03    ...
-    lda l0006                                                         // c541: a5 06       ..
+    lda parsing_ptr_high                                              // c541: a5 06       ..
     sta l038e,x                                                       // c543: 9d 8e 03    ...
     rts                                                               // c546: 60          `
 
@@ -1182,7 +1168,7 @@ lc55c = next_statement_no_check+1
     ldy #0                                                            // c55b: a0 00       ..
 // overlapping: brk                                                   // c55c: 00          .
 // $c55c referenced 2 times by $c4f4, $c51f
-    lda (l0005),y                                                     // c55d: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c55d: b1 05       ..
     cmp #$3b // ';'                                                   // c55f: c9 3b       .;
     bne cc57d                                                         // c561: d0 1a       ..
     jmp if_then                                                       // c563: 4c 1b c3    L..
@@ -1190,8 +1176,8 @@ lc55c = next_statement_no_check+1
 statement_if
     jsr sub_cc70c                                                     // c566: 20 0c c7     ..
     dex                                                               // c569: ca          .
-    stx l0004                                                         // c56a: 86 04       ..
-    lda l0016,x                                                       // c56c: b5 16       ..
+    stx workspace_stack_pointer                                       // c56a: 86 04       ..
+    lda int_workspace_stack_low,x                                     // c56c: b5 16       ..
     beq statement_rem                                                 // c56e: f0 05       ..
     ldx #$20 // ' '                                                   // c570: a2 20       .
     jmp match_keyword                                                 // c572: 4c 33 c2    L3.
@@ -1203,11 +1189,11 @@ statement_rem
 // $c578 referenced 1 time by $c57b
 loop_cc578
     iny                                                               // c578: c8          .
-    cmp (l0005),y                                                     // c579: d1 05       ..
+    cmp (parsing_ptr_low),y                                           // c579: d1 05       ..
     bne loop_cc578                                                    // c57b: d0 fb       ..
 // $c57d referenced 1 time by $c561
 cc57d
-    lda l0006                                                         // c57d: a5 06       ..
+    lda parsing_ptr_high                                              // c57d: a5 06       ..
     cmp #1                                                            // c57f: c9 01       ..
     beq cc547                                                         // c581: f0 c4       ..
     jsr sub_cc51c                                                     // c583: 20 1c c5     ..
@@ -1215,8 +1201,8 @@ cc57d
 
 // $c589 referenced 2 times by $c36a, $ca82
 print_line_number
-    lda l0043                                                         // c589: a5 43       .C
-    sta l0027                                                         // c58b: 85 27       .'
+    lda int_workspace_stack_high                                      // c589: a5 43       .C
+    sta int_workspace_stack_mid1+2                                    // c58b: 85 27       .'
     bpl cc593                                                         // c58d: 10 04       ..
     inx                                                               // c58f: e8          .
     jsr cc8c4                                                         // c590: 20 c4 c8     ..
@@ -1229,29 +1215,29 @@ lc596 = cc595+1
     lda #0                                                            // c595: a9 00       ..
 // overlapping: brk                                                   // c596: 00          .
 // $c596 referenced 1 time by $c51a
-    sta l0045,x                                                       // c597: 95 45       .E
+    sta int_workspace_stack_high+2,x                                  // c597: 95 45       .E
 // $c599 referenced 1 time by $c5bf
 cc599
     sec                                                               // c599: 38          8
-    lda l0016                                                         // c59a: a5 16       ..
+    lda int_workspace_stack_low                                       // c59a: a5 16       ..
     sbc powers_of_ten_byte_0,x                                        // c59c: fd 08 c6    ...
     pha                                                               // c59f: 48          H
-    lda l0025                                                         // c5a0: a5 25       .%
+    lda int_workspace_stack_mid1                                      // c5a0: a5 25       .%
     sbc powers_of_ten_byte_1,x                                        // c5a2: fd 10 c6    ...
     pha                                                               // c5a5: 48          H
-    lda l0034                                                         // c5a6: a5 34       .4
+    lda int_workspace_stack_mid2                                      // c5a6: a5 34       .4
     sbc powers_of_ten_byte_2,x                                        // c5a8: fd 1a c6    ...
     tay                                                               // c5ab: a8          .
-    lda l0043                                                         // c5ac: a5 43       .C
+    lda int_workspace_stack_high                                      // c5ac: a5 43       .C
     sbc powers_of_ten_byte_3,x                                        // c5ae: fd 24 c6    .$.
     bcc cc5c1                                                         // c5b1: 90 0e       ..
-    sta l0043                                                         // c5b3: 85 43       .C
-    sty l0034                                                         // c5b5: 84 34       .4
+    sta int_workspace_stack_high                                      // c5b3: 85 43       .C
+    sty int_workspace_stack_mid2                                      // c5b5: 84 34       .4
     pla                                                               // c5b7: 68          h
-    sta l0025                                                         // c5b8: 85 25       .%
+    sta int_workspace_stack_mid1                                      // c5b8: 85 25       .%
     pla                                                               // c5ba: 68          h
-    sta l0016                                                         // c5bb: 85 16       ..
-    inc l0045,x                                                       // c5bd: f6 45       .E
+    sta int_workspace_stack_low                                       // c5bb: 85 16       ..
+    inc int_workspace_stack_high+2,x                                  // c5bd: f6 45       .E
     bne cc599                                                         // c5bf: d0 d8       ..
 // $c5c1 referenced 1 time by $c5b1
 cc5c1
@@ -1264,12 +1250,12 @@ cc5c1
 cc5c8
     dex                                                               // c5c8: ca          .
     beq cc5cf                                                         // c5c9: f0 04       ..
-    lda l0045,x                                                       // c5cb: b5 45       .E
+    lda int_workspace_stack_high+2,x                                  // c5cb: b5 45       .E
     beq cc5c8                                                         // c5cd: f0 f9       ..
 // $c5cf referenced 1 time by $c5c9
 cc5cf
     stx l0052                                                         // c5cf: 86 52       .R
-    bit l0027                                                         // c5d1: 24 27       $'
+    bit int_workspace_stack_mid1+2                                    // c5d1: 24 27       $'
     bpl cc5d7                                                         // c5d3: 10 02       ..
     inc l0052                                                         // c5d5: e6 52       .R
 // $c5d7 referenced 1 time by $c5d3
@@ -1292,13 +1278,13 @@ loop_cc5e6
     bne loop_cc5e6                                                    // c5ec: d0 f8       ..
 // $c5ee referenced 2 times by $c5e1, $c5e3
 cc5ee
-    bit l0027                                                         // c5ee: 24 27       $'
+    bit int_workspace_stack_mid1+2                                    // c5ee: 24 27       $'
     bpl cc5f7                                                         // c5f0: 10 05       ..
     lda #$2d // '-'                                                   // c5f2: a9 2d       .-
     jsr print_character                                               // c5f4: 20 4c ca     L.
 // $c5f7 referenced 2 times by $c5f0, $c605
 cc5f7
-    lda l0045,x                                                       // c5f7: b5 45       .E
+    lda int_workspace_stack_high+2,x                                  // c5f7: b5 45       .E
 print_hex_number
     cmp #$0a                                                          // c5f9: c9 0a       ..
     bcc cc5ff                                                         // c5fb: 90 02       ..
@@ -1328,8 +1314,8 @@ powers_of_ten_byte_3
 
 // $c62e referenced 3 times by $ca75, $cc0f, $cdcb
 sub_cc62e
-    dec l0004                                                         // c62e: c6 04       ..
-    ldx l0004                                                         // c630: a6 04       ..
+    dec workspace_stack_pointer                                       // c62e: c6 04       ..
+    ldx workspace_stack_pointer                                       // c630: a6 04       ..
     ldy #0                                                            // c632: a0 00       ..
     sty l0058                                                         // c634: 84 58       .X
     lda text_space_page                                               // c636: a5 12       ..
@@ -1346,15 +1332,15 @@ loop_cc63d
     jsr sub_ccea1                                                     // c642: 20 a1 ce     ..
     lda (l0058),y                                                     // c645: b1 58       .X
     iny                                                               // c647: c8          .
-    cmp l0025,x                                                       // c648: d5 25       .%
+    cmp int_workspace_stack_mid1,x                                    // c648: d5 25       .%
     bcc cc63b                                                         // c64a: 90 ef       ..
     bne return_3                                                      // c64c: d0 12       ..
     lda (l0058),y                                                     // c64e: b1 58       .X
-    cmp l0016,x                                                       // c650: d5 16       ..
+    cmp int_workspace_stack_low,x                                     // c650: d5 16       ..
     bcc cc63b                                                         // c652: 90 e7       ..
     bne return_3                                                      // c654: d0 0a       ..
     sta basic_line_number                                             // c656: 85 01       ..
-    lda l0025,x                                                       // c658: b5 25       .%
+    lda int_workspace_stack_mid1,x                                    // c658: b5 25       .%
     sta basic_line_number+1                                           // c65a: 85 02       ..
     jsr sub_ccea1                                                     // c65c: 20 a1 ce     ..
     clc                                                               // c65f: 18          .
@@ -1365,14 +1351,14 @@ return_3
 // $c661 referenced 2 times by $c689, $c813
 sub_cc661
     jsr evaluate_expression                                           // c661: 20 bc c8     ..
-    lda l0042,x                                                       // c664: b5 42       .B
-    eor l0041,x                                                       // c666: 55 41       UA
+    lda int_workspace_stack_high-1,x                                  // c664: b5 42       .B
+    eor int_workspace_stack_high-2,x                                  // c666: 55 41       UA
     sta l0052                                                         // c668: 85 52       .R
     jsr sub_cc905                                                     // c66a: 20 05 c9     ..
     ldy #$53 // 'S'                                                   // c66d: a0 53       .S
     jsr sub_cc3cd                                                     // c66f: 20 cd c3     ..
-    lda l0042,x                                                       // c672: b5 42       .B
-    sta l0043,x                                                       // c674: 95 43       .C
+    lda int_workspace_stack_high-1,x                                  // c672: b5 42       .B
+    sta int_workspace_stack_high,x                                    // c674: 95 43       .C
     jsr sub_cc907                                                     // c676: 20 07 c9     ..
     ldy #$57 // 'W'                                                   // c679: a0 57       .W
     jsr sub_cc3cd                                                     // c67b: 20 cd c3     ..
@@ -1452,23 +1438,23 @@ return_4
 sub_cc6da
     jsr sub_cc78b                                                     // c6da: 20 8b c7     ..
     dex                                                               // c6dd: ca          .
-    stx l0004                                                         // c6de: 86 04       ..
-    lda l0042,x                                                       // c6e0: b5 42       .B
+    stx workspace_stack_pointer                                       // c6de: 86 04       ..
+    lda int_workspace_stack_high-1,x                                  // c6e0: b5 42       .B
     eor #$80                                                          // c6e2: 49 80       I.
     sta l0052                                                         // c6e4: 85 52       .R
-    lda l0043,x                                                       // c6e6: b5 43       .C
+    lda int_workspace_stack_high,x                                    // c6e6: b5 43       .C
     eor #$80                                                          // c6e8: 49 80       I.
     sta l0054                                                         // c6ea: 85 54       .T
     ldy #0                                                            // c6ec: a0 00       ..
     sec                                                               // c6ee: 38          8
-    lda l0015,x                                                       // c6ef: b5 15       ..
-    sbc l0016,x                                                       // c6f1: f5 16       ..
+    lda int_workspace_stack_low-1,x                                   // c6ef: b5 15       ..
+    sbc int_workspace_stack_low,x                                     // c6f1: f5 16       ..
     sta l0053                                                         // c6f3: 85 53       .S
-    lda l0024,x                                                       // c6f5: b5 24       .$
-    sbc l0025,x                                                       // c6f7: f5 25       .%
+    lda int_workspace_stack_mid1-1,x                                  // c6f5: b5 24       .$
+    sbc int_workspace_stack_mid1,x                                    // c6f7: f5 25       .%
     sta l0055                                                         // c6f9: 85 55       .U
-    lda l0033,x                                                       // c6fb: b5 33       .3
-    sbc l0034,x                                                       // c6fd: f5 34       .4
+    lda int_workspace_stack_mid2-1,x                                  // c6fb: b5 33       .3
+    sbc int_workspace_stack_mid2,x                                    // c6fd: f5 34       .4
     sta l0056                                                         // c6ff: 85 56       .V
     lda l0052                                                         // c701: a5 52       .R
     sbc l0054                                                         // c703: e5 54       .T
@@ -1489,18 +1475,18 @@ loop_cc70f
 
 op_and
     jsr sub_cc72c                                                     // c714: 20 2c c7     ,.
-    lda l0014,x                                                       // c717: b5 14       ..
-    and l0015,x                                                       // c719: 35 15       5.
+    lda int_workspace_stack_low-2,x                                   // c717: b5 14       ..
+    and int_workspace_stack_low-1,x                                   // c719: 35 15       5.
 // $c71b referenced 1 time by $c729
 loop_cc71b
-    sta l0014,x                                                       // c71b: 95 14       ..
-    dec l0004                                                         // c71d: c6 04       ..
+    sta int_workspace_stack_low-2,x                                   // c71b: 95 14       ..
+    dec workspace_stack_pointer                                       // c71d: c6 04       ..
     jmp loop_cc70f                                                    // c71f: 4c 0f c7    L..
 
 op_or
     jsr sub_cc72c                                                     // c722: 20 2c c7     ,.
-    lda l0014,x                                                       // c725: b5 14       ..
-    ora l0015,x                                                       // c727: 15 15       ..
+    lda int_workspace_stack_low-2,x                                   // c725: b5 14       ..
+    ora int_workspace_stack_low-1,x                                   // c727: 15 15       ..
     jmp loop_cc71b                                                    // c729: 4c 1b c7    L..
 
 // $c72c referenced 3 times by $c70c, $c714, $c722
@@ -1511,9 +1497,9 @@ sub_cc72c
 sub_cc731
     jsr sub_cc78b                                                     // c731: 20 8b c7     ..
     jsr sub_cceae                                                     // c734: 20 ae ce     ..
-    lda l0015,x                                                       // c737: b5 15       ..
+    lda int_workspace_stack_low-1,x                                   // c737: b5 15       ..
     sta l0054                                                         // c739: 85 54       .T
-    lda l0024,x                                                       // c73b: b5 24       .$
+    lda int_workspace_stack_mid1-1,x                                  // c73b: b5 24       .$
     sta l0055                                                         // c73d: 85 55       .U
     ldy #$ff                                                          // c73f: a0 ff       ..
 // $c741 referenced 1 time by $c74a
@@ -1545,7 +1531,7 @@ cc760
     iny                                                               // c760: c8          .
 // $c761 referenced 8 times by $c751, $c75e, $c76b, $c772, $c779, $c780, $c785, $c789
 cc761
-    sty l0015,x                                                       // c761: 94 15       ..
+    sty int_workspace_stack_low-1,x                                   // c761: 94 15       ..
     rts                                                               // c763: 60          `
 
 op_less_or_equal
@@ -1582,8 +1568,8 @@ sub_cc78b
 
 // $c791 referenced 4 times by $c7b4, $c7d0, $c7ec, $c808
 cc791
-    sta l0041,x                                                       // c791: 95 41       .A
-    dec l0004                                                         // c793: c6 04       ..
+    sta int_workspace_stack_high-2,x                                  // c791: 95 41       .A
+    dec workspace_stack_pointer                                       // c793: c6 04       ..
 // $c795 referenced 1 time by $c78e
 cc795
     ldx #0                                                            // c795: a2 00       ..
@@ -1592,62 +1578,62 @@ cc795
 op_add
     jsr sub_cc80b                                                     // c79a: 20 0b c8     ..
     clc                                                               // c79d: 18          .
-    lda l0014,x                                                       // c79e: b5 14       ..
-    adc l0015,x                                                       // c7a0: 75 15       u.
-    sta l0014,x                                                       // c7a2: 95 14       ..
-    lda l0023,x                                                       // c7a4: b5 23       .#
-    adc l0024,x                                                       // c7a6: 75 24       u$
-    sta l0023,x                                                       // c7a8: 95 23       .#
-    lda l0032,x                                                       // c7aa: b5 32       .2
-    adc l0033,x                                                       // c7ac: 75 33       u3
-    sta l0032,x                                                       // c7ae: 95 32       .2
-    lda l0041,x                                                       // c7b0: b5 41       .A
-    adc l0042,x                                                       // c7b2: 75 42       uB
+    lda int_workspace_stack_low-2,x                                   // c79e: b5 14       ..
+    adc int_workspace_stack_low-1,x                                   // c7a0: 75 15       u.
+    sta int_workspace_stack_low-2,x                                   // c7a2: 95 14       ..
+    lda int_workspace_stack_mid1-2,x                                  // c7a4: b5 23       .#
+    adc int_workspace_stack_mid1-1,x                                  // c7a6: 75 24       u$
+    sta int_workspace_stack_mid1-2,x                                  // c7a8: 95 23       .#
+    lda int_workspace_stack_mid2-2,x                                  // c7aa: b5 32       .2
+    adc int_workspace_stack_mid2-1,x                                  // c7ac: 75 33       u3
+    sta int_workspace_stack_mid2-2,x                                  // c7ae: 95 32       .2
+    lda int_workspace_stack_high-2,x                                  // c7b0: b5 41       .A
+    adc int_workspace_stack_high-1,x                                  // c7b2: 75 42       uB
     jmp cc791                                                         // c7b4: 4c 91 c7    L..
 
 op_subtract
     jsr sub_cc80b                                                     // c7b7: 20 0b c8     ..
-    lda l0014,x                                                       // c7ba: b5 14       ..
-    sbc l0015,x                                                       // c7bc: f5 15       ..
-    sta l0014,x                                                       // c7be: 95 14       ..
-    lda l0023,x                                                       // c7c0: b5 23       .#
-    sbc l0024,x                                                       // c7c2: f5 24       .$
-    sta l0023,x                                                       // c7c4: 95 23       .#
-    lda l0032,x                                                       // c7c6: b5 32       .2
-    sbc l0033,x                                                       // c7c8: f5 33       .3
-    sta l0032,x                                                       // c7ca: 95 32       .2
-    lda l0041,x                                                       // c7cc: b5 41       .A
-    sbc l0042,x                                                       // c7ce: f5 42       .B
+    lda int_workspace_stack_low-2,x                                   // c7ba: b5 14       ..
+    sbc int_workspace_stack_low-1,x                                   // c7bc: f5 15       ..
+    sta int_workspace_stack_low-2,x                                   // c7be: 95 14       ..
+    lda int_workspace_stack_mid1-2,x                                  // c7c0: b5 23       .#
+    sbc int_workspace_stack_mid1-1,x                                  // c7c2: f5 24       .$
+    sta int_workspace_stack_mid1-2,x                                  // c7c4: 95 23       .#
+    lda int_workspace_stack_mid2-2,x                                  // c7c6: b5 32       .2
+    sbc int_workspace_stack_mid2-1,x                                  // c7c8: f5 33       .3
+    sta int_workspace_stack_mid2-2,x                                  // c7ca: 95 32       .2
+    lda int_workspace_stack_high-2,x                                  // c7cc: b5 41       .A
+    sbc int_workspace_stack_high-1,x                                  // c7ce: f5 42       .B
     jmp cc791                                                         // c7d0: 4c 91 c7    L..
 
 op_bitwise_or
     jsr sub_cc80b                                                     // c7d3: 20 0b c8     ..
-    lda l0014,x                                                       // c7d6: b5 14       ..
-    ora l0015,x                                                       // c7d8: 15 15       ..
-    sta l0014,x                                                       // c7da: 95 14       ..
-    lda l0023,x                                                       // c7dc: b5 23       .#
-    ora l0024,x                                                       // c7de: 15 24       .$
-    sta l0023,x                                                       // c7e0: 95 23       .#
-    lda l0032,x                                                       // c7e2: b5 32       .2
-    ora l0033,x                                                       // c7e4: 15 33       .3
-    sta l0032,x                                                       // c7e6: 95 32       .2
-    lda l0041,x                                                       // c7e8: b5 41       .A
-    ora l0042,x                                                       // c7ea: 15 42       .B
+    lda int_workspace_stack_low-2,x                                   // c7d6: b5 14       ..
+    ora int_workspace_stack_low-1,x                                   // c7d8: 15 15       ..
+    sta int_workspace_stack_low-2,x                                   // c7da: 95 14       ..
+    lda int_workspace_stack_mid1-2,x                                  // c7dc: b5 23       .#
+    ora int_workspace_stack_mid1-1,x                                  // c7de: 15 24       .$
+    sta int_workspace_stack_mid1-2,x                                  // c7e0: 95 23       .#
+    lda int_workspace_stack_mid2-2,x                                  // c7e2: b5 32       .2
+    ora int_workspace_stack_mid2-1,x                                  // c7e4: 15 33       .3
+    sta int_workspace_stack_mid2-2,x                                  // c7e6: 95 32       .2
+    lda int_workspace_stack_high-2,x                                  // c7e8: b5 41       .A
+    ora int_workspace_stack_high-1,x                                  // c7ea: 15 42       .B
     jmp cc791                                                         // c7ec: 4c 91 c7    L..
 
 op_bitwise_eor
     jsr sub_cc80b                                                     // c7ef: 20 0b c8     ..
-    lda l0014,x                                                       // c7f2: b5 14       ..
-    eor l0015,x                                                       // c7f4: 55 15       U.
-    sta l0014,x                                                       // c7f6: 95 14       ..
-    lda l0023,x                                                       // c7f8: b5 23       .#
-    eor l0024,x                                                       // c7fa: 55 24       U$
-    sta l0023,x                                                       // c7fc: 95 23       .#
-    lda l0032,x                                                       // c7fe: b5 32       .2
-    eor l0033,x                                                       // c800: 55 33       U3
-    sta l0032,x                                                       // c802: 95 32       .2
-    lda l0041,x                                                       // c804: b5 41       .A
-    eor l0042,x                                                       // c806: 55 42       UB
+    lda int_workspace_stack_low-2,x                                   // c7f2: b5 14       ..
+    eor int_workspace_stack_low-1,x                                   // c7f4: 55 15       U.
+    sta int_workspace_stack_low-2,x                                   // c7f6: 95 14       ..
+    lda int_workspace_stack_mid1-2,x                                  // c7f8: b5 23       .#
+    eor int_workspace_stack_mid1-1,x                                  // c7fa: 55 24       U$
+    sta int_workspace_stack_mid1-2,x                                  // c7fc: 95 23       .#
+    lda int_workspace_stack_mid2-2,x                                  // c7fe: b5 32       .2
+    eor int_workspace_stack_mid2-1,x                                  // c800: 55 33       U3
+    sta int_workspace_stack_mid2-2,x                                  // c802: 95 32       .2
+    lda int_workspace_stack_high-2,x                                  // c804: b5 41       .A
+    eor int_workspace_stack_high-1,x                                  // c806: 55 42       UB
     jmp cc791                                                         // c808: 4c 91 c7    L..
 
 // $c80b referenced 5 times by $c78b, $c79a, $c7b7, $c7d3, $c7ef
@@ -1721,27 +1707,27 @@ op_divide
 
 op_remainder
     jsr sub_cc689                                                     // c870: 20 89 c6     ..
-    ldx l0004                                                         // c873: a6 04       ..
-    lda l0044,x                                                       // c875: b5 44       .D
+    ldx workspace_stack_pointer                                       // c873: a6 04       ..
+    lda int_workspace_stack_high+1,x                                  // c875: b5 44       .D
     php                                                               // c877: 08          .
     jmp cc850                                                         // c878: 4c 50 c8    LP.
 
 op_bitwise_and
     jsr evaluate_expression                                           // c87b: 20 bc c8     ..
     dex                                                               // c87e: ca          .
-    stx l0004                                                         // c87f: 86 04       ..
-    lda l0015,x                                                       // c881: b5 15       ..
-    and l0016,x                                                       // c883: 35 16       5.
-    sta l0015,x                                                       // c885: 95 15       ..
-    lda l0024,x                                                       // c887: b5 24       .$
-    and l0025,x                                                       // c889: 35 25       5%
-    sta l0024,x                                                       // c88b: 95 24       .$
-    lda l0033,x                                                       // c88d: b5 33       .3
-    and l0034,x                                                       // c88f: 35 34       54
-    sta l0033,x                                                       // c891: 95 33       .3
-    lda l0042,x                                                       // c893: b5 42       .B
-    and l0043,x                                                       // c895: 35 43       5C
-    sta l0042,x                                                       // c897: 95 42       .B
+    stx workspace_stack_pointer                                       // c87f: 86 04       ..
+    lda int_workspace_stack_low-1,x                                   // c881: b5 15       ..
+    and int_workspace_stack_low,x                                     // c883: 35 16       5.
+    sta int_workspace_stack_low-1,x                                   // c885: 95 15       ..
+    lda int_workspace_stack_mid1-1,x                                  // c887: b5 24       .$
+    and int_workspace_stack_mid1,x                                    // c889: 35 25       5%
+    sta int_workspace_stack_mid1-1,x                                  // c88b: 95 24       .$
+    lda int_workspace_stack_mid2-1,x                                  // c88d: b5 33       .3
+    and int_workspace_stack_mid2,x                                    // c88f: 35 34       54
+    sta int_workspace_stack_mid2-1,x                                  // c891: 95 33       .3
+    lda int_workspace_stack_high-1,x                                  // c893: b5 42       .B
+    and int_workspace_stack_high,x                                    // c895: 35 43       5C
+    sta int_workspace_stack_high-1,x                                  // c897: 95 42       .B
     jmp cc80e                                                         // c899: 4c 0e c8    L..
 
 op_byte_index
@@ -1752,11 +1738,11 @@ op_byte_index
 sub_cc8a2
     jsr evaluate_expression                                           // c8a2: 20 bc c8     ..
     clc                                                               // c8a5: 18          .
-    lda l0015,x                                                       // c8a6: b5 15       ..
-    adc l0014,x                                                       // c8a8: 75 14       u.
+    lda int_workspace_stack_low-1,x                                   // c8a6: b5 15       ..
+    adc int_workspace_stack_low-2,x                                   // c8a8: 75 14       u.
     tay                                                               // c8aa: a8          .
-    lda l0024,x                                                       // c8ab: b5 24       .$
-    adc l0023,x                                                       // c8ad: 75 23       u#
+    lda int_workspace_stack_mid1-1,x                                  // c8ab: b5 24       .$
+    adc int_workspace_stack_mid1-2,x                                  // c8ad: 75 23       u#
     dex                                                               // c8af: ca          .
     jmp cc953                                                         // c8b0: 4c 53 c9    LS.
 
@@ -1777,17 +1763,17 @@ cc8c4
     sec                                                               // c8c4: 38          8
     lda #0                                                            // c8c5: a9 00       ..
     tay                                                               // c8c7: a8          .  // Y=0
-    sbc l0015,x                                                       // c8c8: f5 15       ..
-    sta l0015,x                                                       // c8ca: 95 15       ..
+    sbc int_workspace_stack_low-1,x                                   // c8c8: f5 15       ..
+    sta int_workspace_stack_low-1,x                                   // c8ca: 95 15       ..
     tya                                                               // c8cc: 98          .  // A=0
-    sbc l0024,x                                                       // c8cd: f5 24       .$
-    sta l0024,x                                                       // c8cf: 95 24       .$
+    sbc int_workspace_stack_mid1-1,x                                  // c8cd: f5 24       .$
+    sta int_workspace_stack_mid1-1,x                                  // c8cf: 95 24       .$
     tya                                                               // c8d1: 98          .  // A=0
-    sbc l0033,x                                                       // c8d2: f5 33       .3
-    sta l0033,x                                                       // c8d4: 95 33       .3
+    sbc int_workspace_stack_mid2-1,x                                  // c8d2: f5 33       .3
+    sta int_workspace_stack_mid2-1,x                                  // c8d4: 95 33       .3
     tya                                                               // c8d6: 98          .  // A=0
-    sbc l0042,x                                                       // c8d7: f5 42       .B
-    sta l0042,x                                                       // c8d9: 95 42       .B
+    sbc int_workspace_stack_high-1,x                                  // c8d7: f5 42       .B
+    sta int_workspace_stack_high-1,x                                  // c8d9: 95 42       .B
     rts                                                               // c8db: 60          `
 
 // $c8dc referenced 1 time by $c8c1
@@ -1796,15 +1782,15 @@ sub_cc8dc
     bcc cc8f8                                                         // c8df: 90 17       ..
 // $c8e1 referenced 1 time by $cd81
 sub_cc8e1
-    ldy l0015,x                                                       // c8e1: b4 15       ..
+    ldy int_workspace_stack_low-1,x                                   // c8e1: b4 15       ..
     lda l0321,y                                                       // c8e3: b9 21 03    .!.
-    sta l0015,x                                                       // c8e6: 95 15       ..
+    sta int_workspace_stack_low-1,x                                   // c8e6: 95 15       ..
     lda l0357,y                                                       // c8e8: b9 57 03    .W.
-    sta l0033,x                                                       // c8eb: 95 33       .3
+    sta int_workspace_stack_mid2-1,x                                  // c8eb: 95 33       .3
     lda l033c,y                                                       // c8ed: b9 3c 03    .<.
-    sta l0024,x                                                       // c8f0: 95 24       .$
+    sta int_workspace_stack_mid1-1,x                                  // c8f0: 95 24       .$
     lda l0372,y                                                       // c8f2: b9 72 03    .r.
-    sta l0042,x                                                       // c8f5: 95 42       .B
+    sta int_workspace_stack_high-1,x                                  // c8f5: 95 42       .B
 // $c8f7 referenced 1 time by $c8fb
 return_5
     rts                                                               // c8f7: 60          `
@@ -1820,7 +1806,7 @@ function_abs
     jsr evaluate_expression                                           // c902: 20 bc c8     ..
 // $c905 referenced 1 time by $c66a
 sub_cc905
-    lda l0042,x                                                       // c905: b5 42       .B
+    lda int_workspace_stack_high-1,x                                  // c905: b5 42       .B
 // $c907 referenced 1 time by $c676
 sub_cc907
     bmi cc8c4                                                         // c907: 30 bb       0.
@@ -1836,7 +1822,7 @@ function_hex
 // $c915 referenced 1 time by $c93c
 cc915
     iny                                                               // c915: c8          .
-    lda (l0005),y                                                     // c916: b1 05       ..
+    lda (parsing_ptr_low),y                                           // c916: b1 05       ..
     cmp #$30 // '0'                                                   // c918: c9 30       .0
     bcc cc93e                                                         // c91a: 90 22       ."
     cmp #$3a // ':'                                                   // c91c: c9 3a       .:
@@ -1878,8 +1864,8 @@ function_bracket
 // $c94c referenced 1 time by $c95f
 function_byte_fetch
     jsr evaluate_expression                                           // c94c: 20 bc c8     ..
-    ldy l0015,x                                                       // c94f: b4 15       ..
-    lda l0024,x                                                       // c951: b5 24       .$
+    ldy int_workspace_stack_low-1,x                                   // c94f: b4 15       ..
+    lda int_workspace_stack_mid1-1,x                                  // c951: b5 24       .$
 // $c953 referenced 1 time by $c8b0
 cc953
     sta l0053                                                         // c953: 85 53       .S
@@ -1900,13 +1886,13 @@ function_word_fetch
 sub_cc962
     ldy #1                                                            // c962: a0 01       ..
     lda (l0052),y                                                     // c964: b1 52       .R
-    sta l0024,x                                                       // c966: 95 24       .$
+    sta int_workspace_stack_mid1-1,x                                  // c966: 95 24       .$
     iny                                                               // c968: c8          .  // Y=2
     lda (l0052),y                                                     // c969: b1 52       .R
-    sta l0033,x                                                       // c96b: 95 33       .3
+    sta int_workspace_stack_mid2-1,x                                  // c96b: 95 33       .3
     iny                                                               // c96d: c8          .  // Y=3
     lda (l0052),y                                                     // c96e: b1 52       .R
-    sta l0042,x                                                       // c970: 95 42       .B
+    sta int_workspace_stack_high-1,x                                  // c970: 95 42       .B
     rts                                                               // c972: 60          `
 
 function_top
@@ -1918,11 +1904,11 @@ function_count
 // $c97c referenced 6 times by $c95c, $c9cf, $ca53, $ca58, $cf63, $cfb3
 cc97c
     jsr sub_cc9b3                                                     // c97c: 20 b3 c9     ..
-    sta l0024,x                                                       // c97f: 95 24       .$
+    sta int_workspace_stack_mid1-1,x                                  // c97f: 95 24       .$
 // $c981 referenced 1 time by $c978
 cc981
-    sta l0033,x                                                       // c981: 95 33       .3
-    sta l0042,x                                                       // c983: 95 42       .B
+    sta int_workspace_stack_mid2-1,x                                  // c981: 95 33       .3
+    sta int_workspace_stack_high-1,x                                  // c983: 95 42       .B
     rts                                                               // c985: 60          `
 
 function_rnd
@@ -1945,22 +1931,22 @@ loop_cc988
     ldy #8                                                            // c99d: a0 08       ..
 // $c99f referenced 3 times by $c4db, $c852, $cf38
 cc99f
-    ldx l0004                                                         // c99f: a6 04       ..
+    ldx workspace_stack_pointer                                       // c99f: a6 04       ..
 // $c9a1 referenced 1 time by $c975
 sub_cc9a1
     lda basic_line_number,y                                           // c9a1: b9 01 00    ...
-    sta l0025,x                                                       // c9a4: 95 25       .%
+    sta int_workspace_stack_mid1,x                                    // c9a4: 95 25       .%
     lda basic_line_number+1,y                                         // c9a6: b9 02 00    ...
-    sta l0034,x                                                       // c9a9: 95 34       .4
-    lda l0003,y                                                       // c9ab: b9 03 00    ...
-    sta l0043,x                                                       // c9ae: 95 43       .C
+    sta int_workspace_stack_mid2,x                                    // c9a9: 95 34       .4
+    lda parsing_ptr_offset,y                                          // c9ab: b9 03 00    ...
+    sta int_workspace_stack_high,x                                    // c9ae: 95 43       .C
     lda basic_error_number,y                                          // c9b0: b9 00 00    ...
 // $c9b3 referenced 1 time by $c97c
 sub_cc9b3
-    sta l0016,x                                                       // c9b3: 95 16       ..
+    sta int_workspace_stack_low,x                                     // c9b3: 95 16       ..
     inx                                                               // c9b5: e8          .
-    stx l0004                                                         // c9b6: 86 04       ..
-    ldy l0003                                                         // c9b8: a4 03       ..
+    stx workspace_stack_pointer                                       // c9b6: 86 04       ..
+    ldy parsing_ptr_offset                                            // c9b8: a4 03       ..
     lda #0                                                            // c9ba: a9 00       ..
     rts                                                               // c9bc: 60          `
 
@@ -1989,9 +1975,9 @@ handle_brkvec
     pla                                                               // c9d9: 68          h
     sta basic_error_number                                            // c9da: 85 00       ..
     lda basic_error_handler                                           // c9dc: a5 10       ..
-    sta l0005                                                         // c9de: 85 05       ..
+    sta parsing_ptr_low                                               // c9de: 85 05       ..
     lda basic_error_handler+1                                         // c9e0: a5 11       ..
-    sta l0006                                                         // c9e2: 85 06       ..
+    sta parsing_ptr_high                                              // c9e2: 85 06       ..
     jmp cc2f2                                                         // c9e4: 4c f2 c2    L..
 
 // BASIC's default error handler, in BASIC: it prints ERROR, the error number (?0) and,
@@ -2020,18 +2006,18 @@ sub_cca2c
     jsr sub_cc78b                                                     // ca2c: 20 8b c7     ..
 // $ca2f referenced 1 time by $c3e8
 sub_cca2f
-    ldx l0004                                                         // ca2f: a6 04       ..
+    ldx workspace_stack_pointer                                       // ca2f: a6 04       ..
     dex                                                               // ca31: ca          .
     dex                                                               // ca32: ca          .
-    stx l0004                                                         // ca33: 86 04       ..
-    ldy l0016,x                                                       // ca35: b4 16       ..
-    lda l0017,x                                                       // ca37: b5 17       ..
+    stx workspace_stack_pointer                                       // ca33: 86 04       ..
+    ldy int_workspace_stack_low,x                                     // ca35: b4 16       ..
+    lda int_workspace_stack_low+1,x                                   // ca37: b5 17       ..
     sta l0321,y                                                       // ca39: 99 21 03    .!.
-    lda l0026,x                                                       // ca3c: b5 26       .&
+    lda int_workspace_stack_mid1+1,x                                  // ca3c: b5 26       .&
     sta l033c,y                                                       // ca3e: 99 3c 03    .<.
-    lda l0035,x                                                       // ca41: b5 35       .5
+    lda int_workspace_stack_mid2+1,x                                  // ca41: b5 35       .5
     sta l0357,y                                                       // ca43: 99 57 03    .W.
-    lda l0044,x                                                       // ca46: b5 44       .D
+    lda int_workspace_stack_high+1,x                                  // ca46: b5 44       .D
     sta l0372,y                                                       // ca48: 99 72 03    .r.
     rts                                                               // ca4b: 60          `
 
@@ -2045,9 +2031,9 @@ statement_list
     jsr cc97c                                                         // ca53: 20 7c c9     |.
     lda #$ff                                                          // ca56: a9 ff       ..
     jsr cc97c                                                         // ca58: 20 7c c9     |.
-    sta l0004                                                         // ca5b: 85 04       ..
+    sta workspace_stack_pointer                                       // ca5b: 85 04       ..
     ldy #$7f                                                          // ca5d: a0 7f       ..
-    sty l0026                                                         // ca5f: 84 26       .&
+    sty int_workspace_stack_mid1+1                                    // ca5f: 84 26       .&
     jsr sub_cc465                                                     // ca61: 20 65 c4     e.
     bcc ccab8                                                         // ca64: 90 52       .R
     jsr skip_comma                                                    // ca66: 20 31 c2     1.
@@ -2056,7 +2042,7 @@ statement_list
 // $ca6e referenced 2 times by $cac0, $cacb
 cca6e
     ldx #1                                                            // ca6e: a2 01       ..
-    stx l0004                                                         // ca70: 86 04       ..
+    stx workspace_stack_pointer                                       // ca70: 86 04       ..
     jsr check_end_of_statement                                        // ca72: 20 e4 c4     ..
     jsr sub_cc62e                                                     // ca75: 20 2e c6     ..
     bcc ccaaa                                                         // ca78: 90 30       .0
@@ -2070,7 +2056,7 @@ cca7d
     jsr print_line_number                                             // ca82: 20 89 c5     ..
     lda #8                                                            // ca85: a9 08       ..
     sta l0321                                                         // ca87: 8d 21 03    .!.
-    ldy l0003                                                         // ca8a: a4 03       ..
+    ldy parsing_ptr_offset                                            // ca8a: a4 03       ..
 // $ca8c referenced 1 time by $ca96
 loop_cca8c
     lda (l0058),y                                                     // ca8c: b1 58       .X
@@ -2086,49 +2072,49 @@ cca98
 // $ca9e referenced 1 time by $ca7b
 cca9e
     lda (l0058),y                                                     // ca9e: b1 58       .X
-    sta l0025                                                         // caa0: 85 25       .%
+    sta int_workspace_stack_mid1                                      // caa0: 85 25       .%
     iny                                                               // caa2: c8          .
     lda (l0058),y                                                     // caa3: b1 58       .X
-    sta l0016                                                         // caa5: 85 16       ..
+    sta int_workspace_stack_low                                       // caa5: 85 16       ..
     iny                                                               // caa7: c8          .
-    sty l0003                                                         // caa8: 84 03       ..
+    sty parsing_ptr_offset                                            // caa8: 84 03       ..
 // $caaa referenced 1 time by $ca78
 ccaaa
-    lda l0016                                                         // caaa: a5 16       ..
+    lda int_workspace_stack_low                                       // caaa: a5 16       ..
     clc                                                               // caac: 18          .
-    sbc l0017                                                         // caad: e5 17       .. // -1 because carry is clear
-    lda l0025                                                         // caaf: a5 25       .%
-    sbc l0026                                                         // cab1: e5 26       .&
+    sbc int_workspace_stack_low+1                                     // caad: e5 17       .. // -1 because carry is clear
+    lda int_workspace_stack_mid1                                      // caaf: a5 25       .%
+    sbc int_workspace_stack_mid1+1                                    // cab1: e5 26       .&
     bcc cca7d                                                         // cab3: 90 c8       ..
     jmp cc2cf                                                         // cab5: 4c cf c2    L..
 
 // $cab8 referenced 1 time by $ca64
 ccab8
     jsr skip_comma                                                    // cab8: 20 31 c2     1.
-    inc l0004                                                         // cabb: e6 04       ..
+    inc workspace_stack_pointer                                       // cabb: e6 04       ..
     jsr sub_cc465                                                     // cabd: 20 65 c4     e.
     jmp cca6e                                                         // cac0: 4c 6e ca    Ln.
 
 // $cac3 referenced 1 time by $ca69
 ccac3
-    lda l0016                                                         // cac3: a5 16       ..
-    ldy l0025                                                         // cac5: a4 25       .%
-    sta l0017                                                         // cac7: 85 17       ..
-    sty l0026                                                         // cac9: 84 26       .&
+    lda int_workspace_stack_low                                       // cac3: a5 16       ..
+    ldy int_workspace_stack_mid1                                      // cac5: a4 25       .%
+    sta int_workspace_stack_low+1                                     // cac7: 85 17       ..
+    sty int_workspace_stack_mid1+1                                    // cac9: 84 26       .&
     bcs cca6e                                                         // cacb: b0 a1       ..
 statement_next
     jsr skip_spaces                                                   // cacd: 20 34 c4     4.
-    ldy l0015                                                         // cad0: a4 15       ..
+    ldy int_workspace_stack_low-1                                     // cad0: a4 15       ..
     beq ccae4                                                         // cad2: f0 10       ..
     bcc ccae5                                                         // cad4: 90 0f       ..
-    dec l0004                                                         // cad6: c6 04       ..
-    lda l0015,x                                                       // cad8: b5 15       ..
+    dec workspace_stack_pointer                                       // cad6: c6 04       ..
+    lda int_workspace_stack_low-1,x                                   // cad8: b5 15       ..
 // $cada referenced 1 time by $cae2
 loop_ccada
     cmp l023f,y                                                       // cada: d9 3f 02    .?.
     beq ccae5                                                         // cadd: f0 06       ..
     dey                                                               // cadf: 88          .
-    sty l0015                                                         // cae0: 84 15       ..
+    sty int_workspace_stack_low-1                                     // cae0: 84 15       ..
     bne loop_ccada                                                    // cae2: d0 f6       ..
 // $cae4 referenced 1 time by $cad2
 ccae4
@@ -2183,14 +2169,14 @@ ccb43
 // $cb45 referenced 2 times by $cb34, $cb3f
 ccb45
     lda l02a2,y                                                       // cb45: b9 a2 02    ...
-    sta l0005                                                         // cb48: 85 05       ..
+    sta parsing_ptr_low                                               // cb48: 85 05       ..
     lda l02ad,y                                                       // cb4a: b9 ad 02    ...
-    sta l0006                                                         // cb4d: 85 06       ..
+    sta parsing_ptr_high                                              // cb4d: 85 06       ..
     jmp lcbff                                                         // cb4f: 4c ff cb    L..
 
 // $cb52 referenced 2 times by $cb41, $cb43
 ccb52
-    dec l0015                                                         // cb52: c6 15       ..
+    dec int_workspace_stack_low-1                                     // cb52: c6 15       ..
     jmp next_statement                                                // cb54: 4c 58 c5    LX.
 
 statement_for
@@ -2199,7 +2185,7 @@ statement_for
     jsr expect_equals                                                 // cb5c: 20 79 c2     y.
     jsr sub_cca2c                                                     // cb5f: 20 2c ca     ,.
     tya                                                               // cb62: 98          .
-    ldy l0015                                                         // cb63: a4 15       ..
+    ldy int_workspace_stack_low-1                                     // cb63: a4 15       ..
     cpy #$0b                                                          // cb65: c0 0b       ..
     bcs ccb6d                                                         // cb67: b0 04       ..
     sta l0240,y                                                       // cb69: 99 40 02    .@.
@@ -2220,67 +2206,67 @@ ccb6d
 
 for_to
     jsr sub_cc78b                                                     // cb81: 20 8b c7     ..
-    ldy l0015                                                         // cb84: a4 15       ..
+    ldy int_workspace_stack_low-1                                     // cb84: a4 15       ..
     dex                                                               // cb86: ca          .
-    stx l0004                                                         // cb87: 86 04       ..
-    lda l0016,x                                                       // cb89: b5 16       ..
+    stx workspace_stack_pointer                                       // cb87: 86 04       ..
+    lda int_workspace_stack_low,x                                     // cb89: b5 16       ..
     sta l0277,y                                                       // cb8b: 99 77 02    .w.
-    lda l0025,x                                                       // cb8e: b5 25       .%
+    lda int_workspace_stack_mid1,x                                    // cb8e: b5 25       .%
     sta l0282,y                                                       // cb90: 99 82 02    ...
-    lda l0034,x                                                       // cb93: b5 34       .4
+    lda int_workspace_stack_mid2,x                                    // cb93: b5 34       .4
     sta l028d,y                                                       // cb95: 99 8d 02    ...
-    lda l0043,x                                                       // cb98: b5 43       .C
+    lda int_workspace_stack_high,x                                    // cb98: b5 43       .C
     sta l0298,y                                                       // cb9a: 99 98 02    ...
     ldx #$1a                                                          // cb9d: a2 1a       ..
     jmp match_keyword                                                 // cb9f: 4c 33 c2    L3.
 
 for_step
     jsr sub_cc78b                                                     // cba2: 20 8b c7     ..
-    ldy l0015                                                         // cba5: a4 15       ..
+    ldy int_workspace_stack_low-1                                     // cba5: a4 15       ..
     dex                                                               // cba7: ca          .
-    stx l0004                                                         // cba8: 86 04       ..
-    lda l0016,x                                                       // cbaa: b5 16       ..
+    stx workspace_stack_pointer                                       // cba8: 86 04       ..
+    lda int_workspace_stack_low,x                                     // cbaa: b5 16       ..
     sta l024b,y                                                       // cbac: 99 4b 02    .K.
-    lda l0025,x                                                       // cbaf: b5 25       .%
+    lda int_workspace_stack_mid1,x                                    // cbaf: b5 25       .%
     sta l0256,y                                                       // cbb1: 99 56 02    .V.
-    lda l0034,x                                                       // cbb4: b5 34       .4
+    lda int_workspace_stack_mid2,x                                    // cbb4: b5 34       .4
     sta l0261,y                                                       // cbb6: 99 61 02    .a.
-    lda l0043,x                                                       // cbb9: b5 43       .C
+    lda int_workspace_stack_high,x                                    // cbb9: b5 43       .C
     sta l026c,y                                                       // cbbb: 99 6c 02    .l.
 sub_ccbbe
     jsr sub_cc50c                                                     // cbbe: 20 0c c5     ..
-    ldy l0015                                                         // cbc1: a4 15       ..
-    lda l0005                                                         // cbc3: a5 05       ..
+    ldy int_workspace_stack_low-1                                     // cbc1: a4 15       ..
+    lda parsing_ptr_low                                               // cbc3: a5 05       ..
     sta l02a3,y                                                       // cbc5: 99 a3 02    ...
-    lda l0006                                                         // cbc8: a5 06       ..
+    lda parsing_ptr_high                                              // cbc8: a5 06       ..
     sta l02ae,y                                                       // cbca: 99 ae 02    ...
-    inc l0015                                                         // cbcd: e6 15       ..
+    inc int_workspace_stack_low-1                                     // cbcd: e6 15       ..
     jmp if_then                                                       // cbcf: 4c 1b c3    L..
 
 statement_gosub
     jsr sub_ccc1f                                                     // cbd2: 20 1f cc     ..
     jsr sub_cc50c                                                     // cbd5: 20 0c c5     ..
-    ldy l0014                                                         // cbd8: a4 14       ..
+    ldy int_workspace_stack_low-2                                     // cbd8: a4 14       ..
     cpy #$0e                                                          // cbda: c0 0e       ..
     bcs ccc00                                                         // cbdc: b0 22       ."
-    lda l0005                                                         // cbde: a5 05       ..
+    lda parsing_ptr_low                                               // cbde: a5 05       ..
     sta l02cf,y                                                       // cbe0: 99 cf 02    ...
-    lda l0006                                                         // cbe3: a5 06       ..
+    lda parsing_ptr_high                                              // cbe3: a5 06       ..
     sta l02dd,y                                                       // cbe5: 99 dd 02    ...
-    inc l0014                                                         // cbe8: e6 14       ..
+    inc int_workspace_stack_low-2                                     // cbe8: e6 14       ..
     bcc ccc0b                                                         // cbea: 90 1f       .. // ALWAYS branch
 
 statement_return
     jsr check_end_of_statement                                        // cbec: 20 e4 c4     ..
-    ldy l0014                                                         // cbef: a4 14       ..
+    ldy int_workspace_stack_low-2                                     // cbef: a4 14       ..
     beq ccc1d                                                         // cbf1: f0 2a       .*
-    dec l0014                                                         // cbf3: c6 14       ..
+    dec int_workspace_stack_low-2                                     // cbf3: c6 14       ..
     lda l02ce,y                                                       // cbf5: b9 ce 02    ...
-    sta l0005                                                         // cbf8: 85 05       ..
+    sta parsing_ptr_low                                               // cbf8: 85 05       ..
     lda l02dc,y                                                       // cbfa: b9 dc 02    ...
 // $cbfd referenced 2 times by $cc1a, $cced
 ccbfd
-    sta l0006                                                         // cbfd: 85 06       ..
+    sta parsing_ptr_high                                              // cbfd: 85 06       ..
 // overlapping: jsr cc500                                             // cbff: 20 00 c5     ..
 // $cbff referenced 1 time by $cb4f
 lcbff
@@ -2307,7 +2293,7 @@ ccc0b
 ccc14
     ldy l0058                                                         // cc14: a4 58       .X
     lda l0059                                                         // cc16: a5 59       .Y
-    sty l0005                                                         // cc18: 84 05       ..
+    sty parsing_ptr_low                                               // cc18: 84 05       ..
     jmp ccbfd                                                         // cc1a: 4c fd cb    L..
 
 // $cc1d referenced 1 time by $cbf1
@@ -2319,7 +2305,7 @@ loop_ccc1e
     iny                                                               // cc1e: c8          .
 // $cc1f referenced 2 times by $cbd2, $cc05
 sub_ccc1f
-    lda (l0005),y                                                     // cc1f: b1 05       ..
+    lda (parsing_ptr_low),y                                           // cc1f: b1 05       ..
     cmp #$20 // ' '                                                   // cc21: c9 20       .
     beq loop_ccc1e                                                    // cc23: f0 f9       ..
     cmp #$61 // 'a'                                                   // cc25: c9 61       .a
@@ -2399,29 +2385,29 @@ statement_input
 // $cc8e referenced 1 time by $cc87
 ccc8e
     jsr sub_ccd09                                                     // cc8e: 20 09 cd     ..
-    lda l0005                                                         // cc91: a5 05       ..
+    lda parsing_ptr_low                                               // cc91: a5 05       ..
     pha                                                               // cc93: 48          H
-    lda l0006                                                         // cc94: a5 06       ..
+    lda parsing_ptr_high                                              // cc94: a5 06       ..
     pha                                                               // cc96: 48          H
-    lda l0003                                                         // cc97: a5 03       ..
+    lda parsing_ptr_offset                                            // cc97: a5 03       ..
     pha                                                               // cc99: 48          H
 ccc9a
 lcc9b = ccc9a+1
     ldy #0                                                            // cc9a: a0 00       ..
 // overlapping: brk                                                   // cc9b: 00          .
 // $cc9b referenced 1 time by $cc54
-    sty l0003                                                         // cc9c: 84 03       ..
+    sty parsing_ptr_offset                                            // cc9c: 84 03       ..
     iny                                                               // cc9e: c8          .
-    sty l0006                                                         // cc9f: 84 06       ..
+    sty parsing_ptr_high                                              // cc9f: 84 06       ..
     ldy #$40 // '@'                                                   // cca1: a0 40       .@
-    sty l0005                                                         // cca3: 84 05       ..
+    sty parsing_ptr_low                                               // cca3: 84 05       ..
     jsr sub_cca2c                                                     // cca5: 20 2c ca     ,.
     pla                                                               // cca8: 68          h
-    sta l0003                                                         // cca9: 85 03       ..
+    sta parsing_ptr_offset                                            // cca9: 85 03       ..
     pla                                                               // ccab: 68          h
-    sta l0006                                                         // ccac: 85 06       ..
+    sta parsing_ptr_high                                              // ccac: 85 06       ..
     pla                                                               // ccae: 68          h
-    sta l0005                                                         // ccaf: 85 05       ..
+    sta parsing_ptr_low                                               // ccaf: 85 05       ..
     ldx #$2c // ','                                                   // ccb1: a2 2c       .,
     jmp match_keyword                                                 // ccb3: 4c 33 c2    L3.
 
@@ -2452,8 +2438,8 @@ statement_until
     ldy l0013                                                         // ccd5: a4 13       ..
     beq loop_cccc4                                                    // ccd7: f0 eb       ..
     dex                                                               // ccd9: ca          .
-    stx l0004                                                         // ccda: 86 04       ..
-    lda l0016,x                                                       // ccdc: b5 16       ..
+    stx workspace_stack_pointer                                       // ccda: 86 04       ..
+    lda int_workspace_stack_low,x                                     // ccdc: b5 16       ..
     beq ccce5                                                         // ccde: f0 05       ..
     dec l0013                                                         // cce0: c6 13       ..
     jmp next_statement                                                // cce2: 4c 58 c5    LX.
@@ -2461,7 +2447,7 @@ statement_until
 // $cce5 referenced 1 time by $ccde
 ccce5
     lda l02b8,y                                                       // cce5: b9 b8 02    ...
-    sta l0005                                                         // cce8: 85 05       ..
+    sta parsing_ptr_low                                               // cce8: 85 05       ..
     lda l02c3,y                                                       // ccea: b9 c3 02    ...
     jmp ccbfd                                                         // cced: 4c fd cb    L..
 
@@ -2471,9 +2457,9 @@ statement_do
     bcs lcd10                                                         // ccf4: b0 1a       ..
     dey                                                               // ccf6: 88          .
     jsr consolidate_text_pointer                                      // ccf7: 20 f6 c4     ..
-    lda l0005                                                         // ccfa: a5 05       ..
+    lda parsing_ptr_low                                               // ccfa: a5 05       ..
     sta l02b9,x                                                       // ccfc: 9d b9 02    ...
-    lda l0006                                                         // ccff: a5 06       ..
+    lda parsing_ptr_high                                              // ccff: a5 06       ..
     sta l02c4,x                                                       // cd01: 9d c4 02    ...
     inc l0013                                                         // cd04: e6 13       ..
     jmp if_then                                                       // cd06: 4c 1b c3    L..
@@ -2580,13 +2566,13 @@ sub_ccd81
     jsr evaluate_expression                                           // cd84: 20 bc c8     ..
     dex                                                               // cd87: ca          .
     clc                                                               // cd88: 18          .
-    lda l0016,x                                                       // cd89: b5 16       ..
-    adc l0015,x                                                       // cd8b: 75 15       u.
-    sta l0015,x                                                       // cd8d: 95 15       ..
-    lda l0025,x                                                       // cd8f: b5 25       .%
-    adc l0024,x                                                       // cd91: 75 24       u$
-    sta l0024,x                                                       // cd93: 95 24       .$
-    stx l0004                                                         // cd95: 86 04       ..
+    lda int_workspace_stack_low,x                                     // cd89: b5 16       ..
+    adc int_workspace_stack_low-1,x                                   // cd8b: 75 15       u.
+    sta int_workspace_stack_low-1,x                                   // cd8d: 95 15       ..
+    lda int_workspace_stack_mid1,x                                    // cd8f: b5 25       .%
+    adc int_workspace_stack_mid1-1,x                                  // cd91: 75 24       u$
+    sta int_workspace_stack_mid1-1,x                                  // cd93: 95 24       .$
+    stx workspace_stack_pointer                                       // cd95: 86 04       ..
     rts                                                               // cd97: 60          `
 
 statement_end
@@ -2743,10 +2729,10 @@ cce5f
     sbc l0059                                                         // ce62: e5 59       .Y
     bcs loop_cce4b                                                    // ce64: b0 e5       ..
     ldy #1                                                            // ce66: a0 01       ..
-    lda l0025                                                         // ce68: a5 25       .%
+    lda int_workspace_stack_mid1                                      // ce68: a5 25       .%
     sta (l0058),y                                                     // ce6a: 91 58       .X
     iny                                                               // ce6c: c8          .  // Y=2
-    lda l0016                                                         // ce6d: a5 16       ..
+    lda int_workspace_stack_low                                       // ce6d: a5 16       ..
     sta (l0058),y                                                     // ce6f: 91 58       .X
     sec                                                               // ce71: 38          8
     jsr sub_ccea2                                                     // ce72: 20 a2 ce     ..
@@ -2764,10 +2750,10 @@ cce80
 
     jsr check_end_of_statement                                        // ce83: 20 e4 c4     ..
     ldy #0                                                            // ce86: a0 00       ..
-    sty l0005                                                         // ce88: 84 05       ..
-    sty l0003                                                         // ce8a: 84 03       ..
+    sty parsing_ptr_low                                               // ce88: 84 05       ..
+    sty parsing_ptr_offset                                            // ce8a: 84 03       ..
     lda text_space_page                                               // ce8c: a5 12       ..
-    sta l0006                                                         // ce8e: 85 06       ..
+    sta parsing_ptr_high                                              // ce8e: 85 06       ..
     jmp next_statement_no_check                                       // ce90: 4c 5b c5    L[.
 
 // $ce93 referenced 2 times by $c3f1, $c409
@@ -2776,7 +2762,7 @@ sub_cce93
     dex                                                               // ce96: ca          .
     jsr pop_to_52                                                     // ce97: 20 cb c3     ..
     ldy #0                                                            // ce9a: a0 00       ..
-    lda l0017,x                                                       // ce9c: b5 17       ..
+    lda int_workspace_stack_low+1,x                                   // ce9c: b5 17       ..
     sta (l0052),y                                                     // ce9e: 91 52       .R
     rts                                                               // cea0: 60          `
 
@@ -2805,7 +2791,7 @@ sub_cceb1
 sub_cceb6
     jsr sub_cc78b                                                     // ceb6: 20 8b c7     ..
     jsr pop_to_52                                                     // ceb9: 20 cb c3     ..
-    ldy l0003                                                         // cebc: a4 03       ..
+    ldy parsing_ptr_offset                                            // cebc: a4 03       ..
     rts                                                               // cebe: 60          `
 
 sub_ccebf
@@ -2819,7 +2805,7 @@ lcec6 = ccec5+1
 // $cec6 referenced 1 time by $cecb
 // $cec7 referenced 2 times by $ced4, $ceeb
 ccec7
-    lda (l0005),y                                                     // cec7: b1 05       ..
+    lda (parsing_ptr_low),y                                           // cec7: b1 05       ..
     cmp #$0d                                                          // cec9: c9 0d       ..
     beq lcec6                                                         // cecb: f0 f9       ..
     sta string_buffer,x                                               // cecd: 9d 40 01    .@.
@@ -2827,15 +2813,15 @@ ccec7
     iny                                                               // ced1: c8          .
     cmp #$22 // '"'                                                   // ced2: c9 22       ."
     bne ccec7                                                         // ced4: d0 f1       ..
-    lda (l0005),y                                                     // ced6: b1 05       ..
+    lda (parsing_ptr_low),y                                           // ced6: b1 05       ..
     cmp #$22 // '"'                                                   // ced8: c9 22       ."
     beq cceea                                                         // ceda: f0 0e       ..
     lda #$0d                                                          // cedc: a9 0d       ..
     sta l013f,x                                                       // cede: 9d 3f 01    .?.
-    sty l0003                                                         // cee1: 84 03       ..
+    sty parsing_ptr_offset                                            // cee1: 84 03       ..
     lda #$40 // '@'                                                   // cee3: a9 40       .@
     sta l0052                                                         // cee5: 85 52       .R
-    ldx l0004                                                         // cee7: a6 04       ..
+    ldx workspace_stack_pointer                                       // cee7: a6 04       ..
     rts                                                               // cee9: 60          `
 
 // $ceea referenced 1 time by $ceda
@@ -2889,7 +2875,7 @@ function_ptr
     jsr OSRDAR                                                        // cf33: 20 da ff     .. // Read a file's arguments
     ldy #$52 // 'R'                                                   // cf36: a0 52       .R
     jsr cc99f                                                         // cf38: 20 9f c9     ..
-    sta l0042,x                                                       // cf3b: 95 42       .B
+    sta int_workspace_stack_high-1,x                                  // cf3b: 95 42       .B
     rts                                                               // cf3d: 60          `
 
 // $cf3e referenced 3 times by $c22c, $cf2d, $cf5b
@@ -2897,9 +2883,9 @@ sub_ccf3e
     jsr evaluate_expression                                           // cf3e: 20 bc c8     ..
 // $cf41 referenced 3 times by $cf50, $cf87, $cfbc
 sub_ccf41
-    ldy l0015,x                                                       // cf41: b4 15       ..
+    ldy int_workspace_stack_low-1,x                                   // cf41: b4 15       ..
     dex                                                               // cf43: ca          .
-    stx l0004                                                         // cf44: 86 04       ..
+    stx workspace_stack_pointer                                       // cf44: 86 04       ..
     rts                                                               // cf46: 60          `
 
 statement_ptr
@@ -2922,11 +2908,11 @@ function_get
     jsr function_bget                                                 // cf66: 20 5b cf     [.
     ldy l0052                                                         // cf69: a4 52       .R // Y=file handle
     jsr OSBGET                                                        // cf6b: 20 d4 ff     .. // Read a byte from file Y
-    sta l0024,x                                                       // cf6e: 95 24       .$ // A=byte read
+    sta int_workspace_stack_mid1-1,x                                  // cf6e: 95 24       .$ // A=byte read
     jsr OSBGET                                                        // cf70: 20 d4 ff     .. // Read a byte from file Y
-    sta l0033,x                                                       // cf73: 95 33       .3 // A=byte read
+    sta int_workspace_stack_mid2-1,x                                  // cf73: 95 33       .3 // A=byte read
     jsr OSBGET                                                        // cf75: 20 d4 ff     .. // Read a byte from file Y
-    sta l0042,x                                                       // cf78: 95 42       .B // A=byte read
+    sta int_workspace_stack_high-1,x                                  // cf78: 95 42       .B // A=byte read
     rts                                                               // cf7a: 60          `
 
 // $cf7b referenced 2 times by $cf8f, $cf95
@@ -2965,7 +2951,7 @@ function_fout
     ldx #$52 // 'R'                                                   // cfab: a2 52       .R // X=zero page address of the file name's address
     plp                                                               // cfad: 28          (
     jsr OSFIND                                                        // cfae: 20 ce ff     .. // Open a file (for input if C=1, output if C=0)
-    ldx l0004                                                         // cfb1: a6 04       ..
+    ldx workspace_stack_pointer                                       // cfb1: a6 04       ..
     jmp cc97c                                                         // cfb3: 4c 7c c9    L|.
 
 statement_shut
@@ -3553,37 +3539,30 @@ pydis_end
 
 // Label references by decreasing frequency:
 //     l0052:                      61
-//     l0005:                      37
-//     l0015:                      30
+//     parsing_ptr_low:            37
 //     l0053:                      30
-//     l0004:                      29
 //     l0054:                      29
 //     l0058:                      29
-//     l0003:                      24
+//     workspace_stack_pointer:    29
+//     parsing_ptr_offset:         24
 //     l0055:                      23
+//     int_workspace_stack_low:    18
 //     l000d:                      18
-//     l0016:                      18
-//     l0024:                      18
-//     l0014:                      17
-//     l0042:                      17
 //     evaluate_expression:        16
-//     l0006:                      15
-//     l0025:                      15
+//     int_workspace_stack_mid1:   15
 //     l0059:                      15
+//     parsing_ptr_high:           15
 //     match_keyword:              14
-//     l0033:                      13
 //     check_end_of_statement:     12
 //     sub_cc78b:                  12
 //     l0056:                      11
 //     l0057:                      11
-//     l0043:                      10
+//     int_workspace_stack_high:   10
 //     next_statement_no_check:    10
 //     l000e:                       9
-//     l0023:                       9
 //     l005e:                       9
 //     cc761:                       8
-//     l0032:                       8
-//     l0034:                       8
+//     int_workspace_stack_mid2:    8
 //     l0321:                       8
 //     pop_to_52:                   8
 //     print_character:             8
@@ -3594,8 +3573,6 @@ pydis_end
 //     basic_line_number:           6
 //     cc463:                       6
 //     cc97c:                       6
-//     l0041:                       6
-//     l0045:                       6
 //     l005a:                       6
 //     l005b:                       6
 //     l005c:                       6
@@ -3607,14 +3584,11 @@ pydis_end
 //     if_then:                     5
 //     l000f:                       5
 //     l0013:                       5
-//     l0026:                       5
 //     next_statement:              5
 //     sub_cc80b:                   5
 //     cc337:                       4
 //     cc791:                       4
 //     cc80e:                       4
-//     l0017:                       4
-//     l0027:                       4
 //     l033c:                       4
 //     l0357:                       4
 //     l0372:                       4
@@ -3632,7 +3606,6 @@ pydis_end
 //     expect_equals:               3
 //     input_buffer:                3
 //     l0007:                       3
-//     l0044:                       3
 //     l038d:                       3
 //     l038e:                       3
 //     skip_comma:                  3
@@ -3672,7 +3645,6 @@ pydis_end
 //     characters:                  2
 //     check_fp_rom:                2
 //     keyword_next:                2
-//     l0035:                       2
 //     l023f:                       2
 //     l024b:                       2
 //     l0256:                       2
@@ -4023,33 +3995,11 @@ pydis_end
 //     ccec7
 //     cceea
 //     ccfc2
-//     l0003
-//     l0004
-//     l0005
-//     l0006
 //     l0007
 //     l000d
 //     l000e
 //     l000f
 //     l0013
-//     l0014
-//     l0015
-//     l0016
-//     l0017
-//     l0023
-//     l0024
-//     l0025
-//     l0026
-//     l0027
-//     l0032
-//     l0033
-//     l0034
-//     l0035
-//     l0041
-//     l0042
-//     l0043
-//     l0044
-//     l0045
 //     l0052
 //     l0053
 //     l0054

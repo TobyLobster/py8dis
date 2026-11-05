@@ -27,7 +27,7 @@ start:
     lda #$f0                                                          ; 2905: a9 f0       ..
     sta ppi_port_a                                                    ; 2907: 8d 00 b0    ... ; Select graphics mode 4 (256x192, 2 colours)
     lda #$10                                                          ; 290a: a9 10       ..
-    sta ppi_port_a                                                    ; 290c: 8d 00 b0    ... ; Select 64x64 graphics, 4 colours
+    sta ppi_port_a                                                    ; 290c: 8d 00 b0    ... ; Select graphics mode 1a (64x64, 4 colours)
     lda #0                                                            ; 290f: a9 00       ..
     sta ppi_port_a                                                    ; 2911: 8d 00 b0    ... ; Select text mode
     ldx #5                                                            ; 2914: a2 05       ..

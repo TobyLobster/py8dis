@@ -107,6 +107,10 @@ atom_workspace = [
     # BASIC
     (0x0000, "basic_error_number", 1),
     (0x0001, "basic_line_number", 2),
+    (0x0003, "parsing_ptr_offset", 1),      # (Y for parsing_ptr_low)
+    (0x0004, "workspace_stack_pointer", 1), # (X for the workspace stack)
+    (0x0005, "parsing_ptr_low", 1),         # (the text being run)
+    (0x0006, "parsing_ptr_high", 1),
     (0x0008, "rnd_seed", 5),
     (0x0010, "basic_error_handler", 2),
     (0x0012, "text_space_page", 1),
@@ -122,6 +126,23 @@ atom_workspace = [
     (0x0100, "input_buffer", 1),
     (0x0140, "string_buffer", 1),
     (0x03fe, "plot_vector", 2),
+]
+
+# BASIC's workspace stack, where it evaluates expressions: four tables of
+# ATOM_WORKSPACE_STACK_LEVELS bytes, one for each byte of a level's 32-bit
+# value (least significant first), indexed by workspace_stack_pointer. Code
+# reads the levels below with e.g. 'lda int_workspace_stack_low-1,x', so
+# the two bytes before each table are named from it (e.g. #24 is
+# int_workspace_stack_mid1-1, not int_workspace_stack_low+14). (These names,
+# and parsing_ptr's and workspace_stack_pointer's above, are from Toby
+# Nelson's annotation of the floating point ROM: see
+# examples/python/atom_float_rom.py.)
+ATOM_WORKSPACE_STACK_LEVELS = 15
+atom_workspace_stack = [
+    (0x16, "int_workspace_stack_low"),
+    (0x25, "int_workspace_stack_mid1"),
+    (0x34, "int_workspace_stack_mid2"),
+    (0x43, "int_workspace_stack_high"),
 ]
 
 # The hardware: {address: name}. The 8255 PPI at #B000 (port A: the
@@ -146,15 +167,17 @@ atom_hardware = {
 # row to read at #B001 in bits 0-3. The graphics modes, by bits 5-7, when bit
 # 4 is set: CLEAR 1 to 4 write #30, #70, #B0 and #F0 (the 2-colour modes,
 # from the kernel's table at #F6DD), and the others are the 6847's 4-colour
-# modes. (With bit 4 clear, it's text mode, as CLEAR 0 writes #00.)
+# modes, 1a to 4a (#10, #50, #90 and #D0: the floating point ROM's COLOUR
+# selects the one that goes with the 2-colour mode). (With bit 4 clear, it's
+# text mode, as CLEAR 0 writes #00.)
 atom_graphics_modes = {
-    0: "64x64 graphics, 4 colours",
+    0: "graphics mode 1a (64x64, 4 colours)",
     1: "graphics mode 1 (128x64, 2 colours)",
-    2: "128x64 graphics, 4 colours",
+    2: "graphics mode 2a (128x64, 4 colours)",
     3: "graphics mode 2 (128x96, 2 colours)",
-    4: "128x96 graphics, 4 colours",
+    4: "graphics mode 3a (128x96, 4 colours)",
     5: "graphics mode 3 (128x192, 2 colours)",
-    6: "128x192 graphics, 4 colours",
+    6: "graphics mode 4a (128x192, 4 colours)",
     7: "graphics mode 4 (256x192, 2 colours)",
 }
 

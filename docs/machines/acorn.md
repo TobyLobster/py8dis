@@ -125,7 +125,7 @@ The Atom's operating system is a different design from the BBC Micro's MOS (it h
     sta ppi_control             ; Set port C bit 2 (speaker high)
 ```
 
-For #B000, that's the 6847's mode in bits 4-7 (text mode, CLEAR 1-4's 2-colour graphics modes, or the 4-colour ones, e.g. `Select 64x64 graphics, 4 colours`) and the keyboard row in bits 0-3. For #B002 (port C), it's the tape output, the 2.4 kHz tape tone, the speaker and the colour set (bit 3, `Select colour set 1`). For #B003, it's the bit of port C set or cleared, or the 8255's modes.
+For #B000, that's the 6847's mode in bits 4-7 (text mode, CLEAR 1-4's 2-colour graphics modes, or the 4-colour ones, 1a-4a, e.g. `Select graphics mode 1a (64x64, 4 colours)`) and the keyboard row in bits 0-3. For #B002 (port C), it's the tape output, the 2.4 kHz tape tone, the speaker and the colour set (bit 3, `Select colour set 1`). For #B003, it's the bit of port C set or cleared, or the 8255's modes.
 
 It **comments tests of the inputs** too:
 - `bit ppi_port_c` before `bpl` or `bmi` is `Test the field sync`, and before `bvc` or `bvs`, `Test the REPT key`.
@@ -134,7 +134,7 @@ It **comments tests of the inputs** too:
 - With no branch after it, it names both bits 7 and 6.
 - `lda ppi_port_b : and #&40` is `Test the CTRL key`, and the same for the other input bits (#B001's bits 0-5 are the keyboard row's columns).
 
-**Names some of the workspace**: the OS's (`screen_line_address`, `cursor_column`, `cursor_mask`, `page_mode_count`, `lock_flag`, `nomon_flag`, `printer_ignore_char`, `irq_save_a`, `input_buffer` at #0100, `string_buffer` at #0140 and `plot_vector` at #03FE) and BASIC's (`basic_error_number`, `basic_line_number`, `rnd_seed`, `basic_error_handler` and `text_space_page`), and groups the memory locations at the top of the disassembly by region (zero page, the input and string buffers, the stack, the OS vectors, the workspace, extension and user memory, the screen, the utility, BASIC, floating point, DOS and kernel ROMs, the I/O and the OS entry points).
+**Names some of the workspace**: the OS's (`screen_line_address`, `cursor_column`, `cursor_mask`, `page_mode_count`, `lock_flag`, `nomon_flag`, `printer_ignore_char`, `irq_save_a`, `input_buffer` at #0100, `string_buffer` at #0140 and `plot_vector` at #03FE) and BASIC's (`basic_error_number`, `basic_line_number`, `parsing_ptr_offset`, `workspace_stack_pointer`, `parsing_ptr_low` and `parsing_ptr_high`, `rnd_seed`, `basic_error_handler`, `text_space_page`, and the workspace stack's four tables, `int_workspace_stack_low`, `_mid1`, `_mid2` and `_high`, where the two bytes before each table are named from it, e.g. `lda int_workspace_stack_mid1-1,x`, as code reads the levels below the top with them), and groups the memory locations at the top of the disassembly by region (zero page, the input and string buffers, the stack, the OS vectors, the workspace, extension and user memory, the screen, the utility, BASIC, floating point, DOS and kernel ROMs, the I/O and the OS entry points).
 
 **Recognises loops that print** a message, or the same character several times, with OSWRCH, as for the BBC Micro.
 

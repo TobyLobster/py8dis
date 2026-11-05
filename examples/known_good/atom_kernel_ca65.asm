@@ -9,90 +9,84 @@
 ; Memory locations
 
 ; Zero page ($0000-$00ff)
-basic_error_number  = $0000
-basic_line_number   = $0001
-l0003               = $0003
-l0004               = $0004
-l0005               = $0005
-l0006               = $0006
-l000d               = $000d
-l000e               = $000e
-l000f               = $000f
-text_space_page     = $0012
-l0014               = $0014
-l0015               = $0015
-l0016               = $0016
-l0017               = $0017
-l0023               = $0023
-l0024               = $0024
-l0025               = $0025
-l0026               = $0026
-l0034               = $0034
-l0043               = $0043
-l0052               = $0052
-l0053               = $0053
-l0054               = $0054
-l0055               = $0055
-l0056               = $0056
-l0057               = $0057
-l0059               = $0059
-l005a               = $005a
-l005b               = $005b
-l005c               = $005c
-l005d               = $005d
-l005e               = $005e
-l005f               = $005f
-l0060               = $0060
-l0061               = $0061
-l0064               = $0064
-l0065               = $0065
-l0066               = $0066
-l0067               = $0067
-l0068               = $0068
-l0069               = $0069
-l006a               = $006a
-l0086               = $0086
-l00c0               = $00c0
-l00c1               = $00c1
-l00c2               = $00c2
-l00c3               = $00c3
-l00c4               = $00c4
-l00c5               = $00c5
-l00c9               = $00c9
-l00ca               = $00ca
-l00cb               = $00cb
-l00cc               = $00cc
-l00cd               = $00cd
-l00ce               = $00ce
-l00cf               = $00cf
-l00d0               = $00d0
-l00d1               = $00d1
-l00d2               = $00d2
-l00d3               = $00d3
-l00d4               = $00d4
-l00d5               = $00d5
-l00d6               = $00d6
-l00d8               = $00d8
-l00db               = $00db
-l00dc               = $00dc
-l00dd               = $00dd
-screen_line_address = $00de
-cursor_column       = $00e0
-cursor_mask         = $00e1
-l00e2               = $00e2
-l00e3               = $00e3
-l00e4               = $00e4
-l00e5               = $00e5
-page_mode_count     = $00e6
-lock_flag           = $00e7
-l00e8               = $00e8
-l00e9               = $00e9
-nomon_flag          = $00ea
-l00ec               = $00ec
-l00ed               = $00ed
-l00fd               = $00fd
-printer_ignore_char = $00fe
-irq_save_a          = $00ff
+basic_error_number      = $0000
+basic_line_number       = $0001
+parsing_ptr_offset      = $0003
+workspace_stack_pointer = $0004
+parsing_ptr_low         = $0005
+parsing_ptr_high        = $0006
+l000d                   = $000d
+l000e                   = $000e
+l000f                   = $000f
+text_space_page         = $0012
+int_workspace_stack_low = $0016
+int_workspace_stack_mid1 = $0025
+int_workspace_stack_mid2 = $0034
+int_workspace_stack_high = $0043
+l0052                   = $0052
+l0053                   = $0053
+l0054                   = $0054
+l0055                   = $0055
+l0056                   = $0056
+l0057                   = $0057
+l0059                   = $0059
+l005a                   = $005a
+l005b                   = $005b
+l005c                   = $005c
+l005d                   = $005d
+l005e                   = $005e
+l005f                   = $005f
+l0060                   = $0060
+l0061                   = $0061
+l0064                   = $0064
+l0065                   = $0065
+l0066                   = $0066
+l0067                   = $0067
+l0068                   = $0068
+l0069                   = $0069
+l006a                   = $006a
+l0086                   = $0086
+l00c0                   = $00c0
+l00c1                   = $00c1
+l00c2                   = $00c2
+l00c3                   = $00c3
+l00c4                   = $00c4
+l00c5                   = $00c5
+l00c9                   = $00c9
+l00ca                   = $00ca
+l00cb                   = $00cb
+l00cc                   = $00cc
+l00cd                   = $00cd
+l00ce                   = $00ce
+l00cf                   = $00cf
+l00d0                   = $00d0
+l00d1                   = $00d1
+l00d2                   = $00d2
+l00d3                   = $00d3
+l00d4                   = $00d4
+l00d5                   = $00d5
+l00d6                   = $00d6
+l00d8                   = $00d8
+l00db                   = $00db
+l00dc                   = $00dc
+l00dd                   = $00dd
+screen_line_address     = $00de
+cursor_column           = $00e0
+cursor_mask             = $00e1
+l00e2                   = $00e2
+l00e3                   = $00e3
+l00e4                   = $00e4
+l00e5                   = $00e5
+page_mode_count         = $00e6
+lock_flag               = $00e7
+l00e8                   = $00e8
+l00e9                   = $00e9
+nomon_flag              = $00ea
+l00ec                   = $00ec
+l00ed                   = $00ed
+l00fd                   = $00fd
+printer_ignore_char     = $00fe
+irq_save_a              = $00ff
 
 ; Input buffer ($0100-$013f)
 input_buffer = $0100
@@ -223,13 +217,13 @@ lf001 = basic_command_table+1
 test_array_variable:
     ldy l005e                                                         ; f02e: a4 5e       .^
 test_array_variable_y:
-    lda (l0005),y                                                     ; f030: b1 05       ..
+    lda (parsing_ptr_low),y                                           ; f030: b1 05       ..
     cmp #$40 ; '@'                                                    ; f032: c9 40       .@
     bcc cf048                                                         ; f034: 90 12       ..
     cmp #$5b ; '['                                                    ; f036: c9 5b       .[
     bcs cf048                                                         ; f038: b0 0e       ..
     iny                                                               ; f03a: c8          .
-    cmp (l0005),y                                                     ; f03b: d1 05       ..
+    cmp (parsing_ptr_low),y                                           ; f03b: d1 05       ..
     bne cf048                                                         ; f03d: d0 09       ..
     jsr sub_cf08b                                                     ; f03f: 20 8b f0     ..
     jsr lc94f                                                         ; f042: 20 4f c9     O.
@@ -243,13 +237,13 @@ interpret_command:
     ldx #$ff                                                          ; f04b: a2 ff       ..
     ldy l005e                                                         ; f04d: a4 5e       .^
     dec l005e                                                         ; f04f: c6 5e       .^
-    lda (l0005),y                                                     ; f051: b1 05       ..
+    lda (parsing_ptr_low),y                                           ; f051: b1 05       ..
     cmp #$40 ; '@'                                                    ; f053: c9 40       .@
     bcc cf060                                                         ; f055: 90 09       ..
     cmp #$5b ; '['                                                    ; f057: c9 5b       .[
     bcs cf060                                                         ; f059: b0 05       ..
     iny                                                               ; f05b: c8          .
-    cmp (l0005),y                                                     ; f05c: d1 05       ..
+    cmp (parsing_ptr_low),y                                           ; f05c: d1 05       ..
     beq assign_array_variable                                         ; f05e: f0 25       .%
 ; $f060 referenced 3 times by $f055, $f059, $f073
 cf060:
@@ -260,7 +254,7 @@ loop_cf062:
     iny                                                               ; f063: c8          .
     lda basic_command_table,x                                         ; f064: bd 00 f0    ...
     bmi cf075                                                         ; f067: 30 0c       0.
-    cmp (l0005),y                                                     ; f069: d1 05       ..
+    cmp (parsing_ptr_low),y                                           ; f069: d1 05       ..
     beq loop_cf062                                                    ; f06b: f0 f5       ..
 ; $f06d referenced 1 time by $f071
 loop_cf06d:
@@ -273,8 +267,8 @@ cf075:
     sta l0053                                                         ; f075: 85 53       .S
     lda lf001,x                                                       ; f077: bd 01 f0    ...
     sta l0052                                                         ; f07a: 85 52       .R
-    sty l0003                                                         ; f07c: 84 03       ..
-    ldx l0004                                                         ; f07e: a6 04       ..
+    sty parsing_ptr_offset                                            ; f07c: 84 03       ..
+    ldx workspace_stack_pointer                                       ; f07e: a6 04       ..
     inc l005e                                                         ; f080: e6 5e       .^
 cf082:
 lf084 = cf082+2
@@ -290,7 +284,7 @@ assign_array_variable:
 ; $f08b referenced 2 times by $f03f, $f085
 sub_cf08b:
     iny                                                               ; f08b: c8          .
-    sty l0003                                                         ; f08c: 84 03       ..
+    sty parsing_ptr_offset                                            ; f08c: 84 03       ..
 ; $f08e referenced 1 time by $f343
 sub_cf08e:
     sbc #$40 ; '@'                                                    ; f08e: e9 40       .@
@@ -298,17 +292,17 @@ sub_cf08e:
     jsr lc8bc                                                         ; f091: 20 bc c8     ..
     pla                                                               ; f094: 68          h
     tay                                                               ; f095: a8          .
-    lda l0015,x                                                       ; f096: b5 15       ..
+    lda int_workspace_stack_low-1,x                                   ; f096: b5 15       ..
     asl                                                               ; f098: 0a          .
-    rol l0024,x                                                       ; f099: 36 24       6$
+    rol int_workspace_stack_mid1-1,x                                  ; f099: 36 24       6$
     asl                                                               ; f09b: 0a          .
-    rol l0024,x                                                       ; f09c: 36 24       6$
+    rol int_workspace_stack_mid1-1,x                                  ; f09c: 36 24       6$
     clc                                                               ; f09e: 18          .
     adc l02eb,y                                                       ; f09f: 79 eb 02    y..
-    sta l0015,x                                                       ; f0a2: 95 15       ..
-    lda l0024,x                                                       ; f0a4: b5 24       .$
+    sta int_workspace_stack_low-1,x                                   ; f0a2: 95 15       ..
+    lda int_workspace_stack_mid1-1,x                                  ; f0a4: b5 24       .$
     adc l0306,y                                                       ; f0a6: 79 06 03    y..
-    sta l0024,x                                                       ; f0a9: 95 24       .$
+    sta int_workspace_stack_mid1-1,x                                  ; f0a9: 95 24       .$
     bcs lf084                                                         ; f0ab: b0 d7       ..
     rts                                                               ; f0ad: 60          `
 
@@ -322,16 +316,16 @@ command_dim:
     jsr lc8bc                                                         ; f0b9: 20 bc c8     ..
     dex                                                               ; f0bc: ca          .
     dex                                                               ; f0bd: ca          .
-    stx l0004                                                         ; f0be: 86 04       ..
-    ldy l0016,x                                                       ; f0c0: b4 16       ..
+    stx workspace_stack_pointer                                       ; f0be: 86 04       ..
+    ldy int_workspace_stack_low,x                                     ; f0c0: b4 16       ..
     sec                                                               ; f0c2: 38          8
-    lda l0023                                                         ; f0c3: a5 23       .#
+    lda int_workspace_stack_mid1-2                                    ; f0c3: a5 23       .#
     sta l0321,y                                                       ; f0c5: 99 21 03    .!.
-    adc l0017,x                                                       ; f0c8: 75 17       u. ; +1 because carry is set
-    sta l0023                                                         ; f0ca: 85 23       .#
-    lda l0024                                                         ; f0cc: a5 24       .$
+    adc int_workspace_stack_low+1,x                                   ; f0c8: 75 17       u. ; +1 because carry is set
+    sta int_workspace_stack_mid1-2                                    ; f0ca: 85 23       .#
+    lda int_workspace_stack_mid1-1                                    ; f0cc: a5 24       .$
     sta l033c,y                                                       ; f0ce: 99 3c 03    .<.
-    adc l0026,x                                                       ; f0d1: 75 26       u&
+    adc int_workspace_stack_mid1+1,x                                  ; f0d1: 75 26       u&
     jmp cf119                                                         ; f0d3: 4c 19 f1    L..
 
 ; $f0d6 referenced 6 times by $f0b2, $f0dd, $f0e1, $f0e6, $f117, $f12f
@@ -340,68 +334,68 @@ cf0d6:
 
 ; $f0d7 referenced 1 time by $f0b7
 cf0d7:
-    ldy l0003                                                         ; f0d7: a4 03       ..
-    lda (l0005),y                                                     ; f0d9: b1 05       ..
+    ldy parsing_ptr_offset                                            ; f0d7: a4 03       ..
+    lda (parsing_ptr_low),y                                           ; f0d9: b1 05       ..
     cmp #$40 ; '@'                                                    ; f0db: c9 40       .@
     bcc cf0d6                                                         ; f0dd: 90 f7       ..
     cmp #$5b ; '['                                                    ; f0df: c9 5b       .[
     bcs cf0d6                                                         ; f0e1: b0 f3       ..
     iny                                                               ; f0e3: c8          .
-    cmp (l0005),y                                                     ; f0e4: d1 05       ..
+    cmp (parsing_ptr_low),y                                           ; f0e4: d1 05       ..
     bne cf0d6                                                         ; f0e6: d0 ee       ..
     sbc #$40 ; '@'                                                    ; f0e8: e9 40       .@
     pha                                                               ; f0ea: 48          H
     iny                                                               ; f0eb: c8          .
-    sty l0003                                                         ; f0ec: 84 03       ..
+    sty parsing_ptr_offset                                            ; f0ec: 84 03       ..
     jsr lc8bc                                                         ; f0ee: 20 bc c8     ..
     pla                                                               ; f0f1: 68          h
     tay                                                               ; f0f2: a8          .
-    lda l0023                                                         ; f0f3: a5 23       .#
+    lda int_workspace_stack_mid1-2                                    ; f0f3: a5 23       .#
     sta l02eb,y                                                       ; f0f5: 99 eb 02    ...
-    lda l0024                                                         ; f0f8: a5 24       .$
+    lda int_workspace_stack_mid1-1                                    ; f0f8: a5 24       .$
     sta l0306,y                                                       ; f0fa: 99 06 03    ...
     dex                                                               ; f0fd: ca          .
-    stx l0004                                                         ; f0fe: 86 04       ..
-    ldy l0016,x                                                       ; f100: b4 16       ..
+    stx workspace_stack_pointer                                       ; f0fe: 86 04       ..
+    ldy int_workspace_stack_low,x                                     ; f100: b4 16       ..
     iny                                                               ; f102: c8          .
     bne cf107                                                         ; f103: d0 02       ..
-    inc l0025,x                                                       ; f105: f6 25       .%
+    inc int_workspace_stack_mid1,x                                    ; f105: f6 25       .%
 ; $f107 referenced 1 time by $f103
 cf107:
     tya                                                               ; f107: 98          .
     asl                                                               ; f108: 0a          .
-    rol l0025,x                                                       ; f109: 36 25       6%
+    rol int_workspace_stack_mid1,x                                    ; f109: 36 25       6%
     asl                                                               ; f10b: 0a          .
-    rol l0025,x                                                       ; f10c: 36 25       6%
+    rol int_workspace_stack_mid1,x                                    ; f10c: 36 25       6%
     clc                                                               ; f10e: 18          .
-    adc l0023                                                         ; f10f: 65 23       e#
-    sta l0023                                                         ; f111: 85 23       .#
-    lda l0025,x                                                       ; f113: b5 25       .%
-    adc l0024                                                         ; f115: 65 24       e$
+    adc int_workspace_stack_mid1-2                                    ; f10f: 65 23       e#
+    sta int_workspace_stack_mid1-2                                    ; f111: 85 23       .#
+    lda int_workspace_stack_mid1,x                                    ; f113: b5 25       .%
+    adc int_workspace_stack_mid1-1                                    ; f115: 65 24       e$
     bcs cf0d6                                                         ; f117: b0 bd       ..
 ; $f119 referenced 1 time by $f0d3
 cf119:
-    sta l0024                                                         ; f119: 85 24       .$
+    sta int_workspace_stack_mid1-1                                    ; f119: 85 24       .$
 cf11b:
 lf11c = cf11b+1
     ldy #0                                                            ; f11b: a0 00       ..
 ; overlapping: brk                                                    ; f11c: 00          .
 ; $f11c referenced 2 times by $f123, $f12a
     lda #$aa                                                          ; f11d: a9 aa       ..
-    sta (l0023),y                                                     ; f11f: 91 23       .#
-    cmp (l0023),y                                                     ; f121: d1 23       .#
+    sta (int_workspace_stack_mid1-2),y                                ; f11f: 91 23       .#
+    cmp (int_workspace_stack_mid1-2),y                                ; f121: d1 23       .#
     bne lf11c                                                         ; f123: d0 f7       ..
     lsr                                                               ; f125: 4a          J
-    sta (l0023),y                                                     ; f126: 91 23       .#
-    cmp (l0023),y                                                     ; f128: d1 23       .#
+    sta (int_workspace_stack_mid1-2),y                                ; f126: 91 23       .#
+    cmp (int_workspace_stack_mid1-2),y                                ; f128: d1 23       .#
     bne lf11c                                                         ; f12a: d0 f0       ..
     jsr lc434                                                         ; f12c: 20 34 c4     4.
     bcs cf0d6                                                         ; f12f: b0 a5       ..
-    ldy l0003                                                         ; f131: a4 03       ..
-    lda (l0005),y                                                     ; f133: b1 05       ..
+    ldy parsing_ptr_offset                                            ; f131: a4 03       ..
+    lda (parsing_ptr_low),y                                           ; f133: b1 05       ..
     cmp #$2c ; ','                                                    ; f135: c9 2c       .,
     bne cf13e                                                         ; f137: d0 05       ..
-    inc l0003                                                         ; f139: e6 03       ..
+    inc parsing_ptr_offset                                            ; f139: e6 03       ..
     jmp command_dim                                                   ; f13b: 4c ae f0    L..
 
 ; $f13e referenced 1 time by $f137
@@ -410,9 +404,9 @@ cf13e:
 
 command_run:
     lda l000d                                                         ; f141: a5 0d       ..
-    sta l0023                                                         ; f143: 85 23       .#
+    sta int_workspace_stack_mid1-2                                    ; f143: 85 23       .#
     lda l000e                                                         ; f145: a5 0e       ..
-    sta l0024                                                         ; f147: 85 24       .$
+    sta int_workspace_stack_mid1-1                                    ; f147: 85 24       .$
     jmp lce83                                                         ; f149: 4c 83 ce    L..
 
 command_wait:
@@ -474,27 +468,27 @@ assembler_base_opcodes:
 
 ; $f291 referenced 13 times by $f299, $f32e, $f333, $f360, $f396, $f3f2, $f408, $f40f, $f465, $f470, $f477, $f48c, $f493
 cf291:
-    ldy l0003                                                         ; f291: a4 03       ..
-    lda (l0005),y                                                     ; f293: b1 05       ..
-    inc l0003                                                         ; f295: e6 03       ..
+    ldy parsing_ptr_offset                                            ; f291: a4 03       ..
+    lda (parsing_ptr_low),y                                           ; f293: b1 05       ..
+    inc parsing_ptr_offset                                            ; f295: e6 03       ..
     cmp #$20 ; ' '                                                    ; f297: c9 20       .
     beq cf291                                                         ; f299: f0 f6       ..
     rts                                                               ; f29b: 60          `
 
 ; $f29c referenced 1 time by $f2a5
 loop_cf29c:
-    inc l0003                                                         ; f29c: e6 03       ..
+    inc parsing_ptr_offset                                            ; f29c: e6 03       ..
     jmp lc31b                                                         ; f29e: 4c 1b c3    L..
 
 ; $f2a1 referenced 1 time by $f32b
 command_assembler:
-    lda (l0005),y                                                     ; f2a1: b1 05       ..
+    lda (parsing_ptr_low),y                                           ; f2a1: b1 05       ..
     cmp #$5d ; ']'                                                    ; f2a3: c9 5d       .]
     beq loop_cf29c                                                    ; f2a5: f0 f5       ..
     jsr lc4f6                                                         ; f2a7: 20 f6 c4     ..
-    dec l0003                                                         ; f2aa: c6 03       ..
+    dec parsing_ptr_offset                                            ; f2aa: c6 03       ..
     jsr sub_cf38e                                                     ; f2ac: 20 8e f3     ..
-    dec l0003                                                         ; f2af: c6 03       ..
+    dec parsing_ptr_offset                                            ; f2af: c6 03       ..
     lda l0052                                                         ; f2b1: a5 52       .R
     pha                                                               ; f2b3: 48          H
     lda l0053                                                         ; f2b4: a5 53       .S
@@ -502,14 +496,14 @@ command_assembler:
     lda l0321                                                         ; f2b7: ad 21 03    .!.
     pha                                                               ; f2ba: 48          H
     lda #0                                                            ; f2bb: a9 00       ..
-    sta l0034                                                         ; f2bd: 85 34       .4
-    sta l0043                                                         ; f2bf: 85 43       .C
+    sta int_workspace_stack_mid2                                      ; f2bd: 85 34       .4
+    sta int_workspace_stack_high                                      ; f2bf: 85 43       .C
     lda #5                                                            ; f2c1: a9 05       ..
     sta l0321                                                         ; f2c3: 8d 21 03    .!.
     lda basic_line_number                                             ; f2c6: a5 01       ..
-    sta l0016                                                         ; f2c8: 85 16       ..
+    sta int_workspace_stack_low                                       ; f2c8: 85 16       ..
     lda basic_line_number+1                                           ; f2ca: a5 02       ..
-    sta l0025                                                         ; f2cc: 85 25       .%
+    sta int_workspace_stack_mid1                                      ; f2cc: 85 25       .%
     jsr lc589                                                         ; f2ce: 20 89 c5     ..
     jsr sub_cf379                                                     ; f2d1: 20 79 f3     y.
     pla                                                               ; f2d4: 68          h
@@ -541,7 +535,7 @@ cf2ff:
     ldy #0                                                            ; f2ff: a0 00       ..
 ; $f301 referenced 1 time by $f30f
 loop_cf301:
-    lda (l0005),y                                                     ; f301: b1 05       ..
+    lda (parsing_ptr_low),y                                           ; f301: b1 05       ..
     cmp #$3b ; ';'                                                    ; f303: c9 3b       .;
     beq cf311                                                         ; f305: f0 0a       ..
     cmp #$0d                                                          ; f307: c9 0d       ..
@@ -554,11 +548,11 @@ cf311:
     jsr lcd54                                                         ; f311: 20 54 cd     T.
     jsr lc4e4                                                         ; f314: 20 e4 c4     ..
     dey                                                               ; f317: 88          .
-    lda (l0005),y                                                     ; f318: b1 05       ..
+    lda (parsing_ptr_low),y                                           ; f318: b1 05       ..
     iny                                                               ; f31a: c8          .
     cmp #$3b ; ';'                                                    ; f31b: c9 3b       .;
     beq cf32b                                                         ; f31d: f0 0c       ..
-    lda l0006                                                         ; f31f: a5 06       ..
+    lda parsing_ptr_high                                              ; f31f: a5 06       ..
     cmp #1                                                            ; f321: c9 01       ..
     bne cf328                                                         ; f323: d0 03       ..
     jmp lc2cf                                                         ; f325: 4c cf c2    L..
@@ -718,13 +712,13 @@ cf3f2:
     ldx #1                                                            ; f3fd: a2 01       ..
     cmp #$41 ; 'A'                                                    ; f3ff: c9 41       .A
     beq loop_cf3ef                                                    ; f401: f0 ec       ..
-    dec l0003                                                         ; f403: c6 03       ..
+    dec parsing_ptr_offset                                            ; f403: c6 03       ..
     jsr lc78b                                                         ; f405: 20 8b c7     ..
     jsr cf291                                                         ; f408: 20 91 f2     ..
     cmp #$2c ; ','                                                    ; f40b: c9 2c       .,
     bne cf440                                                         ; f40d: d0 31       .1
     jsr cf291                                                         ; f40f: 20 91 f2     ..
-    ldy l0025                                                         ; f412: a4 25       .%
+    ldy int_workspace_stack_mid1                                      ; f412: a4 25       .%
     beq cf42b                                                         ; f414: f0 15       ..
     ldx #9                                                            ; f416: a2 09       ..
     cmp #$58 ; 'X'                                                    ; f418: c9 58       .X
@@ -754,13 +748,13 @@ cf42b:
 
 ; $f440 referenced 1 time by $f40d
 cf440:
-    dec l0003                                                         ; f440: c6 03       ..
+    dec parsing_ptr_offset                                            ; f440: c6 03       ..
     ldx #2                                                            ; f442: a2 02       ..
     ldy l000f                                                         ; f444: a4 0f       ..
     cpy #$0c                                                          ; f446: c0 0c       ..
     beq cf49b                                                         ; f448: f0 51       .Q
     ldx #5                                                            ; f44a: a2 05       ..
-    lda l0025                                                         ; f44c: a5 25       .%
+    lda int_workspace_stack_mid1                                      ; f44c: a5 25       .%
     beq cf49b                                                         ; f44e: f0 4b       .K
     ldx #$0c                                                          ; f450: a2 0c       ..
     bne cf49b                                                         ; f452: d0 47       .G ; ALWAYS branch
@@ -829,10 +823,10 @@ cf4ae:
     sta l0066                                                         ; f4b4: 85 66       .f
     lda assembler_mode_offsets_2,x                                    ; f4b6: bd 02 f2    ...
     ldx #0                                                            ; f4b9: a2 00       ..
-    stx l0004                                                         ; f4bb: 86 04       ..
-    ldy l0016                                                         ; f4bd: a4 16       ..
+    stx workspace_stack_pointer                                       ; f4bb: 86 04       ..
+    ldy int_workspace_stack_low                                       ; f4bd: a4 16       ..
     sty l0067                                                         ; f4bf: 84 67       .g
-    ldy l0025                                                         ; f4c1: a4 25       .%
+    ldy int_workspace_stack_mid1                                      ; f4c1: a4 25       .%
     sty l0068                                                         ; f4c3: 84 68       .h
     cmp #$0f                                                          ; f4c5: c9 0f       ..
     beq cf4ec                                                         ; f4c7: f0 23       .#
@@ -920,8 +914,8 @@ command_move:
     ldx #$0c                                                          ; f546: a2 0c       ..
 ; $f548 referenced 1 time by $f544
 cf548:
-    stx l0016                                                         ; f548: 86 16       ..
-    inc l0004                                                         ; f54a: e6 04       ..
+    stx int_workspace_stack_low                                       ; f548: 86 16       ..
+    inc workspace_stack_pointer                                       ; f54a: e6 04       ..
     bne cf554                                                         ; f54c: d0 06       ..
 command_plot:
     jsr lc8bc                                                         ; f54e: 20 bc c8     ..
@@ -932,16 +926,16 @@ cf554:
     jsr lc231                                                         ; f557: 20 31 c2     1.
     jsr lc8bc                                                         ; f55a: 20 bc c8     ..
     jsr lc4e4                                                         ; f55d: 20 e4 c4     ..
-    lda l0015,x                                                       ; f560: b5 15       ..
+    lda int_workspace_stack_low-1,x                                   ; f560: b5 15       ..
     sta l005c                                                         ; f562: 85 5c       .\
-    lda l0024,x                                                       ; f564: b5 24       .$
+    lda int_workspace_stack_mid1-1,x                                  ; f564: b5 24       .$
     sta l005d                                                         ; f566: 85 5d       .]
-    lda l0014,x                                                       ; f568: b5 14       ..
+    lda int_workspace_stack_low-2,x                                   ; f568: b5 14       ..
     sta l005a                                                         ; f56a: 85 5a       .Z
-    lda l0023,x                                                       ; f56c: b5 23       .#
+    lda int_workspace_stack_mid1-2,x                                  ; f56c: b5 23       .#
     sta l005b                                                         ; f56e: 85 5b       .[
     ldx #0                                                            ; f570: a2 00       ..
-    stx l0004                                                         ; f572: 86 04       ..
+    stx workspace_stack_pointer                                       ; f572: 86 04       ..
     ldx #3                                                            ; f574: a2 03       ..
 ; $f576 referenced 1 time by $f57c
 loop_cf576:
@@ -949,7 +943,7 @@ loop_cf576:
     sta l0052,x                                                       ; f579: 95 52       .R
     dex                                                               ; f57b: ca          .
     bpl loop_cf576                                                    ; f57c: 10 f8       ..
-    lda l0016                                                         ; f57e: a5 16       ..
+    lda int_workspace_stack_low                                       ; f57e: a5 16       ..
     and #4                                                            ; f580: 29 04       ).
     bne cf597                                                         ; f582: d0 13       ..
     ldx #2                                                            ; f584: a2 02       ..
@@ -974,11 +968,11 @@ loop_cf599:
     sta l03c1,x                                                       ; f59b: 9d c1 03    ...
     dex                                                               ; f59e: ca          .
     bpl loop_cf599                                                    ; f59f: 10 f8       ..
-    lda l0016                                                         ; f5a1: a5 16       ..
+    lda int_workspace_stack_low                                       ; f5a1: a5 16       ..
     and #3                                                            ; f5a3: 29 03       ).
     beq cf5b2                                                         ; f5a5: f0 0b       ..
     sta l005e                                                         ; f5a7: 85 5e       .^
-    lda l0016                                                         ; f5a9: a5 16       ..
+    lda int_workspace_stack_low                                       ; f5a9: a5 16       ..
     and #8                                                            ; f5ab: 29 08       ).
     beq cf5b5                                                         ; f5ad: f0 06       ..
     jsr sub_cf678                                                     ; f5af: 20 78 f6     x.
@@ -1853,7 +1847,7 @@ cfa0e:
     cmp basic_line_number+1,x                                         ; fa10: d5 02       ..
     bne return_5                                                      ; fa12: d0 04       ..
     lda basic_line_number,x                                           ; fa14: b5 01       ..
-    cmp l0003,x                                                       ; fa16: d5 03       ..
+    cmp parsing_ptr_offset,x                                          ; fa16: d5 03       ..
 ; $fa18 referenced 1 time by $fa12
 return_5:
     rts                                                               ; fa18: 60          `
@@ -3103,21 +3097,19 @@ pydis_end:
 ;     cf49b:                       15
 ;     l0053:                       15
 ;     l005f:                       15
-;     l0003:                       14
+;     parsing_ptr_offset:          14
 ;     ppi_port_c:                  14
 ;     cf291:                       13
 ;     l005b:                       13
 ;     screen_line_address:         13
-;     l0005:                       12
-;     l0023:                       11
+;     parsing_ptr_low:             12
 ;     basic_error_number:          10
-;     l0024:                       10
 ;     l0060:                       10
 ;     print_inline_string:         10
 ;     return_2:                    10
 ;     cf49a:                        8
-;     l0016:                        8
-;     l0025:                        8
+;     int_workspace_stack_low:      8
+;     int_workspace_stack_mid1:     8
 ;     l0059:                        8
 ;     l00cf:                        8
 ;     OSBPUT:                       7
@@ -3137,7 +3129,6 @@ pydis_end:
 ;     cf0d6:                        6
 ;     cfd42:                        6
 ;     input_buffer:                 6
-;     l0004:                        6
 ;     l0054:                        6
 ;     l0067:                        6
 ;     l00c0:                        6
@@ -3149,6 +3140,7 @@ pydis_end:
 ;     ppi_port_a:                   6
 ;     via_pcr:                      6
 ;     wait_for_flyback_or_now:      6
+;     workspace_stack_pointer:      6
 ;     OSBGET:                       5
 ;     cf9a2:                        5
 ;     cfb8e:                        5
@@ -3189,7 +3181,6 @@ pydis_end:
 ;     cfc40:                        3
 ;     cfde9:                        3
 ;     irq_save_a:                   3
-;     l0015:                        3
 ;     l0055:                        3
 ;     l0064:                        3
 ;     l0065:                        3
@@ -3405,14 +3396,10 @@ pydis_end:
 ;     default_vectors:              1
 ;     fndvec:                       1
 ;     graphics_mode_bytes:          1
-;     l0006:                        1
+;     int_workspace_stack_high:     1
+;     int_workspace_stack_mid2:     1
 ;     l000d:                        1
 ;     l000e:                        1
-;     l0014:                        1
-;     l0017:                        1
-;     l0026:                        1
-;     l0034:                        1
-;     l0043:                        1
 ;     l00e3:                        1
 ;     l00fd:                        1
 ;     l013f:                        1
@@ -3514,6 +3501,7 @@ pydis_end:
 ;     loop_cff41:                   1
 ;     loop_cff55:                   1
 ;     nmivec:                       1
+;     parsing_ptr_high:             1
 ;     plot_routines_high:           1
 ;     plot_routines_low:            1
 ;     print_space:                  1
@@ -3699,23 +3687,9 @@ pydis_end:
 ;     cff38
 ;     cff97
 ;     cffc0
-;     l0003
-;     l0004
-;     l0005
-;     l0006
 ;     l000d
 ;     l000e
 ;     l000f
-;     l0014
-;     l0015
-;     l0016
-;     l0017
-;     l0023
-;     l0024
-;     l0025
-;     l0026
-;     l0034
-;     l0043
 ;     l0052
 ;     l0053
 ;     l0054

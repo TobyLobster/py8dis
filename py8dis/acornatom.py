@@ -652,6 +652,27 @@ def _memory_regions():
     for start, end, name in atom_memory_regions:
         memory_region(start, end, name)
 
+def _name_workspace_stack():
+    """Name BASIC's workspace stack (see atom_workspace_stack): each table's
+    levels from its start (e.g. 'int_workspace_stack_low+1'), except the two
+    bytes before each table, which are named from it (e.g.
+    'int_workspace_stack_mid1-1' rather than 'int_workspace_stack_low+14'),
+    as code reads the levels below the top with them."""
+    names = {}
+    for start, name in atom_workspace_stack:
+        for i in range(1, ATOM_WORKSPACE_STACK_LEVELS):
+            names[start + i] = ("{0}+{1}".format(name, i), start)
+    for start, name in atom_workspace_stack:
+        for i in (1, 2):
+            names[start - i] = ("{0}-{1}".format(name, i), start)
+    # (Each table's start first: an expression's base address must have its
+    # own optional label already)
+    for start, name in atom_workspace_stack:
+        optional_label(start, name)
+    for addr in sorted(names):
+        name, start = names[addr]
+        optional_label(addr, name, start)
+
 def atom():
     """Set up for a program for the Acorn Atom (see the module docstring):
     the OS's entry points, with hooks to comment their calls, the comments
@@ -700,6 +721,7 @@ def atom():
         optional_label(addr, name)
         for i in range(1, length):
             optional_label(addr + i, "{0}+{1}".format(name, i), addr)
+    _name_workspace_stack()
 
     # The hardware, which is always defined as 'name = value', never inline
     io_range(0xb000, 0xc000)
