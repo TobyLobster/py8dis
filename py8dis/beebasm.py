@@ -172,10 +172,6 @@ class Beebasm(assembler.Assembler):
         result.append("")
         return result
 
-    def code_end(self):
-        """Nothing."""
-        return []
-
     def format_comment(self, s, indent=1):
         """A word wrapped comment (see mainformatter.format_comment()), for
         the comments explaining the steps of a move."""

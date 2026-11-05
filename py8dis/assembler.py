@@ -94,10 +94,6 @@ class Assembler:
         fill the gap itself pads it here (e.g. ca65's '.res'). The default
         prg_header() calls it too.
 
-    code_end()
-        The lines that end a range of the output. Nothing calls this at the
-        moment, and every assembler returns an empty list.
-
     pseudopc_start(dest, source, length, move_id)
         The lines that start a moved block (see move()): 'length' bytes that
         are at binary address 'source' (a memorymanager.BinaryAddr) in the

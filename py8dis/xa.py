@@ -194,10 +194,6 @@ class Xa(assembler.Assembler):
             "%s* = %s" % (utils.make_indent(1), self.hex4(start_addr)),
             ""]
 
-    def code_end(self):
-        """Nothing."""
-        return []
-
     def pseudopc_start(self, dest, source, length, move_id):
         """Used when assembling code at a different address to where it will
         actually execute: '* = ' the runtime address. (Setting the address

@@ -107,13 +107,6 @@ def signed8(i):
     else:
         return i
 
-# https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst (the last may be shorter)."""
-
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
 def isprint(c):
     """Is the byte value c a printable ASCII character (space to '~')? (This
     is ASCII only: for a string's own text encoding, see
@@ -158,15 +151,6 @@ def is_integer_string(s):
     if re.fullmatch(r'[+-]?[$&]?[0-9A-Fa-f]+', s):
         return True
     return False
-
-# See https://stackoverflow.com/a/11150413
-def natural_sort(l):
-    """The strings in l, sorted in 'natural' order: runs of digits compare
-    as numbers, and the rest without regard to case, so e.g. 'l2' comes
-    before 'l10'. (disassembly.sorted_constants() sorts the same way.)"""
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-    return sorted(l, key=alphanum_key)
 
 class LazyString:
     """Text made of parts, some of which aren't known until the output is

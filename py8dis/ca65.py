@@ -278,10 +278,6 @@ class Ca65(assembler.Assembler):
             result.append("%s%s %s - *" % (utils.make_indent(1), utils.force_case(".res"), self.hex4(start_addr)))
         return result + ["%s%s %s" % (utils.make_indent(1), utils.force_case(".org"), self.hex4(start_addr)), ""]
 
-    def code_end(self):
-        """Nothing."""
-        return []
-
     def pseudopc_start(self, dest, source, length, move_id):
         """Used when assembling code at a different address to where it will
         actually execute: '.org' with the runtime address."""

@@ -313,10 +313,6 @@ class Tass64(assembler.Assembler):
         assemble: '* = $2000'."""
         return ["", "%s* = %s" % (utils.make_indent(1), self.hex4(start_addr)), ""]
 
-    def code_end(self):
-        """Nothing."""
-        return []
-
     def pseudopc_start(self, dest, source, length, move_id):
         """Used when assembling code at a different address to where it will
         actually execute: '.logical' with the runtime address."""

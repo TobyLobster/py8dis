@@ -203,10 +203,6 @@ class Z88DK(assembler.Assembler):
             return ["", "%s%s %d %s (to %s)" % (utils.make_indent(1), utils.force_case("DEFS"), start_addr - previous_end, self.comment_prefix(), self.hex4(start_addr)), ""]
         return ["", "%s%s %s" % (utils.make_indent(1), utils.force_case("ORG"), self.hex4(start_addr)), ""]
 
-    def code_end(self):
-        """Nothing."""
-        return []
-
     def pseudopc_start(self, dest, source, length, move_id):
         """Used when assembling code at a different address to where it will
         actually execute: z88dk-z80asm's PHASE, which assembles the code

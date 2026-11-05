@@ -281,21 +281,6 @@ class SnippetHelper:
         around it)."""
         disassembly.annotate_binary(binary_loc, "", align=Align.BEFORE_LABEL, once_only=True)
 
-    def has_explicit_label(self, binary_loc):
-        """Whether the start of the match has an explicit label (one given a
-        name, rather than auto-generated) in its move. (binary_loc isn't
-        used: it's always the start of the match.)"""
-        binary_addr = self.get_start_loc().binary_addr
-        runtime_addr = movemanager.b2r(binary_addr)
-        move_id = self.get_start_loc().move_id
-
-        if runtime_addr in session.current().labels.labels and session.current().labels.labels[runtime_addr].explicit_names:
-            labels = session.current().labels.labels[runtime_addr].explicit_names[move_id]
-            if labels:
-                return True
-            
-        return False
-    
     def __repr__(self):
         return "binary_addr = {0}, match={1}, labels={2}".format(self.binary_loc, self.match, self.labels)
 

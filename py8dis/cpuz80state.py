@@ -118,10 +118,6 @@ def _parity(value):
     """True if an 8 bit value has an even number of bits set."""
     return bin(value).count("1") % 2 == 0
 
-def _signed8(value):
-    """A byte as a signed number (-128 to 127)."""
-    return value - 0x100 if value >= 0x80 else value
-
 # The 8 bit registers as the opcodes number them (6 is (HL), in memory)
 R = ("b", "c", "d", "e", "h", "l", None, "a")
 
