@@ -1,9 +1,9 @@
 """
 Apple II tables
 
-The data apple.py uses for the Apple II+ and IIe: the Monitor ROM's
-routines, the Monitor's zero page and the other workspace, the page 3
-vectors, the soft switches, Applesoft's routines, workspace and tokens,
+The data apple.py uses for the Apple II+, IIe, enhanced IIe and IIc: the
+Monitor ROM's routines, the Monitor's zero page and the other workspace,
+the page 3 vectors, the soft switches (and the IIc's), Applesoft's routines, workspace and tokens,
 ProDOS 8's MLI calls and global page, DOS 3.3's entry points, memory and
 IOB, and the regions of memory.
 
@@ -115,6 +115,7 @@ apple2e_firmware_routines = [
 # Other places in the Monitor ROM: (address, Apple's name, descriptive name)
 apple2_rom_locations = [
     (0xfbb3, "VERSION",  "rom_id_byte"),
+    (0xfbbf, None,       "iic_rom_version"),
     (0xfbc0, "ZIDBYTE",  "rom_id_byte_2"),
 ]
 
@@ -387,7 +388,92 @@ apple2e_write_switches = {
     0xc00c: ("CLR80VID",     "show_40_columns",    "Show 40 columns"),
     0xc00d: ("SET80VID",     "show_80_columns",    "Show 80 columns"),
     0xc00e: ("CLRALTCHAR",   "primary_charset",    "Use the primary character set"),
-    0xc00f: ("SETALTCHAR",   "alt_charset",        "Use the alternate character set (with MouseText)"),
+    0xc00f: ("SETALTCHAR",   "alt_charset",        "Use the alternate character set (inverse lower case instead of flashing)"),
+}
+
+# What SETALTCHAR does on the enhanced IIe and the IIc, whose alternate
+# character set has MouseText
+APPLE2E_ENHANCED_ALTCHAR = "Use the alternate character set (MouseText and inverse lower case instead of flashing)"
+
+# The IIc: its switches that differ from the IIe's. Apple's names are those
+# of the IIc's firmware source, as Apple published it (MOUXINT, MOUYINT,
+# VBLINT, MOUCLR, MOUDSBL, MOUENBL, MOUBUT, MOUX1, MOUY1, IOUDSBL,
+# IOUENBL), and of Apple's IIc Technical Notes (ENVBL, RDIOUDIS); DISVBL,
+# DHIRESON, DHIRESOFF, IOUDISON, IOUDISOFF and RDDHIRES are the names in
+# common use (A2osX, cc65's apple2.inc, SourceGen) for the switches those
+# don't name. Where there's no such name, it's None, and the descriptive
+# name is used in both styles. The IIc has no slots, cassette or
+# annunciators, so the IIe's switches for those aren't on it
+# (apple2c_missing_switches); its IOU's switches at $C058-$C05D work only
+# with IOUDIS off, and $C05E/$C05F (double hi-res) only with it on.
+apple2c_soft_switches = {
+    0xc015: ("MOUXINT",   "mouse_x_interrupt"),
+    0xc017: ("MOUYINT",   "mouse_y_interrupt"),
+    0xc019: ("VBLINT",    "vbl_interrupt"),
+    0xc048: ("MOUCLR",    "clear_mouse_interrupts"),
+    0xc058: ("MOUDSBL",   "disable_mouse_interrupts"),
+    0xc059: ("MOUENBL",   "enable_mouse_interrupts"),
+    0xc05a: ("DISVBL",    "disable_vbl_interrupt"),
+    0xc05b: ("ENVBL",     "enable_vbl_interrupt"),
+    0xc05e: ("DHIRESON",  "double_hires_on"),
+    0xc05f: ("DHIRESOFF", "double_hires_off"),
+    0xc060: (None,        "column_switch"),
+    0xc063: ("MOUBUT",    "mouse_button"),
+    0xc066: ("MOUX1",     "mouse_x1"),
+    0xc067: ("MOUY1",     "mouse_y1"),
+    0xc07e: ("RDIOUDIS",  "is_iou_disabled"),
+    0xc07f: ("RDDHIRES",  "is_double_hires"),
+    # The serial ports' 6551 ACIAs (in slots 1 and 2, where a Super Serial
+    # Card's are)
+    0xc098: (None,        "serial_1_data"),
+    0xc099: (None,        "serial_1_status"),
+    0xc09a: (None,        "serial_1_command"),
+    0xc09b: (None,        "serial_1_control"),
+    0xc0a8: (None,        "serial_2_data"),
+    0xc0a9: (None,        "serial_2_status"),
+    0xc0aa: (None,        "serial_2_command"),
+    0xc0ab: (None,        "serial_2_control"),
+}
+
+# The IIe's switches that the IIc doesn't have (as well as $C015, $C017 and
+# $C019, which are the IIc's own): the tape output, annunciator 2 (whose
+# addresses are the IOU's mouse edge switches), and the slot ROM switches
+apple2c_missing_switches = (0xc020, 0xc05c, 0xc05d, 0xc006, 0xc007, 0xc00a, 0xc00b)
+
+# What accessing the IIc's switches does, as apple2_switch_actions
+apple2c_switch_actions = {
+    0xc048: "Clear the mouse's interrupts",
+    0xc058: "Disable the mouse's interrupts (with IOUDIS off)",
+    0xc059: "Enable the mouse's interrupts (with IOUDIS off)",
+    0xc05a: "Disable the vertical blank interrupt (with IOUDIS off)",
+    0xc05b: "Enable the vertical blank interrupt (with IOUDIS off)",
+    0xc05e: "Turn double hi-res on (with IOUDIS on)",
+    0xc05f: "Turn double hi-res off (with IOUDIS on)",
+    0xc070: "Start the paddles' timers, and clear the vertical blank interrupt",
+}
+
+# What reading the IIc's inputs tests, as apple2_inputs
+apple2c_inputs = {
+    0xc015: "for a mouse X interrupt (bit 7 set if there was one)",
+    0xc017: "for a mouse Y interrupt (bit 7 set if there was one)",
+    0xc019: "for a vertical blank interrupt (bit 7 set if there was one)",
+    0xc060: "the 40/80-column switch (bit 7)",
+    0xc063: "the mouse's button (bit 7)",
+    0xc066: "the mouse's X1 signal (bit 7, its direction)",
+    0xc067: "the mouse's Y1 signal (bit 7, its direction)",
+    0xc07e: "whether IOUDIS is on (bit 7)",
+    0xc07f: "whether double hi-res is on (bit 7)",
+}
+
+# The IIc's switches that act when written: IOUDIS, which turns the IOU's
+# switches at $C058-$C05D off and double hi-res's at $C05E/$C05F on, as
+# apple2e_write_switches. $C078 and $C079 act as $C07E and $C07F, and are
+# the ones the IIc's firmware uses.
+apple2c_write_switches = {
+    0xc078: ("IOUDSBL",   "iou_disable_mirror", "IOUDIS on: disable the IOU's switches ($C058-$C05D), enable double hi-res's"),
+    0xc079: ("IOUENBL",   "iou_enable_mirror",  "IOUDIS off: enable the IOU's switches ($C058-$C05D)"),
+    0xc07e: ("IOUDISON",  "iou_disable",        "IOUDIS on: disable the IOU's switches ($C058-$C05D), enable double hi-res's"),
+    0xc07f: ("IOUDISOFF", "iou_enable",         "IOUDIS off: enable the IOU's switches ($C058-$C05D)"),
 }
 
 # The Disk II controller's switches, used with the slot times 16 as the index

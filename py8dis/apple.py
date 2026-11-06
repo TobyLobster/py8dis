@@ -1,8 +1,9 @@
 """
 Apple II
 
-Knowledge of the Apple II+ and IIe (see docs/machines/apple2.md). A control
-file calls apple2() after load() (or load_apple_file() etc.). It:
+Knowledge of the Apple II+, IIe, enhanced IIe and IIc (see
+docs/machines/apple2.md). A control file calls apple2() after load() (or
+load_apple_file() etc.). It:
 - names the Monitor ROM's routines (COUT, HOME, RDKEY etc.), each with a
   subroutine hook that comments the calls to it with its title, and, where
   a register's value is known, more: e.g. "Print 'A'" for COUT, 'Print 5
@@ -24,7 +25,9 @@ file calls apple2() after load() (or load_apple_file() etc.). It:
   IIe's switches that act when written (at $C000-$C00F, which reading reads
   the keyboard) where they're written, e.g. 'sta SET80VID', and the Disk
   II's, indexed by the slot times 16, where they're used, e.g. 'lda
-  Q6L,x' (comment_soft_switches());
+  Q6L,x' (comment_soft_switches()); on the IIc, its own switches replace
+  those it lacks or differs in (the mouse's and the vertical blank's
+  interrupts, IOUDIS etc.: see switch_tables());
 - names Applesoft's routines (STROUT, CHRGET, the hi-res routines etc.),
   whose calls are commented in the same way (e.g. STROUT's string is
   marked, 'Print 4660' for LINPRT, 'Plot a hi-res point at (140, 96)' for
@@ -67,6 +70,7 @@ from commands import *
 import config
 import classification
 import cpu6502
+import cpu6510
 import disassembly
 import mainformatter
 import memorymanager
@@ -87,8 +91,13 @@ from acornhelpers import character_streams, register_print_snippets, xy_addr
 from appletables import *
 
 # The models apple2() knows, and the styles of names
-MODELS = ("ii+", "iie")
+MODELS = ("ii+", "iie", "iie-enhanced", "iic")
 NAMES = ("apple", "descriptive")
+
+# The models with the IIe's memory, switches and firmware (the IIe's
+# family), and those with a 65C02
+IIE_FAMILY = ("iie", "iie-enhanced", "iic")
+CMOS_MODELS = ("iie-enhanced", "iic")
 
 # The Monitor's routines that print characters
 COUT = 0xfded
@@ -107,6 +116,40 @@ def official_name(name):
 def _names():
     """The session's style of names: "apple" or "descriptive"."""
     return session.current().extras.get("apple.names", "apple")
+
+def _model():
+    """The session's model (see MODELS), or None before apple2()."""
+    return session.current().extras.get("apple.model")
+
+def switch_tables(model):
+    """The soft switches for the model (see MODELS), from the tables in
+    appletables.py: (names, inputs, actions, write switches), where names
+    is {address: (Apple's name, descriptive name)} for any access (and the
+    language card's), inputs and actions are as apple2_inputs and
+    apple2_switch_actions, and write switches as apple2e_write_switches.
+    The IIe's family has the IIe's, and the IIc its own in place of those it
+    lacks or differs in."""
+    names = dict(apple2_soft_switches)
+    names.update(apple2_language_card)
+    inputs = dict(apple2_inputs)
+    actions = dict(apple2_switch_actions)
+    writes = {}
+    if model in IIE_FAMILY:
+        names.update(apple2e_soft_switches)
+        inputs.update(apple2e_inputs)
+        writes.update(apple2e_write_switches)
+    if model in CMOS_MODELS:
+        apple_name, descriptive_name, _ = writes[0xc00f]
+        writes[0xc00f] = (apple_name, descriptive_name, APPLE2E_ENHANCED_ALTCHAR)
+    if model == "iic":
+        for table in (names, inputs, actions, writes):
+            for addr in apple2c_missing_switches:
+                table.pop(addr, None)
+        names.update(apple2c_soft_switches)
+        inputs.update(apple2c_inputs)
+        actions.update(apple2c_switch_actions)
+        writes.update(apple2c_write_switches)
+    return names, inputs, actions, writes
 
 def _name(apple_name, descriptive_name):
     """The name in the session's style (Apple's, as official_name() gives
@@ -315,6 +358,12 @@ _ABSOLUTE_RMW = {0xee, 0xce, 0x0e, 0x4e, 0x2e, 0x6e}
 _INDEXED = {0xbd, 0xbc, 0xdd, 0x7d, 0xfd, 0x3d, 0x1d, 0x5d, 0x9d, 0xfe, 0xde, 0x1e, 0x5e, 0x3e, 0x7e,
             0xb9, 0xbe, 0xd9, 0x79, 0xf9, 0x39, 0x19, 0x59, 0x99}
 
+# The 65C02's: STZ, TSB and TRB, and BIT and STZ indexed by X (which are
+# other instructions on a 6502)
+_CMOS_ABSOLUTE_WRITES = {0x9c}
+_CMOS_ABSOLUTE_RMW = {0x0c, 0x1c}
+_CMOS_INDEXED = {0x3c, 0x9e}
+
 # The branches on bit 7 (N), which wait loops use: BPL and BMI
 _BPL, _BMI = 0x10, 0x30
 
@@ -327,25 +376,29 @@ def comment_soft_switches():
       read and write RAM bank 2 (two reads in a row enable writing)';
     - a read of an input, e.g. 'Test button 0 (bit 7 set if it's pressed)',
       or 'Wait for a key' for a loop reading KBD until bit 7 is set (and on
-      the IIe, 'Wait for the vertical blank' or 'Wait for the vertical blank
-      to end' for RDVBLBAR);
-    - on the IIe, a write to $C000-$C00F (which reading reads the keyboard),
-      e.g. 'Show 80 columns', with the address named for that write (e.g.
-      'sta SET80VID'; see apple2e_write_switches);
+      the IIe and enhanced IIe, 'Wait for the vertical blank' or 'Wait for
+      the vertical blank to end' for RDVBLBAR, and on the IIc, 'Wait for the
+      vertical blank interrupt' for VBLINT);
+    - in the IIe's family, a write to $C000-$C00F (which reading reads the
+      keyboard), e.g. 'Show 80 columns', with the address named for that
+      write (e.g. 'sta SET80VID'; see apple2e_write_switches), and on the
+      IIc, to IOUDIS (see apple2c_write_switches);
     - an access to $C080-$C08F indexed by X or Y, which is the slot whose
       number times 16 is in the register (usually a Disk II), e.g. 'lda
       Q6L,x ; Disk II: Q6 low (read the data latch)', named for that
       instruction (see apple2_disk2_switches).
     The names for one instruction are local labels (see
-    disassembly.add_local_label()). (Run once the code has been traced, as
-    an analysis hook.)"""
+    disassembly.add_local_label()). The switches are the model's (see
+    switch_tables()), and for a 65C02, its STZ, TSB and TRB count too. (Run
+    once the code has been traced, as an analysis hook.)"""
     cpu = session.current().cpu
     memory_binary = session.current().memory.binary
     moves = session.current().moves.move_id_for_binary_addr
-    iie = session.current().extras.get("apple.model") == "iie"
-    inputs = dict(apple2_inputs)
-    if iie:
-        inputs.update(apple2e_inputs)
+    model = _model()
+    _, inputs, actions, write_switches = switch_tables(model)
+    reads, writes, rmw, indexed = _ABSOLUTE_READS, _ABSOLUTE_WRITES, _ABSOLUTE_RMW, _INDEXED
+    if config.get_cmos():
+        writes, rmw, indexed = writes | _CMOS_ABSOLUTE_WRITES, rmw | _CMOS_ABSOLUTE_RMW, indexed | _CMOS_INDEXED
 
     def comment(binary_addr, text):
         """Comment the instruction at binary_addr, in the move it's in."""
@@ -368,10 +421,10 @@ def comment_soft_switches():
     for run in cpu.straight_runs():
         for k, binary_addr in enumerate(run):
             opcode = memory_binary[binary_addr]
-            if opcode not in _ABSOLUTE_READS and opcode not in _ABSOLUTE_WRITES and opcode not in _ABSOLUTE_RMW and opcode not in _INDEXED:
+            if opcode not in reads and opcode not in writes and opcode not in rmw and opcode not in indexed:
                 continue
             addr = memory_binary[binary_addr + 1] + 256 * memory_binary[binary_addr + 2]
-            if opcode in _INDEXED:
+            if opcode in indexed:
                 # The Disk II (or another card) in the slot whose number
                 # times 16 is in X or Y
                 if 0xc080 <= addr <= 0xc08f:
@@ -381,19 +434,21 @@ def comment_soft_switches():
                 continue
             if 0xc080 <= addr <= 0xc08f:
                 comment(binary_addr, apple2_language_card_action(addr))
-            elif addr in apple2_switch_actions:
-                comment(binary_addr, apple2_switch_actions[addr])
-            elif iie and opcode in _ABSOLUTE_WRITES and addr in apple2e_write_switches:
-                apple_name, descriptive_name, text = apple2e_write_switches[addr]
+            elif opcode in writes and addr in write_switches:
+                apple_name, descriptive_name, text = write_switches[addr]
                 name(binary_addr, addr, apple_name, descriptive_name)
                 comment(binary_addr, text)
-            elif opcode in _ABSOLUTE_READS and addr in inputs:
+            elif addr in actions:
+                comment(binary_addr, actions[addr])
+            elif opcode in reads and addr in inputs:
                 if addr == 0xc000 and branches_back(run, k, _BPL):
                     text = "Wait for a key"
-                elif iie and addr == 0xc019 and branches_back(run, k, _BMI):
+                elif model in ("iie", "iie-enhanced") and addr == 0xc019 and branches_back(run, k, _BMI):
                     text = "Wait for the vertical blank"
-                elif iie and addr == 0xc019 and branches_back(run, k, _BPL):
+                elif model in ("iie", "iie-enhanced") and addr == 0xc019 and branches_back(run, k, _BPL):
                     text = "Wait for the vertical blank to end"
+                elif model == "iic" and addr == 0xc019 and branches_back(run, k, _BPL):
+                    text = "Wait for the vertical blank interrupt"
                 else:
                     text = "Test " + inputs[addr]
                 comment(binary_addr, text)
@@ -824,22 +879,29 @@ def _os_free(addr):
     return not _loaded(addr)
 
 def apple2(model="ii+", names="apple"):
-    """Set up for a program for the Apple II+ or IIe (see the module
-    docstring): the Monitor's and Applesoft's routines, with hooks to
+    """Set up for a program for the Apple II+, IIe, enhanced IIe or IIc (see
+    the module docstring): the Monitor's and Applesoft's routines, with hooks to
     comment their calls, ProDOS's MLI calls and DOS 3.3's entry points,
     the comments on what's printed, the print loops, the zero page and other
     workspace, ProDOS's and DOS's memory, the vectors and the code that sets
     them, the soft switches, the memory regions, and high ASCII as the
     session's text encoding.
 
-    'model' is "ii+" (the default) or "iie" (the unenhanced IIe, which adds
-    its status switches and its 80-column firmware's AUXMOVE and XFER).
+    'model' is "ii+" (the default); "iie" (the unenhanced IIe, which adds
+    its status switches, its memory switches and its 80-column firmware's
+    AUXMOVE and XFER); "iie-enhanced" (the same, with a 65C02, and MouseText
+    in its alternate character set); or "iic" (the IIc, also with a 65C02,
+    whose own switches replace those of the IIe's it lacks or differs in:
+    the mouse's and the vertical blank's interrupts, IOUDIS, double hi-res,
+    the 40/80-column switch and the serial ports; see switch_tables()).
     'names' is "apple" for Apple's names (the default), or "descriptive".
 
-    Call it after load(..., "6502") (or "6510"). It stops with an error if
-    the CPU isn't a 6502 (the II+ and the unenhanced IIe have an NMOS
-    6502), if the arguments are wrong, or if the session's machine has
-    already been chosen. After this, config.set_upper_case_os_calls() can't
+    Call it after load(..., "6502") (or "6510" for the II+ and IIe, or
+    "65C02" for the enhanced IIe and IIc, which run 6502 programs too). It
+    stops with an error if the CPU isn't one the model has (the II+ and the
+    unenhanced IIe have an NMOS 6502; the enhanced IIe and the IIc a 65C02,
+    which doesn't run the 6502's undocumented opcodes), if the arguments
+    are wrong, or if the session's machine has already been chosen. After this, config.set_upper_case_os_calls() can't
     be changed (it stops with an error), since the names have been made."""
     if model not in MODELS:
         utils.die("apple.apple2(): model must be one of {0}, not {1!r}".format(", ".join(repr(m) for m in MODELS), model))
@@ -848,8 +910,10 @@ def apple2(model="ii+", names="apple"):
     cpu = session.current().cpu
     if not isinstance(cpu, cpu6502.Cpu6502):
         utils.die("apple.apple2(): call load(..., \"6502\") first")
-    if config.get_cmos():
-        utils.die("apple.apple2(): the Apple II+ and IIe have a 6502, not a 65C02 (the enhanced IIe and the IIc aren't supported yet)")
+    if config.get_cmos() and model not in CMOS_MODELS:
+        utils.die("apple.apple2(): the Apple II+ and IIe have a 6502, not a 65C02 (model=\"iie-enhanced\" and model=\"iic\" have a 65C02)")
+    if model in CMOS_MODELS and isinstance(cpu, cpu6510.Cpu6510):
+        utils.die("apple.apple2(): the enhanced IIe and the IIc have a 65C02, which doesn't run the 6502's undocumented opcodes (use load(..., \"6502\") or load(..., \"65C02\"))")
     extras = session.current().extras
     if any(extras.get(key) for key in ("apple.model", "acorn.atom", "acorn.snippets_registered", "commodore.machine", "spectrum.machine")):
         utils.die("apple.apple2(): this session's machine has already been chosen")
@@ -865,7 +929,7 @@ def apple2(model="ii+", names="apple"):
     # the ROM
     for entry_ in apple2_monitor_routines + apple2_applesoft_routines:
         _routine(*entry_)
-    if model == "iie":
+    if model in IIE_FAMILY:
         for entry_ in apple2e_firmware_routines:
             _routine(*entry_)
     for addr, apple_name, descriptive_name in apple2_rom_locations:
@@ -891,10 +955,7 @@ def apple2(model="ii+", names="apple"):
     # The soft switches, which are always defined as 'name = value', never
     # inline
     io_range(0xc000, 0xc100)
-    switches = dict(apple2_soft_switches)
-    switches.update(apple2_language_card)
-    if model == "iie":
-        switches.update(apple2e_soft_switches)
+    switches, _, _, _ = switch_tables(model)
     for addr, (apple_name, descriptive_name) in switches.items():
         optional_label(addr, _name(apple_name, descriptive_name), definable_inline=False)
 

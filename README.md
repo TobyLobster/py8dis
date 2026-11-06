@@ -227,7 +227,7 @@ Call one of these after `load()`, and py8dis names the machine's operating syste
 | ------- | ------ | ------- |
 | BBC Micro, B+, Master, Electron | `acorn.bbc()`, `acorn.b_plus()`, `acorn.master()`, `acorn.electron()` | [machines/acorn.md](docs/machines/acorn.md) |
 | Acorn Atom | `acorn.atom()` | [machines/acorn.md](docs/machines/acorn.md#the-acorn-atom) |
-| Apple II+, IIe | `apple.apple2()` | [machines/apple2.md](docs/machines/apple2.md) |
+| Apple II+, IIe, enhanced IIe, IIc | `apple.apple2()` | [machines/apple2.md](docs/machines/apple2.md) |
 | Commodore 64, VIC-20, C128, Plus/4, PET, 1541 disk drive | `commodore.c64()`, `commodore.vic20()`, `commodore.c128()`, `commodore.plus4()`, `commodore.pet()`, `commodore.drive1541()` | [machines/commodore.md](docs/machines/commodore.md) |
 | ZX Spectrum 48K | `spectrum.spectrum48()` | [machines/spectrum.md](docs/machines/spectrum.md) |
 | CP/M | `cpm.cpm()` | [machines/cpm.md](docs/machines/cpm.md) |

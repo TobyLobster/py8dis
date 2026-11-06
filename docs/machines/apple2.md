@@ -1,6 +1,6 @@
 # Apple II
 
-For a program for the Apple II+ or IIe, use `apple.apple2()` after loading it:
+For a program for the Apple II+, IIe, enhanced IIe or IIc, use `apple.apple2()` after loading it:
 
 ```python
 from commands import *
@@ -16,14 +16,20 @@ Apple II files are loaded with [`load_apple_file()`](../commands.md#load_apple_f
 
 `apple.apple2(model="ii+", names="apple")` takes:
 
-- `model`: `"ii+"` (the default), or `"iie"` for the unenhanced IIe, which adds the IIe's status switches and its 80-column firmware's `AUXMOVE` and `XFER`. Both have a 6502 (or `"6510"` for a program with the undocumented opcodes). The enhanced IIe and the IIc, which have a 65C02, aren't supported yet.
+- `model`:
+  - `"ii+"` (the default);
+  - `"iie"` for the unenhanced IIe, which adds the IIe's status switches, its memory switches and its 80-column firmware's `AUXMOVE` and `XFER`;
+  - `"iie-enhanced"` for the enhanced IIe: the same, with a 65C02, and MouseText in its alternate character set;
+  - `"iic"` for the IIc, also with a 65C02, whose own switches replace those of the IIe's it lacks or differs in (see [The IIc](#the-iic)).
+
+  The II+ and the unenhanced IIe have a 6502: load the program with `"6502"` (or `"6510"` for one with the undocumented opcodes). The enhanced IIe and the IIc have a 65C02, which runs 6502 programs too: load it with `"65C02"` or `"6502"` (but not `"6510"`, since the 65C02 doesn't run the undocumented opcodes).
 - `names`: `"apple"` (the default) for Apple's names, as in its reference manuals, in capitals: `COUT`, `HOME`, `CH`, `CSWL`, `KBD`, `TXTCLR`. `config.set_upper_case_os_calls(False)`, before `apple.apple2()`, gives them in lower case. `"descriptive"` gives py8dis's own names instead: `print_char`, `clear_screen`, `cursor_column`, `output_hook`, `keyboard`, `show_graphics`.
 
 ## What it does
 
 **Makes high ASCII the text encoding.** The Apple II's ROM, keyboard and screen use ASCII with bit 7 set, so `apple.apple2()` makes it the session's text encoding (see [text-encodings.md](../text-encodings.md)): strings like `$C8 $C5 $CC $CC $CF` are text ("HELLO"), and so is the hex dump.
 
-**Names the Monitor's routines**, if the program uses them: `PLOT`, `HLINE`, `VLINE`, `CLRSCR`, `SETCOL`, `SCRN`, `PRNTAX`, `PRBL2`, `PREAD`, `INIT`, `SETTXT`, `SETGR`, `SETWND`, `TABV`, `SETPWRC`, `BASCALC`, `BELL1`, `VIDOUT`, `VTAB`, `VTABZ`, `CLREOP`, `HOME`, `CR`, `LF`, `SCROLL`, `CLREOL`, `WAIT`, `NXTA1`, `RDKEY`, `KEYIN`, `RDCHAR`, `GETLN`, `GETLN1`, `CROUT`, `PRBYTE`, `PRHEX`, `COUT`, `COUT1`, `MOVE`, `SETINV`, `SETNORM`, `SETKBD`, `INPORT`, `SETVID`, `OUTPORT`, `BELL`, `SAVE`, `RESTORE`, `IORTS`, `MON`, `MONZ` and others (see `apple2_monitor_routines` in `py8dis/appletables.py`). On the IIe, `AUXMOVE` ($C311) and `XFER` ($C314) too.
+**Names the Monitor's routines**, if the program uses them: `PLOT`, `HLINE`, `VLINE`, `CLRSCR`, `SETCOL`, `SCRN`, `PRNTAX`, `PRBL2`, `PREAD`, `INIT`, `SETTXT`, `SETGR`, `SETWND`, `TABV`, `SETPWRC`, `BASCALC`, `BELL1`, `VIDOUT`, `VTAB`, `VTABZ`, `CLREOP`, `HOME`, `CR`, `LF`, `SCROLL`, `CLREOL`, `WAIT`, `NXTA1`, `RDKEY`, `KEYIN`, `RDCHAR`, `GETLN`, `GETLN1`, `CROUT`, `PRBYTE`, `PRHEX`, `COUT`, `COUT1`, `MOVE`, `SETINV`, `SETNORM`, `SETKBD`, `INPORT`, `SETVID`, `OUTPORT`, `BELL`, `SAVE`, `RESTORE`, `IORTS`, `MON`, `MONZ` and others (see `apple2_monitor_routines` in `py8dis/appletables.py`). On the IIe, enhanced IIe and IIc, `AUXMOVE` ($C311) and `XFER` ($C314) too. The ROM's ID bytes, which programs read to tell the models apart, are `VERSION` ($FBB3), `ZIDBYTE` ($FBC0) and `iic_rom_version` ($FBBF, the IIc's ROM version).
 
 **Comments the calls** with what each routine does, e.g. `jsr HOME ; Clear the window and put the cursor at its top left`, where the registers it takes are set (`; A=row (0-47)`) and where what it returns is used (`; X=line's length` after `GETLN`). When a register's value is known, the comment says more:
 
@@ -60,7 +66,9 @@ A character printed with `COUT` is written as one where it's loaded: `lda #'A' |
 
 - An access to a switch that acts whether it's read or written: `bit TXTCLR ; Show graphics`, `lda SPKR ; Click the speaker`, `sta KBDSTRB ; Clear the keyboard strobe`, `Show page 2`, `Show hi-res graphics`, `Turn annunciator 0 on`, `Start the paddles' timers`, `Release the expansion ROM ($C800-$CFFF)`.
 - The language card: `lda LCBANK2 ; Language card: read and write RAM bank 2 (two reads in a row enable writing)`, `Language card: read ROM, no writing` and so on.
-- A read of an input: `Test button 0 (bit 7 set if it's pressed)` (on the IIe, `Test the Open Apple key`), `Test paddle 0's timer (bit 7 set until it runs out)`, and on the IIe `Test whether 80 columns are shown (bit 7)` etc. A loop reading `KBD` until bit 7 is set is `Wait for a key`, and on the IIe, one reading `RDVBLBAR` is `Wait for the vertical blank` or `Wait for the vertical blank to end`.
+- A read of an input: `Test button 0 (bit 7 set if it's pressed)` (on the IIe, `Test the Open Apple key`), `Test paddle 0's timer (bit 7 set until it runs out)`, and on the IIe `Test whether 80 columns are shown (bit 7)` etc. A loop reading `KBD` until bit 7 is set is `Wait for a key`, and on the IIe and enhanced IIe, one reading `RDVBLBAR` is `Wait for the vertical blank` or `Wait for the vertical blank to end`.
+
+For a 65C02, its `STZ`, `TSB` and `TRB` count as accesses too (e.g. `stz SET80VID ; Show 80 columns`).
 
 **Names the IIe's switches at $C000-$C00F where they're written.** Reading these addresses reads the keyboard, but writing them sets the IIe's memory and display switches, so each write gets the switch's name, with a comment, while reads keep `KBD`:
 
@@ -70,7 +78,7 @@ A character printed with `COUT` is written as one where it's loaded: `lda #'A' |
     sta WRCARDRAM           ; Write auxiliary memory ($0200-$BFFF)
 ```
 
-The names are `CLR80STORE`, `SET80STORE`, `RDMAINRAM`, `RDCARDRAM`, `WRMAINRAM`, `WRCARDRAM`, `SETSLOTCXROM`, `SETINTCXROM`, `SETSTDZP`, `SETALTZP`, `SETINTC3ROM`, `SETSLOTC3ROM`, `CLR80VID`, `SET80VID`, `CLRALTCHAR` and `SETALTCHAR` (with descriptive names such as `store_80_on`, `write_aux_ram` and `show_80_columns`). (The newer manuals call the first `80STOREOFF` and so on, which can't be a label, since it starts with a digit.)
+The names are `CLR80STORE`, `SET80STORE`, `RDMAINRAM`, `RDCARDRAM`, `WRMAINRAM`, `WRCARDRAM`, `SETSLOTCXROM`, `SETINTCXROM`, `SETSTDZP`, `SETALTZP`, `SETINTC3ROM`, `SETSLOTC3ROM`, `CLR80VID`, `SET80VID`, `CLRALTCHAR` and `SETALTCHAR` (with descriptive names such as `store_80_on`, `write_aux_ram` and `show_80_columns`). (The newer manuals call the first `80STOREOFF` and so on, which can't be a label, since it starts with a digit.) `SETALTCHAR`'s comment says what the alternate character set has: inverse lower case instead of flashing characters, and on the enhanced IIe and the IIc, MouseText too.
 
 **Names the Disk II's switches where they're indexed by the slot.** A card's I/O is at $C080 plus the slot number times 16, so code reaches the Disk II in any slot with the slot times 16 in X or Y (e.g. `ldx #$60` for slot 6). An access to $C080-$C08F indexed by X or Y is taken to be the Disk II's, and named, with a comment, as in DOS 3.3's RWTS: `PHASEOFF`, `PHASEON` (and `PHASE1OFF` to `PHASE3ON`), `MOTOROFF`, `MOTORON`, `DRV0EN`, `DRV1EN`, `Q6L`, `Q6H`, `Q7L` and `Q7H`:
 
@@ -184,6 +192,31 @@ DOS commands that a program prints with COUT, after a Ctrl-D, are commented as d
 **Groups the memory locations** in the output by region: zero page, the stack, the input buffer, page 3, the DOS vectors, the vectors, the text and lo-res pages, the hi-res pages, ProDOS's global page, the soft switches, the language card, the slots' I/O and ROMs, the expansion ROM, and the Applesoft and Monitor ROMs.
 
 The tables are in `py8dis/appletables.py`, and a control file can use them as e.g. `apple.apple2_monitor_routines`. Apple's names were checked against the symbol files of Andy McFadden's [6502bench SourceGen](https://github.com/fadden/6502bench).
+
+## The IIc
+
+The IIc has the IIe's memory and display switches, but no slots, cassette or annunciators, and an IOU that handles the mouse and the vertical blank's interrupt. So with `model="iic"`, its own switches replace those of the IIe's it lacks or differs in:
+
+| Address | Name | Comment |
+| ------- | ---- | ------- |
+| $C015, $C017 | `MOUXINT`, `MOUYINT` | `Test for a mouse X interrupt (bit 7 set if there was one)` |
+| $C019 | `VBLINT` | `Test for a vertical blank interrupt (bit 7 set if there was one)`, or in a loop, `Wait for the vertical blank interrupt` |
+| $C048 | `MOUCLR` | `Clear the mouse's interrupts` |
+| $C058, $C059 | `MOUDSBL`, `MOUENBL` | `Disable the mouse's interrupts (with IOUDIS off)` |
+| $C05A, $C05B | `DISVBL`, `ENVBL` | `Enable the vertical blank interrupt (with IOUDIS off)` |
+| $C05E, $C05F | `DHIRESON`, `DHIRESOFF` | `Turn double hi-res on (with IOUDIS on)` |
+| $C060 | `column_switch` | `Test the 40/80-column switch (bit 7)` |
+| $C063 | `MOUBUT` | `Test the mouse's button (bit 7)` |
+| $C066, $C067 | `MOUX1`, `MOUY1` | `Test the mouse's X1 signal (bit 7, its direction)` |
+| $C070 | `PTRIG` | `Start the paddles' timers, and clear the vertical blank interrupt` |
+| $C07E, $C07F (read) | `RDIOUDIS`, `RDDHIRES` | `Test whether IOUDIS is on (bit 7)` |
+| $C07E, $C07F (written) | `IOUDISON`, `IOUDISOFF` | `IOUDIS on: disable the IOU's switches ($C058-$C05D), enable double hi-res's` |
+| $C078, $C079 (written) | `IOUDSBL`, `IOUENBL` | the same as $C07E and $C07F (the addresses the IIc's firmware uses) |
+| $C098-$C09B, $C0A8-$C0AB | `serial_1_data`, `serial_1_status`, `serial_1_command`, `serial_1_control`, and `serial_2_...` | (the serial ports' 6551s) |
+
+The names are from the IIc's firmware source as Apple published it (`MOUXINT`, `VBLINT`, `MOUBUT`, `IOUDSBL`...) and Apple's IIc Technical Notes (`ENVBL`, `RDIOUDIS`); `DISVBL`, `DHIRESON`, `IOUDISON` and `RDDHIRES` are the names in common use (A2osX, cc65's `apple2.inc`, SourceGen) for switches those don't name, and the others are descriptive in both styles. IOUDIS's switches act when written, so, like the IIe's at $C000-$C00F, they're named where they're written. The IIe's switches the IIc doesn't have (`TAPEOUT`, annunciator 2, whose addresses are the IOU's mouse edge switches, `SETSLOTCXROM`, `SETINTCXROM`, `SETINTC3ROM` and `SETSLOTC3ROM`) aren't named.
+
+The enhanced IIe has the IIe's switches.
 
 ## Applesoft programs
 
