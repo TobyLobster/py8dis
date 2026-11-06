@@ -180,6 +180,8 @@ TESTS = [
     ("apple2_test",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.apple2(): the Monitor's routines and their calls' comments, printing with COUT, a DOS command, the zero page, vectors and soft switches"),
     ("apple2e_names_test",       ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the same program with apple.apple2(model=\"iie\", names=\"descriptive\")"),
     ("applesoft_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.applesoft_program(): an Applesoft program's lines listed, and the machine code it CALLs, which uses Applesoft's routines and sets the USR and & vectors"),
+    ("prodos_test",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "ProDOS 8's MLI calls: the call numbers and parameter lists after the JSRs, with pathnames, buffers and a handler, and the global page"),
+    ("penetrator",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Penetrator, a real Apple II game (public domain): an AppleSingle file with the soft switches, the Monitor and ProDOS MLI calls"),
     ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loading parts of a file with load(..., offset=..., length=...)"),
     ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
     ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "PETSCII and screen code strings, with config.set_text_encoding()"),

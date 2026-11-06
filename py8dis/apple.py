@@ -30,6 +30,12 @@ file calls apple2() after load() (or load_apple_file() etc.). It:
   marked, 'Print 4660' for LINPRT, 'Plot a hi-res point at (140, 96)' for
   HPLOT0), and its zero page, and traces the handlers code sets the USR
   function's and the & command's JMPs to;
+- follows ProDOS 8's MLI calls (a JSR to $BF00, then the call number and
+  the address of its parameter list): tracing carries on after them, the
+  number is named (e.g. 'MLI_OPEN'), the call commented ('ProDOS: open a
+  file'), and the parameter list labelled and marked, with its pathname,
+  buffers and handler (mli_hook()); and names ProDOS's global page
+  ($BF00-$BFFF: MLI, DEVNUM, DATE, MACHID etc.);
 - makes the Apple II's high ASCII (ASCII with bit 7 set) the session's text
   encoding (see textencoding.py).
 
@@ -60,6 +66,7 @@ import session
 import textencoding
 import utils
 from align import Align
+from format import Format
 from memorymanager import BinaryAddr, BinaryLocation, RuntimeAddr
 import msbasic
 from snippets6502 import register_snippet
@@ -418,6 +425,131 @@ def post_trace_setting_vector(p):
 
 
 # ************************************************************************************************
+# ProDOS 8's MLI calls
+
+def _loaded_and_unclassified(runtime_addr, length):
+    """Whether there's data loaded for the length bytes at the runtime
+    address, none of it classified yet."""
+    for i in range(length):
+        if runtime_addr + i > 0xffff:
+            return False
+        binary_addr, _ = movemanager.r2b(RuntimeAddr(runtime_addr + i))
+        if (binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr)
+                or classification.get_classification(binary_addr) is not None):
+            return False
+    return True
+
+def _loaded(runtime_addr):
+    """Whether data is loaded at the runtime address."""
+    binary_addr, _ = movemanager.r2b(RuntimeAddr(runtime_addr))
+    return binary_addr is not None and memorymanager.is_data_loaded_at_binary_addr(binary_addr)
+
+def _u8(runtime_addr):
+    """The byte at a runtime address (which must be loaded)."""
+    binary_addr, _ = movemanager.r2b(RuntimeAddr(runtime_addr))
+    return memory_binary[binary_addr]
+
+def _data_name(runtime_addr, name):
+    """The name of the address: its first explicit name, if it has one, or
+    else the given name, which it's labelled with (then name_2 etc. for the
+    next address given the same name, counted for the session)."""
+    existing = vector_handler_name(runtime_addr)
+    if existing is not None:
+        return existing
+    counts = session.current().extras.setdefault("apple.data_names", {})
+    counts[name] = counts.get(name, 0) + 1
+    if counts[name] > 1:
+        name = "{0}_{1}".format(name, counts[name])
+    label(runtime_addr, name)
+    return name
+
+def mli_call_name(apple_name):
+    """The name of an MLI call's number, e.g. 'MLI_OPEN' (Apple's names, in
+    capitals unless config.set_upper_case_os_calls(False)) or 'mli_open'."""
+    return official_name("MLI_" + apple_name) if _names() == "apple" else "mli_" + apple_name.lower()
+
+def _mli_parameters(params, fields, call_name):
+    """Mark the parameter list of an MLI call at params (see
+    prodos_mli_calls): the parameter count, then each parameter, commented
+    with what it is. The address of a pathname, buffer or handler is
+    written as its label (e.g. 'pathname', 'data_buffer', 'io_buffer' or
+    'interrupt_handler', unless it has a name), a reference number is
+    labelled from the call (e.g. 'open_ref', which code often copies to
+    the next calls' lists), a pathname is marked as a
+    length-prefixed string (in ASCII, or high ASCII if its first character
+    has bit 7 set), and a handler is traced. Only if the list is loaded and
+    nothing in it is classified yet. If its count isn't the call's, only
+    the count is marked."""
+    sizes = {"byte": 1, "word": 2, "3": 3, "pathname": 2, "buffer": 2, "io_buffer": 2, "code": 2}
+    if not _loaded_and_unclassified(params, 1 + sum(sizes[kind] for _, kind in fields)):
+        return
+    byte(params)
+    if _u8(params) != len(fields):
+        auto_comment(params, "Parameter count (but the call's is {0})".format(len(fields)), align=Align.INLINE)
+        return
+    auto_comment(params, "Parameter count", align=Align.INLINE)
+    addr = params + 1
+    for description, kind in fields:
+        if kind == "byte":
+            byte(addr)
+            if description.startswith("Reference number"):
+                _data_name(addr, call_name + "_ref")
+        elif kind == "3":
+            byte(addr, 3)
+        else:
+            word(addr)
+            pointer = _u8(addr) + 256 * _u8(addr + 1)
+            if kind != "word" and pointer != 0:
+                if kind == "pathname":
+                    name = _data_name(pointer, "pathname")
+                    if _loaded_and_unclassified(pointer, 1) and _loaded_and_unclassified(pointer, 1 + _u8(pointer)):
+                        first = _u8(pointer + 1) if _u8(pointer) > 0 else 0
+                        stringn(pointer, encoding="apple" if first >= 0x80 else "ascii")
+                elif kind == "code":
+                    if _loaded(pointer):
+                        entry(pointer)
+                    name = _data_name(pointer, "interrupt_handler")
+                else:
+                    name = _data_name(pointer, "data_buffer" if kind == "buffer" else "io_buffer")
+                expr(addr, name)
+        auto_comment(addr, description, align=Align.INLINE)
+        addr += sizes[kind]
+
+def mli_hook(target, caller):
+    """The tracing hook (see Cpu.subroutine_hooks) for a call to ProDOS's
+    MLI ($BF00): the JSR is followed by the call number and the address of
+    its parameter list, so tracing carries on after them. The call number
+    is written as its name (e.g. 'MLI_OPEN'), the address as the parameter
+    list's label (e.g. 'open_params', unless it has a name), and the
+    parameter list is marked (see _mli_parameters()); the call is
+    commented, e.g. 'ProDOS: open a file'. If the bytes after the JSR
+    aren't loaded, or are classified already, they're left alone. Tracing
+    stops after QUIT, which doesn't return."""
+    number_addr = caller + 3
+    if not _loaded_and_unclassified(number_addr, 3):
+        return caller + 3
+    number = _u8(number_addr)
+    params = _u8(number_addr + 1) + 256 * _u8(number_addr + 2)
+    byte(number_addr)
+    word(number_addr + 1)
+    call = prodos_mli_calls.get(number)
+    if call is None:
+        auto_comment(caller, "ProDOS: call {0}".format(_hex2(number)), align=Align.INLINE)
+        return caller + 6
+    apple_name, title, fields = call
+    name = mli_call_name(apple_name)
+    constant(number, name, format=Format.HEX)
+    expr(number_addr, name)
+    auto_comment(caller, "ProDOS: " + title, align=Align.INLINE)
+    # (GET_TIME has no parameters, so its address is usually 0)
+    if fields and params != 0:
+        expr(number_addr + 1, _data_name(params, apple_name.lower() + "_params"))
+        _mli_parameters(params, fields, apple_name.lower())
+    # (QUIT doesn't return)
+    return None if number == PRODOS_MLI_QUIT else caller + 6
+
+
+# ************************************************************************************************
 # Applesoft programs
 
 def _applesoft_line_text(data):
@@ -552,7 +684,7 @@ def _workspace():
     'CSWH')."""
     high_bytes = dict(apple2_workspace_high_bytes)
     high_bytes.update(apple2_applesoft_high_bytes)
-    for addr, apple_name, descriptive_name, length in apple2_workspace + apple2_page3_vectors + apple2_applesoft_workspace:
+    for addr, apple_name, descriptive_name, length in apple2_workspace + apple2_page3_vectors + apple2_applesoft_workspace + prodos_global_page:
         name = _name(apple_name, descriptive_name)
         optional_label(addr, name)
         for i in range(1, length):
@@ -609,6 +741,11 @@ def apple2(model="ii+", names="apple"):
         optional_label(addr, _name(apple_name, descriptive_name))
 
     _workspace()
+
+    # ProDOS's MLI: the call number and the parameter list's address after
+    # the JSR (a tracing hook, set directly, since ProDOS isn't usually
+    # loaded: see Cpu.subroutine_hooks)
+    cpu.subroutine_hooks[RuntimeAddr(PRODOS_MLI)] = mli_hook
 
     # The soft switches, which are always defined as 'name = value', never
     # inline

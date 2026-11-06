@@ -19,6 +19,7 @@
   {"start": 2048, "end": 3072, "name": "Text and lo-res page 2"},
   {"start": 8192, "end": 16384, "name": "Hi-res page 1"},
   {"start": 16384, "end": 24576, "name": "Hi-res page 2"},
+  {"start": 48896, "end": 49152, "name": "ProDOS global page"},
   {"start": 49152, "end": 49280, "name": "Soft switches"},
   {"start": 49280, "end": 49296, "name": "Language card"},
   {"start": 49296, "end": 49408, "name": "Slot I/O"},

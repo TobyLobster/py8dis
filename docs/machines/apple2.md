@@ -96,7 +96,37 @@ These names are only for those instructions (the same addresses without an index
 
 Applesoft's zero page is named too, where the Monitor's names don't cover it: `LINNUM`, `TXTTAB`, `VARTAB`, `ARYTAB`, `STREND`, `FRETOP`, `MEMSIZ`, `CURLIN`, `DATPTR`, `VARPNT`, `FAC`, `ARG`, `TXTPTR`, `ERRFLG`, `ERRLIN`, `ERRNUM`, `HPAG`, `SCALE`, `SHAPEL`/`SHAPEH`, `ROT` and others, and `usr_jump` ($0A, the USR function's JMP). Code that sets the USR function's address, or the `&` command's, has its handler traced and named (`usr_handler`, `ampersand_handler`).
 
-**Groups the memory locations** in the output by region: zero page, the stack, the input buffer, page 3, the DOS vectors, the vectors, the text and lo-res pages, the hi-res pages, the soft switches, the language card, the slots' I/O and ROMs, the expansion ROM, and the Applesoft and Monitor ROMs.
+**Follows ProDOS 8's MLI calls.** A program calls ProDOS with `jsr $BF00` (`MLI`), followed by the call's number and the address of its parameter list, and ProDOS returns after them. So py8dis carries on tracing after them (except after QUIT, which doesn't return), names the number (`MLI_OPEN` etc., or `mli_open` with descriptive names), comments the call, and labels and marks the parameter list:
+
+```
+    jsr MLI                 ; ProDOS: open a file
+    !byte MLI_OPEN
+    !word open_params
+    ...
+open_params
+    !byte 3                 ; Parameter count
+    !word pathname          ; Pathname
+    !word io_buffer         ; I/O buffer (1024 bytes)
+open_ref
+    !byte 0                 ; Reference number (returned)
+...
+pathname
+    !byte data_buffer - l2084
+l2084
+    !text "PICTURE"
+data_buffer
+```
+
+- **Parameter lists:** each is labelled after its call (`open_params`, `read_params`…, then `_2` etc.), unless it has a name, and marked as its call's parameters, each with a comment. If its count isn't the call's, only the count is marked.
+- **Pointers:** a pathname's address is labelled `pathname` and marked as a length-prefixed string (in ASCII, or high ASCII if its first character has bit 7 set), a buffer's `data_buffer` or `io_buffer`, and an interrupt handler's `interrupt_handler` (traced).
+- **Reference numbers** are labelled after the call (`open_ref`, `read_ref`…), since code copies the one OPEN returns into the lists of the calls that follow.
+- **The calls:** all of ProDOS 8's: CREATE, DESTROY, RENAME, SET_FILE_INFO, GET_FILE_INFO, ON_LINE, SET_PREFIX, GET_PREFIX, OPEN, NEWLINE, READ, WRITE, CLOSE, FLUSH, SET_MARK, GET_MARK, SET_EOF, GET_EOF, SET_BUF, GET_BUF, ALLOC_INTERRUPT, DEALLOC_INTERRUPT, QUIT, READ_BLOCK, WRITE_BLOCK and GET_TIME (see `prodos_mli_calls` in `appletables.py`).
+
+ProDOS's error codes are in `apple.prodos_errors`, for a control file to use (e.g. with `constant()` and `expr()`); they aren't found automatically.
+
+**Names ProDOS's global page** ($BF00-$BFFF): `MLI`, `JSPARE`, `DATETIME`, `SYSERR`, `SYSDEATH`, `SERR`, `DEVADR`, `DEVNUM`, `DEVCNT`, `DEVLST`, `BITMAP`, `INTRUPT1` to `INTRUPT4`, the interrupt registers, `DATE`, `TIME`, `LEVEL`, `BUBIT`, `MACHID`, `SLTBYT`, `PFIXPTR`, `MLIACTV`, `CMDADR`, `SAVEX`, `SAVEY`, `IBAKVER`, `IVERSION`, `KBAKVER` and `KVERSION` (with descriptive names starting `prodos_`), under the heading `; ProDOS global page`.
+
+**Groups the memory locations** in the output by region: zero page, the stack, the input buffer, page 3, the DOS vectors, the vectors, the text and lo-res pages, the hi-res pages, ProDOS's global page, the soft switches, the language card, the slots' I/O and ROMs, the expansion ROM, and the Applesoft and Monitor ROMs.
 
 The tables are in `py8dis/appletables.py`, and a control file can use them as e.g. `apple.apple2_monitor_routines`. Apple's names were checked against the symbol files of Andy McFadden's [6502bench SourceGen](https://github.com/fadden/6502bench).
 

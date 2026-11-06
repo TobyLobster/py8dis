@@ -577,6 +577,102 @@ APPLESOFT_TOKEN_CALL = 0x8c
 # Where Applesoft programs start, by default
 APPLESOFT_START = 0x0801
 
+# ProDOS 8's MLI calls (a JSR to $BF00, then the call number and the address
+# of its parameter list): {call number: (Apple's name, title, parameters)}.
+# The parameters, after the count, are (name, kind): "byte", "word", "3"
+# (three bytes), or the address of a pathname (a length-prefixed string),
+# a buffer or code: "pathname", "buffer", "io_buffer" or "code". (From the
+# ProDOS 8 Technical Reference Manual.)
+prodos_mli_calls = {
+    0x40: ("ALLOC_INTERRUPT",   "install an interrupt handler",      [("Interrupt number (returned)", "byte"), ("Handler's address", "code")]),
+    0x41: ("DEALLOC_INTERRUPT", "remove an interrupt handler",       [("Interrupt number", "byte")]),
+    0x65: ("QUIT",              "quit to the next program",          [("Quit type", "byte"), ("Reserved", "word"), ("Reserved", "byte"), ("Reserved", "word")]),
+    0x80: ("READ_BLOCK",        "read a block",                      [("Unit number", "byte"), ("Data buffer", "buffer"), ("Block number", "word")]),
+    0x81: ("WRITE_BLOCK",       "write a block",                     [("Unit number", "byte"), ("Data buffer", "buffer"), ("Block number", "word")]),
+    0x82: ("GET_TIME",          "read the clock into DATE and TIME", []),
+    0xc0: ("CREATE",            "create a file",                     [("Pathname", "pathname"), ("Access", "byte"), ("File type", "byte"), ("Aux type", "word"), ("Storage type", "byte"), ("Creation date", "word"), ("Creation time", "word")]),
+    0xc1: ("DESTROY",           "delete a file",                     [("Pathname", "pathname")]),
+    0xc2: ("RENAME",            "rename a file",                     [("Pathname", "pathname"), ("New pathname", "pathname")]),
+    0xc3: ("SET_FILE_INFO",     "set a file's information",          [("Pathname", "pathname"), ("Access", "byte"), ("File type", "byte"), ("Aux type", "word"), ("Not used", "3"), ("Modification date", "word"), ("Modification time", "word")]),
+    0xc4: ("GET_FILE_INFO",     "read a file's information",         [("Pathname", "pathname"), ("Access (returned)", "byte"), ("File type (returned)", "byte"), ("Aux type (returned)", "word"), ("Storage type (returned)", "byte"), ("Blocks used (returned)", "word"), ("Modification date (returned)", "word"), ("Modification time (returned)", "word"), ("Creation date (returned)", "word"), ("Creation time (returned)", "word")]),
+    0xc5: ("ON_LINE",           "read the volumes' names",           [("Unit number", "byte"), ("Data buffer", "buffer")]),
+    0xc6: ("SET_PREFIX",        "set the prefix",                    [("Pathname", "pathname")]),
+    0xc7: ("GET_PREFIX",        "read the prefix",                   [("Data buffer", "buffer")]),
+    0xc8: ("OPEN",              "open a file",                       [("Pathname", "pathname"), ("I/O buffer (1024 bytes)", "io_buffer"), ("Reference number (returned)", "byte")]),
+    0xc9: ("NEWLINE",           "set a file's newline mode",         [("Reference number", "byte"), ("Enable mask", "byte"), ("Newline character", "byte")]),
+    0xca: ("READ",              "read from a file",                  [("Reference number", "byte"), ("Data buffer", "buffer"), ("Request count", "word"), ("Transfer count (returned)", "word")]),
+    0xcb: ("WRITE",             "write to a file",                   [("Reference number", "byte"), ("Data buffer", "buffer"), ("Request count", "word"), ("Transfer count (returned)", "word")]),
+    0xcc: ("CLOSE",             "close a file",                      [("Reference number", "byte")]),
+    0xcd: ("FLUSH",             "flush a file's buffer",             [("Reference number", "byte")]),
+    0xce: ("SET_MARK",          "set a file's position",             [("Reference number", "byte"), ("Position", "3")]),
+    0xcf: ("GET_MARK",          "read a file's position",            [("Reference number", "byte"), ("Position (returned)", "3")]),
+    0xd0: ("SET_EOF",           "set a file's length",               [("Reference number", "byte"), ("Length", "3")]),
+    0xd1: ("GET_EOF",           "read a file's length",              [("Reference number", "byte"), ("Length (returned)", "3")]),
+    0xd2: ("SET_BUF",           "move a file's I/O buffer",          [("Reference number", "byte"), ("I/O buffer (1024 bytes)", "io_buffer")]),
+    0xd3: ("GET_BUF",           "read where a file's I/O buffer is", [("Reference number", "byte"), ("I/O buffer (returned)", "word")]),
+}
+
+# The address code calls for an MLI call, and the QUIT call's number
+PRODOS_MLI = 0xbf00
+PRODOS_MLI_QUIT = 0x65
+
+# ProDOS 8's global page: (address, Apple's name, descriptive name, length),
+# as apple2_workspace
+prodos_global_page = [
+    (0xbf00, "MLI",      "prodos_mli",            3),
+    (0xbf03, "JSPARE",   "prodos_jspare",         3),
+    (0xbf06, "DATETIME", "prodos_read_clock",     3),
+    (0xbf09, "SYSERR",   "prodos_error_hook",     3),
+    (0xbf0c, "SYSDEATH", "prodos_death_hook",     3),
+    (0xbf0f, "SERR",     "prodos_error",          1),
+    (0xbf10, "DEVADR",   "prodos_drivers",        32),
+    (0xbf30, "DEVNUM",   "prodos_last_device",    1),
+    (0xbf31, "DEVCNT",   "prodos_device_count",   1),
+    (0xbf32, "DEVLST",   "prodos_devices",        14),
+    (0xbf58, "BITMAP",   "prodos_memory_map",     24),
+    (0xbf70, None,       "prodos_file_buffers",   16),
+    (0xbf80, "INTRUPT1", "prodos_interrupt_1",    2),
+    (0xbf82, "INTRUPT2", "prodos_interrupt_2",    2),
+    (0xbf84, "INTRUPT3", "prodos_interrupt_3",    2),
+    (0xbf86, "INTRUPT4", "prodos_interrupt_4",    2),
+    (0xbf88, "INTAREG",  "prodos_interrupt_a",    1),
+    (0xbf89, "INTXREG",  "prodos_interrupt_x",    1),
+    (0xbf8a, "INTYREG",  "prodos_interrupt_y",    1),
+    (0xbf8b, "INTSREG",  "prodos_interrupt_s",    1),
+    (0xbf8c, "INTPREG",  "prodos_interrupt_p",    1),
+    (0xbf8d, "INTBANKID", "prodos_interrupt_bank", 1),
+    (0xbf8e, "INTADDR",  "prodos_interrupt_address", 2),
+    (0xbf90, "DATE",     "prodos_date",           2),
+    (0xbf92, "TIME",     "prodos_time",           2),
+    (0xbf94, "LEVEL",    "prodos_file_level",     1),
+    (0xbf95, "BUBIT",    "prodos_backup_bit",     1),
+    (0xbf98, "MACHID",   "prodos_machine_id",     1),
+    (0xbf99, "SLTBYT",   "prodos_slot_roms",      1),
+    (0xbf9a, "PFIXPTR",  "prodos_prefix_flag",    1),
+    (0xbf9b, "MLIACTV",  "prodos_mli_active",     1),
+    (0xbf9c, "CMDADR",   "prodos_last_call",      2),
+    (0xbf9e, "SAVEX",    "prodos_saved_x",        1),
+    (0xbf9f, "SAVEY",    "prodos_saved_y",        1),
+    (0xbffc, "IBAKVER",  "prodos_interpreter_min_version", 1),
+    (0xbffd, "IVERSION", "prodos_interpreter_version", 1),
+    (0xbffe, "KBAKVER",  "prodos_kernel_min_version", 1),
+    (0xbfff, "KVERSION", "prodos_kernel_version", 1),
+]
+
+# ProDOS 8's error codes, returned in A (with C set) by an MLI call:
+# {code: description}
+prodos_errors = {
+    0x00: "no error", 0x01: "bad call number", 0x04: "bad parameter count", 0x25: "interrupt table full",
+    0x27: "I/O error", 0x28: "no device connected", 0x2b: "disk write protected", 0x2e: "disk switched",
+    0x40: "invalid pathname", 0x42: "too many files open", 0x43: "invalid reference number",
+    0x44: "directory not found", 0x45: "volume not found", 0x46: "file not found", 0x47: "duplicate filename",
+    0x48: "volume full", 0x49: "volume directory full", 0x4a: "incompatible file format",
+    0x4b: "unsupported storage type", 0x4c: "end of file", 0x4d: "position out of range",
+    0x4e: "access error", 0x50: "file is open", 0x51: "directory damaged", 0x52: "not a ProDOS volume",
+    0x53: "invalid parameter", 0x55: "volume control block table full", 0x56: "bad buffer address",
+    0x57: "duplicate volume", 0x5a: "file structure damaged",
+}
+
 # The lo-res colours, for the comments on SETCOL
 apple2_lores_colours = ["black", "magenta", "dark blue", "purple", "dark green", "grey", "medium blue", "light blue",
                         "brown", "orange", "grey", "pink", "green", "yellow", "aquamarine", "white"]
@@ -594,6 +690,7 @@ apple2_memory_regions = [
     (0x0800, 0x0c00, "Text and lo-res page 2"),
     (0x2000, 0x4000, "Hi-res page 1"),
     (0x4000, 0x6000, "Hi-res page 2"),
+    (0xbf00, 0xc000, "ProDOS global page"),
     (0xc000, 0xc080, "Soft switches"),
     (0xc080, 0xc090, "Language card"),
     (0xc090, 0xc100, "Slot I/O"),
