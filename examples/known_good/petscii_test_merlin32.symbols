@@ -1,0 +1,10 @@
+l0400       = $0400
+pydis_start = $c000
+start       = $c000
+loop_cc007  = $c007
+cc012       = $c012
+loop_cc014  = $c014
+lc023       = $c023
+lc04e       = $c04e
+pydis_end   = $c088
+chrout      = $ffd2

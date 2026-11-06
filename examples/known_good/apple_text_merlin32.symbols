@@ -1,0 +1,12 @@
+pydis_start     = $0800
+start           = $0800
+loop_c0802      = $0802
+c080d           = $080d
+loop_c081e      = $081e
+message         = $0835
+dci_message     = $084d
+line            = $0851
+ascii_message   = $0856
+found_by_itself = $0860
+pydis_end       = $0870
+cout            = $fded

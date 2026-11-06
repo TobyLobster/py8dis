@@ -609,11 +609,22 @@ def branch_operand(mnemonic, binary_addr, target):
     """The output for the relative branch at binary_addr to the (wrapped)
     target: the target's label, or, for a branch that wraps round the top
     or bottom of memory, the assembler's way of writing that (see
-    Assembler.wrapped_branch_operand())."""
+    Assembler.wrapped_branch_operand()), or if it has none, data bytes with
+    the branch in a comment."""
     label = disassembly.get_label(target, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
     unwrapped = branch_target(binary_addr)
     if not 0 <= unwrapped < 0x10000:
-        label = config.get_assembler().wrapped_branch_operand(label, unwrapped - movemanager.b2r(binary_addr))
+        operand = config.get_assembler().wrapped_branch_operand(label, unwrapped - movemanager.b2r(binary_addr))
+        if operand is None:
+            # The assembler can't write a branch that wraps, so it's data
+            # bytes, with the branch in a comment
+            instruction = output.Instruction(mnemonic, label, form=output.Instruction.UNDOCUMENTED)
+            offset = config.get_assembler().wrapped_branch_offset(label)
+            instruction.data_items = [classification.get_constant8(binary_addr), classification.get_constant8(binary_addr + 1) if offset is None else offset]
+            instruction.comment_text = utils.LazyString("%s %s (a branch that wraps round memory)", utils.force_case(mnemonic), label)
+            instruction.wrapped_branch = True
+            return instruction
+        label = operand
     return output.Instruction(mnemonic, label)
 
 class Cpu6502(cpu.Cpu):

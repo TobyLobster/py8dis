@@ -1,0 +1,16 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$2000  pydis_start (inline)
+    (not referenced)
+
+$2002  loop_c2002 (inline)
+    $200b     loop_c2002+9                 bne loop_c2002
+
+$200e  l200e (inline)
+    $2002     loop_c2002                   lda l200e,x
+
+$201c  pydis_end (inline)
+    (not referenced)
+
+$ffe3  lffe3 (Memory locations)
+    $2005     loop_c2002+3                 jsr lffe3

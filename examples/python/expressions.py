@@ -11,8 +11,8 @@ from commands import *
 
 load(0x2000, "orig/expressions.orig", "6502", "3cae9c43d5d489f353999570645c6285")
 
-# (ca65 doesn't accept 'a' or 'x' as names: they're registers)
-A, X = ("a_", "x_") if config.get_assembler().get_name() == "ca65" else ("a", "x")
+# (ca65 and Merlin 32 don't accept 'a' or 'x' as names: they're registers)
+A, X = ("a_", "x_") if config.get_assembler().get_name() in ("ca65", "merlin32") else ("a", "x")
 
 constant(0x1234, "table")
 constant(0x7f, "k")

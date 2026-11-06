@@ -27,7 +27,7 @@ The JSON holds everything py8dis knows once it has finished: the names are exact
   "format": "py8dis",
   "version": 1,
   "cpu": "6502",                        // "6502", "65c02", "6510", "8080" or "z80"
-  "assembler": "beebasm",               // "acme", "beebasm", "baron", "xa", "64tass", "ca65", "z88dk" or "sjasmplus"
+  "assembler": "beebasm",               // "acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32", "z88dk" or "sjasmplus"
   "loads": [ { "filename": "orig/helloworld.orig", "start": 8192, "end": 8220 } ],
   "moves": [ { "id": 1, "binary_addr": 8208, "runtime_addr": 2304, "length": 18 } ],
   "constants": [ { "name": "newline", "value": 13, "text": "&0d",

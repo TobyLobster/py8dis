@@ -51,7 +51,7 @@ Loads a Commodore PRG file. Its first two bytes are the address to load the rest
 start = load_prg("game.prg", "6510")
 ```
 
-The disassembly starts with the same two bytes (e.g. `!word $0801` just before the program), so that it assembles to the whole PRG file, with acme, beebasm, Baron, xa, 64tass or ca65. To disassemble just the data, use `load(address, "game.prg", offset=2)` instead. A PC64 `.p00` file (a PRG file after a 26 byte header starting `C64File`) is also accepted; its disassembly assembles to the PRG file.
+The disassembly starts with the same two bytes (e.g. `!word $0801` just before the program), so that it assembles to the whole PRG file, with acme, beebasm, Baron, xa, 64tass, ca65 or Merlin 32. To disassemble just the data, use `load(address, "game.prg", offset=2)` instead. A PC64 `.p00` file (a PRG file after a 26 byte header starting `C64File`) is also accepted; its disassembly assembles to the PRG file.
 
 ### load_atm
 
@@ -64,7 +64,7 @@ start = load_atm("game.atm")
 acorn.atom()
 ```
 
-If the execution address is in the data, the code there is traced, with the comment `; The ATM file's execution address` (give it a name with `label()` or `entry()`). The disassembly starts with the header, so that it assembles to the whole ATM file, with acme, beebasm, Baron, xa, 64tass or ca65:
+If the execution address is in the data, the code there is traced, with the comment `; The ATM file's execution address` (give it a name with `label()` or `entry()`). The disassembly starts with the header, so that it assembles to the whole ATM file, with acme, beebasm, Baron, xa, 64tass, ca65 or Merlin 32:
 
 ```
 ; The ATM file's header
@@ -97,7 +97,7 @@ load_apple_file("hello")                      # e.g. cc65's output: a BIN file a
 
 ProDOS runs a SYS file from $2000, so the code there is traced, with the comment `; ProDOS runs a SYS file from here`. A BIN file isn't traced, since it may be data (a picture, say): use `entry()`. Other file types have no load address, so `load_apple_file()` stops with an error; use `load()` for them.
 
-An AppleSingle file's disassembly starts with its header (everything before the data fork), so that it assembles to the whole file, with acme, beebasm, Baron, xa, 64tass or ca65:
+An AppleSingle file's disassembly starts with its header (everything before the data fork), so that it assembles to the whole file, with acme, beebasm, Baron, xa, 64tass, ca65 or Merlin 32:
 
 ```
 ; The AppleSingle file's header

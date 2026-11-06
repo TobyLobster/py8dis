@@ -1,0 +1,11 @@
+bit_value              = $0070
+char_to_print          = $0070
+pydis_start            = $2000
+test_for_local_labels  = $2000
+print_loop             = $2006
+bit_counting_loop      = $2019
+skip_add_to_bit_count  = $201e
+crtc_substitution_test = $2026
+pydis_end              = $202c
+crtc_address_register  = $fe00
+OSWRCH                 = $ffee

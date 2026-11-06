@@ -4,9 +4,9 @@ The CPU is chosen when the program is loaded: `load(addr, filename, cpu_name)`, 
 
 | `cpu_name` | CPU                                                       | Assemblers |
 | ---------- | --------------------------------------------------------- | ---------- |
-| `"6502"`   | the 6502, its documented instructions                     | acme, beebasm, Baron, xa, 64tass, ca65 |
-| `"6510"`   | the 6502 with its undocumented opcodes (as on the Commodore 64's 6510, and any NMOS 6502) | acme, beebasm, Baron, xa, 64tass, ca65 |
-| `"65C02"`  | the 65C02 (as in the BBC Master)                          | acme, beebasm, Baron, xa, 64tass, ca65 |
+| `"6502"`   | the 6502, its documented instructions                     | acme, beebasm, Baron, xa, 64tass, ca65, Merlin 32 |
+| `"6510"`   | the 6502 with its undocumented opcodes (as on the Commodore 64's 6510, and any NMOS 6502) | acme, beebasm, Baron, xa, 64tass, ca65, Merlin 32 |
+| `"65C02"`  | the 65C02 (as in the BBC Master)                          | acme, beebasm, Baron, xa, 64tass, ca65, Merlin 32 |
 | `"8080"`   | the Intel 8080                                            | z88dk-z80asm |
 | `"Z80"`    | the Z80, with its undocumented opcodes                    | z88dk-z80asm, sjasmplus |
 
@@ -22,7 +22,7 @@ How they're written depends on the assembler:
 - **64tass** uses py8dis's (after `.cpu "6502i"`);
 - **ca65** uses its own (after `.setcpu "6502X"`; LXA is `lax #imm` and SBX is `axs`).
 
-Where an instruction has several opcodes and the assembler uses another one for it (e.g. ANC &2B, or most of the NOPs), it can't be written as an instruction. The same 70 opcodes are written as instructions for all three. The rest, and all of them for beebasm, Baron and xa, are written as data bytes with the instruction in a comment, e.g. `equb &a7, l0070 ; lax l0070 (undocumented)`.
+Where an instruction has several opcodes and the assembler uses another one for it (e.g. ANC &2B, or most of the NOPs), it can't be written as an instruction. The same 70 opcodes are written as instructions for all three. The rest, and all of them for beebasm, Baron, xa and Merlin 32, are written as data bytes with the instruction in a comment, e.g. `equb &a7, l0070 ; lax l0070 (undocumented)`.
 
 With `"6502"` they aren't traced: tracing stops at one, since taking unknown opcodes to be code would turn data into nonsense instructions.
 

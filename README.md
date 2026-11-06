@@ -198,6 +198,7 @@ py8dis can write its output for any of these assemblers:
 | [xa](https://www.floodgap.com/retrotech/xa/) | 6502, 65C02 | `--xa` or `-x` |
 | [64tass](https://sourceforge.net/projects/tass64/) | 6502, 65C02 | `--64tass` or `-t` |
 | [ca65](https://cc65.github.io/doc/ca65.html) | 6502, 65C02 | `--ca65` or `-c` |
+| [Merlin 32](https://brutaldeluxe.fr/products/crossdevtools/merlin/) | 6502, 65C02 | `--merlin32` or `-m` |
 | [z88dk-z80asm](https://z88dk.org) | 8080, Z80 | `--z88dk` or `-z` |
 | [sjasmplus](https://github.com/z00m128/sjasmplus) | Z80 | `--sjasmplus` or `-s` |
 

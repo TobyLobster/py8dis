@@ -14,6 +14,8 @@ go()
 
 Apple II files are loaded with [`load_apple_file()`](../commands.md#load_apple_file) (an AppleSingle file, as cc65 makes, or a file whose name gives its type and address, as CiderPress names them), [`load_dos33_binary()`](../commands.md#load_dos33_binary) (a DOS 3.3 binary file with its 4-byte header), or `load()`.
 
+The output is for beebasm by default; for Merlin 32, in the syntax of Merlin, the Apple II's best-known assembler, run the control file with `--merlin32` (see [assemblers.md](../assemblers.md#merlin-32)). ca65, acme and 64tass, also used for the Apple II, and the other 6502 assemblers work too.
+
 `apple.apple2(model="ii+", names="apple")` takes:
 
 - `model`:
@@ -44,7 +46,7 @@ Apple II files are loaded with [`load_apple_file()`](../commands.md#load_apple_f
 | `OUTPORT`, `INPORT` | `Send output to slot 1 (PR#1)`, `Take input from slot 2 (IN#2)` |
 | `PREAD` | `Read paddle 0` |
 
-A character printed with `COUT` is written as one where it's loaded: `lda #'A' | $80` (as the assembler writes a high ASCII character literal).
+A character printed with `COUT` is written as one where it's loaded: `lda #'A' | $80` (as the assembler writes a high ASCII character literal; Merlin 32's is `lda #"A"`).
 
 **Comments what's printed** with `COUT` (and `COUT1`, `VIDOUT`, `CROUT`, `CROUT1` and `BELL`), however A is set: a run of characters as `; Print "HELLO"`, and a DOS command, printed after a Ctrl-D, as `; DOS command: BLOAD GAME`. A loop that prints a message a character at a time is commented `; print message`.
 

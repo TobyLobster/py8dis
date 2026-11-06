@@ -126,8 +126,11 @@ def add_inline_comment_including_hexdump(binary_loc, length, cycles_description,
     binary_loc = movemanager.make_binloc(binary_loc)
 
     assert isinstance(binary_loc.binary_addr, BinaryAddr)
-    # Add spaces up to the comment column
+    # Add spaces up to the comment column (and one after anything that
+    # reaches it, for an assembler that needs it)
     s = utils.tab_to(s, config.get_inline_comment_column())
+    if config.get_assembler().inline_comment_needs_space and s.strip() and not s.endswith(" "):
+        s += " "
 
     # Add any hex dump (fixed width)
     s = add_hex_dump(binary_loc.binary_addr, length, cycles_description, s, encoding)
@@ -338,8 +341,11 @@ def explicit_label_with_inline_comment(name, value, offset=None, align_value_col
 
     result = config.get_assembler().explicit_label(name, value, offset=offset, align_column=align_value_column)
     if inline_comment:
-        # Add spaces up to the alignment column
+        # Add spaces up to the alignment column (and one after anything that
+        # reaches it, for an assembler that needs it)
         result = utils.tab_to(result, align_comment_column)
+        if config.get_assembler().inline_comment_needs_space and not result.endswith(" "):
+            result += " "
 
         # Add inline comment itself
         result += config.get_assembler().comment_prefix() + " " + inline_comment

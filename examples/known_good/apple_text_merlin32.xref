@@ -1,0 +1,38 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0800  pydis_start (inline), start (inline)
+    (not referenced)
+
+$0802  loop_c0802 (inline)
+    $080b     loop_c0802+9                 bne loop_c0802
+
+$080d  c080d (inline)
+    $0805     loop_c0802+3                 beq c080d
+
+$081e  loop_c081e (inline)
+    $0829     loop_c081e+11                bmi loop_c081e
+
+$0835  message (inline)
+    $0802     loop_c0802                   lda message,x
+
+$084d  dci_message (inline)
+    $081e     loop_c081e                   lda dci_message,x
+
+$0851  line (inline)
+    $082b     loop_c081e+13                lda line
+
+$0856  ascii_message (inline)
+    $082e     loop_c081e+16                ldx ascii_message
+
+$0860  found_by_itself (inline)
+    $0831     loop_c081e+19                ldy found_by_itself
+
+$0870  pydis_end (inline)
+    (not referenced)
+
+$fded  cout (Memory locations)
+    $0807     loop_c0802+5                 jsr cout
+    $080f     c080d+2                      jsr cout
+    $0814     c080d+7                      jsr cout
+    $0819     c080d+12                     jsr cout
+    $0824     loop_c081e+6                 jsr cout

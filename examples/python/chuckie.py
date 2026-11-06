@@ -37,6 +37,13 @@ label_dict = {}
 global_skip = 1
 line_break = "----------------------------------------------------------------------------------"
 
+def brackets(text):
+    """The expression 'text' with its brackets as the assembler writes them:
+    '{' and '}' for Merlin 32. (An expression given as text is written into
+    the output as it is, so it has to suit the assembler.)"""
+    open_bracket, close_bracket = config.get_assembler().expression_brackets()
+    return text.replace("(", open_bracket).replace(")", close_bracket)
+
 def mylabel(addr, name):
     """label(), remembering the name for get_label()."""
     label(addr, name)
@@ -111,9 +118,9 @@ def level_data(addr, index):
     lab = "map" + str(index)
     formatted_comment(addr, "\n" + line_break + "\nMap " + str(index) + " Data\n" + line_break)
     byte(addr, 5)
-    expr(addr,     "((" + lab + "platform_end - " + lab + "platform_start) / 3)")
-    expr(addr + 1, "((" + lab + "ladder_end - "   + lab + "ladder_start) / 3)")
-    expr(addr + 3, "((" + lab + "seed_end - "   + lab + "seed_start) / 2)")
+    expr(addr,     brackets("((" + lab + "platform_end - " + lab + "platform_start) / 3)"))
+    expr(addr + 1, brackets("((" + lab + "ladder_end - "   + lab + "ladder_start) / 3)"))
+    expr(addr + 3, brackets("((" + lab + "seed_end - "   + lab + "seed_start) / 2)"))
     platform_count = memory[addr]
     ladder_count = memory[addr + 1]
     has_lifts = memory[addr + 2]
@@ -1123,10 +1130,13 @@ expr(0x21bd, sprite_constants)
 expr(0x21c7, sprite_constants)
 label_skip(0x2200)
 # An expression given as text is written into the output as it is, so it has
-# to suit the assembler: xa, 64tass and ca65 write bitwise OR as '|'.
-# (make_or() would choose the operator itself.)
+# to suit the assembler: xa, 64tass and ca65 write bitwise OR as '|', and
+# Merlin 32 as '.' (with '{' and '}' as its brackets). (make_or() would choose
+# the operator itself.)
 if is_assembler("xa") or is_assembler("64tass") or is_assembler("ca65"):
     expr(0x2208, "(MapId_Egg | MapId_Seed)")
+elif is_assembler("merlin32"):
+    expr(0x2208, "{MapId_Egg.MapId_Seed}")
 else:
     expr(0x2208, "(MapId_Egg OR MapId_Seed)")
 expr(0x220c, "MapId_Seed")

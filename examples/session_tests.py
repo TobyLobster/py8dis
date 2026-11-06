@@ -31,11 +31,12 @@ Usage: ./session_tests.py      (there are no options; it prints a line for
                                 fails)
 
 The outputs are compared with the known_good/ files that run_tests.py
-checks. Baron's output depends on the asm file's name and folder, so it's
-written to a file of the same name as run_tests.py's, but in a temporary
-folder beside build/ (at the same depth, so the paths in it are the same),
-which is removed afterwards. (run_tests.py runs this script at the same
-time as its own tests, so writing to build/ too could clash with them.)
+checks. Baron's and Merlin 32's output depends on the asm file's name and
+folder, so it's written to a file of the same name as run_tests.py's, but in
+a temporary folder beside build/ (at the same depth, so the paths in it are
+the same), which is removed afterwards. (run_tests.py runs this script at
+the same time as its own tests, so writing to build/ too could clash with
+them.)
 
 To check another disassembly in 1, add a pair to INTERLEAVED (its
 known_good file must exist already). Check 3 covers every module in
@@ -72,11 +73,12 @@ INTERLEAVED = [
     (("trace_z80",        "z88dk"),  ("undocumented_8080",      "z88dk-8080")),
     (("spectrum_test",    "sjasmplus"), ("undocumented_z80",    "z88dk")),
     (("include_binary_file", "baron"), ("planb",                "beebasm")),
+    (("dfs226",           "merlin32"), ("apple_text",           "64tass")),
 ]
 
-# The temporary folder for Baron's output (see baron_asm_filename()), which
-# main() makes
-baron_dir = None
+# The temporary folder for Baron's and Merlin 32's output (see
+# asm_filename()), which main() makes
+asm_dir = None
 
 # Module level names that are allowed to change, as (module, name): the
 # session module's pointer to the current session, and its setting from
@@ -168,13 +170,13 @@ def run_control_file(name, assembler, stop_before_go=False):
     DeferredGo: the control file's 'from commands import *' picks up that
     function. (So anything after go() in the control file isn't run, even
     when go_in() runs go() later.) What it prints (the asm, except for
-    Baron) is captured rather than printed."""
+    Baron and Merlin 32) is captured rather than printed."""
     import commands
     import session
 
-    # (Baron's output is written to a file, as run_tests.py does, since it
-    # depends on the asm file's name and folder)
-    asm_filename = baron_asm_filename(name, assembler)
+    # (Baron's and Merlin 32's output is written to a file, as run_tests.py
+    # does, since it depends on the asm file's name and folder)
+    asm_filename = asm_filename_for(name, assembler)
     s = session.new_session(assembler=assembler, asm_filename=asm_filename)
     real_go = commands.go
     def deferred_go(*args, **kwargs):
@@ -203,14 +205,15 @@ def go_in(s):
         commands.go()
     return Path(s.asm_filename).read_text() if s.asm_filename else out.getvalue()
 
-def baron_asm_filename(name, assembler):
-    """For Baron, the asm file to write, else None (for the asm to be
-    printed). Baron's output depends on the asm file's name and folder, so
-    for it to be the same as known_good, the file has the name run_tests.py
-    gives it, in a folder at the same depth as build/ (baron_dir, rather
-    than build/ itself, where run_tests.py may be writing the same file at
-    the same time)."""
-    return str(Path(baron_dir) / f"{name}_{assembler}.asm") if assembler == "baron" else None
+def asm_filename_for(name, assembler):
+    """For Baron and Merlin 32, the asm file to write, else None (for the asm
+    to be printed). Their output depends on the asm file's name and folder
+    (e.g. the path of an included binary file, relative to it), so for it
+    to be the same as known_good, the file has the name run_tests.py gives
+    it, in a folder at the same depth as build/ (asm_dir, rather than build/
+    itself, where run_tests.py may be writing the same file at the same
+    time)."""
+    return str(Path(asm_dir) / f"{name}_{assembler}.asm") if assembler in ("baron", "merlin32") else None
 
 def check(results, label, output, name, assembler):
     """Compare the asm 'output' with known_good/<name>_<assembler>.asm, and
@@ -228,10 +231,10 @@ def check(results, label, output, name, assembler):
 def main():
     """Run the checks described at the top of this file, print a line for
     each, then the totals, and return the exit code: 1 if any failed, else
-    0. (Baron's output goes in a temporary folder in the examples folder,
-    removed afterwards: see baron_asm_filename().)"""
-    global baron_dir
-    with tempfile.TemporaryDirectory(prefix="session_tests_", dir=EXAMPLES_DIR) as baron_dir:
+    0. (Baron's and Merlin 32's output goes in a temporary folder in the
+    examples folder, removed afterwards: see asm_filename_for().)"""
+    global asm_dir
+    with tempfile.TemporaryDirectory(prefix="session_tests_", dir=EXAMPLES_DIR) as asm_dir:
         return run_checks()
 
 def run_checks():

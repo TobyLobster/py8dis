@@ -92,6 +92,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -127,110 +128,110 @@ TESTS = [
     ("opense",                   ["z88dk", "sjasmplus"],       "OpenSE BASIC, a replacement ZX Spectrum ROM, with spectrum.spectrum48() and the spectrum module's tables"),
 
     # 6502 code: tests
-    ("include_binary_file",      ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for including a binary file"),
-    ("char_literals",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for all character literals"),
-    ("align_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for formatting"),
-    ("cycles",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "cycle counts for branches near page boundaries"),
-    ("cycles_65c02",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "65C02 cycle counts: ADC and SBC in decimal mode, and absolute indexed BIT and shifts"),
-    ("redundant_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "redundant instructions (whose results aren't used), with io_range() and the BIT trick"),
-    ("branch_state",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
+    ("include_binary_file",      ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "tests for including a binary file"),
+    ("char_literals",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "tests for all character literals"),
+    ("align_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "tests for formatting"),
+    ("cycles",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "cycle counts for branches near page boundaries"),
+    ("cycles_65c02",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "65C02 cycle counts: ADC and SBC in decimal mode, and absolute indexed BIT and shifts"),
+    ("redundant_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "redundant instructions (whose results aren't used), with io_range() and the BIT trick"),
+    ("branch_state",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
     ("string_stuff1",            ["acme", "beebasm", "baron", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
     ("shift_by_32",              ["xa"],                       "an expression for xa with a shift by 32, which py8dis doesn't work out (xa takes the count modulo 32)"),
-    ("string_stuff3",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "testing py8dis string commands"),
-    ("banks_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "two banks of code that both run at $8000 (moves to the same address), loaded separately, with a call that can't be told the bank of"),
-    ("beebasm_moves",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a moved block that runs over the end of the program, for which beebasm's output moves only the bytes in the way"),
-    ("moving1",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
-    ("moving2",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
-    ("moving3",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "tests for the move() command"),
-    ("helloworld",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the basic hello world test"),
-    ("local_labels",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "labels defined as local to one move region"),
-    ("move",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a move() test"),
-    ("move2",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "another move() test"),
-    ("move2_legacy_label_maker", ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "move2 with a legacy label maker hook choosing a move"),
-    ("move_from_top_of_memory",  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a move() whose source ends at &10000"),
-    ("move_to_top_of_memory",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a move() whose destination ends at &10000"),
-    ("top_of_memory",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "code at the top of memory, and a branch that wraps round to zero page"),
-    ("top_of_memory_string",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a string found by autostring() that runs up to &ffff"),
-    ("bottom_of_memory",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a branch that wraps round below &0000"),
-    ("split",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loads *two* binary files to disassemble"),
-    ("subroutine_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "demonstrates the use of the subroutine() command"),
-    ("regression_tests",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "regression tests for fixed bugs"),
-    ("crash_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "things that used to crash py8dis: splits inside an instruction and a word, substitute_constants() with RTS, a constant's align without a comment, expr_label() where moves overlap, get_u16_be_binary() at the address stringhi() returns"),
-    ("regex_snippets",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "regex snippets with one character operands, A, negative and binary values, a branch's offset in hex, and a name and an instruction on one line"),
-    ("copy_loops",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loops that copy or set memory, counting up or down, past zero or to a limit, with the comments from the built in snippets"),
-    ("overlapping_moves",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "six moved blocks laid out like Revs's, some running over the others' sources, the rest of the program and their own"),
-    ("expressions",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "how expressions are bracketed for each assembler"),
-    ("acorn_os_calls",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "test all the os calls for acorn machines"),
-    ("acorn_vectors",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the ways of setting an Acorn OS vector that acorn.py recognises"),
-    ("acorn_vdu",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "VDU sequences written with OSWRCH, decoded by acorn.py"),
-    ("acorn_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "acorn.bbc()'s comments: VDU 31 with the column from X and the row from A after X changes, and a table of character row offsets as words"),
-    ("atom_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom program, with acorn.atom(): OS calls, what OSWRCH writes, #F7D1's string, kernel routines, a vector, the hardware"),
-    ("atom_basic",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom BASIC program in an ATM file, listed by acorn.atom_basic_program(), with the machine code its LINK calls traced"),
-    ("atom_hardware",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom program's writes to the 8255 (graphics mode, keyboard row, speaker, colour set) and tests of its inputs, commented by acorn.atom()"),
-    ("acorn_lower_case_os_calls", ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Acorn OS calls named in lower case, with config.set_upper_case_os_calls(False)"),
-    ("effect_patterns",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "effect patterns: snippets matching the values code stores, and the registers at a call"),
-    ("prg_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
-    ("p00_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a PC64 P00 file loaded with load_prg()"),
-    ("atm_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Acorn Atom ATM file loaded with load_atm(), which reassembles to the whole file"),
-    ("apple_applesingle_test",   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Apple II AppleSingle file loaded with load_apple_file(), which reassembles to the whole file"),
-    ("apple_sys_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a ProDOS SYS file loaded with load_apple_file(), its name giving its type and aux type"),
-    ("apple_dos33_test",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "an Apple II DOS 3.3 binary file loaded with load_dos33_binary(), which reassembles to the whole file"),
-    ("apple_text",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Apple II's high ASCII text encoding: strings ending in various ways, character literals, and a string found by autostring"),
-    ("apple2_test",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.apple2(): the Monitor's routines and their calls' comments, printing with COUT, a DOS command, the zero page, vectors and soft switches"),
-    ("apple2e_names_test",       ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the same program with apple.apple2(model=\"iie\", names=\"descriptive\")"),
-    ("apple2c_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.apple2(model=\"iic\") for a 65C02 program: the IIc's mouse and vertical blank interrupt switches, IOUDIS, double hi-res, the 40/80-column switch and the serial ports, and STZ on the IIe's write switches"),
-    ("apple2e_enhanced_test",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the same program with apple.apple2(model=\"iie-enhanced\"), which has the IIe's switches"),
-    ("applesoft_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.applesoft_program(): an Applesoft program's lines listed, and the machine code it CALLs, which uses Applesoft's routines and sets the USR and & vectors"),
-    ("prodos_test",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "ProDOS 8's MLI calls: the call numbers and parameter lists after the JSRs, with pathnames, buffers and a handler, and the global page"),
-    ("dos33_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DOS 3.3 from machine code: RWTS with IOBs (labelled and marked, with names for the fields used), the file manager, the page 3 entry points and DOS's memory"),
-    ("slot_roms_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.slot_rom() for four cards' ROMs: a Pascal 1.1 serial card, a card with no ID bytes, a mouse card, and a SmartPort device with a ProDOS driver, whose boot code makes a SmartPort call"),
-    ("apple2_io_rpi",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a real card's ROM (Apple2-IO-RPi's drive firmware, MIT licence) with apple.slot_rom(): a ProDOS block device that the Autostart ROM boots"),
-    ("smartport_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.smartport_calls(): a program's SmartPort calls through a JMP of its own, and its calls to slot 3's and slot 6's ROMs"),
-    ("penetrator",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Penetrator, a real Apple II game (public domain): an AppleSingle file with the soft switches, the Monitor and ProDOS MLI calls"),
-    ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loading parts of a file with load(..., offset=..., length=...)"),
-    ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
-    ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "PETSCII and screen code strings, with config.set_text_encoding()"),
-    ("c64_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program (a PRG file with a BASIC SYS line), with commodore.c64()"),
-    ("c64_names_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "c64_test with commodore.c64(names=\"commodore\"), and a name clash"),
-    ("c64_memory_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the C64's memory configuration (the 6510's port at $01), followed through the code, with c64_configuration()"),
-    ("drive_code_names",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program and its drive code both using $0300, each with its own machine's name for it (the C64 code's first)"),
-    ("drive_code_fixes",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program's drive code in the middle of buffer 0 (which isn't named, and whose addresses are listed under '1541 drive'), storing to $05 (not a job) and job 1"),
-    ("cartridge_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 cartridge, with commodore.is_cartridge()"),
-    ("vic20_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a VIC-20 program, with commodore.vic20()"),
-    ("vic20_8k_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "vic20_test for a VIC-20 with 8K or more RAM"),
-    ("vic20_cartridge_test",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a VIC-20 cartridge, with commodore.is_cartridge()"),
-    ("c128_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C128 program, with commodore.c128(): the MMU, the VDC, PRIMM and JSRFAR"),
-    ("c128_fixes",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C128 program with BASIC 7.0's keywords (two-byte ones too), and an MMU configuration with a function ROM at $d000"),
-    ("plus4_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Plus/4 program, with commodore.plus4(): the TED, the ACIA and PRIMM"),
-    ("plus4_basic",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a Plus/4 program with BASIC 3.5's keywords"),
-    ("pet4_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a PET program for BASIC 4 with 80 columns (commodore.pet())"),
-    ("pet2_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the PET program for BASIC 2"),
-    ("pet1_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the PET program for BASIC 1, with Commodore's names"),
-    ("drive1541_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "code for the 1541 disk drive (commodore.drive1541()): its job queue, buffers, VIAs and DOS ROM"),
-    ("drive1541_names_test",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "drive1541_test for the 1541-II's DOS ROM, with Commodore's names"),
-    ("fastload_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C64 program with code for the 1541 in it (commodore.drive1541_code())"),
-    ("c128_banks_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a C128 program that changes the MMU's configuration"),
+    ("string_stuff3",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "testing py8dis string commands"),
+    ("banks_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "two banks of code that both run at $8000 (moves to the same address), loaded separately, with a call that can't be told the bank of"),
+    ("beebasm_moves",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a moved block that runs over the end of the program, for which beebasm's output moves only the bytes in the way"),
+    ("moving1",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "tests for the move() command"),
+    ("moving2",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "tests for the move() command"),
+    ("moving3",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "tests for the move() command"),
+    ("helloworld",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the basic hello world test"),
+    ("local_labels",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "labels defined as local to one move region"),
+    ("move",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a move() test"),
+    ("move2",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "another move() test"),
+    ("move2_legacy_label_maker", ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "move2 with a legacy label maker hook choosing a move"),
+    ("move_from_top_of_memory",  ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a move() whose source ends at &10000"),
+    ("move_to_top_of_memory",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a move() whose destination ends at &10000"),
+    ("top_of_memory",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "code at the top of memory, and a branch that wraps round to zero page"),
+    ("top_of_memory_string",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a string found by autostring() that runs up to &ffff"),
+    ("bottom_of_memory",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a branch that wraps round below &0000"),
+    ("split",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "loads *two* binary files to disassemble"),
+    ("subroutine_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "demonstrates the use of the subroutine() command"),
+    ("regression_tests",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "regression tests for fixed bugs"),
+    ("crash_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "things that used to crash py8dis: splits inside an instruction and a word, substitute_constants() with RTS, a constant's align without a comment, expr_label() where moves overlap, get_u16_be_binary() at the address stringhi() returns"),
+    ("regex_snippets",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "regex snippets with one character operands, A, negative and binary values, a branch's offset in hex, and a name and an instruction on one line"),
+    ("copy_loops",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "loops that copy or set memory, counting up or down, past zero or to a limit, with the comments from the built in snippets"),
+    ("overlapping_moves",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "six moved blocks laid out like Revs's, some running over the others' sources, the rest of the program and their own"),
+    ("expressions",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "how expressions are bracketed for each assembler"),
+    ("acorn_os_calls",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "test all the os calls for acorn machines"),
+    ("acorn_vectors",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the ways of setting an Acorn OS vector that acorn.py recognises"),
+    ("acorn_vdu",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "VDU sequences written with OSWRCH, decoded by acorn.py"),
+    ("acorn_fixes",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "acorn.bbc()'s comments: VDU 31 with the column from X and the row from A after X changes, and a table of character row offsets as words"),
+    ("atom_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "an Acorn Atom program, with acorn.atom(): OS calls, what OSWRCH writes, #F7D1's string, kernel routines, a vector, the hardware"),
+    ("atom_basic",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "an Acorn Atom BASIC program in an ATM file, listed by acorn.atom_basic_program(), with the machine code its LINK calls traced"),
+    ("atom_hardware",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "an Acorn Atom program's writes to the 8255 (graphics mode, keyboard row, speaker, colour set) and tests of its inputs, commented by acorn.atom()"),
+    ("acorn_lower_case_os_calls", ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Acorn OS calls named in lower case, with config.set_upper_case_os_calls(False)"),
+    ("effect_patterns",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "effect patterns: snippets matching the values code stores, and the registers at a call"),
+    ("prg_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a Commodore PRG file loaded with load_prg(), which reassembles to the whole file"),
+    ("p00_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a PC64 P00 file loaded with load_prg()"),
+    ("atm_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "an Acorn Atom ATM file loaded with load_atm(), which reassembles to the whole file"),
+    ("apple_applesingle_test",   ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "an Apple II AppleSingle file loaded with load_apple_file(), which reassembles to the whole file"),
+    ("apple_sys_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a ProDOS SYS file loaded with load_apple_file(), its name giving its type and aux type"),
+    ("apple_dos33_test",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "an Apple II DOS 3.3 binary file loaded with load_dos33_binary(), which reassembles to the whole file"),
+    ("apple_text",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the Apple II's high ASCII text encoding: strings ending in various ways, character literals, and a string found by autostring"),
+    ("apple2_test",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "apple.apple2(): the Monitor's routines and their calls' comments, printing with COUT, a DOS command, the zero page, vectors and soft switches"),
+    ("apple2e_names_test",       ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the same program with apple.apple2(model=\"iie\", names=\"descriptive\")"),
+    ("apple2c_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "apple.apple2(model=\"iic\") for a 65C02 program: the IIc's mouse and vertical blank interrupt switches, IOUDIS, double hi-res, the 40/80-column switch and the serial ports, and STZ on the IIe's write switches"),
+    ("apple2e_enhanced_test",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the same program with apple.apple2(model=\"iie-enhanced\"), which has the IIe's switches"),
+    ("applesoft_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "apple.applesoft_program(): an Applesoft program's lines listed, and the machine code it CALLs, which uses Applesoft's routines and sets the USR and & vectors"),
+    ("prodos_test",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "ProDOS 8's MLI calls: the call numbers and parameter lists after the JSRs, with pathnames, buffers and a handler, and the global page"),
+    ("dos33_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "DOS 3.3 from machine code: RWTS with IOBs (labelled and marked, with names for the fields used), the file manager, the page 3 entry points and DOS's memory"),
+    ("slot_roms_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "apple.slot_rom() for four cards' ROMs: a Pascal 1.1 serial card, a card with no ID bytes, a mouse card, and a SmartPort device with a ProDOS driver, whose boot code makes a SmartPort call"),
+    ("apple2_io_rpi",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a real card's ROM (Apple2-IO-RPi's drive firmware, MIT licence) with apple.slot_rom(): a ProDOS block device that the Autostart ROM boots"),
+    ("smartport_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "apple.smartport_calls(): a program's SmartPort calls through a JMP of its own, and its calls to slot 3's and slot 6's ROMs"),
+    ("penetrator",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Penetrator, a real Apple II game (public domain): an AppleSingle file with the soft switches, the Monitor and ProDOS MLI calls"),
+    ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "loading parts of a file with load(..., offset=..., length=...)"),
+    ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
+    ("petscii_test",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "PETSCII and screen code strings, with config.set_text_encoding()"),
+    ("c64_test",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C64 program (a PRG file with a BASIC SYS line), with commodore.c64()"),
+    ("c64_names_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "c64_test with commodore.c64(names=\"commodore\"), and a name clash"),
+    ("c64_memory_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the C64's memory configuration (the 6510's port at $01), followed through the code, with c64_configuration()"),
+    ("drive_code_names",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C64 program and its drive code both using $0300, each with its own machine's name for it (the C64 code's first)"),
+    ("drive_code_fixes",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C64 program's drive code in the middle of buffer 0 (which isn't named, and whose addresses are listed under '1541 drive'), storing to $05 (not a job) and job 1"),
+    ("cartridge_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C64 cartridge, with commodore.is_cartridge()"),
+    ("vic20_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a VIC-20 program, with commodore.vic20()"),
+    ("vic20_8k_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "vic20_test for a VIC-20 with 8K or more RAM"),
+    ("vic20_cartridge_test",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a VIC-20 cartridge, with commodore.is_cartridge()"),
+    ("c128_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C128 program, with commodore.c128(): the MMU, the VDC, PRIMM and JSRFAR"),
+    ("c128_fixes",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C128 program with BASIC 7.0's keywords (two-byte ones too), and an MMU configuration with a function ROM at $d000"),
+    ("plus4_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a Plus/4 program, with commodore.plus4(): the TED, the ACIA and PRIMM"),
+    ("plus4_basic",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a Plus/4 program with BASIC 3.5's keywords"),
+    ("pet4_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a PET program for BASIC 4 with 80 columns (commodore.pet())"),
+    ("pet2_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the PET program for BASIC 2"),
+    ("pet1_test",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the PET program for BASIC 1, with Commodore's names"),
+    ("drive1541_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "code for the 1541 disk drive (commodore.drive1541()): its job queue, buffers, VIAs and DOS ROM"),
+    ("drive1541_names_test",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "drive1541_test for the 1541-II's DOS ROM, with Commodore's names"),
+    ("fastload_test",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C64 program with code for the 1541 in it (commodore.drive1541_code())"),
+    ("c128_banks_test",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "a C128 program that changes the MMU's configuration"),
 
     # 6502 code: real programs
-    ("os12",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "MOS 1.20"),
-    ("atom_kernel",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's kernel ROM, with acorn.atom()"),
-    ("atom_basic_rom",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's BASIC ROM, with acorn.atom(), decoding its keyword tables"),
-    ("atom_float_rom",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's floating point ROM, with acorn.atom() (Toby Nelson's names and comments)"),
-    ("atom_dos_rom",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Acorn Atom's DOS ROM, with acorn.atom(): its 8271 disc controller, and the NMI routines it copies to zero page (two moves to the same address)"),
-    ("basic4",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "BASIC 4"),
-    ("dfs226",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS 2.26"),
-    ("dfs226b",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DFS with an artificially added move() just for testing"),
-    ("anfs418",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Network filing system 4.18"),
+    ("os12",                     ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "MOS 1.20"),
+    ("atom_kernel",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the Acorn Atom's kernel ROM, with acorn.atom()"),
+    ("atom_basic_rom",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the Acorn Atom's BASIC ROM, with acorn.atom(), decoding its keyword tables"),
+    ("atom_float_rom",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the Acorn Atom's floating point ROM, with acorn.atom() (Toby Nelson's names and comments)"),
+    ("atom_dos_rom",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the Acorn Atom's DOS ROM, with acorn.atom(): its 8271 disc controller, and the NMI routines it copies to zero page (two moves to the same address)"),
+    ("basic4",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "BASIC 4"),
+    ("dfs226",                   ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "DFS 2.26"),
+    ("dfs226b",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "DFS with an artificially added move() just for testing"),
+    ("anfs418",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Network filing system 4.18"),
     ("lisp406",                  ["acme", "beebasm", "baron", "64tass", "ca65"],"Lisp 4.06 (xa is excluded since it can't cope with: 'ldx #(>(LISPEN-LISVAL-1))+1'; for 64tass its '_AND' is 'AND_', since 64tass takes a label starting with '_' to be local)"),
-    ("chuckie",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Chuckie Egg"),
-    ("planb",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Plan B with the old style label_maker function"),
-    ("planb_new_label_maker",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Plan B with a new style label_maker function"),
-    ("starship",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Starship Command"),
-    ("open_roms_kernal",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the Kernal ROM of MEGA65's Open ROMs, a free replacement for the C64's"),
-    ("open_roms_basic",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "the BASIC ROM of MEGA65's Open ROMs"),
-    ("quikman2k8",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Quikman 2K8, a VIC-20 game"),
-    ("memory128",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "memory128, a C128 game for the 80 column screen"),
+    ("chuckie",                  ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Chuckie Egg"),
+    ("planb",                    ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Plan B with the old style label_maker function"),
+    ("planb_new_label_maker",    ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Plan B with a new style label_maker function"),
+    ("starship",                 ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Starship Command"),
+    ("open_roms_kernal",         ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the Kernal ROM of MEGA65's Open ROMs, a free replacement for the C64's"),
+    ("open_roms_basic",          ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the BASIC ROM of MEGA65's Open ROMs"),
+    ("quikman2k8",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "Quikman 2K8, a VIC-20 game"),
+    ("memory128",                ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "memory128, a C128 game for the 80 column screen"),
 ]
 
 # The tests whose other outputs are also compared with known_good: the JSON
@@ -247,7 +248,7 @@ EXTRAS_KNOWN_GOOD = ["helloworld", "atom_test", "apple_applesingle_test", "apple
 # Where run_test() checks the symbol file against the assembler's own
 # labels, it reads the file in this format: beebasm's for beebasm, VICE's
 # for Baron, 64tass and ca65, and plain for sjasmplus.
-SYMBOLS_FORMATS = {"beebasm": "beebasm", "baron": "vice", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "z88dk-8080": "plain", "z88dk": "plain", "sjasmplus": "plain"}
+SYMBOLS_FORMATS = {"beebasm": "beebasm", "baron": "vice", "acme": "vice", "xa": "mame", "64tass": "vice", "ca65": "vice", "merlin32": "plain", "z88dk-8080": "plain", "z88dk": "plain", "sjasmplus": "plain"}
 
 # Each error test is (name, expected error message). The control file is
 # python/errors/<name>.py (which describes the test), and py8dis must stop with
@@ -303,6 +304,7 @@ ERROR_TESTS = [
     ("tass64_local_label_name", "64tass takes a label starting with '_' to be local to the label before it, so '_count' can't be used: rename it"),
     ("ca65_register_label",     "ca65 doesn't accept 'x' as a label, since it's a register's name: rename it"),
     ("ca65_mnemonic_label",     "ca65 doesn't accept 'lax' as a label, since it's an instruction's mnemonic: rename it"),
+    ("merlin32_register_label", "Merlin 32 doesn't accept 'y' as a label, since it's a register's name: rename it"),
     ("sjasmplus_register_label", "sjasmplus doesn't accept 'hl' as a label, since it's a register's name: rename it"),
     ("sjasmplus_operator_label", "sjasmplus doesn't accept 'LOW' as a label, since it's an operator's name: rename it"),
     ("sjasmplus_long_label",    "sjasmplus doesn't accept 'a_label_name_that_is_much_too_long_for_sjasmplus_which_allows_64_chars' as a label, since it's longer than 64 characters: rename it"),
@@ -345,6 +347,7 @@ ASSEMBLER_PROGRAMS = {
     "xa":         "xa",
     "64tass":     "64tass",
     "ca65":       "cl65",
+    "merlin32":   "merlin32",
     "z88dk-8080": "z88dk-z80asm",
     "z88dk":      "z88dk-z80asm",
     "sjasmplus":  "sjasmplus",
@@ -430,7 +433,8 @@ def assemble_command(assembler, p, make_extras):
     (p.beebasm_symbols or p.assembler_symbols). With 'make_extras' (-x), it
     also writes the assembler's report or listing, and its own symbol file
     where it has one, for debugging. (Baron saves its binary in
-    p.output_dir rather than p.binary: run_test() moves it.)"""
+    p.output_dir rather than p.binary, and Merlin 32 beside p.asm: run_test()
+    moves it.)"""
     if assembler == "acme":
         cmd = ["acme", "-o", str(p.binary)]
         if make_extras:
@@ -472,6 +476,16 @@ def assemble_command(assembler, p, make_extras):
         cmd = ["cl65", "-t", "none", "-g", "-C", "ca65.cfg", "-o", str(p.binary), "-Ln", str(p.assembler_symbols)]
         if make_extras:
             cmd += ["-l", str(p.report)]
+        return cmd + [str(p.asm)]
+    if assembler == "merlin32":
+        # (Merlin 32 saves the program beside the asm file, named after it
+        # without its extension, and '_FileInformation.txt' there too:
+        # run_test() moves the one and deletes the other. -v writes its
+        # listing beside the asm file too, which run_test() moves to the
+        # report.)
+        cmd = ["merlin32"]
+        if make_extras:
+            cmd += ["-v"]
         return cmd + [str(p.asm)]
     if assembler in ("z88dk-8080", "z88dk"):
         # (The tests of 8080 code use the name "z88dk-8080", and of Z80
@@ -916,6 +930,36 @@ def baron_symbols(text):
     return result
 
 
+# Merlin 32 reads and rewrites '_FileInformation.txt' in the asm file's folder
+# (build/, for every test), so it's run for one test at a time
+_merlin32_lock = threading.Lock()
+
+def run_merlin32(p, make_extras):
+    """Assemble p.asm with Merlin 32 (see assemble_command()), returning the
+    finished process. The program it saves beside the asm file is moved to
+    p.binary, its listing (with -x) to p.report, and the other files it
+    writes there are deleted."""
+    with _merlin32_lock:
+        saved = p.asm.with_suffix("")
+        for path in (saved, p.binary):
+            if path.exists():
+                path.unlink()
+        proc = subprocess.run(assemble_command("merlin32", p, make_extras), capture_output=True, text=True)
+        if saved.exists():
+            shutil.move(str(saved), str(p.binary))
+        listing = p.asm.parent / (saved.name + "_Output.txt")
+        if listing.exists():
+            shutil.move(str(listing), str(p.report))
+        for other in ("_FileInformation.txt", "error_output.txt"):
+            (p.asm.parent / other).unlink(missing_ok=True)
+    if proc.returncode == 0 and not p.binary.exists():
+        # (So that run_test() reports it)
+        proc.returncode = 1
+    if proc.returncode != 0:
+        # (Only its error lines, from its report of each stage on stdout)
+        proc.stdout = "\n".join(line.strip() for line in proc.stdout.splitlines() if "[Error]" in line) or proc.stdout
+    return proc
+
 def run_test(name, assembler, options, env):
     """Run one test with one assembler, returning a Result.
 
@@ -930,11 +974,11 @@ def run_test(name, assembler, options, env):
     # (The control file reads the assembler and output options from its
     # command line, as when a user runs it. py8dis prints the asm, which is
     # saved here, unless it's written with -o.)
-    # (For Baron, the asm is written with -o, since its output depends on the
-    # asm file's name and folder: the name of the file Baron saves, and the
-    # path of an included binary file, which Baron finds relative to the asm
-    # file)
-    output = ["-o", str(p.asm)] if assembler == "baron" else []
+    # (For Baron and Merlin 32, the asm is written with -o, since their output
+    # depends on the asm file's name and folder: the name of the file Baron
+    # saves, and the path of an included binary file, which they find
+    # relative to the asm file)
+    output = ["-o", str(p.asm)] if assembler in ("baron", "merlin32") else []
     proc = subprocess.run([sys.executable, str(p.control_file), "--" + assembler, "--json", str(p.json),
                            "--symbols", str(p.py8dis_symbols), "--symbols-format", SYMBOLS_FORMATS[assembler], "--xref", str(p.xref)] + output,
                           capture_output=True, text=True, env=env)
@@ -980,7 +1024,10 @@ def run_test(name, assembler, options, env):
     if assembler == "baron":
         shutil.rmtree(p.output_dir, ignore_errors=True)
         p.output_dir.mkdir(parents=True)
-    proc = subprocess.run(assemble_command(assembler, p, options.make_extras), capture_output=True, text=True)
+    if assembler == "merlin32":
+        proc = run_merlin32(p, options.make_extras)
+    else:
+        proc = subprocess.run(assemble_command(assembler, p, options.make_extras), capture_output=True, text=True)
     if assembler in ("beebasm", "baron") and options.make_extras:
         p.report.write_text(proc.stdout)
     if proc.returncode != 0:

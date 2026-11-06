@@ -1,0 +1,22 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0801  pydis_start (inline)
+    (not referenced)
+
+$080d  start (inline)
+    (not referenced)
+
+$080f  loop_c080f (inline)
+    $0818     loop_c080f+9                 bne loop_c080f
+
+$081a  return_1 (inline)
+    $0812     loop_c080f+3                 beq return_1
+
+$081b  l081b (inline)
+    $080f     loop_c080f                   lda l081b,x
+
+$0822  pydis_end (inline)
+    (not referenced)
+
+$ffd2  chrout (Memory locations)
+    $0814     loop_c080f+5                 jsr chrout

@@ -554,7 +554,9 @@ def _instruction_fields(binary_loc, c, instruction):
     # undocumented opcodes have 'undocumented' True, and the Z80's opcodes
     # their kind of undocumented opcode, or None. The 8080's are always
     # written as data.)
-    if instruction.form == output.Instruction.UNDOCUMENTED or getattr(c, "undocumented", False):
+    # (A branch that wraps round memory, written as data bytes for an
+    # assembler that can't write it, isn't undocumented)
+    if (instruction.form == output.Instruction.UNDOCUMENTED and not instruction.wrapped_branch) or getattr(c, "undocumented", False):
         result["undocumented"] = True
     if isinstance(cpu, cpuz80.CpuZ80):
         # (The value's expression is that of its part of the operand)

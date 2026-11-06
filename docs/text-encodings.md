@@ -63,6 +63,10 @@ High ASCII is the encoding `"apple"`, defined with `.cdef " ~", $a0`, so in an A
 
 ca65's character map (`.charmap`, from a character in the source to a byte) applies to every string and character literal, and can't be switched for one string. So ca65's output is like acme's: if the session's encoding is PETSCII, screen codes or high ASCII and the output has text in it, the output starts with the character map for it (e.g. `.charmap $61, $41 ; 'a'`; for high ASCII, one line for each of the 95 characters), and its strings and character literals are text (`.byte "Hello"`, `lda #'a'`). Strings in other encodings, ASCII included, are written as bytes with the text in a comment.
 
+### Merlin 32
+
+Merlin 32's `ASC` writes ASCII in single quotes and high ASCII in double quotes, which set bit 7 of each character, so a high ASCII string is text (`asc "HELLO", $8d`), and so is a character literal (`lda #"A"`). The bytes that aren't characters are written as hex numbers. Merlin 32 has no PETSCII or screen codes, so those strings are written as bytes with the text in a comment, as below.
+
 ### beebasm, Baron and xa
 
 beebasm, Baron and xa have no PETSCII, screen code or high ASCII directives, and no PETSCII or screen code character literals. So these strings are written as bytes with the text in a comment, e.g. `equb &c8, &45, &4c, &4c, &4f ; petscii "Hello"` or `equb &c8, &e5, &ec, &ec, &ef ; apple "Hello"`, and PETSCII and screen code characters are numbers with the character in a comment (`lda #$41 ; 'a'`). A high ASCII character literal is ASCII with bit 7 set (`lda #'A' or &80`).

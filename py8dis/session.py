@@ -64,8 +64,8 @@ class Session:
         options_from_command_line()).
 
         'assembler' is the assembler to produce output for: its name (beebasm,
-        baron, acme, xa, 64tass, ca65, z88dk or sjasmplus, or z88dk-8080, the
-        same as z88dk) or an assembler object.
+        baron, acme, xa, 64tass, ca65, merlin32, z88dk or sjasmplus, or
+        z88dk-8080, the same as z88dk) or an assembler object.
 
         'lower_case' is True for lower case output, False for upper case.
 
@@ -169,13 +169,16 @@ def make_assembler(name):
     if name == "ca65":
         import ca65
         return ca65.Ca65()
+    if name == "merlin32":
+        import merlin32
+        return merlin32.Merlin32()
     if name in ("z88dk", "z88dk-8080"):
         import z88dk
         return z88dk.Z88DK()
     if name == "sjasmplus":
         import sjasmplus
         return sjasmplus.Sjasmplus()
-    utils.die("Unknown assembler '{0}' (expected beebasm, baron, acme, xa, 64tass, ca65, z88dk or sjasmplus)".format(name))
+    utils.die("Unknown assembler '{0}' (expected beebasm, baron, acme, xa, 64tass, ca65, merlin32, z88dk or sjasmplus)".format(name))
 
 
 # The command line: the options a control file takes when it's run (see
@@ -189,6 +192,7 @@ parser.add_argument("-a", "--acme", action="store_true", help="generate acme-sty
 parser.add_argument("-x", "--xa", action="store_true", help="generate xa-style output")
 parser.add_argument("-t", "--64tass", dest="tass64", action="store_true", help="generate 64tass-style output")
 parser.add_argument("-c", "--ca65", action="store_true", help="generate ca65-style output")
+parser.add_argument("-m", "--merlin32", action="store_true", help="generate Merlin 32-style output")
 parser.add_argument("-z", "--z88dk", action="store_true", help="generate z88dk style output (for the 8080 or Z80)")
 parser.add_argument("-8", "--z88dk-8080", action="store_true", help="the same as --z88dk")
 parser.add_argument("-s", "--sjasmplus", action="store_true", help="generate sjasmplus-style output (for the Z80)")
@@ -211,9 +215,9 @@ def options_from_command_line():
     # (Other arguments are allowed, for the control file's own use.)
     args = parser.parse_known_args()[0]
 
-    assembler_count = sum(1 for x in (args.beebasm, args.baron, args.acme, args.xa, args.tass64, args.ca65, args.z88dk or args.z88dk_8080, args.sjasmplus) if x)
+    assembler_count = sum(1 for x in (args.beebasm, args.baron, args.acme, args.xa, args.tass64, args.ca65, args.merlin32, args.z88dk or args.z88dk_8080, args.sjasmplus) if x)
     if assembler_count > 1:
-        utils.die("--beebasm, --baron, --acme, --xa, --64tass, --ca65, --z88dk and --sjasmplus arguments are incompatible")
+        utils.die("--beebasm, --baron, --acme, --xa, --64tass, --ca65, --merlin32, --z88dk and --sjasmplus arguments are incompatible")
     if args.lower and args.upper:
         utils.die("--lower and --upper arguments are incompatible")
 
@@ -227,6 +231,8 @@ def options_from_command_line():
         assembler = "64tass"
     elif args.ca65:
         assembler = "ca65"
+    elif args.merlin32:
+        assembler = "merlin32"
     elif args.z88dk or args.z88dk_8080:
         assembler = "z88dk"
     elif args.sjasmplus:

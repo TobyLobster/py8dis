@@ -269,7 +269,11 @@ def define_forward_zero_page_labels_first():
     has to choose an instruction's size when it first sees it, and for a
     label it doesn't know yet it chooses an absolute address, so the
     instruction would be a byte longer: acme and xa warn, and beebasm
-    stops.) Called once the code has been traced.
+    stops.) For an assembler whose zero_page_labels_first is True (Merlin
+    32, which takes a label defined inline to be an absolute address even
+    after it's defined), each zero page label that a zero page instruction
+    uses anywhere is defined at the top. Called once the code has been
+    traced.
 
     (By go(), at the start of stage 3 in the module docstring, before any
     label names are chosen. It sets each such label's definable_inline to
@@ -306,7 +310,10 @@ def define_forward_zero_page_labels_first():
         # (An instruction whose operand has an expression is left alone: the
         # control file has chosen what it is, e.g. dfs226's
         # 'sta tube_brkv_handler_fwd,x', where that's a constant)
-        last_definition_addr = max(definition_addrs)
+        # (For an assembler that takes a label defined inline to be an
+        # absolute address even after it's defined, any such instruction
+        # counts)
+        last_definition_addr = 0x10000 if config.get_assembler().zero_page_labels_first else max(definition_addrs)
         for reference in label.references:
             if (reference.binary_addr < last_definition_addr
                     and isinstance(classification.get_classification(reference.binary_addr), zp_opcode)

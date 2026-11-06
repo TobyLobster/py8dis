@@ -33,6 +33,9 @@ says how to write them (see the Assembler class):
     unary_precedence()      how tightly each unary (prefix) operator binds
     unary_rewrite()         another way to write a unary operator, e.g. as a
                             binary operator for an assembler that doesn't have it
+    binary_rewrite()        another way to write a binary operator, e.g. a shift
+                            as a multiplication
+    expression_brackets()   the brackets, e.g. '{' and '}' for Merlin 32
 
 Brackets are added where they are needed: round a part of the expression
 that binds less tightly than the operator it's used with. A part whose
@@ -58,10 +61,13 @@ For example, these trees (from maker.py) are written:
     xa          <(table + 1)                    (table >> 8) + 1
     z88dk       (table + 1) & $ff               (table >> 8) + 1
     sjasmplus   low (table + 1)                 (high table) + 1
+    merlin32    <{table + 1}                    {table & $ffff} / $0100 + 1
 
 and make_op1('NOT', 'bits') is 'NOT(bits)' for beebasm, '!bits' for acme,
-'~bits' for 64tass, ca65, z88dk and sjasmplus, and '-1 - bits' for xa (which
-has no bitwise NOT).
+'~bits' for 64tass, ca65, z88dk and sjasmplus, '-1 - bits' for xa (which
+has no bitwise NOT), and 'bits ! $ffffffff' for Merlin 32 (whose '!' is EOR).
+(Merlin 32 works expressions out from left to right, with '{' and '}' as its
+brackets: see merlin32.py.)
 
 Where an expression is used can also change how it's written, e.g. in an
 assertion, or as an instruction operand. Use render(expr, context) for these.
@@ -391,6 +397,13 @@ class Binary(Expr):
 
     def _render(self, nested):
         op = self.generic_op()
+
+        # Does the assembler write this another way? (e.g. a shift as a
+        # multiplication, for an assembler that has no shift operators)
+        rewritten = config.get_assembler().binary_rewrite(op, self.left, self.right, nested)
+        if rewritten is not None:
+            return _render(rewritten, nested)
+
         level = config.get_assembler().binary_precedence().get(op)
 
         # Operators of the same level are worked out left to right, so the
@@ -485,16 +498,18 @@ class InContext(utils.LazyString):
         return self.resolved
 
 def is_fully_bracketed(text):
-    """Is the whole text enclosed in one matching pair of brackets?
-    e.g. '(a OR b)' is, but '(a) OR (b)' is not."""
+    """Is the whole text enclosed in one matching pair of brackets (the
+    assembler's, see Assembler.expression_brackets())? e.g. '(a OR b)' is,
+    but '(a) OR (b)' is not."""
 
-    if not (text.startswith("(") and text.endswith(")")):
+    open_bracket, close_bracket = config.get_assembler().expression_brackets()
+    if not (text.startswith(open_bracket) and text.endswith(close_bracket)):
         return False
     depth = 0
     for i, c in enumerate(text):
-        if c == "(":
+        if c == open_bracket:
             depth += 1
-        elif c == ")":
+        elif c == close_bracket:
             depth -= 1
             if depth == 0 and i != len(text) - 1:
                 # The first bracket closed before the end
@@ -549,7 +564,8 @@ def _operand_text(expr, parent_level, strict, parent_op=None, same_op_ok=None, u
     text, level, chain = _render(expr, nested=True)
     if level == ATOM:
         return text, NO_CHAIN
-    bracketed = "(" + text + ")", NO_CHAIN
+    open_bracket, close_bracket = config.get_assembler().expression_brackets()
+    bracketed = open_bracket + text + close_bracket, NO_CHAIN
 
     # Needed brackets: where either precedence isn't known, or the operand
     # binds less tightly (or, if 'strict', no more tightly) than the

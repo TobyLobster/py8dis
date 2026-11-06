@@ -1,0 +1,14 @@
+low_a       = $0900
+low_b       = $0901
+c0903       = $0903
+loop_c0905  = $0905
+c0909       = $0909
+l090a       = $090a
+c090c       = $090c
+l090d       = $090d
+low_b_baz   = $090d
+pydis_start = $2000
+sub_c2022   = $2022
+sub_c2039   = $2039
+pydis_end   = $2040
+lffee       = $ffee

@@ -1,0 +1,7 @@
+pydis_start = $0801
+start       = $080d
+loop_c080f  = $080f
+return_1    = $081a
+l081b       = $081b
+pydis_end   = $0822
+chrout      = $ffd2

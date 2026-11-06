@@ -5,9 +5,10 @@ py8dis writes its output for one of several assemblers (see
 docs/assemblers.md). Each is a class derived from Assembler, in a module of
 its own: beebasm.py (Beebasm), baron.py (Baron, derived from Beebasm),
 acme.py (Acme), xa.py (Xa), tass64.py (Tass64, for 64tass), ca65.py (Ca65),
-z88dk.py (Z88DK, for z88dk-z80asm) and sjasmplus.py (Sjasmplus, derived from
-Z88DK). session.make_assembler() makes the one named on the command line
-(e.g. --acme), and config.get_assembler() returns the session's.
+merlin32.py (Merlin32, for Merlin 32), z88dk.py (Z88DK, for z88dk-z80asm) and
+sjasmplus.py (Sjasmplus, derived from Z88DK). session.make_assembler() makes
+the one named on the command line (e.g. --acme), and config.get_assembler()
+returns the session's.
 
 An assembler object doesn't make the output itself. Its methods are hooks,
 which the rest of py8dis calls whenever it needs something written in the
@@ -175,6 +176,21 @@ class Assembler:
     # py8dis writes the 'A' (see cpu6502.py).
     explicit_a = False
 
+    # A zero page label that a zero page instruction uses is defined at the
+    # top of the output, rather than inline, if the instruction comes before
+    # the label's place in the output (see
+    # disassembly.define_forward_zero_page_labels_first()). If
+    # 'zero_page_labels_first' is True, it's defined at the top wherever the
+    # instruction is: for an assembler that takes a label defined inline to
+    # be an absolute address even after it's defined (Merlin 32).
+    zero_page_labels_first = False
+
+    # If 'inline_comment_needs_space' is True, an instruction or data that
+    # reaches the column of the inline comments has a space after it, before
+    # the comment, rather than nothing (Merlin 32 takes a ';' straight after
+    # an operand to be part of it).
+    inline_comment_needs_space = False
+
     # At the end of the output, py8dis writes assertions that each
     # expression it has used (e.g. one given with expr()) has the value it
     # should have there. The assembler checks them (where it can: e.g.
@@ -240,6 +256,20 @@ class Assembler:
         time the expression is rendered."""
         return None
 
+    def binary_rewrite(self, op, left, right, nested):
+        """For an assembler that writes the generic binary operator 'op'
+        (e.g. '<<') another way, the expression to write instead (an
+        expression.Expr, e.g. 'left * 4' for 'left << 2'), otherwise None, in
+        which case it's written as binary_operators() says. 'nested' says
+        whether it's part of a larger expression. Called each time the
+        expression is rendered."""
+        return None
+
+    def expression_brackets(self):
+        """The brackets that group part of an expression, as (opening,
+        closing): ('(', ')') by default. (Merlin 32's are '{' and '}'.)"""
+        return ("(", ")")
+
     def expression_in_context(self, expr, text, level, context):
         """The text to write for the expression 'expr' in the given context
         (expression.py's DEFAULT, OPERAND, ASSERTION or PREPROCESSOR), given
@@ -259,8 +289,18 @@ class Assembler:
         and 'offset', the distance from the branch instruction's address to
         the target as if it didn't wrap (e.g. -16). The default, the label,
         is for an assembler that wraps the target as the CPU does (acme and
-        xa do). Called by cpu6502.branch_operand() and cpuz80.py."""
+        xa do). None means the assembler can't write such a branch at all
+        (6502 only: Merlin 32), so it's written as data bytes, with the
+        branch in a comment. Called by cpu6502.branch_operand() and
+        cpuz80.py."""
         return label
+
+    def wrapped_branch_offset(self, label):
+        """For a 6502 branch whose target wraps round memory, written as data
+        bytes (see wrapped_branch_operand()), the text of its offset byte,
+        given 'label', the label at the target (e.g. Merlin 32's
+        '{label-*-2} & $ff'), or None to write it as a number."""
+        return None
 
     def can_force_absolute(self):
         """True if the assembler can be told to use absolute addressing for
@@ -280,6 +320,16 @@ class Assembler:
         output.Instruction.text()) if can_force_absolute(), so the default
         raises NotImplementedError."""
         raise NotImplementedError
+
+    def operand_text(self, prefix, operand):
+        """The text to write for an instruction's operand, given its usual
+        text, 'operand', and the 'prefix' written before it (e.g. '#' for an
+        immediate operand, or '(' for an indirect one). By default it's the
+        operand as it is. (Merlin 32's rewrites a 6502 address operand that
+        starts with '>'.) Called by output.Instruction.text() for an
+        instruction that's written as an instruction (not data), after
+        direct_operand()."""
+        return operand
 
     def direct_operand(self, operand):
         """The text to write for a 6502 instruction's operand that isn't
@@ -339,6 +389,30 @@ class Assembler:
         acme.py.)"""
         import classification
         return classification.get_constant8(binary_addr)
+
+    def string_expression_directive(self, directive, length):
+        """The directive (with a space after it) for a string of 'length'
+        bytes whose bytes are written as one expression (given with expr(),
+        e.g. a constant's name, or $80+'O' for the last character of a
+        string marked with stringhi()), given the string's usual directive
+        (from text_directive(), or None if it's written as bytes). By
+        default it's the usual directive, or string_prefix() if there's
+        none. (Merlin 32's 'ASC' can't take an expression, so it's a byte's
+        directive for one byte.) Called by output.StringData."""
+        return directive if directive is not None else self.string_prefix()
+
+    def string_quote(self, encoding):
+        """The quote round the characters of a string in the given encoding:
+        '"' by default. (Merlin 32's ASC uses "'" for ASCII and '"' for high
+        ASCII, which sets bit 7.)"""
+        return '"'
+
+    def string_quote_literal(self, n, encoding):
+        """How the byte n, in a string in the given encoding, is written when
+        it's the quote character, which can't be inside the quotes: by
+        default, a double quote is the character literal '"'. None means
+        it's written as other numbers are (see string_number())."""
+        return "'\"'" if encoding.char(n) == '"' else None
 
     def text_chr(self, n, encoding):
         """How the byte n is written inside the double quotes of a string in

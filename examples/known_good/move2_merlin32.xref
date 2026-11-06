@@ -1,0 +1,46 @@
+Cross-reference listing: each label, where it's defined, and what refers to it.
+
+$0900  low_a (inline)
+    $2008     pydis_start+8                jsr low_a
+    $2022     sub_c2022                    lda low_a,y
+    $2025     sub_c2022+3                  sta low_a,y
+
+$0901  low_b (inline)
+    $2039     sub_c2039                    lda low_b,x
+    $203c     sub_c2039+3                  sta low_b,x
+
+$0903  c0903 (inline)
+    $0907[2]  c0903+4                      bne c0903
+    $090f[2]  low_b_baz+2                  bne c0903
+
+$0905  loop_c0905 (inline)
+    $090a[1]  c0909+1                      bne loop_c0905
+
+$0909  c0909 (inline)
+    $0902[1]  low_a+2                      jmp c0909
+
+$090a  l090a (inline)
+    $0903[2]  c0903                        lda l090a,x
+
+$090c  c090c (inline)
+    (not referenced)
+
+$090d  l090d (relative to the item it's inside), low_b_baz (inline)
+    $090f[1]  c090c+3                      jmp l090d
+
+$2000  pydis_start (inline)
+    (not referenced)
+
+$2022  sub_c2022 (inline)
+    $2005     pydis_start+5                jsr sub_c2022
+
+$2039  sub_c2039 (inline)
+    $090c[1]  c090c                        jsr sub_c2039
+
+$2040  pydis_end (inline)
+    (not referenced)
+
+$ffee  lffee (Memory locations)
+    $0906[1]  loop_c0905+1                 jsr lffee
+    $2002     pydis_start+2                jsr lffee
+    $200d     pydis_start+13               jmp lffee

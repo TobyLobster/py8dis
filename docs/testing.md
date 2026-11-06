@@ -18,7 +18,7 @@ Each test disassembles a program for one or more assemblers, assembles the outpu
 
 py8dis itself needs only Python 3. The tests also use these, when they're installed, and skip what needs them otherwise:
 
-- the assemblers (acme, beebasm, Baron, xa, 64tass, ca65, z88dk-z80asm and sjasmplus), to check that each disassembly assembles to the original program;
+- the assemblers (acme, beebasm, Baron, xa, 64tass, ca65, Merlin 32, z88dk-z80asm and sjasmplus), to check that each disassembly assembles to the original program;
 - the [jsonschema](https://pypi.org/project/jsonschema/) package (`pip install jsonschema`), to check the JSON output against its schema (see [output-files.md](output-files.md)). Without it, `run_tests.py -c` says so at the end.
 
 `./run_tests.py --help` lists the other options:
@@ -39,4 +39,4 @@ The tests and what each one covers are listed in `run_tests.py`. Besides the dis
 
 With `-c`, when all the tests are run, it also runs `session_tests.py` (several disassemblies in one process, using py8dis as a library, and a check that each of py8dis's modules can be imported on its own) and `render_tests.py` (how each kind of line is written for each assembler; `./render_tests.py --print` shows what each test gives now).
 
-On GitHub, the tests are run on every push and pull request (`.github/workflows/tests.yml`), with Python 3.9 and 3.14 and all eight assemblers: acme, xa, 64tass and ca65 (cc65) from Ubuntu's packages, and beebasm, Baron, z88dk-z80asm and sjasmplus built from source (and cached). The results are on the repository's Actions tab.
+On GitHub, the tests are run on every push and pull request (`.github/workflows/tests.yml`), with Python 3.9 and 3.14 and all nine assemblers: acme, xa, 64tass and ca65 (cc65) from Ubuntu's packages, and beebasm, Baron, Merlin 32, z88dk-z80asm and sjasmplus built from source (and cached). The results are on the repository's Actions tab.

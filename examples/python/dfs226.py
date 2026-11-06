@@ -25,7 +25,9 @@ def patched_branch(base_label, offset_addr, target_label, label_only=False):
     assert offset < 0x80
     f = label if label_only else entry
     f(base_addr + 2 + offset, target_label)
-    expr(offset_addr, "%s-(%s+2)" % (target_label, base_label))
+    # (In the assembler's brackets: '{' and '}' for Merlin 32)
+    open_bracket, close_bracket = config.get_assembler().expression_brackets()
+    expr(offset_addr, "%s-%s%s+2%s" % (target_label, open_bracket, base_label, close_bracket))
 
 load(0x8000, "orig/dfs226.orig", "6502", "f083f49d6fe66344c650d7e74249cb96")
 #set_output_filename("dfs226.rom")

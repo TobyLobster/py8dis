@@ -284,7 +284,9 @@ class Instruction(Line):
                        written as data bytes (the opcode, then the operand, if
                        any: one byte, or the low and high bytes of a two byte
                        operand, as 'operand_length' says), with the
-                       instruction it runs as in a comment
+                       instruction it runs as in a comment; also a branch
+                       whose target wraps round memory, for an assembler that
+                       can't write one ('wrapped_branch')
 
     'char_literal' is a character to show in a comment after the instruction
     (e.g. for 'lda #65', "'A'"), or None.
@@ -324,6 +326,10 @@ class Instruction(Line):
         # comment, if not the instruction
         self.data_items = None
         self.comment_text = None
+        # For UNDOCUMENTED: True for a branch whose target wraps round memory,
+        # which the assembler can't write, so it's data bytes too (see
+        # cpu6502.branch_operand()), but isn't an undocumented opcode
+        self.wrapped_branch = False
 
         self.binary_loc = binary_loc
         self.length = length
@@ -371,16 +377,18 @@ class Instruction(Line):
             result = "%s%s%s" % (indent, assembler.byte_prefix(), ", ".join(items))
             if plain:
                 return result
+            note = "" if self.wrapped_branch else " (undocumented)"
             if self.comment_text is not None:
-                return result + " %s %s (undocumented)" % (assembler.comment_prefix(), self.comment_text)
-            return result + " %s %s%s (undocumented)" % (assembler.comment_prefix(), mnemonic,
-                                                                 "" if self.operand is None else " " + self.prefix + str(self.operand) + suffix)
+                return result + " %s %s%s" % (assembler.comment_prefix(), self.comment_text, note)
+            return result + " %s %s%s%s" % (assembler.comment_prefix(), mnemonic,
+                                            "" if self.operand is None else " " + self.prefix + str(self.operand) + suffix, note)
 
         if self.operand is None:
             return "%s%s" % (indent, mnemonic)
 
         if self.form == Instruction.FORCE_ABSOLUTE:
-            result = assembler.force_abs_instruction(mnemonic, self.prefix, str(self.operand), suffix)
+            operand = assembler.operand_text(self.prefix, str(self.operand))
+            result = assembler.force_abs_instruction(mnemonic, self.prefix, operand, suffix)
             return result.strip() if plain else result
 
         if self.form == Instruction.AS_DATA:
@@ -399,6 +407,7 @@ class Instruction(Line):
         if self.prefix == "" and operand.startswith("("):
             # (Not indirect, which some assemblers would take it to be)
             operand = assembler.direct_operand(operand)
+        operand = assembler.operand_text(self.prefix, operand)
         result = "%s%s %s%s%s" % (indent, mnemonic, self.prefix, operand, suffix)
         if self.char_literal is not None and not plain:
             result += " %s %s" % (assembler.comment_prefix(), self.char_literal)
@@ -561,9 +570,10 @@ class StringData(Line):
             name_labels_in(classification.get_expression(binary_addr, session.current().memory.binary[binary_addr]))
             return
         _, text_chr = self._text_form()
+        assembler = config.get_assembler()
         for i in range(self.length):
             c = memorymanager.get_u8_binary(binary_addr + i)
-            if text_chr is None or (text_chr(c) is None and self.encoding.char(c) != '"'):
+            if text_chr is None or (text_chr(c) is None and assembler.string_quote_literal(c, self.encoding) is None):
                 name_labels_in(classification.get_constant8(binary_addr + i))
 
     def text_comment(self, start, end):
@@ -612,6 +622,8 @@ class StringData(Line):
         annotations = self.annotations
         directive, text_chr = self._text_form()
         as_bytes = directive is None
+        # (The quote round the characters, e.g. '"')
+        quote = assembler.string_quote(self.encoding)
 
         def finish(start, end, text):
             """The line for bytes start to end (not included) of the string,
@@ -634,7 +646,7 @@ class StringData(Line):
         # written in place of its bytes, on one line
         if binary_loc.binary_addr in expressions:
             s = classification.get_expression(binary_loc.binary_addr, memory_binary[binary_loc.binary_addr])
-            result.append(finish(0, self.length, utils.make_indent(1) + (directive if directive is not None else assembler.string_prefix()) + s))
+            result.append(finish(0, self.length, utils.make_indent(1) + assembler.string_expression_directive(directive, self.length) + s))
             return result
 
         # Add each byte to the line in turn, until the next one wouldn't fit
@@ -650,21 +662,22 @@ class StringData(Line):
             if c_in_string is not None:
                 # A character in the quotes, opening them if needed
                 if state == 0:
-                    next_char += '"'
+                    next_char += quote
                 elif state == 2:
-                    next_char += ', "'
+                    next_char += ', ' + quote
                 next_state = 1
                 next_char += c_in_string
             else:
                 # A number, closing the quotes if needed
                 if state == 1:
-                    next_char += '", '
+                    next_char += quote + ', '
                 elif state == 2:
                     next_char += ", "
                 next_state = 2
-                if self.encoding.char(c) == '"' and not as_bytes:
-                    # (A double quote as a character literal)
-                    next_char += "'\"'"
+                quote_literal = None if as_bytes else assembler.string_quote_literal(c, self.encoding)
+                if quote_literal is not None:
+                    # (e.g. a double quote, as a character literal)
+                    next_char += quote_literal
                 elif as_bytes:
                     next_char += classification.get_constant8(binary_loc.binary_addr + i)
                 else:
@@ -684,7 +697,7 @@ class StringData(Line):
                 # Save out the line before the next char, which is added
                 # again on a new line
                 if state == 1:
-                    s += '"'
+                    s += quote
                 result.append(finish(start_line_i, i, s))
                 s = prefix
                 start_line_i = i
@@ -697,7 +710,7 @@ class StringData(Line):
         # The last line
         if s != prefix:
             if state == 1:
-                s += '"'
+                s += quote
             result.append(finish(start_line_i, self.length, s))
         return result
 

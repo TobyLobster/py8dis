@@ -1,0 +1,15 @@
+test_byte               = $0070
+pydis_start             = $2000
+start                   = $2000
+print_message           = $2010
+print_loop              = $2012
+welcome_message         = $201e
+print_decimal_number    = $2029
+loop_next_decimal_digit = $202b
+loop_finding_digit      = $202d
+found_digit             = $2038
+decimal_digits          = $2042
+print_hex_number        = $2045
+print_hex_digit         = $2050
+pydis_end               = $2059
+OSWRCH                  = $ffee

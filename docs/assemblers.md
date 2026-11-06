@@ -10,6 +10,7 @@ py8dis writes its output for one of these assemblers, chosen on the command line
 | [xa](https://www.floodgap.com/retrotech/xa/)             | 6502, 65C02    | `--xa` or `-x`        | |
 | [64tass](https://sourceforge.net/projects/tass64/)       | 6502, 65C02    | `--64tass` or `-t`    | 1.59.3120 |
 | [ca65](https://cc65.github.io/doc/ca65.html)             | 6502, 65C02    | `--ca65` or `-c`      | V2.18 (Ubuntu's cc65 2.19) |
+| [Merlin 32](https://brutaldeluxe.fr/products/crossdevtools/merlin/) | 6502, 65C02 | `--merlin32` or `-m` | v1.1.10 |
 | [z88dk-z80asm](https://z88dk.org)                        | 8080, Z80      | `--z88dk` or `-z`     | v2.4 |
 | [sjasmplus](https://github.com/z00m128/sjasmplus)        | Z80            | `--sjasmplus` or `-s` | v1.24.0 |
 
@@ -94,6 +95,38 @@ where `ca65.cfg` (as in `examples/ca65.cfg`) gives a plain binary of the bytes i
 ca65 doesn't accept a register's name (`a`, `x`, `y`), `z`, or one of the CPU's mnemonics as a label, so py8dis stops with an error for one. Rename it.
 
 Its character map for PETSCII and screen codes is in [text-encodings.md](text-encodings.md#ca65).
+
+## Merlin 32
+
+Merlin 32 is Brutal Deluxe's cross-assembler in the syntax of Merlin 8 and Merlin 16, the Apple II's best-known assemblers. Assemble the output with:
+
+```
+merlin32 program.asm
+```
+
+which writes the program to a file named after the asm file without its extension (`program`), in the same folder, with `_FileInformation.txt` (its ProDOS file type) beside it. The output starts with a comment saying so.
+
+The output is in Merlin's syntax: a label in the first column, then `EQU`, `ORG`, `DFB`, `DA`, `ASC`, `DS`, `PUTBIN` and `ERR`. It differs from the other assemblers' in a few ways:
+
+- **Expressions:** Merlin works them out strictly from left to right (`2+3*4` is 20), and groups them with `{` and `}`, not brackets. So `a + b * c` is written `a + {b * c}`, and `(a + b) * c` is written `a + b * c`. AND, OR and EOR are `&`, `.` and `!`. It has no MOD (py8dis stops with an error for one, as for xa), no NOT (it's written `x ! $ffffffff`) and no shifts (a shift by a number is written as a multiplication or division, e.g. `x * $0100`).
+- **Low and high bytes:** `<` and `>` apply to the whole of the rest of an operand, and can only start it, so in a larger expression they're written `x & $ff` and `x & $ffff / $0100`. In an address operand (not an immediate one), Merlin 32 takes `>` to choose the 65816's long addressing, so an address that starts with a high byte is written that way too.
+- **Absolute addressing** for a zero page address is forced with `:` after the mnemonic, e.g. `lda: l0070,x`.
+- **Zero page labels:** Merlin 32 takes a label defined in the code to be an absolute address, even after it's defined, and so is one defined with four hex digits (`$0070`). So a zero page label that a zero page instruction uses is always defined at the top, with two hex digits (`l0070 EQU $70`).
+- **Another range of addresses, and moved code:** `ORG` sets the address the code is assembled for, but the bytes still follow on in the output. So a gap before a later range (from a second `load()`) is filled with `DS`, and a block that runs somewhere else (see `move()`) is just an `ORG` with its runtime address, then another with its address in the binary after it.
+- **Branches round memory:** a branch whose target wraps round the top or bottom of memory can't be written at all, so it's written as data bytes, with the offset worked out from the target's label and the branch in a comment, e.g. `dfb $30, {l0020-*-2} & $ff ; bmi l0020`.
+- **Strings:** `ASC 'Hello'` for ASCII, and `ASC "HELLO"` for the Apple II's high ASCII (which sets bit 7 of each character, see [text-encodings.md](text-encodings.md#merlin-32)). A string can't contain its own quote, so that's a number, as are the bytes that aren't characters. Merlin 32 reads those numbers as hex, two digits each, as `HEX` does, so they're written in hex (`$0d`), never as a constant's name or an expression.
+- **Character literals:** `'A'`, or `"A"` with bit 7 set. A single quote, a comma, `{` or `}` can't be written as one, so it's a number.
+- **Assertions:** `ERR expression - value`, which stops Merlin 32 unless it's 0. One that uses the current address (`*`) is left out, since it would be checked at the end of the file.
+- **Included files:** `PUTBIN` finds the file relative to the asm file, so with `-o`, py8dis writes its path relative to the asm file's folder (as for Baron).
+- **Inline comments:** Merlin 32 takes a `;` straight after an operand to be part of it, so a line that reaches the comments' column has a space before its comment.
+
+The 6502's undocumented opcodes are written as data, as for beebasm, Baron and xa. 65C02 code needs nothing extra.
+
+Merlin 32 doesn't accept a register's name (`a`, `x`, `y`) as a label (`x` would replace the index register in `lda table,x`), so py8dis stops with an error for one. Rename it.
+
+An expression given as text (e.g. to `expr()`) is written as it is, so it has to be in Merlin's syntax, with `{` and `}` rather than brackets. A control file can get the assembler's brackets with `config.get_assembler().expression_brackets()` (see `examples/python/starship.py`), or make the expression with `make_add()` etc., which write it for each assembler.
+
+Merlin 32 isn't packaged, but it builds from [its source](https://github.com/lroathe/merlin32) on Linux and macOS with `make -C Source` (its v1.1.11 tag, which reports itself as v1.1.10).
 
 ## z88dk-z80asm
 

@@ -40,7 +40,7 @@ PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
 
 # The assemblers for each CPU, by the names session.new_session() takes (for
 # 8080 code, the tests use "z88dk-8080")
-ASSEMBLERS_6502 = ["acme", "beebasm", "baron", "xa", "64tass", "ca65"]
+ASSEMBLERS_6502 = ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"]
 ASSEMBLERS_Z80 = ["z88dk", "sjasmplus"]
 
 # The bytes at &2000 onwards: 'lda #&41' (with 'A' as a character), 'lda
@@ -225,6 +225,22 @@ def with_assertions_6502():
     config.get_assembler().assert_expr("target - P%", 3)
     return output.Directive("disassembly_end")
 
+def with_assertions_merlin32():
+    """The end of the output, with assertions, for Merlin 32: a name's value,
+    a negative value, an AND, a low byte and a high byte (which apply to the
+    whole of the rest of the expression, so they're written with '&' and
+    '/'), and one that uses the current address ('*'), which is left out"""
+    import config
+    import expression
+    import output
+    config.get_assembler().assert_expr("table", 0x1234)
+    config.get_assembler().assert_expr("delta", -0x36)
+    config.get_assembler().assert_expr(expression.Binary(expression.Name("flags"), "AND", expression.Num(0xf0, "hex")), 0x80)
+    config.get_assembler().assert_expr(expression.Unary("<", expression.Binary(expression.Name("table"), "+", expression.Num(1))), 0x35)
+    config.get_assembler().assert_expr(expression.Unary(">", expression.Name("table")), 0x12)
+    config.get_assembler().assert_expr("target - *", 3)
+    return output.Directive("disassembly_end")
+
 # "Hello", '"', 13 in PETSCII (shifted H), and "@ab[" in screen codes
 PETSCII_HELLO = [0xc8, 0x45, 0x4c, 0x4c, 0x4f, 0x22, 0x0d]
 # "Hi!", a double quote, then a CR, in the Apple II's high ASCII (with bit 7
@@ -263,9 +279,9 @@ def make_tests():
          ASSEMBLERS_6502, lambda: instruction(0x2002, 2, "lda", expression.Binary(Name("ptr"), "+", Num(1)))),
         # A zero page address in an instruction that uses absolute addressing
         ("force absolute addressing",
-         ["acme", "xa", "64tass", "ca65"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), form=Instruction.FORCE_ABSOLUTE)),
+         ["acme", "xa", "64tass", "ca65", "merlin32"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), form=Instruction.FORCE_ABSOLUTE)),
         ("force absolute addressing, indexed *",
-         ["acme", "xa", "64tass", "ca65"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
+         ["acme", "xa", "64tass", "ca65", "merlin32"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.FORCE_ABSOLUTE)),
         ("absolute addressing as data *",
          ["beebasm", "baron"], lambda: instruction(0x2004, 3, "lda", Name("zp_value"), suffix=",x", form=Instruction.AS_DATA,
                                           data_byte=Num(0xad, "hex"), listing_operand=Name("zp_value"))),
@@ -354,7 +370,7 @@ def make_tests():
         ("code start *",
          ASSEMBLERS_6502 + ["z88dk-8080", "sjasmplus"], lambda: output.Directive("code_start", 0x2000, 0x2014, True)),
         ("code start, after other code *",
-         ["xa", "ca65", "sjasmplus", "baron"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
+         ["xa", "ca65", "merlin32", "sjasmplus", "baron"], lambda: output.Directive("code_start", 0x3000, 0x3010, False)),
         ("code start, after other code, padded from its end *",
          ["z88dk-8080", "z88dk"], lambda: output.Directive("code_start", 0x3000, 0x3010, False, 0x2014)),
         ("include binary file *",
@@ -376,7 +392,7 @@ def make_tests():
         ("6510 JAM, with cycles",
          ASSEMBLERS_6502, with_6510([0x02], show_cycles=True)),
         ("6510 undocumented opcode as data, zero page operand *",
-         ["beebasm", "baron", "xa"], undocumented_zp),
+         ["beebasm", "baron", "xa", "merlin32"], undocumented_zp),
         ("start, for the 6510 *",
          ["acme", "64tass", "ca65"], lambda: (setattr(session.current(), "cpu", __import__("cpu6510").Cpu6510()), output.Directive("disassembly_start"))[1]),
         ("start, for the 65C02 *",
@@ -402,6 +418,8 @@ def make_tests():
          ASSEMBLERS_6502, lambda: instruction(0x2000, 2, "lda", expression.Binary(expression.Binary(Num(0x27, "char"), "+", Num(0x5c, "char")), "+", Num(0x22, "char")), prefix="#")),
         ("6502 operand with a low byte of an expression",
          ASSEMBLERS_6502, lambda: instruction(0x2000, 2, "lda", expression.Unary("<", expression.Binary(Name("table"), "+", Num(1))), prefix="#")),
+        ("6502 address operand with a high byte",
+         ASSEMBLERS_6502, lambda: instruction(0x2002, 2, "lda", expression.Unary(">", expression.Binary(Name("table"), "+", Num(1))), suffix=",x")),
         # Baron's sections (for the code and for each move), constants, and
         # the start and end of its output (and beebasm's end)
         ("6502 move start and end *",
@@ -420,6 +438,13 @@ def make_tests():
          ["baron"], lambda: output.Directive("disassembly_start")),
         ("end, with 6502 assertions *",
          ["beebasm", "baron"], with_assertions_6502),
+        # Merlin 32's moves, the start of its output, and its assertions
+        ("6502 move start and end, Merlin 32 *",
+         ["merlin32"], lambda: MultiLine(output.Directive("pseudopc_start", 0x0900, 0x2000, 0x10, 1), output.Directive("pseudopc_end", 0x0900, 0x2000, 0x10, 1))),
+        ("start, for Merlin 32",
+         ["merlin32"], lambda: output.Directive("disassembly_start")),
+        ("end, with Merlin 32 assertions *",
+         ["merlin32"], with_assertions_merlin32),
     ]
 
 # What each test should render, for each assembler (one string per line of
@@ -473,6 +498,12 @@ EXPECTED = {
     'implied, ca65, upper case': [
         '    RTS                                                               ; 2007: 60          `',
     ],
+    'implied, merlin32': [
+        '    rts                                                               ; 2007: 60          `',
+    ],
+    'implied, merlin32, upper case': [
+        '    RTS                                                               ; 2007: 60          `',
+    ],
     'immediate with a character, acme': [
         "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
@@ -489,6 +520,9 @@ EXPECTED = {
         "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
     'immediate with a character, ca65': [
+        "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
+    ],
+    'immediate with a character, merlin32': [
         "    lda #$41 ; 'A'                                                    ; 2000: a9 41       .A",
     ],
     'operand prefix and suffix, acme': [
@@ -527,6 +561,12 @@ EXPECTED = {
     'operand prefix and suffix, ca65, upper case': [
         '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
     ],
+    'operand prefix and suffix, merlin32': [
+        '    lda (ptr),y                                                       ; 2002: b1 70       .p',
+    ],
+    'operand prefix and suffix, merlin32, upper case': [
+        '    LDA (ptr),Y                                                       ; 2002: B1 70       .p',
+    ],
     'operand expression, acme': [
         '    lda ptr + 1                                                       ; 2002: b1 70       .p',
     ],
@@ -545,11 +585,14 @@ EXPECTED = {
     'operand expression, ca65': [
         '    lda ptr + 1                                                       ; 2002: b1 70       .p',
     ],
+    'operand expression, merlin32': [
+        '    lda ptr + 1                                                       ; 2002: b1 70       .p',
+    ],
     # A zero page address used with absolute addressing (e.g. LDA's &ad
     # rather than &a5), which each assembler has its own way to force:
-    # acme's '+2', xa's '!', 64tass's '@w' and ca65's 'a:'. beebasm and Baron
-    # have none, so the instruction is written as data bytes, with the
-    # instruction in a comment.
+    # acme's '+2', xa's '!', 64tass's '@w', ca65's 'a:' and Merlin 32's ':'
+    # after the mnemonic. beebasm and Baron have none, so the instruction is
+    # written as data bytes, with the instruction in a comment.
     'force absolute addressing, acme': [
         '    lda+2 zp_value                                                    ; 2004: ad 70 00    .p.',
     ],
@@ -561,6 +604,9 @@ EXPECTED = {
     ],
     'force absolute addressing, ca65': [
         '    lda a:zp_value                                                    ; 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, merlin32': [
+        '    lda: zp_value                                                     ; 2004: ad 70 00    .p.',
     ],
     'force absolute addressing, indexed, acme': [
         '    lda+2 zp_value,x                                                  ; 2004: ad 70 00    .p.',
@@ -585,6 +631,12 @@ EXPECTED = {
     ],
     'force absolute addressing, indexed, ca65, upper case': [
         '    LDA A:zp_value,X                                                  ; 2004: AD 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, merlin32': [
+        '    lda: zp_value,x                                                   ; 2004: ad 70 00    .p.',
+    ],
+    'force absolute addressing, indexed, merlin32, upper case': [
+        '    LDA: zp_value,X                                                   ; 2004: AD 70 00    .p.',
     ],
     'absolute addressing as data, beebasm': [
         '    equb &ad, <(zp_value), >(zp_value) ; lda+2 zp_value,x             ; 2004: ad 70 00    .p.',
@@ -720,6 +772,9 @@ EXPECTED = {
     '6502 CPU state, ca65': [
         '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
     ],
+    '6502 CPU state, merlin32': [
+        '    lda #$41                                                          ; 2000: a9 41       .A  A:41 X:-- Y:-- n---z-',
+    ],
     '8080 CPU state, z88dk-8080': [
         '    mvi a, $41                                                        ; 2000: 3e 41       >A  A:41 B:-- C:-- D:-- E:-- H:-- L:-- SP:---- -----',
     ],
@@ -770,6 +825,12 @@ EXPECTED = {
     'byte data, ca65, upper case': [
         '    .BYTE 1, 2, 3, $FF                                                ; 2008: 01 02 03... ...',
     ],
+    'byte data, merlin32': [
+        '    dfb 1, 2, 3, $ff                                                  ; 2008: 01 02 03... ...',
+    ],
+    'byte data, merlin32, upper case': [
+        '    DFB 1, 2, 3, $FF                                                  ; 2008: 01 02 03... ...',
+    ],
     'byte data, z88dk-8080': [
         '    db 1, 2, 3, $ff                                                   ; 2008: 01 02 03... ...',
     ],
@@ -806,6 +867,10 @@ EXPECTED = {
         '    .byte 1,   2                                                      ; 2008: 01 02       ..',
         '    .byte 3, $ff                                                      ; 200a: 03 ff       ..',
     ],
+    'byte data, two per line, merlin32': [
+        '    dfb 1,   2                                                        ; 2008: 01 02       ..',
+        '    dfb 3, $ff                                                        ; 200a: 03 ff       ..',
+    ],
     'word data, acme': [
         '    !word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
@@ -824,6 +889,9 @@ EXPECTED = {
     'word data, ca65': [
         '    .word $1234, $5678                                                ; 200c: 34 12 78... 4.x',
     ],
+    'word data, merlin32': [
+        '    da $1234, $5678                                                   ; 200c: 34 12 78... 4.x',
+    ],
     'word data, z88dk-8080': [
         '    dw $1234, $5678                                                   ; 200c: 34 12 78... 4.x',
     ],
@@ -833,7 +901,8 @@ EXPECTED = {
     # ASCII strings, and a '"' inside one: acme, beebasm and ca65 write it as
     # the character literal '"' between strings, Baron and 64tass double it
     # inside the string, and xa writes it as 34 between strings (working
-    # round an xa bug), which leaves an empty "" at the end
+    # round an xa bug), which leaves an empty "" at the end. Merlin 32's are
+    # in single quotes, with the numbers after them in hex.
     'string, acme': [
         '    !text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
     ],
@@ -869,6 +938,12 @@ EXPECTED = {
     ],
     'string, ca65, upper case': [
         '    .BYTE "Hi!", $0D                                                  ; 2010: 48 69 21... Hi!',
+    ],
+    'string, merlin32': [
+        "    asc 'Hi!', $0d                                                    ; 2010: 48 69 21... Hi!",
+    ],
+    'string, merlin32, upper case': [
+        "    ASC 'Hi!', $0D                                                    ; 2010: 48 69 21... Hi!",
     ],
     'ASCII string with a quote, acme': [
         '    !text "H", \'"\', "i", \'"\'                                          ; 2010: 48 22 69... H"i',
@@ -906,8 +981,14 @@ EXPECTED = {
     'ASCII string with a quote, ca65, upper case': [
         '    .BYTE "H", \'"\', "i", \'"\'                                          ; 2010: 48 22 69... H"i',
     ],
-    # The low byte of a label inside an expression is bracketed, and xa
-    # writes it as '& $ff'
+    'ASCII string with a quote, merlin32': [
+        '    asc \'H"i"\'                                                        ; 2010: 48 22 69... H"i',
+    ],
+    'ASCII string with a quote, merlin32, upper case': [
+        '    ASC \'H"i"\'                                                        ; 2010: 48 22 69... H"i',
+    ],
+    # The low byte of a label inside an expression is bracketed, and xa and
+    # Merlin 32 write it as '& $ff' (Merlin 32's brackets are '{' and '}')
     'operand with a low byte in an expression, acme': [
         '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
     ],
@@ -925,6 +1006,9 @@ EXPECTED = {
     ],
     'operand with a low byte in an expression, ca65': [
         '    lda #(<table) + 1                                                 ; 2000: a9 41       .A',
+    ],
+    'operand with a low byte in an expression, merlin32': [
+        '    lda #{table & $ff} + 1                                            ; 2000: a9 41       .A',
     ],
     # Strings in PETSCII and screen codes. acme has !pet and !scr. 64tass and
     # ca65 write a string in the session's encoding as text (their output
@@ -975,6 +1059,12 @@ EXPECTED = {
     'PETSCII string, ca65, upper case': [
         '    .BYTE "Hello", \'"\', $0D                                           ; 2010: C8 45 4C... Hel',
     ],
+    'PETSCII string, merlin32': [
+        '    dfb $c8, $45, $4c, $4c, $4f, $22, $0d ; petscii "Hello", $22, $0d ; 2010: c8 45 4c... Hel',
+    ],
+    'PETSCII string, merlin32, upper case': [
+        '    DFB $C8, $45, $4C, $4C, $4F, $22, $0D ; petscii "Hello", $22, $0D ; 2010: C8 45 4C... Hel',
+    ],
     'screen code string, acme': [
         '    !scr "@ab["                                                       ; 2010: 00 01 02... @ab',
     ],
@@ -1015,6 +1105,12 @@ EXPECTED = {
     'screen code string, ca65, upper case': [
         '    .BYTE 0, 1, 2, $1B ; screen "@ab["                                ; 2010: 00 01 02... @ab',
     ],
+    'screen code string, merlin32': [
+        '    dfb 0, 1, 2, $1b ; screen "@ab["                                  ; 2010: 00 01 02... @ab',
+    ],
+    'screen code string, merlin32, upper case': [
+        '    DFB 0, 1, 2, $1B ; screen "@ab["                                  ; 2010: 00 01 02... @ab',
+    ],
     "ASCII string with PETSCII the session's encoding, acme": [
         '    !text "Hi!", $0d                                                  ; 2010: 48 69 21... Hi!',
     ],
@@ -1034,6 +1130,9 @@ EXPECTED = {
     ],
     "ASCII string with PETSCII the session's encoding, ca65": [
         '    .byte $48, $69, $21, $0d ; ascii "Hi!", $0d                       ; 2010: 48 69 21... Hi!',
+    ],
+    "ASCII string with PETSCII the session's encoding, merlin32": [
+        "    asc 'Hi!', $0d                                                    ; 2010: 48 69 21... Hi!",
     ],
     'PETSCII string over two lines, beebasm': [
         '    equb &c8, &45, &4c, &4c, &4f, &22 ; petscii "Hello", &22          ; 2010: c8 45 4c... Hel',
@@ -1063,11 +1162,14 @@ EXPECTED = {
     "byte data with PETSCII the session's encoding, ca65": [
         '    .byte $48, $69, $21, $0d                                          ; 2010: 48 69 21... h.!',
     ],
+    "byte data with PETSCII the session's encoding, merlin32": [
+        '    dfb $48, $69, $21, $0d                                            ; 2010: 48 69 21... h.!',
+    ],
     # The Apple II's high ASCII (ASCII with bit 7 set). acme writes it as
     # ASCII in an '!xor $80' block, so the numbers in it are XORed too ($0d
     # for $8d); 64tass and ca65 as text in the session's encoding (defined
-    # at the start of the output); the others as bytes, with the text in a
-    # comment.
+    # at the start of the output); Merlin 32 as text in double quotes, which
+    # set bit 7; the others as bytes, with the text in a comment.
     'high ASCII string, acme': [
         '    !xor $80 {',
         '    !text "Hi!", \'"\', $0d                                             ; 2010: c8 e9 a1... Hi!',
@@ -1108,6 +1210,12 @@ EXPECTED = {
     'high ASCII string, ca65, upper case': [
         '    .BYTE "Hi!", \'"\', $8D                                             ; 2010: C8 E9 A1... Hi!',
     ],
+    'high ASCII string, merlin32': [
+        '    asc "Hi!", $a2, $8d                                               ; 2010: c8 e9 a1... Hi!',
+    ],
+    'high ASCII string, merlin32, upper case': [
+        '    ASC "Hi!", $A2, $8D                                               ; 2010: C8 E9 A1... Hi!',
+    ],
     # Blank lines and comments. A word wrapped comment is wrapped at the
     # same column for each assembler, so xa's longer '//' moves a word onto
     # the next line.
@@ -1129,6 +1237,9 @@ EXPECTED = {
     'blank, ca65': [
         '',
     ],
+    'blank, merlin32': [
+        '',
+    ],
     'one line comment, acme': [
         '; Memory locations',
     ],
@@ -1145,6 +1256,9 @@ EXPECTED = {
         '; Memory locations',
     ],
     'one line comment, ca65': [
+        '; Memory locations',
+    ],
+    'one line comment, merlin32': [
         '; Memory locations',
     ],
     'one line comment, z88dk-8080': [
@@ -1171,6 +1285,9 @@ EXPECTED = {
     'empty one line comment, ca65': [
         ';',
     ],
+    'empty one line comment, merlin32': [
+        ';',
+    ],
     'word wrapped comment, acme': [
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
@@ -1187,6 +1304,9 @@ EXPECTED = {
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
     'word wrapped comment, ca65': [
+        '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
+    ],
+    'word wrapped comment, merlin32': [
         '    ; This is a long comment which is word wrapped, since it is much too long to fit on\n    ; one line of the output.',
     ],
     # A line that starts with spaces (e.g. a subroutine header's registers)
@@ -1236,6 +1356,12 @@ EXPECTED = {
     'constant definition, ca65, upper case': [
         'lives       = 3         ; Starting number of lives',
     ],
+    'constant definition, merlin32': [
+        'lives       equ 3       ; Starting number of lives',
+    ],
+    'constant definition, merlin32, upper case': [
+        'lives       EQU 3       ; Starting number of lives',
+    ],
     'constant definition, z88dk-8080': [
         'lives       equ 3       ; Starting number of lives',
     ],
@@ -1250,10 +1376,10 @@ EXPECTED = {
     ],
     # The start of the code at an address. Baron's is the section that holds
     # all the code. A later block of code, after a gap, needs the gap filled
-    # for some assemblers: xa's '.dsb', ca65's '.res', sjasmplus's 'ds' and
-    # Baron's 'skipto', and z88dk-z80asm's 'defs', counted from the end of
-    # the code before (z88dk-z80asm allows only one 'org'). The others
-    # write a later start as they write the first.
+    # for some assemblers: xa's '.dsb', ca65's '.res', Merlin 32's 'ds',
+    # sjasmplus's 'ds' and Baron's 'skipto', and z88dk-z80asm's 'defs',
+    # counted from the end of the code before (z88dk-z80asm allows only one
+    # 'org'). The others write a later start as they write the first.
     'code start, acme': [
         '',
         '    * = $2000',
@@ -1314,6 +1440,16 @@ EXPECTED = {
         '    .ORG $2000',
         '',
     ],
+    'code start, merlin32': [
+        '',
+        '    org $2000',
+        '',
+    ],
+    'code start, merlin32, upper case': [
+        '',
+        '    ORG $2000',
+        '',
+    ],
     'code start, z88dk-8080': [
         '',
         '    org $2000',
@@ -1358,6 +1494,18 @@ EXPECTED = {
         '',
         '    .RES $3000 - *',
         '    .ORG $3000',
+        '',
+    ],
+    'code start, after other code, merlin32': [
+        '',
+        '    ds $3000-*',
+        '    org $3000',
+        '',
+    ],
+    'code start, after other code, merlin32, upper case': [
+        '',
+        '    DS $3000-*',
+        '    ORG $3000',
         '',
     ],
     'code start, after other code, sjasmplus': [
@@ -1439,6 +1587,12 @@ EXPECTED = {
     'include binary file, ca65, upper case': [
         '    .INCBIN "data.bin"',
     ],
+    'include binary file, merlin32': [
+        '    putbin data.bin',
+    ],
+    'include binary file, merlin32, upper case': [
+        '    PUTBIN data.bin',
+    ],
     'include binary file, z88dk': [
         '    binary "data.bin"',
     ],
@@ -1456,9 +1610,9 @@ EXPECTED = {
     # where an instruction has several opcodes (e.g. ANC is &0b and &2b, and
     # there are many NOPs) they make only one, so the others are written as
     # data bytes with the instruction in a comment, as all of them are for
-    # beebasm, Baron and xa. Then the directive at the start of the output
-    # that makes the assembler accept them (or the 65C02's instructions),
-    # after ca65's note on how to assemble its output.
+    # beebasm, Baron, xa and Merlin 32. Then the directive at the start of
+    # the output that makes the assembler accept them (or the 65C02's
+    # instructions), after ca65's note on how to assemble its output.
     '6510 undocumented opcode, immediate, acme': [
         '    anc #$81                                                          ; 2000: 0b 81       ..',
     ],
@@ -1495,6 +1649,12 @@ EXPECTED = {
     '6510 undocumented opcode, immediate, ca65, upper case': [
         '    ANC #$81                                                          ; 2000: 0B 81       ..',
     ],
+    '6510 undocumented opcode, immediate, merlin32': [
+        '    dfb $0b, $81 ; anc #$81 (undocumented)                            ; 2000: 0b 81       ..',
+    ],
+    '6510 undocumented opcode, immediate, merlin32, upper case': [
+        '    DFB $0B, $81 ; ANC #$81 (undocumented)                            ; 2000: 0B 81       ..',
+    ],
     '6510 ALR, which acme calls ASR, acme': [
         '    asr #$0f                                                          ; 2000: 4b 0f       K.',
     ],
@@ -1512,6 +1672,9 @@ EXPECTED = {
     ],
     '6510 ALR, which acme calls ASR, ca65': [
         '    alr #$0f                                                          ; 2000: 4b 0f       K.',
+    ],
+    '6510 ALR, which acme calls ASR, merlin32': [
+        '    dfb $4b, $0f ; alr #$0f (undocumented)                            ; 2000: 4b 0f       K.',
     ],
     '6510 LXA, which ca65 calls LAX, acme': [
         '    lxa #$12                                                          ; 2000: ab 12       ..',
@@ -1549,6 +1712,9 @@ EXPECTED = {
     "6510 undocumented opcode acme doesn't use, ca65": [
         '    .byte $2b, $81 ; anc #$81 (undocumented)                          ; 2000: 2b 81       +.',
     ],
+    "6510 undocumented opcode acme doesn't use, merlin32": [
+        '    dfb $2b, $81 ; anc #$81 (undocumented)                            ; 2000: 2b 81       +.',
+    ],
     '6510 undocumented opcode, implied, acme': [
         '    !byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
     ],
@@ -1566,6 +1732,9 @@ EXPECTED = {
     ],
     '6510 undocumented opcode, implied, ca65': [
         '    .byte $1a ; nop (undocumented)                                    ; 2000: 1a          .',
+    ],
+    '6510 undocumented opcode, implied, merlin32': [
+        '    dfb $1a ; nop (undocumented)                                      ; 2000: 1a          .',
     ],
     '6510 JAM, with cycles, acme': [
         '    jam                                                               ; 2000: 02          .   halts',
@@ -1585,6 +1754,9 @@ EXPECTED = {
     '6510 JAM, with cycles, ca65': [
         '    jam                                                               ; 2000: 02          .   halts',
     ],
+    '6510 JAM, with cycles, merlin32': [
+        '    dfb $02 ; jam (undocumented)                                      ; 2000: 02          .   halts',
+    ],
     '6510 undocumented opcode as data, zero page operand, beebasm': [
         '    equb &b3, ptr ; lax (ptr),y (undocumented)                        ; 2000: a9 41       .A',
     ],
@@ -1602,6 +1774,12 @@ EXPECTED = {
     ],
     '6510 undocumented opcode as data, zero page operand, xa, upper case': [
         '    .BYT $B3, ptr // LAX (ptr),Y (undocumented)                       // 2000: A9 41       .A',
+    ],
+    '6510 undocumented opcode as data, zero page operand, merlin32': [
+        '    dfb $b3, ptr ; lax (ptr),y (undocumented)                         ; 2000: a9 41       .A',
+    ],
+    '6510 undocumented opcode as data, zero page operand, merlin32, upper case': [
+        '    DFB $B3, ptr ; LAX (ptr),Y (undocumented)                         ; 2000: A9 41       .A',
     ],
     'start, for the 6510, acme': [
         '!cpu 6510',
@@ -1773,10 +1951,13 @@ EXPECTED = {
     ],
     # More 6502 operands: one that starts with a bracket but isn't indirect
     # addressing, which Baron writes after a '+', and xa and ca65 after
-    # '0+', so they don't take it as indirect; character literals for a
-    # quote, a backslash and a double quote, each written as a number where
-    # the assembler can't write it as a character (xa writes them all as
-    # numbers); and the low byte of an expression
+    # '0+', so they don't take it as indirect (Merlin 32 works expressions
+    # out from left to right, so it needs no brackets); character literals
+    # for a quote, a backslash and a double quote, each written as a number
+    # where the assembler can't write it as a character (xa writes them all
+    # as numbers); the low byte of an expression; and the high byte of an
+    # expression used as an address, which Merlin 32 writes with '&' and '/'
+    # (its '>' there would choose the 65816's long addressing)
     'operand starting with a bracket, not indirect, acme': [
         '    lda (table + 1) * 2,y                                             ; 2000: a9 41 b1    .A.',
     ],
@@ -1794,6 +1975,9 @@ EXPECTED = {
     ],
     'operand starting with a bracket, not indirect, ca65': [
         '    lda 0+(table + 1) * 2,y                                           ; 2000: a9 41 b1    .A.',
+    ],
+    'operand starting with a bracket, not indirect, merlin32': [
+        '    lda table + 1 * 2,y                                               ; 2000: a9 41 b1    .A.',
     ],
     '6502 character literals, acme': [
         '    lda #\'\\\'\' + \'\\\\\' + \'"\'                                            ; 2000: a9 41       .A',
@@ -1813,6 +1997,9 @@ EXPECTED = {
     '6502 character literals, ca65': [
         '    lda #\'\'\' + \'\\\' + \'"\'                                              ; 2000: a9 41       .A',
     ],
+    '6502 character literals, merlin32': [
+        '    lda #$27 + \'\\\' + \'"\'                                              ; 2000: a9 41       .A',
+    ],
     '6502 operand with a low byte of an expression, acme': [
         '    lda #<(table + 1)                                                 ; 2000: a9 41       .A',
     ],
@@ -1830,6 +2017,30 @@ EXPECTED = {
     ],
     '6502 operand with a low byte of an expression, ca65': [
         '    lda #<(table + 1)                                                 ; 2000: a9 41       .A',
+    ],
+    '6502 operand with a low byte of an expression, merlin32': [
+        '    lda #<{table + 1}                                                 ; 2000: a9 41       .A',
+    ],
+    '6502 address operand with a high byte, acme': [
+        '    lda >(table + 1),x                                                ; 2002: b1 70       .p',
+    ],
+    '6502 address operand with a high byte, beebasm': [
+        '    lda >(table + 1),x                                                ; 2002: b1 70       .p',
+    ],
+    '6502 address operand with a high byte, baron': [
+        '    lda >(table + 1),x                                                ; 2002: b1 70       .p',
+    ],
+    '6502 address operand with a high byte, xa': [
+        '    lda >(table + 1),x                                                // 2002: b1 70       .p',
+    ],
+    '6502 address operand with a high byte, 64tass': [
+        '    lda >(table + 1),x                                                ; 2002: b1 70       .p',
+    ],
+    '6502 address operand with a high byte, ca65': [
+        '    lda >(table + 1),x                                                ; 2002: b1 70       .p',
+    ],
+    '6502 address operand with a high byte, merlin32': [
+        '    lda {table + 1} & $ffff / $0100,x                                 ; 2002: b1 70       .p',
     ],
     # Baron's sections: a section inside the main one for a move, and the
     # main section, with 'cmos = true' for the 65C02 and the name of the
@@ -1926,6 +2137,42 @@ EXPECTED = {
         '    ASSERT (table) = &1234',
         '',
         'ENDSECTION',
+    ],
+    # Merlin 32's moves: 'org' with the address the block runs at, then
+    # 'org' with the address after it in the binary. Then its note on how to
+    # assemble its output, and its assertions, 'err expression - value',
+    # which stops it unless that's 0, without the one that uses the current
+    # address ('*'): a low or high byte at the start of the expression would
+    # apply to the ' - value' too, so they're written with '&' and '/'.
+    '6502 move start and end, Merlin 32, merlin32': [
+        '    org $0900',
+        '    org $2010',
+        '',
+    ],
+    '6502 move start and end, Merlin 32, merlin32, upper case': [
+        '    ORG $0900',
+        '    ORG $2010',
+        '',
+    ],
+    'start, for Merlin 32, merlin32': [
+        '; Assemble with Merlin 32, which writes the program to a file named after',
+        '; this one without its extension, in the same folder:',
+        ';     merlin32 this_file.asm',
+        '',
+    ],
+    'end, with Merlin 32 assertions, merlin32': [
+        '    err {table + 1} & $ff - $35',
+        '    err table & $ffff / $0100 - $12',
+        '    err delta + $36',
+        '    err flags & $f0 - $80',
+        '    err table - $1234',
+    ],
+    'end, with Merlin 32 assertions, merlin32, upper case': [
+        '    ERR {table + 1} & $FF - $35',
+        '    ERR table & $FFFF / $0100 - $12',
+        '    ERR delta + $36',
+        '    ERR flags & $F0 - $80',
+        '    ERR table - $1234',
     ],
 }
 
