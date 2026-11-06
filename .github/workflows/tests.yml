@@ -1,11 +1,11 @@
 # Run the example tests (examples/run_tests.py -c) on every push and pull
-# request, with all eight assemblers, so that each disassembly is also checked
+# request, with all nine assemblers, so that each disassembly is also checked
 # to reassemble to the original binary.
 #
 # acme, xa, 64tass and cc65 (ca65) come from Ubuntu's packages. beebasm, Baron,
-# z88dk-z80asm and sjasmplus aren't packaged, so they're built from source at a
-# fixed version, and cached, so they're only built again when the versions
-# below change.
+# Merlin 32, z88dk-z80asm and sjasmplus aren't packaged, so they're built from
+# source at a fixed version, and cached, so they're only built again when the
+# versions below change.
 
 name: Tests
 
@@ -29,6 +29,7 @@ jobs:
     env:
       BEEBASM_COMMIT: ca2cc5fd2fa3f73da3b0682ad004b2aca99840c3   # beebasm 1.11
       BARON_TAG: v0.6.0
+      MERLIN32_TAG: v1.1.11                                      # (which reports itself as v1.1.10)
       Z88DK_TAG: v2.4
       SJASMPLUS_TAG: v1.24.0
     steps:
@@ -44,14 +45,14 @@ jobs:
           sudo apt-get install -y -q acme xa65 64tass cc65 ninja-build
           python -m pip install -q jsonschema
 
-      - name: Cache beebasm, Baron, z88dk-z80asm and sjasmplus
+      - name: Cache beebasm, Baron, Merlin 32, z88dk-z80asm and sjasmplus
         id: cache
         uses: actions/cache@v4
         with:
           path: ~/assemblers
-          key: assemblers-${{ runner.os }}-beebasm-${{ env.BEEBASM_COMMIT }}-baron-${{ env.BARON_TAG }}-z88dk-${{ env.Z88DK_TAG }}-sjasmplus-${{ env.SJASMPLUS_TAG }}
+          key: assemblers-${{ runner.os }}-beebasm-${{ env.BEEBASM_COMMIT }}-baron-${{ env.BARON_TAG }}-merlin32-${{ env.MERLIN32_TAG }}-z88dk-${{ env.Z88DK_TAG }}-sjasmplus-${{ env.SJASMPLUS_TAG }}
 
-      - name: Build beebasm, Baron, z88dk-z80asm and sjasmplus
+      - name: Build beebasm, Baron, Merlin 32, z88dk-z80asm and sjasmplus
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/assemblers
@@ -64,6 +65,10 @@ jobs:
           cmake -S /tmp/baron -B /tmp/baron/build -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build /tmp/baron/build
           cp /tmp/baron/build/src/baron ~/assemblers/
+          # (Merlin 32 builds with its GNUmakefile, which GNU make chooses)
+          git clone -q --depth 1 --branch "$MERLIN32_TAG" https://github.com/lroathe/merlin32.git /tmp/merlin32
+          make -C /tmp/merlin32/Source -j4
+          cp /tmp/merlin32/Source/merlin32 ~/assemblers/
           git clone -q --depth 1 --branch "$Z88DK_TAG" https://github.com/z88dk/z88dk.git /tmp/z88dk
           cd /tmp/z88dk
           git submodule update -q --init --depth 1 ext/optparse ext/regex ext/uthash
