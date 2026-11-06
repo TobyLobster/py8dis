@@ -36,6 +36,15 @@ file calls apple2() after load() (or load_apple_file() etc.). It:
   file'), and the parameter list labelled and marked, with its pathname,
   buffers and handler (mli_hook()); and names ProDOS's global page
   ($BF00-$BFFF: MLI, DEVNUM, DATE, MACHID etc.);
+- names DOS 3.3's entry points in page 3 (dos_rwts, dos_file_manager,
+  dos_get_iob etc.), whose calls are commented: for RWTS, the IOB whose
+  address Y and A are loaded with is labelled ('rwts_iob') and marked, with
+  its fields, its device characteristics table and its sector buffer
+  (_rwts_hook()); and names DOS's memory (IOB, IBSLOT, IBTRK and the other
+  fields of DOS's own IOB, DCT, and the length and address of the file last
+  loaded etc.). Tracing stops after a JSR to DOS's warm or cold start.
+  ProDOS's and DOS's names and hooks aren't used where the program is
+  loaded, since it can't then be using them there;
 - makes the Apple II's high ASCII (ASCII with bit 7 set) the session's text
   encoding (see textencoding.py).
 
@@ -550,6 +559,111 @@ def mli_hook(target, caller):
 
 
 # ************************************************************************************************
+# DOS 3.3: RWTS and the file manager
+
+def _object_name(runtime_addr, name):
+    """Label the runtime address with the name (or name_2 etc.: see
+    _data_name()), unless it has an explicit name already, or an optional
+    label of its own (e.g. DOS's IOB's, 'IOB'), which is then the one
+    used."""
+    optional = session.current().disassembly.optional_labels.get(runtime_addr)
+    if optional is not None and optional.base_address is None and vector_handler_name(runtime_addr) is None:
+        return
+    _data_name(runtime_addr, name)
+
+def _label_at(runtime_addr, target):
+    """Write the word at runtime_addr as the label of the target address."""
+    binary_addr, _ = movemanager.r2b(RuntimeAddr(runtime_addr))
+    auto_expr(runtime_addr, get_label(target, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE))
+
+def _rwts_dct(dct):
+    """Mark a device characteristics table (see dos33_dct_fields), if it's
+    loaded and nothing in it is classified yet."""
+    if not _loaded_and_unclassified(dct, 4):
+        return
+    addr = dct
+    for description, kind in dos33_dct_fields:
+        if kind == "byte":
+            byte(addr)
+        else:
+            word(addr)
+        auto_comment(addr, description, align=Align.INLINE)
+        addr += 1 if kind == "byte" else 2
+
+def _rwts_iob(iob):
+    """Mark a program's IOB for RWTS (see dos33_iob_fields), if it's loaded
+    and nothing in it is classified yet: each field is a byte or a word,
+    commented with what it is, and gets an optional label, named from the
+    IOB's (e.g. 'rwts_iob_track'), used where the code refers to it (unless
+    it has an optional label already). The
+    address of the device characteristics table is written as its label
+    ('rwts_dct', unless it has a name, such as DOS's own 'DCT'), and the
+    table is marked (see _rwts_dct()); the address of the sector buffer is
+    written as its label ('sector_buffer', unless it has a name). (An
+    address of 0 is left alone, since the code must set it.)"""
+    if not _loaded_and_unclassified(iob, DOS33_IOB_LENGTH):
+        return
+    iob_name = vector_handler_name(iob)
+    optional_labels = session.current().disassembly.optional_labels
+    for offset, suffix, description, kind in dos33_iob_fields:
+        addr = iob + offset
+        # (Not where there's an optional label already, e.g. 'IN+5' for an
+        # IOB in the input buffer)
+        if suffix is not None and iob_name is not None and addr not in optional_labels:
+            optional_label(addr, "{0}_{1}".format(iob_name, suffix))
+        if kind == "byte":
+            byte(addr)
+        else:
+            word(addr)
+            pointer = _u8(addr) + 256 * _u8(addr + 1)
+            if pointer != 0:
+                _object_name(pointer, "rwts_dct" if kind == "dct" else "sector_buffer")
+                _label_at(addr, pointer)
+                if kind == "dct":
+                    _rwts_dct(pointer)
+        auto_comment(addr, description, align=Align.INLINE)
+
+def _rwts_hook(runtime_addr, state, subroutine):
+    """RWTS's hook (for dos_rwts, dos_rwts_entry and RWTS): where Y and A are
+    loaded with the low and high bytes of the IOB's address, write them as
+    its label's (e.g. 'ldy #<rwts_iob', with 'rwts_iob', then 'rwts_iob_2'
+    etc., unless it has a name, such as DOS's own IOB's, 'IOB'), and mark the
+    IOB (see _rwts_iob()). Then comment the call as the default hook does
+    (without the comments on Y and A, if they're the IOB's label)."""
+    if subroutine.runtime_addr != runtime_addr:
+        lo = state.pessimistic['y'].get_previous_load_imm_operand()
+        hi = state.pessimistic['a'].get_previous_load_imm_operand()
+        if lo is not None and hi is not None:
+            iob = memory_binary[lo] + 256 * memory_binary[hi]
+            _object_name(iob, "rwts_iob")
+            xy_addr(lo, hi)
+            _rwts_iob(iob)
+            subroutine = copy.copy(subroutine)
+            subroutine.on_entry = {}
+    session.current().cpu.default_subroutine_hook(runtime_addr, state, subroutine)
+
+def _file_manager_text(x):
+    """The comment on a call to the file manager, for X (its file creation
+    flag)."""
+    if x == 0:
+        return "Call DOS's file manager (creating the file if it isn't found)"
+    return "Call DOS's file manager (not creating the file if it isn't found)"
+
+# The hooks of DOS's routines that have their own (as _HOOKS)
+_DOS33_HOOKS = {
+    0x03d6: _call_hook(_file_manager_text, 'x'),    # dos_file_manager
+    0x03d9: _rwts_hook,                             # dos_rwts
+    0xb7b5: _rwts_hook,                             # dos_rwts_entry
+    0xbd00: _rwts_hook,                             # RWTS
+}
+
+def _no_return_hook(target, caller):
+    """The tracing hook (see Cpu.subroutine_hooks) for DOS's warm and cold
+    starts, which don't return: tracing stops after a JSR to them."""
+    return None
+
+
+# ************************************************************************************************
 # Applesoft programs
 
 def _applesoft_line_text(data):
@@ -673,18 +787,27 @@ def applesoft_program(runtime_addr=APPLESOFT_START):
 
 def _routine(addr, apple_name, descriptive_name, title, on_entry, on_exit):
     """Name a ROM routine, as an optional label, with its title, registers
-    and hook (its own from _HOOKS, or the 6502's default)."""
-    subroutine(addr, _name(apple_name, descriptive_name), title, None, on_entry, on_exit, hook=_HOOKS.get(addr), is_entry_point=False)
+    and hook (its own from _HOOKS or _DOS33_HOOKS, or the 6502's
+    default)."""
+    hook = _HOOKS.get(addr, _DOS33_HOOKS.get(addr))
+    subroutine(addr, _name(apple_name, descriptive_name), title, None, on_entry, on_exit, hook=hook, is_entry_point=False)
 
 def _workspace():
-    """Name the workspace (see apple2_workspace, apple2_page3_vectors and
-    apple2_applesoft_workspace): each byte of a location of more than one
-    byte is named from its start (e.g. 'IN+1', 'output_hook+1'), except that
-    Apple's names for the high bytes of some pointers are their own (e.g.
-    'CSWH')."""
+    """Name the workspace (see apple2_workspace, apple2_page3_vectors,
+    apple2_applesoft_workspace, prodos_global_page and dos33_memory): each
+    byte of a location of more than one byte is named from its start (e.g.
+    'IN+1', 'output_hook+1'), except that Apple's names for the high bytes
+    of some pointers are their own (e.g. 'CSWH'). A location in ProDOS's or
+    DOS's memory isn't named if any of it is where the program is loaded
+    (see _os_free())."""
     high_bytes = dict(apple2_workspace_high_bytes)
     high_bytes.update(apple2_applesoft_high_bytes)
-    for addr, apple_name, descriptive_name, length in apple2_workspace + apple2_page3_vectors + apple2_applesoft_workspace + prodos_global_page:
+    # (Each location, and whether it's ProDOS's or DOS's)
+    machine = apple2_workspace + apple2_page3_vectors + apple2_applesoft_workspace
+    locations = [(entry, False) for entry in machine] + [(entry, True) for entry in prodos_global_page + dos33_memory]
+    for (addr, apple_name, descriptive_name, length), os_memory in locations:
+        if os_memory and not all(_os_free(addr + i) for i in range(length)):
+            continue
         name = _name(apple_name, descriptive_name)
         optional_label(addr, name)
         for i in range(1, length):
@@ -693,13 +816,21 @@ def _workspace():
             else:
                 optional_label(addr + i, "{0}+{1}".format(name, i), addr)
 
+def _os_free(addr):
+    """Whether nothing is loaded at the address, so that ProDOS's or DOS's
+    names and hooks can be used there: a program loaded where ProDOS or DOS
+    would be doesn't use it (e.g. Penetrator, at $4000-$B921), so its own
+    addresses there mustn't be given their names."""
+    return not _loaded(addr)
+
 def apple2(model="ii+", names="apple"):
     """Set up for a program for the Apple II+ or IIe (see the module
     docstring): the Monitor's and Applesoft's routines, with hooks to
-    comment their calls,
+    comment their calls, ProDOS's MLI calls and DOS 3.3's entry points,
     the comments on what's printed, the print loops, the zero page and other
-    workspace, the vectors and the code that sets them, the soft switches,
-    the memory regions, and high ASCII as the session's text encoding.
+    workspace, ProDOS's and DOS's memory, the vectors and the code that sets
+    them, the soft switches, the memory regions, and high ASCII as the
+    session's text encoding.
 
     'model' is "ii+" (the default) or "iie" (the unenhanced IIe, which adds
     its status switches and its 80-column firmware's AUXMOVE and XFER).
@@ -745,7 +876,17 @@ def apple2(model="ii+", names="apple"):
     # ProDOS's MLI: the call number and the parameter list's address after
     # the JSR (a tracing hook, set directly, since ProDOS isn't usually
     # loaded: see Cpu.subroutine_hooks)
-    cpu.subroutine_hooks[RuntimeAddr(PRODOS_MLI)] = mli_hook
+    if _os_free(PRODOS_MLI):
+        cpu.subroutine_hooks[RuntimeAddr(PRODOS_MLI)] = mli_hook
+
+    # DOS 3.3's entry points, and its warm and cold starts, which don't
+    # return (not where the program is loaded)
+    for entry_ in dos33_routines:
+        if _os_free(entry_[0]):
+            _routine(*entry_)
+    for addr in (DOS33_WARM_START, DOS33_COLD_START):
+        if _os_free(addr):
+            cpu.subroutine_hooks[RuntimeAddr(addr)] = _no_return_hook
 
     # The soft switches, which are always defined as 'name = value', never
     # inline

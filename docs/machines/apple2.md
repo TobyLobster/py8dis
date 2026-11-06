@@ -126,6 +126,61 @@ ProDOS's error codes are in `apple.prodos_errors`, for a control file to use (e.
 
 **Names ProDOS's global page** ($BF00-$BFFF): `MLI`, `JSPARE`, `DATETIME`, `SYSERR`, `SYSDEATH`, `SERR`, `DEVADR`, `DEVNUM`, `DEVCNT`, `DEVLST`, `BITMAP`, `INTRUPT1` to `INTRUPT4`, the interrupt registers, `DATE`, `TIME`, `LEVEL`, `BUBIT`, `MACHID`, `SLTBYT`, `PFIXPTR`, `MLIACTV`, `CMDADR`, `SAVEX`, `SAVEY`, `IBAKVER`, `IVERSION`, `KBAKVER` and `KVERSION` (with descriptive names starting `prodos_`), under the heading `; ProDOS global page`.
 
+**Names DOS 3.3's entry points** in page 3, and comments their calls. Apple didn't name them, so their names are descriptive in both styles:
+
+| Address | Name | Comment |
+| ------- | ---- | ------- |
+| $03D0 | `dos_warm_start` | `Go to DOS's warm start (BASIC, keeping its program)` |
+| $03D3 | `dos_cold_start` | `Go to DOS's cold start (BASIC, clearing its program)` |
+| $03D6 | `dos_file_manager` | `Call DOS's file manager (creating the file if it isn't found)` for X=0, or `(not creating the file if it isn't found)` |
+| $03D9 | `dos_rwts` | `Call RWTS (DOS's read/write track/sector routine)` |
+| $03DC | `dos_get_fm_params` | `Find the file manager's parameter list` (and `Y=parameter list's address (low byte)` where Y is used) |
+| $03E3 | `dos_get_iob` | `Find DOS's IOB (RWTS's parameters)` |
+| $03EA | `dos_connect_hooks` | `Reconnect DOS to the input and output hooks (KSW and CSW)` |
+
+RWTS is also called at $B7B5 (`dos_rwts_entry`, which disables interrupts first) and $BD00 (`RWTS`, as DOS's source names it). Tracing stops after a JSR to DOS's warm or cold start, which don't return.
+
+**Marks the IOBs that RWTS is called with.** RWTS takes the address of its IOB (input/output block) in Y (low byte) and A (high byte). Where they're loaded with it, they're written as its label, `rwts_iob` (then `rwts_iob_2` etc., unless it has a name), and the IOB is marked, each field with a comment:
+
+```
+    lda #17
+    sta rwts_iob_track
+    ...
+    lda #>rwts_iob
+    ldy #<rwts_iob
+    jsr dos_rwts            ; Call RWTS (DOS's read/write track/sector routine)
+    ...
+rwts_iob
+    !byte 1                 ; Table type (1)
+    !byte $60               ; Slot times 16
+    !byte 1                 ; Drive (1 or 2)
+    !byte 0                 ; Volume expected (0 for any)
+rwts_iob_track
+    !byte 0                 ; Track
+    ...
+    !word rwts_dct          ; Device characteristics table
+    !word sector_buffer     ; Sector buffer (256 bytes)
+    !byte 0                 ; Not used
+    !byte 0                 ; Byte count for a partial sector (0 for 256)
+    !byte 1                 ; Command (0 seek, 1 read, 2 write, 4 format)
+    ...
+```
+
+- **Fields:** each gets a name from the IOB's (`rwts_iob_slot`, `rwts_iob_track`, `rwts_iob_sector`, `rwts_iob_buffer`, `rwts_iob_command`, `rwts_iob_error` and so on), used where the code refers to it, as code usually sets the track, sector and command before each call.
+- **Pointers:** the device characteristics table's address is labelled `rwts_dct` and the table marked (device type, phases per track, motor on time), and the sector buffer's is labelled `sector_buffer`, unless they have names (e.g. DOS's own table, `DCT`).
+- **DOS's own IOB**, as `lda #$b7 : ldy #$e8` loads it, is written as `IOB`. Where Y and A come from `dos_get_iob` instead, they're commented (`Y=IOB's address (low byte)`).
+
+The file manager's parameter list is always DOS's own, so it isn't marked: code finds it with `dos_get_fm_params` and fills it in through a pointer. The file manager's calls and return codes, and RWTS's error codes, are in `apple.dos33_file_manager_calls`, `apple.dos33_file_manager_errors` and `apple.dos33_rwts_errors`, for a control file to use.
+
+**Names DOS 3.3's memory**, where it is in a 48K machine:
+
+- **DOS's IOB**, with the names DOS's source gives its fields: `IOB` ($B7E8), `IBSLOT`, `IBDRVN`, `IBVOL`, `IBTRK`, `IBSECT`, `IBDCTP`, `IBBUFP`, `IBCMD`, `IBSTAT`, `IBSMOD`, `IBPSLT` and `IBPDRV` (descriptive: `dos_iob`, `dos_iob_slot` etc.), and its device characteristics table, `DCT` ($B7FB);
+- with descriptive names in both styles: the length and address of the file last loaded, as BLOAD sets them (`dos_load_length` $AA60, `dos_load_address` $AA72); the output and input hooks DOS passes characters on to (`dos_saved_output_hook`, `dos_saved_input_hook`); MAXFILES (`dos_maxfiles`); which BASIC is active (`dos_basic_flag`); the file manager's parameter list (`dos_fm_params`); the VTOC and directory sector buffers (`dos_vtoc_buffer`, `dos_directory_buffer`); and the address of the first file buffer (`dos_buffer_chain`).
+
+DOS commands that a program prints with COUT, after a Ctrl-D, are commented as described above (`DOS command: BLOAD GAME`).
+
+**Leaves the program's own memory alone.** ProDOS's and DOS's names and hooks are only used for addresses where nothing is loaded. A program loaded where ProDOS or DOS would be isn't using them there (Penetrator, for one, runs from $4000 to $B921), and its own addresses mustn't get their names.
+
 **Groups the memory locations** in the output by region: zero page, the stack, the input buffer, page 3, the DOS vectors, the vectors, the text and lo-res pages, the hi-res pages, ProDOS's global page, the soft switches, the language card, the slots' I/O and ROMs, the expansion ROM, and the Applesoft and Monitor ROMs.
 
 The tables are in `py8dis/appletables.py`, and a control file can use them as e.g. `apple.apple2_monitor_routines`. Apple's names were checked against the symbol files of Andy McFadden's [6502bench SourceGen](https://github.com/fadden/6502bench).

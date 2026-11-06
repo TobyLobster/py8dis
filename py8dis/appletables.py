@@ -3,7 +3,9 @@ Apple II tables
 
 The data apple.py uses for the Apple II+ and IIe: the Monitor ROM's
 routines, the Monitor's zero page and the other workspace, the page 3
-vectors, the soft switches and the regions of memory.
+vectors, the soft switches, Applesoft's routines, workspace and tokens,
+ProDOS 8's MLI calls and global page, DOS 3.3's entry points, memory and
+IOB, and the regions of memory.
 
 Each name is given twice: Apple's (from Apple's reference manuals: the
 Apple II Reference Manual's Monitor listing, and the Apple IIe Technical
@@ -671,6 +673,121 @@ prodos_errors = {
     0x4e: "access error", 0x50: "file is open", 0x51: "directory damaged", 0x52: "not a ProDOS volume",
     0x53: "invalid parameter", 0x55: "volume control block table full", 0x56: "bad buffer address",
     0x57: "duplicate volume", 0x5a: "file structure damaged",
+}
+
+
+# ************************************************************************************************
+# DOS 3.3 (from Beneath Apple DOS, chapters 6 and 8). Apple's names are
+# those in DOS's source: RWTS, and the names of the fields of DOS's own IOB
+# and of its DCT, as in DOS 3.1's source of 1978 (DOS 3.3's code uses them
+# too, e.g. 'lda IBSLOT'). The addresses inside DOS are for DOS 3.3 in a
+# 48K machine, where it almost always is.
+
+# DOS's entry points, which it puts in page 3 ($03D0-$03EC), and those it
+# jumps to for RWTS: (address, Apple's name, descriptive name, title,
+# on_entry, on_exit), as for the Monitor's routines. Apple's manuals don't
+# name the page 3 ones, so their names are descriptive in both styles.
+# RWTS takes the address of its IOB (see dos33_iob_fields) in Y (low byte)
+# and A (high byte), and returns with C set if there was an error (whose
+# code is in the IOB); apple.py's hook labels and marks the IOB. The file
+# manager's parameter list is always DOS's (at $B5BB, the address
+# dos_get_fm_params returns).
+dos33_routines = [
+    (0x03d0, None,   "dos_warm_start",    "Go to DOS's warm start (BASIC, keeping its program)", None, None),
+    (0x03d3, None,   "dos_cold_start",    "Go to DOS's cold start (BASIC, clearing its program)", None, None),
+    (0x03d6, None,   "dos_file_manager",  "Call DOS's file manager (with its parameter list)", {'x': "file creation flag (0: create a file that isn't found)"}, None),
+    (0x03d9, None,   "dos_rwts",          "Call RWTS (DOS's read/write track/sector routine)", {'y': "IOB's address (low byte)", 'a': "IOB's address (high byte)"}, None),
+    (0x03dc, None,   "dos_get_fm_params", "Find the file manager's parameter list", None, {'y': "parameter list's address (low byte)", 'a': "parameter list's address (high byte)"}),
+    (0x03e3, None,   "dos_get_iob",       "Find DOS's IOB (RWTS's parameters)", None, {'y': "IOB's address (low byte)", 'a': "IOB's address (high byte)"}),
+    (0x03ea, None,   "dos_connect_hooks", "Reconnect DOS to the input and output hooks (KSW and CSW)", None, None),
+    (0xb7b5, None,   "dos_rwts_entry",    "Call RWTS (DOS's read/write track/sector routine), with interrupts disabled", {'y': "IOB's address (low byte)", 'a': "IOB's address (high byte)"}, None),
+    (0xbd00, "RWTS", "rwts",              "Call RWTS (DOS's read/write track/sector routine) directly", {'y': "IOB's address (low byte)", 'a': "IOB's address (high byte)"}, None),
+]
+
+# The addresses of the entry points that don't return
+DOS33_WARM_START = 0x03d0
+DOS33_COLD_START = 0x03d3
+
+# DOS's own memory: (address, Apple's name, descriptive name, length), as
+# apple2_workspace. Apple's names are the IOB's and the DCT's (which DOS
+# 3.3 keeps from DOS 3.1); the others are descriptive in both styles.
+dos33_memory = [
+    (0x9d00, None,     "dos_buffer_chain",        2),
+    (0xaa53, None,     "dos_saved_output_hook",   2),
+    (0xaa55, None,     "dos_saved_input_hook",    2),
+    (0xaa57, None,     "dos_maxfiles",            1),
+    (0xaa60, None,     "dos_load_length",         2),
+    (0xaa72, None,     "dos_load_address",        2),
+    (0xaab6, None,     "dos_basic_flag",          1),
+    (0xb3bb, None,     "dos_vtoc_buffer",         256),
+    (0xb4bb, None,     "dos_directory_buffer",    256),
+    (0xb5bb, None,     "dos_fm_params",           18),
+    (0xb7e8, "IOB",    "dos_iob",                 1),
+    (0xb7e9, "IBSLOT", "dos_iob_slot",            1),
+    (0xb7ea, "IBDRVN", "dos_iob_drive",           1),
+    (0xb7eb, "IBVOL",  "dos_iob_volume",          1),
+    (0xb7ec, "IBTRK",  "dos_iob_track",           1),
+    (0xb7ed, "IBSECT", "dos_iob_sector",          1),
+    (0xb7ee, "IBDCTP", "dos_iob_dct",             2),
+    (0xb7f0, "IBBUFP", "dos_iob_buffer",          2),
+    (0xb7f3, None,     "dos_iob_byte_count",      1),
+    (0xb7f4, "IBCMD",  "dos_iob_command",         1),
+    (0xb7f5, "IBSTAT", "dos_iob_error",           1),
+    (0xb7f6, "IBSMOD", "dos_iob_volume_found",    1),
+    (0xb7f7, "IBPSLT", "dos_iob_last_slot",       1),
+    (0xb7f8, "IBPDRV", "dos_iob_last_drive",      1),
+    (0xb7fb, "DCT",    "dos_dct",                 4),
+]
+
+# RWTS's IOB (input/output block), which a program can have of its own:
+# (offset, the suffix of its field's name, description, kind). Each field
+# of a program's IOB gets an optional label, its name the IOB's with the
+# suffix (e.g. 'rwts_iob_track'), used where the code refers to it. 'kind'
+# is "byte", or "dct" or "buffer" for the address of the device
+# characteristics table (see dos33_dct_fields) or of the sector's buffer.
+dos33_iob_fields = [
+    (0x00, None,           "Table type (1)",                          "byte"),
+    (0x01, "slot",         "Slot times 16",                           "byte"),
+    (0x02, "drive",        "Drive (1 or 2)",                          "byte"),
+    (0x03, "volume",       "Volume expected (0 for any)",             "byte"),
+    (0x04, "track",        "Track",                                   "byte"),
+    (0x05, "sector",       "Sector",                                  "byte"),
+    (0x06, "dct",          "Device characteristics table",            "dct"),
+    (0x08, "buffer",       "Sector buffer (256 bytes)",               "buffer"),
+    (0x0a, None,           "Not used",                                "byte"),
+    (0x0b, "byte_count",   "Byte count for a partial sector (0 for 256)", "byte"),
+    (0x0c, "command",      "Command (0 seek, 1 read, 2 write, 4 format)", "byte"),
+    (0x0d, "error",        "Error code (returned)",                   "byte"),
+    (0x0e, "volume_found", "Volume found (returned)",                 "byte"),
+    (0x0f, "last_slot",    "Slot times 16 last used",                 "byte"),
+    (0x10, "last_drive",   "Drive last used",                         "byte"),
+]
+DOS33_IOB_LENGTH = 0x11
+
+# The device characteristics table that an IOB points to: (description,
+# kind), "byte" or "word"
+dos33_dct_fields = [
+    ("Device type (0 for the Disk II)",  "byte"),
+    ("Phases per track (1 for the Disk II)", "byte"),
+    ("Motor on time",                    "word"),
+]
+
+# RWTS's error codes, in its IOB: {code: description}
+dos33_rwts_errors = {
+    0x00: "no error", 0x08: "error formatting", 0x10: "write protected", 0x20: "volume mismatch",
+    0x40: "drive error", 0x80: "read error",
+}
+
+# The file manager's calls (the first byte of its parameter list) and its
+# return codes (at offset $0A): {number: name or description}
+dos33_file_manager_calls = {
+    0x01: "OPEN", 0x02: "CLOSE", 0x03: "READ", 0x04: "WRITE", 0x05: "DELETE", 0x06: "CATALOG",
+    0x07: "LOCK", 0x08: "UNLOCK", 0x09: "RENAME", 0x0a: "POSITION", 0x0b: "INIT", 0x0c: "VERIFY",
+}
+dos33_file_manager_errors = {
+    0x00: "no error", 0x02: "bad call type", 0x03: "bad sub-call type",
+    0x04: "write protected", 0x05: "end of data", 0x06: "file not found", 0x07: "volume mismatch",
+    0x08: "I/O error", 0x09: "disk full", 0x0a: "file locked",
 }
 
 # The lo-res colours, for the comments on SETCOL
