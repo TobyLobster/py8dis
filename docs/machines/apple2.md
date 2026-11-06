@@ -187,7 +187,9 @@ The file manager's parameter list is always DOS's own, so it isn't marked: code 
 
 DOS commands that a program prints with COUT, after a Ctrl-D, are commented as described above (`DOS command: BLOAD GAME`).
 
-**Leaves the program's own memory alone.** ProDOS's and DOS's names and hooks are only used for addresses where nothing is loaded. A program loaded where ProDOS or DOS would be isn't using them there (Penetrator, for one, runs from $4000 to $B921), and its own addresses mustn't get their names.
+**Names the slots' ROMs where programs call them.** A program starts a card's firmware by calling $Cn00 for slot n, as PR#n does, so $C100-$C700 are named `slot_1_entry` to `slot_7_entry`, with comments: `jsr slot_3_entry ; Start the 80-column firmware (as PR#3 does)` (on the IIe, enhanced IIe and IIc), `jmp slot_6_entry ; Start slot 6's firmware (as PR#6 does: for a disk, boot it)`, and `Start slot 1's firmware (as PR#1 does)` and so on for the others. For a card's ROM itself, see [Slot firmware](#slot-firmware).
+
+**Leaves the program's own memory alone.** ProDOS's and DOS's names and hooks (and the slots' entry points) are only used for addresses where nothing is loaded. A program loaded where ProDOS or DOS would be isn't using them there (Penetrator, for one, runs from $4000 to $B921), and its own addresses mustn't get their names.
 
 **Groups the memory locations** in the output by region: zero page, the stack, the input buffer, page 3, the DOS vectors, the vectors, the text and lo-res pages, the hi-res pages, ProDOS's global page, the soft switches, the language card, the slots' I/O and ROMs, the expansion ROM, and the Applesoft and Monitor ROMs.
 
@@ -217,6 +219,79 @@ The IIc has the IIe's memory and display switches, but no slots, cassette or ann
 The names are from the IIc's firmware source as Apple published it (`MOUXINT`, `VBLINT`, `MOUBUT`, `IOUDSBL`...) and Apple's IIc Technical Notes (`ENVBL`, `RDIOUDIS`); `DISVBL`, `DHIRESON`, `IOUDISON` and `RDDHIRES` are the names in common use (A2osX, cc65's `apple2.inc`, SourceGen) for switches those don't name, and the others are descriptive in both styles. IOUDIS's switches act when written, so, like the IIe's at $C000-$C00F, they're named where they're written. The IIe's switches the IIc doesn't have (`TAPEOUT`, annunciator 2, whose addresses are the IOU's mouse edge switches, `SETSLOTCXROM`, `SETINTCXROM`, `SETINTC3ROM` and `SETSLOTC3ROM`) aren't named.
 
 The enhanced IIe has the IIe's switches.
+
+## Slot firmware
+
+`apple.slot_rom(slot)` sets up for a card's ROM, loaded at $Cn00 for slot n (1 to 7), after `apple.apple2()`:
+
+```python
+load(0xc700, "CARD.ROM", "6502")
+apple.apple2()
+apple.slot_rom(7)
+go()
+```
+
+- **The entry point** at $Cn00, where PR#n, IN#n and booting from slot n start, is traced and labelled `slot_7_entry`.
+- **A ProDOS block device** has $20, $00 and $03 at $Cn01, $Cn03 and $Cn05 (from the ProDOS 8 Technical Reference); $Cn07 is $3C if the Autostart ROM boots it (a Disk II's ID byte), or $00 for SmartPort. A comment says which. $CnFF is the low byte of its ProDOS driver's address ($00 and $FF mean a Disk II, which ProDOS drives itself):
+  - the driver is traced and labelled `prodos_driver`, and $CnFF written as its low byte;
+  - $CnFC-$CnFD, the number of blocks (0 to read it with STATUS), and $CnFE, the status byte, are marked and commented: `Status: 3 volumes; removable, formats, writes, reads, gives its status`;
+  - ProDOS's parameters in zero page get their names in the ROM, instead of the Monitor's (`A4L` etc.): `driver_command` ($42), `driver_unit`, `driver_buffer` and `driver_buffer_high` ($44-$45), and `driver_block` and `driver_block_high` ($46-$47), under the heading `; ProDOS driver's parameters`;
+  - for SmartPort, the dispatcher (3 bytes after the driver) is traced and labelled `smartport`, and calls to it in the ROM are decoded (see [SmartPort calls](#smartport-calls)).
+- **A Pascal 1.1 card** has $38, $18 and $01 at $Cn05, $Cn07 and $Cn0B (from Apple's Technical Note Miscellaneous #8):
+  - BASIC's input and output entry points at $Cn05 and $Cn07 (whose SEC and CLC are the ID bytes $38 and $18) are traced and labelled `basic_input` and `basic_output`;
+  - the device signature at $Cn0C is commented with its class and ID: `Device signature: class 3 (serial or communications), ID 1` (for the classes of Apple's own cards: the mouse, the serial ports and the 80-column firmware; other classes are given by number);
+  - the offsets of the INIT, READ, WRITE and STATUS routines at $Cn0D-$Cn10 are written as their labels' low bytes, and the routines traced and labelled `pascal_init`, `pascal_read`, `pascal_write` and `pascal_status`;
+  - for the mouse (device signature $20), the offsets of its routines at $Cn12-$Cn19 too: `SETMOUSE`, `SERVEMOUSE`, `READMOUSE`, `CLEARMOUSE`, `POSMOUSE`, `CLAMPMOUSE`, `HOMEMOUSE` and `INITMOUSE` (descriptive: `mouse_set_mode`, `mouse_serve` etc.).
+- **The card's I/O,** $C080 + 16n to $C08F + 16n, is named for the slot: `sta slot_7_io+7`. In the ROM of a card that isn't a Disk II, its accesses to $C080-$C08F indexed by the slot times 16 are the card's own (`lda card_io_14,x`, under the heading `; The card's I/O (indexed by the slot times 16)`), not the Disk II's names that `apple.apple2()` gives them elsewhere.
+- **`MSLOT`** ($07F8), where a card notes that it's using the expansion ROM ($C800-$CFFF), is named.
+
+Here's the start of [Apple2-IO-RPi](https://github.com/tjboldt/Apple2-IO-RPi)'s drive firmware for slot 7, with the names from its source:
+
+```
+; Slot 7's ROM: PR#7, IN#7 and booting from slot 7 start here
+; ID bytes $20, $00 and $03 at $c701, $c703 and $c705: a ProDOS block device, which the
+; Autostart ROM boots ($3C at $c707, as a Disk II's)
+slot_7_entry
+    cpx #$20
+    ...
+Start
+    ldx #$70
+    stx BAS2H
+    stx driver_unit
+    lda #1
+    sta driver_command
+    ...
+    !word 0                 ; Number of blocks (0: read it with STATUS)
+    !byte $17               ; Status: 1 volume; writes, reads, gives its status
+    !byte <DriverEntry      ; The low byte of the driver's address
+```
+
+Names given more than once (for several slots in one session) get `_2` etc., and names the control file gives are kept. It stops with an error if `apple.apple2()` hasn't been called, the slot isn't 1 to 7, or nothing is loaded at $Cn00. Not done: the optional Pascal routines some cards have after $Cn10, and finding entry points through other tables.
+
+## SmartPort calls
+
+SmartPort is called as ProDOS's MLI is: a JSR to its dispatcher is followed by the call's number and the address of its parameter list, and it returns after them. A program finds the dispatcher in a slot's ROM as it runs (at $Cn00 plus the byte at $CnFF, plus 3), so it usually calls it through a JMP of its own, whose address it sets. `apple.smartport_calls(addr)`, after `apple.apple2()`, says that a JSR to `addr` is a SmartPort call:
+
+```python
+apple.apple2(model="iie")
+apple.smartport_calls(0x085b)
+```
+
+Each call is then decoded as the MLI's are (see above): tracing carries on after it, the number is named (`SP_READBLOCK` etc., or `smartport_readblock` with descriptive names), the call is commented, and the parameter list is labelled (`sp_readblock_params`) and marked, with its buffers labelled `data_buffer`, `status_list` and `control_list`:
+
+```
+    jsr smartport           ; SmartPort: read a block
+    !byte SP_READBLOCK
+    !word sp_readblock_params
+    ...
+sp_readblock_params
+    !byte 3                 ; Parameter count
+    !byte 1                 ; Unit number
+    !word data_buffer       ; Data buffer (512 bytes)
+    !byte 0, 0, 0           ; Block number
+```
+
+The calls are STATUS, READBLOCK, WRITEBLOCK, FORMAT, CONTROL, INIT, OPEN, CLOSE, READ and WRITE (see `smartport_calls_table` in `appletables.py`). Another number (a device's own call) is commented with its number. The extended calls ($40 and up, with longer addresses) aren't decoded, and tracing stops after them. `apple.slot_rom()` does this for a SmartPort device's own dispatcher.
 
 ## Applesoft programs
 

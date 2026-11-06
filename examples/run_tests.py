@@ -184,6 +184,9 @@ TESTS = [
     ("applesoft_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.applesoft_program(): an Applesoft program's lines listed, and the machine code it CALLs, which uses Applesoft's routines and sets the USR and & vectors"),
     ("prodos_test",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "ProDOS 8's MLI calls: the call numbers and parameter lists after the JSRs, with pathnames, buffers and a handler, and the global page"),
     ("dos33_test",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "DOS 3.3 from machine code: RWTS with IOBs (labelled and marked, with names for the fields used), the file manager, the page 3 entry points and DOS's memory"),
+    ("slot_roms_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.slot_rom() for four cards' ROMs: a Pascal 1.1 serial card, a card with no ID bytes, a mouse card, and a SmartPort device with a ProDOS driver, whose boot code makes a SmartPort call"),
+    ("apple2_io_rpi",            ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "a real card's ROM (Apple2-IO-RPi's drive firmware, MIT licence) with apple.slot_rom(): a ProDOS block device that the Autostart ROM boots"),
+    ("smartport_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "apple.smartport_calls(): a program's SmartPort calls through a JMP of its own, and its calls to slot 3's and slot 6's ROMs"),
     ("penetrator",               ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "Penetrator, a real Apple II game (public domain): an AppleSingle file with the soft switches, the Monitor and ProDOS MLI calls"),
     ("load_offset",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "loading parts of a file with load(..., offset=..., length=...)"),
     ("undocumented_6502",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65"], "every undocumented 6502 opcode, with load(..., \"6510\")"),
@@ -284,6 +287,10 @@ ERROR_TESTS = [
     ("apple2_bad_names",        "apple.apple2(): names must be one of 'apple', 'descriptive', not 'commodore'"),
     ("apple2_65c02",            "apple.apple2(): the Apple II+ and IIe have a 6502, not a 65C02 (model=\"iie-enhanced\" and model=\"iic\" have a 65C02)"),
     ("apple2c_6510",            "apple.apple2(): the enhanced IIe and the IIc have a 65C02, which doesn't run the 6502's undocumented opcodes (use load(..., \"6502\") or load(..., \"65C02\"))"),
+    ("slot_rom_before_apple2",  "apple.slot_rom(): call apple.apple2() first"),
+    ("slot_rom_bad_slot",       "apple.slot_rom(): the slot must be 1 to 7, not 8"),
+    ("slot_rom_not_loaded",     "apple.slot_rom(6): nothing is loaded at &c600 (load the card's ROM there)"),
+    ("smartport_calls_before_apple2", "apple.smartport_calls(): call apple.apple2() first"),
     ("apple2_before_load",      'apple.apple2(): call load(..., "6502") first'),
     ("apple2_after_atom",       "apple.apple2(): this session's machine has already been chosen"),
     ("upper_case_os_calls_too_late", "config.set_upper_case_os_calls(): call it before acorn.bbc(), commodore.c64() etc., which name the OS calls"),
@@ -744,7 +751,8 @@ def check_json_annotations(path, doc, asm):
     # configurations', for the C64's names in other memory configurations,
     # and '1541 drive', for the 1541's names in drive code; and apple.py's
     # Disk II heading, for its names indexed by the slot)
-    own_headings = {"Other banks", "Other memory configurations", "1541 drive", "Disk II (indexed by the slot times 16)"}
+    own_headings = {"Other banks", "Other memory configurations", "1541 drive", "Disk II (indexed by the slot times 16)",
+                    "ProDOS driver's parameters", "The card's I/O (indexed by the slot times 16)"}
     region_names = {r["name"] for r in regions} | {"Other"} | own_headings
     # The headings in the asm, e.g. '; Zero page (&0000-&00ff)' or '; Other'
     # (z88dk writes an address below &100 with two digits, e.g. '; ROM ($00-$3fff)')

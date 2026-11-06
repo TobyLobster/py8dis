@@ -5,7 +5,8 @@ The data apple.py uses for the Apple II+, IIe, enhanced IIe and IIc: the
 Monitor ROM's routines, the Monitor's zero page and the other workspace,
 the page 3 vectors, the soft switches (and the IIc's), Applesoft's routines, workspace and tokens,
 ProDOS 8's MLI calls and global page, DOS 3.3's entry points, memory and
-IOB, and the regions of memory.
+IOB, slot firmware's ID bytes and tables, SmartPort's calls, and the regions
+of memory.
 
 Each name is given twice: Apple's (from Apple's reference manuals: the
 Apple II Reference Manual's Monitor listing, and the Apple IIe Technical
@@ -875,6 +876,110 @@ dos33_file_manager_errors = {
     0x04: "write protected", 0x05: "end of data", 0x06: "file not found", 0x07: "volume mismatch",
     0x08: "I/O error", 0x09: "disk full", 0x0a: "file locked",
 }
+
+
+# ************************************************************************************************
+# Slot firmware: a card's ROM at $Cn00-$CnFF for slot n (see apple.slot_rom())
+
+# The ID bytes of a ProDOS block device (and of a card the Autostart ROM boots
+# from): {offset: value} ($Cn01 = $20, $Cn03 = $00, $Cn05 = $03), from the
+# ProDOS 8 Technical Reference. $Cn07 is then $3C for a Disk II (the
+# Autostart ROM boots a card with all four), or $00 for SmartPort.
+SLOT_BLOCK_DEVICE_ID = {0x01: 0x20, 0x03: 0x00, 0x05: 0x03}
+SLOT_DISK2_ID = 0x3c
+SLOT_SMARTPORT_ID = 0x00
+
+# A ProDOS block device's status byte ($CnFE): its bits from 7 down, with
+# bits 5 and 4 the number of volumes (ProDOS 8 Technical Reference, 6.3)
+slot_status_bits = {
+    7: "removable",
+    6: "interruptible",
+    3: "formats",
+    2: "writes",
+    1: "reads",
+    0: "gives its status",
+}
+
+# The ID bytes of a card with the Pascal 1.1 firmware protocol: {offset:
+# value} ($Cn05 = $38 and $Cn07 = $18, from Pascal 1.0, and $Cn0B = $01, the
+# generic signature), from Apple's Technical Note Miscellaneous #8. The code
+# at $Cn05 and $Cn07 (SEC and CLC) is BASIC's input and output entry points.
+SLOT_PASCAL_ID = {0x05: 0x38, 0x07: 0x18, 0x0b: 0x01}
+
+# The Pascal 1.1 card's device signature ($Cn0C): the classes (its high 4
+# bits; the low 4 bits are the card's ID) of Apple's own cards, as Apple's
+# Technical Note Miscellaneous #8 lists them (the mouse $20, the serial
+# ports $31, the 80-column firmware $88). Other classes are given by number.
+slot_pascal_classes = {
+    0x2: "mouse",
+    0x3: "serial or communications",
+    0x8: "80-column display",
+}
+
+# The offsets of the Pascal 1.1 routines (the low bytes of their addresses):
+# (offset in the ROM, Apple's name, descriptive name, what it is)
+slot_pascal_routines = [
+    (0x0d, None, "pascal_init",   "Pascal 1.1 INIT routine"),
+    (0x0e, None, "pascal_read",   "Pascal 1.1 READ routine"),
+    (0x0f, None, "pascal_write",  "Pascal 1.1 WRITE routine"),
+    (0x10, None, "pascal_status", "Pascal 1.1 STATUS routine"),
+]
+
+# The mouse's firmware (a Pascal 1.1 card whose device signature is $20):
+# the offsets of its routines, as slot_pascal_routines, with Apple's names
+# (from the AppleMouse II's documentation, as cc65's mouse driver uses them)
+SLOT_MOUSE_SIGNATURE = 0x20
+slot_mouse_routines = [
+    (0x12, "SETMOUSE",   "mouse_set_mode",     "Mouse: set the mode"),
+    (0x13, "SERVEMOUSE", "mouse_serve",        "Mouse: service an interrupt"),
+    (0x14, "READMOUSE",  "mouse_read",         "Mouse: read the position and buttons"),
+    (0x15, "CLEARMOUSE", "mouse_clear",        "Mouse: set the position to 0"),
+    (0x16, "POSMOUSE",   "mouse_set_position", "Mouse: set the position"),
+    (0x17, "CLAMPMOUSE", "mouse_clamp",        "Mouse: set the bounds"),
+    (0x18, "HOMEMOUSE",  "mouse_home",         "Mouse: move to the top left of the bounds"),
+    (0x19, "INITMOUSE",  "mouse_init",         "Mouse: reset the bounds, and set the position to 0"),
+]
+
+# The zero page that ProDOS passes a block device's driver its parameters in
+# (ProDOS 8 Technical Reference, 6.3): {address: descriptive name}, named in
+# the card's ROM instead of the Monitor's A4L etc.
+slot_driver_zero_page = {
+    0x42: "driver_command",
+    0x43: "driver_unit",
+    0x44: "driver_buffer",
+    0x45: "driver_buffer_high",
+    0x46: "driver_block",
+    0x47: "driver_block_high",
+}
+SLOT_DRIVER_HEADING = "ProDOS driver's parameters"
+
+# The heading for a card's I/O, indexed by the slot times 16, in its ROM
+# (e.g. 'lda card_io_14,x'), where it isn't a Disk II's
+SLOT_CARD_IO_HEADING = "The card's I/O (indexed by the slot times 16)"
+
+# The slot whose ROM uses the expansion ROM ($C800-$CFFF), as $Cn: (address,
+# Apple's name, descriptive name)
+SLOT_MSLOT = (0x07f8, "MSLOT", "expansion_rom_owner")
+
+# SmartPort's calls (a JSR to its dispatcher, then the command number and
+# the address of its parameter list, as for ProDOS's MLI): {number: (name,
+# title, parameters)}, the parameters as for prodos_mli_calls, plus
+# "status_list" and "control_list" for those buffers. (The parameter counts
+# and lists as AppleIISd's SmartPort firmware checks them.) The extended
+# calls ($40 and up, with longer addresses) aren't here.
+smartport_calls_table = {
+    0x00: ("STATUS",     "read a device's status",  [("Unit number", "byte"), ("Status list", "status_list"), ("Status code", "byte")]),
+    0x01: ("READBLOCK",  "read a block",            [("Unit number", "byte"), ("Data buffer (512 bytes)", "buffer"), ("Block number", "3")]),
+    0x02: ("WRITEBLOCK", "write a block",           [("Unit number", "byte"), ("Data buffer (512 bytes)", "buffer"), ("Block number", "3")]),
+    0x03: ("FORMAT",     "format a device",         [("Unit number", "byte")]),
+    0x04: ("CONTROL",    "control a device",        [("Unit number", "byte"), ("Control list", "control_list"), ("Control code", "byte")]),
+    0x05: ("INIT",       "reset the devices",       [("Unit number (0)", "byte")]),
+    0x06: ("OPEN",       "open a character device", [("Unit number", "byte")]),
+    0x07: ("CLOSE",      "close a character device", [("Unit number", "byte")]),
+    0x08: ("READ",       "read bytes",              [("Unit number", "byte"), ("Data buffer", "buffer"), ("Byte count", "word"), ("Address", "3")]),
+    0x09: ("WRITE",      "write bytes",             [("Unit number", "byte"), ("Data buffer", "buffer"), ("Byte count", "word"), ("Address", "3")]),
+}
+SMARTPORT_EXTENDED = 0x40
 
 # The lo-res colours, for the comments on SETCOL
 apple2_lores_colours = ["black", "magenta", "dark blue", "purple", "dark green", "grey", "medium blue", "light blue",

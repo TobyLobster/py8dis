@@ -51,8 +51,16 @@ load_apple_file() etc.). It:
 - makes the Apple II's high ASCII (ASCII with bit 7 set) the session's text
   encoding (see textencoding.py).
 
+It also names the slots' ROMs at $Cn00 (e.g. 'slot_3_entry'), which
+programs call as PR#n does, with comments (e.g. 'Start the 80-column
+firmware (as PR#3 does)').
+
 applesoft_program() marks an Applesoft program, listing its lines in
-comments, and traces the machine code its CALLs call.
+comments, and traces the machine code its CALLs call. slot_rom() sets up
+for a card's ROM at $Cn00: its entry points, and those its ID bytes give (a
+ProDOS block device's driver and SmartPort dispatcher, a Pascal 1.1 card's
+routines, the mouse's). smartport_calls() decodes the SmartPort calls a
+program makes through a JMP of its own.
 
 The names are Apple's, in capitals (unless
 config.set_upper_case_os_calls(False)), or with names="descriptive",
@@ -81,6 +89,7 @@ import utils
 from align import Align
 from format import Format
 from memorymanager import BinaryAddr, BinaryLocation, RuntimeAddr
+from maker import make_lo
 import msbasic
 from snippets6502 import register_snippet
 from snippethelper import vector_pattern, vector_handler, vector_handler_name, comment_vector, half_set_vector_text
@@ -386,7 +395,9 @@ def comment_soft_switches():
     - an access to $C080-$C08F indexed by X or Y, which is the slot whose
       number times 16 is in the register (usually a Disk II), e.g. 'lda
       Q6L,x ; Disk II: Q6 low (read the data latch)', named for that
-      instruction (see apple2_disk2_switches).
+      instruction (see apple2_disk2_switches); but in the ROM of a card
+      that isn't a Disk II (see slot_rom()), with the card's names, e.g.
+      'lda card_io_14,x'.
     The names for one instruction are local labels (see
     disassembly.add_local_label()). The switches are the model's (see
     switch_tables()), and for a 65C02, its STZ, TSB and TRB count too. (Run
@@ -396,6 +407,7 @@ def comment_soft_switches():
     moves = session.current().moves.move_id_for_binary_addr
     model = _model()
     _, inputs, actions, write_switches = switch_tables(model)
+    card_roms = session.current().extras.get("apple.card_roms", [])
     reads, writes, rmw, indexed = _ABSOLUTE_READS, _ABSOLUTE_WRITES, _ABSOLUTE_RMW, _INDEXED
     if config.get_cmos():
         writes, rmw, indexed = writes | _CMOS_ABSOLUTE_WRITES, rmw | _CMOS_ABSOLUTE_RMW, indexed | _CMOS_INDEXED
@@ -428,9 +440,13 @@ def comment_soft_switches():
                 # The Disk II (or another card) in the slot whose number
                 # times 16 is in X or Y
                 if 0xc080 <= addr <= 0xc08f:
-                    apple_name, descriptive_name, text = apple2_disk2_switches[addr & 0x0f]
-                    name(binary_addr, addr, apple_name, descriptive_name, APPLE2_DISK2_HEADING)
-                    comment(binary_addr, text)
+                    if any(start <= binary_addr < end for start, end in card_roms):
+                        # (In a card's ROM, not a Disk II's: see slot_rom())
+                        name(binary_addr, addr, None, "card_io_{0}".format(addr & 0x0f), SLOT_CARD_IO_HEADING)
+                    else:
+                        apple_name, descriptive_name, text = apple2_disk2_switches[addr & 0x0f]
+                        name(binary_addr, addr, apple_name, descriptive_name, APPLE2_DISK2_HEADING)
+                        comment(binary_addr, text)
                 continue
             if 0xc080 <= addr <= 0xc08f:
                 comment(binary_addr, apple2_language_card_action(addr))
@@ -532,19 +548,25 @@ def mli_call_name(apple_name):
     capitals unless config.set_upper_case_os_calls(False)) or 'mli_open'."""
     return official_name("MLI_" + apple_name) if _names() == "apple" else "mli_" + apple_name.lower()
 
-def _mli_parameters(params, fields, call_name):
-    """Mark the parameter list of an MLI call at params (see
-    prodos_mli_calls): the parameter count, then each parameter, commented
-    with what it is. The address of a pathname, buffer or handler is
-    written as its label (e.g. 'pathname', 'data_buffer', 'io_buffer' or
-    'interrupt_handler', unless it has a name), a reference number is
+# The labels given to the buffers that parameter lists point to, by the
+# parameter's kind (see prodos_mli_calls and smartport_calls_table)
+_BUFFER_NAMES = {"buffer": "data_buffer", "io_buffer": "io_buffer", "status_list": "status_list", "control_list": "control_list"}
+
+def _parameter_list(params, fields, call_name):
+    """Mark the parameter list of an MLI call (or a SmartPort call) at params
+    (see prodos_mli_calls and smartport_calls_table): the parameter count,
+    then each parameter, commented with what it is. The address of a
+    pathname, buffer or handler is written as its label (e.g. 'pathname',
+    'data_buffer', 'io_buffer', 'status_list' or 'interrupt_handler', unless
+    it has a name; see _BUFFER_NAMES), a reference number is
     labelled from the call (e.g. 'open_ref', which code often copies to
     the next calls' lists), a pathname is marked as a
     length-prefixed string (in ASCII, or high ASCII if its first character
     has bit 7 set), and a handler is traced. Only if the list is loaded and
     nothing in it is classified yet. If its count isn't the call's, only
     the count is marked."""
-    sizes = {"byte": 1, "word": 2, "3": 3, "pathname": 2, "buffer": 2, "io_buffer": 2, "code": 2}
+    sizes = {"byte": 1, "word": 2, "3": 3, "pathname": 2, "code": 2}
+    sizes.update({kind: 2 for kind in _BUFFER_NAMES})
     if not _loaded_and_unclassified(params, 1 + sum(sizes[kind] for _, kind in fields)):
         return
     byte(params)
@@ -574,7 +596,7 @@ def _mli_parameters(params, fields, call_name):
                         entry(pointer)
                     name = _data_name(pointer, "interrupt_handler")
                 else:
-                    name = _data_name(pointer, "data_buffer" if kind == "buffer" else "io_buffer")
+                    name = _data_name(pointer, _BUFFER_NAMES[kind])
                 expr(addr, name)
         auto_comment(addr, description, align=Align.INLINE)
         addr += sizes[kind]
@@ -585,7 +607,7 @@ def mli_hook(target, caller):
     its parameter list, so tracing carries on after them. The call number
     is written as its name (e.g. 'MLI_OPEN'), the address as the parameter
     list's label (e.g. 'open_params', unless it has a name), and the
-    parameter list is marked (see _mli_parameters()); the call is
+    parameter list is marked (see _parameter_list()); the call is
     commented, e.g. 'ProDOS: open a file'. If the bytes after the JSR
     aren't loaded, or are classified already, they're left alone. Tracing
     stops after QUIT, which doesn't return."""
@@ -599,6 +621,8 @@ def mli_hook(target, caller):
     call = prodos_mli_calls.get(number)
     if call is None:
         auto_comment(caller, "ProDOS: call {0}".format(_hex2(number)), align=Align.INLINE)
+        if params != 0:
+            _label_at(number_addr + 1, params)
         return caller + 6
     apple_name, title, fields = call
     name = mli_call_name(apple_name)
@@ -608,7 +632,7 @@ def mli_hook(target, caller):
     # (GET_TIME has no parameters, so its address is usually 0)
     if fields and params != 0:
         expr(number_addr + 1, _data_name(params, apple_name.lower() + "_params"))
-        _mli_parameters(params, fields, apple_name.lower())
+        _parameter_list(params, fields, apple_name.lower())
     # (QUIT doesn't return)
     return None if number == PRODOS_MLI_QUIT else caller + 6
 
@@ -628,8 +652,7 @@ def _object_name(runtime_addr, name):
 
 def _label_at(runtime_addr, target):
     """Write the word at runtime_addr as the label of the target address."""
-    binary_addr, _ = movemanager.r2b(RuntimeAddr(runtime_addr))
-    auto_expr(runtime_addr, get_label(target, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE))
+    auto_expr(runtime_addr, _label_ref(target, runtime_addr))
 
 def _rwts_dct(dct):
     """Mark a device characteristics table (see dos33_dct_fields), if it's
@@ -712,10 +735,261 @@ _DOS33_HOOKS = {
     0xbd00: _rwts_hook,                             # RWTS
 }
 
+def _slot_entry_title(slot, model):
+    """The comment on a call to slot n's ROM at $Cn00."""
+    if slot == 3 and model in IIE_FAMILY:
+        return "Start the 80-column firmware (as PR#3 does)"
+    if slot == 6:
+        return "Start slot 6's firmware (as PR#6 does: for a disk, boot it)"
+    return "Start slot {0}'s firmware (as PR#{0} does)".format(slot)
+
 def _no_return_hook(target, caller):
     """The tracing hook (see Cpu.subroutine_hooks) for DOS's warm and cold
     starts, which don't return: tracing stops after a JSR to them."""
     return None
+
+
+# ************************************************************************************************
+# SmartPort's calls
+
+def smartport_call_name(name):
+    """The name of a SmartPort call's number, e.g. 'SP_READBLOCK' (in
+    capitals unless config.set_upper_case_os_calls(False)) or
+    'smartport_readblock'."""
+    return official_name("SP_" + name) if _names() == "apple" else "smartport_" + name.lower()
+
+def smartport_hook(target, caller):
+    """The tracing hook (see Cpu.subroutine_hooks) for a call to SmartPort's
+    dispatcher (see smartport_calls()): as mli_hook() for the MLI, the JSR
+    is followed by the call number and the address of its parameter list,
+    so tracing carries on after them; the number is written as its name
+    (e.g. 'SP_READBLOCK'), the address as the parameter list's label (e.g.
+    'sp_readblock_params', unless it has a name), and the parameter list is
+    marked (see _parameter_list() and smartport_calls_table); the call is
+    commented, e.g. 'SmartPort: read a block'. An extended call ($40 and
+    up) isn't decoded, and tracing stops after it."""
+    number_addr = caller + 3
+    if not _loaded_and_unclassified(number_addr, 1):
+        return caller + 3
+    number = _u8(number_addr)
+    if number >= SMARTPORT_EXTENDED:
+        byte(number_addr)
+        auto_comment(caller, "SmartPort: extended call {0} (not decoded, so tracing stops)".format(_hex2(number)), align=Align.INLINE)
+        return None
+    if not _loaded_and_unclassified(number_addr, 3):
+        return caller + 3
+    params = _u8(number_addr + 1) + 256 * _u8(number_addr + 2)
+    byte(number_addr)
+    word(number_addr + 1)
+    call = smartport_calls_table.get(number)
+    if call is None:
+        auto_comment(caller, "SmartPort: call {0}".format(_hex2(number)), align=Align.INLINE)
+        if params != 0:
+            _label_at(number_addr + 1, params)
+        return caller + 6
+    name, title, fields = call
+    constant(number, smartport_call_name(name), format=Format.HEX)
+    expr(number_addr, smartport_call_name(name))
+    auto_comment(caller, "SmartPort: " + title, align=Align.INLINE)
+    if params != 0:
+        call_name = "sp_" + name.lower()
+        expr(number_addr + 1, _data_name(params, call_name + "_params"))
+        _parameter_list(params, fields, call_name)
+    return caller + 6
+
+def smartport_calls(runtime_addr):
+    """Say that a JSR to runtime_addr is a call to SmartPort's dispatcher,
+    followed by the call number and the address of its parameter list (see
+    smartport_hook()). A program finds the dispatcher in a slot's ROM as it
+    runs, so it usually calls it through a JMP of its own whose address it
+    sets: give that JMP's address. It's labelled 'smartport' unless it has a
+    name. Call it after apple.apple2()."""
+    if _model() is None:
+        utils.die("apple.smartport_calls(): call apple.apple2() first")
+    runtime_addr = RuntimeAddr(runtime_addr)
+    session.current().cpu.subroutine_hooks[runtime_addr] = smartport_hook
+    _data_name(runtime_addr, "smartport")
+
+
+# ************************************************************************************************
+# Slot firmware: a card's ROM at $Cn00
+
+def _hex4(n):
+    """A 4 digit hex number for a comment, e.g. $c701."""
+    return config.get_assembler().hex4_for_comment(n)
+
+def _label_ref(target, runtime_addr):
+    """The label of the target address, as used at runtime_addr."""
+    binary_addr, _ = movemanager.r2b(RuntimeAddr(runtime_addr))
+    return get_label(target, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+
+def _status_text(status):
+    """The comment on a ProDOS block device's status byte ($CnFE), e.g.
+    'Status: 1 volume; writes, reads, gives its status'."""
+    volumes = (status >> 4) & 3
+    features = [slot_status_bits[bit] for bit in sorted(slot_status_bits, reverse=True) if status & (1 << bit)]
+    text = "Status: {0} volume{1}".format(volumes, "" if volumes == 1 else "s")
+    return text + ("; " + ", ".join(features) if features else "")
+
+def _slot_offset_table(base, routines):
+    """Mark a table of routines' offsets in a card's ROM (the low bytes of
+    their addresses, in the page at base): each is a byte written as its
+    routine's label's low byte (and commented with the routine's name, e.g.
+    'Offset of POSMOUSE', since routines can share one), the routine traced
+    and labelled (e.g. 'pascal_init', unless it has a name; see
+    slot_pascal_routines), with a comment before it saying what it is. Only
+    for offsets that are loaded and not yet classified."""
+    for offset, apple_name, descriptive_name, text in routines:
+        if not _loaded_and_unclassified(base + offset, 1):
+            continue
+        byte(base + offset)
+        target = base + _u8(base + offset)
+        name = _data_name(target, _name(apple_name, descriptive_name))
+        if _loaded(target):
+            entry(target)
+            auto_comment(target, text)
+        auto_expr(base + offset, make_lo(_label_ref(target, base + offset)))
+        auto_comment(base + offset, "Offset of " + _name(apple_name, descriptive_name), align=Align.INLINE)
+
+def _slot_byte(addr, text):
+    """Mark a byte of a card's ROM, with a comment, if it's loaded and not
+    yet classified."""
+    if _loaded_and_unclassified(addr, 1):
+        byte(addr)
+        auto_comment(addr, text, align=Align.INLINE)
+
+def slot_rom(slot):
+    """Set up for a peripheral card's ROM, loaded at $Cn00 for slot n (1 to
+    7), after apple.apple2() (see docs/machines/apple2.md):
+    - $Cn00, where PR#n, IN#n and booting from slot n start, is traced and
+      labelled (e.g. 'slot_7_entry', unless it has a name);
+    - a ProDOS block device ($20, $00 and $03 at $Cn01, $Cn03 and $Cn05):
+      its ID bytes are described (and $Cn07: $3C, which the Autostart ROM
+      boots as a Disk II, or $00 for SmartPort), and from $CnFF, the low
+      byte of its driver's address (if it isn't $00 or $FF, a Disk II), the
+      driver is traced and labelled ('prodos_driver'), the number of blocks
+      ($CnFC) and the status byte ($CnFE) are marked, and ProDOS's
+      parameters in zero page get their names in the ROM ('driver_command'
+      etc.: see slot_driver_zero_page); SmartPort's dispatcher, 3 bytes on,
+      is traced and labelled ('smartport'), and calls to it decoded (see
+      smartport_hook());
+    - a Pascal 1.1 card ($38, $18 and $01 at $Cn05, $Cn07 and $Cn0B): BASIC's
+      input and output entry points at $Cn05 and $Cn07 are traced
+      ('basic_input', 'basic_output'), the device signature at $Cn0C is
+      described, and the offsets of the INIT, READ, WRITE and STATUS
+      routines at $Cn0D-$Cn10 are marked, and the routines traced and
+      labelled ('pascal_init' etc.); for the mouse (signature $20), its
+      routines' offsets at $Cn12-$Cn19 too ('SETMOUSE' etc.);
+    - MSLOT ($07F8), where a card notes that it's using the expansion ROM,
+      is named.
+    Names given more than once (for several slots) get _2 etc. It stops
+    with an error if apple.apple2() hasn't been called, the slot isn't 1 to
+    7, or nothing is loaded at $Cn00."""
+    if _model() is None:
+        utils.die("apple.slot_rom(): call apple.apple2() first")
+    if not isinstance(slot, int) or isinstance(slot, bool) or not 1 <= slot <= 7:
+        utils.die("apple.slot_rom(): the slot must be 1 to 7, not {0!r}".format(slot))
+    base = 0xc000 + 0x100 * slot
+    if not _loaded(base):
+        utils.die("apple.slot_rom({0}): nothing is loaded at {1} (load the card's ROM there)".format(slot, config.get_assembler().hex4(base)))
+
+    def rom(offset):
+        """The byte at $Cn00 + offset, or None if it isn't loaded."""
+        return _u8(base + offset) if _loaded(base + offset) else None
+
+    entry(base)
+    _data_name(base, "slot_{0}_entry".format(slot))
+    auto_comment(base, "Slot {0}'s ROM: PR#{0}, IN#{0} and booting from slot {0} start here".format(slot))
+    recognised = False
+
+    # A ProDOS block device (and SmartPort, or a Disk II)
+    if all(rom(offset) == value for offset, value in SLOT_BLOCK_DEVICE_ID.items()):
+        recognised = True
+        text = "ID bytes $20, $00 and $03 at {0}, {1} and {2}: a ProDOS block device".format(_hex4(base + 1), _hex4(base + 3), _hex4(base + 5))
+        if rom(7) == SLOT_DISK2_ID:
+            text += ", which the Autostart ROM boots ($3C at {0}, as a Disk II's)".format(_hex4(base + 7))
+        elif rom(7) == SLOT_SMARTPORT_ID:
+            text += ", with SmartPort ($00 at {0})".format(_hex4(base + 7))
+        auto_comment(base, text)
+        low = rom(0xff)
+        if low == 0x00:
+            _slot_byte(base + 0xff, "$00: a Disk II with 16-sector ROMs, which ProDOS drives itself")
+        elif low == 0xff:
+            _slot_byte(base + 0xff, "$FF: a Disk II with 13-sector ROMs, which ProDOS doesn't use")
+        elif low is not None:
+            driver = base + low
+            entry(driver)
+            _data_name(driver, "prodos_driver")
+            auto_comment(driver, "ProDOS's driver for the device (with its parameters at $42-$47)")
+            if _loaded_and_unclassified(base + 0xfc, 2):
+                word(base + 0xfc)
+                auto_comment(base + 0xfc, "Number of blocks (0: read it with STATUS)", align=Align.INLINE)
+            if rom(0xfe) is not None:
+                _slot_byte(base + 0xfe, _status_text(rom(0xfe)))
+            if _loaded_and_unclassified(base + 0xff, 1):
+                byte(base + 0xff)
+                auto_expr(base + 0xff, make_lo(_label_ref(driver, base + 0xff)))
+                auto_comment(base + 0xff, "The low byte of the driver's address", align=Align.INLINE)
+            # ProDOS's parameters in zero page, named in the ROM (and the
+            # expansion ROM, if it's loaded)
+            ranges = [(base, base + 0x100)]
+            if _loaded(0xc800):
+                ranges.append((0xc800, 0xd000))
+            for addr, name in slot_driver_zero_page.items():
+                for start, end in ranges:
+                    disassembly.add_local_label(RuntimeAddr(addr), name, BinaryAddr(start), BinaryAddr(end), heading=SLOT_DRIVER_HEADING)
+            if rom(7) == SLOT_SMARTPORT_ID and _loaded(driver + 3):
+                dispatcher = driver + 3
+                entry(dispatcher)
+                _data_name(dispatcher, "smartport")
+                auto_comment(dispatcher, "SmartPort's dispatcher: a JSR to it is followed by the call number and the address of its parameter list")
+                session.current().cpu.subroutine_hooks[RuntimeAddr(dispatcher)] = smartport_hook
+
+    # A Pascal 1.1 card (and the mouse)
+    if all(rom(offset) == value for offset, value in SLOT_PASCAL_ID.items()):
+        recognised = True
+        auto_comment(base, "ID bytes $38, $18 and $01 at {0}, {1} and {2}: the Pascal 1.1 firmware protocol".format(_hex4(base + 5), _hex4(base + 7), _hex4(base + 0x0b)))
+        for offset, name, text in ((5, "basic_input", "BASIC's input entry point (whose SEC is the ID byte $38)"),
+                                   (7, "basic_output", "BASIC's output entry point (whose CLC is the ID byte $18)")):
+            entry(base + offset)
+            _data_name(base + offset, name)
+            auto_comment(base + offset, text)
+        _slot_byte(base + 0x0b, "Pascal 1.1's generic signature")
+        signature = rom(0x0c)
+        if signature is not None:
+            device_class = slot_pascal_classes.get(signature >> 4)
+            text = "Device signature: class {0}{1}, ID {2}".format(signature >> 4, " ({0})".format(device_class) if device_class else "", signature & 0x0f)
+            _slot_byte(base + 0x0c, text)
+        routines = list(slot_pascal_routines)
+        if signature == SLOT_MOUSE_SIGNATURE:
+            routines += slot_mouse_routines
+        _slot_offset_table(base, routines)
+
+    if not recognised:
+        auto_comment(base, "(No ID bytes of a ProDOS block device or a Pascal 1.1 card)")
+
+    # The card's I/O: $C080 + 16n to $C08F + 16n, named for the slot (e.g.
+    # 'slot_7_io+7') where an address there has no name already; and
+    # unless it's a Disk II's ROM, the accesses in the ROM indexed by the
+    # slot times 16 (e.g. 'lda $c08e,x') get the card's names, not the
+    # Disk II's (see comment_soft_switches())
+    io = 0xc080 + 0x10 * slot
+    optional_labels = session.current().disassembly.optional_labels
+    io_name = "slot_{0}_io".format(slot)
+    if io not in optional_labels:
+        optional_label(io, io_name, definable_inline=False)
+        for i in range(1, 16):
+            if io + i not in optional_labels:
+                optional_label(io + i, "{0}+{1}".format(io_name, i), io, definable_inline=False)
+    disk2 = all(rom(offset) == value for offset, value in SLOT_BLOCK_DEVICE_ID.items()) and rom(0xff) in (0x00, 0xff)
+    if not disk2:
+        card_roms = session.current().extras.setdefault("apple.card_roms", [])
+        card_roms.append((base, base + 0x100))
+        if _loaded(0xc800):
+            card_roms.append((0xc800, 0xd000))
+
+    if _os_free(SLOT_MSLOT[0]):
+        optional_label(SLOT_MSLOT[0], _name(SLOT_MSLOT[1], SLOT_MSLOT[2]))
 
 
 # ************************************************************************************************
@@ -873,9 +1147,9 @@ def _workspace():
 
 def _os_free(addr):
     """Whether nothing is loaded at the address, so that ProDOS's or DOS's
-    names and hooks can be used there: a program loaded where ProDOS or DOS
-    would be doesn't use it (e.g. Penetrator, at $4000-$B921), so its own
-    addresses there mustn't be given their names."""
+    names and hooks (or a slot ROM's) can be used there: a program loaded
+    where ProDOS or DOS would be doesn't use it (e.g. Penetrator, at
+    $4000-$B921), so its own addresses there mustn't be given their names."""
     return not _loaded(addr)
 
 def apple2(model="ii+", names="apple"):
@@ -951,6 +1225,13 @@ def apple2(model="ii+", names="apple"):
     for addr in (DOS33_WARM_START, DOS33_COLD_START):
         if _os_free(addr):
             cpu.subroutine_hooks[RuntimeAddr(addr)] = _no_return_hook
+
+    # The slots' ROMs, which programs call at $Cn00, as PR#n does (not where
+    # the program is loaded: for a card's ROM, see slot_rom())
+    for slot in range(1, 8):
+        addr = 0xc000 + 0x100 * slot
+        if _os_free(addr):
+            subroutine(addr, "slot_{0}_entry".format(slot), _slot_entry_title(slot, model), None, None, None, is_entry_point=False)
 
     # The soft switches, which are always defined as 'name = value', never
     # inline
