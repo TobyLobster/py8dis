@@ -341,7 +341,7 @@ OSCLI   = &fff7
 .c80cc
     lda romsel_copy                                                   ; 80cc: a5 f4       ..
     eor #&40 ; '@'                                                    ; 80ce: 49 40       I@
-    tax                                                               ; 80d0: aa          .  ; X=ROM number
+    tax                                                               ; 80d0: aa          .   ; X=ROM number
     lda #osbyte_enter_language                                        ; 80d1: a9 8e       ..
     ldy #0                                                            ; 80d3: a0 00       ..
     jmp OSBYTE                                                        ; 80d5: 4c f4 ff    L.. ; Enter language ROM X
@@ -369,15 +369,15 @@ OSCLI   = &fff7
     bne c80ff                                                         ; 80f1: d0 0c       ..
     lda #&41 ; 'A'                                                    ; 80f3: a9 41       .A
     sta l000d                                                         ; 80f5: 85 0d       ..
-    eor #&13                                                          ; 80f7: 49 13       I. ; A=&52
+    eor #&13                                                          ; 80f7: 49 13       I.  ; A=&52
     sta l000e                                                         ; 80f9: 85 0e       ..
-    eor #5                                                            ; 80fb: 49 05       I. ; A=&57
+    eor #5                                                            ; 80fb: 49 05       I.  ; A=&57
     sta l000f                                                         ; 80fd: 85 0f       ..
 ; &80ff referenced 1 time by &80f1
 .c80ff
     lda #osbyte_read_himem                                            ; 80ff: a9 84       ..
     jsr OSBYTE                                                        ; 8101: 20 f4 ff     .. ; Read top of user memory (HIMEM)
-    stx l0006                                                         ; 8104: 86 06       .. ; X and Y contain the address of HIMEM (low, high)
+    stx l0006                                                         ; 8104: 86 06       ..  ; X and Y contain the address of HIMEM (low, high)
     sty l0007                                                         ; 8106: 84 07       ..
     dec a                                                             ; 8108: 3a          :
     jsr OSBYTE                                                        ; 8109: 20 f4 ff     ..
@@ -393,7 +393,7 @@ OSCLI   = &fff7
     stx l0023                                                         ; 8120: 86 23       .#
     ldx #&0a                                                          ; 8122: a2 0a       ..
     stx l0400                                                         ; 8124: 8e 00 04    ...
-    dex                                                               ; 8127: ca          .  ; X=9
+    dex                                                               ; 8127: ca          .   ; X=9
     stx l0401                                                         ; 8128: 8e 01 04    ...
 
     ; Set BRK vector to 'handle_brkv'
@@ -497,7 +497,7 @@ OSCLI   = &fff7
 ; &81ad referenced 1 time by &819d
 .c81ad
     bne c81b9                                                         ; 81ad: d0 0a       ..
-    iny                                                               ; 81af: c8          .  ; Y=2
+    iny                                                               ; 81af: c8          .   ; Y=2
     lda (l003d),y                                                     ; 81b0: b1 3d       .=
     cmp l002a                                                         ; 81b2: c5 2a       .*
     bcc loop_c819f                                                    ; 81b4: 90 e9       ..
@@ -734,7 +734,7 @@ OSCLI   = &fff7
 ; &82f7 referenced 1 time by &82f9
 .loop_c82f7
     dey                                                               ; 82f7: 88          .
-    rol a                                                             ; 82f8: 2a          *  ; Rotate clear bit out (clears carry)
+    rol a                                                             ; 82f8: 2a          *
     bpl loop_c82f7                                                    ; 82f9: 10 fc       ..
 ; &82fb referenced 2 times by &82b0, &82bc
 .c82fb
@@ -883,16 +883,16 @@ OSCLI   = &fff7
 .sub_c83aa
     sec                                                               ; 83aa: 38          8
     ldy #0                                                            ; 83ab: a0 00       ..
-    tya                                                               ; 83ad: 98          .  ; A=0
+    tya                                                               ; 83ad: 98          .   ; A=0
     sbc l0034                                                         ; 83ae: e5 34       .4
     sta l0034                                                         ; 83b0: 85 34       .4
-    tya                                                               ; 83b2: 98          .  ; A=0
+    tya                                                               ; 83b2: 98          .   ; A=0
     sbc l0033                                                         ; 83b3: e5 33       .3
     sta l0033                                                         ; 83b5: 85 33       .3
-    tya                                                               ; 83b7: 98          .  ; A=0
+    tya                                                               ; 83b7: 98          .   ; A=0
     sbc l0032                                                         ; 83b8: e5 32       .2
     sta l0032                                                         ; 83ba: 85 32       .2
-    tya                                                               ; 83bc: 98          .  ; A=0
+    tya                                                               ; 83bc: 98          .   ; A=0
     sbc l0031                                                         ; 83bd: e5 31       .1
     sta l0031                                                         ; 83bf: 85 31       .1
 ; &83c1 referenced 1 time by &83a8
@@ -1461,7 +1461,7 @@ l8993 = c8992+1
 
 ; &89d7 referenced 1 time by &89e2
 .loop_c89d7
-    dec a                                                             ; 89d7: 3a          :  ; A=&ff
+    dec a                                                             ; 89d7: 3a          :   ; A=&ff
     sta l0028                                                         ; 89d8: 85 28       .(
     jmp c90d0                                                         ; 89da: 4c d0 90    L..
 
@@ -1673,10 +1673,10 @@ l8993 = c8992+1
     ldx #&29 ; ')'                                                    ; 8af5: a2 29       .)
     cmp #&80                                                          ; 8af7: c9 80       ..
     beq c8b10                                                         ; 8af9: f0 15       ..
-    inx                                                               ; 8afb: e8          .  ; X=&2a
+    inx                                                               ; 8afb: e8          .   ; X=&2a
     cmp #&82                                                          ; 8afc: c9 82       ..
     beq c8b10                                                         ; 8afe: f0 10       ..
-    inx                                                               ; 8b00: e8          .  ; X=&2b
+    inx                                                               ; 8b00: e8          .   ; X=&2b
     cmp #&84                                                          ; 8b01: c9 84       ..
     bne c8af2                                                         ; 8b03: d0 ed       ..
     inc l000a                                                         ; 8b05: e6 0a       ..
@@ -1929,7 +1929,7 @@ l8993 = c8992+1
     ldx #&0f                                                          ; 8c6d: a2 0f       ..
     lda #&64 ; 'd'                                                    ; 8c6f: a9 64       .d
     sta l0029                                                         ; 8c71: 85 29       .)
-    dey                                                               ; 8c73: 88          .  ; Y=2
+    dey                                                               ; 8c73: 88          .   ; Y=2
 ; &8c74 referenced 1 time by &8c6b
 .c8c74
     phy                                                               ; 8c74: 5a          Z
@@ -2078,7 +2078,7 @@ l8993 = c8992+1
     and #&df                                                          ; 8d4c: 29 df       ).
     cmp #&42 ; 'B'                                                    ; 8d4e: c9 42       .B
     beq c8d64                                                         ; 8d50: f0 12       ..
-    inx                                                               ; 8d52: e8          .  ; X=2
+    inx                                                               ; 8d52: e8          .   ; X=2
     cmp #&57 ; 'W'                                                    ; 8d53: c9 57       .W
     beq c8d64                                                         ; 8d55: f0 0d       ..
     ldx #4                                                            ; 8d57: a2 04       ..
@@ -2156,7 +2156,7 @@ l8993 = c8992+1
     adc l0037                                                         ; 8dac: 65 37       e7
     sta l0039                                                         ; 8dae: 85 39       .9
     ldy #0                                                            ; 8db0: a0 00       ..
-    tya                                                               ; 8db2: 98          .  ; A=0
+    tya                                                               ; 8db2: 98          .   ; A=0
     adc l0038                                                         ; 8db3: 65 38       e8
     sta l003a                                                         ; 8db5: 85 3a       .:
 ; &8db7 referenced 1 time by &8dbe
@@ -2433,7 +2433,7 @@ l8993 = c8992+1
     bpl c8f1a                                                         ; 8f1d: 10 fb       ..
     cmp #&fe                                                          ; 8f1f: c9 fe       ..
     bne c8f32                                                         ; 8f21: d0 0f       ..
-    bcs c8ee7                                                         ; 8f23: b0 c2       .. ; ALWAYS branch
+    bcs c8ee7                                                         ; 8f23: b0 c2       ..  ; ALWAYS branch
 
 ; &8f25 referenced 1 time by &8f18
 .c8f25
@@ -2452,7 +2452,7 @@ l8993 = c8992+1
     sec                                                               ; 8f32: 38          8
     iny                                                               ; 8f33: c8          .
     tya                                                               ; 8f34: 98          .
-    adc l0039                                                         ; 8f35: 65 39       e9 ; +1 because carry is set
+    adc l0039                                                         ; 8f35: 65 39       e9  ; +1 because carry is set
     sta l0039                                                         ; 8f37: 85 39       .9
     bcc c8f3d                                                         ; 8f39: 90 02       ..
     inc l003a                                                         ; 8f3b: e6 3a       .:
@@ -2490,7 +2490,7 @@ l8993 = c8992+1
     lsr a                                                             ; 8f65: 4a          J
     lsr a                                                             ; 8f66: 4a          J
     bcc c8f6d                                                         ; 8f67: 90 04       ..
-    stx l003b                                                         ; 8f69: 86 3b       .;
+    stx l003b                                                         ; 8f69: 86 3b       .;  ; X=&ff
     stz l003c                                                         ; 8f6b: 64 3c       d<
 ; &8f6d referenced 1 time by &8f67
 .c8f6d
@@ -2713,7 +2713,7 @@ l8993 = c8992+1
     ldx l0020                                                         ; 9092: a6 20       .
     beq c90a0                                                         ; 9094: f0 0a       ..
     sta l002b                                                         ; 9096: 85 2b       .+
-    iny                                                               ; 9098: c8          .  ; Y=2
+    iny                                                               ; 9098: c8          .   ; Y=2
     lda (l000b),y                                                     ; 9099: b1 0b       ..
     sta l002a                                                         ; 909b: 85 2a       .*
     jsr sub_c9d0f                                                     ; 909d: 20 0f 9d     ..
@@ -2794,7 +2794,7 @@ l8993 = c8992+1
     ldx #5                                                            ; 9101: a2 05       ..
     cpx l002c                                                         ; 9103: e4 2c       .,
     bne c9108                                                         ; 9105: d0 01       ..
-    inx                                                               ; 9107: e8          .  ; X=6
+    inx                                                               ; 9107: e8          .   ; X=6
 ; &9108 referenced 1 time by &9105
 .c9108
     jsr sub_c9952                                                     ; 9108: 20 52 99     R.
@@ -2887,7 +2887,7 @@ l8993 = c8992+1
     lda l0036                                                         ; 9187: a5 36       .6
     cmp #8                                                            ; 9189: c9 08       ..
     bcc c9193                                                         ; 918b: 90 06       ..
-    adc #7                                                            ; 918d: 69 07       i. ; Carry is set, so adding 8
+    adc #7                                                            ; 918d: 69 07       i.  ; Carry is set, so adding 8
     bcc c9193                                                         ; 918f: 90 02       ..
     lda #&ff                                                          ; 9191: a9 ff       ..
 ; &9193 referenced 2 times by &918b, &918f
@@ -2895,17 +2895,17 @@ l8993 = c8992+1
     clc                                                               ; 9193: 18          .
     pha                                                               ; 9194: 48          H
     tax                                                               ; 9195: aa          .
-    lda (l002a),y                                                     ; 9196: b1 2a       .*
+    lda (l002a),y                                                     ; 9196: b1 2a       .*  ; Offset is Y=2
     adc (l002a)                                                       ; 9198: 72 2a       r*
     eor l0002                                                         ; 919a: 45 02       E.
     bne c91ad                                                         ; 919c: d0 0f       ..
-    dey                                                               ; 919e: 88          .  ; Y=1
+    dey                                                               ; 919e: 88          .   ; Y=1
     adc (l002a),y                                                     ; 919f: 71 2a       q*
     eor l0003                                                         ; 91a1: 45 03       E.
     bne c91ad                                                         ; 91a3: d0 08       ..
-    sta l002d                                                         ; 91a5: 85 2d       .-
+    sta l002d                                                         ; 91a5: 85 2d       .-  ; A=0
     txa                                                               ; 91a7: 8a          .
-    iny                                                               ; 91a8: c8          .  ; Y=2
+    iny                                                               ; 91a8: c8          .   ; Y=2
     sec                                                               ; 91a9: 38          8
     sbc (l002a),y                                                     ; 91aa: f1 2a       .*
     tax                                                               ; 91ac: aa          .
@@ -2926,7 +2926,7 @@ l8993 = c8992+1
     pla                                                               ; 91c1: 68          h
     ldy #2                                                            ; 91c2: a0 02       ..
     sta (l002a),y                                                     ; 91c4: 91 2a       .*
-    dey                                                               ; 91c6: 88          .  ; Y=1
+    dey                                                               ; 91c6: 88          .   ; Y=1
     lda l002d                                                         ; 91c7: a5 2d       .-
     beq c91d1                                                         ; 91c9: f0 06       ..
     sta (l002a),y                                                     ; 91cb: 91 2a       .*
@@ -2943,7 +2943,7 @@ l8993 = c8992+1
     sta l002d                                                         ; 91dd: 85 2d       .-
     lda (l002a)                                                       ; 91df: b2 2a       .*
     sta l002c                                                         ; 91e1: 85 2c       .,
-    dey                                                               ; 91e3: 88          .  ; Y=0
+    dey                                                               ; 91e3: 88          .   ; Y=0
 ; &91e4 referenced 1 time by &91ec
 .loop_c91e4
     lda l0600,y                                                       ; 91e4: b9 00 06    ...
@@ -2983,7 +2983,7 @@ l8993 = c8992+1
     bne c924a                                                         ; 920b: d0 3d       .=
     jsr sub_c9dff                                                     ; 920d: 20 ff 9d     ..
     jsr sub_ca545                                                     ; 9210: 20 45 a5     E.
-    ply                                                               ; 9213: 7a          z  ; Y=file handle
+    ply                                                               ; 9213: 7a          z   ; Y=file handle
     lda l0027                                                         ; 9214: a5 27       .'
     jsr OSBPUT                                                        ; 9216: 20 d4 ff     .. ; Write a single byte A to an open file Y
     tax                                                               ; 9219: aa          .
@@ -3382,7 +3382,7 @@ l8993 = c8992+1
     sta (l003b),y                                                     ; 945d: 91 3b       .;
     sec                                                               ; 945f: 38          8
     tya                                                               ; 9460: 98          .
-    adc l003b                                                         ; 9461: 65 3b       e; ; +1 because carry is set
+    adc l003b                                                         ; 9461: 65 3b       e;  ; +1 because carry is set
     sta l003b                                                         ; 9463: 85 3b       .;
     bcc c9469                                                         ; 9465: 90 02       ..
     inc l003c                                                         ; 9467: e6 3c       .<
@@ -3668,7 +3668,7 @@ l8993 = c8992+1
     clc                                                               ; 9605: 18          .
 ; &9606 referenced 1 time by &9602
 .c9606
-    sbc #0                                                            ; 9606: e9 00       ..
+    sbc #0                                                            ; 9606: e9 00       ..  ; Carry is clear, so subtracting 1
     sta l0037                                                         ; 9608: 85 37       .7
     txa                                                               ; 960a: 8a          .
     sbc #0                                                            ; 960b: e9 00       ..
@@ -3776,7 +3776,7 @@ l8993 = c8992+1
     inc l0038                                                         ; 96b6: e6 38       .8
 ; &96b8 referenced 3 times by &96b4, &96c1, &96c5
 .c96b8
-    sta (l0037),y                                                     ; 96b8: 91 37       .7
+    sta (l0037),y                                                     ; 96b8: 91 37       .7  ; A=0
     iny                                                               ; 96ba: c8          .
     bne c96bf                                                         ; 96bb: d0 02       ..
     inc l0038                                                         ; 96bd: e6 38       .8
@@ -3858,7 +3858,7 @@ l8993 = c8992+1
     inc l000a                                                         ; 972c: e6 0a       ..
     jsr c9c6a                                                         ; 972e: 20 6a 9c     j.
     lda #&ff                                                          ; 9731: a9 ff       ..
-    bne loop_c9724                                                    ; 9733: d0 ef       .. ; ALWAYS branch
+    bne loop_c9724                                                    ; 9733: d0 ef       ..  ; ALWAYS branch
 
 ; &9735 referenced 1 time by &9716
 .c9735
@@ -3983,7 +3983,7 @@ l8993 = c8992+1
     ldy #3                                                            ; 97ca: a0 03       ..
     lda #0                                                            ; 97cc: a9 00       ..
     sta (l002a),y                                                     ; 97ce: 91 2a       .*
-    beq c97ee                                                         ; 97d0: f0 1c       .. ; ALWAYS branch
+    beq c97ee                                                         ; 97d0: f0 1c       ..  ; ALWAYS branch
 
 ; &97d2 referenced 1 time by &97f9
 .c97d2
@@ -4060,10 +4060,10 @@ l8993 = c8992+1
     lda l0005                                                         ; 9843: a5 05       ..
     cmp l0007                                                         ; 9845: c5 07       ..
     bne c9808                                                         ; 9847: d0 bf       ..
-    ldx l002a                                                         ; 9849: a6 2a       .* ; X=MODE number
+    ldx l002a                                                         ; 9849: a6 2a       .*  ; X=MODE number
     lda #osbyte_read_himem_for_mode                                   ; 984b: a9 85       ..
     jsr OSBYTE                                                        ; 984d: 20 f4 ff     .. ; Read top of user memory for a given screen mode X
-    cpx l0002                                                         ; 9850: e4 02       .. ; X and Y contain the address (low, high)
+    cpx l0002                                                         ; 9850: e4 02       ..  ; X and Y contain the address (low, high)
     tya                                                               ; 9852: 98          .
     sbc l0003                                                         ; 9853: e5 03       ..
     bcc c9808                                                         ; 9855: 90 b1       ..
@@ -4247,7 +4247,7 @@ l8993 = c8992+1
     lda #0                                                            ; 9952: a9 00       ..
 ; &9954 referenced 1 time by &9958
 .loop_c9954
-    sta (l0002),y                                                     ; 9954: 91 02       ..
+    sta (l0002),y                                                     ; 9954: 91 02       ..  ; A=0
     iny                                                               ; 9956: c8          .
     dex                                                               ; 9957: ca          .
     bne loop_c9954                                                    ; 9958: d0 fa       ..
@@ -4292,7 +4292,7 @@ l8993 = c8992+1
     ldx #5                                                            ; 9987: a2 05       ..
     cpx l002c                                                         ; 9989: e4 2c       .,
     bne c997a                                                         ; 998b: d0 ed       ..
-    inx                                                               ; 998d: e8          .  ; X=6
+    inx                                                               ; 998d: e8          .   ; X=6
     bra c997a                                                         ; 998e: 80 ea       ..
 
 ; &9990 referenced 1 time by &99da
@@ -4892,7 +4892,7 @@ l8993 = c8992+1
     ldx l0020                                                         ; 9ca8: a6 20       .
     beq c9cb6                                                         ; 9caa: f0 0a       ..
     sta l002b                                                         ; 9cac: 85 2b       .+
-    iny                                                               ; 9cae: c8          .  ; Y=2
+    iny                                                               ; 9cae: c8          .   ; Y=2
     lda (l000b),y                                                     ; 9caf: b1 0b       ..
     sta l002a                                                         ; 9cb1: 85 2a       .*
     jsr sub_c9d0f                                                     ; 9cb3: 20 0f 9d     ..
@@ -4965,7 +4965,7 @@ l8993 = c8992+1
     cmp #&8b                                                          ; 9d04: c9 8b       ..
     bne loop_c9cfd                                                    ; 9d06: d0 f5       ..
     sty l000a                                                         ; 9d08: 84 0a       ..
-    beq c9ced                                                         ; 9d0a: f0 e1       .. ; ALWAYS branch
+    beq c9ced                                                         ; 9d0a: f0 e1       ..  ; ALWAYS branch
 
 ; &9d0c referenced 1 time by &9d01
 .c9d0c
@@ -5369,11 +5369,11 @@ l8993 = c8992+1
     lda (l0004),y                                                     ; 9f29: b1 04       ..
     adc l002b                                                         ; 9f2b: 65 2b       e+
     sta l002b                                                         ; 9f2d: 85 2b       .+
-    iny                                                               ; 9f2f: c8          .  ; Y=2
+    iny                                                               ; 9f2f: c8          .   ; Y=2
     lda (l0004),y                                                     ; 9f30: b1 04       ..
     adc l002c                                                         ; 9f32: 65 2c       e,
     sta l002c                                                         ; 9f34: 85 2c       .,
-    iny                                                               ; 9f36: c8          .  ; Y=3
+    iny                                                               ; 9f36: c8          .   ; Y=3
     lda (l0004),y                                                     ; 9f37: b1 04       ..
     adc l002d                                                         ; 9f39: 65 2d       e-
 ; &9f3b referenced 1 time by &9f98
@@ -5435,11 +5435,11 @@ l8993 = c8992+1
     lda (l0004),y                                                     ; 9f86: b1 04       ..
     sbc l002b                                                         ; 9f88: e5 2b       .+
     sta l002b                                                         ; 9f8a: 85 2b       .+
-    iny                                                               ; 9f8c: c8          .  ; Y=2
+    iny                                                               ; 9f8c: c8          .   ; Y=2
     lda (l0004),y                                                     ; 9f8d: b1 04       ..
     sbc l002c                                                         ; 9f8f: e5 2c       .,
     sta l002c                                                         ; 9f91: 85 2c       .,
-    iny                                                               ; 9f93: c8          .  ; Y=3
+    iny                                                               ; 9f93: c8          .   ; Y=3
     lda (l0004),y                                                     ; 9f94: b1 04       ..
     sbc l002d                                                         ; 9f96: e5 2d       .-
     bra c9f3b                                                         ; 9f98: 80 a1       ..
@@ -5722,7 +5722,7 @@ l8993 = c8992+1
     stx l0037                                                         ; a116: 86 37       .7
     lda l0014                                                         ; a118: a5 14       ..
     beq ca126                                                         ; a11a: f0 0a       ..
-    sbc l0037                                                         ; a11c: e5 37       .7 ; -1 because carry is clear
+    sbc l0037                                                         ; a11c: e5 37       .7  ; -1 because carry is clear
     beq ca126                                                         ; a11e: f0 06       ..
     tax                                                               ; a120: aa          .
     jsr cbdff                                                         ; a121: 20 ff bd     ..
@@ -5773,7 +5773,7 @@ l8993 = c8992+1
     lda l003f,x                                                       ; a158: b5 3f       .?
     cmp #&0a                                                          ; a15a: c9 0a       ..
     bcc ca160                                                         ; a15c: 90 02       ..
-    adc #6                                                            ; a15e: 69 06       i. ; Carry is set, so adding 7
+    adc #6                                                            ; a15e: 69 06       i.  ; Carry is set, so adding 7
 ; &a160 referenced 1 time by &a15c
 .ca160
     adc #&30 ; '0'                                                    ; a160: 69 30       i0
@@ -5869,7 +5869,7 @@ l8993 = c8992+1
     ldx l0037                                                         ; a1db: a6 37       .7
     cpx #2                                                            ; a1dd: e0 02       ..
     bne ca1ef                                                         ; a1df: d0 0e       ..
-    adc l0048                                                         ; a1e1: 65 48       eH ; +1 because carry is set
+    adc l0048                                                         ; a1e1: 65 48       eH  ; +1 because carry is set
     bmi ca220                                                         ; a1e3: 30 3b       0;
     cmp #&0b                                                          ; a1e5: c9 0b       ..
     bcc ca1ed                                                         ; a1e7: 90 04       ..
@@ -5932,7 +5932,7 @@ l8993 = c8992+1
     stz l0048                                                         ; a238: 64 48       dH
     iny                                                               ; a23a: c8          .
     tya                                                               ; a23b: 98          .
-    bne ca261                                                         ; a23c: d0 23       .# ; ALWAYS branch
+    bne ca261                                                         ; a23c: d0 23       .#  ; ALWAYS branch
 
 ; &a23e referenced 1 time by &a232
 .ca23e
@@ -6075,7 +6075,7 @@ l8993 = c8992+1
     beq ca348                                                         ; a2f1: f0 55       .U
     cmp #&3a ; ':'                                                    ; a2f3: c9 3a       .:
     bcs ca2d6                                                         ; a2f5: b0 df       ..
-    sbc #&2f ; '/'                                                    ; a2f7: e9 2f       ./ ; Carry is clear, so subtracting 48
+    sbc #&2f ; '/'                                                    ; a2f7: e9 2f       ./  ; Carry is clear, so subtracting 48
     bmi ca2d6                                                         ; a2f9: 30 db       0.
 ; &a2fb referenced 4 times by &a31f, &a323, &a337, &a33c
 .ca2fb
@@ -6091,7 +6091,7 @@ l8993 = c8992+1
     lda (l0019),y                                                     ; a304: b1 19       ..
     cmp #&3a ; ':'                                                    ; a306: c9 3a       .:
     bcs ca34c                                                         ; a308: b0 42       .B
-    sbc #&2f ; '/'                                                    ; a30a: e9 2f       ./ ; Carry is clear, so subtracting 48
+    sbc #&2f ; '/'                                                    ; a30a: e9 2f       ./  ; Carry is clear, so subtracting 48
     bcc ca342                                                         ; a30c: 90 34       .4
     sta l0042                                                         ; a30e: 85 42       .B
     ldx l0049                                                         ; a310: a6 49       .I
@@ -6168,7 +6168,7 @@ l8993 = c8992+1
     sta l002c                                                         ; a375: 85 2c       .,
     lda l0048                                                         ; a377: a5 48       .H
     bne ca37e                                                         ; a379: d0 03       ..
-    inc a                                                             ; a37b: 1a          .  ; A=1
+    inc a                                                             ; a37b: 1a          .   ; A=1
     sec                                                               ; a37c: 38          8
     rts                                                               ; a37d: 60          `
 
@@ -6236,14 +6236,14 @@ l8993 = c8992+1
 .ca3c3
     cmp #&3a ; ':'                                                    ; a3c3: c9 3a       .:
     bcs ca3e9                                                         ; a3c5: b0 22       ."
-    sbc #&2f ; '/'                                                    ; a3c7: e9 2f       ./ ; Carry is clear, so subtracting 48
+    sbc #&2f ; '/'                                                    ; a3c7: e9 2f       ./  ; Carry is clear, so subtracting 48
     bcc ca3e9                                                         ; a3c9: 90 1e       ..
     sta l0049                                                         ; a3cb: 85 49       .I
     iny                                                               ; a3cd: c8          .
     lda (l0019),y                                                     ; a3ce: b1 19       ..
     cmp #&3a ; ':'                                                    ; a3d0: c9 3a       .:
     bcs ca3e5                                                         ; a3d2: b0 11       ..
-    sbc #&2f ; '/'                                                    ; a3d4: e9 2f       ./ ; Carry is clear, so subtracting 48
+    sbc #&2f ; '/'                                                    ; a3d4: e9 2f       ./  ; Carry is clear, so subtracting 48
     bcc ca3e5                                                         ; a3d6: 90 0d       ..
     iny                                                               ; a3d8: c8          .
     sta l0042                                                         ; a3d9: 85 42       .B
@@ -6376,7 +6376,7 @@ l8993 = c8992+1
     ror a                                                             ; a482: 6a          j
     inx                                                               ; a483: e8          .
     bne ca47a                                                         ; a484: d0 f4       ..
-    dex                                                               ; a486: ca          .  ; X=&ff
+    dex                                                               ; a486: ca          .   ; X=&ff
     bra ca452                                                         ; a487: 80 c9       ..
 
 ; &a489 referenced 1 time by &84aa
@@ -6417,7 +6417,7 @@ l8993 = c8992+1
 .sub_ca4ba
     clc                                                               ; a4ba: 18          .
     lda #&fc                                                          ; a4bb: a9 fc       ..
-    tax                                                               ; a4bd: aa          .  ; X=&fc
+    tax                                                               ; a4bd: aa          .   ; X=&fc
     adc l0030                                                         ; a4be: 65 30       e0
     bcs ca4c4                                                         ; a4c0: b0 02       ..
     dec l002f                                                         ; a4c2: c6 2f       ./
@@ -6486,13 +6486,13 @@ l8993 = c8992+1
     ldy #4                                                            ; a516: a0 04       ..
     lda (l004a),y                                                     ; a518: b1 4a       .J
     sta l0040                                                         ; a51a: 85 40       .@
-    dey                                                               ; a51c: 88          .  ; Y=3
+    dey                                                               ; a51c: 88          .   ; Y=3
     lda (l004a),y                                                     ; a51d: b1 4a       .J
     sta l003f                                                         ; a51f: 85 3f       .?
-    dey                                                               ; a521: 88          .  ; Y=2
+    dey                                                               ; a521: 88          .   ; Y=2
     lda (l004a),y                                                     ; a522: b1 4a       .J
     sta l003e                                                         ; a524: 85 3e       .>
-    dey                                                               ; a526: 88          .  ; Y=1
+    dey                                                               ; a526: 88          .   ; Y=1
     lda (l004a),y                                                     ; a527: b1 4a       .J
     sta l003b                                                         ; a529: 85 3b       .;
     tay                                                               ; a52b: a8          .
@@ -6535,15 +6535,15 @@ l8993 = c8992+1
     eor l0031                                                         ; a555: 45 31       E1
     and #&80                                                          ; a557: 29 80       ).
     eor l0031                                                         ; a559: 45 31       E1
-    sta (l004a),y                                                     ; a55b: 91 4a       .J
+    sta (l004a),y                                                     ; a55b: 91 4a       .J  ; Offset is Y=1
     lda l0032                                                         ; a55d: a5 32       .2
-    iny                                                               ; a55f: c8          .  ; Y=2
+    iny                                                               ; a55f: c8          .   ; Y=2
     sta (l004a),y                                                     ; a560: 91 4a       .J
     lda l0033                                                         ; a562: a5 33       .3
-    iny                                                               ; a564: c8          .  ; Y=3
+    iny                                                               ; a564: c8          .   ; Y=3
     sta (l004a),y                                                     ; a565: 91 4a       .J
     lda l0034                                                         ; a567: a5 34       .4
-    iny                                                               ; a569: c8          .  ; Y=4
+    iny                                                               ; a569: c8          .   ; Y=4
     sta (l004a),y                                                     ; a56a: 91 4a       .J
     rts                                                               ; a56c: 60          `
 
@@ -6572,13 +6572,13 @@ l8993 = c8992+1
     ldy #4                                                            ; a582: a0 04       ..
     lda (l004a),y                                                     ; a584: b1 4a       .J
     sta l0034                                                         ; a586: 85 34       .4
-    dey                                                               ; a588: 88          .  ; Y=3
+    dey                                                               ; a588: 88          .   ; Y=3
     lda (l004a),y                                                     ; a589: b1 4a       .J
     sta l0033                                                         ; a58b: 85 33       .3
-    dey                                                               ; a58d: 88          .  ; Y=2
+    dey                                                               ; a58d: 88          .   ; Y=2
     lda (l004a),y                                                     ; a58e: b1 4a       .J
     sta l0032                                                         ; a590: 85 32       .2
-    dey                                                               ; a592: 88          .  ; Y=1
+    dey                                                               ; a592: 88          .   ; Y=1
     lda (l004a),y                                                     ; a593: b1 4a       .J
     sta l002e                                                         ; a595: 85 2e       ..
     tay                                                               ; a597: a8          .
@@ -6644,7 +6644,7 @@ l8993 = c8992+1
 .sub_ca5d1
     ldy #&80                                                          ; a5d1: a0 80       ..
     sty l003d                                                         ; a5d3: 84 3d       .=
-    iny                                                               ; a5d5: c8          .  ; Y=&81
+    iny                                                               ; a5d5: c8          .   ; Y=&81
     sty l003c                                                         ; a5d6: 84 3c       .<
     stz l003e                                                         ; a5d8: 64 3e       d>
     stz l003f                                                         ; a5da: 64 3f       d?
@@ -6710,7 +6710,7 @@ l8993 = c8992+1
 .ca622
     lda #&80                                                          ; a622: a9 80       ..
     sta l0031                                                         ; a624: 85 31       .1
-    inc a                                                             ; a626: 1a          .  ; A=&81
+    inc a                                                             ; a626: 1a          .   ; A=&81
     sta l0030                                                         ; a627: 85 30       .0
     jmp ca72f                                                         ; a629: 4c 2f a7    L/.
 
@@ -6739,7 +6739,7 @@ l8993 = c8992+1
     sta l002e                                                         ; a644: 85 2e       ..
     sec                                                               ; a646: 38          8
     lda l003c                                                         ; a647: a5 3c       .<
-    adc #&81                                                          ; a649: 69 81       i. ; Carry is set, so adding 130
+    adc #&81                                                          ; a649: 69 81       i.  ; Carry is set, so adding 130
     rol l002f                                                         ; a64b: 26 2f       &/
     sbc l0030                                                         ; a64d: e5 30       .0
     bcs ca653                                                         ; a64f: b0 02       ..
@@ -6896,9 +6896,9 @@ l8993 = c8992+1
 .ca712
     lda l0035                                                         ; a712: a5 35       .5
     bpl ca725                                                         ; a714: 10 0f       ..
-    asl a                                                             ; a716: 0a          .  ; Shift set bit out (sets carry)
+    asl a                                                             ; a716: 0a          .   ; Shift set bit out (sets carry)
     bne ca71e                                                         ; a717: d0 05       ..
-    rol a                                                             ; a719: 2a          *  ; Rotate in a set bit ; A=1
+    rol a                                                             ; a719: 2a          *   ; Rotate in a set bit ; A=1
     and l0034                                                         ; a71a: 25 34       %4
     bne ca725                                                         ; a71c: d0 07       ..
 ; &a71e referenced 1 time by &a717
@@ -7042,7 +7042,7 @@ l8993 = c8992+1
     cmp #&b5                                                          ; a7d5: c9 b5       ..
     bcs ca7db                                                         ; a7d7: b0 02       ..
     dex                                                               ; a7d9: ca          .
-    iny                                                               ; a7da: c8          .  ; Y=&81
+    iny                                                               ; a7da: c8          .   ; Y=&81
 ; &a7db referenced 2 times by &a7d1, &a7d7
 .ca7db
     phx                                                               ; a7db: da          .
@@ -7344,7 +7344,7 @@ l8993 = c8992+1
 ; &a982 referenced 1 time by &a988
 .loop_ca982
     dey                                                               ; a982: 88          .
-    stx l0031,y                                                       ; a983: 96 31       .1
+    stx l0031,y                                                       ; a983: 96 31       .1  ; X=0
     cmp la7c9,y                                                       ; a985: d9 c9 a7    ...
     bcc loop_ca982                                                    ; a988: 90 f8       ..
     lda l004c                                                         ; a98a: a5 4c       .L
@@ -7616,7 +7616,7 @@ l8993 = c8992+1
 .sub_cab14
     lda #osbyte_read_text_cursor_pos                                  ; ab14: a9 86       ..
     jsr OSBYTE                                                        ; ab16: 20 f4 ff     .. ; Read input cursor position (Sets X=POS and Y=VPOS)
-    tya                                                               ; ab19: 98          .  ; Y is the vertical text position ('VPOS')
+    tya                                                               ; ab19: 98          .   ; Y is the vertical text position ('VPOS')
 ; &ab1a referenced 2 times by &ab35, &ab52
 .cab1a
     jmp cae60                                                         ; ab1a: 4c 60 ae    L`.
@@ -7801,10 +7801,10 @@ l8993 = c8992+1
 
 .sub_cac1f
     jsr sub_cba7a                                                     ; ac1f: 20 7a ba     z.
-    tax                                                               ; ac22: aa          .  ; X=File handle
+    tax                                                               ; ac22: aa          .   ; X=File handle
     lda #osbyte_check_eof                                             ; ac23: a9 7f       ..
     jsr OSBYTE                                                        ; ac25: 20 f4 ff     .. ; Check for EOF in file handle X
-    txa                                                               ; ac28: 8a          .  ; X is non-zero if reached end of file, zero otherwise
+    txa                                                               ; ac28: 8a          .   ; X is non-zero if reached end of file, zero otherwise
     beq cac2d                                                         ; ac29: f0 02       ..
 ; &ac2b referenced 6 times by &ac0a, &ac16, &ac44, &ac4f, &ac7b, &b3dd
 .cac2b
@@ -7915,7 +7915,7 @@ l8993 = c8992+1
     bcc cace8                                                         ; acc5: 90 21       .!
     sbc l0036                                                         ; acc7: e5 36       .6
     bcc cace8                                                         ; acc9: 90 1d       ..
-    adc #0                                                            ; accb: 69 00       i. ; Carry is set, so adding 1
+    adc #0                                                            ; accb: 69 00       i.  ; Carry is set, so adding 1
     sta l002b                                                         ; accd: 85 2b       .+
     jsr cbd21                                                         ; accf: 20 21 bd     !.
 ; &acd2 referenced 2 times by &acf7, &acfb
@@ -7996,16 +7996,16 @@ l8993 = c8992+1
 .cad20
     sec                                                               ; ad20: 38          8
     lda #0                                                            ; ad21: a9 00       ..
-    tay                                                               ; ad23: a8          .  ; Y=0
+    tay                                                               ; ad23: a8          .   ; Y=0
     sbc l002a                                                         ; ad24: e5 2a       .*
     sta l002a                                                         ; ad26: 85 2a       .*
-    tya                                                               ; ad28: 98          .  ; A=0
+    tya                                                               ; ad28: 98          .   ; A=0
     sbc l002b                                                         ; ad29: e5 2b       .+
     sta l002b                                                         ; ad2b: 85 2b       .+
-    tya                                                               ; ad2d: 98          .  ; A=0
+    tya                                                               ; ad2d: 98          .   ; A=0
     sbc l002c                                                         ; ad2e: e5 2c       .,
     sta l002c                                                         ; ad30: 85 2c       .,
-    tya                                                               ; ad32: 98          .  ; A=0
+    tya                                                               ; ad32: 98          .   ; A=0
     sbc l002d                                                         ; ad33: e5 2d       .-
     sta l002d                                                         ; ad35: 85 2d       .-
 ; &ad37 referenced 1 time by &ad0b
@@ -8059,7 +8059,7 @@ l8993 = c8992+1
     lda (l0019),y                                                     ; ad6d: b1 19       ..
     cmp #&22 ; '"'                                                    ; ad6f: c9 22       ."
     beq loop_cad5d                                                    ; ad71: f0 ea       ..
-    bne cad53                                                         ; ad73: d0 de       .. ; ALWAYS branch
+    bne cad53                                                         ; ad73: d0 de       ..  ; ALWAYS branch
 
 ; &ad75 referenced 1 time by &ad62
 .cad75
@@ -8176,7 +8176,7 @@ l8993 = c8992+1
 
 ; &ae0d referenced 1 time by &ae05
 .cae0d
-    sbc #&2f ; '/'                                                    ; ae0d: e9 2f       ./
+    sbc #&2f ; '/'                                                    ; ae0d: e9 2f       ./  ; Carry is clear, so subtracting 48
     cmp #&0a                                                          ; ae0f: c9 0a       ..
 ; &ae11 referenced 1 time by &ae0b
 .cae11
@@ -8398,7 +8398,7 @@ l8993 = c8992+1
     tay                                                               ; af33: a8          .
     clc                                                               ; af34: 18          .
     beq caf3d                                                         ; af35: f0 06       ..
-    sbc l0036                                                         ; af37: e5 36       .6 ; -1 because carry is clear
+    sbc l0036                                                         ; af37: e5 36       .6  ; -1 because carry is clear
     bcs caf03                                                         ; af39: b0 c8       ..
     dey                                                               ; af3b: 88          .
     tya                                                               ; af3c: 98          .
@@ -8433,7 +8433,7 @@ l8993 = c8992+1
     ldy #&ff                                                          ; af64: a0 ff       ..
     cmp #&7e ; '~'                                                    ; af66: c9 7e       .~
     beq caf6d                                                         ; af68: f0 03       ..
-    iny                                                               ; af6a: c8          .  ; Y=0
+    iny                                                               ; af6a: c8          .   ; Y=0
     dec l001b                                                         ; af6b: c6 1b       ..
 ; &af6d referenced 1 time by &af68
 .caf6d
@@ -8445,7 +8445,7 @@ l8993 = c8992+1
     sta l0015                                                         ; af75: 85 15       ..
     lda l0403                                                         ; af77: ad 03 04    ...
     bne caf83                                                         ; af7a: d0 07       ..
-    sta l0037                                                         ; af7c: 85 37       .7
+    sta l0037                                                         ; af7c: 85 37       .7  ; A=0
     jsr ca19b                                                         ; af7e: 20 9b a1     ..
     bra cafb8                                                         ; af81: 80 35       .5
 
@@ -8491,7 +8491,7 @@ l8993 = c8992+1
 
 ; &afbb referenced 1 time by &af9c
 .cafbb
-    sta l0036                                                         ; afbb: 85 36       .6
+    sta l0036                                                         ; afbb: 85 36       .6  ; A=0
     rts                                                               ; afbd: 60          `
 
 ; &afbe referenced 1 time by &afac
@@ -8555,7 +8555,7 @@ l8993 = c8992+1
     clc                                                               ; b00d: 18          .
 ; &b00e referenced 1 time by &b00a
 .cb00e
-    sbc #0                                                            ; b00e: e9 00       ..
+    sbc #0                                                            ; b00e: e9 00       ..  ; Carry is clear, so subtracting 1
     sta l003c                                                         ; b010: 85 3c       .<
     tya                                                               ; b012: 98          .
     sbc #0                                                            ; b013: e9 00       ..
@@ -8584,7 +8584,7 @@ l8993 = c8992+1
     ldy #1                                                            ; b03d: a0 01       ..
     lda l000c                                                         ; b03f: a5 0c       ..
     sta (l0002),y                                                     ; b041: 91 02       ..
-    iny                                                               ; b043: c8          .  ; Y=2
+    iny                                                               ; b043: c8          .   ; Y=2
     jsr sub_c995a                                                     ; b044: 20 5a 99     Z.
     jmp cb0b0                                                         ; b047: 4c b0 b0    L..
 
@@ -8636,7 +8636,7 @@ l8993 = c8992+1
     clc                                                               ; b089: 18          .
 ; &b08a referenced 1 time by &b086
 .cb08a
-    sbc #1                                                            ; b08a: e9 01       ..
+    sbc #1                                                            ; b08a: e9 01       ..  ; Carry is clear, so subtracting 2
     sta l0037                                                         ; b08c: 85 37       .7
     tya                                                               ; b08e: 98          .
     sbc #0                                                            ; b08f: e9 00       ..
@@ -8712,7 +8712,7 @@ l8993 = c8992+1
     cpx #&ff                                                          ; b0f9: e0 ff       ..
     bne loop_cb0f2                                                    ; b0fb: d0 f5       ..
     tya                                                               ; b0fd: 98          .
-    adc l0004                                                         ; b0fe: 65 04       e. ; +1 because carry is set
+    adc l0004                                                         ; b0fe: 65 04       e.  ; +1 because carry is set
     sta l0004                                                         ; b100: 85 04       ..
     bcc cb106                                                         ; b102: 90 02       ..
     inc l0005                                                         ; b104: e6 05       ..
@@ -8866,10 +8866,10 @@ l8993 = c8992+1
     ldy #3                                                            ; b1e8: a0 03       ..
     lda (l002a),y                                                     ; b1ea: b1 2a       .*
     sta l002d                                                         ; b1ec: 85 2d       .-
-    dey                                                               ; b1ee: 88          .  ; Y=2
+    dey                                                               ; b1ee: 88          .   ; Y=2
     lda (l002a),y                                                     ; b1ef: b1 2a       .*
     sta l002c                                                         ; b1f1: 85 2c       .,
-    dey                                                               ; b1f3: 88          .  ; Y=1
+    dey                                                               ; b1f3: 88          .   ; Y=1
     lda (l002a),y                                                     ; b1f4: b1 2a       .*
     tax                                                               ; b1f6: aa          .
     lda (l002a)                                                       ; b1f7: b2 2a       .*
@@ -8880,7 +8880,7 @@ l8993 = c8992+1
 
 ; &b200 referenced 1 time by &b1e2
 .cb200
-    lda (l002a),y                                                     ; b200: b1 2a       .*
+    lda (l002a),y                                                     ; b200: b1 2a       .*  ; Offset is Y=0
     jmp cae62                                                         ; b202: 4c 62 ae    Lb.
 
 ; &b205 referenced 2 times by &b1e6, &b5f1
@@ -8954,7 +8954,7 @@ l8993 = c8992+1
     beq cb266                                                         ; b260: f0 04       ..
     iny                                                               ; b262: c8          .
     bne loop_cb259                                                    ; b263: d0 f4       ..
-    tya                                                               ; b265: 98          .  ; A=0
+    tya                                                               ; b265: 98          .   ; A=0
 ; &b266 referenced 1 time by &b260
 .cb266
     sty l0036                                                         ; b266: 84 36       .6
@@ -9012,7 +9012,7 @@ l8993 = c8992+1
     ldx #&ff                                                          ; b2b2: a2 ff       ..
     stx l0028                                                         ; b2b4: 86 28       .(
     txs                                                               ; b2b6: 9a          .
-    inx                                                               ; b2b7: e8          .  ; X=0
+    inx                                                               ; b2b7: e8          .   ; X=0
     ldy #0                                                            ; b2b8: a0 00       ..
     lda #osbyte_read_write_vdu_queue_size                             ; b2ba: a9 da       ..
     jsr OSBYTE                                                        ; b2bc: 20 f4 ff     .. ; Write VDU queue
@@ -9147,10 +9147,10 @@ l8993 = c8992+1
     ldy #1                                                            ; b38a: a0 01       ..
     sta (l0037),y                                                     ; b38c: 91 37       .7
     lda l002c                                                         ; b38e: a5 2c       .,
-    iny                                                               ; b390: c8          .  ; Y=2
+    iny                                                               ; b390: c8          .   ; Y=2
     sta (l0037),y                                                     ; b391: 91 37       .7
     lda l002d                                                         ; b393: a5 2d       .-
-    iny                                                               ; b395: c8          .  ; Y=3
+    iny                                                               ; b395: c8          .   ; Y=3
     sta (l0037),y                                                     ; b396: 91 37       .7
 ; &b398 referenced 1 time by &b386
 .return_32
@@ -9169,14 +9169,14 @@ l8993 = c8992+1
     eor l0031                                                         ; b3a6: 45 31       E1
     and #&80                                                          ; b3a8: 29 80       ).
     eor l0031                                                         ; b3aa: 45 31       E1
-    sta (l0037),y                                                     ; b3ac: 91 37       .7
-    iny                                                               ; b3ae: c8          .  ; Y=2
+    sta (l0037),y                                                     ; b3ac: 91 37       .7  ; Offset is Y=1
+    iny                                                               ; b3ae: c8          .   ; Y=2
     lda l0032                                                         ; b3af: a5 32       .2
     sta (l0037),y                                                     ; b3b1: 91 37       .7
-    iny                                                               ; b3b3: c8          .  ; Y=3
+    iny                                                               ; b3b3: c8          .   ; Y=3
     lda l0033                                                         ; b3b4: a5 33       .3
     sta (l0037),y                                                     ; b3b6: 91 37       .7
-    iny                                                               ; b3b8: c8          .  ; Y=4
+    iny                                                               ; b3b8: c8          .   ; Y=4
     lda l0034                                                         ; b3b9: a5 34       .4
     sta (l0037),y                                                     ; b3bb: 91 37       .7
     rts                                                               ; b3bd: 60          `
@@ -9282,7 +9282,7 @@ l8993 = c8992+1
 .cb45d
     lda l002a                                                         ; b45d: a5 2a       .*
     clc                                                               ; b45f: 18          .
-    sbc l0031                                                         ; b460: e5 31       .1 ; -1 because carry is clear
+    sbc l0031                                                         ; b460: e5 31       .1  ; -1 because carry is clear
     lda l002b                                                         ; b462: a5 2b       .+
     sbc l0032                                                         ; b464: e5 32       .2
     bcc cb46f                                                         ; b466: 90 07       ..
@@ -9350,7 +9350,7 @@ l8993 = c8992+1
 
 ; &b4ba referenced 1 time by &b4ae
 .cb4ba
-    sta l004d                                                         ; b4ba: 85 4d       .M
+    sta l004d                                                         ; b4ba: 85 4d       .M  ; A=&0d
 ; &b4bc referenced 1 time by &b4b2
 .cb4bc
     inc l001b                                                         ; b4bc: e6 1b       ..
@@ -9417,7 +9417,7 @@ l8993 = c8992+1
 .cb516
     cmp #&f4                                                          ; b516: c9 f4       ..
     bne cb51c                                                         ; b518: d0 02       ..
-    sta l004c                                                         ; b51a: 85 4c       .L
+    sta l004c                                                         ; b51a: 85 4c       .L  ; A=&f4
 ; &b51c referenced 1 time by &b518
 .cb51c
     jsr sub_cbd77                                                     ; b51c: 20 77 bd     w.
@@ -9489,12 +9489,12 @@ l8993 = c8992+1
     adc l051d,x                                                       ; b588: 7d 1d 05    }..
     sta (l002a),y                                                     ; b58b: 91 2a       .*
     sta l0038                                                         ; b58d: 85 38       .8
-    iny                                                               ; b58f: c8          .  ; Y=2
+    iny                                                               ; b58f: c8          .   ; Y=2
     lda (l002a),y                                                     ; b590: b1 2a       .*
     adc l051e,x                                                       ; b592: 7d 1e 05    }..
     sta (l002a),y                                                     ; b595: 91 2a       .*
     sta l0039                                                         ; b597: 85 39       .9
-    iny                                                               ; b599: c8          .  ; Y=3
+    iny                                                               ; b599: c8          .   ; Y=3
     lda (l002a),y                                                     ; b59a: b1 2a       .*
     adc l051f,x                                                       ; b59c: 7d 1f 05    }..
     sta (l002a),y                                                     ; b59f: 91 2a       .*
@@ -9961,7 +9961,7 @@ l8993 = c8992+1
     php                                                               ; b892: 08          .
     jsr cbc66                                                         ; b893: 20 66 bc     f.
 .sub_cb896
-    ldy l004c                                                         ; b896: a4 4c       .L ; Y=file handle
+    ldy l004c                                                         ; b896: a4 4c       .L  ; Y=file handle
     jsr OSBGET                                                        ; b898: 20 d7 ff     .. ; Read a single byte from an open file Y
     sta l0027                                                         ; b89b: 85 27       .'
     plp                                                               ; b89d: 28          (
@@ -10083,7 +10083,7 @@ l8993 = c8992+1
     sty l0036                                                         ; b944: 84 36       .6
     asl l004c                                                         ; b946: 06 4c       .L
     clc                                                               ; b948: 18          .
-    ror l004c                                                         ; b949: 66 4c       fL ; Rotate in a clear bit
+    ror l004c                                                         ; b949: 66 4c       fL  ; Rotate in a clear bit
     bit l004c                                                         ; b94b: 24 4c       $L
     bvs cb968                                                         ; b94d: 70 19       p.
 ; &b94f referenced 1 time by &b936
@@ -10328,9 +10328,9 @@ l8993 = c8992+1
     sta l003a                                                         ; bab0: 85 3a       .:
     ldy #&ff                                                          ; bab2: a0 ff       ..
     sty l003b                                                         ; bab4: 84 3b       .;
-    iny                                                               ; bab6: c8          .  ; Y=0
+    iny                                                               ; bab6: c8          .   ; Y=0
     ldx #&37 ; '7'                                                    ; bab7: a2 37       .7
-    tya                                                               ; bab9: 98          .  ; A=0
+    tya                                                               ; bab9: 98          .   ; A=0
     jsr OSWORD                                                        ; baba: 20 f1 ff     ..
     bcc cbac5                                                         ; babd: 90 06       ..
     jmp c9c41                                                         ; babf: 4c 41 9c    LA.
@@ -10498,7 +10498,7 @@ l8993 = c8992+1
 .cbba6
     dey                                                               ; bba6: 88          .
     tya                                                               ; bba7: 98          .
-    adc l0039                                                         ; bba8: 65 39       e9 ; +1 because carry is set
+    adc l0039                                                         ; bba8: 65 39       e9  ; +1 because carry is set
     ldx l003a                                                         ; bbaa: a6 3a       .:
     bcc cbbaf                                                         ; bbac: 90 01       ..
     inx                                                               ; bbae: e8          .
@@ -10511,15 +10511,15 @@ l8993 = c8992+1
     ldy #1                                                            ; bbb6: a0 01       ..
     lda l002b                                                         ; bbb8: a5 2b       .+
     sta (l003d),y                                                     ; bbba: 91 3d       .=
-    iny                                                               ; bbbc: c8          .  ; Y=2
+    iny                                                               ; bbbc: c8          .   ; Y=2
     lda l002a                                                         ; bbbd: a5 2a       .*
     sta (l003d),y                                                     ; bbbf: 91 3d       .=
-    iny                                                               ; bbc1: c8          .  ; Y=3
+    iny                                                               ; bbc1: c8          .   ; Y=3
     lda l003f                                                         ; bbc2: a5 3f       .?
     sta (l003d),y                                                     ; bbc4: 91 3d       .=
     sec                                                               ; bbc6: 38          8
-    tya                                                               ; bbc7: 98          .  ; A=3
-    adc l003d                                                         ; bbc8: 65 3d       e= ; +1 because carry is set
+    tya                                                               ; bbc7: 98          .   ; A=3
+    adc l003d                                                         ; bbc8: 65 3d       e=  ; +1 because carry is set
     sta l003d                                                         ; bbca: 85 3d       .=
     bcc cbbd0                                                         ; bbcc: 90 02       ..
     inc l003e                                                         ; bbce: e6 3e       .>
@@ -10619,14 +10619,14 @@ l8993 = c8992+1
     eor l0031                                                         ; bc4a: 45 31       E1
     and #&80                                                          ; bc4c: 29 80       ).
     eor l0031                                                         ; bc4e: 45 31       E1
-    sta (l0004),y                                                     ; bc50: 91 04       ..
-    iny                                                               ; bc52: c8          .  ; Y=2
+    sta (l0004),y                                                     ; bc50: 91 04       ..  ; Offset is Y=1
+    iny                                                               ; bc52: c8          .   ; Y=2
     lda l0032                                                         ; bc53: a5 32       .2
     sta (l0004),y                                                     ; bc55: 91 04       ..
-    iny                                                               ; bc57: c8          .  ; Y=3
+    iny                                                               ; bc57: c8          .   ; Y=3
     lda l0033                                                         ; bc58: a5 33       .3
     sta (l0004),y                                                     ; bc5a: 91 04       ..
-    iny                                                               ; bc5c: c8          .  ; Y=4
+    iny                                                               ; bc5c: c8          .   ; Y=4
     lda l0034                                                         ; bc5d: a5 34       .4
     sta (l0004),y                                                     ; bc5f: 91 04       ..
     rts                                                               ; bc61: 60          `
@@ -10644,10 +10644,10 @@ l8993 = c8992+1
     ldy #3                                                            ; bc6e: a0 03       ..
     lda l002d                                                         ; bc70: a5 2d       .-
     sta (l0004),y                                                     ; bc72: 91 04       ..
-    dey                                                               ; bc74: 88          .  ; Y=2
+    dey                                                               ; bc74: 88          .   ; Y=2
     lda l002c                                                         ; bc75: a5 2c       .,
     sta (l0004),y                                                     ; bc77: 91 04       ..
-    dey                                                               ; bc79: 88          .  ; Y=1
+    dey                                                               ; bc79: 88          .   ; Y=1
     lda l002b                                                         ; bc7a: a5 2b       .+
     sta (l0004),y                                                     ; bc7c: 91 04       ..
     lda l002a                                                         ; bc7e: a5 2a       .*
@@ -10672,7 +10672,7 @@ l8993 = c8992+1
 .cbc91
     clc                                                               ; bc91: 18          .
     lda l0004                                                         ; bc92: a5 04       ..
-    sbc l0036                                                         ; bc94: e5 36       .6 ; -1 because carry is clear
+    sbc l0036                                                         ; bc94: e5 36       .6  ; -1 because carry is clear
     jsr sub_cbd5e                                                     ; bc96: 20 5e bd     ^.
     ldy l0036                                                         ; bc99: a4 36       .6
     beq cbca5                                                         ; bc9b: f0 08       ..
@@ -10739,7 +10739,7 @@ l8993 = c8992+1
 ; &bce6 referenced 1 time by &bcda
 .cbce6
     lda #&0d                                                          ; bce6: a9 0d       ..
-    bne loop_cbcd1                                                    ; bce8: d0 e7       .. ; ALWAYS branch
+    bne loop_cbcd1                                                    ; bce8: d0 e7       ..  ; ALWAYS branch
 
 ; &bcea referenced 1 time by &bcb0
 .cbcea
@@ -10751,18 +10751,18 @@ l8993 = c8992+1
     ldy #1                                                            ; bcf4: a0 01       ..
     lda (l0004),y                                                     ; bcf6: b1 04       ..
     sta (l0037),y                                                     ; bcf8: 91 37       .7
-    iny                                                               ; bcfa: c8          .  ; Y=2
+    iny                                                               ; bcfa: c8          .   ; Y=2
     lda (l0004),y                                                     ; bcfb: b1 04       ..
     sta (l0037),y                                                     ; bcfd: 91 37       .7
-    iny                                                               ; bcff: c8          .  ; Y=3
+    iny                                                               ; bcff: c8          .   ; Y=3
     lda (l0004),y                                                     ; bd00: b1 04       ..
     sta (l0037),y                                                     ; bd02: 91 37       .7
-    iny                                                               ; bd04: c8          .  ; Y=4
+    iny                                                               ; bd04: c8          .   ; Y=4
     cpy l0039                                                         ; bd05: c4 39       .9
     bcs cbd0e                                                         ; bd07: b0 05       ..
     lda (l0004),y                                                     ; bd09: b1 04       ..
     sta (l0037),y                                                     ; bd0b: 91 37       .7
-    iny                                                               ; bd0d: c8          .  ; Y=5
+    iny                                                               ; bd0d: c8          .   ; Y=5
 ; &bd0e referenced 2 times by &bcf2, &bd07
 .cbd0e
     tya                                                               ; bd0e: 98          .
@@ -10795,10 +10795,10 @@ l8993 = c8992+1
     ldy #3                                                            ; bd26: a0 03       ..
     lda (l0004),y                                                     ; bd28: b1 04       ..
     sta l002d                                                         ; bd2a: 85 2d       .-
-    dey                                                               ; bd2c: 88          .  ; Y=2
+    dey                                                               ; bd2c: 88          .   ; Y=2
     lda (l0004),y                                                     ; bd2d: b1 04       ..
     sta l002c                                                         ; bd2f: 85 2c       .,
-    dey                                                               ; bd31: 88          .  ; Y=1
+    dey                                                               ; bd31: 88          .   ; Y=1
     lda (l0004),y                                                     ; bd32: b1 04       ..
     sta l002b                                                         ; bd34: 85 2b       .+
     lda (l0004)                                                       ; bd36: b2 04       ..
@@ -10825,10 +10825,10 @@ l8993 = c8992+1
     ldy #3                                                            ; bd48: a0 03       ..
     lda (l0004),y                                                     ; bd4a: b1 04       ..
     sta l0003,x                                                       ; bd4c: 95 03       ..
-    dey                                                               ; bd4e: 88          .  ; Y=2
+    dey                                                               ; bd4e: 88          .   ; Y=2
     lda (l0004),y                                                     ; bd4f: b1 04       ..
     sta l0002,x                                                       ; bd51: 95 02       ..
-    dey                                                               ; bd53: 88          .  ; Y=1
+    dey                                                               ; bd53: 88          .   ; Y=1
     lda (l0004),y                                                     ; bd54: b1 04       ..
     sta l0001,x                                                       ; bd56: 95 01       ..
     lda (l0004)                                                       ; bd58: b2 04       ..
@@ -10882,7 +10882,7 @@ l8993 = c8992+1
     iny                                                               ; bd91: c8          .
     tya                                                               ; bd92: 98          .
     sec                                                               ; bd93: 38          8
-    adc l0038                                                         ; bd94: 65 38       e8 ; +1 because carry is set
+    adc l0038                                                         ; bd94: 65 38       e8  ; +1 because carry is set
     sta l0038                                                         ; bd96: 85 38       .8
     bcc cbd86                                                         ; bd98: 90 ec       ..
     inc l0039                                                         ; bd9a: e6 39       .9
@@ -10917,7 +10917,7 @@ l8993 = c8992+1
 .sub_cbdb7
     cmp #&0a                                                          ; bdb7: c9 0a       ..
     bcc cbdbd                                                         ; bdb9: 90 02       ..
-    adc #6                                                            ; bdbb: 69 06       i. ; Carry is set, so adding 7
+    adc #6                                                            ; bdbb: 69 06       i.  ; Carry is set, so adding 7
 ; &bdbd referenced 1 time by &bdb9
 .cbdbd
     adc #&30 ; '0'                                                    ; bdbd: 69 30       i0
@@ -11089,7 +11089,7 @@ l8993 = c8992+1
 .sub_cbe8b
     lda #osbyte_read_high_order_address                               ; be8b: a9 82       ..
     jsr OSBYTE                                                        ; be8d: 20 f4 ff     .. ; Read the filing system 'machine high order address'
-    stx l003b                                                         ; be90: 86 3b       .; ; X and Y contain the machine high order address (low, high)
+    stx l003b                                                         ; be90: 86 3b       .;  ; X and Y contain the machine high order address (low, high)
     sty l003c                                                         ; be92: 84 3c       .<
     rts                                                               ; be94: 60          `
 
@@ -11114,7 +11114,7 @@ l8993 = c8992+1
     ldx l0018                                                         ; beb9: a6 18       ..
     stx l0042                                                         ; bebb: 86 42       .B
     lda #osfile_save                                                  ; bebd: a9 00       ..
-    tay                                                               ; bebf: a8          .  ; Y=0
+    tay                                                               ; bebf: a8          .   ; Y=0
     ldx #<l0037                                                       ; bec0: a2 37       .7
     jsr OSFILE                                                        ; bec2: 20 dd ff     .. ; Save a block of memory (returning file length and attributes) (A=0)
     bra cbeeb                                                         ; bec5: 80 24       .$
@@ -11169,7 +11169,7 @@ lbefe = sub_cbefd+1
     pha                                                               ; bf00: 48          H
     jsr sub_c9771                                                     ; bf01: 20 71 97     q.
     jsr sub_c9c5a                                                     ; bf04: 20 5a 9c     Z.
-    ply                                                               ; bf07: 7a          z  ; Y=file handle
+    ply                                                               ; bf07: 7a          z   ; Y=file handle
     lda l002a                                                         ; bf08: a5 2a       .*
     jsr OSBPUT                                                        ; bf0a: 20 d4 ff     .. ; Write a single byte A to an open file Y
     bra cbeeb                                                         ; bf0d: 80 dc       ..
@@ -11220,11 +11220,11 @@ lbefe = sub_cbefd+1
     sty l0013                                                         ; bf42: 84 13       ..
     stz l0012                                                         ; bf44: 64 12       d.
     stz l0020                                                         ; bf46: 64 20       d
-    sta (l0012)                                                       ; bf48: 92 12       ..
+    sta (l0012)                                                       ; bf48: 92 12       ..  ; A=&0d
     lda #&ff                                                          ; bf4a: a9 ff       ..
     ldy #1                                                            ; bf4c: a0 01       ..
     sta (l0012),y                                                     ; bf4e: 91 12       ..
-    iny                                                               ; bf50: c8          .  ; Y=2
+    iny                                                               ; bf50: c8          .   ; Y=2
     sty l0012                                                         ; bf51: 84 12       ..
     rts                                                               ; bf53: 60          `
 
@@ -11248,7 +11248,7 @@ lbefe = sub_cbefd+1
     ldx #0                                                            ; bf68: a2 00       ..
     ldy #&ff                                                          ; bf6a: a0 ff       ..
     jsr OSBYTE                                                        ; bf6c: 20 f4 ff     .. ; Read Tube present flag
-    txa                                                               ; bf6f: 8a          .  ; X=value of Tube present flag
+    txa                                                               ; bf6f: 8a          .   ; X=value of Tube present flag
     rts                                                               ; bf70: 60          `
 
 ; &bf71 referenced 1 time by &bbed

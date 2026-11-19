@@ -1429,7 +1429,7 @@ spritegotonextrow
     rts                                                               ; 1976: 60          `
 
 movetonextcharrow
-    sta spriteline                                                    ; 1977: 85 72       .r
+    sta spriteline                                                    ; 1977: 85 72       .r             ; A=0
     clc                                                               ; 1979: 18          .
     lda write                                                         ; 197a: a5 70       .p
     adc #$79                                                          ; 197c: 69 79       iy
@@ -1513,7 +1513,7 @@ getspritedata
     lda read + 1                                                      ; 19e9: a5 77       .w
     adc #>spritetable                                                 ; 19eb: 69 11       i.
     sta read + 1                                                      ; 19ed: 85 77       .w
-    lda (read),y                                                      ; 19ef: b1 76       .v
+    lda (read),y                                                      ; 19ef: b1 76       .v             ; Offset is Y=0
     sta spritewidthpixels                                             ; 19f1: 85 79       .y
     clc                                                               ; 19f3: 18          .
     adc #7                                                            ; 19f4: 69 07       i.
@@ -1784,15 +1784,15 @@ initmap
     lda #0                                                            ; 1b64: a9 00       ..
     tax                                                               ; 1b66: aa          .              ; X=0
 clearmaploop
-    sta mapdata,x                                                     ; 1b67: 9d 00 06    ...
-    sta mapdata + $0100,x                                             ; 1b6a: 9d 00 07    ...
+    sta mapdata,x                                                     ; 1b67: 9d 00 06    ...            ; A=0
+    sta mapdata + $0100,x                                             ; 1b6a: 9d 00 07    ...            ; A=0
     dex                                                               ; 1b6d: ca          .
     bne clearmaploop                                                  ; 1b6e: d0 f7       ..
     lda #PlatformColour                                               ; 1b70: a9 0a       ..
     sta spritecolour                                                  ; 1b72: 85 7f       ..
     lda numplatforms                                                  ; 1b74: a5 53       .S
     sta temp3                                                         ; 1b76: 85 8a       ..
-    sty temp2                                                         ; 1b78: 84 89       ..
+    sty temp2                                                         ; 1b78: 84 89       ..             ; Y=4
 putplatformsloop
     ldy temp2                                                         ; 1b7a: a4 89       ..
     iny                                                               ; 1b7c: c8          .
@@ -2381,7 +2381,7 @@ climbingup
     jsr getmapblock                                                   ; 1f60: 20 c8 23     .#
     and #MapId_Ladder                                                 ; 1f63: 29 02       ).
     bne laddermove                                                    ; 1f65: d0 13       ..
-    sta movementy                                                     ; 1f67: 85 47       .G
+    sta movementy                                                     ; 1f67: 85 47       .G             ; A=0
     jmp laddermove                                                    ; 1f69: 4c 7a 1f    Lz.
 
 climbingdown
@@ -2391,7 +2391,7 @@ climbingdown
     jsr getmapblock                                                   ; 1f71: 20 c8 23     .#
     and #MapId_Ladder                                                 ; 1f74: 29 02       ).
     bne laddermove                                                    ; 1f76: d0 02       ..
-    sta movementy                                                     ; 1f78: 85 47       .G
+    sta movementy                                                     ; 1f78: 85 47       .G             ; A=0
 laddermove
     lda #0                                                            ; 1f7a: a9 00       ..
     sta playerfacingdir                                               ; 1f7c: 85 4c       .L
@@ -3315,7 +3315,7 @@ birdwalking
     jsr getmapblock                                                   ; 24e9: 20 c8 23     .#
     and #MapId_Platform                                               ; 24ec: 29 01       ).
     beq noplatformtotheleft                                           ; 24ee: f0 02       ..
-    sta temp6                                                         ; 24f0: 85 8d       ..
+    sta temp6                                                         ; 24f0: 85 8d       ..             ; A=1
 noplatformtotheleft
     ldx temp4                                                         ; 24f2: a6 8b       ..
     ldy temp5                                                         ; 24f4: a4 8c       ..
@@ -3752,12 +3752,13 @@ resethiscoretabloop
     ldy #$0f                                                          ; 279f: a0 0f       ..
     lda #' '                                                          ; 27a1: a9 20       .
 clearhiscorenameloop
-    sta (hiscoreaddr),y                                               ; 27a3: 91 76       .v
+    ; Set 5 bytes of memory from (hiscoreaddr)+11 onwards to 32
+    sta (hiscoreaddr),y                                               ; 27a3: 91 76       .v             ; A=$20
     dey                                                               ; 27a5: 88          .
     cpy #$0a                                                          ; 27a6: c0 0a       ..
     bne clearhiscorenameloop                                          ; 27a8: d0 f9       ..
     lda #'F'                                                          ; 27aa: a9 46       .F
-    sta (hiscoreaddr),y                                               ; 27ac: 91 76       .v
+    sta (hiscoreaddr),y                                               ; 27ac: 91 76       .v             ; Offset is Y=$0a
     dey                                                               ; 27ae: 88          .              ; Y=9
     lda #char_ampersand                                               ; 27af: a9 26       .&
     sta (hiscoreaddr),y                                               ; 27b1: 91 76       .v
@@ -3767,7 +3768,8 @@ clearhiscorenameloop
     dey                                                               ; 27b8: 88          .              ; Y=7
     lda #0                                                            ; 27b9: a9 00       ..
 clearhiscoreloop
-    sta (hiscoreaddr),y                                               ; 27bb: 91 76       .v
+    ; Clear 8 bytes of memory from (hiscoreaddr) onwards
+    sta (hiscoreaddr),y                                               ; 27bb: 91 76       .v             ; A=0
     dey                                                               ; 27bd: 88          .
     bpl clearhiscoreloop                                              ; 27be: 10 fb       ..
     lda #1                                                            ; 27c0: a9 01       ..
@@ -3815,7 +3817,8 @@ inserthiscoreloop
     ldy #$0f                                                          ; 27fa: a0 0f       ..
     lda #' '                                                          ; 27fc: a9 20       .
 insertblanknameloop
-    sta (hiscoreaddr),y                                               ; 27fe: 91 76       .v
+    ; Set 8 bytes of memory from (hiscoreaddr)+8 onwards to 32
+    sta (hiscoreaddr),y                                               ; 27fe: 91 76       .v             ; A=$20
     dey                                                               ; 2800: 88          .
     cpy #7                                                            ; 2801: c0 07       ..
     bne insertblanknameloop                                           ; 2803: d0 f9       ..
@@ -4400,7 +4403,7 @@ resetplayerscores
     ldy #7                                                            ; 2c19: a0 07       ..
     lda #0                                                            ; 2c1b: a9 00       ..
 resetplayerscores2
-    sta playerscore,x                                                 ; 2c1d: 9d 00 05    ...
+    sta playerscore,x                                                 ; 2c1d: 9d 00 05    ...            ; A=0
     inx                                                               ; 2c20: e8          .
     dey                                                               ; 2c21: 88          .
     bpl resetplayerscores2                                            ; 2c22: 10 f9       ..
@@ -4703,8 +4706,8 @@ capto9
     sta playerbonusexpiredflag,x                                      ; 2e27: 9d 0b 05    ...
     ldy #$10                                                          ; 2e2a: a0 10       ..
 clearcollectedflags
-    sta collectedeggsflags,x                                          ; 2e2c: 9d 10 05    ...
-    sta collectedseedflags,x                                          ; 2e2f: 9d 20 05    . .
+    sta collectedeggsflags,x                                          ; 2e2c: 9d 10 05    ...            ; A=0
+    sta collectedseedflags,x                                          ; 2e2f: 9d 20 05    . .            ; A=0
     inx                                                               ; 2e32: e8          .
     dey                                                               ; 2e33: 88          .
     bne clearcollectedflags                                           ; 2e34: d0 f6       ..

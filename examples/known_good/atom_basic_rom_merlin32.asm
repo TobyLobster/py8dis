@@ -87,7 +87,6 @@ l033a   equ $033a
 l033c   equ $033c
 l0357   equ $0357
 l0372   equ $0372
-l038c   equ $038c
 l038d   equ $038d
 l038e   equ $038e
 
@@ -625,7 +624,7 @@ cc26b
     bcs cc2aa                                                         ; c26d: b0 3b       .;
     sta l0053                                                         ; c26f: 85 53       .S
     lda keyword_next,x                                                ; c271: bd ee c0    ...
-    bcc cc29f                                                         ; c274: 90 29       .) ; ALWAYS branch
+    bcc cc29f                                                         ; c274: 90 29       .)  ; ALWAYS branch
 
 ; $c276 referenced 1 time by $c2aa
 cc276
@@ -693,11 +692,11 @@ basic_start
     sty l000e                                                         ; c2ba: 84 0e       ..
     ldy #0                                                            ; c2bc: a0 00       ..
     sty l000d                                                         ; c2be: 84 0d       ..
-    sta (l000d),y                                                     ; c2c0: 91 0d       ..
+    sta (l000d),y                                                     ; c2c0: 91 0d       ..  ; A=$0d
     lda #$ff                                                          ; c2c2: a9 ff       ..
-    iny                                                               ; c2c4: c8          .  ; Y=1
+    iny                                                               ; c2c4: c8          .   ; Y=1
     sta (l000d),y                                                     ; c2c5: 91 0d       ..
-    iny                                                               ; c2c7: c8          .  ; Y=2
+    iny                                                               ; c2c7: c8          .   ; Y=2
     sty l000d                                                         ; c2c8: 84 0d       ..
     lda #8                                                            ; c2ca: a9 08       ..
     sta l0321                                                         ; c2cc: 8d 21 03    .!.
@@ -708,7 +707,7 @@ cc2cf
     jsr sub_ccd0f                                                     ; c2d2: 20 0f cd     ..
     ldx #1                                                            ; c2d5: a2 01       ..
     stx parsing_ptr_high                                              ; c2d7: 86 06       ..
-    dex                                                               ; c2d9: ca          .  ; X=0
+    dex                                                               ; c2d9: ca          .   ; X=0
     stx parsing_ptr_low                                               ; c2da: 86 05       ..
     stx basic_line_number                                             ; c2dc: 86 01       ..
     stx basic_line_number+1                                           ; c2de: 86 02       ..
@@ -732,11 +731,12 @@ cc2f2
     sta parsing_ptr_offset                                            ; c2f9: 85 03       ..
     sta int_workspace_stack_low-1                                     ; c2fb: 85 15       ..
     sta l0013                                                         ; c2fd: 85 13       ..
-    sta int_workspace_stack_low-2                                     ; c2ff: 85 14       ..
+    sta int_workspace_stack_low-2                                     ; c2ff: 85 14       ..  ; A=0
     ldx #$34 ; '4'                                                    ; c301: a2 34       .4
 ; $c303 referenced 1 time by $c307
 loop_cc303
-    sta l038c,x                                                       ; c303: 9d 8c 03    ...
+    ; Clear 52 bytes of memory from l038d onwards
+    sta l038d - 1,x                                                   ; c303: 9d 8c 03    ... ; A=0
     dex                                                               ; c306: ca          .
     bne loop_cc303                                                    ; c307: d0 fa       ..
     jsr skip_spaces                                                   ; c309: 20 34 c4     4.
@@ -831,7 +831,7 @@ print_quoted_string
     cmp #$22 ; '"'                                                    ; c389: c9 22       ."
     bne cc372                                                         ; c38b: d0 e5       ..
     iny                                                               ; c38d: c8          .
-    bcs cc377                                                         ; c38e: b0 e7       .. ; ALWAYS branch
+    bcs cc377                                                         ; c38e: b0 e7       ..  ; ALWAYS branch
 
 sub_cc390
     jsr sub_cc78b                                                     ; c390: 20 8b c7     ..
@@ -940,7 +940,7 @@ lc425 equ check_fp_rom+1
 ; $c425 referenced 1 time by $c468
     cmp #$aa                                                          ; c427: c9 aa       ..
     bne cc463                                                         ; c429: d0 38       .8
-    lsr                                                               ; c42b: 4a          J  ; A=$55
+    lsr                                                               ; c42b: 4a          J   ; A=$55
     cmp fp_rom_id+1                                                   ; c42c: cd 01 d0    ...
     bne cc463                                                         ; c42f: d0 32       .2
     ldy l005e                                                         ; c431: a4 5e       .^
@@ -961,7 +961,7 @@ cc43b
     beq loop_cc438                                                    ; c43f: f0 f7       ..
     cmp #$5b ; '['                                                    ; c441: c9 5b       .[
     bcs cc463                                                         ; c443: b0 1e       ..
-    sbc #$3f ; '?'                                                    ; c445: e9 3f       .? ; Carry is clear, so subtracting 64
+    sbc #$3f ; '?'                                                    ; c445: e9 3f       .?  ; Carry is clear, so subtracting 64
     bcc return_1                                                      ; c447: 90 1b       ..
     ldx workspace_stack_pointer                                       ; c449: a6 04       ..
     sta int_workspace_stack_low,x                                     ; c44b: 95 16       ..
@@ -1059,7 +1059,7 @@ cc477
 ; $c4cf referenced 3 times by $c4c1, $c4c5, $c4c9
 cc4cf
     ldx #$ff                                                          ; c4cf: a2 ff       ..
-    bne cc477                                                         ; c4d1: d0 a4       .. ; ALWAYS branch
+    bne cc477                                                         ; c4d1: d0 a4       ..  ; ALWAYS branch
 
 ; $c4d3 referenced 2 times by $c47d, $c481
 cc4d3
@@ -1107,7 +1107,7 @@ cc500
     ldy #1                                                            ; c500: a0 01       ..
     sty parsing_ptr_offset                                            ; c502: 84 03       ..
     lda ppi_port_b                                                    ; c504: ad 01 b0    ...
-    and #$20 ; ' '                                                    ; c507: 29 20       )  ; Test keyboard column 5
+    and #$20 ; ' '                                                    ; c507: 29 20       )   ; Test keyboard column 5
     beq cc547                                                         ; c509: f0 3c       .<
 ; $c50b referenced 1 time by $c514
 return_2
@@ -1292,7 +1292,7 @@ cc5f7
 print_hex_number
     cmp #$0a                                                          ; c5f9: c9 0a       ..
     bcc cc5ff                                                         ; c5fb: 90 02       ..
-    adc #6                                                            ; c5fd: 69 06       i. ; Carry is set, so adding 7
+    adc #6                                                            ; c5fd: 69 06       i.  ; Carry is set, so adding 7
 ; $c5ff referenced 1 time by $c5fb
 cc5ff
     adc #$30 ; '0'                                                    ; c5ff: 69 30       i0
@@ -1324,7 +1324,7 @@ sub_cc62e
     sty l0058                                                         ; c634: 84 58       .X
     lda text_space_page                                               ; c636: a5 12       ..
     sta l0059                                                         ; c638: 85 59       .Y
-    dey                                                               ; c63a: 88          .  ; Y=$ff
+    dey                                                               ; c63a: 88          .   ; Y=$ff
 ; $c63b referenced 2 times by $c64a, $c652
 cc63b
     lda #$0d                                                          ; c63b: a9 0d       ..
@@ -1424,7 +1424,7 @@ cc6a2
     sta l005c                                                         ; c6cd: 85 5c       .\
     pla                                                               ; c6cf: 68          h
     sta l005b                                                         ; c6d0: 85 5b       .[
-    bcs cc6d6                                                         ; c6d2: b0 02       .. ; ALWAYS branch
+    bcs cc6d6                                                         ; c6d2: b0 02       ..  ; ALWAYS branch
 
 ; $c6d4 referenced 1 time by $c6c6
 cc6d4
@@ -1514,13 +1514,13 @@ loop_cc741
     bne cc74f                                                         ; c746: d0 07       ..
     eor #$0d                                                          ; c748: 49 0d       I.
     bne loop_cc741                                                    ; c74a: d0 f5       ..
-    tay                                                               ; c74c: a8          .  ; Y=0
-    beq cc760                                                         ; c74d: f0 11       .. ; ALWAYS branch
+    tay                                                               ; c74c: a8          .   ; Y=0
+    beq cc760                                                         ; c74d: f0 11       ..  ; ALWAYS branch
 
 ; $c74f referenced 1 time by $c746
 cc74f
     ldy #0                                                            ; c74f: a0 00       ..
-    beq cc761                                                         ; c751: f0 0e       .. ; ALWAYS branch
+    beq cc761                                                         ; c751: f0 0e       ..  ; ALWAYS branch
 
 sub_cc753
     jsr sub_cc78b                                                     ; c753: 20 8b c7     ..
@@ -1542,28 +1542,28 @@ op_less_or_equal
     jsr sub_cc6da                                                     ; c764: 20 da c6     ..
     beq cc760                                                         ; c767: f0 f7       ..
     bcc cc760                                                         ; c769: 90 f5       ..
-    bcs cc761                                                         ; c76b: b0 f4       .. ; ALWAYS branch
+    bcs cc761                                                         ; c76b: b0 f4       ..  ; ALWAYS branch
 
 op_not_equal
     jsr sub_cc6da                                                     ; c76d: 20 da c6     ..
     bne cc760                                                         ; c770: d0 ee       ..
-    beq cc761                                                         ; c772: f0 ed       .. ; ALWAYS branch
+    beq cc761                                                         ; c772: f0 ed       ..  ; ALWAYS branch
 
 op_less
     jsr sub_cc6da                                                     ; c774: 20 da c6     ..
     bcc cc760                                                         ; c777: 90 e7       ..
-    bcs cc761                                                         ; c779: b0 e6       .. ; ALWAYS branch
+    bcs cc761                                                         ; c779: b0 e6       ..  ; ALWAYS branch
 
 op_greater_or_equal
     jsr sub_cc6da                                                     ; c77b: 20 da c6     ..
     bcs cc760                                                         ; c77e: b0 e0       ..
-    bcc cc761                                                         ; c780: 90 df       .. ; ALWAYS branch
+    bcc cc761                                                         ; c780: 90 df       ..  ; ALWAYS branch
 
 op_greater
     jsr sub_cc6da                                                     ; c782: 20 da c6     ..
     beq cc761                                                         ; c785: f0 da       ..
     bcs cc760                                                         ; c787: b0 d7       ..
-    bcc cc761                                                         ; c789: 90 d6       .. ; ALWAYS branch
+    bcc cc761                                                         ; c789: 90 d6       ..  ; ALWAYS branch
 
 ; $c78b referenced 12 times by $c33f, $c390, $c4e1, $c6da, $c731, $c753, $ca2c, $cb81, $cba2, $ccb6, $cd5c, $ceb6
 sub_cc78b
@@ -1707,7 +1707,7 @@ op_divide
     bit l0052                                                         ; c869: 24 52       $R
     php                                                               ; c86b: 08          .
     ldy #$57 ; 'W'                                                    ; c86c: a0 57       .W
-    bne loop_cc852                                                    ; c86e: d0 e2       .. ; ALWAYS branch
+    bne loop_cc852                                                    ; c86e: d0 e2       ..  ; ALWAYS branch
 
 op_remainder
     jsr sub_cc689                                                     ; c870: 20 89 c6     ..
@@ -1766,16 +1766,16 @@ sub_cc8c1
 cc8c4
     sec                                                               ; c8c4: 38          8
     lda #0                                                            ; c8c5: a9 00       ..
-    tay                                                               ; c8c7: a8          .  ; Y=0
+    tay                                                               ; c8c7: a8          .   ; Y=0
     sbc int_workspace_stack_low-1,x                                   ; c8c8: f5 15       ..
     sta int_workspace_stack_low-1,x                                   ; c8ca: 95 15       ..
-    tya                                                               ; c8cc: 98          .  ; A=0
+    tya                                                               ; c8cc: 98          .   ; A=0
     sbc int_workspace_stack_mid1-1,x                                  ; c8cd: f5 24       .$
     sta int_workspace_stack_mid1-1,x                                  ; c8cf: 95 24       .$
-    tya                                                               ; c8d1: 98          .  ; A=0
+    tya                                                               ; c8d1: 98          .   ; A=0
     sbc int_workspace_stack_mid2-1,x                                  ; c8d2: f5 33       .3
     sta int_workspace_stack_mid2-1,x                                  ; c8d4: 95 33       .3
-    tya                                                               ; c8d6: 98          .  ; A=0
+    tya                                                               ; c8d6: 98          .   ; A=0
     sbc int_workspace_stack_high-1,x                                  ; c8d7: f5 42       .B
     sta int_workspace_stack_high-1,x                                  ; c8d9: 95 42       .B
     rts                                                               ; c8db: 60          `
@@ -1852,7 +1852,7 @@ loop_cc930
     rol l0055                                                         ; c937: 26 55       &U
     dex                                                               ; c939: ca          .
     bpl loop_cc930                                                    ; c93a: 10 f4       ..
-    bmi cc915                                                         ; c93c: 30 d7       0. ; ALWAYS branch
+    bmi cc915                                                         ; c93c: 30 d7       0.  ; ALWAYS branch
 
 ; $c93e referenced 3 times by $c91a, $c924, $c928
 cc93e
@@ -1891,10 +1891,10 @@ sub_cc962
     ldy #1                                                            ; c962: a0 01       ..
     lda (l0052),y                                                     ; c964: b1 52       .R
     sta int_workspace_stack_mid1-1,x                                  ; c966: 95 24       .$
-    iny                                                               ; c968: c8          .  ; Y=2
+    iny                                                               ; c968: c8          .   ; Y=2
     lda (l0052),y                                                     ; c969: b1 52       .R
     sta int_workspace_stack_mid2-1,x                                  ; c96b: 95 33       .3
-    iny                                                               ; c96d: c8          .  ; Y=3
+    iny                                                               ; c96d: c8          .   ; Y=3
     lda (l0052),y                                                     ; c96e: b1 52       .R
     sta int_workspace_stack_high-1,x                                  ; c970: 95 42       .B
     rts                                                               ; c972: 60          `
@@ -2050,7 +2050,7 @@ cca6e
     jsr sub_cc62e                                                     ; ca75: 20 2e c6     ..
     bcc ccaaa                                                         ; ca78: 90 30       .0
     dey                                                               ; ca7a: 88          .
-    bcs cca9e                                                         ; ca7b: b0 21       .! ; ALWAYS branch
+    bcs cca9e                                                         ; ca7b: b0 21       .!  ; ALWAYS branch
 
 ; $ca7d referenced 1 time by $cab3
 cca7d
@@ -2085,7 +2085,7 @@ cca9e
 ccaaa
     lda int_workspace_stack_low                                       ; caaa: a5 16       ..
     clc                                                               ; caac: 18          .
-    sbc int_workspace_stack_low+1                                     ; caad: e5 17       .. ; -1 because carry is clear
+    sbc int_workspace_stack_low+1                                     ; caad: e5 17       ..  ; -1 because carry is clear
     lda int_workspace_stack_mid1                                      ; caaf: a5 25       .%
     sbc int_workspace_stack_mid1+1                                    ; cab1: e5 26       .&
     bcc cca7d                                                         ; cab3: 90 c8       ..
@@ -2104,7 +2104,7 @@ ccac3
     ldy int_workspace_stack_mid1                                      ; cac5: a4 25       .%
     sta int_workspace_stack_low+1                                     ; cac7: 85 17       ..
     sty int_workspace_stack_mid1+1                                    ; cac9: 84 26       .&
-    bcs cca6e                                                         ; cacb: b0 a1       .. ; ALWAYS branch
+    bcs cca6e                                                         ; cacb: b0 a1       ..  ; ALWAYS branch
 
 statement_next
     jsr skip_spaces                                                   ; cacd: 20 34 c4     4.
@@ -2165,7 +2165,7 @@ ccae5
     eor l0297,y                                                       ; cb3a: 59 97 02    Y..
     bpl ccb43                                                         ; cb3d: 10 04       ..
     bcs ccb45                                                         ; cb3f: b0 04       ..
-    bcc ccb52                                                         ; cb41: 90 0f       .. ; ALWAYS branch
+    bcc ccb52                                                         ; cb41: 90 0f       ..  ; ALWAYS branch
 
 ; $cb43 referenced 1 time by $cb3d
 ccb43
@@ -2258,7 +2258,7 @@ statement_gosub
     lda parsing_ptr_high                                              ; cbe3: a5 06       ..
     sta l02dd,y                                                       ; cbe5: 99 dd 02    ...
     inc int_workspace_stack_low-2                                     ; cbe8: e6 14       ..
-    bcc ccc0b                                                         ; cbea: 90 1f       .. ; ALWAYS branch
+    bcc ccc0b                                                         ; cbea: 90 1f       ..  ; ALWAYS branch
 
 statement_return
     jsr check_end_of_statement                                        ; cbec: 20 e4 c4     ..
@@ -2327,10 +2327,10 @@ sub_ccc1f
     sta l0059                                                         ; cc3e: 85 59       .Y
     ora l0058                                                         ; cc40: 05 58       .X
     bne return_6                                                      ; cc42: d0 34       .4
-    tay                                                               ; cc44: a8          .  ; Y=0
+    tay                                                               ; cc44: a8          .   ; Y=0
     lda text_space_page                                               ; cc45: a5 12       ..
     sta l0059                                                         ; cc47: 85 59       .Y
-    dey                                                               ; cc49: 88          .  ; Y=$ff
+    dey                                                               ; cc49: 88          .   ; Y=$ff
 ; $cc4a referenced 1 time by $cc68
 loop_ccc4a
     lda #$0d                                                          ; cc4a: a9 0d       ..
@@ -2472,7 +2472,7 @@ statement_do
 sub_ccd09
     lda #$3f ; '?'                                                    ; cd09: a9 3f       .?
     ldy #$40 ; '@'                                                    ; cd0b: a0 40       .@
-    bne ccd11                                                         ; cd0d: d0 02       .. ; ALWAYS branch
+    bne ccd11                                                         ; cd0d: d0 02       ..  ; ALWAYS branch
 
 ; $cd0f referenced 1 time by $c2d2
 sub_ccd0f
@@ -2490,14 +2490,14 @@ ccd16
 ; $cd18 referenced 2 times by $cd22, $cd45
 ccd18
     jsr OSECHO                                                        ; cd18: 20 e6 ff     .. ; Read a character and write it
-    cmp #$7f                                                          ; cd1b: c9 7f       .. ; A=character read
+    cmp #$7f                                                          ; cd1b: c9 7f       ..  ; A=character read
     bne ccd26                                                         ; cd1d: d0 07       ..
 ; $cd1f referenced 1 time by $cd51
 ccd1f
     dey                                                               ; cd1f: 88          .
     cpy l0052                                                         ; cd20: c4 52       .R
     bpl ccd18                                                         ; cd22: 10 f4       ..
-    bmi ccd16                                                         ; cd24: 30 f0       0. ; ALWAYS branch
+    bmi ccd16                                                         ; cd24: 30 f0       0.  ; ALWAYS branch
 
 ; $cd26 referenced 1 time by $cd1d
 ccd26
@@ -2526,7 +2526,7 @@ ccd37
 ; $cd47 referenced 1 time by $cd4c
 loop_ccd47
     jsr OSRDCH                                                        ; cd47: 20 e3 ff     .. ; Read a character
-    cmp #$7f                                                          ; cd4a: c9 7f       .. ; A=character read
+    cmp #$7f                                                          ; cd4a: c9 7f       ..  ; A=character read
     bne loop_ccd47                                                    ; cd4c: d0 f9       ..
     ; Delete the character before the cursor
     jsr OSWRCH                                                        ; cd4e: 20 f4 ff     .. ; Write character 127
@@ -2587,7 +2587,7 @@ end_program
     sta l000e                                                         ; cd9d: 85 0e       ..
     ldy #0                                                            ; cd9f: a0 00       ..
     sty l000d                                                         ; cda1: 84 0d       ..
-    dey                                                               ; cda3: 88          .  ; Y=$ff
+    dey                                                               ; cda3: 88          .   ; Y=$ff
 ; $cda4 referenced 2 times by $cda9, $cdb3
 ccda4
     iny                                                               ; cda4: c8          .
@@ -2627,7 +2627,7 @@ ccdc9
     bcs cce18                                                         ; cdce: b0 48       .H
     lda l0058                                                         ; cdd0: a5 58       .X
     sta l0052                                                         ; cdd2: 85 52       .R
-    sbc #1                                                            ; cdd4: e9 01       .. ; Carry is clear, so subtracting 2
+    sbc #1                                                            ; cdd4: e9 01       ..  ; Carry is clear, so subtracting 2
     sta l0058                                                         ; cdd6: 85 58       .X
     sta l000d                                                         ; cdd8: 85 0d       ..
     lda l0059                                                         ; cdda: a5 59       .Y
@@ -2682,7 +2682,7 @@ cce0f
 cce18
     ldy #1                                                            ; ce18: a0 01       ..
     sty l0057                                                         ; ce1a: 84 57       .W
-    dey                                                               ; ce1c: 88          .  ; Y=0
+    dey                                                               ; ce1c: 88          .   ; Y=0
     lda #$0d                                                          ; ce1d: a9 0d       ..
     cmp (l0056),y                                                     ; ce1f: d1 56       .V
     beq cce80                                                         ; ce21: f0 5d       .]
@@ -2706,7 +2706,7 @@ loop_cce23
     sta (l000d),y                                                     ; ce3e: 91 0d       ..
     cmp (l000d),y                                                     ; ce40: d1 0d       ..
     bne lcdf6                                                         ; ce42: d0 b2       ..
-    asl                                                               ; ce44: 0a          .  ; A=$aa
+    asl                                                               ; ce44: 0a          .   ; A=$aa
     sta (l000d),y                                                     ; ce45: 91 0d       ..
     cmp (l000d),y                                                     ; ce47: d1 0d       ..
     bne lcdf6                                                         ; ce49: d0 ab       ..
@@ -2722,7 +2722,7 @@ loop_cce4b
 cce56
     dey                                                               ; ce56: 88          .
     tya                                                               ; ce57: 98          .
-    adc l0054                                                         ; ce58: 65 54       eT ; +1 because carry is set
+    adc l0054                                                         ; ce58: 65 54       eT  ; +1 because carry is set
     ldx l0055                                                         ; ce5a: a6 55       .U
     bcc cce5f                                                         ; ce5c: 90 01       ..
     inx                                                               ; ce5e: e8          .
@@ -2735,7 +2735,7 @@ cce5f
     ldy #1                                                            ; ce66: a0 01       ..
     lda int_workspace_stack_mid1                                      ; ce68: a5 25       .%
     sta (l0058),y                                                     ; ce6a: 91 58       .X
-    iny                                                               ; ce6c: c8          .  ; Y=2
+    iny                                                               ; ce6c: c8          .   ; Y=2
     lda int_workspace_stack_low                                       ; ce6d: a5 16       ..
     sta (l0058),y                                                     ; ce6f: 91 58       .X
     sec                                                               ; ce71: 38          8
@@ -2831,7 +2831,7 @@ ccec7
 ; $ceea referenced 1 time by $ceda
 cceea
     iny                                                               ; ceea: c8          .
-    bcs ccec7                                                         ; ceeb: b0 da       .. ; ALWAYS branch
+    bcs ccec7                                                         ; ceeb: b0 da       ..  ; ALWAYS branch
 
 statement_load
     jsr sub_ccefa                                                     ; ceed: 20 fa ce     ..
@@ -2911,13 +2911,13 @@ function_bget
 
 function_get
     jsr function_bget                                                 ; cf66: 20 5b cf     [.
-    ldy l0052                                                         ; cf69: a4 52       .R ; Y=file handle
+    ldy l0052                                                         ; cf69: a4 52       .R  ; Y=file handle
     jsr OSBGET                                                        ; cf6b: 20 d4 ff     .. ; Read a byte from file Y
-    sta int_workspace_stack_mid1-1,x                                  ; cf6e: 95 24       .$ ; A=byte read
+    sta int_workspace_stack_mid1-1,x                                  ; cf6e: 95 24       .$  ; A=byte read
     jsr OSBGET                                                        ; cf70: 20 d4 ff     .. ; Read a byte from file Y
-    sta int_workspace_stack_mid2-1,x                                  ; cf73: 95 33       .3 ; A=byte read
+    sta int_workspace_stack_mid2-1,x                                  ; cf73: 95 33       .3  ; A=byte read
     jsr OSBGET                                                        ; cf75: 20 d4 ff     .. ; Read a byte from file Y
-    sta int_workspace_stack_high-1,x                                  ; cf78: 95 42       .B ; A=byte read
+    sta int_workspace_stack_high-1,x                                  ; cf78: 95 42       .B  ; A=byte read
     rts                                                               ; cf7a: 60          `
 
 ; $cf7b referenced 2 times by $cf8f, $cf95
@@ -2946,14 +2946,14 @@ loop_ccf9a
     inx                                                               ; cf9f: e8          .
     cpx #4                                                            ; cfa0: e0 04       ..
     bcc loop_ccf9a                                                    ; cfa2: 90 f6       ..
-    bcs loop_ccf92                                                    ; cfa4: b0 ec       .. ; ALWAYS branch
+    bcs loop_ccf92                                                    ; cfa4: b0 ec       ..  ; ALWAYS branch
 
 function_fin
     sec                                                               ; cfa6: 38          8
 function_fout
     php                                                               ; cfa7: 08          .
     jsr sub_cceb1                                                     ; cfa8: 20 b1 ce     ..
-    ldx #$52 ; 'R'                                                    ; cfab: a2 52       .R ; X=zero page address of the file name's address
+    ldx #$52 ; 'R'                                                    ; cfab: a2 52       .R  ; X=zero page address of the file name's address
     plp                                                               ; cfad: 28          (
     jsr OSFIND                                                        ; cfae: 20 ce ff     .. ; Open a file (for input if C=1, output if C=0)
     ldx workspace_stack_pointer                                       ; cfb1: a6 04       ..
@@ -2977,7 +2977,7 @@ statement_sput
 loop_ccfcf
     lda (l0052),y                                                     ; cfcf: b1 52       .R
     sty l0055                                                         ; cfd1: 84 55       .U
-    ldy l000f                                                         ; cfd3: a4 0f       .. ; Y=file handle
+    ldy l000f                                                         ; cfd3: a4 0f       ..  ; Y=file handle
     pha                                                               ; cfd5: 48          H
     jsr OSBPUT                                                        ; cfd6: 20 d1 ff     .. ; Write byte A to file Y
     pla                                                               ; cfd9: 68          h
@@ -2994,14 +2994,14 @@ statement_sget
 ; $cfee referenced 1 time by $cffc
 loop_ccfee
     sty l0055                                                         ; cfee: 84 55       .U
-    ldy l000f                                                         ; cff0: a4 0f       .. ; Y=file handle
+    ldy l000f                                                         ; cff0: a4 0f       ..  ; Y=file handle
     jsr OSBGET                                                        ; cff2: 20 d4 ff     .. ; Read a byte from file Y
     ldy l0055                                                         ; cff5: a4 55       .U
-    sta (l0052),y                                                     ; cff7: 91 52       .R ; A=byte read
+    sta (l0052),y                                                     ; cff7: 91 52       .R  ; A=byte read
     iny                                                               ; cff9: c8          .
     cmp #$0d                                                          ; cffa: c9 0d       ..
     bne loop_ccfee                                                    ; cffc: d0 f0       ..
-    beq ccfc2                                                         ; cffe: f0 c2       .. ; ALWAYS branch
+    beq ccfc2                                                         ; cffe: f0 c2       ..  ; ALWAYS branch
 
 ; $d000 referenced 1 time by $c424
 fp_rom_id
@@ -3185,6 +3185,7 @@ pydis_end
     err test_array_variable & $ffff / $0100 - $f0
     err fp_rom_id+1 - $d001
     err keywords-1 - $bfff
+    err l038d - 1 - $038c
 
 ; Label references by decreasing frequency:
 ;     l0052:                      61
@@ -3449,7 +3450,6 @@ pydis_end
 ;     l0322:                       1
 ;     l0339:                       1
 ;     l033a:                       1
-;     l038c:                       1
 ;     lc425:                       1
 ;     lc596:                       1
 ;     lc959:                       1
@@ -3700,7 +3700,6 @@ pydis_end
 ;     l033c
 ;     l0357
 ;     l0372
-;     l038c
 ;     l038d
 ;     l038e
 ;     lc425

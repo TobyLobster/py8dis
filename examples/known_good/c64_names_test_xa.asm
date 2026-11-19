@@ -121,7 +121,7 @@ sys_entry
     sta BGCOL0                                                        // 0851: 8d 21 d0    .!P
     ldx #colour_white                                                 // 0854: a2 01       ..
     stx COLOR                                                         // 0856: 8e 86 02    ...
-    lda #$93                                                          // 0859: a9 93       .. // A=character to output
+    lda #$93                                                          // 0859: a9 93       ..  // A=character to output
     jsr CHROUT                                                        // 085b: 20 d2 ff     R. // Output $93 (clear screen)
     ldx #0                                                            // 085e: a2 00       ..
 // $0860 referenced 1 time by $0869
@@ -133,41 +133,41 @@ loop_c0860
     bne loop_c0860                                                    // 0869: d0 f5       P.
 // $086b referenced 1 time by $0863
 c086b
-    lda #$21 // '!'                                                   // 086b: a9 21       .! // A=character to output
+    lda #$21 // '!'                                                   // 086b: a9 21       .!  // A=character to output
     jsr CHROUT                                                        // 086d: 20 d2 ff     R. // Output '!'
     clc                                                               // 0870: 18          .
-    ldx #5                                                            // 0871: a2 05       .. // X=cursor row
-    ldy #$0a                                                          // 0873: a0 0a       .. // Y=cursor column
+    ldx #5                                                            // 0871: a2 05       ..  // X=cursor row
+    ldy #$0a                                                          // 0873: a0 0a       ..  // Y=cursor column
     jsr PLOT                                                          // 0875: 20 f0 ff     .. // Move the cursor to row 5, column 10
     sec                                                               // 0878: 38          8
     jsr PLOT                                                          // 0879: 20 f0 ff     .. // Read the cursor position into X (row) and Y (column)
     stx l095c                                                         // 087c: 8e 5c 09    ... // X=cursor row
     sty l095d                                                         // 087f: 8c 5d 09    .]. // Y=cursor column
-    lda #$0f                                                          // 0882: a9 0f       .. // A=logical file number
-    ldx #device_disk_8                                                // 0884: a2 08       .. // X=device number
-    ldy #$0f                                                          // 0886: a0 0f       .. // Y=secondary address
+    lda #$0f                                                          // 0882: a9 0f       ..  // A=logical file number
+    ldx #device_disk_8                                                // 0884: a2 08       ..  // X=device number
+    ldy #$0f                                                          // 0886: a0 0f       ..  // Y=secondary address
     jsr SETLFS                                                        // 0888: 20 ba ff     .. // Set logical file 15 to device 8 (disk drive), secondary address 15
-    lda #2                                                            // 088b: a9 02       .. // A=filename length
-    ldx #<filename                                                    // 088d: a2 47       .g // X=filename address (low byte)
-    ldy #>filename                                                    // 088f: a0 09       .. // Y=filename address (high byte)
+    lda #2                                                            // 088b: a9 02       ..  // A=filename length
+    ldx #<filename                                                    // 088d: a2 47       .g  // X=filename address (low byte)
+    ldy #>filename                                                    // 088f: a0 09       ..  // Y=filename address (high byte)
     jsr SETNAM                                                        // 0891: 20 bd ff     .. // Set the filename to "i0"
     jsr OPEN                                                          // 0894: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
-    ldx #$0f                                                          // 0897: a2 0f       .. // X=logical file number
+    ldx #$0f                                                          // 0897: a2 0f       ..  // X=logical file number
     jsr CHKIN                                                         // 0899: 20 c6 ff     F. // Open a channel for input
     jsr CHRIN                                                         // 089c: 20 cf ff     O. // Read a character from the input channel
     sta l095e                                                         // 089f: 8d 5e 09    ... // A=character read
     jsr CLRCHN                                                        // 08a2: 20 cc ff     L. // Restore the default input and output channels
-    lda #$0f                                                          // 08a5: a9 0f       .. // A=logical file number
+    lda #$0f                                                          // 08a5: a9 0f       ..  // A=logical file number
     jsr CLOSE                                                         // 08a7: 20 c3 ff     C. // Close a logical file
-    lda #1                                                            // 08aa: a9 01       .. // A=logical file number
-    ldx #device_disk_8                                                // 08ac: a2 08       .. // X=device number
-    ldy #1                                                            // 08ae: a0 01       .. // Y=secondary address
+    lda #1                                                            // 08aa: a9 01       ..  // A=logical file number
+    ldx #device_disk_8                                                // 08ac: a2 08       ..  // X=device number
+    ldy #1                                                            // 08ae: a0 01       ..  // Y=secondary address
     jsr SETLFS                                                        // 08b0: 20 ba ff     .. // Set logical file 1 to device 8 (disk drive), secondary address 1
-    lda #4                                                            // 08b3: a9 04       .. // A=filename length
-    ldx #<filename_2                                                  // 08b5: a2 49       .i // X=filename address (low byte)
-    ldy #>filename_2                                                  // 08b7: a0 09       .. // Y=filename address (high byte)
+    lda #4                                                            // 08b3: a9 04       ..  // A=filename length
+    ldx #<filename_2                                                  // 08b5: a2 49       .i  // X=filename address (low byte)
+    ldy #>filename_2                                                  // 08b7: a0 09       ..  // Y=filename address (high byte)
     jsr SETNAM                                                        // 08b9: 20 bd ff     .. // Set the filename to "data"
-    lda #0                                                            // 08bc: a9 00       .. // A=0 to load, 1 to verify
+    lda #0                                                            // 08bc: a9 00       ..  // A=0 to load, 1 to verify
     jsr LOAD                                                          // 08be: 20 d5 ff     U. // Load a file
     stx l095f                                                         // 08c1: 8e 5f 09    ... // X=end address of the data loaded (low byte)
     sty l0960                                                         // 08c4: 8c 60 09    ... // Y=end address of the data loaded (high byte)
@@ -175,11 +175,11 @@ c086b
     sta FREKZP                                                        // 08c9: 85 fb       ..
     lda #8                                                            // 08cb: a9 08       ..
     sta FREKZP+1                                                      // 08cd: 85 fc       ..
-    lda #FREKZP                                                       // 08cf: a9 fb       .. // A=zero page address of the start address
-    ldx #<pydis_end                                                   // 08d1: a2 68       .. // X=end address + 1 (low byte)
-    ldy #>pydis_end                                                   // 08d3: a0 09       .. // Y=end address + 1 (high byte)
+    lda #FREKZP                                                       // 08cf: a9 fb       ..  // A=zero page address of the start address
+    ldx #<pydis_end                                                   // 08d1: a2 68       ..  // X=end address + 1 (low byte)
+    ldy #>pydis_end                                                   // 08d3: a0 09       ..  // Y=end address + 1 (high byte)
     jsr SAVE                                                          // 08d5: 20 d8 ff     X. // Save memory to a file (set up with SETLFS and SETNAM)
-    lda #$c0                                                          // 08d8: a9 c0       .. // A=message flags
+    lda #$c0                                                          // 08d8: a9 c0       ..  // A=message flags
     jsr SETMSG                                                        // 08da: 20 90 ff     .. // Show Kernal control and error messages
     jsr RDTIM                                                         // 08dd: 20 de ff     .. // Read the jiffy clock
     sty l0961                                                         // 08e0: 8c 61 09    ... // Y=jiffy clock (low byte)
@@ -192,11 +192,11 @@ c086b
     jsr SCREEN                                                        // 08f5: 20 ed ff     .. // Read the screen size
     stx l0966                                                         // 08f8: 8e 66 09    ... // X=number of columns
     sty l0967                                                         // 08fb: 8c 67 09    ... // Y=number of rows
-    lda #<l094d                                                       // 08fe: a9 4d       .m // A=string address (low byte)
-    ldy #>l094d                                                       // 0900: a0 09       .. // Y=string address (high byte)
+    lda #<l094d                                                       // 08fe: a9 4d       .m  // A=string address (low byte)
+    ldy #>l094d                                                       // 0900: a0 09       ..  // Y=string address (high byte)
     jsr STROUT                                                        // 0902: 20 1e ab     .. // Print the zero-terminated string at A/Y
-    lda #0                                                            // 0905: a9 00       .. // A=number to print (high byte)
-    ldx #$2a // '*'                                                   // 0907: a2 2a       .* // X=number to print (low byte)
+    lda #0                                                            // 0905: a9 00       ..  // A=number to print (high byte)
+    ldx #$2a // '*'                                                   // 0907: a2 2a       .*  // X=number to print (low byte)
     jsr LINPRT                                                        // 0909: 20 cd bd     M. // Print the 16-bit number in A/X
     lda NDX                                                           // 090c: a5 c6       .F
     sta key                                                           // 090e: 8d 64 09    ...

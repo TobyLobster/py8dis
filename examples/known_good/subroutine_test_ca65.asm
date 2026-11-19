@@ -19,12 +19,12 @@ OSWRCH  = $ffee
 ; ***************************************************************************************
 pydis_start:
 start:
-    jsr print_message                                                 ; 2000: 20 10 20     . ; Print welcome message
-    stx test_byte                                                     ; 2003: 86 70       .p ; X=Length of the message just printed
-    lda #$aa                                                          ; 2005: a9 aa       .. ; A=number to print
+    jsr print_message                                                 ; 2000: 20 10 20     .  ; Print welcome message
+    stx test_byte                                                     ; 2003: 86 70       .p  ; X=Length of the message just printed
+    lda #$aa                                                          ; 2005: a9 aa       ..  ; A=number to print
     jsr print_decimal_number                                          ; 2007: 20 29 20     )
-    lda test_byte                                                     ; 200a: a5 70       .p ; A=number to print
-    jsr print_hex_number                                              ; 200c: 20 45 20     E ; Print a byte as hexadecimal
+    lda test_byte                                                     ; 200a: a5 70       .p  ; A=number to print
+    jsr print_hex_number                                              ; 200c: 20 45 20     E  ; Print a byte as hexadecimal
     rts                                                               ; 200f: 60          `
 
 ; ***************************************************************************************
@@ -65,7 +65,7 @@ loop_finding_digit:
     bcc found_digit                                                   ; 2030: 90 06       ..
     sbc decimal_digits,y                                              ; 2032: f9 42 20    .B
     inx                                                               ; 2035: e8          .
-    bne loop_finding_digit                                            ; 2036: d0 f5       .. ; ALWAYS branch
+    bne loop_finding_digit                                            ; 2036: d0 f5       ..  ; ALWAYS branch
 found_digit:
     pha                                                               ; 2038: 48          H
     txa                                                               ; 2039: 8a          .

@@ -91,53 +91,53 @@ interrupt_handler
     rts                                                               ; 2053: 60          .
 
 get_prefix_params
-    dfb 1                                                             ; 2054: 01          .  ; Parameter count
-    da data_buffer                                                    ; 2055: 8b 20       .. ; Data buffer
+    dfb 1                                                             ; 2054: 01          .   ; Parameter count
+    da data_buffer                                                    ; 2055: 8b 20       ..  ; Data buffer
 create_params
-    dfb 7                                                             ; 2057: 07          .  ; Parameter count
-    da pathname                                                       ; 2058: 83 20       .. ; Pathname
-    dfb $c3                                                           ; 205a: c3          C  ; Access
-    dfb 6                                                             ; 205b: 06          .  ; File type
-    da $2000                                                          ; 205c: 00 20       .. ; Aux type
-    dfb 1                                                             ; 205e: 01          .  ; Storage type
-    da 0                                                              ; 205f: 00 00       .. ; Creation date
-    da 0                                                              ; 2061: 00 00       .. ; Creation time
+    dfb 7                                                             ; 2057: 07          .   ; Parameter count
+    da pathname                                                       ; 2058: 83 20       ..  ; Pathname
+    dfb $c3                                                           ; 205a: c3          C   ; Access
+    dfb 6                                                             ; 205b: 06          .   ; File type
+    da $2000                                                          ; 205c: 00 20       ..  ; Aux type
+    dfb 1                                                             ; 205e: 01          .   ; Storage type
+    da 0                                                              ; 205f: 00 00       ..  ; Creation date
+    da 0                                                              ; 2061: 00 00       ..  ; Creation time
 open_params
-    dfb 3                                                             ; 2063: 03          .  ; Parameter count
-    da pathname                                                       ; 2064: 83 20       .. ; Pathname
-    da io_buffer                                                      ; 2066: 00 96       .. ; I/O buffer (1024 bytes)
+    dfb 3                                                             ; 2063: 03          .   ; Parameter count
+    da pathname                                                       ; 2064: 83 20       ..  ; Pathname
+    da io_buffer                                                      ; 2066: 00 96       ..  ; I/O buffer (1024 bytes)
 ; $2068 referenced 1 time by $2024
 open_ref
-    dfb 0                                                             ; 2068: 00          .  ; Reference number (returned)
+    dfb 0                                                             ; 2068: 00          .   ; Reference number (returned)
 set_mark_params
-    dfb 2                                                             ; 2069: 02          .  ; Parameter count
+    dfb 2                                                             ; 2069: 02          .   ; Parameter count
 ; $206a referenced 1 time by $202a
 set_mark_ref
-    dfb 0                                                             ; 206a: 00          .  ; Reference number
+    dfb 0                                                             ; 206a: 00          .   ; Reference number
     dfb 0, 2, 0                                                       ; 206b: 00 02 00    ... ; Position
 write_params
-    dfb 4                                                             ; 206e: 04          .  ; Parameter count
+    dfb 4                                                             ; 206e: 04          .   ; Parameter count
 ; $206f referenced 1 time by $2027
 write_ref
-    dfb 0                                                             ; 206f: 00          .  ; Reference number
-    da data_buffer_2                                                  ; 2070: 00 40       .. ; Data buffer
-    da $2000                                                          ; 2072: 00 20       .. ; Request count
-    da 0                                                              ; 2074: 00 00       .. ; Transfer count (returned)
+    dfb 0                                                             ; 206f: 00          .   ; Reference number
+    da data_buffer_2                                                  ; 2070: 00 40       ..  ; Data buffer
+    da $2000                                                          ; 2072: 00 20       ..  ; Request count
+    da 0                                                              ; 2074: 00 00       ..  ; Transfer count (returned)
 close_params
-    dfb 1                                                             ; 2076: 01          .  ; Parameter count
+    dfb 1                                                             ; 2076: 01          .   ; Parameter count
 ; $2077 referenced 1 time by $202d
 close_ref
-    dfb 0                                                             ; 2077: 00          .  ; Reference number
+    dfb 0                                                             ; 2077: 00          .   ; Reference number
 alloc_interrupt_params
-    dfb 2                                                             ; 2078: 02          .  ; Parameter count
-    dfb 0                                                             ; 2079: 00          .  ; Interrupt number (returned)
-    da interrupt_handler                                              ; 207a: 52 20       .. ; Handler's address
+    dfb 2                                                             ; 2078: 02          .   ; Parameter count
+    dfb 0                                                             ; 2079: 00          .   ; Interrupt number (returned)
+    da interrupt_handler                                              ; 207a: 52 20       ..  ; Handler's address
 quit_params
-    dfb 4                                                             ; 207c: 04          .  ; Parameter count
-    dfb 0                                                             ; 207d: 00          .  ; Quit type
-    da 0                                                              ; 207e: 00 00       .. ; Reserved
-    dfb 0                                                             ; 2080: 00          .  ; Reserved
-    da 0                                                              ; 2081: 00 00       .. ; Reserved
+    dfb 4                                                             ; 207c: 04          .   ; Parameter count
+    dfb 0                                                             ; 207d: 00          .   ; Quit type
+    da 0                                                              ; 207e: 00 00       ..  ; Reserved
+    dfb 0                                                             ; 2080: 00          .   ; Reserved
+    da 0                                                              ; 2081: 00 00       ..  ; Reserved
 pathname
     dfb data_buffer - l2084                                           ; 2083: 07          .
 l2084

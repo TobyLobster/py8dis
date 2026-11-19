@@ -639,16 +639,16 @@ l03f6:
 
 l03f8:
     rst $28                                                           ; 03f8: ef          .
-    db $31                                                            ; 03f9: 31          1  ; duplicate
-    db $27                                                            ; 03fa: 27          '  ; int
-    db $c0                                                            ; 03fb: c0          .  ; st-mem-0
-    db 3                                                              ; 03fc: 03          .  ; subtract
-    db $34                                                            ; 03fd: 34          4  ; stk-data
+    db $31                                                            ; 03f9: 31          1   ; duplicate
+    db $27                                                            ; 03fa: 27          '   ; int
+    db $c0                                                            ; 03fb: c0          .   ; st-mem-0
+    db 3                                                              ; 03fc: 03          .   ; subtract
+    db $34                                                            ; 03fd: 34          4   ; stk-data
     db $ec, $6c, $98, $1f, $f5                                        ; 03fe: ec 6c 98... .l. ; 0.05776226505
-    db 4                                                              ; 0403: 04          .  ; multiply
-    db $a1                                                            ; 0404: a1          .  ; stk-one
-    db $0f                                                            ; 0405: 0f          .  ; addition
-    db $38                                                            ; 0406: 38          8  ; end-calc
+    db 4                                                              ; 0403: 04          .   ; multiply
+    db $a1                                                            ; 0404: a1          .   ; stk-one
+    db $0f                                                            ; 0405: 0f          .   ; addition
+    db $38                                                            ; 0406: 38          8   ; end-calc
 
     ld hl,$5c92                                                       ; 0407: 21 92 5c    !.\
     ld a,(hl)                                                         ; 040a: 7e          ~
@@ -684,33 +684,33 @@ l0427:
     call loc_mem                                                      ; 0432: cd f7 33    ..3
     call l33b8                                                        ; 0435: cd b8 33    ..3
     rst $28                                                           ; 0438: ef          .
-    db 4                                                              ; 0439: 04          .  ; multiply
-    db $38                                                            ; 043a: 38          8  ; end-calc
+    db 4                                                              ; 0439: 04          .   ; multiply
+    db $38                                                            ; 043a: 38          8   ; end-calc
 
     pop af                                                            ; 043b: f1          .
     add a,(hl)                                                        ; 043c: 86          .
     ld (hl),a                                                         ; 043d: 77          w
     rst $28                                                           ; 043e: ef          .
-    db $c0                                                            ; 043f: c0          .  ; st-mem-0
-    db 2                                                              ; 0440: 02          .  ; delete
-    db $31                                                            ; 0441: 31          1  ; duplicate
-    db $38                                                            ; 0442: 38          8  ; end-calc
+    db $c0                                                            ; 043f: c0          .   ; st-mem-0
+    db 2                                                              ; 0440: 02          .   ; delete
+    db $31                                                            ; 0441: 31          1   ; duplicate
+    db $38                                                            ; 0442: 38          8   ; end-calc
 
     call getbyte                                                      ; 0443: cd 94 1e    ...
     cp $0b                                                            ; 0446: fe 0b       ..
     jr nc,ioorerr                                                     ; 0448: 30 22       0"
     rst $28                                                           ; 044a: ef          .
-    db $e0                                                            ; 044b: e0          .  ; get-mem-0
-    db 4                                                              ; 044c: 04          .  ; multiply
-    db $e0                                                            ; 044d: e0          .  ; get-mem-0
-    db $34                                                            ; 044e: 34          4  ; stk-data
+    db $e0                                                            ; 044b: e0          .   ; get-mem-0
+    db 4                                                              ; 044c: 04          .   ; multiply
+    db $e0                                                            ; 044d: e0          .   ; get-mem-0
+    db $34                                                            ; 044e: 34          4   ; stk-data
     db $80, $43, $55, $9f, $80                                        ; 044f: 80 43 55... .CU ; 437500
-    db 1                                                              ; 0454: 01          .  ; exchange
-    db 5                                                              ; 0455: 05          .  ; division
-    db $34                                                            ; 0456: 34          4  ; stk-data
-    db $35, $6c                                                       ; 0457: 35 6c       5l ; 29.5
-    db 3                                                              ; 0459: 03          .  ; subtract
-    db $38                                                            ; 045a: 38          8  ; end-calc
+    db 1                                                              ; 0454: 01          .   ; exchange
+    db 5                                                              ; 0455: 05          .   ; division
+    db $34                                                            ; 0456: 34          4   ; stk-data
+    db $35, $6c                                                       ; 0457: 35 6c       5l  ; 29.5
+    db 3                                                              ; 0459: 03          .   ; subtract
+    db $38                                                            ; 045a: 38          8   ; end-calc
 
     call find_int                                                     ; 045b: cd 99 1e    ...
     push bc                                                           ; 045e: c5          .
@@ -727,7 +727,7 @@ l0427:
 ; $046c referenced 7 times by $040c, $0416, $041a, $0422, $0448, $09d4, $09d9
 ioorerr:
     rst $08                                                           ; 046c: cf          .
-    db $0a                                                            ; 046d: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 046d: 0a          .   ; Report B Integer out of range
 l046e:
     db $89, 2, $d0, $12, $86                                          ; 046e: 89 02 d0... ... ; C
     db $89, $0a, $97, $60, $73                                        ; 0473: 89 0a 97... ... ; C#
@@ -762,7 +762,7 @@ l04b9:
     bit 7,(hl)                                                        ; 04bd: cb 7e       .~
     ret nz                                                            ; 04bf: c0          .
     rst $08                                                           ; 04c0: cf          .
-    db $0b                                                            ; 04c1: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 04c1: 0b          .   ; Report C Nonsense in BASIC
 
 ; $04c2 referenced 2 times by $098a, $099e
 l04c2:
@@ -857,7 +857,7 @@ l0525:
     inc ix                                                            ; 052c: dd 23       .#
     dec de                                                            ; 052e: 1b          .
     ld a,$7f                                                          ; 052f: 3e 7f       >.
-    in a,(ula_port)                                                   ; 0531: db fe       .. ; Read the keyboard (SPACE-B)
+    in a,(ula_port)                                                   ; 0531: db fe       ..  ; Read the keyboard (SPACE-B)
     rra                                                               ; 0533: 1f          .
     ret nc                                                            ; 0534: d0          .
     ld a,d                                                            ; 0535: 7a          z
@@ -878,12 +878,12 @@ l053f:
     rrca                                                              ; 0547: 0f          .
     out (ula_port),a                                                  ; 0548: d3 fe       ..
     ld a,$7f                                                          ; 054a: 3e 7f       >.
-    in a,(ula_port)                                                   ; 054c: db fe       .. ; Read the keyboard (SPACE-B)
+    in a,(ula_port)                                                   ; 054c: db fe       ..  ; Read the keyboard (SPACE-B)
     rra                                                               ; 054e: 1f          .
     ei                                                                ; 054f: fb          .
     jr c,l0554                                                        ; 0550: 38 02       8.
     rst $08                                                           ; 0552: cf          .
-    db $0c                                                            ; 0553: 0c          .  ; Report D BREAK - CONT repeats
+    db $0c                                                            ; 0553: 0c          .   ; Report D BREAK - CONT repeats
 
 ; $0554 referenced 1 time by $0550
 l0554:
@@ -897,10 +897,10 @@ l0556:
     ex af,af'                                                         ; 0558: 08          .
     dec d                                                             ; 0559: 15          .
     ld a,$0f                                                          ; 055a: 3e 0f       >.
-    out (ula_port),a                                                  ; 055c: d3 fe       .. ; Border white, MIC on
+    out (ula_port),a                                                  ; 055c: d3 fe       ..  ; Border white, MIC on
     ld hl,l053f                                                       ; 055e: 21 3f 05    !?.
     push hl                                                           ; 0561: e5          .
-    in a,(ula_port)                                                   ; 0562: db fe       .. ; Read the keyboard (0-6, P-Y, ENTER-H, SPACE-B)
+    in a,(ula_port)                                                   ; 0562: db fe       ..  ; Read the keyboard (0-6, P-Y, ENTER-H, SPACE-B)
     rra                                                               ; 0564: 1f          .
     and $20                                                           ; 0565: e6 20       .
     or 2                                                              ; 0567: f6 02       ..
@@ -1021,7 +1021,7 @@ l05ed:
     inc b                                                             ; 05ed: 04          .
     ret z                                                             ; 05ee: c8          .
     ld a,$7f                                                          ; 05ef: 3e 7f       >.
-    in a,(ula_port)                                                   ; 05f1: db fe       .. ; Read the keyboard (SPACE-B)
+    in a,(ula_port)                                                   ; 05f1: db fe       ..  ; Read the keyboard (SPACE-B)
     rra                                                               ; 05f3: 1f          .
     ret nc                                                            ; 05f4: d0          .
     xor c                                                             ; 05f5: a9          .
@@ -1073,7 +1073,7 @@ l0629:
     and a                                                             ; 063f: a7          .
     jr nz,l0644                                                       ; 0640: 20 02        .
     rst $08                                                           ; 0642: cf          .
-    db $0e                                                            ; 0643: 0e          .  ; Report F Invalid file name
+    db $0e                                                            ; 0643: 0e          .   ; Report F Invalid file name
 
 ; $0644 referenced 1 time by $0640
 l0644:
@@ -1106,7 +1106,7 @@ l0652:
     jr z,l0685                                                        ; 066e: 28 15       (.
 l0670:
     rst $08                                                           ; 0670: cf          .
-    db 1                                                              ; 0671: 01          .  ; Report 2 Variable not found
+    db 1                                                              ; 0671: 01          .   ; Report 2 Variable not found
 
 ; $0672 referenced 2 times by $0665, $0696
 l0672:
@@ -1352,7 +1352,7 @@ l0802:
 ; $0806 referenced 2 times by $07de, $07e7
 terror:
     rst $08                                                           ; 0806: cf          .
-    db $1a                                                            ; 0807: 1a          .  ; Report R Tape loading error
+    db $1a                                                            ; 0807: 1a          .   ; Report R Tape loading error
 
 ; $0808 referenced 1 time by $07c3
 l0808:
@@ -1666,7 +1666,7 @@ l09af:
     cp $38                                                            ; 09b4: fe 38       .8
     jp z,l3927                                                        ; 09b6: ca 27 39    .'9
     rst $08                                                           ; 09b9: cf          .
-    db $0b                                                            ; 09ba: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 09ba: 0b          .   ; Report C Nonsense in BASIC
 
 ; $09bb referenced 1 time by $09b2
 l09bb:
@@ -2058,7 +2058,7 @@ l0bb6:
     cp $38                                                            ; 0bb6: fe 38       .8
     ret c                                                             ; 0bb8: d8          .
     rst $08                                                           ; 0bb9: cf          .
-    db $0b                                                            ; 0bba: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 0bba: 0b          .   ; Report C Nonsense in BASIC
 
 l0bbb:
     call l0bd0                                                        ; 0bbb: cd d0 0b    ...
@@ -2083,7 +2083,7 @@ l0bd0:
 ; $0bd9 referenced 1 time by $0bc9
 l0bdd9:
     rst $08                                                           ; 0bd9: cf          .
-    db 9                                                              ; 0bda: 09          .  ; Report A Invalid argument
+    db 9                                                              ; 0bda: 09          .   ; Report A Invalid argument
 
 ; $0bdb referenced 2 times by $0bae, $2304
 l0bdb:
@@ -2213,7 +2213,7 @@ l0c81:
 ; $0c86 referenced 3 times by $0ab6, $0c64, $0d04
 oserror:
     rst $08                                                           ; 0c86: cf          .
-    db 4                                                              ; 0c87: 04          .  ; Report 5 Out of screen
+    db 4                                                              ; 0c87: 04          .   ; Report 5 Out of screen
 
 ; $0c88 referenced 1 time by $0c6b
 l0c88:
@@ -2292,7 +2292,7 @@ l0cfe:
 ; $0d00 referenced 3 times by $0cb5, $0cb9, $0cbf
 report_d:
     rst $08                                                           ; 0d00: cf          .
-    db $0c                                                            ; 0d01: 0c          .  ; Report D BREAK - CONT repeats
+    db $0c                                                            ; 0d01: 0c          .   ; Report D BREAK - CONT repeats
 
 ; $0d02 referenced 1 time by $0c5e
 l0d02:
@@ -2457,12 +2457,12 @@ l0de5:
 
 x80_ftan:
     rst $28                                                           ; 0df5: ef          .
-    db $31                                                            ; 0df6: 31          1  ; duplicate
-    db $1f                                                            ; 0df7: 1f          .  ; sin
-    db 1                                                              ; 0df8: 01          .  ; exchange
-    db $20                                                            ; 0df9: 20             ; cos
-    db 5                                                              ; 0dfa: 05          .  ; division
-    db $38                                                            ; 0dfb: 38          8  ; end-calc
+    db $31                                                            ; 0df6: 31          1   ; duplicate
+    db $1f                                                            ; 0df7: 1f          .   ; sin
+    db 1                                                              ; 0df8: 01          .   ; exchange
+    db $20                                                            ; 0df9: 20              ; cos
+    db 5                                                              ; 0dfa: 05          .   ; division
+    db $38                                                            ; 0dfb: 38          8   ; end-calc
 
     ret                                                               ; 0dfc: c9          .
 
@@ -3265,7 +3265,7 @@ initial:
     ldir                                                              ; 1285: ed b0       ..
     ld (iy+df_sz - err_nr),2                                          ; 1287: fd 36 31... .61
     ld a,7                                                            ; 128b: 3e 07       >.
-    out (ula_port),a                                                  ; 128d: d3 fe       .. ; Border white
+    out (ula_port),a                                                  ; 128d: d3 fe       ..  ; Border white
     call cls                                                          ; 128f: cd 6b 0d    .k.
     call l394d                                                        ; 1292: cd 4d 39    .M9
     xor a                                                             ; 1295: af          .
@@ -3519,7 +3519,7 @@ chantab:
 
 iderr:
     rst $08                                                           ; 15c4: cf          .
-    db $12                                                            ; 15c5: 12          .  ; Report J Invalid I/O device
+    db $12                                                            ; 15c5: 12          .   ; Report J Invalid I/O device
 strmtab:
     db 1, 0, 6, 0, $0b, 0, 1, 0, 1, 0, 6, 0, $10, 0                   ; 15c6: 01 00 06... ...
 
@@ -3534,7 +3534,7 @@ wtky2:
     ret c                                                             ; 15e1: d8          .
     jr z,wtky2                                                        ; 15e2: 28 fa       (.
     rst $08                                                           ; 15e4: cf          .
-    db 7                                                              ; 15e5: 07          .  ; Report 8 End of file
+    db 7                                                              ; 15e5: 07          .   ; Report 8 End of file
 
 ; $15e6 referenced 2 times by $15de, $3629
 inputad:
@@ -3580,7 +3580,7 @@ l1601:
 ; $160e referenced 1 time by $2081
 invstrm:
     rst $08                                                           ; 160e: cf          .
-    db $17                                                            ; 160f: 17          .  ; Report O Invalid stream
+    db $17                                                            ; 160f: 17          .   ; Report O Invalid stream
 
 ; $1610 referenced 1 time by $160c
 l1610:
@@ -3832,7 +3832,7 @@ l171e:
 ; $1725 referenced 3 times by $171a, $1754, $1793
 invstrm2:
     rst $08                                                           ; 1725: cf          .
-    db $17                                                            ; 1726: 17          .  ; Report O Invalid stream
+    db $17                                                            ; 1726: 17          .   ; Report O Invalid stream
 
 ; $1727 referenced 1 time by $1723
 l1727:
@@ -3850,8 +3850,8 @@ l1727:
 
 l1736:
     rst $28                                                           ; 1736: ef          .
-    db 1                                                              ; 1737: 01          .  ; exchange
-    db $38                                                            ; 1738: 38          8  ; end-calc
+    db 1                                                              ; 1737: 01          .   ; exchange
+    db $38                                                            ; 1738: 38          8   ; end-calc
 
     call l171e                                                        ; 1739: cd 1e 17    ...
     ld a,c                                                            ; 173c: 79          y
@@ -3889,7 +3889,7 @@ l175d:
 ; $1765 referenced 2 times by $1772, $178e
 report_f:
     rst $08                                                           ; 1765: cf          .
-    db $0e                                                            ; 1766: 0e          .  ; Report F Invalid file name
+    db $0e                                                            ; 1766: 0e          .   ; Report F Invalid file name
 
 ; $1767 referenced 1 time by $1763
 l1767:
@@ -4125,7 +4125,7 @@ l18a8:
     ld a,d                                                            ; 18ab: 7a          z
     jp nz,l1701                                                       ; 18ac: c2 01 17    ...
     rst $08                                                           ; 18af: cf          .
-    db $17                                                            ; 18b0: 17          .  ; Report O Invalid stream
+    db $17                                                            ; 18b0: 17          .   ; Report O Invalid stream
 
 ; $18b1 referenced 4 times by $189a, $199a, $3b1d, $3b9d
 number:
@@ -4256,7 +4256,7 @@ l1937:
     cp $e2                                                            ; 1940: fe e2       ..
     jr z,l1967                                                        ; 1942: 28 23       (#
     rst $08                                                           ; 1944: cf          .
-    db $0b                                                            ; 1945: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 1945: 0b          .   ; Report C Nonsense in BASIC
 
 ; $1946 referenced 1 time by $193a
 l1946:
@@ -4789,7 +4789,7 @@ nextstat:
     call break_1                                                      ; 1b76: cd 54 1f    .T.
     jr c,l1b7d                                                        ; 1b79: 38 02       8.
     rst $08                                                           ; 1b7b: cf          .
-    db $14                                                            ; 1b7c: 14          .  ; Report L BREAK into program
+    db $14                                                            ; 1b7c: 14          .   ; Report L BREAK into program
 
 ; $1b7d referenced 1 time by $1b79
 l1b7d:
@@ -4820,7 +4820,7 @@ l1b9e:
     and $c0                                                           ; 1baa: e6 c0       ..
     jr z,lineuse                                                      ; 1bac: 28 11       (.
     rst $08                                                           ; 1bae: cf          .
-    db $ff                                                            ; 1baf: ff          .  ; Report 0 OK
+    db $ff                                                            ; 1baf: ff          .   ; Report 0 OK
 l1bb0:
     db $41, $57                                                       ; 1bb0: 41 57       AW
 
@@ -4867,7 +4867,7 @@ next_line:
 ; $1bec referenced 1 time by $1ba7
 statlost:
     rst $08                                                           ; 1bec: cf          .
-    db $16                                                            ; 1bed: 16          .  ; Report N Statement lost
+    db $16                                                            ; 1bed: 16          .   ; Report N Statement lost
 
 ; $1bee referenced 27 times by $0699, $06ad, $06f9, $071a, $072e, $09a9, $09bc, $09ea, $1822, $194a, $195a, $1c12, $1ca5, $1cd7, $1d0b, $1d10, $1e23, $1e31, $1fc0, $1fdb, $209d, $232a, $2387, $2391, $2c12, $3928, $3ac8
 check_end:
@@ -4883,7 +4883,7 @@ stmtnext1:
     cp $3a                                                            ; 1bf9: fe 3a       .:
     jp z,stmtlp                                                       ; 1bfb: ca 28 1b    .(.
     rst $08                                                           ; 1bfe: cf          .
-    db $0b                                                            ; 1bff: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 1bff: 0b          .   ; Report C Nonsense in BASIC
 command:
     db class_0 - $                                                    ; 1c00: 10          .
     db class_1 - $                                                    ; 1c01: 1e          .
@@ -4928,7 +4928,7 @@ class_4_2:
 ; $1c2e referenced 2 times by $1daf, $26cc
 report_2:
     rst $08                                                           ; 1c2e: cf          .
-    db 1                                                              ; 1c2f: 01          .  ; Report 2 Variable not found
+    db 1                                                              ; 1c2f: 01          .   ; Report 2 Variable not found
 
 ; $1c30 referenced 1 time by $1c26
 set_stk:
@@ -5001,7 +5001,7 @@ class_6:
 ; $1c8a referenced 33 times by $065c, $0672, $06a9, $06cc, $06d9, $06ed, $0727, $1a15, $1b2f, $1b71, $1c64, $1c74, $1c7f, $1c94, $1f89, $1fbd, $20d1, $20e8, $21ef, $2323, $2515, $252d, $25ee, $26ef, $26f9, $2761, $27c6, $27e6, $28ba, $2a7a, $2c05, $2ccf, $35dc
 report_c:
     rst $08                                                           ; 1c8a: cf          .
-    db $0b                                                            ; 1c8b: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 1c8b: 0b          .   ; Report C Nonsense in BASIC
 
 ; $1c8c referenced 1 time by $060e
 class_a:
@@ -5068,22 +5068,22 @@ no_to_stk:
     call syntax_z                                                     ; 1ce6: cd 30 25    .0%
     ret z                                                             ; 1ce9: c8          .
     rst $28                                                           ; 1cea: ef          .
-    db $a0                                                            ; 1ceb: a0          .  ; stk-zero
-    db $38                                                            ; 1cec: 38          8  ; end-calc
+    db $a0                                                            ; 1ceb: a0          .   ; stk-zero
+    db $38                                                            ; 1cec: 38          8   ; end-calc
 
     ret                                                               ; 1ced: c9          .
 
 stop:
     rst $08                                                           ; 1cee: cf          .
-    db 8                                                              ; 1cef: 08          .  ; Report 9 STOP statement
+    db 8                                                              ; 1cef: 08          .   ; Report 9 STOP statement
 
 _if:
     pop bc                                                            ; 1cf0: c1          .
     call syntax_z                                                     ; 1cf1: cd 30 25    .0%
     jr z,l1d00                                                        ; 1cf4: 28 0a       (.
     rst $28                                                           ; 1cf6: ef          .
-    db 2                                                              ; 1cf7: 02          .  ; delete
-    db $38                                                            ; 1cf8: 38          8  ; end-calc
+    db 2                                                              ; 1cf7: 02          .   ; delete
+    db $38                                                            ; 1cf8: 38          8   ; end-calc
 
     ex de,hl                                                          ; 1cf9: eb          .
     call tstzero                                                      ; 1cfa: cd c5 34    ..4
@@ -5104,18 +5104,18 @@ for:
 use_one:
     call check_end                                                    ; 1d10: cd ee 1b    ...
     rst $28                                                           ; 1d13: ef          .
-    db $a1                                                            ; 1d14: a1          .  ; stk-one
-    db $38                                                            ; 1d15: 38          8  ; end-calc
+    db $a1                                                            ; 1d14: a1          .   ; stk-one
+    db $38                                                            ; 1d15: 38          8   ; end-calc
 
 ; $1d16 referenced 1 time by $1d0e
 reorder:
     rst $28                                                           ; 1d16: ef          .
-    db $c0                                                            ; 1d17: c0          .  ; st-mem-0
-    db 2                                                              ; 1d18: 02          .  ; delete
-    db 1                                                              ; 1d19: 01          .  ; exchange
-    db $e0                                                            ; 1d1a: e0          .  ; get-mem-0
-    db 1                                                              ; 1d1b: 01          .  ; exchange
-    db $38                                                            ; 1d1c: 38          8  ; end-calc
+    db $c0                                                            ; 1d17: c0          .   ; st-mem-0
+    db 2                                                              ; 1d18: 02          .   ; delete
+    db 1                                                              ; 1d19: 01          .   ; exchange
+    db $e0                                                            ; 1d1a: e0          .   ; get-mem-0
+    db 1                                                              ; 1d1b: 01          .   ; exchange
+    db $38                                                            ; 1d1c: 38          8   ; end-calc
 
     call let                                                          ; 1d1d: cd ff 2a    ..*
     ld (mem),hl                                                       ; 1d20: 22 68 5c    "h\
@@ -5133,9 +5133,9 @@ reorder:
 lmt_step:
     push hl                                                           ; 1d34: e5          .
     rst $28                                                           ; 1d35: ef          .
-    db 2                                                              ; 1d36: 02          .  ; delete
-    db 2                                                              ; 1d37: 02          .  ; delete
-    db $38                                                            ; 1d38: 38          8  ; end-calc
+    db 2                                                              ; 1d36: 02          .   ; delete
+    db 2                                                              ; 1d37: 02          .   ; delete
+    db $38                                                            ; 1d38: 38          8   ; end-calc
 
     pop hl                                                            ; 1d39: e1          .
     ex de,hl                                                          ; 1d3a: eb          .
@@ -5186,7 +5186,7 @@ l1d7c:
 ; $1d84 referenced 1 time by $1d71
 l1d84:
     rst $08                                                           ; 1d84: cf          .
-    db $11                                                            ; 1d85: 11          .  ; Report I FOR without NEXT
+    db $11                                                            ; 1d85: 11          .   ; Report I FOR without NEXT
 
 ; $1d86 referenced 3 times by $1d69, $1e03, $280c
 l1d86:
@@ -5231,12 +5231,12 @@ next:
     inc hl                                                            ; 1db9: 23          #
     ld (mem),hl                                                       ; 1dba: 22 68 5c    "h\
     rst $28                                                           ; 1dbd: ef          .
-    db $e0                                                            ; 1dbe: e0          .  ; get-mem-0
-    db $e2                                                            ; 1dbf: e2          .  ; get-mem-2
-    db $0f                                                            ; 1dc0: 0f          .  ; addition
-    db $c0                                                            ; 1dc1: c0          .  ; st-mem-0
-    db 2                                                              ; 1dc2: 02          .  ; delete
-    db $38                                                            ; 1dc3: 38          8  ; end-calc
+    db $e0                                                            ; 1dbe: e0          .   ; get-mem-0
+    db $e2                                                            ; 1dbf: e2          .   ; get-mem-2
+    db $0f                                                            ; 1dc0: 0f          .   ; addition
+    db $c0                                                            ; 1dc1: c0          .   ; st-mem-0
+    db 2                                                              ; 1dc2: 02          .   ; delete
+    db $38                                                            ; 1dc3: 38          8   ; end-calc
 
     call next_loop                                                    ; 1dc4: cd da 1d    ...
     ret c                                                             ; 1dc7: d8          .
@@ -5254,30 +5254,30 @@ next:
 ; $1dd8 referenced 1 time by $1db7
 report_1:
     rst $08                                                           ; 1dd8: cf          .
-    db 0                                                              ; 1dd9: 00          .  ; Report 1 NEXT without FOR
+    db 0                                                              ; 1dd9: 00          .   ; Report 1 NEXT without FOR
 
 ; $1dda referenced 2 times by $1d4c, $1dc4
 next_loop:
     rst $28                                                           ; 1dda: ef          .
-    db $e1                                                            ; 1ddb: e1          .  ; get-mem-1
-    db $e0                                                            ; 1ddc: e0          .  ; get-mem-0
-    db $e2                                                            ; 1ddd: e2          .  ; get-mem-2
-    db $36                                                            ; 1dde: 36          6  ; less-0
-    db 0                                                              ; 1ddf: 00          .  ; jump-true
+    db $e1                                                            ; 1ddb: e1          .   ; get-mem-1
+    db $e0                                                            ; 1ddc: e0          .   ; get-mem-0
+    db $e2                                                            ; 1ddd: e2          .   ; get-mem-2
+    db $36                                                            ; 1dde: 36          6   ; less-0
+    db 0                                                              ; 1ddf: 00          .   ; jump-true
     db lmt_v_val - $                                                  ; 1de0: 02          .
-    db 1                                                              ; 1de1: 01          .  ; exchange
+    db 1                                                              ; 1de1: 01          .   ; exchange
 lmt_v_val:
-    db 3                                                              ; 1de2: 03          .  ; subtract
-    db $37                                                            ; 1de3: 37          7  ; greater-0
-    db 0                                                              ; 1de4: 00          .  ; jump-true
+    db 3                                                              ; 1de2: 03          .   ; subtract
+    db $37                                                            ; 1de3: 37          7   ; greater-0
+    db 0                                                              ; 1de4: 00          .   ; jump-true
     db imposs - $                                                     ; 1de5: 04          .
-    db $38                                                            ; 1de6: 38          8  ; end-calc
+    db $38                                                            ; 1de6: 38          8   ; end-calc
 
     and a                                                             ; 1de7: a7          .
     ret                                                               ; 1de8: c9          .
 
 imposs:
-    db $38                                                            ; 1de9: 38          8  ; end-calc
+    db $38                                                            ; 1de9: 38          8   ; end-calc
 
     scf                                                               ; 1dea: 37          7
     ret                                                               ; 1deb: c9          .
@@ -5299,7 +5299,7 @@ l1ded:
     call l1d86                                                        ; 1e03: cd 86 1d    ...
     jr nc,l1e0a                                                       ; 1e06: 30 02       0.
     rst $08                                                           ; 1e08: cf          .
-    db $0d                                                            ; 1e09: 0d          .  ; Report E Out of DATA
+    db $0d                                                            ; 1e09: 0d          .   ; Report E Out of DATA
 
 ; $1e0a referenced 2 times by $1dff, $1e06
 l1e0a:
@@ -5419,7 +5419,7 @@ getibc:
 ; $1e9f referenced 4 times by $0aa6, $1e71, $1e88, $1e9c
 report_b1:
     rst $08                                                           ; 1e9f: cf          .
-    db $0a                                                            ; 1ea0: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 1ea0: 0a          .   ; Report B Integer out of range
 
 run:
     call goto                                                         ; 1ea1: cd 67 1e    .g.
@@ -5456,7 +5456,7 @@ clr3:
 ; $1eda referenced 1 time by $1ed0
 rterr:
     rst $08                                                           ; 1eda: cf          .
-    db $15                                                            ; 1edb: 15          .  ; Report M RAMTOP no good
+    db $15                                                            ; 1edb: 15          .   ; Report M RAMTOP no good
 
 ; $1edc referenced 1 time by $1ed8
 clr4:
@@ -5529,7 +5529,7 @@ report_7:
     push de                                                           ; 1f36: d5          .
     push hl                                                           ; 1f37: e5          .
     rst $08                                                           ; 1f38: cf          .
-    db 6                                                              ; 1f39: 06          .  ; Report 7 RETURN without GOSUB
+    db 6                                                              ; 1f39: 06          .   ; Report 7 RETURN without GOSUB
 
 pause:
     call l0abc                                                        ; 1f3a: cd bc 0a    ...
@@ -5557,11 +5557,11 @@ pau2:
 ; $1f54 referenced 1 time by $1b76
 break_1:
     ld a,$7f                                                          ; 1f54: 3e 7f       >.
-    in a,(ula_port)                                                   ; 1f56: db fe       .. ; Read the keyboard (SPACE-B)
+    in a,(ula_port)                                                   ; 1f56: db fe       ..  ; Read the keyboard (SPACE-B)
     rra                                                               ; 1f58: 1f          .
     ret c                                                             ; 1f59: d8          .
     ld a,$fe                                                          ; 1f5a: 3e fe       >.
-    in a,(ula_port)                                                   ; 1f5c: db fe       .. ; Read the keyboard (CAPS SHIFT-V)
+    in a,(ula_port)                                                   ; 1f5c: db fe       ..  ; Read the keyboard (CAPS SHIFT-V)
     rra                                                               ; 1f5e: 1f          .
     ret                                                               ; 1f5f: c9          .
 
@@ -5963,14 +5963,14 @@ inpas:
     cp $0d                                                            ; 21cb: fe 0d       ..
     ret z                                                             ; 21cd: c8          .
     rst $08                                                           ; 21ce: cf          .
-    db $0b                                                            ; 21cf: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 21cf: 0b          .   ; Report C Nonsense in BASIC
 
 ; $21d0 referenced 1 time by $21c2
 l21d0:
     call syntax_z                                                     ; 21d0: cd 30 25    .0%
     ret z                                                             ; 21d3: c8          .
     rst $08                                                           ; 21d4: cf          .
-    db $10                                                            ; 21d5: 10          .  ; Report H STOP in INPUT
+    db $10                                                            ; 21d5: 10          .   ; Report H STOP in INPUT
 
 ; $21d6 referenced 2 times by $2165, $3623
 chltchk:
@@ -6067,7 +6067,7 @@ l223e:
 ; $2244 referenced 5 times by $222c, $2285, $2299, $393a, $3940
 invcolerr:
     rst $08                                                           ; 2244: cf          .
-    db $13                                                            ; 2245: 13          .  ; Report K Invalid colour
+    db $13                                                            ; 2245: 13          .   ; Report K Invalid colour
 
 ; $2246 referenced 1 time by $2242
 l2246:
@@ -6260,46 +6260,46 @@ circle:
     call class_6                                                      ; 2327: cd 82 1c    ...
     call check_end                                                    ; 232a: cd ee 1b    ...
     rst $28                                                           ; 232d: ef          .
-    db $2a                                                            ; 232e: 2a          *  ; abs
-    db $3d                                                            ; 232f: 3d          =  ; re-stack
-    db $38                                                            ; 2330: 38          8  ; end-calc
+    db $2a                                                            ; 232e: 2a          *   ; abs
+    db $3d                                                            ; 232f: 3d          =   ; re-stack
+    db $38                                                            ; 2330: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2331: 7e          ~
     cp $81                                                            ; 2332: fe 81       ..
     jr nc,l233b                                                       ; 2334: 30 05       0.
     rst $28                                                           ; 2336: ef          .
-    db 2                                                              ; 2337: 02          .  ; delete
-    db $38                                                            ; 2338: 38          8  ; end-calc
+    db 2                                                              ; 2337: 02          .   ; delete
+    db $38                                                            ; 2338: 38          8   ; end-calc
 
     jr plot                                                           ; 2339: 18 a1       ..
 
 ; $233b referenced 1 time by $2334
 l233b:
     rst $28                                                           ; 233b: ef          .
-    db $a3                                                            ; 233c: a3          .  ; stk-pi/2
-    db $38                                                            ; 233d: 38          8  ; end-calc
+    db $a3                                                            ; 233c: a3          .   ; stk-pi/2
+    db $38                                                            ; 233d: 38          8   ; end-calc
 
     ld (hl),$83                                                       ; 233e: 36 83       6.
     rst $28                                                           ; 2340: ef          .
-    db $c5                                                            ; 2341: c5          .  ; st-mem-5
-    db 2                                                              ; 2342: 02          .  ; delete
-    db $38                                                            ; 2343: 38          8  ; end-calc
+    db $c5                                                            ; 2341: c5          .   ; st-mem-5
+    db 2                                                              ; 2342: 02          .   ; delete
+    db $38                                                            ; 2343: 38          8   ; end-calc
 
     call l247d                                                        ; 2344: cd 7d 24    .}$
     push bc                                                           ; 2347: c5          .
     rst $28                                                           ; 2348: ef          .
-    db $31                                                            ; 2349: 31          1  ; duplicate
-    db $e1                                                            ; 234a: e1          .  ; get-mem-1
-    db 4                                                              ; 234b: 04          .  ; multiply
-    db $38                                                            ; 234c: 38          8  ; end-calc
+    db $31                                                            ; 2349: 31          1   ; duplicate
+    db $e1                                                            ; 234a: e1          .   ; get-mem-1
+    db 4                                                              ; 234b: 04          .   ; multiply
+    db $38                                                            ; 234c: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 234d: 7e          ~
     cp $80                                                            ; 234e: fe 80       ..
     jr nc,l235a                                                       ; 2350: 30 08       0.
     rst $28                                                           ; 2352: ef          .
-    db 2                                                              ; 2353: 02          .  ; delete
-    db 2                                                              ; 2354: 02          .  ; delete
-    db $38                                                            ; 2355: 38          8  ; end-calc
+    db 2                                                              ; 2353: 02          .   ; delete
+    db 2                                                              ; 2354: 02          .   ; delete
+    db $38                                                            ; 2355: 38          8   ; end-calc
 
     pop bc                                                            ; 2356: c1          .
     jp plot                                                           ; 2357: c3 dc 22    .."
@@ -6307,25 +6307,25 @@ l233b:
 ; $235a referenced 1 time by $2350
 l235a:
     rst $28                                                           ; 235a: ef          .
-    db $c2                                                            ; 235b: c2          .  ; st-mem-2
-    db 1                                                              ; 235c: 01          .  ; exchange
-    db $c0                                                            ; 235d: c0          .  ; st-mem-0
-    db 2                                                              ; 235e: 02          .  ; delete
-    db 3                                                              ; 235f: 03          .  ; subtract
-    db 1                                                              ; 2360: 01          .  ; exchange
-    db $e0                                                            ; 2361: e0          .  ; get-mem-0
-    db $0f                                                            ; 2362: 0f          .  ; addition
-    db $c0                                                            ; 2363: c0          .  ; st-mem-0
-    db 1                                                              ; 2364: 01          .  ; exchange
-    db $31                                                            ; 2365: 31          1  ; duplicate
-    db $e0                                                            ; 2366: e0          .  ; get-mem-0
-    db 1                                                              ; 2367: 01          .  ; exchange
-    db $31                                                            ; 2368: 31          1  ; duplicate
-    db $e0                                                            ; 2369: e0          .  ; get-mem-0
-    db $a0                                                            ; 236a: a0          .  ; stk-zero
-    db $c1                                                            ; 236b: c1          .  ; st-mem-1
-    db 2                                                              ; 236c: 02          .  ; delete
-    db $38                                                            ; 236d: 38          8  ; end-calc
+    db $c2                                                            ; 235b: c2          .   ; st-mem-2
+    db 1                                                              ; 235c: 01          .   ; exchange
+    db $c0                                                            ; 235d: c0          .   ; st-mem-0
+    db 2                                                              ; 235e: 02          .   ; delete
+    db 3                                                              ; 235f: 03          .   ; subtract
+    db 1                                                              ; 2360: 01          .   ; exchange
+    db $e0                                                            ; 2361: e0          .   ; get-mem-0
+    db $0f                                                            ; 2362: 0f          .   ; addition
+    db $c0                                                            ; 2363: c0          .   ; st-mem-0
+    db 1                                                              ; 2364: 01          .   ; exchange
+    db $31                                                            ; 2365: 31          1   ; duplicate
+    db $e0                                                            ; 2366: e0          .   ; get-mem-0
+    db 1                                                              ; 2367: 01          .   ; exchange
+    db $31                                                            ; 2368: 31          1   ; duplicate
+    db $e0                                                            ; 2369: e0          .   ; get-mem-0
+    db $a0                                                            ; 236a: a0          .   ; stk-zero
+    db $c1                                                            ; 236b: c1          .   ; st-mem-1
+    db 2                                                              ; 236c: 02          .   ; delete
+    db $38                                                            ; 236d: 38          8   ; end-calc
 
     inc (iy+(membot+10) - err_nr)                                     ; 236e: fd 34 62    .4b
     call getbyte                                                      ; 2371: cd 94 1e    ...
@@ -6351,111 +6351,111 @@ l238d:
     call class_6                                                      ; 238e: cd 82 1c    ...
     call check_end                                                    ; 2391: cd ee 1b    ...
     rst $28                                                           ; 2394: ef          .
-    db $c5                                                            ; 2395: c5          .  ; st-mem-5
-    db $a2                                                            ; 2396: a2          .  ; stk-half
-    db 4                                                              ; 2397: 04          .  ; multiply
-    db $1f                                                            ; 2398: 1f          .  ; sin
-    db $31                                                            ; 2399: 31          1  ; duplicate
-    db $30                                                            ; 239a: 30          0  ; not
-    db $30                                                            ; 239b: 30          0  ; not
-    db 0                                                              ; 239c: 00          .  ; jump-true
+    db $c5                                                            ; 2395: c5          .   ; st-mem-5
+    db $a2                                                            ; 2396: a2          .   ; stk-half
+    db 4                                                              ; 2397: 04          .   ; multiply
+    db $1f                                                            ; 2398: 1f          .   ; sin
+    db $31                                                            ; 2399: 31          1   ; duplicate
+    db $30                                                            ; 239a: 30          0   ; not
+    db $30                                                            ; 239b: 30          0   ; not
+    db 0                                                              ; 239c: 00          .   ; jump-true
     db l23a3 - $                                                      ; 239d: 06          .
-    db 2                                                              ; 239e: 02          .  ; delete
-    db $38                                                            ; 239f: 38          8  ; end-calc
+    db 2                                                              ; 239e: 02          .   ; delete
+    db $38                                                            ; 239f: 38          8   ; end-calc
 
     jp linedraw                                                       ; 23a0: c3 77 24    .w$
 
 l23a3:
-    db $c0                                                            ; 23a3: c0          .  ; st-mem-0
-    db 2                                                              ; 23a4: 02          .  ; delete
-    db $c1                                                            ; 23a5: c1          .  ; st-mem-1
-    db 2                                                              ; 23a6: 02          .  ; delete
-    db $31                                                            ; 23a7: 31          1  ; duplicate
-    db $2a                                                            ; 23a8: 2a          *  ; abs
-    db $e1                                                            ; 23a9: e1          .  ; get-mem-1
-    db 1                                                              ; 23aa: 01          .  ; exchange
-    db $e1                                                            ; 23ab: e1          .  ; get-mem-1
-    db $2a                                                            ; 23ac: 2a          *  ; abs
-    db $0f                                                            ; 23ad: 0f          .  ; addition
-    db $e0                                                            ; 23ae: e0          .  ; get-mem-0
-    db 5                                                              ; 23af: 05          .  ; division
-    db $2a                                                            ; 23b0: 2a          *  ; abs
-    db $e0                                                            ; 23b1: e0          .  ; get-mem-0
-    db 1                                                              ; 23b2: 01          .  ; exchange
-    db $38                                                            ; 23b3: 38          8  ; end-calc
+    db $c0                                                            ; 23a3: c0          .   ; st-mem-0
+    db 2                                                              ; 23a4: 02          .   ; delete
+    db $c1                                                            ; 23a5: c1          .   ; st-mem-1
+    db 2                                                              ; 23a6: 02          .   ; delete
+    db $31                                                            ; 23a7: 31          1   ; duplicate
+    db $2a                                                            ; 23a8: 2a          *   ; abs
+    db $e1                                                            ; 23a9: e1          .   ; get-mem-1
+    db 1                                                              ; 23aa: 01          .   ; exchange
+    db $e1                                                            ; 23ab: e1          .   ; get-mem-1
+    db $2a                                                            ; 23ac: 2a          *   ; abs
+    db $0f                                                            ; 23ad: 0f          .   ; addition
+    db $e0                                                            ; 23ae: e0          .   ; get-mem-0
+    db 5                                                              ; 23af: 05          .   ; division
+    db $2a                                                            ; 23b0: 2a          *   ; abs
+    db $e0                                                            ; 23b1: e0          .   ; get-mem-0
+    db 1                                                              ; 23b2: 01          .   ; exchange
+    db $38                                                            ; 23b3: 38          8   ; end-calc
 
     call l247d                                                        ; 23b4: cd 7d 24    .}$
     push bc                                                           ; 23b7: c5          .
     rst $28                                                           ; 23b8: ef          .
-    db 2                                                              ; 23b9: 02          .  ; delete
-    db $e1                                                            ; 23ba: e1          .  ; get-mem-1
-    db 1                                                              ; 23bb: 01          .  ; exchange
-    db 5                                                              ; 23bc: 05          .  ; division
-    db $c1                                                            ; 23bd: c1          .  ; st-mem-1
-    db 2                                                              ; 23be: 02          .  ; delete
-    db 1                                                              ; 23bf: 01          .  ; exchange
-    db $31                                                            ; 23c0: 31          1  ; duplicate
-    db $e1                                                            ; 23c1: e1          .  ; get-mem-1
-    db 4                                                              ; 23c2: 04          .  ; multiply
-    db $c2                                                            ; 23c3: c2          .  ; st-mem-2
-    db 2                                                              ; 23c4: 02          .  ; delete
-    db 1                                                              ; 23c5: 01          .  ; exchange
-    db $31                                                            ; 23c6: 31          1  ; duplicate
-    db $e1                                                            ; 23c7: e1          .  ; get-mem-1
-    db 4                                                              ; 23c8: 04          .  ; multiply
-    db $e2                                                            ; 23c9: e2          .  ; get-mem-2
-    db $e5                                                            ; 23ca: e5          .  ; get-mem-5
-    db $e0                                                            ; 23cb: e0          .  ; get-mem-0
-    db 3                                                              ; 23cc: 03          .  ; subtract
-    db $a2                                                            ; 23cd: a2          .  ; stk-half
-    db 4                                                              ; 23ce: 04          .  ; multiply
-    db $31                                                            ; 23cf: 31          1  ; duplicate
-    db $1f                                                            ; 23d0: 1f          .  ; sin
-    db $c5                                                            ; 23d1: c5          .  ; st-mem-5
-    db 2                                                              ; 23d2: 02          .  ; delete
-    db $20                                                            ; 23d3: 20             ; cos
-    db $c0                                                            ; 23d4: c0          .  ; st-mem-0
-    db 2                                                              ; 23d5: 02          .  ; delete
-    db $c2                                                            ; 23d6: c2          .  ; st-mem-2
-    db 2                                                              ; 23d7: 02          .  ; delete
-    db $c1                                                            ; 23d8: c1          .  ; st-mem-1
-    db $e5                                                            ; 23d9: e5          .  ; get-mem-5
-    db 4                                                              ; 23da: 04          .  ; multiply
-    db $e0                                                            ; 23db: e0          .  ; get-mem-0
-    db $e2                                                            ; 23dc: e2          .  ; get-mem-2
-    db 4                                                              ; 23dd: 04          .  ; multiply
-    db $0f                                                            ; 23de: 0f          .  ; addition
-    db $e1                                                            ; 23df: e1          .  ; get-mem-1
-    db 1                                                              ; 23e0: 01          .  ; exchange
-    db $c1                                                            ; 23e1: c1          .  ; st-mem-1
-    db 2                                                              ; 23e2: 02          .  ; delete
-    db $e0                                                            ; 23e3: e0          .  ; get-mem-0
-    db 4                                                              ; 23e4: 04          .  ; multiply
-    db $e2                                                            ; 23e5: e2          .  ; get-mem-2
-    db $e5                                                            ; 23e6: e5          .  ; get-mem-5
-    db 4                                                              ; 23e7: 04          .  ; multiply
-    db 3                                                              ; 23e8: 03          .  ; subtract
-    db $c2                                                            ; 23e9: c2          .  ; st-mem-2
-    db 2                                                              ; 23ea: 02          .  ; delete
-    db 1                                                              ; 23eb: 01          .  ; exchange
-    db $38                                                            ; 23ec: 38          8  ; end-calc
+    db 2                                                              ; 23b9: 02          .   ; delete
+    db $e1                                                            ; 23ba: e1          .   ; get-mem-1
+    db 1                                                              ; 23bb: 01          .   ; exchange
+    db 5                                                              ; 23bc: 05          .   ; division
+    db $c1                                                            ; 23bd: c1          .   ; st-mem-1
+    db 2                                                              ; 23be: 02          .   ; delete
+    db 1                                                              ; 23bf: 01          .   ; exchange
+    db $31                                                            ; 23c0: 31          1   ; duplicate
+    db $e1                                                            ; 23c1: e1          .   ; get-mem-1
+    db 4                                                              ; 23c2: 04          .   ; multiply
+    db $c2                                                            ; 23c3: c2          .   ; st-mem-2
+    db 2                                                              ; 23c4: 02          .   ; delete
+    db 1                                                              ; 23c5: 01          .   ; exchange
+    db $31                                                            ; 23c6: 31          1   ; duplicate
+    db $e1                                                            ; 23c7: e1          .   ; get-mem-1
+    db 4                                                              ; 23c8: 04          .   ; multiply
+    db $e2                                                            ; 23c9: e2          .   ; get-mem-2
+    db $e5                                                            ; 23ca: e5          .   ; get-mem-5
+    db $e0                                                            ; 23cb: e0          .   ; get-mem-0
+    db 3                                                              ; 23cc: 03          .   ; subtract
+    db $a2                                                            ; 23cd: a2          .   ; stk-half
+    db 4                                                              ; 23ce: 04          .   ; multiply
+    db $31                                                            ; 23cf: 31          1   ; duplicate
+    db $1f                                                            ; 23d0: 1f          .   ; sin
+    db $c5                                                            ; 23d1: c5          .   ; st-mem-5
+    db 2                                                              ; 23d2: 02          .   ; delete
+    db $20                                                            ; 23d3: 20              ; cos
+    db $c0                                                            ; 23d4: c0          .   ; st-mem-0
+    db 2                                                              ; 23d5: 02          .   ; delete
+    db $c2                                                            ; 23d6: c2          .   ; st-mem-2
+    db 2                                                              ; 23d7: 02          .   ; delete
+    db $c1                                                            ; 23d8: c1          .   ; st-mem-1
+    db $e5                                                            ; 23d9: e5          .   ; get-mem-5
+    db 4                                                              ; 23da: 04          .   ; multiply
+    db $e0                                                            ; 23db: e0          .   ; get-mem-0
+    db $e2                                                            ; 23dc: e2          .   ; get-mem-2
+    db 4                                                              ; 23dd: 04          .   ; multiply
+    db $0f                                                            ; 23de: 0f          .   ; addition
+    db $e1                                                            ; 23df: e1          .   ; get-mem-1
+    db 1                                                              ; 23e0: 01          .   ; exchange
+    db $c1                                                            ; 23e1: c1          .   ; st-mem-1
+    db 2                                                              ; 23e2: 02          .   ; delete
+    db $e0                                                            ; 23e3: e0          .   ; get-mem-0
+    db 4                                                              ; 23e4: 04          .   ; multiply
+    db $e2                                                            ; 23e5: e2          .   ; get-mem-2
+    db $e5                                                            ; 23e6: e5          .   ; get-mem-5
+    db 4                                                              ; 23e7: 04          .   ; multiply
+    db 3                                                              ; 23e8: 03          .   ; subtract
+    db $c2                                                            ; 23e9: c2          .   ; st-mem-2
+    db 2                                                              ; 23ea: 02          .   ; delete
+    db 1                                                              ; 23eb: 01          .   ; exchange
+    db $38                                                            ; 23ec: 38          8   ; end-calc
 
     ld a,(coords)                                                     ; 23ed: 3a 7d 5c    :}\
     call stack_a                                                      ; 23f0: cd 28 2d    .(-
     rst $28                                                           ; 23f3: ef          .
-    db $c0                                                            ; 23f4: c0          .  ; st-mem-0
-    db $0f                                                            ; 23f5: 0f          .  ; addition
-    db 1                                                              ; 23f6: 01          .  ; exchange
-    db $38                                                            ; 23f7: 38          8  ; end-calc
+    db $c0                                                            ; 23f4: c0          .   ; st-mem-0
+    db $0f                                                            ; 23f5: 0f          .   ; addition
+    db 1                                                              ; 23f6: 01          .   ; exchange
+    db $38                                                            ; 23f7: 38          8   ; end-calc
 
     ld a,(coords+1)                                                   ; 23f8: 3a 7e 5c    :~\
     call stack_a                                                      ; 23fb: cd 28 2d    .(-
     rst $28                                                           ; 23fe: ef          .
-    db $c5                                                            ; 23ff: c5          .  ; st-mem-5
-    db $0f                                                            ; 2400: 0f          .  ; addition
-    db $e0                                                            ; 2401: e0          .  ; get-mem-0
-    db $e5                                                            ; 2402: e5          .  ; get-mem-5
-    db $38                                                            ; 2403: 38          8  ; end-calc
+    db $c5                                                            ; 23ff: c5          .   ; st-mem-5
+    db $0f                                                            ; 2400: 0f          .   ; addition
+    db $e0                                                            ; 2401: e0          .   ; get-mem-0
+    db $e5                                                            ; 2402: e5          .   ; get-mem-5
+    db $38                                                            ; 2403: 38          8   ; end-calc
 
     pop bc                                                            ; 2404: c1          .
 ; $2405 referenced 1 time by $237f
@@ -6486,76 +6486,76 @@ l241e:
 ; $2425 referenced 1 time by $245d
 l2425:
     rst $28                                                           ; 2425: ef          .
-    db $e1                                                            ; 2426: e1          .  ; get-mem-1
-    db $31                                                            ; 2427: 31          1  ; duplicate
-    db $e3                                                            ; 2428: e3          .  ; get-mem-3
-    db 4                                                              ; 2429: 04          .  ; multiply
-    db $e2                                                            ; 242a: e2          .  ; get-mem-2
-    db $e4                                                            ; 242b: e4          .  ; get-mem-4
-    db 4                                                              ; 242c: 04          .  ; multiply
-    db 3                                                              ; 242d: 03          .  ; subtract
-    db $c1                                                            ; 242e: c1          .  ; st-mem-1
-    db 2                                                              ; 242f: 02          .  ; delete
-    db $e4                                                            ; 2430: e4          .  ; get-mem-4
-    db 4                                                              ; 2431: 04          .  ; multiply
-    db $e2                                                            ; 2432: e2          .  ; get-mem-2
-    db $e3                                                            ; 2433: e3          .  ; get-mem-3
-    db 4                                                              ; 2434: 04          .  ; multiply
-    db $0f                                                            ; 2435: 0f          .  ; addition
-    db $c2                                                            ; 2436: c2          .  ; st-mem-2
-    db 2                                                              ; 2437: 02          .  ; delete
-    db $38                                                            ; 2438: 38          8  ; end-calc
+    db $e1                                                            ; 2426: e1          .   ; get-mem-1
+    db $31                                                            ; 2427: 31          1   ; duplicate
+    db $e3                                                            ; 2428: e3          .   ; get-mem-3
+    db 4                                                              ; 2429: 04          .   ; multiply
+    db $e2                                                            ; 242a: e2          .   ; get-mem-2
+    db $e4                                                            ; 242b: e4          .   ; get-mem-4
+    db 4                                                              ; 242c: 04          .   ; multiply
+    db 3                                                              ; 242d: 03          .   ; subtract
+    db $c1                                                            ; 242e: c1          .   ; st-mem-1
+    db 2                                                              ; 242f: 02          .   ; delete
+    db $e4                                                            ; 2430: e4          .   ; get-mem-4
+    db 4                                                              ; 2431: 04          .   ; multiply
+    db $e2                                                            ; 2432: e2          .   ; get-mem-2
+    db $e3                                                            ; 2433: e3          .   ; get-mem-3
+    db 4                                                              ; 2434: 04          .   ; multiply
+    db $0f                                                            ; 2435: 0f          .   ; addition
+    db $c2                                                            ; 2436: c2          .   ; st-mem-2
+    db 2                                                              ; 2437: 02          .   ; delete
+    db $38                                                            ; 2438: 38          8   ; end-calc
 
 ; $2439 referenced 1 time by $2406
 l2439:
     push bc                                                           ; 2439: c5          .
     rst $28                                                           ; 243a: ef          .
-    db $c0                                                            ; 243b: c0          .  ; st-mem-0
-    db 2                                                              ; 243c: 02          .  ; delete
-    db $e1                                                            ; 243d: e1          .  ; get-mem-1
-    db $0f                                                            ; 243e: 0f          .  ; addition
-    db $31                                                            ; 243f: 31          1  ; duplicate
-    db $38                                                            ; 2440: 38          8  ; end-calc
+    db $c0                                                            ; 243b: c0          .   ; st-mem-0
+    db 2                                                              ; 243c: 02          .   ; delete
+    db $e1                                                            ; 243d: e1          .   ; get-mem-1
+    db $0f                                                            ; 243e: 0f          .   ; addition
+    db $31                                                            ; 243f: 31          1   ; duplicate
+    db $38                                                            ; 2440: 38          8   ; end-calc
 
     ld a,(coords)                                                     ; 2441: 3a 7d 5c    :}\
     call stack_a                                                      ; 2444: cd 28 2d    .(-
     rst $28                                                           ; 2447: ef          .
-    db 3                                                              ; 2448: 03          .  ; subtract
-    db $e0                                                            ; 2449: e0          .  ; get-mem-0
-    db $e2                                                            ; 244a: e2          .  ; get-mem-2
-    db $0f                                                            ; 244b: 0f          .  ; addition
-    db $c0                                                            ; 244c: c0          .  ; st-mem-0
-    db 1                                                              ; 244d: 01          .  ; exchange
-    db $e0                                                            ; 244e: e0          .  ; get-mem-0
-    db $38                                                            ; 244f: 38          8  ; end-calc
+    db 3                                                              ; 2448: 03          .   ; subtract
+    db $e0                                                            ; 2449: e0          .   ; get-mem-0
+    db $e2                                                            ; 244a: e2          .   ; get-mem-2
+    db $0f                                                            ; 244b: 0f          .   ; addition
+    db $c0                                                            ; 244c: c0          .   ; st-mem-0
+    db 1                                                              ; 244d: 01          .   ; exchange
+    db $e0                                                            ; 244e: e0          .   ; get-mem-0
+    db $38                                                            ; 244f: 38          8   ; end-calc
 
     ld a,(coords+1)                                                   ; 2450: 3a 7e 5c    :~\
     call stack_a                                                      ; 2453: cd 28 2d    .(-
     rst $28                                                           ; 2456: ef          .
-    db 3                                                              ; 2457: 03          .  ; subtract
-    db $38                                                            ; 2458: 38          8  ; end-calc
+    db 3                                                              ; 2457: 03          .   ; subtract
+    db $38                                                            ; 2458: 38          8   ; end-calc
 
     call r1offcl                                                      ; 2459: cd b7 24    ..$
     pop bc                                                            ; 245c: c1          .
     djnz l2425                                                        ; 245d: 10 c6       ..
     rst $28                                                           ; 245f: ef          .
-    db 2                                                              ; 2460: 02          .  ; delete
-    db 2                                                              ; 2461: 02          .  ; delete
-    db 1                                                              ; 2462: 01          .  ; exchange
-    db $38                                                            ; 2463: 38          8  ; end-calc
+    db 2                                                              ; 2460: 02          .   ; delete
+    db 2                                                              ; 2461: 02          .   ; delete
+    db 1                                                              ; 2462: 01          .   ; exchange
+    db $38                                                            ; 2463: 38          8   ; end-calc
 
     ld a,(coords)                                                     ; 2464: 3a 7d 5c    :}\
     call stack_a                                                      ; 2467: cd 28 2d    .(-
     rst $28                                                           ; 246a: ef          .
-    db 3                                                              ; 246b: 03          .  ; subtract
-    db 1                                                              ; 246c: 01          .  ; exchange
-    db $38                                                            ; 246d: 38          8  ; end-calc
+    db 3                                                              ; 246b: 03          .   ; subtract
+    db 1                                                              ; 246c: 01          .   ; exchange
+    db $38                                                            ; 246d: 38          8   ; end-calc
 
     ld a,(coords+1)                                                   ; 246e: 3a 7e 5c    :~\
     call stack_a                                                      ; 2471: cd 28 2d    .(-
     rst $28                                                           ; 2474: ef          .
-    db 3                                                              ; 2475: 03          .  ; subtract
-    db $38                                                            ; 2476: 38          8  ; end-calc
+    db 3                                                              ; 2475: 03          .   ; subtract
+    db $38                                                            ; 2476: 38          8   ; end-calc
 
 ; $2477 referenced 2 times by $238a, $23a0
 linedraw:
@@ -6565,17 +6565,17 @@ linedraw:
 ; $247d referenced 2 times by $2344, $23b4
 l247d:
     rst $28                                                           ; 247d: ef          .
-    db $31                                                            ; 247e: 31          1  ; duplicate
-    db $28                                                            ; 247f: 28          (  ; sqr
-    db $34                                                            ; 2480: 34          4  ; stk-data
-    db $32, 0                                                         ; 2481: 32 00       2. ; 2
-    db 1                                                              ; 2483: 01          .  ; exchange
-    db 5                                                              ; 2484: 05          .  ; division
-    db $e5                                                            ; 2485: e5          .  ; get-mem-5
-    db 1                                                              ; 2486: 01          .  ; exchange
-    db 5                                                              ; 2487: 05          .  ; division
-    db $2a                                                            ; 2488: 2a          *  ; abs
-    db $38                                                            ; 2489: 38          8  ; end-calc
+    db $31                                                            ; 247e: 31          1   ; duplicate
+    db $28                                                            ; 247f: 28          (   ; sqr
+    db $34                                                            ; 2480: 34          4   ; stk-data
+    db $32, 0                                                         ; 2481: 32 00       2.  ; 2
+    db 1                                                              ; 2483: 01          .   ; exchange
+    db 5                                                              ; 2484: 05          .   ; division
+    db $e5                                                            ; 2485: e5          .   ; get-mem-5
+    db 1                                                              ; 2486: 01          .   ; exchange
+    db 5                                                              ; 2487: 05          .   ; division
+    db $2a                                                            ; 2488: 2a          *   ; abs
+    db $38                                                            ; 2489: 38          8   ; end-calc
 
     call fp_to_a                                                      ; 248a: cd d5 2d    ..-
     jr c,l2495                                                        ; 248d: 38 06       8.
@@ -6590,31 +6590,31 @@ l2497:
     push af                                                           ; 2497: f5          .
     call stack_a                                                      ; 2498: cd 28 2d    .(-
     rst $28                                                           ; 249b: ef          .
-    db $e5                                                            ; 249c: e5          .  ; get-mem-5
-    db 1                                                              ; 249d: 01          .  ; exchange
-    db 5                                                              ; 249e: 05          .  ; division
-    db $31                                                            ; 249f: 31          1  ; duplicate
-    db $1f                                                            ; 24a0: 1f          .  ; sin
-    db $c4                                                            ; 24a1: c4          .  ; st-mem-4
-    db 2                                                              ; 24a2: 02          .  ; delete
-    db $31                                                            ; 24a3: 31          1  ; duplicate
-    db $a2                                                            ; 24a4: a2          .  ; stk-half
-    db 4                                                              ; 24a5: 04          .  ; multiply
-    db $1f                                                            ; 24a6: 1f          .  ; sin
-    db $c1                                                            ; 24a7: c1          .  ; st-mem-1
-    db 1                                                              ; 24a8: 01          .  ; exchange
-    db $c0                                                            ; 24a9: c0          .  ; st-mem-0
-    db 2                                                              ; 24aa: 02          .  ; delete
-    db $31                                                            ; 24ab: 31          1  ; duplicate
-    db 4                                                              ; 24ac: 04          .  ; multiply
-    db $31                                                            ; 24ad: 31          1  ; duplicate
-    db $0f                                                            ; 24ae: 0f          .  ; addition
-    db $a1                                                            ; 24af: a1          .  ; stk-one
-    db 3                                                              ; 24b0: 03          .  ; subtract
-    db $1b                                                            ; 24b1: 1b          .  ; negate
-    db $c3                                                            ; 24b2: c3          .  ; st-mem-3
-    db 2                                                              ; 24b3: 02          .  ; delete
-    db $38                                                            ; 24b4: 38          8  ; end-calc
+    db $e5                                                            ; 249c: e5          .   ; get-mem-5
+    db 1                                                              ; 249d: 01          .   ; exchange
+    db 5                                                              ; 249e: 05          .   ; division
+    db $31                                                            ; 249f: 31          1   ; duplicate
+    db $1f                                                            ; 24a0: 1f          .   ; sin
+    db $c4                                                            ; 24a1: c4          .   ; st-mem-4
+    db 2                                                              ; 24a2: 02          .   ; delete
+    db $31                                                            ; 24a3: 31          1   ; duplicate
+    db $a2                                                            ; 24a4: a2          .   ; stk-half
+    db 4                                                              ; 24a5: 04          .   ; multiply
+    db $1f                                                            ; 24a6: 1f          .   ; sin
+    db $c1                                                            ; 24a7: c1          .   ; st-mem-1
+    db 1                                                              ; 24a8: 01          .   ; exchange
+    db $c0                                                            ; 24a9: c0          .   ; st-mem-0
+    db 2                                                              ; 24aa: 02          .   ; delete
+    db $31                                                            ; 24ab: 31          1   ; duplicate
+    db 4                                                              ; 24ac: 04          .   ; multiply
+    db $31                                                            ; 24ad: 31          1   ; duplicate
+    db $0f                                                            ; 24ae: 0f          .   ; addition
+    db $a1                                                            ; 24af: a1          .   ; stk-one
+    db 3                                                              ; 24b0: 03          .   ; subtract
+    db $1b                                                            ; 24b1: 1b          .   ; negate
+    db $c3                                                            ; 24b2: c3          .   ; st-mem-3
+    db 2                                                              ; 24b3: 02          .   ; delete
+    db $38                                                            ; 24b4: 38          8   ; end-calc
 
     pop bc                                                            ; 24b5: c1          .
     ret                                                               ; 24b6: c9          .
@@ -6693,7 +6693,7 @@ l24f7:
 ; $24f9 referenced 3 times by $22ad, $2317, $24ea
 report_b:
     rst $08                                                           ; 24f9: cf          .
-    db $0a                                                            ; 24fa: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 24fa: 0a          .   ; Report B Integer out of range
 
 ; $24fb referenced 12 times by $1c5a, $1c82, $1c8c, $1e2c, $1fb4, $202c, $25e9, $27d9, $289c, $35ce, $35e6, $3cde
 scanning:
@@ -6921,19 +6921,19 @@ s_rnd:
     ld bc,(seed)                                                      ; 25fd: ed 4b 76... .Kv
     call stack_bc1                                                    ; 2601: cd 2f 2d    ./-
     rst $28                                                           ; 2604: ef          .
-    db $a1                                                            ; 2605: a1          .  ; stk-one
-    db $0f                                                            ; 2606: 0f          .  ; addition
-    db $34                                                            ; 2607: 34          4  ; stk-data
-    db $37, $16                                                       ; 2608: 37 16       7. ; 75
-    db 4                                                              ; 260a: 04          .  ; multiply
-    db $34                                                            ; 260b: 34          4  ; stk-data
+    db $a1                                                            ; 2605: a1          .   ; stk-one
+    db $0f                                                            ; 2606: 0f          .   ; addition
+    db $34                                                            ; 2607: 34          4   ; stk-data
+    db $37, $16                                                       ; 2608: 37 16       7.  ; 75
+    db 4                                                              ; 260a: 04          .   ; multiply
+    db $34                                                            ; 260b: 34          4   ; stk-data
     db $80, $41, 0, 0, $80                                            ; 260c: 80 41 00... .A. ; 65537
-    db $32                                                            ; 2611: 32          2  ; n-mod-m
-    db 2                                                              ; 2612: 02          .  ; delete
-    db $a1                                                            ; 2613: a1          .  ; stk-one
-    db 3                                                              ; 2614: 03          .  ; subtract
-    db $31                                                            ; 2615: 31          1  ; duplicate
-    db $38                                                            ; 2616: 38          8  ; end-calc
+    db $32                                                            ; 2611: 32          2   ; n-mod-m
+    db 2                                                              ; 2612: 02          .   ; delete
+    db $a1                                                            ; 2613: a1          .   ; stk-one
+    db 3                                                              ; 2614: 03          .   ; subtract
+    db $31                                                            ; 2615: 31          1   ; duplicate
+    db $38                                                            ; 2616: 38          8   ; end-calc
 
     call fp_to_bc                                                     ; 2617: cd a2 2d    ..-
     ld (seed),bc                                                      ; 261a: ed 43 76... .Cv
@@ -6950,8 +6950,8 @@ s_pi:
     call syntax_z                                                     ; 2627: cd 30 25    .0%
     jr z,s_pi_end                                                     ; 262a: 28 04       (.
     rst $28                                                           ; 262c: ef          .
-    db $a3                                                            ; 262d: a3          .  ; stk-pi/2
-    db $38                                                            ; 262e: 38          8  ; end-calc
+    db $a3                                                            ; 262d: a3          .   ; stk-pi/2
+    db $38                                                            ; 262e: 38          8   ; end-calc
 
     inc (hl)                                                          ; 262f: 34          4
 ; $2630 referenced 2 times by $2625, $262a
@@ -7149,8 +7149,8 @@ l274c:
     and $3f                                                           ; 2753: e6 3f       .?
     ld b,a                                                            ; 2755: 47          G
     rst $28                                                           ; 2756: ef          .
-    db $3b                                                            ; 2757: 3b          ;  ; fp-calc-2
-    db $38                                                            ; 2758: 38          8  ; end-calc
+    db $3b                                                            ; 2757: 3b          ;   ; fp-calc-2
+    db $38                                                            ; 2758: 38          8   ; end-calc
 
     jr s_runtest                                                      ; 2759: 18 09       ..
 
@@ -7278,7 +7278,7 @@ l2808:
     pop bc                                                            ; 280f: c1          .
     jr nc,l2814                                                       ; 2810: 30 02       0.
     rst $08                                                           ; 2812: cf          .
-    db $18                                                            ; 2813: 18          .  ; Report P FN without DEF
+    db $18                                                            ; 2813: 18          .   ; Report P FN without DEF
 
 ; $2814 referenced 1 time by $2810
 l2814:
@@ -7363,7 +7363,7 @@ l2885:
 ; $288b referenced 4 times by $285e, $287c, $3af6, $3b08
 parerr:
     rst $08                                                           ; 288b: cf          .
-    db $19                                                            ; 288c: 19          .  ; Report Q Parameter error
+    db $19                                                            ; 288c: 19          .   ; Report Q Parameter error
 
 ; $288d referenced 1 time by $2889
 l288d:
@@ -7690,7 +7690,7 @@ sv_rpt_c:
 ; $2a20 referenced 6 times by $29bd, $29cc, $2a05, $2a43, $2aa3, $2c34
 report_3:
     rst $08                                                           ; 2a20: cf          .
-    db 2                                                              ; 2a21: 02          .  ; Report 3 Subscript wrong
+    db 2                                                              ; 2a21: 02          .   ; Report 3 Subscript wrong
 
 ; $2a22 referenced 1 time by $2a1e
 sv_number:
@@ -7947,8 +7947,8 @@ l_single:
 l_numeric:
     push hl                                                           ; 2b59: e5          .
     rst $28                                                           ; 2b5a: ef          .
-    db 2                                                              ; 2b5b: 02          .  ; delete
-    db $38                                                            ; 2b5c: 38          8  ; end-calc
+    db 2                                                              ; 2b5b: 02          .   ; delete
+    db $38                                                            ; 2b5c: 38          8   ; end-calc
 
     pop hl                                                            ; 2b5d: e1          .
     ld bc,5                                                           ; 2b5e: 01 05 00    ...
@@ -8252,16 +8252,16 @@ decint:
 nonsense:
     jp c,report_c                                                     ; 2ccf: da 8a 1c    ...
     rst $28                                                           ; 2cd2: ef          .
-    db $a0                                                            ; 2cd3: a0          .  ; stk-zero
-    db $38                                                            ; 2cd4: 38          8  ; end-calc
+    db $a0                                                            ; 2cd3: a0          .   ; stk-zero
+    db $38                                                            ; 2cd4: 38          8   ; end-calc
 
 ; $2cd5 referenced 1 time by $2cc9
 l2cd5:
     rst $28                                                           ; 2cd5: ef          .
-    db $a1                                                            ; 2cd6: a1          .  ; stk-one
-    db $c0                                                            ; 2cd7: c0          .  ; st-mem-0
-    db 2                                                              ; 2cd8: 02          .  ; delete
-    db $38                                                            ; 2cd9: 38          8  ; end-calc
+    db $a1                                                            ; 2cd6: a1          .   ; stk-one
+    db $c0                                                            ; 2cd7: c0          .   ; st-mem-0
+    db 2                                                              ; 2cd8: 02          .   ; delete
+    db $38                                                            ; 2cd9: 38          8   ; end-calc
 
 ; $2cda referenced 1 time by $2ce9
 nxt_dgt_1:
@@ -8269,13 +8269,13 @@ nxt_dgt_1:
     call stk_digit                                                    ; 2cdb: cd 22 2d    ."-
     jr c,e_format                                                     ; 2cde: 38 0b       8.
     rst $28                                                           ; 2ce0: ef          .
-    db $e0                                                            ; 2ce1: e0          .  ; get-mem-0
-    db $a4                                                            ; 2ce2: a4          .  ; stk-ten
-    db 4                                                              ; 2ce3: 04          .  ; multiply
-    db $c0                                                            ; 2ce4: c0          .  ; st-mem-0
-    db 5                                                              ; 2ce5: 05          .  ; division
-    db $0f                                                            ; 2ce6: 0f          .  ; addition
-    db $38                                                            ; 2ce7: 38          8  ; end-calc
+    db $e0                                                            ; 2ce1: e0          .   ; get-mem-0
+    db $a4                                                            ; 2ce2: a4          .   ; stk-ten
+    db 4                                                              ; 2ce3: 04          .   ; multiply
+    db $c0                                                            ; 2ce4: c0          .   ; st-mem-0
+    db 5                                                              ; 2ce5: 05          .   ; division
+    db $0f                                                            ; 2ce6: 0f          .   ; addition
+    db $38                                                            ; 2ce7: 38          8   ; end-calc
 
     rst $20                                                           ; 2ce8: e7          .
     jr nxt_dgt_1                                                      ; 2ce9: 18 ef       ..
@@ -8346,7 +8346,7 @@ stack_bc1:
     ld b,e                                                            ; 2d33: 43          C
     call l2ab6                                                        ; 2d34: cd b6 2a    ..*
     rst $28                                                           ; 2d37: ef          .
-    db $38                                                            ; 2d38: 38          8  ; end-calc
+    db $38                                                            ; 2d38: 38          8   ; end-calc
 
     and a                                                             ; 2d39: a7          .
     ret                                                               ; 2d3a: c9          .
@@ -8355,8 +8355,8 @@ stack_bc1:
 int_to_fp:
     push af                                                           ; 2d3b: f5          .
     rst $28                                                           ; 2d3c: ef          .
-    db $a0                                                            ; 2d3d: a0          .  ; stk-zero
-    db $38                                                            ; 2d3e: 38          8  ; end-calc
+    db $a0                                                            ; 2d3d: a0          .   ; stk-zero
+    db $38                                                            ; 2d3e: 38          8   ; end-calc
 
     pop af                                                            ; 2d3f: f1          .
 ; $2d40 referenced 1 time by $2d4d
@@ -8364,11 +8364,11 @@ nxt_dgt_2:
     call stk_digit                                                    ; 2d40: cd 22 2d    ."-
     ret c                                                             ; 2d43: d8          .
     rst $28                                                           ; 2d44: ef          .
-    db 1                                                              ; 2d45: 01          .  ; exchange
-    db $a4                                                            ; 2d46: a4          .  ; stk-ten
-    db 4                                                              ; 2d47: 04          .  ; multiply
-    db $0f                                                            ; 2d48: 0f          .  ; addition
-    db $38                                                            ; 2d49: 38          8  ; end-calc
+    db 1                                                              ; 2d45: 01          .   ; exchange
+    db $a4                                                            ; 2d46: a4          .   ; stk-ten
+    db 4                                                              ; 2d47: 04          .   ; multiply
+    db $0f                                                            ; 2d48: 0f          .   ; addition
+    db $38                                                            ; 2d49: 38          8   ; end-calc
 
     call ch_add_1                                                     ; 2d4a: cd 74 00    .t.
     jr nxt_dgt_2                                                      ; 2d4d: 18 f1       ..
@@ -8386,8 +8386,8 @@ l2d55:
     ld hl,$5c92                                                       ; 2d56: 21 92 5c    !.\
     call fp_0_1                                                       ; 2d59: cd e7 34    ..4
     rst $28                                                           ; 2d5c: ef          .
-    db $a4                                                            ; 2d5d: a4          .  ; stk-ten
-    db $38                                                            ; 2d5e: 38          8  ; end-calc
+    db $a4                                                            ; 2d5d: a4          .   ; stk-ten
+    db $38                                                            ; 2d5e: 38          8   ; end-calc
 
     pop af                                                            ; 2d5f: f1          .
 ; $2d60 referenced 1 time by $2d79
@@ -8396,18 +8396,18 @@ l2d60:
     jr nc,l2d71                                                       ; 2d62: 30 0d       0.
     push af                                                           ; 2d64: f5          .
     rst $28                                                           ; 2d65: ef          .
-    db $c1                                                            ; 2d66: c1          .  ; st-mem-1
-    db $e0                                                            ; 2d67: e0          .  ; get-mem-0
-    db 0                                                              ; 2d68: 00          .  ; jump-true
+    db $c1                                                            ; 2d66: c1          .   ; st-mem-1
+    db $e0                                                            ; 2d67: e0          .   ; get-mem-0
+    db 0                                                              ; 2d68: 00          .   ; jump-true
     db l2d6d - $                                                      ; 2d69: 04          .
-    db 4                                                              ; 2d6a: 04          .  ; multiply
-    db $33                                                            ; 2d6b: 33          3  ; jump
+    db 4                                                              ; 2d6a: 04          .   ; multiply
+    db $33                                                            ; 2d6b: 33          3   ; jump
     db l2d6e - $                                                      ; 2d6c: 02          .
 l2d6d:
-    db 5                                                              ; 2d6d: 05          .  ; division
+    db 5                                                              ; 2d6d: 05          .   ; division
 l2d6e:
-    db $e1                                                            ; 2d6e: e1          .  ; get-mem-1
-    db $38                                                            ; 2d6f: 38          8  ; end-calc
+    db $e1                                                            ; 2d6e: e1          .   ; get-mem-1
+    db $38                                                            ; 2d6f: 38          8   ; end-calc
 
     pop af                                                            ; 2d70: f1          .
 ; $2d71 referenced 1 time by $2d62
@@ -8415,9 +8415,9 @@ l2d71:
     jr z,l2d7b                                                        ; 2d71: 28 08       (.
     push af                                                           ; 2d73: f5          .
     rst $28                                                           ; 2d74: ef          .
-    db $31                                                            ; 2d75: 31          1  ; duplicate
-    db 4                                                              ; 2d76: 04          .  ; multiply
-    db $38                                                            ; 2d77: 38          8  ; end-calc
+    db $31                                                            ; 2d75: 31          1   ; duplicate
+    db 4                                                              ; 2d76: 04          .   ; multiply
+    db $38                                                            ; 2d77: 38          8   ; end-calc
 
     pop af                                                            ; 2d78: f1          .
     jr l2d60                                                          ; 2d79: 18 e5       ..
@@ -8425,8 +8425,8 @@ l2d71:
 ; $2d7b referenced 1 time by $2d71
 l2d7b:
     rst $28                                                           ; 2d7b: ef          .
-    db 2                                                              ; 2d7c: 02          .  ; delete
-    db $38                                                            ; 2d7d: 38          8  ; end-calc
+    db 2                                                              ; 2d7c: 02          .   ; delete
+    db $38                                                            ; 2d7d: 38          8   ; end-calc
 
     ret                                                               ; 2d7e: c9          .
 
@@ -8476,22 +8476,22 @@ l2d8e:
 ; $2da2 referenced 8 times by $106f, $1a0c, $1e99, $2617, $2dd5, $3863, $3bb0, $3c24
 fp_to_bc:
     rst $28                                                           ; 2da2: ef          .
-    db $38                                                            ; 2da3: 38          8  ; end-calc
+    db $38                                                            ; 2da3: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2da4: 7e          ~
     and a                                                             ; 2da5: a7          .
     jr z,fpbcint                                                      ; 2da6: 28 05       (.
     rst $28                                                           ; 2da8: ef          .
-    db $a2                                                            ; 2da9: a2          .  ; stk-half
-    db $0f                                                            ; 2daa: 0f          .  ; addition
-    db $27                                                            ; 2dab: 27          '  ; int
-    db $38                                                            ; 2dac: 38          8  ; end-calc
+    db $a2                                                            ; 2da9: a2          .   ; stk-half
+    db $0f                                                            ; 2daa: 0f          .   ; addition
+    db $27                                                            ; 2dab: 27          '   ; int
+    db $38                                                            ; 2dac: 38          8   ; end-calc
 
 ; $2dad referenced 1 time by $2da6
 fpbcint:
     rst $28                                                           ; 2dad: ef          .
-    db 2                                                              ; 2dae: 02          .  ; delete
-    db $38                                                            ; 2daf: 38          8  ; end-calc
+    db 2                                                              ; 2dae: 02          .   ; delete
+    db $38                                                            ; 2daf: 38          8   ; end-calc
 
     push de                                                           ; 2db0: d5          .
     push hl                                                           ; 2db1: e5          .
@@ -8519,11 +8519,11 @@ l2dc1:
     ld b,a                                                            ; 2dc7: 47          G
     call l2ab6                                                        ; 2dc8: cd b6 2a    ..*
     rst $28                                                           ; 2dcb: ef          .
-    db $34                                                            ; 2dcc: 34          4  ; stk-data
-    db $ef, $1a, $20, $9a, $85                                        ; 2dcd: ef 1a 20... .. ; 0.3010299957
-    db 4                                                              ; 2dd2: 04          .  ; multiply
-    db $27                                                            ; 2dd3: 27          '  ; int
-    db $38                                                            ; 2dd4: 38          8  ; end-calc
+    db $34                                                            ; 2dcc: 34          4   ; stk-data
+    db $ef, $1a, $20, $9a, $85                                        ; 2dcd: ef 1a 20... ..  ; 0.3010299957
+    db 4                                                              ; 2dd2: 04          .   ; multiply
+    db $27                                                            ; 2dd3: 27          '   ; int
+    db $38                                                            ; 2dd4: 38          8   ; end-calc
 
 ; $2dd5 referenced 10 times by $09cb, $09cf, $1e85, $1e94, $2314, $248a, $2d08, $2e41, $35a2, $36cd
 fp_to_a:
@@ -8545,35 +8545,35 @@ fp_a_end:
 ; $2de3 referenced 2 times by $2039, $3603
 print_fp:
     rst $28                                                           ; 2de3: ef          .
-    db $31                                                            ; 2de4: 31          1  ; duplicate
-    db $36                                                            ; 2de5: 36          6  ; less-0
-    db 0                                                              ; 2de6: 00          .  ; jump-true
+    db $31                                                            ; 2de4: 31          1   ; duplicate
+    db $36                                                            ; 2de5: 36          6   ; less-0
+    db 0                                                              ; 2de6: 00          .   ; jump-true
     db p_neg - $                                                      ; 2de7: 0b          .
-    db $31                                                            ; 2de8: 31          1  ; duplicate
-    db $37                                                            ; 2de9: 37          7  ; greater-0
-    db 0                                                              ; 2dea: 00          .  ; jump-true
+    db $31                                                            ; 2de8: 31          1   ; duplicate
+    db $37                                                            ; 2de9: 37          7   ; greater-0
+    db 0                                                              ; 2dea: 00          .   ; jump-true
     db p_pos - $                                                      ; 2deb: 0d          .
-    db 2                                                              ; 2dec: 02          .  ; delete
-    db $38                                                            ; 2ded: 38          8  ; end-calc
+    db 2                                                              ; 2dec: 02          .   ; delete
+    db $38                                                            ; 2ded: 38          8   ; end-calc
 
     ld a,$30                                                          ; 2dee: 3e 30       >0
     rst $10                                                           ; 2df0: d7          .
     ret                                                               ; 2df1: c9          .
 
 p_neg:
-    db $2a                                                            ; 2df2: 2a          *  ; abs
-    db $38                                                            ; 2df3: 38          8  ; end-calc
+    db $2a                                                            ; 2df2: 2a          *   ; abs
+    db $38                                                            ; 2df3: 38          8   ; end-calc
 
     ld a,$2d                                                          ; 2df4: 3e 2d       >-
     rst $10                                                           ; 2df6: d7          .
     rst $28                                                           ; 2df7: ef          .
 p_pos:
-    db $a0                                                            ; 2df8: a0          .  ; stk-zero
-    db $c3                                                            ; 2df9: c3          .  ; st-mem-3
-    db $c4                                                            ; 2dfa: c4          .  ; st-mem-4
-    db $c5                                                            ; 2dfb: c5          .  ; st-mem-5
-    db 2                                                              ; 2dfc: 02          .  ; delete
-    db $38                                                            ; 2dfd: 38          8  ; end-calc
+    db $a0                                                            ; 2df8: a0          .   ; stk-zero
+    db $c3                                                            ; 2df9: c3          .   ; st-mem-3
+    db $c4                                                            ; 2dfa: c4          .   ; st-mem-4
+    db $c5                                                            ; 2dfb: c5          .   ; st-mem-5
+    db 2                                                              ; 2dfc: 02          .   ; delete
+    db $38                                                            ; 2dfd: 38          8   ; end-calc
 
     exx                                                               ; 2dfe: d9          .
     push hl                                                           ; 2dff: e5          .
@@ -8581,15 +8581,15 @@ p_pos:
 ; $2e01 referenced 1 time by $2e6d
 l2e01:
     rst $28                                                           ; 2e01: ef          .
-    db $31                                                            ; 2e02: 31          1  ; duplicate
-    db $27                                                            ; 2e03: 27          '  ; int
-    db $c2                                                            ; 2e04: c2          .  ; st-mem-2
-    db 3                                                              ; 2e05: 03          .  ; subtract
-    db $e2                                                            ; 2e06: e2          .  ; get-mem-2
-    db 1                                                              ; 2e07: 01          .  ; exchange
-    db $c2                                                            ; 2e08: c2          .  ; st-mem-2
-    db 2                                                              ; 2e09: 02          .  ; delete
-    db $38                                                            ; 2e0a: 38          8  ; end-calc
+    db $31                                                            ; 2e02: 31          1   ; duplicate
+    db $27                                                            ; 2e03: 27          '   ; int
+    db $c2                                                            ; 2e04: c2          .   ; st-mem-2
+    db 3                                                              ; 2e05: 03          .   ; subtract
+    db $e2                                                            ; 2e06: e2          .   ; get-mem-2
+    db 1                                                              ; 2e07: 01          .   ; exchange
+    db $c2                                                            ; 2e08: c2          .   ; st-mem-2
+    db 2                                                              ; 2e09: 02          .   ; delete
+    db $38                                                            ; 2e0a: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2e0b: 7e          ~
     and a                                                             ; 2e0c: a7          .
@@ -8614,9 +8614,9 @@ l2e1e:
 ; $2e24 referenced 1 time by $2e19
 l2e24:
     rst $28                                                           ; 2e24: ef          .
-    db 2                                                              ; 2e25: 02          .  ; delete
-    db $e2                                                            ; 2e26: e2          .  ; get-mem-2
-    db $38                                                            ; 2e27: 38          8  ; end-calc
+    db 2                                                              ; 2e25: 02          .   ; delete
+    db $e2                                                            ; 2e26: e2          .   ; get-mem-2
+    db $38                                                            ; 2e27: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2e28: 7e          ~
     sub $7e                                                           ; 2e29: d6 7e       .~
@@ -8628,12 +8628,12 @@ l2e24:
     ld a,d                                                            ; 2e36: 7a          z
     call e_to_fp                                                      ; 2e37: cd 4f 2d    .O-
     rst $28                                                           ; 2e3a: ef          .
-    db $31                                                            ; 2e3b: 31          1  ; duplicate
-    db $27                                                            ; 2e3c: 27          '  ; int
-    db $c1                                                            ; 2e3d: c1          .  ; st-mem-1
-    db 3                                                              ; 2e3e: 03          .  ; subtract
-    db $e1                                                            ; 2e3f: e1          .  ; get-mem-1
-    db $38                                                            ; 2e40: 38          8  ; end-calc
+    db $31                                                            ; 2e3b: 31          1   ; duplicate
+    db $27                                                            ; 2e3c: 27          '   ; int
+    db $c1                                                            ; 2e3d: c1          .   ; st-mem-1
+    db 3                                                              ; 2e3e: 03          .   ; subtract
+    db $e1                                                            ; 2e3f: e1          .   ; get-mem-1
+    db $38                                                            ; 2e40: 38          8   ; end-calc
 
     call fp_to_a                                                      ; 2e41: cd d5 2d    ..-
     push hl                                                           ; 2e44: e5          .
@@ -8735,9 +8735,9 @@ l2eb8:
 ; $2ecb referenced 1 time by $2ebf
 l2ecb:
     rst $28                                                           ; 2ecb: ef          .
-    db 2                                                              ; 2ecc: 02          .  ; delete
-    db $e2                                                            ; 2ecd: e2          .  ; get-mem-2
-    db $38                                                            ; 2ece: 38          8  ; end-calc
+    db 2                                                              ; 2ecc: 02          .   ; delete
+    db $e2                                                            ; 2ecd: e2          .   ; get-mem-2
+    db $38                                                            ; 2ece: 38          8   ; end-calc
 
 ; $2ecf referenced 1 time by $2e54
 l2ecf:
@@ -8813,8 +8813,8 @@ l2f25:
 l2f2d:
     ld (iy+(membot+25) - err_nr),b                                    ; 2f2d: fd 70 71    .pq
     rst $28                                                           ; 2f30: ef          .
-    db 2                                                              ; 2f31: 02          .  ; delete
-    db $38                                                            ; 2f32: 38          8  ; end-calc
+    db 2                                                              ; 2f31: 02          .   ; delete
+    db $38                                                            ; 2f32: 38          8   ; end-calc
 
     exx                                                               ; 2f33: d9          .
     pop hl                                                            ; 2f34: e1          .
@@ -9408,7 +9408,7 @@ oflow_clr:
 ; $31ad referenced 10 times by $0ed4, $0f06, $2cad, $2d0c, $2d10, $309f, $3143, $314f, $3193, $31b7
 report_6:
     rst $08                                                           ; 31ad: cf          .
-    db 5                                                              ; 31ae: 05          .  ; Report 6 Number too big
+    db 5                                                              ; 31ae: 05          .   ; Report 6 Number too big
 
 x80_fdiv:
     call l3293                                                        ; 31af: cd 93 32    ..2
@@ -9924,32 +9924,32 @@ swap_byte:
 x80_fsgen:
     ld b,a                                                            ; 342d: 47          G
     call gen_ent_1                                                    ; 342e: cd 65 33    .e3
-    db $31                                                            ; 3431: 31          1  ; duplicate
-    db $0f                                                            ; 3432: 0f          .  ; addition
-    db $c0                                                            ; 3433: c0          .  ; st-mem-0
-    db 2                                                              ; 3434: 02          .  ; delete
-    db $a0                                                            ; 3435: a0          .  ; stk-zero
-    db $c2                                                            ; 3436: c2          .  ; st-mem-2
+    db $31                                                            ; 3431: 31          1   ; duplicate
+    db $0f                                                            ; 3432: 0f          .   ; addition
+    db $c0                                                            ; 3433: c0          .   ; st-mem-0
+    db 2                                                              ; 3434: 02          .   ; delete
+    db $a0                                                            ; 3435: a0          .   ; stk-zero
+    db $c2                                                            ; 3436: c2          .   ; st-mem-2
 g_loop:
-    db $31                                                            ; 3437: 31          1  ; duplicate
-    db $e0                                                            ; 3438: e0          .  ; get-mem-0
-    db 4                                                              ; 3439: 04          .  ; multiply
-    db $e2                                                            ; 343a: e2          .  ; get-mem-2
-    db $c1                                                            ; 343b: c1          .  ; st-mem-1
-    db 3                                                              ; 343c: 03          .  ; subtract
-    db $38                                                            ; 343d: 38          8  ; end-calc
+    db $31                                                            ; 3437: 31          1   ; duplicate
+    db $e0                                                            ; 3438: e0          .   ; get-mem-0
+    db 4                                                              ; 3439: 04          .   ; multiply
+    db $e2                                                            ; 343a: e2          .   ; get-mem-2
+    db $c1                                                            ; 343b: c1          .   ; st-mem-1
+    db 3                                                              ; 343c: 03          .   ; subtract
+    db $38                                                            ; 343d: 38          8   ; end-calc
 
     call x80_fstk                                                     ; 343e: cd ca 33    ..3
     call gen_ent_2                                                    ; 3441: cd 69 33    .i3
-    db $0f                                                            ; 3444: 0f          .  ; addition
-    db 1                                                              ; 3445: 01          .  ; exchange
-    db $c2                                                            ; 3446: c2          .  ; st-mem-2
-    db 2                                                              ; 3447: 02          .  ; delete
-    db $35                                                            ; 3448: 35          5  ; dec-jr-nz
+    db $0f                                                            ; 3444: 0f          .   ; addition
+    db 1                                                              ; 3445: 01          .   ; exchange
+    db $c2                                                            ; 3446: c2          .   ; st-mem-2
+    db 2                                                              ; 3447: 02          .   ; delete
+    db $35                                                            ; 3448: 35          5   ; dec-jr-nz
     db g_loop - $                                                     ; 3449: ee          .
-    db $e1                                                            ; 344a: e1          .  ; get-mem-1
-    db 3                                                              ; 344b: 03          .  ; subtract
-    db $38                                                            ; 344c: 38          8  ; end-calc
+    db $e1                                                            ; 344a: e1          .   ; get-mem-1
+    db 3                                                              ; 344b: 03          .   ; subtract
+    db $38                                                            ; 344c: 38          8   ; end-calc
 
     ret                                                               ; 344d: c9          .
 
@@ -10056,7 +10056,7 @@ l34c0:
 ; $34c3 referenced 3 times by $34a2, $34ac, $34b5
 invarg:
     rst $08                                                           ; 34c3: cf          .
-    db 9                                                              ; 34c4: 09          .  ; Report A Invalid argument
+    db 9                                                              ; 34c4: 09          .   ; Report A Invalid argument
 
 ; $34c5 referenced 9 times by $1cfa, $30c0, $3452, $3472, $34d5, $34dd, $34f8, $3501, $350a
 tstzero:
@@ -10221,8 +10221,8 @@ frst_less:
 str_test:
     push af                                                           ; 3560: f5          .
     rst $28                                                           ; 3561: ef          .
-    db $a0                                                            ; 3562: a0          .  ; stk-zero
-    db $38                                                            ; 3563: 38          8  ; end-calc
+    db $a0                                                            ; 3562: a0          .   ; stk-zero
+    db $38                                                            ; 3563: 38          8   ; end-calc
 
 ; $3564 referenced 1 time by $3531
 end_tests:
@@ -10290,7 +10290,7 @@ x80_fchrs:
 ; $35af referenced 4 times by $35a5, $35a7, $3866, $3869
 report_b2:
     rst $08                                                           ; 35af: cf          .
-    db $0a                                                            ; 35b0: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 35b0: 0a          .   ; Report B Integer out of range
 
 x80_fval:
     rst $18                                                           ; 35b1: df          .
@@ -10438,66 +10438,66 @@ x80_fce:
 
 x80_fmod:
     rst $28                                                           ; 3675: ef          .
-    db $c1                                                            ; 3676: c1          .  ; st-mem-1
-    db 2                                                              ; 3677: 02          .  ; delete
-    db $31                                                            ; 3678: 31          1  ; duplicate
-    db $e1                                                            ; 3679: e1          .  ; get-mem-1
-    db 5                                                              ; 367a: 05          .  ; division
-    db $27                                                            ; 367b: 27          '  ; int
-    db $e1                                                            ; 367c: e1          .  ; get-mem-1
-    db 1                                                              ; 367d: 01          .  ; exchange
-    db $c1                                                            ; 367e: c1          .  ; st-mem-1
-    db 4                                                              ; 367f: 04          .  ; multiply
-    db 3                                                              ; 3680: 03          .  ; subtract
-    db $e1                                                            ; 3681: e1          .  ; get-mem-1
-    db $38                                                            ; 3682: 38          8  ; end-calc
+    db $c1                                                            ; 3676: c1          .   ; st-mem-1
+    db 2                                                              ; 3677: 02          .   ; delete
+    db $31                                                            ; 3678: 31          1   ; duplicate
+    db $e1                                                            ; 3679: e1          .   ; get-mem-1
+    db 5                                                              ; 367a: 05          .   ; division
+    db $27                                                            ; 367b: 27          '   ; int
+    db $e1                                                            ; 367c: e1          .   ; get-mem-1
+    db 1                                                              ; 367d: 01          .   ; exchange
+    db $c1                                                            ; 367e: c1          .   ; st-mem-1
+    db 4                                                              ; 367f: 04          .   ; multiply
+    db 3                                                              ; 3680: 03          .   ; subtract
+    db $e1                                                            ; 3681: e1          .   ; get-mem-1
+    db $38                                                            ; 3682: 38          8   ; end-calc
 
     ret                                                               ; 3683: c9          .
 
 x80_fint:
     rst $28                                                           ; 3684: ef          .
-    db $31                                                            ; 3685: 31          1  ; duplicate
-    db $36                                                            ; 3686: 36          6  ; less-0
-    db 0                                                              ; 3687: 00          .  ; jump-true
+    db $31                                                            ; 3685: 31          1   ; duplicate
+    db $36                                                            ; 3686: 36          6   ; less-0
+    db 0                                                              ; 3687: 00          .   ; jump-true
     db x_neg - $                                                      ; 3688: 04          .
-    db $3a                                                            ; 3689: 3a          :  ; truncate
-    db $38                                                            ; 368a: 38          8  ; end-calc
+    db $3a                                                            ; 3689: 3a          :   ; truncate
+    db $38                                                            ; 368a: 38          8   ; end-calc
 
     ret                                                               ; 368b: c9          .
 
 x_neg:
-    db $31                                                            ; 368c: 31          1  ; duplicate
-    db $3a                                                            ; 368d: 3a          :  ; truncate
-    db $c0                                                            ; 368e: c0          .  ; st-mem-0
-    db 3                                                              ; 368f: 03          .  ; subtract
-    db $e0                                                            ; 3690: e0          .  ; get-mem-0
-    db 1                                                              ; 3691: 01          .  ; exchange
-    db $30                                                            ; 3692: 30          0  ; not
-    db 0                                                              ; 3693: 00          .  ; jump-true
+    db $31                                                            ; 368c: 31          1   ; duplicate
+    db $3a                                                            ; 368d: 3a          :   ; truncate
+    db $c0                                                            ; 368e: c0          .   ; st-mem-0
+    db 3                                                              ; 368f: 03          .   ; subtract
+    db $e0                                                            ; 3690: e0          .   ; get-mem-0
+    db 1                                                              ; 3691: 01          .   ; exchange
+    db $30                                                            ; 3692: 30          0   ; not
+    db 0                                                              ; 3693: 00          .   ; jump-true
     db exit - $                                                       ; 3694: 03          .
-    db $a1                                                            ; 3695: a1          .  ; stk-one
-    db 3                                                              ; 3696: 03          .  ; subtract
+    db $a1                                                            ; 3695: a1          .   ; stk-one
+    db 3                                                              ; 3696: 03          .   ; subtract
 exit:
-    db $38                                                            ; 3697: 38          8  ; end-calc
+    db $38                                                            ; 3697: 38          8   ; end-calc
 
     ret                                                               ; 3698: c9          .
 
 ; $3699 referenced 1 time by $384f
 x80_fexp:
     rst $28                                                           ; 3699: ef          .
-    db $34                                                            ; 369a: 34          4  ; stk-data
+    db $34                                                            ; 369a: 34          4   ; stk-data
     db $f1, $38, $aa, $3b, $29                                        ; 369b: f1 38 aa... .8. ; 1.442695041
-    db 4                                                              ; 36a0: 04          .  ; multiply
-    db $31                                                            ; 36a1: 31          1  ; duplicate
-    db $27                                                            ; 36a2: 27          '  ; int
-    db $c3                                                            ; 36a3: c3          .  ; st-mem-3
-    db 3                                                              ; 36a4: 03          .  ; subtract
-    db $31                                                            ; 36a5: 31          1  ; duplicate
-    db $0f                                                            ; 36a6: 0f          .  ; addition
-    db $a1                                                            ; 36a7: a1          .  ; stk-one
-    db 3                                                              ; 36a8: 03          .  ; subtract
-    db $88                                                            ; 36a9: 88          .  ; series-08
-    db $13, $36                                                       ; 36aa: 13 36       .6 ; 1.324224286e-09
+    db 4                                                              ; 36a0: 04          .   ; multiply
+    db $31                                                            ; 36a1: 31          1   ; duplicate
+    db $27                                                            ; 36a2: 27          '   ; int
+    db $c3                                                            ; 36a3: c3          .   ; st-mem-3
+    db 3                                                              ; 36a4: 03          .   ; subtract
+    db $31                                                            ; 36a5: 31          1   ; duplicate
+    db $0f                                                            ; 36a6: 0f          .   ; addition
+    db $a1                                                            ; 36a7: a1          .   ; stk-one
+    db 3                                                              ; 36a8: 03          .   ; subtract
+    db $88                                                            ; 36a9: 88          .   ; series-08
+    db $13, $36                                                       ; 36aa: 13 36       .6  ; 1.324224286e-09
     db $58, $65, $66                                                  ; 36ac: 58 65 66    Xef ; 5.341098586e-08
     db $9d, $78, $65, $40                                             ; 36af: 9d 78 65... .xe ; 1.850690751e-06
     db $a2, $60, $32, $c9                                             ; 36b3: a2 60 32... .`2 ; 5.345305908e-05
@@ -10505,8 +10505,8 @@ x80_fexp:
     db $eb, $2f, $b0, $b0, $14                                        ; 36bc: eb 2f b0... ./. ; 0.021446556
     db $ee, $7e, $bb, $94, $58                                        ; 36c1: ee 7e bb... .~. ; 0.2487624339
     db $f1, $3a, $7e, $f8, $cf                                        ; 36c6: f1 3a 7e... .:~ ; 1.456999875
-    db $e3                                                            ; 36cb: e3          .  ; get-mem-3
-    db $38                                                            ; 36cc: 38          8  ; end-calc
+    db $e3                                                            ; 36cb: e3          .   ; get-mem-3
+    db $38                                                            ; 36cc: 38          8   ; end-calc
 
     call fp_to_a                                                      ; 36cd: cd d5 2d    ..-
     jr nz,n_negtv                                                     ; 36d0: 20 07        .
@@ -10516,7 +10516,7 @@ x80_fexp:
 ; $36d7 referenced 1 time by $36d2
 report6_2:
     rst $08                                                           ; 36d7: cf          .
-    db 5                                                              ; 36d8: 05          .  ; Report 6 Number too big
+    db 5                                                              ; 36d8: 05          .   ; Report 6 Number too big
 
 ; $36d9 referenced 1 time by $36d0
 n_negtv:
@@ -10532,70 +10532,70 @@ result_ok:
 ; $36e2 referenced 2 times by $36d9, $36dc
 rslt_zero:
     rst $28                                                           ; 36e2: ef          .
-    db 2                                                              ; 36e3: 02          .  ; delete
-    db $a0                                                            ; 36e4: a0          .  ; stk-zero
-    db $38                                                            ; 36e5: 38          8  ; end-calc
+    db 2                                                              ; 36e3: 02          .   ; delete
+    db $a0                                                            ; 36e4: a0          .   ; stk-zero
+    db $38                                                            ; 36e5: 38          8   ; end-calc
 
     ret                                                               ; 36e6: c9          .
 
 x80_flogn:
     rst $28                                                           ; 36e7: ef          .
-    db $3d                                                            ; 36e8: 3d          =  ; re-stack
-    db $31                                                            ; 36e9: 31          1  ; duplicate
-    db $37                                                            ; 36ea: 37          7  ; greater-0
-    db 0                                                              ; 36eb: 00          .  ; jump-true
+    db $3d                                                            ; 36e8: 3d          =   ; re-stack
+    db $31                                                            ; 36e9: 31          1   ; duplicate
+    db $37                                                            ; 36ea: 37          7   ; greater-0
+    db 0                                                              ; 36eb: 00          .   ; jump-true
     db valid - $                                                      ; 36ec: 04          .
-    db $38                                                            ; 36ed: 38          8  ; end-calc
+    db $38                                                            ; 36ed: 38          8   ; end-calc
 
 ; $36ee referenced 1 time by $381d
 x36e6:
     rst $08                                                           ; 36ee: cf          .
-    db 9                                                              ; 36ef: 09          .  ; Report A Invalid argument
+    db 9                                                              ; 36ef: 09          .   ; Report A Invalid argument
 valid:
-    db $38                                                            ; 36f0: 38          8  ; end-calc
+    db $38                                                            ; 36f0: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 36f1: 7e          ~
     ld (hl),$80                                                       ; 36f2: 36 80       6.
     call stack_a                                                      ; 36f4: cd 28 2d    .(-
     rst $28                                                           ; 36f7: ef          .
-    db $34                                                            ; 36f8: 34          4  ; stk-data
-    db $38, 0                                                         ; 36f9: 38 00       8. ; 128
-    db 3                                                              ; 36fb: 03          .  ; subtract
-    db 1                                                              ; 36fc: 01          .  ; exchange
-    db $31                                                            ; 36fd: 31          1  ; duplicate
-    db $34                                                            ; 36fe: 34          4  ; stk-data
+    db $34                                                            ; 36f8: 34          4   ; stk-data
+    db $38, 0                                                         ; 36f9: 38 00       8.  ; 128
+    db 3                                                              ; 36fb: 03          .   ; subtract
+    db 1                                                              ; 36fc: 01          .   ; exchange
+    db $31                                                            ; 36fd: 31          1   ; duplicate
+    db $34                                                            ; 36fe: 34          4   ; stk-data
     db $f0, $4c, $cc, $cc, $cd                                        ; 36ff: f0 4c cc... .L. ; 0.8
-    db 3                                                              ; 3704: 03          .  ; subtract
-    db $37                                                            ; 3705: 37          7  ; greater-0
-    db 0                                                              ; 3706: 00          .  ; jump-true
+    db 3                                                              ; 3704: 03          .   ; subtract
+    db $37                                                            ; 3705: 37          7   ; greater-0
+    db 0                                                              ; 3706: 00          .   ; jump-true
     db gre_8 - $                                                      ; 3707: 08          .
-    db 1                                                              ; 3708: 01          .  ; exchange
-    db $a1                                                            ; 3709: a1          .  ; stk-one
-    db 3                                                              ; 370a: 03          .  ; subtract
-    db 1                                                              ; 370b: 01          .  ; exchange
-    db $38                                                            ; 370c: 38          8  ; end-calc
+    db 1                                                              ; 3708: 01          .   ; exchange
+    db $a1                                                            ; 3709: a1          .   ; stk-one
+    db 3                                                              ; 370a: 03          .   ; subtract
+    db 1                                                              ; 370b: 01          .   ; exchange
+    db $38                                                            ; 370c: 38          8   ; end-calc
 
     inc (hl)                                                          ; 370d: 34          4
     rst $28                                                           ; 370e: ef          .
 gre_8:
-    db 1                                                              ; 370f: 01          .  ; exchange
-    db $34                                                            ; 3710: 34          4  ; stk-data
+    db 1                                                              ; 370f: 01          .   ; exchange
+    db $34                                                            ; 3710: 34          4   ; stk-data
     db $f0, $31, $72, $17, $f8                                        ; 3711: f0 31 72... .1r ; 0.6931471806
-    db 4                                                              ; 3716: 04          .  ; multiply
-    db 1                                                              ; 3717: 01          .  ; exchange
-    db $a2                                                            ; 3718: a2          .  ; stk-half
-    db 3                                                              ; 3719: 03          .  ; subtract
-    db $a2                                                            ; 371a: a2          .  ; stk-half
-    db 3                                                              ; 371b: 03          .  ; subtract
-    db $31                                                            ; 371c: 31          1  ; duplicate
-    db $34                                                            ; 371d: 34          4  ; stk-data
-    db $32, $20                                                       ; 371e: 32 20       2  ; 2.5
-    db 4                                                              ; 3720: 04          .  ; multiply
-    db $a2                                                            ; 3721: a2          .  ; stk-half
-    db 3                                                              ; 3722: 03          .  ; subtract
-    db $8c                                                            ; 3723: 8c          .  ; series-0C
-    db $11, $ac                                                       ; 3724: 11 ac       .. ; -3.128661774e-10
-    db $14, 9                                                         ; 3726: 14 09       .. ; 1.993612386e-09
+    db 4                                                              ; 3716: 04          .   ; multiply
+    db 1                                                              ; 3717: 01          .   ; exchange
+    db $a2                                                            ; 3718: a2          .   ; stk-half
+    db 3                                                              ; 3719: 03          .   ; subtract
+    db $a2                                                            ; 371a: a2          .   ; stk-half
+    db 3                                                              ; 371b: 03          .   ; subtract
+    db $31                                                            ; 371c: 31          1   ; duplicate
+    db $34                                                            ; 371d: 34          4   ; stk-data
+    db $32, $20                                                       ; 371e: 32 20       2   ; 2.5
+    db 4                                                              ; 3720: 04          .   ; multiply
+    db $a2                                                            ; 3721: a2          .   ; stk-half
+    db 3                                                              ; 3722: 03          .   ; subtract
+    db $8c                                                            ; 3723: 8c          .   ; series-0C
+    db $11, $ac                                                       ; 3724: 11 ac       ..  ; -3.128661774e-10
+    db $14, 9                                                         ; 3726: 14 09       ..  ; 1.993612386e-09
     db $56, $da, $a5                                                  ; 3728: 56 da a5    V.. ; -1.272678674e-08
     db $59, $30, $c5                                                  ; 372b: 59 30 c5    Y0. ; 8.231472748e-08
     db $5c, $90, $aa                                                  ; 372e: 5c 90 aa    \.. ; -5.389156286e-07
@@ -10606,86 +10606,86 @@ gre_8:
     db $ea, $1b, $43, $ca, $36                                        ; 3742: ea 1b 43... ..C ; 0.009476611587
     db $ed, $a7, $9c, $7e, $5e                                        ; 3747: ed a7 9c... ... ; -0.08184145665
     db $f0, $6e, $23, $80, $93                                        ; 374c: f0 6e 23... .n# ; 0.9302292212
-    db 4                                                              ; 3751: 04          .  ; multiply
-    db $0f                                                            ; 3752: 0f          .  ; addition
-    db $38                                                            ; 3753: 38          8  ; end-calc
+    db 4                                                              ; 3751: 04          .   ; multiply
+    db $0f                                                            ; 3752: 0f          .   ; addition
+    db $38                                                            ; 3753: 38          8   ; end-calc
 
     ret                                                               ; 3754: c9          .
 
 x80_fget:
     rst $28                                                           ; 3755: ef          .
-    db $34                                                            ; 3756: 34          4  ; stk-data
+    db $34                                                            ; 3756: 34          4   ; stk-data
     db $ee, $22, $f9, $83, $6e                                        ; 3757: ee 22 f9... .". ; 0.1591549431
-    db 4                                                              ; 375c: 04          .  ; multiply
-    db $31                                                            ; 375d: 31          1  ; duplicate
-    db $a2                                                            ; 375e: a2          .  ; stk-half
-    db $0f                                                            ; 375f: 0f          .  ; addition
-    db $27                                                            ; 3760: 27          '  ; int
-    db 3                                                              ; 3761: 03          .  ; subtract
-    db $31                                                            ; 3762: 31          1  ; duplicate
-    db $0f                                                            ; 3763: 0f          .  ; addition
-    db $31                                                            ; 3764: 31          1  ; duplicate
-    db $0f                                                            ; 3765: 0f          .  ; addition
-    db $31                                                            ; 3766: 31          1  ; duplicate
-    db $2a                                                            ; 3767: 2a          *  ; abs
-    db $a1                                                            ; 3768: a1          .  ; stk-one
-    db 3                                                              ; 3769: 03          .  ; subtract
-    db $31                                                            ; 376a: 31          1  ; duplicate
-    db $37                                                            ; 376b: 37          7  ; greater-0
-    db $c0                                                            ; 376c: c0          .  ; st-mem-0
-    db 0                                                              ; 376d: 00          .  ; jump-true
+    db 4                                                              ; 375c: 04          .   ; multiply
+    db $31                                                            ; 375d: 31          1   ; duplicate
+    db $a2                                                            ; 375e: a2          .   ; stk-half
+    db $0f                                                            ; 375f: 0f          .   ; addition
+    db $27                                                            ; 3760: 27          '   ; int
+    db 3                                                              ; 3761: 03          .   ; subtract
+    db $31                                                            ; 3762: 31          1   ; duplicate
+    db $0f                                                            ; 3763: 0f          .   ; addition
+    db $31                                                            ; 3764: 31          1   ; duplicate
+    db $0f                                                            ; 3765: 0f          .   ; addition
+    db $31                                                            ; 3766: 31          1   ; duplicate
+    db $2a                                                            ; 3767: 2a          *   ; abs
+    db $a1                                                            ; 3768: a1          .   ; stk-one
+    db 3                                                              ; 3769: 03          .   ; subtract
+    db $31                                                            ; 376a: 31          1   ; duplicate
+    db $37                                                            ; 376b: 37          7   ; greater-0
+    db $c0                                                            ; 376c: c0          .   ; st-mem-0
+    db 0                                                              ; 376d: 00          .   ; jump-true
     db zplus - $                                                      ; 376e: 04          .
-    db 2                                                              ; 376f: 02          .  ; delete
-    db $38                                                            ; 3770: 38          8  ; end-calc
+    db 2                                                              ; 376f: 02          .   ; delete
+    db $38                                                            ; 3770: 38          8   ; end-calc
 
     ret                                                               ; 3771: c9          .
 
 zplus:
-    db $a1                                                            ; 3772: a1          .  ; stk-one
-    db 3                                                              ; 3773: 03          .  ; subtract
-    db 1                                                              ; 3774: 01          .  ; exchange
-    db $36                                                            ; 3775: 36          6  ; less-0
-    db 0                                                              ; 3776: 00          .  ; jump-true
+    db $a1                                                            ; 3772: a1          .   ; stk-one
+    db 3                                                              ; 3773: 03          .   ; subtract
+    db 1                                                              ; 3774: 01          .   ; exchange
+    db $36                                                            ; 3775: 36          6   ; less-0
+    db 0                                                              ; 3776: 00          .   ; jump-true
     db yneg - $                                                       ; 3777: 02          .
-    db $1b                                                            ; 3778: 1b          .  ; negate
+    db $1b                                                            ; 3778: 1b          .   ; negate
 yneg:
-    db $38                                                            ; 3779: 38          8  ; end-calc
+    db $38                                                            ; 3779: 38          8   ; end-calc
 
     ret                                                               ; 377a: c9          .
 
 x80_fcos:
     rst $28                                                           ; 377b: ef          .
-    db $39                                                            ; 377c: 39          9  ; get-argt
-    db $2a                                                            ; 377d: 2a          *  ; abs
-    db $a1                                                            ; 377e: a1          .  ; stk-one
-    db 3                                                              ; 377f: 03          .  ; subtract
-    db $e0                                                            ; 3780: e0          .  ; get-mem-0
-    db 0                                                              ; 3781: 00          .  ; jump-true
+    db $39                                                            ; 377c: 39          9   ; get-argt
+    db $2a                                                            ; 377d: 2a          *   ; abs
+    db $a1                                                            ; 377e: a1          .   ; stk-one
+    db 3                                                              ; 377f: 03          .   ; subtract
+    db $e0                                                            ; 3780: e0          .   ; get-mem-0
+    db 0                                                              ; 3781: 00          .   ; jump-true
     db c_ent - $                                                      ; 3782: 06          .
-    db $1b                                                            ; 3783: 1b          .  ; negate
-    db $33                                                            ; 3784: 33          3  ; jump
+    db $1b                                                            ; 3783: 1b          .   ; negate
+    db $33                                                            ; 3784: 33          3   ; jump
     db c_ent - $                                                      ; 3785: 03          .
 
 x80_fsin:
     rst $28                                                           ; 3786: ef          .
-    db $39                                                            ; 3787: 39          9  ; get-argt
+    db $39                                                            ; 3787: 39          9   ; get-argt
 c_ent:
-    db $31                                                            ; 3788: 31          1  ; duplicate
-    db $31                                                            ; 3789: 31          1  ; duplicate
-    db 4                                                              ; 378a: 04          .  ; multiply
-    db $31                                                            ; 378b: 31          1  ; duplicate
-    db $0f                                                            ; 378c: 0f          .  ; addition
-    db $a1                                                            ; 378d: a1          .  ; stk-one
-    db 3                                                              ; 378e: 03          .  ; subtract
-    db $86                                                            ; 378f: 86          .  ; series-06
-    db $14, $e6                                                       ; 3790: 14 e6       .. ; -3.346940503e-09
+    db $31                                                            ; 3788: 31          1   ; duplicate
+    db $31                                                            ; 3789: 31          1   ; duplicate
+    db 4                                                              ; 378a: 04          .   ; multiply
+    db $31                                                            ; 378b: 31          1   ; duplicate
+    db $0f                                                            ; 378c: 0f          .   ; addition
+    db $a1                                                            ; 378d: a1          .   ; stk-one
+    db 3                                                              ; 378e: 03          .   ; subtract
+    db $86                                                            ; 378f: 86          .   ; series-06
+    db $14, $e6                                                       ; 3790: 14 e6       ..  ; -3.346940503e-09
     db $5c, $1f, $0b                                                  ; 3792: 5c 1f 0b    \.. ; 5.924812285e-07
     db $a3, $8f, $38, $ee                                             ; 3795: a3 8f 38... ..8 ; -6.829375343e-05
     db $e9, $15, $63, $bb, $23                                        ; 3799: e9 15 63... ..c ; 0.004559008003
     db $ee, $92, $0d, $cd, $ed                                        ; 379e: ee 92 0d... ... ; -0.1426307846
     db $f1, $23, $5d, $1b, $ea                                        ; 37a3: f1 23 5d... .#] ; 1.276278962
-    db 4                                                              ; 37a8: 04          .  ; multiply
-    db $38                                                            ; 37a9: 38          8  ; end-calc
+    db 4                                                              ; 37a8: 04          .   ; multiply
+    db $38                                                            ; 37a9: 38          8   ; end-calc
 
     ret                                                               ; 37aa: c9          .
 
@@ -10695,36 +10695,36 @@ x80_fatan:
     cp $81                                                            ; 37af: fe 81       ..
     jr c,small                                                        ; 37b1: 38 0e       8.
     rst $28                                                           ; 37b3: ef          .
-    db $a1                                                            ; 37b4: a1          .  ; stk-one
-    db $1b                                                            ; 37b5: 1b          .  ; negate
-    db 1                                                              ; 37b6: 01          .  ; exchange
-    db 5                                                              ; 37b7: 05          .  ; division
-    db $31                                                            ; 37b8: 31          1  ; duplicate
-    db $36                                                            ; 37b9: 36          6  ; less-0
-    db $a3                                                            ; 37ba: a3          .  ; stk-pi/2
-    db 1                                                              ; 37bb: 01          .  ; exchange
-    db 0                                                              ; 37bc: 00          .  ; jump-true
+    db $a1                                                            ; 37b4: a1          .   ; stk-one
+    db $1b                                                            ; 37b5: 1b          .   ; negate
+    db 1                                                              ; 37b6: 01          .   ; exchange
+    db 5                                                              ; 37b7: 05          .   ; division
+    db $31                                                            ; 37b8: 31          1   ; duplicate
+    db $36                                                            ; 37b9: 36          6   ; less-0
+    db $a3                                                            ; 37ba: a3          .   ; stk-pi/2
+    db 1                                                              ; 37bb: 01          .   ; exchange
+    db 0                                                              ; 37bc: 00          .   ; jump-true
     db cases - $                                                      ; 37bd: 06          .
-    db $1b                                                            ; 37be: 1b          .  ; negate
-    db $33                                                            ; 37bf: 33          3  ; jump
+    db $1b                                                            ; 37be: 1b          .   ; negate
+    db $33                                                            ; 37bf: 33          3   ; jump
     db cases - $                                                      ; 37c0: 03          .
 
 ; $37c1 referenced 1 time by $37b1
 small:
     rst $28                                                           ; 37c1: ef          .
-    db $a0                                                            ; 37c2: a0          .  ; stk-zero
+    db $a0                                                            ; 37c2: a0          .   ; stk-zero
 cases:
-    db 1                                                              ; 37c3: 01          .  ; exchange
-    db $31                                                            ; 37c4: 31          1  ; duplicate
-    db $31                                                            ; 37c5: 31          1  ; duplicate
-    db 4                                                              ; 37c6: 04          .  ; multiply
-    db $31                                                            ; 37c7: 31          1  ; duplicate
-    db $0f                                                            ; 37c8: 0f          .  ; addition
-    db $a1                                                            ; 37c9: a1          .  ; stk-one
-    db 3                                                              ; 37ca: 03          .  ; subtract
-    db $8c                                                            ; 37cb: 8c          .  ; series-0C
-    db $10, $b2                                                       ; 37cc: 10 b2       .. ; -1.618900569e-10
-    db $13, $0e                                                       ; 37ce: 13 0e       .. ; 1.033185981e-09
+    db 1                                                              ; 37c3: 01          .   ; exchange
+    db $31                                                            ; 37c4: 31          1   ; duplicate
+    db $31                                                            ; 37c5: 31          1   ; duplicate
+    db 4                                                              ; 37c6: 04          .   ; multiply
+    db $31                                                            ; 37c7: 31          1   ; duplicate
+    db $0f                                                            ; 37c8: 0f          .   ; addition
+    db $a1                                                            ; 37c9: a1          .   ; stk-one
+    db 3                                                              ; 37ca: 03          .   ; subtract
+    db $8c                                                            ; 37cb: 8c          .   ; series-0C
+    db $10, $b2                                                       ; 37cc: 10 b2       ..  ; -1.618900569e-10
+    db $13, $0e                                                       ; 37ce: 13 0e       ..  ; 1.033185981e-09
     db $55, $e4, $8d                                                  ; 37d0: 55 e4 8d    U.. ; -6.651703188e-09
     db $58, $39, $bc                                                  ; 37d3: 58 39 bc    X9. ; 4.324465408e-08
     db $5b, $98, $fd                                                  ; 37d6: 5b 98 fd    [.. ; -2.8496288e-07
@@ -10735,46 +10735,46 @@ cases:
     db $e9, $36, $73, $1b, $5d                                        ; 37e9: e9 36 73... .6s ; 0.005567921029
     db $ec, $d8, $de, $63, $be                                        ; 37ee: ec d8 de... ... ; -0.05294646227
     db $f0, $61, $a1, $b3, $0c                                        ; 37f3: f0 61 a1... .a. ; 0.8813735871
-    db 4                                                              ; 37f8: 04          .  ; multiply
-    db $0f                                                            ; 37f9: 0f          .  ; addition
-    db $38                                                            ; 37fa: 38          8  ; end-calc
+    db 4                                                              ; 37f8: 04          .   ; multiply
+    db $0f                                                            ; 37f9: 0f          .   ; addition
+    db $38                                                            ; 37fa: 38          8   ; end-calc
 
     ret                                                               ; 37fb: c9          .
 
 x80_fasin:
     rst $28                                                           ; 37fc: ef          .
-    db $31                                                            ; 37fd: 31          1  ; duplicate
-    db $31                                                            ; 37fe: 31          1  ; duplicate
-    db 4                                                              ; 37ff: 04          .  ; multiply
-    db $a1                                                            ; 3800: a1          .  ; stk-one
-    db 3                                                              ; 3801: 03          .  ; subtract
-    db $1b                                                            ; 3802: 1b          .  ; negate
-    db $28                                                            ; 3803: 28          (  ; sqr
-    db $a1                                                            ; 3804: a1          .  ; stk-one
-    db $0f                                                            ; 3805: 0f          .  ; addition
-    db 5                                                              ; 3806: 05          .  ; division
-    db $24                                                            ; 3807: 24          $  ; atn
-    db $31                                                            ; 3808: 31          1  ; duplicate
-    db $0f                                                            ; 3809: 0f          .  ; addition
-    db $38                                                            ; 380a: 38          8  ; end-calc
+    db $31                                                            ; 37fd: 31          1   ; duplicate
+    db $31                                                            ; 37fe: 31          1   ; duplicate
+    db 4                                                              ; 37ff: 04          .   ; multiply
+    db $a1                                                            ; 3800: a1          .   ; stk-one
+    db 3                                                              ; 3801: 03          .   ; subtract
+    db $1b                                                            ; 3802: 1b          .   ; negate
+    db $28                                                            ; 3803: 28          (   ; sqr
+    db $a1                                                            ; 3804: a1          .   ; stk-one
+    db $0f                                                            ; 3805: 0f          .   ; addition
+    db 5                                                              ; 3806: 05          .   ; division
+    db $24                                                            ; 3807: 24          $   ; atn
+    db $31                                                            ; 3808: 31          1   ; duplicate
+    db $0f                                                            ; 3809: 0f          .   ; addition
+    db $38                                                            ; 380a: 38          8   ; end-calc
 
     ret                                                               ; 380b: c9          .
 
 x80_facos:
     rst $28                                                           ; 380c: ef          .
-    db $22                                                            ; 380d: 22          "  ; asn
-    db $a3                                                            ; 380e: a3          .  ; stk-pi/2
-    db 3                                                              ; 380f: 03          .  ; subtract
-    db $1b                                                            ; 3810: 1b          .  ; negate
-    db $38                                                            ; 3811: 38          8  ; end-calc
+    db $22                                                            ; 380d: 22          "   ; asn
+    db $a3                                                            ; 380e: a3          .   ; stk-pi/2
+    db 3                                                              ; 380f: 03          .   ; subtract
+    db $1b                                                            ; 3810: 1b          .   ; negate
+    db $38                                                            ; 3811: 38          8   ; end-calc
 
     ret                                                               ; 3812: c9          .
 
 x80_fsqrt:
     rst $28                                                           ; 3813: ef          .
-    db $3d                                                            ; 3814: 3d          =  ; re-stack
-    db $c3                                                            ; 3815: c3          .  ; st-mem-3
-    db $38                                                            ; 3816: 38          8  ; end-calc
+    db $3d                                                            ; 3814: 3d          =   ; re-stack
+    db $c3                                                            ; 3815: c3          .   ; st-mem-3
+    db $38                                                            ; 3816: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 3817: 7e          ~
     and a                                                             ; 3818: a7          .
@@ -10796,59 +10796,59 @@ l382f:
     ld (hl),a                                                         ; 3831: 77          w
     rst $28                                                           ; 3832: ef          .
 l3833:
-    db $31                                                            ; 3833: 31          1  ; duplicate
-    db $e3                                                            ; 3834: e3          .  ; get-mem-3
-    db $c4                                                            ; 3835: c4          .  ; st-mem-4
-    db 5                                                              ; 3836: 05          .  ; division
-    db $e3                                                            ; 3837: e3          .  ; get-mem-3
-    db $0f                                                            ; 3838: 0f          .  ; addition
-    db $a2                                                            ; 3839: a2          .  ; stk-half
-    db 4                                                              ; 383a: 04          .  ; multiply
-    db $c3                                                            ; 383b: c3          .  ; st-mem-3
-    db $e4                                                            ; 383c: e4          .  ; get-mem-4
-    db 3                                                              ; 383d: 03          .  ; subtract
-    db $2a                                                            ; 383e: 2a          *  ; abs
-    db $37                                                            ; 383f: 37          7  ; greater-0
-    db 0                                                              ; 3840: 00          .  ; jump-true
+    db $31                                                            ; 3833: 31          1   ; duplicate
+    db $e3                                                            ; 3834: e3          .   ; get-mem-3
+    db $c4                                                            ; 3835: c4          .   ; st-mem-4
+    db 5                                                              ; 3836: 05          .   ; division
+    db $e3                                                            ; 3837: e3          .   ; get-mem-3
+    db $0f                                                            ; 3838: 0f          .   ; addition
+    db $a2                                                            ; 3839: a2          .   ; stk-half
+    db 4                                                              ; 383a: 04          .   ; multiply
+    db $c3                                                            ; 383b: c3          .   ; st-mem-3
+    db $e4                                                            ; 383c: e4          .   ; get-mem-4
+    db 3                                                              ; 383d: 03          .   ; subtract
+    db $2a                                                            ; 383e: 2a          *   ; abs
+    db $37                                                            ; 383f: 37          7   ; greater-0
+    db 0                                                              ; 3840: 00          .   ; jump-true
     db l3833 - $                                                      ; 3841: f2          .
-    db 2                                                              ; 3842: 02          .  ; delete
-    db $e3                                                            ; 3843: e3          .  ; get-mem-3
-    db $38                                                            ; 3844: 38          8  ; end-calc
+    db 2                                                              ; 3842: 02          .   ; delete
+    db $e3                                                            ; 3843: e3          .   ; get-mem-3
+    db $38                                                            ; 3844: 38          8   ; end-calc
 
     ret                                                               ; 3845: c9          .
 
 x80_ftop:
     rst $28                                                           ; 3846: ef          .
-    db 1                                                              ; 3847: 01          .  ; exchange
-    db $31                                                            ; 3848: 31          1  ; duplicate
-    db $30                                                            ; 3849: 30          0  ; not
-    db 0                                                              ; 384a: 00          .  ; jump-true
+    db 1                                                              ; 3847: 01          .   ; exchange
+    db $31                                                            ; 3848: 31          1   ; duplicate
+    db $30                                                            ; 3849: 30          0   ; not
+    db 0                                                              ; 384a: 00          .   ; jump-true
     db xis0 - $                                                       ; 384b: 07          .
-    db $25                                                            ; 384c: 25          %  ; ln
-    db 4                                                              ; 384d: 04          .  ; multiply
-    db $38                                                            ; 384e: 38          8  ; end-calc
+    db $25                                                            ; 384c: 25          %   ; ln
+    db 4                                                              ; 384d: 04          .   ; multiply
+    db $38                                                            ; 384e: 38          8   ; end-calc
 
     jp x80_fexp                                                       ; 384f: c3 99 36    ..6
 
 xis0:
-    db 2                                                              ; 3852: 02          .  ; delete
-    db $31                                                            ; 3853: 31          1  ; duplicate
-    db $30                                                            ; 3854: 30          0  ; not
-    db 0                                                              ; 3855: 00          .  ; jump-true
+    db 2                                                              ; 3852: 02          .   ; delete
+    db $31                                                            ; 3853: 31          1   ; duplicate
+    db $30                                                            ; 3854: 30          0   ; not
+    db 0                                                              ; 3855: 00          .   ; jump-true
     db one - $                                                        ; 3856: 09          .
-    db $a0                                                            ; 3857: a0          .  ; stk-zero
-    db 1                                                              ; 3858: 01          .  ; exchange
-    db $37                                                            ; 3859: 37          7  ; greater-0
-    db 0                                                              ; 385a: 00          .  ; jump-true
+    db $a0                                                            ; 3857: a0          .   ; stk-zero
+    db 1                                                              ; 3858: 01          .   ; exchange
+    db $37                                                            ; 3859: 37          7   ; greater-0
+    db 0                                                              ; 385a: 00          .   ; jump-true
     db last - $                                                       ; 385b: 06          .
-    db $a1                                                            ; 385c: a1          .  ; stk-one
-    db 1                                                              ; 385d: 01          .  ; exchange
-    db 5                                                              ; 385e: 05          .  ; division
+    db $a1                                                            ; 385c: a1          .   ; stk-one
+    db 1                                                              ; 385d: 01          .   ; exchange
+    db 5                                                              ; 385e: 05          .   ; division
 one:
-    db 2                                                              ; 385f: 02          .  ; delete
-    db $a1                                                            ; 3860: a1          .  ; stk-one
+    db 2                                                              ; 385f: 02          .   ; delete
+    db $a1                                                            ; 3860: a1          .   ; stk-one
 last:
-    db $38                                                            ; 3861: 38          8  ; end-calc
+    db $38                                                            ; 3861: 38          8   ; end-calc
 
     ret                                                               ; 3862: c9          .
 
@@ -10985,7 +10985,7 @@ l3915:
 ; $391b referenced 1 time by $390f
 l391b:
     rst $08                                                           ; 391b: cf          .
-    db $0a                                                            ; 391c: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 391c: 0a          .   ; Report B Integer out of range
 
 ; $391d referenced 1 time by $0ad9
 l391d:
@@ -11318,23 +11318,23 @@ l3ac8:
 ; $3ad6 referenced 1 time by $3ace
 l3ad6:
     rst $28                                                           ; 3ad6: ef          .
-    db $a4                                                            ; 3ad7: a4          .  ; stk-ten
-    db $38                                                            ; 3ad8: 38          8  ; end-calc
+    db $a4                                                            ; 3ad7: a4          .   ; stk-ten
+    db $38                                                            ; 3ad8: 38          8   ; end-calc
 
 ; $3ad9 referenced 1 time by $3ad2
 l3ad9:
     rst $28                                                           ; 3ad9: ef          .
-    db $a4                                                            ; 3ada: a4          .  ; stk-ten
-    db $38                                                            ; 3adb: 38          8  ; end-calc
+    db $a4                                                            ; 3ada: a4          .   ; stk-ten
+    db $38                                                            ; 3adb: 38          8   ; end-calc
 
 ; $3adc referenced 1 time by $3ad4
 l3adc:
     rst $28                                                           ; 3adc: ef          .
-    db $c1                                                            ; 3add: c1          .  ; st-mem-1
-    db 2                                                              ; 3ade: 02          .  ; delete
-    db $c0                                                            ; 3adf: c0          .  ; st-mem-0
-    db 2                                                              ; 3ae0: 02          .  ; delete
-    db $38                                                            ; 3ae1: 38          8  ; end-calc
+    db $c1                                                            ; 3add: c1          .   ; st-mem-1
+    db 2                                                              ; 3ade: 02          .   ; delete
+    db $c0                                                            ; 3adf: c0          .   ; st-mem-0
+    db 2                                                              ; 3ae0: 02          .   ; delete
+    db $38                                                            ; 3ae1: 38          8   ; end-calc
 
     ld de,(prog)                                                      ; 3ae2: ed 5b 53... .[S
     ld hl,(vars)                                                      ; 3ae6: 2a 4b 5c    *K\
@@ -11723,7 +11723,7 @@ cursors:
     db %00000000                                                      ; 3cfe: 00          .
     db %00000000                                                      ; 3cff: 00          .
 font:
-    db %00000000                                                      ; 3d00: 00          .  ; ' '
+    db %00000000                                                      ; 3d00: 00          .   ; ' '
     db %00000000                                                      ; 3d01: 00          .
     db %00000000                                                      ; 3d02: 00          .
     db %00000000                                                      ; 3d03: 00          .
@@ -11731,7 +11731,7 @@ font:
     db %00000000                                                      ; 3d05: 00          .
     db %00000000                                                      ; 3d06: 00          .
     db %00000000                                                      ; 3d07: 00          .
-    db %00000000                                                      ; 3d08: 00          .  ; '!'
+    db %00000000                                                      ; 3d08: 00          .   ; '!'
     db %00010000                                                      ; 3d09: 10          .
     db %00010000                                                      ; 3d0a: 10          .
     db %00010000                                                      ; 3d0b: 10          .
@@ -11739,7 +11739,7 @@ font:
     db %00000000                                                      ; 3d0d: 00          .
     db %00010000                                                      ; 3d0e: 10          .
     db %00000000                                                      ; 3d0f: 00          .
-    db %00000000                                                      ; 3d10: 00          .  ; '"'
+    db %00000000                                                      ; 3d10: 00          .   ; '"'
     db %00100100                                                      ; 3d11: 24          $
     db %00100100                                                      ; 3d12: 24          $
     db %00000000                                                      ; 3d13: 00          .
@@ -11747,7 +11747,7 @@ font:
     db %00000000                                                      ; 3d15: 00          .
     db %00000000                                                      ; 3d16: 00          .
     db %00000000                                                      ; 3d17: 00          .
-    db %00000000                                                      ; 3d18: 00          .  ; '#'
+    db %00000000                                                      ; 3d18: 00          .   ; '#'
     db %00100100                                                      ; 3d19: 24          $
     db %01111110                                                      ; 3d1a: 7e          ~
     db %00100100                                                      ; 3d1b: 24          $
@@ -11755,7 +11755,7 @@ font:
     db %01111110                                                      ; 3d1d: 7e          ~
     db %00100100                                                      ; 3d1e: 24          $
     db %00000000                                                      ; 3d1f: 00          .
-    db %00000000                                                      ; 3d20: 00          .  ; '$'
+    db %00000000                                                      ; 3d20: 00          .   ; '$'
     db %00001000                                                      ; 3d21: 08          .
     db %00111110                                                      ; 3d22: 3e          >
     db %00101000                                                      ; 3d23: 28          (
@@ -11763,7 +11763,7 @@ font:
     db %00001010                                                      ; 3d25: 0a          .
     db %00111110                                                      ; 3d26: 3e          >
     db %00001000                                                      ; 3d27: 08          .
-    db %00000000                                                      ; 3d28: 00          .  ; '%'
+    db %00000000                                                      ; 3d28: 00          .   ; '%'
     db %01100010                                                      ; 3d29: 62          b
     db %01100100                                                      ; 3d2a: 64          d
     db %00001000                                                      ; 3d2b: 08          .
@@ -11771,7 +11771,7 @@ font:
     db %00100110                                                      ; 3d2d: 26          &
     db %01000110                                                      ; 3d2e: 46          F
     db %00000000                                                      ; 3d2f: 00          .
-    db %00000000                                                      ; 3d30: 00          .  ; '&'
+    db %00000000                                                      ; 3d30: 00          .   ; '&'
     db %00010000                                                      ; 3d31: 10          .
     db %00101000                                                      ; 3d32: 28          (
     db %00010000                                                      ; 3d33: 10          .
@@ -11779,7 +11779,7 @@ font:
     db %01000100                                                      ; 3d35: 44          D
     db %00111010                                                      ; 3d36: 3a          :
     db %00000000                                                      ; 3d37: 00          .
-    db %00000000                                                      ; 3d38: 00          .  ; '''
+    db %00000000                                                      ; 3d38: 00          .   ; '''
     db %00001000                                                      ; 3d39: 08          .
     db %00010000                                                      ; 3d3a: 10          .
     db %00000000                                                      ; 3d3b: 00          .
@@ -11787,7 +11787,7 @@ font:
     db %00000000                                                      ; 3d3d: 00          .
     db %00000000                                                      ; 3d3e: 00          .
     db %00000000                                                      ; 3d3f: 00          .
-    db %00000000                                                      ; 3d40: 00          .  ; '('
+    db %00000000                                                      ; 3d40: 00          .   ; '('
     db %00000100                                                      ; 3d41: 04          .
     db %00001000                                                      ; 3d42: 08          .
     db %00001000                                                      ; 3d43: 08          .
@@ -11795,7 +11795,7 @@ font:
     db %00001000                                                      ; 3d45: 08          .
     db %00000100                                                      ; 3d46: 04          .
     db %00000000                                                      ; 3d47: 00          .
-    db %00000000                                                      ; 3d48: 00          .  ; ')'
+    db %00000000                                                      ; 3d48: 00          .   ; ')'
     db %00100000                                                      ; 3d49: 20
     db %00010000                                                      ; 3d4a: 10          .
     db %00010000                                                      ; 3d4b: 10          .
@@ -11803,7 +11803,7 @@ font:
     db %00010000                                                      ; 3d4d: 10          .
     db %00100000                                                      ; 3d4e: 20
     db %00000000                                                      ; 3d4f: 00          .
-    db %00000000                                                      ; 3d50: 00          .  ; '*'
+    db %00000000                                                      ; 3d50: 00          .   ; '*'
     db %00000000                                                      ; 3d51: 00          .
     db %00010100                                                      ; 3d52: 14          .
     db %00001000                                                      ; 3d53: 08          .
@@ -11811,7 +11811,7 @@ font:
     db %00001000                                                      ; 3d55: 08          .
     db %00010100                                                      ; 3d56: 14          .
     db %00000000                                                      ; 3d57: 00          .
-    db %00000000                                                      ; 3d58: 00          .  ; '+'
+    db %00000000                                                      ; 3d58: 00          .   ; '+'
     db %00000000                                                      ; 3d59: 00          .
     db %00001000                                                      ; 3d5a: 08          .
     db %00001000                                                      ; 3d5b: 08          .
@@ -11819,7 +11819,7 @@ font:
     db %00001000                                                      ; 3d5d: 08          .
     db %00001000                                                      ; 3d5e: 08          .
     db %00000000                                                      ; 3d5f: 00          .
-    db %00000000                                                      ; 3d60: 00          .  ; ','
+    db %00000000                                                      ; 3d60: 00          .   ; ','
     db %00000000                                                      ; 3d61: 00          .
     db %00000000                                                      ; 3d62: 00          .
     db %00000000                                                      ; 3d63: 00          .
@@ -11827,7 +11827,7 @@ font:
     db %00001000                                                      ; 3d65: 08          .
     db %00001000                                                      ; 3d66: 08          .
     db %00010000                                                      ; 3d67: 10          .
-    db %00000000                                                      ; 3d68: 00          .  ; '-'
+    db %00000000                                                      ; 3d68: 00          .   ; '-'
     db %00000000                                                      ; 3d69: 00          .
     db %00000000                                                      ; 3d6a: 00          .
     db %00000000                                                      ; 3d6b: 00          .
@@ -11835,7 +11835,7 @@ font:
     db %00000000                                                      ; 3d6d: 00          .
     db %00000000                                                      ; 3d6e: 00          .
     db %00000000                                                      ; 3d6f: 00          .
-    db %00000000                                                      ; 3d70: 00          .  ; '.'
+    db %00000000                                                      ; 3d70: 00          .   ; '.'
     db %00000000                                                      ; 3d71: 00          .
     db %00000000                                                      ; 3d72: 00          .
     db %00000000                                                      ; 3d73: 00          .
@@ -11843,7 +11843,7 @@ font:
     db %00011000                                                      ; 3d75: 18          .
     db %00011000                                                      ; 3d76: 18          .
     db %00000000                                                      ; 3d77: 00          .
-    db %00000000                                                      ; 3d78: 00          .  ; '/'
+    db %00000000                                                      ; 3d78: 00          .   ; '/'
     db %00000000                                                      ; 3d79: 00          .
     db %00000010                                                      ; 3d7a: 02          .
     db %00000100                                                      ; 3d7b: 04          .
@@ -11851,7 +11851,7 @@ font:
     db %00010000                                                      ; 3d7d: 10          .
     db %00100000                                                      ; 3d7e: 20
     db %00000000                                                      ; 3d7f: 00          .
-    db %00000000                                                      ; 3d80: 00          .  ; '0'
+    db %00000000                                                      ; 3d80: 00          .   ; '0'
     db %00111100                                                      ; 3d81: 3c          <
     db %01000110                                                      ; 3d82: 46          F
     db %01001010                                                      ; 3d83: 4a          J
@@ -11859,7 +11859,7 @@ font:
     db %01100010                                                      ; 3d85: 62          b
     db %00111100                                                      ; 3d86: 3c          <
     db %00000000                                                      ; 3d87: 00          .
-    db %00000000                                                      ; 3d88: 00          .  ; '1'
+    db %00000000                                                      ; 3d88: 00          .   ; '1'
     db %00011000                                                      ; 3d89: 18          .
     db %00101000                                                      ; 3d8a: 28          (
     db %00001000                                                      ; 3d8b: 08          .
@@ -11867,7 +11867,7 @@ font:
     db %00001000                                                      ; 3d8d: 08          .
     db %00111110                                                      ; 3d8e: 3e          >
     db %00000000                                                      ; 3d8f: 00          .
-    db %00000000                                                      ; 3d90: 00          .  ; '2'
+    db %00000000                                                      ; 3d90: 00          .   ; '2'
     db %00111100                                                      ; 3d91: 3c          <
     db %01000010                                                      ; 3d92: 42          B
     db %00000010                                                      ; 3d93: 02          .
@@ -11875,7 +11875,7 @@ font:
     db %01000000                                                      ; 3d95: 40          @
     db %01111110                                                      ; 3d96: 7e          ~
     db %00000000                                                      ; 3d97: 00          .
-    db %00000000                                                      ; 3d98: 00          .  ; '3'
+    db %00000000                                                      ; 3d98: 00          .   ; '3'
     db %00111100                                                      ; 3d99: 3c          <
     db %01000010                                                      ; 3d9a: 42          B
     db %00001100                                                      ; 3d9b: 0c          .
@@ -11883,7 +11883,7 @@ font:
     db %01000010                                                      ; 3d9d: 42          B
     db %00111100                                                      ; 3d9e: 3c          <
     db %00000000                                                      ; 3d9f: 00          .
-    db %00000000                                                      ; 3da0: 00          .  ; '4'
+    db %00000000                                                      ; 3da0: 00          .   ; '4'
     db %00001000                                                      ; 3da1: 08          .
     db %00011000                                                      ; 3da2: 18          .
     db %00101000                                                      ; 3da3: 28          (
@@ -11891,7 +11891,7 @@ font:
     db %01111110                                                      ; 3da5: 7e          ~
     db %00001000                                                      ; 3da6: 08          .
     db %00000000                                                      ; 3da7: 00          .
-    db %00000000                                                      ; 3da8: 00          .  ; '5'
+    db %00000000                                                      ; 3da8: 00          .   ; '5'
     db %01111110                                                      ; 3da9: 7e          ~
     db %01000000                                                      ; 3daa: 40          @
     db %01111100                                                      ; 3dab: 7c          |
@@ -11899,7 +11899,7 @@ font:
     db %01000010                                                      ; 3dad: 42          B
     db %00111100                                                      ; 3dae: 3c          <
     db %00000000                                                      ; 3daf: 00          .
-    db %00000000                                                      ; 3db0: 00          .  ; '6'
+    db %00000000                                                      ; 3db0: 00          .   ; '6'
     db %00111100                                                      ; 3db1: 3c          <
     db %01000000                                                      ; 3db2: 40          @
     db %01111100                                                      ; 3db3: 7c          |
@@ -11907,7 +11907,7 @@ font:
     db %01000010                                                      ; 3db5: 42          B
     db %00111100                                                      ; 3db6: 3c          <
     db %00000000                                                      ; 3db7: 00          .
-    db %00000000                                                      ; 3db8: 00          .  ; '7'
+    db %00000000                                                      ; 3db8: 00          .   ; '7'
     db %01111110                                                      ; 3db9: 7e          ~
     db %00000010                                                      ; 3dba: 02          .
     db %00000100                                                      ; 3dbb: 04          .
@@ -11915,7 +11915,7 @@ font:
     db %00010000                                                      ; 3dbd: 10          .
     db %00010000                                                      ; 3dbe: 10          .
     db %00000000                                                      ; 3dbf: 00          .
-    db %00000000                                                      ; 3dc0: 00          .  ; '8'
+    db %00000000                                                      ; 3dc0: 00          .   ; '8'
     db %00111100                                                      ; 3dc1: 3c          <
     db %01000010                                                      ; 3dc2: 42          B
     db %00111100                                                      ; 3dc3: 3c          <
@@ -11923,7 +11923,7 @@ font:
     db %01000010                                                      ; 3dc5: 42          B
     db %00111100                                                      ; 3dc6: 3c          <
     db %00000000                                                      ; 3dc7: 00          .
-    db %00000000                                                      ; 3dc8: 00          .  ; '9'
+    db %00000000                                                      ; 3dc8: 00          .   ; '9'
     db %00111100                                                      ; 3dc9: 3c          <
     db %01000010                                                      ; 3dca: 42          B
     db %01000010                                                      ; 3dcb: 42          B
@@ -11931,7 +11931,7 @@ font:
     db %00000010                                                      ; 3dcd: 02          .
     db %00111100                                                      ; 3dce: 3c          <
     db %00000000                                                      ; 3dcf: 00          .
-    db %00000000                                                      ; 3dd0: 00          .  ; ':'
+    db %00000000                                                      ; 3dd0: 00          .   ; ':'
     db %00000000                                                      ; 3dd1: 00          .
     db %00000000                                                      ; 3dd2: 00          .
     db %00010000                                                      ; 3dd3: 10          .
@@ -11939,7 +11939,7 @@ font:
     db %00000000                                                      ; 3dd5: 00          .
     db %00010000                                                      ; 3dd6: 10          .
     db %00000000                                                      ; 3dd7: 00          .
-    db %00000000                                                      ; 3dd8: 00          .  ; ';'
+    db %00000000                                                      ; 3dd8: 00          .   ; ';'
     db %00000000                                                      ; 3dd9: 00          .
     db %00010000                                                      ; 3dda: 10          .
     db %00000000                                                      ; 3ddb: 00          .
@@ -11947,7 +11947,7 @@ font:
     db %00010000                                                      ; 3ddd: 10          .
     db %00010000                                                      ; 3dde: 10          .
     db %00100000                                                      ; 3ddf: 20
-    db %00000000                                                      ; 3de0: 00          .  ; '<'
+    db %00000000                                                      ; 3de0: 00          .   ; '<'
     db %00000000                                                      ; 3de1: 00          .
     db %00000100                                                      ; 3de2: 04          .
     db %00001000                                                      ; 3de3: 08          .
@@ -11955,7 +11955,7 @@ font:
     db %00001000                                                      ; 3de5: 08          .
     db %00000100                                                      ; 3de6: 04          .
     db %00000000                                                      ; 3de7: 00          .
-    db %00000000                                                      ; 3de8: 00          .  ; '='
+    db %00000000                                                      ; 3de8: 00          .   ; '='
     db %00000000                                                      ; 3de9: 00          .
     db %00000000                                                      ; 3dea: 00          .
     db %00111110                                                      ; 3deb: 3e          >
@@ -11963,7 +11963,7 @@ font:
     db %00111110                                                      ; 3ded: 3e          >
     db %00000000                                                      ; 3dee: 00          .
     db %00000000                                                      ; 3def: 00          .
-    db %00000000                                                      ; 3df0: 00          .  ; '>'
+    db %00000000                                                      ; 3df0: 00          .   ; '>'
     db %00000000                                                      ; 3df1: 00          .
     db %00010000                                                      ; 3df2: 10          .
     db %00001000                                                      ; 3df3: 08          .
@@ -11971,7 +11971,7 @@ font:
     db %00001000                                                      ; 3df5: 08          .
     db %00010000                                                      ; 3df6: 10          .
     db %00000000                                                      ; 3df7: 00          .
-    db %00000000                                                      ; 3df8: 00          .  ; '?'
+    db %00000000                                                      ; 3df8: 00          .   ; '?'
     db %00111100                                                      ; 3df9: 3c          <
     db %01000010                                                      ; 3dfa: 42          B
     db %00000100                                                      ; 3dfb: 04          .
@@ -11979,7 +11979,7 @@ font:
     db %00000000                                                      ; 3dfd: 00          .
     db %00001000                                                      ; 3dfe: 08          .
     db %00000000                                                      ; 3dff: 00          .
-    db %00000000                                                      ; 3e00: 00          .  ; '@'
+    db %00000000                                                      ; 3e00: 00          .   ; '@'
     db %00111100                                                      ; 3e01: 3c          <
     db %01001010                                                      ; 3e02: 4a          J
     db %01010110                                                      ; 3e03: 56          V
@@ -11987,7 +11987,7 @@ font:
     db %01000000                                                      ; 3e05: 40          @
     db %00111100                                                      ; 3e06: 3c          <
     db %00000000                                                      ; 3e07: 00          .
-    db %00000000                                                      ; 3e08: 00          .  ; 'A'
+    db %00000000                                                      ; 3e08: 00          .   ; 'A'
     db %00111100                                                      ; 3e09: 3c          <
     db %01000010                                                      ; 3e0a: 42          B
     db %01000010                                                      ; 3e0b: 42          B
@@ -11995,7 +11995,7 @@ font:
     db %01000010                                                      ; 3e0d: 42          B
     db %01000010                                                      ; 3e0e: 42          B
     db %00000000                                                      ; 3e0f: 00          .
-    db %00000000                                                      ; 3e10: 00          .  ; 'B'
+    db %00000000                                                      ; 3e10: 00          .   ; 'B'
     db %01111100                                                      ; 3e11: 7c          |
     db %01000010                                                      ; 3e12: 42          B
     db %01111100                                                      ; 3e13: 7c          |
@@ -12003,7 +12003,7 @@ font:
     db %01000010                                                      ; 3e15: 42          B
     db %01111100                                                      ; 3e16: 7c          |
     db %00000000                                                      ; 3e17: 00          .
-    db %00000000                                                      ; 3e18: 00          .  ; 'C'
+    db %00000000                                                      ; 3e18: 00          .   ; 'C'
     db %00111100                                                      ; 3e19: 3c          <
     db %01000010                                                      ; 3e1a: 42          B
     db %01000000                                                      ; 3e1b: 40          @
@@ -12011,7 +12011,7 @@ font:
     db %01000010                                                      ; 3e1d: 42          B
     db %00111100                                                      ; 3e1e: 3c          <
     db %00000000                                                      ; 3e1f: 00          .
-    db %00000000                                                      ; 3e20: 00          .  ; 'D'
+    db %00000000                                                      ; 3e20: 00          .   ; 'D'
     db %01111000                                                      ; 3e21: 78          x
     db %01000100                                                      ; 3e22: 44          D
     db %01000010                                                      ; 3e23: 42          B
@@ -12019,7 +12019,7 @@ font:
     db %01000100                                                      ; 3e25: 44          D
     db %01111000                                                      ; 3e26: 78          x
     db %00000000                                                      ; 3e27: 00          .
-    db %00000000                                                      ; 3e28: 00          .  ; 'E'
+    db %00000000                                                      ; 3e28: 00          .   ; 'E'
     db %01111110                                                      ; 3e29: 7e          ~
     db %01000000                                                      ; 3e2a: 40          @
     db %01111100                                                      ; 3e2b: 7c          |
@@ -12027,7 +12027,7 @@ font:
     db %01000000                                                      ; 3e2d: 40          @
     db %01111110                                                      ; 3e2e: 7e          ~
     db %00000000                                                      ; 3e2f: 00          .
-    db %00000000                                                      ; 3e30: 00          .  ; 'F'
+    db %00000000                                                      ; 3e30: 00          .   ; 'F'
     db %01111110                                                      ; 3e31: 7e          ~
     db %01000000                                                      ; 3e32: 40          @
     db %01111100                                                      ; 3e33: 7c          |
@@ -12035,7 +12035,7 @@ font:
     db %01000000                                                      ; 3e35: 40          @
     db %01000000                                                      ; 3e36: 40          @
     db %00000000                                                      ; 3e37: 00          .
-    db %00000000                                                      ; 3e38: 00          .  ; 'G'
+    db %00000000                                                      ; 3e38: 00          .   ; 'G'
     db %00111100                                                      ; 3e39: 3c          <
     db %01000010                                                      ; 3e3a: 42          B
     db %01000000                                                      ; 3e3b: 40          @
@@ -12043,7 +12043,7 @@ font:
     db %01000010                                                      ; 3e3d: 42          B
     db %00111100                                                      ; 3e3e: 3c          <
     db %00000000                                                      ; 3e3f: 00          .
-    db %00000000                                                      ; 3e40: 00          .  ; 'H'
+    db %00000000                                                      ; 3e40: 00          .   ; 'H'
     db %01000010                                                      ; 3e41: 42          B
     db %01000010                                                      ; 3e42: 42          B
     db %01111110                                                      ; 3e43: 7e          ~
@@ -12051,7 +12051,7 @@ font:
     db %01000010                                                      ; 3e45: 42          B
     db %01000010                                                      ; 3e46: 42          B
     db %00000000                                                      ; 3e47: 00          .
-    db %00000000                                                      ; 3e48: 00          .  ; 'I'
+    db %00000000                                                      ; 3e48: 00          .   ; 'I'
     db %00111110                                                      ; 3e49: 3e          >
     db %00001000                                                      ; 3e4a: 08          .
     db %00001000                                                      ; 3e4b: 08          .
@@ -12059,7 +12059,7 @@ font:
     db %00001000                                                      ; 3e4d: 08          .
     db %00111110                                                      ; 3e4e: 3e          >
     db %00000000                                                      ; 3e4f: 00          .
-    db %00000000                                                      ; 3e50: 00          .  ; 'J'
+    db %00000000                                                      ; 3e50: 00          .   ; 'J'
     db %00000010                                                      ; 3e51: 02          .
     db %00000010                                                      ; 3e52: 02          .
     db %00000010                                                      ; 3e53: 02          .
@@ -12067,7 +12067,7 @@ font:
     db %01000010                                                      ; 3e55: 42          B
     db %00111100                                                      ; 3e56: 3c          <
     db %00000000                                                      ; 3e57: 00          .
-    db %00000000                                                      ; 3e58: 00          .  ; 'K'
+    db %00000000                                                      ; 3e58: 00          .   ; 'K'
     db %01000100                                                      ; 3e59: 44          D
     db %01001000                                                      ; 3e5a: 48          H
     db %01110000                                                      ; 3e5b: 70          p
@@ -12075,7 +12075,7 @@ font:
     db %01000100                                                      ; 3e5d: 44          D
     db %01000010                                                      ; 3e5e: 42          B
     db %00000000                                                      ; 3e5f: 00          .
-    db %00000000                                                      ; 3e60: 00          .  ; 'L'
+    db %00000000                                                      ; 3e60: 00          .   ; 'L'
     db %01000000                                                      ; 3e61: 40          @
     db %01000000                                                      ; 3e62: 40          @
     db %01000000                                                      ; 3e63: 40          @
@@ -12083,7 +12083,7 @@ font:
     db %01000000                                                      ; 3e65: 40          @
     db %01111110                                                      ; 3e66: 7e          ~
     db %00000000                                                      ; 3e67: 00          .
-    db %00000000                                                      ; 3e68: 00          .  ; 'M'
+    db %00000000                                                      ; 3e68: 00          .   ; 'M'
     db %01000010                                                      ; 3e69: 42          B
     db %01100110                                                      ; 3e6a: 66          f
     db %01011010                                                      ; 3e6b: 5a          Z
@@ -12091,7 +12091,7 @@ font:
     db %01000010                                                      ; 3e6d: 42          B
     db %01000010                                                      ; 3e6e: 42          B
     db %00000000                                                      ; 3e6f: 00          .
-    db %00000000                                                      ; 3e70: 00          .  ; 'N'
+    db %00000000                                                      ; 3e70: 00          .   ; 'N'
     db %01000010                                                      ; 3e71: 42          B
     db %01100010                                                      ; 3e72: 62          b
     db %01010010                                                      ; 3e73: 52          R
@@ -12099,7 +12099,7 @@ font:
     db %01000110                                                      ; 3e75: 46          F
     db %01000010                                                      ; 3e76: 42          B
     db %00000000                                                      ; 3e77: 00          .
-    db %00000000                                                      ; 3e78: 00          .  ; 'O'
+    db %00000000                                                      ; 3e78: 00          .   ; 'O'
     db %00111100                                                      ; 3e79: 3c          <
     db %01000010                                                      ; 3e7a: 42          B
     db %01000010                                                      ; 3e7b: 42          B
@@ -12107,7 +12107,7 @@ font:
     db %01000010                                                      ; 3e7d: 42          B
     db %00111100                                                      ; 3e7e: 3c          <
     db %00000000                                                      ; 3e7f: 00          .
-    db %00000000                                                      ; 3e80: 00          .  ; 'P'
+    db %00000000                                                      ; 3e80: 00          .   ; 'P'
     db %01111100                                                      ; 3e81: 7c          |
     db %01000010                                                      ; 3e82: 42          B
     db %01000010                                                      ; 3e83: 42          B
@@ -12115,7 +12115,7 @@ font:
     db %01000000                                                      ; 3e85: 40          @
     db %01000000                                                      ; 3e86: 40          @
     db %00000000                                                      ; 3e87: 00          .
-    db %00000000                                                      ; 3e88: 00          .  ; 'Q'
+    db %00000000                                                      ; 3e88: 00          .   ; 'Q'
     db %00111100                                                      ; 3e89: 3c          <
     db %01000010                                                      ; 3e8a: 42          B
     db %01000010                                                      ; 3e8b: 42          B
@@ -12123,7 +12123,7 @@ font:
     db %01001010                                                      ; 3e8d: 4a          J
     db %00111100                                                      ; 3e8e: 3c          <
     db %00000000                                                      ; 3e8f: 00          .
-    db %00000000                                                      ; 3e90: 00          .  ; 'R'
+    db %00000000                                                      ; 3e90: 00          .   ; 'R'
     db %01111100                                                      ; 3e91: 7c          |
     db %01000010                                                      ; 3e92: 42          B
     db %01000010                                                      ; 3e93: 42          B
@@ -12131,7 +12131,7 @@ font:
     db %01000100                                                      ; 3e95: 44          D
     db %01000010                                                      ; 3e96: 42          B
     db %00000000                                                      ; 3e97: 00          .
-    db %00000000                                                      ; 3e98: 00          .  ; 'S'
+    db %00000000                                                      ; 3e98: 00          .   ; 'S'
     db %00111100                                                      ; 3e99: 3c          <
     db %01000000                                                      ; 3e9a: 40          @
     db %00111100                                                      ; 3e9b: 3c          <
@@ -12139,7 +12139,7 @@ font:
     db %01000010                                                      ; 3e9d: 42          B
     db %00111100                                                      ; 3e9e: 3c          <
     db %00000000                                                      ; 3e9f: 00          .
-    db %00000000                                                      ; 3ea0: 00          .  ; 'T'
+    db %00000000                                                      ; 3ea0: 00          .   ; 'T'
     db %11111110                                                      ; 3ea1: fe          .
     db %00010000                                                      ; 3ea2: 10          .
     db %00010000                                                      ; 3ea3: 10          .
@@ -12147,7 +12147,7 @@ font:
     db %00010000                                                      ; 3ea5: 10          .
     db %00010000                                                      ; 3ea6: 10          .
     db %00000000                                                      ; 3ea7: 00          .
-    db %00000000                                                      ; 3ea8: 00          .  ; 'U'
+    db %00000000                                                      ; 3ea8: 00          .   ; 'U'
     db %01000010                                                      ; 3ea9: 42          B
     db %01000010                                                      ; 3eaa: 42          B
     db %01000010                                                      ; 3eab: 42          B
@@ -12155,7 +12155,7 @@ font:
     db %01000010                                                      ; 3ead: 42          B
     db %00111100                                                      ; 3eae: 3c          <
     db %00000000                                                      ; 3eaf: 00          .
-    db %00000000                                                      ; 3eb0: 00          .  ; 'V'
+    db %00000000                                                      ; 3eb0: 00          .   ; 'V'
     db %01000010                                                      ; 3eb1: 42          B
     db %01000010                                                      ; 3eb2: 42          B
     db %01000010                                                      ; 3eb3: 42          B
@@ -12163,7 +12163,7 @@ font:
     db %00100100                                                      ; 3eb5: 24          $
     db %00011000                                                      ; 3eb6: 18          .
     db %00000000                                                      ; 3eb7: 00          .
-    db %00000000                                                      ; 3eb8: 00          .  ; 'W'
+    db %00000000                                                      ; 3eb8: 00          .   ; 'W'
     db %01000010                                                      ; 3eb9: 42          B
     db %01000010                                                      ; 3eba: 42          B
     db %01000010                                                      ; 3ebb: 42          B
@@ -12171,7 +12171,7 @@ font:
     db %01011010                                                      ; 3ebd: 5a          Z
     db %00100100                                                      ; 3ebe: 24          $
     db %00000000                                                      ; 3ebf: 00          .
-    db %00000000                                                      ; 3ec0: 00          .  ; 'X'
+    db %00000000                                                      ; 3ec0: 00          .   ; 'X'
     db %01000010                                                      ; 3ec1: 42          B
     db %00100100                                                      ; 3ec2: 24          $
     db %00011000                                                      ; 3ec3: 18          .
@@ -12179,7 +12179,7 @@ font:
     db %00100100                                                      ; 3ec5: 24          $
     db %01000010                                                      ; 3ec6: 42          B
     db %00000000                                                      ; 3ec7: 00          .
-    db %00000000                                                      ; 3ec8: 00          .  ; 'Y'
+    db %00000000                                                      ; 3ec8: 00          .   ; 'Y'
     db %10000010                                                      ; 3ec9: 82          .
     db %01000100                                                      ; 3eca: 44          D
     db %00101000                                                      ; 3ecb: 28          (
@@ -12187,7 +12187,7 @@ font:
     db %00010000                                                      ; 3ecd: 10          .
     db %00010000                                                      ; 3ece: 10          .
     db %00000000                                                      ; 3ecf: 00          .
-    db %00000000                                                      ; 3ed0: 00          .  ; 'Z'
+    db %00000000                                                      ; 3ed0: 00          .   ; 'Z'
     db %01111110                                                      ; 3ed1: 7e          ~
     db %00000100                                                      ; 3ed2: 04          .
     db %00001000                                                      ; 3ed3: 08          .
@@ -12195,7 +12195,7 @@ font:
     db %00100000                                                      ; 3ed5: 20
     db %01111110                                                      ; 3ed6: 7e          ~
     db %00000000                                                      ; 3ed7: 00          .
-    db %00000000                                                      ; 3ed8: 00          .  ; '['
+    db %00000000                                                      ; 3ed8: 00          .   ; '['
     db %00001110                                                      ; 3ed9: 0e          .
     db %00001000                                                      ; 3eda: 08          .
     db %00001000                                                      ; 3edb: 08          .
@@ -12203,7 +12203,7 @@ font:
     db %00001000                                                      ; 3edd: 08          .
     db %00001110                                                      ; 3ede: 0e          .
     db %00000000                                                      ; 3edf: 00          .
-    db %00000000                                                      ; 3ee0: 00          .  ; '\'
+    db %00000000                                                      ; 3ee0: 00          .   ; '\'
     db %00000000                                                      ; 3ee1: 00          .
     db %01000000                                                      ; 3ee2: 40          @
     db %00100000                                                      ; 3ee3: 20
@@ -12211,7 +12211,7 @@ font:
     db %00001000                                                      ; 3ee5: 08          .
     db %00000100                                                      ; 3ee6: 04          .
     db %00000000                                                      ; 3ee7: 00          .
-    db %00000000                                                      ; 3ee8: 00          .  ; ']'
+    db %00000000                                                      ; 3ee8: 00          .   ; ']'
     db %01110000                                                      ; 3ee9: 70          p
     db %00010000                                                      ; 3eea: 10          .
     db %00010000                                                      ; 3eeb: 10          .
@@ -12219,7 +12219,7 @@ font:
     db %00010000                                                      ; 3eed: 10          .
     db %01110000                                                      ; 3eee: 70          p
     db %00000000                                                      ; 3eef: 00          .
-    db %00000000                                                      ; 3ef0: 00          .  ; '^'
+    db %00000000                                                      ; 3ef0: 00          .   ; '^'
     db %00010000                                                      ; 3ef1: 10          .
     db %00111000                                                      ; 3ef2: 38          8
     db %01010100                                                      ; 3ef3: 54          T
@@ -12227,7 +12227,7 @@ font:
     db %00010000                                                      ; 3ef5: 10          .
     db %00010000                                                      ; 3ef6: 10          .
     db %00000000                                                      ; 3ef7: 00          .
-    db %00000000                                                      ; 3ef8: 00          .  ; '_'
+    db %00000000                                                      ; 3ef8: 00          .   ; '_'
     db %00000000                                                      ; 3ef9: 00          .
     db %00000000                                                      ; 3efa: 00          .
     db %00000000                                                      ; 3efb: 00          .
@@ -12235,7 +12235,7 @@ font:
     db %00000000                                                      ; 3efd: 00          .
     db %00000000                                                      ; 3efe: 00          .
     db %11111111                                                      ; 3eff: ff          .
-    db %00000000                                                      ; 3f00: 00          .  ; $60 (pound sign)
+    db %00000000                                                      ; 3f00: 00          .   ; $60 (pound sign)
     db %00011100                                                      ; 3f01: 1c          .
     db %00100010                                                      ; 3f02: 22          "
     db %01111000                                                      ; 3f03: 78          x
@@ -12243,7 +12243,7 @@ font:
     db %00100000                                                      ; 3f05: 20
     db %01111110                                                      ; 3f06: 7e          ~
     db %00000000                                                      ; 3f07: 00          .
-    db %00000000                                                      ; 3f08: 00          .  ; 'a'
+    db %00000000                                                      ; 3f08: 00          .   ; 'a'
     db %00000000                                                      ; 3f09: 00          .
     db %00111000                                                      ; 3f0a: 38          8
     db %00000100                                                      ; 3f0b: 04          .
@@ -12251,7 +12251,7 @@ font:
     db %01000100                                                      ; 3f0d: 44          D
     db %00111110                                                      ; 3f0e: 3e          >
     db %00000000                                                      ; 3f0f: 00          .
-    db %00000000                                                      ; 3f10: 00          .  ; 'b'
+    db %00000000                                                      ; 3f10: 00          .   ; 'b'
     db %00100000                                                      ; 3f11: 20
     db %00100000                                                      ; 3f12: 20
     db %00111100                                                      ; 3f13: 3c          <
@@ -12259,7 +12259,7 @@ font:
     db %00100010                                                      ; 3f15: 22          "
     db %00111100                                                      ; 3f16: 3c          <
     db %00000000                                                      ; 3f17: 00          .
-    db %00000000                                                      ; 3f18: 00          .  ; 'c'
+    db %00000000                                                      ; 3f18: 00          .   ; 'c'
     db %00000000                                                      ; 3f19: 00          .
     db %00011100                                                      ; 3f1a: 1c          .
     db %00100000                                                      ; 3f1b: 20
@@ -12267,7 +12267,7 @@ font:
     db %00100000                                                      ; 3f1d: 20
     db %00011100                                                      ; 3f1e: 1c          .
     db %00000000                                                      ; 3f1f: 00          .
-    db %00000000                                                      ; 3f20: 00          .  ; 'd'
+    db %00000000                                                      ; 3f20: 00          .   ; 'd'
     db %00000100                                                      ; 3f21: 04          .
     db %00000100                                                      ; 3f22: 04          .
     db %00111100                                                      ; 3f23: 3c          <
@@ -12275,7 +12275,7 @@ font:
     db %01000100                                                      ; 3f25: 44          D
     db %00111110                                                      ; 3f26: 3e          >
     db %00000000                                                      ; 3f27: 00          .
-    db %00000000                                                      ; 3f28: 00          .  ; 'e'
+    db %00000000                                                      ; 3f28: 00          .   ; 'e'
     db %00000000                                                      ; 3f29: 00          .
     db %00111000                                                      ; 3f2a: 38          8
     db %01000100                                                      ; 3f2b: 44          D
@@ -12283,7 +12283,7 @@ font:
     db %01000000                                                      ; 3f2d: 40          @
     db %00111100                                                      ; 3f2e: 3c          <
     db %00000000                                                      ; 3f2f: 00          .
-    db %00000000                                                      ; 3f30: 00          .  ; 'f'
+    db %00000000                                                      ; 3f30: 00          .   ; 'f'
     db %00001100                                                      ; 3f31: 0c          .
     db %00010000                                                      ; 3f32: 10          .
     db %00011000                                                      ; 3f33: 18          .
@@ -12291,7 +12291,7 @@ font:
     db %00010000                                                      ; 3f35: 10          .
     db %00010000                                                      ; 3f36: 10          .
     db %00000000                                                      ; 3f37: 00          .
-    db %00000000                                                      ; 3f38: 00          .  ; 'g'
+    db %00000000                                                      ; 3f38: 00          .   ; 'g'
     db %00000000                                                      ; 3f39: 00          .
     db %00111100                                                      ; 3f3a: 3c          <
     db %01000100                                                      ; 3f3b: 44          D
@@ -12299,7 +12299,7 @@ font:
     db %00111100                                                      ; 3f3d: 3c          <
     db %00000100                                                      ; 3f3e: 04          .
     db %00111000                                                      ; 3f3f: 38          8
-    db %00000000                                                      ; 3f40: 00          .  ; 'h'
+    db %00000000                                                      ; 3f40: 00          .   ; 'h'
     db %01000000                                                      ; 3f41: 40          @
     db %01000000                                                      ; 3f42: 40          @
     db %01111000                                                      ; 3f43: 78          x
@@ -12307,7 +12307,7 @@ font:
     db %01000100                                                      ; 3f45: 44          D
     db %01000100                                                      ; 3f46: 44          D
     db %00000000                                                      ; 3f47: 00          .
-    db %00000000                                                      ; 3f48: 00          .  ; 'i'
+    db %00000000                                                      ; 3f48: 00          .   ; 'i'
     db %00010000                                                      ; 3f49: 10          .
     db %00000000                                                      ; 3f4a: 00          .
     db %00110000                                                      ; 3f4b: 30          0
@@ -12315,7 +12315,7 @@ font:
     db %00010000                                                      ; 3f4d: 10          .
     db %00111000                                                      ; 3f4e: 38          8
     db %00000000                                                      ; 3f4f: 00          .
-    db %00000000                                                      ; 3f50: 00          .  ; 'j'
+    db %00000000                                                      ; 3f50: 00          .   ; 'j'
     db %00000100                                                      ; 3f51: 04          .
     db %00000000                                                      ; 3f52: 00          .
     db %00000100                                                      ; 3f53: 04          .
@@ -12323,7 +12323,7 @@ font:
     db %00000100                                                      ; 3f55: 04          .
     db %00100100                                                      ; 3f56: 24          $
     db %00011000                                                      ; 3f57: 18          .
-    db %00000000                                                      ; 3f58: 00          .  ; 'k'
+    db %00000000                                                      ; 3f58: 00          .   ; 'k'
     db %00100000                                                      ; 3f59: 20
     db %00101000                                                      ; 3f5a: 28          (
     db %00110000                                                      ; 3f5b: 30          0
@@ -12331,7 +12331,7 @@ font:
     db %00101000                                                      ; 3f5d: 28          (
     db %00100100                                                      ; 3f5e: 24          $
     db %00000000                                                      ; 3f5f: 00          .
-    db %00000000                                                      ; 3f60: 00          .  ; 'l'
+    db %00000000                                                      ; 3f60: 00          .   ; 'l'
     db %00010000                                                      ; 3f61: 10          .
     db %00010000                                                      ; 3f62: 10          .
     db %00010000                                                      ; 3f63: 10          .
@@ -12339,7 +12339,7 @@ font:
     db %00010000                                                      ; 3f65: 10          .
     db %00001100                                                      ; 3f66: 0c          .
     db %00000000                                                      ; 3f67: 00          .
-    db %00000000                                                      ; 3f68: 00          .  ; 'm'
+    db %00000000                                                      ; 3f68: 00          .   ; 'm'
     db %00000000                                                      ; 3f69: 00          .
     db %01101000                                                      ; 3f6a: 68          h
     db %01010100                                                      ; 3f6b: 54          T
@@ -12347,7 +12347,7 @@ font:
     db %01010100                                                      ; 3f6d: 54          T
     db %01010100                                                      ; 3f6e: 54          T
     db %00000000                                                      ; 3f6f: 00          .
-    db %00000000                                                      ; 3f70: 00          .  ; 'n'
+    db %00000000                                                      ; 3f70: 00          .   ; 'n'
     db %00000000                                                      ; 3f71: 00          .
     db %01111000                                                      ; 3f72: 78          x
     db %01000100                                                      ; 3f73: 44          D
@@ -12355,7 +12355,7 @@ font:
     db %01000100                                                      ; 3f75: 44          D
     db %01000100                                                      ; 3f76: 44          D
     db %00000000                                                      ; 3f77: 00          .
-    db %00000000                                                      ; 3f78: 00          .  ; 'o'
+    db %00000000                                                      ; 3f78: 00          .   ; 'o'
     db %00000000                                                      ; 3f79: 00          .
     db %00111000                                                      ; 3f7a: 38          8
     db %01000100                                                      ; 3f7b: 44          D
@@ -12363,7 +12363,7 @@ font:
     db %01000100                                                      ; 3f7d: 44          D
     db %00111000                                                      ; 3f7e: 38          8
     db %00000000                                                      ; 3f7f: 00          .
-    db %00000000                                                      ; 3f80: 00          .  ; 'p'
+    db %00000000                                                      ; 3f80: 00          .   ; 'p'
     db %00000000                                                      ; 3f81: 00          .
     db %01111000                                                      ; 3f82: 78          x
     db %01000100                                                      ; 3f83: 44          D
@@ -12371,7 +12371,7 @@ font:
     db %01111000                                                      ; 3f85: 78          x
     db %01000000                                                      ; 3f86: 40          @
     db %01000000                                                      ; 3f87: 40          @
-    db %00000000                                                      ; 3f88: 00          .  ; 'q'
+    db %00000000                                                      ; 3f88: 00          .   ; 'q'
     db %00000000                                                      ; 3f89: 00          .
     db %00111100                                                      ; 3f8a: 3c          <
     db %01000100                                                      ; 3f8b: 44          D
@@ -12379,7 +12379,7 @@ font:
     db %00111100                                                      ; 3f8d: 3c          <
     db %00000100                                                      ; 3f8e: 04          .
     db %00000110                                                      ; 3f8f: 06          .
-    db %00000000                                                      ; 3f90: 00          .  ; 'r'
+    db %00000000                                                      ; 3f90: 00          .   ; 'r'
     db %00000000                                                      ; 3f91: 00          .
     db %00011100                                                      ; 3f92: 1c          .
     db %00100000                                                      ; 3f93: 20
@@ -12387,7 +12387,7 @@ font:
     db %00100000                                                      ; 3f95: 20
     db %00100000                                                      ; 3f96: 20
     db %00000000                                                      ; 3f97: 00          .
-    db %00000000                                                      ; 3f98: 00          .  ; 's'
+    db %00000000                                                      ; 3f98: 00          .   ; 's'
     db %00000000                                                      ; 3f99: 00          .
     db %00111000                                                      ; 3f9a: 38          8
     db %01000000                                                      ; 3f9b: 40          @
@@ -12395,7 +12395,7 @@ font:
     db %00000100                                                      ; 3f9d: 04          .
     db %01111000                                                      ; 3f9e: 78          x
     db %00000000                                                      ; 3f9f: 00          .
-    db %00000000                                                      ; 3fa0: 00          .  ; 't'
+    db %00000000                                                      ; 3fa0: 00          .   ; 't'
     db %00010000                                                      ; 3fa1: 10          .
     db %00111000                                                      ; 3fa2: 38          8
     db %00010000                                                      ; 3fa3: 10          .
@@ -12403,7 +12403,7 @@ font:
     db %00010000                                                      ; 3fa5: 10          .
     db %00001100                                                      ; 3fa6: 0c          .
     db %00000000                                                      ; 3fa7: 00          .
-    db %00000000                                                      ; 3fa8: 00          .  ; 'u'
+    db %00000000                                                      ; 3fa8: 00          .   ; 'u'
     db %00000000                                                      ; 3fa9: 00          .
     db %01000100                                                      ; 3faa: 44          D
     db %01000100                                                      ; 3fab: 44          D
@@ -12411,7 +12411,7 @@ font:
     db %01000100                                                      ; 3fad: 44          D
     db %00111100                                                      ; 3fae: 3c          <
     db %00000000                                                      ; 3faf: 00          .
-    db %00000000                                                      ; 3fb0: 00          .  ; 'v'
+    db %00000000                                                      ; 3fb0: 00          .   ; 'v'
     db %00000000                                                      ; 3fb1: 00          .
     db %01000100                                                      ; 3fb2: 44          D
     db %01000100                                                      ; 3fb3: 44          D
@@ -12419,7 +12419,7 @@ font:
     db %00101000                                                      ; 3fb5: 28          (
     db %00010000                                                      ; 3fb6: 10          .
     db %00000000                                                      ; 3fb7: 00          .
-    db %00000000                                                      ; 3fb8: 00          .  ; 'w'
+    db %00000000                                                      ; 3fb8: 00          .   ; 'w'
     db %00000000                                                      ; 3fb9: 00          .
     db %01000100                                                      ; 3fba: 44          D
     db %01010100                                                      ; 3fbb: 54          T
@@ -12427,7 +12427,7 @@ font:
     db %01010100                                                      ; 3fbd: 54          T
     db %00101000                                                      ; 3fbe: 28          (
     db %00000000                                                      ; 3fbf: 00          .
-    db %00000000                                                      ; 3fc0: 00          .  ; 'x'
+    db %00000000                                                      ; 3fc0: 00          .   ; 'x'
     db %00000000                                                      ; 3fc1: 00          .
     db %01000100                                                      ; 3fc2: 44          D
     db %00101000                                                      ; 3fc3: 28          (
@@ -12435,7 +12435,7 @@ font:
     db %00101000                                                      ; 3fc5: 28          (
     db %01000100                                                      ; 3fc6: 44          D
     db %00000000                                                      ; 3fc7: 00          .
-    db %00000000                                                      ; 3fc8: 00          .  ; 'y'
+    db %00000000                                                      ; 3fc8: 00          .   ; 'y'
     db %00000000                                                      ; 3fc9: 00          .
     db %01000100                                                      ; 3fca: 44          D
     db %01000100                                                      ; 3fcb: 44          D
@@ -12443,7 +12443,7 @@ font:
     db %00111100                                                      ; 3fcd: 3c          <
     db %00000100                                                      ; 3fce: 04          .
     db %00111000                                                      ; 3fcf: 38          8
-    db %00000000                                                      ; 3fd0: 00          .  ; 'z'
+    db %00000000                                                      ; 3fd0: 00          .   ; 'z'
     db %00000000                                                      ; 3fd1: 00          .
     db %01111100                                                      ; 3fd2: 7c          |
     db %00001000                                                      ; 3fd3: 08          .
@@ -12451,7 +12451,7 @@ font:
     db %00100000                                                      ; 3fd5: 20
     db %01111100                                                      ; 3fd6: 7c          |
     db %00000000                                                      ; 3fd7: 00          .
-    db %00000000                                                      ; 3fd8: 00          .  ; '{'
+    db %00000000                                                      ; 3fd8: 00          .   ; '{'
     db %00001110                                                      ; 3fd9: 0e          .
     db %00001000                                                      ; 3fda: 08          .
     db %00110000                                                      ; 3fdb: 30          0
@@ -12459,7 +12459,7 @@ font:
     db %00001000                                                      ; 3fdd: 08          .
     db %00001110                                                      ; 3fde: 0e          .
     db %00000000                                                      ; 3fdf: 00          .
-    db %00000000                                                      ; 3fe0: 00          .  ; '|'
+    db %00000000                                                      ; 3fe0: 00          .   ; '|'
     db %00001000                                                      ; 3fe1: 08          .
     db %00001000                                                      ; 3fe2: 08          .
     db %00001000                                                      ; 3fe3: 08          .
@@ -12467,7 +12467,7 @@ font:
     db %00001000                                                      ; 3fe5: 08          .
     db %00001000                                                      ; 3fe6: 08          .
     db %00000000                                                      ; 3fe7: 00          .
-    db %00000000                                                      ; 3fe8: 00          .  ; '}'
+    db %00000000                                                      ; 3fe8: 00          .   ; '}'
     db %01110000                                                      ; 3fe9: 70          p
     db %00010000                                                      ; 3fea: 10          .
     db %00001100                                                      ; 3feb: 0c          .
@@ -12475,7 +12475,7 @@ font:
     db %00010000                                                      ; 3fed: 10          .
     db %01110000                                                      ; 3fee: 70          p
     db %00000000                                                      ; 3fef: 00          .
-    db %00110010                                                      ; 3ff0: 32          2  ; '~'
+    db %00110010                                                      ; 3ff0: 32          2   ; '~'
     db %01001100                                                      ; 3ff1: 4c          L
     db %00000000                                                      ; 3ff2: 00          .
     db %00000000                                                      ; 3ff3: 00          .
@@ -12483,7 +12483,7 @@ font:
     db %00000000                                                      ; 3ff5: 00          .
     db %00000000                                                      ; 3ff6: 00          .
     db %00000000                                                      ; 3ff7: 00          .
-    db %00111100                                                      ; 3ff8: 3c          <  ; $7F (copyright sign)
+    db %00111100                                                      ; 3ff8: 3c          <   ; $7F (copyright sign)
     db %01000010                                                      ; 3ff9: 42          B
     db %10011001                                                      ; 3ffa: 99          .
     db %10100001                                                      ; 3ffb: a1          .

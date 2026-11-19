@@ -147,7 +147,7 @@ sys_entry:
     sta mmu_configuration                                             ; 1c49: 8d 00 ff    ... ; Set the MMU to bank 15 (RAM 0, BASIC ROM, Kernal ROM, I/O)
     jsr sub_c1c5f                                                     ; 1c4c: 20 5f 1c     ..
     lda vic_border_colour                                             ; 1c4f: ad 20 d0    . P
-    lda #'a'                                                          ; 1c52: a9 41       .a ; A=character to output
+    lda #'a'                                                          ; 1c52: a9 41       .a  ; A=character to output
     jsr CHROUT                                                        ; 1c54: 20 d2 ff     R. ; Output 'a'
     lda #1                                                            ; 1c57: a9 01       ..
     sta vic_interrupt_status                                          ; 1c59: 8d 19 d0    ..P ; Acknowledge the VIC-II's raster interrupt

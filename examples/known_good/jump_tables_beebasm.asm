@@ -28,7 +28,7 @@ l0081   = &0081
     lda l0070                                                         ; 2013: a5 70       .p
     cmp #3                                                            ; 2015: c9 03       ..
     bcs return_1                                                      ; 2017: b0 32       .2
-    asl a                                                             ; 2019: 0a          .  ; Shift clear bit out (clears carry)
+    asl a                                                             ; 2019: 0a          .
     tax                                                               ; 201a: aa          .
     lda l207e,x                                                       ; 201b: bd 7e 20    .~
     pha                                                               ; 201e: 48          H
@@ -73,7 +73,7 @@ l204a = c2048+2
     bcc return_1                                                      ; 2050: 90 f9       ..
     cmp #4                                                            ; 2052: c9 04       ..
     bcs return_1                                                      ; 2054: b0 f5       ..
-    asl a                                                             ; 2056: 0a          .  ; Shift clear bit out (clears carry)
+    asl a                                                             ; 2056: 0a          .
     tax                                                               ; 2057: aa          .
     lda l2090,x                                                       ; 2058: bd 90 20    ..
     pha                                                               ; 205b: 48          H
@@ -96,7 +96,7 @@ l204a = c2048+2
 .sub_c206e
     lda l0075                                                         ; 206e: a5 75       .u
     and #1                                                            ; 2070: 29 01       ).
-    asl a                                                             ; 2072: 0a          .  ; Shift clear bit out (clears carry)
+    asl a                                                             ; 2072: 0a          .
     tax                                                               ; 2073: aa          .
     lda l209c,x                                                       ; 2074: bd 9c 20    ..
     pha                                                               ; 2077: 48          H

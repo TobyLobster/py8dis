@@ -1609,7 +1609,7 @@ iut:
     ld hl,flgsat                                                      ; 1d60: 21 89 1d    !..
     ld a,(hl)                                                         ; 1d63: 7e          ~
 flgmsk:
-    and $d7                                                           ; 1d64: e6 d7       .. ; The operand is the flag mask (self-modified code)
+    and $d7                                                           ; 1d64: e6 d7       ..  ; The operand is the flag mask (self-modified code)
 ; $1d65 referenced 1 time by $1ae8
     ld (hl),a                                                         ; 1d66: 77          w
     ld b,$10                                                          ; 1d67: 06 10       ..

@@ -401,7 +401,7 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
 .open_bracket_function
     jsr evaluate_expression_group_4                                   ; d0e4: 20 fc d0     ..
     ldx #keyword_table_close_bracket - keyword_table                  ; d0e7: a2 b4       ..
-    bne operator                                                      ; d0e9: d0 20       .  ; ALWAYS branch
+    bne operator                                                      ; d0e9: d0 20       .   ; ALWAYS branch
 
 .evaluate_float_operand
     ; Group 1, the operands: unary plus, minus and close bracket
@@ -409,7 +409,7 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
 .evaluate_operand_but_flt_is_error_if_carry_set
     ror flt_is_an_error_flag                                          ; d0ec: 66 73       fs
     ldx #keyword_table_unary_plus_operator - keyword_table            ; d0ee: a2 ac       ..
-    bne operator                                                      ; d0f0: d0 19       .. ; ALWAYS branch
+    bne operator                                                      ; d0f0: d0 19       ..  ; ALWAYS branch
 
 .push_float8A_and_evaluate_expression_group_3
     jsr push_float8A_onto_workspace_stack                             ; d0f2: 20 5d d8     ].
@@ -417,13 +417,13 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
     jsr evaluate_expression_group_2                                   ; d0f5: 20 06 d1     ..
 .cd0f8
     ldx #keyword_table_multiply - keyword_table                       ; d0f8: a2 a1       ..
-    bne operator                                                      ; d0fa: d0 0f       .. ; ALWAYS branch
+    bne operator                                                      ; d0fa: d0 0f       ..  ; ALWAYS branch
 
 .evaluate_expression_group_4
     jsr evaluate_expression_group_3                                   ; d0fc: 20 f5 d0     ..
 .evaluate_expression_group_4_only
     ldx #keyword_table_add - keyword_table                            ; d0ff: a2 9a       ..
-    bne operator                                                      ; d101: d0 08       .. ; ALWAYS branch
+    bne operator                                                      ; d101: d0 08       ..  ; ALWAYS branch
 
 .push_float8A_and_evaluate_expression_group_2
     jsr push_float8A_onto_workspace_stack                             ; d103: 20 5d d8     ].
@@ -433,7 +433,7 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
     ldx #keyword_table_raise_to_the_power - keyword_table             ; d109: a2 a8       ..
 .operator
     clc                                                               ; d10b: 18          .
-    bcc operator_with_carry_allowing_abbreviations                    ; d10c: 90 05       .. ; ALWAYS branch
+    bcc operator_with_carry_allowing_abbreviations                    ; d10c: 90 05       ..  ; ALWAYS branch
 
 .entry_point_unrecognised_statement
     ldx #floating_point_prefix - keyword_table                        ; d10e: a2 5f       ._
@@ -480,7 +480,7 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
     bne compare_against_each_keyword_loop                             ; d140: d0 e1       ..
     iny                                                               ; d142: c8          .
     dex                                                               ; d143: ca          .
-    bcs check_for_jump_address                                        ; d144: b0 e1       .. ; ALWAYS branch
+    bcs check_for_jump_address                                        ; d144: b0 e1       ..  ; ALWAYS branch
 
 .execute_function_at_address_with_high_byte_A
     cmp #&fe                                                          ; d146: c9 fe       ..
@@ -656,14 +656,14 @@ section pydis, org = &d000, filename = "atom_float_rom_baron"
     lda #>degrees_to_radians_constant                                 ; d26a: a9 d2       ..
 .multiply_float8A_by_constant_at_ay
     sty floatptr_low                                                  ; d26c: 84 6f       .o
-    sta floatptr_high                                                 ; d26e: 85 70       .p
+    sta floatptr_high                                                 ; d26e: 85 70       .p  ; A=&d2
     jmp multiply_float8A_by_floatptr                                  ; d270: 4c 45 da    LE.
 
 .deg_function
     jsr evaluate_float_operand                                        ; d273: 20 eb d0     ..
     ldy #<radians_to_degrees_constant                                 ; d276: a0 81       ..
     lda #>radians_to_degrees_constant                                 ; d278: a9 d2       ..
-    bne multiply_float8A_by_constant_at_ay                            ; d27a: d0 f0       .. ; ALWAYS branch
+    bne multiply_float8A_by_constant_at_ay                            ; d27a: d0 f0       ..  ; ALWAYS branch
 
 .degrees_to_radians_constant
     equb &7b, &0e, &fa, &35, &12                                      ; d27c: 7b 0e fa... {..
@@ -884,7 +884,7 @@ error2 = cd2e3+1
     bne dim_error                                                     ; d3ec: d0 55       .U
     cmp #&5b                                                          ; d3ee: c9 5b       .[
     bcs dim_error                                                     ; d3f0: b0 51       .Q
-    sbc #&3f                                                          ; d3f2: e9 3f       .? ; Carry is clear, so subtracting 64
+    sbc #&3f                                                          ; d3f2: e9 3f       .?  ; Carry is clear, so subtracting 64
     bcc dim_error                                                     ; d3f4: 90 4d       .M
     iny                                                               ; d3f6: c8          .
     sty parsing_ptr_offset                                            ; d3f7: 84 03       ..
@@ -912,9 +912,9 @@ error2 = cd2e3+1
     sta (sneaky_pointer_low),y                                        ; d421: 91 23       .#
     cmp (sneaky_pointer_low),y                                        ; d423: d1 23       .#
     bne dim_error                                                     ; d425: d0 1c       ..
-    lsr a                                                             ; d427: 4a          J  ; A=&55
-    sta (sneaky_pointer_low),y                                        ; d428: 91 23       .#
-    cmp (sneaky_pointer_low),y                                        ; d42a: d1 23       .#
+    lsr a                                                             ; d427: 4a          J   ; A=&55
+    sta (sneaky_pointer_low),y                                        ; d428: 91 23       .#  ; Offset is Y=0
+    cmp (sneaky_pointer_low),y                                        ; d42a: d1 23       .#  ; Offset is Y=0
     bne dim_error                                                     ; d42c: d0 15       ..
     jsr basic_interpreter_alphabetic_pre_test                         ; d42e: 20 34 c4     4.
     bcs dim_error                                                     ; d431: b0 10       ..
@@ -961,7 +961,7 @@ error2 = cd2e3+1
     bne variable_not_valid                                            ; d469: d0 08       ..
     cmp #'Z'+1                                                        ; d46b: c9 5b       .[
     bcs variable_not_valid                                            ; d46d: b0 04       ..
-    sbc #'@'-1                                                        ; d46f: e9 3f       .? ; Carry is clear, so subtracting 64
+    sbc #'@'-1                                                        ; d46f: e9 3f       .?  ; Carry is clear, so subtracting 64
     bcs got_valid_array_variable                                      ; d471: b0 02       ..
 .variable_not_valid
     clc                                                               ; d473: 18          .
@@ -1124,7 +1124,7 @@ error2 = cd2e3+1
     jsr output_accumulator                                            ; d56e: 20 87 d5     ..
 .output_cr
     lda #&0d                                                          ; d571: a9 0d       ..
-    bne append_character_to_string_buffer                             ; d573: d0 18       .. ; ALWAYS branch
+    bne append_character_to_string_buffer                             ; d573: d0 18       ..  ; ALWAYS branch
 
 .output_bcd_digit_and_shift_next_digit
     lda float8A_man1                                                  ; d575: a5 5a       .Z
@@ -1201,7 +1201,7 @@ error2 = cd2e3+1
     lda number_of_entries                                             ; d5e7: a5 6c       .l
     bne check_for_decimal_point                                       ; d5e9: d0 db       ..
     inc power_of_ten_count                                            ; d5eb: e6 6d       .m
-    bcs check_for_decimal_point                                       ; d5ed: b0 d7       .. ; ALWAYS branch
+    bcs check_for_decimal_point                                       ; d5ed: b0 d7       ..  ; ALWAYS branch
 
 .cd5ef
     lda number_of_entries                                             ; d5ef: a5 6c       .l
@@ -1233,7 +1233,7 @@ error2 = cd2e3+1
     jsr multiply_float8A_by_ten                                       ; d61e: 20 a0 d6     ..
     dec power_of_ten_count                                            ; d621: c6 6d       .m
     bne loop_cd61e                                                    ; d623: d0 f9       ..
-    beq cd62e                                                         ; d625: f0 07       .. ; ALWAYS branch
+    beq cd62e                                                         ; d625: f0 07       ..  ; ALWAYS branch
 
 .divide_by_ten_until_power_of_ten_count_becomes_zero
     jsr divide_float8A_by_ten                                         ; d627: 20 1b d7     ..
@@ -1320,9 +1320,9 @@ error2 = cd2e3+1
     rts                                                               ; d698: 60          `
 
 .zero_float8A_sign_exponent_and_overflow1
-    sta float8A_sign                                                  ; d699: 85 57       .W
-    sta float8A_exponent                                              ; d69b: 85 59       .Y
-    sta float8A_overflow                                              ; d69d: 85 58       .X
+    sta float8A_sign                                                  ; d699: 85 57       .W  ; A=0
+    sta float8A_exponent                                              ; d69b: 85 59       .Y  ; A=0
+    sta float8A_overflow                                              ; d69d: 85 58       .X  ; A=0
 .return_6
     rts                                                               ; d69f: 60          `
 
@@ -1453,7 +1453,7 @@ error2 = cd2e3+1
     beq done_sign                                                     ; d77c: f0 05       ..
     cmp #'-'                                                          ; d77e: c9 2d       .-
     bne get_first_digit                                               ; d780: d0 04       ..
-    iny                                                               ; d782: c8          .  ; Y=0
+    iny                                                               ; d782: c8          .   ; Y=0
 .done_sign
     jsr get_next_output_buffer_character                              ; d783: 20 7b d6     {.
 .get_first_digit
@@ -1531,7 +1531,7 @@ error2 = cd2e3+1
     sta float8A_exponent                                              ; d7ea: 85 59       .Y
     bcs normalise_by_bytes_loop                                       ; d7ec: b0 df       ..
     dec float8A_overflow                                              ; d7ee: c6 58       .X
-    bcc normalise_by_bytes_loop                                       ; d7f0: 90 db       .. ; ALWAYS branch
+    bcc normalise_by_bytes_loop                                       ; d7f0: 90 db       ..  ; ALWAYS branch
 
 .normalise_by_bits_loop
     lda float8A_man1                                                  ; d7f2: a5 5a       .Z
@@ -1584,14 +1584,14 @@ error2 = cd2e3+1
     ldy #0                                                            ; d83d: a0 00       ..
     lda float8A_exponent                                              ; d83f: a5 59       .Y
     sta (floatptr_low),y                                              ; d841: 91 6f       .o
-    iny                                                               ; d843: c8          .  ; Y=1
+    iny                                                               ; d843: c8          .   ; Y=1
     lda float8A_sign                                                  ; d844: a5 57       .W
     and #&80                                                          ; d846: 29 80       ).
     sta float8A_sign                                                  ; d848: 85 57       .W
     lda float8A_man1                                                  ; d84a: a5 5a       .Z
     and #&7f                                                          ; d84c: 29 7f       ).
     ora float8A_sign                                                  ; d84e: 05 57       .W
-    sta (floatptr_low),y                                              ; d850: 91 6f       .o
+    sta (floatptr_low),y                                              ; d850: 91 6f       .o  ; Offset is Y=1
 .loop_cd852
     iny                                                               ; d852: c8          .
     lda float8A_exponent,y                                            ; d853: b9 59 00    .Y.
@@ -1637,11 +1637,11 @@ error2 = cd2e3+1
     lda float8A_man4                                                  ; d892: a5 5d       .]
     ora #1                                                            ; d894: 09 01       ..
     sta float8A_man4                                                  ; d896: 85 5d       .]
-    bne zero_rounding_byte                                            ; d898: d0 f3       .. ; ALWAYS branch
+    bne zero_rounding_byte                                            ; d898: d0 f3       ..  ; ALWAYS branch
 
 .convert_float8A_to_integer_in_mantissa
     jsr zero_float8B_bugged                                           ; d89a: 20 c7 d8     ..
-    beq shift_float8A_down                                            ; d89d: f0 06       .. ; ALWAYS branch!
+    beq shift_float8A_down                                            ; d89d: f0 06       ..  ; ALWAYS branch!
 
 .shift_down_loop
     lda float8A_exponent                                              ; d89f: a5 59       .Y
@@ -1673,7 +1673,8 @@ error2 = cd2e3+1
     ldx #8                                                            ; d8c7: a2 08       ..
     lda #0                                                            ; d8c9: a9 00       ..
 .zero_float8B_loop
-    sta float8B_overflow - 1,x                                        ; d8cb: 95 5f       ._
+    ; Clear 8 bytes of memory from float8B_overflow onwards
+    sta float8B_overflow - 1,x                                        ; d8cb: 95 5f       ._  ; A=0
     dex                                                               ; d8cd: ca          .
     bne zero_float8B_loop                                             ; d8ce: d0 fb       ..
     rts                                                               ; d8d0: 60          `
@@ -1773,7 +1774,7 @@ error2 = cd2e3+1
     jsr halve_float8B_mantissa                                        ; d955: 20 fb d6     ..
     dex                                                               ; d958: ca          .
     bne shift_float8B_mantissa_bits_loop                              ; d959: d0 fa       ..
-    beq add_mantissas                                                 ; d95b: f0 15       .. ; ALWAYS branch
+    beq add_mantissas                                                 ; d95b: f0 15       ..  ; ALWAYS branch
 
 .shift_float8A_mantissa_bits
     sec                                                               ; d95d: 38          8
@@ -1867,23 +1868,23 @@ error2 = cd2e3+1
 
 .equals_conditional
     lda #&5d                                                          ; d9f6: a9 5d       .]
-    bne cda0c                                                         ; d9f8: d0 12       .. ; ALWAYS branch
+    bne cda0c                                                         ; d9f8: d0 12       ..  ; ALWAYS branch
 
 .less_than_or_equals_conditional
     lda #&66                                                          ; d9fa: a9 66       .f
-    bne cda0c                                                         ; d9fc: d0 0e       .. ; ALWAYS branch
+    bne cda0c                                                         ; d9fc: d0 0e       ..  ; ALWAYS branch
 
 .not_equals_conditional
     lda #&6f                                                          ; d9fe: a9 6f       .o
-    bne cda0c                                                         ; da00: d0 0a       .. ; ALWAYS branch
+    bne cda0c                                                         ; da00: d0 0a       ..  ; ALWAYS branch
 
 .less_than_conditional
     lda #&76                                                          ; da02: a9 76       .v
-    bne cda0c                                                         ; da04: d0 06       .. ; ALWAYS branch
+    bne cda0c                                                         ; da04: d0 06       ..  ; ALWAYS branch
 
 .greater_than_or_equal_conditional
     lda #&7d                                                          ; da06: a9 7d       .}
-    bne cda0c                                                         ; da08: d0 02       .. ; ALWAYS branch
+    bne cda0c                                                         ; da08: d0 02       ..  ; ALWAYS branch
 
 .greater_than_conditional
     lda #&84                                                          ; da0a: a9 84       ..
@@ -1922,7 +1923,7 @@ error2 = cd2e3+1
     eor float8B_sign                                                  ; da3e: 45 5f       E_
     rol a                                                             ; da40: 2a          *
     lda #1                                                            ; da41: a9 01       ..
-    bne cda38                                                         ; da43: d0 f3       .. ; ALWAYS branch
+    bne cda38                                                         ; da43: d0 f3       ..  ; ALWAYS branch
 
 .multiply_float8A_by_floatptr
     jsr three_way_sign_of_float8A                                     ; da45: 20 86 d6     ..
@@ -1951,7 +1952,7 @@ error2 = cd2e3+1
 .copy_mantissa_loop1
     lda float8A_man1 - 1,x                                            ; da6c: b5 59       .Y
     sta result_man1 - 1,x                                             ; da6e: 95 66       .f
-    sty float8A_man1 - 1,x                                            ; da70: 94 59       .Y
+    sty float8A_man1 - 1,x                                            ; da70: 94 59       .Y  ; Y=0
     dex                                                               ; da72: ca          .
     bne copy_mantissa_loop1                                           ; da73: d0 f7       ..
     lda float8A_sign                                                  ; da75: a5 57       .W
@@ -2126,15 +2127,15 @@ error3 = dummy+1
 
 .point_floatptr_at_float4
     lda #<float4                                                      ; db9e: a9 d4       ..
-    bne set_floatptr                                                  ; dba0: d0 0a       .. ; ALWAYS branch
+    bne set_floatptr                                                  ; dba0: d0 0a       ..  ; ALWAYS branch
 
 .point_floatptr_at_float2
     lda #<float2                                                      ; dba2: a9 ca       ..
-    bne set_floatptr                                                  ; dba4: d0 06       .. ; ALWAYS branch
+    bne set_floatptr                                                  ; dba4: d0 06       ..  ; ALWAYS branch
 
 .point_floatptr_at_float3
     lda #<float3                                                      ; dba6: a9 cf       ..
-    bne set_floatptr                                                  ; dba8: d0 02       .. ; ALWAYS branch
+    bne set_floatptr                                                  ; dba8: d0 02       ..  ; ALWAYS branch
 
 .point_floatptr_at_float1
     lda #<float1                                                      ; dbaa: a9 c5       ..
@@ -2185,7 +2186,7 @@ error3 = dummy+1
 .ln2
     equb &80, &31, &72, &17, &f8                                      ; dbf9: 80 31 72... .1r
 .ln_series
-    equb 7                                                            ; dbfe: 07          .  ; Number of coefficients - 1
+    equb 7                                                            ; dbfe: 07          .   ; Number of coefficients - 1
     equb &85, &17, &6e, &d4, &85                                      ; dbff: 85 17 6e... ..n
     equb &80, &28, &c7, &12, &a0                                      ; dc04: 80 28 c7... .(.
     equb &84, &70, &4e, &5f, &f2                                      ; dc09: 84 70 4e... .pN
@@ -2271,7 +2272,7 @@ error3 = dummy+1
     jmp multiply_float8A_by_floatptr                                  ; dcad: 4c 45 da    LE.
 
 .atn_series
-    equb 9                                                            ; dcb0: 09          .  ; Number of coefficients - 1
+    equb 9                                                            ; dcb0: 09          .   ; Number of coefficients - 1
     equb &85, &a3, &59, &e8, &67                                      ; dcb1: 85 a3 59... ..Y
     equb &80, &1c, &9d, 7, &36                                        ; dcb6: 80 1c 9d... ...
     equb &80, &57, &bb, &78, &df                                      ; dcbb: 80 57 bb... .W.
@@ -2367,7 +2368,7 @@ error3 = dummy+1
 
 .prepare_minus_half_pi_major_part
     lda #<minus_half_pi_major_part                                    ; dd86: a9 97       ..
-    bne finish_prepare_constant                                       ; dd88: d0 02       .. ; ALWAYS branch
+    bne finish_prepare_constant                                       ; dd88: d0 02       ..  ; ALWAYS branch
 
 .prepare_minus_half_pi_minor_part
     lda #<minus_half_pi_minor_part                                    ; dd8a: a9 9c       ..
@@ -2379,7 +2380,7 @@ error3 = dummy+1
 
 .prepare_half_pi
     lda #<half_pi                                                     ; dd93: a9 a1       ..
-    bne finish_prepare_constant                                       ; dd95: d0 f5       .. ; ALWAYS branch
+    bne finish_prepare_constant                                       ; dd95: d0 f5       ..  ; ALWAYS branch
 
 .minus_half_pi_major_part
     equb &81, &c9, 0, 0, 0                                            ; dd97: 81 c9 00... ...
@@ -2441,7 +2442,7 @@ error3 = dummy+1
 .e_constant
     equb &82, &2d, &f8, &54, &58                                      ; de23: 82 2d f8... .-.
 .exp_series
-    equb 7                                                            ; de28: 07          .  ; Number of coefficients - 1
+    equb 7                                                            ; de28: 07          .   ; Number of coefficients - 1
     equb &83, &e0, &20, &86, &5b                                      ; de29: 83 e0 20... ..
     equb &82, &80, &53, &93, &b8                                      ; de2e: 82 80 53... ..S
     equb &83, &20, 0, 6, &a1                                          ; de33: 83 20 00... . .
@@ -2495,7 +2496,7 @@ error3 = dummy+1
     jsr zero_float8A                                                  ; de8d: 20 a4 da     ..
     ldy #&80                                                          ; de90: a0 80       ..
     sty float8A_man1                                                  ; de92: 84 5a       .Z
-    iny                                                               ; de94: c8          .  ; Y=&81
+    iny                                                               ; de94: c8          .   ; Y=&81
     sty float8A_exponent                                              ; de95: 84 59       .Y
     rts                                                               ; de97: 60          `
 
@@ -2560,10 +2561,10 @@ error3 = dummy+1
     bne cdf25                                                         ; df17: d0 0c       ..
     ; Clear $8600 to $8800
     lda #0                                                            ; df19: a9 00       ..
-    tay                                                               ; df1b: a8          .  ; Y=0
+    tay                                                               ; df1b: a8          .   ; Y=0
 .loop_cdf1c
-    sta l8600,y                                                       ; df1c: 99 00 86    ...
-    sta l8700,y                                                       ; df1f: 99 00 87    ...
+    sta l8600,y                                                       ; df1c: 99 00 86    ... ; A=0
+    sta l8700,y                                                       ; df1f: 99 00 87    ... ; A=0
     dey                                                               ; df22: 88          .
     bne loop_cdf1c                                                    ; df23: d0 f7       ..
 .cdf25
@@ -2694,25 +2695,25 @@ error3 = dummy+1
     dex                                                               ; dfe1: ca          .
     beq invert_pixel                                                  ; dfe2: f0 05       ..
     ; clear pixel
-    and (colour_screen_address_low),y                                 ; dfe4: 31 5f       1_
-    sta (colour_screen_address_low),y                                 ; dfe6: 91 5f       ._
+    and (colour_screen_address_low),y                                 ; dfe4: 31 5f       1_  ; Offset is Y=0
+    sta (colour_screen_address_low),y                                 ; dfe6: 91 5f       ._  ; Offset is Y=0
     rts                                                               ; dfe8: 60          `
 
 .invert_pixel
     eor #&ff                                                          ; dfe9: 49 ff       I.
-    eor (colour_screen_address_low),y                                 ; dfeb: 51 5f       Q_
-    sta (colour_screen_address_low),y                                 ; dfed: 91 5f       ._
+    eor (colour_screen_address_low),y                                 ; dfeb: 51 5f       Q_  ; Offset is Y=0
+    sta (colour_screen_address_low),y                                 ; dfed: 91 5f       ._  ; Offset is Y=0
     rts                                                               ; dfef: 60          `
 
 .set_pixel
     tax                                                               ; dff0: aa          .
-    and (colour_screen_address_low),y                                 ; dff1: 31 5f       1_
-    sta (colour_screen_address_low),y                                 ; dff3: 91 5f       ._
+    and (colour_screen_address_low),y                                 ; dff1: 31 5f       1_  ; Offset is Y=0
+    sta (colour_screen_address_low),y                                 ; dff3: 91 5f       ._  ; Offset is Y=0
     txa                                                               ; dff5: 8a          .
     eor #&ff                                                          ; dff6: 49 ff       I.
     and temp_colour_byte                                              ; dff8: 2d fd 03    -..
-    ora (colour_screen_address_low),y                                 ; dffb: 11 5f       ._
-    sta (colour_screen_address_low),y                                 ; dffd: 91 5f       ._
+    ora (colour_screen_address_low),y                                 ; dffb: 11 5f       ._  ; Offset is Y=0
+    sta (colour_screen_address_low),y                                 ; dffd: 91 5f       ._  ; Offset is Y=0
     rts                                                               ; dfff: 60          `
 
 .pydis_end

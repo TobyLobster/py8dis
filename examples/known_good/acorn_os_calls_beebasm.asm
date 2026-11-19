@@ -301,7 +301,7 @@ OSBYTE  = &fff4
     ldx #&22 ; '"'                                                    ; 1131: a2 22       ."
     ldy #0                                                            ; 1133: a0 00       ..
     jsr OSBYTE                                                        ; 1135: 20 f4 ff     .. ; Set user flag byte to 34
-    cpx #1                                                            ; 1138: e0 01       .. ; X is the previous value of the user flag byte
+    cpx #1                                                            ; 1138: e0 01       ..  ; X is the previous value of the user flag byte
 
     ; *************** Test OSBYTE 0x02 ***************
     lda #osbyte_select_input_stream                                   ; 113a: a9 02       ..
@@ -324,7 +324,7 @@ OSBYTE  = &fff4
     ldx #3                                                            ; 1160: a2 03       ..
     ldy #0                                                            ; 1162: a0 00       ..
     jsr OSBYTE                                                        ; 1164: 20 f4 ff     .. ; Select input stream X (0=keyboard, 1=RS232, 2=both)
-    lda mem,x                                                         ; 1167: b5 70       .p ; X is the previous input stream (0=keyboard, 1=RS232) ; Redundant instruction?
+    lda mem,x                                                         ; 1167: b5 70       .p  ; X is the previous input stream (0=keyboard, 1=RS232) ; Redundant instruction?
 
     ; *************** Test OSBYTE 0x03 ***************
     lda #osbyte_select_output_stream                                  ; 1169: a9 03       ..
@@ -339,7 +339,7 @@ OSBYTE  = &fff4
     ldx #%11111111                                                    ; 117d: a2 ff       ..
     ldy #0                                                            ; 117f: a0 00       ..
     jsr OSBYTE                                                        ; 1181: 20 f4 ff     .. ; Select output stream based on X: enable RS232 output; disable VDU driver; disable printer output; enable printer despite CTRL-B/C state; disable SPOOLed output; disable printer output unless VDU 1 first
-    lda mem,x                                                         ; 1184: b5 70       .p ; X is the previous output stream status byte ; Redundant instruction?
+    lda mem,x                                                         ; 1184: b5 70       .p  ; X is the previous output stream status byte ; Redundant instruction?
 
     ; *************** Test OSBYTE 0x04 ***************
     lda #osbyte_set_cursor_editing                                    ; 1186: a9 04       ..
@@ -422,7 +422,7 @@ OSBYTE  = &fff4
     ldx #'A'                                                          ; 120a: a2 41       .A
     ldy #0                                                            ; 120c: a0 00       ..
     jsr OSBYTE                                                        ; 120e: 20 f4 ff     .. ; Set printer ignore character to X=65
-    cpx #1                                                            ; 1211: e0 01       .. ; X is the previous printer ignore character
+    cpx #1                                                            ; 1211: e0 01       ..  ; X is the previous printer ignore character
 
     ; *************** Test OSBYTE 0x07 ***************
     lda #osbyte_set_serial_receive_rate                               ; 1213: a9 07       ..
@@ -430,43 +430,43 @@ OSBYTE  = &fff4
     ldy #0                                                            ; 1217: a0 00       ..
     jsr OSBYTE                                                        ; 1219: 20 f4 ff     .. ; Set serial receive rate based on X
     lda #osbyte_set_serial_receive_rate                               ; 121c: a9 07       ..
-    ldx #baud_rate_default_9600                                       ; 121e: a2 00       .. ; X=baud rate
+    ldx #baud_rate_default_9600                                       ; 121e: a2 00       ..  ; X=baud rate
     ldy #0                                                            ; 1220: a0 00       ..
     jsr OSBYTE                                                        ; 1222: 20 f4 ff     .. ; Set serial receive rate to default 9600 baud (X=0)
     lda #osbyte_set_serial_receive_rate                               ; 1225: a9 07       ..
-    ldx #baud_rate_75                                                 ; 1227: a2 01       .. ; X=baud rate
+    ldx #baud_rate_75                                                 ; 1227: a2 01       ..  ; X=baud rate
     ldy #0                                                            ; 1229: a0 00       ..
     jsr OSBYTE                                                        ; 122b: 20 f4 ff     .. ; Set serial receive rate to 75 baud (X=1)
     lda #osbyte_set_serial_receive_rate                               ; 122e: a9 07       ..
-    ldx #baud_rate_150                                                ; 1230: a2 02       .. ; X=baud rate
+    ldx #baud_rate_150                                                ; 1230: a2 02       ..  ; X=baud rate
     ldy #0                                                            ; 1232: a0 00       ..
     jsr OSBYTE                                                        ; 1234: 20 f4 ff     .. ; Set serial receive rate to 150 baud (X=2)
     lda #osbyte_set_serial_receive_rate                               ; 1237: a9 07       ..
-    ldx #baud_rate_300                                                ; 1239: a2 03       .. ; X=baud rate
+    ldx #baud_rate_300                                                ; 1239: a2 03       ..  ; X=baud rate
     ldy #0                                                            ; 123b: a0 00       ..
     jsr OSBYTE                                                        ; 123d: 20 f4 ff     .. ; Set serial receive rate to 300 baud (X=3)
     lda #osbyte_set_serial_receive_rate                               ; 1240: a9 07       ..
-    ldx #baud_rate_1200                                               ; 1242: a2 04       .. ; X=baud rate
+    ldx #baud_rate_1200                                               ; 1242: a2 04       ..  ; X=baud rate
     ldy #0                                                            ; 1244: a0 00       ..
     jsr OSBYTE                                                        ; 1246: 20 f4 ff     .. ; Set serial receive rate to 1200 baud (X=4)
     lda #osbyte_set_serial_receive_rate                               ; 1249: a9 07       ..
-    ldx #baud_rate_2400                                               ; 124b: a2 05       .. ; X=baud rate
+    ldx #baud_rate_2400                                               ; 124b: a2 05       ..  ; X=baud rate
     ldy #0                                                            ; 124d: a0 00       ..
     jsr OSBYTE                                                        ; 124f: 20 f4 ff     .. ; Set serial receive rate to 2400 baud (X=5)
     lda #osbyte_set_serial_receive_rate                               ; 1252: a9 07       ..
-    ldx #baud_rate_4800                                               ; 1254: a2 06       .. ; X=baud rate
+    ldx #baud_rate_4800                                               ; 1254: a2 06       ..  ; X=baud rate
     ldy #0                                                            ; 1256: a0 00       ..
     jsr OSBYTE                                                        ; 1258: 20 f4 ff     .. ; Set serial receive rate to 4800 baud (X=6)
     lda #osbyte_set_serial_receive_rate                               ; 125b: a9 07       ..
-    ldx #baud_rate_9600                                               ; 125d: a2 07       .. ; X=baud rate
+    ldx #baud_rate_9600                                               ; 125d: a2 07       ..  ; X=baud rate
     ldy #0                                                            ; 125f: a0 00       ..
     jsr OSBYTE                                                        ; 1261: 20 f4 ff     .. ; Set serial receive rate to 9600 baud (X=7)
     lda #osbyte_set_serial_receive_rate                               ; 1264: a9 07       ..
-    ldx #baud_rate_19200                                              ; 1266: a2 08       .. ; X=baud rate
+    ldx #baud_rate_19200                                              ; 1266: a2 08       ..  ; X=baud rate
     ldy #0                                                            ; 1268: a0 00       ..
     jsr OSBYTE                                                        ; 126a: 20 f4 ff     .. ; Set serial receive rate to 19200 baud (X=8)
     lda #osbyte_set_serial_receive_rate                               ; 126d: a9 07       ..
-    ldx #9                                                            ; 126f: a2 09       .. ; X=baud rate
+    ldx #9                                                            ; 126f: a2 09       ..  ; X=baud rate
     ldy #0                                                            ; 1271: a0 00       ..
     jsr OSBYTE                                                        ; 1273: 20 f4 ff     .. ; Set serial receive rate based on X
 
@@ -484,45 +484,45 @@ OSBYTE  = &fff4
     ldy #0                                                            ; 127e: a0 00       ..
     jsr OSBYTE                                                        ; 1280: 20 f4 ff     .. ; Set serial transmission rate based on X
     lda #osbyte_set_serial_transmit_rate                              ; 1283: a9 08       ..
-    ldx #baud_rate_default_9600                                       ; 1285: a2 00       .. ; X=baud rate
+    ldx #baud_rate_default_9600                                       ; 1285: a2 00       ..  ; X=baud rate
     ldy #0                                                            ; 1287: a0 00       ..
     jsr OSBYTE                                                        ; 1289: 20 f4 ff     .. ; Set serial transmission rate to default 9600 baud (X=0)
     lda #osbyte_set_serial_transmit_rate                              ; 128c: a9 08       ..
-    ldx #baud_rate_75                                                 ; 128e: a2 01       .. ; X=baud rate
+    ldx #baud_rate_75                                                 ; 128e: a2 01       ..  ; X=baud rate
     ldy #0                                                            ; 1290: a0 00       ..
     jsr OSBYTE                                                        ; 1292: 20 f4 ff     .. ; Set serial transmission rate to 75 baud (X=1)
     lda #osbyte_set_serial_transmit_rate                              ; 1295: a9 08       ..
-    ldx #baud_rate_150                                                ; 1297: a2 02       .. ; X=baud rate
+    ldx #baud_rate_150                                                ; 1297: a2 02       ..  ; X=baud rate
     ldy #0                                                            ; 1299: a0 00       ..
     jsr OSBYTE                                                        ; 129b: 20 f4 ff     .. ; Set serial transmission rate to 150 baud (X=2)
     lda #osbyte_set_serial_transmit_rate                              ; 129e: a9 08       ..
-    ldx #baud_rate_300                                                ; 12a0: a2 03       .. ; X=baud rate
+    ldx #baud_rate_300                                                ; 12a0: a2 03       ..  ; X=baud rate
     ldy #0                                                            ; 12a2: a0 00       ..
     jsr OSBYTE                                                        ; 12a4: 20 f4 ff     .. ; Set serial transmission rate to 300 baud (X=3)
     lda #osbyte_set_serial_transmit_rate                              ; 12a7: a9 08       ..
-    ldx #baud_rate_1200                                               ; 12a9: a2 04       .. ; X=baud rate
+    ldx #baud_rate_1200                                               ; 12a9: a2 04       ..  ; X=baud rate
     ldy #0                                                            ; 12ab: a0 00       ..
     jsr OSBYTE                                                        ; 12ad: 20 f4 ff     .. ; Set serial transmission rate to 1200 baud (X=4)
     lda #osbyte_set_serial_transmit_rate                              ; 12b0: a9 08       ..
-    ldx #baud_rate_2400                                               ; 12b2: a2 05       .. ; X=baud rate
+    ldx #baud_rate_2400                                               ; 12b2: a2 05       ..  ; X=baud rate
     ldy #0                                                            ; 12b4: a0 00       ..
     jsr OSBYTE                                                        ; 12b6: 20 f4 ff     .. ; Set serial transmission rate to 2400 baud (X=5)
     lda #osbyte_set_serial_transmit_rate                              ; 12b9: a9 08       ..
-    ldx #baud_rate_4800                                               ; 12bb: a2 06       .. ; X=baud rate
+    ldx #baud_rate_4800                                               ; 12bb: a2 06       ..  ; X=baud rate
     ldy #0                                                            ; 12bd: a0 00       ..
     jsr OSBYTE                                                        ; 12bf: 20 f4 ff     .. ; Set serial transmission rate to 4800 baud (X=6)
     lda #osbyte_set_serial_transmit_rate                              ; 12c2: a9 08       ..
-    ldx #baud_rate_9600                                               ; 12c4: a2 07       .. ; X=baud rate
+    ldx #baud_rate_9600                                               ; 12c4: a2 07       ..  ; X=baud rate
     ldy #0                                                            ; 12c6: a0 00       ..
     jsr OSBYTE                                                        ; 12c8: 20 f4 ff     .. ; Set serial transmission rate to 9600 baud (X=7)
     lda #osbyte_set_serial_transmit_rate                              ; 12cb: a9 08       ..
-    ldx #baud_rate_19200                                              ; 12cd: a2 08       .. ; X=baud rate
+    ldx #baud_rate_19200                                              ; 12cd: a2 08       ..  ; X=baud rate
     ldy #0                                                            ; 12cf: a0 00       ..
     jsr OSBYTE                                                        ; 12d1: 20 f4 ff     .. ; Set serial transmission rate to 19200 baud (X=8)
     lda #osbyte_set_serial_transmit_rate                              ; 12d4: a9 08       ..
 
     ; *************** Test OSBYTE 0x09 ***************
-    ldx #9                                                            ; 12d6: a2 09       .. ; X=baud rate
+    ldx #9                                                            ; 12d6: a2 09       ..  ; X=baud rate
     ldy #0                                                            ; 12d8: a0 00       ..
     jsr OSBYTE                                                        ; 12da: 20 f4 ff     .. ; Set serial transmission rate based on X
 
@@ -548,7 +548,7 @@ OSBYTE  = &fff4
     ldx #&0c                                                          ; 12fc: a2 0c       ..
     ldy #0                                                            ; 12fe: a0 00       ..
     jsr OSBYTE                                                        ; 1300: 20 f4 ff     .. ; Set 'mark' duration of flashing colours to X=12 vsyncs (fiftieths of a second)
-    cpx mem                                                           ; 1303: e4 70       .p ; X is the previous mark duration (in fiftieths of a second)
+    cpx mem                                                           ; 1303: e4 70       .p  ; X is the previous mark duration (in fiftieths of a second)
 
     ; *************** Test OSBYTE 0x0a ***************
     lda #osbyte_set_flashing_space                                    ; 1305: a9 0a       ..
@@ -567,7 +567,7 @@ OSBYTE  = &fff4
     ldx #7                                                            ; 1322: a2 07       ..
     ldy #0                                                            ; 1324: a0 00       ..
     jsr OSBYTE                                                        ; 1326: 20 f4 ff     .. ; Set 'space' duration of flashing colours to X=7 vsyncs (fiftieths of a second)
-    cpx mem                                                           ; 1329: e4 70       .p ; X is the previous space duration (in fiftieths of a second)
+    cpx mem                                                           ; 1329: e4 70       .p  ; X is the previous space duration (in fiftieths of a second)
 
     ; *************** Test OSBYTE 0x0b ***************
     lda #osbyte_set_keyboard_repeat_delay                             ; 132b: a9 0b       ..
@@ -586,7 +586,7 @@ OSBYTE  = &fff4
     ldx #5                                                            ; 1348: a2 05       ..
     ldy #0                                                            ; 134a: a0 00       ..
     jsr OSBYTE                                                        ; 134c: 20 f4 ff     .. ; Set keyboard auto-repeat delay to X=5 centiseconds
-    cpx mem                                                           ; 134f: e4 70       .p ; X is the previous keyboard auto-repeat delay (in centiseconds)
+    cpx mem                                                           ; 134f: e4 70       .p  ; X is the previous keyboard auto-repeat delay (in centiseconds)
 
     ; *************** Test OSBYTE 0x0c ***************
     lda #osbyte_set_keyboard_repeat_rate                              ; 1351: a9 0c       ..
@@ -605,101 +605,101 @@ OSBYTE  = &fff4
     ldx #8                                                            ; 136e: a2 08       ..
     ldy #0                                                            ; 1370: a0 00       ..
     jsr OSBYTE                                                        ; 1372: 20 f4 ff     .. ; Set keyboard auto-repeat interval to X=8 centiseconds
-    cpx #2                                                            ; 1375: e0 02       .. ; X is the previous keyboard auto-repeat interval (in centiseconds)
+    cpx #2                                                            ; 1375: e0 02       ..  ; X is the previous keyboard auto-repeat interval (in centiseconds)
 
     ; *************** Test OSBYTE 0x0d ***************
     lda #osbyte_disable_event                                         ; 1377: a9 0d       ..
-    ldx #event_output_buffer_empty                                    ; 1379: a2 00       .. ; X=event number
+    ldx #event_output_buffer_empty                                    ; 1379: a2 00       ..  ; X=event number
     ldy #0                                                            ; 137b: a0 00       ..
     jsr OSBYTE                                                        ; 137d: 20 f4 ff     .. ; Disable 'Output buffer empty' event (X=0)
     lda #osbyte_disable_event                                         ; 1380: a9 0d       ..
-    ldx #event_input_buffer_full                                      ; 1382: a2 01       .. ; X=event number
+    ldx #event_input_buffer_full                                      ; 1382: a2 01       ..  ; X=event number
     ldy #0                                                            ; 1384: a0 00       ..
     jsr OSBYTE                                                        ; 1386: 20 f4 ff     .. ; Disable 'Input buffer full' event (X=1)
     lda #osbyte_disable_event                                         ; 1389: a9 0d       ..
-    ldx #event_character_entering_input_buffer                        ; 138b: a2 02       .. ; X=event number
+    ldx #event_character_entering_input_buffer                        ; 138b: a2 02       ..  ; X=event number
     ldy #0                                                            ; 138d: a0 00       ..
     jsr OSBYTE                                                        ; 138f: 20 f4 ff     .. ; Disable 'Character entering input buffer' event (X=2)
     lda #osbyte_disable_event                                         ; 1392: a9 0d       ..
-    ldx #event_adc_conversion_complete                                ; 1394: a2 03       .. ; X=event number
+    ldx #event_adc_conversion_complete                                ; 1394: a2 03       ..  ; X=event number
     ldy #0                                                            ; 1396: a0 00       ..
     jsr OSBYTE                                                        ; 1398: 20 f4 ff     .. ; Disable 'ADC conversion complete' event (X=3)
     lda #osbyte_disable_event                                         ; 139b: a9 0d       ..
-    ldx #event_start_of_vertical_sync                                 ; 139d: a2 04       .. ; X=event number
+    ldx #event_start_of_vertical_sync                                 ; 139d: a2 04       ..  ; X=event number
     ldy #0                                                            ; 139f: a0 00       ..
     jsr OSBYTE                                                        ; 13a1: 20 f4 ff     .. ; Disable 'Start of vertical sync' event (X=4)
     lda #osbyte_disable_event                                         ; 13a4: a9 0d       ..
-    ldx #event_interval_timer_crossing_zero                           ; 13a6: a2 05       .. ; X=event number
+    ldx #event_interval_timer_crossing_zero                           ; 13a6: a2 05       ..  ; X=event number
     ldy #0                                                            ; 13a8: a0 00       ..
     jsr OSBYTE                                                        ; 13aa: 20 f4 ff     .. ; Disable 'Interval timer crossing zero' event (X=5)
     lda #osbyte_disable_event                                         ; 13ad: a9 0d       ..
-    ldx #event_escape_condition_detected                              ; 13af: a2 06       .. ; X=event number
+    ldx #event_escape_condition_detected                              ; 13af: a2 06       ..  ; X=event number
     ldy #0                                                            ; 13b1: a0 00       ..
     jsr OSBYTE                                                        ; 13b3: 20 f4 ff     .. ; Disable 'ESCAPE condition detected' event (X=6)
     lda #osbyte_disable_event                                         ; 13b6: a9 0d       ..
-    ldx #event_rs423_error                                            ; 13b8: a2 07       .. ; X=event number
+    ldx #event_rs423_error                                            ; 13b8: a2 07       ..  ; X=event number
     ldy #0                                                            ; 13ba: a0 00       ..
     jsr OSBYTE                                                        ; 13bc: 20 f4 ff     .. ; Disable 'RS423 error' event (X=7)
     lda #osbyte_disable_event                                         ; 13bf: a9 0d       ..
-    ldx #event_network_error                                          ; 13c1: a2 08       .. ; X=event number
+    ldx #event_network_error                                          ; 13c1: a2 08       ..  ; X=event number
     ldy #0                                                            ; 13c3: a0 00       ..
     jsr OSBYTE                                                        ; 13c5: 20 f4 ff     .. ; Disable 'Network error' event (X=8)
     lda #osbyte_disable_event                                         ; 13c8: a9 0d       ..
-    ldx #event_user                                                   ; 13ca: a2 09       .. ; X=event number
+    ldx #event_user                                                   ; 13ca: a2 09       ..  ; X=event number
     ldy #0                                                            ; 13cc: a0 00       ..
     jsr OSBYTE                                                        ; 13ce: 20 f4 ff     .. ; Disable 'User' event (X=9)
     lda #osbyte_disable_event                                         ; 13d1: a9 0d       ..
-    ldx #&0a                                                          ; 13d3: a2 0a       .. ; X=event number
+    ldx #&0a                                                          ; 13d3: a2 0a       ..  ; X=event number
     ldy #0                                                            ; 13d5: a0 00       ..
     jsr OSBYTE                                                        ; 13d7: 20 f4 ff     .. ; Disable event X
-    cpx #0                                                            ; 13da: e0 00       .. ; X is the previous value of the event enable flag (0=disabled, non-zero=enabled)
+    cpx #0                                                            ; 13da: e0 00       ..  ; X is the previous value of the event enable flag (0=disabled, non-zero=enabled)
 
     ; *************** Test OSBYTE 0x0e ***************
     lda #osbyte_enable_event                                          ; 13dc: a9 0e       ..
-    ldx #event_output_buffer_empty                                    ; 13de: a2 00       .. ; X=event number
+    ldx #event_output_buffer_empty                                    ; 13de: a2 00       ..  ; X=event number
     ldy #0                                                            ; 13e0: a0 00       ..
     jsr OSBYTE                                                        ; 13e2: 20 f4 ff     .. ; Enable 'Output buffer empty' event (X=0)
     lda #osbyte_enable_event                                          ; 13e5: a9 0e       ..
-    ldx #event_input_buffer_full                                      ; 13e7: a2 01       .. ; X=event number
+    ldx #event_input_buffer_full                                      ; 13e7: a2 01       ..  ; X=event number
     ldy #0                                                            ; 13e9: a0 00       ..
     jsr OSBYTE                                                        ; 13eb: 20 f4 ff     .. ; Enable 'Input buffer full' event (X=1)
     lda #osbyte_enable_event                                          ; 13ee: a9 0e       ..
-    ldx #event_character_entering_input_buffer                        ; 13f0: a2 02       .. ; X=event number
+    ldx #event_character_entering_input_buffer                        ; 13f0: a2 02       ..  ; X=event number
     ldy #0                                                            ; 13f2: a0 00       ..
     jsr OSBYTE                                                        ; 13f4: 20 f4 ff     .. ; Enable 'Character entering input buffer' event (X=2)
     lda #osbyte_enable_event                                          ; 13f7: a9 0e       ..
-    ldx #event_adc_conversion_complete                                ; 13f9: a2 03       .. ; X=event number
+    ldx #event_adc_conversion_complete                                ; 13f9: a2 03       ..  ; X=event number
     ldy #0                                                            ; 13fb: a0 00       ..
     jsr OSBYTE                                                        ; 13fd: 20 f4 ff     .. ; Enable 'ADC conversion complete' event (X=3)
     lda #osbyte_enable_event                                          ; 1400: a9 0e       ..
-    ldx #event_start_of_vertical_sync                                 ; 1402: a2 04       .. ; X=event number
+    ldx #event_start_of_vertical_sync                                 ; 1402: a2 04       ..  ; X=event number
     ldy #0                                                            ; 1404: a0 00       ..
     jsr OSBYTE                                                        ; 1406: 20 f4 ff     .. ; Enable 'Start of vertical sync' event (X=4)
     lda #osbyte_enable_event                                          ; 1409: a9 0e       ..
-    ldx #event_interval_timer_crossing_zero                           ; 140b: a2 05       .. ; X=event number
+    ldx #event_interval_timer_crossing_zero                           ; 140b: a2 05       ..  ; X=event number
     ldy #0                                                            ; 140d: a0 00       ..
     jsr OSBYTE                                                        ; 140f: 20 f4 ff     .. ; Enable 'Interval timer crossing zero' event (X=5)
     lda #osbyte_enable_event                                          ; 1412: a9 0e       ..
-    ldx #event_escape_condition_detected                              ; 1414: a2 06       .. ; X=event number
+    ldx #event_escape_condition_detected                              ; 1414: a2 06       ..  ; X=event number
     ldy #0                                                            ; 1416: a0 00       ..
     jsr OSBYTE                                                        ; 1418: 20 f4 ff     .. ; Enable 'ESCAPE condition detected' event (X=6)
     lda #osbyte_enable_event                                          ; 141b: a9 0e       ..
-    ldx #event_rs423_error                                            ; 141d: a2 07       .. ; X=event number
+    ldx #event_rs423_error                                            ; 141d: a2 07       ..  ; X=event number
     ldy #0                                                            ; 141f: a0 00       ..
     jsr OSBYTE                                                        ; 1421: 20 f4 ff     .. ; Enable 'RS423 error' event (X=7)
     lda #osbyte_enable_event                                          ; 1424: a9 0e       ..
-    ldx #event_network_error                                          ; 1426: a2 08       .. ; X=event number
+    ldx #event_network_error                                          ; 1426: a2 08       ..  ; X=event number
     ldy #0                                                            ; 1428: a0 00       ..
     jsr OSBYTE                                                        ; 142a: 20 f4 ff     .. ; Enable 'Network error' event (X=8)
     lda #osbyte_enable_event                                          ; 142d: a9 0e       ..
-    ldx #event_user                                                   ; 142f: a2 09       .. ; X=event number
+    ldx #event_user                                                   ; 142f: a2 09       ..  ; X=event number
     ldy #0                                                            ; 1431: a0 00       ..
     jsr OSBYTE                                                        ; 1433: 20 f4 ff     .. ; Enable 'User' event (X=9)
     lda #osbyte_enable_event                                          ; 1436: a9 0e       ..
-    ldx #&0a                                                          ; 1438: a2 0a       .. ; X=event number
+    ldx #&0a                                                          ; 1438: a2 0a       ..  ; X=event number
     ldy #0                                                            ; 143a: a0 00       ..
     jsr OSBYTE                                                        ; 143c: 20 f4 ff     .. ; Enable event X
-    cpx #0                                                            ; 143f: e0 00       .. ; X is the previous event enable flag (0=disabled, non-zero=enabled)
+    cpx #0                                                            ; 143f: e0 00       ..  ; X is the previous event enable flag (0=disabled, non-zero=enabled)
 
     ; *************** Test OSBYTE 0x0f ***************
     lda #osbyte_flush_buffer_class                                    ; 1441: a9 0f       ..
@@ -740,7 +740,7 @@ OSBYTE  = &fff4
     ldx #4                                                            ; 148b: a2 04       ..
     ldy #0                                                            ; 148d: a0 00       ..
     jsr OSBYTE                                                        ; 148f: 20 f4 ff     .. ; Select 4 ADC channels (X=4)
-    cpx #4                                                            ; 1492: e0 04       .. ; X is the previous ADC channel 1-4 or zero if disabled
+    cpx #4                                                            ; 1492: e0 04       ..  ; X is the previous ADC channel 1-4 or zero if disabled
 
     ; *************** Test OSBYTE 0x11 ***************
     lda #osbyte_force_adc_conversion                                  ; 1494: a9 11       ..
@@ -801,7 +801,7 @@ OSBYTE  = &fff4
     ldx #7                                                            ; 1502: a2 07       ..
     ldy #0                                                            ; 1504: a0 00       ..
     jsr OSBYTE                                                        ; 1506: 20 f4 ff     .. ; Implode or Explode character definition RAM based on X
-    stx mem                                                           ; 1509: 86 70       .p ; X is the new OSHWM (high byte)
+    stx mem                                                           ; 1509: 86 70       .p  ; X is the new OSHWM (high byte)
 
     ; *************** Test OSBYTE 0x15 ***************
     lda #osbyte_flush_buffer                                          ; 150b: a9 15       ..
@@ -809,43 +809,43 @@ OSBYTE  = &fff4
     ldy #0                                                            ; 150f: a0 00       ..
     jsr OSBYTE                                                        ; 1511: 20 f4 ff     .. ; Flush specific buffer X
     lda #osbyte_flush_buffer                                          ; 1514: a9 15       ..
-    ldx #buffer_keyboard                                              ; 1516: a2 00       .. ; X=buffer number
+    ldx #buffer_keyboard                                              ; 1516: a2 00       ..  ; X=buffer number
     ldy #0                                                            ; 1518: a0 00       ..
     jsr OSBYTE                                                        ; 151a: 20 f4 ff     .. ; Flush the keyboard buffer (X=0)
     lda #osbyte_flush_buffer                                          ; 151d: a9 15       ..
-    ldx #buffer_rs423_input                                           ; 151f: a2 01       .. ; X=buffer number
+    ldx #buffer_rs423_input                                           ; 151f: a2 01       ..  ; X=buffer number
     ldy #0                                                            ; 1521: a0 00       ..
     jsr OSBYTE                                                        ; 1523: 20 f4 ff     .. ; Flush the RS423 input buffer (X=1)
     lda #osbyte_flush_buffer                                          ; 1526: a9 15       ..
-    ldx #buffer_rs423_output                                          ; 1528: a2 02       .. ; X=buffer number
+    ldx #buffer_rs423_output                                          ; 1528: a2 02       ..  ; X=buffer number
     ldy #0                                                            ; 152a: a0 00       ..
     jsr OSBYTE                                                        ; 152c: 20 f4 ff     .. ; Flush the RS423 output buffer (X=2)
     lda #osbyte_flush_buffer                                          ; 152f: a9 15       ..
-    ldx #buffer_printer                                               ; 1531: a2 03       .. ; X=buffer number
+    ldx #buffer_printer                                               ; 1531: a2 03       ..  ; X=buffer number
     ldy #0                                                            ; 1533: a0 00       ..
     jsr OSBYTE                                                        ; 1535: 20 f4 ff     .. ; Flush the printer buffer (X=3)
     lda #osbyte_flush_buffer                                          ; 1538: a9 15       ..
-    ldx #buffer_sound_channel_0                                       ; 153a: a2 04       .. ; X=buffer number
+    ldx #buffer_sound_channel_0                                       ; 153a: a2 04       ..  ; X=buffer number
     ldy #0                                                            ; 153c: a0 00       ..
     jsr OSBYTE                                                        ; 153e: 20 f4 ff     .. ; Flush sound channel 0 (X=4)
     lda #osbyte_flush_buffer                                          ; 1541: a9 15       ..
-    ldx #buffer_sound_channel_1                                       ; 1543: a2 05       .. ; X=buffer number
+    ldx #buffer_sound_channel_1                                       ; 1543: a2 05       ..  ; X=buffer number
     ldy #0                                                            ; 1545: a0 00       ..
     jsr OSBYTE                                                        ; 1547: 20 f4 ff     .. ; Flush sound channel 1 (X=5)
     lda #osbyte_flush_buffer                                          ; 154a: a9 15       ..
-    ldx #buffer_sound_channel_2                                       ; 154c: a2 06       .. ; X=buffer number
+    ldx #buffer_sound_channel_2                                       ; 154c: a2 06       ..  ; X=buffer number
     ldy #0                                                            ; 154e: a0 00       ..
     jsr OSBYTE                                                        ; 1550: 20 f4 ff     .. ; Flush sound channel 2 (X=6)
     lda #osbyte_flush_buffer                                          ; 1553: a9 15       ..
-    ldx #buffer_sound_channel_3                                       ; 1555: a2 07       .. ; X=buffer number
+    ldx #buffer_sound_channel_3                                       ; 1555: a2 07       ..  ; X=buffer number
     ldy #0                                                            ; 1557: a0 00       ..
     jsr OSBYTE                                                        ; 1559: 20 f4 ff     .. ; Flush sound channel 3 (X=7)
     lda #osbyte_flush_buffer                                          ; 155c: a9 15       ..
-    ldx #buffer_speech                                                ; 155e: a2 08       .. ; X=buffer number
+    ldx #buffer_speech                                                ; 155e: a2 08       ..  ; X=buffer number
     ldy #0                                                            ; 1560: a0 00       ..
     jsr OSBYTE                                                        ; 1562: 20 f4 ff     .. ; Flush the speech buffer (X=8)
     lda #osbyte_flush_buffer                                          ; 1565: a9 15       ..
-    ldx #9                                                            ; 1567: a2 09       .. ; X=buffer number
+    ldx #9                                                            ; 1567: a2 09       ..  ; X=buffer number
     ldy #0                                                            ; 1569: a0 00       ..
     jsr OSBYTE                                                        ; 156b: 20 f4 ff     .. ; Flush unknown buffer (X=9)
 
@@ -908,12 +908,12 @@ OSBYTE  = &fff4
     ; *************** Test OSBYTE 0x44 ***************
     lda #osbyte_test_for_sideways_ram                                 ; 15db: a9 44       .D
     jsr OSBYTE                                                        ; 15dd: 20 f4 ff     .. ; Master and B+ only: Test for sideways RAM
-    cpx #&80                                                          ; 15e0: e0 80       .. ; Bits 0-3 of X indicate use of ROM numbers 4-7 as RAM
+    cpx #&80                                                          ; 15e0: e0 80       ..  ; Bits 0-3 of X indicate use of ROM numbers 4-7 as RAM
 
     ; *************** Test OSBYTE 0x45 ***************
     lda #osbyte_get_sideways_ram_allocation                           ; 15e2: a9 45       .E
     jsr OSBYTE                                                        ; 15e4: 20 f4 ff     .. ; Master and B+ only: Get sideways RAM allocation
-    cpx #&80                                                          ; 15e7: e0 80       .. ; Bits 0-3 of X indicate ROM numbers 4-7 in use for extended addressing
+    cpx #&80                                                          ; 15e7: e0 80       ..  ; Bits 0-3 of X indicate ROM numbers 4-7 in use for extended addressing
 
     ; *************** Test OSBYTE 0x6b ***************
     lda #osbyte_selects_internal_or_external_bus                      ; 15e9: a9 6b       .k
@@ -959,42 +959,42 @@ OSBYTE  = &fff4
 
     ; *************** Test OSBYTE 0x78 ***************
     lda #osbyte_write_keys_pressed                                    ; 1620: a9 78       .x
-    ldx #0                                                            ; 1622: a2 00       .. ; X=key
-    ldy #0                                                            ; 1624: a0 00       .. ; Y=key
+    ldx #0                                                            ; 1622: a2 00       ..  ; X=key
+    ldy #0                                                            ; 1624: a0 00       ..  ; Y=key
     jsr OSBYTE                                                        ; 1626: 20 f4 ff     .. ; Write current keys pressed (X and Y)
 
     ; *************** Test OSBYTE 0x79 ***************
     lda #osbyte_scan_keyboard                                         ; 1629: a9 79       .y
     ldx mem                                                           ; 162b: a6 70       .p
     jsr OSBYTE                                                        ; 162d: 20 f4 ff     .. ; Keyboard scan, or test for a specific key
-    cpx #0                                                            ; 1630: e0 00       .. ; X is either the internal key number (0-127) pressed (for a keyboard scan), or the top bit is the key state (when testing a specific key)
+    cpx #0                                                            ; 1630: e0 00       ..  ; X is either the internal key number (0-127) pressed (for a keyboard scan), or the top bit is the key state (when testing a specific key)
     lda #osbyte_scan_keyboard                                         ; 1632: a9 79       .y
-    ldx #255 - inkey_key_shift                                        ; 1634: a2 00       .. ; X=internal key number
+    ldx #255 - inkey_key_shift                                        ; 1634: a2 00       ..  ; X=internal key number
     jsr OSBYTE                                                        ; 1636: 20 f4 ff     .. ; Keyboard scan starting from 'SHIFT' key (X=0)
-    cpx #0                                                            ; 1639: e0 00       .. ; X is the internal key number (0-127) if a key is pressed, or &ff otherwise
+    cpx #0                                                            ; 1639: e0 00       ..  ; X is the internal key number (0-127) if a key is pressed, or &ff otherwise
     lda #osbyte_scan_keyboard                                         ; 163b: a9 79       .y
-    ldx #255 - inkey_key_ctrl                                         ; 163d: a2 01       .. ; X=internal key number
+    ldx #255 - inkey_key_ctrl                                         ; 163d: a2 01       ..  ; X=internal key number
     jsr OSBYTE                                                        ; 163f: 20 f4 ff     .. ; Keyboard scan starting from 'CTRL' key (X=1)
-    cpx #0                                                            ; 1642: e0 00       .. ; X is the internal key number (0-127) if a key is pressed, or &ff otherwise
+    cpx #0                                                            ; 1642: e0 00       ..  ; X is the internal key number (0-127) if a key is pressed, or &ff otherwise
     lda #osbyte_scan_keyboard                                         ; 1644: a9 79       .y
-    ldx #(255 - inkey_key_shift) EOR 128                              ; 1646: a2 80       .. ; X=internal key number EOR 128
+    ldx #(255 - inkey_key_shift) EOR 128                              ; 1646: a2 80       ..  ; X=internal key number EOR 128
     jsr OSBYTE                                                        ; 1648: 20 f4 ff     .. ; Test for 'SHIFT' key pressed (X=128)
-    cpx #0                                                            ; 164b: e0 00       .. ; X has top bit set if 'SHIFT' pressed
+    cpx #0                                                            ; 164b: e0 00       ..  ; X has top bit set if 'SHIFT' pressed
     lda #osbyte_scan_keyboard                                         ; 164d: a9 79       .y
     ldx #&ff                                                          ; 164f: a2 ff       ..
     jsr OSBYTE                                                        ; 1651: 20 f4 ff     .. ; Test for an unknown key pressed (X=255)
-    cpx #0                                                            ; 1654: e0 00       .. ; X has top bit set if an unknown pressed
+    cpx #0                                                            ; 1654: e0 00       ..  ; X has top bit set if an unknown pressed
     lda #osbyte_scan_keyboard                                         ; 1656: a9 79       .y
-    ldx #255 - inkey_key_f0                                           ; 1658: a2 20       .  ; X=internal key number
+    ldx #255 - inkey_key_f0                                           ; 1658: a2 20       .   ; X=internal key number
     jsr OSBYTE                                                        ; 165a: 20 f4 ff     .. ; Keyboard scan starting from 'F0' key (X=32)
-    cpx #0                                                            ; 165d: e0 00       .. ; X is the internal key number (0-127) if a key is pressed, or &ff otherwise
+    cpx #0                                                            ; 165d: e0 00       ..  ; X is the internal key number (0-127) if a key is pressed, or &ff otherwise
 
     ; *************** Test OSBYTE 0x7a ***************
     lda #osbyte_scan_keyboard_from_16                                 ; 165f: a9 7a       .z
     ldx #0                                                            ; 1661: a2 00       ..
     ldy #0                                                            ; 1663: a0 00       ..
     jsr OSBYTE                                                        ; 1665: 20 f4 ff     .. ; Keyboard scan starting from key 16
-    cpx #&ff                                                          ; 1668: e0 ff       .. ; X is key number if key is pressed, or &ff otherwise
+    cpx #&ff                                                          ; 1668: e0 ff       ..  ; X is key number if key is pressed, or &ff otherwise
 
     ; *************** Test OSBYTE 0x7b ***************
     lda #osbyte_printer_driver_going_dormant                          ; 166a: a9 7b       .{
@@ -1007,7 +1007,7 @@ OSBYTE  = &fff4
     ldx #0                                                            ; 1675: a2 00       ..
     ldy #0                                                            ; 1677: a0 00       ..
     jsr OSBYTE                                                        ; 1679: 20 f4 ff     .. ; Clear escape condition
-    cpx #&ff                                                          ; 167c: e0 ff       .. ; X=&ff if there was an ESCAPE condition to clear, or zero otherwise
+    cpx #&ff                                                          ; 167c: e0 ff       ..  ; X=&ff if there was an ESCAPE condition to clear, or zero otherwise
 
     ; *************** Test OSBYTE 0x7d ***************
     lda #osbyte_set_escape                                            ; 167e: a9 7d       .}
@@ -1020,104 +1020,104 @@ OSBYTE  = &fff4
     ldx #0                                                            ; 1689: a2 00       ..
     ldy #0                                                            ; 168b: a0 00       ..
     jsr OSBYTE                                                        ; 168d: 20 f4 ff     .. ; Clear escape condition and perform escape effects
-    cpx #&ff                                                          ; 1690: e0 ff       .. ; X=&ff if there was an ESCAPE condition to clear, or zero otherwise
+    cpx #&ff                                                          ; 1690: e0 ff       ..  ; X=&ff if there was an ESCAPE condition to clear, or zero otherwise
 
     ; *************** Test OSBYTE 0x7f ***************
     lda #osbyte_check_eof                                             ; 1692: a9 7f       ..
     ldy #0                                                            ; 1694: a0 00       ..
     jsr OSBYTE                                                        ; 1696: 20 f4 ff     .. ; Check for EOF in file handle X
     lda #osbyte_check_eof                                             ; 1699: a9 7f       ..
-    ldx mem                                                           ; 169b: a6 70       .p ; X=File handle
+    ldx mem                                                           ; 169b: a6 70       .p  ; X=File handle
     ldy #0                                                            ; 169d: a0 00       ..
     jsr OSBYTE                                                        ; 169f: 20 f4 ff     .. ; Check for EOF in file handle X
     lda #osbyte_check_eof                                             ; 16a2: a9 7f       ..
-    ldx #0                                                            ; 16a4: a2 00       .. ; X=File handle
+    ldx #0                                                            ; 16a4: a2 00       ..  ; X=File handle
     ldy #0                                                            ; 16a6: a0 00       ..
     jsr OSBYTE                                                        ; 16a8: 20 f4 ff     .. ; Check for EOF in file handle X
-    cpx #0                                                            ; 16ab: e0 00       .. ; X is non-zero if reached end of file, zero otherwise
+    cpx #0                                                            ; 16ab: e0 00       ..  ; X is non-zero if reached end of file, zero otherwise
 
     ; *************** Test OSBYTE 0x80 ***************
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16ad: a9 80       ..
     ldx #0                                                            ; 16af: a2 00       ..
     jsr OSBYTE                                                        ; 16b1: 20 f4 ff     .. ; Read the channel number last used for an ADC conversion and joystick fire buttons (X=0)
-    txa                                                               ; 16b4: 8a          .  ; X has the joystick fire buttons status in the lower two bits: bit 0=left button, bit 1=right button ; Redundant instruction?
-    and #3                                                            ; 16b5: 29 03       ). ; Redundant instruction?
-    sty mem                                                           ; 16b7: 84 70       .p ; Y is the last ADC channel number to complete conversion
+    txa                                                               ; 16b4: 8a          .   ; X has the joystick fire buttons status in the lower two bits: bit 0=left button, bit 1=right button ; Redundant instruction?
+    and #3                                                            ; 16b5: 29 03       ).  ; Redundant instruction?
+    sty mem                                                           ; 16b7: 84 70       .p  ; Y is the last ADC channel number to complete conversion
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16b9: a9 80       ..
     ldx #1                                                            ; 16bb: a2 01       ..
     ldy #0                                                            ; 16bd: a0 00       ..
     jsr OSBYTE                                                        ; 16bf: 20 f4 ff     .. ; Read the ADC conversion value for channel X=1
-    stx mem                                                           ; 16c2: 86 70       .p ; X and Y contain the ADC value read (low,high)
+    stx mem                                                           ; 16c2: 86 70       .p  ; X and Y contain the ADC value read (low,high)
     sty mem                                                           ; 16c4: 84 70       .p
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16c6: a9 80       ..
     ldx #2                                                            ; 16c8: a2 02       ..
     ldy #0                                                            ; 16ca: a0 00       ..
     jsr OSBYTE                                                        ; 16cc: 20 f4 ff     .. ; Read the ADC conversion value for channel X=2
-    stx mem                                                           ; 16cf: 86 70       .p ; X and Y contain the ADC value read (low,high)
+    stx mem                                                           ; 16cf: 86 70       .p  ; X and Y contain the ADC value read (low,high)
     sty mem                                                           ; 16d1: 84 70       .p
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16d3: a9 80       ..
     ldx #3                                                            ; 16d5: a2 03       ..
     ldy #0                                                            ; 16d7: a0 00       ..
     jsr OSBYTE                                                        ; 16d9: 20 f4 ff     .. ; Read the ADC conversion value for channel X=3
-    stx mem                                                           ; 16dc: 86 70       .p ; X and Y contain the ADC value read (low,high)
+    stx mem                                                           ; 16dc: 86 70       .p  ; X and Y contain the ADC value read (low,high)
     sty mem                                                           ; 16de: 84 70       .p
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16e0: a9 80       ..
     ldx #4                                                            ; 16e2: a2 04       ..
     ldy #0                                                            ; 16e4: a0 00       ..
     jsr OSBYTE                                                        ; 16e6: 20 f4 ff     .. ; Read the ADC conversion value for channel X=4
-    stx mem                                                           ; 16e9: 86 70       .p ; X and Y contain the ADC value read (low,high)
+    stx mem                                                           ; 16e9: 86 70       .p  ; X and Y contain the ADC value read (low,high)
     sty mem                                                           ; 16eb: 84 70       .p
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16ed: a9 80       ..
     ldx #5                                                            ; 16ef: a2 05       ..
     ldy #0                                                            ; 16f1: a0 00       ..
     jsr OSBYTE                                                        ; 16f3: 20 f4 ff     .. ; Read the ADC conversion value for channel X=5
-    stx mem                                                           ; 16f6: 86 70       .p ; X and Y contain the ADC value read (low,high)
+    stx mem                                                           ; 16f6: 86 70       .p  ; X and Y contain the ADC value read (low,high)
     sty mem                                                           ; 16f8: 84 70       .p
     lda #osbyte_read_adc_or_get_buffer_status                         ; 16fa: a9 80       ..
     ldx #&ff                                                          ; 16fc: a2 ff       ..
     ldy #0                                                            ; 16fe: a0 00       ..
     jsr OSBYTE                                                        ; 1700: 20 f4 ff     .. ; Read number of characters in keyboard buffer (X=255)
-    cpx #0                                                            ; 1703: e0 00       .. ; X is the number of characters in the keyboard buffer
+    cpx #0                                                            ; 1703: e0 00       ..  ; X is the number of characters in the keyboard buffer
     lda #osbyte_read_adc_or_get_buffer_status                         ; 1705: a9 80       ..
     ldx #&fe                                                          ; 1707: a2 fe       ..
     ldy #0                                                            ; 1709: a0 00       ..
     jsr OSBYTE                                                        ; 170b: 20 f4 ff     .. ; Read number of characters in RS423 input buffer (X=254)
-    cpx #0                                                            ; 170e: e0 00       .. ; X is the number of characters in the RS423 input buffer
+    cpx #0                                                            ; 170e: e0 00       ..  ; X is the number of characters in the RS423 input buffer
     lda #osbyte_read_adc_or_get_buffer_status                         ; 1710: a9 80       ..
     ldx #&fd                                                          ; 1712: a2 fd       ..
     ldy #0                                                            ; 1714: a0 00       ..
     jsr OSBYTE                                                        ; 1716: 20 f4 ff     .. ; Read number of spaces remaining in RS423 output buffer (X=253)
-    cpx #0                                                            ; 1719: e0 00       .. ; X is the number of spaces remaining in the RS423 output buffer
+    cpx #0                                                            ; 1719: e0 00       ..  ; X is the number of spaces remaining in the RS423 output buffer
     lda #osbyte_read_adc_or_get_buffer_status                         ; 171b: a9 80       ..
     ldx #&fc                                                          ; 171d: a2 fc       ..
     ldy #0                                                            ; 171f: a0 00       ..
     jsr OSBYTE                                                        ; 1721: 20 f4 ff     .. ; Read number of spaces remaining in printer buffer (X=252)
-    cpx #0                                                            ; 1724: e0 00       .. ; X is the number of spaces remaining in the printer buffer
+    cpx #0                                                            ; 1724: e0 00       ..  ; X is the number of spaces remaining in the printer buffer
     lda #osbyte_read_adc_or_get_buffer_status                         ; 1726: a9 80       ..
     ldx #&fb                                                          ; 1728: a2 fb       ..
     ldy #0                                                            ; 172a: a0 00       ..
     jsr OSBYTE                                                        ; 172c: 20 f4 ff     .. ; Read number of spaces remaining in sound channel 0 (X=251)
-    cpx #0                                                            ; 172f: e0 00       .. ; X is the number of spaces remaining in sound channel 0
+    cpx #0                                                            ; 172f: e0 00       ..  ; X is the number of spaces remaining in sound channel 0
     lda #osbyte_read_adc_or_get_buffer_status                         ; 1731: a9 80       ..
     ldx #&fa                                                          ; 1733: a2 fa       ..
     ldy #0                                                            ; 1735: a0 00       ..
     jsr OSBYTE                                                        ; 1737: 20 f4 ff     .. ; Read number of spaces remaining in sound channel 1 (X=250)
-    cpx #0                                                            ; 173a: e0 00       .. ; X is the number of spaces remaining in sound channel 1
+    cpx #0                                                            ; 173a: e0 00       ..  ; X is the number of spaces remaining in sound channel 1
     lda #osbyte_read_adc_or_get_buffer_status                         ; 173c: a9 80       ..
     ldx #&f9                                                          ; 173e: a2 f9       ..
     ldy #0                                                            ; 1740: a0 00       ..
     jsr OSBYTE                                                        ; 1742: 20 f4 ff     .. ; Read number of spaces remaining in sound channel 2 (X=249)
-    cpx #0                                                            ; 1745: e0 00       .. ; X is the number of spaces remaining in sound channel 2
+    cpx #0                                                            ; 1745: e0 00       ..  ; X is the number of spaces remaining in sound channel 2
     lda #osbyte_read_adc_or_get_buffer_status                         ; 1747: a9 80       ..
     ldx #&f8                                                          ; 1749: a2 f8       ..
     ldy #0                                                            ; 174b: a0 00       ..
     jsr OSBYTE                                                        ; 174d: 20 f4 ff     .. ; Read number of spaces remaining in sound channel 3 (X=248)
-    cpx #0                                                            ; 1750: e0 00       .. ; X is the number of spaces remaining in sound channel 3
+    cpx #0                                                            ; 1750: e0 00       ..  ; X is the number of spaces remaining in sound channel 3
     lda #osbyte_read_adc_or_get_buffer_status                         ; 1752: a9 80       ..
     ldx #&f7                                                          ; 1754: a2 f7       ..
     ldy #0                                                            ; 1756: a0 00       ..
     jsr OSBYTE                                                        ; 1758: 20 f4 ff     .. ; Read number of spaces remaining in speech buffer (X=247)
-    cpx #0                                                            ; 175b: e0 00       .. ; X is the number of spaces remaining in the speech buffer
+    cpx #0                                                            ; 175b: e0 00       ..  ; X is the number of spaces remaining in the speech buffer
     lda #osbyte_read_adc_or_get_buffer_status                         ; 175d: a9 80       ..
     ldx #&f6                                                          ; 175f: a2 f6       ..
     ldy #0                                                            ; 1761: a0 00       ..
@@ -1131,7 +1131,7 @@ OSBYTE  = &fff4
     lda #osbyte_inkey                                                 ; 176f: a9 81       ..
     ldy #0                                                            ; 1771: a0 00       ..
     jsr OSBYTE                                                        ; 1773: 20 f4 ff     .. ; Wait for a key press with a time limit
-    cpy #0                                                            ; 1776: c0 00       .. ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
+    cpy #0                                                            ; 1776: c0 00       ..  ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
     lda #osbyte_inkey                                                 ; 1778: a9 81       ..
     ldy #&80                                                          ; 177a: a0 80       ..
     jsr OSBYTE                                                        ; 177c: 20 f4 ff     .. ; Read a specific key (or read machine type)
@@ -1153,37 +1153,37 @@ OSBYTE  = &fff4
     ;     X=245, Master Compact OS 5.10
     cpx #0                                                            ; 178a: e0 00       ..
     lda #osbyte_inkey                                                 ; 178c: a9 81       ..
-    ldx #inkey_key_shift                                              ; 178e: a2 ff       .. ; X=inkey key value
+    ldx #inkey_key_shift                                              ; 178e: a2 ff       ..  ; X=inkey key value
     ldy #&80                                                          ; 1790: a0 80       ..
     jsr OSBYTE                                                        ; 1792: 20 f4 ff     .. ; Is the 'SHIFT' key pressed?
-    cpy #0                                                            ; 1795: c0 00       .. ; X and Y contain &ff if the key is pressed
+    cpy #0                                                            ; 1795: c0 00       ..  ; X and Y contain &ff if the key is pressed
     lda #osbyte_inkey                                                 ; 1797: a9 81       ..
     ldx #0                                                            ; 1799: a2 00       ..
     ldy #0                                                            ; 179b: a0 00       ..
     jsr OSBYTE                                                        ; 179d: 20 f4 ff     .. ; Wait for a key press within 0 centiseconds
-    cpy #0                                                            ; 17a0: c0 00       .. ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
+    cpy #0                                                            ; 17a0: c0 00       ..  ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
     lda #osbyte_inkey                                                 ; 17a2: a9 81       ..
     ldx #1                                                            ; 17a4: a2 01       ..
     ldy #0                                                            ; 17a6: a0 00       ..
     jsr OSBYTE                                                        ; 17a8: 20 f4 ff     .. ; Wait for a key press within 1 centisecond
-    cpy #0                                                            ; 17ab: c0 00       .. ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
+    cpy #0                                                            ; 17ab: c0 00       ..  ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
     lda #osbyte_inkey                                                 ; 17ad: a9 81       ..
     ldx #&ff                                                          ; 17af: a2 ff       ..
     ldy #0                                                            ; 17b1: a0 00       ..
     jsr OSBYTE                                                        ; 17b3: 20 f4 ff     .. ; Wait for a key press within 255 centiseconds
-    cpy #0                                                            ; 17b6: c0 00       .. ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
+    cpy #0                                                            ; 17b6: c0 00       ..  ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
     lda #osbyte_inkey                                                 ; 17b8: a9 81       ..
     ldx #1                                                            ; 17ba: a2 01       ..
     ldy #2                                                            ; 17bc: a0 02       ..
     jsr OSBYTE                                                        ; 17be: 20 f4 ff     .. ; Wait for a key press within 513 centiseconds
-    cpy #0                                                            ; 17c1: c0 00       .. ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
+    cpy #0                                                            ; 17c1: c0 00       ..  ; Y is zero if key pressed; &ff if no key pressed; &1b if ESCAPE pressed
 
     ; *************** Test OSBYTE 0x82 ***************
     lda #osbyte_read_high_order_address                               ; 17c3: a9 82       ..
     ldx #0                                                            ; 17c5: a2 00       ..
     ldy #0                                                            ; 17c7: a0 00       ..
     jsr OSBYTE                                                        ; 17c9: 20 f4 ff     .. ; Read the filing system 'machine high order address'
-    stx mem                                                           ; 17cc: 86 70       .p ; X and Y contain the machine high order address (low, high)
+    stx mem                                                           ; 17cc: 86 70       .p  ; X and Y contain the machine high order address (low, high)
     sty mem                                                           ; 17ce: 84 70       .p
 
     ; *************** Test OSBYTE 0x83 ***************
@@ -1191,7 +1191,7 @@ OSBYTE  = &fff4
     ldx #0                                                            ; 17d2: a2 00       ..
     ldy #0                                                            ; 17d4: a0 00       ..
     jsr OSBYTE                                                        ; 17d6: 20 f4 ff     .. ; Read top of operating system RAM address (OSHWM)
-    stx mem                                                           ; 17d9: 86 70       .p ; X and Y contain the address of OSHWM (low, high)
+    stx mem                                                           ; 17d9: 86 70       .p  ; X and Y contain the address of OSHWM (low, high)
     sty mem                                                           ; 17db: 84 70       .p
 
     ; *************** Test OSBYTE 0x84 ***************
@@ -1199,47 +1199,47 @@ OSBYTE  = &fff4
     ldx #0                                                            ; 17df: a2 00       ..
     ldy #0                                                            ; 17e1: a0 00       ..
     jsr OSBYTE                                                        ; 17e3: 20 f4 ff     .. ; Read top of user memory (HIMEM)
-    stx mem                                                           ; 17e6: 86 70       .p ; X and Y contain the address of HIMEM (low, high)
+    stx mem                                                           ; 17e6: 86 70       .p  ; X and Y contain the address of HIMEM (low, high)
     sty mem                                                           ; 17e8: 84 70       .p
 
     ; *************** Test OSBYTE 0x85 ***************
     lda #osbyte_read_himem_for_mode                                   ; 17ea: a9 85       ..
-    ldx mem                                                           ; 17ec: a6 70       .p ; X=MODE number
+    ldx mem                                                           ; 17ec: a6 70       .p  ; X=MODE number
     ldy #0                                                            ; 17ee: a0 00       ..
     jsr OSBYTE                                                        ; 17f0: 20 f4 ff     .. ; Read top of user memory for a given screen mode X
     lda #osbyte_read_himem_for_mode                                   ; 17f3: a9 85       ..
-    ldx #0                                                            ; 17f5: a2 00       .. ; X=MODE number
+    ldx #0                                                            ; 17f5: a2 00       ..  ; X=MODE number
     ldy #0                                                            ; 17f7: a0 00       ..
     jsr OSBYTE                                                        ; 17f9: 20 f4 ff     .. ; Read top of user memory for screen MODE 0
     lda #osbyte_read_himem_for_mode                                   ; 17fc: a9 85       ..
-    ldx #1                                                            ; 17fe: a2 01       .. ; X=MODE number
+    ldx #1                                                            ; 17fe: a2 01       ..  ; X=MODE number
     ldy #0                                                            ; 1800: a0 00       ..
     jsr OSBYTE                                                        ; 1802: 20 f4 ff     .. ; Read top of user memory for screen MODE 1
     lda #osbyte_read_himem_for_mode                                   ; 1805: a9 85       ..
-    ldx #2                                                            ; 1807: a2 02       .. ; X=MODE number
+    ldx #2                                                            ; 1807: a2 02       ..  ; X=MODE number
     ldy #0                                                            ; 1809: a0 00       ..
     jsr OSBYTE                                                        ; 180b: 20 f4 ff     .. ; Read top of user memory for screen MODE 2
     lda #osbyte_read_himem_for_mode                                   ; 180e: a9 85       ..
-    ldx #3                                                            ; 1810: a2 03       .. ; X=MODE number
+    ldx #3                                                            ; 1810: a2 03       ..  ; X=MODE number
     ldy #0                                                            ; 1812: a0 00       ..
     jsr OSBYTE                                                        ; 1814: 20 f4 ff     .. ; Read top of user memory for screen MODE 3
     lda #osbyte_read_himem_for_mode                                   ; 1817: a9 85       ..
-    ldx #4                                                            ; 1819: a2 04       .. ; X=MODE number
+    ldx #4                                                            ; 1819: a2 04       ..  ; X=MODE number
     ldy #0                                                            ; 181b: a0 00       ..
     jsr OSBYTE                                                        ; 181d: 20 f4 ff     .. ; Read top of user memory for screen MODE 4
     lda #osbyte_read_himem_for_mode                                   ; 1820: a9 85       ..
-    ldx #5                                                            ; 1822: a2 05       .. ; X=MODE number
+    ldx #5                                                            ; 1822: a2 05       ..  ; X=MODE number
     ldy #0                                                            ; 1824: a0 00       ..
     jsr OSBYTE                                                        ; 1826: 20 f4 ff     .. ; Read top of user memory for screen MODE 5
     lda #osbyte_read_himem_for_mode                                   ; 1829: a9 85       ..
-    ldx #6                                                            ; 182b: a2 06       .. ; X=MODE number
+    ldx #6                                                            ; 182b: a2 06       ..  ; X=MODE number
     ldy #0                                                            ; 182d: a0 00       ..
     jsr OSBYTE                                                        ; 182f: 20 f4 ff     .. ; Read top of user memory for screen MODE 6
     lda #osbyte_read_himem_for_mode                                   ; 1832: a9 85       ..
-    ldx #7                                                            ; 1834: a2 07       .. ; X=MODE number
+    ldx #7                                                            ; 1834: a2 07       ..  ; X=MODE number
     ldy #0                                                            ; 1836: a0 00       ..
     jsr OSBYTE                                                        ; 1838: 20 f4 ff     .. ; Read top of user memory for screen MODE 7
-    stx mem                                                           ; 183b: 86 70       .p ; X and Y contain the address (low, high)
+    stx mem                                                           ; 183b: 86 70       .p  ; X and Y contain the address (low, high)
     sty mem                                                           ; 183d: 84 70       .p
 
     ; *************** Test OSBYTE 0x86 ***************
@@ -1247,16 +1247,16 @@ OSBYTE  = &fff4
     ldx #0                                                            ; 1841: a2 00       ..
     ldy #0                                                            ; 1843: a0 00       ..
     jsr OSBYTE                                                        ; 1845: 20 f4 ff     .. ; Read input cursor position (Sets X=POS and Y=VPOS)
-    stx mem                                                           ; 1848: 86 70       .p ; X is the horizontal text position ('POS')
-    sty mem                                                           ; 184a: 84 70       .p ; Y is the vertical text position ('VPOS')
+    stx mem                                                           ; 1848: 86 70       .p  ; X is the horizontal text position ('POS')
+    sty mem                                                           ; 184a: 84 70       .p  ; Y is the vertical text position ('VPOS')
 
     ; *************** Test OSBYTE 0x87 ***************
     lda #osbyte_read_char_at_cursor                                   ; 184c: a9 87       ..
     ldx #0                                                            ; 184e: a2 00       ..
     ldy #0                                                            ; 1850: a0 00       ..
     jsr OSBYTE                                                        ; 1852: 20 f4 ff     .. ; Read character at the text cursor, and current screen MODE
-    stx mem                                                           ; 1855: 86 70       .p ; X is the character at the text cursor
-    sty mem                                                           ; 1857: 84 70       .p ; Y is the current screen MODE (0-7)
+    stx mem                                                           ; 1855: 86 70       .p  ; X is the character at the text cursor
+    sty mem                                                           ; 1857: 84 70       .p  ; Y is the current screen MODE (0-7)
 
     ; *************** Test OSBYTE 0x88 ***************
     lda #osbyte_code                                                  ; 1859: a9 88       ..
@@ -1284,47 +1284,47 @@ OSBYTE  = &fff4
     ldy #0                                                            ; 1881: a0 00       ..
     jsr OSBYTE                                                        ; 1883: 20 f4 ff     .. ; Insert value 0 into buffer X; carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 1886: a9 8a       ..
-    ldx #buffer_rs423_input                                           ; 1888: a2 01       .. ; X=buffer number
+    ldx #buffer_rs423_input                                           ; 1888: a2 01       ..  ; X=buffer number
     ldy mem                                                           ; 188a: a4 70       .p
     jsr OSBYTE                                                        ; 188c: 20 f4 ff     .. ; Insert value Y into the RS423 input buffer (X=1); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 188f: a9 8a       ..
-    ldx #buffer_keyboard                                              ; 1891: a2 00       .. ; X=buffer number
+    ldx #buffer_keyboard                                              ; 1891: a2 00       ..  ; X=buffer number
     ldy #2                                                            ; 1893: a0 02       ..
     jsr OSBYTE                                                        ; 1895: 20 f4 ff     .. ; Insert value 2 into the keyboard buffer (X=0); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 1898: a9 8a       ..
-    ldx #buffer_rs423_input                                           ; 189a: a2 01       .. ; X=buffer number
+    ldx #buffer_rs423_input                                           ; 189a: a2 01       ..  ; X=buffer number
     ldy #3                                                            ; 189c: a0 03       ..
     jsr OSBYTE                                                        ; 189e: 20 f4 ff     .. ; Insert value 3 into the RS423 input buffer (X=1); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18a1: a9 8a       ..
-    ldx #buffer_rs423_output                                          ; 18a3: a2 02       .. ; X=buffer number
+    ldx #buffer_rs423_output                                          ; 18a3: a2 02       ..  ; X=buffer number
     ldy #&63 ; 'c'                                                    ; 18a5: a0 63       .c
     jsr OSBYTE                                                        ; 18a7: 20 f4 ff     .. ; Insert value 99 into the RS423 output buffer (X=2); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18aa: a9 8a       ..
-    ldx #buffer_printer                                               ; 18ac: a2 03       .. ; X=buffer number
+    ldx #buffer_printer                                               ; 18ac: a2 03       ..  ; X=buffer number
     ldy #&17                                                          ; 18ae: a0 17       ..
     jsr OSBYTE                                                        ; 18b0: 20 f4 ff     .. ; Insert value 23 into the printer buffer (X=3); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18b3: a9 8a       ..
-    ldx #buffer_sound_channel_0                                       ; 18b5: a2 04       .. ; X=buffer number
+    ldx #buffer_sound_channel_0                                       ; 18b5: a2 04       ..  ; X=buffer number
     ldy #&ce                                                          ; 18b7: a0 ce       ..
     jsr OSBYTE                                                        ; 18b9: 20 f4 ff     .. ; Insert value 206 into sound channel 0 (X=4); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18bc: a9 8a       ..
-    ldx #buffer_sound_channel_1                                       ; 18be: a2 05       .. ; X=buffer number
+    ldx #buffer_sound_channel_1                                       ; 18be: a2 05       ..  ; X=buffer number
     ldy #&63 ; 'c'                                                    ; 18c0: a0 63       .c
     jsr OSBYTE                                                        ; 18c2: 20 f4 ff     .. ; Insert value 99 into sound channel 1 (X=5); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18c5: a9 8a       ..
-    ldx #buffer_sound_channel_2                                       ; 18c7: a2 06       .. ; X=buffer number
+    ldx #buffer_sound_channel_2                                       ; 18c7: a2 06       ..  ; X=buffer number
     ldy #&2a ; '*'                                                    ; 18c9: a0 2a       .*
     jsr OSBYTE                                                        ; 18cb: 20 f4 ff     .. ; Insert value 42 into sound channel 2 (X=6); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18ce: a9 8a       ..
-    ldx #buffer_sound_channel_3                                       ; 18d0: a2 07       .. ; X=buffer number
+    ldx #buffer_sound_channel_3                                       ; 18d0: a2 07       ..  ; X=buffer number
     ldy #1                                                            ; 18d2: a0 01       ..
     jsr OSBYTE                                                        ; 18d4: 20 f4 ff     .. ; Insert value 1 into sound channel 3 (X=7); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18d7: a9 8a       ..
-    ldx #buffer_speech                                                ; 18d9: a2 08       .. ; X=buffer number
+    ldx #buffer_speech                                                ; 18d9: a2 08       ..  ; X=buffer number
     ldy #&5a ; 'Z'                                                    ; 18db: a0 5a       .Z
     jsr OSBYTE                                                        ; 18dd: 20 f4 ff     .. ; Insert value 90 into the speech buffer (X=8); carry is clear if successful
     lda #osbyte_insert_buffer                                         ; 18e0: a9 8a       ..
-    ldx #9                                                            ; 18e2: a2 09       .. ; X=buffer number
+    ldx #9                                                            ; 18e2: a2 09       ..  ; X=buffer number
     ldy #&64 ; 'd'                                                    ; 18e4: a0 64       .d
     jsr OSBYTE                                                        ; 18e6: 20 f4 ff     .. ; Insert value 100 into unknown buffer (X=9); carry is clear if successful
 
@@ -1430,7 +1430,7 @@ OSBYTE  = &fff4
 
     ; *************** Test OSBYTE 0x8e ***************
     lda #osbyte_enter_language                                        ; 19bd: a9 8e       ..
-    ldx #0                                                            ; 19bf: a2 00       .. ; X=ROM number
+    ldx #0                                                            ; 19bf: a2 00       ..  ; X=ROM number
     ldy #0                                                            ; 19c1: a0 00       ..
     jsr OSBYTE                                                        ; 19c3: 20 f4 ff     .. ; Enter language ROM X
 
@@ -1631,8 +1631,8 @@ OSBYTE  = &fff4
     ldx #&ff                                                          ; 1b78: a2 ff       ..
     ldy #0                                                            ; 1b7a: a0 00       ..
     jsr OSBYTE                                                        ; 1b7c: 20 f4 ff     .. ; Issue paged ROM service call, Reason X=255 - Tube system main initialisation
-    cpx #0                                                            ; 1b7f: e0 00       .. ; X is zero if a paged ROM claimed the service call ; Redundant instruction?
-    cpy #0                                                            ; 1b81: c0 00       .. ; Y contains a return argument from the ROM service call
+    cpx #0                                                            ; 1b7f: e0 00       ..  ; X is zero if a paged ROM claimed the service call ; Redundant instruction?
+    cpy #0                                                            ; 1b81: c0 00       ..  ; Y contains a return argument from the ROM service call
 
     ; *************** Test OSBYTE 0x90 ***************
     lda #osbyte_tv                                                    ; 1b83: a9 90       ..
@@ -1671,16 +1671,16 @@ OSBYTE  = &fff4
     ldx #&ff                                                          ; 1bcd: a2 ff       ..
     ldy #0                                                            ; 1bcf: a0 00       ..
     jsr OSBYTE                                                        ; 1bd1: 20 f4 ff     .. ; *TV 255,0 shift display down 1 line, turn interlace on
-    stx mem                                                           ; 1bd4: 86 70       .p ; X is the previous screen shift setting
-    sty mem                                                           ; 1bd6: 84 70       .p ; Y is the previous interlace option (0=interlace on, 1=off)
+    stx mem                                                           ; 1bd4: 86 70       .p  ; X is the previous screen shift setting
+    sty mem                                                           ; 1bd6: 84 70       .p  ; Y is the previous interlace option (0=interlace on, 1=off)
 
     ; *************** Test OSBYTE 0x91 ***************
     lda #osbyte_read_buffer                                           ; 1bd8: a9 91       ..
-    ldx #buffer_keyboard                                              ; 1bda: a2 00       .. ; X=buffer number
+    ldx #buffer_keyboard                                              ; 1bda: a2 00       ..  ; X=buffer number
     ldy #0                                                            ; 1bdc: a0 00       ..
     jsr OSBYTE                                                        ; 1bde: 20 f4 ff     .. ; Get character from keyboard buffer (C is set if the buffer is empty, otherwise Y=extracted character)
     bcs buffer_empty                                                  ; 1be1: b0 02       ..
-    cpy #0                                                            ; 1be3: c0 00       .. ; Y is the character extracted from the buffer
+    cpy #0                                                            ; 1be3: c0 00       ..  ; Y is the character extracted from the buffer
 
     ; *************** Test OSBYTE 0x92 ***************
 ; &1be5 referenced 1 time by &1be1
@@ -1693,7 +1693,7 @@ OSBYTE  = &fff4
     ldx #3                                                            ; 1bf0: a2 03       ..
     ldy #4                                                            ; 1bf2: a0 04       ..
     jsr OSBYTE                                                        ; 1bf4: 20 f4 ff     .. ; Read from FRED address &fc03 into Y
-    cpy #0                                                            ; 1bf7: c0 00       .. ; Y is the byte read
+    cpy #0                                                            ; 1bf7: c0 00       ..  ; Y is the byte read
 
     ; *************** Test OSBYTE 0x93 ***************
     lda #osbyte_write_fred                                            ; 1bf9: a9 93       ..
@@ -1720,7 +1720,7 @@ OSBYTE  = &fff4
     ldx #7                                                            ; 1c24: a2 07       ..
     ldy #8                                                            ; 1c26: a0 08       ..
     jsr OSBYTE                                                        ; 1c28: 20 f4 ff     .. ; Read from JIM address &fd07 into Y
-    cpy #1                                                            ; 1c2b: c0 01       .. ; Y is the byte read
+    cpy #1                                                            ; 1c2b: c0 01       ..  ; Y is the byte read
 
     ; *************** Test OSBYTE 0x95 ***************
     lda #osbyte_write_jim                                             ; 1c2d: a9 95       ..
@@ -1747,7 +1747,7 @@ OSBYTE  = &fff4
     ldx #&0b                                                          ; 1c58: a2 0b       ..
     ldy #&0c                                                          ; 1c5a: a0 0c       ..
     jsr OSBYTE                                                        ; 1c5c: 20 f4 ff     .. ; Read from SHEILA address &fe0b into Y
-    sty mem                                                           ; 1c5f: 84 70       .p ; Y is the byte read
+    sty mem                                                           ; 1c5f: 84 70       .p  ; Y is the byte read
 
     ; *************** Test OSBYTE 0x97 ***************
     lda #osbyte_write_sheila                                          ; 1c61: a9 97       ..
@@ -1771,36 +1771,36 @@ OSBYTE  = &fff4
     ldy #0                                                            ; 1c85: a0 00       ..
     jsr OSBYTE                                                        ; 1c87: 20 f4 ff     .. ; Examine status of buffer X (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c8a: a9 98       ..
-    ldx #buffer_keyboard                                              ; 1c8c: a2 00       .. ; X=buffer number
+    ldx #buffer_keyboard                                              ; 1c8c: a2 00       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1c8e: 20 f4 ff     .. ; Examine the keyboard buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c91: a9 98       ..
-    ldx #buffer_rs423_input                                           ; 1c93: a2 01       .. ; X=buffer number
+    ldx #buffer_rs423_input                                           ; 1c93: a2 01       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1c95: 20 f4 ff     .. ; Examine the RS423 input buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c98: a9 98       ..
-    ldx #buffer_rs423_output                                          ; 1c9a: a2 02       .. ; X=buffer number
+    ldx #buffer_rs423_output                                          ; 1c9a: a2 02       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1c9c: 20 f4 ff     .. ; Examine the RS423 output buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1c9f: a9 98       ..
-    ldx #buffer_printer                                               ; 1ca1: a2 03       .. ; X=buffer number
+    ldx #buffer_printer                                               ; 1ca1: a2 03       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1ca3: 20 f4 ff     .. ; Examine the printer buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1ca6: a9 98       ..
-    ldx #buffer_sound_channel_0                                       ; 1ca8: a2 04       .. ; X=buffer number
+    ldx #buffer_sound_channel_0                                       ; 1ca8: a2 04       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1caa: 20 f4 ff     .. ; Examine sound channel 0 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cad: a9 98       ..
-    ldx #buffer_sound_channel_1                                       ; 1caf: a2 05       .. ; X=buffer number
+    ldx #buffer_sound_channel_1                                       ; 1caf: a2 05       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1cb1: 20 f4 ff     .. ; Examine sound channel 1 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cb4: a9 98       ..
-    ldx #buffer_sound_channel_2                                       ; 1cb6: a2 06       .. ; X=buffer number
+    ldx #buffer_sound_channel_2                                       ; 1cb6: a2 06       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1cb8: 20 f4 ff     .. ; Examine sound channel 2 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cbb: a9 98       ..
-    ldx #buffer_sound_channel_3                                       ; 1cbd: a2 07       .. ; X=buffer number
+    ldx #buffer_sound_channel_3                                       ; 1cbd: a2 07       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1cbf: 20 f4 ff     .. ; Examine sound channel 3 (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cc2: a9 98       ..
-    ldx #buffer_speech                                                ; 1cc4: a2 08       .. ; X=buffer number
+    ldx #buffer_speech                                                ; 1cc4: a2 08       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1cc6: 20 f4 ff     .. ; Examine the speech buffer (exits with carry clear on success)
     lda #osbyte_examine_buffer                                        ; 1cc9: a9 98       ..
-    ldx #9                                                            ; 1ccb: a2 09       .. ; X=buffer number
+    ldx #9                                                            ; 1ccb: a2 09       ..  ; X=buffer number
     jsr OSBYTE                                                        ; 1ccd: 20 f4 ff     .. ; Examine status of unknown buffer (exits with carry clear on success)
-    cpy #0                                                            ; 1cd0: c0 00       .. ; Y is: on BBC Micro: offset to next character to be read from address stored at (&fa, &fb); or Master, B+, Electron: the byte read
+    cpy #0                                                            ; 1cd0: c0 00       ..  ; Y is: on BBC Micro: offset to next character to be read from address stored at (&fa, &fb); or Master, B+, Electron: the byte read
 
     ; *************** Test OSBYTE 0x99 ***************
     lda #osbyte_insert_input_buffer                                   ; 1cd2: a9 99       ..
@@ -1881,20 +1881,20 @@ OSBYTE  = &fff4
     ldx #%11111111                                                    ; 1d70: a2 ff       ..
     ldy #0                                                            ; 1d72: a0 00       ..
     jsr OSBYTE                                                        ; 1d74: 20 f4 ff     .. ; Write 6850 (ACIA) control register, value X=255: master reset; 8 bit word, odd parity, 1 stop bit; RTS low, break level on data output, transmit interrupt disabled; enables the receive data register full, over-run, or DCD transition interrupts.
-    cpx #0                                                            ; 1d77: e0 00       .. ; X is the previous value of the control register
+    cpx #0                                                            ; 1d77: e0 00       ..  ; X is the previous value of the control register
 
     ; *************** Test OSBYTE 0x9d ***************
     lda #osbyte_fast_tube_bput                                        ; 1d79: a9 9d       ..
     ldx mem                                                           ; 1d7b: a6 70       .p
-    ldy #0                                                            ; 1d7d: a0 00       .. ; Y=file handle
+    ldy #0                                                            ; 1d7d: a0 00       ..  ; Y=file handle
     jsr OSBYTE                                                        ; 1d7f: 20 f4 ff     .. ; Fast Tube BPUT value X to file handle Y
     lda #osbyte_fast_tube_bput                                        ; 1d82: a9 9d       ..
     ldx #0                                                            ; 1d84: a2 00       ..
-    ldy #0                                                            ; 1d86: a0 00       .. ; Y=file handle
+    ldy #0                                                            ; 1d86: a0 00       ..  ; Y=file handle
     jsr OSBYTE                                                        ; 1d88: 20 f4 ff     .. ; Fast Tube BPUT value X=0 to file handle Y
     lda #osbyte_fast_tube_bput                                        ; 1d8b: a9 9d       ..
     ldx #&11                                                          ; 1d8d: a2 11       ..
-    ldy #&2e ; '.'                                                    ; 1d8f: a0 2e       .. ; Y=file handle
+    ldy #&2e ; '.'                                                    ; 1d8f: a0 2e       ..  ; Y=file handle
     jsr OSBYTE                                                        ; 1d91: 20 f4 ff     .. ; Fast Tube BPUT value X=17 to file handle Y
 
     ; *************** Test OSBYTE 0x9e ***************
@@ -1906,7 +1906,7 @@ OSBYTE  = &fff4
     ; *************** Test OSBYTE 0x9f ***************
     lda #osbyte_write_speech                                          ; 1d9d: a9 9f       ..
     ldx #0                                                            ; 1d9f: a2 00       ..
-    ldy #0                                                            ; 1da1: a0 00       .. ; Y=byte to write
+    ldy #0                                                            ; 1da1: a0 00       ..  ; Y=byte to write
     jsr OSBYTE                                                        ; 1da3: 20 f4 ff     .. ; Write Y=0 to speech processor
 
     ; *************** Test OSBYTE 0xa0 ***************
@@ -1914,980 +1914,980 @@ OSBYTE  = &fff4
     ldx #0                                                            ; 1da8: a2 00       ..
     ldy #0                                                            ; 1daa: a0 00       ..
     jsr OSBYTE                                                        ; 1dac: 20 f4 ff     .. ; Read the graphics window left coordinate in pixels (VDU variable X=0)
-    stx mem                                                           ; 1daf: 86 70       .p ; X is the graphics window left coordinate in pixels
-    sty mem                                                           ; 1db1: 84 70       .p ; Y is the graphics window left coordinate in pixels (high byte)
+    stx mem                                                           ; 1daf: 86 70       .p  ; X is the graphics window left coordinate in pixels
+    sty mem                                                           ; 1db1: 84 70       .p  ; Y is the graphics window left coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1db3: a9 a0       ..
     ldx #1                                                            ; 1db5: a2 01       ..
     ldy #0                                                            ; 1db7: a0 00       ..
     jsr OSBYTE                                                        ; 1db9: 20 f4 ff     .. ; Read the graphics window left coordinate in pixels (high byte) (VDU variable X=1)
-    stx mem                                                           ; 1dbc: 86 70       .p ; X is the graphics window left coordinate in pixels (high byte)
-    sty mem                                                           ; 1dbe: 84 70       .p ; Y is the graphics window bottom coordinate in pixels
+    stx mem                                                           ; 1dbc: 86 70       .p  ; X is the graphics window left coordinate in pixels (high byte)
+    sty mem                                                           ; 1dbe: 84 70       .p  ; Y is the graphics window bottom coordinate in pixels
     lda #osbyte_read_vdu_variable                                     ; 1dc0: a9 a0       ..
     ldx #2                                                            ; 1dc2: a2 02       ..
     ldy #0                                                            ; 1dc4: a0 00       ..
     jsr OSBYTE                                                        ; 1dc6: 20 f4 ff     .. ; Read the graphics window bottom coordinate in pixels (VDU variable X=2)
-    stx mem                                                           ; 1dc9: 86 70       .p ; X is the graphics window bottom coordinate in pixels
-    sty mem                                                           ; 1dcb: 84 70       .p ; Y is the graphics window bottom coordinate in pixels (high byte)
+    stx mem                                                           ; 1dc9: 86 70       .p  ; X is the graphics window bottom coordinate in pixels
+    sty mem                                                           ; 1dcb: 84 70       .p  ; Y is the graphics window bottom coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1dcd: a9 a0       ..
     ldx #3                                                            ; 1dcf: a2 03       ..
     ldy #0                                                            ; 1dd1: a0 00       ..
     jsr OSBYTE                                                        ; 1dd3: 20 f4 ff     .. ; Read the graphics window bottom coordinate in pixels (high byte) (VDU variable X=3)
-    stx mem                                                           ; 1dd6: 86 70       .p ; X is the graphics window bottom coordinate in pixels (high byte)
-    sty mem                                                           ; 1dd8: 84 70       .p ; Y is the graphics window right coordinate in pixels
+    stx mem                                                           ; 1dd6: 86 70       .p  ; X is the graphics window bottom coordinate in pixels (high byte)
+    sty mem                                                           ; 1dd8: 84 70       .p  ; Y is the graphics window right coordinate in pixels
     lda #osbyte_read_vdu_variable                                     ; 1dda: a9 a0       ..
     ldx #4                                                            ; 1ddc: a2 04       ..
     ldy #0                                                            ; 1dde: a0 00       ..
     jsr OSBYTE                                                        ; 1de0: 20 f4 ff     .. ; Read the graphics window right coordinate in pixels (VDU variable X=4)
-    stx mem                                                           ; 1de3: 86 70       .p ; X is the graphics window right coordinate in pixels
-    sty mem                                                           ; 1de5: 84 70       .p ; Y is the graphics window right coordinate in pixels (high byte)
+    stx mem                                                           ; 1de3: 86 70       .p  ; X is the graphics window right coordinate in pixels
+    sty mem                                                           ; 1de5: 84 70       .p  ; Y is the graphics window right coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1de7: a9 a0       ..
     ldx #5                                                            ; 1de9: a2 05       ..
     ldy #0                                                            ; 1deb: a0 00       ..
     jsr OSBYTE                                                        ; 1ded: 20 f4 ff     .. ; Read the graphics window right coordinate in pixels (high byte) (VDU variable X=5)
-    stx mem                                                           ; 1df0: 86 70       .p ; X is the graphics window right coordinate in pixels (high byte)
-    sty mem                                                           ; 1df2: 84 70       .p ; Y is the graphics window top coordinate in pixels
+    stx mem                                                           ; 1df0: 86 70       .p  ; X is the graphics window right coordinate in pixels (high byte)
+    sty mem                                                           ; 1df2: 84 70       .p  ; Y is the graphics window top coordinate in pixels
     lda #osbyte_read_vdu_variable                                     ; 1df4: a9 a0       ..
     ldx #6                                                            ; 1df6: a2 06       ..
     ldy #0                                                            ; 1df8: a0 00       ..
     jsr OSBYTE                                                        ; 1dfa: 20 f4 ff     .. ; Read the graphics window top coordinate in pixels (VDU variable X=6)
-    stx mem                                                           ; 1dfd: 86 70       .p ; X is the graphics window top coordinate in pixels
-    sty mem                                                           ; 1dff: 84 70       .p ; Y is the graphics window top coordinate in pixels (high byte)
+    stx mem                                                           ; 1dfd: 86 70       .p  ; X is the graphics window top coordinate in pixels
+    sty mem                                                           ; 1dff: 84 70       .p  ; Y is the graphics window top coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1e01: a9 a0       ..
     ldx #7                                                            ; 1e03: a2 07       ..
     ldy #0                                                            ; 1e05: a0 00       ..
     jsr OSBYTE                                                        ; 1e07: 20 f4 ff     .. ; Read the graphics window top coordinate in pixels (high byte) (VDU variable X=7)
-    stx mem                                                           ; 1e0a: 86 70       .p ; X is the graphics window top coordinate in pixels (high byte)
-    sty mem                                                           ; 1e0c: 84 70       .p ; Y is the text window left position
+    stx mem                                                           ; 1e0a: 86 70       .p  ; X is the graphics window top coordinate in pixels (high byte)
+    sty mem                                                           ; 1e0c: 84 70       .p  ; Y is the text window left position
     lda #osbyte_read_vdu_variable                                     ; 1e0e: a9 a0       ..
     ldx #8                                                            ; 1e10: a2 08       ..
     ldy #0                                                            ; 1e12: a0 00       ..
     jsr OSBYTE                                                        ; 1e14: 20 f4 ff     .. ; Read the text window left position (VDU variable X=8)
-    stx mem                                                           ; 1e17: 86 70       .p ; X is the text window left position
-    sty mem                                                           ; 1e19: 84 70       .p ; Y is the text window bottom position
+    stx mem                                                           ; 1e17: 86 70       .p  ; X is the text window left position
+    sty mem                                                           ; 1e19: 84 70       .p  ; Y is the text window bottom position
     lda #osbyte_read_vdu_variable                                     ; 1e1b: a9 a0       ..
     ldx #9                                                            ; 1e1d: a2 09       ..
     ldy #0                                                            ; 1e1f: a0 00       ..
     jsr OSBYTE                                                        ; 1e21: 20 f4 ff     .. ; Read the text window bottom position (VDU variable X=9)
-    stx mem                                                           ; 1e24: 86 70       .p ; X is the text window bottom position
-    sty mem                                                           ; 1e26: 84 70       .p ; Y is the text window right position
+    stx mem                                                           ; 1e24: 86 70       .p  ; X is the text window bottom position
+    sty mem                                                           ; 1e26: 84 70       .p  ; Y is the text window right position
     lda #osbyte_read_vdu_variable                                     ; 1e28: a9 a0       ..
     ldx #&0a                                                          ; 1e2a: a2 0a       ..
     ldy #0                                                            ; 1e2c: a0 00       ..
     jsr OSBYTE                                                        ; 1e2e: 20 f4 ff     .. ; Read the text window right position (VDU variable X=10)
-    stx mem                                                           ; 1e31: 86 70       .p ; X is the text window right position
-    sty mem                                                           ; 1e33: 84 70       .p ; Y is the text window top position
+    stx mem                                                           ; 1e31: 86 70       .p  ; X is the text window right position
+    sty mem                                                           ; 1e33: 84 70       .p  ; Y is the text window top position
     lda #osbyte_read_vdu_variable                                     ; 1e35: a9 a0       ..
     ldx #&0b                                                          ; 1e37: a2 0b       ..
     ldy #0                                                            ; 1e39: a0 00       ..
     jsr OSBYTE                                                        ; 1e3b: 20 f4 ff     .. ; Read the text window top position (VDU variable X=11)
-    stx mem                                                           ; 1e3e: 86 70       .p ; X is the text window top position
-    sty mem                                                           ; 1e40: 84 70       .p ; Y is the graphics window origin X
+    stx mem                                                           ; 1e3e: 86 70       .p  ; X is the text window top position
+    sty mem                                                           ; 1e40: 84 70       .p  ; Y is the graphics window origin X
     lda #osbyte_read_vdu_variable                                     ; 1e42: a9 a0       ..
     ldx #&0c                                                          ; 1e44: a2 0c       ..
     ldy #0                                                            ; 1e46: a0 00       ..
     jsr OSBYTE                                                        ; 1e48: 20 f4 ff     .. ; Read the graphics window origin X (VDU variable X=12)
-    stx mem                                                           ; 1e4b: 86 70       .p ; X is the graphics window origin X
-    sty mem                                                           ; 1e4d: 84 70       .p ; Y is the graphics window origin X (high byte)
+    stx mem                                                           ; 1e4b: 86 70       .p  ; X is the graphics window origin X
+    sty mem                                                           ; 1e4d: 84 70       .p  ; Y is the graphics window origin X (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1e4f: a9 a0       ..
     ldx #&0d                                                          ; 1e51: a2 0d       ..
     ldy #0                                                            ; 1e53: a0 00       ..
     jsr OSBYTE                                                        ; 1e55: 20 f4 ff     .. ; Read the graphics window origin X (high byte) (VDU variable X=13)
-    stx mem                                                           ; 1e58: 86 70       .p ; X is the graphics window origin X (high byte)
-    sty mem                                                           ; 1e5a: 84 70       .p ; Y is the graphics window origin Y
+    stx mem                                                           ; 1e58: 86 70       .p  ; X is the graphics window origin X (high byte)
+    sty mem                                                           ; 1e5a: 84 70       .p  ; Y is the graphics window origin Y
     lda #osbyte_read_vdu_variable                                     ; 1e5c: a9 a0       ..
     ldx #&0e                                                          ; 1e5e: a2 0e       ..
     ldy #0                                                            ; 1e60: a0 00       ..
     jsr OSBYTE                                                        ; 1e62: 20 f4 ff     .. ; Read the graphics window origin Y (VDU variable X=14)
-    stx mem                                                           ; 1e65: 86 70       .p ; X is the graphics window origin Y
-    sty mem                                                           ; 1e67: 84 70       .p ; Y is the graphics window origin Y (high byte)
+    stx mem                                                           ; 1e65: 86 70       .p  ; X is the graphics window origin Y
+    sty mem                                                           ; 1e67: 84 70       .p  ; Y is the graphics window origin Y (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1e69: a9 a0       ..
     ldx #&0f                                                          ; 1e6b: a2 0f       ..
     ldy #0                                                            ; 1e6d: a0 00       ..
     jsr OSBYTE                                                        ; 1e6f: 20 f4 ff     .. ; Read the graphics window origin Y (high byte) (VDU variable X=15)
-    stx mem                                                           ; 1e72: 86 70       .p ; X is the graphics window origin Y (high byte)
-    sty mem                                                           ; 1e74: 84 70       .p ; Y is the graphics cursor X coordinate
+    stx mem                                                           ; 1e72: 86 70       .p  ; X is the graphics window origin Y (high byte)
+    sty mem                                                           ; 1e74: 84 70       .p  ; Y is the graphics cursor X coordinate
     lda #osbyte_read_vdu_variable                                     ; 1e76: a9 a0       ..
     ldx #&10                                                          ; 1e78: a2 10       ..
     ldy #0                                                            ; 1e7a: a0 00       ..
     jsr OSBYTE                                                        ; 1e7c: 20 f4 ff     .. ; Read the graphics cursor X coordinate (VDU variable X=16)
-    stx mem                                                           ; 1e7f: 86 70       .p ; X is the graphics cursor X coordinate
-    sty mem                                                           ; 1e81: 84 70       .p ; Y is the graphics cursor X coordinate (high byte)
+    stx mem                                                           ; 1e7f: 86 70       .p  ; X is the graphics cursor X coordinate
+    sty mem                                                           ; 1e81: 84 70       .p  ; Y is the graphics cursor X coordinate (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1e83: a9 a0       ..
     ldx #&11                                                          ; 1e85: a2 11       ..
     ldy #0                                                            ; 1e87: a0 00       ..
     jsr OSBYTE                                                        ; 1e89: 20 f4 ff     .. ; Read the graphics cursor X coordinate (high byte) (VDU variable X=17)
-    stx mem                                                           ; 1e8c: 86 70       .p ; X is the graphics cursor X coordinate (high byte)
-    sty mem                                                           ; 1e8e: 84 70       .p ; Y is the graphics cursor Y coordinate
+    stx mem                                                           ; 1e8c: 86 70       .p  ; X is the graphics cursor X coordinate (high byte)
+    sty mem                                                           ; 1e8e: 84 70       .p  ; Y is the graphics cursor Y coordinate
     lda #osbyte_read_vdu_variable                                     ; 1e90: a9 a0       ..
     ldx #&12                                                          ; 1e92: a2 12       ..
     ldy #0                                                            ; 1e94: a0 00       ..
     jsr OSBYTE                                                        ; 1e96: 20 f4 ff     .. ; Read the graphics cursor Y coordinate (VDU variable X=18)
-    stx mem                                                           ; 1e99: 86 70       .p ; X is the graphics cursor Y coordinate
-    sty mem                                                           ; 1e9b: 84 70       .p ; Y is the graphics cursor Y coordinate (high byte)
+    stx mem                                                           ; 1e99: 86 70       .p  ; X is the graphics cursor Y coordinate
+    sty mem                                                           ; 1e9b: 84 70       .p  ; Y is the graphics cursor Y coordinate (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1e9d: a9 a0       ..
     ldx #&13                                                          ; 1e9f: a2 13       ..
     ldy #0                                                            ; 1ea1: a0 00       ..
     jsr OSBYTE                                                        ; 1ea3: 20 f4 ff     .. ; Read the graphics cursor Y coordinate (high byte) (VDU variable X=19)
-    stx mem                                                           ; 1ea6: 86 70       .p ; X is the graphics cursor Y coordinate (high byte)
-    sty mem                                                           ; 1ea8: 84 70       .p ; Y is the old graphics cursor X coordinate in pixels
+    stx mem                                                           ; 1ea6: 86 70       .p  ; X is the graphics cursor Y coordinate (high byte)
+    sty mem                                                           ; 1ea8: 84 70       .p  ; Y is the old graphics cursor X coordinate in pixels
     lda #osbyte_read_vdu_variable                                     ; 1eaa: a9 a0       ..
     ldx #&14                                                          ; 1eac: a2 14       ..
     ldy #0                                                            ; 1eae: a0 00       ..
     jsr OSBYTE                                                        ; 1eb0: 20 f4 ff     .. ; Read the old graphics cursor X coordinate in pixels (VDU variable X=20)
-    stx mem                                                           ; 1eb3: 86 70       .p ; X is the old graphics cursor X coordinate in pixels
-    sty mem                                                           ; 1eb5: 84 70       .p ; Y is the old graphics cursor X coordinate in pixels (high byte)
+    stx mem                                                           ; 1eb3: 86 70       .p  ; X is the old graphics cursor X coordinate in pixels
+    sty mem                                                           ; 1eb5: 84 70       .p  ; Y is the old graphics cursor X coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1eb7: a9 a0       ..
     ldx #&15                                                          ; 1eb9: a2 15       ..
     ldy #0                                                            ; 1ebb: a0 00       ..
     jsr OSBYTE                                                        ; 1ebd: 20 f4 ff     .. ; Read the old graphics cursor X coordinate in pixels (high byte) (VDU variable X=21)
-    stx mem                                                           ; 1ec0: 86 70       .p ; X is the old graphics cursor X coordinate in pixels (high byte)
-    sty mem                                                           ; 1ec2: 84 70       .p ; Y is the old graphics cursor Y coordinate in pixels
+    stx mem                                                           ; 1ec0: 86 70       .p  ; X is the old graphics cursor X coordinate in pixels (high byte)
+    sty mem                                                           ; 1ec2: 84 70       .p  ; Y is the old graphics cursor Y coordinate in pixels
     lda #osbyte_read_vdu_variable                                     ; 1ec4: a9 a0       ..
     ldx #&16                                                          ; 1ec6: a2 16       ..
     ldy #0                                                            ; 1ec8: a0 00       ..
     jsr OSBYTE                                                        ; 1eca: 20 f4 ff     .. ; Read the old graphics cursor Y coordinate in pixels (VDU variable X=22)
-    stx mem                                                           ; 1ecd: 86 70       .p ; X is the old graphics cursor Y coordinate in pixels
-    sty mem                                                           ; 1ecf: 84 70       .p ; Y is the old graphics cursor Y coordinate in pixels (high byte)
+    stx mem                                                           ; 1ecd: 86 70       .p  ; X is the old graphics cursor Y coordinate in pixels
+    sty mem                                                           ; 1ecf: 84 70       .p  ; Y is the old graphics cursor Y coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1ed1: a9 a0       ..
     ldx #&17                                                          ; 1ed3: a2 17       ..
     ldy #0                                                            ; 1ed5: a0 00       ..
     jsr OSBYTE                                                        ; 1ed7: 20 f4 ff     .. ; Read the old graphics cursor Y coordinate in pixels (high byte) (VDU variable X=23)
-    stx mem                                                           ; 1eda: 86 70       .p ; X is the old graphics cursor Y coordinate in pixels (high byte)
-    sty mem                                                           ; 1edc: 84 70       .p ; Y is the text cursor X position
+    stx mem                                                           ; 1eda: 86 70       .p  ; X is the old graphics cursor Y coordinate in pixels (high byte)
+    sty mem                                                           ; 1edc: 84 70       .p  ; Y is the text cursor X position
     lda #osbyte_read_vdu_variable                                     ; 1ede: a9 a0       ..
     ldx #&18                                                          ; 1ee0: a2 18       ..
     ldy #0                                                            ; 1ee2: a0 00       ..
     jsr OSBYTE                                                        ; 1ee4: 20 f4 ff     .. ; Read the text cursor X position (VDU variable X=24)
-    stx mem                                                           ; 1ee7: 86 70       .p ; X is the text cursor X position
-    sty mem                                                           ; 1ee9: 84 70       .p ; Y is the text cursor Y position
+    stx mem                                                           ; 1ee7: 86 70       .p  ; X is the text cursor X position
+    sty mem                                                           ; 1ee9: 84 70       .p  ; Y is the text cursor Y position
     lda #osbyte_read_vdu_variable                                     ; 1eeb: a9 a0       ..
     ldx #&19                                                          ; 1eed: a2 19       ..
     ldy #0                                                            ; 1eef: a0 00       ..
     jsr OSBYTE                                                        ; 1ef1: 20 f4 ff     .. ; Read the text cursor Y position (VDU variable X=25)
-    stx mem                                                           ; 1ef4: 86 70       .p ; X is the text cursor Y position
-    sty mem                                                           ; 1ef6: 84 70       .p ; Y is the graphics cursor vertical offset in character cell
+    stx mem                                                           ; 1ef4: 86 70       .p  ; X is the text cursor Y position
+    sty mem                                                           ; 1ef6: 84 70       .p  ; Y is the graphics cursor vertical offset in character cell
     lda #osbyte_read_vdu_variable                                     ; 1ef8: a9 a0       ..
     ldx #&1a                                                          ; 1efa: a2 1a       ..
     ldy #0                                                            ; 1efc: a0 00       ..
     jsr OSBYTE                                                        ; 1efe: 20 f4 ff     .. ; Read the graphics cursor vertical offset in character cell (VDU variable X=26)
-    stx mem                                                           ; 1f01: 86 70       .p ; X is the graphics cursor vertical offset in character cell
-    sty mem                                                           ; 1f03: 84 70       .p ; Y is the VDU queue start byte
+    stx mem                                                           ; 1f01: 86 70       .p  ; X is the graphics cursor vertical offset in character cell
+    sty mem                                                           ; 1f03: 84 70       .p  ; Y is the VDU queue start byte
     lda #osbyte_read_vdu_variable                                     ; 1f05: a9 a0       ..
     ldx #&1b                                                          ; 1f07: a2 1b       ..
     ldy #0                                                            ; 1f09: a0 00       ..
     jsr OSBYTE                                                        ; 1f0b: 20 f4 ff     .. ; Read the VDU queue start byte (VDU variable X=27)
-    stx mem                                                           ; 1f0e: 86 70       .p ; X is the VDU queue start byte
-    sty mem                                                           ; 1f10: 84 70       .p ; Y is the VDU queue byte 1
+    stx mem                                                           ; 1f0e: 86 70       .p  ; X is the VDU queue start byte
+    sty mem                                                           ; 1f10: 84 70       .p  ; Y is the VDU queue byte 1
     lda #osbyte_read_vdu_variable                                     ; 1f12: a9 a0       ..
     ldx #&1c                                                          ; 1f14: a2 1c       ..
     ldy #0                                                            ; 1f16: a0 00       ..
     jsr OSBYTE                                                        ; 1f18: 20 f4 ff     .. ; Read the VDU queue byte 1 (VDU variable X=28)
-    stx mem                                                           ; 1f1b: 86 70       .p ; X is the VDU queue byte 1
-    sty mem                                                           ; 1f1d: 84 70       .p ; Y is the VDU queue byte 2
+    stx mem                                                           ; 1f1b: 86 70       .p  ; X is the VDU queue byte 1
+    sty mem                                                           ; 1f1d: 84 70       .p  ; Y is the VDU queue byte 2
     lda #osbyte_read_vdu_variable                                     ; 1f1f: a9 a0       ..
     ldx #&1d                                                          ; 1f21: a2 1d       ..
     ldy #0                                                            ; 1f23: a0 00       ..
     jsr OSBYTE                                                        ; 1f25: 20 f4 ff     .. ; Read the VDU queue byte 2 (VDU variable X=29)
-    stx mem                                                           ; 1f28: 86 70       .p ; X is the VDU queue byte 2
-    sty mem                                                           ; 1f2a: 84 70       .p ; Y is the VDU queue byte 3
+    stx mem                                                           ; 1f28: 86 70       .p  ; X is the VDU queue byte 2
+    sty mem                                                           ; 1f2a: 84 70       .p  ; Y is the VDU queue byte 3
     lda #osbyte_read_vdu_variable                                     ; 1f2c: a9 a0       ..
     ldx #&1e                                                          ; 1f2e: a2 1e       ..
     ldy #0                                                            ; 1f30: a0 00       ..
     jsr OSBYTE                                                        ; 1f32: 20 f4 ff     .. ; Read the VDU queue byte 3 (VDU variable X=30)
-    stx mem                                                           ; 1f35: 86 70       .p ; X is the VDU queue byte 3
-    sty mem                                                           ; 1f37: 84 70       .p ; Y is the VDU queue byte 4
+    stx mem                                                           ; 1f35: 86 70       .p  ; X is the VDU queue byte 3
+    sty mem                                                           ; 1f37: 84 70       .p  ; Y is the VDU queue byte 4
     lda #osbyte_read_vdu_variable                                     ; 1f39: a9 a0       ..
     ldx #&1f                                                          ; 1f3b: a2 1f       ..
     ldy #0                                                            ; 1f3d: a0 00       ..
     jsr OSBYTE                                                        ; 1f3f: 20 f4 ff     .. ; Read the VDU queue byte 4 (VDU variable X=31)
-    stx mem                                                           ; 1f42: 86 70       .p ; X is the VDU queue byte 4
-    sty mem                                                           ; 1f44: 84 70       .p ; Y is the VDU queue byte 5
+    stx mem                                                           ; 1f42: 86 70       .p  ; X is the VDU queue byte 4
+    sty mem                                                           ; 1f44: 84 70       .p  ; Y is the VDU queue byte 5
     lda #osbyte_read_vdu_variable                                     ; 1f46: a9 a0       ..
     ldx #&20 ; ' '                                                    ; 1f48: a2 20       .
     ldy #0                                                            ; 1f4a: a0 00       ..
     jsr OSBYTE                                                        ; 1f4c: 20 f4 ff     .. ; Read the VDU queue byte 5 (VDU variable X=32)
-    stx mem                                                           ; 1f4f: 86 70       .p ; X is the VDU queue byte 5
-    sty mem                                                           ; 1f51: 84 70       .p ; Y is the VDU queue byte 6
+    stx mem                                                           ; 1f4f: 86 70       .p  ; X is the VDU queue byte 5
+    sty mem                                                           ; 1f51: 84 70       .p  ; Y is the VDU queue byte 6
     lda #osbyte_read_vdu_variable                                     ; 1f53: a9 a0       ..
     ldx #&21 ; '!'                                                    ; 1f55: a2 21       .!
     ldy #0                                                            ; 1f57: a0 00       ..
     jsr OSBYTE                                                        ; 1f59: 20 f4 ff     .. ; Read the VDU queue byte 6 (VDU variable X=33)
-    stx mem                                                           ; 1f5c: 86 70       .p ; X is the VDU queue byte 6
-    sty mem                                                           ; 1f5e: 84 70       .p ; Y is the VDU queue byte 7
+    stx mem                                                           ; 1f5c: 86 70       .p  ; X is the VDU queue byte 6
+    sty mem                                                           ; 1f5e: 84 70       .p  ; Y is the VDU queue byte 7
     lda #osbyte_read_vdu_variable                                     ; 1f60: a9 a0       ..
     ldx #&22 ; '"'                                                    ; 1f62: a2 22       ."
     ldy #0                                                            ; 1f64: a0 00       ..
     jsr OSBYTE                                                        ; 1f66: 20 f4 ff     .. ; Read the VDU queue byte 7 (VDU variable X=34)
-    stx mem                                                           ; 1f69: 86 70       .p ; X is the VDU queue byte 7
-    sty mem                                                           ; 1f6b: 84 70       .p ; Y is the VDU queue end byte
+    stx mem                                                           ; 1f69: 86 70       .p  ; X is the VDU queue byte 7
+    sty mem                                                           ; 1f6b: 84 70       .p  ; Y is the VDU queue end byte
     lda #osbyte_read_vdu_variable                                     ; 1f6d: a9 a0       ..
     ldx #&23 ; '#'                                                    ; 1f6f: a2 23       .#
     ldy #0                                                            ; 1f71: a0 00       ..
     jsr OSBYTE                                                        ; 1f73: 20 f4 ff     .. ; Read the VDU queue end byte (VDU variable X=35)
-    stx mem                                                           ; 1f76: 86 70       .p ; X is the VDU queue end byte
-    sty mem                                                           ; 1f78: 84 70       .p ; Y is the graphics cursor X coordinate in pixels
+    stx mem                                                           ; 1f76: 86 70       .p  ; X is the VDU queue end byte
+    sty mem                                                           ; 1f78: 84 70       .p  ; Y is the graphics cursor X coordinate in pixels
     lda #osbyte_read_vdu_variable                                     ; 1f7a: a9 a0       ..
     ldx #&24 ; '$'                                                    ; 1f7c: a2 24       .$
     ldy #0                                                            ; 1f7e: a0 00       ..
     jsr OSBYTE                                                        ; 1f80: 20 f4 ff     .. ; Read the graphics cursor X coordinate in pixels (VDU variable X=36)
-    stx mem                                                           ; 1f83: 86 70       .p ; X is the graphics cursor X coordinate in pixels
-    sty mem                                                           ; 1f85: 84 70       .p ; Y is the graphics cursor X coordinate in pixels (high byte)
+    stx mem                                                           ; 1f83: 86 70       .p  ; X is the graphics cursor X coordinate in pixels
+    sty mem                                                           ; 1f85: 84 70       .p  ; Y is the graphics cursor X coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1f87: a9 a0       ..
     ldx #&25 ; '%'                                                    ; 1f89: a2 25       .%
     ldy #0                                                            ; 1f8b: a0 00       ..
     jsr OSBYTE                                                        ; 1f8d: 20 f4 ff     .. ; Read the graphics cursor X coordinate in pixels (high byte) (VDU variable X=37)
-    stx mem                                                           ; 1f90: 86 70       .p ; X is the graphics cursor X coordinate in pixels (high byte)
-    sty mem                                                           ; 1f92: 84 70       .p ; Y is the graphics cursor Y coordinate in pixels
+    stx mem                                                           ; 1f90: 86 70       .p  ; X is the graphics cursor X coordinate in pixels (high byte)
+    sty mem                                                           ; 1f92: 84 70       .p  ; Y is the graphics cursor Y coordinate in pixels
     lda #osbyte_read_vdu_variable                                     ; 1f94: a9 a0       ..
     ldx #&26 ; '&'                                                    ; 1f96: a2 26       .&
     ldy #0                                                            ; 1f98: a0 00       ..
     jsr OSBYTE                                                        ; 1f9a: 20 f4 ff     .. ; Read the graphics cursor Y coordinate in pixels (VDU variable X=38)
-    stx mem                                                           ; 1f9d: 86 70       .p ; X is the graphics cursor Y coordinate in pixels
-    sty mem                                                           ; 1f9f: 84 70       .p ; Y is the graphics cursor Y coordinate in pixels (high byte)
+    stx mem                                                           ; 1f9d: 86 70       .p  ; X is the graphics cursor Y coordinate in pixels
+    sty mem                                                           ; 1f9f: 84 70       .p  ; Y is the graphics cursor Y coordinate in pixels (high byte)
     lda #osbyte_read_vdu_variable                                     ; 1fa1: a9 a0       ..
     ldx #&27 ; '''                                                    ; 1fa3: a2 27       .'
     ldy #0                                                            ; 1fa5: a0 00       ..
     jsr OSBYTE                                                        ; 1fa7: 20 f4 ff     .. ; Read the graphics cursor Y coordinate in pixels (high byte) (VDU variable X=39)
-    stx mem                                                           ; 1faa: 86 70       .p ; X is the graphics cursor Y coordinate in pixels (high byte)
-    sty mem                                                           ; 1fac: 84 70       .p ; Y is the workspace A
+    stx mem                                                           ; 1faa: 86 70       .p  ; X is the graphics cursor Y coordinate in pixels (high byte)
+    sty mem                                                           ; 1fac: 84 70       .p  ; Y is the workspace A
     lda #osbyte_read_vdu_variable                                     ; 1fae: a9 a0       ..
     ldx #&28 ; '('                                                    ; 1fb0: a2 28       .(
     ldy #0                                                            ; 1fb2: a0 00       ..
     jsr OSBYTE                                                        ; 1fb4: 20 f4 ff     .. ; Read the workspace A (VDU variable X=40)
-    stx mem                                                           ; 1fb7: 86 70       .p ; X is the workspace A
-    sty mem                                                           ; 1fb9: 84 70       .p ; Y is the workspace B
+    stx mem                                                           ; 1fb7: 86 70       .p  ; X is the workspace A
+    sty mem                                                           ; 1fb9: 84 70       .p  ; Y is the workspace B
     lda #osbyte_read_vdu_variable                                     ; 1fbb: a9 a0       ..
     ldx #&29 ; ')'                                                    ; 1fbd: a2 29       .)
     ldy #0                                                            ; 1fbf: a0 00       ..
     jsr OSBYTE                                                        ; 1fc1: 20 f4 ff     .. ; Read the workspace B (VDU variable X=41)
-    stx mem                                                           ; 1fc4: 86 70       .p ; X is the workspace B
-    sty mem                                                           ; 1fc6: 84 70       .p ; Y is the workspace C
+    stx mem                                                           ; 1fc4: 86 70       .p  ; X is the workspace B
+    sty mem                                                           ; 1fc6: 84 70       .p  ; Y is the workspace C
     lda #osbyte_read_vdu_variable                                     ; 1fc8: a9 a0       ..
     ldx #&2a ; '*'                                                    ; 1fca: a2 2a       .*
     ldy #0                                                            ; 1fcc: a0 00       ..
     jsr OSBYTE                                                        ; 1fce: 20 f4 ff     .. ; Read the workspace C (VDU variable X=42)
-    stx mem                                                           ; 1fd1: 86 70       .p ; X is the workspace C
-    sty mem                                                           ; 1fd3: 84 70       .p ; Y is the workspace D
+    stx mem                                                           ; 1fd1: 86 70       .p  ; X is the workspace C
+    sty mem                                                           ; 1fd3: 84 70       .p  ; Y is the workspace D
     lda #osbyte_read_vdu_variable                                     ; 1fd5: a9 a0       ..
     ldx #&2b ; '+'                                                    ; 1fd7: a2 2b       .+
     ldy #0                                                            ; 1fd9: a0 00       ..
     jsr OSBYTE                                                        ; 1fdb: 20 f4 ff     .. ; Read the workspace D (VDU variable X=43)
-    stx mem                                                           ; 1fde: 86 70       .p ; X is the workspace D
-    sty mem                                                           ; 1fe0: 84 70       .p ; Y is the workspace E
+    stx mem                                                           ; 1fde: 86 70       .p  ; X is the workspace D
+    sty mem                                                           ; 1fe0: 84 70       .p  ; Y is the workspace E
     lda #osbyte_read_vdu_variable                                     ; 1fe2: a9 a0       ..
     ldx #&2c ; ','                                                    ; 1fe4: a2 2c       .,
     ldy #0                                                            ; 1fe6: a0 00       ..
     jsr OSBYTE                                                        ; 1fe8: 20 f4 ff     .. ; Read the workspace E (VDU variable X=44)
-    stx mem                                                           ; 1feb: 86 70       .p ; X is the workspace E
-    sty mem                                                           ; 1fed: 84 70       .p ; Y is the workspace F
+    stx mem                                                           ; 1feb: 86 70       .p  ; X is the workspace E
+    sty mem                                                           ; 1fed: 84 70       .p  ; Y is the workspace F
     lda #osbyte_read_vdu_variable                                     ; 1fef: a9 a0       ..
     ldx #&2d ; '-'                                                    ; 1ff1: a2 2d       .-
     ldy #0                                                            ; 1ff3: a0 00       ..
     jsr OSBYTE                                                        ; 1ff5: 20 f4 ff     .. ; Read the workspace F (VDU variable X=45)
-    stx mem                                                           ; 1ff8: 86 70       .p ; X is the workspace F
-    sty mem                                                           ; 1ffa: 84 70       .p ; Y is the workspace G
+    stx mem                                                           ; 1ff8: 86 70       .p  ; X is the workspace F
+    sty mem                                                           ; 1ffa: 84 70       .p  ; Y is the workspace G
     lda #osbyte_read_vdu_variable                                     ; 1ffc: a9 a0       ..
     ldx #&2e ; '.'                                                    ; 1ffe: a2 2e       ..
     ldy #0                                                            ; 2000: a0 00       ..
     jsr OSBYTE                                                        ; 2002: 20 f4 ff     .. ; Read the workspace G (VDU variable X=46)
-    stx mem                                                           ; 2005: 86 70       .p ; X is the workspace G
-    sty mem                                                           ; 2007: 84 70       .p ; Y is the workspace H
+    stx mem                                                           ; 2005: 86 70       .p  ; X is the workspace G
+    sty mem                                                           ; 2007: 84 70       .p  ; Y is the workspace H
     lda #osbyte_read_vdu_variable                                     ; 2009: a9 a0       ..
     ldx #&2f ; '/'                                                    ; 200b: a2 2f       ./
     ldy #0                                                            ; 200d: a0 00       ..
     jsr OSBYTE                                                        ; 200f: 20 f4 ff     .. ; Read the workspace H (VDU variable X=47)
-    stx mem                                                           ; 2012: 86 70       .p ; X is the workspace H
-    sty mem                                                           ; 2014: 84 70       .p ; Y is the workspace I
+    stx mem                                                           ; 2012: 86 70       .p  ; X is the workspace H
+    sty mem                                                           ; 2014: 84 70       .p  ; Y is the workspace I
     lda #osbyte_read_vdu_variable                                     ; 2016: a9 a0       ..
     ldx #&30 ; '0'                                                    ; 2018: a2 30       .0
     ldy #0                                                            ; 201a: a0 00       ..
     jsr OSBYTE                                                        ; 201c: 20 f4 ff     .. ; Read the workspace I (VDU variable X=48)
-    stx mem                                                           ; 201f: 86 70       .p ; X is the workspace I
-    sty mem                                                           ; 2021: 84 70       .p ; Y is the workspace J
+    stx mem                                                           ; 201f: 86 70       .p  ; X is the workspace I
+    sty mem                                                           ; 2021: 84 70       .p  ; Y is the workspace J
     lda #osbyte_read_vdu_variable                                     ; 2023: a9 a0       ..
     ldx #&31 ; '1'                                                    ; 2025: a2 31       .1
     ldy #0                                                            ; 2027: a0 00       ..
     jsr OSBYTE                                                        ; 2029: 20 f4 ff     .. ; Read the workspace J (VDU variable X=49)
-    stx mem                                                           ; 202c: 86 70       .p ; X is the workspace J
-    sty mem                                                           ; 202e: 84 70       .p ; Y is the workspace K
+    stx mem                                                           ; 202c: 86 70       .p  ; X is the workspace J
+    sty mem                                                           ; 202e: 84 70       .p  ; Y is the workspace K
     lda #osbyte_read_vdu_variable                                     ; 2030: a9 a0       ..
     ldx #&32 ; '2'                                                    ; 2032: a2 32       .2
     ldy #0                                                            ; 2034: a0 00       ..
     jsr OSBYTE                                                        ; 2036: 20 f4 ff     .. ; Read the workspace K (VDU variable X=50)
-    stx mem                                                           ; 2039: 86 70       .p ; X is the workspace K
-    sty mem                                                           ; 203b: 84 70       .p ; Y is the workspace L
+    stx mem                                                           ; 2039: 86 70       .p  ; X is the workspace K
+    sty mem                                                           ; 203b: 84 70       .p  ; Y is the workspace L
     lda #osbyte_read_vdu_variable                                     ; 203d: a9 a0       ..
     ldx #&33 ; '3'                                                    ; 203f: a2 33       .3
     ldy #0                                                            ; 2041: a0 00       ..
     jsr OSBYTE                                                        ; 2043: 20 f4 ff     .. ; Read the workspace L (VDU variable X=51)
-    stx mem                                                           ; 2046: 86 70       .p ; X is the workspace L
-    sty mem                                                           ; 2048: 84 70       .p ; Y is the workspace M
+    stx mem                                                           ; 2046: 86 70       .p  ; X is the workspace L
+    sty mem                                                           ; 2048: 84 70       .p  ; Y is the workspace M
     lda #osbyte_read_vdu_variable                                     ; 204a: a9 a0       ..
     ldx #&34 ; '4'                                                    ; 204c: a2 34       .4
     ldy #0                                                            ; 204e: a0 00       ..
     jsr OSBYTE                                                        ; 2050: 20 f4 ff     .. ; Read the workspace M (VDU variable X=52)
-    stx mem                                                           ; 2053: 86 70       .p ; X is the workspace M
-    sty mem                                                           ; 2055: 84 70       .p ; Y is the workspace N
+    stx mem                                                           ; 2053: 86 70       .p  ; X is the workspace M
+    sty mem                                                           ; 2055: 84 70       .p  ; Y is the workspace N
     lda #osbyte_read_vdu_variable                                     ; 2057: a9 a0       ..
     ldx #&35 ; '5'                                                    ; 2059: a2 35       .5
     ldy #0                                                            ; 205b: a0 00       ..
     jsr OSBYTE                                                        ; 205d: 20 f4 ff     .. ; Read the workspace N (VDU variable X=53)
-    stx mem                                                           ; 2060: 86 70       .p ; X is the workspace N
-    sty mem                                                           ; 2062: 84 70       .p ; Y is the workspace O
+    stx mem                                                           ; 2060: 86 70       .p  ; X is the workspace N
+    sty mem                                                           ; 2062: 84 70       .p  ; Y is the workspace O
     lda #osbyte_read_vdu_variable                                     ; 2064: a9 a0       ..
     ldx #&36 ; '6'                                                    ; 2066: a2 36       .6
     ldy #0                                                            ; 2068: a0 00       ..
     jsr OSBYTE                                                        ; 206a: 20 f4 ff     .. ; Read the workspace O (VDU variable X=54)
-    stx mem                                                           ; 206d: 86 70       .p ; X is the workspace O
-    sty mem                                                           ; 206f: 84 70       .p ; Y is the workspace P
+    stx mem                                                           ; 206d: 86 70       .p  ; X is the workspace O
+    sty mem                                                           ; 206f: 84 70       .p  ; Y is the workspace P
     lda #osbyte_read_vdu_variable                                     ; 2071: a9 a0       ..
     ldx #&37 ; '7'                                                    ; 2073: a2 37       .7
     ldy #0                                                            ; 2075: a0 00       ..
     jsr OSBYTE                                                        ; 2077: 20 f4 ff     .. ; Read the workspace P (VDU variable X=55)
-    stx mem                                                           ; 207a: 86 70       .p ; X is the workspace P
-    sty mem                                                           ; 207c: 84 70       .p ; Y is the workspace Q
+    stx mem                                                           ; 207a: 86 70       .p  ; X is the workspace P
+    sty mem                                                           ; 207c: 84 70       .p  ; Y is the workspace Q
     lda #osbyte_read_vdu_variable                                     ; 207e: a9 a0       ..
     ldx #&38 ; '8'                                                    ; 2080: a2 38       .8
     ldy #0                                                            ; 2082: a0 00       ..
     jsr OSBYTE                                                        ; 2084: 20 f4 ff     .. ; Read the workspace Q (VDU variable X=56)
-    stx mem                                                           ; 2087: 86 70       .p ; X is the workspace Q
-    sty mem                                                           ; 2089: 84 70       .p ; Y is the workspace R
+    stx mem                                                           ; 2087: 86 70       .p  ; X is the workspace Q
+    sty mem                                                           ; 2089: 84 70       .p  ; Y is the workspace R
     lda #osbyte_read_vdu_variable                                     ; 208b: a9 a0       ..
     ldx #&39 ; '9'                                                    ; 208d: a2 39       .9
     ldy #0                                                            ; 208f: a0 00       ..
     jsr OSBYTE                                                        ; 2091: 20 f4 ff     .. ; Read the workspace R (VDU variable X=57)
-    stx mem                                                           ; 2094: 86 70       .p ; X is the workspace R
-    sty mem                                                           ; 2096: 84 70       .p ; Y is the workspace S
+    stx mem                                                           ; 2094: 86 70       .p  ; X is the workspace R
+    sty mem                                                           ; 2096: 84 70       .p  ; Y is the workspace S
     lda #osbyte_read_vdu_variable                                     ; 2098: a9 a0       ..
     ldx #&3a ; ':'                                                    ; 209a: a2 3a       .:
     ldy #0                                                            ; 209c: a0 00       ..
     jsr OSBYTE                                                        ; 209e: 20 f4 ff     .. ; Read the workspace S (VDU variable X=58)
-    stx mem                                                           ; 20a1: 86 70       .p ; X is the workspace S
-    sty mem                                                           ; 20a3: 84 70       .p ; Y is the workspace T
+    stx mem                                                           ; 20a1: 86 70       .p  ; X is the workspace S
+    sty mem                                                           ; 20a3: 84 70       .p  ; Y is the workspace T
     lda #osbyte_read_vdu_variable                                     ; 20a5: a9 a0       ..
     ldx #&3b ; ';'                                                    ; 20a7: a2 3b       .;
     ldy #0                                                            ; 20a9: a0 00       ..
     jsr OSBYTE                                                        ; 20ab: 20 f4 ff     .. ; Read the workspace T (VDU variable X=59)
-    stx mem                                                           ; 20ae: 86 70       .p ; X is the workspace T
-    sty mem                                                           ; 20b0: 84 70       .p ; Y is the workspace U
+    stx mem                                                           ; 20ae: 86 70       .p  ; X is the workspace T
+    sty mem                                                           ; 20b0: 84 70       .p  ; Y is the workspace U
     lda #osbyte_read_vdu_variable                                     ; 20b2: a9 a0       ..
     ldx #&3c ; '<'                                                    ; 20b4: a2 3c       .<
     ldy #0                                                            ; 20b6: a0 00       ..
     jsr OSBYTE                                                        ; 20b8: 20 f4 ff     .. ; Read the workspace U (VDU variable X=60)
-    stx mem                                                           ; 20bb: 86 70       .p ; X is the workspace U
-    sty mem                                                           ; 20bd: 84 70       .p ; Y is the workspace V
+    stx mem                                                           ; 20bb: 86 70       .p  ; X is the workspace U
+    sty mem                                                           ; 20bd: 84 70       .p  ; Y is the workspace V
     lda #osbyte_read_vdu_variable                                     ; 20bf: a9 a0       ..
     ldx #&3d ; '='                                                    ; 20c1: a2 3d       .=
     ldy #0                                                            ; 20c3: a0 00       ..
     jsr OSBYTE                                                        ; 20c5: 20 f4 ff     .. ; Read the workspace V (VDU variable X=61)
-    stx mem                                                           ; 20c8: 86 70       .p ; X is the workspace V
-    sty mem                                                           ; 20ca: 84 70       .p ; Y is the plot triangle storage area holding the original X coordinate
+    stx mem                                                           ; 20c8: 86 70       .p  ; X is the workspace V
+    sty mem                                                           ; 20ca: 84 70       .p  ; Y is the plot triangle storage area holding the original X coordinate
     lda #osbyte_read_vdu_variable                                     ; 20cc: a9 a0       ..
     ldx #&3e ; '>'                                                    ; 20ce: a2 3e       .>
     ldy #0                                                            ; 20d0: a0 00       ..
     jsr OSBYTE                                                        ; 20d2: 20 f4 ff     .. ; Read the plot triangle storage area holding the original X coordinate (VDU variable X=62)
-    stx mem                                                           ; 20d5: 86 70       .p ; X is the plot triangle storage area holding the original X coordinate
-    sty mem                                                           ; 20d7: 84 70       .p ; Y is the plot triangle storage area holding the original X coordinate (high byte)
+    stx mem                                                           ; 20d5: 86 70       .p  ; X is the plot triangle storage area holding the original X coordinate
+    sty mem                                                           ; 20d7: 84 70       .p  ; Y is the plot triangle storage area holding the original X coordinate (high byte)
     lda #osbyte_read_vdu_variable                                     ; 20d9: a9 a0       ..
     ldx #&3f ; '?'                                                    ; 20db: a2 3f       .?
     ldy #0                                                            ; 20dd: a0 00       ..
     jsr OSBYTE                                                        ; 20df: 20 f4 ff     .. ; Read the plot triangle storage area holding the original X coordinate (high byte) (VDU variable X=63)
-    stx mem                                                           ; 20e2: 86 70       .p ; X is the plot triangle storage area holding the original X coordinate (high byte)
-    sty mem                                                           ; 20e4: 84 70       .p ; Y is the plot triangle storage area holding the original Y coordinate
+    stx mem                                                           ; 20e2: 86 70       .p  ; X is the plot triangle storage area holding the original X coordinate (high byte)
+    sty mem                                                           ; 20e4: 84 70       .p  ; Y is the plot triangle storage area holding the original Y coordinate
     lda #osbyte_read_vdu_variable                                     ; 20e6: a9 a0       ..
     ldx #&40 ; '@'                                                    ; 20e8: a2 40       .@
     ldy #0                                                            ; 20ea: a0 00       ..
     jsr OSBYTE                                                        ; 20ec: 20 f4 ff     .. ; Read the plot triangle storage area holding the original Y coordinate (VDU variable X=64)
-    stx mem                                                           ; 20ef: 86 70       .p ; X is the plot triangle storage area holding the original Y coordinate
-    sty mem                                                           ; 20f1: 84 70       .p ; Y is the plot triangle storage area holding the original Y coordinate (high byte)
+    stx mem                                                           ; 20ef: 86 70       .p  ; X is the plot triangle storage area holding the original Y coordinate
+    sty mem                                                           ; 20f1: 84 70       .p  ; Y is the plot triangle storage area holding the original Y coordinate (high byte)
     lda #osbyte_read_vdu_variable                                     ; 20f3: a9 a0       ..
     ldx #&41 ; 'A'                                                    ; 20f5: a2 41       .A
     ldy #0                                                            ; 20f7: a0 00       ..
     jsr OSBYTE                                                        ; 20f9: 20 f4 ff     .. ; Read the plot triangle storage area holding the original Y coordinate (high byte) (VDU variable X=65)
-    stx mem                                                           ; 20fc: 86 70       .p ; X is the plot triangle storage area holding the original Y coordinate (high byte)
-    sty mem                                                           ; 20fe: 84 70       .p ; Y is the plot triangle storage area holding the original graphics cursor X coordinate
+    stx mem                                                           ; 20fc: 86 70       .p  ; X is the plot triangle storage area holding the original Y coordinate (high byte)
+    sty mem                                                           ; 20fe: 84 70       .p  ; Y is the plot triangle storage area holding the original graphics cursor X coordinate
     lda #osbyte_read_vdu_variable                                     ; 2100: a9 a0       ..
     ldx #&42 ; 'B'                                                    ; 2102: a2 42       .B
     ldy #0                                                            ; 2104: a0 00       ..
     jsr OSBYTE                                                        ; 2106: 20 f4 ff     .. ; Read the plot triangle storage area holding the original graphics cursor X coordinate (VDU variable X=66)
-    stx mem                                                           ; 2109: 86 70       .p ; X is the plot triangle storage area holding the original graphics cursor X coordinate
-    sty mem                                                           ; 210b: 84 70       .p ; Y is the plot triangle storage area holding the original graphics cursor X coordinate (high byte)
+    stx mem                                                           ; 2109: 86 70       .p  ; X is the plot triangle storage area holding the original graphics cursor X coordinate
+    sty mem                                                           ; 210b: 84 70       .p  ; Y is the plot triangle storage area holding the original graphics cursor X coordinate (high byte)
     lda #osbyte_read_vdu_variable                                     ; 210d: a9 a0       ..
     ldx #&43 ; 'C'                                                    ; 210f: a2 43       .C
     ldy #0                                                            ; 2111: a0 00       ..
     jsr OSBYTE                                                        ; 2113: 20 f4 ff     .. ; Read the plot triangle storage area holding the original graphics cursor X coordinate (high byte) (VDU variable X=67)
-    stx mem                                                           ; 2116: 86 70       .p ; X is the plot triangle storage area holding the original graphics cursor X coordinate (high byte)
-    sty mem                                                           ; 2118: 84 70       .p ; Y is the plot triangle storage area holding the original graphics cursor Y coordinate
+    stx mem                                                           ; 2116: 86 70       .p  ; X is the plot triangle storage area holding the original graphics cursor X coordinate (high byte)
+    sty mem                                                           ; 2118: 84 70       .p  ; Y is the plot triangle storage area holding the original graphics cursor Y coordinate
     lda #osbyte_read_vdu_variable                                     ; 211a: a9 a0       ..
     ldx #&44 ; 'D'                                                    ; 211c: a2 44       .D
     ldy #0                                                            ; 211e: a0 00       ..
     jsr OSBYTE                                                        ; 2120: 20 f4 ff     .. ; Read the plot triangle storage area holding the original graphics cursor Y coordinate (VDU variable X=68)
-    stx mem                                                           ; 2123: 86 70       .p ; X is the plot triangle storage area holding the original graphics cursor Y coordinate
-    sty mem                                                           ; 2125: 84 70       .p ; Y is the plot triangle storage area holding the original graphics cursor Y coordinate (high byte)
+    stx mem                                                           ; 2123: 86 70       .p  ; X is the plot triangle storage area holding the original graphics cursor Y coordinate
+    sty mem                                                           ; 2125: 84 70       .p  ; Y is the plot triangle storage area holding the original graphics cursor Y coordinate (high byte)
     lda #osbyte_read_vdu_variable                                     ; 2127: a9 a0       ..
     ldx #&45 ; 'E'                                                    ; 2129: a2 45       .E
     ldy #0                                                            ; 212b: a0 00       ..
     jsr OSBYTE                                                        ; 212d: 20 f4 ff     .. ; Read the plot triangle storage area holding the original graphics cursor Y coordinate (high byte) (VDU variable X=69)
-    stx mem                                                           ; 2130: 86 70       .p ; X is the plot triangle storage area holding the original graphics cursor Y coordinate (high byte)
-    sty mem                                                           ; 2132: 84 70       .p ; Y is the unused byte
+    stx mem                                                           ; 2130: 86 70       .p  ; X is the plot triangle storage area holding the original graphics cursor Y coordinate (high byte)
+    sty mem                                                           ; 2132: 84 70       .p  ; Y is the unused byte
     lda #osbyte_read_vdu_variable                                     ; 2134: a9 a0       ..
     ldx #&46 ; 'F'                                                    ; 2136: a2 46       .F
     ldy #0                                                            ; 2138: a0 00       ..
     jsr OSBYTE                                                        ; 213a: 20 f4 ff     .. ; Read the unused byte (VDU variable X=70)
-    stx mem                                                           ; 213d: 86 70       .p ; X is the unused byte
-    sty mem                                                           ; 213f: 84 70       .p ; Y is the unused byte
+    stx mem                                                           ; 213d: 86 70       .p  ; X is the unused byte
+    sty mem                                                           ; 213f: 84 70       .p  ; Y is the unused byte
     lda #osbyte_read_vdu_variable                                     ; 2141: a9 a0       ..
     ldx #&47 ; 'G'                                                    ; 2143: a2 47       .G
     ldy #0                                                            ; 2145: a0 00       ..
     jsr OSBYTE                                                        ; 2147: 20 f4 ff     .. ; Read the unused byte (VDU variable X=71)
-    stx mem                                                           ; 214a: 86 70       .p ; X is the unused byte
-    sty mem                                                           ; 214c: 84 70       .p ; Y is the unused byte
+    stx mem                                                           ; 214a: 86 70       .p  ; X is the unused byte
+    sty mem                                                           ; 214c: 84 70       .p  ; Y is the unused byte
     lda #osbyte_read_vdu_variable                                     ; 214e: a9 a0       ..
     ldx #&48 ; 'H'                                                    ; 2150: a2 48       .H
     ldy #0                                                            ; 2152: a0 00       ..
     jsr OSBYTE                                                        ; 2154: 20 f4 ff     .. ; Read the unused byte (VDU variable X=72)
-    stx mem                                                           ; 2157: 86 70       .p ; X is the unused byte
-    sty mem                                                           ; 2159: 84 70       .p ; Y is the unused byte
+    stx mem                                                           ; 2157: 86 70       .p  ; X is the unused byte
+    sty mem                                                           ; 2159: 84 70       .p  ; Y is the unused byte
     lda #osbyte_read_vdu_variable                                     ; 215b: a9 a0       ..
     ldx #&49 ; 'I'                                                    ; 215d: a2 49       .I
     ldy #0                                                            ; 215f: a0 00       ..
     jsr OSBYTE                                                        ; 2161: 20 f4 ff     .. ; Read the unused byte (VDU variable X=73)
-    stx mem                                                           ; 2164: 86 70       .p ; X is the unused byte
-    sty mem                                                           ; 2166: 84 70       .p ; Y is the text cursor CRTC address
+    stx mem                                                           ; 2164: 86 70       .p  ; X is the unused byte
+    sty mem                                                           ; 2166: 84 70       .p  ; Y is the text cursor CRTC address
     lda #osbyte_read_vdu_variable                                     ; 2168: a9 a0       ..
     ldx #&4a ; 'J'                                                    ; 216a: a2 4a       .J
     ldy #0                                                            ; 216c: a0 00       ..
     jsr OSBYTE                                                        ; 216e: 20 f4 ff     .. ; Read the text cursor CRTC address (VDU variable X=74)
-    stx mem                                                           ; 2171: 86 70       .p ; X is the text cursor CRTC address
-    sty mem                                                           ; 2173: 84 70       .p ; Y is the text cursor CRTC address (high byte)
+    stx mem                                                           ; 2171: 86 70       .p  ; X is the text cursor CRTC address
+    sty mem                                                           ; 2173: 84 70       .p  ; Y is the text cursor CRTC address (high byte)
     lda #osbyte_read_vdu_variable                                     ; 2175: a9 a0       ..
     ldx #&4b ; 'K'                                                    ; 2177: a2 4b       .K
     ldy #0                                                            ; 2179: a0 00       ..
     jsr OSBYTE                                                        ; 217b: 20 f4 ff     .. ; Read the text cursor CRTC address (high byte) (VDU variable X=75)
-    stx mem                                                           ; 217e: 86 70       .p ; X is the text cursor CRTC address (high byte)
-    sty mem                                                           ; 2180: 84 70       .p ; Y is the text window width in bytes
+    stx mem                                                           ; 217e: 86 70       .p  ; X is the text cursor CRTC address (high byte)
+    sty mem                                                           ; 2180: 84 70       .p  ; Y is the text window width in bytes
     lda #osbyte_read_vdu_variable                                     ; 2182: a9 a0       ..
     ldx #&4c ; 'L'                                                    ; 2184: a2 4c       .L
     ldy #0                                                            ; 2186: a0 00       ..
     jsr OSBYTE                                                        ; 2188: 20 f4 ff     .. ; Read the text window width in bytes (VDU variable X=76)
-    stx mem                                                           ; 218b: 86 70       .p ; X is the text window width in bytes
-    sty mem                                                           ; 218d: 84 70       .p ; Y is the text window width in bytes (high byte)
+    stx mem                                                           ; 218b: 86 70       .p  ; X is the text window width in bytes
+    sty mem                                                           ; 218d: 84 70       .p  ; Y is the text window width in bytes (high byte)
     lda #osbyte_read_vdu_variable                                     ; 218f: a9 a0       ..
     ldx #&4d ; 'M'                                                    ; 2191: a2 4d       .M
     ldy #0                                                            ; 2193: a0 00       ..
     jsr OSBYTE                                                        ; 2195: 20 f4 ff     .. ; Read the text window width in bytes (high byte) (VDU variable X=77)
-    stx mem                                                           ; 2198: 86 70       .p ; X is the text window width in bytes (high byte)
-    sty mem                                                           ; 219a: 84 70       .p ; Y is the start screen address high byte
+    stx mem                                                           ; 2198: 86 70       .p  ; X is the text window width in bytes (high byte)
+    sty mem                                                           ; 219a: 84 70       .p  ; Y is the start screen address high byte
     lda #osbyte_read_vdu_variable                                     ; 219c: a9 a0       ..
     ldx #&4e ; 'N'                                                    ; 219e: a2 4e       .N
     ldy #0                                                            ; 21a0: a0 00       ..
     jsr OSBYTE                                                        ; 21a2: 20 f4 ff     .. ; Read the start screen address high byte (VDU variable X=78)
-    stx mem                                                           ; 21a5: 86 70       .p ; X is the start screen address high byte
-    sty mem                                                           ; 21a7: 84 70       .p ; Y is the bytes per character
+    stx mem                                                           ; 21a5: 86 70       .p  ; X is the start screen address high byte
+    sty mem                                                           ; 21a7: 84 70       .p  ; Y is the bytes per character
     lda #osbyte_read_vdu_variable                                     ; 21a9: a9 a0       ..
     ldx #&4f ; 'O'                                                    ; 21ab: a2 4f       .O
     ldy #0                                                            ; 21ad: a0 00       ..
     jsr OSBYTE                                                        ; 21af: 20 f4 ff     .. ; Read the bytes per character (VDU variable X=79)
-    stx mem                                                           ; 21b2: 86 70       .p ; X is the bytes per character
-    sty mem                                                           ; 21b4: 84 70       .p ; Y is the screen top left address
+    stx mem                                                           ; 21b2: 86 70       .p  ; X is the bytes per character
+    sty mem                                                           ; 21b4: 84 70       .p  ; Y is the screen top left address
     lda #osbyte_read_vdu_variable                                     ; 21b6: a9 a0       ..
     ldx #&50 ; 'P'                                                    ; 21b8: a2 50       .P
     ldy #0                                                            ; 21ba: a0 00       ..
     jsr OSBYTE                                                        ; 21bc: 20 f4 ff     .. ; Read the screen top left address (VDU variable X=80)
-    stx mem                                                           ; 21bf: 86 70       .p ; X is the screen top left address
-    sty mem                                                           ; 21c1: 84 70       .p ; Y is the screen top left address (high byte)
+    stx mem                                                           ; 21bf: 86 70       .p  ; X is the screen top left address
+    sty mem                                                           ; 21c1: 84 70       .p  ; Y is the screen top left address (high byte)
     lda #osbyte_read_vdu_variable                                     ; 21c3: a9 a0       ..
     ldx #&51 ; 'Q'                                                    ; 21c5: a2 51       .Q
     ldy #0                                                            ; 21c7: a0 00       ..
     jsr OSBYTE                                                        ; 21c9: 20 f4 ff     .. ; Read the screen top left address (high byte) (VDU variable X=81)
-    stx mem                                                           ; 21cc: 86 70       .p ; X is the screen top left address (high byte)
-    sty mem                                                           ; 21ce: 84 70       .p ; Y is the bytes per character row
+    stx mem                                                           ; 21cc: 86 70       .p  ; X is the screen top left address (high byte)
+    sty mem                                                           ; 21ce: 84 70       .p  ; Y is the bytes per character row
     lda #osbyte_read_vdu_variable                                     ; 21d0: a9 a0       ..
     ldx #&52 ; 'R'                                                    ; 21d2: a2 52       .R
     ldy #0                                                            ; 21d4: a0 00       ..
     jsr OSBYTE                                                        ; 21d6: 20 f4 ff     .. ; Read the bytes per character row (VDU variable X=82)
-    stx mem                                                           ; 21d9: 86 70       .p ; X is the bytes per character row
-    sty mem                                                           ; 21db: 84 70       .p ; Y is the bytes per character row (high byte)
+    stx mem                                                           ; 21d9: 86 70       .p  ; X is the bytes per character row
+    sty mem                                                           ; 21db: 84 70       .p  ; Y is the bytes per character row (high byte)
     lda #osbyte_read_vdu_variable                                     ; 21dd: a9 a0       ..
     ldx #&53 ; 'S'                                                    ; 21df: a2 53       .S
     ldy #0                                                            ; 21e1: a0 00       ..
     jsr OSBYTE                                                        ; 21e3: 20 f4 ff     .. ; Read the bytes per character row (high byte) (VDU variable X=83)
-    stx mem                                                           ; 21e6: 86 70       .p ; X is the bytes per character row (high byte)
-    sty mem                                                           ; 21e8: 84 70       .p ; Y is the screen size high byte
+    stx mem                                                           ; 21e6: 86 70       .p  ; X is the bytes per character row (high byte)
+    sty mem                                                           ; 21e8: 84 70       .p  ; Y is the screen size high byte
     lda #osbyte_read_vdu_variable                                     ; 21ea: a9 a0       ..
     ldx #&54 ; 'T'                                                    ; 21ec: a2 54       .T
     ldy #0                                                            ; 21ee: a0 00       ..
     jsr OSBYTE                                                        ; 21f0: 20 f4 ff     .. ; Read the screen size high byte (VDU variable X=84)
-    stx mem                                                           ; 21f3: 86 70       .p ; X is the screen size high byte
-    sty mem                                                           ; 21f5: 84 70       .p ; Y is the current screen MODE
+    stx mem                                                           ; 21f3: 86 70       .p  ; X is the screen size high byte
+    sty mem                                                           ; 21f5: 84 70       .p  ; Y is the current screen MODE
     lda #osbyte_read_vdu_variable                                     ; 21f7: a9 a0       ..
     ldx #&55 ; 'U'                                                    ; 21f9: a2 55       .U
     ldy #0                                                            ; 21fb: a0 00       ..
     jsr OSBYTE                                                        ; 21fd: 20 f4 ff     .. ; Read the current screen MODE (VDU variable X=85)
-    stx mem                                                           ; 2200: 86 70       .p ; X is the current screen MODE
-    sty mem                                                           ; 2202: 84 70       .p ; Y is the current screen MODE group
+    stx mem                                                           ; 2200: 86 70       .p  ; X is the current screen MODE
+    sty mem                                                           ; 2202: 84 70       .p  ; Y is the current screen MODE group
     lda #osbyte_read_vdu_variable                                     ; 2204: a9 a0       ..
     ldx #&56 ; 'V'                                                    ; 2206: a2 56       .V
     ldy #0                                                            ; 2208: a0 00       ..
     jsr OSBYTE                                                        ; 220a: 20 f4 ff     .. ; Read the current screen MODE group (VDU variable X=86)
-    stx mem                                                           ; 220d: 86 70       .p ; X is the current screen MODE group
-    sty mem                                                           ; 220f: 84 70       .p ; Y is the foreground text colour
+    stx mem                                                           ; 220d: 86 70       .p  ; X is the current screen MODE group
+    sty mem                                                           ; 220f: 84 70       .p  ; Y is the foreground text colour
     lda #osbyte_read_vdu_variable                                     ; 2211: a9 a0       ..
     ldx #&57 ; 'W'                                                    ; 2213: a2 57       .W
     ldy #0                                                            ; 2215: a0 00       ..
     jsr OSBYTE                                                        ; 2217: 20 f4 ff     .. ; Read the foreground text colour (VDU variable X=87)
-    stx mem                                                           ; 221a: 86 70       .p ; X is the foreground text colour
-    sty mem                                                           ; 221c: 84 70       .p ; Y is the background text colour
+    stx mem                                                           ; 221a: 86 70       .p  ; X is the foreground text colour
+    sty mem                                                           ; 221c: 84 70       .p  ; Y is the background text colour
     lda #osbyte_read_vdu_variable                                     ; 221e: a9 a0       ..
     ldx #&58 ; 'X'                                                    ; 2220: a2 58       .X
     ldy #0                                                            ; 2222: a0 00       ..
     jsr OSBYTE                                                        ; 2224: 20 f4 ff     .. ; Read the background text colour (VDU variable X=88)
-    stx mem                                                           ; 2227: 86 70       .p ; X is the background text colour
-    sty mem                                                           ; 2229: 84 70       .p ; Y is the foreground graphics colour
+    stx mem                                                           ; 2227: 86 70       .p  ; X is the background text colour
+    sty mem                                                           ; 2229: 84 70       .p  ; Y is the foreground graphics colour
     lda #osbyte_read_vdu_variable                                     ; 222b: a9 a0       ..
     ldx #&59 ; 'Y'                                                    ; 222d: a2 59       .Y
     ldy #0                                                            ; 222f: a0 00       ..
     jsr OSBYTE                                                        ; 2231: 20 f4 ff     .. ; Read the foreground graphics colour (VDU variable X=89)
-    stx mem                                                           ; 2234: 86 70       .p ; X is the foreground graphics colour
-    sty mem                                                           ; 2236: 84 70       .p ; Y is the background graphics colour
+    stx mem                                                           ; 2234: 86 70       .p  ; X is the foreground graphics colour
+    sty mem                                                           ; 2236: 84 70       .p  ; Y is the background graphics colour
     lda #osbyte_read_vdu_variable                                     ; 2238: a9 a0       ..
     ldx #&5a ; 'Z'                                                    ; 223a: a2 5a       .Z
     ldy #0                                                            ; 223c: a0 00       ..
     jsr OSBYTE                                                        ; 223e: 20 f4 ff     .. ; Read the background graphics colour (VDU variable X=90)
-    stx mem                                                           ; 2241: 86 70       .p ; X is the background graphics colour
-    sty mem                                                           ; 2243: 84 70       .p ; Y is the foreground GCOL mode
+    stx mem                                                           ; 2241: 86 70       .p  ; X is the background graphics colour
+    sty mem                                                           ; 2243: 84 70       .p  ; Y is the foreground GCOL mode
     lda #osbyte_read_vdu_variable                                     ; 2245: a9 a0       ..
     ldx #&5b ; '['                                                    ; 2247: a2 5b       .[
     ldy #0                                                            ; 2249: a0 00       ..
     jsr OSBYTE                                                        ; 224b: 20 f4 ff     .. ; Read the foreground GCOL mode (VDU variable X=91)
-    stx mem                                                           ; 224e: 86 70       .p ; X is the foreground GCOL mode
-    sty mem                                                           ; 2250: 84 70       .p ; Y is the background GCOL mode
+    stx mem                                                           ; 224e: 86 70       .p  ; X is the foreground GCOL mode
+    sty mem                                                           ; 2250: 84 70       .p  ; Y is the background GCOL mode
     lda #osbyte_read_vdu_variable                                     ; 2252: a9 a0       ..
     ldx #&5c ; '\'                                                    ; 2254: a2 5c       .\
     ldy #0                                                            ; 2256: a0 00       ..
     jsr OSBYTE                                                        ; 2258: 20 f4 ff     .. ; Read the background GCOL mode (VDU variable X=92)
-    stx mem                                                           ; 225b: 86 70       .p ; X is the background GCOL mode
-    sty mem                                                           ; 225d: 84 70       .p ; Y is the jump vector
+    stx mem                                                           ; 225b: 86 70       .p  ; X is the background GCOL mode
+    sty mem                                                           ; 225d: 84 70       .p  ; Y is the jump vector
     lda #osbyte_read_vdu_variable                                     ; 225f: a9 a0       ..
     ldx #&5d ; ']'                                                    ; 2261: a2 5d       .]
     ldy #0                                                            ; 2263: a0 00       ..
     jsr OSBYTE                                                        ; 2265: 20 f4 ff     .. ; Read the jump vector (VDU variable X=93)
-    stx mem                                                           ; 2268: 86 70       .p ; X is the jump vector
-    sty mem                                                           ; 226a: 84 70       .p ; Y is the jump vector (high byte)
+    stx mem                                                           ; 2268: 86 70       .p  ; X is the jump vector
+    sty mem                                                           ; 226a: 84 70       .p  ; Y is the jump vector (high byte)
     lda #osbyte_read_vdu_variable                                     ; 226c: a9 a0       ..
     ldx #&5e ; '^'                                                    ; 226e: a2 5e       .^
     ldy #0                                                            ; 2270: a0 00       ..
     jsr OSBYTE                                                        ; 2272: 20 f4 ff     .. ; Read the jump vector (high byte) (VDU variable X=94)
-    stx mem                                                           ; 2275: 86 70       .p ; X is the jump vector (high byte)
-    sty mem                                                           ; 2277: 84 70       .p ; Y is the last cursor start register value
+    stx mem                                                           ; 2275: 86 70       .p  ; X is the jump vector (high byte)
+    sty mem                                                           ; 2277: 84 70       .p  ; Y is the last cursor start register value
     lda #osbyte_read_vdu_variable                                     ; 2279: a9 a0       ..
     ldx #&5f ; '_'                                                    ; 227b: a2 5f       ._
     ldy #0                                                            ; 227d: a0 00       ..
     jsr OSBYTE                                                        ; 227f: 20 f4 ff     .. ; Read the last cursor start register value (VDU variable X=95)
-    stx mem                                                           ; 2282: 86 70       .p ; X is the last cursor start register value
-    sty mem                                                           ; 2284: 84 70       .p ; Y is the number of logical colours minus one
+    stx mem                                                           ; 2282: 86 70       .p  ; X is the last cursor start register value
+    sty mem                                                           ; 2284: 84 70       .p  ; Y is the number of logical colours minus one
     lda #osbyte_read_vdu_variable                                     ; 2286: a9 a0       ..
     ldx #&60 ; '`'                                                    ; 2288: a2 60       .`
     ldy #0                                                            ; 228a: a0 00       ..
     jsr OSBYTE                                                        ; 228c: 20 f4 ff     .. ; Read the number of logical colours minus one (VDU variable X=96)
-    stx mem                                                           ; 228f: 86 70       .p ; X is the number of logical colours minus one
-    sty mem                                                           ; 2291: 84 70       .p ; Y is the pixels per byte minus one
+    stx mem                                                           ; 228f: 86 70       .p  ; X is the number of logical colours minus one
+    sty mem                                                           ; 2291: 84 70       .p  ; Y is the pixels per byte minus one
     lda #osbyte_read_vdu_variable                                     ; 2293: a9 a0       ..
     ldx #&61 ; 'a'                                                    ; 2295: a2 61       .a
     ldy #0                                                            ; 2297: a0 00       ..
     jsr OSBYTE                                                        ; 2299: 20 f4 ff     .. ; Read the pixels per byte minus one (VDU variable X=97)
-    stx mem                                                           ; 229c: 86 70       .p ; X is the pixels per byte minus one
-    sty mem                                                           ; 229e: 84 70       .p ; Y is the colour mask left
+    stx mem                                                           ; 229c: 86 70       .p  ; X is the pixels per byte minus one
+    sty mem                                                           ; 229e: 84 70       .p  ; Y is the colour mask left
     lda #osbyte_read_vdu_variable                                     ; 22a0: a9 a0       ..
     ldx #&62 ; 'b'                                                    ; 22a2: a2 62       .b
     ldy #0                                                            ; 22a4: a0 00       ..
     jsr OSBYTE                                                        ; 22a6: 20 f4 ff     .. ; Read the colour mask left (VDU variable X=98)
-    stx mem                                                           ; 22a9: 86 70       .p ; X is the colour mask left
-    sty mem                                                           ; 22ab: 84 70       .p ; Y is the colour mask right
+    stx mem                                                           ; 22a9: 86 70       .p  ; X is the colour mask left
+    sty mem                                                           ; 22ab: 84 70       .p  ; Y is the colour mask right
     lda #osbyte_read_vdu_variable                                     ; 22ad: a9 a0       ..
     ldx #&63 ; 'c'                                                    ; 22af: a2 63       .c
     ldy #0                                                            ; 22b1: a0 00       ..
     jsr OSBYTE                                                        ; 22b3: 20 f4 ff     .. ; Read the colour mask right (VDU variable X=99)
-    stx mem                                                           ; 22b6: 86 70       .p ; X is the colour mask right
-    sty mem                                                           ; 22b8: 84 70       .p ; Y is the text input cursor X coordinate
+    stx mem                                                           ; 22b6: 86 70       .p  ; X is the colour mask right
+    sty mem                                                           ; 22b8: 84 70       .p  ; Y is the text input cursor X coordinate
     lda #osbyte_read_vdu_variable                                     ; 22ba: a9 a0       ..
     ldx #&64 ; 'd'                                                    ; 22bc: a2 64       .d
     ldy #0                                                            ; 22be: a0 00       ..
     jsr OSBYTE                                                        ; 22c0: 20 f4 ff     .. ; Read the text input cursor X coordinate (VDU variable X=100)
-    stx mem                                                           ; 22c3: 86 70       .p ; X is the text input cursor X coordinate
-    sty mem                                                           ; 22c5: 84 70       .p ; Y is the text input cursor Y coordinate
+    stx mem                                                           ; 22c3: 86 70       .p  ; X is the text input cursor X coordinate
+    sty mem                                                           ; 22c5: 84 70       .p  ; Y is the text input cursor Y coordinate
     lda #osbyte_read_vdu_variable                                     ; 22c7: a9 a0       ..
     ldx #&65 ; 'e'                                                    ; 22c9: a2 65       .e
     ldy #0                                                            ; 22cb: a0 00       ..
     jsr OSBYTE                                                        ; 22cd: 20 f4 ff     .. ; Read the text input cursor Y coordinate (VDU variable X=101)
-    stx mem                                                           ; 22d0: 86 70       .p ; X is the text input cursor Y coordinate
-    sty mem                                                           ; 22d2: 84 70       .p ; Y is the teletext character for cursor (or Master: VDU 23,16 setting)
+    stx mem                                                           ; 22d0: 86 70       .p  ; X is the text input cursor Y coordinate
+    sty mem                                                           ; 22d2: 84 70       .p  ; Y is the teletext character for cursor (or Master: VDU 23,16 setting)
     lda #osbyte_read_vdu_variable                                     ; 22d4: a9 a0       ..
     ldx #&66 ; 'f'                                                    ; 22d6: a2 66       .f
     ldy #0                                                            ; 22d8: a0 00       ..
     jsr OSBYTE                                                        ; 22da: 20 f4 ff     .. ; Read the teletext character for cursor (or Master: VDU 23,16 setting) (VDU variable X=102)
-    stx mem                                                           ; 22dd: 86 70       .p ; X is the teletext character for cursor (or Master: VDU 23,16 setting)
-    sty mem                                                           ; 22df: 84 70       .p ; Y is the character explosion font flags (or Master: VDU 23,6 setting, dot pattern)
+    stx mem                                                           ; 22dd: 86 70       .p  ; X is the teletext character for cursor (or Master: VDU 23,16 setting)
+    sty mem                                                           ; 22df: 84 70       .p  ; Y is the character explosion font flags (or Master: VDU 23,6 setting, dot pattern)
     lda #osbyte_read_vdu_variable                                     ; 22e1: a9 a0       ..
     ldx #&67 ; 'g'                                                    ; 22e3: a2 67       .g
     ldy #0                                                            ; 22e5: a0 00       ..
     jsr OSBYTE                                                        ; 22e7: 20 f4 ff     .. ; Read the character explosion font flags (or Master: VDU 23,6 setting, dot pattern) (VDU variable X=103)
-    stx mem                                                           ; 22ea: 86 70       .p ; X is the character explosion font flags (or Master: VDU 23,6 setting, dot pattern)
-    sty mem                                                           ; 22ec: 84 70       .p ; Y is the font zone addresses high 1 (or Master: current state of dot pattern)
+    stx mem                                                           ; 22ea: 86 70       .p  ; X is the character explosion font flags (or Master: VDU 23,6 setting, dot pattern)
+    sty mem                                                           ; 22ec: 84 70       .p  ; Y is the font zone addresses high 1 (or Master: current state of dot pattern)
     lda #osbyte_read_vdu_variable                                     ; 22ee: a9 a0       ..
     ldx #&68 ; 'h'                                                    ; 22f0: a2 68       .h
     ldy #0                                                            ; 22f2: a0 00       ..
     jsr OSBYTE                                                        ; 22f4: 20 f4 ff     .. ; Read the font zone addresses high 1 (or Master: current state of dot pattern) (VDU variable X=104)
-    stx mem                                                           ; 22f7: 86 70       .p ; X is the font zone addresses high 1 (or Master: current state of dot pattern)
-    sty mem                                                           ; 22f9: 84 70       .p ; Y is the font zone addresses high 2 (or Master: colour plotting, ECF pattern number or zero)
+    stx mem                                                           ; 22f7: 86 70       .p  ; X is the font zone addresses high 1 (or Master: current state of dot pattern)
+    sty mem                                                           ; 22f9: 84 70       .p  ; Y is the font zone addresses high 2 (or Master: colour plotting, ECF pattern number or zero)
     lda #osbyte_read_vdu_variable                                     ; 22fb: a9 a0       ..
     ldx #&69 ; 'i'                                                    ; 22fd: a2 69       .i
     ldy #0                                                            ; 22ff: a0 00       ..
     jsr OSBYTE                                                        ; 2301: 20 f4 ff     .. ; Read the font zone addresses high 2 (or Master: colour plotting, ECF pattern number or zero) (VDU variable X=105)
-    stx mem                                                           ; 2304: 86 70       .p ; X is the font zone addresses high 2 (or Master: colour plotting, ECF pattern number or zero)
-    sty mem                                                           ; 2306: 84 70       .p ; Y is the font zone addresses high 3 (or Master: graphics foreground, ECF number or zero)
+    stx mem                                                           ; 2304: 86 70       .p  ; X is the font zone addresses high 2 (or Master: colour plotting, ECF pattern number or zero)
+    sty mem                                                           ; 2306: 84 70       .p  ; Y is the font zone addresses high 3 (or Master: graphics foreground, ECF number or zero)
     lda #osbyte_read_vdu_variable                                     ; 2308: a9 a0       ..
     ldx #&6a ; 'j'                                                    ; 230a: a2 6a       .j
     ldy #0                                                            ; 230c: a0 00       ..
     jsr OSBYTE                                                        ; 230e: 20 f4 ff     .. ; Read the font zone addresses high 3 (or Master: graphics foreground, ECF number or zero) (VDU variable X=106)
-    stx mem                                                           ; 2311: 86 70       .p ; X is the font zone addresses high 3 (or Master: graphics foreground, ECF number or zero)
-    sty mem                                                           ; 2313: 84 70       .p ; Y is the font zone addresses high 4 (or Master: graphics background, ECF number or zero)
+    stx mem                                                           ; 2311: 86 70       .p  ; X is the font zone addresses high 3 (or Master: graphics foreground, ECF number or zero)
+    sty mem                                                           ; 2313: 84 70       .p  ; Y is the font zone addresses high 4 (or Master: graphics background, ECF number or zero)
     lda #osbyte_read_vdu_variable                                     ; 2315: a9 a0       ..
     ldx #&6b ; 'k'                                                    ; 2317: a2 6b       .k
     ldy #0                                                            ; 2319: a0 00       ..
     jsr OSBYTE                                                        ; 231b: 20 f4 ff     .. ; Read the font zone addresses high 4 (or Master: graphics background, ECF number or zero) (VDU variable X=107)
-    stx mem                                                           ; 231e: 86 70       .p ; X is the font zone addresses high 4 (or Master: graphics background, ECF number or zero)
-    sty mem                                                           ; 2320: 84 70       .p ; Y is the font zone addresses high 5 (or Master: Bit 7 - flag for cursor in column 81)
+    stx mem                                                           ; 231e: 86 70       .p  ; X is the font zone addresses high 4 (or Master: graphics background, ECF number or zero)
+    sty mem                                                           ; 2320: 84 70       .p  ; Y is the font zone addresses high 5 (or Master: Bit 7 - flag for cursor in column 81)
     lda #osbyte_read_vdu_variable                                     ; 2322: a9 a0       ..
     ldx #&6c ; 'l'                                                    ; 2324: a2 6c       .l
     ldy #0                                                            ; 2326: a0 00       ..
     jsr OSBYTE                                                        ; 2328: 20 f4 ff     .. ; Read the font zone addresses high 5 (or Master: Bit 7 - flag for cursor in column 81) (VDU variable X=108)
-    stx mem                                                           ; 232b: 86 70       .p ; X is the font zone addresses high 5 (or Master: Bit 7 - flag for cursor in column 81)
-    sty mem                                                           ; 232d: 84 70       .p ; Y is the font zone addresses high 6 (or Master: GCOL setting of graphics foreground colour)
+    stx mem                                                           ; 232b: 86 70       .p  ; X is the font zone addresses high 5 (or Master: Bit 7 - flag for cursor in column 81)
+    sty mem                                                           ; 232d: 84 70       .p  ; Y is the font zone addresses high 6 (or Master: GCOL setting of graphics foreground colour)
     lda #osbyte_read_vdu_variable                                     ; 232f: a9 a0       ..
     ldx #&6d ; 'm'                                                    ; 2331: a2 6d       .m
     ldy #0                                                            ; 2333: a0 00       ..
     jsr OSBYTE                                                        ; 2335: 20 f4 ff     .. ; Read the font zone addresses high 6 (or Master: GCOL setting of graphics foreground colour) (VDU variable X=109)
-    stx mem                                                           ; 2338: 86 70       .p ; X is the font zone addresses high 6 (or Master: GCOL setting of graphics foreground colour)
-    sty mem                                                           ; 233a: 84 70       .p ; Y is the font zone addresses high 7 (or Master: GCOL setting of graphics background colour)
+    stx mem                                                           ; 2338: 86 70       .p  ; X is the font zone addresses high 6 (or Master: GCOL setting of graphics foreground colour)
+    sty mem                                                           ; 233a: 84 70       .p  ; Y is the font zone addresses high 7 (or Master: GCOL setting of graphics background colour)
     lda #osbyte_read_vdu_variable                                     ; 233c: a9 a0       ..
     ldx #&6e ; 'n'                                                    ; 233e: a2 6e       .n
     ldy #0                                                            ; 2340: a0 00       ..
     jsr OSBYTE                                                        ; 2342: 20 f4 ff     .. ; Read the font zone addresses high 7 (or Master: GCOL setting of graphics background colour) (VDU variable X=110)
-    stx mem                                                           ; 2345: 86 70       .p ; X is the font zone addresses high 7 (or Master: GCOL setting of graphics background colour)
-    sty mem                                                           ; 2347: 84 70       .p ; Y is the physical colour for logical colour 0
+    stx mem                                                           ; 2345: 86 70       .p  ; X is the font zone addresses high 7 (or Master: GCOL setting of graphics background colour)
+    sty mem                                                           ; 2347: 84 70       .p  ; Y is the physical colour for logical colour 0
     lda #osbyte_read_vdu_variable                                     ; 2349: a9 a0       ..
     ldx #&6f ; 'o'                                                    ; 234b: a2 6f       .o
     ldy #0                                                            ; 234d: a0 00       ..
     jsr OSBYTE                                                        ; 234f: 20 f4 ff     .. ; Read the physical colour for logical colour 0 (VDU variable X=111)
-    stx mem                                                           ; 2352: 86 70       .p ; X is the physical colour for logical colour 0
-    sty mem                                                           ; 2354: 84 70       .p ; Y is the physical colour for logical colour 1
+    stx mem                                                           ; 2352: 86 70       .p  ; X is the physical colour for logical colour 0
+    sty mem                                                           ; 2354: 84 70       .p  ; Y is the physical colour for logical colour 1
     lda #osbyte_read_vdu_variable                                     ; 2356: a9 a0       ..
     ldx #&70 ; 'p'                                                    ; 2358: a2 70       .p
     ldy #0                                                            ; 235a: a0 00       ..
     jsr OSBYTE                                                        ; 235c: 20 f4 ff     .. ; Read the physical colour for logical colour 1 (VDU variable X=112)
-    stx mem                                                           ; 235f: 86 70       .p ; X is the physical colour for logical colour 1
-    sty mem                                                           ; 2361: 84 70       .p ; Y is the physical colour for logical colour 2
+    stx mem                                                           ; 235f: 86 70       .p  ; X is the physical colour for logical colour 1
+    sty mem                                                           ; 2361: 84 70       .p  ; Y is the physical colour for logical colour 2
     lda #osbyte_read_vdu_variable                                     ; 2363: a9 a0       ..
     ldx #&71 ; 'q'                                                    ; 2365: a2 71       .q
     ldy #0                                                            ; 2367: a0 00       ..
     jsr OSBYTE                                                        ; 2369: 20 f4 ff     .. ; Read the physical colour for logical colour 2 (VDU variable X=113)
-    stx mem                                                           ; 236c: 86 70       .p ; X is the physical colour for logical colour 2
-    sty mem                                                           ; 236e: 84 70       .p ; Y is the physical colour for logical colour 3
+    stx mem                                                           ; 236c: 86 70       .p  ; X is the physical colour for logical colour 2
+    sty mem                                                           ; 236e: 84 70       .p  ; Y is the physical colour for logical colour 3
     lda #osbyte_read_vdu_variable                                     ; 2370: a9 a0       ..
     ldx #&72 ; 'r'                                                    ; 2372: a2 72       .r
     ldy #0                                                            ; 2374: a0 00       ..
     jsr OSBYTE                                                        ; 2376: 20 f4 ff     .. ; Read the physical colour for logical colour 3 (VDU variable X=114)
-    stx mem                                                           ; 2379: 86 70       .p ; X is the physical colour for logical colour 3
-    sty mem                                                           ; 237b: 84 70       .p ; Y is the physical colour for logical colour 4
+    stx mem                                                           ; 2379: 86 70       .p  ; X is the physical colour for logical colour 3
+    sty mem                                                           ; 237b: 84 70       .p  ; Y is the physical colour for logical colour 4
     lda #osbyte_read_vdu_variable                                     ; 237d: a9 a0       ..
     ldx #&73 ; 's'                                                    ; 237f: a2 73       .s
     ldy #0                                                            ; 2381: a0 00       ..
     jsr OSBYTE                                                        ; 2383: 20 f4 ff     .. ; Read the physical colour for logical colour 4 (VDU variable X=115)
-    stx mem                                                           ; 2386: 86 70       .p ; X is the physical colour for logical colour 4
-    sty mem                                                           ; 2388: 84 70       .p ; Y is the physical colour for logical colour 5
+    stx mem                                                           ; 2386: 86 70       .p  ; X is the physical colour for logical colour 4
+    sty mem                                                           ; 2388: 84 70       .p  ; Y is the physical colour for logical colour 5
     lda #osbyte_read_vdu_variable                                     ; 238a: a9 a0       ..
     ldx #&74 ; 't'                                                    ; 238c: a2 74       .t
     ldy #0                                                            ; 238e: a0 00       ..
     jsr OSBYTE                                                        ; 2390: 20 f4 ff     .. ; Read the physical colour for logical colour 5 (VDU variable X=116)
-    stx mem                                                           ; 2393: 86 70       .p ; X is the physical colour for logical colour 5
-    sty mem                                                           ; 2395: 84 70       .p ; Y is the physical colour for logical colour 6
+    stx mem                                                           ; 2393: 86 70       .p  ; X is the physical colour for logical colour 5
+    sty mem                                                           ; 2395: 84 70       .p  ; Y is the physical colour for logical colour 6
     lda #osbyte_read_vdu_variable                                     ; 2397: a9 a0       ..
     ldx #&75 ; 'u'                                                    ; 2399: a2 75       .u
     ldy #0                                                            ; 239b: a0 00       ..
     jsr OSBYTE                                                        ; 239d: 20 f4 ff     .. ; Read the physical colour for logical colour 6 (VDU variable X=117)
-    stx mem                                                           ; 23a0: 86 70       .p ; X is the physical colour for logical colour 6
-    sty mem                                                           ; 23a2: 84 70       .p ; Y is the physical colour for logical colour 7
+    stx mem                                                           ; 23a0: 86 70       .p  ; X is the physical colour for logical colour 6
+    sty mem                                                           ; 23a2: 84 70       .p  ; Y is the physical colour for logical colour 7
     lda #osbyte_read_vdu_variable                                     ; 23a4: a9 a0       ..
     ldx #&76 ; 'v'                                                    ; 23a6: a2 76       .v
     ldy #0                                                            ; 23a8: a0 00       ..
     jsr OSBYTE                                                        ; 23aa: 20 f4 ff     .. ; Read the physical colour for logical colour 7 (VDU variable X=118)
-    stx mem                                                           ; 23ad: 86 70       .p ; X is the physical colour for logical colour 7
-    sty mem                                                           ; 23af: 84 70       .p ; Y is the physical colour for logical colour 8
+    stx mem                                                           ; 23ad: 86 70       .p  ; X is the physical colour for logical colour 7
+    sty mem                                                           ; 23af: 84 70       .p  ; Y is the physical colour for logical colour 8
     lda #osbyte_read_vdu_variable                                     ; 23b1: a9 a0       ..
     ldx #&77 ; 'w'                                                    ; 23b3: a2 77       .w
     ldy #0                                                            ; 23b5: a0 00       ..
     jsr OSBYTE                                                        ; 23b7: 20 f4 ff     .. ; Read the physical colour for logical colour 8 (VDU variable X=119)
-    stx mem                                                           ; 23ba: 86 70       .p ; X is the physical colour for logical colour 8
-    sty mem                                                           ; 23bc: 84 70       .p ; Y is the physical colour for logical colour 9
+    stx mem                                                           ; 23ba: 86 70       .p  ; X is the physical colour for logical colour 8
+    sty mem                                                           ; 23bc: 84 70       .p  ; Y is the physical colour for logical colour 9
     lda #osbyte_read_vdu_variable                                     ; 23be: a9 a0       ..
     ldx #&78 ; 'x'                                                    ; 23c0: a2 78       .x
     ldy #0                                                            ; 23c2: a0 00       ..
     jsr OSBYTE                                                        ; 23c4: 20 f4 ff     .. ; Read the physical colour for logical colour 9 (VDU variable X=120)
-    stx mem                                                           ; 23c7: 86 70       .p ; X is the physical colour for logical colour 9
-    sty mem                                                           ; 23c9: 84 70       .p ; Y is the physical colour for logical colour 10
+    stx mem                                                           ; 23c7: 86 70       .p  ; X is the physical colour for logical colour 9
+    sty mem                                                           ; 23c9: 84 70       .p  ; Y is the physical colour for logical colour 10
     lda #osbyte_read_vdu_variable                                     ; 23cb: a9 a0       ..
     ldx #&79 ; 'y'                                                    ; 23cd: a2 79       .y
     ldy #0                                                            ; 23cf: a0 00       ..
     jsr OSBYTE                                                        ; 23d1: 20 f4 ff     .. ; Read the physical colour for logical colour 10 (VDU variable X=121)
-    stx mem                                                           ; 23d4: 86 70       .p ; X is the physical colour for logical colour 10
-    sty mem                                                           ; 23d6: 84 70       .p ; Y is the physical colour for logical colour 11
+    stx mem                                                           ; 23d4: 86 70       .p  ; X is the physical colour for logical colour 10
+    sty mem                                                           ; 23d6: 84 70       .p  ; Y is the physical colour for logical colour 11
     lda #osbyte_read_vdu_variable                                     ; 23d8: a9 a0       ..
     ldx #&7a ; 'z'                                                    ; 23da: a2 7a       .z
     ldy #0                                                            ; 23dc: a0 00       ..
     jsr OSBYTE                                                        ; 23de: 20 f4 ff     .. ; Read the physical colour for logical colour 11 (VDU variable X=122)
-    stx mem                                                           ; 23e1: 86 70       .p ; X is the physical colour for logical colour 11
-    sty mem                                                           ; 23e3: 84 70       .p ; Y is the physical colour for logical colour 12
+    stx mem                                                           ; 23e1: 86 70       .p  ; X is the physical colour for logical colour 11
+    sty mem                                                           ; 23e3: 84 70       .p  ; Y is the physical colour for logical colour 12
     lda #osbyte_read_vdu_variable                                     ; 23e5: a9 a0       ..
     ldx #&7b ; '{'                                                    ; 23e7: a2 7b       .{
     ldy #0                                                            ; 23e9: a0 00       ..
     jsr OSBYTE                                                        ; 23eb: 20 f4 ff     .. ; Read the physical colour for logical colour 12 (VDU variable X=123)
-    stx mem                                                           ; 23ee: 86 70       .p ; X is the physical colour for logical colour 12
-    sty mem                                                           ; 23f0: 84 70       .p ; Y is the physical colour for logical colour 13
+    stx mem                                                           ; 23ee: 86 70       .p  ; X is the physical colour for logical colour 12
+    sty mem                                                           ; 23f0: 84 70       .p  ; Y is the physical colour for logical colour 13
     lda #osbyte_read_vdu_variable                                     ; 23f2: a9 a0       ..
     ldx #&7c ; '|'                                                    ; 23f4: a2 7c       .|
     ldy #0                                                            ; 23f6: a0 00       ..
     jsr OSBYTE                                                        ; 23f8: 20 f4 ff     .. ; Read the physical colour for logical colour 13 (VDU variable X=124)
-    stx mem                                                           ; 23fb: 86 70       .p ; X is the physical colour for logical colour 13
-    sty mem                                                           ; 23fd: 84 70       .p ; Y is the physical colour for logical colour 14
+    stx mem                                                           ; 23fb: 86 70       .p  ; X is the physical colour for logical colour 13
+    sty mem                                                           ; 23fd: 84 70       .p  ; Y is the physical colour for logical colour 14
     lda #osbyte_read_vdu_variable                                     ; 23ff: a9 a0       ..
     ldx #&7d ; '}'                                                    ; 2401: a2 7d       .}
     ldy #0                                                            ; 2403: a0 00       ..
     jsr OSBYTE                                                        ; 2405: 20 f4 ff     .. ; Read the physical colour for logical colour 14 (VDU variable X=125)
-    stx mem                                                           ; 2408: 86 70       .p ; X is the physical colour for logical colour 14
-    sty mem                                                           ; 240a: 84 70       .p ; Y is the physical colour for logical colour 15
+    stx mem                                                           ; 2408: 86 70       .p  ; X is the physical colour for logical colour 14
+    sty mem                                                           ; 240a: 84 70       .p  ; Y is the physical colour for logical colour 15
     lda #osbyte_read_vdu_variable                                     ; 240c: a9 a0       ..
     ldx #&7e ; '~'                                                    ; 240e: a2 7e       .~
     ldy #0                                                            ; 2410: a0 00       ..
     jsr OSBYTE                                                        ; 2412: 20 f4 ff     .. ; Read the physical colour for logical colour 15 (VDU variable X=126)
-    stx mem                                                           ; 2415: 86 70       .p ; X is the physical colour for logical colour 15
-    sty mem                                                           ; 2417: 84 70       .p ; Y is the unused byte
+    stx mem                                                           ; 2415: 86 70       .p  ; X is the physical colour for logical colour 15
+    sty mem                                                           ; 2417: 84 70       .p  ; Y is the unused byte
     lda #osbyte_read_vdu_variable                                     ; 2419: a9 a0       ..
     ldx #&7f                                                          ; 241b: a2 7f       ..
     ldy #0                                                            ; 241d: a0 00       ..
     jsr OSBYTE                                                        ; 241f: 20 f4 ff     .. ; Read the unused byte (VDU variable X=127)
-    stx mem                                                           ; 2422: 86 70       .p ; X is the unused byte
-    sty mem                                                           ; 2424: 84 70       .p ; Y is the next VDU variable
+    stx mem                                                           ; 2422: 86 70       .p  ; X is the unused byte
+    sty mem                                                           ; 2424: 84 70       .p  ; Y is the next VDU variable
 
     ; *************** Test OSBYTE 0xa1 ***************
     lda #osbyte_read_cmos_ram                                         ; 2426: a9 a1       ..
     ldx mem                                                           ; 2428: a6 70       .p
     jsr OSBYTE                                                        ; 242a: 20 f4 ff     .. ; Master and Compact: Read CMOS RAM/EEPROM byte X
-    cpy #0                                                            ; 242d: c0 00       .. ; Y is the byte value read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 242d: c0 00       ..  ; Y is the byte value read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 242f: a9 a1       ..
     ldx #0                                                            ; 2431: a2 00       ..
     jsr OSBYTE                                                        ; 2433: 20 f4 ff     .. ; Master and Compact: Read the 'Econet station number' byte from CMOS RAM/EEPROM (X=0)
-    cpy #0                                                            ; 2436: c0 00       .. ; Y is the 'Econet station number' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2436: c0 00       ..  ; Y is the 'Econet station number' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2438: a9 a1       ..
     ldx #1                                                            ; 243a: a2 01       ..
     jsr OSBYTE                                                        ; 243c: 20 f4 ff     .. ; Master and Compact: Read the 'File server station number' byte from CMOS RAM/EEPROM (X=1)
-    cpy #0                                                            ; 243f: c0 00       .. ; Y is the 'File server station number' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 243f: c0 00       ..  ; Y is the 'File server station number' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2441: a9 a1       ..
     ldx #2                                                            ; 2443: a2 02       ..
     jsr OSBYTE                                                        ; 2445: 20 f4 ff     .. ; Master and Compact: Read the 'File server network number' byte from CMOS RAM/EEPROM (X=2)
-    cpy #0                                                            ; 2448: c0 00       .. ; Y is the 'File server network number' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2448: c0 00       ..  ; Y is the 'File server network number' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 244a: a9 a1       ..
     ldx #3                                                            ; 244c: a2 03       ..
     jsr OSBYTE                                                        ; 244e: 20 f4 ff     .. ; Master and Compact: Read the 'Printer server station number' byte from CMOS RAM/EEPROM (X=3)
-    cpy #0                                                            ; 2451: c0 00       .. ; Y is the 'Printer server station number' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2451: c0 00       ..  ; Y is the 'Printer server station number' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2453: a9 a1       ..
     ldx #4                                                            ; 2455: a2 04       ..
     jsr OSBYTE                                                        ; 2457: 20 f4 ff     .. ; Master and Compact: Read the 'Printer server network number' byte from CMOS RAM/EEPROM (X=4)
-    cpy #0                                                            ; 245a: c0 00       .. ; Y is the 'Printer server network number' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 245a: c0 00       ..  ; Y is the 'Printer server network number' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 245c: a9 a1       ..
     ldx #5                                                            ; 245e: a2 05       ..
     jsr OSBYTE                                                        ; 2460: 20 f4 ff     .. ; Master and Compact: Read the 'Default filing system/ROM number' byte from CMOS RAM/EEPROM (X=5)
-    cpy #0                                                            ; 2463: c0 00       .. ; Y is the 'Default filing system/ROM number' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2463: c0 00       ..  ; Y is the 'Default filing system/ROM number' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2465: a9 a1       ..
     ldx #6                                                            ; 2467: a2 06       ..
     jsr OSBYTE                                                        ; 2469: 20 f4 ff     .. ; Master and Compact: Read the 'ROMs 0-7 (1=inserted; 0=unplugged)' byte from CMOS RAM/EEPROM (X=6)
-    cpy #0                                                            ; 246c: c0 00       .. ; Y is the 'ROMs 0-7 (1=inserted; 0=unplugged)' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 246c: c0 00       ..  ; Y is the 'ROMs 0-7 (1=inserted; 0=unplugged)' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 246e: a9 a1       ..
     ldx #7                                                            ; 2470: a2 07       ..
     jsr OSBYTE                                                        ; 2472: 20 f4 ff     .. ; Master and Compact: Read the 'ROMs 8-15 (1=inserted; 0=unplugged)' byte from CMOS RAM/EEPROM (X=7)
-    cpy #0                                                            ; 2475: c0 00       .. ; Y is the 'ROMs 8-15 (1=inserted; 0=unplugged)' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2475: c0 00       ..  ; Y is the 'ROMs 8-15 (1=inserted; 0=unplugged)' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2477: a9 a1       ..
     ldx #8                                                            ; 2479: a2 08       ..
     jsr OSBYTE                                                        ; 247b: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to EDIT ROM' byte from CMOS RAM/EEPROM (X=8)
-    cpy #0                                                            ; 247e: c0 00       .. ; Y is the 'Allocated to EDIT ROM' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 247e: c0 00       ..  ; Y is the 'Allocated to EDIT ROM' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2480: a9 a1       ..
     ldx #9                                                            ; 2482: a2 09       ..
     jsr OSBYTE                                                        ; 2484: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for telecommunications applications' byte from CMOS RAM/EEPROM (X=9)
-    cpy #0                                                            ; 2487: c0 00       .. ; Y is the 'Reserved for telecommunications applications' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2487: c0 00       ..  ; Y is the 'Reserved for telecommunications applications' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2489: a9 a1       ..
     ldx #&0a                                                          ; 248b: a2 0a       ..
     jsr OSBYTE                                                        ; 248d: 20 f4 ff     .. ; Master and Compact: Read the 'Default screen mode, interlace, *TV settings' byte from CMOS RAM/EEPROM (X=10)
-    cpy #0                                                            ; 2490: c0 00       .. ; Y is the 'Default screen mode, interlace, *TV settings' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2490: c0 00       ..  ; Y is the 'Default screen mode, interlace, *TV settings' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2492: a9 a1       ..
     ldx #&0b                                                          ; 2494: a2 0b       ..
     jsr OSBYTE                                                        ; 2496: 20 f4 ff     .. ; Master and Compact: Read the 'Default FDRIVE; default CAPS; load DIR at switch on; floppy/hard disc' byte from CMOS RAM/EEPROM (X=11)
-    cpy #0                                                            ; 2499: c0 00       .. ; Y is the 'Default FDRIVE; default CAPS; load DIR at switch on; floppy/hard disc' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2499: c0 00       ..  ; Y is the 'Default FDRIVE; default CAPS; load DIR at switch on; floppy/hard disc' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 249b: a9 a1       ..
     ldx #&0c                                                          ; 249d: a2 0c       ..
     jsr OSBYTE                                                        ; 249f: 20 f4 ff     .. ; Master and Compact: Read the 'Keyboard auto-repeat delay' byte from CMOS RAM/EEPROM (X=12)
-    cpy #0                                                            ; 24a2: c0 00       .. ; Y is the 'Keyboard auto-repeat delay' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24a2: c0 00       ..  ; Y is the 'Keyboard auto-repeat delay' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24a4: a9 a1       ..
     ldx #&0d                                                          ; 24a6: a2 0d       ..
     jsr OSBYTE                                                        ; 24a8: 20 f4 ff     .. ; Master and Compact: Read the 'Keyboard auto-repeat rate' byte from CMOS RAM/EEPROM (X=13)
-    cpy #0                                                            ; 24ab: c0 00       .. ; Y is the 'Keyboard auto-repeat rate' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24ab: c0 00       ..  ; Y is the 'Keyboard auto-repeat rate' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24ad: a9 a1       ..
     ldx #&0e                                                          ; 24af: a2 0e       ..
     jsr OSBYTE                                                        ; 24b1: 20 f4 ff     .. ; Master and Compact: Read the 'Printer ignore character' byte from CMOS RAM/EEPROM (X=14)
-    cpy #0                                                            ; 24b4: c0 00       .. ; Y is the 'Printer ignore character' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24b4: c0 00       ..  ; Y is the 'Printer ignore character' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24b6: a9 a1       ..
     ldx #&0f                                                          ; 24b8: a2 0f       ..
     jsr OSBYTE                                                        ; 24ba: 20 f4 ff     .. ; Master and Compact: Read the 'Default tube select/printer ignore character/serial baud rate/FX5 setting' byte from CMOS RAM/EEPROM (X=15)
-    cpy #0                                                            ; 24bd: c0 00       .. ; Y is the 'Default tube select/printer ignore character/serial baud rate/FX5 setting' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24bd: c0 00       ..  ; Y is the 'Default tube select/printer ignore character/serial baud rate/FX5 setting' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24bf: a9 a1       ..
     ldx #&10                                                          ; 24c1: a2 10       ..
     jsr OSBYTE                                                        ; 24c3: 20 f4 ff     .. ; Master and Compact: Read the 'Default beep loudness; internal/external TUBE/scrolling flag/boot mode/serial data format' byte from CMOS RAM/EEPROM (X=16)
-    cpy #0                                                            ; 24c6: c0 00       .. ; Y is the 'Default beep loudness; internal/external TUBE/scrolling flag/boot mode/serial data format' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24c6: c0 00       ..  ; Y is the 'Default beep loudness; internal/external TUBE/scrolling flag/boot mode/serial data format' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24c8: a9 a1       ..
     ldx #&11                                                          ; 24ca: a2 11       ..
     jsr OSBYTE                                                        ; 24cc: 20 f4 ff     .. ; Master and Compact: Read the 'ANFS settings' byte from CMOS RAM/EEPROM (X=17)
-    cpy #0                                                            ; 24cf: c0 00       .. ; Y is the 'ANFS settings' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24cf: c0 00       ..  ; Y is the 'ANFS settings' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24d1: a9 a1       ..
     ldx #&12                                                          ; 24d3: a2 12       ..
     jsr OSBYTE                                                        ; 24d5: 20 f4 ff     .. ; Master and Compact: Read the 'Master Compact joystick settings' byte from CMOS RAM/EEPROM (X=18)
-    cpy #0                                                            ; 24d8: c0 00       .. ; Y is the 'Master Compact joystick settings' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24d8: c0 00       ..  ; Y is the 'Master Compact joystick settings' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24da: a9 a1       ..
     ldx #&13                                                          ; 24dc: a2 13       ..
     jsr OSBYTE                                                        ; 24de: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved' byte from CMOS RAM/EEPROM (X=19)
-    cpy #0                                                            ; 24e1: c0 00       .. ; Y is the 'Reserved' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24e1: c0 00       ..  ; Y is the 'Reserved' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24e3: a9 a1       ..
     ldx #&14                                                          ; 24e5: a2 14       ..
     jsr OSBYTE                                                        ; 24e7: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #0' byte from CMOS RAM/EEPROM (X=20)
-    cpy #0                                                            ; 24ea: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #0' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24ea: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #0' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24ec: a9 a1       ..
     ldx #&15                                                          ; 24ee: a2 15       ..
     jsr OSBYTE                                                        ; 24f0: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #1' byte from CMOS RAM/EEPROM (X=21)
-    cpy #0                                                            ; 24f3: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #1' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24f3: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #1' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24f5: a9 a1       ..
     ldx #&16                                                          ; 24f7: a2 16       ..
     jsr OSBYTE                                                        ; 24f9: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #2' byte from CMOS RAM/EEPROM (X=22)
-    cpy #0                                                            ; 24fc: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #2' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 24fc: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #2' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 24fe: a9 a1       ..
     ldx #&17                                                          ; 2500: a2 17       ..
     jsr OSBYTE                                                        ; 2502: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #3' byte from CMOS RAM/EEPROM (X=23)
-    cpy #0                                                            ; 2505: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #3' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2505: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #3' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2507: a9 a1       ..
     ldx #&18                                                          ; 2509: a2 18       ..
     jsr OSBYTE                                                        ; 250b: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #4' byte from CMOS RAM/EEPROM (X=24)
-    cpy #0                                                            ; 250e: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #4' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 250e: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #4' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2510: a9 a1       ..
     ldx #&19                                                          ; 2512: a2 19       ..
     jsr OSBYTE                                                        ; 2514: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #5' byte from CMOS RAM/EEPROM (X=25)
-    cpy #0                                                            ; 2517: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #5' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2517: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #5' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2519: a9 a1       ..
     ldx #&1a                                                          ; 251b: a2 1a       ..
     jsr OSBYTE                                                        ; 251d: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #6' byte from CMOS RAM/EEPROM (X=26)
-    cpy #0                                                            ; 2520: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #6' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2520: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #6' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2522: a9 a1       ..
     ldx #&1b                                                          ; 2524: a2 1b       ..
     jsr OSBYTE                                                        ; 2526: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #7' byte from CMOS RAM/EEPROM (X=27)
-    cpy #0                                                            ; 2529: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #7' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2529: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #7' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 252b: a9 a1       ..
     ldx #&1c                                                          ; 252d: a2 1c       ..
     jsr OSBYTE                                                        ; 252f: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #8' byte from CMOS RAM/EEPROM (X=28)
-    cpy #0                                                            ; 2532: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #8' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2532: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #8' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2534: a9 a1       ..
     ldx #&1d                                                          ; 2536: a2 1d       ..
     jsr OSBYTE                                                        ; 2538: 20 f4 ff     .. ; Master and Compact: Read the 'Reserved for new Acorn firmware/filing systems #9' byte from CMOS RAM/EEPROM (X=29)
-    cpy #0                                                            ; 253b: c0 00       .. ; Y is the 'Reserved for new Acorn firmware/filing systems #9' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 253b: c0 00       ..  ; Y is the 'Reserved for new Acorn firmware/filing systems #9' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 253d: a9 a1       ..
     ldx #&1e                                                          ; 253f: a2 1e       ..
     jsr OSBYTE                                                        ; 2541: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 0' byte from CMOS RAM/EEPROM (X=30)
-    cpy #0                                                            ; 2544: c0 00       .. ; Y is the 'Allocated to ROM 0' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2544: c0 00       ..  ; Y is the 'Allocated to ROM 0' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2546: a9 a1       ..
     ldx #&1f                                                          ; 2548: a2 1f       ..
     jsr OSBYTE                                                        ; 254a: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 1' byte from CMOS RAM/EEPROM (X=31)
-    cpy #0                                                            ; 254d: c0 00       .. ; Y is the 'Allocated to ROM 1' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 254d: c0 00       ..  ; Y is the 'Allocated to ROM 1' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 254f: a9 a1       ..
     ldx #&20 ; ' '                                                    ; 2551: a2 20       .
     jsr OSBYTE                                                        ; 2553: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 2' byte from CMOS RAM/EEPROM (X=32)
-    cpy #0                                                            ; 2556: c0 00       .. ; Y is the 'Allocated to ROM 2' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2556: c0 00       ..  ; Y is the 'Allocated to ROM 2' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2558: a9 a1       ..
     ldx #&21 ; '!'                                                    ; 255a: a2 21       .!
     jsr OSBYTE                                                        ; 255c: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 3' byte from CMOS RAM/EEPROM (X=33)
-    cpy #0                                                            ; 255f: c0 00       .. ; Y is the 'Allocated to ROM 3' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 255f: c0 00       ..  ; Y is the 'Allocated to ROM 3' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2561: a9 a1       ..
     ldx #&22 ; '"'                                                    ; 2563: a2 22       ."
     jsr OSBYTE                                                        ; 2565: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 4' byte from CMOS RAM/EEPROM (X=34)
-    cpy #0                                                            ; 2568: c0 00       .. ; Y is the 'Allocated to ROM 4' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2568: c0 00       ..  ; Y is the 'Allocated to ROM 4' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 256a: a9 a1       ..
     ldx #&23 ; '#'                                                    ; 256c: a2 23       .#
     jsr OSBYTE                                                        ; 256e: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 5' byte from CMOS RAM/EEPROM (X=35)
-    cpy #0                                                            ; 2571: c0 00       .. ; Y is the 'Allocated to ROM 5' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2571: c0 00       ..  ; Y is the 'Allocated to ROM 5' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2573: a9 a1       ..
     ldx #&24 ; '$'                                                    ; 2575: a2 24       .$
     jsr OSBYTE                                                        ; 2577: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 6' byte from CMOS RAM/EEPROM (X=36)
-    cpy #0                                                            ; 257a: c0 00       .. ; Y is the 'Allocated to ROM 6' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 257a: c0 00       ..  ; Y is the 'Allocated to ROM 6' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 257c: a9 a1       ..
     ldx #&25 ; '%'                                                    ; 257e: a2 25       .%
     jsr OSBYTE                                                        ; 2580: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 7' byte from CMOS RAM/EEPROM (X=37)
-    cpy #0                                                            ; 2583: c0 00       .. ; Y is the 'Allocated to ROM 7' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2583: c0 00       ..  ; Y is the 'Allocated to ROM 7' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2585: a9 a1       ..
     ldx #&26 ; '&'                                                    ; 2587: a2 26       .&
     jsr OSBYTE                                                        ; 2589: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 8' byte from CMOS RAM/EEPROM (X=38)
-    cpy #0                                                            ; 258c: c0 00       .. ; Y is the 'Allocated to ROM 8' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 258c: c0 00       ..  ; Y is the 'Allocated to ROM 8' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 258e: a9 a1       ..
     ldx #&27 ; '''                                                    ; 2590: a2 27       .'
     jsr OSBYTE                                                        ; 2592: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 9' byte from CMOS RAM/EEPROM (X=39)
-    cpy #0                                                            ; 2595: c0 00       .. ; Y is the 'Allocated to ROM 9' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 2595: c0 00       ..  ; Y is the 'Allocated to ROM 9' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 2597: a9 a1       ..
     ldx #&28 ; '('                                                    ; 2599: a2 28       .(
     jsr OSBYTE                                                        ; 259b: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 10' byte from CMOS RAM/EEPROM (X=40)
-    cpy #0                                                            ; 259e: c0 00       .. ; Y is the 'Allocated to ROM 10' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 259e: c0 00       ..  ; Y is the 'Allocated to ROM 10' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25a0: a9 a1       ..
     ldx #&29 ; ')'                                                    ; 25a2: a2 29       .)
     jsr OSBYTE                                                        ; 25a4: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 11' byte from CMOS RAM/EEPROM (X=41)
-    cpy #0                                                            ; 25a7: c0 00       .. ; Y is the 'Allocated to ROM 11' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25a7: c0 00       ..  ; Y is the 'Allocated to ROM 11' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25a9: a9 a1       ..
     ldx #&2a ; '*'                                                    ; 25ab: a2 2a       .*
     jsr OSBYTE                                                        ; 25ad: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 12' byte from CMOS RAM/EEPROM (X=42)
-    cpy #0                                                            ; 25b0: c0 00       .. ; Y is the 'Allocated to ROM 12' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25b0: c0 00       ..  ; Y is the 'Allocated to ROM 12' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25b2: a9 a1       ..
     ldx #&2b ; '+'                                                    ; 25b4: a2 2b       .+
     jsr OSBYTE                                                        ; 25b6: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 13' byte from CMOS RAM/EEPROM (X=43)
-    cpy #0                                                            ; 25b9: c0 00       .. ; Y is the 'Allocated to ROM 13' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25b9: c0 00       ..  ; Y is the 'Allocated to ROM 13' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25bb: a9 a1       ..
     ldx #&2c ; ','                                                    ; 25bd: a2 2c       .,
     jsr OSBYTE                                                        ; 25bf: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 14' byte from CMOS RAM/EEPROM (X=44)
-    cpy #0                                                            ; 25c2: c0 00       .. ; Y is the 'Allocated to ROM 14' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25c2: c0 00       ..  ; Y is the 'Allocated to ROM 14' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25c4: a9 a1       ..
     ldx #&2d ; '-'                                                    ; 25c6: a2 2d       .-
     jsr OSBYTE                                                        ; 25c8: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated to ROM 15' byte from CMOS RAM/EEPROM (X=45)
-    cpy #0                                                            ; 25cb: c0 00       .. ; Y is the 'Allocated to ROM 15' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25cb: c0 00       ..  ; Y is the 'Allocated to ROM 15' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25cd: a9 a1       ..
     ldx #&2e ; '.'                                                    ; 25cf: a2 2e       ..
     jsr OSBYTE                                                        ; 25d1: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated for user applications #0' byte from CMOS RAM/EEPROM (X=46)
-    cpy #0                                                            ; 25d4: c0 00       .. ; Y is the 'Allocated for user applications #0' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25d4: c0 00       ..  ; Y is the 'Allocated for user applications #0' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25d6: a9 a1       ..
     ldx #&2f ; '/'                                                    ; 25d8: a2 2f       ./
     jsr OSBYTE                                                        ; 25da: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated for user applications #1' byte from CMOS RAM/EEPROM (X=47)
-    cpy #0                                                            ; 25dd: c0 00       .. ; Y is the 'Allocated for user applications #1' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25dd: c0 00       ..  ; Y is the 'Allocated for user applications #1' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25df: a9 a1       ..
     ldx #&30 ; '0'                                                    ; 25e1: a2 30       .0
     jsr OSBYTE                                                        ; 25e3: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated for user applications #2' byte from CMOS RAM/EEPROM (X=48)
-    cpy #0                                                            ; 25e6: c0 00       .. ; Y is the 'Allocated for user applications #2' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25e6: c0 00       ..  ; Y is the 'Allocated for user applications #2' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25e8: a9 a1       ..
     ldx #&31 ; '1'                                                    ; 25ea: a2 31       .1
     jsr OSBYTE                                                        ; 25ec: 20 f4 ff     .. ; Master and Compact: Read the 'Allocated for user applications #3' byte from CMOS RAM/EEPROM (X=49)
-    cpy #0                                                            ; 25ef: c0 00       .. ; Y is the 'Allocated for user applications #3' byte read from the CMOS RAM/EEPROM
+    cpy #0                                                            ; 25ef: c0 00       ..  ; Y is the 'Allocated for user applications #3' byte read from the CMOS RAM/EEPROM
     lda #osbyte_read_cmos_ram                                         ; 25f1: a9 a1       ..
     ldx #&ff                                                          ; 25f3: a2 ff       ..
     jsr OSBYTE                                                        ; 25f5: 20 f4 ff     .. ; Compact only: Determine if the EEPROM is 128 or 256 bytes long (X=255)
-    cpy #0                                                            ; 25f8: c0 00       .. ; Y=0 means no EEPROM present; Y=127 means 128 byte EEPROM; Y=255 means 256 byte EEPROM present
+    cpy #0                                                            ; 25f8: c0 00       ..  ; Y=0 means no EEPROM present; Y=127 means 128 byte EEPROM; Y=255 means 256 byte EEPROM present
 
     ; *************** Test OSBYTE 0xa2 ***************
     lda #osbyte_write_cmos_ram                                        ; 25fa: a9 a2       ..
@@ -3111,8 +3111,8 @@ OSBYTE  = &fff4
 
     ; *************** Test OSBYTE 0xa4 ***************
     lda #osbyte_check_for_6502_code                                   ; 27e0: a9 a4       ..
-    ldx #0                                                            ; 27e2: a2 00       .. ; X=Address of ROM format code to check (low byte)
-    ldy #0                                                            ; 27e4: a0 00       .. ; Y=Address of ROM format code to check (high byte)
+    ldx #0                                                            ; 27e2: a2 00       ..  ; X=Address of ROM format code to check (low byte)
+    ldy #0                                                            ; 27e4: a0 00       ..  ; Y=Address of ROM format code to check (high byte)
     jsr OSBYTE                                                        ; 27e6: 20 f4 ff     .. ; Check for 6502 code in paged ROM format, where XY is the address to check.
 
     ; *************** Test OSBYTE 0xa5 ***************
@@ -3120,1254 +3120,1254 @@ OSBYTE  = &fff4
     ldx #0                                                            ; 27eb: a2 00       ..
     ldy #0                                                            ; 27ed: a0 00       ..
     jsr OSBYTE                                                        ; 27ef: 20 f4 ff     .. ; Read output cursor position (Master only)
-    stx mem                                                           ; 27f2: 86 70       .p ; X=text cursor 'POS'
-    sty mem                                                           ; 27f4: 84 70       .p ; Y=text cursor 'VPOS'
+    stx mem                                                           ; 27f2: 86 70       .p  ; X=text cursor 'POS'
+    sty mem                                                           ; 27f4: 84 70       .p  ; Y=text cursor 'VPOS'
 
     ; *************** Test OSBYTE 0xa6 ***************
     lda #osbyte_read_os_variables_low                                 ; 27f6: a9 a6       ..
     ldx #&2a ; '*'                                                    ; 27f8: a2 2a       .*
     ldy #0                                                            ; 27fa: a0 00       ..
     jsr OSBYTE                                                        ; 27fc: 20 f4 ff     .. ; Write address of OS variables, value X=42
-    stx mem                                                           ; 27ff: 86 70       .p ; X=old value of address of OS variables (low byte)
-    sty mem                                                           ; 2801: 84 70       .p ; Y=value of address of OS variables (high byte)
+    stx mem                                                           ; 27ff: 86 70       .p  ; X=old value of address of OS variables (low byte)
+    sty mem                                                           ; 2801: 84 70       .p  ; Y=value of address of OS variables (high byte)
     lda #osbyte_read_os_variables_low                                 ; 2803: a9 a6       ..
     ldx #0                                                            ; 2805: a2 00       ..
     ldy #&ff                                                          ; 2807: a0 ff       ..
     jsr OSBYTE                                                        ; 2809: 20 f4 ff     .. ; Read address of OS variables
-    stx mem                                                           ; 280c: 86 70       .p ; X=value of address of OS variables (low byte)
-    sty mem                                                           ; 280e: 84 70       .p ; Y=value of address of OS variables (high byte)
+    stx mem                                                           ; 280c: 86 70       .p  ; X=value of address of OS variables (low byte)
+    sty mem                                                           ; 280e: 84 70       .p  ; Y=value of address of OS variables (high byte)
 
     ; *************** Test OSBYTE 0xa7 ***************
     lda #osbyte_read_os_variables_high                                ; 2810: a9 a7       ..
     ldx #&2a ; '*'                                                    ; 2812: a2 2a       .*
     ldy #0                                                            ; 2814: a0 00       ..
     jsr OSBYTE                                                        ; 2816: 20 f4 ff     .. ; Write address of OS variables (high byte), value X=42
-    stx mem                                                           ; 2819: 86 70       .p ; X=old value of address of OS variables (high byte)
-    sty mem                                                           ; 281b: 84 70       .p ; Y=value of address of ROM pointer table (low byte)
+    stx mem                                                           ; 2819: 86 70       .p  ; X=old value of address of OS variables (high byte)
+    sty mem                                                           ; 281b: 84 70       .p  ; Y=value of address of ROM pointer table (low byte)
     lda #osbyte_read_os_variables_high                                ; 281d: a9 a7       ..
     ldx #0                                                            ; 281f: a2 00       ..
     ldy #&ff                                                          ; 2821: a0 ff       ..
     jsr OSBYTE                                                        ; 2823: 20 f4 ff     .. ; Read address of OS variables (high byte)
-    stx mem                                                           ; 2826: 86 70       .p ; X=value of address of OS variables (high byte)
-    sty mem                                                           ; 2828: 84 70       .p ; Y=value of address of ROM pointer table (low byte)
+    stx mem                                                           ; 2826: 86 70       .p  ; X=value of address of OS variables (high byte)
+    sty mem                                                           ; 2828: 84 70       .p  ; Y=value of address of ROM pointer table (low byte)
 
     ; *************** Test OSBYTE 0xa8 ***************
     lda #osbyte_read_rom_ptr_table_low                                ; 282a: a9 a8       ..
     ldx #&2a ; '*'                                                    ; 282c: a2 2a       .*
     ldy #0                                                            ; 282e: a0 00       ..
     jsr OSBYTE                                                        ; 2830: 20 f4 ff     .. ; Write address of ROM pointer table, value X=42
-    stx mem                                                           ; 2833: 86 70       .p ; X=old value of address of ROM pointer table (low byte)
-    sty mem                                                           ; 2835: 84 70       .p ; Y=value of address of ROM pointer table (high byte)
+    stx mem                                                           ; 2833: 86 70       .p  ; X=old value of address of ROM pointer table (low byte)
+    sty mem                                                           ; 2835: 84 70       .p  ; Y=value of address of ROM pointer table (high byte)
     lda #osbyte_read_rom_ptr_table_low                                ; 2837: a9 a8       ..
     ldx #0                                                            ; 2839: a2 00       ..
     ldy #&ff                                                          ; 283b: a0 ff       ..
     jsr OSBYTE                                                        ; 283d: 20 f4 ff     .. ; Read address of ROM pointer table
-    stx mem                                                           ; 2840: 86 70       .p ; X=value of address of ROM pointer table (low byte)
-    sty mem                                                           ; 2842: 84 70       .p ; Y=value of address of ROM pointer table (high byte)
+    stx mem                                                           ; 2840: 86 70       .p  ; X=value of address of ROM pointer table (low byte)
+    sty mem                                                           ; 2842: 84 70       .p  ; Y=value of address of ROM pointer table (high byte)
 
     ; *************** Test OSBYTE 0xa9 ***************
     lda #osbyte_read_rom_ptr_table_high                               ; 2844: a9 a9       ..
     ldx #&2a ; '*'                                                    ; 2846: a2 2a       .*
     ldy #0                                                            ; 2848: a0 00       ..
     jsr OSBYTE                                                        ; 284a: 20 f4 ff     .. ; Write address of ROM pointer table (high byte), value X=42
-    stx mem                                                           ; 284d: 86 70       .p ; X=old value of address of ROM pointer table (high byte)
-    sty mem                                                           ; 284f: 84 70       .p ; Y=value of address of ROM info table (low byte)
+    stx mem                                                           ; 284d: 86 70       .p  ; X=old value of address of ROM pointer table (high byte)
+    sty mem                                                           ; 284f: 84 70       .p  ; Y=value of address of ROM info table (low byte)
     lda #osbyte_read_rom_ptr_table_high                               ; 2851: a9 a9       ..
     ldx #0                                                            ; 2853: a2 00       ..
     ldy #&ff                                                          ; 2855: a0 ff       ..
     jsr OSBYTE                                                        ; 2857: 20 f4 ff     .. ; Read address of ROM pointer table (high byte)
-    stx mem                                                           ; 285a: 86 70       .p ; X=value of address of ROM pointer table (high byte)
-    sty mem                                                           ; 285c: 84 70       .p ; Y=value of address of ROM info table (low byte)
+    stx mem                                                           ; 285a: 86 70       .p  ; X=value of address of ROM pointer table (high byte)
+    sty mem                                                           ; 285c: 84 70       .p  ; Y=value of address of ROM info table (low byte)
 
     ; *************** Test OSBYTE 0xaa ***************
     lda #osbyte_read_rom_info_table_low                               ; 285e: a9 aa       ..
     ldx #&2a ; '*'                                                    ; 2860: a2 2a       .*
     ldy #0                                                            ; 2862: a0 00       ..
     jsr OSBYTE                                                        ; 2864: 20 f4 ff     .. ; Write address of ROM info table, value X=42
-    stx mem                                                           ; 2867: 86 70       .p ; X=old value of address of ROM info table (low byte)
-    sty mem                                                           ; 2869: 84 70       .p ; Y=value of address of ROM info table (high byte)
+    stx mem                                                           ; 2867: 86 70       .p  ; X=old value of address of ROM info table (low byte)
+    sty mem                                                           ; 2869: 84 70       .p  ; Y=value of address of ROM info table (high byte)
     lda #osbyte_read_rom_info_table_low                               ; 286b: a9 aa       ..
     ldx #0                                                            ; 286d: a2 00       ..
     ldy #&ff                                                          ; 286f: a0 ff       ..
     jsr OSBYTE                                                        ; 2871: 20 f4 ff     .. ; Read address of ROM info table
-    stx mem                                                           ; 2874: 86 70       .p ; X=value of address of ROM info table (low byte)
-    sty mem                                                           ; 2876: 84 70       .p ; Y=value of address of ROM info table (high byte)
+    stx mem                                                           ; 2874: 86 70       .p  ; X=value of address of ROM info table (low byte)
+    sty mem                                                           ; 2876: 84 70       .p  ; Y=value of address of ROM info table (high byte)
 
     ; *************** Test OSBYTE 0xab ***************
     lda #osbyte_read_rom_info_table_high                              ; 2878: a9 ab       ..
     ldx #&2a ; '*'                                                    ; 287a: a2 2a       .*
     ldy #0                                                            ; 287c: a0 00       ..
     jsr OSBYTE                                                        ; 287e: 20 f4 ff     .. ; Write address of ROM info table (high byte), value X=42
-    stx mem                                                           ; 2881: 86 70       .p ; X=old value of address of ROM info table (high byte)
-    sty mem                                                           ; 2883: 84 70       .p ; Y=value of keyboard translation table address (low byte)
+    stx mem                                                           ; 2881: 86 70       .p  ; X=old value of address of ROM info table (high byte)
+    sty mem                                                           ; 2883: 84 70       .p  ; Y=value of keyboard translation table address (low byte)
     lda #osbyte_read_rom_info_table_high                              ; 2885: a9 ab       ..
     ldx #0                                                            ; 2887: a2 00       ..
     ldy #&ff                                                          ; 2889: a0 ff       ..
     jsr OSBYTE                                                        ; 288b: 20 f4 ff     .. ; Read address of ROM info table (high byte)
-    stx mem                                                           ; 288e: 86 70       .p ; X=value of address of ROM info table (high byte)
-    sty mem                                                           ; 2890: 84 70       .p ; Y=value of keyboard translation table address (low byte)
+    stx mem                                                           ; 288e: 86 70       .p  ; X=value of address of ROM info table (high byte)
+    sty mem                                                           ; 2890: 84 70       .p  ; Y=value of keyboard translation table address (low byte)
 
     ; *************** Test OSBYTE 0xac ***************
     lda #osbyte_read_key_table_low                                    ; 2892: a9 ac       ..
     ldx #&2a ; '*'                                                    ; 2894: a2 2a       .*
     ldy #0                                                            ; 2896: a0 00       ..
     jsr OSBYTE                                                        ; 2898: 20 f4 ff     .. ; Write keyboard translation table address, value X=42
-    stx mem                                                           ; 289b: 86 70       .p ; X=old value of keyboard translation table address (low byte)
-    sty mem                                                           ; 289d: 84 70       .p ; Y=value of keyboard translation table address (high byte)
+    stx mem                                                           ; 289b: 86 70       .p  ; X=old value of keyboard translation table address (low byte)
+    sty mem                                                           ; 289d: 84 70       .p  ; Y=value of keyboard translation table address (high byte)
     lda #osbyte_read_key_table_low                                    ; 289f: a9 ac       ..
     ldx #0                                                            ; 28a1: a2 00       ..
     ldy #&ff                                                          ; 28a3: a0 ff       ..
     jsr OSBYTE                                                        ; 28a5: 20 f4 ff     .. ; Read keyboard translation table address
-    stx mem                                                           ; 28a8: 86 70       .p ; X=value of keyboard translation table address (low byte)
-    sty mem                                                           ; 28aa: 84 70       .p ; Y=value of keyboard translation table address (high byte)
+    stx mem                                                           ; 28a8: 86 70       .p  ; X=value of keyboard translation table address (low byte)
+    sty mem                                                           ; 28aa: 84 70       .p  ; Y=value of keyboard translation table address (high byte)
 
     ; *************** Test OSBYTE 0xad ***************
     lda #osbyte_read_key_table_high                                   ; 28ac: a9 ad       ..
     ldx #&2a ; '*'                                                    ; 28ae: a2 2a       .*
     ldy #0                                                            ; 28b0: a0 00       ..
     jsr OSBYTE                                                        ; 28b2: 20 f4 ff     .. ; Write keyboard translation table address (high byte), value X=42
-    stx mem                                                           ; 28b5: 86 70       .p ; X=old value of keyboard translation table address (high byte)
-    sty mem                                                           ; 28b7: 84 70       .p ; Y=value of address of VDU variables (low byte)
+    stx mem                                                           ; 28b5: 86 70       .p  ; X=old value of keyboard translation table address (high byte)
+    sty mem                                                           ; 28b7: 84 70       .p  ; Y=value of address of VDU variables (low byte)
     lda #osbyte_read_key_table_high                                   ; 28b9: a9 ad       ..
     ldx #0                                                            ; 28bb: a2 00       ..
     ldy #&ff                                                          ; 28bd: a0 ff       ..
     jsr OSBYTE                                                        ; 28bf: 20 f4 ff     .. ; Read keyboard translation table address (high byte)
-    stx mem                                                           ; 28c2: 86 70       .p ; X=value of keyboard translation table address (high byte)
-    sty mem                                                           ; 28c4: 84 70       .p ; Y=value of address of VDU variables (low byte)
+    stx mem                                                           ; 28c2: 86 70       .p  ; X=value of keyboard translation table address (high byte)
+    sty mem                                                           ; 28c4: 84 70       .p  ; Y=value of address of VDU variables (low byte)
 
     ; *************** Test OSBYTE 0xae ***************
     lda #osbyte_read_vdu_variables_low                                ; 28c6: a9 ae       ..
     ldx #&2a ; '*'                                                    ; 28c8: a2 2a       .*
     ldy #0                                                            ; 28ca: a0 00       ..
     jsr OSBYTE                                                        ; 28cc: 20 f4 ff     .. ; Write address of VDU variables, value X=42
-    stx mem                                                           ; 28cf: 86 70       .p ; X=old value of address of VDU variables (low byte)
-    sty mem                                                           ; 28d1: 84 70       .p ; Y=value of address of VDU variables (high byte)
+    stx mem                                                           ; 28cf: 86 70       .p  ; X=old value of address of VDU variables (low byte)
+    sty mem                                                           ; 28d1: 84 70       .p  ; Y=value of address of VDU variables (high byte)
     lda #osbyte_read_vdu_variables_low                                ; 28d3: a9 ae       ..
     ldx #0                                                            ; 28d5: a2 00       ..
     ldy #&ff                                                          ; 28d7: a0 ff       ..
     jsr OSBYTE                                                        ; 28d9: 20 f4 ff     .. ; Read address of VDU variables
-    stx mem                                                           ; 28dc: 86 70       .p ; X=value of address of VDU variables (low byte)
-    sty mem                                                           ; 28de: 84 70       .p ; Y=value of address of VDU variables (high byte)
+    stx mem                                                           ; 28dc: 86 70       .p  ; X=value of address of VDU variables (low byte)
+    sty mem                                                           ; 28de: 84 70       .p  ; Y=value of address of VDU variables (high byte)
 
     ; *************** Test OSBYTE 0xaf ***************
     lda #osbyte_read_vdu_variables_high                               ; 28e0: a9 af       ..
     ldx #&2a ; '*'                                                    ; 28e2: a2 2a       .*
     ldy #0                                                            ; 28e4: a0 00       ..
     jsr OSBYTE                                                        ; 28e6: 20 f4 ff     .. ; Write address of VDU variables (high byte), value X=42
-    stx mem                                                           ; 28e9: 86 70       .p ; X=old value of address of VDU variables (high byte)
-    sty mem                                                           ; 28eb: 84 70       .p ; Y=value of CFS timeout counter in 50ths of a second
+    stx mem                                                           ; 28e9: 86 70       .p  ; X=old value of address of VDU variables (high byte)
+    sty mem                                                           ; 28eb: 84 70       .p  ; Y=value of CFS timeout counter in 50ths of a second
     lda #osbyte_read_vdu_variables_high                               ; 28ed: a9 af       ..
     ldx #0                                                            ; 28ef: a2 00       ..
     ldy #&ff                                                          ; 28f1: a0 ff       ..
     jsr OSBYTE                                                        ; 28f3: 20 f4 ff     .. ; Read address of VDU variables (high byte)
-    stx mem                                                           ; 28f6: 86 70       .p ; X=value of address of VDU variables (high byte)
-    sty mem                                                           ; 28f8: 84 70       .p ; Y=value of CFS timeout counter in 50ths of a second
+    stx mem                                                           ; 28f6: 86 70       .p  ; X=value of address of VDU variables (high byte)
+    sty mem                                                           ; 28f8: 84 70       .p  ; Y=value of CFS timeout counter in 50ths of a second
 
     ; *************** Test OSBYTE 0xb0 ***************
     lda #osbyte_read_write_cfs_timeout                                ; 28fa: a9 b0       ..
     ldx #&2a ; '*'                                                    ; 28fc: a2 2a       .*
     ldy #0                                                            ; 28fe: a0 00       ..
     jsr OSBYTE                                                        ; 2900: 20 f4 ff     .. ; Write CFS timeout counter in 50ths of a second, value X=42
-    stx mem                                                           ; 2903: 86 70       .p ; X=old value of CFS timeout counter in 50ths of a second
-    sty mem                                                           ; 2905: 84 70       .p ; Y=value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
+    stx mem                                                           ; 2903: 86 70       .p  ; X=old value of CFS timeout counter in 50ths of a second
+    sty mem                                                           ; 2905: 84 70       .p  ; Y=value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
     lda #osbyte_read_write_cfs_timeout                                ; 2907: a9 b0       ..
     ldx #0                                                            ; 2909: a2 00       ..
     ldy #&ff                                                          ; 290b: a0 ff       ..
     jsr OSBYTE                                                        ; 290d: 20 f4 ff     .. ; Read CFS timeout counter in 50ths of a second
-    stx mem                                                           ; 2910: 86 70       .p ; X=value of CFS timeout counter in 50ths of a second
-    sty mem                                                           ; 2912: 84 70       .p ; Y=value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
+    stx mem                                                           ; 2910: 86 70       .p  ; X=value of CFS timeout counter in 50ths of a second
+    sty mem                                                           ; 2912: 84 70       .p  ; Y=value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
 
     ; *************** Test OSBYTE 0xb1 ***************
     lda #osbyte_read_write_input_source                               ; 2914: a9 b1       ..
     ldx #&2a ; '*'                                                    ; 2916: a2 2a       .*
     ldy #0                                                            ; 2918: a0 00       ..
     jsr OSBYTE                                                        ; 291a: 20 f4 ff     .. ; Write input source flag (0=keyboard buffer, 1=RS423 input buffer), value X=42
-    stx mem                                                           ; 291d: 86 70       .p ; X=old value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
-    sty mem                                                           ; 291f: 84 70       .p ; Y=value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
+    stx mem                                                           ; 291d: 86 70       .p  ; X=old value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
+    sty mem                                                           ; 291f: 84 70       .p  ; Y=value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
     lda #osbyte_read_write_input_source                               ; 2921: a9 b1       ..
     ldx #0                                                            ; 2923: a2 00       ..
     ldy #&ff                                                          ; 2925: a0 ff       ..
     jsr OSBYTE                                                        ; 2927: 20 f4 ff     .. ; Read input source flag (0=keyboard buffer, 1=RS423 input buffer)
-    stx mem                                                           ; 292a: 86 70       .p ; X=value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
-    sty mem                                                           ; 292c: 84 70       .p ; Y=value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
+    stx mem                                                           ; 292a: 86 70       .p  ; X=value of input source flag (0=keyboard buffer, 1=RS423 input buffer)
+    sty mem                                                           ; 292c: 84 70       .p  ; Y=value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
 
     ; *************** Test OSBYTE 0xb2 ***************
     lda #osbyte_read_write_keyboard_semaphore                         ; 292e: a9 b2       ..
     ldx #&2a ; '*'                                                    ; 2930: a2 2a       .*
     ldy #0                                                            ; 2932: a0 00       ..
     jsr OSBYTE                                                        ; 2934: 20 f4 ff     .. ; Write keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled), value X=42
-    stx mem                                                           ; 2937: 86 70       .p ; X=old value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
-    sty mem                                                           ; 2939: 84 70       .p ; Y=value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
+    stx mem                                                           ; 2937: 86 70       .p  ; X=old value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
+    sty mem                                                           ; 2939: 84 70       .p  ; Y=value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
     lda #osbyte_read_write_keyboard_semaphore                         ; 293b: a9 b2       ..
     ldx #0                                                            ; 293d: a2 00       ..
     ldy #&ff                                                          ; 293f: a0 ff       ..
     jsr OSBYTE                                                        ; 2941: 20 f4 ff     .. ; Read keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
-    stx mem                                                           ; 2944: 86 70       .p ; X=value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
-    sty mem                                                           ; 2946: 84 70       .p ; Y=value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
+    stx mem                                                           ; 2944: 86 70       .p  ; X=value of keyboard semaphore (0=keyboard interrupts are ignored, 255=interrupts enabled)
+    sty mem                                                           ; 2946: 84 70       .p  ; Y=value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
 
     ; *************** Test OSBYTE 0xb3 ***************
     lda #osbyte_read_write_primary_oshwm                              ; 2948: a9 b3       ..
     ldx #&2a ; '*'                                                    ; 294a: a2 2a       .*
     ldy #0                                                            ; 294c: a0 00       ..
     jsr OSBYTE                                                        ; 294e: 20 f4 ff     .. ; Write Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore), value X=42
-    stx mem                                                           ; 2951: 86 70       .p ; X=old value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
-    sty mem                                                           ; 2953: 84 70       .p ; Y=value of OSHWM
+    stx mem                                                           ; 2951: 86 70       .p  ; X=old value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
+    sty mem                                                           ; 2953: 84 70       .p  ; Y=value of OSHWM
     lda #osbyte_read_write_primary_oshwm                              ; 2955: a9 b3       ..
     ldx #0                                                            ; 2957: a2 00       ..
     ldy #&ff                                                          ; 2959: a0 ff       ..
     jsr OSBYTE                                                        ; 295b: 20 f4 ff     .. ; Read Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
-    stx mem                                                           ; 295e: 86 70       .p ; X=value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
-    sty mem                                                           ; 2960: 84 70       .p ; Y=value of OSHWM
+    stx mem                                                           ; 295e: 86 70       .p  ; X=value of Primary OSHWM (or for Master, the paged ROM 100Hz polling semaphore)
+    sty mem                                                           ; 2960: 84 70       .p  ; Y=value of OSHWM
 
     ; *************** Test OSBYTE 0xb4 ***************
     lda #osbyte_read_write_current_oshwm                              ; 2962: a9 b4       ..
     ldx #&2a ; '*'                                                    ; 2964: a2 2a       .*
     ldy #0                                                            ; 2966: a0 00       ..
     jsr OSBYTE                                                        ; 2968: 20 f4 ff     .. ; Write OSHWM, value X=42
-    stx mem                                                           ; 296b: 86 70       .p ; X=old value of OSHWM
-    sty mem                                                           ; 296d: 84 70       .p ; Y=value of RS423 mode (0 or 1)
+    stx mem                                                           ; 296b: 86 70       .p  ; X=old value of OSHWM
+    sty mem                                                           ; 296d: 84 70       .p  ; Y=value of RS423 mode (0 or 1)
     lda #osbyte_read_write_current_oshwm                              ; 296f: a9 b4       ..
     ldx #0                                                            ; 2971: a2 00       ..
     ldy #&ff                                                          ; 2973: a0 ff       ..
     jsr OSBYTE                                                        ; 2975: 20 f4 ff     .. ; Read OSHWM
-    stx mem                                                           ; 2978: 86 70       .p ; X=value of OSHWM
-    sty mem                                                           ; 297a: 84 70       .p ; Y=value of RS423 mode (0 or 1)
+    stx mem                                                           ; 2978: 86 70       .p  ; X=value of OSHWM
+    sty mem                                                           ; 297a: 84 70       .p  ; Y=value of RS423 mode (0 or 1)
 
     ; *************** Test OSBYTE 0xb5 ***************
     lda #osbyte_read_write_serial_mode                                ; 297c: a9 b5       ..
     ldx #&2a ; '*'                                                    ; 297e: a2 2a       .*
     ldy #0                                                            ; 2980: a0 00       ..
     jsr OSBYTE                                                        ; 2982: 20 f4 ff     .. ; Write RS423 mode (0 or 1), value X=42
-    stx mem                                                           ; 2985: 86 70       .p ; X=old value of RS423 mode (0 or 1)
-    sty mem                                                           ; 2987: 84 70       .p ; Y=value of character explosion state
+    stx mem                                                           ; 2985: 86 70       .p  ; X=old value of RS423 mode (0 or 1)
+    sty mem                                                           ; 2987: 84 70       .p  ; Y=value of character explosion state
     lda #osbyte_read_write_serial_mode                                ; 2989: a9 b5       ..
     ldx #0                                                            ; 298b: a2 00       ..
     ldy #&ff                                                          ; 298d: a0 ff       ..
     jsr OSBYTE                                                        ; 298f: 20 f4 ff     .. ; Read RS423 mode (0 or 1)
-    stx mem                                                           ; 2992: 86 70       .p ; X=value of RS423 mode (0 or 1)
-    sty mem                                                           ; 2994: 84 70       .p ; Y=value of character explosion state
+    stx mem                                                           ; 2992: 86 70       .p  ; X=value of RS423 mode (0 or 1)
+    sty mem                                                           ; 2994: 84 70       .p  ; Y=value of character explosion state
 
     ; *************** Test OSBYTE 0xb6 ***************
     lda #osbyte_read_char_explode_state                               ; 2996: a9 b6       ..
     ldx #&2a ; '*'                                                    ; 2998: a2 2a       .*
     ldy #0                                                            ; 299a: a0 00       ..
     jsr OSBYTE                                                        ; 299c: 20 f4 ff     .. ; Write character explosion state, value X=42
-    stx mem                                                           ; 299f: 86 70       .p ; X=old value of character explosion state
-    sty mem                                                           ; 29a1: 84 70       .p ; Y=value of CFS/RFS switch (0=CFS, 2=RFS)
+    stx mem                                                           ; 299f: 86 70       .p  ; X=old value of character explosion state
+    sty mem                                                           ; 29a1: 84 70       .p  ; Y=value of CFS/RFS switch (0=CFS, 2=RFS)
     lda #osbyte_read_char_explode_state                               ; 29a3: a9 b6       ..
     ldx #0                                                            ; 29a5: a2 00       ..
     ldy #&ff                                                          ; 29a7: a0 ff       ..
     jsr OSBYTE                                                        ; 29a9: 20 f4 ff     .. ; Read character explosion state
-    stx mem                                                           ; 29ac: 86 70       .p ; X=value of character explosion state
-    sty mem                                                           ; 29ae: 84 70       .p ; Y=value of CFS/RFS switch (0=CFS, 2=RFS)
+    stx mem                                                           ; 29ac: 86 70       .p  ; X=value of character explosion state
+    sty mem                                                           ; 29ae: 84 70       .p  ; Y=value of CFS/RFS switch (0=CFS, 2=RFS)
 
     ; *************** Test OSBYTE 0xb7 ***************
     lda #osbyte_read_write_cfs_rfs_switch                             ; 29b0: a9 b7       ..
     ldx #&2a ; '*'                                                    ; 29b2: a2 2a       .*
     ldy #0                                                            ; 29b4: a0 00       ..
     jsr OSBYTE                                                        ; 29b6: 20 f4 ff     .. ; Write CFS/RFS switch (0=CFS, 2=RFS), value X=42
-    stx mem                                                           ; 29b9: 86 70       .p ; X=old value of CFS/RFS switch (0=CFS, 2=RFS)
-    sty mem                                                           ; 29bb: 84 70       .p ; Y=value of OS copies of video ULA control register
+    stx mem                                                           ; 29b9: 86 70       .p  ; X=old value of CFS/RFS switch (0=CFS, 2=RFS)
+    sty mem                                                           ; 29bb: 84 70       .p  ; Y=value of OS copies of video ULA control register
     lda #osbyte_read_write_cfs_rfs_switch                             ; 29bd: a9 b7       ..
     ldx #0                                                            ; 29bf: a2 00       ..
     ldy #&ff                                                          ; 29c1: a0 ff       ..
     jsr OSBYTE                                                        ; 29c3: 20 f4 ff     .. ; Read CFS/RFS switch (0=CFS, 2=RFS)
-    stx mem                                                           ; 29c6: 86 70       .p ; X=value of CFS/RFS switch (0=CFS, 2=RFS)
-    sty mem                                                           ; 29c8: 84 70       .p ; Y=value of OS copies of video ULA control register
+    stx mem                                                           ; 29c6: 86 70       .p  ; X=value of CFS/RFS switch (0=CFS, 2=RFS)
+    sty mem                                                           ; 29c8: 84 70       .p  ; Y=value of OS copies of video ULA control register
 
     ; *************** Test OSBYTE 0xb8 ***************
     lda #osbyte_read_video_ula_control                                ; 29ca: a9 b8       ..
     ldx #&2a ; '*'                                                    ; 29cc: a2 2a       .*
     ldy #0                                                            ; 29ce: a0 00       ..
     jsr OSBYTE                                                        ; 29d0: 20 f4 ff     .. ; Write OS copies of video ULA control register, value X=42
-    stx mem                                                           ; 29d3: 86 70       .p ; X=old value of OS copies of video ULA control register
-    sty mem                                                           ; 29d5: 84 70       .p ; Y=value of OS copies of video ULA palette register
+    stx mem                                                           ; 29d3: 86 70       .p  ; X=old value of OS copies of video ULA control register
+    sty mem                                                           ; 29d5: 84 70       .p  ; Y=value of OS copies of video ULA palette register
     lda #osbyte_read_video_ula_control                                ; 29d7: a9 b8       ..
     ldx #0                                                            ; 29d9: a2 00       ..
     ldy #&ff                                                          ; 29db: a0 ff       ..
     jsr OSBYTE                                                        ; 29dd: 20 f4 ff     .. ; Read OS copies of video ULA control register
-    stx mem                                                           ; 29e0: 86 70       .p ; X=value of OS copies of video ULA control register
-    sty mem                                                           ; 29e2: 84 70       .p ; Y=value of OS copies of video ULA palette register
+    stx mem                                                           ; 29e0: 86 70       .p  ; X=value of OS copies of video ULA control register
+    sty mem                                                           ; 29e2: 84 70       .p  ; Y=value of OS copies of video ULA palette register
 
     ; *************** Test OSBYTE 0xb9 ***************
     lda #osbyte_read_video_ula_palette                                ; 29e4: a9 b9       ..
     ldx #&2a ; '*'                                                    ; 29e6: a2 2a       .*
     ldy #0                                                            ; 29e8: a0 00       ..
     jsr OSBYTE                                                        ; 29ea: 20 f4 ff     .. ; Write OS copies of video ULA palette register, value X=42
-    stx mem                                                           ; 29ed: 86 70       .p ; X=old value of OS copies of video ULA palette register
-    sty mem                                                           ; 29ef: 84 70       .p ; Y=value of ROM number active at last BRK
+    stx mem                                                           ; 29ed: 86 70       .p  ; X=old value of OS copies of video ULA palette register
+    sty mem                                                           ; 29ef: 84 70       .p  ; Y=value of ROM number active at last BRK
     lda #osbyte_read_video_ula_palette                                ; 29f1: a9 b9       ..
     ldx #0                                                            ; 29f3: a2 00       ..
     ldy #&ff                                                          ; 29f5: a0 ff       ..
     jsr OSBYTE                                                        ; 29f7: 20 f4 ff     .. ; Read OS copies of video ULA palette register
-    stx mem                                                           ; 29fa: 86 70       .p ; X=value of OS copies of video ULA palette register
-    sty mem                                                           ; 29fc: 84 70       .p ; Y=value of ROM number active at last BRK
+    stx mem                                                           ; 29fa: 86 70       .p  ; X=value of OS copies of video ULA palette register
+    sty mem                                                           ; 29fc: 84 70       .p  ; Y=value of ROM number active at last BRK
 
     ; *************** Test OSBYTE 0xba ***************
     lda #osbyte_read_write_rom_bank_at_last_brk                       ; 29fe: a9 ba       ..
     ldx #&2a ; '*'                                                    ; 2a00: a2 2a       .*
     ldy #0                                                            ; 2a02: a0 00       ..
     jsr OSBYTE                                                        ; 2a04: 20 f4 ff     .. ; Write ROM number active at last BRK, value X=42
-    stx mem                                                           ; 2a07: 86 70       .p ; X=old value of ROM number active at last BRK
-    sty mem                                                           ; 2a09: 84 70       .p ; Y=value of BASIC ROM number
+    stx mem                                                           ; 2a07: 86 70       .p  ; X=old value of ROM number active at last BRK
+    sty mem                                                           ; 2a09: 84 70       .p  ; Y=value of BASIC ROM number
     lda #osbyte_read_write_rom_bank_at_last_brk                       ; 2a0b: a9 ba       ..
     ldx #0                                                            ; 2a0d: a2 00       ..
     ldy #&ff                                                          ; 2a0f: a0 ff       ..
     jsr OSBYTE                                                        ; 2a11: 20 f4 ff     .. ; Read ROM number active at last BRK
-    stx mem                                                           ; 2a14: 86 70       .p ; X=value of ROM number active at last BRK
-    sty mem                                                           ; 2a16: 84 70       .p ; Y=value of BASIC ROM number
+    stx mem                                                           ; 2a14: 86 70       .p  ; X=value of ROM number active at last BRK
+    sty mem                                                           ; 2a16: 84 70       .p  ; Y=value of BASIC ROM number
 
     ; *************** Test OSBYTE 0xbb ***************
     lda #osbyte_read_write_basic_rom_bank                             ; 2a18: a9 bb       ..
     ldx #&2a ; '*'                                                    ; 2a1a: a2 2a       .*
     ldy #0                                                            ; 2a1c: a0 00       ..
     jsr OSBYTE                                                        ; 2a1e: 20 f4 ff     .. ; Write BASIC ROM number, value X=42
-    stx mem                                                           ; 2a21: 86 70       .p ; X=old value of BASIC ROM number
-    sty mem                                                           ; 2a23: 84 70       .p ; Y=value of current ADC channel
+    stx mem                                                           ; 2a21: 86 70       .p  ; X=old value of BASIC ROM number
+    sty mem                                                           ; 2a23: 84 70       .p  ; Y=value of current ADC channel
     lda #osbyte_read_write_basic_rom_bank                             ; 2a25: a9 bb       ..
     ldx #0                                                            ; 2a27: a2 00       ..
     ldy #&ff                                                          ; 2a29: a0 ff       ..
     jsr OSBYTE                                                        ; 2a2b: 20 f4 ff     .. ; Read BASIC ROM number
-    stx mem                                                           ; 2a2e: 86 70       .p ; X=value of BASIC ROM number
-    sty mem                                                           ; 2a30: 84 70       .p ; Y=value of current ADC channel
+    stx mem                                                           ; 2a2e: 86 70       .p  ; X=value of BASIC ROM number
+    sty mem                                                           ; 2a30: 84 70       .p  ; Y=value of current ADC channel
 
     ; *************** Test OSBYTE 0xbc ***************
     lda #osbyte_read_current_adc_channel                              ; 2a32: a9 bc       ..
     ldx #&2a ; '*'                                                    ; 2a34: a2 2a       .*
     ldy #0                                                            ; 2a36: a0 00       ..
     jsr OSBYTE                                                        ; 2a38: 20 f4 ff     .. ; Write current ADC channel, value X=42
-    stx mem                                                           ; 2a3b: 86 70       .p ; X=old value of current ADC channel
-    sty mem                                                           ; 2a3d: 84 70       .p ; Y=value of maximum ADC channel number
+    stx mem                                                           ; 2a3b: 86 70       .p  ; X=old value of current ADC channel
+    sty mem                                                           ; 2a3d: 84 70       .p  ; Y=value of maximum ADC channel number
     lda #osbyte_read_current_adc_channel                              ; 2a3f: a9 bc       ..
     ldx #0                                                            ; 2a41: a2 00       ..
     ldy #&ff                                                          ; 2a43: a0 ff       ..
     jsr OSBYTE                                                        ; 2a45: 20 f4 ff     .. ; Read current ADC channel
-    stx mem                                                           ; 2a48: 86 70       .p ; X=value of current ADC channel
-    sty mem                                                           ; 2a4a: 84 70       .p ; Y=value of maximum ADC channel number
+    stx mem                                                           ; 2a48: 86 70       .p  ; X=value of current ADC channel
+    sty mem                                                           ; 2a4a: 84 70       .p  ; Y=value of maximum ADC channel number
 
     ; *************** Test OSBYTE 0xbd ***************
     lda #osbyte_read_write_max_adc_channel                            ; 2a4c: a9 bd       ..
     ldx #&2a ; '*'                                                    ; 2a4e: a2 2a       .*
     ldy #0                                                            ; 2a50: a0 00       ..
     jsr OSBYTE                                                        ; 2a52: 20 f4 ff     .. ; Write maximum ADC channel number, value X=42
-    stx mem                                                           ; 2a55: 86 70       .p ; X=old value of maximum ADC channel number
-    sty mem                                                           ; 2a57: 84 70       .p ; Y=value of ADC conversion type
+    stx mem                                                           ; 2a55: 86 70       .p  ; X=old value of maximum ADC channel number
+    sty mem                                                           ; 2a57: 84 70       .p  ; Y=value of ADC conversion type
     lda #osbyte_read_write_max_adc_channel                            ; 2a59: a9 bd       ..
     ldx #0                                                            ; 2a5b: a2 00       ..
     ldy #&ff                                                          ; 2a5d: a0 ff       ..
     jsr OSBYTE                                                        ; 2a5f: 20 f4 ff     .. ; Read maximum ADC channel number
-    stx mem                                                           ; 2a62: 86 70       .p ; X=value of maximum ADC channel number
-    sty mem                                                           ; 2a64: 84 70       .p ; Y=value of ADC conversion type
+    stx mem                                                           ; 2a62: 86 70       .p  ; X=value of maximum ADC channel number
+    sty mem                                                           ; 2a64: 84 70       .p  ; Y=value of ADC conversion type
 
     ; *************** Test OSBYTE 0xbe ***************
     lda #osbyte_read_write_adc_conversion_type                        ; 2a66: a9 be       ..
     ldx #&2a ; '*'                                                    ; 2a68: a2 2a       .*
     ldy #0                                                            ; 2a6a: a0 00       ..
     jsr OSBYTE                                                        ; 2a6c: 20 f4 ff     .. ; Write ADC conversion type, value X=42
-    stx mem                                                           ; 2a6f: 86 70       .p ; X=old value of ADC conversion type
-    sty mem                                                           ; 2a71: 84 70       .p ; Y=value of RS423 use flag
+    stx mem                                                           ; 2a6f: 86 70       .p  ; X=old value of ADC conversion type
+    sty mem                                                           ; 2a71: 84 70       .p  ; Y=value of RS423 use flag
     lda #osbyte_read_write_adc_conversion_type                        ; 2a73: a9 be       ..
     ldx #0                                                            ; 2a75: a2 00       ..
     ldy #&ff                                                          ; 2a77: a0 ff       ..
     jsr OSBYTE                                                        ; 2a79: 20 f4 ff     .. ; Read ADC conversion type
-    stx mem                                                           ; 2a7c: 86 70       .p ; X=value of ADC conversion type
-    sty mem                                                           ; 2a7e: 84 70       .p ; Y=value of RS423 use flag
+    stx mem                                                           ; 2a7c: 86 70       .p  ; X=value of ADC conversion type
+    sty mem                                                           ; 2a7e: 84 70       .p  ; Y=value of RS423 use flag
 
     ; *************** Test OSBYTE 0xbf ***************
     lda #osbyte_read_write_serial_user_flag                           ; 2a80: a9 bf       ..
     ldx #&2a ; '*'                                                    ; 2a82: a2 2a       .*
     ldy #0                                                            ; 2a84: a0 00       ..
     jsr OSBYTE                                                        ; 2a86: 20 f4 ff     .. ; Write RS423 use flag, value X=42
-    stx mem                                                           ; 2a89: 86 70       .p ; X=old value of RS423 use flag
-    sty mem                                                           ; 2a8b: 84 70       .p ; Y=value of OS copy of 6850 (ACIA) control register
+    stx mem                                                           ; 2a89: 86 70       .p  ; X=old value of RS423 use flag
+    sty mem                                                           ; 2a8b: 84 70       .p  ; Y=value of OS copy of 6850 (ACIA) control register
     lda #osbyte_read_write_serial_user_flag                           ; 2a8d: a9 bf       ..
     ldx #0                                                            ; 2a8f: a2 00       ..
     ldy #&ff                                                          ; 2a91: a0 ff       ..
     jsr OSBYTE                                                        ; 2a93: 20 f4 ff     .. ; Read RS423 use flag
-    stx mem                                                           ; 2a96: 86 70       .p ; X=value of RS423 use flag
-    sty mem                                                           ; 2a98: 84 70       .p ; Y=value of OS copy of 6850 (ACIA) control register
+    stx mem                                                           ; 2a96: 86 70       .p  ; X=value of RS423 use flag
+    sty mem                                                           ; 2a98: 84 70       .p  ; Y=value of OS copy of 6850 (ACIA) control register
 
     ; *************** Test OSBYTE 0xc0 ***************
     lda #osbyte_read_serial_control_register_copy                     ; 2a9a: a9 c0       ..
     ldx #&2a ; '*'                                                    ; 2a9c: a2 2a       .*
     ldy #0                                                            ; 2a9e: a0 00       ..
     jsr OSBYTE                                                        ; 2aa0: 20 f4 ff     .. ; Write OS copy of 6850 (ACIA) control register, value X=42
-    stx mem                                                           ; 2aa3: 86 70       .p ; X=old value of OS copy of 6850 (ACIA) control register
-    sty mem                                                           ; 2aa5: 84 70       .p ; Y=value of flash counter in fiftieths of a second
+    stx mem                                                           ; 2aa3: 86 70       .p  ; X=old value of OS copy of 6850 (ACIA) control register
+    sty mem                                                           ; 2aa5: 84 70       .p  ; Y=value of flash counter in fiftieths of a second
     lda #osbyte_read_serial_control_register_copy                     ; 2aa7: a9 c0       ..
     ldx #0                                                            ; 2aa9: a2 00       ..
     ldy #&ff                                                          ; 2aab: a0 ff       ..
     jsr OSBYTE                                                        ; 2aad: 20 f4 ff     .. ; Read OS copy of 6850 (ACIA) control register
-    stx mem                                                           ; 2ab0: 86 70       .p ; X=value of OS copy of 6850 (ACIA) control register
-    sty mem                                                           ; 2ab2: 84 70       .p ; Y=value of flash counter in fiftieths of a second
+    stx mem                                                           ; 2ab0: 86 70       .p  ; X=value of OS copy of 6850 (ACIA) control register
+    sty mem                                                           ; 2ab2: 84 70       .p  ; Y=value of flash counter in fiftieths of a second
 
     ; *************** Test OSBYTE 0xc1 ***************
     lda #osbyte_read_write_flash_counter                              ; 2ab4: a9 c1       ..
     ldx #&2a ; '*'                                                    ; 2ab6: a2 2a       .*
     ldy #0                                                            ; 2ab8: a0 00       ..
     jsr OSBYTE                                                        ; 2aba: 20 f4 ff     .. ; Write flash counter in fiftieths of a second, value X=42
-    stx mem                                                           ; 2abd: 86 70       .p ; X=old value of flash counter in fiftieths of a second
-    sty mem                                                           ; 2abf: 84 70       .p ; Y=value of flashing colour mark duration in fiftieths of a second
+    stx mem                                                           ; 2abd: 86 70       .p  ; X=old value of flash counter in fiftieths of a second
+    sty mem                                                           ; 2abf: 84 70       .p  ; Y=value of flashing colour mark duration in fiftieths of a second
     lda #osbyte_read_write_flash_counter                              ; 2ac1: a9 c1       ..
     ldx #0                                                            ; 2ac3: a2 00       ..
     ldy #&ff                                                          ; 2ac5: a0 ff       ..
     jsr OSBYTE                                                        ; 2ac7: 20 f4 ff     .. ; Read flash counter in fiftieths of a second
-    stx mem                                                           ; 2aca: 86 70       .p ; X=value of flash counter in fiftieths of a second
-    sty mem                                                           ; 2acc: 84 70       .p ; Y=value of flashing colour mark duration in fiftieths of a second
+    stx mem                                                           ; 2aca: 86 70       .p  ; X=value of flash counter in fiftieths of a second
+    sty mem                                                           ; 2acc: 84 70       .p  ; Y=value of flashing colour mark duration in fiftieths of a second
 
     ; *************** Test OSBYTE 0xc2 ***************
     lda #osbyte_read_write_mark_count                                 ; 2ace: a9 c2       ..
     ldx #&2a ; '*'                                                    ; 2ad0: a2 2a       .*
     ldy #0                                                            ; 2ad2: a0 00       ..
     jsr OSBYTE                                                        ; 2ad4: 20 f4 ff     .. ; Write flashing colour mark duration in fiftieths of a second, value X=42
-    stx mem                                                           ; 2ad7: 86 70       .p ; X=old value of flashing colour mark duration in fiftieths of a second
-    sty mem                                                           ; 2ad9: 84 70       .p ; Y=value of flashing colour space duration in fiftieths of a second
+    stx mem                                                           ; 2ad7: 86 70       .p  ; X=old value of flashing colour mark duration in fiftieths of a second
+    sty mem                                                           ; 2ad9: 84 70       .p  ; Y=value of flashing colour space duration in fiftieths of a second
     lda #osbyte_read_write_mark_count                                 ; 2adb: a9 c2       ..
     ldx #0                                                            ; 2add: a2 00       ..
     ldy #&ff                                                          ; 2adf: a0 ff       ..
     jsr OSBYTE                                                        ; 2ae1: 20 f4 ff     .. ; Read flashing colour mark duration in fiftieths of a second
-    stx mem                                                           ; 2ae4: 86 70       .p ; X=value of flashing colour mark duration in fiftieths of a second
-    sty mem                                                           ; 2ae6: 84 70       .p ; Y=value of flashing colour space duration in fiftieths of a second
+    stx mem                                                           ; 2ae4: 86 70       .p  ; X=value of flashing colour mark duration in fiftieths of a second
+    sty mem                                                           ; 2ae6: 84 70       .p  ; Y=value of flashing colour space duration in fiftieths of a second
 
     ; *************** Test OSBYTE 0xc3 ***************
     lda #osbyte_read_write_space_count                                ; 2ae8: a9 c3       ..
     ldx #&2a ; '*'                                                    ; 2aea: a2 2a       .*
     ldy #0                                                            ; 2aec: a0 00       ..
     jsr OSBYTE                                                        ; 2aee: 20 f4 ff     .. ; Write flashing colour space duration in fiftieths of a second, value X=42
-    stx mem                                                           ; 2af1: 86 70       .p ; X=old value of flashing colour space duration in fiftieths of a second
-    sty mem                                                           ; 2af3: 84 70       .p ; Y=value of keyboard auto-repeat delay in centiseconds
+    stx mem                                                           ; 2af1: 86 70       .p  ; X=old value of flashing colour space duration in fiftieths of a second
+    sty mem                                                           ; 2af3: 84 70       .p  ; Y=value of keyboard auto-repeat delay in centiseconds
     lda #osbyte_read_write_space_count                                ; 2af5: a9 c3       ..
     ldx #0                                                            ; 2af7: a2 00       ..
     ldy #&ff                                                          ; 2af9: a0 ff       ..
     jsr OSBYTE                                                        ; 2afb: 20 f4 ff     .. ; Read flashing colour space duration in fiftieths of a second
-    stx mem                                                           ; 2afe: 86 70       .p ; X=value of flashing colour space duration in fiftieths of a second
-    sty mem                                                           ; 2b00: 84 70       .p ; Y=value of keyboard auto-repeat delay in centiseconds
+    stx mem                                                           ; 2afe: 86 70       .p  ; X=value of flashing colour space duration in fiftieths of a second
+    sty mem                                                           ; 2b00: 84 70       .p  ; Y=value of keyboard auto-repeat delay in centiseconds
 
     ; *************** Test OSBYTE 0xc4 ***************
     lda #osbyte_read_write_keyboard_repeat_delay                      ; 2b02: a9 c4       ..
     ldx #&2a ; '*'                                                    ; 2b04: a2 2a       .*
     ldy #0                                                            ; 2b06: a0 00       ..
     jsr OSBYTE                                                        ; 2b08: 20 f4 ff     .. ; Write keyboard auto-repeat delay in centiseconds, value X=42
-    stx mem                                                           ; 2b0b: 86 70       .p ; X=old value of keyboard auto-repeat delay in centiseconds
-    sty mem                                                           ; 2b0d: 84 70       .p ; Y=value of keyboard auto-repeat period in centiseconds
+    stx mem                                                           ; 2b0b: 86 70       .p  ; X=old value of keyboard auto-repeat delay in centiseconds
+    sty mem                                                           ; 2b0d: 84 70       .p  ; Y=value of keyboard auto-repeat period in centiseconds
     lda #osbyte_read_write_keyboard_repeat_delay                      ; 2b0f: a9 c4       ..
     ldx #0                                                            ; 2b11: a2 00       ..
     ldy #&ff                                                          ; 2b13: a0 ff       ..
     jsr OSBYTE                                                        ; 2b15: 20 f4 ff     .. ; Read keyboard auto-repeat delay in centiseconds
-    stx mem                                                           ; 2b18: 86 70       .p ; X=value of keyboard auto-repeat delay in centiseconds
-    sty mem                                                           ; 2b1a: 84 70       .p ; Y=value of keyboard auto-repeat period in centiseconds
+    stx mem                                                           ; 2b18: 86 70       .p  ; X=value of keyboard auto-repeat delay in centiseconds
+    sty mem                                                           ; 2b1a: 84 70       .p  ; Y=value of keyboard auto-repeat period in centiseconds
 
     ; *************** Test OSBYTE 0xc5 ***************
     lda #osbyte_read_write_keyboard_repeat_rate                       ; 2b1c: a9 c5       ..
     ldx #&2a ; '*'                                                    ; 2b1e: a2 2a       .*
     ldy #0                                                            ; 2b20: a0 00       ..
     jsr OSBYTE                                                        ; 2b22: 20 f4 ff     .. ; Write keyboard auto-repeat period in centiseconds, value X=42
-    stx mem                                                           ; 2b25: 86 70       .p ; X=old value of keyboard auto-repeat period in centiseconds
-    sty mem                                                           ; 2b27: 84 70       .p ; Y=value of *EXEC file handle
+    stx mem                                                           ; 2b25: 86 70       .p  ; X=old value of keyboard auto-repeat period in centiseconds
+    sty mem                                                           ; 2b27: 84 70       .p  ; Y=value of *EXEC file handle
     lda #osbyte_read_write_keyboard_repeat_rate                       ; 2b29: a9 c5       ..
     ldx #0                                                            ; 2b2b: a2 00       ..
     ldy #&ff                                                          ; 2b2d: a0 ff       ..
     jsr OSBYTE                                                        ; 2b2f: 20 f4 ff     .. ; Read keyboard auto-repeat period in centiseconds
-    stx mem                                                           ; 2b32: 86 70       .p ; X=value of keyboard auto-repeat period in centiseconds
-    sty mem                                                           ; 2b34: 84 70       .p ; Y=value of *EXEC file handle
+    stx mem                                                           ; 2b32: 86 70       .p  ; X=value of keyboard auto-repeat period in centiseconds
+    sty mem                                                           ; 2b34: 84 70       .p  ; Y=value of *EXEC file handle
 
     ; *************** Test OSBYTE 0xc6 ***************
     lda #osbyte_read_write_exec_file_handle                           ; 2b36: a9 c6       ..
-    ldx #&2a ; '*'                                                    ; 2b38: a2 2a       .* ; X=File handle
+    ldx #&2a ; '*'                                                    ; 2b38: a2 2a       .*  ; X=File handle
     ldy #0                                                            ; 2b3a: a0 00       ..
     jsr OSBYTE                                                        ; 2b3c: 20 f4 ff     .. ; Write *EXEC file handle, value X=42
-    stx mem                                                           ; 2b3f: 86 70       .p ; X=old value of *EXEC file handle
-    sty mem                                                           ; 2b41: 84 70       .p ; Y=value of *SPOOL file handle
+    stx mem                                                           ; 2b3f: 86 70       .p  ; X=old value of *EXEC file handle
+    sty mem                                                           ; 2b41: 84 70       .p  ; Y=value of *SPOOL file handle
     lda #osbyte_read_write_exec_file_handle                           ; 2b43: a9 c6       ..
-    ldx #0                                                            ; 2b45: a2 00       .. ; X=File handle
+    ldx #0                                                            ; 2b45: a2 00       ..  ; X=File handle
     ldy #&ff                                                          ; 2b47: a0 ff       ..
     jsr OSBYTE                                                        ; 2b49: 20 f4 ff     .. ; Read *EXEC file handle
-    stx mem                                                           ; 2b4c: 86 70       .p ; X=value of *EXEC file handle
-    sty mem                                                           ; 2b4e: 84 70       .p ; Y=value of *SPOOL file handle
+    stx mem                                                           ; 2b4c: 86 70       .p  ; X=value of *EXEC file handle
+    sty mem                                                           ; 2b4e: 84 70       .p  ; Y=value of *SPOOL file handle
 
     ; *************** Test OSBYTE 0xc7 ***************
     lda #osbyte_read_write_spool_file_handle                          ; 2b50: a9 c7       ..
-    ldx #&2a ; '*'                                                    ; 2b52: a2 2a       .* ; X=File handle
+    ldx #&2a ; '*'                                                    ; 2b52: a2 2a       .*  ; X=File handle
     ldy #0                                                            ; 2b54: a0 00       ..
     jsr OSBYTE                                                        ; 2b56: 20 f4 ff     .. ; Write *SPOOL file handle, value X=42
-    stx mem                                                           ; 2b59: 86 70       .p ; X=old value of *SPOOL file handle
-    sty mem                                                           ; 2b5b: 84 70       .p ; Y=value of ESCAPE+BREAK effects
+    stx mem                                                           ; 2b59: 86 70       .p  ; X=old value of *SPOOL file handle
+    sty mem                                                           ; 2b5b: 84 70       .p  ; Y=value of ESCAPE+BREAK effects
     lda #osbyte_read_write_spool_file_handle                          ; 2b5d: a9 c7       ..
-    ldx #0                                                            ; 2b5f: a2 00       .. ; X=File handle
+    ldx #0                                                            ; 2b5f: a2 00       ..  ; X=File handle
     ldy #&ff                                                          ; 2b61: a0 ff       ..
     jsr OSBYTE                                                        ; 2b63: 20 f4 ff     .. ; Read *SPOOL file handle
-    stx mem                                                           ; 2b66: 86 70       .p ; X=value of *SPOOL file handle
-    sty mem                                                           ; 2b68: 84 70       .p ; Y=value of ESCAPE+BREAK effects
+    stx mem                                                           ; 2b66: 86 70       .p  ; X=value of *SPOOL file handle
+    sty mem                                                           ; 2b68: 84 70       .p  ; Y=value of ESCAPE+BREAK effects
 
     ; *************** Test OSBYTE 0xc8 ***************
     lda #osbyte_read_write_escape_break_effect                        ; 2b6a: a9 c8       ..
     ldx #&2a ; '*'                                                    ; 2b6c: a2 2a       .*
     ldy #0                                                            ; 2b6e: a0 00       ..
     jsr OSBYTE                                                        ; 2b70: 20 f4 ff     .. ; Set normal ESCAPE action, clear memory on BREAK (X=42)
-    stx mem                                                           ; 2b73: 86 70       .p ; X=old value of ESCAPE+BREAK effects
-    sty mem                                                           ; 2b75: 84 70       .p ; Y=value of keyboard disable (for Econet)
+    stx mem                                                           ; 2b73: 86 70       .p  ; X=old value of ESCAPE+BREAK effects
+    sty mem                                                           ; 2b75: 84 70       .p  ; Y=value of keyboard disable (for Econet)
     lda #osbyte_read_write_escape_break_effect                        ; 2b77: a9 c8       ..
     ldx #0                                                            ; 2b79: a2 00       ..
     ldy #&ff                                                          ; 2b7b: a0 ff       ..
     jsr OSBYTE                                                        ; 2b7d: 20 f4 ff     .. ; Read ESCAPE+BREAK effects
-    stx mem                                                           ; 2b80: 86 70       .p ; X=value of ESCAPE+BREAK effects
-    sty mem                                                           ; 2b82: 84 70       .p ; Y=value of keyboard disable (for Econet)
+    stx mem                                                           ; 2b80: 86 70       .p  ; X=value of ESCAPE+BREAK effects
+    sty mem                                                           ; 2b82: 84 70       .p  ; Y=value of keyboard disable (for Econet)
 
     ; *************** Test OSBYTE 0xc9 ***************
     lda #osbyte_read_write_econet_keyboard_disable                    ; 2b84: a9 c9       ..
     ldx #&2a ; '*'                                                    ; 2b86: a2 2a       .*
     ldy #0                                                            ; 2b88: a0 00       ..
     jsr OSBYTE                                                        ; 2b8a: 20 f4 ff     .. ; Disable keyboard (for Econet)
-    stx mem                                                           ; 2b8d: 86 70       .p ; X=old value of keyboard disable (for Econet)
-    sty mem                                                           ; 2b8f: 84 70       .p ; Y=value of keyboard status byte
+    stx mem                                                           ; 2b8d: 86 70       .p  ; X=old value of keyboard disable (for Econet)
+    sty mem                                                           ; 2b8f: 84 70       .p  ; Y=value of keyboard status byte
     lda #osbyte_read_write_econet_keyboard_disable                    ; 2b91: a9 c9       ..
     ldx #0                                                            ; 2b93: a2 00       ..
     ldy #&ff                                                          ; 2b95: a0 ff       ..
     jsr OSBYTE                                                        ; 2b97: 20 f4 ff     .. ; Enable/Disable keyboard (for Econet)
-    stx mem                                                           ; 2b9a: 86 70       .p ; X=value of keyboard disable (for Econet)
-    sty mem                                                           ; 2b9c: 84 70       .p ; Y=value of keyboard status byte
+    stx mem                                                           ; 2b9a: 86 70       .p  ; X=value of keyboard disable (for Econet)
+    sty mem                                                           ; 2b9c: 84 70       .p  ; Y=value of keyboard status byte
 
     ; *************** Test OSBYTE 0xca ***************
     lda #osbyte_read_write_keyboard_status                            ; 2b9e: a9 ca       ..
     ldx #&2a ; '*'                                                    ; 2ba0: a2 2a       .*
     ldy #0                                                            ; 2ba2: a0 00       ..
     jsr OSBYTE                                                        ; 2ba4: 20 f4 ff     .. ; Write keyboard status byte, value X=42
-    stx mem                                                           ; 2ba7: 86 70       .p ; X=old value of keyboard status byte
-    sty mem                                                           ; 2ba9: 84 70       .p ; Y=value of RS423 handshake level (or Electron: ULA IRQ mask)
+    stx mem                                                           ; 2ba7: 86 70       .p  ; X=old value of keyboard status byte
+    sty mem                                                           ; 2ba9: 84 70       .p  ; Y=value of RS423 handshake level (or Electron: ULA IRQ mask)
     lda #osbyte_read_write_keyboard_status                            ; 2bab: a9 ca       ..
     ldx #0                                                            ; 2bad: a2 00       ..
     ldy #&ff                                                          ; 2baf: a0 ff       ..
     jsr OSBYTE                                                        ; 2bb1: 20 f4 ff     .. ; Read keyboard status byte
-    stx mem                                                           ; 2bb4: 86 70       .p ; X=value of keyboard status byte
-    sty mem                                                           ; 2bb6: 84 70       .p ; Y=value of RS423 handshake level (or Electron: ULA IRQ mask)
+    stx mem                                                           ; 2bb4: 86 70       .p  ; X=value of keyboard status byte
+    sty mem                                                           ; 2bb6: 84 70       .p  ; Y=value of RS423 handshake level (or Electron: ULA IRQ mask)
 
     ; *************** Test OSBYTE 0xcb ***************
     lda #osbyte_read_write_serial_handshake_extent                    ; 2bb8: a9 cb       ..
     ldx #&2a ; '*'                                                    ; 2bba: a2 2a       .*
     ldy #0                                                            ; 2bbc: a0 00       ..
     jsr OSBYTE                                                        ; 2bbe: 20 f4 ff     .. ; Write RS423 handshake level (or Electron: ULA IRQ mask), value X=42
-    stx mem                                                           ; 2bc1: 86 70       .p ; X=old value of RS423 handshake level (or Electron: ULA IRQ mask)
-    sty mem                                                           ; 2bc3: 84 70       .p ; Y=value of RS423 input suppression flag (or Electron: firm key pointer)
+    stx mem                                                           ; 2bc1: 86 70       .p  ; X=old value of RS423 handshake level (or Electron: ULA IRQ mask)
+    sty mem                                                           ; 2bc3: 84 70       .p  ; Y=value of RS423 input suppression flag (or Electron: firm key pointer)
     lda #osbyte_read_write_serial_handshake_extent                    ; 2bc5: a9 cb       ..
     ldx #0                                                            ; 2bc7: a2 00       ..
     ldy #&ff                                                          ; 2bc9: a0 ff       ..
     jsr OSBYTE                                                        ; 2bcb: 20 f4 ff     .. ; Read RS423 handshake level (or Electron: ULA IRQ mask)
-    stx mem                                                           ; 2bce: 86 70       .p ; X=value of RS423 handshake level (or Electron: ULA IRQ mask)
-    sty mem                                                           ; 2bd0: 84 70       .p ; Y=value of RS423 input suppression flag (or Electron: firm key pointer)
+    stx mem                                                           ; 2bce: 86 70       .p  ; X=value of RS423 handshake level (or Electron: ULA IRQ mask)
+    sty mem                                                           ; 2bd0: 84 70       .p  ; Y=value of RS423 input suppression flag (or Electron: firm key pointer)
 
     ; *************** Test OSBYTE 0xcc ***************
     lda #osbyte_read_write_serial_input_suppression                   ; 2bd2: a9 cc       ..
     ldx #&2a ; '*'                                                    ; 2bd4: a2 2a       .*
     ldy #0                                                            ; 2bd6: a0 00       ..
     jsr OSBYTE                                                        ; 2bd8: 20 f4 ff     .. ; Write RS423 input suppression flag (or Electron: firm key pointer), value X=42
-    stx mem                                                           ; 2bdb: 86 70       .p ; X=old value of RS423 input suppression flag (or Electron: firm key pointer)
-    sty mem                                                           ; 2bdd: 84 70       .p ; Y=value of RS423/cassette flag (or Electron: length of firm key string)
+    stx mem                                                           ; 2bdb: 86 70       .p  ; X=old value of RS423 input suppression flag (or Electron: firm key pointer)
+    sty mem                                                           ; 2bdd: 84 70       .p  ; Y=value of RS423/cassette flag (or Electron: length of firm key string)
     lda #osbyte_read_write_serial_input_suppression                   ; 2bdf: a9 cc       ..
     ldx #0                                                            ; 2be1: a2 00       ..
     ldy #&ff                                                          ; 2be3: a0 ff       ..
     jsr OSBYTE                                                        ; 2be5: 20 f4 ff     .. ; Read RS423 input suppression flag (or Electron: firm key pointer)
-    stx mem                                                           ; 2be8: 86 70       .p ; X=value of RS423 input suppression flag (or Electron: firm key pointer)
-    sty mem                                                           ; 2bea: 84 70       .p ; Y=value of RS423/cassette flag (or Electron: length of firm key string)
+    stx mem                                                           ; 2be8: 86 70       .p  ; X=value of RS423 input suppression flag (or Electron: firm key pointer)
+    sty mem                                                           ; 2bea: 84 70       .p  ; Y=value of RS423/cassette flag (or Electron: length of firm key string)
 
     ; *************** Test OSBYTE 0xcd ***************
     lda #osbyte_read_write_cassette_serial_selection                  ; 2bec: a9 cd       ..
     ldx #&2a ; '*'                                                    ; 2bee: a2 2a       .*
     ldy #0                                                            ; 2bf0: a0 00       ..
     jsr OSBYTE                                                        ; 2bf2: 20 f4 ff     .. ; Write RS423/cassette flag (or Electron: length of firm key string), value X=42
-    stx mem                                                           ; 2bf5: 86 70       .p ; X=old value of RS423/cassette flag (or Electron: length of firm key string)
-    sty mem                                                           ; 2bf7: 84 70       .p ; Y=value of OSBYTE and OSWORD call interception status
+    stx mem                                                           ; 2bf5: 86 70       .p  ; X=old value of RS423/cassette flag (or Electron: length of firm key string)
+    sty mem                                                           ; 2bf7: 84 70       .p  ; Y=value of OSBYTE and OSWORD call interception status
     lda #osbyte_read_write_cassette_serial_selection                  ; 2bf9: a9 cd       ..
     ldx #0                                                            ; 2bfb: a2 00       ..
     ldy #&ff                                                          ; 2bfd: a0 ff       ..
     jsr OSBYTE                                                        ; 2bff: 20 f4 ff     .. ; Read RS423/cassette flag (or Electron: length of firm key string)
-    stx mem                                                           ; 2c02: 86 70       .p ; X=value of RS423/cassette flag (or Electron: length of firm key string)
-    sty mem                                                           ; 2c04: 84 70       .p ; Y=value of OSBYTE and OSWORD call interception status
+    stx mem                                                           ; 2c02: 86 70       .p  ; X=value of RS423/cassette flag (or Electron: length of firm key string)
+    sty mem                                                           ; 2c04: 84 70       .p  ; Y=value of OSBYTE and OSWORD call interception status
 
     ; *************** Test OSBYTE 0xce ***************
     lda #osbyte_read_write_econet_os_call_interception                ; 2c06: a9 ce       ..
     ldx #&2a ; '*'                                                    ; 2c08: a2 2a       .*
     ldy #0                                                            ; 2c0a: a0 00       ..
     jsr OSBYTE                                                        ; 2c0c: 20 f4 ff     .. ; Write OSBYTE and OSWORD call interception status, value X=42
-    stx mem                                                           ; 2c0f: 86 70       .p ; X=old value of OSBYTE and OSWORD call interception status
-    sty mem                                                           ; 2c11: 84 70       .p ; Y=value of OSRDCH call interception status
+    stx mem                                                           ; 2c0f: 86 70       .p  ; X=old value of OSBYTE and OSWORD call interception status
+    sty mem                                                           ; 2c11: 84 70       .p  ; Y=value of OSRDCH call interception status
     lda #osbyte_read_write_econet_os_call_interception                ; 2c13: a9 ce       ..
     ldx #0                                                            ; 2c15: a2 00       ..
     ldy #&ff                                                          ; 2c17: a0 ff       ..
     jsr OSBYTE                                                        ; 2c19: 20 f4 ff     .. ; Read OSBYTE and OSWORD call interception status
-    stx mem                                                           ; 2c1c: 86 70       .p ; X=value of OSBYTE and OSWORD call interception status
-    sty mem                                                           ; 2c1e: 84 70       .p ; Y=value of OSRDCH call interception status
+    stx mem                                                           ; 2c1c: 86 70       .p  ; X=value of OSBYTE and OSWORD call interception status
+    sty mem                                                           ; 2c1e: 84 70       .p  ; Y=value of OSRDCH call interception status
 
     ; *************** Test OSBYTE 0xcf ***************
     lda #osbyte_read_write_econet_osrdch_interception                 ; 2c20: a9 cf       ..
     ldx #&2a ; '*'                                                    ; 2c22: a2 2a       .*
     ldy #0                                                            ; 2c24: a0 00       ..
     jsr OSBYTE                                                        ; 2c26: 20 f4 ff     .. ; Write OSRDCH call interception status, value X=42
-    stx mem                                                           ; 2c29: 86 70       .p ; X=old value of OSRDCH call interception status
-    sty mem                                                           ; 2c2b: 84 70       .p ; Y=value of OSWRCH call interception status
+    stx mem                                                           ; 2c29: 86 70       .p  ; X=old value of OSRDCH call interception status
+    sty mem                                                           ; 2c2b: 84 70       .p  ; Y=value of OSWRCH call interception status
     lda #osbyte_read_write_econet_osrdch_interception                 ; 2c2d: a9 cf       ..
     ldx #0                                                            ; 2c2f: a2 00       ..
     ldy #&ff                                                          ; 2c31: a0 ff       ..
     jsr OSBYTE                                                        ; 2c33: 20 f4 ff     .. ; Read OSRDCH call interception status
-    stx mem                                                           ; 2c36: 86 70       .p ; X=value of OSRDCH call interception status
-    sty mem                                                           ; 2c38: 84 70       .p ; Y=value of OSWRCH call interception status
+    stx mem                                                           ; 2c36: 86 70       .p  ; X=value of OSRDCH call interception status
+    sty mem                                                           ; 2c38: 84 70       .p  ; Y=value of OSWRCH call interception status
 
     ; *************** Test OSBYTE 0xd0 ***************
     lda #osbyte_read_write_econet_oswrch_interception                 ; 2c3a: a9 d0       ..
     ldx #&2a ; '*'                                                    ; 2c3c: a2 2a       .*
     ldy #0                                                            ; 2c3e: a0 00       ..
     jsr OSBYTE                                                        ; 2c40: 20 f4 ff     .. ; Write OSWRCH call interception status, value X=42
-    stx mem                                                           ; 2c43: 86 70       .p ; X=old value of OSWRCH call interception status
-    sty mem                                                           ; 2c45: 84 70       .p ; Y=value of speech suppression
+    stx mem                                                           ; 2c43: 86 70       .p  ; X=old value of OSWRCH call interception status
+    sty mem                                                           ; 2c45: 84 70       .p  ; Y=value of speech suppression
     lda #osbyte_read_write_econet_oswrch_interception                 ; 2c47: a9 d0       ..
     ldx #0                                                            ; 2c49: a2 00       ..
     ldy #&ff                                                          ; 2c4b: a0 ff       ..
     jsr OSBYTE                                                        ; 2c4d: 20 f4 ff     .. ; Read OSWRCH call interception status
-    stx mem                                                           ; 2c50: 86 70       .p ; X=value of OSWRCH call interception status
-    sty mem                                                           ; 2c52: 84 70       .p ; Y=value of speech suppression
+    stx mem                                                           ; 2c50: 86 70       .p  ; X=value of OSWRCH call interception status
+    sty mem                                                           ; 2c52: 84 70       .p  ; Y=value of speech suppression
 
     ; *************** Test OSBYTE 0xd1 ***************
     lda #osbyte_read_write_speech_suppression                         ; 2c54: a9 d1       ..
     ldx #&2a ; '*'                                                    ; 2c56: a2 2a       .*
     ldy #0                                                            ; 2c58: a0 00       ..
     jsr OSBYTE                                                        ; 2c5a: 20 f4 ff     .. ; Write speech suppression, value X=42
-    stx mem                                                           ; 2c5d: 86 70       .p ; X=old value of speech suppression
-    sty mem                                                           ; 2c5f: 84 70       .p ; Y=value of sound suppression (anything non-zero suppresses sound)
+    stx mem                                                           ; 2c5d: 86 70       .p  ; X=old value of speech suppression
+    sty mem                                                           ; 2c5f: 84 70       .p  ; Y=value of sound suppression (anything non-zero suppresses sound)
     lda #osbyte_read_write_speech_suppression                         ; 2c61: a9 d1       ..
     ldx #0                                                            ; 2c63: a2 00       ..
     ldy #&ff                                                          ; 2c65: a0 ff       ..
     jsr OSBYTE                                                        ; 2c67: 20 f4 ff     .. ; Read speech suppression
-    stx mem                                                           ; 2c6a: 86 70       .p ; X=value of speech suppression
-    sty mem                                                           ; 2c6c: 84 70       .p ; Y=value of sound suppression (anything non-zero suppresses sound)
+    stx mem                                                           ; 2c6a: 86 70       .p  ; X=value of speech suppression
+    sty mem                                                           ; 2c6c: 84 70       .p  ; Y=value of sound suppression (anything non-zero suppresses sound)
 
     ; *************** Test OSBYTE 0xd2 ***************
     lda #osbyte_read_write_sound_suppression                          ; 2c6e: a9 d2       ..
     ldx #&2a ; '*'                                                    ; 2c70: a2 2a       .*
     ldy #0                                                            ; 2c72: a0 00       ..
     jsr OSBYTE                                                        ; 2c74: 20 f4 ff     .. ; Write sound suppression (anything non-zero suppresses sound), value X=42
-    stx mem                                                           ; 2c77: 86 70       .p ; X=old value of sound suppression (anything non-zero suppresses sound)
-    sty mem                                                           ; 2c79: 84 70       .p ; Y=value of CTRL G channel
+    stx mem                                                           ; 2c77: 86 70       .p  ; X=old value of sound suppression (anything non-zero suppresses sound)
+    sty mem                                                           ; 2c79: 84 70       .p  ; Y=value of CTRL G channel
     lda #osbyte_read_write_sound_suppression                          ; 2c7b: a9 d2       ..
     ldx #0                                                            ; 2c7d: a2 00       ..
     ldy #&ff                                                          ; 2c7f: a0 ff       ..
     jsr OSBYTE                                                        ; 2c81: 20 f4 ff     .. ; Read sound suppression (anything non-zero suppresses sound)
-    stx mem                                                           ; 2c84: 86 70       .p ; X=value of sound suppression (anything non-zero suppresses sound)
-    sty mem                                                           ; 2c86: 84 70       .p ; Y=value of CTRL G channel
+    stx mem                                                           ; 2c84: 86 70       .p  ; X=value of sound suppression (anything non-zero suppresses sound)
+    sty mem                                                           ; 2c86: 84 70       .p  ; Y=value of CTRL G channel
 
     ; *************** Test OSBYTE 0xd3 ***************
     lda #osbyte_read_write_bell_channel                               ; 2c88: a9 d3       ..
     ldx #&2a ; '*'                                                    ; 2c8a: a2 2a       .*
     ldy #0                                                            ; 2c8c: a0 00       ..
     jsr OSBYTE                                                        ; 2c8e: 20 f4 ff     .. ; Write CTRL G channel, value X=42
-    stx mem                                                           ; 2c91: 86 70       .p ; X=old value of CTRL G channel
-    sty mem                                                           ; 2c93: 84 70       .p ; Y=value of CTRL G amplitude/envelope
+    stx mem                                                           ; 2c91: 86 70       .p  ; X=old value of CTRL G channel
+    sty mem                                                           ; 2c93: 84 70       .p  ; Y=value of CTRL G amplitude/envelope
     lda #osbyte_read_write_bell_channel                               ; 2c95: a9 d3       ..
     ldx #0                                                            ; 2c97: a2 00       ..
     ldy #&ff                                                          ; 2c99: a0 ff       ..
     jsr OSBYTE                                                        ; 2c9b: 20 f4 ff     .. ; Read CTRL G channel
-    stx mem                                                           ; 2c9e: 86 70       .p ; X=value of CTRL G channel
-    sty mem                                                           ; 2ca0: 84 70       .p ; Y=value of CTRL G amplitude/envelope
+    stx mem                                                           ; 2c9e: 86 70       .p  ; X=value of CTRL G channel
+    sty mem                                                           ; 2ca0: 84 70       .p  ; Y=value of CTRL G amplitude/envelope
 
     ; *************** Test OSBYTE 0xd4 ***************
     lda #osbyte_read_write_bell_envelope                              ; 2ca2: a9 d4       ..
     ldx #&2a ; '*'                                                    ; 2ca4: a2 2a       .*
     ldy #0                                                            ; 2ca6: a0 00       ..
     jsr OSBYTE                                                        ; 2ca8: 20 f4 ff     .. ; Write CTRL G amplitude/envelope, value X=42
-    stx mem                                                           ; 2cab: 86 70       .p ; X=old value of CTRL G amplitude/envelope
-    sty mem                                                           ; 2cad: 84 70       .p ; Y=value of CTRL G frequency
+    stx mem                                                           ; 2cab: 86 70       .p  ; X=old value of CTRL G amplitude/envelope
+    sty mem                                                           ; 2cad: 84 70       .p  ; Y=value of CTRL G frequency
     lda #osbyte_read_write_bell_envelope                              ; 2caf: a9 d4       ..
     ldx #0                                                            ; 2cb1: a2 00       ..
     ldy #&ff                                                          ; 2cb3: a0 ff       ..
     jsr OSBYTE                                                        ; 2cb5: 20 f4 ff     .. ; Read CTRL G amplitude/envelope
-    stx mem                                                           ; 2cb8: 86 70       .p ; X=value of CTRL G amplitude/envelope
-    sty mem                                                           ; 2cba: 84 70       .p ; Y=value of CTRL G frequency
+    stx mem                                                           ; 2cb8: 86 70       .p  ; X=value of CTRL G amplitude/envelope
+    sty mem                                                           ; 2cba: 84 70       .p  ; Y=value of CTRL G frequency
 
     ; *************** Test OSBYTE 0xd5 ***************
     lda #osbyte_read_write_bell_frequency                             ; 2cbc: a9 d5       ..
     ldx #&2a ; '*'                                                    ; 2cbe: a2 2a       .*
     ldy #0                                                            ; 2cc0: a0 00       ..
     jsr OSBYTE                                                        ; 2cc2: 20 f4 ff     .. ; Write CTRL G frequency, value X=42
-    stx mem                                                           ; 2cc5: 86 70       .p ; X=old value of CTRL G frequency
-    sty mem                                                           ; 2cc7: 84 70       .p ; Y=value of CTRL G duration
+    stx mem                                                           ; 2cc5: 86 70       .p  ; X=old value of CTRL G frequency
+    sty mem                                                           ; 2cc7: 84 70       .p  ; Y=value of CTRL G duration
     lda #osbyte_read_write_bell_frequency                             ; 2cc9: a9 d5       ..
     ldx #0                                                            ; 2ccb: a2 00       ..
     ldy #&ff                                                          ; 2ccd: a0 ff       ..
     jsr OSBYTE                                                        ; 2ccf: 20 f4 ff     .. ; Read CTRL G frequency
-    stx mem                                                           ; 2cd2: 86 70       .p ; X=value of CTRL G frequency
-    sty mem                                                           ; 2cd4: 84 70       .p ; Y=value of CTRL G duration
+    stx mem                                                           ; 2cd2: 86 70       .p  ; X=value of CTRL G frequency
+    sty mem                                                           ; 2cd4: 84 70       .p  ; Y=value of CTRL G duration
 
     ; *************** Test OSBYTE 0xd6 ***************
     lda #osbyte_read_write_bell_duration                              ; 2cd6: a9 d6       ..
     ldx #&2a ; '*'                                                    ; 2cd8: a2 2a       .*
     ldy #0                                                            ; 2cda: a0 00       ..
     jsr OSBYTE                                                        ; 2cdc: 20 f4 ff     .. ; Write CTRL G duration, value X=42
-    stx mem                                                           ; 2cdf: 86 70       .p ; X=old value of CTRL G duration
-    sty mem                                                           ; 2ce1: 84 70       .p ; Y=value of message suppression
+    stx mem                                                           ; 2cdf: 86 70       .p  ; X=old value of CTRL G duration
+    sty mem                                                           ; 2ce1: 84 70       .p  ; Y=value of message suppression
     lda #osbyte_read_write_bell_duration                              ; 2ce3: a9 d6       ..
     ldx #0                                                            ; 2ce5: a2 00       ..
     ldy #&ff                                                          ; 2ce7: a0 ff       ..
     jsr OSBYTE                                                        ; 2ce9: 20 f4 ff     .. ; Read CTRL G duration
-    stx mem                                                           ; 2cec: 86 70       .p ; X=value of CTRL G duration
-    sty mem                                                           ; 2cee: 84 70       .p ; Y=value of message suppression
+    stx mem                                                           ; 2cec: 86 70       .p  ; X=value of CTRL G duration
+    sty mem                                                           ; 2cee: 84 70       .p  ; Y=value of message suppression
 
     ; *************** Test OSBYTE 0xd7 ***************
     lda #osbyte_read_write_startup_boot_options                       ; 2cf0: a9 d7       ..
     ldx #&2a ; '*'                                                    ; 2cf2: a2 2a       .*
     ldy #0                                                            ; 2cf4: a0 00       ..
     jsr OSBYTE                                                        ; 2cf6: 20 f4 ff     .. ; Write message suppression, value X=42
-    stx mem                                                           ; 2cf9: 86 70       .p ; X=old value of message suppression
-    sty mem                                                           ; 2cfb: 84 70       .p ; Y=value of length of soft key string
+    stx mem                                                           ; 2cf9: 86 70       .p  ; X=old value of message suppression
+    sty mem                                                           ; 2cfb: 84 70       .p  ; Y=value of length of soft key string
     lda #osbyte_read_write_startup_boot_options                       ; 2cfd: a9 d7       ..
     ldx #0                                                            ; 2cff: a2 00       ..
     ldy #&ff                                                          ; 2d01: a0 ff       ..
     jsr OSBYTE                                                        ; 2d03: 20 f4 ff     .. ; Read message suppression
-    stx mem                                                           ; 2d06: 86 70       .p ; X=value of message suppression
-    sty mem                                                           ; 2d08: 84 70       .p ; Y=value of length of soft key string
+    stx mem                                                           ; 2d06: 86 70       .p  ; X=value of message suppression
+    sty mem                                                           ; 2d08: 84 70       .p  ; Y=value of length of soft key string
 
     ; *************** Test OSBYTE 0xd8 ***************
     lda #osbyte_read_write_soft_key_length                            ; 2d0a: a9 d8       ..
     ldx #&2a ; '*'                                                    ; 2d0c: a2 2a       .*
     ldy #0                                                            ; 2d0e: a0 00       ..
     jsr OSBYTE                                                        ; 2d10: 20 f4 ff     .. ; Write length of soft key string, value X=42
-    stx mem                                                           ; 2d13: 86 70       .p ; X=old value of length of soft key string
-    sty mem                                                           ; 2d15: 84 70       .p ; Y=value of lines since last page halt
+    stx mem                                                           ; 2d13: 86 70       .p  ; X=old value of length of soft key string
+    sty mem                                                           ; 2d15: 84 70       .p  ; Y=value of lines since last page halt
     lda #osbyte_read_write_soft_key_length                            ; 2d17: a9 d8       ..
     ldx #0                                                            ; 2d19: a2 00       ..
     ldy #&ff                                                          ; 2d1b: a0 ff       ..
     jsr OSBYTE                                                        ; 2d1d: 20 f4 ff     .. ; Read length of soft key string
-    stx mem                                                           ; 2d20: 86 70       .p ; X=value of length of soft key string
-    sty mem                                                           ; 2d22: 84 70       .p ; Y=value of lines since last page halt
+    stx mem                                                           ; 2d20: 86 70       .p  ; X=value of length of soft key string
+    sty mem                                                           ; 2d22: 84 70       .p  ; Y=value of lines since last page halt
 
     ; *************** Test OSBYTE 0xd9 ***************
     lda #osbyte_read_write_lines_since_last_page                      ; 2d24: a9 d9       ..
     ldx #&2a ; '*'                                                    ; 2d26: a2 2a       .*
     ldy #0                                                            ; 2d28: a0 00       ..
     jsr OSBYTE                                                        ; 2d2a: 20 f4 ff     .. ; Write lines since last page halt, value X=42
-    stx mem                                                           ; 2d2d: 86 70       .p ; X=old value of lines since last page halt
-    sty mem                                                           ; 2d2f: 84 70       .p ; Y=value of VDU queue
+    stx mem                                                           ; 2d2d: 86 70       .p  ; X=old value of lines since last page halt
+    sty mem                                                           ; 2d2f: 84 70       .p  ; Y=value of VDU queue
     lda #osbyte_read_write_lines_since_last_page                      ; 2d31: a9 d9       ..
     ldx #0                                                            ; 2d33: a2 00       ..
     ldy #&ff                                                          ; 2d35: a0 ff       ..
     jsr OSBYTE                                                        ; 2d37: 20 f4 ff     .. ; Read lines since last page halt
-    stx mem                                                           ; 2d3a: 86 70       .p ; X=value of lines since last page halt
-    sty mem                                                           ; 2d3c: 84 70       .p ; Y=value of VDU queue
+    stx mem                                                           ; 2d3a: 86 70       .p  ; X=value of lines since last page halt
+    sty mem                                                           ; 2d3c: 84 70       .p  ; Y=value of VDU queue
 
     ; *************** Test OSBYTE 0xda ***************
     lda #osbyte_read_write_vdu_queue_size                             ; 2d3e: a9 da       ..
     ldx #&2a ; '*'                                                    ; 2d40: a2 2a       .*
     ldy #0                                                            ; 2d42: a0 00       ..
     jsr OSBYTE                                                        ; 2d44: 20 f4 ff     .. ; Write VDU queue, value X=42
-    stx mem                                                           ; 2d47: 86 70       .p ; X=old value of VDU queue
-    sty mem                                                           ; 2d49: 84 70       .p ; Y=value of TAB key character
+    stx mem                                                           ; 2d47: 86 70       .p  ; X=old value of VDU queue
+    sty mem                                                           ; 2d49: 84 70       .p  ; Y=value of TAB key character
     lda #osbyte_read_write_vdu_queue_size                             ; 2d4b: a9 da       ..
     ldx #0                                                            ; 2d4d: a2 00       ..
     ldy #&ff                                                          ; 2d4f: a0 ff       ..
     jsr OSBYTE                                                        ; 2d51: 20 f4 ff     .. ; Read VDU queue
-    stx mem                                                           ; 2d54: 86 70       .p ; X=value of VDU queue
-    sty mem                                                           ; 2d56: 84 70       .p ; Y=value of TAB key character
+    stx mem                                                           ; 2d54: 86 70       .p  ; X=value of VDU queue
+    sty mem                                                           ; 2d56: 84 70       .p  ; Y=value of TAB key character
 
     ; *************** Test OSBYTE 0xdb ***************
     lda #osbyte_read_write_tab_char                                   ; 2d58: a9 db       ..
     ldx #&2a ; '*'                                                    ; 2d5a: a2 2a       .*
     ldy #0                                                            ; 2d5c: a0 00       ..
     jsr OSBYTE                                                        ; 2d5e: 20 f4 ff     .. ; Write TAB key character, value X=42
-    stx mem                                                           ; 2d61: 86 70       .p ; X=old value of TAB key character
-    sty mem                                                           ; 2d63: 84 70       .p ; Y=value of ESCAPE character
+    stx mem                                                           ; 2d61: 86 70       .p  ; X=old value of TAB key character
+    sty mem                                                           ; 2d63: 84 70       .p  ; Y=value of ESCAPE character
     lda #osbyte_read_write_tab_char                                   ; 2d65: a9 db       ..
     ldx #0                                                            ; 2d67: a2 00       ..
     ldy #&ff                                                          ; 2d69: a0 ff       ..
     jsr OSBYTE                                                        ; 2d6b: 20 f4 ff     .. ; Read TAB key character
-    stx mem                                                           ; 2d6e: 86 70       .p ; X=value of TAB key character
-    sty mem                                                           ; 2d70: 84 70       .p ; Y=value of ESCAPE character
+    stx mem                                                           ; 2d6e: 86 70       .p  ; X=value of TAB key character
+    sty mem                                                           ; 2d70: 84 70       .p  ; Y=value of ESCAPE character
 
     ; *************** Test OSBYTE 0xdc ***************
     lda #osbyte_read_write_escape_char                                ; 2d72: a9 dc       ..
     ldx #&2a ; '*'                                                    ; 2d74: a2 2a       .*
     ldy #0                                                            ; 2d76: a0 00       ..
     jsr OSBYTE                                                        ; 2d78: 20 f4 ff     .. ; Write ESCAPE character, value X=42
-    stx mem                                                           ; 2d7b: 86 70       .p ; X=old value of ESCAPE character
-    sty mem                                                           ; 2d7d: 84 70       .p ; Y=value of character status flag ($c0-$cf)
+    stx mem                                                           ; 2d7b: 86 70       .p  ; X=old value of ESCAPE character
+    sty mem                                                           ; 2d7d: 84 70       .p  ; Y=value of character status flag ($c0-$cf)
     lda #osbyte_read_write_escape_char                                ; 2d7f: a9 dc       ..
     ldx #0                                                            ; 2d81: a2 00       ..
     ldy #&ff                                                          ; 2d83: a0 ff       ..
     jsr OSBYTE                                                        ; 2d85: 20 f4 ff     .. ; Read ESCAPE character
-    stx mem                                                           ; 2d88: 86 70       .p ; X=value of ESCAPE character
-    sty mem                                                           ; 2d8a: 84 70       .p ; Y=value of character status flag ($c0-$cf)
+    stx mem                                                           ; 2d88: 86 70       .p  ; X=value of ESCAPE character
+    sty mem                                                           ; 2d8a: 84 70       .p  ; Y=value of character status flag ($c0-$cf)
 
     ; *************** Test OSBYTE 0xdd ***************
     lda #osbyte_read_write_characters_c0_cf_status                    ; 2d8c: a9 dd       ..
     ldx #&2a ; '*'                                                    ; 2d8e: a2 2a       .*
     ldy #0                                                            ; 2d90: a0 00       ..
     jsr OSBYTE                                                        ; 2d92: 20 f4 ff     .. ; Write character status flag ($c0-$cf), value X=42
-    stx mem                                                           ; 2d95: 86 70       .p ; X=old value of character status flag ($c0-$cf)
-    sty mem                                                           ; 2d97: 84 70       .p ; Y=value of character status flag ($d0-$df)
+    stx mem                                                           ; 2d95: 86 70       .p  ; X=old value of character status flag ($c0-$cf)
+    sty mem                                                           ; 2d97: 84 70       .p  ; Y=value of character status flag ($d0-$df)
     lda #osbyte_read_write_characters_c0_cf_status                    ; 2d99: a9 dd       ..
     ldx #0                                                            ; 2d9b: a2 00       ..
     ldy #&ff                                                          ; 2d9d: a0 ff       ..
     jsr OSBYTE                                                        ; 2d9f: 20 f4 ff     .. ; Read character status flag ($c0-$cf)
-    stx mem                                                           ; 2da2: 86 70       .p ; X=value of character status flag ($c0-$cf)
-    sty mem                                                           ; 2da4: 84 70       .p ; Y=value of character status flag ($d0-$df)
+    stx mem                                                           ; 2da2: 86 70       .p  ; X=value of character status flag ($c0-$cf)
+    sty mem                                                           ; 2da4: 84 70       .p  ; Y=value of character status flag ($d0-$df)
 
     ; *************** Test OSBYTE 0xde ***************
     lda #osbyte_read_write_characters_d0_df_status                    ; 2da6: a9 de       ..
     ldx #&2a ; '*'                                                    ; 2da8: a2 2a       .*
     ldy #0                                                            ; 2daa: a0 00       ..
     jsr OSBYTE                                                        ; 2dac: 20 f4 ff     .. ; Write character status flag ($d0-$df), value X=42
-    stx mem                                                           ; 2daf: 86 70       .p ; X=old value of character status flag ($d0-$df)
-    sty mem                                                           ; 2db1: 84 70       .p ; Y=value of character status flag ($e0-$ef)
+    stx mem                                                           ; 2daf: 86 70       .p  ; X=old value of character status flag ($d0-$df)
+    sty mem                                                           ; 2db1: 84 70       .p  ; Y=value of character status flag ($e0-$ef)
     lda #osbyte_read_write_characters_d0_df_status                    ; 2db3: a9 de       ..
     ldx #0                                                            ; 2db5: a2 00       ..
     ldy #&ff                                                          ; 2db7: a0 ff       ..
     jsr OSBYTE                                                        ; 2db9: 20 f4 ff     .. ; Read character status flag ($d0-$df)
-    stx mem                                                           ; 2dbc: 86 70       .p ; X=value of character status flag ($d0-$df)
-    sty mem                                                           ; 2dbe: 84 70       .p ; Y=value of character status flag ($e0-$ef)
+    stx mem                                                           ; 2dbc: 86 70       .p  ; X=value of character status flag ($d0-$df)
+    sty mem                                                           ; 2dbe: 84 70       .p  ; Y=value of character status flag ($e0-$ef)
 
     ; *************** Test OSBYTE 0xdf ***************
     lda #osbyte_read_write_characters_e0_ef_status                    ; 2dc0: a9 df       ..
     ldx #&2a ; '*'                                                    ; 2dc2: a2 2a       .*
     ldy #0                                                            ; 2dc4: a0 00       ..
     jsr OSBYTE                                                        ; 2dc6: 20 f4 ff     .. ; Write character status flag ($e0-$ef), value X=42
-    stx mem                                                           ; 2dc9: 86 70       .p ; X=old value of character status flag ($e0-$ef)
-    sty mem                                                           ; 2dcb: 84 70       .p ; Y=value of character status flag ($f0-$ff)
+    stx mem                                                           ; 2dc9: 86 70       .p  ; X=old value of character status flag ($e0-$ef)
+    sty mem                                                           ; 2dcb: 84 70       .p  ; Y=value of character status flag ($f0-$ff)
     lda #osbyte_read_write_characters_e0_ef_status                    ; 2dcd: a9 df       ..
     ldx #0                                                            ; 2dcf: a2 00       ..
     ldy #&ff                                                          ; 2dd1: a0 ff       ..
     jsr OSBYTE                                                        ; 2dd3: 20 f4 ff     .. ; Read character status flag ($e0-$ef)
-    stx mem                                                           ; 2dd6: 86 70       .p ; X=value of character status flag ($e0-$ef)
-    sty mem                                                           ; 2dd8: 84 70       .p ; Y=value of character status flag ($f0-$ff)
+    stx mem                                                           ; 2dd6: 86 70       .p  ; X=value of character status flag ($e0-$ef)
+    sty mem                                                           ; 2dd8: 84 70       .p  ; Y=value of character status flag ($f0-$ff)
 
     ; *************** Test OSBYTE 0xe0 ***************
     lda #osbyte_read_write_characters_f0_ff_status                    ; 2dda: a9 e0       ..
     ldx #&2a ; '*'                                                    ; 2ddc: a2 2a       .*
     ldy #0                                                            ; 2dde: a0 00       ..
     jsr OSBYTE                                                        ; 2de0: 20 f4 ff     .. ; Write character status flag ($f0-$ff), value X=42
-    stx mem                                                           ; 2de3: 86 70       .p ; X=old value of character status flag ($f0-$ff)
-    sty mem                                                           ; 2de5: 84 70       .p ; Y=value of function key status
+    stx mem                                                           ; 2de3: 86 70       .p  ; X=old value of character status flag ($f0-$ff)
+    sty mem                                                           ; 2de5: 84 70       .p  ; Y=value of function key status
     lda #osbyte_read_write_characters_f0_ff_status                    ; 2de7: a9 e0       ..
     ldx #0                                                            ; 2de9: a2 00       ..
     ldy #&ff                                                          ; 2deb: a0 ff       ..
     jsr OSBYTE                                                        ; 2ded: 20 f4 ff     .. ; Read character status flag ($f0-$ff)
-    stx mem                                                           ; 2df0: 86 70       .p ; X=value of character status flag ($f0-$ff)
-    sty mem                                                           ; 2df2: 84 70       .p ; Y=value of function key status
+    stx mem                                                           ; 2df0: 86 70       .p  ; X=value of character status flag ($f0-$ff)
+    sty mem                                                           ; 2df2: 84 70       .p  ; Y=value of function key status
 
     ; *************** Test OSBYTE 0xe1 ***************
     lda #osbyte_read_write_function_key_status                        ; 2df4: a9 e1       ..
     ldx #&2a ; '*'                                                    ; 2df6: a2 2a       .*
     ldy #0                                                            ; 2df8: a0 00       ..
     jsr OSBYTE                                                        ; 2dfa: 20 f4 ff     .. ; Write function key status, value X=42
-    stx mem                                                           ; 2dfd: 86 70       .p ; X=old value of function key status
-    sty mem                                                           ; 2dff: 84 70       .p ; Y=value of SHIFT+function keys status
+    stx mem                                                           ; 2dfd: 86 70       .p  ; X=old value of function key status
+    sty mem                                                           ; 2dff: 84 70       .p  ; Y=value of SHIFT+function keys status
     lda #osbyte_read_write_function_key_status                        ; 2e01: a9 e1       ..
     ldx #0                                                            ; 2e03: a2 00       ..
     ldy #&ff                                                          ; 2e05: a0 ff       ..
     jsr OSBYTE                                                        ; 2e07: 20 f4 ff     .. ; Read function key status
-    stx mem                                                           ; 2e0a: 86 70       .p ; X=value of function key status
-    sty mem                                                           ; 2e0c: 84 70       .p ; Y=value of SHIFT+function keys status
+    stx mem                                                           ; 2e0a: 86 70       .p  ; X=value of function key status
+    sty mem                                                           ; 2e0c: 84 70       .p  ; Y=value of SHIFT+function keys status
 
     ; *************** Test OSBYTE 0xe2 ***************
     lda #osbyte_read_write_shift_function_key_status                  ; 2e0e: a9 e2       ..
     ldx #&2a ; '*'                                                    ; 2e10: a2 2a       .*
     ldy #0                                                            ; 2e12: a0 00       ..
     jsr OSBYTE                                                        ; 2e14: 20 f4 ff     .. ; Write SHIFT+function keys status, value X=42
-    stx mem                                                           ; 2e17: 86 70       .p ; X=old value of SHIFT+function keys status
-    sty mem                                                           ; 2e19: 84 70       .p ; Y=value of CTRL+function keys status
+    stx mem                                                           ; 2e17: 86 70       .p  ; X=old value of SHIFT+function keys status
+    sty mem                                                           ; 2e19: 84 70       .p  ; Y=value of CTRL+function keys status
     lda #osbyte_read_write_shift_function_key_status                  ; 2e1b: a9 e2       ..
     ldx #0                                                            ; 2e1d: a2 00       ..
     ldy #&ff                                                          ; 2e1f: a0 ff       ..
     jsr OSBYTE                                                        ; 2e21: 20 f4 ff     .. ; Read SHIFT+function keys status
-    stx mem                                                           ; 2e24: 86 70       .p ; X=value of SHIFT+function keys status
-    sty mem                                                           ; 2e26: 84 70       .p ; Y=value of CTRL+function keys status
+    stx mem                                                           ; 2e24: 86 70       .p  ; X=value of SHIFT+function keys status
+    sty mem                                                           ; 2e26: 84 70       .p  ; Y=value of CTRL+function keys status
 
     ; *************** Test OSBYTE 0xe3 ***************
     lda #osbyte_read_write_ctrl_function_key_status                   ; 2e28: a9 e3       ..
     ldx #&2a ; '*'                                                    ; 2e2a: a2 2a       .*
     ldy #0                                                            ; 2e2c: a0 00       ..
     jsr OSBYTE                                                        ; 2e2e: 20 f4 ff     .. ; Write CTRL+function keys status, value X=42
-    stx mem                                                           ; 2e31: 86 70       .p ; X=old value of CTRL+function keys status
-    sty mem                                                           ; 2e33: 84 70       .p ; Y=value of CTRL+SHIFT+function keys status
+    stx mem                                                           ; 2e31: 86 70       .p  ; X=old value of CTRL+function keys status
+    sty mem                                                           ; 2e33: 84 70       .p  ; Y=value of CTRL+SHIFT+function keys status
     lda #osbyte_read_write_ctrl_function_key_status                   ; 2e35: a9 e3       ..
     ldx #0                                                            ; 2e37: a2 00       ..
     ldy #&ff                                                          ; 2e39: a0 ff       ..
     jsr OSBYTE                                                        ; 2e3b: 20 f4 ff     .. ; Read CTRL+function keys status
-    stx mem                                                           ; 2e3e: 86 70       .p ; X=value of CTRL+function keys status
-    sty mem                                                           ; 2e40: 84 70       .p ; Y=value of CTRL+SHIFT+function keys status
+    stx mem                                                           ; 2e3e: 86 70       .p  ; X=value of CTRL+function keys status
+    sty mem                                                           ; 2e40: 84 70       .p  ; Y=value of CTRL+SHIFT+function keys status
 
     ; *************** Test OSBYTE 0xe4 ***************
     lda #osbyte_read_write_ctrl_shift_function_key_status             ; 2e42: a9 e4       ..
     ldx #&2a ; '*'                                                    ; 2e44: a2 2a       .*
     ldy #0                                                            ; 2e46: a0 00       ..
     jsr OSBYTE                                                        ; 2e48: 20 f4 ff     .. ; Write CTRL+SHIFT+function keys status, value X=42
-    stx mem                                                           ; 2e4b: 86 70       .p ; X=old value of CTRL+SHIFT+function keys status
-    sty mem                                                           ; 2e4d: 84 70       .p ; Y=value of ESCAPE key status
+    stx mem                                                           ; 2e4b: 86 70       .p  ; X=old value of CTRL+SHIFT+function keys status
+    sty mem                                                           ; 2e4d: 84 70       .p  ; Y=value of ESCAPE key status
     lda #osbyte_read_write_ctrl_shift_function_key_status             ; 2e4f: a9 e4       ..
     ldx #0                                                            ; 2e51: a2 00       ..
     ldy #&ff                                                          ; 2e53: a0 ff       ..
     jsr OSBYTE                                                        ; 2e55: 20 f4 ff     .. ; Read CTRL+SHIFT+function keys status
-    stx mem                                                           ; 2e58: 86 70       .p ; X=value of CTRL+SHIFT+function keys status
-    sty mem                                                           ; 2e5a: 84 70       .p ; Y=value of ESCAPE key status
+    stx mem                                                           ; 2e58: 86 70       .p  ; X=value of CTRL+SHIFT+function keys status
+    sty mem                                                           ; 2e5a: 84 70       .p  ; Y=value of ESCAPE key status
 
     ; *************** Test OSBYTE 0xe5 ***************
     lda #osbyte_read_write_escape_status                              ; 2e5c: a9 e5       ..
     ldx #&2a ; '*'                                                    ; 2e5e: a2 2a       .*
     ldy #0                                                            ; 2e60: a0 00       ..
     jsr OSBYTE                                                        ; 2e62: 20 f4 ff     .. ; Set ESCAPE key to produce ASCII code 42
-    stx mem                                                           ; 2e65: 86 70       .p ; X=old value of ESCAPE key status
-    sty mem                                                           ; 2e67: 84 70       .p ; Y=value of ESCAPE effects
+    stx mem                                                           ; 2e65: 86 70       .p  ; X=old value of ESCAPE key status
+    sty mem                                                           ; 2e67: 84 70       .p  ; Y=value of ESCAPE effects
     lda #osbyte_read_write_escape_status                              ; 2e69: a9 e5       ..
     ldx #0                                                            ; 2e6b: a2 00       ..
     ldy #&ff                                                          ; 2e6d: a0 ff       ..
     jsr OSBYTE                                                        ; 2e6f: 20 f4 ff     .. ; Read ESCAPE key status
-    stx mem                                                           ; 2e72: 86 70       .p ; X=value of ESCAPE key status
-    sty mem                                                           ; 2e74: 84 70       .p ; Y=value of ESCAPE effects
+    stx mem                                                           ; 2e72: 86 70       .p  ; X=value of ESCAPE key status
+    sty mem                                                           ; 2e74: 84 70       .p  ; Y=value of ESCAPE effects
 
     ; *************** Test OSBYTE 0xe6 ***************
     lda #osbyte_read_write_escape_effects                             ; 2e76: a9 e6       ..
     ldx #&2a ; '*'                                                    ; 2e78: a2 2a       .*
     ldy #0                                                            ; 2e7a: a0 00       ..
     jsr OSBYTE                                                        ; 2e7c: 20 f4 ff     .. ; Write ESCAPE effects, value X=42
-    stx mem                                                           ; 2e7f: 86 70       .p ; X=old value of ESCAPE effects
-    sty mem                                                           ; 2e81: 84 70       .p ; Y=value of User 6522 IRQ bit mask
+    stx mem                                                           ; 2e7f: 86 70       .p  ; X=old value of ESCAPE effects
+    sty mem                                                           ; 2e81: 84 70       .p  ; Y=value of User 6522 IRQ bit mask
     lda #osbyte_read_write_escape_effects                             ; 2e83: a9 e6       ..
     ldx #0                                                            ; 2e85: a2 00       ..
     ldy #&ff                                                          ; 2e87: a0 ff       ..
     jsr OSBYTE                                                        ; 2e89: 20 f4 ff     .. ; Read ESCAPE effects
-    stx mem                                                           ; 2e8c: 86 70       .p ; X=value of ESCAPE effects
-    sty mem                                                           ; 2e8e: 84 70       .p ; Y=value of User 6522 IRQ bit mask
+    stx mem                                                           ; 2e8c: 86 70       .p  ; X=value of ESCAPE effects
+    sty mem                                                           ; 2e8e: 84 70       .p  ; Y=value of User 6522 IRQ bit mask
 
     ; *************** Test OSBYTE 0xe7 ***************
     lda #osbyte_read_write_user_via_irq_mask                          ; 2e90: a9 e7       ..
     ldx #&2a ; '*'                                                    ; 2e92: a2 2a       .*
     ldy #0                                                            ; 2e94: a0 00       ..
     jsr OSBYTE                                                        ; 2e96: 20 f4 ff     .. ; Write User 6522 IRQ bit mask, value X=42
-    stx mem                                                           ; 2e99: 86 70       .p ; X=old value of User 6522 IRQ bit mask
-    sty mem                                                           ; 2e9b: 84 70       .p ; Y=value of 6850 IRQ bit mask
+    stx mem                                                           ; 2e99: 86 70       .p  ; X=old value of User 6522 IRQ bit mask
+    sty mem                                                           ; 2e9b: 84 70       .p  ; Y=value of 6850 IRQ bit mask
     lda #osbyte_read_write_user_via_irq_mask                          ; 2e9d: a9 e7       ..
     ldx #0                                                            ; 2e9f: a2 00       ..
     ldy #&ff                                                          ; 2ea1: a0 ff       ..
     jsr OSBYTE                                                        ; 2ea3: 20 f4 ff     .. ; Read User 6522 IRQ bit mask
-    stx mem                                                           ; 2ea6: 86 70       .p ; X=value of User 6522 IRQ bit mask
-    sty mem                                                           ; 2ea8: 84 70       .p ; Y=value of 6850 IRQ bit mask
+    stx mem                                                           ; 2ea6: 86 70       .p  ; X=value of User 6522 IRQ bit mask
+    sty mem                                                           ; 2ea8: 84 70       .p  ; Y=value of 6850 IRQ bit mask
 
     ; *************** Test OSBYTE 0xe8 ***************
     lda #osbyte_read_write_6850_irq_mark                              ; 2eaa: a9 e8       ..
     ldx #&2a ; '*'                                                    ; 2eac: a2 2a       .*
     ldy #0                                                            ; 2eae: a0 00       ..
     jsr OSBYTE                                                        ; 2eb0: 20 f4 ff     .. ; Write 6850 IRQ bit mask, value X=42
-    stx mem                                                           ; 2eb3: 86 70       .p ; X=old value of 6850 IRQ bit mask
-    sty mem                                                           ; 2eb5: 84 70       .p ; Y=value of System 6522 IRQ bit mask
+    stx mem                                                           ; 2eb3: 86 70       .p  ; X=old value of 6850 IRQ bit mask
+    sty mem                                                           ; 2eb5: 84 70       .p  ; Y=value of System 6522 IRQ bit mask
     lda #osbyte_read_write_6850_irq_mark                              ; 2eb7: a9 e8       ..
     ldx #0                                                            ; 2eb9: a2 00       ..
     ldy #&ff                                                          ; 2ebb: a0 ff       ..
     jsr OSBYTE                                                        ; 2ebd: 20 f4 ff     .. ; Read 6850 IRQ bit mask
-    stx mem                                                           ; 2ec0: 86 70       .p ; X=value of 6850 IRQ bit mask
-    sty mem                                                           ; 2ec2: 84 70       .p ; Y=value of System 6522 IRQ bit mask
+    stx mem                                                           ; 2ec0: 86 70       .p  ; X=value of 6850 IRQ bit mask
+    sty mem                                                           ; 2ec2: 84 70       .p  ; Y=value of System 6522 IRQ bit mask
 
     ; *************** Test OSBYTE 0xe9 ***************
     lda #osbyte_read_write_system_via_irq_mask                        ; 2ec4: a9 e9       ..
     ldx #&2a ; '*'                                                    ; 2ec6: a2 2a       .*
     ldy #0                                                            ; 2ec8: a0 00       ..
     jsr OSBYTE                                                        ; 2eca: 20 f4 ff     .. ; Write System 6522 IRQ bit mask, value X=42
-    stx mem                                                           ; 2ecd: 86 70       .p ; X=old value of System 6522 IRQ bit mask
-    sty mem                                                           ; 2ecf: 84 70       .p ; Y=value of Tube present flag
+    stx mem                                                           ; 2ecd: 86 70       .p  ; X=old value of System 6522 IRQ bit mask
+    sty mem                                                           ; 2ecf: 84 70       .p  ; Y=value of Tube present flag
     lda #osbyte_read_write_system_via_irq_mask                        ; 2ed1: a9 e9       ..
     ldx #0                                                            ; 2ed3: a2 00       ..
     ldy #&ff                                                          ; 2ed5: a0 ff       ..
     jsr OSBYTE                                                        ; 2ed7: 20 f4 ff     .. ; Read System 6522 IRQ bit mask
-    stx mem                                                           ; 2eda: 86 70       .p ; X=value of System 6522 IRQ bit mask
-    sty mem                                                           ; 2edc: 84 70       .p ; Y=value of Tube present flag
+    stx mem                                                           ; 2eda: 86 70       .p  ; X=value of System 6522 IRQ bit mask
+    sty mem                                                           ; 2edc: 84 70       .p  ; Y=value of Tube present flag
 
     ; *************** Test OSBYTE 0xea ***************
     lda #osbyte_read_tube_presence                                    ; 2ede: a9 ea       ..
     ldx #&2a ; '*'                                                    ; 2ee0: a2 2a       .*
     ldy #0                                                            ; 2ee2: a0 00       ..
     jsr OSBYTE                                                        ; 2ee4: 20 f4 ff     .. ; Write Tube present flag, value X=42
-    stx mem                                                           ; 2ee7: 86 70       .p ; X=old value of Tube present flag
-    sty mem                                                           ; 2ee9: 84 70       .p ; Y=value of Test presence of speech processor
+    stx mem                                                           ; 2ee7: 86 70       .p  ; X=old value of Tube present flag
+    sty mem                                                           ; 2ee9: 84 70       .p  ; Y=value of Test presence of speech processor
     lda #osbyte_read_tube_presence                                    ; 2eeb: a9 ea       ..
     ldx #0                                                            ; 2eed: a2 00       ..
     ldy #&ff                                                          ; 2eef: a0 ff       ..
     jsr OSBYTE                                                        ; 2ef1: 20 f4 ff     .. ; Read Tube present flag
-    stx mem                                                           ; 2ef4: 86 70       .p ; X=value of Tube present flag
-    sty mem                                                           ; 2ef6: 84 70       .p ; Y=value of Test presence of speech processor
+    stx mem                                                           ; 2ef4: 86 70       .p  ; X=value of Tube present flag
+    sty mem                                                           ; 2ef6: 84 70       .p  ; Y=value of Test presence of speech processor
 
     ; *************** Test OSBYTE 0xeb ***************
     lda #osbyte_read_speech_processor_presence                        ; 2ef8: a9 eb       ..
     ldx #&2a ; '*'                                                    ; 2efa: a2 2a       .*
     ldy #0                                                            ; 2efc: a0 00       ..
     jsr OSBYTE                                                        ; 2efe: 20 f4 ff     .. ; Write Test presence of speech processor, value X=42
-    stx mem                                                           ; 2f01: 86 70       .p ; X=old value of Test presence of speech processor
-    sty mem                                                           ; 2f03: 84 70       .p ; Y=value of output stream flag
+    stx mem                                                           ; 2f01: 86 70       .p  ; X=old value of Test presence of speech processor
+    sty mem                                                           ; 2f03: 84 70       .p  ; Y=value of output stream flag
     lda #osbyte_read_speech_processor_presence                        ; 2f05: a9 eb       ..
     ldx #0                                                            ; 2f07: a2 00       ..
     ldy #&ff                                                          ; 2f09: a0 ff       ..
     jsr OSBYTE                                                        ; 2f0b: 20 f4 ff     .. ; Read Test presence of speech processor
-    stx mem                                                           ; 2f0e: 86 70       .p ; X=value of Test presence of speech processor
-    sty mem                                                           ; 2f10: 84 70       .p ; Y=value of output stream flag
+    stx mem                                                           ; 2f0e: 86 70       .p  ; X=value of Test presence of speech processor
+    sty mem                                                           ; 2f10: 84 70       .p  ; Y=value of output stream flag
 
     ; *************** Test OSBYTE 0xec ***************
     lda #osbyte_read_write_char_destination_status                    ; 2f12: a9 ec       ..
     ldx #&2a ; '*'                                                    ; 2f14: a2 2a       .*
     ldy #0                                                            ; 2f16: a0 00       ..
     jsr OSBYTE                                                        ; 2f18: 20 f4 ff     .. ; Write output stream flag, value X=42
-    stx mem                                                           ; 2f1b: 86 70       .p ; X=old value of output stream flag
-    sty mem                                                           ; 2f1d: 84 70       .p ; Y=value of cursor editing status
+    stx mem                                                           ; 2f1b: 86 70       .p  ; X=old value of output stream flag
+    sty mem                                                           ; 2f1d: 84 70       .p  ; Y=value of cursor editing status
     lda #osbyte_read_write_char_destination_status                    ; 2f1f: a9 ec       ..
     ldx #0                                                            ; 2f21: a2 00       ..
     ldy #&ff                                                          ; 2f23: a0 ff       ..
     jsr OSBYTE                                                        ; 2f25: 20 f4 ff     .. ; Read output stream flag
-    stx mem                                                           ; 2f28: 86 70       .p ; X=value of output stream flag
-    sty mem                                                           ; 2f2a: 84 70       .p ; Y=value of cursor editing status
+    stx mem                                                           ; 2f28: 86 70       .p  ; X=value of output stream flag
+    sty mem                                                           ; 2f2a: 84 70       .p  ; Y=value of cursor editing status
 
     ; *************** Test OSBYTE 0xed ***************
     lda #osbyte_read_write_cursor_editing_status                      ; 2f2c: a9 ed       ..
     ldx #&2a ; '*'                                                    ; 2f2e: a2 2a       .*
     ldy #0                                                            ; 2f30: a0 00       ..
     jsr OSBYTE                                                        ; 2f32: 20 f4 ff     .. ; Write cursor editing status, value X=42
-    stx mem                                                           ; 2f35: 86 70       .p ; X=old value of cursor editing status
-    sty mem                                                           ; 2f37: 84 70       .p ; Y=value of Master only: Set base for numeric keypad
+    stx mem                                                           ; 2f35: 86 70       .p  ; X=old value of cursor editing status
+    sty mem                                                           ; 2f37: 84 70       .p  ; Y=value of Master only: Set base for numeric keypad
     lda #osbyte_read_write_cursor_editing_status                      ; 2f39: a9 ed       ..
     ldx #0                                                            ; 2f3b: a2 00       ..
     ldy #&ff                                                          ; 2f3d: a0 ff       ..
     jsr OSBYTE                                                        ; 2f3f: 20 f4 ff     .. ; Read cursor editing status
-    stx mem                                                           ; 2f42: 86 70       .p ; X=value of cursor editing status
-    sty mem                                                           ; 2f44: 84 70       .p ; Y=value of Master only: Set base for numeric keypad
+    stx mem                                                           ; 2f42: 86 70       .p  ; X=value of cursor editing status
+    sty mem                                                           ; 2f44: 84 70       .p  ; Y=value of Master only: Set base for numeric keypad
 
     ; *************** Test OSBYTE 0xee ***************
     lda #osbyte_read_write_27e                                        ; 2f46: a9 ee       ..
     ldx #&2a ; '*'                                                    ; 2f48: a2 2a       .*
     ldy #0                                                            ; 2f4a: a0 00       ..
     jsr OSBYTE                                                        ; 2f4c: 20 f4 ff     .. ; Write Master only: Set base for numeric keypad, value X=42
-    stx mem                                                           ; 2f4f: 86 70       .p ; X=old value of Master only: Set base for numeric keypad
-    sty mem                                                           ; 2f51: 84 70       .p ; Y=value of flag that stores the value of OSBYTE 114 (shadow memory use)
+    stx mem                                                           ; 2f4f: 86 70       .p  ; X=old value of Master only: Set base for numeric keypad
+    sty mem                                                           ; 2f51: 84 70       .p  ; Y=value of flag that stores the value of OSBYTE 114 (shadow memory use)
     lda #osbyte_read_write_27e                                        ; 2f53: a9 ee       ..
     ldx #0                                                            ; 2f55: a2 00       ..
     ldy #&ff                                                          ; 2f57: a0 ff       ..
     jsr OSBYTE                                                        ; 2f59: 20 f4 ff     .. ; Read Master only: Set base for numeric keypad
-    stx mem                                                           ; 2f5c: 86 70       .p ; X=value of Master only: Set base for numeric keypad
-    sty mem                                                           ; 2f5e: 84 70       .p ; Y=value of flag that stores the value of OSBYTE 114 (shadow memory use)
+    stx mem                                                           ; 2f5c: 86 70       .p  ; X=value of Master only: Set base for numeric keypad
+    sty mem                                                           ; 2f5e: 84 70       .p  ; Y=value of flag that stores the value of OSBYTE 114 (shadow memory use)
 
     ; *************** Test OSBYTE 0xef ***************
     lda #osbyte_read_write_27f                                        ; 2f60: a9 ef       ..
     ldx #&2a ; '*'                                                    ; 2f62: a2 2a       .*
     ldy #0                                                            ; 2f64: a0 00       ..
     jsr OSBYTE                                                        ; 2f66: 20 f4 ff     .. ; Write flag that stores the value of OSBYTE 114 (shadow memory use), value X=42
-    stx mem                                                           ; 2f69: 86 70       .p ; X=old value of flag that stores the value of OSBYTE 114 (shadow memory use)
-    sty mem                                                           ; 2f6b: 84 70       .p ; Y=value of country code (0=UK; 1=US)
+    stx mem                                                           ; 2f69: 86 70       .p  ; X=old value of flag that stores the value of OSBYTE 114 (shadow memory use)
+    sty mem                                                           ; 2f6b: 84 70       .p  ; Y=value of country code (0=UK; 1=US)
     lda #osbyte_read_write_27f                                        ; 2f6d: a9 ef       ..
     ldx #0                                                            ; 2f6f: a2 00       ..
     ldy #&ff                                                          ; 2f71: a0 ff       ..
     jsr OSBYTE                                                        ; 2f73: 20 f4 ff     .. ; Read flag that stores the value of OSBYTE 114 (shadow memory use)
-    stx mem                                                           ; 2f76: 86 70       .p ; X=value of flag that stores the value of OSBYTE 114 (shadow memory use)
-    sty mem                                                           ; 2f78: 84 70       .p ; Y=value of country code (0=UK; 1=US)
+    stx mem                                                           ; 2f76: 86 70       .p  ; X=value of flag that stores the value of OSBYTE 114 (shadow memory use)
+    sty mem                                                           ; 2f78: 84 70       .p  ; Y=value of country code (0=UK; 1=US)
 
     ; *************** Test OSBYTE 0xf0 ***************
     lda #osbyte_read_write_280                                        ; 2f7a: a9 f0       ..
     ldx #&2a ; '*'                                                    ; 2f7c: a2 2a       .*
     ldy #0                                                            ; 2f7e: a0 00       ..
     jsr OSBYTE                                                        ; 2f80: 20 f4 ff     .. ; Write country code (0=UK; 1=US), value X=42
-    stx mem                                                           ; 2f83: 86 70       .p ; X=old value of country code (0=UK; 1=US)
-    sty mem                                                           ; 2f85: 84 70       .p ; Y=value of user flag byte
+    stx mem                                                           ; 2f83: 86 70       .p  ; X=old value of country code (0=UK; 1=US)
+    sty mem                                                           ; 2f85: 84 70       .p  ; Y=value of user flag byte
     lda #osbyte_read_write_280                                        ; 2f87: a9 f0       ..
     ldx #0                                                            ; 2f89: a2 00       ..
     ldy #&ff                                                          ; 2f8b: a0 ff       ..
     jsr OSBYTE                                                        ; 2f8d: 20 f4 ff     .. ; Read country code (0=UK; 1=US)
-    stx mem                                                           ; 2f90: 86 70       .p ; X=value of country code (0=UK; 1=US)
-    sty mem                                                           ; 2f92: 84 70       .p ; Y=value of user flag byte
+    stx mem                                                           ; 2f90: 86 70       .p  ; X=value of country code (0=UK; 1=US)
+    sty mem                                                           ; 2f92: 84 70       .p  ; Y=value of user flag byte
 
     ; *************** Test OSBYTE 0xf1 ***************
     lda #osbyte_read_write_281                                        ; 2f94: a9 f1       ..
     ldx #&2a ; '*'                                                    ; 2f96: a2 2a       .*
     ldy #0                                                            ; 2f98: a0 00       ..
     jsr OSBYTE                                                        ; 2f9a: 20 f4 ff     .. ; Write user flag byte, value X=42
-    stx mem                                                           ; 2f9d: 86 70       .p ; X=old value of user flag byte
-    sty mem                                                           ; 2f9f: 84 70       .p ; Y=value of OS copy of serial ULA register
+    stx mem                                                           ; 2f9d: 86 70       .p  ; X=old value of user flag byte
+    sty mem                                                           ; 2f9f: 84 70       .p  ; Y=value of OS copy of serial ULA register
     lda #osbyte_read_write_281                                        ; 2fa1: a9 f1       ..
     ldx #0                                                            ; 2fa3: a2 00       ..
     ldy #&ff                                                          ; 2fa5: a0 ff       ..
     jsr OSBYTE                                                        ; 2fa7: 20 f4 ff     .. ; Read user flag byte
-    stx mem                                                           ; 2faa: 86 70       .p ; X=value of user flag byte
-    sty mem                                                           ; 2fac: 84 70       .p ; Y=value of OS copy of serial ULA register
+    stx mem                                                           ; 2faa: 86 70       .p  ; X=value of user flag byte
+    sty mem                                                           ; 2fac: 84 70       .p  ; Y=value of OS copy of serial ULA register
 
     ; *************** Test OSBYTE 0xf2 ***************
     lda #osbyte_read_serial_ula                                       ; 2fae: a9 f2       ..
     ldx #&2a ; '*'                                                    ; 2fb0: a2 2a       .*
     ldy #0                                                            ; 2fb2: a0 00       ..
     jsr OSBYTE                                                        ; 2fb4: 20 f4 ff     .. ; Write OS copy of serial ULA register, value X=42
-    stx mem                                                           ; 2fb7: 86 70       .p ; X=old value of OS copy of serial ULA register
-    sty mem                                                           ; 2fb9: 84 70       .p ; Y=value of timer state switch
+    stx mem                                                           ; 2fb7: 86 70       .p  ; X=old value of OS copy of serial ULA register
+    sty mem                                                           ; 2fb9: 84 70       .p  ; Y=value of timer state switch
     lda #osbyte_read_serial_ula                                       ; 2fbb: a9 f2       ..
     ldx #0                                                            ; 2fbd: a2 00       ..
     ldy #&ff                                                          ; 2fbf: a0 ff       ..
     jsr OSBYTE                                                        ; 2fc1: 20 f4 ff     .. ; Read OS copy of serial ULA register
-    stx mem                                                           ; 2fc4: 86 70       .p ; X=value of OS copy of serial ULA register
-    sty mem                                                           ; 2fc6: 84 70       .p ; Y=value of timer state switch
+    stx mem                                                           ; 2fc4: 86 70       .p  ; X=value of OS copy of serial ULA register
+    sty mem                                                           ; 2fc6: 84 70       .p  ; Y=value of timer state switch
 
     ; *************** Test OSBYTE 0xf3 ***************
     lda #osbyte_read_write_timer_switch_state                         ; 2fc8: a9 f3       ..
     ldx #&2a ; '*'                                                    ; 2fca: a2 2a       .*
     ldy #0                                                            ; 2fcc: a0 00       ..
     jsr OSBYTE                                                        ; 2fce: 20 f4 ff     .. ; Write timer state switch, value X=42
-    stx mem                                                           ; 2fd1: 86 70       .p ; X=old value of timer state switch
-    sty mem                                                           ; 2fd3: 84 70       .p ; Y=value of soft key consistency flag
+    stx mem                                                           ; 2fd1: 86 70       .p  ; X=old value of timer state switch
+    sty mem                                                           ; 2fd3: 84 70       .p  ; Y=value of soft key consistency flag
     lda #osbyte_read_write_timer_switch_state                         ; 2fd5: a9 f3       ..
     ldx #0                                                            ; 2fd7: a2 00       ..
     ldy #&ff                                                          ; 2fd9: a0 ff       ..
     jsr OSBYTE                                                        ; 2fdb: 20 f4 ff     .. ; Read timer state switch
-    stx mem                                                           ; 2fde: 86 70       .p ; X=value of timer state switch
-    sty mem                                                           ; 2fe0: 84 70       .p ; Y=value of soft key consistency flag
+    stx mem                                                           ; 2fde: 86 70       .p  ; X=value of timer state switch
+    sty mem                                                           ; 2fe0: 84 70       .p  ; Y=value of soft key consistency flag
 
     ; *************** Test OSBYTE 0xf4 ***************
     lda #osbyte_read_write_soft_key_consistency_flag                  ; 2fe2: a9 f4       ..
     ldx #&2a ; '*'                                                    ; 2fe4: a2 2a       .*
     ldy #0                                                            ; 2fe6: a0 00       ..
     jsr OSBYTE                                                        ; 2fe8: 20 f4 ff     .. ; Write soft key consistency flag, value X=42
-    stx mem                                                           ; 2feb: 86 70       .p ; X=old value of soft key consistency flag
-    sty mem                                                           ; 2fed: 84 70       .p ; Y=value of printer destination
+    stx mem                                                           ; 2feb: 86 70       .p  ; X=old value of soft key consistency flag
+    sty mem                                                           ; 2fed: 84 70       .p  ; Y=value of printer destination
     lda #osbyte_read_write_soft_key_consistency_flag                  ; 2fef: a9 f4       ..
     ldx #0                                                            ; 2ff1: a2 00       ..
     ldy #&ff                                                          ; 2ff3: a0 ff       ..
     jsr OSBYTE                                                        ; 2ff5: 20 f4 ff     .. ; Read soft key consistency flag
-    stx mem                                                           ; 2ff8: 86 70       .p ; X=value of soft key consistency flag
-    sty mem                                                           ; 2ffa: 84 70       .p ; Y=value of printer destination
+    stx mem                                                           ; 2ff8: 86 70       .p  ; X=value of soft key consistency flag
+    sty mem                                                           ; 2ffa: 84 70       .p  ; Y=value of printer destination
 
     ; *************** Test OSBYTE 0xf5 ***************
     lda #osbyte_read_write_printer_destination                        ; 2ffc: a9 f5       ..
     ldx #&2a ; '*'                                                    ; 2ffe: a2 2a       .*
     ldy #0                                                            ; 3000: a0 00       ..
     jsr OSBYTE                                                        ; 3002: 20 f4 ff     .. ; Write printer destination, value X=42
-    stx mem                                                           ; 3005: 86 70       .p ; X=old value of printer destination
-    sty mem                                                           ; 3007: 84 70       .p ; Y=value of printer ignore character
+    stx mem                                                           ; 3005: 86 70       .p  ; X=old value of printer destination
+    sty mem                                                           ; 3007: 84 70       .p  ; Y=value of printer ignore character
     lda #osbyte_read_write_printer_destination                        ; 3009: a9 f5       ..
     ldx #0                                                            ; 300b: a2 00       ..
     ldy #&ff                                                          ; 300d: a0 ff       ..
     jsr OSBYTE                                                        ; 300f: 20 f4 ff     .. ; Read printer destination
-    stx mem                                                           ; 3012: 86 70       .p ; X=value of printer destination
-    sty mem                                                           ; 3014: 84 70       .p ; Y=value of printer ignore character
+    stx mem                                                           ; 3012: 86 70       .p  ; X=value of printer destination
+    sty mem                                                           ; 3014: 84 70       .p  ; Y=value of printer ignore character
 
     ; *************** Test OSBYTE 0xf6 ***************
     lda #osbyte_read_write_printer_ignore_char                        ; 3016: a9 f6       ..
     ldx #&2a ; '*'                                                    ; 3018: a2 2a       .*
     ldy #0                                                            ; 301a: a0 00       ..
     jsr OSBYTE                                                        ; 301c: 20 f4 ff     .. ; Write printer ignore character, value X=42
-    stx mem                                                           ; 301f: 86 70       .p ; X=old value of printer ignore character
-    sty mem                                                           ; 3021: 84 70       .p ; Y=value of reset intercept code (opcode)
+    stx mem                                                           ; 301f: 86 70       .p  ; X=old value of printer ignore character
+    sty mem                                                           ; 3021: 84 70       .p  ; Y=value of reset intercept code (opcode)
     lda #osbyte_read_write_printer_ignore_char                        ; 3023: a9 f6       ..
     ldx #0                                                            ; 3025: a2 00       ..
     ldy #&ff                                                          ; 3027: a0 ff       ..
     jsr OSBYTE                                                        ; 3029: 20 f4 ff     .. ; Read printer ignore character
-    stx mem                                                           ; 302c: 86 70       .p ; X=value of printer ignore character
-    sty mem                                                           ; 302e: 84 70       .p ; Y=value of reset intercept code (opcode)
+    stx mem                                                           ; 302c: 86 70       .p  ; X=value of printer ignore character
+    sty mem                                                           ; 302e: 84 70       .p  ; Y=value of reset intercept code (opcode)
 
     ; *************** Test OSBYTE 0xf7 ***************
     lda #osbyte_read_write_first_byte_break_intercept                 ; 3030: a9 f7       ..
     ldx #&2a ; '*'                                                    ; 3032: a2 2a       .*
     ldy #0                                                            ; 3034: a0 00       ..
     jsr OSBYTE                                                        ; 3036: 20 f4 ff     .. ; Write reset intercept code (opcode), value X=42
-    stx mem                                                           ; 3039: 86 70       .p ; X=old value of reset intercept code (opcode)
-    sty mem                                                           ; 303b: 84 70       .p ; Y=value of reset intercept code (operand low)
+    stx mem                                                           ; 3039: 86 70       .p  ; X=old value of reset intercept code (opcode)
+    sty mem                                                           ; 303b: 84 70       .p  ; Y=value of reset intercept code (operand low)
     lda #osbyte_read_write_first_byte_break_intercept                 ; 303d: a9 f7       ..
     ldx #0                                                            ; 303f: a2 00       ..
     ldy #&ff                                                          ; 3041: a0 ff       ..
     jsr OSBYTE                                                        ; 3043: 20 f4 ff     .. ; Read reset intercept code (opcode)
-    stx mem                                                           ; 3046: 86 70       .p ; X=value of reset intercept code (opcode)
-    sty mem                                                           ; 3048: 84 70       .p ; Y=value of reset intercept code (operand low)
+    stx mem                                                           ; 3046: 86 70       .p  ; X=value of reset intercept code (opcode)
+    sty mem                                                           ; 3048: 84 70       .p  ; Y=value of reset intercept code (operand low)
 
     ; *************** Test OSBYTE 0xf8 ***************
     lda #osbyte_read_write_second_byte_break_intercept                ; 304a: a9 f8       ..
     ldx #&2a ; '*'                                                    ; 304c: a2 2a       .*
     ldy #0                                                            ; 304e: a0 00       ..
     jsr OSBYTE                                                        ; 3050: 20 f4 ff     .. ; Write reset intercept code (operand low), value X=42
-    stx mem                                                           ; 3053: 86 70       .p ; X=old value of reset intercept code (operand low)
-    sty mem                                                           ; 3055: 84 70       .p ; Y=value of reset intercept code (operand high)
+    stx mem                                                           ; 3053: 86 70       .p  ; X=old value of reset intercept code (operand low)
+    sty mem                                                           ; 3055: 84 70       .p  ; Y=value of reset intercept code (operand high)
     lda #osbyte_read_write_second_byte_break_intercept                ; 3057: a9 f8       ..
     ldx #0                                                            ; 3059: a2 00       ..
     ldy #&ff                                                          ; 305b: a0 ff       ..
     jsr OSBYTE                                                        ; 305d: 20 f4 ff     .. ; Read reset intercept code (operand low)
-    stx mem                                                           ; 3060: 86 70       .p ; X=value of reset intercept code (operand low)
-    sty mem                                                           ; 3062: 84 70       .p ; Y=value of reset intercept code (operand high)
+    stx mem                                                           ; 3060: 86 70       .p  ; X=value of reset intercept code (operand low)
+    sty mem                                                           ; 3062: 84 70       .p  ; Y=value of reset intercept code (operand high)
 
     ; *************** Test OSBYTE 0xf9 ***************
     lda #osbyte_read_write_third_byte_break_intercept                 ; 3064: a9 f9       ..
     ldx #&2a ; '*'                                                    ; 3066: a2 2a       .*
     ldy #0                                                            ; 3068: a0 00       ..
     jsr OSBYTE                                                        ; 306a: 20 f4 ff     .. ; Write reset intercept code (operand high), value X=42
-    stx mem                                                           ; 306d: 86 70       .p ; X=old value of reset intercept code (operand high)
-    sty mem                                                           ; 306f: 84 70       .p ; Y=value of flag used by OSBYTE 112
+    stx mem                                                           ; 306d: 86 70       .p  ; X=old value of reset intercept code (operand high)
+    sty mem                                                           ; 306f: 84 70       .p  ; Y=value of flag used by OSBYTE 112
     lda #osbyte_read_write_third_byte_break_intercept                 ; 3071: a9 f9       ..
     ldx #0                                                            ; 3073: a2 00       ..
     ldy #&ff                                                          ; 3075: a0 ff       ..
     jsr OSBYTE                                                        ; 3077: 20 f4 ff     .. ; Read reset intercept code (operand high)
-    stx mem                                                           ; 307a: 86 70       .p ; X=value of reset intercept code (operand high)
-    sty mem                                                           ; 307c: 84 70       .p ; Y=value of flag used by OSBYTE 112
+    stx mem                                                           ; 307a: 86 70       .p  ; X=value of reset intercept code (operand high)
+    sty mem                                                           ; 307c: 84 70       .p  ; Y=value of flag used by OSBYTE 112
 
     ; *************** Test OSBYTE 0xfa ***************
     lda #osbyte_read_write_28a                                        ; 307e: a9 fa       ..
     ldx #&2a ; '*'                                                    ; 3080: a2 2a       .*
     ldy #0                                                            ; 3082: a0 00       ..
     jsr OSBYTE                                                        ; 3084: 20 f4 ff     .. ; Write flag used by OSBYTE 112, value X=42
-    stx mem                                                           ; 3087: 86 70       .p ; X=old value of flag used by OSBYTE 112
-    sty mem                                                           ; 3089: 84 70       .p ; Y=value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
+    stx mem                                                           ; 3087: 86 70       .p  ; X=old value of flag used by OSBYTE 112
+    sty mem                                                           ; 3089: 84 70       .p  ; Y=value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
     lda #osbyte_read_write_28a                                        ; 308b: a9 fa       ..
     ldx #0                                                            ; 308d: a2 00       ..
     ldy #&ff                                                          ; 308f: a0 ff       ..
     jsr OSBYTE                                                        ; 3091: 20 f4 ff     .. ; Read flag used by OSBYTE 112
-    stx mem                                                           ; 3094: 86 70       .p ; X=value of flag used by OSBYTE 112
-    sty mem                                                           ; 3096: 84 70       .p ; Y=value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
+    stx mem                                                           ; 3094: 86 70       .p  ; X=value of flag used by OSBYTE 112
+    sty mem                                                           ; 3096: 84 70       .p  ; Y=value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
 
     ; *************** Test OSBYTE 0xfb ***************
     lda #osbyte_read_write_28b                                        ; 3098: a9 fb       ..
     ldx #&2a ; '*'                                                    ; 309a: a2 2a       .*
     ldy #0                                                            ; 309c: a0 00       ..
     jsr OSBYTE                                                        ; 309e: 20 f4 ff     .. ; Write flag that stores the value of OSBYTE 113 (main/shadow memory for display), value X=42
-    stx mem                                                           ; 30a1: 86 70       .p ; X=old value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
-    sty mem                                                           ; 30a3: 84 70       .p ; Y=value of current language ROM number
+    stx mem                                                           ; 30a1: 86 70       .p  ; X=old value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
+    sty mem                                                           ; 30a3: 84 70       .p  ; Y=value of current language ROM number
     lda #osbyte_read_write_28b                                        ; 30a5: a9 fb       ..
     ldx #0                                                            ; 30a7: a2 00       ..
     ldy #&ff                                                          ; 30a9: a0 ff       ..
     jsr OSBYTE                                                        ; 30ab: 20 f4 ff     .. ; Read flag that stores the value of OSBYTE 113 (main/shadow memory for display)
-    stx mem                                                           ; 30ae: 86 70       .p ; X=value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
-    sty mem                                                           ; 30b0: 84 70       .p ; Y=value of current language ROM number
+    stx mem                                                           ; 30ae: 86 70       .p  ; X=value of flag that stores the value of OSBYTE 113 (main/shadow memory for display)
+    sty mem                                                           ; 30b0: 84 70       .p  ; Y=value of current language ROM number
 
     ; *************** Test OSBYTE 0xfc ***************
     lda #osbyte_read_write_current_language_rom_bank                  ; 30b2: a9 fc       ..
     ldx #&2a ; '*'                                                    ; 30b4: a2 2a       .*
     ldy #0                                                            ; 30b6: a0 00       ..
     jsr OSBYTE                                                        ; 30b8: 20 f4 ff     .. ; Write current language ROM number, value X=42
-    stx mem                                                           ; 30bb: 86 70       .p ; X=old value of current language ROM number
-    sty mem                                                           ; 30bd: 84 70       .p ; Y=value of type of last reset
+    stx mem                                                           ; 30bb: 86 70       .p  ; X=old value of current language ROM number
+    sty mem                                                           ; 30bd: 84 70       .p  ; Y=value of type of last reset
     lda #osbyte_read_write_current_language_rom_bank                  ; 30bf: a9 fc       ..
     ldx #0                                                            ; 30c1: a2 00       ..
     ldy #&ff                                                          ; 30c3: a0 ff       ..
     jsr OSBYTE                                                        ; 30c5: 20 f4 ff     .. ; Read current language ROM number
-    stx mem                                                           ; 30c8: 86 70       .p ; X=value of current language ROM number
-    sty mem                                                           ; 30ca: 84 70       .p ; Y=value of type of last reset
+    stx mem                                                           ; 30c8: 86 70       .p  ; X=value of current language ROM number
+    sty mem                                                           ; 30ca: 84 70       .p  ; Y=value of type of last reset
 
     ; *************** Test OSBYTE 0xfd ***************
     lda #osbyte_read_write_last_break_type                            ; 30cc: a9 fd       ..
     ldx #&2a ; '*'                                                    ; 30ce: a2 2a       .*
     ldy #0                                                            ; 30d0: a0 00       ..
     jsr OSBYTE                                                        ; 30d2: 20 f4 ff     .. ; Write type of last reset, value X=42
-    stx mem                                                           ; 30d5: 86 70       .p ; X=old value of type of last reset
-    sty mem                                                           ; 30d7: 84 70       .p ; Y=value of RAM size (or Master only: shift key effect)
+    stx mem                                                           ; 30d5: 86 70       .p  ; X=old value of type of last reset
+    sty mem                                                           ; 30d7: 84 70       .p  ; Y=value of RAM size (or Master only: shift key effect)
     lda #osbyte_read_write_last_break_type                            ; 30d9: a9 fd       ..
     ldx #0                                                            ; 30db: a2 00       ..
     ldy #&ff                                                          ; 30dd: a0 ff       ..
     jsr OSBYTE                                                        ; 30df: 20 f4 ff     .. ; Read type of last reset
-    stx mem                                                           ; 30e2: 86 70       .p ; X=value of type of last reset
-    sty mem                                                           ; 30e4: 84 70       .p ; Y=value of RAM size (or Master only: shift key effect)
+    stx mem                                                           ; 30e2: 86 70       .p  ; X=value of type of last reset
+    sty mem                                                           ; 30e4: 84 70       .p  ; Y=value of RAM size (or Master only: shift key effect)
 
     ; *************** Test OSBYTE 0xfe ***************
     lda #osbyte_read_write_available_ram                              ; 30e6: a9 fe       ..
     ldx #&2a ; '*'                                                    ; 30e8: a2 2a       .*
     ldy #0                                                            ; 30ea: a0 00       ..
     jsr OSBYTE                                                        ; 30ec: 20 f4 ff     .. ; Write RAM size (or Master only: shift key effect), value X=42
-    stx mem                                                           ; 30ef: 86 70       .p ; X=old value of RAM size (or Master only: shift key effect)
-    sty mem                                                           ; 30f1: 84 70       .p ; Y=value of start-up option byte
+    stx mem                                                           ; 30ef: 86 70       .p  ; X=old value of RAM size (or Master only: shift key effect)
+    sty mem                                                           ; 30f1: 84 70       .p  ; Y=value of start-up option byte
     lda #osbyte_read_write_available_ram                              ; 30f3: a9 fe       ..
     ldx #0                                                            ; 30f5: a2 00       ..
     ldy #&ff                                                          ; 30f7: a0 ff       ..
     jsr OSBYTE                                                        ; 30f9: 20 f4 ff     .. ; Read RAM size (or Master only: shift key effect)
-    stx mem                                                           ; 30fc: 86 70       .p ; X=value of RAM size (or Master only: shift key effect)
-    sty mem                                                           ; 30fe: 84 70       .p ; Y=value of start-up option byte
+    stx mem                                                           ; 30fc: 86 70       .p  ; X=value of RAM size (or Master only: shift key effect)
+    sty mem                                                           ; 30fe: 84 70       .p  ; Y=value of start-up option byte
 
     ; *************** Test OSBYTE 0xff ***************
     lda #osbyte_read_write_startup_options                            ; 3100: a9 ff       ..
@@ -4392,7 +4392,7 @@ OSBYTE  = &fff4
     ; |  1 | 0  | 0      | 1      | 6         | 50          | 32        | 20        | 30          | 2         | 15          |
     ; |  1 | 1  | 0      | 0      | 24        | 20          | 64        | 30        | 30          | 3         | 15          |
     ; |---------------------------------------------------------------------------------------------------------------------|
-    stx mem                                                           ; 3109: 86 70       .p ; X=old value of start-up option byte
+    stx mem                                                           ; 3109: 86 70       .p  ; X=old value of start-up option byte
     sty mem                                                           ; 310b: 84 70       .p
     lda #osbyte_read_write_startup_options                            ; 310d: a9 ff       ..
     ldx #0                                                            ; 310f: a2 00       ..
@@ -4416,7 +4416,7 @@ OSBYTE  = &fff4
     ; |  1 | 0  | 0      | 1      | 6         | 50          | 32        | 20        | 30          | 2         | 15          |
     ; |  1 | 1  | 0      | 0      | 24        | 20          | 64        | 30        | 30          | 3         | 15          |
     ; |---------------------------------------------------------------------------------------------------------------------|
-    stx mem                                                           ; 3116: 86 70       .p ; X=value of start-up option byte
+    stx mem                                                           ; 3116: 86 70       .p  ; X=value of start-up option byte
     sty mem                                                           ; 3118: 84 70       .p
     lda #osbyte_read_write_startup_options                            ; 311a: a9 ff       ..
     ldx #&2a ; '*'                                                    ; 311c: a2 2a       .*
@@ -4488,18 +4488,18 @@ OSBYTE  = &fff4
     ldy #>osword15block                                               ; 31ae: a0 40       .@
     jsr OSWORD                                                        ; 31b0: 20 f1 ff     .. ; Write CMOS clock
 ; Misc other calls
-    ldy #3                                                            ; 31b3: a0 03       .. ; Y=ROM number
+    ldy #3                                                            ; 31b3: a0 03       ..  ; Y=ROM number
     jsr OSRDSC                                                        ; 31b5: 20 b9 ff     .. ; Read byte from ROM Y or screen
-    cmp #3                                                            ; 31b8: c9 03       .. ; A=byte read
-    lda #4                                                            ; 31ba: a9 04       .. ; A=value to be written
-    ldy #&5a ; 'Z'                                                    ; 31bc: a0 5a       .Z ; Y=offset from base address
+    cmp #3                                                            ; 31b8: c9 03       ..  ; A=byte read
+    lda #4                                                            ; 31ba: a9 04       ..  ; A=value to be written
+    ldy #&5a ; 'Z'                                                    ; 31bc: a0 5a       .Z  ; Y=offset from base address
     jsr OSWRSC                                                        ; 31be: 20 b3 ff     .. ; Write byte to screen
-    ldy #event_character_entering_input_buffer                        ; 31c1: a0 02       .. ; Y=event number
+    ldy #event_character_entering_input_buffer                        ; 31c1: a0 02       ..  ; Y=event number
     jsr OSEVEN                                                        ; 31c3: 20 bf ff     .. ; Generate event Y='Character entering input buffer'
     jsr OSRDCH                                                        ; 31c6: 20 e0 ff     .. ; Read a character from the current input stream
-    cmp #&20 ; ' '                                                    ; 31c9: c9 20       .  ; A=character read
+    cmp #&20 ; ' '                                                    ; 31c9: c9 20       .   ; A=character read
     jsr NVRDCH                                                        ; 31cb: 20 c8 ff     .. ; Read a character from the current input stream
-    cmp #&2a ; '*'                                                    ; 31ce: c9 2a       .* ; A=character read
+    cmp #&2a ; '*'                                                    ; 31ce: c9 2a       .*  ; A=character read
     lda #osfind_close                                                 ; 31d0: a9 00       ..
     ldy #0                                                            ; 31d2: a0 00       ..
     jsr OSFIND                                                        ; 31d4: 20 ce ff     .. ; Close all files (Y=0)
@@ -4510,24 +4510,24 @@ OSBYTE  = &fff4
     ldx #<osfind_block                                                ; 31e0: a2 c7       ..
     ldy #>osfind_block                                                ; 31e2: a0 41       .A
     jsr OSFIND                                                        ; 31e4: 20 ce ff     .. ; Open file for input (A=64)
-    sta mem                                                           ; 31e7: 85 70       .p ; A=file handle (or zero on failure)
+    sta mem                                                           ; 31e7: 85 70       .p  ; A=file handle (or zero on failure)
     lda #osfind_open_output                                           ; 31e9: a9 80       ..
     ldx #<osfind_block                                                ; 31eb: a2 c7       ..
     ldy #>osfind_block                                                ; 31ed: a0 41       .A
     jsr OSFIND                                                        ; 31ef: 20 ce ff     .. ; Open file for output (A=128)
-    sta mem                                                           ; 31f2: 85 70       .p ; A=file handle (or zero on failure)
+    sta mem                                                           ; 31f2: 85 70       .p  ; A=file handle (or zero on failure)
     lda #osfind_open_random_access                                    ; 31f4: a9 c0       ..
     ldx #<osfind_block                                                ; 31f6: a2 c7       ..
     ldy #>osfind_block                                                ; 31f8: a0 41       .A
     jsr OSFIND                                                        ; 31fa: 20 ce ff     .. ; Open file for random access (A=192)
-    sta mem                                                           ; 31fd: 85 70       .p ; A=file handle (or zero on failure)
+    sta mem                                                           ; 31fd: 85 70       .p  ; A=file handle (or zero on failure)
     lda #&2a ; '*'                                                    ; 31ff: a9 2a       .*
     ldx #<osfind_block                                                ; 3201: a2 c7       ..
     ldy #>osfind_block                                                ; 3203: a0 41       .A
     jsr OSFIND                                                        ; 3205: 20 ce ff     .. ; Open or close file(s)
-    sta mem                                                           ; 3208: 85 70       .p ; A=file handle (or zero on failure)
+    sta mem                                                           ; 3208: 85 70       .p  ; A=file handle (or zero on failure)
     jsr OSRDCH                                                        ; 320a: 20 e0 ff     .. ; Read a character from the current input stream
-    sta mem                                                           ; 320d: 85 70       .p ; A=character read
+    sta mem                                                           ; 320d: 85 70       .p  ; A=character read
     ldy mem                                                           ; 320f: a4 70       .p
     jsr OSGBPB                                                        ; 3211: 20 d1 ff     .. ; Read or write multiple bytes to an open file
     lda mem                                                           ; 3214: a5 70       .p
@@ -4571,9 +4571,9 @@ OSBYTE  = &fff4
     ldy #>osgbpb8_block                                               ; 3269: a0 41       .A
     jsr OSGBPB                                                        ; 326b: 20 d1 ff     .. ; read file names from the current directory (A=8)
     lda #&2a ; '*'                                                    ; 326e: a9 2a       .*
-    ldy mem                                                           ; 3270: a4 70       .p ; Y=file handle
+    ldy mem                                                           ; 3270: a4 70       .p  ; Y=file handle
     jsr OSBPUT                                                        ; 3272: 20 d4 ff     .. ; Write a single byte A=42 to an open file Y
-    ldy mem                                                           ; 3275: a4 70       .p ; Y=file handle
+    ldy mem                                                           ; 3275: a4 70       .p  ; Y=file handle
     jsr OSBGET                                                        ; 3277: 20 d7 ff     .. ; Read a single byte from an open file Y
     cmp #0                                                            ; 327a: c9 00       ..
     jsr OSNEWL                                                        ; 327c: 20 e7 ff     .. ; Write newline (characters 10 and 13)
@@ -4639,28 +4639,28 @@ OSBYTE  = &fff4
     ;     A=8, ADFS
     ;     A=9, Host filing system
     ;     A=10, Videodisc filing system
-    sta mem                                                           ; 32f1: 85 70       .p ; A=filing system number
+    sta mem                                                           ; 32f1: 85 70       .p  ; A=filing system number
     lda #0                                                            ; 32f3: a9 00       ..
-    ldx mem                                                           ; 32f5: a6 70       .p ; X=zero page address for result
-    ldy mem                                                           ; 32f7: a4 70       .p ; Y=file handle
+    ldx mem                                                           ; 32f5: a6 70       .p  ; X=zero page address for result
+    ldy mem                                                           ; 32f7: a4 70       .p  ; Y=file handle
     jsr OSARGS                                                        ; 32f9: 20 da ff     .. ; Get sequential file pointer into zero page address X (A=0)
     lda #1                                                            ; 32fc: a9 01       ..
-    ldx mem                                                           ; 32fe: a6 70       .p ; X=zero page address for result
+    ldx mem                                                           ; 32fe: a6 70       .p  ; X=zero page address for result
     ldy #0                                                            ; 3300: a0 00       ..
     jsr OSARGS                                                        ; 3302: 20 da ff     .. ; Get address of remaining command line into zero page address X (A=1, Y=0)
     lda #1                                                            ; 3305: a9 01       ..
-    ldx mem                                                           ; 3307: a6 70       .p ; X=zero page address to write from
-    ldy mem                                                           ; 3309: a4 70       .p ; Y=file handle
+    ldx mem                                                           ; 3307: a6 70       .p  ; X=zero page address to write from
+    ldy mem                                                           ; 3309: a4 70       .p  ; Y=file handle
     jsr OSARGS                                                        ; 330b: 20 da ff     .. ; Write sequential file pointer from zero page address X (A=1)
     lda #2                                                            ; 330e: a9 02       ..
-    ldx mem                                                           ; 3310: a6 70       .p ; X=zero page address for result
-    ldy mem                                                           ; 3312: a4 70       .p ; Y=file handle
+    ldx mem                                                           ; 3310: a6 70       .p  ; X=zero page address for result
+    ldy mem                                                           ; 3312: a4 70       .p  ; Y=file handle
     jsr OSARGS                                                        ; 3314: 20 da ff     .. ; Get length of file into zero page address X (A=2)
     lda #&ff                                                          ; 3317: a9 ff       ..
     ldy #0                                                            ; 3319: a0 00       ..
     jsr OSARGS                                                        ; 331b: 20 da ff     .. ; Write any buffered data to all pending files (A=255, Y=0)
     lda #&ff                                                          ; 331e: a9 ff       ..
-    ldy mem                                                           ; 3320: a4 70       .p ; Y=file handle
+    ldy mem                                                           ; 3320: a4 70       .p  ; Y=file handle
     jsr OSARGS                                                        ; 3322: 20 da ff     .. ; Write any buffered data to file Y
     lda #&10                                                          ; 3325: a9 10       ..
     ldx #<osword255block                                              ; 3327: a2 81       ..
@@ -5740,11 +5740,11 @@ OSBYTE  = &fff4
     equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 3fe7: 00 00 00... ...
     equb 0, 0, 0, 0, 0                                                ; 3ffb: 00 00 00... ...
 .osword0block
-    equb <input_buffer                                                ; 4000: 05          .  ; Buffer address for input (2 bytes)
+    equb <input_buffer                                                ; 4000: 05          .   ; Buffer address for input (2 bytes)
     equb >input_buffer                                                ; 4001: 40          @
-    equb &7f                                                          ; 4002: 7f          .  ; Maximum line length
-    equb &20                                                          ; 4003: 20             ; Min. acceptable character value
-    equb &7e                                                          ; 4004: 7e          ~  ; Max. acceptable character value
+    equb &7f                                                          ; 4002: 7f          .   ; Maximum line length
+    equb &20                                                          ; 4003: 20              ; Min. acceptable character value
+    equb &7e                                                          ; 4004: 7e          ~   ; Max. acceptable character value
 .input_buffer
     equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 4005: 00 00 00... ...
     equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 4019: 00 00 00... ...
@@ -5766,13 +5766,13 @@ OSBYTE  = &fff4
 .osword6block
     equb 0, 0, 0, 0, 0                                                ; 409e: 00 00 00... ... ; Four byte I/O processor address ; Byte to write
 .osword7block
-    equb 0                                                            ; 40a3: 00          .  ; Channel (2 bytes)
+    equb 0                                                            ; 40a3: 00          .   ; Channel (2 bytes)
     equb 0                                                            ; 40a4: 00          .
-    equb 0                                                            ; 40a5: 00          .  ; Amplitude (2 bytes)
+    equb 0                                                            ; 40a5: 00          .   ; Amplitude (2 bytes)
     equb 0                                                            ; 40a6: 00          .
-    equb 0                                                            ; 40a7: 00          .  ; Pitch (2 bytes)
+    equb 0                                                            ; 40a7: 00          .   ; Pitch (2 bytes)
     equb 0                                                            ; 40a8: 00          .
-    equb 0                                                            ; 40a9: 00          .  ; Duration (2 bytes)
+    equb 0                                                            ; 40a9: 00          .   ; Duration (2 bytes)
     equb 0                                                            ; 40aa: 00          .
 .osword8block
     equb 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                     ; 40ab: 01 00 00... ... ; Envelope Number (1-16) and rest of definition (14 bytes)
@@ -5785,13 +5785,13 @@ OSBYTE  = &fff4
 .osword12block
     equb 0, 0, 0, 0, 0                                                ; 40cc: 00 00 00... ... ; logical colour ; physical colour ; zero ; zero ; zero
 .osword13block
-    equb 0                                                            ; 40d1: 00          .  ; Previous graphics X coordinate (2 bytes)
+    equb 0                                                            ; 40d1: 00          .   ; Previous graphics X coordinate (2 bytes)
     equb 0                                                            ; 40d2: 00          .
-    equb 0                                                            ; 40d3: 00          .  ; Previous graphics Y coordinate (2 bytes)
+    equb 0                                                            ; 40d3: 00          .   ; Previous graphics Y coordinate (2 bytes)
     equb 0                                                            ; 40d4: 00          .
-    equb 0                                                            ; 40d5: 00          .  ; Current graphics X coordinate (2 bytes)
+    equb 0                                                            ; 40d5: 00          .   ; Current graphics X coordinate (2 bytes)
     equb 0                                                            ; 40d6: 00          .
-    equb 0                                                            ; 40d7: 00          .  ; Current graphics Y coordinate (2 bytes)
+    equb 0                                                            ; 40d7: 00          .   ; Current graphics Y coordinate (2 bytes)
     equb 0                                                            ; 40d8: 00          .
 .osword14block
     equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 40d9: 00 00 00... ... ; read clock time format (0,1,2)

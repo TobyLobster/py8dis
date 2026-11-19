@@ -64,7 +64,7 @@ loop_c2032
 ; $203d referenced 1 time by $2035
 c203d
     txa                                                               ; 203d: 8a          .   A:0- X:0- Y:-- n----C
-    asl                                                               ; 203e: 0a          .   A:0- X:0- Y:-- n----c ; Shift clear bit out (clears carry)
+    asl                                                               ; 203e: 0a          .   A:0- X:0- Y:-- n----c
     tax                                                               ; 203f: aa          .   A:0- X:0- Y:-- n----c
     lda l2063,x                                                       ; 2040: bd 63 20    .c  A:-- X:0- Y:-- -----c
     pha                                                               ; 2043: 48          H   A:-- X:0- Y:-- -----c

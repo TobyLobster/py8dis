@@ -125,7 +125,7 @@ end_job         = &f969
     lda via2_disk_data                                                ; 0613: ad 01 1c    ...
     sta buffer_1                                                      ; 0616: 8d 00 04    ...
     jsr gcr_to_binary                                                 ; 0619: 20 e0 f8     .. ; Convert the GCR data read into the buffer at BUFPNT to binary
-    lda #job_ok                                                       ; 061c: a9 01       .. ; A=result (1 for OK)
+    lda #job_ok                                                       ; 061c: a9 01       ..  ; A=result (1 for OK)
     jmp end_job                                                       ; 061e: 4c 69 f9    l.. ; End the job, with its result (A) in the job queue
 
 .pydis_end

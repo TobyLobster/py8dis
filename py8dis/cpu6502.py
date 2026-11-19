@@ -1066,6 +1066,10 @@ class Cpu6502(cpu.Cpu):
         # address, from join_states_at_labels() (or None if it isn't used)
         self.states_before = None
 
+        # The addresses the traced code writes to (see modified_addresses()),
+        # worked out with the CPU states, or None before then
+        self.modified = None
+
         self.code_analysis_fns.append(self.subroutine_argument_finder)  # For trace.subroutine_argument_finder_hooks (see subroutine_argument_finder())
         self.code_analysis_fns.append(self.substitute_constants)        # For the substitute_constants() command
         self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
@@ -1615,7 +1619,20 @@ class Cpu6502(cpu.Cpu):
             self.clear_pessimistic_state_if_label_here(binary_addr, state)
 
             # otherwise we update state if there's an update function
-            if self.update is not None:
+            if self.update is not None and self.addr_mode == Cpu6502.mode_immediate and session.current().cpu.is_operand_modified(binary_addr):
+                # Code changes the operand (e.g. 'sta ldx_instruction+1'), so
+                # its value isn't known: as for an operand from memory
+                self.regular_update(binary_addr, state)
+                for disposition in (state.optimistic, state.pessimistic):
+                    for reg in "axy":
+                        if self.reg_changes[reg] == "A":
+                            disposition[reg].value = None
+                    for flag in "nvzc":
+                        disposition[flag] = None
+                    disposition.z_from = None
+                    disposition.n_from = None
+                    disposition.c_from = None
+            elif self.update is not None:
                 self.regular_update(binary_addr, state)
                 self.update(binary_addr, state)
                 z_from = Cpu6502.z_source(self, binary_addr)
@@ -2534,10 +2551,20 @@ class Cpu6502(cpu.Cpu):
         ADC (and the same for an SBC with carry clear), 'ALWAYS branch'
         on a conditional branch that's always taken (with a blank line
         after it), and 'Rotate in a set bit' etc. on a rotate or shift whose
-        carry is known (see _shift_comment())."""
+        carry is known (see _shift_comment()). And where a register whose
+        value is known was set far back (see _set_far_back()): the value
+        stored, e.g. 'A=0' on 'sta table,y' in a loop that clears the table,
+        and the index, e.g. 'Offset is Y=$11' on 'sta (ptr),y'."""
         binary_addr = 0
         prev_state = self.EMPTY_STATE
         state = self.EMPTY_STATE
+        index_registers = {self.mode_indexed_indirect: "x", self.mode_abs_indexed_x: "x", self.mode_zp_indexed_x: "x",
+                           self.mode_indirect_indexed: "y", self.mode_abs_indexed_y: "y", self.mode_zp_indexed_y: "y"}
+        store_registers = {"sta": "a", "stx": "x", "sty": "y"}
+
+        def value_text(reg, r):
+            """e.g. 'Y=$11'."""
+            return "{0}={1}".format(reg.upper(), config.get_assembler().hex(r) if r > 9 else r)
 
         # (Only the loaded data can be classified, so just loop over that)
         for range_start, range_end in memorymanager.loaded_ranges():
@@ -2548,19 +2575,39 @@ class Cpu6502(cpu.Cpu):
                     prev_state = state
                     state = self.cpu_states[binary_addr]
 
-                    # If there's a label here, then clear our prev_state (i.e. be pessimistic for this state)
+                    # What's known just before the instruction: from
+                    # join_states_at_labels(), or else what's known after the
+                    # instruction before it, unless there's a label here
                     runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
-                    if runtime_addr is not None:
-                        if runtime_addr in session.current().labels.labels:
-                            prev_state = self.EMPTY_STATE
+                    if self.states_before is not None:
+                        before = self.states_before.get(binary_addr) if isinstance(c, self.Opcode) else None
+                    else:
+                        before = prev_state.pessimistic if prev_state else None
+                        if runtime_addr is not None and runtime_addr in session.current().labels.labels:
+                            before = None
+                    if before is None:
+                        before = self.EMPTY_STATE.pessimistic
+                    move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
+                    binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
 
                     # Say what a rotate or shift does with the carry, where
                     # that's known (e.g. 'sec : ror' rotates in a set bit)
-                    if isinstance(c, self.Opcode) and prev_state:
-                        text = self._shift_comment(c, binary_addr, prev_state.pessimistic)
+                    if isinstance(c, self.Opcode):
+                        text = self._shift_comment(c, binary_addr, before)
                         if text is not None:
-                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                            disassembly.comment_binary(movemanager.BinaryLocation(binary_addr, move_id), text, align=Align.INLINE, auto_generated=True)
+                            disassembly.comment_binary(binary_loc, text, align=Align.INLINE, auto_generated=True)
+
+                    # The value stored, and the index, if they're known and
+                    # were set far back (e.g. 'A=0' on 'sta table,y' in a
+                    # loop that clears it)
+                    if isinstance(c, self.Opcode):
+                        reg = store_registers.get(c.mnemonic.lower())
+                        if reg is not None and before[reg].value is not None and self._set_far_back(before[reg], binary_addr):
+                            disassembly.comment_binary(binary_loc, value_text(reg, before[reg].value), align=Align.INLINE, auto_generated=True)
+                        reg = index_registers.get(c.addr_mode)
+                        if (reg is not None and c.mnemonic.lower() != "nop" and before[reg].value is not None
+                                and self._set_far_back(before[reg], binary_addr)):
+                            disassembly.comment_binary(binary_loc, "Offset is " + value_text(reg, before[reg].value), align=Align.INLINE, auto_generated=True)
 
                     # Show the value of a register as an inline comment (if known) once they have been
                     # altered (e.g. for 'LDY #0:LDA (zp),Y:STA mem:INY' output '; Y=1' on the 'INY' line).
@@ -2573,28 +2620,20 @@ class Cpu6502(cpu.Cpu):
                                 # Get the value of the register
                                 r = state.pessimistic[reg].value
                                 if r is not None:
-                                    move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                                    binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
-                                    formatter = config.get_assembler()
-                                    if r > 9:
-                                        r = formatter.hex(r)
-                                    disassembly.comment_binary(binary_loc, "{0}={1}".format(reg.upper(), r), align=Align.INLINE, auto_generated=True)
+                                    disassembly.comment_binary(binary_loc, value_text(reg, r), align=Align.INLINE, auto_generated=True)
 
                     # Check for ADC or SBC with carry in its opposite to normal state: auto comment it
-                    if isinstance(c, self.Opcode):
+                    # (not an immediate operand that the code changes: see is_operand_modified())
+                    if isinstance(c, self.Opcode) and not (c.addr_mode == self.mode_immediate and self.is_operand_modified(binary_addr)):
                         value = memorymanager.get_u8_binary(binary_addr)
-                        if prev_state and prev_state.pessimistic['c'] == True:
-                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                            binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                        if before['c'] == True:
                             if value == OPCODE_ADC_IMMEDIATE:
                                 value = memorymanager.get_u8_binary(binary_addr+1)
                                 disassembly.comment_binary(binary_loc, "Carry is set, so adding {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
                             elif (value == OPCODE_ADC_INDEXED_INDIRECT) or (value == OPCODE_ADC_ZERO_PAGE) or (value == OPCODE_ADC_ABSOLUTE) or (value == OPCODE_ADC_INDIRECT_INDEXED) or (value == OPCODE_ADC_ZERO_PAGE_COMMA_X) or (value == OPCODE_ADC_ABSOLUTE_COMMA_Y) or (value == OPCODE_ADC_ABSOLUTE_COMMA_X):
                                 disassembly.comment_binary(binary_loc, "+1 because carry is set", align=Align.INLINE, auto_generated=True)
 
-                        elif prev_state and prev_state.pessimistic['c'] == False:
-                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                            binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                        elif before['c'] == False:
                             if value == OPCODE_SBC_IMMEDIATE:
                                 value = memorymanager.get_u8_binary(binary_addr+1)
                                 disassembly.comment_binary(binary_loc, "Carry is clear, so subtracting {0}".format((value + 1) & 255), align=Align.INLINE, auto_generated=True)
@@ -2604,8 +2643,6 @@ class Cpu6502(cpu.Cpu):
                     # Find "ALWAYS branch" instructions
                     if isinstance(c, self.OpcodeConditionalBranch):
                         if state.always_branch:
-                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
-                            binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
                             disassembly.comment_binary(binary_loc, "ALWAYS branch", align=Align.INLINE, auto_generated=True)
                             disassembly.add_raw_annotation(binary_loc, "", align=Align.AFTER_LINE)  # add a blank line after ALWAYS branch
                     binary_addr += c.length()
@@ -2613,15 +2650,42 @@ class Cpu6502(cpu.Cpu):
                     binary_addr += 1
                     prev_state = self.EMPTY_STATE
 
+    # How many instructions back a register can have been set for its value
+    # still to be obvious where it's used (see _set_far_back())
+    SET_NEARBY_INSTRUCTIONS = 4
+
+    def _set_far_back(self, r, binary_addr):
+        """Whether the register (a RegState, before the instruction at
+        binary_addr) was set far enough back for a comment on its value
+        there to help: where it was set isn't known (e.g. it's known from
+        the ways into a label agreeing, or a branch), or it was set after
+        binary_addr (round a loop), or there's a label between there and
+        here (including here), or more than SET_NEARBY_INSTRUCTIONS
+        instructions. (So 'ldy #0 : lda (ptr),y' isn't commented.)"""
+        setter = r.previous_adjust
+        if setter is None or setter >= binary_addr:
+            return True
+        labels = session.current().labels.labels
+        count = 0
+        addr = setter
+        while addr < binary_addr:
+            c = classification.get_classification(addr)
+            if not isinstance(c, self.Opcode):
+                return True
+            addr += c.length()
+            count += 1
+            if count > self.SET_NEARBY_INSTRUCTIONS or movemanager.b2r(BinaryAddr(addr)) in labels:
+                return True
+        return False
 
     def _shift_comment(self, c, binary_addr, before):
         """The comment for a rotate or shift (the opcode c, at binary_addr),
         from what's known before it ('before', a CpuStateDisposition), or
         None: a rotate with C known rotates in a set or clear bit, and a
         rotate or shift of A whose bit shifted out is known sets or clears
-        C, if the carry is used afterwards (see _carry_used_after()). E.g.
-        'Rotate in a set bit' for 'sec : ror', and 'Rotate set bit out (sets
-        carry)' for 'ora #$80 : rol : rts'."""
+        C, if the carry is relied on afterwards (see _carry_used_after()).
+        E.g. 'Rotate in a set bit' for 'sec : ror', and 'Rotate set bit out
+        (sets carry)' for 'ora #$80 : rol : rol flags'."""
         mnemonic = c.mnemonic.lower()
         if mnemonic not in ("asl", "lsr", "rol", "ror"):
             return None
@@ -2642,20 +2706,22 @@ class Cpu6502(cpu.Cpu):
 
     def _carry_used_after(self, binary_addr, c):
         """Whether the carry that the instruction (the opcode c, at
-        binary_addr) leaves is used: going on through the code that follows
-        it (past labels, and past branches other than BCC and BCS, which are
-        followed where they don't branch), an instruction reads C (e.g. ADC,
-        ROL, BCC or PHP), or an RTS or RTI returns it, before anything sets
-        it. A jump or call, or anything else that isn't known to read C,
-        counts as not using it. (So the carry from the first two of 'asl :
-        asl : asl' isn't used.)"""
+        binary_addr) leaves is relied on: going on through the code that
+        follows it (past labels, and past branches other than BCC and BCS,
+        which are followed where they don't branch), an instruction reads C
+        (ADC, SBC, ROL, ROR, BCC, BCS or PHP) before anything sets it. A
+        jump, call or return (including the RTS of the RTS trick), or
+        anything else that isn't known to read C, counts as not relying on
+        it. (So the carry from the first two of 'asl : asl : asl' isn't
+        relied on, nor that of the ASL in 'asl : tax : lda table+1,x : pha :
+        lda table,x : pha : rts'.)"""
         binary_addr += c.length()
         for _ in range(64):
             c = classification.get_classification(binary_addr)
             if not isinstance(c, self.Opcode):
                 return False
             mnemonic = c.mnemonic.lower()
-            if mnemonic in ("rts", "rti", "bcc", "bcs"):
+            if mnemonic in ("bcc", "bcs"):
                 return True
             if isinstance(c, self.OpcodeConditionalBranch):
                 binary_addr += c.length()
@@ -3240,13 +3306,47 @@ class Cpu6502(cpu.Cpu):
     # a loop counter's range is exact if the loop runs fewer times than this)
     JOIN_WIDEN_AFTER = 32
 
+    # The instructions that write to an address they're given (zero page or
+    # absolute, not indexed), for modified_addresses()
+    _WRITE_MNEMONICS = {"sta", "stx", "sty", "stz", "inc", "dec", "asl", "lsr", "rol", "ror", "trb", "tsb",
+                        "sax", "slo", "rla", "sre", "rra", "dcp", "isc"}
+
+    def modified_addresses(self):
+        """The runtime addresses that the traced code writes to directly (e.g.
+        'sta $1234' or 'inc $70'; not indexed or indirect writes), as a set:
+        e.g. the operand of an instruction that the code changes."""
+        result = set()
+        memory_binary = session.current().memory.binary
+        for range_start, range_end in memorymanager.loaded_ranges():
+            for b in range(range_start, range_end):
+                c = classification.get_classification(b)
+                if isinstance(c, self.Opcode) and c.mnemonic.lower() in self._WRITE_MNEMONICS:
+                    if c.addr_mode == self.mode_zp:
+                        result.add(memory_binary[b + 1])
+                    elif c.addr_mode == self.mode_addr:
+                        result.add(memorymanager.get_u16_binary(b + 1))
+        return result
+
+    def is_operand_modified(self, binary_addr, length=1):
+        """Whether the traced code writes to any of the 'length' bytes of the
+        operand of the instruction at binary_addr (see
+        modified_addresses()), so the operand in the binary isn't
+        necessarily its value when the instruction runs (self-modifying
+        code)."""
+        if self.modified is None:
+            return False
+        runtime_addr = movemanager.b2r(BinaryAddr(binary_addr))
+        return any(((runtime_addr + 1 + i) & 0xffff) in self.modified for i in range(length))
+
     def calculate_cpu_states(self):
         """Work out what's known after each instruction (see
         Cpu.calculate_cpu_states(), which goes straight through the code,
         forgetting what's known for certain at each label). Then, unless
         config.set_join_states_at_labels(False), work out what's known for
         certain again, joining the ways into each label (see
-        join_states_at_labels())."""
+        join_states_at_labels()). An immediate operand that the code writes
+        to (see is_operand_modified()) is taken not to be known."""
+        self.modified = self.modified_addresses()
         super().calculate_cpu_states()
         if config.get_join_states_at_labels():
             self.join_states_at_labels()
@@ -3528,12 +3628,12 @@ class Cpu6502(cpu.Cpu):
                 table = None
                 if mnemonic == "rts":
                     table = self._rts_jump_table(run, i)
-                elif mnemonic == "jmp" and c.addr_mode == self.mode_indirect_addr:
+                elif mnemonic == "jmp" and c.addr_mode == self.mode_indirect_addr and not self.is_operand_modified(binary_addr, 2):
                     table = self._stored_jump_table(run, i, memorymanager.get_u16_binary(binary_addr + 1))
                 elif mnemonic in ("jmp", "jsr") and c.addr_mode == self.mode_addr:
                     # (Its own operand, if code before it stores there)
                     table = self._stored_jump_table(run, i, (movemanager.b2r(BinaryAddr(binary_addr)) + 1) & 0xffff)
-                elif mnemonic == "jmp" and c.addr_mode == self.mode_indexed_abs:
+                elif mnemonic == "jmp" and c.addr_mode == self.mode_indexed_abs and not self.is_operand_modified(binary_addr, 2):
                     table = self._indexed_jump_table(run, i)
                 if table is not None and self._mark_jump_table(binary_addr, *table):
                     self.jump_tables_marked.add(binary_addr)
@@ -3553,6 +3653,9 @@ class Cpu6502(cpu.Cpu):
         otherwise None."""
         c = classification.get_classification(run[j])
         if c.mnemonic.lower() not in ("lda", "ldx", "ldy") or c.addr_mode not in (self.mode_abs_indexed_x, self.mode_abs_indexed_y):
+            return None
+        if self.is_operand_modified(run[j], 2):
+            # (Code changes the table's address)
             return None
         return memorymanager.get_u16_binary(run[j] + 1), "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
 

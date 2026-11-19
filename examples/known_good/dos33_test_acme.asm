@@ -93,13 +93,13 @@ c601f
     bcs c60c9                                                         ; 6049: b0 7e       0.
     lda rwts_iob_error                                                ; 604b: ad f3 60    -s.
     jsr dos_get_iob                                                   ; 604e: 20 e3 03    .c. ; Find DOS's IOB (RWTS's parameters)
-    sty l0006                                                         ; 6051: 84 06       .. ; Y=IOB's address (low byte)
-    sta l0007                                                         ; 6053: 85 07       .. ; A=IOB's address (high byte)
+    sty l0006                                                         ; 6051: 84 06       ..  ; Y=IOB's address (low byte)
+    sta l0007                                                         ; 6053: 85 07       ..  ; A=IOB's address (high byte)
     ldy #$0c                                                          ; 6055: a0 0c        .
     lda #2                                                            ; 6057: a9 02       ).
     sta (l0006),y                                                     ; 6059: 91 06       ..
-    ldy l0006                                                         ; 605b: a4 06       $. ; Y=IOB's address (low byte)
-    lda l0007                                                         ; 605d: a5 07       %. ; A=IOB's address (high byte)
+    ldy l0006                                                         ; 605b: a4 06       $.  ; Y=IOB's address (low byte)
+    lda l0007                                                         ; 605d: a5 07       %.  ; A=IOB's address (high byte)
     jsr dos_rwts                                                      ; 605f: 20 d9 03    .Y. ; Call RWTS (DOS's read/write track/sector routine)
     lda IBSLOT                                                        ; 6062: ad e9 b7    -i7
     sta rwts_iob_2_slot                                               ; 6065: 8d fc 60    .|.
@@ -114,8 +114,8 @@ c601f
     jsr RWTS                                                          ; 6079: 20 00 bd    ..= ; Call RWTS (DOS's read/write track/sector routine) directly
     cli                                                               ; 607c: 58          .
     jsr dos_get_fm_params                                             ; 607d: 20 dc 03    .\. ; Find the file manager's parameter list
-    sty l0006                                                         ; 6080: 84 06       .. ; Y=parameter list's address (low byte)
-    sta l0007                                                         ; 6082: 85 07       .. ; A=parameter list's address (high byte)
+    sty l0006                                                         ; 6080: 84 06       ..  ; Y=parameter list's address (low byte)
+    sta l0007                                                         ; 6082: 85 07       ..  ; A=parameter list's address (high byte)
     ldy #0                                                            ; 6084: a0 00        .
     lda #5                                                            ; 6086: a9 05       ).
     sta (l0006),y                                                     ; 6088: 91 06       ..
@@ -165,51 +165,51 @@ output_handler
     jmp COUT                                                          ; 60e3: 4c ed fd    .m} ; Print a character (through CSW)
 
 rwts_iob
-    !byte 1                                                           ; 60e6: 01          .  ; Table type (1)
-    !byte $60                                                         ; 60e7: 60          .  ; Slot times 16
-    !byte 1                                                           ; 60e8: 01          .  ; Drive (1 or 2)
-    !byte 0                                                           ; 60e9: 00          .  ; Volume expected (0 for any)
+    !byte 1                                                           ; 60e6: 01          .   ; Table type (1)
+    !byte $60                                                         ; 60e7: 60          .   ; Slot times 16
+    !byte 1                                                           ; 60e8: 01          .   ; Drive (1 or 2)
+    !byte 0                                                           ; 60e9: 00          .   ; Volume expected (0 for any)
 ; $60ea referenced 1 time by $6035
 rwts_iob_track
-    !byte 0                                                           ; 60ea: 00          .  ; Track
+    !byte 0                                                           ; 60ea: 00          .   ; Track
 ; $60eb referenced 1 time by $603a
 rwts_iob_sector
-    !byte 0                                                           ; 60eb: 00          .  ; Sector
-    !word rwts_dct                                                    ; 60ec: f7 60       w. ; Device characteristics table
-    !word sector_buffer                                               ; 60ee: 00 10       .. ; Sector buffer (256 bytes)
-    !byte 0                                                           ; 60f0: 00          .  ; Not used
-    !byte 0                                                           ; 60f1: 00          .  ; Byte count for a partial sector (0 for 256)
+    !byte 0                                                           ; 60eb: 00          .   ; Sector
+    !word rwts_dct                                                    ; 60ec: f7 60       w.  ; Device characteristics table
+    !word sector_buffer                                               ; 60ee: 00 10       ..  ; Sector buffer (256 bytes)
+    !byte 0                                                           ; 60f0: 00          .   ; Not used
+    !byte 0                                                           ; 60f1: 00          .   ; Byte count for a partial sector (0 for 256)
 ; $60f2 referenced 1 time by $603f
 rwts_iob_command
-    !byte 1                                                           ; 60f2: 01          .  ; Command (0 seek, 1 read, 2 write, 4 format)
+    !byte 1                                                           ; 60f2: 01          .   ; Command (0 seek, 1 read, 2 write, 4 format)
 ; $60f3 referenced 1 time by $604b
 rwts_iob_error
-    !byte 0                                                           ; 60f3: 00          .  ; Error code (returned)
-    !byte 0                                                           ; 60f4: 00          .  ; Volume found (returned)
-    !byte $60                                                         ; 60f5: 60          .  ; Slot times 16 last used
-    !byte 1                                                           ; 60f6: 01          .  ; Drive last used
+    !byte 0                                                           ; 60f3: 00          .   ; Error code (returned)
+    !byte 0                                                           ; 60f4: 00          .   ; Volume found (returned)
+    !byte $60                                                         ; 60f5: 60          .   ; Slot times 16 last used
+    !byte 1                                                           ; 60f6: 01          .   ; Drive last used
 rwts_dct
-    !byte 0                                                           ; 60f7: 00          .  ; Device type (0 for the Disk II)
-    !byte 1                                                           ; 60f8: 01          .  ; Phases per track (1 for the Disk II)
-    !word $efd8                                                       ; 60f9: d8 ef       Xo ; Motor on time
+    !byte 0                                                           ; 60f7: 00          .   ; Device type (0 for the Disk II)
+    !byte 1                                                           ; 60f8: 01          .   ; Phases per track (1 for the Disk II)
+    !word $efd8                                                       ; 60f9: d8 ef       Xo  ; Motor on time
 rwts_iob_2
-    !byte 1                                                           ; 60fb: 01          .  ; Table type (1)
+    !byte 1                                                           ; 60fb: 01          .   ; Table type (1)
 ; $60fc referenced 1 time by $6065
 rwts_iob_2_slot
-    !byte $60                                                         ; 60fc: 60          .  ; Slot times 16
-    !byte 2                                                           ; 60fd: 02          .  ; Drive (1 or 2)
-    !byte 0                                                           ; 60fe: 00          .  ; Volume expected (0 for any)
-    !byte 3                                                           ; 60ff: 03          .  ; Track
-    !byte 5                                                           ; 6100: 05          .  ; Sector
-    !word DCT                                                         ; 6101: fb b7       {7 ; Device characteristics table
-    !word sector_buffer_2                                             ; 6103: 00 40       .. ; Sector buffer (256 bytes)
-    !byte 0                                                           ; 6105: 00          .  ; Not used
-    !byte 0                                                           ; 6106: 00          .  ; Byte count for a partial sector (0 for 256)
-    !byte 2                                                           ; 6107: 02          .  ; Command (0 seek, 1 read, 2 write, 4 format)
-    !byte 0                                                           ; 6108: 00          .  ; Error code (returned)
-    !byte 0                                                           ; 6109: 00          .  ; Volume found (returned)
-    !byte $60                                                         ; 610a: 60          .  ; Slot times 16 last used
-    !byte 1                                                           ; 610b: 01          .  ; Drive last used
+    !byte $60                                                         ; 60fc: 60          .   ; Slot times 16
+    !byte 2                                                           ; 60fd: 02          .   ; Drive (1 or 2)
+    !byte 0                                                           ; 60fe: 00          .   ; Volume expected (0 for any)
+    !byte 3                                                           ; 60ff: 03          .   ; Track
+    !byte 5                                                           ; 6100: 05          .   ; Sector
+    !word DCT                                                         ; 6101: fb b7       {7  ; Device characteristics table
+    !word sector_buffer_2                                             ; 6103: 00 40       ..  ; Sector buffer (256 bytes)
+    !byte 0                                                           ; 6105: 00          .   ; Not used
+    !byte 0                                                           ; 6106: 00          .   ; Byte count for a partial sector (0 for 256)
+    !byte 2                                                           ; 6107: 02          .   ; Command (0 seek, 1 read, 2 write, 4 format)
+    !byte 0                                                           ; 6108: 00          .   ; Error code (returned)
+    !byte 0                                                           ; 6109: 00          .   ; Volume found (returned)
+    !byte $60                                                         ; 610a: 60          .   ; Slot times 16 last used
+    !byte 1                                                           ; 610b: 01          .   ; Drive last used
 pydis_end
 
 !if (<IOB) != $e8 {

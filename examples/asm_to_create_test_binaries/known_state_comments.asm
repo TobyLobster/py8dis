@@ -23,12 +23,15 @@ start
     sta $74
 
     ; 3. After a BCC that isn't taken, carry is set: ROR rotates a set bit
-    ;    into bit 7, and ROL rotates it out again, setting carry
+    ;    into bit 7, and ROL rotates it out again, setting carry (which the
+    ;    ROL of memory relies on: a bit shifted out is only commented if
+    ;    something reads the carry afterwards)
     lda $75
     bcc different
     ror                     ; rotate in a set bit
     rol                     ; rotate set bit out (sets carry)
     sta $76
+    rol $82                 ; rotate in a set bit
     rts
 
     ; The rest is what's known bit by bit (see knownbits.py)

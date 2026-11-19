@@ -64,7 +64,7 @@ start
 
     // Set user vector to 'handle_userv'
     ldx #<handle_userv                                                // 2046: a2 7b       .{
-    txa                                                               // 2048: 8a          .  // A=$7b
+    txa                                                               // 2048: 8a          .   // A=$7b
     sta userv                                                         // 2049: 8d 00 02    ...
     lda #>handle_userv                                                // 204c: a9 20       .
     sta userv+1                                                       // 204e: 8d 01 02    ...

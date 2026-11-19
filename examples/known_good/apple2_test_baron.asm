@@ -132,17 +132,17 @@ section pydis, org = &0803, filename = "apple2_test_baron"
     jsr SETGR                                                         ; 0862: 20 40 fb    ..{ ; Set lo-res mixed mode, and clear the graphics
     lda #9                                                            ; 0865: a9 09       ).
     jsr SETCOL                                                        ; 0867: 20 64 f8    ..x ; Set the lo-res colour to 9 (orange)
-    lda #&0a                                                          ; 086a: a9 0a       ). ; A=row (0-47)
-    ldy #5                                                            ; 086c: a0 05        . ; Y=column (0-39)
+    lda #&0a                                                          ; 086a: a9 0a       ).  ; A=row (0-47)
+    ldy #5                                                            ; 086c: a0 05        .  ; Y=column (0-39)
     jsr PLOT                                                          ; 086e: 20 00 f8    ..x ; Plot a lo-res block (in COLOR)
     ldx #0                                                            ; 0871: a2 00       ".
     jsr PREAD                                                         ; 0873: 20 1e fb    ..{ ; Read paddle 0
-    sty l0006                                                         ; 0876: 84 06       .. ; Y=paddle's value (0-255)
+    sty l0006                                                         ; 0876: 84 06       ..  ; Y=paddle's value (0-255)
     jsr RDKEY                                                         ; 0878: 20 0c fd    ..} ; Read a key (through KSW)
-    cmp #&d9 ; 'Y'                                                    ; 087b: c9 d9       IY ; A=key (with bit 7 set)
+    cmp #&d9 ; 'Y'                                                    ; 087b: c9 d9       IY  ; A=key (with bit 7 set)
     beq c0887                                                         ; 087d: f0 08       p.
     jsr GETLN                                                         ; 087f: 20 6a fd    ..} ; Input a line into IN, after PROMPT
-    stx l0007                                                         ; 0882: 86 07       .. ; X=line's length
+    stx l0007                                                         ; 0882: 86 07       ..  ; X=line's length
     lda IN                                                            ; 0884: ad 00 02    -..
 ; &0887 referenced 1 time by &087d
 .c0887
@@ -221,9 +221,9 @@ section pydis, org = &0803, filename = "apple2_test_baron"
     lda Q7L,x                                                         ; 0915: bd 8e c0    =.@ ; Disk II: Q7 low (read mode)
 ; &0918 referenced 1 time by &091b
 .loop_c0918
-    lda Q6L,x                                                         ; 0918: bd 8c c0    =.@ ; Disk II: Q6 low (read the data latch)
+    lda Q6L,x                                                         ; 0918: bd 8c c0    =.@ ; Offset is X=&60 ; Disk II: Q6 low (read the data latch)
     bpl loop_c0918                                                    ; 091b: 10 fb       .{
-    lda MOTOROFF,x                                                    ; 091d: bd 88 c0    =.@ ; Disk II: turn the motor off
+    lda MOTOROFF,x                                                    ; 091d: bd 88 c0    =.@ ; Offset is X=&60 ; Disk II: turn the motor off
     jsr IORTS                                                         ; 0920: 20 58 ff    ... ; Return (an RTS: code calls it to find its own address on the stack)
     tsx                                                               ; 0923: ba          :
     lda l0100,x                                                       ; 0924: bd 00 01    =..

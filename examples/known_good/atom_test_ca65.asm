@@ -88,7 +88,7 @@ loop_c2940:
     inx                                                               ; 2946: e8          .
     cpx #4                                                            ; 2947: e0 04       ..
     bne loop_c2940                                                    ; 2949: d0 f5       ..
-    lda #$41 ; 'A'                                                    ; 294b: a9 41       .A ; A=byte to print
+    lda #$41 ; 'A'                                                    ; 294b: a9 41       .A  ; A=byte to print
     jsr print_hex                                                     ; 294d: 20 02 f8     .. ; Print A in hex
     jsr print_space                                                   ; 2950: 20 fd f7     .. ; Print a space
     jsr wait_for_flyback                                              ; 2953: 20 66 fe     f. ; Wait for the start of the next field flyback
@@ -102,24 +102,24 @@ loop_c2940:
     lda #0                                                            ; 2960: a9 00       ..
     sta brkvec                                                        ; 2962: 8d 02 02    ... ; Set the low byte of BRK vector to $00
     jsr OSRDCH                                                        ; 2965: 20 e3 ff     .. ; Read a character
-    sta l0070                                                         ; 2968: 85 70       .p ; A=character read
+    sta l0070                                                         ; 2968: 85 70       .p  ; A=character read
     jsr OSECHO                                                        ; 296a: 20 e6 ff     .. ; Read a character and write it
-    sta l0071                                                         ; 296d: 85 71       .q ; A=character read
+    sta l0071                                                         ; 296d: 85 71       .q  ; A=character read
     sec                                                               ; 296f: 38          8
-    ldx #$80                                                          ; 2970: a2 80       .. ; X=zero page address of the file name's address
+    ldx #$80                                                          ; 2970: a2 80       ..  ; X=zero page address of the file name's address
     jsr OSFIND                                                        ; 2972: 20 ce ff     .. ; Open file for input (C=1)
-    sta l0072                                                         ; 2975: 85 72       .r ; A=file handle (or zero if not found)
-    ldy l0072                                                         ; 2977: a4 72       .r ; Y=file handle
+    sta l0072                                                         ; 2975: 85 72       .r  ; A=file handle (or zero if not found)
+    ldy l0072                                                         ; 2977: a4 72       .r  ; Y=file handle
     jsr OSBGET                                                        ; 2979: 20 d4 ff     .. ; Read a byte from file Y
-    sta l0073                                                         ; 297c: 85 73       .s ; A=byte read
+    sta l0073                                                         ; 297c: 85 73       .s  ; A=byte read
     lda #$41 ; 'A'                                                    ; 297e: a9 41       .A
-    ldy l0072                                                         ; 2980: a4 72       .r ; Y=file handle
+    ldy l0072                                                         ; 2980: a4 72       .r  ; Y=file handle
     jsr OSBPUT                                                        ; 2982: 20 d1 ff     .. ; Write byte A=65 to file Y
     ldy #0                                                            ; 2985: a0 00       ..
     jsr OSSHUT                                                        ; 2987: 20 cb ff     .. ; Close all files (Y=0)
-    ldx #$84                                                          ; 298a: a2 84       .. ; X=zero page address of the load parameter block
+    ldx #$84                                                          ; 298a: a2 84       ..  ; X=zero page address of the load parameter block
     jsr OSLOAD                                                        ; 298c: 20 e0 ff     .. ; Load a file
-    ldx #$84                                                          ; 298f: a2 84       .. ; X=zero page address of the save parameter block
+    ldx #$84                                                          ; 298f: a2 84       ..  ; X=zero page address of the save parameter block
     jsr OSSAVE                                                        ; 2991: 20 dd ff     .. ; Save a file
     jsr OSCLI                                                         ; 2994: 20 f7 ff     .. ; Run the command in the input buffer
     lda ppi_port_b                                                    ; 2997: ad 01 b0    ...

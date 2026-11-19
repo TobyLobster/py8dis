@@ -249,7 +249,7 @@ cia2_control_b          = &dd0f
 ; &e1db referenced 1 time by &e1c4
 .ce1db
     lda #&27 ; '''                                                    ; e1db: a9 27       .'
-    sta cpu_port                                                      ; e1dd: 85 01       .. ; Set the memory configuration to the usual one (RAM, BASIC ROM, Kernal ROM, I/O) ($27)
+    sta cpu_port                                                      ; e1dd: 85 01       ..  ; Set the memory configuration to the usual one (RAM, BASIC ROM, Kernal ROM, I/O) ($27)
     plp                                                               ; e1df: 28          (
     rts                                                               ; e1e0: 60          .
 
@@ -412,7 +412,8 @@ cia2_control_b          = &dd0f
     ldy #&18                                                          ; e546: a0 18       ..
 ; &e548 referenced 1 time by &e54c
 .loop_ce548
-    sta screen_line_links,y                                           ; e548: 99 d9 00    .Y.
+    ; Set 25 bytes of memory from screen_line_links onwards to 128
+    sta screen_line_links,y                                           ; e548: 99 d9 00    .Y. ; A=&80
     dey                                                               ; e54b: 88          .
     bpl loop_ce548                                                    ; e54c: 10 fa       ..
     ldx #&18                                                          ; e54e: a2 18       ..
@@ -481,7 +482,8 @@ cia2_control_b          = &dd0f
     ldx #&2e ; '.'                                                    ; e5a2: a2 2e       ..
 ; &e5a4 referenced 1 time by &e5a8
 .loop_ce5a4
-    sta vic_sprite0_x,x                                               ; e5a4: 9d 00 d0    ..P
+    ; Clear 47 bytes of memory from vic_sprite0_x onwards
+    sta vic_sprite0_x,x                                               ; e5a4: 9d 00 d0    ..P ; A=0
     dex                                                               ; e5a7: ca          J
     bpl loop_ce5a4                                                    ; e5a8: 10 fa       ..
     lda #&1b                                                          ; e5aa: a9 1b       ..
@@ -541,7 +543,7 @@ cia2_control_b          = &dd0f
     ldy #5                                                            ; e601: a0 05       ..
 ; &e603 referenced 1 time by &e60b
 .loop_ce603
-    lda (tape_buffer_ptr),y                                           ; e603: b1 b2       .. ; A=character to output
+    lda (tape_buffer_ptr),y                                           ; e603: b1 b2       ..  ; A=character to output
     jsr CHROUT                                                        ; e605: 20 d2 ff     R. ; Output a character
     iny                                                               ; e608: c8          H
     cpy #&15                                                          ; e609: c0 15       ..
@@ -553,13 +555,13 @@ cia2_control_b          = &dd0f
     ldy #1                                                            ; e617: a0 01       ..
     lda (tape_buffer_ptr),y                                           ; e619: b1 b2       ..
     sta io_start_ptr                                                  ; e61b: 85 c1       .A
-    iny                                                               ; e61d: c8          H  ; Y=2
+    iny                                                               ; e61d: c8          H   ; Y=2
     lda (tape_buffer_ptr),y                                           ; e61e: b1 b2       ..
     sta io_start_ptr+1                                                ; e620: 85 c2       .B
-    iny                                                               ; e622: c8          H  ; Y=3
+    iny                                                               ; e622: c8          H   ; Y=3
     lda (tape_buffer_ptr),y                                           ; e623: b1 b2       ..
     sta io_end_ptr                                                    ; e625: 85 ae       ..
-    iny                                                               ; e627: c8          H  ; Y=4
+    iny                                                               ; e627: c8          H   ; Y=4
     lda (tape_buffer_ptr),y                                           ; e628: b1 b2       ..
     sta io_end_ptr+1                                                  ; e62a: 85 af       ..
     lda secondary_address                                             ; e62c: a5 b9       ..
@@ -900,7 +902,7 @@ cia2_control_b          = &dd0f
     sta shift_key_flags                                               ; e805: 8d 8d 02    ...
     ldx #0                                                            ; e808: a2 00       ..
     stx cia1_port_a                                                   ; e80a: 8e 00 dc    ...
-    dex                                                               ; e80d: ca          J  ; X=&ff
+    dex                                                               ; e80d: ca          J   ; X=&ff
     cpx cia1_port_b                                                   ; e80e: ec 01 dc    ...
     beq ce885                                                         ; e811: f0 72       ..
     ldy #3                                                            ; e813: a0 03       ..
@@ -960,7 +962,7 @@ cia2_control_b          = &dd0f
 .ce871
     dey                                                               ; e871: 88          .
     bpl loop_ce863                                                    ; e872: 10 ef       ..
-    bmi ce885                                                         ; e874: 30 0f       0. ; ALWAYS branch
+    bmi ce885                                                         ; e874: 30 0f       0.  ; ALWAYS branch
 
 ; &e876 referenced 2 times by &e85b, &e86e
 .ce876
@@ -1012,7 +1014,7 @@ cia2_control_b          = &dd0f
     beq ce8bf                                                         ; e8b8: f0 05       ..
     dex                                                               ; e8ba: ca          J
     bpl loop_ce8b5                                                    ; e8bb: 10 f8       ..
-    bmi return_4                                                      ; e8bd: 30 ed       0. ; ALWAYS branch
+    bmi return_4                                                      ; e8bd: 30 ed       0.  ; ALWAYS branch
 
 ; &e8bf referenced 2 times by &e8b0, &e8b8
 .ce8bf
@@ -1135,7 +1137,7 @@ cia2_control_b          = &dd0f
 .sub_ce971
     lda lead1,x                                                       ; e971: bd d1 ea    .Q.
     bpl loop_ce96d                                                    ; e974: 10 f7       ..
-    and #&7f                                                          ; e976: 29 7f       ). ; A=character to output
+    and #&7f                                                          ; e976: 29 7f       ).  ; A=character to output
     jmp CHROUT                                                        ; e978: 4c d2 ff    lR. ; Output a character
 
 ; &e97b referenced 2 times by &f4b8, &f4bf
@@ -1160,7 +1162,7 @@ cia2_control_b          = &dd0f
 .ce997
     ldy #0                                                            ; e997: a0 00       ..
     sta (tape_buffer_ptr),y                                           ; e999: 91 b2       ..
-    iny                                                               ; e99b: c8          H  ; Y=1
+    iny                                                               ; e99b: c8          H   ; Y=1
 ; &e99c referenced 1 time by &e9ab
 .loop_ce99c
     jsr sub_ce95a                                                     ; e99c: 20 5a e9     z.
@@ -1271,7 +1273,7 @@ cia2_control_b          = &dd0f
     jsr sub_cf8e3                                                     ; ea40: 20 e3 f8     ..
     lda #0                                                            ; ea43: a9 00       ..
     sta tape_motor_interlock                                          ; ea45: 85 c0       ..
-    beq cea50                                                         ; ea47: f0 07       .. ; ALWAYS branch
+    beq cea50                                                         ; ea47: f0 07       ..  ; ALWAYS branch
 
 ; &ea49 referenced 1 time by &ea3e
 .cea49
@@ -1377,7 +1379,7 @@ cia2_control_b          = &dd0f
     cmp #&ff                                                          ; eb59: c9 ff       I.
     bne ceb61                                                         ; eb5b: d0 04       P.
     lda #0                                                            ; eb5d: a9 00       ..
-    beq ceb6a                                                         ; eb5f: f0 09       .. ; ALWAYS branch
+    beq ceb6a                                                         ; eb5f: f0 09       ..  ; ALWAYS branch
 
 ; &eb61 referenced 1 time by &eb5b
 .ceb61
@@ -1520,7 +1522,7 @@ cia2_control_b          = &dd0f
     cmp #&e0                                                          ; ec37: c9 e0       I.
     bcc return_6                                                      ; ec39: 90 05       ..
     clc                                                               ; ec3b: 18          .
-    bcc cec49                                                         ; ec3c: 90 0b       .. ; ALWAYS branch
+    bcc cec49                                                         ; ec3c: 90 0b       ..  ; ALWAYS branch
 
 ; &ec3e referenced 2 times by &ec1d, &ec29
 .cec3e
@@ -1595,7 +1597,7 @@ cia2_control_b          = &dd0f
 .cecae
     ldx #9                                                            ; ecae: a2 09       ..
     sec                                                               ; ecb0: 38          8
-    bcs loop_ceca8                                                    ; ecb1: b0 f5       .. ; ALWAYS branch
+    bcs loop_ceca8                                                    ; ecb1: b0 f5       ..  ; ALWAYS branch
 
     lda cursor_row                                                    ; ecb3: a5 d6       .V
     beq cecb9                                                         ; ecb5: f0 02       ..
@@ -1665,7 +1667,7 @@ cia2_control_b          = &dd0f
     sta tape_sync_number                                              ; ed2b: 85 96       ..
     lda #&80                                                          ; ed2d: a9 80       ..
     ldy #&ff                                                          ; ed2f: a0 ff       ..
-    bmi ced3a                                                         ; ed31: 30 07       0. ; ALWAYS branch
+    bmi ced3a                                                         ; ed31: 30 07       0.  ; ALWAYS branch
 
 ; &ed33 referenced 1 time by &f020
 .sub_ced33
@@ -1767,7 +1769,7 @@ cia2_control_b          = &dd0f
     sta (colour_ram_line_ptr),y                                       ; edb9: 91 f3       ..
     lda #1                                                            ; edbb: a9 01       ..
     sta cursor_blink_phase                                            ; edbd: 85 cf       .O
-    bne ceddd                                                         ; edbf: d0 1c       P. ; ALWAYS branch
+    bne ceddd                                                         ; edbf: d0 1c       P.  ; ALWAYS branch
 
 ; &edc1 referenced 1 time by &f697
 .sub_cedc1
@@ -1874,7 +1876,7 @@ cia2_control_b          = &dd0f
     stx tape_pass1_errors                                             ; ee55: 86 9e       ..
     jsr cf9f4                                                         ; ee57: 20 f4 f9     ..
     bcc cee72                                                         ; ee5a: 90 16       ..
-    bcs cee78                                                         ; ee5c: b0 1a       .. ; ALWAYS branch
+    bcs cee78                                                         ; ee5c: b0 1a       ..  ; ALWAYS branch
 
 ; &ee5e referenced 1 time by &ee40
 .cee5e
@@ -1917,13 +1919,13 @@ cia2_control_b          = &dd0f
 ; &ee8c referenced 1 time by &ee95
 .loop_cee8c
     and #&df                                                          ; ee8c: 29 df       ).
-    bne ceeca                                                         ; ee8e: d0 3a       P: ; ALWAYS branch
+    bne ceeca                                                         ; ee8e: d0 3a       P:  ; ALWAYS branch
 
 ; &ee90 referenced 3 times by &f0f8, &f0fe, &f122
 .sub_cee90
     lda cia2_port_a                                                   ; ee90: ad 00 dd    ...
     ora #&10                                                          ; ee93: 09 10       ..
-    bne loop_cee8c                                                    ; ee95: d0 f5       P. ; ALWAYS branch
+    bne loop_cee8c                                                    ; ee95: d0 f5       P.  ; ALWAYS branch
 
 ; &ee97 referenced 1 time by &f0d9
 .sub_cee97
@@ -1944,7 +1946,7 @@ cia2_control_b          = &dd0f
     ora #&20 ; ' '                                                    ; eeaf: 09 20       .
     sta cia2_port_a                                                   ; eeb1: 8d 00 dd    ...
     and #&ef                                                          ; eeb4: 29 ef       ).
-    bne ceeca                                                         ; eeb6: d0 12       P. ; ALWAYS branch
+    bne ceeca                                                         ; eeb6: d0 12       P.  ; ALWAYS branch
 
 ; &eeb8 referenced 1 time by &fb97
 .sub_ceeb8
@@ -1972,7 +1974,7 @@ cia2_control_b          = &dd0f
 .ceed8
     jsr sub_cec7f                                                     ; eed8: 20 7f ec     ..
     bcc ceedf                                                         ; eedb: 90 02       ..
-    bcs ceef9                                                         ; eedd: b0 1a       .. ; ALWAYS branch
+    bcs ceef9                                                         ; eedd: b0 1a       ..  ; ALWAYS branch
 
 ; &eedf referenced 1 time by &eedb
 .ceedf
@@ -1980,7 +1982,7 @@ cia2_control_b          = &dd0f
     beq ceeeb                                                         ; eee2: f0 07       ..
     jsr cf9f4                                                         ; eee4: 20 f4 f9     ..
     bcs ceeff                                                         ; eee7: b0 16       ..
-    bcc ceef9                                                         ; eee9: 90 0e       .. ; ALWAYS branch
+    bcc ceef9                                                         ; eee9: 90 0e       ..  ; ALWAYS branch
 
 ; &eeeb referenced 1 time by &eee2
 .ceeeb
@@ -3168,7 +3170,7 @@ cia2_control_b          = &dd0f
 ; &f6ba referenced 1 time by &f6b6
 .cf6ba
     ldy #&50 ; 'p'                                                    ; f6ba: a0 50       .p
-    bne cf6c2                                                         ; f6bc: d0 04       P. ; ALWAYS branch
+    bne cf6c2                                                         ; f6bc: d0 04       P.  ; ALWAYS branch
 
 ; &f6be referenced 1 time by &f6ad
 .cf6be
@@ -3190,7 +3192,7 @@ cia2_control_b          = &dd0f
     bcs cf666                                                         ; f6d4: b0 90       ..
     ldy #0                                                            ; f6d6: a0 00       ..
     sty quote_mode_flag                                               ; f6d8: 84 d4       .T
-    beq cf675                                                         ; f6da: f0 99       .. ; ALWAYS branch
+    beq cf675                                                         ; f6da: f0 99       ..  ; ALWAYS branch
 
 ; &f6dc referenced 1 time by &f695
 .cf6dc
@@ -3242,7 +3244,7 @@ lf7b6 = cf7b4+2
 
 ; &f7c1 referenced 2 times by &e5f3, &e65d
 .sub_cf7c1
-    lda #&0d                                                          ; f7c1: a9 0d       .. ; A=character to output
+    lda #&0d                                                          ; f7c1: a9 0d       ..  ; A=character to output
     jmp CHROUT                                                        ; f7c3: 4c d2 ff    lR. ; Output &0d (RETURN)
 
     equb &a9                                                          ; f7c6: a9          .
@@ -3380,7 +3382,7 @@ lf7b6 = cf7b4+2
     clc                                                               ; f874: 18          .
     adc #&80                                                          ; f875: 69 80       ..
     bcc cf87b                                                         ; f877: 90 02       ..
-    adc #&bf                                                          ; f879: 69 bf       .. ; Carry is set, so adding 192
+    adc #&bf                                                          ; f879: 69 bf       ..  ; Carry is set, so adding 192
 ; &f87b referenced 1 time by &f877
 .cf87b
     jmp cedf3                                                         ; f87b: 4c f3 ed    l..
@@ -3435,7 +3437,8 @@ lf7b6 = cf7b4+2
     ldy #&1c                                                          ; f8b6: a0 1c       ..
 ; &f8b8 referenced 1 time by &f8bc
 .loop_cf8b8
-    sta sid_voice1_frequency_low,y                                    ; f8b8: 99 00 d4    ..T
+    ; Clear 29 bytes of memory from sid_voice1_frequency_low onwards
+    sta sid_voice1_frequency_low,y                                    ; f8b8: 99 00 d4    ..T ; A=0
     dey                                                               ; f8bb: 88          .
     bpl loop_cf8b8                                                    ; f8bc: 10 fa       ..
     rts                                                               ; f8be: 60          .
@@ -3475,7 +3478,7 @@ lf7b6 = cf7b4+2
 .sub_cf8e3
     lda cpu_port                                                      ; f8e3: a5 01       ..
     ora #&20 ; ' '                                                    ; f8e5: 09 20       .
-    bne cf8ed                                                         ; f8e7: d0 04       P. ; ALWAYS branch
+    bne cf8ed                                                         ; f8e7: d0 04       P.  ; ALWAYS branch
 
 ; &f8e9 referenced 2 times by &ea4d, &fb8e
 .cf8e9
@@ -3529,7 +3532,7 @@ lf7b6 = cf7b4+2
 
 ; &f917 referenced 1 time by &f1df
 .cf917
-    lda last_char_printed                                             ; f917: a5 d7       .W ; A=byte to send
+    lda last_char_printed                                             ; f917: a5 d7       .W  ; A=byte to send
     jsr CIOUT                                                         ; f919: 20 a8 ff     .. ; Send a byte over the serial bus
     bcs cf921                                                         ; f91c: b0 03       ..
     jmp cf1f1                                                         ; f91e: 4c f1 f1    l..
@@ -3625,13 +3628,13 @@ lf7b6 = cf7b4+2
 ; &f981 referenced 6 times by &f211, &f253, &f34a, &f4af, &f5ed, &faa3
 .cf981
     lda #0                                                            ; f981: a9 00       ..
-    beq cf98f                                                         ; f983: f0 0a       .. ; ALWAYS branch
+    beq cf98f                                                         ; f983: f0 0a       ..  ; ALWAYS branch
 
 ; &f985 referenced 3 times by &ef64, &f1b3, &fa81
 .sub_cf985
     lda io_status                                                     ; f985: a5 90       ..
     ora #&40 ; '@'                                                    ; f987: 09 40       .@
-    bne cf98f                                                         ; f989: d0 04       P. ; ALWAYS branch
+    bne cf98f                                                         ; f989: d0 04       P.  ; ALWAYS branch
 
 ; &f98b referenced 3 times by &f943, &ff43, &ff49
 .sub_cf98b
@@ -3732,7 +3735,7 @@ lf7b6 = cf7b4+2
     bcs cf9fe                                                         ; fa01: b0 fb       ..
     cmp tape_sync_number                                              ; fa03: c5 96       E.
     bcs cf9fe                                                         ; fa05: b0 f7       ..
-    bcc loop_cf9fb                                                    ; fa07: 90 f2       .. ; ALWAYS branch
+    bcc loop_cf9fb                                                    ; fa07: 90 f2       ..  ; ALWAYS branch
 
 ; &fa09 referenced 1 time by &ffa8
 .cfa09
@@ -3805,7 +3808,7 @@ lf7b6 = cf7b4+2
     ldx #0                                                            ; fa65: a2 00       ..
     stx cia2_timer_a_high                                             ; fa67: 8e 05 dd    ...
     stx cia2_timer_b_high                                             ; fa6a: 8e 07 dd    ...
-    dex                                                               ; fa6d: ca          J  ; X=&ff
+    dex                                                               ; fa6d: ca          J   ; X=&ff
     stx cia2_timer_b_low                                              ; fa6e: 8e 06 dd    ...
     ldx #&11                                                          ; fa71: a2 11       ..
     stx cia2_control_a                                                ; fa73: 8e 0e dd    ...
@@ -3905,7 +3908,7 @@ lf7b6 = cf7b4+2
     lda io_temp_1                                                     ; fae1: a5 a3       ..
     bpl return_21                                                     ; fae3: 10 0b       ..
     lda #0                                                            ; fae5: a9 00       ..
-    beq cfaee                                                         ; fae7: f0 05       .. ; ALWAYS branch
+    beq cfaee                                                         ; fae7: f0 05       ..  ; ALWAYS branch
 
 ; &fae9 referenced 1 time by &fadc
 .cfae9
@@ -3927,14 +3930,14 @@ lf7b6 = cf7b4+2
     lsr a                                                             ; faf5: 4a          j
     lsr a                                                             ; faf6: 4a          j
     cmp #&0a                                                          ; faf7: c9 0a       I.
-    adc #&30 ; '0'                                                    ; faf9: 69 30       .0 ; A=character to output
+    adc #&30 ; '0'                                                    ; faf9: 69 30       .0  ; A=character to output
     cld                                                               ; fafb: d8          X
     jsr CHROUT                                                        ; fafc: 20 d2 ff     R. ; Output a character
     sed                                                               ; faff: f8          .
     pla                                                               ; fb00: 68          .
     and #&0f                                                          ; fb01: 29 0f       ).
     cmp #&0a                                                          ; fb03: c9 0a       I.
-    adc #&30 ; '0'                                                    ; fb05: 69 30       .0 ; A=character to output
+    adc #&30 ; '0'                                                    ; fb05: 69 30       .0  ; A=character to output
     cld                                                               ; fb07: d8          X
     jmp CHROUT                                                        ; fb08: 4c d2 ff    lR. ; Output a character
 
@@ -3950,7 +3953,7 @@ lf7b6 = cf7b4+2
     bne cfb1d                                                         ; fb16: d0 05       P.
     iny                                                               ; fb18: c8          H
     bpl loop_cfb0d                                                    ; fb19: 10 f2       ..
-    bmi cfb23                                                         ; fb1b: 30 06       0. ; ALWAYS branch
+    bmi cfb23                                                         ; fb1b: 30 06       0.  ; ALWAYS branch
 
 ; &fb1d referenced 1 time by &fb16
 .cfb1d
@@ -4094,7 +4097,7 @@ lf7b6 = cf7b4+2
     bcc cfbe4                                                         ; fbdd: 90 05       ..
     clc                                                               ; fbdf: 18          .
     lda #6                                                            ; fbe0: a9 06       ..
-    bne loop_cfbd5                                                    ; fbe2: d0 f1       P. ; ALWAYS branch
+    bne loop_cfbd5                                                    ; fbe2: d0 f1       P.  ; ALWAYS branch
 
 ; &fbe4 referenced 2 times by &fbd1, &fbdd
 .cfbe4
@@ -4111,7 +4114,7 @@ lf7b6 = cf7b4+2
     bcc cfbfa                                                         ; fbf1: 90 07       ..
     lda irq_vector,y                                                  ; fbf3: b9 14 03    ...
     sta (load_address_temp),y                                         ; fbf6: 91 c3       .C
-    bcs cfbff                                                         ; fbf8: b0 05       .. ; ALWAYS branch
+    bcs cfbff                                                         ; fbf8: b0 05       ..  ; ALWAYS branch
 
 ; &fbfa referenced 2 times by &fbf1, &fc00
 .cfbfa
@@ -4403,9 +4406,9 @@ lfc8a = cfc89+1
     lda #0                                                            ; fd52: a9 00       ..
 ; &fd54 referenced 1 time by &fd5e
 .loop_cfd54
-    sta basic_error_vector,y                                          ; fd54: 99 00 03    ...
-    sta basic_input_buffer,y                                          ; fd57: 99 00 02    ...
-    sta l0002,y                                                       ; fd5a: 99 02 00    ...
+    sta basic_error_vector,y                                          ; fd54: 99 00 03    ... ; A=0
+    sta basic_input_buffer,y                                          ; fd57: 99 00 02    ... ; A=0
+    sta l0002,y                                                       ; fd5a: 99 02 00    ... ; A=0
     iny                                                               ; fd5d: c8          H
     bne loop_cfd54                                                    ; fd5e: d0 f4       P.
     ldx #&3c ; '<'                                                    ; fd60: a2 3c       .<
@@ -4432,7 +4435,7 @@ lfc8a = cfc89+1
 ; &fd88 referenced 1 time by &fd7c
 .cfd88
     ldy #&80                                                          ; fd88: a0 80       ..
-    bne loop_cfd80                                                    ; fd8a: d0 f4       P. ; ALWAYS branch
+    bne loop_cfd80                                                    ; fd8a: d0 f4       P.  ; ALWAYS branch
 
 ; &fd8c referenced 1 time by &ffa2
 .cfd8c
@@ -4457,7 +4460,7 @@ lfc8a = cfc89+1
 ; &fda3 referenced 1 time by &ff84
 .cfda3
     ldx #&27 ; '''                                                    ; fda3: a2 27       .'
-    stx cpu_port                                                      ; fda5: 86 01       .. ; Set the memory configuration to the usual one (RAM, BASIC ROM, Kernal ROM, I/O) ($27)
+    stx cpu_port                                                      ; fda5: 86 01       ..  ; Set the memory configuration to the usual one (RAM, BASIC ROM, Kernal ROM, I/O) ($27)
     ldx #&2f ; '/'                                                    ; fda7: a2 2f       ./
     stx cpu_port_direction                                            ; fda9: 86 00       ..
     ldx #&7f                                                          ; fdab: a2 7f       ..
@@ -4468,7 +4471,7 @@ lfc8a = cfc89+1
     sta sid_volume_filter_mode                                        ; fdb8: 8d 18 d4    ..T
     ldx #&ff                                                          ; fdbb: a2 ff       ..
     stx cia1_data_direction_a                                         ; fdbd: 8e 02 dc    ...
-    inx                                                               ; fdc0: e8          .  ; X=0
+    inx                                                               ; fdc0: e8          .   ; X=0
     stx cia1_data_direction_b                                         ; fdc1: 8e 03 dc    ...
     stx cia2_data_direction_b                                         ; fdc4: 8e 03 dd    ...
     lda #&3f ; '?'                                                    ; fdc7: a9 3f       .?
@@ -4746,7 +4749,7 @@ lfc8a = cfc89+1
 .loop_cff2e
     cpy filename_length                                               ; ff2e: c4 b7       D.
     beq return_25                                                     ; ff30: f0 08       ..
-    lda (filename_ptr),y                                              ; ff32: b1 bb       .. ; A=character to output
+    lda (filename_ptr),y                                              ; ff32: b1 bb       ..  ; A=character to output
     jsr CHROUT                                                        ; ff34: 20 d2 ff     R. ; Output a character
     iny                                                               ; ff37: c8          H
     bne loop_cff2e                                                    ; ff38: d0 f4       P.
@@ -4781,7 +4784,7 @@ lfc8a = cfc89+1
     lda load_verify_flag                                              ; ff4f: a5 93       ..
     bne cff57                                                         ; ff51: d0 04       P.
     lda #&1d                                                          ; ff53: a9 1d       ..
-    bne loop_cff3b                                                    ; ff55: d0 e4       P. ; ALWAYS branch
+    bne loop_cff3b                                                    ; ff55: d0 e4       P.  ; ALWAYS branch
 
 ; &ff57 referenced 1 time by &ff51
 .cff57

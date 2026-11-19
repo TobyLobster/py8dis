@@ -53,7 +53,7 @@ sys_entry
     .byt $48, $45, $4c, $4c, $4f, $2c, $20, $50 // petscii "hello, p" // 1010: 48 45 4c... hel
     .byt $4c, $55, $53, $2f, $34, $0d, 0 // petscii "lus/4", $0d, $00 // 1018: 4c 55 53... lus
 
-    lda #$93                                                          // 101f: a9 93       .. // A=character to output
+    lda #$93                                                          // 101f: a9 93       ..  // A=character to output
     jsr CHROUT                                                        // 1021: 20 d2 ff     R. // Output $93 (clear screen)
     lda #$71                                                          // 1024: a9 71       ..
     sta ted_border_colour                                             // 1026: 8d 19 ff    ...

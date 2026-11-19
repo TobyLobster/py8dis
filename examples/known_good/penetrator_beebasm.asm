@@ -1529,14 +1529,14 @@ l5fac = logo_picture+8108
 .loop_c608f
     inx                                                               ; 608f: e8          h
     bne c6093                                                         ; 6090: d0 01       P.
-    dex                                                               ; 6092: ca          J  ; X=&ff
+    dex                                                               ; 6092: ca          J   ; X=&ff
 ; &6093 referenced 2 times by &608d, &6090
 .c6093
     lda PADDL1                                                        ; 6093: ad 65 c0    -.@ ; Test paddle 1's timer (bit 7 set until it runs out)
     bpl c609c                                                         ; 6096: 10 04       ..
     iny                                                               ; 6098: c8          H
     bne loop_c608a                                                    ; 6099: d0 ef       Po
-    dey                                                               ; 609b: 88          .  ; Y=&ff
+    dey                                                               ; 609b: 88          .   ; Y=&ff
 ; &609c referenced 1 time by &6096
 .c609c
     lda PADDL0                                                        ; 609c: ad 64 c0    -.@ ; Test paddle 0's timer (bit 7 set until it runs out)
@@ -1544,20 +1544,20 @@ l5fac = logo_picture+8108
     lda #&ff                                                          ; 60a1: a9 ff       ).
     cpx #&20                                                          ; 60a3: e0 20       `.
     bcs c60ab                                                         ; 60a5: b0 04       0.
-    eor #2                                                            ; 60a7: 49 02       .. ; A=&fd
-    bne c60b1                                                         ; 60a9: d0 06       P. ; ALWAYS branch
+    eor #2                                                            ; 60a7: 49 02       ..  ; A=&fd
+    bne c60b1                                                         ; 60a9: d0 06       P.  ; ALWAYS branch
 
 ; &60ab referenced 1 time by &60a5
 .c60ab
     cpx #&60                                                          ; 60ab: e0 60       `.
     bcc c60b1                                                         ; 60ad: 90 02       ..
-    eor #1                                                            ; 60af: 49 01       .. ; A=&fe
+    eor #1                                                            ; 60af: 49 01       ..  ; A=&fe
 ; &60b1 referenced 2 times by &60a9, &60ad
 .c60b1
     cpy #&20                                                          ; 60b1: c0 20       @.
     bcs c60b9                                                         ; 60b3: b0 04       0.
     eor #8                                                            ; 60b5: 49 08       ..
-    bne c60bf                                                         ; 60b7: d0 06       P. ; ALWAYS branch
+    bne c60bf                                                         ; 60b7: d0 06       P.  ; ALWAYS branch
 
 ; &60b9 referenced 1 time by &60b3
 .c60b9
@@ -1601,7 +1601,7 @@ l5fac = logo_picture+8108
     cmp #&14                                                          ; 60ee: c9 14       I.
     bcc c6105                                                         ; 60f0: 90 13       ..
     sta playerShipY                                                   ; 60f2: 85 7d       ..
-    bcs c6105                                                         ; 60f4: b0 0f       0. ; ALWAYS branch
+    bcs c6105                                                         ; 60f4: b0 0f       0.  ; ALWAYS branch
 
 ; &60f6 referenced 1 time by &60e7
 .c60f6
@@ -1627,7 +1627,7 @@ l5fac = logo_picture+8108
     lda audioFrame                                                    ; 6112: a5 97       %.
     ora #4                                                            ; 6114: 09 04       ..
     sta audioFrame                                                    ; 6116: 85 97       ..
-    bne c612d                                                         ; 6118: d0 13       P. ; ALWAYS branch
+    bne c612d                                                         ; 6118: d0 13       P.  ; ALWAYS branch
 
 ; &611a referenced 1 time by &6109
 .c611a
@@ -1662,7 +1662,7 @@ l5fac = logo_picture+8108
     beq c614d                                                         ; 6146: f0 05       p.
     dex                                                               ; 6148: ca          J
     bpl loop_c6143                                                    ; 6149: 10 f8       .x
-    bmi c6167                                                         ; 614b: 30 1a       .. ; ALWAYS branch
+    bmi c6167                                                         ; 614b: 30 1a       ..  ; ALWAYS branch
 
 ; &614d referenced 1 time by &6146
 .c614d
@@ -1765,7 +1765,7 @@ l5fac = logo_picture+8108
     jsr serviceAudio                                                  ; 61e5: 20 03 60    ...
     lda tempBlock+16                                                  ; 61e8: a5 66       %.
     bne c61f6                                                         ; 61ea: d0 0a       P.
-    ora #1                                                            ; 61ec: 09 01       .. ; A=1
+    ora #1                                                            ; 61ec: 09 01       ..  ; A=1
     sta tempBlock+18                                                  ; 61ee: 85 68       ..
     jsr editSetTerrainBottom                                          ; 61f0: 20 c6 6f    .F.
     jmp c61f9                                                         ; 61f3: 4c f9 61    .y.
@@ -1785,7 +1785,7 @@ l5fac = logo_picture+8108
     jsr serviceAudio                                                  ; 6203: 20 03 60    ...
     lda tempBlock+16                                                  ; 6206: a5 66       %.
     bne c6214                                                         ; 6208: d0 0a       P.
-    ora #1                                                            ; 620a: 09 01       .. ; A=1
+    ora #1                                                            ; 620a: 09 01       ..  ; A=1
     sta tempBlock+18                                                  ; 620c: 85 68       ..
     jsr editSetTerrainTop                                             ; 620e: 20 0e 70    ...
     jmp c6217                                                         ; 6211: 4c 17 62    ...
@@ -1870,7 +1870,7 @@ l5fac = logo_picture+8108
     bit Bit7Mask                                                      ; 6280: 24 72       ..
     beq c6288                                                         ; 6282: f0 04       p.
     lda #1                                                            ; 6284: a9 01       ).
-    bne c628e                                                         ; 6286: d0 06       P. ; ALWAYS branch
+    bne c628e                                                         ; 6286: d0 06       P.  ; ALWAYS branch
 
 ; &6288 referenced 1 time by &6282
 .c6288
@@ -2059,7 +2059,7 @@ l5fac = logo_picture+8108
     lda lb300,x                                                       ; 63b5: bd 00 b3    =.3
     cmp #&20                                                          ; 63b8: c9 20       I.
     bne c63ea                                                         ; 63ba: d0 2e       P.
-    beq c63c6                                                         ; 63bc: f0 08       p. ; ALWAYS branch
+    beq c63c6                                                         ; 63bc: f0 08       p.  ; ALWAYS branch
 
 ; &63be referenced 1 time by &6426
 .c63be
@@ -2457,12 +2457,12 @@ l5fac = logo_picture+8108
     bit Bit8432Mask                                                   ; 665c: 24 77       ..
     bne c6664                                                         ; 665e: d0 04       P.
     lda #0                                                            ; 6660: a9 00       ).
-    beq c666a                                                         ; 6662: f0 06       p. ; ALWAYS branch
+    beq c666a                                                         ; 6662: f0 06       p.  ; ALWAYS branch
 
 ; &6664 referenced 1 time by &665e
 .c6664
     lda #&71                                                          ; 6664: a9 71       ).
-    bne c666a                                                         ; 6666: d0 02       P. ; ALWAYS branch
+    bne c666a                                                         ; 6666: d0 02       P.  ; ALWAYS branch
 
 ; &6668 referenced 1 time by &665a
 .c6668
@@ -2479,11 +2479,11 @@ l5fac = logo_picture+8108
     equb MLI_QUIT                                                     ; 6675: 65          .
     equw quit_params                                                  ; 6676: 78 66       ..
 .quit_params
-    equb 4                                                            ; 6678: 04          .  ; Parameter count
-    equb 0                                                            ; 6679: 00          .  ; Quit type
-    equw 0                                                            ; 667a: 00 00       .. ; Reserved
-    equb 0                                                            ; 667c: 00          .  ; Reserved
-    equw 0                                                            ; 667d: 00 00       .. ; Reserved
+    equb 4                                                            ; 6678: 04          .   ; Parameter count
+    equb 0                                                            ; 6679: 00          .   ; Quit type
+    equw 0                                                            ; 667a: 00 00       ..  ; Reserved
+    equb 0                                                            ; 667c: 00          .   ; Reserved
+    equw 0                                                            ; 667d: 00 00       ..  ; Reserved
     equb &31, &32, &54, &45, &4c, &53, &51                            ; 667f: 31 32 54... ...
 
 ; &6686 referenced 1 time by &663b
@@ -2581,9 +2581,9 @@ l6721 = loop_c671f+2
 ; &6720 referenced 1 time by &6700
 ; &6721 referenced 1 time by &6703
     beq return_5                                                      ; 6722: f0 05       p.
-    dex                                                               ; 6724: ca          J  ; X=&ff
+    dex                                                               ; 6724: ca          J
     bpl loop_c671f                                                    ; 6725: 10 f8       .x
-    bmi c670d                                                         ; 6727: 30 e4       .d ; ALWAYS branch
+    bmi c670d                                                         ; 6727: 30 e4       .d  ; ALWAYS branch
 
 ; &6729 referenced 1 time by &6722
 .return_5
@@ -3096,7 +3096,7 @@ l6721 = loop_c671f+2
     dex                                                               ; 6ae0: ca          J
     dey                                                               ; 6ae1: 88          .
     bpl loop_c6ae0                                                    ; 6ae2: 10 fc       .|
-    bmi c6aea                                                         ; 6ae4: 30 04       .. ; ALWAYS branch
+    bmi c6aea                                                         ; 6ae4: 30 04       ..  ; ALWAYS branch
 
 ; &6ae6 referenced 1 time by &6ade
 .c6ae6
@@ -3116,7 +3116,7 @@ l6721 = loop_c671f+2
 
 ; &6af5 referenced 1 time by &6af2
 .c6af5
-    dex                                                               ; 6af5: ca          J  ; X=4
+    dex                                                               ; 6af5: ca          J   ; X=4
     cpx tempBlock+16                                                  ; 6af6: e4 66       d.
     beq c6afd                                                         ; 6af8: f0 03       p.
     jsr uiInsertHighScoreRow                                          ; 6afa: 20 17 6b    ...
@@ -3197,11 +3197,11 @@ l6721 = loop_c671f+2
     ldy #0                                                            ; 6b69: a0 00        .
 ; &6b6b referenced 1 time by &6b6f
 .loop_c6b6b
-    sta (zWorldPtr),y                                                 ; 6b6b: 91 50       ..
+    sta (zWorldPtr),y                                                 ; 6b6b: 91 50       ..  ; A=&5f
     iny                                                               ; 6b6d: c8          H
     dex                                                               ; 6b6e: ca          J
     bne loop_c6b6b                                                    ; 6b6f: d0 fa       Pz
-    stx tempBlock+17                                                  ; 6b71: 86 67       ..
+    stx tempBlock+17                                                  ; 6b71: 86 67       ..  ; X=0
 ; &6b73 referenced 1 time by &6c00
 .c6b73
     lda #&4c                                                          ; 6b73: a9 4c       ).
@@ -3308,7 +3308,7 @@ l6721 = loop_c671f+2
 .loop_c6c32
     cpy tempBlock+18                                                  ; 6c32: c4 68       D.
     bcs c6c3b                                                         ; 6c34: b0 05       0.
-    sta (zWorldPtr),y                                                 ; 6c36: 91 50       ..
+    sta (zWorldPtr),y                                                 ; 6c36: 91 50       ..  ; A=&5f
     iny                                                               ; 6c38: c8          H
     bne loop_c6c32                                                    ; 6c39: d0 f7       Pw
 ; &6c3b referenced 3 times by &6c34, &6ce6, &6cf6
@@ -3557,7 +3557,7 @@ l6721 = loop_c671f+2
     dey                                                               ; 6de7: 88          .
     lda #&5f                                                          ; 6de8: a9 5f       ).
     sta (zWorldPtr),y                                                 ; 6dea: 91 50       ..
-    bne loop_c6ddf                                                    ; 6dec: d0 f1       Pq ; ALWAYS branch
+    bne loop_c6ddf                                                    ; 6dec: d0 f1       Pq  ; ALWAYS branch
 
 ; &6dee referenced 1 time by &6db3
 .c6dee
@@ -3752,7 +3752,7 @@ l6721 = loop_c671f+2
     ldy #0                                                            ; 6efc: a0 00        .
     lda (tempBlock+14),y                                              ; 6efe: b1 64       1.
     sta lb422,x                                                       ; 6f00: 9d 22 b4    ..4
-    iny                                                               ; 6f03: c8          H  ; Y=1
+    iny                                                               ; 6f03: c8          H   ; Y=1
     lda (tempBlock+14),y                                              ; 6f04: b1 64       1.
     sta lb322,x                                                       ; 6f06: 9d 22 b3    ..3
     ldy #2                                                            ; 6f09: a0 02        .
@@ -3789,25 +3789,26 @@ l6721 = loop_c671f+2
     sta lb2ae                                                         ; 6f36: 8d ae b2    ..2
     sta terrainOrigin                                                 ; 6f39: 85 7e       ..
     sta zCollision                                                    ; 6f3b: 85 55       ..
-    sta stopScrolling                                                 ; 6f3d: 85 7f       ..
-    sta bufferInsert                                                  ; 6f3f: 85 86       ..
-    sta dangerTickIdx                                                 ; 6f41: 85 8a       ..
-    sta pause                                                         ; 6f43: 85 93       ..
-    tax                                                               ; 6f45: aa          *  ; X=0
+    sta stopScrolling                                                 ; 6f3d: 85 7f       ..  ; A=0
+    sta bufferInsert                                                  ; 6f3f: 85 86       ..  ; A=0
+    sta dangerTickIdx                                                 ; 6f41: 85 8a       ..  ; A=0
+    sta pause                                                         ; 6f43: 85 93       ..  ; A=0
+    tax                                                               ; 6f45: aa          *   ; X=0
 ; &6f46 referenced 1 time by &6f59
 .loop_c6f46
-    sta lb422,x                                                       ; 6f46: 9d 22 b4    ..4
-    sta lb322,x                                                       ; 6f49: 9d 22 b3    ..3
-    sta lb522,x                                                       ; 6f4c: 9d 22 b5    ..5
-    sta lb622,x                                                       ; 6f4f: 9d 22 b6    ..6
-    sta lb822,x                                                       ; 6f52: 9d 22 b8    ..8
-    sta lb722,x                                                       ; 6f55: 9d 22 b7    ..7
+    sta lb422,x                                                       ; 6f46: 9d 22 b4    ..4 ; A=0
+    sta lb322,x                                                       ; 6f49: 9d 22 b3    ..3 ; A=0
+    sta lb522,x                                                       ; 6f4c: 9d 22 b5    ..5 ; A=0
+    sta lb622,x                                                       ; 6f4f: 9d 22 b6    ..6 ; A=0
+    sta lb822,x                                                       ; 6f52: 9d 22 b8    ..8 ; A=0
+    sta lb722,x                                                       ; 6f55: 9d 22 b7    ..7 ; A=0
     dex                                                               ; 6f58: ca          J
     bne loop_c6f46                                                    ; 6f59: d0 eb       Pk
     ldx #4                                                            ; 6f5b: a2 04       ".
 ; &6f5d referenced 1 time by &6f61
 .loop_c6f5d
-    sta lb2af,x                                                       ; 6f5d: 9d af b2    ./2
+    ; Clear 5 bytes of memory from lb2af onwards
+    sta lb2af,x                                                       ; 6f5d: 9d af b2    ./2 ; A=0
     dex                                                               ; 6f60: ca          J
     bpl loop_c6f5d                                                    ; 6f61: 10 fa       .z
     lda #&ff                                                          ; 6f63: a9 ff       ).
@@ -4167,11 +4168,12 @@ l6fb8 = c6fb6+2
     sta activePlayer                                                  ; 717a: 85 7a       ..
     sta lb2aa                                                         ; 717c: 8d aa b2    .*2
     sta lb2ab                                                         ; 717f: 8d ab b2    .+2
-    sta lb2ac                                                         ; 7182: 8d ac b2    .,2
+    sta lb2ac                                                         ; 7182: 8d ac b2    .,2 ; A=0
     ldx #4                                                            ; 7185: a2 04       ".
 ; &7187 referenced 1 time by &718b
 .loop_c7187
-    sta lb2af,x                                                       ; 7187: 9d af b2    ./2
+    ; Clear 5 bytes of memory from lb2af onwards
+    sta lb2af,x                                                       ; 7187: 9d af b2    ./2 ; A=0
     dex                                                               ; 718a: ca          J
     bpl loop_c7187                                                    ; 718b: 10 fa       .z
     lda #4                                                            ; 718d: a9 04       ).
@@ -4190,28 +4192,29 @@ l6fb8 = c6fb6+2
     sta playerDead                                                    ; 71a4: 85 80       ..
     sta zCollision                                                    ; 71a6: 85 55       ..
     sta stopScrolling                                                 ; 71a8: 85 7f       ..
-    sta bufferInsert                                                  ; 71aa: 85 86       ..
-    sta dangerTickIdx                                                 ; 71ac: 85 8a       ..
-    sta moveHorz                                                      ; 71ae: 85 8b       ..
-    sta moveVert                                                      ; 71b0: 85 8c       ..
-    sta flipFlop                                                      ; 71b2: 85 8e       ..
-    sta pause                                                         ; 71b4: 85 93       ..
-    sta fireCoolDown                                                  ; 71b6: 85 94       ..
-    tax                                                               ; 71b8: aa          *  ; X=0
+    sta bufferInsert                                                  ; 71aa: 85 86       ..  ; A=0
+    sta dangerTickIdx                                                 ; 71ac: 85 8a       ..  ; A=0
+    sta moveHorz                                                      ; 71ae: 85 8b       ..  ; A=0
+    sta moveVert                                                      ; 71b0: 85 8c       ..  ; A=0
+    sta flipFlop                                                      ; 71b2: 85 8e       ..  ; A=0
+    sta pause                                                         ; 71b4: 85 93       ..  ; A=0
+    sta fireCoolDown                                                  ; 71b6: 85 94       ..  ; A=0
+    tax                                                               ; 71b8: aa          *   ; X=0
 ; &71b9 referenced 1 time by &71cc
 .loop_c71b9
-    sta lb422,x                                                       ; 71b9: 9d 22 b4    ..4
-    sta lb322,x                                                       ; 71bc: 9d 22 b3    ..3
-    sta lb522,x                                                       ; 71bf: 9d 22 b5    ..5
-    sta lb622,x                                                       ; 71c2: 9d 22 b6    ..6
-    sta lb822,x                                                       ; 71c5: 9d 22 b8    ..8
-    sta lb722,x                                                       ; 71c8: 9d 22 b7    ..7
+    sta lb422,x                                                       ; 71b9: 9d 22 b4    ..4 ; A=0
+    sta lb322,x                                                       ; 71bc: 9d 22 b3    ..3 ; A=0
+    sta lb522,x                                                       ; 71bf: 9d 22 b5    ..5 ; A=0
+    sta lb622,x                                                       ; 71c2: 9d 22 b6    ..6 ; A=0
+    sta lb822,x                                                       ; 71c5: 9d 22 b8    ..8 ; A=0
+    sta lb722,x                                                       ; 71c8: 9d 22 b7    ..7 ; A=0
     dex                                                               ; 71cb: ca          J
     bne loop_c71b9                                                    ; 71cc: d0 eb       Pk
     ldx #5                                                            ; 71ce: a2 05       ".
 ; &71d0 referenced 1 time by &71d4
 .loop_c71d0
-    sta lb31c,x                                                       ; 71d0: 9d 1c b3    ..3
+    ; Clear 6 bytes of memory from lb31c onwards
+    sta lb31c,x                                                       ; 71d0: 9d 1c b3    ..3 ; A=0
     dex                                                               ; 71d3: ca          J
     bpl loop_c71d0                                                    ; 71d4: 10 fa       .z
     lda #&3f                                                          ; 71d6: a9 3f       ).
@@ -4348,7 +4351,7 @@ l6fb8 = c6fb6+2
     dec nextStage                                                     ; 72a3: c6 85       F.
     bne return_12                                                     ; 72a5: d0 1d       P.
     dec nextStage                                                     ; 72a7: c6 85       F.
-    sty updateHUD                                                     ; 72a9: 84 8d       ..
+    sty updateHUD                                                     ; 72a9: 84 8d       ..  ; Y=2
     lda lb2ae                                                         ; 72ab: ad ae b2    -.2
     beq c72c1                                                         ; 72ae: f0 11       p.
     dec lb2ad                                                         ; 72b0: ce ad b2    N-2
@@ -4614,7 +4617,7 @@ l6fb8 = c6fb6+2
     iny                                                               ; 7431: c8          H
     dex                                                               ; 7432: ca          J
     bne loop_c7428                                                    ; 7433: d0 f3       Ps
-    beq c73ef                                                         ; 7435: f0 b8       p8 ; ALWAYS branch
+    beq c73ef                                                         ; 7435: f0 b8       p8  ; ALWAYS branch
 
     rts                                                               ; 7437: 60          .
 
@@ -4645,12 +4648,12 @@ l6fb8 = c6fb6+2
     ldy #0                                                            ; 745e: a0 00        .
     lda (zWorldPtr),y                                                 ; 7460: b1 50       1.
     sta lb422,x                                                       ; 7462: 9d 22 b4    ..4
-    iny                                                               ; 7465: c8          H  ; Y=1
+    iny                                                               ; 7465: c8          H   ; Y=1
     lda (zWorldPtr),y                                                 ; 7466: b1 50       1.
     sta lb322,x                                                       ; 7468: 9d 22 b3    ..3
     lda terrainOrigin                                                 ; 746b: a5 7e       %.
     bne return_13                                                     ; 746d: d0 3b       P.
-    iny                                                               ; 746f: c8          H  ; Y=2
+    iny                                                               ; 746f: c8          H   ; Y=2
     lda (zWorldPtr),y                                                 ; 7470: b1 50       1.
     beq return_13                                                     ; 7472: f0 36       p.
     jmp gameWorldFlag                                                 ; 7474: 4c 36 75    ...
@@ -4669,7 +4672,7 @@ l6fb8 = c6fb6+2
     ldy #6                                                            ; 7483: a0 06        .
     lda (zWorldPtr),y                                                 ; 7485: b1 50       1.
     sta lb422,x                                                       ; 7487: 9d 22 b4    ..4
-    iny                                                               ; 748a: c8          H  ; Y=7
+    iny                                                               ; 748a: c8          H   ; Y=7
     lda (zWorldPtr),y                                                 ; 748b: b1 50       1.
     sta lb322,x                                                       ; 748d: 9d 22 b3    ..3
     lda terrainOrigin                                                 ; 7490: a5 7e       %.
@@ -4723,7 +4726,7 @@ l6fb8 = c6fb6+2
     jsr gameUpdateDangerBar                                           ; 74d4: 20 0d 75    ...
     lda tempBlock+1                                                   ; 74d7: a5 57       %.
     beq c750b                                                         ; 74d9: f0 30       p.
-    bne loop_c74c1                                                    ; 74db: d0 e4       Pd ; ALWAYS branch
+    bne loop_c74c1                                                    ; 74db: d0 e4       Pd  ; ALWAYS branch
 
 ; &74dd referenced 1 time by &74b0
 .c74dd
@@ -4755,7 +4758,7 @@ l6fb8 = c6fb6+2
     jsr gameUpdateDangerBar                                           ; 7502: 20 0d 75    ...
     lda tempBlock+1                                                   ; 7505: a5 57       %.
     beq c750b                                                         ; 7507: f0 02       p.
-    bne loop_c74ef                                                    ; 7509: d0 e4       Pd ; ALWAYS branch
+    bne loop_c74ef                                                    ; 7509: d0 e4       Pd  ; ALWAYS branch
 
 ; &750b referenced 4 times by &74bd, &74d9, &74eb, &7507
 .c750b
@@ -4835,7 +4838,7 @@ l6fb8 = c6fb6+2
 ; &7576 referenced 1 time by &7546
 .c7576
     lda lb422,x                                                       ; 7576: bd 22 b4    =.4
-    sbc #0                                                            ; 7579: e9 00       i. ; Carry is clear, so subtracting 1
+    sbc #0                                                            ; 7579: e9 00       i.  ; Carry is clear, so subtracting 1
     tay                                                               ; 757b: a8          (
     sta lb622,x                                                       ; 757c: 9d 22 b6    ..6
     lda #3                                                            ; 757f: a9 03       ).
@@ -4967,7 +4970,7 @@ l6fb8 = c6fb6+2
 .c7647
     lda lb2b4,y                                                       ; 7647: b9 b4 b2    942
     beq return_16                                                     ; 764a: f0 09       p.
-    ldy activePlayer                                                  ; 764c: a4 7a       $. ; Redundant instruction?
+    ldy activePlayer                                                  ; 764c: a4 7a       $.  ; Redundant instruction?
     stx activePlayer                                                  ; 764e: 86 7a       ..
     ldy activePlayer                                                  ; 7650: a4 7a       $.
     jsr gamePlayerToStats                                             ; 7652: 20 6a 76    ...
@@ -5069,19 +5072,19 @@ l6fb8 = c6fb6+2
     ldy #1                                                            ; 76d7: a0 01        .
     sty victory                                                       ; 76d9: 84 84       ..
     ldy #0                                                            ; 76db: a0 00        .
-    beq c76ec                                                         ; 76dd: f0 0d       p. ; ALWAYS branch
+    beq c76ec                                                         ; 76dd: f0 0d       p.  ; ALWAYS branch
 
 ; &76df referenced 1 time by &76d5
 .c76df
     ldy #1                                                            ; 76df: a0 01        .
-    bne c76ec                                                         ; 76e1: d0 09       P. ; ALWAYS branch
+    bne c76ec                                                         ; 76e1: d0 09       P.  ; ALWAYS branch
 
 ; &76e3 referenced 1 time by &76d2
 .c76e3
     lsr a                                                             ; 76e3: 4a          .
     bcc c76ea                                                         ; 76e4: 90 04       ..
     ldy #3                                                            ; 76e6: a0 03        .
-    bne c76ec                                                         ; 76e8: d0 02       P. ; ALWAYS branch
+    bne c76ec                                                         ; 76e8: d0 02       P.  ; ALWAYS branch
 
 ; &76ea referenced 1 time by &76e4
 .c76ea
@@ -5112,17 +5115,17 @@ l6fb8 = c6fb6+2
     sta lb622,x                                                       ; 7712: 9d 22 b6    ..6
     inx                                                               ; 7715: e8          h
     sta lb522,x                                                       ; 7716: 9d 22 b5    ..5
-    sta lb622,x                                                       ; 7719: 9d 22 b6    ..6
+    sta lb622,x                                                       ; 7719: 9d 22 b6    ..6 ; A=0
     dey                                                               ; 771c: 88          .
     beq c7730                                                         ; 771d: f0 11       p.
     inx                                                               ; 771f: e8          h
-    sta lb522,x                                                       ; 7720: 9d 22 b5    ..5
-    sta lb622,x                                                       ; 7723: 9d 22 b6    ..6
+    sta lb522,x                                                       ; 7720: 9d 22 b5    ..5 ; A=0
+    sta lb622,x                                                       ; 7723: 9d 22 b6    ..6 ; A=0
     dey                                                               ; 7726: 88          .
     beq c7730                                                         ; 7727: f0 07       p.
     inx                                                               ; 7729: e8          h
-    sta lb522,x                                                       ; 772a: 9d 22 b5    ..5
-    sta lb622,x                                                       ; 772d: 9d 22 b6    ..6
+    sta lb522,x                                                       ; 772a: 9d 22 b5    ..5 ; A=0
+    sta lb622,x                                                       ; 772d: 9d 22 b6    ..6 ; A=0
 ; &7730 referenced 3 times by &76cd, &771d, &7727
 .c7730
     inc tempBlock+4                                                   ; 7730: e6 5a       f.
@@ -5139,7 +5142,7 @@ l6fb8 = c6fb6+2
     and #&80                                                          ; 773c: 29 80       ..
     bne c7744                                                         ; 773e: d0 04       P.
     lda #0                                                            ; 7740: a9 00       ).
-    beq c7746                                                         ; 7742: f0 02       p. ; ALWAYS branch
+    beq c7746                                                         ; 7742: f0 02       p.  ; ALWAYS branch
 
 ; &7744 referenced 1 time by &773e
 .c7744
@@ -5438,7 +5441,7 @@ l78f6 = c78f4+2
     dey                                                               ; 78f7: 88          .
     inx                                                               ; 78f8: e8          h
     bne c78d9                                                         ; 78f9: d0 de       P^
-    beq c7917                                                         ; 78fb: f0 1a       p. ; ALWAYS branch
+    beq c7917                                                         ; 78fb: f0 1a       p.  ; ALWAYS branch
 
 ; &78fd referenced 1 time by &78d6
 .c78fd
@@ -5551,7 +5554,7 @@ l7988 = c7986+2
     iny                                                               ; 7989: c8          H
     dex                                                               ; 798a: ca          J
     bne c796b                                                         ; 798b: d0 de       P^
-    beq c79a9                                                         ; 798d: f0 1a       p. ; ALWAYS branch
+    beq c79a9                                                         ; 798d: f0 1a       p.  ; ALWAYS branch
 
 ; &798f referenced 1 time by &7968
 .c798f
@@ -6025,7 +6028,7 @@ l79e5 = c79e3+2
 ; &7e38 referenced 16 times by &62ac, &6521, &6686, &6731, &687f, &6887, &6b50, &6c09, &6c0f, &6d93, &6df0, &6e39, &716d, &7204, &724a, &8647
 .drawClearScreen
     lda #0                                                            ; 7e38: a9 00       ).
-    tax                                                               ; 7e3a: aa          *  ; X=0
+    tax                                                               ; 7e3a: aa          *   ; X=0
 ; &7e3b referenced 1 time by &7efe
 .c7e3b
     sta l2000,x                                                       ; 7e3b: 9d 00 20    ...
@@ -6277,7 +6280,7 @@ l7fa5 = c7fa3+2
     sta l7f9c                                                         ; 7ff1: 8d 9c 7f    ...
     lda #&b2 ; '2'                                                    ; 7ff4: a9 b2       )2
     sta l7f9d                                                         ; 7ff6: 8d 9d 7f    ...
-    bne c800d                                                         ; 7ff9: d0 12       P. ; ALWAYS branch
+    bne c800d                                                         ; 7ff9: d0 12       P.  ; ALWAYS branch
 
 ; &7ffb referenced 1 time by &7fe5
 .c7ffb
@@ -6386,7 +6389,7 @@ l7fa5 = c7fa3+2
     sta l7f9d                                                         ; 80a2: 8d 9d 7f    ...
     lda #4                                                            ; 80a5: a9 04       ).
     sta tempBlock+7                                                   ; 80a7: 85 5d       ..
-    bne c80d6                                                         ; 80a9: d0 2b       P. ; ALWAYS branch
+    bne c80d6                                                         ; 80a9: d0 2b       P.  ; ALWAYS branch
 
 ; &80ab referenced 1 time by &8080
 .c80ab
@@ -6439,7 +6442,7 @@ l7fa5 = c7fa3+2
     cmp #&3f                                                          ; 80fc: c9 3f       I.
     bne c8104                                                         ; 80fe: d0 04       P.
     lda #0                                                            ; 8100: a9 00       ).
-    beq c8106                                                         ; 8102: f0 02       p. ; ALWAYS branch
+    beq c8106                                                         ; 8102: f0 02       p.  ; ALWAYS branch
 
 ; &8104 referenced 1 time by &80fe
 .c8104
@@ -6453,7 +6456,7 @@ l7fa5 = c7fa3+2
     sta l7f9d                                                         ; 8111: 8d 9d 7f    ...
     lda #2                                                            ; 8114: a9 02       ).
     sta tempBlock+7                                                   ; 8116: 85 5d       ..
-    bne c8133                                                         ; 8118: d0 19       P. ; ALWAYS branch
+    bne c8133                                                         ; 8118: d0 19       P.  ; ALWAYS branch
 
 ; &811a referenced 1 time by &80f4
 .c811a
@@ -6480,7 +6483,7 @@ l7fa5 = c7fa3+2
     ldx #0                                                            ; 813d: a2 00       ".
     bit Bit3Mask                                                      ; 813f: 24 6e       ..
     beq c8144                                                         ; 8141: f0 01       p.
-    inx                                                               ; 8143: e8          h  ; X=1
+    inx                                                               ; 8143: e8          h   ; X=1
 ; &8144 referenced 1 time by &8141
 .c8144
     lda #8                                                            ; 8144: a9 08       ).
@@ -6494,7 +6497,7 @@ l7fa5 = c7fa3+2
     cmp #&3f                                                          ; 8154: c9 3f       I.
     bne c815c                                                         ; 8156: d0 04       P.
     lda #0                                                            ; 8158: a9 00       ).
-    beq c815e                                                         ; 815a: f0 02       p. ; ALWAYS branch
+    beq c815e                                                         ; 815a: f0 02       p.  ; ALWAYS branch
 
 ; &815c referenced 1 time by &8156
 .c815c
@@ -6508,7 +6511,7 @@ l7fa5 = c7fa3+2
     sta l7f9d                                                         ; 8169: 8d 9d 7f    ...
     lda #2                                                            ; 816c: a9 02       ).
     sta tempBlock+7                                                   ; 816e: 85 5d       ..
-    bne c818b                                                         ; 8170: d0 19       P. ; ALWAYS branch
+    bne c818b                                                         ; 8170: d0 19       P.  ; ALWAYS branch
 
 ; &8172 referenced 1 time by &814c
 .c8172
@@ -6547,7 +6550,7 @@ l7fa5 = c7fa3+2
     cmp #&3f                                                          ; 81aa: c9 3f       I.
     bne c81b2                                                         ; 81ac: d0 04       P.
     lda #0                                                            ; 81ae: a9 00       ).
-    beq c81b4                                                         ; 81b0: f0 02       p. ; ALWAYS branch
+    beq c81b4                                                         ; 81b0: f0 02       p.  ; ALWAYS branch
 
 ; &81b2 referenced 1 time by &81ac
 .c81b2
@@ -6561,7 +6564,7 @@ l7fa5 = c7fa3+2
     sta l7f9d                                                         ; 81bd: 8d 9d 7f    ...
     lda #3                                                            ; 81c0: a9 03       ).
     sta tempBlock+7                                                   ; 81c2: 85 5d       ..
-    bne c81dc                                                         ; 81c4: d0 16       P. ; ALWAYS branch
+    bne c81dc                                                         ; 81c4: d0 16       P.  ; ALWAYS branch
 
 ; &81c6 referenced 1 time by &81a6
 .c81c6
@@ -6663,7 +6666,7 @@ l7fa5 = c7fa3+2
     inx                                                               ; 8263: e8          h
     dey                                                               ; 8264: 88          .
     beq c8277                                                         ; 8265: f0 10       p.
-    bne loop_c824b                                                    ; 8267: d0 e2       Pb ; ALWAYS branch
+    bne loop_c824b                                                    ; 8267: d0 e2       Pb  ; ALWAYS branch
 
 ; &8269 referenced 1 time by &8261
 .c8269
@@ -6732,7 +6735,7 @@ l7fa5 = c7fa3+2
     stx tempBlock+1                                                   ; 82cc: 86 57       ..
     ldx #0                                                            ; 82ce: a2 00       ".
     lda #&78                                                          ; 82d0: a9 78       ).
-    bne c82dc                                                         ; 82d2: d0 08       P. ; ALWAYS branch
+    bne c82dc                                                         ; 82d2: d0 08       P.  ; ALWAYS branch
 
 ; &82d4 referenced 1 time by &82c8
 .c82d4
@@ -6743,7 +6746,7 @@ l7fa5 = c7fa3+2
 ; &82dc referenced 1 time by &82d2
 .c82dc
     sta tempBlock+6                                                   ; 82dc: 85 5c       ..
-    bne c82f9                                                         ; 82de: d0 19       P. ; ALWAYS branch
+    bne c82f9                                                         ; 82de: d0 19       P.  ; ALWAYS branch
 
 ; &82e0 referenced 1 time by &82c3
 .c82e0
@@ -6754,7 +6757,7 @@ l7fa5 = c7fa3+2
     stx tempBlock+1                                                   ; 82e7: 86 57       ..
     ldx #0                                                            ; 82e9: a2 00       ".
     lda #&7f                                                          ; 82eb: a9 7f       ).
-    bne c82f7                                                         ; 82ed: d0 08       P. ; ALWAYS branch
+    bne c82f7                                                         ; 82ed: d0 08       P.  ; ALWAYS branch
 
 ; &82ef referenced 1 time by &82e3
 .c82ef
@@ -6787,7 +6790,7 @@ l82fe = c82fc+2
     cmp #&7f                                                          ; 830a: c9 7f       I.
     beq c8312                                                         ; 830c: f0 04       p.
     lda #&7f                                                          ; 830e: a9 7f       ).
-    bne c8314                                                         ; 8310: d0 02       P. ; ALWAYS branch
+    bne c8314                                                         ; 8310: d0 02       P.  ; ALWAYS branch
 
 ; &8312 referenced 1 time by &830c
 .c8312
@@ -6795,7 +6798,7 @@ l82fe = c82fc+2
 ; &8314 referenced 1 time by &8310
 .c8314
     sta tempBlock+6                                                   ; 8314: 85 5c       ..
-    bne c82f9                                                         ; 8316: d0 e1       Pa ; ALWAYS branch
+    bne c82f9                                                         ; 8316: d0 e1       Pa  ; ALWAYS branch
 
 ; &8318 referenced 2 times by &8306, &8355
 .c8318
@@ -6817,7 +6820,7 @@ l82fe = c82fc+2
     iny                                                               ; 832b: c8          H
     dec tempBlock+1                                                   ; 832c: c6 57       F.
     bpl loop_c8326                                                    ; 832e: 10 f6       .v
-    bmi c834e                                                         ; 8330: 30 1c       .. ; ALWAYS branch
+    bmi c834e                                                         ; 8330: 30 1c       ..  ; ALWAYS branch
 
 ; &8332 referenced 1 time by &8329
 .c8332
@@ -6839,7 +6842,7 @@ l82fe = c82fc+2
     ldx tempBlock+5                                                   ; 834e: a6 5b       &.
     lda #0                                                            ; 8350: a9 00       ).
     sta lb722,x                                                       ; 8352: 9d 22 b7    ..7
-    beq c8318                                                         ; 8355: f0 c1       pA ; ALWAYS branch
+    beq c8318                                                         ; 8355: f0 c1       pA  ; ALWAYS branch
 
 ; &8357 referenced 1 time by &7145
 .drawExplosions
@@ -6907,7 +6910,7 @@ l82fe = c82fc+2
     cmp #&3e                                                          ; 83bd: c9 3e       I.
     bcc c83c5                                                         ; 83bf: 90 04       ..
     lda #0                                                            ; 83c1: a9 00       ).
-    beq c83c7                                                         ; 83c3: f0 02       p. ; ALWAYS branch
+    beq c83c7                                                         ; 83c3: f0 02       p.  ; ALWAYS branch
 
 ; &83c5 referenced 1 time by &83bf
 .c83c5
@@ -7203,7 +7206,7 @@ l8465 = c8463+2
     and #&0f                                                          ; 8552: 29 0f       ..
     cmp #&0a                                                          ; 8554: c9 0a       I.
     bcc c855a                                                         ; 8556: 90 02       ..
-    adc #6                                                            ; 8558: 69 06       .. ; Carry is set, so adding 7
+    adc #6                                                            ; 8558: 69 06       ..  ; Carry is set, so adding 7
 ; &855a referenced 1 time by &8556
 .c855a
     adc #&30                                                          ; 855a: 69 30       ..
@@ -7407,7 +7410,8 @@ l8465 = c8463+2
     ldx #&0e                                                          ; 8685: a2 0e       ".
 ; &8687 referenced 1 time by &868b
 .loop_c8687
-    sta lb2ca,x                                                       ; 8687: 9d ca b2    .J2
+    ; Clear 15 bytes of memory from lb2ca onwards
+    sta lb2ca,x                                                       ; 8687: 9d ca b2    .J2 ; A=0
     dex                                                               ; 868a: ca          J
     bpl loop_c8687                                                    ; 868b: 10 fa       .z
 ; &868d referenced 1 time by &8672
@@ -8483,58 +8487,58 @@ l8465 = c8463+2
     equb   0,   0, &3f,   0,   0, &40, &0f,   0,   0, &60,   3,   0   ; b274: 00 00 3f... ...
     equb   0, &70, &7f,   0,   0                                      ; b280: 00 70 7f... ...
 .create_params
-    equb 7                                                            ; b285: 07          .  ; Parameter count
-    equw pathname                                                     ; b286: 80 02       .. ; Pathname
-    equb &c3                                                          ; b288: c3          C  ; Access
-    equb 6                                                            ; b289: 06          .  ; File type
-    equw 0                                                            ; b28a: 00 00       .. ; Aux type
-    equb 1                                                            ; b28c: 01          .  ; Storage type
-    equw 0                                                            ; b28d: 00 00       .. ; Creation date
-    equw 0                                                            ; b28f: 00 00       .. ; Creation time
+    equb 7                                                            ; b285: 07          .   ; Parameter count
+    equw pathname                                                     ; b286: 80 02       ..  ; Pathname
+    equb &c3                                                          ; b288: c3          C   ; Access
+    equb 6                                                            ; b289: 06          .   ; File type
+    equw 0                                                            ; b28a: 00 00       ..  ; Aux type
+    equb 1                                                            ; b28c: 01          .   ; Storage type
+    equw 0                                                            ; b28d: 00 00       ..  ; Creation date
+    equw 0                                                            ; b28f: 00 00       ..  ; Creation time
 .open_params
-    equb 3                                                            ; b291: 03          .  ; Parameter count
-    equw pathname                                                     ; b292: 80 02       .. ; Pathname
-    equw io_buffer                                                    ; b294: 00 1c       .. ; I/O buffer (1024 bytes)
+    equb 3                                                            ; b291: 03          .   ; Parameter count
+    equw pathname                                                     ; b292: 80 02       ..  ; Pathname
+    equw io_buffer                                                    ; b294: 00 1c       ..  ; I/O buffer (1024 bytes)
 ; &b296 referenced 2 times by &8600, &8625
 .open_ref
-    equb 0                                                            ; b296: 00          .  ; Reference number (returned)
+    equb 0                                                            ; b296: 00          .   ; Reference number (returned)
 .read_params
-    equb 4                                                            ; b297: 04          .  ; Parameter count
+    equb 4                                                            ; b297: 04          .   ; Parameter count
 ; &b298 referenced 1 time by &8628
 .read_ref
-    equb 0                                                            ; b298: 00          .  ; Reference number
+    equb 0                                                            ; b298: 00          .   ; Reference number
 ; &b299 referenced 2 times by &857a, &85ae
 .lb299
 lb29a = lb299+1
-    equw data_buffer                                                  ; b299: 23 8c       .. ; Data buffer
+    equw data_buffer                                                  ; b299: 23 8c       ..  ; Data buffer
 ; &b29a referenced 2 times by &857f, &85b3
 ; &b29b referenced 2 times by &8584, &85b8
 .lb29b
 lb29c = lb29b+1
-    equw &ffff                                                        ; b29b: ff ff       .. ; Request count
+    equw &ffff                                                        ; b29b: ff ff       ..  ; Request count
 ; &b29c referenced 2 times by &8589, &85bd
-    equw 0                                                            ; b29d: 00 00       .. ; Transfer count (returned)
+    equw 0                                                            ; b29d: 00 00       ..  ; Transfer count (returned)
 .write_params
-    equb 4                                                            ; b29f: 04          .  ; Parameter count
+    equb 4                                                            ; b29f: 04          .   ; Parameter count
 ; &b2a0 referenced 1 time by &8603
 .write_ref
-    equb 0                                                            ; b2a0: 00          .  ; Reference number
+    equb 0                                                            ; b2a0: 00          .   ; Reference number
 ; &b2a1 referenced 2 times by &8563, &8594
 .lb2a1
 lb2a2 = lb2a1+1
-    equw data_buffer                                                  ; b2a1: 23 8c       .. ; Data buffer
+    equw data_buffer                                                  ; b2a1: 23 8c       ..  ; Data buffer
 ; &b2a2 referenced 2 times by &8568, &8599
 ; &b2a3 referenced 2 times by &856d, &859e
 .lb2a3
 lb2a4 = lb2a3+1
-    equw &1b5a                                                        ; b2a3: 5a 1b       .. ; Request count
+    equw &1b5a                                                        ; b2a3: 5a 1b       ..  ; Request count
 ; &b2a4 referenced 2 times by &8572, &85a3
-    equw 0                                                            ; b2a5: 00 00       .. ; Transfer count (returned)
+    equw 0                                                            ; b2a5: 00 00       ..  ; Transfer count (returned)
 .close_params
-    equb 1                                                            ; b2a7: 01          .  ; Parameter count
+    equb 1                                                            ; b2a7: 01          .   ; Parameter count
 ; &b2a8 referenced 2 times by &8606, &862b
 .close_ref
-    equb 0                                                            ; b2a8: 00          .  ; Reference number
+    equb 0                                                            ; b2a8: 00          .   ; Reference number
 ; &b2a9 referenced 8 times by &70d1, &7172, &75fd, &7603, &7609, &765f, &7676, &767e
 .lb2a9
     equb 0                                                            ; b2a9: 00          .

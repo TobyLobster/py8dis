@@ -52,7 +52,7 @@ sys_entry
     jsr PRIMM                                                         ; 100d: 20 4f ff     o. ; Print the zero-terminated string that follows the JSR
     !pet "hello, plus/4", $0d, 0                                      ; 1010: 48 45 4c... hel
 
-    lda #$93                                                          ; 101f: a9 93       .. ; A=character to output
+    lda #$93                                                          ; 101f: a9 93       ..  ; A=character to output
     jsr CHROUT                                                        ; 1021: 20 d2 ff     R. ; Output $93 (clear screen)
     lda #$71                                                          ; 1024: a9 71       ..
     sta ted_border_colour                                             ; 1026: 8d 19 ff    ...

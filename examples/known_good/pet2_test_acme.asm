@@ -47,13 +47,13 @@ basic_end
     !byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0     ; 040d: 00 00 00... ...
 
 sys_entry
-    lda #$93                                                          ; 0420: a9 93       .. ; A=character to output
+    lda #$93                                                          ; 0420: a9 93       ..  ; A=character to output
     jsr CHROUT                                                        ; 0422: 20 d2 ff     R. ; Output $93 (clear screen)
-    lda #<l046e                                                       ; 0425: a9 6e       .. ; A=string address (low byte)
-    ldy #>l046e                                                       ; 0427: a0 04       .. ; Y=string address (high byte)
+    lda #<l046e                                                       ; 0425: a9 6e       ..  ; A=string address (low byte)
+    ldy #>l046e                                                       ; 0427: a0 04       ..  ; Y=string address (high byte)
     jsr basic_print_string                                            ; 0429: 20 1c ca     .J ; Print the zero-terminated string at A/Y
-    lda #4                                                            ; 042c: a9 04       .. ; A=number to print (high byte)
-    ldx #$d2 ; 'R'                                                    ; 042e: a2 d2       .R ; X=number to print (low byte)
+    lda #4                                                            ; 042c: a9 04       ..  ; A=number to print (high byte)
+    ldx #$d2 ; 'R'                                                    ; 042e: a2 d2       .R  ; X=number to print (low byte)
     jsr basic_print_number                                            ; 0430: 20 d9 dc     Y. ; Print the 16-bit number in A/X
     sei                                                               ; 0433: 78          .
 

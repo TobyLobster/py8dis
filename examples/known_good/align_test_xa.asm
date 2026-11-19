@@ -15,7 +15,7 @@ pydis_start
 print_loop
 // *** AFTER LABEL ***
     // *** BEFORE LINE ***
-    lda hello_world_string,x                                          // 2002: bd 0e 20    .. // *** INLINE ***
+    lda hello_world_string,x                                          // 2002: bd 0e 20    ..  // *** INLINE ***
     // *** AFTER LINE ***
     jsr OSASCI                                                        // 2005: 20 e3 ff     .. // Write character
     inx                                                               // 2008: e8          .

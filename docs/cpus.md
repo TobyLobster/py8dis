@@ -86,7 +86,10 @@ What's known is used for comments, which are all on by default:
 - a register's value, when an instruction changes it to one that's known, e.g. `; Y=1` on the `iny` of `ldy #0 : ... : iny`;
 - an ADC with carry set, or an SBC with carry clear, e.g. `; Carry is set, so adding 4` on the `adc #3` of `cmp $71 : bne skip : adc #3`;
 - a conditional branch that's always taken, `; ALWAYS branch`, e.g. the `bmi` of `ora #$80 : bmi skip`;
-- a rotate with the carry known, `; Rotate in a set bit` or `; Rotate in a clear bit`, e.g. `sec : ror flag`; and a rotate or shift of A whose bit shifted out is known, e.g. `; Shift clear bit out (clears carry)` on the `asl` of `and #$7f : asl : adc #1`, but only if the carry is used afterwards: something reads it, or an RTS or RTI returns it, before anything sets it (so not on the first two of `asl : asl : asl`).
+- a rotate with the carry known, `; Rotate in a set bit` or `; Rotate in a clear bit`, e.g. `sec : ror flag`; and a rotate or shift of A whose bit shifted out is known, e.g. `; Shift clear bit out (clears carry)` on the `asl` of `and #$7f : asl : adc #1`, but only if the carry is relied on afterwards: an instruction reads it (ADC, SBC, ROL, ROR, BCC, BCS or PHP) before anything sets it (so not on the first two of `asl : asl : asl`, nor before a jump, call or return, e.g. the RTS of the RTS trick);
+- where a register whose value is known was set well before (more than four instructions back, or before a label, e.g. round a loop), the value a store stores, e.g. `; A=0` on the `sta table,y` of `lda #0 : tay : loop: sta table,y : iny : bne loop`, and the index of an indexed instruction, e.g. `; Offset is Y=$11` on `sta (ptr),y` (not just after `ldy #$11`, where it's plain).
+
+An immediate operand that the code itself changes (self-modifying code, e.g. `sta modified+1 : ... modified: ldx #0`) isn't taken to be known: the instruction is treated as if its operand came from memory. That's any operand that an instruction in the traced code writes to with an address (zero page or absolute, not indexed or indirect).
 
 For the 8080, A to L, SP and the flags S, Z, P, CY and AC are tracked.
 

@@ -38,9 +38,9 @@ l3f80   = &3f80
     ldy #&82                                                          ; 200b: a0 82       ..
 ; &200d referenced 1 time by &2014
 .loop_c200d
-    lda l3282 - 130,y                                                 ; 200d: b9 00 32    ..2
-    sta l3382 - 130,y                                                 ; 2010: 99 00 33    ..3
-    dey                                                               ; 2013: 88          .  ; Y=&81
+    lda l3282 - 130,y                                                 ; 200d: b9 00 32    ..2 ; Offset is Y=&82
+    sta l3382 - 130,y                                                 ; 2010: 99 00 33    ..3 ; Offset is Y=&82
+    dey                                                               ; 2013: 88          .   ; Y=&81
     bpl loop_c200d                                                    ; 2014: 10 f7       ..
     ; Copy 8 bytes of memory from (table3+3) + 2 to l3502
     ldy #9                                                            ; 2016: a0 09       ..
@@ -55,9 +55,9 @@ l3f80   = &3f80
     ldx #1                                                            ; 2023: a2 01       ..
 ; &2025 referenced 1 time by &202e
 .loop_c2025
-    lda l3601 - 1,x                                                   ; 2025: bd 00 36    ..6
-    sta l3701 - 1,x                                                   ; 2028: 9d 00 37    ..7
-    dex                                                               ; 202b: ca          .  ; X=0
+    lda l3601 - 1,x                                                   ; 2025: bd 00 36    ..6 ; Offset is X=1
+    sta l3701 - 1,x                                                   ; 2028: 9d 00 37    ..7 ; Offset is X=1
+    dex                                                               ; 202b: ca          .   ; X=0
     cpx #4                                                            ; 202c: e0 04       ..
     bcs loop_c2025                                                    ; 202e: b0 f5       ..
     ldx #&f0                                                          ; 2030: a2 f0       ..
@@ -92,7 +92,7 @@ l3f80   = &3f80
     ldx #0                                                            ; 205c: a2 00       ..
 ; &205e referenced 1 time by &2063
 .loop_c205e
-    sta l3e00,y                                                       ; 205e: 99 00 3e    ..>
+    sta l3e00,y                                                       ; 205e: 99 00 3e    ..> ; A=0
     iny                                                               ; 2061: c8          .
     dex                                                               ; 2062: ca          .
     bne loop_c205e                                                    ; 2063: d0 f9       ..
@@ -102,7 +102,7 @@ l3f80   = &3f80
     ldx #4                                                            ; 2069: a2 04       ..
 ; &206b referenced 1 time by &2070
 .loop_c206b
-    sta l3f80,y                                                       ; 206b: 99 80 3f    ..?
+    sta l3f80,y                                                       ; 206b: 99 80 3f    ..? ; A=&ff
     iny                                                               ; 206e: c8          .
     dex                                                               ; 206f: ca          .
     bne loop_c206b                                                    ; 2070: d0 f9       ..

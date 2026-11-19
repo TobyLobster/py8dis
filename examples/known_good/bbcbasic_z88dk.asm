@@ -7028,7 +7028,7 @@ sin1:
     db $c0, $80, $88, 8, $79                                          ; 2a60: c0 80 88... ... ; coefficient
     db $9d, $aa, $aa, $aa, $7d                                        ; 2a65: 9d aa aa... ... ; coefficient
 
-    nop                                                               ; 2a6a: 00          .  ; (the last coefficient, run as code)
+    nop                                                               ; 2a6a: 00          .   ; (the last coefficient, run as code)
     nop                                                               ; 2a6b: 00          .
     nop                                                               ; 2a6c: 00          .
     nop                                                               ; 2a6d: 00          .
@@ -7047,7 +7047,7 @@ sin2:
     db $c8, $9c, $aa, $2a, $7b                                        ; 2a8b: c8 9c aa... ... ; coefficient
     db $dd, $ff, $ff, $ff, $7e                                        ; 2a90: dd ff ff... ... ; coefficient
 
-    nop                                                               ; 2a95: 00          .  ; (the last coefficient, run as code)
+    nop                                                               ; 2a95: 00          .   ; (the last coefficient, run as code)
     nop                                                               ; 2a96: 00          .
     nop                                                               ; 2a97: 00          .
     nop                                                               ; 2a98: 00          .
@@ -7125,7 +7125,7 @@ exp1:
     db $56, $fd, $ff, $7f, $7e                                        ; 2b0b: 56 fd ff... V.. ; coefficient
     db $fe, $ff, $ff, $ff, $7f                                        ; 2b10: fe ff ff... ... ; coefficient
 
-    nop                                                               ; 2b15: 00          .  ; (the last coefficient, run as code)
+    nop                                                               ; 2b15: 00          .   ; (the last coefficient, run as code)
     nop                                                               ; 2b16: 00          .
     nop                                                               ; 2b17: 00          .
     nop                                                               ; 2b18: 00          .
@@ -7207,7 +7207,7 @@ ln4:
     db $8c, $d9, $cd, $4c, $7e                                        ; 2b8b: 8c d9 cd... ... ; coefficient
     db $e3, $a9, $aa, $2a, $7f                                        ; 2b90: e3 a9 aa... ... ; coefficient
 
-    nop                                                               ; 2b95: 00          .  ; (the last coefficient, run as code)
+    nop                                                               ; 2b95: 00          .   ; (the last coefficient, run as code)
     nop                                                               ; 2b96: 00          .
     nop                                                               ; 2b97: 00          .
     nop                                                               ; 2b98: 00          .
@@ -7317,7 +7317,7 @@ atn2:
     db $5a, $2a, $cc, $4c, $7d                                        ; 2c5b: 5a 2a cc... Z*. ; coefficient
     db $5c, $a9, $aa, $aa, $7e                                        ; 2c60: 5c a9 aa... \.. ; coefficient
 
-    nop                                                               ; 2c65: 00          .  ; (the last coefficient, run as code)
+    nop                                                               ; 2c65: 00          .   ; (the last coefficient, run as code)
     nop                                                               ; 2c66: 00          .
     nop                                                               ; 2c67: 00          .
     nop                                                               ; 2c68: 00          .

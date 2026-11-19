@@ -56,12 +56,12 @@ basic_output
     clc                                                               // c207: 18          .
     jmp cc220                                                         // c208: 4c 20 c2    ..B
 
-    .byt 1                                                            // c20b: 01          .  // Pascal 1.1's generic signature
-    .byt $31                                                          // c20c: 31          .  // Device signature: class 3 (serial or communications), ID 1
-    .byt <pascal_init                                                 // c20d: 11          .  // Offset of pascal_init
-    .byt <pascal_read                                                 // c20e: 14          .  // Offset of pascal_read
-    .byt <pascal_write                                                // c20f: 1a          .  // Offset of pascal_write
-    .byt <pascal_status                                               // c210: 26          .  // Offset of pascal_status
+    .byt 1                                                            // c20b: 01          .   // Pascal 1.1's generic signature
+    .byt $31                                                          // c20c: 31          .   // Device signature: class 3 (serial or communications), ID 1
+    .byt <pascal_init                                                 // c20d: 11          .   // Offset of pascal_init
+    .byt <pascal_read                                                 // c20e: 14          .   // Offset of pascal_read
+    .byt <pascal_write                                                // c20f: 1a          .   // Offset of pascal_write
+    .byt <pascal_status                                               // c210: 26          .   // Offset of pascal_status
 
 // Pascal 1.1 INIT routine
 pascal_init
@@ -144,21 +144,21 @@ basic_output_2
     clc                                                               // c407: 18          .
     jmp return_1                                                      // c408: 4c 20 c4    ..D
 
-    .byt 1                                                            // c40b: 01          .  // Pascal 1.1's generic signature
-    .byt $20                                                          // c40c: 20          .  // Device signature: class 2 (mouse), ID 0
-    .byt <pascal_init_2                                               // c40d: 1a          .  // Offset of pascal_init
-    .byt <pascal_init_2                                               // c40e: 1a          .  // Offset of pascal_read
-    .byt <pascal_init_2                                               // c40f: 1a          .  // Offset of pascal_write
-    .byt <pascal_status_2                                             // c410: 21          .  // Offset of pascal_status
+    .byt 1                                                            // c40b: 01          .   // Pascal 1.1's generic signature
+    .byt $20                                                          // c40c: 20          .   // Device signature: class 2 (mouse), ID 0
+    .byt <pascal_init_2                                               // c40d: 1a          .   // Offset of pascal_init
+    .byt <pascal_init_2                                               // c40e: 1a          .   // Offset of pascal_read
+    .byt <pascal_init_2                                               // c40f: 1a          .   // Offset of pascal_write
+    .byt <pascal_status_2                                             // c410: 21          .   // Offset of pascal_status
     .byt 0                                                            // c411: 00          .
-    .byt <SETMOUSE                                                    // c412: 25          .  // Offset of SETMOUSE
-    .byt <SERVEMOUSE                                                  // c413: 2a          .  // Offset of SERVEMOUSE
-    .byt <READMOUSE                                                   // c414: 2f          .  // Offset of READMOUSE
-    .byt <CLEARMOUSE                                                  // c415: 37          .  // Offset of CLEARMOUSE
-    .byt <CLEARMOUSE                                                  // c416: 37          .  // Offset of POSMOUSE
-    .byt <CLEARMOUSE                                                  // c417: 37          .  // Offset of CLAMPMOUSE
-    .byt <CLEARMOUSE                                                  // c418: 37          .  // Offset of HOMEMOUSE
-    .byt <INITMOUSE                                                   // c419: 39          .  // Offset of INITMOUSE
+    .byt <SETMOUSE                                                    // c412: 25          .   // Offset of SETMOUSE
+    .byt <SERVEMOUSE                                                  // c413: 2a          .   // Offset of SERVEMOUSE
+    .byt <READMOUSE                                                   // c414: 2f          .   // Offset of READMOUSE
+    .byt <CLEARMOUSE                                                  // c415: 37          .   // Offset of CLEARMOUSE
+    .byt <CLEARMOUSE                                                  // c416: 37          .   // Offset of POSMOUSE
+    .byt <CLEARMOUSE                                                  // c417: 37          .   // Offset of CLAMPMOUSE
+    .byt <CLEARMOUSE                                                  // c418: 37          .   // Offset of HOMEMOUSE
+    .byt <INITMOUSE                                                   // c419: 39          .   // Offset of INITMOUSE
 
 // Pascal 1.1 INIT routine
 // Pascal 1.1 READ routine
@@ -227,10 +227,10 @@ INITMOUSE
 // ID bytes $20, $00 and $03 at $c501, $c503 and $c505: a ProDOS block device, with
 // SmartPort ($00 at $c507)
 slot_5_entry
-    ldx #$20                                                          // c500: a2 20       ". // Redundant instruction?
-    ldx #0                                                            // c502: a2 00       ". // Redundant instruction?
-    ldx #3                                                            // c504: a2 03       ". // Redundant instruction?
-    ldx #0                                                            // c506: a2 00       ". // Redundant instruction?
+    ldx #$20                                                          // c500: a2 20       ".  // Redundant instruction?
+    ldx #0                                                            // c502: a2 00       ".  // Redundant instruction?
+    ldx #3                                                            // c504: a2 03       ".  // Redundant instruction?
+    ldx #0                                                            // c506: a2 00       ".  // Redundant instruction?
     lda #$c5 // 'E'                                                   // c508: a9 c5       )E
     sta MSLOT                                                         // c50a: 8d f8 07    .x.
     ldx #$50                                                          // c50d: a2 50       ".
@@ -262,18 +262,18 @@ smartport
 
 // $c52a referenced 1 time by $c521
 cc52a
-    lda driver_command                                                // c52a: a5 42       %. // Redundant instruction?
+    lda driver_command                                                // c52a: a5 42       %.  // Redundant instruction?
     ldx driver_unit                                                   // c52c: a6 43       &.
     lda (driver_buffer),y                                             // c52e: b1 44       1.
-    lda driver_block                                                  // c530: a5 46       %. // Redundant instruction?
+    lda driver_block                                                  // c530: a5 46       %.  // Redundant instruction?
     lda #0                                                            // c532: a9 00       ).
     clc                                                               // c534: 18          .
     rts                                                               // c535: 60          .
 
 sp_readblock_params
-    .byt 3                                                            // c536: 03          .  // Parameter count
-    .byt 1                                                            // c537: 01          .  // Unit number
-    .word data_buffer                                                 // c538: 00 08       .. // Data buffer (512 bytes)
+    .byt 3                                                            // c536: 03          .   // Parameter count
+    .byt 1                                                            // c537: 01          .   // Unit number
+    .word data_buffer                                                 // c538: 00 08       ..  // Data buffer (512 bytes)
     .byt 0, 0, 0                                                      // c53a: 00 00 00    ... // Block number
     .byt 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   // c53d: 00 00 00... ...
     .byt 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   // c551: 00 00 00... ...
@@ -285,9 +285,9 @@ sp_readblock_params
     .byt 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   // c5c9: 00 00 00... ...
     .byt 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   // c5dd: 00 00 00... ...
     .byt 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                              // c5f1: 00 00 00... ...
-    .word 0                                                           // c5fc: 00 00       .. // Number of blocks (0: read it with STATUS)
-    .byt $bf                                                          // c5fe: bf          ?  // Status: 3 volumes; removable, formats, writes, reads, gives its status
-    .byt <prodos_driver                                               // c5ff: 21          .  // The low byte of the driver's address
+    .word 0                                                           // c5fc: 00 00       ..  // Number of blocks (0: read it with STATUS)
+    .byt $bf                                                          // c5fe: bf          ?   // Status: 3 volumes; removable, formats, writes, reads, gives its status
+    .byt <prodos_driver                                               // c5ff: 21          .   // The low byte of the driver's address
 pydis_end
 
 #if ((CLEARMOUSE) & $ff) <> $37

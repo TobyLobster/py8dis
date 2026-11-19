@@ -107,6 +107,14 @@ def add_hex_dump(binary_addr, length, cycles_description, s, encoding=None):
             dump_move = " :%s[%d]" % (utils.plainhex4(runtime_addr), session.current().moves.move_id_for_binary_addr[binary_addr])
         dump_move = utils.tab_to(dump_move, 12)
 
+    # If the characters are the last part, end them with a space, so that a
+    # comment after them starts in the same column whatever the characters
+    # (otherwise a line with fewer bytes, or ending with a space character,
+    # would have its comment a column further left than one ending with a
+    # character; any spaces at the end of a line are taken off)
+    if dump_chars and not (cycles_description or dump_cpu_state or dump_move):
+        dump_chars += " "
+
     # Join them all together: address, hex bytes, characters, cpu state, move details
     s += utils.plainhex4(binary_addr) + ": " + dump_hex + dump_chars + cycles_description + dump_cpu_state + dump_move
     return s

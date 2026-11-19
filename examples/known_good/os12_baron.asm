@@ -224,7 +224,6 @@ l02ea   = &02ea
 l02eb   = &02eb
 l02ec   = &02ec
 l02ed   = &02ed
-l02ff   = &02ff
 l0300   = &0300
 l0301   = &0301
 l0302   = &0302
@@ -308,7 +307,6 @@ l0367   = &0367
 l0368   = &0368
 l036f   = &036f
 l0380   = &0380
-l038b   = &038b
 l038c   = &038c
 l0394   = &0394
 l0395   = &0395
@@ -354,7 +352,6 @@ l081c   = &081c
 l0820   = &0820
 l0824   = &0824
 l0828   = &0828
-l082b   = &082b
 l082c   = &082c
 l0830   = &0830
 l0838   = &0838
@@ -1338,7 +1335,7 @@ section pydis, org = &c000, filename = "os12_baron"
     equb 1, &aa, &55, &88, &44, &22, &11                              ; c406: 01 aa 55... ..U
 ; &c40d referenced 2 times by &c8ff, &d04c
 .lc40d
-    equb &80, &40, &20, &10, 8, 4, 2                                  ; c40d: 80 40 20... .@ ; bitmask
+    equb &80, &40, &20, &10, 8, 4, 2                                  ; c40d: 80 40 20... .@  ; bitmask
 ; &c414 referenced 1 time by &cb40
 .lc414
     equb 1, 3, &0f, 1, 1, 3, 1                                        ; c414: 01 03 0f... ...
@@ -1595,7 +1592,7 @@ section pydis, org = &c000, filename = "os12_baron"
     ldy #0                                                            ; c58d: a0 00       ..
     sty l0269                                                         ; c58f: 8c 69 02    .i.
     lda #4                                                            ; c592: a9 04       ..
-    bne cc59d                                                         ; c594: d0 07       .. ; ALWAYS branch
+    bne cc59d                                                         ; c594: d0 07       ..  ; ALWAYS branch
 
 .vdu2EntryPoint
     jsr sub_ce1a2                                                     ; c596: 20 a2 e1     ..
@@ -1626,7 +1623,7 @@ section pydis, org = &c000, filename = "os12_baron"
     beq return_2                                                      ; c5b0: f0 fa       ..
     jsr sub_cc951                                                     ; c5b2: 20 51 c9     Q.
     lda #&df                                                          ; c5b5: a9 df       ..
-    bne cc5a8                                                         ; c5b7: d0 ef       .. ; ALWAYS branch
+    bne cc5a8                                                         ; c5b7: d0 ef       ..  ; ALWAYS branch
 
 .vdu5EntryPoint
     lda l0361                                                         ; c5b9: ad 61 03    .a.
@@ -1713,7 +1710,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda l0304,x                                                       ; c641: bd 04 03    ...
     cpx #1                                                            ; c644: e0 01       ..
     bcs cc64a                                                         ; c646: b0 02       ..
-    sbc #6                                                            ; c648: e9 06       .. ; Carry is clear, so subtracting 7
+    sbc #6                                                            ; c648: e9 06       ..  ; Carry is clear, so subtracting 7
 ; &c64a referenced 1 time by &c646
 .cc64a
     sta l0324,x                                                       ; c64a: 9d 24 03    .$.
@@ -1732,7 +1729,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &c660 referenced 1 time by &c656
 .cc660
     ldx #2                                                            ; c660: a2 02       ..
-    bne cc6b6                                                         ; c662: d0 52       .R ; ALWAYS branch
+    bne cc6b6                                                         ; c662: d0 52       .R  ; ALWAYS branch
 
 ; &c664 referenced 2 times by &c4e7, &d913
 .vdu9EntryPoint
@@ -1762,7 +1759,7 @@ section pydis, org = &c000, filename = "os12_baron"
     cpx l0309                                                         ; c691: ec 09 03    ...
     bcs cc69b                                                         ; c694: b0 05       ..
     inc l0319                                                         ; c696: ee 19 03    ...
-    bcc cc6af                                                         ; c699: 90 14       .. ; ALWAYS branch
+    bcc cc6af                                                         ; c699: 90 14       ..  ; ALWAYS branch
 
 ; &c69b referenced 1 time by &c694
 .cc69b
@@ -1806,7 +1803,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda l0300,x                                                       ; c6d6: bd 00 03    ...
     cpx #1                                                            ; c6d9: e0 01       ..
     bcc cc6df                                                         ; c6db: 90 02       ..
-    adc #6                                                            ; c6dd: 69 06       i. ; Carry is set, so adding 7
+    adc #6                                                            ; c6dd: 69 06       i.  ; Carry is set, so adding 7
 ; &c6df referenced 1 time by &c6db
 .cc6df
     sta l0324,x                                                       ; c6df: 9d 24 03    .$.
@@ -1870,7 +1867,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda #&28 ; '('                                                    ; c73f: a9 28       .(
     jsr sub_cd839                                                     ; c741: 20 39 d8     9.
     ldy #4                                                            ; c744: a0 04       ..
-    bne cc750                                                         ; c746: d0 08       .. ; ALWAYS branch
+    bne cc750                                                         ; c746: d0 08       ..  ; ALWAYS branch
 
 .osword11EntryPoint
     and l0360                                                         ; c748: 2d 60 03    -`.
@@ -1985,7 +1982,7 @@ section pydis, org = &c000, filename = "os12_baron"
 
 .vdu17EntryPoint
     ldy #0                                                            ; c7f9: a0 00       ..
-    beq cc7ff                                                         ; c7fb: f0 02       .. ; ALWAYS branch
+    beq cc7ff                                                         ; c7fb: f0 02       ..  ; ALWAYS branch
 
 .vdu18EntryPoint
     ldy #2                                                            ; c7fd: a0 02       ..
@@ -2035,7 +2032,8 @@ section pydis, org = &c000, filename = "os12_baron"
     lda #0                                                            ; c83b: a9 00       ..
 ; &c83d referenced 1 time by &c841
 .loop_cc83d
-    sta l0357,x                                                       ; c83d: 9d 57 03    .W.
+    ; Clear 6 bytes of memory from l0357 onwards
+    sta l0357,x                                                       ; c83d: 9d 57 03    .W. ; A=0
     dex                                                               ; c840: ca          .
     bpl loop_cc83d                                                    ; c841: 10 fa       ..
     ldx l0360                                                         ; c843: ae 60 03    .`.
@@ -2233,7 +2231,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &c954 referenced 3 times by &c5c0, &c94f, &d8e3
 .cc954
     ldy #&0a                                                          ; c954: a0 0a       ..
-    bne cc985                                                         ; c956: d0 2d       .- ; ALWAYS branch
+    bne cc985                                                         ; c956: d0 2d       .-  ; ALWAYS branch
 
 ; &c958 referenced 1 time by &c941
 .cc958
@@ -2299,7 +2297,7 @@ section pydis, org = &c000, filename = "os12_baron"
     sta l0351                                                         ; c9b3: 8d 51 03    .Q.
     stx l0350                                                         ; c9b6: 8e 50 03    .P.
     ldy #&0c                                                          ; c9b9: a0 0c       ..
-    bne cca0e                                                         ; c9bb: d0 51       .Q ; ALWAYS branch
+    bne cca0e                                                         ; c9bb: d0 51       .Q  ; ALWAYS branch
 
 ; &c9bd referenced 1 time by &cbbe
 .vdu26EntryPoint
@@ -2307,7 +2305,8 @@ section pydis, org = &c000, filename = "os12_baron"
     ldx #&2c ; ','                                                    ; c9bf: a2 2c       .,
 ; &c9c1 referenced 1 time by &c9c5
 .loop_cc9c1
-    sta l0300,x                                                       ; c9c1: 9d 00 03    ...
+    ; Clear 45 bytes of memory from l0300 onwards
+    sta l0300,x                                                       ; c9c1: 9d 00 03    ... ; A=0
     dex                                                               ; c9c4: ca          .
     bpl loop_cc9c1                                                    ; c9c5: 10 fa       ..
     ldx l0355                                                         ; c9c7: ae 55 03    .U.
@@ -2318,7 +2317,7 @@ section pydis, org = &c000, filename = "os12_baron"
     sty l0309                                                         ; c9d6: 8c 09 03    ...
     ldy #3                                                            ; c9d9: a0 03       ..
     sty l0323                                                         ; c9db: 8c 23 03    .#.
-    iny                                                               ; c9de: c8          .  ; Y=4
+    iny                                                               ; c9de: c8          .   ; Y=4
     sty l0321                                                         ; c9df: 8c 21 03    .!.
     dec l0322                                                         ; c9e2: ce 22 03    .".
     dec l0320                                                         ; c9e5: ce 20 03    . .
@@ -2524,7 +2523,8 @@ section pydis, org = &c000, filename = "os12_baron"
     sta l00d0                                                         ; cb22: 85 d0       ..
 ; &cb24 referenced 1 time by &cb28
 .loop_ccb24
-    sta l02ff,x                                                       ; cb24: 9d ff 02    ...
+    ; Clear 127 bytes of memory from l0300 onwards
+    sta l0300 - 1,x                                                   ; cb24: 9d ff 02    ... ; A=0
     dex                                                               ; cb27: ca          .
     bne loop_ccb24                                                    ; cb28: d0 fa       ..
     jsr osbyte20EntryPoint                                            ; cb2a: 20 07 cd     ..
@@ -2747,7 +2747,8 @@ section pydis, org = &c000, filename = "os12_baron"
     ldy #6                                                            ; cd0e: a0 06       ..
 ; &cd10 referenced 1 time by &cd14
 .loop_ccd10
-    sta l0368,y                                                       ; cd10: 99 68 03    .h.
+    ; Set 7 bytes of memory from l0368 onwards to 12
+    sta l0368,y                                                       ; cd10: 99 68 03    .h. ; A=&0c
     dey                                                               ; cd13: 88          .
     bpl loop_ccd10                                                    ; cd14: 10 fa       ..
     cpx #7                                                            ; cd16: e0 07       ..
@@ -2819,7 +2820,7 @@ section pydis, org = &c000, filename = "os12_baron"
     dey                                                               ; cd6f: 88          .
     bne ccd8f                                                         ; cd70: d0 1d       ..
     lda l0338                                                         ; cd72: ad 38 03    .8.
-    sta (l00d8),y                                                     ; cd75: 91 d8       ..
+    sta (l00d8),y                                                     ; cd75: 91 d8       ..  ; Offset is Y=0
 ; &cd77 referenced 2 times by &cd8c, &cda2
 .ccd77
     pla                                                               ; cd77: 68          h
@@ -2837,10 +2838,10 @@ section pydis, org = &c000, filename = "os12_baron"
     ldy l034f                                                         ; cd7c: ac 4f 03    .O.
     dey                                                               ; cd7f: 88          .
     bne ccd8f                                                         ; cd80: d0 0d       ..
-    lda (l00d8),y                                                     ; cd82: b1 d8       ..
+    lda (l00d8),y                                                     ; cd82: b1 d8       ..  ; Offset is Y=0
     sta l0338                                                         ; cd84: 8d 38 03    .8.
     lda l0366                                                         ; cd87: ad 66 03    .f.
-    sta (l00d8),y                                                     ; cd8a: 91 d8       ..
+    sta (l00d8),y                                                     ; cd8a: 91 d8       ..  ; Offset is Y=0
     jmp ccd77                                                         ; cd8c: 4c 77 cd    Lw.
 
 ; &cd8f referenced 2 times by &cd70, &cd80
@@ -2859,7 +2860,7 @@ section pydis, org = &c000, filename = "os12_baron"
     sta (l00d8),y                                                     ; cd9d: 91 d8       ..
     dey                                                               ; cd9f: 88          .
     bpl loop_ccd99                                                    ; cda0: 10 f7       ..
-    bmi ccd77                                                         ; cda2: 30 d3       0. ; ALWAYS branch
+    bmi ccd77                                                         ; cda2: 30 d3       0.  ; ALWAYS branch
 
 ; &cda4 referenced 1 time by &c619
 .sub_ccda4
@@ -2903,7 +2904,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &cdde referenced 3 times by &c56e, &c7ac, &d434
 .ccdde
     lda #2                                                            ; cdde: a9 02       ..
-    bne ccde8                                                         ; cde0: d0 06       .. ; ALWAYS branch
+    bne ccde8                                                         ; cde0: d0 06       ..  ; ALWAYS branch
 
 ; &cde2 referenced 4 times by &d0d9, &d5d6, &d615, &d61c
 .sub_ccde2
@@ -2967,7 +2968,7 @@ section pydis, org = &c000, filename = "os12_baron"
     stx l00d8                                                         ; ce30: 86 d8       ..
     dec l00de                                                         ; ce32: c6 de       ..
     bne cce0b                                                         ; ce34: d0 d5       ..
-    beq ccdda                                                         ; ce36: f0 a2       .. ; ALWAYS branch
+    beq ccdda                                                         ; ce36: f0 a2       ..  ; ALWAYS branch
 
 ; &ce38 referenced 2 times by &cdcb, &ce27
 .sub_cce38
@@ -3356,7 +3357,7 @@ section pydis, org = &c000, filename = "os12_baron"
     rol a                                                             ; d040: 2a          *
     sta l00de                                                         ; d041: 85 de       ..
     and #3                                                            ; d043: 29 03       ).
-    rol a                                                             ; d045: 2a          *  ; Rotate clear bit out (clears carry)
+    rol a                                                             ; d045: 2a          *   ; Rotate clear bit out (clears carry)
     tax                                                               ; d046: aa          .
     and #3                                                            ; d047: 29 03       ).
     adc #&bf                                                          ; d049: 69 bf       i.
@@ -3385,8 +3386,8 @@ section pydis, org = &c000, filename = "os12_baron"
     beq cd080                                                         ; d070: f0 0e       ..
     lsr a                                                             ; d072: 4a          J
     bcs cd078                                                         ; d073: b0 03       ..
-    dey                                                               ; d075: 88          .  ; Y=4
-    bne cd080                                                         ; d076: d0 08       .. ; ALWAYS branch
+    dey                                                               ; d075: 88          .   ; Y=4
+    bne cd080                                                         ; d076: d0 08       ..  ; ALWAYS branch
 
 ; &d078 referenced 1 time by &d073
 .cd078
@@ -3427,7 +3428,7 @@ section pydis, org = &c000, filename = "os12_baron"
 
 ; &d0ae referenced 1 time by &d09b
 .cd0ae
-    sta l00dc                                                         ; d0ae: 85 dc       ..
+    sta l00dc                                                         ; d0ae: 85 dc       ..  ; A=0
     jmp cd4bf                                                         ; d0b0: 4c bf d4    L..
 
 ; &d0b3 referenced 3 times by &c7cb, &cf63, &d080
@@ -3548,7 +3549,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &d149 referenced 3 times by &ca4a, &ca4f, &d83b
 .sub_cd149
     lda #&ff                                                          ; d149: a9 ff       ..
-    bne cd150                                                         ; d14b: d0 03       .. ; ALWAYS branch
+    bne cd150                                                         ; d14b: d0 03       ..  ; ALWAYS branch
 
 ; &d14d referenced 1 time by &d062
 .sub_cd14d
@@ -3586,7 +3587,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda l0302,x                                                       ; d17d: bd 02 03    ...
     pha                                                               ; d180: 48          H
     lda l0303,x                                                       ; d181: bd 03 03    ...
-    bcc cd194                                                         ; d184: 90 0e       .. ; ALWAYS branch
+    bcc cd194                                                         ; d184: 90 0e       ..  ; ALWAYS branch
 
 ; &d186 referenced 1 time by &d17b
 .cd186
@@ -3686,7 +3687,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda l0329,x                                                       ; d22c: bd 29 03    .).
     bpl cd235                                                         ; d22f: 10 04       ..
     ldx #&24 ; '$'                                                    ; d231: a2 24       .$
-    bne cd237                                                         ; d233: d0 02       .. ; ALWAYS branch
+    bne cd237                                                         ; d233: d0 02       ..  ; ALWAYS branch
 
 ; &d235 referenced 1 time by &d22f
 .cd235
@@ -3784,7 +3785,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &d2ca referenced 1 time by &d2c6
 .cd2ca
     sty l00df                                                         ; d2ca: 84 df       ..
-    beq cd2d7                                                         ; d2cc: f0 09       .. ; ALWAYS branch
+    beq cd2d7                                                         ; d2cc: f0 09       ..  ; ALWAYS branch
 
 ; &d2ce referenced 1 time by &d2a3
 .cd2ce
@@ -4024,7 +4025,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &d47c referenced 4 times by &c7d2, &ca7e, &d5ee, &d62c
 .sub_cd47c
     lda #8                                                            ; d47c: a9 08       ..
-    bne cd48c                                                         ; d47e: d0 0c       .. ; ALWAYS branch
+    bne cd48c                                                         ; d47e: d0 0c       ..  ; ALWAYS branch
 
 ; &d480 referenced 2 times by &d247, &d27b
 .sub_cd480
@@ -4032,7 +4033,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &d482 referenced 5 times by &cf8a, &cfaa, &cfb1, &d6d5, &d8ea
 .sub_cd482
     lda #2                                                            ; d482: a9 02       ..
-    bne cd48c                                                         ; d484: d0 06       .. ; ALWAYS branch
+    bne cd48c                                                         ; d484: d0 06       ..  ; ALWAYS branch
 
 ; &d486 referenced 1 time by &cf66
 .sub_cd486
@@ -4121,7 +4122,7 @@ section pydis, org = &c000, filename = "os12_baron"
     tax                                                               ; d4f0: aa          .
     jsr sub_cd104                                                     ; d4f1: 20 04 d1     ..
     sec                                                               ; d4f4: 38          8
-    bcs cd4d9                                                         ; d4f5: b0 e2       .. ; ALWAYS branch
+    bcs cd4d9                                                         ; d4f5: b0 e2       ..  ; ALWAYS branch
 
 ; &d4f7 referenced 2 times by &d4e3, &d4ee
 .cd4f7
@@ -4169,7 +4170,7 @@ section pydis, org = &c000, filename = "os12_baron"
     tax                                                               ; d536: aa          .
     jsr sub_cd104                                                     ; d537: 20 04 d1     ..
     sec                                                               ; d53a: 38          8
-    bcs cd519                                                         ; d53b: b0 dc       .. ; ALWAYS branch
+    bcs cd519                                                         ; d53b: b0 dc       ..  ; ALWAYS branch
 
 ; &d53d referenced 2 times by &d529, &d534
 .cd53d
@@ -4188,7 +4189,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda l00d1                                                         ; d54b: a5 d1       ..
     pha                                                               ; d54d: 48          H
     clc                                                               ; d54e: 18          .
-    bcc cd560                                                         ; d54f: 90 0f       .. ; ALWAYS branch
+    bcc cd560                                                         ; d54f: 90 0f       ..  ; ALWAYS branch
 
 ; &d551 referenced 1 time by &d56a
 .loop_cd551
@@ -4224,7 +4225,7 @@ section pydis, org = &c000, filename = "os12_baron"
 .sub_cd574
     lda #0                                                            ; d574: a9 00       ..
     clc                                                               ; d576: 18          .
-    bcc cd583                                                         ; d577: 90 0a       .. ; ALWAYS branch
+    bcc cd583                                                         ; d577: 90 0a       ..  ; ALWAYS branch
 
 ; &d579 referenced 1 time by &d587
 .loop_cd579
@@ -4246,9 +4247,9 @@ section pydis, org = &c000, filename = "os12_baron"
     bcc cd56f                                                         ; d58c: 90 e1       ..
 ; &d58e referenced 1 time by &d581
 .cd58e
-    ror a                                                             ; d58e: 6a          j
+    ror a                                                             ; d58e: 6a          j   ; Rotate in a set bit
     sec                                                               ; d58f: 38          8
-    bcs cd56f                                                         ; d590: b0 dd       .. ; ALWAYS branch
+    bcs cd56f                                                         ; d590: b0 dd       ..  ; ALWAYS branch
 
 ; &d592 referenced 2 times by &d4c8, &d50b
 .sub_cd592
@@ -4599,7 +4600,7 @@ section pydis, org = &c000, filename = "os12_baron"
 .osbyte135EntryPoint
     ldy l0360                                                         ; d7c2: ac 60 03    .`.
     bne cd7dc                                                         ; d7c5: d0 15       ..
-    lda (l00d8),y                                                     ; d7c7: b1 d8       ..
+    lda (l00d8),y                                                     ; d7c7: b1 d8       ..  ; Offset is Y=0
     ldy #2                                                            ; d7c9: a0 02       ..
 ; &d7cb referenced 1 time by &d7d5
 .loop_cd7cb
@@ -4651,7 +4652,7 @@ section pydis, org = &c000, filename = "os12_baron"
     bne loop_cd7e8                                                    ; d801: d0 e5       ..
     txa                                                               ; d803: 8a          .
     bne cd7e1                                                         ; d804: d0 db       ..
-    beq cd7d7                                                         ; d806: f0 cf       .. ; ALWAYS branch
+    beq cd7d7                                                         ; d806: f0 cf       ..  ; ALWAYS branch
 
 ; &d808 referenced 1 time by &d7dc
 .sub_cd808
@@ -4680,7 +4681,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lsr l00dc                                                         ; d824: 46 dc       F.
     bcc loop_cd81b                                                    ; d826: 90 f3       ..
     tya                                                               ; d828: 98          .
-    adc #7                                                            ; d829: 69 07       i. ; Carry is set, so adding 8
+    adc #7                                                            ; d829: 69 07       i.  ; Carry is set, so adding 8
     tay                                                               ; d82b: a8          .
     bcc loop_cd810                                                    ; d82c: 90 e2       ..
 ; &d82e referenced 1 time by &d822
@@ -4868,7 +4869,7 @@ section pydis, org = &c000, filename = "os12_baron"
     and #&3f ; '?'                                                    ; d937: 29 3f       )?
     cpy #4                                                            ; d939: c0 04       ..
     bcs cd93e                                                         ; d93b: b0 01       ..
-    txa                                                               ; d93d: 8a          .  ; A=0
+    txa                                                               ; d93d: 8a          .   ; A=0
 ; &d93e referenced 2 times by &d935, &d93b
 .cd93e
     tay                                                               ; d93e: a8          .
@@ -4909,21 +4910,21 @@ section pydis, org = &c000, filename = "os12_baron"
     lsr a                                                             ; d9e1: 4a          J
     cmp #1                                                            ; d9e2: c9 01       ..
     bne cda03                                                         ; d9e4: d0 1d       ..
-    lsr a                                                             ; d9e6: 4a          J  ; A=0
+    lsr a                                                             ; d9e6: 4a          J   ; A=0
 ; &d9e7 referenced 1 time by &d9dc
 .cd9e7
     ldx #4                                                            ; d9e7: a2 04       ..
     stx l0001                                                         ; d9e9: 86 01       ..
-    sta l0000                                                         ; d9eb: 85 00       ..
-    tay                                                               ; d9ed: a8          .  ; Y=0
+    sta l0000                                                         ; d9eb: 85 00       ..  ; A=0
+    tay                                                               ; d9ed: a8          .   ; Y=0
 ; &d9ee referenced 2 times by &d9f5, &d9fb
 .cd9ee
-    sta (l0000),y                                                     ; d9ee: 91 00       ..
+    sta (l0000),y                                                     ; d9ee: 91 00       ..  ; A=0
     cmp l0001                                                         ; d9f0: c5 01       ..
     beq cd9fd                                                         ; d9f2: f0 09       ..
     iny                                                               ; d9f4: c8          .
     bne cd9ee                                                         ; d9f5: d0 f7       ..
-    iny                                                               ; d9f7: c8          .  ; Y=1
+    iny                                                               ; d9f7: c8          .   ; Y=1
     inx                                                               ; d9f8: e8          .
     inc l0001                                                         ; d9f9: e6 01       ..
     bpl cd9ee                                                         ; d9fb: 10 f1       ..
@@ -4941,7 +4942,7 @@ section pydis, org = &c000, filename = "os12_baron"
     stx system_via_register_b                                         ; da09: 8e 40 fe    .@.
     cpx #9                                                            ; da0c: e0 09       ..
     bcs loop_cda08                                                    ; da0e: b0 f8       ..
-    inx                                                               ; da10: e8          .  ; X=9
+    inx                                                               ; da10: e8          .   ; X=9
 ; &da11 referenced 1 time by &da1b
 .loop_cda11
     txa                                                               ; da11: 8a          .
@@ -4951,7 +4952,7 @@ section pydis, org = &c000, filename = "os12_baron"
     tax                                                               ; da19: aa          .
     dex                                                               ; da1a: ca          .
     bne loop_cda11                                                    ; da1b: d0 f4       ..
-    stx l028d                                                         ; da1d: 8e 8d 02    ...
+    stx l028d                                                         ; da1d: 8e 8d 02    ... ; X=0
     rol l00fc                                                         ; da20: 26 fc       &.
     jsr ceeeb                                                         ; da22: 20 eb ee     ..
     ror a                                                             ; da25: 6a          j
@@ -4984,11 +4985,12 @@ section pydis, org = &c000, filename = "os12_baron"
     inx                                                               ; da4d: e8          .
     bne loop_cda44                                                    ; da4e: d0 f4       ..
     sta user_via_ddra                                                 ; da50: 8d 63 fe    .c.
-    txa                                                               ; da53: 8a          .  ; A=0
+    txa                                                               ; da53: 8a          .   ; A=0
     ldx #&e2                                                          ; da54: a2 e2       ..
 ; &da56 referenced 1 time by &da59
 .loop_cda56
-    sta l0000,x                                                       ; da56: 95 00       ..
+    ; Clear 30 bytes of memory from l00e2 onwards
+    sta l0000,x                                                       ; da56: 95 00       ..  ; A=0
     inx                                                               ; da58: e8          .
     bne loop_cda56                                                    ; da59: d0 fb       ..
 ; &da5b referenced 1 time by &da62
@@ -5005,8 +5007,8 @@ section pydis, org = &c000, filename = "os12_baron"
     inx                                                               ; da6d: e8          .
 ; &da6e referenced 1 time by &da75
 .loop_cda6e
-    sta system_via_ifr,x                                              ; da6e: 9d 4d fe    .M.
-    sta user_via_ifr,x                                                ; da71: 9d 6d fe    .m.
+    sta system_via_ifr,x                                              ; da6e: 9d 4d fe    .M. ; A=&7f
+    sta user_via_ifr,x                                                ; da71: 9d 6d fe    .m. ; A=&7f
     dex                                                               ; da74: ca          .
     bpl loop_cda6e                                                    ; da75: 10 f7       ..
     cli                                                               ; da77: 58          X
@@ -5104,8 +5106,8 @@ section pydis, org = &c000, filename = "os12_baron"
     jsr osbyte159EntryPoint                                           ; db1b: 20 7f ee     ..
     dex                                                               ; db1e: ca          .
     bne loop_cdb19                                                    ; db1f: d0 f8       ..
-    stx system_via_t2c_l                                              ; db21: 8e 48 fe    .H.
-    stx system_via_t2c_h                                              ; db24: 8e 49 fe    .I.
+    stx system_via_t2c_l                                              ; db21: 8e 48 fe    .H. ; X=0
+    stx system_via_t2c_h                                              ; db24: 8e 49 fe    .I. ; X=0
 ; &db27 referenced 1 time by &db14
 .cdb27
     lda l028f                                                         ; db27: ad 8f 02    ...
@@ -5182,7 +5184,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &dbb8 referenced 2 times by &dba2, &dc65
 .cdbb8
     lda #0                                                            ; dbb8: a9 00       ..
-    tax                                                               ; dbba: aa          .  ; X=0
+    tax                                                               ; dbba: aa          .   ; X=0
     jsr sub_cf137                                                     ; dbbb: 20 37 f1     7.
 ; &dbbe referenced 2 times by &db9f, &dbb6
 .cdbbe
@@ -5312,7 +5314,7 @@ section pydis, org = &c000, filename = "os12_baron"
     bne cdcb8                                                         ; dc82: d0 34       .4
     ldx l025c                                                         ; dc84: ae 5c 02    .\.
     bne return_24                                                     ; dc87: d0 09       ..
-    inx                                                               ; dc89: e8          .  ; X=1
+    inx                                                               ; dc89: e8          .   ; X=1
     jsr osbyte153EntryPoint                                           ; dc8a: 20 f3 e4     ..
     jsr sub_ce741                                                     ; dc8d: 20 41 e7     A.
     bcc cdc78                                                         ; dc90: 90 e6       ..
@@ -5349,7 +5351,7 @@ section pydis, org = &c000, filename = "os12_baron"
 ; &dcb3 referenced 1 time by &dced
 .cdcb3
     ldy acia_data                                                     ; dcb3: ac 09 fe    ...
-    rol a                                                             ; dcb6: 2a          *  ; Rotate in a set bit
+    rol a                                                             ; dcb6: 2a          *   ; Rotate in a set bit
     asl a                                                             ; dcb7: 0a          .
 ; &dcb8 referenced 1 time by &dc82
 .cdcb8
@@ -5467,7 +5469,7 @@ section pydis, org = &c000, filename = "os12_baron"
 
 ; &dd69 referenced 1 time by &dd13
 .cdd69
-    rol a                                                             ; dd69: 2a          *
+    rol a                                                             ; dd69: 2a          *   ; Rotate in a clear bit
     rol a                                                             ; dd6a: 2a          *
     rol a                                                             ; dd6b: 2a          *
     rol a                                                             ; dd6c: 2a          *
@@ -5608,7 +5610,7 @@ section pydis, org = &c000, filename = "os12_baron"
 
 ; &de47 referenced 1 time by &ddca
 .cde47
-    rol a                                                             ; de47: 2a          *
+    rol a                                                             ; de47: 2a          *   ; Rotate in a clear bit
     bpl cde72                                                         ; de48: 10 28       .(
 ; &de4a referenced 1 time by &de44
 .cde4a
@@ -5637,14 +5639,14 @@ section pydis, org = &c000, filename = "os12_baron"
 
 ; &de72 referenced 1 time by &de48
 .cde72
-    rol a                                                             ; de72: 2a          *
-    rol a                                                             ; de73: 2a          *  ; Rotate in a clear bit
+    rol a                                                             ; de72: 2a          *   ; Rotate in a clear bit, rotate clear bit out (clears carry)
+    rol a                                                             ; de73: 2a          *   ; Rotate in a clear bit
     rol a                                                             ; de74: 2a          *
     rol a                                                             ; de75: 2a          *
     bpl cde7f                                                         ; de76: 10 07       ..
     jsr sub_cf065                                                     ; de78: 20 65 f0     e.
     lda #1                                                            ; de7b: a9 01       ..
-    bne cde6e                                                         ; de7d: d0 ef       .. ; ALWAYS branch
+    bne cde6e                                                         ; de7d: d0 ef       ..  ; ALWAYS branch
 
 ; &de7f referenced 1 time by &de76
 .cde7f
@@ -5703,7 +5705,7 @@ section pydis, org = &c000, filename = "os12_baron"
     stx l02b1                                                         ; debb: 8e b1 02    ...
     sty l02b2                                                         ; debe: 8c b2 02    ...
     lda #&ff                                                          ; dec1: a9 ff       ..
-    bne cdec7                                                         ; dec3: d0 02       .. ; ALWAYS branch
+    bne cdec7                                                         ; dec3: d0 02       ..  ; ALWAYS branch
 
 ; &dec5 referenced 1 time by &ffc8
 .cdec5
@@ -5719,7 +5721,7 @@ section pydis, org = &c000, filename = "os12_baron"
     ldy l0256                                                         ; decd: ac 56 02    .V. ; Y=file handle
     beq cdee6                                                         ; ded0: f0 14       ..
     sec                                                               ; ded2: 38          8
-    ror l00eb                                                         ; ded3: 66 eb       f. ; Rotate in a set bit
+    ror l00eb                                                         ; ded3: 66 eb       f.  ; Rotate in a set bit
     jsr OSBGET                                                        ; ded5: 20 d7 ff     .. ; Read a single byte from an open file Y
     php                                                               ; ded8: 08          .
     lsr l00eb                                                         ; ded9: 46 eb       F.
@@ -5740,7 +5742,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda l02b1                                                         ; def6: ad b1 02    ...
     ora l02b2                                                         ; def9: 0d b2 02    ...
     bne cdee6                                                         ; defc: d0 e8       ..
-    bcs cdf05                                                         ; defe: b0 05       .. ; ALWAYS branch
+    bcs cdf05                                                         ; defe: b0 05       ..  ; ALWAYS branch
 
 ; &df00 referenced 1 time by &dee8
 .cdf00
@@ -5837,13 +5839,13 @@ section pydis, org = &c000, filename = "os12_baron"
     iny                                                               ; dfb6: c8          .
     jsr sub_ce009                                                     ; dfb7: 20 09 e0     ..
     lda #2                                                            ; dfba: a9 02       ..
-    bne ce031                                                         ; dfbc: d0 73       .s ; ALWAYS branch
+    bne ce031                                                         ; dfbc: d0 73       .s  ; ALWAYS branch
 
 ; &dfbe referenced 1 time by &dfb4
 .cdfbe
     sty l00e6                                                         ; dfbe: 84 e6       ..
     ldx #0                                                            ; dfc0: a2 00       ..
-    beq cdfd7                                                         ; dfc2: f0 13       .. ; ALWAYS branch
+    beq cdfd7                                                         ; dfc2: f0 13       ..  ; ALWAYS branch
 
 ; &dfc4 referenced 1 time by &dfd5
 .loop_cdfc4
@@ -5881,7 +5883,7 @@ section pydis, org = &c000, filename = "os12_baron"
     lda ldf0e,x                                                       ; dfe9: bd 0e df    ...
     beq ce021                                                         ; dfec: f0 33       .3
     bpl loop_cdfe8                                                    ; dfee: 10 f8       ..
-    bmi cdfcd                                                         ; dff0: 30 db       0. ; ALWAYS branch
+    bmi cdfcd                                                         ; dff0: 30 db       0.  ; ALWAYS branch
 
 ; &dff2 referenced 1 time by &dfda
 .cdff2
@@ -5940,7 +5942,7 @@ section pydis, org = &c000, filename = "os12_baron"
     asl a                                                             ; e034: 0a          .
 .osbyte127EntryPoint
     and #1                                                            ; e035: 29 01       ).
-    bpl ce031                                                         ; e037: 10 f8       .. ; ALWAYS branch
+    bpl ce031                                                         ; e037: 10 f8       ..  ; ALWAYS branch
 
 ; &e039 referenced 2 times by &dfa0, &e03e
 .ce039
@@ -6036,7 +6038,7 @@ section pydis, org = &c000, filename = "os12_baron"
     pla                                                               ; e103: 68          h
     pha                                                               ; e104: 48          H
     sec                                                               ; e105: 38          8
-    ror l00eb                                                         ; e106: 66 eb       f. ; Rotate in a set bit
+    ror l00eb                                                         ; e106: 66 eb       f.  ; Rotate in a set bit
     jsr OSBPUT                                                        ; e108: 20 d4 ff     .. ; Write a single byte A to an open file Y
     lsr l00eb                                                         ; e10b: 46 eb       F.
 ; &e10d referenced 3 times by &e0b9, &e0fc, &e101
@@ -6096,7 +6098,7 @@ section pydis, org = &c000, filename = "os12_baron"
     sta user_via_pcr                                                  ; e15a: 8d 6c fe    .l.
     ora #&0e                                                          ; e15d: 09 0e       ..
     sta user_via_pcr                                                  ; e15f: 8d 6c fe    .l.
-    bne return_29                                                     ; e162: d0 2c       ., ; ALWAYS branch
+    bne return_29                                                     ; e162: d0 2c       .,  ; ALWAYS branch
 
 ; &e164 referenced 1 time by &e141
 .ce164
@@ -6273,7 +6275,7 @@ section pydis, org = &c000, filename = "os12_baron"
     beq return_32                                                     ; e292: f0 0b       ..
     lda #osfind_open_output                                           ; e294: a9 80       ..
     jsr OSFIND                                                        ; e296: 20 ce ff     .. ; Open file for output (A=128)
-    tay                                                               ; e299: a8          .  ; A=file handle (or zero on failure)
+    tay                                                               ; e299: a8          .   ; A=file handle (or zero on failure)
     beq ce310                                                         ; e29a: f0 74       .t
     sta l0257                                                         ; e29c: 8d 57 02    .W.
 ; &e29f referenced 2 times by &e27a, &e292
@@ -6581,7 +6583,7 @@ section pydis, org = &c000, filename = "os12_baron"
     and #&0f                                                          ; e554: 29 0f       ).
     cmp #&0b                                                          ; e556: c9 0b       ..
     bcc ce519                                                         ; e558: 90 bf       ..
-    adc #&7b ; '{'                                                    ; e55a: 69 7b       i{ ; Carry is set, so adding 124
+    adc #&7b ; '{'                                                    ; e55a: 69 7b       i{  ; Carry is set, so adding 124
     pha                                                               ; e55c: 48          H
     lda l027d                                                         ; e55d: ad 7d 02    .}.
     bne ce515                                                         ; e560: d0 b3       ..
@@ -6745,7 +6747,7 @@ le5b4 = le5b3+1
     lda l0276                                                         ; e662: ad 76 02    .v.
     bne ce671                                                         ; e665: d0 0a       ..
     cli                                                               ; e667: 58          X
-    sta l0269                                                         ; e668: 8d 69 02    .i.
+    sta l0269                                                         ; e668: 8d 69 02    .i. ; A=0
     jsr sub_cf68d                                                     ; e66b: 20 8d f6     ..
     jsr sub_cf0aa                                                     ; e66e: 20 aa f0     ..
 ; &e671 referenced 1 time by &e665
@@ -6889,8 +6891,8 @@ le5b4 = le5b3+1
     ldx #&ff                                                          ; e729: a2 ff       ..
     ldy #&ff                                                          ; e72b: a0 ff       ..
     bcs return_34                                                     ; e72d: b0 02       ..
-    inx                                                               ; e72f: e8          .  ; X=0
-    iny                                                               ; e730: c8          .  ; Y=0
+    inx                                                               ; e72f: e8          .   ; X=0
+    iny                                                               ; e730: c8          .   ; Y=0
 ; &e731 referenced 1 time by &e72d
 .return_34
     rts                                                               ; e731: 60          `
@@ -6904,7 +6906,7 @@ le5b4 = le5b3+1
 ; &e738 referenced 1 time by &e744
 .sub_ce738
     clv                                                               ; e738: b8          .
-    bvc ce73e                                                         ; e739: 50 03       P. ; ALWAYS branch
+    bvc ce73e                                                         ; e739: 50 03       P.  ; ALWAYS branch
 
 ; &e73b referenced 1 time by &e1cb
 .sub_ce73b
@@ -7160,7 +7162,7 @@ le5b4 = le5b3+1
 .ce887
     sec                                                               ; e887: 38          8
     ror l0800,x                                                       ; e888: 7e 00 08    ~.. ; Rotate in a set bit
-    bmi ce8a4                                                         ; e88b: 30 17       0. ; ALWAYS branch
+    bmi ce8a4                                                         ; e88b: 30 17       0.  ; ALWAYS branch
 
 ; &e88d referenced 1 time by &e832
 .ce88d
@@ -7219,7 +7221,7 @@ le5b4 = le5b3+1
 
 .osword3EntryPoint
     ldx #&0f                                                          ; e8d1: a2 0f       ..
-    bne ce8d8                                                         ; e8d3: d0 03       .. ; ALWAYS branch
+    bne ce8d8                                                         ; e8d3: d0 03       ..  ; ALWAYS branch
 
 .osword1EntryPoint
     ldx l0283                                                         ; e8d5: ae 83 02    ...
@@ -7239,7 +7241,7 @@ le5b4 = le5b3+1
 
 .osword4EntryPoint
     lda #&0f                                                          ; e8e4: a9 0f       ..
-    bne ce8ee                                                         ; e8e6: d0 06       .. ; ALWAYS branch
+    bne ce8ee                                                         ; e8e6: d0 06       ..  ; ALWAYS branch
 
 .osword2EntryPoint
     lda l0283                                                         ; e8e8: ad 83 02    ...
@@ -7272,14 +7274,14 @@ le5b4 = le5b3+1
     dey                                                               ; e909: 88          .
     cpy #2                                                            ; e90a: c0 02       ..
     bcs loop_ce904                                                    ; e90c: b0 f6       ..
-    lda (l00f0),y                                                     ; e90e: b1 f0       ..
+    lda (l00f0),y                                                     ; e90e: b1 f0       ..  ; Offset is Y=1
     sta l00e9                                                         ; e910: 85 e9       ..
-    dey                                                               ; e912: 88          .  ; Y=0
+    dey                                                               ; e912: 88          .   ; Y=0
     sty l0269                                                         ; e913: 8c 69 02    .i.
     lda (l00f0),y                                                     ; e916: b1 f0       ..
     sta l00e8                                                         ; e918: 85 e8       ..
     cli                                                               ; e91a: 58          X
-    bcc ce924                                                         ; e91b: 90 07       .. ; ALWAYS branch
+    bcc ce924                                                         ; e91b: 90 07       ..  ; ALWAYS branch
 
 ; &e91d referenced 1 time by &e95c
 .ce91d
@@ -7297,9 +7299,9 @@ le5b4 = le5b3+1
 .ce924
     jsr OSRDCH                                                        ; e924: 20 e0 ff     .. ; Read a character from the current input stream
     bcs ce972                                                         ; e927: b0 49       .I
-    tax                                                               ; e929: aa          .  ; A=character read
+    tax                                                               ; e929: aa          .   ; A=character read
     lda l027c                                                         ; e92a: ad 7c 02    .|.
-    ror a                                                             ; e92d: 6a          j  ; Rotate in a clear bit
+    ror a                                                             ; e92d: 6a          j   ; Rotate in a clear bit
     ror a                                                             ; e92e: 6a          j
     txa                                                               ; e92f: 8a          .
     bcs ce937                                                         ; e930: b0 05       ..
@@ -7312,7 +7314,7 @@ le5b4 = le5b3+1
     cpy #0                                                            ; e93b: c0 00       ..
     beq ce924                                                         ; e93d: f0 e5       ..
     dey                                                               ; e93f: 88          .
-    bcs ce921                                                         ; e940: b0 df       .. ; ALWAYS branch
+    bcs ce921                                                         ; e940: b0 df       ..  ; ALWAYS branch
 
 ; &e942 referenced 1 time by &e939
 .ce942
@@ -7326,7 +7328,7 @@ le5b4 = le5b3+1
     jsr OSWRCH                                                        ; e94b: 20 ee ff     .. ; Write character 127
     dey                                                               ; e94e: 88          .
     bne loop_ce94b                                                    ; e94f: d0 fa       ..
-    beq ce924                                                         ; e951: f0 d1       .. ; ALWAYS branch
+    beq ce924                                                         ; e951: f0 d1       ..  ; ALWAYS branch
 
 ; &e953 referenced 1 time by &e944
 .ce953
@@ -7340,7 +7342,7 @@ le5b4 = le5b3+1
     cmp l02b5                                                         ; e963: cd b5 02    ...
     beq ce920                                                         ; e966: f0 b8       ..
     bcc ce920                                                         ; e968: 90 b6       ..
-    bcs ce91f                                                         ; e96a: b0 b3       .. ; ALWAYS branch
+    bcs ce91f                                                         ; e96a: b0 b3       ..  ; ALWAYS branch
 
 ; &e96c referenced 1 time by &e957
 .ce96c
@@ -7366,7 +7368,7 @@ le5b4 = le5b3+1
 .osbyte1EntryPoint
 .osbyte6EntryPoint
     ora #&f0                                                          ; e988: 09 f0       ..
-    bne ce99a                                                         ; e98a: d0 0e       .. ; ALWAYS branch
+    bne ce99a                                                         ; e98a: d0 0e       ..  ; ALWAYS branch
 
 .osbyte12EntryPoint
     bne osbyte11EntryPoint                                            ; e98c: d0 07       ..
@@ -7421,10 +7423,11 @@ le5b4 = le5b3+1
     ldx #0                                                            ; e9cd: a2 00       ..
 ; &e9cf referenced 1 time by &e9d3
 .loop_ce9cf
-    sta l0b00,x                                                       ; e9cf: 9d 00 0b    ...
+    ; Set 256 bytes of memory from l0b00 onwards to 16
+    sta l0b00,x                                                       ; e9cf: 9d 00 0b    ... ; A=&10
     inx                                                               ; e9d2: e8          .
     bne loop_ce9cf                                                    ; e9d3: d0 fa       ..
-    stx l0284                                                         ; e9d5: 8e 84 02    ...
+    stx l0284                                                         ; e9d5: 8e 84 02    ... ; X=0
     rts                                                               ; e9d8: 60          `
 
 ; &e9d9 referenced 3 times by &cae3, &cb0e, &db8b
@@ -7448,7 +7451,7 @@ le5b4 = le5b3+1
     bcc ce9f5                                                         ; e9ea: 90 09       ..
     ldy #7                                                            ; e9ec: a0 07       ..
     sty system_via_register_b                                         ; e9ee: 8c 40 fe    .@.
-    dey                                                               ; e9f1: 88          .  ; Y=6
+    dey                                                               ; e9f1: 88          .   ; Y=6
     sty system_via_register_b                                         ; e9f2: 8c 40 fe    .@.
 ; &e9f5 referenced 1 time by &e9ea
 .ce9f5
@@ -7491,7 +7494,7 @@ le5b4 = le5b3+1
 ; &ea1d referenced 1 time by &f260
 .sub_cea1d
     clc                                                               ; ea1d: 18          .
-    ror l00e4                                                         ; ea1e: 66 e4       f. ; Rotate in a clear bit
+    ror l00e4                                                         ; ea1e: 66 e4       f.  ; Rotate in a clear bit
     jsr sub_ce03a                                                     ; ea20: 20 3a e0     :.
     iny                                                               ; ea23: c8          .
     cmp #&22 ; '"'                                                    ; ea24: c9 22       ."
@@ -7515,7 +7518,7 @@ le5b4 = le5b3+1
     bne cea3f                                                         ; ea37: d0 06       ..
     bit l00e4                                                         ; ea39: 24 e4       $.
     bmi cea8f                                                         ; ea3b: 30 52       0R
-    bpl cea5a                                                         ; ea3d: 10 1b       .. ; ALWAYS branch
+    bpl cea5a                                                         ; ea3d: 10 1b       ..  ; ALWAYS branch
 
 ; &ea3f referenced 1 time by &ea37
 .cea3f
@@ -7555,7 +7558,7 @@ le5b4 = le5b3+1
     bne cea77                                                         ; ea70: d0 05       ..
     iny                                                               ; ea72: c8          .
     lda #&80                                                          ; ea73: a9 80       ..
-    bne cea31                                                         ; ea75: d0 ba       .. ; ALWAYS branch
+    bne cea31                                                         ; ea75: d0 ba       ..  ; ALWAYS branch
 
 ; &ea77 referenced 1 time by &ea70
 .cea77
@@ -7703,7 +7706,7 @@ le5b4 = le5b3+1
     ldy #&ff                                                          ; eb23: a0 ff       ..
     sty system_via_ddra                                               ; eb25: 8c 43 fe    .C.
     sta system_via_register_a_no_handshake                            ; eb28: 8d 4f fe    .O.
-    iny                                                               ; eb2b: c8          .  ; Y=0
+    iny                                                               ; eb2b: c8          .   ; Y=0
     sty system_via_register_b                                         ; eb2c: 8c 40 fe    .@.
     ldy #2                                                            ; eb2f: a0 02       ..
 ; &eb31 referenced 1 time by &eb32
@@ -7801,7 +7804,7 @@ le5b4 = le5b3+1
     rol a                                                             ; ebc8: 2a          *
     lda #&3f ; '?'                                                    ; ebc9: a9 3f       .?
     bcs cebcf                                                         ; ebcb: b0 02       ..
-    eor #&ff                                                          ; ebcd: 49 ff       I. ; A=&c0
+    eor #&ff                                                          ; ebcd: 49 ff       I.  ; A=&c0
 ; &ebcf referenced 2 times by &ebc6, &ebcb
 .cebcf
     sta l0804,x                                                       ; ebcf: 9d 04 08    ...
@@ -7810,7 +7813,7 @@ le5b4 = le5b3+1
     bpl cebe1                                                         ; ebd6: 10 09       ..
     lda #&3f ; '?'                                                    ; ebd8: a9 3f       .?
     bcc cebde                                                         ; ebda: 90 02       ..
-    eor #&ff                                                          ; ebdc: 49 ff       I. ; A=&c0
+    eor #&ff                                                          ; ebdc: 49 ff       I.  ; A=&c0
 ; &ebde referenced 1 time by &ebda
 .cebde
     sta l0804,x                                                       ; ebde: 9d 04 08    ...
@@ -7908,11 +7911,12 @@ le5b4 = le5b3+1
     ldy #4                                                            ; ec81: a0 04       ..
 ; &ec83 referenced 1 time by &ec87
 .loop_cec83
-    sta l082b,y                                                       ; ec83: 99 2b 08    .+.
+    ; Clear 4 bytes of memory from l082c onwards
+    sta l082c - 1,y                                                   ; ec83: 99 2b 08    .+. ; A=0
     dey                                                               ; ec86: 88          .
     bne loop_cec83                                                    ; ec87: d0 fa       ..
-    sta l0818,x                                                       ; ec89: 9d 18 08    ...
-    dey                                                               ; ec8c: 88          .  ; Y=&ff
+    sta l0818,x                                                       ; ec89: 9d 18 08    ... ; A=0
+    dey                                                               ; ec8c: 88          .   ; Y=&ff
     sty l0838                                                         ; ec8d: 8c 38 08    .8.
 ; &ec90 referenced 1 time by &ec7a
 .cec90
@@ -7936,11 +7940,12 @@ le5b4 = le5b3+1
     ldy #3                                                            ; ecaf: a0 03       ..
 ; &ecb1 referenced 1 time by &ecb5
 .loop_cecb1
+    ; Set 4 bytes of memory from l082c onwards
     sta l082c,y                                                       ; ecb1: 99 2c 08    .,.
     dey                                                               ; ecb4: 88          .
     bpl loop_cecb1                                                    ; ecb5: 10 fa       ..
     sty l0838                                                         ; ecb7: 8c 38 08    .8.
-    bmi ced06                                                         ; ecba: 30 4a       0J ; ALWAYS branch
+    bmi ced06                                                         ; ecba: 30 4a       0J  ; ALWAYS branch
 
 ; &ecbc referenced 1 time by &ecde
 .cecbc
@@ -7980,7 +7985,7 @@ le5b4 = le5b3+1
     jsr osbyte152EntryPoint                                           ; ecf1: 20 5b e4     [.
     and #3                                                            ; ecf4: 29 03       ).
     sta l0838                                                         ; ecf6: 8d 38 08    .8.
-    bpl cecfe                                                         ; ecf9: 10 03       .. ; ALWAYS branch
+    bpl cecfe                                                         ; ecf9: 10 03       ..  ; ALWAYS branch
 
 ; &ecfb referenced 1 time by &ecef
 .cecfb
@@ -7999,7 +8004,7 @@ le5b4 = le5b3+1
     cpx #4                                                            ; ed09: e0 04       ..
     bne ced16                                                         ; ed0b: d0 09       ..
     and #&0f                                                          ; ed0d: 29 0f       ).
-    ora ceb3c,x                                                       ; ed0f: 1d 3c eb    .<.
+    ora ceb3c,x                                                       ; ed0f: 1d 3c eb    .<. ; Offset is X=4
     php                                                               ; ed12: 08          .
     jmp ced95                                                         ; ed13: 4c 95 ed    L..
 
@@ -8169,7 +8174,7 @@ le5b4 = le5b3+1
     bpl cee59                                                         ; ee1e: 10 39       .9
     ldx #0                                                            ; ee20: a2 00       ..
     stx l00f7                                                         ; ee22: 86 f7       ..
-    inx                                                               ; ee24: e8          .  ; X=1
+    inx                                                               ; ee24: e8          .   ; X=1
     stx osrdsc_ptr                                                    ; ee25: 86 f6       ..
     jsr ceebb                                                         ; ee27: 20 bb ee     ..
     ldx #3                                                            ; ee2a: a2 03       ..
@@ -8199,7 +8204,7 @@ le5b4 = le5b3+1
     inx                                                               ; ee4b: e8          .
     beq loop_cee40                                                    ; ee4c: f0 f2       ..
     clc                                                               ; ee4e: 18          .
-    bcc ceebb                                                         ; ee4f: 90 6a       .j ; ALWAYS branch
+    bcc ceebb                                                         ; ee4f: 90 6a       .j  ; ALWAYS branch
 
 ; &ee51 referenced 3 times by &f58f, &f780, &f7a0
 .sub_cee51
@@ -8223,12 +8228,12 @@ le5b4 = le5b3+1
     ldy #&10                                                          ; ee64: a0 10       ..
     jsr osbyte159EntryPoint                                           ; ee66: 20 7f ee     ..
     ldy #0                                                            ; ee69: a0 00       ..
-    beq cee84                                                         ; ee6b: f0 17       .. ; ALWAYS branch
+    beq cee84                                                         ; ee6b: f0 17       ..  ; ALWAYS branch
 
 ; &ee6d referenced 2 times by &dd88, &de1f
 .osbyte158EntryPoint
     ldy #0                                                            ; ee6d: a0 00       ..
-    beq cee82                                                         ; ee6f: f0 11       .. ; ALWAYS branch
+    beq cee82                                                         ; ee6f: f0 11       ..  ; ALWAYS branch
 
 ; &ee71 referenced 2 times by &eebf, &eed0
 .sub_cee71
@@ -8317,7 +8322,7 @@ le5b4 = le5b3+1
     bne ceee8                                                         ; eee0: d0 06       ..
     lda #&81                                                          ; eee2: a9 81       ..
     sta system_via_ier                                                ; eee4: 8d 4e fe    .N.
-    inx                                                               ; eee7: e8          .  ; X=0
+    inx                                                               ; eee7: e8          .   ; X=0
 ; &eee8 referenced 1 time by &eee0
 .ceee8
     stx l0242                                                         ; eee8: 8e 42 02    .B.
@@ -8480,7 +8485,7 @@ le5b4 = le5b3+1
     bne cefdd                                                         ; efd4: d0 07       ..
     ldx l0275                                                         ; efd6: ae 75 02    .u.
     bne cefdd                                                         ; efd9: d0 02       ..
-    stx l00e7                                                         ; efdb: 86 e7       ..
+    stx l00e7                                                         ; efdb: 86 e7       ..  ; X=0
 ; &efdd referenced 2 times by &efd4, &efd9
 .cefdd
     tay                                                               ; efdd: a8          .
@@ -8524,7 +8529,7 @@ le5b4 = le5b3+1
     ldy #&ed                                                          ; f016: a0 ed       ..
     jsr sub_cf0cc                                                     ; f018: 20 cc f0     ..
     bmi cf00c                                                         ; f01b: 30 ef       0.
-    bpl loop_cf007                                                    ; f01d: 10 e8       .. ; ALWAYS branch
+    bpl loop_cf007                                                    ; f01d: 10 e8       ..  ; ALWAYS branch
 
 ; &f01f referenced 2 times by &ef4a, &f009
 .sub_cf01f
@@ -8739,7 +8744,7 @@ le5b4 = le5b3+1
     ldx #6                                                            ; f151: a2 06       ..
     plp                                                               ; f153: 28          (
     beq cf157                                                         ; f154: f0 01       ..
-    dex                                                               ; f156: ca          .  ; X=5
+    dex                                                               ; f156: ca          .   ; X=5
 ; &f157 referenced 1 time by &f154
 .cf157
     stx l00c6                                                         ; f157: 86 c6       ..
@@ -8751,7 +8756,7 @@ le5b4 = le5b3+1
     sta filev - 1,x                                                   ; f15e: 9d 11 02    ...
     dex                                                               ; f161: ca          .
     bne loop_cf15b                                                    ; f162: d0 f7       ..
-    stx l00c2                                                         ; f164: 86 c2       ..
+    stx l00c2                                                         ; f164: 86 c2       ..  ; X=0
     ldx #&0f                                                          ; f166: a2 0f       ..
 ; &f168 referenced 12 times by &cd3c, &db45, &db51, &db56, &db64, &db9c, &dc43, &dcf5, &e025, &e277, &e7cc, &ee5a
 .osbyte143EntryPoint
@@ -8812,7 +8817,7 @@ lf1a4 = lf1a3+1
     cmp #7                                                            ; f1b1: c9 07       ..
     bcs return_45                                                     ; f1b3: b0 ed       ..
     stx l00bc                                                         ; f1b5: 86 bc       ..
-    asl a                                                             ; f1b7: 0a          .  ; Shift clear bit out (clears carry)
+    asl a                                                             ; f1b7: 0a          .
     tax                                                               ; f1b8: aa          .
     lda lf1a4,x                                                       ; f1b9: bd a4 f1    ...
     pha                                                               ; f1bc: 48          H
@@ -8898,13 +8903,13 @@ lf1a4 = lf1a3+1
     ldy #&0a                                                          ; f232: a0 0a       ..
     lda l00cc                                                         ; f234: a5 cc       ..
     sta (l00c8),y                                                     ; f236: 91 c8       ..
-    iny                                                               ; f238: c8          .  ; Y=&0b
+    iny                                                               ; f238: c8          .   ; Y=&0b
     lda l00cd                                                         ; f239: a5 cd       ..
     sta (l00c8),y                                                     ; f23b: 91 c8       ..
     lda #0                                                            ; f23d: a9 00       ..
-    iny                                                               ; f23f: c8          .  ; Y=&0c
+    iny                                                               ; f23f: c8          .   ; Y=&0c
     sta (l00c8),y                                                     ; f240: 91 c8       ..
-    iny                                                               ; f242: c8          .  ; Y=&0d
+    iny                                                               ; f242: c8          .   ; Y=&0d
     sta (l00c8),y                                                     ; f243: 91 c8       ..
     plp                                                               ; f245: 28          (
 ; &f246 referenced 1 time by &f870
@@ -8959,7 +8964,7 @@ lf1a4 = lf1a3+1
     ldy #0                                                            ; f282: a0 00       ..
     lda (l00c8),y                                                     ; f284: b1 c8       ..
     tax                                                               ; f286: aa          .
-    iny                                                               ; f287: c8          .  ; Y=1
+    iny                                                               ; f287: c8          .   ; Y=1
     lda (l00c8),y                                                     ; f288: b1 c8       ..
     tay                                                               ; f28a: a8          .
     jsr sub_cf25a                                                     ; f28b: 20 5a f2     Z.
@@ -8980,8 +8985,8 @@ lf1a4 = lf1a3+1
 
 ; &f2a7 referenced 1 time by &f29e
 .cf2a7
-    sta l03c6                                                         ; f2a7: 8d c6 03    ...
-    sta l03c7                                                         ; f2aa: 8d c7 03    ...
+    sta l03c6                                                         ; f2a7: 8d c6 03    ... ; A=0
+    sta l03c7                                                         ; f2aa: 8d c7 03    ... ; A=0
 ; &f2ad referenced 1 time by &f2b5
 .loop_cf2ad
     lda (l00c8),y                                                     ; f2ad: b1 c8       ..
@@ -9014,13 +9019,13 @@ lf1a4 = lf1a3+1
     sbc l03c9                                                         ; f2df: ed c9 03    ...
     bcc cf2e8                                                         ; f2e2: 90 04       ..
     ldx #&80                                                          ; f2e4: a2 80       ..
-    bne cf2f0                                                         ; f2e6: d0 08       .. ; ALWAYS branch
+    bne cf2f0                                                         ; f2e6: d0 08       ..  ; ALWAYS branch
 
 ; &f2e8 referenced 2 times by &f2d8, &f2e2
 .cf2e8
     lda #1                                                            ; f2e8: a9 01       ..
     sta l03c9                                                         ; f2ea: 8d c9 03    ...
-    stx l03c8                                                         ; f2ed: 8e c8 03    ...
+    stx l03c8                                                         ; f2ed: 8e c8 03    ... ; X=0
 ; &f2f0 referenced 1 time by &f2e6
 .cf2f0
     stx l03ca                                                         ; f2f0: 8e ca 03    ...
@@ -9089,7 +9094,7 @@ lf1a4 = lf1a3+1
     jsr cee18                                                         ; f351: 20 18 ee     ..
     bcc cf359                                                         ; f354: 90 03       ..
     clv                                                               ; f356: b8          .
-    bvc cf39a                                                         ; f357: 50 41       PA ; ALWAYS branch
+    bvc cf39a                                                         ; f357: 50 41       PA  ; ALWAYS branch
 
 ; &f359 referenced 2 times by &f34c, &f354
 .cf359
@@ -9100,9 +9105,9 @@ lf1a4 = lf1a3+1
     sta l00b5                                                         ; f364: 85 b5       ..
     ldx #&ff                                                          ; f366: a2 ff       ..
     stx l03df                                                         ; f368: 8e df 03    ...
-    inx                                                               ; f36b: e8          .  ; X=0
+    inx                                                               ; f36b: e8          .   ; X=0
     stx l00ba                                                         ; f36c: 86 ba       ..
-    beq cf376                                                         ; f36e: f0 06       .. ; ALWAYS branch
+    beq cf376                                                         ; f36e: f0 06       ..  ; ALWAYS branch
 
 ; &f370 referenced 2 times by &f3ac, &f3c8
 .cf370
@@ -9146,7 +9151,7 @@ lf1a4 = lf1a3+1
     lda #&ff                                                          ; f3a4: a9 ff       ..
     sta l03c6                                                         ; f3a6: 8d c6 03    ...
     sta l03c7                                                         ; f3a9: 8d c7 03    ...
-    bne cf370                                                         ; f3ac: d0 c2       .. ; ALWAYS branch
+    bne cf370                                                         ; f3ac: d0 c2       ..  ; ALWAYS branch
 
 ; &f3ae referenced 2 times by &f37f, &f39f
 .cf3ae
@@ -9165,7 +9170,7 @@ lf1a4 = lf1a3+1
 .cf3c3
     bit l03ca                                                         ; f3c3: 2c ca 03    ,..
     bmi cf3a4                                                         ; f3c6: 30 dc       0.
-    bpl cf370                                                         ; f3c8: 10 a6       .. ; ALWAYS branch
+    bpl cf370                                                         ; f3c8: 10 a6       ..  ; ALWAYS branch
 
     sta l00bc                                                         ; f3ca: 85 bc       ..
     ; push X,Y onto the stack
@@ -9252,14 +9257,16 @@ lf1a4 = lf1a3+1
     ldx #8                                                            ; f449: a2 08       ..
 ; &f44b referenced 1 time by &f44f
 .loop_cf44b
-    sta l038b,x                                                       ; f44b: 9d 8b 03    ...
+    ; Set 8 bytes of memory from l038c onwards to 255
+    sta l038c - 1,x                                                   ; f44b: 9d 8b 03    ... ; A=&ff
     dex                                                               ; f44e: ca          .
     bne loop_cf44b                                                    ; f44f: d0 fa       ..
-    txa                                                               ; f451: 8a          .  ; A=0
+    txa                                                               ; f451: 8a          .   ; A=0
     ldx #&14                                                          ; f452: a2 14       ..
 ; &f454 referenced 1 time by &f45a
 .loop_cf454
-    sta l0380,x                                                       ; f454: 9d 80 03    ...
+    ; Clear 10 bytes of memory from l0394 onwards
+    sta l0394 - 20,x                                                  ; f454: 9d 80 03    ... ; A=0
     inx                                                               ; f457: e8          .
     cpx #&1e                                                          ; f458: e0 1e       ..
     bne loop_cf454                                                    ; f45a: d0 f8       ..
@@ -9436,7 +9443,7 @@ lf1a4 = lf1a3+1
     iny                                                               ; f563: c8          .
     iny                                                               ; f564: c8          .
     iny                                                               ; f565: c8          .
-    bne cf56a                                                         ; f566: d0 02       .. ; ALWAYS branch
+    bne cf56a                                                         ; f566: d0 02       ..  ; ALWAYS branch
 
 ; &f568 referenced 1 time by &f55c
 .cf568
@@ -9466,8 +9473,8 @@ lf1a4 = lf1a3+1
 
 ; &f57e referenced 1 time by &f54e
 .cf57e
-    tay                                                               ; f57e: a8          .  ; Y=0
-    beq loop_cf56d                                                    ; f57f: f0 ec       .. ; ALWAYS branch
+    tay                                                               ; f57e: a8          .   ; Y=0
+    beq loop_cf56d                                                    ; f57f: f0 ec       ..  ; ALWAYS branch
 
 ; &f581 referenced 1 time by &f56d
 .cf581
@@ -9482,7 +9489,7 @@ lf1a4 = lf1a3+1
     jsr sub_cee51                                                     ; f58f: 20 51 ee     Q.
     tay                                                               ; f592: a8          .
     clc                                                               ; f593: 18          .
-    bcc cf5b0                                                         ; f594: 90 1a       .. ; ALWAYS branch
+    bcc cf5b0                                                         ; f594: 90 1a       ..  ; ALWAYS branch
 
 ; &f596 referenced 1 time by &f58d
 .cf596
@@ -9512,7 +9519,7 @@ lf1a4 = lf1a3+1
     bne cf5bd                                                         ; f5b5: d0 06       ..
     bcc return_50                                                     ; f5b7: 90 64       .d
     ldy #2                                                            ; f5b9: a0 02       ..
-    bne cf61b                                                         ; f5bb: d0 5e       .^ ; ALWAYS branch
+    bne cf61b                                                         ; f5bb: d0 5e       .^  ; ALWAYS branch
 
 ; &f5bd referenced 1 time by &f5b5
 .cf5bd
@@ -9526,7 +9533,7 @@ lf1a4 = lf1a3+1
     beq cf61b                                                         ; f5ca: f0 4f       .O
     jsr sub_cfb50                                                     ; f5cc: 20 50 fb     P.
     ldy #1                                                            ; f5cf: a0 01       ..
-    bne cf61b                                                         ; f5d1: d0 48       .H ; ALWAYS branch
+    bne cf61b                                                         ; f5d1: d0 48       .H  ; ALWAYS branch
 
 ; &f5d3 referenced 1 time by &f5be
 .cf5d3
@@ -9534,13 +9541,13 @@ lf1a4 = lf1a3+1
     bne cf5e2                                                         ; f5d4: d0 0c       ..
     bcs cf5dc                                                         ; f5d6: b0 04       ..
     sty l00bd                                                         ; f5d8: 84 bd       ..
-    beq return_50                                                     ; f5da: f0 41       .A ; ALWAYS branch
+    beq return_50                                                     ; f5da: f0 41       .A  ; ALWAYS branch
 
 ; &f5dc referenced 1 time by &f5d6
 .cf5dc
     lda #&80                                                          ; f5dc: a9 80       ..
     sta l00c0                                                         ; f5de: 85 c0       ..
-    bne return_50                                                     ; f5e0: d0 3b       .; ; ALWAYS branch
+    bne return_50                                                     ; f5e0: d0 3b       .;  ; ALWAYS branch
 
 ; &f5e2 referenced 1 time by &f5d4
 .cf5e2
@@ -9556,7 +9563,7 @@ lf1a4 = lf1a3+1
     jsr sub_cfbd3                                                     ; f5f3: 20 d3 fb     ..
     beq cf5fd                                                         ; f5f6: f0 05       ..
     stx tube_data_register_3                                          ; f5f8: 8e e5 fe    ...
-    bne cf600                                                         ; f5fb: d0 03       .. ; ALWAYS branch
+    bne cf600                                                         ; f5fb: d0 03       ..  ; ALWAYS branch
 
 ; &f5fd referenced 1 time by &f5f6
 .cf5fd
@@ -9570,7 +9577,7 @@ lf1a4 = lf1a3+1
     lda #1                                                            ; f606: a9 01       ..
     sta l00bc                                                         ; f608: 85 bc       ..
     ldy #5                                                            ; f60a: a0 05       ..
-    bne cf61b                                                         ; f60c: d0 0d       .. ; ALWAYS branch
+    bne cf61b                                                         ; f60c: d0 0d       ..  ; ALWAYS branch
 
 ; &f60e referenced 1 time by &f5e3
 .cf60e
@@ -9653,7 +9660,7 @@ lf1a4 = lf1a3+1
     beq return_51                                                     ; f69e: f0 0b       ..
     lda #osfind_open_input                                            ; f6a0: a9 40       .@
     jsr OSFIND                                                        ; f6a2: 20 ce ff     .. ; Open file for input (A=64)
-    tay                                                               ; f6a5: a8          .  ; A=file handle (or zero on failure)
+    tay                                                               ; f6a5: a8          .   ; A=file handle (or zero on failure)
     beq cf674                                                         ; f6a6: f0 cc       ..
     sta l0256                                                         ; f6a8: 8d 56 02    .V.
 ; &f6ab referenced 1 time by &f69e
@@ -9762,7 +9769,7 @@ lf1a4 = lf1a3+1
     iny                                                               ; f751: c8          .
     cpy #&0b                                                          ; f752: c0 0b       ..
     bne loop_cf747                                                    ; f754: d0 f1       ..
-    dey                                                               ; f756: 88          .  ; Y=&0a
+    dey                                                               ; f756: 88          .   ; Y=&0a
 ; &f757 referenced 1 time by &f74f
 .cf757
     ldx #&0c                                                          ; f757: a2 0c       ..
@@ -9835,7 +9842,7 @@ lf1a4 = lf1a3+1
     php                                                               ; f7b0: 08          .
     pha                                                               ; f7b1: 48          H
     sec                                                               ; f7b2: 38          8
-    ror l00cb                                                         ; f7b3: 66 cb       f. ; Rotate in a set bit
+    ror l00cb                                                         ; f7b3: 66 cb       f.  ; Rotate in a set bit
     eor l00bf                                                         ; f7b5: 45 bf       E.
     sta l00bf                                                         ; f7b7: 85 bf       ..
 ; &f7b9 referenced 1 time by &f7d0
@@ -9843,7 +9850,7 @@ lf1a4 = lf1a3+1
     lda l00bf                                                         ; f7b9: a5 bf       ..
     rol a                                                             ; f7bb: 2a          *
     bcc cf7ca                                                         ; f7bc: 90 0c       ..
-    ror a                                                             ; f7be: 6a          j  ; Rotate in a set bit
+    ror a                                                             ; f7be: 6a          j   ; Rotate in a set bit
     eor #8                                                            ; f7bf: 49 08       I.
     sta l00bf                                                         ; f7c1: 85 bf       ..
     lda l00be                                                         ; f7c3: a5 be       ..
@@ -9887,7 +9894,8 @@ lf1a4 = lf1a3+1
     lda #0                                                            ; f7ef: a9 00       ..
 ; &f7f1 referenced 1 time by &f7f5
 .loop_cf7f1
-    sta l03cb,x                                                       ; f7f1: 9d cb 03    ...
+    ; Clear 4 bytes of memory from l03cb onwards
+    sta l03cb,x                                                       ; f7f1: 9d cb 03    ... ; A=0
     dex                                                               ; f7f4: ca          .
     bpl loop_cf7f1                                                    ; f7f5: 10 fa       ..
     lda l03c6                                                         ; f7f7: ad c6 03    ...
@@ -9986,7 +9994,7 @@ lf1a4 = lf1a3+1
 ; &f892 referenced 2 times by &f7ff, &f86d
 .sub_cf892
     lda #&32 ; '2'                                                    ; f892: a9 32       .2
-    bne cf898                                                         ; f894: d0 02       .. ; ALWAYS branch
+    bne cf898                                                         ; f894: d0 02       ..  ; ALWAYS branch
 
 ; &f896 referenced 1 time by &f804
 .sub_cf896
@@ -10143,7 +10151,7 @@ lf1a4 = lf1a3+1
     adc #&30 ; '0'                                                    ; f986: 69 30       i0
     cmp #&3a ; ':'                                                    ; f988: c9 3a       .:
     bcc cf98e                                                         ; f98a: 90 02       ..
-    adc #6                                                            ; f98c: 69 06       i. ; Carry is set, so adding 7
+    adc #6                                                            ; f98c: 69 06       i.  ; Carry is set, so adding 7
 ; &f98e referenced 2 times by &f98a, &f993
 .cf98e
     jmp OSWRCH                                                        ; f98e: 4c ee ff    L.. ; Write character
@@ -10151,7 +10159,7 @@ lf1a4 = lf1a3+1
 ; &f991 referenced 4 times by &f8eb, &f917, &f922, &f976
 .sub_cf991
     lda #&20 ; ' '                                                    ; f991: a9 20       .
-    bne cf98e                                                         ; f993: d0 f9       .. ; ALWAYS branch
+    bne cf98e                                                         ; f993: d0 f9       ..  ; ALWAYS branch
 
 ; &f995 referenced 5 times by &f739, &f884, &f89d, &fada, &fbef
 .sub_cf995
@@ -10189,7 +10197,7 @@ lf1a4 = lf1a3+1
 
 ; &f9c4 referenced 1 time by &f9b5
 .cf9c4
-    sta l00ba                                                         ; f9c4: 85 ba       ..
+    sta l00ba                                                         ; f9c4: 85 ba       ..  ; A=0
     ldx #&ff                                                          ; f9c6: a2 ff       ..
     lda l00c1                                                         ; f9c8: a5 c1       ..
     bne cf9d9                                                         ; f9ca: d0 0d       ..
@@ -10206,7 +10214,7 @@ lf1a4 = lf1a3+1
     lda l00c1                                                         ; f9db: a5 c1       ..
     beq cf9e3                                                         ; f9dd: f0 04       ..
     lda #&fa                                                          ; f9df: a9 fa       ..
-    bne cf9f5                                                         ; f9e1: d0 12       .. ; ALWAYS branch
+    bne cf9f5                                                         ; f9e1: d0 12       ..  ; ALWAYS branch
 
 ; &f9e3 referenced 1 time by &f9dd
 .cf9e3
@@ -10397,7 +10405,7 @@ lf1a4 = lf1a3+1
     sta serial_ula_set_baud_cassette_and_motor                        ; fb01: 8d 10 fe    ...
     lda #0                                                            ; fb04: a9 00       ..
     sta l00ea                                                         ; fb06: 85 ea       ..
-    beq cfb0b                                                         ; fb08: f0 01       .. ; ALWAYS branch
+    beq cfb0b                                                         ; fb08: f0 01       ..  ; ALWAYS branch
 
 ; &fb0a referenced 1 time by &da68
 .sub_cfb0a
@@ -10452,13 +10460,13 @@ lf1a4 = lf1a3+1
 ; &fb46 referenced 5 times by &f616, &f85b, &fb0b, &fb41, &fbe7
 .sub_cfb46
     lda #3                                                            ; fb46: a9 03       ..
-    bne cfb65                                                         ; fb48: d0 1b       .. ; ALWAYS branch
+    bne cfb65                                                         ; fb48: d0 1b       ..  ; ALWAYS branch
 
 ; &fb4a referenced 1 time by &f80e
 .sub_cfb4a
     lda #&30 ; '0'                                                    ; fb4a: a9 30       .0
     sta l00ca                                                         ; fb4c: 85 ca       ..
-    bne cfb63                                                         ; fb4e: d0 13       .. ; ALWAYS branch
+    bne cfb63                                                         ; fb4e: d0 13       ..  ; ALWAYS branch
 
 ; &fb50 referenced 2 times by &f5cc, &f736
 .sub_cfb50
@@ -10469,7 +10477,7 @@ lf1a4 = lf1a3+1
 .loop_cfb57
     dex                                                               ; fb57: ca          .
     bne loop_cfb57                                                    ; fb58: d0 fd       ..
-    stx l00ca                                                         ; fb5a: 86 ca       ..
+    stx l00ca                                                         ; fb5a: 86 ca       ..  ; X=0
     lda #&85                                                          ; fb5c: a9 85       ..
     sta serial_ula_set_baud_cassette_and_motor                        ; fb5e: 8d 10 fe    ...
     lda #&d0                                                          ; fb61: a9 d0       ..
@@ -10724,7 +10732,7 @@ lf1a4 = lf1a3+1
 
 .osbyte157EntryPoint
     txa                                                               ; ffa7: 8a          .
-    bcs OSBPUT                                                        ; ffa8: b0 2a       .* ; Write a single byte A to an open file Y
+    bcs OSBPUT                                                        ; ffa8: b0 2a       .*  ; Write a single byte A to an open file Y
 .osbyte146EntryPoint
     ldy fred,x                                                        ; ffaa: bc 00 fc    ...
     rts                                                               ; ffad: 60          `
@@ -10801,17 +10809,17 @@ lffb3 = osbyte150EntryPoint+1
 ; ***************************************************************************************
 ; &ffe3 referenced 2 times by &deb4, &fa62
 .OSASCI
-    cmp #&0d                                                          ; ffe3: c9 0d       .. ; Write character
-    bne OSWRCH                                                        ; ffe5: d0 07       .. ; Write character
+    cmp #&0d                                                          ; ffe3: c9 0d       ..  ; Write character
+    bne OSWRCH                                                        ; ffe5: d0 07       ..  ; Write character
 ; ***************************************************************************************
 ; &ffe7 referenced 5 times by &dbf7, &dbfa, &dc5f, &dc62, &e96c
 .OSNEWL
     ; Move the cursor down one line
-    lda #&0a                                                          ; ffe7: a9 0a       .. ; Write newline (characters 10 and 13)
+    lda #&0a                                                          ; ffe7: a9 0a       ..  ; Write newline (characters 10 and 13)
     jsr OSWRCH                                                        ; ffe9: 20 ee ff     .. ; Write character 10
 ; ***************************************************************************************
 .OSWRCR
-    lda #&0d                                                          ; ffec: a9 0d       .. ; Write carriage return (character 13)
+    lda #&0d                                                          ; ffec: a9 0d       ..  ; Write carriage return (character 13)
 ; ***************************************************************************************
 ; &ffee referenced 8 times by &e921, &e94b, &f8ca, &f8dc, &f98e, &faef, &ffe5, &ffe9
 .OSWRCH
@@ -10847,6 +10855,10 @@ lffb3 = osbyte150EntryPoint+1
     assert (ce310 - 1) = &e30f
     assert (filev - 1) = &0211
     assert (l02b3 - 2) = &02b1
+    assert (l0300 - 1) = &02ff
+    assert (l038c - 1) = &038b
+    assert (l0394 - 20) = &0380
+    assert (l082c - 1) = &082b
     assert (ld940 - 1) = &d93f
     assert (ld952 - 1) = &d951
     assert (osbyte0EntryPoint) = &e821
@@ -12114,7 +12126,6 @@ endsection
 ;     l02b3:                                    1
 ;     l02b4:                                    1
 ;     l02cb:                                    1
-;     l02ff:                                    1
 ;     l030d:                                    1
 ;     l032f:                                    1
 ;     l0331:                                    1
@@ -12124,7 +12135,6 @@ endsection
 ;     l033a:                                    1
 ;     l033d:                                    1
 ;     l035c:                                    1
-;     l038b:                                    1
 ;     l038c:                                    1
 ;     l0394:                                    1
 ;     l0395:                                    1
@@ -12137,7 +12147,6 @@ endsection
 ;     l03cc:                                    1
 ;     l0400:                                    1
 ;     l0403:                                    1
-;     l082b:                                    1
 ;     l08c1:                                    1
 ;     l08c4:                                    1
 ;     l08c7:                                    1
@@ -13417,7 +13426,6 @@ endsection
 ;     l02eb
 ;     l02ec
 ;     l02ed
-;     l02ff
 ;     l0300
 ;     l0301
 ;     l0302
@@ -13501,7 +13509,6 @@ endsection
 ;     l0368
 ;     l036f
 ;     l0380
-;     l038b
 ;     l038c
 ;     l0394
 ;     l0395
@@ -13543,7 +13550,6 @@ endsection
 ;     l0820
 ;     l0824
 ;     l0828
-;     l082b
 ;     l082c
 ;     l0830
 ;     l0838

@@ -87,53 +87,53 @@ COUT = &fded
     rts                                                               ; 2053: 60          .
 
 .get_prefix_params
-    equb 1                                                            ; 2054: 01          .  ; Parameter count
-    equw data_buffer                                                  ; 2055: 8b 20       .. ; Data buffer
+    equb 1                                                            ; 2054: 01          .   ; Parameter count
+    equw data_buffer                                                  ; 2055: 8b 20       ..  ; Data buffer
 .create_params
-    equb 7                                                            ; 2057: 07          .  ; Parameter count
-    equw pathname                                                     ; 2058: 83 20       .. ; Pathname
-    equb &c3                                                          ; 205a: c3          C  ; Access
-    equb 6                                                            ; 205b: 06          .  ; File type
-    equw &2000                                                        ; 205c: 00 20       .. ; Aux type
-    equb 1                                                            ; 205e: 01          .  ; Storage type
-    equw 0                                                            ; 205f: 00 00       .. ; Creation date
-    equw 0                                                            ; 2061: 00 00       .. ; Creation time
+    equb 7                                                            ; 2057: 07          .   ; Parameter count
+    equw pathname                                                     ; 2058: 83 20       ..  ; Pathname
+    equb &c3                                                          ; 205a: c3          C   ; Access
+    equb 6                                                            ; 205b: 06          .   ; File type
+    equw &2000                                                        ; 205c: 00 20       ..  ; Aux type
+    equb 1                                                            ; 205e: 01          .   ; Storage type
+    equw 0                                                            ; 205f: 00 00       ..  ; Creation date
+    equw 0                                                            ; 2061: 00 00       ..  ; Creation time
 .open_params
-    equb 3                                                            ; 2063: 03          .  ; Parameter count
-    equw pathname                                                     ; 2064: 83 20       .. ; Pathname
-    equw io_buffer                                                    ; 2066: 00 96       .. ; I/O buffer (1024 bytes)
+    equb 3                                                            ; 2063: 03          .   ; Parameter count
+    equw pathname                                                     ; 2064: 83 20       ..  ; Pathname
+    equw io_buffer                                                    ; 2066: 00 96       ..  ; I/O buffer (1024 bytes)
 ; &2068 referenced 1 time by &2024
 .open_ref
-    equb 0                                                            ; 2068: 00          .  ; Reference number (returned)
+    equb 0                                                            ; 2068: 00          .   ; Reference number (returned)
 .set_mark_params
-    equb 2                                                            ; 2069: 02          .  ; Parameter count
+    equb 2                                                            ; 2069: 02          .   ; Parameter count
 ; &206a referenced 1 time by &202a
 .set_mark_ref
-    equb 0                                                            ; 206a: 00          .  ; Reference number
+    equb 0                                                            ; 206a: 00          .   ; Reference number
     equb 0, 2, 0                                                      ; 206b: 00 02 00    ... ; Position
 .write_params
-    equb 4                                                            ; 206e: 04          .  ; Parameter count
+    equb 4                                                            ; 206e: 04          .   ; Parameter count
 ; &206f referenced 1 time by &2027
 .write_ref
-    equb 0                                                            ; 206f: 00          .  ; Reference number
-    equw data_buffer_2                                                ; 2070: 00 40       .. ; Data buffer
-    equw &2000                                                        ; 2072: 00 20       .. ; Request count
-    equw 0                                                            ; 2074: 00 00       .. ; Transfer count (returned)
+    equb 0                                                            ; 206f: 00          .   ; Reference number
+    equw data_buffer_2                                                ; 2070: 00 40       ..  ; Data buffer
+    equw &2000                                                        ; 2072: 00 20       ..  ; Request count
+    equw 0                                                            ; 2074: 00 00       ..  ; Transfer count (returned)
 .close_params
-    equb 1                                                            ; 2076: 01          .  ; Parameter count
+    equb 1                                                            ; 2076: 01          .   ; Parameter count
 ; &2077 referenced 1 time by &202d
 .close_ref
-    equb 0                                                            ; 2077: 00          .  ; Reference number
+    equb 0                                                            ; 2077: 00          .   ; Reference number
 .alloc_interrupt_params
-    equb 2                                                            ; 2078: 02          .  ; Parameter count
-    equb 0                                                            ; 2079: 00          .  ; Interrupt number (returned)
-    equw interrupt_handler                                            ; 207a: 52 20       .. ; Handler's address
+    equb 2                                                            ; 2078: 02          .   ; Parameter count
+    equb 0                                                            ; 2079: 00          .   ; Interrupt number (returned)
+    equw interrupt_handler                                            ; 207a: 52 20       ..  ; Handler's address
 .quit_params
-    equb 4                                                            ; 207c: 04          .  ; Parameter count
-    equb 0                                                            ; 207d: 00          .  ; Quit type
-    equw 0                                                            ; 207e: 00 00       .. ; Reserved
-    equb 0                                                            ; 2080: 00          .  ; Reserved
-    equw 0                                                            ; 2081: 00 00       .. ; Reserved
+    equb 4                                                            ; 207c: 04          .   ; Parameter count
+    equb 0                                                            ; 207d: 00          .   ; Quit type
+    equw 0                                                            ; 207e: 00 00       ..  ; Reserved
+    equb 0                                                            ; 2080: 00          .   ; Reserved
+    equw 0                                                            ; 2081: 00 00       ..  ; Reserved
 .pathname
     equb data_buffer - l2084                                          ; 2083: 07          .
 .l2084

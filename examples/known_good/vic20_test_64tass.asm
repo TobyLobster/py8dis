@@ -83,7 +83,7 @@ sys_entry
     sta vic_voice3_frequency                                          ; 1025: 8d 0c 90    ...
     lda #colour_red                                                   ; 1028: a9 02       ..
     sta text_colour                                                   ; 102a: 8d 86 02    ...
-    lda #$93                                                          ; 102d: a9 93       .. ; A=character to output
+    lda #$93                                                          ; 102d: a9 93       ..  ; A=character to output
     jsr CHROUT                                                        ; 102f: 20 d2 ff     R. ; Output $93 (clear screen)
     ldx #0                                                            ; 1032: a2 00       ..
 ; $1034 referenced 1 time by $103d
@@ -96,8 +96,8 @@ loop_c1034
 ; $103f referenced 1 time by $1037
 c103f
     clc                                                               ; 103f: 18          .
-    ldx #$0a                                                          ; 1040: a2 0a       .. ; X=cursor row
-    ldy #5                                                            ; 1042: a0 05       .. ; Y=cursor column
+    ldx #$0a                                                          ; 1040: a2 0a       ..  ; X=cursor row
+    ldy #5                                                            ; 1042: a0 05       ..  ; Y=cursor column
     jsr PLOT                                                          ; 1044: 20 f0 ff     .. ; Move the cursor to row 10, column 5
     ldx #$15                                                          ; 1047: a2 15       ..
 ; $1049 referenced 1 time by $1054
@@ -118,11 +118,11 @@ loop_c1049
     sta l109f                                                         ; 1069: 8d 9f 10    ...
     jsr GETIN                                                         ; 106c: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     sta l10a0                                                         ; 106f: 8d a0 10    ... ; A=character read
-    lda #<l108f                                                       ; 1072: a9 8f       .. ; A=string address (low byte)
-    ldy #>l108f                                                       ; 1074: a0 10       .. ; Y=string address (high byte)
+    lda #<l108f                                                       ; 1072: a9 8f       ..  ; A=string address (low byte)
+    ldy #>l108f                                                       ; 1074: a0 10       ..  ; Y=string address (high byte)
     jsr basic_print_string                                            ; 1076: 20 1e cb     .K ; Print the zero-terminated string at A/Y
-    lda #0                                                            ; 1079: a9 00       .. ; A=number to print (high byte)
-    ldx #$14                                                          ; 107b: a2 14       .. ; X=number to print (low byte)
+    lda #0                                                            ; 1079: a9 00       ..  ; A=number to print (high byte)
+    ldx #$14                                                          ; 107b: a2 14       ..  ; X=number to print (low byte)
     jsr basic_print_number                                            ; 107d: 20 cd dd     M. ; Print the 16-bit number in A/X
     rts                                                               ; 1080: 60          .
 

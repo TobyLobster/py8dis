@@ -74,7 +74,7 @@ cartridge_cold_start
 c803f
     jsr GETIN                                                         ; 803f: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     beq c803f                                                         ; 8042: f0 fb       ..
-    cmp #$51 ; 'q'                                                    ; 8044: c9 51       Iq ; A=character read
+    cmp #$51 ; 'q'                                                    ; 8044: c9 51       Iq  ; A=character read
     bne c803f                                                         ; 8046: d0 f7       P.
 cartridge_warm_start
     jmp (basic_warm_start_vector)                                     ; 8048: 6c 02 a0    ...

@@ -313,7 +313,7 @@ command_dim
     sec                                                               // f0c2: 38          8
     lda int_workspace_stack_mid1-2                                    // f0c3: a5 23       .#
     sta l0321,y                                                       // f0c5: 99 21 03    .!.
-    adc int_workspace_stack_low+1,x                                   // f0c8: 75 17       u. // +1 because carry is set
+    adc int_workspace_stack_low+1,x                                   // f0c8: 75 17       u.  // +1 because carry is set
     sta int_workspace_stack_mid1-2                                    // f0ca: 85 23       .#
     lda int_workspace_stack_mid1-1                                    // f0cc: a5 24       .$
     sta l033c,y                                                       // f0ce: 99 3c 03    .<.
@@ -377,7 +377,7 @@ lf11c = cf11b+1
     sta (int_workspace_stack_mid1-2),y                                // f11f: 91 23       .#
     cmp (int_workspace_stack_mid1-2),y                                // f121: d1 23       .#
     bne lf11c                                                         // f123: d0 f7       ..
-    lsr                                                               // f125: 4a          J  // A=$55
+    lsr                                                               // f125: 4a          J   // A=$55
     sta (int_workspace_stack_mid1-2),y                                // f126: 91 23       .#
     cmp (int_workspace_stack_mid1-2),y                                // f128: d1 23       .#
     bne lf11c                                                         // f12a: d0 f0       ..
@@ -643,7 +643,7 @@ cf396
     beq cf360                                                         // f3a7: f0 b7       ..
     ldy #5                                                            // f3a9: a0 05       ..
     sec                                                               // f3ab: 38          8
-    adc #0                                                            // f3ac: 69 00       i. // Carry is set, so adding 1
+    adc #0                                                            // f3ac: 69 00       i.  // Carry is set, so adding 1
     asl                                                               // f3ae: 0a          .
     asl                                                               // f3af: 0a          .
     asl                                                               // f3b0: 0a          .
@@ -715,14 +715,14 @@ cf3f2
     ldx #9                                                            // f416: a2 09       ..
     cmp #$58 // 'X'                                                   // f418: c9 58       .X
     beq cf49b                                                         // f41a: f0 7f       ..
-    dex                                                               // f41c: ca          .  // X=8
+    dex                                                               // f41c: ca          .   // X=8
     cmp #$59 // 'Y'                                                   // f41d: c9 59       .Y
     bne cf49a                                                         // f41f: d0 79       .y
     lda l000f                                                         // f421: a5 0f       ..
     cmp #9                                                            // f423: c9 09       ..
     bne cf49b                                                         // f425: d0 74       .t
     ldx #$0e                                                          // f427: a2 0e       ..
-    bne cf49b                                                         // f429: d0 70       .p // ALWAYS branch
+    bne cf49b                                                         // f429: d0 70       .p  // ALWAYS branch
 
 // $f42b referenced 1 time by $f414
 cf42b
@@ -731,12 +731,12 @@ cf42b
     beq cf49b                                                         // f42f: f0 6a       .j
     cmp #$59 // 'Y'                                                   // f431: c9 59       .Y
     bne cf49a                                                         // f433: d0 65       .e
-    dex                                                               // f435: ca          .  // X=3
+    dex                                                               // f435: ca          .   // X=3
     ldy l000f                                                         // f436: a4 0f       ..
     cpy #3                                                            // f438: c0 03       ..
     bcs cf49b                                                         // f43a: b0 5f       ._
     ldx #8                                                            // f43c: a2 08       ..
-    bne cf49b                                                         // f43e: d0 5b       .[ // ALWAYS branch
+    bne cf49b                                                         // f43e: d0 5b       .[  // ALWAYS branch
 
 // $f440 referenced 1 time by $f40d
 cf440
@@ -749,7 +749,7 @@ cf440
     lda int_workspace_stack_mid1                                      // f44c: a5 25       .%
     beq cf49b                                                         // f44e: f0 4b       .K
     ldx #$0c                                                          // f450: a2 0c       ..
-    bne cf49b                                                         // f452: d0 47       .G // ALWAYS branch
+    bne cf49b                                                         // f452: d0 47       .G  // ALWAYS branch
 
 // $f454 referenced 1 time by $f3f7
 cf454
@@ -758,8 +758,8 @@ cf454
     ldx #6                                                            // f459: a2 06       ..
     cmp #1                                                            // f45b: c9 01       ..
     beq cf49b                                                         // f45d: f0 3c       .<
-    inx                                                               // f45f: e8          .  // X=7
-    bne cf49b                                                         // f460: d0 39       .9 // ALWAYS branch
+    inx                                                               // f45f: e8          .   // X=7
+    bne cf49b                                                         // f460: d0 39       .9  // ALWAYS branch
 
 // $f462 referenced 1 time by $f3fb
 cf462
@@ -776,7 +776,7 @@ cf462
     cmp #$29 // ')'                                                   // f47a: c9 29       .)
     bne cf49a                                                         // f47c: d0 1c       ..
     ldx #$0b                                                          // f47e: a2 0b       ..
-    bne cf49b                                                         // f480: d0 19       .. // ALWAYS branch
+    bne cf49b                                                         // f480: d0 19       ..  // ALWAYS branch
 
 // $f482 referenced 1 time by $f46a
 cf482
@@ -879,13 +879,13 @@ cf511
 cf527
     tya                                                               // f527: 98          .
     bmi cf4d7                                                         // f528: 30 ad       0.
-    bpl cf511                                                         // f52a: 10 e5       .. // ALWAYS branch
+    bpl cf511                                                         // f52a: 10 e5       ..  // ALWAYS branch
 
 // $f52c referenced 1 time by $f50b
 cf52c
     tya                                                               // f52c: 98          .
     bpl cf4d7                                                         // f52d: 10 a8       ..
-    bmi cf511                                                         // f52f: 30 e0       0. // ALWAYS branch
+    bmi cf511                                                         // f52f: 30 e0       0.  // ALWAYS branch
 
 command_old
     jsr lc4e4                                                         // f531: 20 e4 c4     ..
@@ -900,7 +900,7 @@ command_old
 
 command_draw
     ldx #5                                                            // f542: a2 05       ..
-    bne cf548                                                         // f544: d0 02       .. // ALWAYS branch
+    bne cf548                                                         // f544: d0 02       ..  // ALWAYS branch
 
 command_move
     ldx #$0c                                                          // f546: a2 0c       ..
@@ -1013,7 +1013,7 @@ cf5dd
     lda #0                                                            // f5f1: a9 00       ..
     sbc l0055                                                         // f5f3: e5 55       .U
     sec                                                               // f5f5: 38          8
-    ror                                                               // f5f6: 6a          j  // Rotate in a set bit
+    ror                                                               // f5f6: 6a          j   // Rotate in a set bit
     sta l0059                                                         // f5f7: 85 59       .Y
     ror l0057                                                         // f5f9: 66 57       fW
 // $f5fb referenced 2 times by $f614, $f619
@@ -1072,7 +1072,7 @@ sub_cf644
     sbc l0055                                                         // f64d: e5 55       .U
     sta l0059                                                         // f64f: 85 59       .Y
     ldx #0                                                            // f651: a2 00       ..
-    beq cf664                                                         // f653: f0 0f       .. // ALWAYS branch
+    beq cf664                                                         // f653: f0 0f       ..  // ALWAYS branch
 
 // $f655 referenced 2 times by $f60f, $f63e
 sub_cf655
@@ -1161,13 +1161,13 @@ cf6c2
     lda #$40 // '@'                                                   // f6c2: a9 40       .@
 // $f6c4 referenced 1 time by $f6cb
 loop_cf6c4
-    sta l8000,y                                                       // f6c4: 99 00 80    ...
-    sta l8100,y                                                       // f6c7: 99 00 81    ...
+    sta l8000,y                                                       // f6c4: 99 00 80    ... // A=$40
+    sta l8100,y                                                       // f6c7: 99 00 81    ... // A=$40
     dey                                                               // f6ca: 88          .
     bne loop_cf6c4                                                    // f6cb: d0 f7       ..
 cf6cd
 lf6ce = cf6cd+1
-    beq cf6ab                                                         // f6cd: f0 dc       .. // ALWAYS branch
+    beq cf6ab                                                         // f6cd: f0 dc       ..  // ALWAYS branch
 
 // $f6ce referenced 1 time by $f693
 // overlapping: sty l0086                                             // f6cf: 84 86       ..
@@ -1241,20 +1241,20 @@ cf720
     dex                                                               // f727: ca          .
     beq cf731                                                         // f728: f0 07       ..
     eor #$ff                                                          // f72a: 49 ff       I.
-    and (l005f),y                                                     // f72c: 31 5f       1_
-    sta (l005f),y                                                     // f72e: 91 5f       ._
+    and (l005f),y                                                     // f72c: 31 5f       1_  // Offset is Y=0
+    sta (l005f),y                                                     // f72e: 91 5f       ._  // Offset is Y=0
     rts                                                               // f730: 60          `
 
 // $f731 referenced 1 time by $f728
 cf731
-    eor (l005f),y                                                     // f731: 51 5f       Q_
-    sta (l005f),y                                                     // f733: 91 5f       ._
+    eor (l005f),y                                                     // f731: 51 5f       Q_  // Offset is Y=0
+    sta (l005f),y                                                     // f733: 91 5f       ._  // Offset is Y=0
     rts                                                               // f735: 60          `
 
 // $f736 referenced 1 time by $f725
 cf736
-    ora (l005f),y                                                     // f736: 11 5f       ._
-    sta (l005f),y                                                     // f738: 91 5f       ._
+    ora (l005f),y                                                     // f736: 11 5f       ._  // Offset is Y=0
+    sta (l005f),y                                                     // f738: 91 5f       ._  // Offset is Y=0
 // $f73a referenced 10 times by $f6e6, $f6ec, $f6f8, $f73f, $f743, $f758, $f75c, $f771, $f775, $f783
 return_2
     rts                                                               // f73a: 60          `
@@ -1357,7 +1357,7 @@ plot_mode_4
 // $f7c9 referenced 1 time by $f7a4
 bit_masks
 lf7cb = bit_masks+2
-    .byt $80, $40, $20, $10, 8, 4, 2, 1                               // f7c9: 80 40 20... .@ // bitmask
+    .byt $80, $40, $20, $10, 8, 4, 2, 1                               // f7c9: 80 40 20... .@  // bitmask
 // $f7cb referenced 1 time by $f71d
 
 // ***************************************************************************************
@@ -1377,7 +1377,7 @@ loop_cf7d7
     inc l00e9                                                         // f7dd: e6 e9       ..
 // $f7df referenced 1 time by $f7db
 cf7df
-    lda (l00e8),y                                                     // f7df: b1 e8       ..
+    lda (l00e8),y                                                     // f7df: b1 e8       ..  // Offset is Y=0
     bmi cf7e9                                                         // f7e1: 30 06       0.
     jsr OSWRCH                                                        // f7e3: 20 f4 ff     .. // Write character
     jmp loop_cf7d7                                                    // f7e6: 4c d7 f7    L..
@@ -1388,7 +1388,7 @@ cf7e9
 
 // $f7ec referenced 2 times by $fa3f, $fa4d
 sub_cf7ec
-    ldx #$d4                                                          // f7ec: a2 d4       .. // X=zero page address
+    ldx #$d4                                                          // f7ec: a2 d4       ..  // X=zero page address
 // ***************************************************************************************
 // Print the four bytes at X in hex: X+1, X, a space, X+3, X+2 and a space
 // 
@@ -1405,11 +1405,11 @@ print_hex_4_bytes
 // ***************************************************************************************
 // $f7f1 referenced 2 times by $f7ee, $fa55
 print_hex_2_bytes
-    lda basic_line_number,x                                           // f7f1: b5 01       .. // A=byte to print
+    lda basic_line_number,x                                           // f7f1: b5 01       ..  // A=byte to print
     jsr print_hex                                                     // f7f3: 20 02 f8     .. // Print A in hex
     inx                                                               // f7f6: e8          .
     inx                                                               // f7f7: e8          .
-    lda printer_ignore_char,x                                         // f7f8: b5 fe       .. // A=byte to print
+    lda printer_ignore_char,x                                         // f7f8: b5 fe       ..  // A=byte to print
 // ***************************************************************************************
 // Print A in hex, and a space
 // 
@@ -1438,9 +1438,9 @@ print_hex
     lsr                                                               // f803: 4a          J
     lsr                                                               // f804: 4a          J
     lsr                                                               // f805: 4a          J
-    lsr                                                               // f806: 4a          J  // A=value to print (bits 0-3)
+    lsr                                                               // f806: 4a          J   // A=value to print (bits 0-3)
     jsr print_hex_digit                                               // f807: 20 0b f8     .. // Print the low four bits of A as a hex digit
-    pla                                                               // f80a: 68          h  // A=value to print (bits 0-3)
+    pla                                                               // f80a: 68          h   // A=value to print (bits 0-3)
 // ***************************************************************************************
 // Print the low four bits of A as a hex digit
 // 
@@ -1452,7 +1452,7 @@ print_hex_digit
     and #$0f                                                          // f80b: 29 0f       ).
     cmp #$0a                                                          // f80d: c9 0a       ..
     bcc cf813                                                         // f80f: 90 02       ..
-    adc #6                                                            // f811: 69 06       i. // Carry is set, so adding 7
+    adc #6                                                            // f811: 69 06       i.  // Carry is set, so adding 7
 // $f813 referenced 1 time by $f80f
 cf813
     adc #$30 // '0'                                                   // f813: 69 30       i0
@@ -1464,8 +1464,8 @@ sub_cf818
     ldx #0                                                            // f81b: a2 00       ..
     cmp #$22 // '"'                                                   // f81d: c9 22       ."
     beq cf827                                                         // f81f: f0 06       ..
-    inx                                                               // f821: e8          .  // X=1
-    bne cf83f                                                         // f822: d0 1b       .. // ALWAYS branch
+    inx                                                               // f821: e8          .   // X=1
+    bne cf83f                                                         // f822: d0 1b       ..  // ALWAYS branch
 
 // $f824 referenced 1 time by $f82d
 loop_cf824
@@ -1529,7 +1529,7 @@ cf86c
 
 // $f875 referenced 1 time by $f87b
 loop_cf875
-    iny                                                               // f875: c8          .  // Y=offset in the input buffer
+    iny                                                               // f875: c8          .   // Y=offset in the input buffer
 // ***************************************************************************************
 // Skip spaces in the input buffer from #0100+Y (A is the next character)
 // 
@@ -1637,7 +1637,7 @@ kernel_cli
     cld                                                               // f8f1: d8          .
 // $f8f2 referenced 1 time by $f913
 cf8f2
-    ldy #0                                                            // f8f2: a0 00       .. // Y=offset in the input buffer
+    ldy #0                                                            // f8f2: a0 00       ..  // Y=offset in the input buffer
     sty l00dd                                                         // f8f4: 84 dd       ..
     jsr skip_input_buffer_spaces                                      // f8f6: 20 76 f8     v. // Skip spaces in the input buffer from #0100+Y (A is the next character)
     dey                                                               // f8f9: 88          .
@@ -1663,7 +1663,7 @@ loop_cf907
     bne cf8f2                                                         // f913: d0 dd       ..
     iny                                                               // f915: c8          .
     dex                                                               // f916: ca          .
-    bcs loop_cf8fc                                                    // f917: b0 e3       .. // ALWAYS branch
+    bcs loop_cf8fc                                                    // f917: b0 e3       ..  // ALWAYS branch
 
 // $f919 referenced 1 time by $f8ff
 cf919
@@ -1689,11 +1689,11 @@ cf92f
     bvc loop_cf92e                                                    // f932: 50 fa       P.
     beq cf92f                                                         // f934: f0 f9       ..
     jsr sub_cfc2b                                                     // f936: 20 2b fc     +.
-    ldy #0                                                            // f939: a0 00       .. // Y=file handle
+    ldy #0                                                            // f939: a0 00       ..  // Y=file handle
 // $f93b referenced 1 time by $f94b
 loop_cf93b
     jsr OSBGET                                                        // f93b: 20 d4 ff     .. // Read a byte from file Y
-    sta (l00cb),y                                                     // f93e: 91 cb       .. // A=byte read
+    sta (l00cb),y                                                     // f93e: 91 cb       ..  // A=byte read
     inc l00cb                                                         // f940: e6 cb       ..
     bne cf946                                                         // f942: d0 02       ..
     inc l00cc                                                         // f944: e6 cc       ..
@@ -1707,13 +1707,13 @@ cf946
 cf94e
     ror l00dd                                                         // f94e: 66 dd       f.
     clc                                                               // f950: 18          .
-    ror l00dd                                                         // f951: 66 dd       f. // Rotate in a clear bit
+    ror l00dd                                                         // f951: 66 dd       f.  // Rotate in a clear bit
     plp                                                               // f953: 28          (
     rts                                                               // f954: 60          `
 
 star_fload
     sec                                                               // f955: 38          8
-    ror l00dd                                                         // f956: 66 dd       f. // Rotate in a set bit
+    ror l00dd                                                         // f956: 66 dd       f.  // Rotate in a set bit
 // $f958 referenced 1 time by $fa20
 star_load
     jsr sub_cf818                                                     // f958: 20 18 f8     ..
@@ -1750,7 +1750,7 @@ loop_cf980
     inc l00cc                                                         // f987: e6 cc       ..
     bne loop_cf980                                                    // f989: d0 f5       ..
     clc                                                               // f98b: 18          .
-    bcc cf94e                                                         // f98c: 90 c0       .. // ALWAYS branch
+    bcc cf94e                                                         // f98c: 90 c0       ..  // ALWAYS branch
 
 // $f98e referenced 1 time by $f997
 loop_cf98e
@@ -1817,9 +1817,9 @@ cf9e0
     dey                                                               // f9e7: 88          .
 // $f9e8 referenced 1 time by $f9f0
 loop_cf9e8
-    iny                                                               // f9e8: c8          .  // Y=file handle
+    iny                                                               // f9e8: c8          .   // Y=file handle
     jsr OSBGET                                                        // f9e9: 20 d4 ff     .. // Read a byte from file Y
-    sta (l00cb),y                                                     // f9ec: 91 cb       .. // A=byte read
+    sta (l00cb),y                                                     // f9ec: 91 cb       ..  // A=byte read
     cpy l00d8                                                         // f9ee: c4 d8       ..
     bne loop_cf9e8                                                    // f9f0: d0 f6       ..
 // $f9f2 referenced 1 time by $f9e5
@@ -1827,7 +1827,7 @@ cf9f2
     lda l00dc                                                         // f9f2: a5 dc       ..
     sta l00ce                                                         // f9f4: 85 ce       ..
     jsr OSBGET                                                        // f9f6: 20 d4 ff     .. // Read a byte from file Y
-    cmp l00ce                                                         // f9f9: c5 ce       .. // A=byte read
+    cmp l00ce                                                         // f9f9: c5 ce       ..  // A=byte read
     beq cfa05                                                         // f9fb: f0 08       ..
     jsr print_inline_string                                           // f9fd: 20 d1 f7     .. // Print the string after the JSR, up to a byte with bit 7 set, and carry on there
     .asc "SUM"                                                        // fa00: 53 55 4d    SUM
@@ -1837,7 +1837,7 @@ cf9f2
 
 // $fa05 referenced 1 time by $f9fb
 cfa05
-    rol l00db                                                         // fa05: 26 db       &.
+    rol l00db                                                         // fa05: 26 db       &.  // Rotate in a set bit
     rts                                                               // fa07: 60          `
 
 // $fa08 referenced 2 times by $f948, $fab4
@@ -1897,9 +1897,9 @@ cfa44
     jsr sub_cf7ec                                                     // fa4d: 20 ec f7     ..
     rol l00db                                                         // fa50: 26 db       &.
     bpl cfa5d                                                         // fa52: 10 09       ..
-    inx                                                               // fa54: e8          .  // X=zero page address
+    inx                                                               // fa54: e8          .   // X=zero page address
     jsr print_hex_2_bytes                                             // fa55: 20 f1 f7     .. // Print the two bytes at X in hex, high byte first, and a space
-    lda l00fd,x                                                       // fa58: b5 fd       .. // A=byte to print
+    lda l00fd,x                                                       // fa58: b5 fd       ..  // A=byte to print
     jsr print_hex                                                     // fa5a: 20 02 f8     .. // Print A in hex
 // $fa5d referenced 2 times by $fa42, $fa52
 cfa5d
@@ -1950,7 +1950,7 @@ cfa86
     tya                                                               // fa97: 98          .
     adc l00cc                                                         // fa98: 65 cc       e.
     sta l00ce                                                         // fa9a: 85 ce       ..
-    ldy #4                                                            // fa9c: a0 04       .. // Y=file handle
+    ldy #4                                                            // fa9c: a0 04       ..  // Y=file handle
 // $fa9e referenced 1 time by $faa5
 loop_cfa9e
     lda l00ca,y                                                       // fa9e: b9 ca 00    ...
@@ -2016,8 +2016,8 @@ loop_cfafa
     sta l00d2,x                                                       // fafc: 95 d2       ..
     dex                                                               // fafe: ca          .
     bne loop_cfafa                                                    // faff: d0 f9       ..
-    stx l00d0                                                         // fb01: 86 d0       ..
-    stx l00d1                                                         // fb03: 86 d1       ..
+    stx l00d0                                                         // fb01: 86 d0       ..  // X=0
+    stx l00d1                                                         // fb03: 86 d1       ..  // X=0
     lda l00d5                                                         // fb05: a5 d5       ..
     bne cfb0b                                                         // fb07: d0 02       ..
     dec l00d6                                                         // fb09: c6 d6       ..
@@ -2041,12 +2041,12 @@ cfb0e
     bcc cfb29                                                         // fb21: 90 06       ..
     clc                                                               // fb23: 18          .
     beq cfb29                                                         // fb24: f0 03       ..
-    stx l00cf                                                         // fb26: 86 cf       ..
+    stx l00cf                                                         // fb26: 86 cf       ..  // X=$ff
     sec                                                               // fb28: 38          8
 // $fb29 referenced 2 times by $fb21, $fb24
 cfb29
     ror l00d2                                                         // fb29: 66 d2       f.
-    inx                                                               // fb2b: e8          .  // X=0
+    inx                                                               // fb2b: e8          .   // X=0
     jsr sub_cfb3b                                                     // fb2c: 20 3b fb     ;.
     inc l00d0                                                         // fb2f: e6 d0       ..
     inc l00d4                                                         // fb31: e6 d4       ..
@@ -2061,7 +2061,7 @@ sub_cfb3b
     ldx #7                                                            // fb3b: a2 07       ..
     jsr sub_cfb7a                                                     // fb3d: 20 7a fb     z.
     stx l00dc                                                         // fb40: 86 dc       ..
-    ldy #4                                                            // fb42: a0 04       .. // Y=file handle
+    ldy #4                                                            // fb42: a0 04       ..  // Y=file handle
 // $fb44 referenced 1 time by $fb4a
 loop_cfb44
     lda #$2a // '*'                                                   // fb44: a9 2a       .*
@@ -2075,7 +2075,7 @@ loop_cfb4c
     iny                                                               // fb51: c8          .
     cmp #$0d                                                          // fb52: c9 0d       ..
     bne loop_cfb4c                                                    // fb54: d0 f6       ..
-    ldy #8                                                            // fb56: a0 08       .. // Y=file handle
+    ldy #8                                                            // fb56: a0 08       ..  // Y=file handle
 // $fb58 referenced 1 time by $fb5f
 loop_cfb58
     lda l00ca,y                                                       // fb58: b9 ca 00    ...
@@ -2088,7 +2088,7 @@ loop_cfb58
     dey                                                               // fb68: 88          .
 // $fb69 referenced 1 time by $fb71
 loop_cfb69
-    iny                                                               // fb69: c8          .  // Y=file handle
+    iny                                                               // fb69: c8          .   // Y=file handle
     lda (l00d3),y                                                     // fb6a: b1 d3       ..
     jsr OSBPUT                                                        // fb6c: 20 d1 ff     .. // Write byte A to file Y
     cpy l00cf                                                         // fb6f: c4 cf       ..
@@ -2102,7 +2102,7 @@ cfb73
 sub_cfb7a
     stx ppi_port_c                                                    // fb7a: 8e 02 b0    ...
     ldx #$78 // 'x'                                                   // fb7d: a2 78       .x
-    bne cfb83                                                         // fb7f: d0 02       .. // ALWAYS branch
+    bne cfb83                                                         // fb7f: d0 02       ..  // ALWAYS branch
 
 // $fb81 referenced 1 time by $fb61
 sub_cfb81
@@ -2120,7 +2120,7 @@ cfb83
 // $fb8a referenced 1 time by $fea4
 wait_tenth_second
     ldx #6                                                            // fb8a: a2 06       ..
-    bne cfb83                                                         // fb8c: d0 f5       .. // ALWAYS branch
+    bne cfb83                                                         // fb8c: d0 f5       ..  // ALWAYS branch
 
 // $fb8e referenced 5 times by $f92f, $f9a6, $fa31, $fb91, $fb93
 cfb8e
@@ -2169,7 +2169,7 @@ return_7
 
 // $fbc8 referenced 1 time by $fbd1
 loop_cfbc8
-    iny                                                               // fbc8: c8          .  // Y=file handle
+    iny                                                               // fbc8: c8          .   // Y=file handle
 // $fbc9 referenced 2 times by $f9ad, $fa44
 sub_cfbc9
     jsr OSBGET                                                        // fbc9: 20 d4 ff     .. // Read a byte from file Y
@@ -2189,7 +2189,7 @@ loop_cfbd5
 
 // $fbe2 referenced 2 times by $f9b1, $fa47
 sub_cfbe2
-    ldy #8                                                            // fbe2: a0 08       .. // Y=file handle
+    ldy #8                                                            // fbe2: a0 08       ..  // Y=file handle
 // $fbe4 referenced 2 times by $fbb7, $fbeb
 cfbe4
     jsr OSBGET                                                        // fbe4: 20 d4 ff     .. // Read a byte from file Y
@@ -2268,7 +2268,7 @@ return_8
 kernel_find
     bcs cfc3e                                                         // fc38: b0 04       ..
     lda #6                                                            // fc3a: a9 06       ..
-    bne cfc40                                                         // fc3c: d0 02       .. // ALWAYS branch
+    bne cfc40                                                         // fc3c: d0 02       ..  // ALWAYS branch
 
 // $fc3e referenced 4 times by $f974, $f9d8, $fa2e, $fc38
 cfc3e
@@ -2346,7 +2346,7 @@ loop_cfc9e
 // $fcaf referenced 1 time by $fc9a
 cfcaf
     sec                                                               // fcaf: 38          8
-    ror l00c0                                                         // fcb0: 66 c0       f. // Rotate in a set bit
+    ror l00c0                                                         // fcb0: 66 c0       f.  // Rotate in a set bit
     dec l00c1                                                         // fcb2: c6 c1       ..
     bne cfc90                                                         // fcb4: d0 da       ..
     ldy l00c3                                                         // fcb6: a4 c3       ..
@@ -2408,9 +2408,9 @@ sub_cfcea
     cmp #$1b                                                          // fcf6: c9 1b       ..
     beq cfd0b                                                         // fcf8: f0 11       ..
     cmp #7                                                            // fcfa: c9 07       ..
-    beq wrch_bell                                                     // fcfc: f0 1c       .. // Sound the bell (as OSWRCH does for character 7)
+    beq wrch_bell                                                     // fcfc: f0 1c       ..  // Sound the bell (as OSWRCH does for character 7)
     jsr wrch_invert_cursor                                            // fcfe: 20 44 fd     D.
-    ldx #$0a                                                          // fd01: a2 0a       .. // X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
+    ldx #$0a                                                          // fd01: a2 0a       ..  // X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
     jsr find_control_code                                             // fd03: 20 c5 fe     .. // Find A in the table of control codes and keys at #FECB, from X down (X is its index)
     bne cfd29                                                         // fd06: d0 21       .!
     jmp cfeb7                                                         // fd08: 4c b7 fe    L..
@@ -2439,7 +2439,7 @@ return_10
 // $fd1a referenced 1 time by $fcfc
 wrch_bell
     lda #5                                                            // fd1a: a9 05       ..
-    tay                                                               // fd1c: a8          .  // Y=5
+    tay                                                               // fd1c: a8          .   // Y=5
 // $fd1d referenced 1 time by $fd26
 loop_cfd1d
     sta ppi_control                                                   // fd1d: 8d 03 b0    ...
@@ -2456,7 +2456,7 @@ loop_cfd20
 cfd29
     cmp #$20 // ' '                                                   // fd29: c9 20       .
     bcc wrch_invert_cursor                                            // fd2b: 90 17       ..
-    adc #$1f                                                          // fd2d: 69 1f       i. // Carry is set, so adding 32
+    adc #$1f                                                          // fd2d: 69 1f       i.  // Carry is set, so adding 32
     bmi cfd33                                                         // fd2f: 30 02       0.
     eor #$60 // '`'                                                   // fd31: 49 60       I`
 // $fd33 referenced 1 time by $fd2f
@@ -2507,8 +2507,8 @@ wrch_clear_screen
     lda #$20 // ' '                                                   // fd72: a9 20       .
 // $fd74 referenced 1 time by $fd7b
 loop_cfd74
-    sta l8000,y                                                       // fd74: 99 00 80    ...
-    sta l8100,y                                                       // fd77: 99 00 81    ...
+    sta l8000,y                                                       // fd74: 99 00 80    ... // A=$20
+    sta l8100,y                                                       // fd77: 99 00 81    ... // A=$20
     iny                                                               // fd7a: c8          .
     bne loop_cfd74                                                    // fd7b: d0 f7       ..
 wrch_home
@@ -2516,7 +2516,7 @@ wrch_home
     ldy #0                                                            // fd7f: a0 00       ..
     sta screen_line_address+1                                         // fd81: 85 df       ..
     sty screen_line_address                                           // fd83: 84 de       ..
-    beq cfd42                                                         // fd85: f0 bb       .. // ALWAYS branch
+    beq cfd42                                                         // fd85: f0 bb       ..  // ALWAYS branch
 
 wrch_up
     jsr sub_cfe3a                                                     // fd87: 20 3a fe     :.
@@ -2635,7 +2635,8 @@ loop_cfe19
     lda #$20 // ' '                                                   // fe24: a9 20       .
 // $fe26 referenced 1 time by $fe29
 loop_cfe26
-    sta (screen_line_address),y                                       // fe26: 91 de       ..
+    // Set 32 bytes of memory from (screen_line_address) onwards to 32
+    sta (screen_line_address),y                                       // fe26: 91 de       ..  // A=$20
     dey                                                               // fe28: 88          .
     bpl loop_cfe26                                                    // fe29: 10 fb       ..
     rts                                                               // fe2b: 60          `
@@ -2705,14 +2706,14 @@ restore_xy_and_return
 // $fe66 referenced 4 times by $f14f, $fb83, $fe0a, $fe69
 wait_for_flyback
     bit ppi_port_c                                                    // fe66: 2c 02 b0    ,.. // Test the field sync
-    bpl wait_for_flyback                                              // fe69: 10 fb       .. // Wait for the start of the next field flyback
+    bpl wait_for_flyback                                              // fe69: 10 fb       ..  // Wait for the start of the next field flyback
 // ***************************************************************************************
 // Wait for the field flyback, unless it's under way
 // ***************************************************************************************
 // $fe6b referenced 6 times by $fd33, $fd45, $fd55, $fdb0, $fe16, $fe6e
 wait_for_flyback_or_now
     bit ppi_port_c                                                    // fe6b: 2c 02 b0    ,.. // Test the field sync
-    bmi wait_for_flyback_or_now                                       // fe6e: 30 fb       0. // Wait for the field flyback, unless it's under way
+    bmi wait_for_flyback_or_now                                       // fe6e: 30 fb       0.  // Wait for the field flyback, unless it's under way
     rts                                                               // fe70: 60          `
 
 // ***************************************************************************************
@@ -2771,8 +2772,8 @@ cfea7
     bcs cfea7                                                         // feaa: b0 fb       ..
     jsr scan_keyboard                                                 // feac: 20 71 fe     q. // Scan the keyboard: if a key is pressed, carry is clear and Y is its ASCII code minus 32
     bcs cfea7                                                         // feaf: b0 f6       ..
-    tya                                                               // feb1: 98          .  // A=character
-    ldx #$17                                                          // feb2: a2 17       .. // X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
+    tya                                                               // feb1: 98          .   // A=character
+    ldx #$17                                                          // feb2: a2 17       ..  // X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
     jsr find_control_code                                             // feb4: 20 c5 fe     .. // Find A in the table of control codes and keys at #FECB, from X down (X is its index)
 // $feb7 referenced 1 time by $fd08
 cfeb7
@@ -2785,7 +2786,7 @@ cfeb7
 
 // $fec4 referenced 1 time by $fec8
 loop_cfec4
-    dex                                                               // fec4: ca          .  // X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
+    dex                                                               // fec4: ca          .   // X=index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's keys)
 // ***************************************************************************************
 // Find A in the table of control codes and keys at #FECB, from X down (X is its index)
 // 
@@ -2864,7 +2865,7 @@ loop_cff10
     ora #$0c                                                          // ff1e: 09 0c       ..
     sta via_pcr                                                       // ff20: 8d 0c b8    ...
     ora #2                                                            // ff23: 09 02       ..
-    bne cff33                                                         // ff25: d0 0c       .. // ALWAYS branch
+    bne cff33                                                         // ff25: d0 0c       ..  // ALWAYS branch
 
 // $ff27 referenced 1 time by $fefe
 cff27
@@ -2885,7 +2886,7 @@ cff36
 cff38
     lda via_pcr                                                       // ff38: ad 0c b8    ...
     and #$f0                                                          // ff3b: 29 f0       ).
-    bcs cff33                                                         // ff3d: b0 f4       .. // ALWAYS branch
+    bcs cff33                                                         // ff3d: b0 f4       ..  // ALWAYS branch
 
 reset
     // Copy 24 bytes of memory from default_vectors to irqvec
@@ -2905,6 +2906,7 @@ loop_cff41
     ldx #$33 // '3'                                                   // ff53: a2 33       .3
 // $ff55 referenced 1 time by $ff59
 loop_cff55
+    // Set 52 bytes of memory from l02eb onwards
     sta l02eb,x                                                       // ff55: 9d eb 02    ...
     dex                                                               // ff58: ca          .
     bpl loop_cff55                                                    // ff59: 10 fa       ..
@@ -2924,7 +2926,7 @@ loop_cff55
     sta l2901                                                         // ff83: 8d 01 29    ..)
     cmp l2901                                                         // ff86: cd 01 29    ..)
     bne cff97                                                         // ff89: d0 0c       ..
-    asl                                                               // ff8b: 0a          .  // A=$aa
+    asl                                                               // ff8b: 0a          .   // A=$aa
     sta l2901                                                         // ff8c: 8d 01 29    ..)
     cmp l2901                                                         // ff8f: cd 01 29    ..)
     bne cff97                                                         // ff92: d0 03       ..
@@ -3014,13 +3016,13 @@ OSECHO
     jsr OSRDCH                                                        // ffe6: 20 e3 ff     .. // Read a character // Read a character and write it
 // ***************************************************************************************
 OSASCI
-    cmp #$0d                                                          // ffe9: c9 0d       .. // A=character read // Write character
-    bne OSWRCH                                                        // ffeb: d0 07       .. // Write character
+    cmp #$0d                                                          // ffe9: c9 0d       ..  // A=character read // Write character
+    bne OSWRCH                                                        // ffeb: d0 07       ..  // Write character
 // ***************************************************************************************
 // $ffed referenced 4 times by $f9c2, $fa5d, $fa62, $fc79
 OSCRLF
     // Move the cursor down one line
-    lda #$0a                                                          // ffed: a9 0a       .. // Write newline (characters 10 and 13)
+    lda #$0a                                                          // ffed: a9 0a       ..  // Write newline (characters 10 and 13)
     jsr OSWRCH                                                        // ffef: 20 f4 ff     .. // Write character 10
     lda #$0d                                                          // fff2: a9 0d       ..
 // ***************************************************************************************

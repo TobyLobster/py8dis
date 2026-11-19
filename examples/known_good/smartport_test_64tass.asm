@@ -92,33 +92,33 @@ l085d = smartport+2
 ; $085c referenced 1 time by $0818
 ; $085d referenced 1 time by $081d
 sp_status_params
-    .byte 3                                                           ; 085e: 03          .  ; Parameter count
-    .byte 0                                                           ; 085f: 00          .  ; Unit number
-    .word status_list                                                 ; 0860: 81 08       .. ; Status list
-    .byte 0                                                           ; 0862: 00          .  ; Status code
+    .byte 3                                                           ; 085e: 03          .   ; Parameter count
+    .byte 0                                                           ; 085f: 00          .   ; Unit number
+    .word status_list                                                 ; 0860: 81 08       ..  ; Status list
+    .byte 0                                                           ; 0862: 00          .   ; Status code
 sp_readblock_params
-    .byte 3                                                           ; 0863: 03          .  ; Parameter count
-    .byte 1                                                           ; 0864: 01          .  ; Unit number
-    .word data_buffer                                                 ; 0865: 00 20       .. ; Data buffer (512 bytes)
+    .byte 3                                                           ; 0863: 03          .   ; Parameter count
+    .byte 1                                                           ; 0864: 01          .   ; Unit number
+    .word data_buffer                                                 ; 0865: 00 20       ..  ; Data buffer (512 bytes)
     .byte 0, 0, 0                                                     ; 0867: 00 00 00    ... ; Block number
 sp_writeblock_params
-    .byte 3                                                           ; 086a: 03          .  ; Parameter count
-    .byte 1                                                           ; 086b: 01          .  ; Unit number
-    .word data_buffer                                                 ; 086c: 00 20       .. ; Data buffer (512 bytes)
+    .byte 3                                                           ; 086a: 03          .   ; Parameter count
+    .byte 1                                                           ; 086b: 01          .   ; Unit number
+    .word data_buffer                                                 ; 086c: 00 20       ..  ; Data buffer (512 bytes)
     .byte 1, 0, 0                                                     ; 086e: 01 00 00    ... ; Block number
 sp_control_params
-    .byte 3                                                           ; 0871: 03          .  ; Parameter count
-    .byte 1                                                           ; 0872: 01          .  ; Unit number
-    .word control_list                                                ; 0873: 89 08       .. ; Control list
-    .byte 4                                                           ; 0875: 04          .  ; Control code
+    .byte 3                                                           ; 0871: 03          .   ; Parameter count
+    .byte 1                                                           ; 0872: 01          .   ; Unit number
+    .word control_list                                                ; 0873: 89 08       ..  ; Control list
+    .byte 4                                                           ; 0875: 04          .   ; Control code
 sp_init_params
-    .byte 1                                                           ; 0876: 01          .  ; Parameter count
-    .byte 0                                                           ; 0877: 00          .  ; Unit number (0)
+    .byte 1                                                           ; 0876: 01          .   ; Parameter count
+    .byte 0                                                           ; 0877: 00          .   ; Unit number (0)
 sp_read_params
-    .byte 4                                                           ; 0878: 04          .  ; Parameter count
-    .byte 2                                                           ; 0879: 02          .  ; Unit number
-    .word data_buffer_2                                               ; 087a: 00 22       .. ; Data buffer
-    .word $0200                                                       ; 087c: 00 02       .. ; Byte count
+    .byte 4                                                           ; 0878: 04          .   ; Parameter count
+    .byte 2                                                           ; 0879: 02          .   ; Unit number
+    .word data_buffer_2                                               ; 087a: 00 22       ..  ; Data buffer
+    .word $0200                                                       ; 087c: 00 02       ..  ; Byte count
     .byte 0, 0, 0                                                     ; 087e: 00 00 00    ... ; Address
 status_list
     .byte 0, 0, 0, 0, 0, 0, 0, 0                                      ; 0881: 00 00 00... ...

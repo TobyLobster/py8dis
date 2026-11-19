@@ -647,16 +647,16 @@ be_end:
 
 beep:
     rst $28                                                           ; 03f8: ef          .   11 cycles
-    db $31                                                            ; 03f9: 31          1  ; duplicate
-    db $27                                                            ; 03fa: 27          '  ; int
-    db $c0                                                            ; 03fb: c0          .  ; st-mem-0
-    db 3                                                              ; 03fc: 03          .  ; subtract
-    db $34                                                            ; 03fd: 34          4  ; stk-data
+    db $31                                                            ; 03f9: 31          1   ; duplicate
+    db $27                                                            ; 03fa: 27          '   ; int
+    db $c0                                                            ; 03fb: c0          .   ; st-mem-0
+    db 3                                                              ; 03fc: 03          .   ; subtract
+    db $34                                                            ; 03fd: 34          4   ; stk-data
     db $ec, $6c, $98, $1f, $f5                                        ; 03fe: ec 6c 98... .l. ; 0.05776226505
-    db 4                                                              ; 0403: 04          .  ; multiply
-    db $a1                                                            ; 0404: a1          .  ; stk-one
-    db $0f                                                            ; 0405: 0f          .  ; addition
-    db $38                                                            ; 0406: 38          8  ; end-calc
+    db 4                                                              ; 0403: 04          .   ; multiply
+    db $a1                                                            ; 0404: a1          .   ; stk-one
+    db $0f                                                            ; 0405: 0f          .   ; addition
+    db $38                                                            ; 0406: 38          8   ; end-calc
 
     ld hl,$5c92                                                       ; 0407: 21 92 5c    !.\ 10 cycles
     ld a,(hl)                                                         ; 040a: 7e          ~   7 cycles
@@ -692,33 +692,33 @@ be_octave:
     call loc_mem                                                      ; 0432: cd 06 34    ..4 17 cycles
     call stack_num                                                    ; 0435: cd b4 33    ..3 17 cycles
     rst $28                                                           ; 0438: ef          .   11 cycles
-    db 4                                                              ; 0439: 04          .  ; multiply
-    db $38                                                            ; 043a: 38          8  ; end-calc
+    db 4                                                              ; 0439: 04          .   ; multiply
+    db $38                                                            ; 043a: 38          8   ; end-calc
 
     pop af                                                            ; 043b: f1          .   10 cycles
     add a,(hl)                                                        ; 043c: 86          .   7 cycles
     ld (hl),a                                                         ; 043d: 77          w   7 cycles
     rst $28                                                           ; 043e: ef          .   11 cycles
-    db $c0                                                            ; 043f: c0          .  ; st-mem-0
-    db 2                                                              ; 0440: 02          .  ; delete
-    db $31                                                            ; 0441: 31          1  ; duplicate
-    db $38                                                            ; 0442: 38          8  ; end-calc
+    db $c0                                                            ; 043f: c0          .   ; st-mem-0
+    db 2                                                              ; 0440: 02          .   ; delete
+    db $31                                                            ; 0441: 31          1   ; duplicate
+    db $38                                                            ; 0442: 38          8   ; end-calc
 
     call find_int1                                                    ; 0443: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
     cp $0b                                                            ; 0446: fe 0b       ..  7 cycles
     jr nc,report_b                                                    ; 0448: 30 22       0"  7/12 cycles
     rst $28                                                           ; 044a: ef          .   11 cycles
-    db $e0                                                            ; 044b: e0          .  ; get-mem-0
-    db 4                                                              ; 044c: 04          .  ; multiply
-    db $e0                                                            ; 044d: e0          .  ; get-mem-0
-    db $34                                                            ; 044e: 34          4  ; stk-data
+    db $e0                                                            ; 044b: e0          .   ; get-mem-0
+    db 4                                                              ; 044c: 04          .   ; multiply
+    db $e0                                                            ; 044d: e0          .   ; get-mem-0
+    db $34                                                            ; 044e: 34          4   ; stk-data
     db $80, $43, $55, $9f, $80                                        ; 044f: 80 43 55... .CU ; 437500
-    db 1                                                              ; 0454: 01          .  ; exchange
-    db 5                                                              ; 0455: 05          .  ; division
-    db $34                                                            ; 0456: 34          4  ; stk-data
-    db $35, $71                                                       ; 0457: 35 71       5q ; 30.125
-    db 3                                                              ; 0459: 03          .  ; subtract
-    db $38                                                            ; 045a: 38          8  ; end-calc
+    db 1                                                              ; 0454: 01          .   ; exchange
+    db 5                                                              ; 0455: 05          .   ; division
+    db $34                                                            ; 0456: 34          4   ; stk-data
+    db $35, $71                                                       ; 0457: 35 71       5q  ; 30.125
+    db 3                                                              ; 0459: 03          .   ; subtract
+    db $38                                                            ; 045a: 38          8   ; end-calc
 
     call find_int2                                                    ; 045b: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
     push bc                                                           ; 045e: c5          .   11 cycles
@@ -735,7 +735,7 @@ be_octave:
 ; $046c referenced 5 times by $040c, $0416, $041a, $0422, $0448
 report_b:
     rst $08                                                           ; 046c: cf          .   11 cycles
-    db $0a                                                            ; 046d: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 046d: 0a          .   ; Report B Integer out of range
 semi_tone:
     db $89,   2, $d0, $12, $86, $89, $0a, $97, $60, $75, $89, $12     ; 046e: 89 02 d0... ...
     db $d5, $17, $1f, $89, $1b, $90, $41,   2, $89, $24, $d0, $53     ; 047a: d5 17 1f... ...
@@ -888,7 +888,7 @@ sa_ld_ret:
     jr c,sa_ld_end                                                    ; 0550: 38 02       8.  7/12 cycles
 report_da:
     rst $08                                                           ; 0552: cf          .   11 cycles
-    db $0c                                                            ; 0553: 0c          .  ; Report D BREAK - CONT repeats
+    db $0c                                                            ; 0553: 0c          .   ; Report D BREAK - CONT repeats
 
 ; $0554 referenced 1 time by $0550
 sa_ld_end:
@@ -1091,7 +1091,7 @@ sa_blank:
     jr nz,sa_null                                                     ; 0640: 20 02        .  7/12 cycles
 report_fa:
     rst $08                                                           ; 0642: cf          .   11 cycles
-    db $0e                                                            ; 0643: 0e          .  ; Report F Invalid file name
+    db $0e                                                            ; 0643: 0e          .   ; Report F Invalid file name
 
 ; $0644 referenced 1 time by $0640
 sa_null:
@@ -1124,7 +1124,7 @@ sa_data:
     jr z,sa_v_new                                                     ; 066e: 28 15       (.  7/12 cycles
 report_2a:
     rst $08                                                           ; 0670: cf          .   11 cycles
-    db 1                                                              ; 0671: 01          .  ; Report 2 Variable not found
+    db 1                                                              ; 0671: 01          .   ; Report 2 Variable not found
 
 ; $0672 referenced 2 times by $0665, $0696
 sa_v_old:
@@ -1370,7 +1370,7 @@ ld_block:
 ; $0806 referenced 2 times by $07de, $07e7
 report_r:
     rst $08                                                           ; 0806: cf          .   11 cycles
-    db $1a                                                            ; 0807: 1a          .  ; Report R Tape loading error
+    db $1a                                                            ; 0807: 1a          .   ; Report R Tape loading error
 
 ; $0808 referenced 1 time by $07c3
 ld_contrl:
@@ -2164,7 +2164,7 @@ po_scr:
 ; $0c86 referenced 3 times by $0abc, $0c69, $0d04
 report_5:
     rst $08                                                           ; 0c86: cf          .   11 cycles
-    db 4                                                              ; 0c87: 04          .  ; Report 5 Out of screen
+    db 4                                                              ; 0c87: 04          .   ; Report 5 Out of screen
 
 ; $0c88 referenced 1 time by $0c70
 po_scr_2:
@@ -2239,7 +2239,7 @@ scrl_mssg:
 ; $0d00 referenced 3 times by $0cb9, $0cbd, $0cc3
 report_d:
     rst $08                                                           ; 0d00: cf          .   11 cycles
-    db $0c                                                            ; 0d01: 0c          .  ; Report D BREAK - CONT repeats
+    db $0c                                                            ; 0d01: 0c          .   ; Report D BREAK - CONT repeats
 
 ; $0d02 referenced 1 time by $0c63
 po_scr_4:
@@ -2641,7 +2641,7 @@ copy_l_1:
     call clear_prb                                                    ; 0f07: cd df 0e    ... 17 cycles
 report_dc:
     rst $08                                                           ; 0f0a: cf          .   11 cycles
-    db $0c                                                            ; 0f0b: 0c          .  ; Report D BREAK - CONT repeats
+    db $0c                                                            ; 0f0b: 0c          .   ; Report D BREAK - CONT repeats
 
 ; $0f0c referenced 1 time by $0f00
 copy_l_2:
@@ -3448,7 +3448,7 @@ init_chan:
 
 report_j:
     rst $08                                                           ; 15c4: cf          .   11 cycles
-    db $12                                                            ; 15c5: 12          .  ; Report J Invalid I/O device
+    db $12                                                            ; 15c5: 12          .   ; Report J Invalid I/O device
 init_strm:
     db 1, 0, 6, 0, $0b, 0, 1, 0, 1, 0, 6, 0, $10, 0                   ; 15c6: 01 00 06... ...
 
@@ -3470,7 +3470,7 @@ wait_key1:
     jr z,wait_key1                                                    ; 15e2: 28 fa       (.  7/12 cycles
 report_8:
     rst $08                                                           ; 15e4: cf          .   11 cycles
-    db 7                                                              ; 15e5: 07          .  ; Report 8 End of file
+    db 7                                                              ; 15e5: 07          .   ; Report 8 End of file
 
 ; $15e6 referenced 2 times by $15de, $3654
 input_ad:
@@ -3522,7 +3522,7 @@ chan_open:
 ; $160e referenced 1 time by $2081
 report_oa:
     rst $08                                                           ; 160e: cf          .   11 cycles
-    db $17                                                            ; 160f: 17          .  ; Report O Invalid stream
+    db $17                                                            ; 160f: 17          .   ; Report O Invalid stream
 
 ; $1610 referenced 1 time by $160c
 chan_op_1:
@@ -3761,7 +3761,7 @@ str_data:
 ; $1725 referenced 2 times by $1754, $1793
 report_ob:
     rst $08                                                           ; 1725: cf          .   11 cycles
-    db $17                                                            ; 1726: 17          .  ; Report O Invalid stream
+    db $17                                                            ; 1726: 17          .   ; Report O Invalid stream
 
 ; $1727 referenced 1 time by $1723
 str_data1:
@@ -3779,8 +3779,8 @@ str_data1:
 
 open:
     rst $28                                                           ; 1736: ef          .   11 cycles
-    db 1                                                              ; 1737: 01          .  ; exchange
-    db $38                                                            ; 1738: 38          8  ; end-calc
+    db 1                                                              ; 1737: 01          .   ; exchange
+    db $38                                                            ; 1738: 38          8   ; end-calc
 
     call str_data                                                     ; 1739: cd 1e 17    ... 17 cycles
     ld a,b                                                            ; 173c: 78          x   4 cycles
@@ -3818,7 +3818,7 @@ open_2:
 ; $1765 referenced 2 times by $1772, $178e
 report_f:
     rst $08                                                           ; 1765: cf          .   11 cycles
-    db $0e                                                            ; 1766: 0e          .  ; Report F Invalid file name
+    db $0e                                                            ; 1766: 0e          .   ; Report F Invalid file name
 
 ; $1767 referenced 1 time by $1763
 open_3:
@@ -4686,7 +4686,7 @@ stmt_ret:
     jr c,stmt_r_1                                                     ; 1b79: 38 02       8.  7/12 cycles
 report_l:
     rst $08                                                           ; 1b7b: cf          .   11 cycles
-    db $14                                                            ; 1b7c: 14          .  ; Report L BREAK into program
+    db $14                                                            ; 1b7c: 14          .   ; Report L BREAK into program
 
 ; $1b7d referenced 1 time by $1b79
 stmt_r_1:
@@ -4720,7 +4720,7 @@ line_new:
     jr z,line_use                                                     ; 1bae: 28 0f       (.  7/12 cycles
 report_0:
     rst $08                                                           ; 1bb0: cf          .   11 cycles
-    db $ff                                                            ; 1bb1: ff          .  ; Report 0 OK
+    db $ff                                                            ; 1bb1: ff          .   ; Report 0 OK
 
 rem:
     pop bc                                                            ; 1bb2: c1          .   10 cycles
@@ -4765,7 +4765,7 @@ next_line:
 ; $1bec referenced 1 time by $1ba7
 report_n:
     rst $08                                                           ; 1bec: cf          .   11 cycles
-    db $16                                                            ; 1bed: 16          .  ; Report N Statement lost
+    db $16                                                            ; 1bed: 16          .   ; Report N Statement lost
 
 ; $1bee referenced 20 times by $0699, $06ad, $06f9, $071a, $072e, $1822, $1c12, $1c52, $1caa, $1d0b, $1d10, $1e23, $1e31, $1fc0, $1fdb, $209d, $232a, $2387, $2391, $2c12
 check_end:
@@ -4824,7 +4824,7 @@ var_a_1:
 ; $1c2e referenced 2 times by $1daf, $26cc
 report_2:
     rst $08                                                           ; 1c2e: cf          .   11 cycles
-    db 1                                                              ; 1c2f: 01          .  ; Report 2 Variable not found
+    db 1                                                              ; 1c2f: 01          .   ; Report 2 Variable not found
 
 ; $1c30 referenced 1 time by $1c26
 var_a_2:
@@ -4893,7 +4893,7 @@ expt_1num:
 ; $1c8a referenced 36 times by $04b1, $065c, $0672, $06a9, $06cc, $06d9, $06ed, $0727, $1a15, $1b2f, $1b46, $1b71, $1bfe, $1c64, $1c74, $1c7f, $1c94, $1f89, $1fbd, $20d1, $20e8, $21ef, $2323, $2515, $252d, $25ee, $26ef, $26f9, $2761, $27c6, $27e6, $28ba, $2a7a, $2c05, $2ccf, $360c
 report_c:
     rst $08                                                           ; 1c8a: cf          .   11 cycles
-    db $0b                                                            ; 1c8b: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 1c8b: 0b          .   ; Report C Nonsense in BASIC
 
 ; $1c8c referenced 1 time by $060e
 expt_exp:
@@ -4952,22 +4952,22 @@ use_zero:
     call syntax_z                                                     ; 1ce6: cd 30 25    .0% 17 cycles
     ret z                                                             ; 1ce9: c8          .   5/11 cycles
     rst $28                                                           ; 1cea: ef          .   11 cycles
-    db $a0                                                            ; 1ceb: a0          .  ; stk-zero
-    db $38                                                            ; 1cec: 38          8  ; end-calc
+    db $a0                                                            ; 1ceb: a0          .   ; stk-zero
+    db $38                                                            ; 1cec: 38          8   ; end-calc
 
     ret                                                               ; 1ced: c9          .   10 cycles
 
 stop:
     rst $08                                                           ; 1cee: cf          .   11 cycles
-    db 8                                                              ; 1cef: 08          .  ; Report 9 STOP statement
+    db 8                                                              ; 1cef: 08          .   ; Report 9 STOP statement
 
 if:
     pop bc                                                            ; 1cf0: c1          .   10 cycles
     call syntax_z                                                     ; 1cf1: cd 30 25    .0% 17 cycles
     jr z,if_1                                                         ; 1cf4: 28 0a       (.  7/12 cycles
     rst $28                                                           ; 1cf6: ef          .   11 cycles
-    db 2                                                              ; 1cf7: 02          .  ; delete
-    db $38                                                            ; 1cf8: 38          8  ; end-calc
+    db 2                                                              ; 1cf7: 02          .   ; delete
+    db $38                                                            ; 1cf8: 38          8   ; end-calc
 
     ex de,hl                                                          ; 1cf9: eb          .   4 cycles
     call test_zero                                                    ; 1cfa: cd e9 34    ..4 17 cycles
@@ -4988,18 +4988,18 @@ for:
 f_use_1:
     call check_end                                                    ; 1d10: cd ee 1b    ... 17 cycles
     rst $28                                                           ; 1d13: ef          .   11 cycles
-    db $a1                                                            ; 1d14: a1          .  ; stk-one
-    db $38                                                            ; 1d15: 38          8  ; end-calc
+    db $a1                                                            ; 1d14: a1          .   ; stk-one
+    db $38                                                            ; 1d15: 38          8   ; end-calc
 
 ; $1d16 referenced 1 time by $1d0e
 f_reorder:
     rst $28                                                           ; 1d16: ef          .   11 cycles
-    db $c0                                                            ; 1d17: c0          .  ; st-mem-0
-    db 2                                                              ; 1d18: 02          .  ; delete
-    db 1                                                              ; 1d19: 01          .  ; exchange
-    db $e0                                                            ; 1d1a: e0          .  ; get-mem-0
-    db 1                                                              ; 1d1b: 01          .  ; exchange
-    db $38                                                            ; 1d1c: 38          8  ; end-calc
+    db $c0                                                            ; 1d17: c0          .   ; st-mem-0
+    db 2                                                              ; 1d18: 02          .   ; delete
+    db 1                                                              ; 1d19: 01          .   ; exchange
+    db $e0                                                            ; 1d1a: e0          .   ; get-mem-0
+    db 1                                                              ; 1d1b: 01          .   ; exchange
+    db $38                                                            ; 1d1c: 38          8   ; end-calc
 
     call let                                                          ; 1d1d: cd ff 2a    ..* 17 cycles
     ld (mem),hl                                                       ; 1d20: 22 68 5c    "h\ 16 cycles
@@ -5017,9 +5017,9 @@ f_reorder:
 f_l_s:
     push hl                                                           ; 1d34: e5          .   11 cycles
     rst $28                                                           ; 1d35: ef          .   11 cycles
-    db 2                                                              ; 1d36: 02          .  ; delete
-    db 2                                                              ; 1d37: 02          .  ; delete
-    db $38                                                            ; 1d38: 38          8  ; end-calc
+    db 2                                                              ; 1d36: 02          .   ; delete
+    db 2                                                              ; 1d37: 02          .   ; delete
+    db $38                                                            ; 1d38: 38          8   ; end-calc
 
     pop hl                                                            ; 1d39: e1          .   10 cycles
     ex de,hl                                                          ; 1d3a: eb          .   4 cycles
@@ -5070,7 +5070,7 @@ f_found:
 ; $1d84 referenced 1 time by $1d71
 report_i:
     rst $08                                                           ; 1d84: cf          .   11 cycles
-    db $11                                                            ; 1d85: 11          .  ; Report I FOR without NEXT
+    db $11                                                            ; 1d85: 11          .   ; Report I FOR without NEXT
 
 ; $1d86 referenced 3 times by $1d69, $1e03, $280c
 look_prog:
@@ -5115,12 +5115,12 @@ next:
     inc hl                                                            ; 1db9: 23          #   6 cycles
     ld (mem),hl                                                       ; 1dba: 22 68 5c    "h\ 16 cycles
     rst $28                                                           ; 1dbd: ef          .   11 cycles
-    db $e0                                                            ; 1dbe: e0          .  ; get-mem-0
-    db $e2                                                            ; 1dbf: e2          .  ; get-mem-2
-    db $0f                                                            ; 1dc0: 0f          .  ; addition
-    db $c0                                                            ; 1dc1: c0          .  ; st-mem-0
-    db 2                                                              ; 1dc2: 02          .  ; delete
-    db $38                                                            ; 1dc3: 38          8  ; end-calc
+    db $e0                                                            ; 1dbe: e0          .   ; get-mem-0
+    db $e2                                                            ; 1dbf: e2          .   ; get-mem-2
+    db $0f                                                            ; 1dc0: 0f          .   ; addition
+    db $c0                                                            ; 1dc1: c0          .   ; st-mem-0
+    db 2                                                              ; 1dc2: 02          .   ; delete
+    db $38                                                            ; 1dc3: 38          8   ; end-calc
 
     call next_loop                                                    ; 1dc4: cd da 1d    ... 17 cycles
     ret c                                                             ; 1dc7: d8          .   5/11 cycles
@@ -5138,30 +5138,30 @@ next:
 ; $1dd8 referenced 1 time by $1db7
 report_1:
     rst $08                                                           ; 1dd8: cf          .   11 cycles
-    db 0                                                              ; 1dd9: 00          .  ; Report 1 NEXT without FOR
+    db 0                                                              ; 1dd9: 00          .   ; Report 1 NEXT without FOR
 
 ; $1dda referenced 2 times by $1d4c, $1dc4
 next_loop:
     rst $28                                                           ; 1dda: ef          .   11 cycles
-    db $e1                                                            ; 1ddb: e1          .  ; get-mem-1
-    db $e0                                                            ; 1ddc: e0          .  ; get-mem-0
-    db $e2                                                            ; 1ddd: e2          .  ; get-mem-2
-    db $36                                                            ; 1dde: 36          6  ; less-0
-    db 0                                                              ; 1ddf: 00          .  ; jump-true
+    db $e1                                                            ; 1ddb: e1          .   ; get-mem-1
+    db $e0                                                            ; 1ddc: e0          .   ; get-mem-0
+    db $e2                                                            ; 1ddd: e2          .   ; get-mem-2
+    db $36                                                            ; 1dde: 36          6   ; less-0
+    db 0                                                              ; 1ddf: 00          .   ; jump-true
     db next_1 - $                                                     ; 1de0: 02          .
-    db 1                                                              ; 1de1: 01          .  ; exchange
+    db 1                                                              ; 1de1: 01          .   ; exchange
 next_1:
-    db 3                                                              ; 1de2: 03          .  ; subtract
-    db $37                                                            ; 1de3: 37          7  ; greater-0
-    db 0                                                              ; 1de4: 00          .  ; jump-true
+    db 3                                                              ; 1de2: 03          .   ; subtract
+    db $37                                                            ; 1de3: 37          7   ; greater-0
+    db 0                                                              ; 1de4: 00          .   ; jump-true
     db next_2 - $                                                     ; 1de5: 04          .
-    db $38                                                            ; 1de6: 38          8  ; end-calc
+    db $38                                                            ; 1de6: 38          8   ; end-calc
 
     and a                                                             ; 1de7: a7          .   4 cycles
     ret                                                               ; 1de8: c9          .   10 cycles
 
 next_2:
-    db $38                                                            ; 1de9: 38          8  ; end-calc
+    db $38                                                            ; 1de9: 38          8   ; end-calc
 
     scf                                                               ; 1dea: 37          7   4 cycles
     ret                                                               ; 1deb: c9          .   10 cycles
@@ -5184,7 +5184,7 @@ read:
     jr nc,read_1                                                      ; 1e06: 30 02       0.  7/12 cycles
 report_e:
     rst $08                                                           ; 1e08: cf          .   11 cycles
-    db $0d                                                            ; 1e09: 0d          .  ; Report E Out of DATA
+    db $0d                                                            ; 1e09: 0d          .   ; Report E Out of DATA
 
 ; $1e0a referenced 2 times by $1dff, $1e06
 read_1:
@@ -5316,7 +5316,7 @@ find_i_1:
 ; $1e9f referenced 5 times by $0aac, $1e71, $1e88, $1e9c, $364a
 report_bb:
     rst $08                                                           ; 1e9f: cf          .   11 cycles
-    db $0a                                                            ; 1ea0: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 1ea0: 0a          .   ; Report B Integer out of range
 
 run:
     call go_to                                                        ; 1ea1: cd 67 1e    .g. 17 cycles
@@ -5353,7 +5353,7 @@ clear_1:
 ; $1eda referenced 1 time by $1ed0
 report_m:
     rst $08                                                           ; 1eda: cf          .   11 cycles
-    db $15                                                            ; 1edb: 15          .  ; Report M RAMTOP no good
+    db $15                                                            ; 1edb: 15          .   ; Report M RAMTOP no good
 
 ; $1edc referenced 1 time by $1ed8
 clear_2:
@@ -5424,7 +5424,7 @@ report_7:
     push de                                                           ; 1f36: d5          .   11 cycles
     push hl                                                           ; 1f37: e5          .   11 cycles
     rst $08                                                           ; 1f38: cf          .   11 cycles
-    db 6                                                              ; 1f39: 06          .  ; Report 7 RETURN without GOSUB
+    db 6                                                              ; 1f39: 06          .   ; Report 7 RETURN without GOSUB
 
 pause:
     call find_int2                                                    ; 1f3a: cd 99 1e    ... 17 cycles    ; Get a number from the calculator stack
@@ -5870,7 +5870,7 @@ in_assign:
     ret z                                                             ; 21cd: c8          .   5/11 cycles
 report_cb:
     rst $08                                                           ; 21ce: cf          .   11 cycles
-    db $0b                                                            ; 21cf: 0b          .  ; Report C Nonsense in BASIC
+    db $0b                                                            ; 21cf: 0b          .   ; Report C Nonsense in BASIC
 
 ; $21d0 referenced 1 time by $21c2
 in_stop:
@@ -5878,7 +5878,7 @@ in_stop:
     ret z                                                             ; 21d3: c8          .   5/11 cycles
 report_h:
     rst $08                                                           ; 21d4: cf          .   11 cycles
-    db $10                                                            ; 21d5: 10          .  ; Report H STOP in INPUT
+    db $10                                                            ; 21d5: 10          .   ; Report H STOP in INPUT
 
 ; $21d6 referenced 1 time by $2165
 in_chan_k:
@@ -5975,7 +5975,7 @@ co_temp_8:
 ; $2244 referenced 3 times by $222c, $2285, $2299
 report_k:
     rst $08                                                           ; 2244: cf          .   11 cycles
-    db $13                                                            ; 2245: 13          .  ; Report K Invalid colour
+    db $13                                                            ; 2245: 13          .   ; Report K Invalid colour
 
 ; $2246 referenced 1 time by $2242
 co_temp_9:
@@ -6186,46 +6186,46 @@ circle:
     call expt_1num                                                    ; 2327: cd 82 1c    ... 17 cycles
     call check_end                                                    ; 232a: cd ee 1b    ... 17 cycles
     rst $28                                                           ; 232d: ef          .   11 cycles
-    db $2a                                                            ; 232e: 2a          *  ; abs
-    db $3d                                                            ; 232f: 3d          =  ; re-stack
-    db $38                                                            ; 2330: 38          8  ; end-calc
+    db $2a                                                            ; 232e: 2a          *   ; abs
+    db $3d                                                            ; 232f: 3d          =   ; re-stack
+    db $38                                                            ; 2330: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2331: 7e          ~   7 cycles
     cp $81                                                            ; 2332: fe 81       ..  7 cycles
     jr nc,c_r_gre_1                                                   ; 2334: 30 05       0.  7/12 cycles
     rst $28                                                           ; 2336: ef          .   11 cycles
-    db 2                                                              ; 2337: 02          .  ; delete
-    db $38                                                            ; 2338: 38          8  ; end-calc
+    db 2                                                              ; 2337: 02          .   ; delete
+    db $38                                                            ; 2338: 38          8   ; end-calc
 
     jr plot                                                           ; 2339: 18 a1       ..  12 cycles
 
 ; $233b referenced 1 time by $2334
 c_r_gre_1:
     rst $28                                                           ; 233b: ef          .   11 cycles
-    db $a3                                                            ; 233c: a3          .  ; stk-pi/2
-    db $38                                                            ; 233d: 38          8  ; end-calc
+    db $a3                                                            ; 233c: a3          .   ; stk-pi/2
+    db $38                                                            ; 233d: 38          8   ; end-calc
 
     ld (hl),$83                                                       ; 233e: 36 83       6.  10 cycles
     rst $28                                                           ; 2340: ef          .   11 cycles
-    db $c5                                                            ; 2341: c5          .  ; st-mem-5
-    db 2                                                              ; 2342: 02          .  ; delete
-    db $38                                                            ; 2343: 38          8  ; end-calc
+    db $c5                                                            ; 2341: c5          .   ; st-mem-5
+    db 2                                                              ; 2342: 02          .   ; delete
+    db $38                                                            ; 2343: 38          8   ; end-calc
 
     call cd_prms1                                                     ; 2344: cd 7d 24    .}$ 17 cycles
     push bc                                                           ; 2347: c5          .   11 cycles
     rst $28                                                           ; 2348: ef          .   11 cycles
-    db $31                                                            ; 2349: 31          1  ; duplicate
-    db $e1                                                            ; 234a: e1          .  ; get-mem-1
-    db 4                                                              ; 234b: 04          .  ; multiply
-    db $38                                                            ; 234c: 38          8  ; end-calc
+    db $31                                                            ; 2349: 31          1   ; duplicate
+    db $e1                                                            ; 234a: e1          .   ; get-mem-1
+    db 4                                                              ; 234b: 04          .   ; multiply
+    db $38                                                            ; 234c: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 234d: 7e          ~   7 cycles
     cp $80                                                            ; 234e: fe 80       ..  7 cycles
     jr nc,c_arc_ge1                                                   ; 2350: 30 08       0.  7/12 cycles
     rst $28                                                           ; 2352: ef          .   11 cycles
-    db 2                                                              ; 2353: 02          .  ; delete
-    db 2                                                              ; 2354: 02          .  ; delete
-    db $38                                                            ; 2355: 38          8  ; end-calc
+    db 2                                                              ; 2353: 02          .   ; delete
+    db 2                                                              ; 2354: 02          .   ; delete
+    db $38                                                            ; 2355: 38          8   ; end-calc
 
     pop bc                                                            ; 2356: c1          .   10 cycles
     jp plot                                                           ; 2357: c3 dc 22    .." 10 cycles
@@ -6233,25 +6233,25 @@ c_r_gre_1:
 ; $235a referenced 1 time by $2350
 c_arc_ge1:
     rst $28                                                           ; 235a: ef          .   11 cycles
-    db $c2                                                            ; 235b: c2          .  ; st-mem-2
-    db 1                                                              ; 235c: 01          .  ; exchange
-    db $c0                                                            ; 235d: c0          .  ; st-mem-0
-    db 2                                                              ; 235e: 02          .  ; delete
-    db 3                                                              ; 235f: 03          .  ; subtract
-    db 1                                                              ; 2360: 01          .  ; exchange
-    db $e0                                                            ; 2361: e0          .  ; get-mem-0
-    db $0f                                                            ; 2362: 0f          .  ; addition
-    db $c0                                                            ; 2363: c0          .  ; st-mem-0
-    db 1                                                              ; 2364: 01          .  ; exchange
-    db $31                                                            ; 2365: 31          1  ; duplicate
-    db $e0                                                            ; 2366: e0          .  ; get-mem-0
-    db 1                                                              ; 2367: 01          .  ; exchange
-    db $31                                                            ; 2368: 31          1  ; duplicate
-    db $e0                                                            ; 2369: e0          .  ; get-mem-0
-    db $a0                                                            ; 236a: a0          .  ; stk-zero
-    db $c1                                                            ; 236b: c1          .  ; st-mem-1
-    db 2                                                              ; 236c: 02          .  ; delete
-    db $38                                                            ; 236d: 38          8  ; end-calc
+    db $c2                                                            ; 235b: c2          .   ; st-mem-2
+    db 1                                                              ; 235c: 01          .   ; exchange
+    db $c0                                                            ; 235d: c0          .   ; st-mem-0
+    db 2                                                              ; 235e: 02          .   ; delete
+    db 3                                                              ; 235f: 03          .   ; subtract
+    db 1                                                              ; 2360: 01          .   ; exchange
+    db $e0                                                            ; 2361: e0          .   ; get-mem-0
+    db $0f                                                            ; 2362: 0f          .   ; addition
+    db $c0                                                            ; 2363: c0          .   ; st-mem-0
+    db 1                                                              ; 2364: 01          .   ; exchange
+    db $31                                                            ; 2365: 31          1   ; duplicate
+    db $e0                                                            ; 2366: e0          .   ; get-mem-0
+    db 1                                                              ; 2367: 01          .   ; exchange
+    db $31                                                            ; 2368: 31          1   ; duplicate
+    db $e0                                                            ; 2369: e0          .   ; get-mem-0
+    db $a0                                                            ; 236a: a0          .   ; stk-zero
+    db $c1                                                            ; 236b: c1          .   ; st-mem-1
+    db 2                                                              ; 236c: 02          .   ; delete
+    db $38                                                            ; 236d: 38          8   ; end-calc
 
     inc (iy+(membot+10) - err_nr)                                     ; 236e: fd 34 62    .4b 23 cycles
     call find_int1                                                    ; 2371: cd 94 1e    ... 17 cycles    ; Get a number from the calculator stack
@@ -6277,47 +6277,47 @@ dr_3_prms:
     call expt_1num                                                    ; 238e: cd 82 1c    ... 17 cycles
     call check_end                                                    ; 2391: cd ee 1b    ... 17 cycles
     rst $28                                                           ; 2394: ef          .   11 cycles
-    db $c5                                                            ; 2395: c5          .  ; st-mem-5
-    db $a2                                                            ; 2396: a2          .  ; stk-half
-    db 4                                                              ; 2397: 04          .  ; multiply
-    db $1f                                                            ; 2398: 1f          .  ; sin
-    db $31                                                            ; 2399: 31          1  ; duplicate
-    db $30                                                            ; 239a: 30          0  ; not
-    db $30                                                            ; 239b: 30          0  ; not
-    db 0                                                              ; 239c: 00          .  ; jump-true
+    db $c5                                                            ; 2395: c5          .   ; st-mem-5
+    db $a2                                                            ; 2396: a2          .   ; stk-half
+    db 4                                                              ; 2397: 04          .   ; multiply
+    db $1f                                                            ; 2398: 1f          .   ; sin
+    db $31                                                            ; 2399: 31          1   ; duplicate
+    db $30                                                            ; 239a: 30          0   ; not
+    db $30                                                            ; 239b: 30          0   ; not
+    db 0                                                              ; 239c: 00          .   ; jump-true
     db dr_sin_nz - $                                                  ; 239d: 06          .
-    db 2                                                              ; 239e: 02          .  ; delete
-    db $38                                                            ; 239f: 38          8  ; end-calc
+    db 2                                                              ; 239e: 02          .   ; delete
+    db $38                                                            ; 239f: 38          8   ; end-calc
 
     jp line_draw                                                      ; 23a0: c3 77 24    .w$ 10 cycles
 
 dr_sin_nz:
-    db $c0                                                            ; 23a3: c0          .  ; st-mem-0
-    db 2                                                              ; 23a4: 02          .  ; delete
-    db $c1                                                            ; 23a5: c1          .  ; st-mem-1
-    db 2                                                              ; 23a6: 02          .  ; delete
-    db $31                                                            ; 23a7: 31          1  ; duplicate
-    db $2a                                                            ; 23a8: 2a          *  ; abs
-    db $e1                                                            ; 23a9: e1          .  ; get-mem-1
-    db 1                                                              ; 23aa: 01          .  ; exchange
-    db $e1                                                            ; 23ab: e1          .  ; get-mem-1
-    db $2a                                                            ; 23ac: 2a          *  ; abs
-    db $0f                                                            ; 23ad: 0f          .  ; addition
-    db $e0                                                            ; 23ae: e0          .  ; get-mem-0
-    db 5                                                              ; 23af: 05          .  ; division
-    db $2a                                                            ; 23b0: 2a          *  ; abs
-    db $e0                                                            ; 23b1: e0          .  ; get-mem-0
-    db 1                                                              ; 23b2: 01          .  ; exchange
-    db $3d                                                            ; 23b3: 3d          =  ; re-stack
-    db $38                                                            ; 23b4: 38          8  ; end-calc
+    db $c0                                                            ; 23a3: c0          .   ; st-mem-0
+    db 2                                                              ; 23a4: 02          .   ; delete
+    db $c1                                                            ; 23a5: c1          .   ; st-mem-1
+    db 2                                                              ; 23a6: 02          .   ; delete
+    db $31                                                            ; 23a7: 31          1   ; duplicate
+    db $2a                                                            ; 23a8: 2a          *   ; abs
+    db $e1                                                            ; 23a9: e1          .   ; get-mem-1
+    db 1                                                              ; 23aa: 01          .   ; exchange
+    db $e1                                                            ; 23ab: e1          .   ; get-mem-1
+    db $2a                                                            ; 23ac: 2a          *   ; abs
+    db $0f                                                            ; 23ad: 0f          .   ; addition
+    db $e0                                                            ; 23ae: e0          .   ; get-mem-0
+    db 5                                                              ; 23af: 05          .   ; division
+    db $2a                                                            ; 23b0: 2a          *   ; abs
+    db $e0                                                            ; 23b1: e0          .   ; get-mem-0
+    db 1                                                              ; 23b2: 01          .   ; exchange
+    db $3d                                                            ; 23b3: 3d          =   ; re-stack
+    db $38                                                            ; 23b4: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 23b5: 7e          ~   7 cycles
     cp $81                                                            ; 23b6: fe 81       ..  7 cycles
     jr nc,dr_prms                                                     ; 23b8: 30 07       0.  7/12 cycles
     rst $28                                                           ; 23ba: ef          .   11 cycles
-    db 2                                                              ; 23bb: 02          .  ; delete
-    db 2                                                              ; 23bc: 02          .  ; delete
-    db $38                                                            ; 23bd: 38          8  ; end-calc
+    db 2                                                              ; 23bb: 02          .   ; delete
+    db 2                                                              ; 23bc: 02          .   ; delete
+    db $38                                                            ; 23bd: 38          8   ; end-calc
 
     jp line_draw                                                      ; 23be: c3 77 24    .w$ 10 cycles
 
@@ -6326,61 +6326,61 @@ dr_prms:
     call cd_prms1                                                     ; 23c1: cd 7d 24    .}$ 17 cycles
     push bc                                                           ; 23c4: c5          .   11 cycles
     rst $28                                                           ; 23c5: ef          .   11 cycles
-    db 2                                                              ; 23c6: 02          .  ; delete
-    db $e1                                                            ; 23c7: e1          .  ; get-mem-1
-    db 1                                                              ; 23c8: 01          .  ; exchange
-    db 5                                                              ; 23c9: 05          .  ; division
-    db $c1                                                            ; 23ca: c1          .  ; st-mem-1
-    db 2                                                              ; 23cb: 02          .  ; delete
-    db 1                                                              ; 23cc: 01          .  ; exchange
-    db $31                                                            ; 23cd: 31          1  ; duplicate
-    db $e1                                                            ; 23ce: e1          .  ; get-mem-1
-    db 4                                                              ; 23cf: 04          .  ; multiply
-    db $c2                                                            ; 23d0: c2          .  ; st-mem-2
-    db 2                                                              ; 23d1: 02          .  ; delete
-    db 1                                                              ; 23d2: 01          .  ; exchange
-    db $31                                                            ; 23d3: 31          1  ; duplicate
-    db $e1                                                            ; 23d4: e1          .  ; get-mem-1
-    db 4                                                              ; 23d5: 04          .  ; multiply
-    db $e2                                                            ; 23d6: e2          .  ; get-mem-2
-    db $e5                                                            ; 23d7: e5          .  ; get-mem-5
-    db $e0                                                            ; 23d8: e0          .  ; get-mem-0
-    db 3                                                              ; 23d9: 03          .  ; subtract
-    db $a2                                                            ; 23da: a2          .  ; stk-half
-    db 4                                                              ; 23db: 04          .  ; multiply
-    db $31                                                            ; 23dc: 31          1  ; duplicate
-    db $1f                                                            ; 23dd: 1f          .  ; sin
-    db $c5                                                            ; 23de: c5          .  ; st-mem-5
-    db 2                                                              ; 23df: 02          .  ; delete
-    db $20                                                            ; 23e0: 20             ; cos
-    db $c0                                                            ; 23e1: c0          .  ; st-mem-0
-    db 2                                                              ; 23e2: 02          .  ; delete
-    db $c2                                                            ; 23e3: c2          .  ; st-mem-2
-    db 2                                                              ; 23e4: 02          .  ; delete
-    db $c1                                                            ; 23e5: c1          .  ; st-mem-1
-    db $e5                                                            ; 23e6: e5          .  ; get-mem-5
-    db 4                                                              ; 23e7: 04          .  ; multiply
-    db $e0                                                            ; 23e8: e0          .  ; get-mem-0
-    db $e2                                                            ; 23e9: e2          .  ; get-mem-2
-    db 4                                                              ; 23ea: 04          .  ; multiply
-    db $0f                                                            ; 23eb: 0f          .  ; addition
-    db $e1                                                            ; 23ec: e1          .  ; get-mem-1
-    db 1                                                              ; 23ed: 01          .  ; exchange
-    db $c1                                                            ; 23ee: c1          .  ; st-mem-1
-    db 2                                                              ; 23ef: 02          .  ; delete
-    db $e0                                                            ; 23f0: e0          .  ; get-mem-0
-    db 4                                                              ; 23f1: 04          .  ; multiply
-    db $e2                                                            ; 23f2: e2          .  ; get-mem-2
-    db $e5                                                            ; 23f3: e5          .  ; get-mem-5
-    db 4                                                              ; 23f4: 04          .  ; multiply
-    db 3                                                              ; 23f5: 03          .  ; subtract
-    db $c2                                                            ; 23f6: c2          .  ; st-mem-2
-    db $2a                                                            ; 23f7: 2a          *  ; abs
-    db $e1                                                            ; 23f8: e1          .  ; get-mem-1
-    db $2a                                                            ; 23f9: 2a          *  ; abs
-    db $0f                                                            ; 23fa: 0f          .  ; addition
-    db 2                                                              ; 23fb: 02          .  ; delete
-    db $38                                                            ; 23fc: 38          8  ; end-calc
+    db 2                                                              ; 23c6: 02          .   ; delete
+    db $e1                                                            ; 23c7: e1          .   ; get-mem-1
+    db 1                                                              ; 23c8: 01          .   ; exchange
+    db 5                                                              ; 23c9: 05          .   ; division
+    db $c1                                                            ; 23ca: c1          .   ; st-mem-1
+    db 2                                                              ; 23cb: 02          .   ; delete
+    db 1                                                              ; 23cc: 01          .   ; exchange
+    db $31                                                            ; 23cd: 31          1   ; duplicate
+    db $e1                                                            ; 23ce: e1          .   ; get-mem-1
+    db 4                                                              ; 23cf: 04          .   ; multiply
+    db $c2                                                            ; 23d0: c2          .   ; st-mem-2
+    db 2                                                              ; 23d1: 02          .   ; delete
+    db 1                                                              ; 23d2: 01          .   ; exchange
+    db $31                                                            ; 23d3: 31          1   ; duplicate
+    db $e1                                                            ; 23d4: e1          .   ; get-mem-1
+    db 4                                                              ; 23d5: 04          .   ; multiply
+    db $e2                                                            ; 23d6: e2          .   ; get-mem-2
+    db $e5                                                            ; 23d7: e5          .   ; get-mem-5
+    db $e0                                                            ; 23d8: e0          .   ; get-mem-0
+    db 3                                                              ; 23d9: 03          .   ; subtract
+    db $a2                                                            ; 23da: a2          .   ; stk-half
+    db 4                                                              ; 23db: 04          .   ; multiply
+    db $31                                                            ; 23dc: 31          1   ; duplicate
+    db $1f                                                            ; 23dd: 1f          .   ; sin
+    db $c5                                                            ; 23de: c5          .   ; st-mem-5
+    db 2                                                              ; 23df: 02          .   ; delete
+    db $20                                                            ; 23e0: 20              ; cos
+    db $c0                                                            ; 23e1: c0          .   ; st-mem-0
+    db 2                                                              ; 23e2: 02          .   ; delete
+    db $c2                                                            ; 23e3: c2          .   ; st-mem-2
+    db 2                                                              ; 23e4: 02          .   ; delete
+    db $c1                                                            ; 23e5: c1          .   ; st-mem-1
+    db $e5                                                            ; 23e6: e5          .   ; get-mem-5
+    db 4                                                              ; 23e7: 04          .   ; multiply
+    db $e0                                                            ; 23e8: e0          .   ; get-mem-0
+    db $e2                                                            ; 23e9: e2          .   ; get-mem-2
+    db 4                                                              ; 23ea: 04          .   ; multiply
+    db $0f                                                            ; 23eb: 0f          .   ; addition
+    db $e1                                                            ; 23ec: e1          .   ; get-mem-1
+    db 1                                                              ; 23ed: 01          .   ; exchange
+    db $c1                                                            ; 23ee: c1          .   ; st-mem-1
+    db 2                                                              ; 23ef: 02          .   ; delete
+    db $e0                                                            ; 23f0: e0          .   ; get-mem-0
+    db 4                                                              ; 23f1: 04          .   ; multiply
+    db $e2                                                            ; 23f2: e2          .   ; get-mem-2
+    db $e5                                                            ; 23f3: e5          .   ; get-mem-5
+    db 4                                                              ; 23f4: 04          .   ; multiply
+    db 3                                                              ; 23f5: 03          .   ; subtract
+    db $c2                                                            ; 23f6: c2          .   ; st-mem-2
+    db $2a                                                            ; 23f7: 2a          *   ; abs
+    db $e1                                                            ; 23f8: e1          .   ; get-mem-1
+    db $2a                                                            ; 23f9: 2a          *   ; abs
+    db $0f                                                            ; 23fa: 0f          .   ; addition
+    db 2                                                              ; 23fb: 02          .   ; delete
+    db $38                                                            ; 23fc: 38          8   ; end-calc
 
     ld a,(de)                                                         ; 23fd: 1a          .   7 cycles
     cp $81                                                            ; 23fe: fe 81       ..  7 cycles
@@ -6388,25 +6388,25 @@ dr_prms:
     jp c,line_draw                                                    ; 2401: da 77 24    .w$ 10 cycles
     push bc                                                           ; 2404: c5          .   11 cycles
     rst $28                                                           ; 2405: ef          .   11 cycles
-    db 1                                                              ; 2406: 01          .  ; exchange
-    db $38                                                            ; 2407: 38          8  ; end-calc
+    db 1                                                              ; 2406: 01          .   ; exchange
+    db $38                                                            ; 2407: 38          8   ; end-calc
 
     ld a,(coords)                                                     ; 2408: 3a 7d 5c    :}\ 13 cycles
     call stack_a                                                      ; 240b: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 240e: ef          .   11 cycles
-    db $c0                                                            ; 240f: c0          .  ; st-mem-0
-    db $0f                                                            ; 2410: 0f          .  ; addition
-    db 1                                                              ; 2411: 01          .  ; exchange
-    db $38                                                            ; 2412: 38          8  ; end-calc
+    db $c0                                                            ; 240f: c0          .   ; st-mem-0
+    db $0f                                                            ; 2410: 0f          .   ; addition
+    db 1                                                              ; 2411: 01          .   ; exchange
+    db $38                                                            ; 2412: 38          8   ; end-calc
 
     ld a,(coords+1)                                                   ; 2413: 3a 7e 5c    :~\ 13 cycles
     call stack_a                                                      ; 2416: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2419: ef          .   11 cycles
-    db $c5                                                            ; 241a: c5          .  ; st-mem-5
-    db $0f                                                            ; 241b: 0f          .  ; addition
-    db $e0                                                            ; 241c: e0          .  ; get-mem-0
-    db $e5                                                            ; 241d: e5          .  ; get-mem-5
-    db $38                                                            ; 241e: 38          8  ; end-calc
+    db $c5                                                            ; 241a: c5          .   ; st-mem-5
+    db $0f                                                            ; 241b: 0f          .   ; addition
+    db $e0                                                            ; 241c: e0          .   ; get-mem-0
+    db $e5                                                            ; 241d: e5          .   ; get-mem-5
+    db $38                                                            ; 241e: 38          8   ; end-calc
 
     pop bc                                                            ; 241f: c1          .   10 cycles
 ; $2420 referenced 1 time by $237f
@@ -6418,54 +6418,54 @@ drw_steps:
 ; $2425 referenced 1 time by $245d
 arc_loop:
     rst $28                                                           ; 2425: ef          .   11 cycles
-    db $e1                                                            ; 2426: e1          .  ; get-mem-1
-    db $31                                                            ; 2427: 31          1  ; duplicate
-    db $e3                                                            ; 2428: e3          .  ; get-mem-3
-    db 4                                                              ; 2429: 04          .  ; multiply
-    db $e2                                                            ; 242a: e2          .  ; get-mem-2
-    db $e4                                                            ; 242b: e4          .  ; get-mem-4
-    db 4                                                              ; 242c: 04          .  ; multiply
-    db 3                                                              ; 242d: 03          .  ; subtract
-    db $c1                                                            ; 242e: c1          .  ; st-mem-1
-    db 2                                                              ; 242f: 02          .  ; delete
-    db $e4                                                            ; 2430: e4          .  ; get-mem-4
-    db 4                                                              ; 2431: 04          .  ; multiply
-    db $e2                                                            ; 2432: e2          .  ; get-mem-2
-    db $e3                                                            ; 2433: e3          .  ; get-mem-3
-    db 4                                                              ; 2434: 04          .  ; multiply
-    db $0f                                                            ; 2435: 0f          .  ; addition
-    db $c2                                                            ; 2436: c2          .  ; st-mem-2
-    db 2                                                              ; 2437: 02          .  ; delete
-    db $38                                                            ; 2438: 38          8  ; end-calc
+    db $e1                                                            ; 2426: e1          .   ; get-mem-1
+    db $31                                                            ; 2427: 31          1   ; duplicate
+    db $e3                                                            ; 2428: e3          .   ; get-mem-3
+    db 4                                                              ; 2429: 04          .   ; multiply
+    db $e2                                                            ; 242a: e2          .   ; get-mem-2
+    db $e4                                                            ; 242b: e4          .   ; get-mem-4
+    db 4                                                              ; 242c: 04          .   ; multiply
+    db 3                                                              ; 242d: 03          .   ; subtract
+    db $c1                                                            ; 242e: c1          .   ; st-mem-1
+    db 2                                                              ; 242f: 02          .   ; delete
+    db $e4                                                            ; 2430: e4          .   ; get-mem-4
+    db 4                                                              ; 2431: 04          .   ; multiply
+    db $e2                                                            ; 2432: e2          .   ; get-mem-2
+    db $e3                                                            ; 2433: e3          .   ; get-mem-3
+    db 4                                                              ; 2434: 04          .   ; multiply
+    db $0f                                                            ; 2435: 0f          .   ; addition
+    db $c2                                                            ; 2436: c2          .   ; st-mem-2
+    db 2                                                              ; 2437: 02          .   ; delete
+    db $38                                                            ; 2438: 38          8   ; end-calc
 
 ; $2439 referenced 1 time by $2423
 arc_start:
     push bc                                                           ; 2439: c5          .   11 cycles
     rst $28                                                           ; 243a: ef          .   11 cycles
-    db $c0                                                            ; 243b: c0          .  ; st-mem-0
-    db 2                                                              ; 243c: 02          .  ; delete
-    db $e1                                                            ; 243d: e1          .  ; get-mem-1
-    db $0f                                                            ; 243e: 0f          .  ; addition
-    db $31                                                            ; 243f: 31          1  ; duplicate
-    db $38                                                            ; 2440: 38          8  ; end-calc
+    db $c0                                                            ; 243b: c0          .   ; st-mem-0
+    db 2                                                              ; 243c: 02          .   ; delete
+    db $e1                                                            ; 243d: e1          .   ; get-mem-1
+    db $0f                                                            ; 243e: 0f          .   ; addition
+    db $31                                                            ; 243f: 31          1   ; duplicate
+    db $38                                                            ; 2440: 38          8   ; end-calc
 
     ld a,(coords)                                                     ; 2441: 3a 7d 5c    :}\ 13 cycles
     call stack_a                                                      ; 2444: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2447: ef          .   11 cycles
-    db 3                                                              ; 2448: 03          .  ; subtract
-    db $e0                                                            ; 2449: e0          .  ; get-mem-0
-    db $e2                                                            ; 244a: e2          .  ; get-mem-2
-    db $0f                                                            ; 244b: 0f          .  ; addition
-    db $c0                                                            ; 244c: c0          .  ; st-mem-0
-    db 1                                                              ; 244d: 01          .  ; exchange
-    db $e0                                                            ; 244e: e0          .  ; get-mem-0
-    db $38                                                            ; 244f: 38          8  ; end-calc
+    db 3                                                              ; 2448: 03          .   ; subtract
+    db $e0                                                            ; 2449: e0          .   ; get-mem-0
+    db $e2                                                            ; 244a: e2          .   ; get-mem-2
+    db $0f                                                            ; 244b: 0f          .   ; addition
+    db $c0                                                            ; 244c: c0          .   ; st-mem-0
+    db 1                                                              ; 244d: 01          .   ; exchange
+    db $e0                                                            ; 244e: e0          .   ; get-mem-0
+    db $38                                                            ; 244f: 38          8   ; end-calc
 
     ld a,(coords+1)                                                   ; 2450: 3a 7e 5c    :~\ 13 cycles
     call stack_a                                                      ; 2453: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2456: ef          .   11 cycles
-    db 3                                                              ; 2457: 03          .  ; subtract
-    db $38                                                            ; 2458: 38          8  ; end-calc
+    db 3                                                              ; 2457: 03          .   ; subtract
+    db $38                                                            ; 2458: 38          8   ; end-calc
 
     call draw_line                                                    ; 2459: cd b7 24    ..$ 17 cycles    ; Draw a line
     pop bc                                                            ; 245c: c1          .   10 cycles
@@ -6473,23 +6473,23 @@ arc_start:
 ; $245f referenced 1 time by $2421
 arc_end:
     rst $28                                                           ; 245f: ef          .   11 cycles
-    db 2                                                              ; 2460: 02          .  ; delete
-    db 2                                                              ; 2461: 02          .  ; delete
-    db 1                                                              ; 2462: 01          .  ; exchange
-    db $38                                                            ; 2463: 38          8  ; end-calc
+    db 2                                                              ; 2460: 02          .   ; delete
+    db 2                                                              ; 2461: 02          .   ; delete
+    db 1                                                              ; 2462: 01          .   ; exchange
+    db $38                                                            ; 2463: 38          8   ; end-calc
 
     ld a,(coords)                                                     ; 2464: 3a 7d 5c    :}\ 13 cycles
     call stack_a                                                      ; 2467: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 246a: ef          .   11 cycles
-    db 3                                                              ; 246b: 03          .  ; subtract
-    db 1                                                              ; 246c: 01          .  ; exchange
-    db $38                                                            ; 246d: 38          8  ; end-calc
+    db 3                                                              ; 246b: 03          .   ; subtract
+    db 1                                                              ; 246c: 01          .   ; exchange
+    db $38                                                            ; 246d: 38          8   ; end-calc
 
     ld a,(coords+1)                                                   ; 246e: 3a 7e 5c    :~\ 13 cycles
     call stack_a                                                      ; 2471: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 2474: ef          .   11 cycles
-    db 3                                                              ; 2475: 03          .  ; subtract
-    db $38                                                            ; 2476: 38          8  ; end-calc
+    db 3                                                              ; 2475: 03          .   ; subtract
+    db $38                                                            ; 2476: 38          8   ; end-calc
 
 ; $2477 referenced 4 times by $238a, $23a0, $23be, $2401
 line_draw:
@@ -6499,17 +6499,17 @@ line_draw:
 ; $247d referenced 2 times by $2344, $23c1
 cd_prms1:
     rst $28                                                           ; 247d: ef          .   11 cycles
-    db $31                                                            ; 247e: 31          1  ; duplicate
-    db $28                                                            ; 247f: 28          (  ; sqr
-    db $34                                                            ; 2480: 34          4  ; stk-data
-    db $32, 0                                                         ; 2481: 32 00       2. ; 2
-    db 1                                                              ; 2483: 01          .  ; exchange
-    db 5                                                              ; 2484: 05          .  ; division
-    db $e5                                                            ; 2485: e5          .  ; get-mem-5
-    db 1                                                              ; 2486: 01          .  ; exchange
-    db 5                                                              ; 2487: 05          .  ; division
-    db $2a                                                            ; 2488: 2a          *  ; abs
-    db $38                                                            ; 2489: 38          8  ; end-calc
+    db $31                                                            ; 247e: 31          1   ; duplicate
+    db $28                                                            ; 247f: 28          (   ; sqr
+    db $34                                                            ; 2480: 34          4   ; stk-data
+    db $32, 0                                                         ; 2481: 32 00       2.  ; 2
+    db 1                                                              ; 2483: 01          .   ; exchange
+    db 5                                                              ; 2484: 05          .   ; division
+    db $e5                                                            ; 2485: e5          .   ; get-mem-5
+    db 1                                                              ; 2486: 01          .   ; exchange
+    db 5                                                              ; 2487: 05          .   ; division
+    db $2a                                                            ; 2488: 2a          *   ; abs
+    db $38                                                            ; 2489: 38          8   ; end-calc
 
     call fp_to_a                                                      ; 248a: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr c,use_252                                                      ; 248d: 38 06       8.  7/12 cycles
@@ -6524,31 +6524,31 @@ draw_save:
     push af                                                           ; 2497: f5          .   11 cycles
     call stack_a                                                      ; 2498: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 249b: ef          .   11 cycles
-    db $e5                                                            ; 249c: e5          .  ; get-mem-5
-    db 1                                                              ; 249d: 01          .  ; exchange
-    db 5                                                              ; 249e: 05          .  ; division
-    db $31                                                            ; 249f: 31          1  ; duplicate
-    db $1f                                                            ; 24a0: 1f          .  ; sin
-    db $c4                                                            ; 24a1: c4          .  ; st-mem-4
-    db 2                                                              ; 24a2: 02          .  ; delete
-    db $31                                                            ; 24a3: 31          1  ; duplicate
-    db $a2                                                            ; 24a4: a2          .  ; stk-half
-    db 4                                                              ; 24a5: 04          .  ; multiply
-    db $1f                                                            ; 24a6: 1f          .  ; sin
-    db $c1                                                            ; 24a7: c1          .  ; st-mem-1
-    db 1                                                              ; 24a8: 01          .  ; exchange
-    db $c0                                                            ; 24a9: c0          .  ; st-mem-0
-    db 2                                                              ; 24aa: 02          .  ; delete
-    db $31                                                            ; 24ab: 31          1  ; duplicate
-    db 4                                                              ; 24ac: 04          .  ; multiply
-    db $31                                                            ; 24ad: 31          1  ; duplicate
-    db $0f                                                            ; 24ae: 0f          .  ; addition
-    db $a1                                                            ; 24af: a1          .  ; stk-one
-    db 3                                                              ; 24b0: 03          .  ; subtract
-    db $1b                                                            ; 24b1: 1b          .  ; negate
-    db $c3                                                            ; 24b2: c3          .  ; st-mem-3
-    db 2                                                              ; 24b3: 02          .  ; delete
-    db $38                                                            ; 24b4: 38          8  ; end-calc
+    db $e5                                                            ; 249c: e5          .   ; get-mem-5
+    db 1                                                              ; 249d: 01          .   ; exchange
+    db 5                                                              ; 249e: 05          .   ; division
+    db $31                                                            ; 249f: 31          1   ; duplicate
+    db $1f                                                            ; 24a0: 1f          .   ; sin
+    db $c4                                                            ; 24a1: c4          .   ; st-mem-4
+    db 2                                                              ; 24a2: 02          .   ; delete
+    db $31                                                            ; 24a3: 31          1   ; duplicate
+    db $a2                                                            ; 24a4: a2          .   ; stk-half
+    db 4                                                              ; 24a5: 04          .   ; multiply
+    db $1f                                                            ; 24a6: 1f          .   ; sin
+    db $c1                                                            ; 24a7: c1          .   ; st-mem-1
+    db 1                                                              ; 24a8: 01          .   ; exchange
+    db $c0                                                            ; 24a9: c0          .   ; st-mem-0
+    db 2                                                              ; 24aa: 02          .   ; delete
+    db $31                                                            ; 24ab: 31          1   ; duplicate
+    db 4                                                              ; 24ac: 04          .   ; multiply
+    db $31                                                            ; 24ad: 31          1   ; duplicate
+    db $0f                                                            ; 24ae: 0f          .   ; addition
+    db $a1                                                            ; 24af: a1          .   ; stk-one
+    db 3                                                              ; 24b0: 03          .   ; subtract
+    db $1b                                                            ; 24b1: 1b          .   ; negate
+    db $c3                                                            ; 24b2: c3          .   ; st-mem-3
+    db 2                                                              ; 24b3: 02          .   ; delete
+    db $38                                                            ; 24b4: 38          8   ; end-calc
 
     pop bc                                                            ; 24b5: c1          .   10 cycles
     ret                                                               ; 24b6: c9          .   10 cycles
@@ -6636,7 +6636,7 @@ d_l_range:
 ; $24f9 referenced 3 times by $22ad, $2317, $24ea
 report_bc:
     rst $08                                                           ; 24f9: cf          .   11 cycles
-    db $0a                                                            ; 24fa: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 24fa: 0a          .   ; Report B Integer out of range
 
 ; $24fb referenced 13 times by $04aa, $1c5a, $1c82, $1c8c, $1e2c, $1fb4, $202c, $25e9, $27d9, $2855, $289c, $35fd, $3616
 scanning:
@@ -6854,19 +6854,19 @@ s_rnd:
     ld bc,(seed)                                                      ; 25fd: ed 4b 76... .Kv 20 cycles
     call stack_bc                                                     ; 2601: cd 2b 2d    .+- 17 cycles    ; Put BC on the calculator stack
     rst $28                                                           ; 2604: ef          .   11 cycles
-    db $a1                                                            ; 2605: a1          .  ; stk-one
-    db $0f                                                            ; 2606: 0f          .  ; addition
-    db $34                                                            ; 2607: 34          4  ; stk-data
-    db $37, $16                                                       ; 2608: 37 16       7. ; 75
-    db 4                                                              ; 260a: 04          .  ; multiply
-    db $34                                                            ; 260b: 34          4  ; stk-data
+    db $a1                                                            ; 2605: a1          .   ; stk-one
+    db $0f                                                            ; 2606: 0f          .   ; addition
+    db $34                                                            ; 2607: 34          4   ; stk-data
+    db $37, $16                                                       ; 2608: 37 16       7.  ; 75
+    db 4                                                              ; 260a: 04          .   ; multiply
+    db $34                                                            ; 260b: 34          4   ; stk-data
     db $80, $41, 0, 0, $80                                            ; 260c: 80 41 00... .A. ; 65537
-    db $32                                                            ; 2611: 32          2  ; n-mod-m
-    db 2                                                              ; 2612: 02          .  ; delete
-    db $a1                                                            ; 2613: a1          .  ; stk-one
-    db 3                                                              ; 2614: 03          .  ; subtract
-    db $31                                                            ; 2615: 31          1  ; duplicate
-    db $38                                                            ; 2616: 38          8  ; end-calc
+    db $32                                                            ; 2611: 32          2   ; n-mod-m
+    db 2                                                              ; 2612: 02          .   ; delete
+    db $a1                                                            ; 2613: a1          .   ; stk-one
+    db 3                                                              ; 2614: 03          .   ; subtract
+    db $31                                                            ; 2615: 31          1   ; duplicate
+    db $38                                                            ; 2616: 38          8   ; end-calc
 
     call fp_to_bc                                                     ; 2617: cd a2 2d    ..- 17 cycles    ; Get a number from the calculator stack
     ld (seed),bc                                                      ; 261a: ed 43 76... .Cv 20 cycles
@@ -6883,8 +6883,8 @@ s_pi:
     call syntax_z                                                     ; 2627: cd 30 25    .0% 17 cycles
     jr z,s_pi_end                                                     ; 262a: 28 04       (.  7/12 cycles
     rst $28                                                           ; 262c: ef          .   11 cycles
-    db $a3                                                            ; 262d: a3          .  ; stk-pi/2
-    db $38                                                            ; 262e: 38          8  ; end-calc
+    db $a3                                                            ; 262d: a3          .   ; stk-pi/2
+    db $38                                                            ; 262e: 38          8   ; end-calc
 
     inc (hl)                                                          ; 262f: 34          4   11 cycles
 ; $2630 referenced 2 times by $2625, $262a
@@ -7080,8 +7080,8 @@ s_stk_lst:
     and $3f                                                           ; 2753: e6 3f       .?  7 cycles
     ld b,a                                                            ; 2755: 47          G   4 cycles
     rst $28                                                           ; 2756: ef          .   11 cycles
-    db $3b                                                            ; 2757: 3b          ;  ; fp-calc-2
-    db $38                                                            ; 2758: 38          8  ; end-calc
+    db $3b                                                            ; 2757: 3b          ;   ; fp-calc-2
+    db $38                                                            ; 2758: 38          8   ; end-calc
 
     jr s_runtest                                                      ; 2759: 18 09       ..  12 cycles
 
@@ -7210,7 +7210,7 @@ sf_fnd_df:
     jr nc,sf_cp_def                                                   ; 2810: 30 02       0.  7/12 cycles
 report_p:
     rst $08                                                           ; 2812: cf          .   11 cycles
-    db $18                                                            ; 2813: 18          .  ; Report P FN without DEF
+    db $18                                                            ; 2813: 18          .   ; Report P FN without DEF
 
 ; $2814 referenced 1 time by $2810
 sf_cp_def:
@@ -7295,7 +7295,7 @@ sf_r_br_2:
 ; $288b referenced 2 times by $285e, $287c
 report_q:
     rst $08                                                           ; 288b: cf          .   11 cycles
-    db $19                                                            ; 288c: 19          .  ; Report Q Parameter error
+    db $19                                                            ; 288c: 19          .   ; Report Q Parameter error
 
 ; $288d referenced 1 time by $2889
 sf_value:
@@ -7622,7 +7622,7 @@ sv_rpt_c:
 ; $2a20 referenced 6 times by $29bd, $29cc, $2a05, $2a43, $2aa3, $2c34
 report_3:
     rst $08                                                           ; 2a20: cf          .   11 cycles
-    db 2                                                              ; 2a21: 02          .  ; Report 3 Subscript wrong
+    db 2                                                              ; 2a21: 02          .   ; Report 3 Subscript wrong
 
 ; $2a22 referenced 1 time by $2a1e
 sv_number:
@@ -7879,8 +7879,8 @@ l_single:
 l_numeric:
     push hl                                                           ; 2b59: e5          .   11 cycles
     rst $28                                                           ; 2b5a: ef          .   11 cycles
-    db 2                                                              ; 2b5b: 02          .  ; delete
-    db $38                                                            ; 2b5c: 38          8  ; end-calc
+    db 2                                                              ; 2b5b: 02          .   ; delete
+    db $38                                                            ; 2b5c: 38          8   ; end-calc
 
     pop hl                                                            ; 2b5d: e1          .   10 cycles
     ld bc,5                                                           ; 2b5e: 01 05 00    ... 10 cycles
@@ -8191,16 +8191,16 @@ decimal:
 dec_rpt_c:
     jp c,report_c                                                     ; 2ccf: da 8a 1c    ... 10 cycles
     rst $28                                                           ; 2cd2: ef          .   11 cycles
-    db $a0                                                            ; 2cd3: a0          .  ; stk-zero
-    db $38                                                            ; 2cd4: 38          8  ; end-calc
+    db $a0                                                            ; 2cd3: a0          .   ; stk-zero
+    db $38                                                            ; 2cd4: 38          8   ; end-calc
 
 ; $2cd5 referenced 1 time by $2cc9
 dec_sto_1:
     rst $28                                                           ; 2cd5: ef          .   11 cycles
-    db $a1                                                            ; 2cd6: a1          .  ; stk-one
-    db $c0                                                            ; 2cd7: c0          .  ; st-mem-0
-    db 2                                                              ; 2cd8: 02          .  ; delete
-    db $38                                                            ; 2cd9: 38          8  ; end-calc
+    db $a1                                                            ; 2cd6: a1          .   ; stk-one
+    db $c0                                                            ; 2cd7: c0          .   ; st-mem-0
+    db 2                                                              ; 2cd8: 02          .   ; delete
+    db $38                                                            ; 2cd9: 38          8   ; end-calc
 
 ; $2cda referenced 1 time by $2ce9
 nxt_dgt_1:
@@ -8208,13 +8208,13 @@ nxt_dgt_1:
     call stk_digit                                                    ; 2cdb: cd 22 2d    ."- 17 cycles
     jr c,e_format                                                     ; 2cde: 38 0b       8.  7/12 cycles
     rst $28                                                           ; 2ce0: ef          .   11 cycles
-    db $e0                                                            ; 2ce1: e0          .  ; get-mem-0
-    db $a4                                                            ; 2ce2: a4          .  ; stk-ten
-    db 5                                                              ; 2ce3: 05          .  ; division
-    db $c0                                                            ; 2ce4: c0          .  ; st-mem-0
-    db 4                                                              ; 2ce5: 04          .  ; multiply
-    db $0f                                                            ; 2ce6: 0f          .  ; addition
-    db $38                                                            ; 2ce7: 38          8  ; end-calc
+    db $e0                                                            ; 2ce1: e0          .   ; get-mem-0
+    db $a4                                                            ; 2ce2: a4          .   ; stk-ten
+    db 5                                                              ; 2ce3: 05          .   ; division
+    db $c0                                                            ; 2ce4: c0          .   ; st-mem-0
+    db 4                                                              ; 2ce5: 04          .   ; multiply
+    db $0f                                                            ; 2ce6: 0f          .   ; addition
+    db $38                                                            ; 2ce7: 38          8   ; end-calc
 
     rst $20                                                           ; 2ce8: e7          .   11 cycles    ; Get the next BASIC character
     jr nxt_dgt_1                                                      ; 2ce9: 18 ef       ..  12 cycles
@@ -8294,7 +8294,7 @@ stack_bc:
     ld b,a                                                            ; 2d33: 47          G   4 cycles
     call stk_store                                                    ; 2d34: cd b6 2a    ..* 17 cycles
     rst $28                                                           ; 2d37: ef          .   11 cycles
-    db $38                                                            ; 2d38: 38          8  ; end-calc
+    db $38                                                            ; 2d38: 38          8   ; end-calc
 
     and a                                                             ; 2d39: a7          .   4 cycles
     ret                                                               ; 2d3a: c9          .   10 cycles
@@ -8303,8 +8303,8 @@ stack_bc:
 int_to_fp:
     push af                                                           ; 2d3b: f5          .   11 cycles
     rst $28                                                           ; 2d3c: ef          .   11 cycles
-    db $a0                                                            ; 2d3d: a0          .  ; stk-zero
-    db $38                                                            ; 2d3e: 38          8  ; end-calc
+    db $a0                                                            ; 2d3d: a0          .   ; stk-zero
+    db $38                                                            ; 2d3e: 38          8   ; end-calc
 
     pop af                                                            ; 2d3f: f1          .   10 cycles
 ; $2d40 referenced 1 time by $2d4d
@@ -8312,11 +8312,11 @@ nxt_dgt_2:
     call stk_digit                                                    ; 2d40: cd 22 2d    ."- 17 cycles
     ret c                                                             ; 2d43: d8          .   5/11 cycles
     rst $28                                                           ; 2d44: ef          .   11 cycles
-    db 1                                                              ; 2d45: 01          .  ; exchange
-    db $a4                                                            ; 2d46: a4          .  ; stk-ten
-    db 4                                                              ; 2d47: 04          .  ; multiply
-    db $0f                                                            ; 2d48: 0f          .  ; addition
-    db $38                                                            ; 2d49: 38          8  ; end-calc
+    db 1                                                              ; 2d45: 01          .   ; exchange
+    db $a4                                                            ; 2d46: a4          .   ; stk-ten
+    db 4                                                              ; 2d47: 04          .   ; multiply
+    db $0f                                                            ; 2d48: 0f          .   ; addition
+    db $38                                                            ; 2d49: 38          8   ; end-calc
 
     call ch_add_plus_1                                                ; 2d4a: cd 74 00    .t. 17 cycles
     jr nxt_dgt_2                                                      ; 2d4d: 18 f1       ..  12 cycles
@@ -8334,8 +8334,8 @@ e_save:
     ld hl,$5c92                                                       ; 2d56: 21 92 5c    !.\ 10 cycles
     call fp_0_1                                                       ; 2d59: cd 0b 35    ..5 17 cycles
     rst $28                                                           ; 2d5c: ef          .   11 cycles
-    db $a4                                                            ; 2d5d: a4          .  ; stk-ten
-    db $38                                                            ; 2d5e: 38          8  ; end-calc
+    db $a4                                                            ; 2d5d: a4          .   ; stk-ten
+    db $38                                                            ; 2d5e: 38          8   ; end-calc
 
     pop af                                                            ; 2d5f: f1          .   10 cycles
 ; $2d60 referenced 1 time by $2d79
@@ -8344,18 +8344,18 @@ e_loop:
     jr nc,e_tst_end                                                   ; 2d62: 30 0d       0.  7/12 cycles
     push af                                                           ; 2d64: f5          .   11 cycles
     rst $28                                                           ; 2d65: ef          .   11 cycles
-    db $c1                                                            ; 2d66: c1          .  ; st-mem-1
-    db $e0                                                            ; 2d67: e0          .  ; get-mem-0
-    db 0                                                              ; 2d68: 00          .  ; jump-true
+    db $c1                                                            ; 2d66: c1          .   ; st-mem-1
+    db $e0                                                            ; 2d67: e0          .   ; get-mem-0
+    db 0                                                              ; 2d68: 00          .   ; jump-true
     db e_divsn - $                                                    ; 2d69: 04          .
-    db 4                                                              ; 2d6a: 04          .  ; multiply
-    db $33                                                            ; 2d6b: 33          3  ; jump
+    db 4                                                              ; 2d6a: 04          .   ; multiply
+    db $33                                                            ; 2d6b: 33          3   ; jump
     db e_fetch - $                                                    ; 2d6c: 02          .
 e_divsn:
-    db 5                                                              ; 2d6d: 05          .  ; division
+    db 5                                                              ; 2d6d: 05          .   ; division
 e_fetch:
-    db $e1                                                            ; 2d6e: e1          .  ; get-mem-1
-    db $38                                                            ; 2d6f: 38          8  ; end-calc
+    db $e1                                                            ; 2d6e: e1          .   ; get-mem-1
+    db $38                                                            ; 2d6f: 38          8   ; end-calc
 
     pop af                                                            ; 2d70: f1          .   10 cycles
 ; $2d71 referenced 1 time by $2d62
@@ -8363,9 +8363,9 @@ e_tst_end:
     jr z,e_end                                                        ; 2d71: 28 08       (.  7/12 cycles
     push af                                                           ; 2d73: f5          .   11 cycles
     rst $28                                                           ; 2d74: ef          .   11 cycles
-    db $31                                                            ; 2d75: 31          1  ; duplicate
-    db 4                                                              ; 2d76: 04          .  ; multiply
-    db $38                                                            ; 2d77: 38          8  ; end-calc
+    db $31                                                            ; 2d75: 31          1   ; duplicate
+    db 4                                                              ; 2d76: 04          .   ; multiply
+    db $38                                                            ; 2d77: 38          8   ; end-calc
 
     pop af                                                            ; 2d78: f1          .   10 cycles
     jr e_loop                                                         ; 2d79: 18 e5       ..  12 cycles
@@ -8373,8 +8373,8 @@ e_tst_end:
 ; $2d7b referenced 1 time by $2d71
 e_end:
     rst $28                                                           ; 2d7b: ef          .   11 cycles
-    db 2                                                              ; 2d7c: 02          .  ; delete
-    db $38                                                            ; 2d7d: 38          8  ; end-calc
+    db 2                                                              ; 2d7c: 02          .   ; delete
+    db $38                                                            ; 2d7d: 38          8   ; end-calc
 
     ret                                                               ; 2d7e: c9          .   10 cycles
 
@@ -8427,22 +8427,22 @@ int_store:
 ; $2da2 referenced 4 times by $1a0c, $1e99, $2617, $2dd5
 fp_to_bc:
     rst $28                                                           ; 2da2: ef          .   11 cycles
-    db $38                                                            ; 2da3: 38          8  ; end-calc
+    db $38                                                            ; 2da3: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2da4: 7e          ~   7 cycles
     and a                                                             ; 2da5: a7          .   4 cycles
     jr z,fp_delete                                                    ; 2da6: 28 05       (.  7/12 cycles
     rst $28                                                           ; 2da8: ef          .   11 cycles
-    db $a2                                                            ; 2da9: a2          .  ; stk-half
-    db $0f                                                            ; 2daa: 0f          .  ; addition
-    db $27                                                            ; 2dab: 27          '  ; int
-    db $38                                                            ; 2dac: 38          8  ; end-calc
+    db $a2                                                            ; 2da9: a2          .   ; stk-half
+    db $0f                                                            ; 2daa: 0f          .   ; addition
+    db $27                                                            ; 2dab: 27          '   ; int
+    db $38                                                            ; 2dac: 38          8   ; end-calc
 
 ; $2dad referenced 1 time by $2da6
 fp_delete:
     rst $28                                                           ; 2dad: ef          .   11 cycles
-    db 2                                                              ; 2dae: 02          .  ; delete
-    db $38                                                            ; 2daf: 38          8  ; end-calc
+    db 2                                                              ; 2dae: 02          .   ; delete
+    db $38                                                            ; 2daf: 38          8   ; end-calc
 
     push hl                                                           ; 2db0: e5          .   11 cycles
     push de                                                           ; 2db1: d5          .   11 cycles
@@ -8470,11 +8470,11 @@ log_2_pow_a:
     ld b,a                                                            ; 2dc7: 47          G   4 cycles
     call stk_store                                                    ; 2dc8: cd b6 2a    ..* 17 cycles
     rst $28                                                           ; 2dcb: ef          .   11 cycles
-    db $34                                                            ; 2dcc: 34          4  ; stk-data
-    db $ef, $1a, $20, $9a, $85                                        ; 2dcd: ef 1a 20... .. ; 0.3010299957
-    db 4                                                              ; 2dd2: 04          .  ; multiply
-    db $27                                                            ; 2dd3: 27          '  ; int
-    db $38                                                            ; 2dd4: 38          8  ; end-calc
+    db $34                                                            ; 2dcc: 34          4   ; stk-data
+    db $ef, $1a, $20, $9a, $85                                        ; 2dcd: ef 1a 20... ..  ; 0.3010299957
+    db 4                                                              ; 2dd2: 04          .   ; multiply
+    db $27                                                            ; 2dd3: 27          '   ; int
+    db $38                                                            ; 2dd4: 38          8   ; end-calc
 
 ; ***************************************************************************************
 ; Get a number from the calculator stack
@@ -8506,35 +8506,35 @@ fp_a_end:
 ; $2de3 referenced 2 times by $2039, $3630
 print_fp:
     rst $28                                                           ; 2de3: ef          .   11 cycles
-    db $31                                                            ; 2de4: 31          1  ; duplicate
-    db $36                                                            ; 2de5: 36          6  ; less-0
-    db 0                                                              ; 2de6: 00          .  ; jump-true
+    db $31                                                            ; 2de4: 31          1   ; duplicate
+    db $36                                                            ; 2de5: 36          6   ; less-0
+    db 0                                                              ; 2de6: 00          .   ; jump-true
     db pf_negtve - $                                                  ; 2de7: 0b          .
-    db $31                                                            ; 2de8: 31          1  ; duplicate
-    db $37                                                            ; 2de9: 37          7  ; greater-0
-    db 0                                                              ; 2dea: 00          .  ; jump-true
+    db $31                                                            ; 2de8: 31          1   ; duplicate
+    db $37                                                            ; 2de9: 37          7   ; greater-0
+    db 0                                                              ; 2dea: 00          .   ; jump-true
     db pf_postve - $                                                  ; 2deb: 0d          .
-    db 2                                                              ; 2dec: 02          .  ; delete
-    db $38                                                            ; 2ded: 38          8  ; end-calc
+    db 2                                                              ; 2dec: 02          .   ; delete
+    db $38                                                            ; 2ded: 38          8   ; end-calc
 
     ld a,$30                                                          ; 2dee: 3e 30       >0  7 cycles
     rst $10                                                           ; 2df0: d7          .   11 cycles    ; Print '0'
     ret                                                               ; 2df1: c9          .   10 cycles
 
 pf_negtve:
-    db $2a                                                            ; 2df2: 2a          *  ; abs
-    db $38                                                            ; 2df3: 38          8  ; end-calc
+    db $2a                                                            ; 2df2: 2a          *   ; abs
+    db $38                                                            ; 2df3: 38          8   ; end-calc
 
     ld a,$2d                                                          ; 2df4: 3e 2d       >-  7 cycles
     rst $10                                                           ; 2df6: d7          .   11 cycles    ; Print '-'
     rst $28                                                           ; 2df7: ef          .   11 cycles
 pf_postve:
-    db $a0                                                            ; 2df8: a0          .  ; stk-zero
-    db $c3                                                            ; 2df9: c3          .  ; st-mem-3
-    db $c4                                                            ; 2dfa: c4          .  ; st-mem-4
-    db $c5                                                            ; 2dfb: c5          .  ; st-mem-5
-    db 2                                                              ; 2dfc: 02          .  ; delete
-    db $38                                                            ; 2dfd: 38          8  ; end-calc
+    db $a0                                                            ; 2df8: a0          .   ; stk-zero
+    db $c3                                                            ; 2df9: c3          .   ; st-mem-3
+    db $c4                                                            ; 2dfa: c4          .   ; st-mem-4
+    db $c5                                                            ; 2dfb: c5          .   ; st-mem-5
+    db 2                                                              ; 2dfc: 02          .   ; delete
+    db $38                                                            ; 2dfd: 38          8   ; end-calc
 
     exx                                                               ; 2dfe: d9          .   4 cycles
     push hl                                                           ; 2dff: e5          .   11 cycles
@@ -8542,15 +8542,15 @@ pf_postve:
 ; $2e01 referenced 1 time by $2e6d
 pf_loop:
     rst $28                                                           ; 2e01: ef          .   11 cycles
-    db $31                                                            ; 2e02: 31          1  ; duplicate
-    db $27                                                            ; 2e03: 27          '  ; int
-    db $c2                                                            ; 2e04: c2          .  ; st-mem-2
-    db 3                                                              ; 2e05: 03          .  ; subtract
-    db $e2                                                            ; 2e06: e2          .  ; get-mem-2
-    db 1                                                              ; 2e07: 01          .  ; exchange
-    db $c2                                                            ; 2e08: c2          .  ; st-mem-2
-    db 2                                                              ; 2e09: 02          .  ; delete
-    db $38                                                            ; 2e0a: 38          8  ; end-calc
+    db $31                                                            ; 2e02: 31          1   ; duplicate
+    db $27                                                            ; 2e03: 27          '   ; int
+    db $c2                                                            ; 2e04: c2          .   ; st-mem-2
+    db 3                                                              ; 2e05: 03          .   ; subtract
+    db $e2                                                            ; 2e06: e2          .   ; get-mem-2
+    db 1                                                              ; 2e07: 01          .   ; exchange
+    db $c2                                                            ; 2e08: c2          .   ; st-mem-2
+    db 2                                                              ; 2e09: 02          .   ; delete
+    db $38                                                            ; 2e0a: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2e0b: 7e          ~   7 cycles
     and a                                                             ; 2e0c: a7          .   4 cycles
@@ -8575,8 +8575,8 @@ pf_save:
 ; $2e24 referenced 1 time by $2e19
 pf_small:
     rst $28                                                           ; 2e24: ef          .   11 cycles
-    db $e2                                                            ; 2e25: e2          .  ; get-mem-2
-    db $38                                                            ; 2e26: 38          8  ; end-calc
+    db $e2                                                            ; 2e25: e2          .   ; get-mem-2
+    db $38                                                            ; 2e26: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 2e27: 7e          ~   7 cycles
     sub $7e                                                           ; 2e28: d6 7e       .~  7 cycles
@@ -8588,12 +8588,12 @@ pf_small:
     ld a,d                                                            ; 2e35: 7a          z   4 cycles
     call e_to_fp                                                      ; 2e36: cd 4f 2d    .O- 17 cycles
     rst $28                                                           ; 2e39: ef          .   11 cycles
-    db $31                                                            ; 2e3a: 31          1  ; duplicate
-    db $27                                                            ; 2e3b: 27          '  ; int
-    db $c1                                                            ; 2e3c: c1          .  ; st-mem-1
-    db 3                                                              ; 2e3d: 03          .  ; subtract
-    db $e1                                                            ; 2e3e: e1          .  ; get-mem-1
-    db $38                                                            ; 2e3f: 38          8  ; end-calc
+    db $31                                                            ; 2e3a: 31          1   ; duplicate
+    db $27                                                            ; 2e3b: 27          '   ; int
+    db $c1                                                            ; 2e3c: c1          .   ; st-mem-1
+    db 3                                                              ; 2e3d: 03          .   ; subtract
+    db $e1                                                            ; 2e3e: e1          .   ; get-mem-1
+    db $38                                                            ; 2e3f: 38          8   ; end-calc
 
     call fp_to_a                                                      ; 2e40: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     push hl                                                           ; 2e43: e5          .   11 cycles
@@ -8695,9 +8695,9 @@ pf_all_9:
 ; $2ecb referenced 1 time by $2ebf
 pf_more:
     rst $28                                                           ; 2ecb: ef          .   11 cycles
-    db 2                                                              ; 2ecc: 02          .  ; delete
-    db $e2                                                            ; 2ecd: e2          .  ; get-mem-2
-    db $38                                                            ; 2ece: 38          8  ; end-calc
+    db 2                                                              ; 2ecc: 02          .   ; delete
+    db $e2                                                            ; 2ecd: e2          .   ; get-mem-2
+    db $38                                                            ; 2ece: 38          8   ; end-calc
 
 ; $2ecf referenced 1 time by $2e53
 pf_fractn:
@@ -8773,8 +8773,8 @@ pf_r_back:
 pf_count:
     ld (iy+(membot+25) - err_nr),b                                    ; 2f2d: fd 70 71    .pq 19 cycles
     rst $28                                                           ; 2f30: ef          .   11 cycles
-    db 2                                                              ; 2f31: 02          .  ; delete
-    db $38                                                            ; 2f32: 38          8  ; end-calc
+    db 2                                                              ; 2f31: 02          .   ; delete
+    db $38                                                            ; 2f32: 38          8   ; end-calc
 
     exx                                                               ; 2f33: d9          .   4 cycles
     pop hl                                                            ; 2f34: e1          .   10 cycles
@@ -9366,7 +9366,7 @@ oflow_clr:
 ; $31ad referenced 8 times by $2cad, $2d0c, $2d10, $309f, $3143, $314f, $3193, $31b7
 report_6:
     rst $08                                                           ; 31ad: cf          .   11 cycles
-    db 5                                                              ; 31ae: 05          .  ; Report 6 Number too big
+    db 5                                                              ; 31ae: 05          .   ; Report 6 Number too big
 
 division:
     call re_st_two                                                    ; 31af: cd 93 32    ..2 17 cycles
@@ -9628,7 +9628,7 @@ stk_zero:
 stk_one:
     db $40, $b0, 0, 1                                                 ; 32c8: 40 b0 00... @.. ; 1
 stk_half:
-    db $30, 0                                                         ; 32cc: 30 00       0. ; 0.5
+    db $30, 0                                                         ; 32cc: 30 00       0.  ; 0.5
 stk_pi_2:
     db $f1, $49, $0f, $da, $a2                                        ; 32ce: f1 49 0f... .I. ; 1.570796327
 stk_ten:
@@ -9920,32 +9920,32 @@ swap_byte:
 series_xx:
     ld b,a                                                            ; 3449: 47          G   4 cycles
     call gen_ent_1                                                    ; 344a: cd 5e 33    .^3 17 cycles
-    db $31                                                            ; 344d: 31          1  ; duplicate
-    db $0f                                                            ; 344e: 0f          .  ; addition
-    db $c0                                                            ; 344f: c0          .  ; st-mem-0
-    db 2                                                              ; 3450: 02          .  ; delete
-    db $a0                                                            ; 3451: a0          .  ; stk-zero
-    db $c2                                                            ; 3452: c2          .  ; st-mem-2
+    db $31                                                            ; 344d: 31          1   ; duplicate
+    db $0f                                                            ; 344e: 0f          .   ; addition
+    db $c0                                                            ; 344f: c0          .   ; st-mem-0
+    db 2                                                              ; 3450: 02          .   ; delete
+    db $a0                                                            ; 3451: a0          .   ; stk-zero
+    db $c2                                                            ; 3452: c2          .   ; st-mem-2
 g_loop:
-    db $31                                                            ; 3453: 31          1  ; duplicate
-    db $e0                                                            ; 3454: e0          .  ; get-mem-0
-    db 4                                                              ; 3455: 04          .  ; multiply
-    db $e2                                                            ; 3456: e2          .  ; get-mem-2
-    db $c1                                                            ; 3457: c1          .  ; st-mem-1
-    db 3                                                              ; 3458: 03          .  ; subtract
-    db $38                                                            ; 3459: 38          8  ; end-calc
+    db $31                                                            ; 3453: 31          1   ; duplicate
+    db $e0                                                            ; 3454: e0          .   ; get-mem-0
+    db 4                                                              ; 3455: 04          .   ; multiply
+    db $e2                                                            ; 3456: e2          .   ; get-mem-2
+    db $c1                                                            ; 3457: c1          .   ; st-mem-1
+    db 3                                                              ; 3458: 03          .   ; subtract
+    db $38                                                            ; 3459: 38          8   ; end-calc
 
     call stk_data                                                     ; 345a: cd c6 33    ..3 17 cycles
     call gen_ent_2                                                    ; 345d: cd 62 33    .b3 17 cycles
-    db $0f                                                            ; 3460: 0f          .  ; addition
-    db 1                                                              ; 3461: 01          .  ; exchange
-    db $c2                                                            ; 3462: c2          .  ; st-mem-2
-    db 2                                                              ; 3463: 02          .  ; delete
-    db $35                                                            ; 3464: 35          5  ; dec-jr-nz
+    db $0f                                                            ; 3460: 0f          .   ; addition
+    db 1                                                              ; 3461: 01          .   ; exchange
+    db $c2                                                            ; 3462: c2          .   ; st-mem-2
+    db 2                                                              ; 3463: 02          .   ; delete
+    db $35                                                            ; 3464: 35          5   ; dec-jr-nz
     db g_loop - $                                                     ; 3465: ee          .
-    db $e1                                                            ; 3466: e1          .  ; get-mem-1
-    db 3                                                              ; 3467: 03          .  ; subtract
-    db $38                                                            ; 3468: 38          8  ; end-calc
+    db $e1                                                            ; 3466: e1          .   ; get-mem-1
+    db 3                                                              ; 3467: 03          .   ; subtract
+    db $38                                                            ; 3468: 38          8   ; end-calc
 
     ret                                                               ; 3469: c9          .   10 cycles
 
@@ -10055,7 +10055,7 @@ usr_stack:
 ; $34e7 referenced 4 times by $34c2, $34cc, $34d0, $34d9
 report_a:
     rst $08                                                           ; 34e7: cf          .   11 cycles
-    db 9                                                              ; 34e8: 09          .  ; Report A Invalid argument
+    db 9                                                              ; 34e8: 09          .   ; Report A Invalid argument
 
 ; $34e9 referenced 9 times by $1cfa, $30c0, $346e, $3492, $34f9, $3501, $351c, $3525, $352e
 test_zero:
@@ -10223,8 +10223,8 @@ frst_less:
 str_test:
     push af                                                           ; 3588: f5          .   11 cycles
     rst $28                                                           ; 3589: ef          .   11 cycles
-    db $a0                                                            ; 358a: a0          .  ; stk-zero
-    db $38                                                            ; 358b: 38          8  ; end-calc
+    db $a0                                                            ; 358a: a0          .   ; stk-zero
+    db $38                                                            ; 358b: 38          8   ; end-calc
 
 ; $358c referenced 1 time by $3557
 end_tests:
@@ -10292,7 +10292,7 @@ chrs:
 ; $35dc referenced 2 times by $35cc, $35ce
 report_bd:
     rst $08                                                           ; 35dc: cf          .   11 cycles
-    db $0a                                                            ; 35dd: 0a          .  ; Report B Integer out of range
+    db $0a                                                            ; 35dd: 0a          .   ; Report B Integer out of range
 
 val_str:
     ld hl,(ch_add)                                                    ; 35de: 2a 5d 5c    *]\ 16 cycles
@@ -10434,67 +10434,67 @@ end_calc:
 
 n_mod_m:
     rst $28                                                           ; 36a0: ef          .   11 cycles
-    db $c0                                                            ; 36a1: c0          .  ; st-mem-0
-    db 2                                                              ; 36a2: 02          .  ; delete
-    db $31                                                            ; 36a3: 31          1  ; duplicate
-    db $e0                                                            ; 36a4: e0          .  ; get-mem-0
-    db 5                                                              ; 36a5: 05          .  ; division
-    db $27                                                            ; 36a6: 27          '  ; int
-    db $e0                                                            ; 36a7: e0          .  ; get-mem-0
-    db 1                                                              ; 36a8: 01          .  ; exchange
-    db $c0                                                            ; 36a9: c0          .  ; st-mem-0
-    db 4                                                              ; 36aa: 04          .  ; multiply
-    db 3                                                              ; 36ab: 03          .  ; subtract
-    db $e0                                                            ; 36ac: e0          .  ; get-mem-0
-    db $38                                                            ; 36ad: 38          8  ; end-calc
+    db $c0                                                            ; 36a1: c0          .   ; st-mem-0
+    db 2                                                              ; 36a2: 02          .   ; delete
+    db $31                                                            ; 36a3: 31          1   ; duplicate
+    db $e0                                                            ; 36a4: e0          .   ; get-mem-0
+    db 5                                                              ; 36a5: 05          .   ; division
+    db $27                                                            ; 36a6: 27          '   ; int
+    db $e0                                                            ; 36a7: e0          .   ; get-mem-0
+    db 1                                                              ; 36a8: 01          .   ; exchange
+    db $c0                                                            ; 36a9: c0          .   ; st-mem-0
+    db 4                                                              ; 36aa: 04          .   ; multiply
+    db 3                                                              ; 36ab: 03          .   ; subtract
+    db $e0                                                            ; 36ac: e0          .   ; get-mem-0
+    db $38                                                            ; 36ad: 38          8   ; end-calc
 
     ret                                                               ; 36ae: c9          .   10 cycles
 
 int:
     rst $28                                                           ; 36af: ef          .   11 cycles
-    db $31                                                            ; 36b0: 31          1  ; duplicate
-    db $36                                                            ; 36b1: 36          6  ; less-0
-    db 0                                                              ; 36b2: 00          .  ; jump-true
+    db $31                                                            ; 36b0: 31          1   ; duplicate
+    db $36                                                            ; 36b1: 36          6   ; less-0
+    db 0                                                              ; 36b2: 00          .   ; jump-true
     db x_neg - $                                                      ; 36b3: 04          .
-    db $3a                                                            ; 36b4: 3a          :  ; truncate
-    db $38                                                            ; 36b5: 38          8  ; end-calc
+    db $3a                                                            ; 36b4: 3a          :   ; truncate
+    db $38                                                            ; 36b5: 38          8   ; end-calc
 
     ret                                                               ; 36b6: c9          .   10 cycles
 
 x_neg:
-    db $31                                                            ; 36b7: 31          1  ; duplicate
-    db $3a                                                            ; 36b8: 3a          :  ; truncate
-    db $c0                                                            ; 36b9: c0          .  ; st-mem-0
-    db 3                                                              ; 36ba: 03          .  ; subtract
-    db $e0                                                            ; 36bb: e0          .  ; get-mem-0
-    db 1                                                              ; 36bc: 01          .  ; exchange
-    db $30                                                            ; 36bd: 30          0  ; not
-    db 0                                                              ; 36be: 00          .  ; jump-true
+    db $31                                                            ; 36b7: 31          1   ; duplicate
+    db $3a                                                            ; 36b8: 3a          :   ; truncate
+    db $c0                                                            ; 36b9: c0          .   ; st-mem-0
+    db 3                                                              ; 36ba: 03          .   ; subtract
+    db $e0                                                            ; 36bb: e0          .   ; get-mem-0
+    db 1                                                              ; 36bc: 01          .   ; exchange
+    db $30                                                            ; 36bd: 30          0   ; not
+    db 0                                                              ; 36be: 00          .   ; jump-true
     db exit - $                                                       ; 36bf: 03          .
-    db $a1                                                            ; 36c0: a1          .  ; stk-one
-    db 3                                                              ; 36c1: 03          .  ; subtract
+    db $a1                                                            ; 36c0: a1          .   ; stk-one
+    db 3                                                              ; 36c1: 03          .   ; subtract
 exit:
-    db $38                                                            ; 36c2: 38          8  ; end-calc
+    db $38                                                            ; 36c2: 38          8   ; end-calc
 
     ret                                                               ; 36c3: c9          .   10 cycles
 
 ; $36c4 referenced 1 time by $385a
 exp:
     rst $28                                                           ; 36c4: ef          .   11 cycles
-    db $3d                                                            ; 36c5: 3d          =  ; re-stack
-    db $34                                                            ; 36c6: 34          4  ; stk-data
+    db $3d                                                            ; 36c5: 3d          =   ; re-stack
+    db $34                                                            ; 36c6: 34          4   ; stk-data
     db $f1, $38, $aa, $3b, $29                                        ; 36c7: f1 38 aa... .8. ; 1.442695041
-    db 4                                                              ; 36cc: 04          .  ; multiply
-    db $31                                                            ; 36cd: 31          1  ; duplicate
-    db $27                                                            ; 36ce: 27          '  ; int
-    db $c3                                                            ; 36cf: c3          .  ; st-mem-3
-    db 3                                                              ; 36d0: 03          .  ; subtract
-    db $31                                                            ; 36d1: 31          1  ; duplicate
-    db $0f                                                            ; 36d2: 0f          .  ; addition
-    db $a1                                                            ; 36d3: a1          .  ; stk-one
-    db 3                                                              ; 36d4: 03          .  ; subtract
-    db $88                                                            ; 36d5: 88          .  ; series-08
-    db $13, $36                                                       ; 36d6: 13 36       .6 ; 1.324224286e-09
+    db 4                                                              ; 36cc: 04          .   ; multiply
+    db $31                                                            ; 36cd: 31          1   ; duplicate
+    db $27                                                            ; 36ce: 27          '   ; int
+    db $c3                                                            ; 36cf: c3          .   ; st-mem-3
+    db 3                                                              ; 36d0: 03          .   ; subtract
+    db $31                                                            ; 36d1: 31          1   ; duplicate
+    db $0f                                                            ; 36d2: 0f          .   ; addition
+    db $a1                                                            ; 36d3: a1          .   ; stk-one
+    db 3                                                              ; 36d4: 03          .   ; subtract
+    db $88                                                            ; 36d5: 88          .   ; series-08
+    db $13, $36                                                       ; 36d6: 13 36       .6  ; 1.324224286e-09
     db $58, $65, $66                                                  ; 36d8: 58 65 66    Xef ; 5.341098586e-08
     db $9d, $78, $65, $40                                             ; 36db: 9d 78 65... .xe ; 1.850690751e-06
     db $a2, $60, $32, $c9                                             ; 36df: a2 60 32... .`2 ; 5.345305908e-05
@@ -10502,8 +10502,8 @@ exp:
     db $eb, $2f, $b0, $b0, $14                                        ; 36e8: eb 2f b0... ./. ; 0.021446556
     db $ee, $7e, $bb, $94, $58                                        ; 36ed: ee 7e bb... .~. ; 0.2487624339
     db $f1, $3a, $7e, $f8, $cf                                        ; 36f2: f1 3a 7e... .:~ ; 1.456999875
-    db $e3                                                            ; 36f7: e3          .  ; get-mem-3
-    db $38                                                            ; 36f8: 38          8  ; end-calc
+    db $e3                                                            ; 36f7: e3          .   ; get-mem-3
+    db $38                                                            ; 36f8: 38          8   ; end-calc
 
     call fp_to_a                                                      ; 36f9: cd d5 2d    ..- 17 cycles    ; Get a number from the calculator stack
     jr nz,n_negtv                                                     ; 36fc: 20 07        .  7/12 cycles
@@ -10513,7 +10513,7 @@ exp:
 ; $3703 referenced 1 time by $36fe
 report_6b:
     rst $08                                                           ; 3703: cf          .   11 cycles
-    db 5                                                              ; 3704: 05          .  ; Report 6 Number too big
+    db 5                                                              ; 3704: 05          .   ; Report 6 Number too big
 
 ; $3705 referenced 1 time by $36fc
 n_negtv:
@@ -10529,71 +10529,71 @@ result_ok:
 ; $370e referenced 2 times by $3705, $3708
 rslt_zero:
     rst $28                                                           ; 370e: ef          .   11 cycles
-    db 2                                                              ; 370f: 02          .  ; delete
-    db $a0                                                            ; 3710: a0          .  ; stk-zero
-    db $38                                                            ; 3711: 38          8  ; end-calc
+    db 2                                                              ; 370f: 02          .   ; delete
+    db $a0                                                            ; 3710: a0          .   ; stk-zero
+    db $38                                                            ; 3711: 38          8   ; end-calc
 
     ret                                                               ; 3712: c9          .   10 cycles
 
 ln:
     rst $28                                                           ; 3713: ef          .   11 cycles
-    db $3d                                                            ; 3714: 3d          =  ; re-stack
-    db $31                                                            ; 3715: 31          1  ; duplicate
-    db $37                                                            ; 3716: 37          7  ; greater-0
-    db 0                                                              ; 3717: 00          .  ; jump-true
+    db $3d                                                            ; 3714: 3d          =   ; re-stack
+    db $31                                                            ; 3715: 31          1   ; duplicate
+    db $37                                                            ; 3716: 37          7   ; greater-0
+    db 0                                                              ; 3717: 00          .   ; jump-true
     db valid - $                                                      ; 3718: 04          .
-    db $38                                                            ; 3719: 38          8  ; end-calc
+    db $38                                                            ; 3719: 38          8   ; end-calc
 
 report_ab:
     rst $08                                                           ; 371a: cf          .   11 cycles
-    db 9                                                              ; 371b: 09          .  ; Report A Invalid argument
+    db 9                                                              ; 371b: 09          .   ; Report A Invalid argument
 valid:
-    db $a0                                                            ; 371c: a0          .  ; stk-zero
-    db 2                                                              ; 371d: 02          .  ; delete
-    db $38                                                            ; 371e: 38          8  ; end-calc
+    db $a0                                                            ; 371c: a0          .   ; stk-zero
+    db 2                                                              ; 371d: 02          .   ; delete
+    db $38                                                            ; 371e: 38          8   ; end-calc
 
     ld a,(hl)                                                         ; 371f: 7e          ~   7 cycles
     ld (hl),$80                                                       ; 3720: 36 80       6.  10 cycles
     call stack_a                                                      ; 3722: cd 28 2d    .(- 17 cycles    ; Put A on the calculator stack
     rst $28                                                           ; 3725: ef          .   11 cycles
-    db $34                                                            ; 3726: 34          4  ; stk-data
-    db $38, 0                                                         ; 3727: 38 00       8. ; 128
-    db 3                                                              ; 3729: 03          .  ; subtract
-    db 1                                                              ; 372a: 01          .  ; exchange
-    db $31                                                            ; 372b: 31          1  ; duplicate
-    db $34                                                            ; 372c: 34          4  ; stk-data
+    db $34                                                            ; 3726: 34          4   ; stk-data
+    db $38, 0                                                         ; 3727: 38 00       8.  ; 128
+    db 3                                                              ; 3729: 03          .   ; subtract
+    db 1                                                              ; 372a: 01          .   ; exchange
+    db $31                                                            ; 372b: 31          1   ; duplicate
+    db $34                                                            ; 372c: 34          4   ; stk-data
     db $f0, $4c, $cc, $cc, $cd                                        ; 372d: f0 4c cc... .L. ; 0.8
-    db 3                                                              ; 3732: 03          .  ; subtract
-    db $37                                                            ; 3733: 37          7  ; greater-0
-    db 0                                                              ; 3734: 00          .  ; jump-true
+    db 3                                                              ; 3732: 03          .   ; subtract
+    db $37                                                            ; 3733: 37          7   ; greater-0
+    db 0                                                              ; 3734: 00          .   ; jump-true
     db gre_8 - $                                                      ; 3735: 08          .
-    db 1                                                              ; 3736: 01          .  ; exchange
-    db $a1                                                            ; 3737: a1          .  ; stk-one
-    db 3                                                              ; 3738: 03          .  ; subtract
-    db 1                                                              ; 3739: 01          .  ; exchange
-    db $38                                                            ; 373a: 38          8  ; end-calc
+    db 1                                                              ; 3736: 01          .   ; exchange
+    db $a1                                                            ; 3737: a1          .   ; stk-one
+    db 3                                                              ; 3738: 03          .   ; subtract
+    db 1                                                              ; 3739: 01          .   ; exchange
+    db $38                                                            ; 373a: 38          8   ; end-calc
 
     inc (hl)                                                          ; 373b: 34          4   11 cycles
     rst $28                                                           ; 373c: ef          .   11 cycles
 gre_8:
-    db 1                                                              ; 373d: 01          .  ; exchange
-    db $34                                                            ; 373e: 34          4  ; stk-data
+    db 1                                                              ; 373d: 01          .   ; exchange
+    db $34                                                            ; 373e: 34          4   ; stk-data
     db $f0, $31, $72, $17, $f8                                        ; 373f: f0 31 72... .1r ; 0.6931471806
-    db 4                                                              ; 3744: 04          .  ; multiply
-    db 1                                                              ; 3745: 01          .  ; exchange
-    db $a2                                                            ; 3746: a2          .  ; stk-half
-    db 3                                                              ; 3747: 03          .  ; subtract
-    db $a2                                                            ; 3748: a2          .  ; stk-half
-    db 3                                                              ; 3749: 03          .  ; subtract
-    db $31                                                            ; 374a: 31          1  ; duplicate
-    db $34                                                            ; 374b: 34          4  ; stk-data
-    db $32, $20                                                       ; 374c: 32 20       2  ; 2.5
-    db 4                                                              ; 374e: 04          .  ; multiply
-    db $a2                                                            ; 374f: a2          .  ; stk-half
-    db 3                                                              ; 3750: 03          .  ; subtract
-    db $8c                                                            ; 3751: 8c          .  ; series-0C
-    db $11, $ac                                                       ; 3752: 11 ac       .. ; -3.128661774e-10
-    db $14, 9                                                         ; 3754: 14 09       .. ; 1.993612386e-09
+    db 4                                                              ; 3744: 04          .   ; multiply
+    db 1                                                              ; 3745: 01          .   ; exchange
+    db $a2                                                            ; 3746: a2          .   ; stk-half
+    db 3                                                              ; 3747: 03          .   ; subtract
+    db $a2                                                            ; 3748: a2          .   ; stk-half
+    db 3                                                              ; 3749: 03          .   ; subtract
+    db $31                                                            ; 374a: 31          1   ; duplicate
+    db $34                                                            ; 374b: 34          4   ; stk-data
+    db $32, $20                                                       ; 374c: 32 20       2   ; 2.5
+    db 4                                                              ; 374e: 04          .   ; multiply
+    db $a2                                                            ; 374f: a2          .   ; stk-half
+    db 3                                                              ; 3750: 03          .   ; subtract
+    db $8c                                                            ; 3751: 8c          .   ; series-0C
+    db $11, $ac                                                       ; 3752: 11 ac       ..  ; -3.128661774e-10
+    db $14, 9                                                         ; 3754: 14 09       ..  ; 1.993612386e-09
     db $56, $da, $a5                                                  ; 3756: 56 da a5    V.. ; -1.272678674e-08
     db $59, $30, $c5                                                  ; 3759: 59 30 c5    Y0. ; 8.231472748e-08
     db $5c, $90, $aa                                                  ; 375c: 5c 90 aa    \.. ; -5.389156286e-07
@@ -10604,98 +10604,98 @@ gre_8:
     db $ea, $1b, $43, $ca, $36                                        ; 3770: ea 1b 43... ..C ; 0.009476611587
     db $ed, $a7, $9c, $7e, $5e                                        ; 3775: ed a7 9c... ... ; -0.08184145665
     db $f0, $6e, $23, $80, $93                                        ; 377a: f0 6e 23... .n# ; 0.9302292212
-    db 4                                                              ; 377f: 04          .  ; multiply
-    db $0f                                                            ; 3780: 0f          .  ; addition
-    db $38                                                            ; 3781: 38          8  ; end-calc
+    db 4                                                              ; 377f: 04          .   ; multiply
+    db $0f                                                            ; 3780: 0f          .   ; addition
+    db $38                                                            ; 3781: 38          8   ; end-calc
 
     ret                                                               ; 3782: c9          .   10 cycles
 
 get_argt:
     rst $28                                                           ; 3783: ef          .   11 cycles
-    db $3d                                                            ; 3784: 3d          =  ; re-stack
-    db $34                                                            ; 3785: 34          4  ; stk-data
+    db $3d                                                            ; 3784: 3d          =   ; re-stack
+    db $34                                                            ; 3785: 34          4   ; stk-data
     db $ee, $22, $f9, $83, $6e                                        ; 3786: ee 22 f9... .". ; 0.1591549431
-    db 4                                                              ; 378b: 04          .  ; multiply
-    db $31                                                            ; 378c: 31          1  ; duplicate
-    db $a2                                                            ; 378d: a2          .  ; stk-half
-    db $0f                                                            ; 378e: 0f          .  ; addition
-    db $27                                                            ; 378f: 27          '  ; int
-    db 3                                                              ; 3790: 03          .  ; subtract
-    db $31                                                            ; 3791: 31          1  ; duplicate
-    db $0f                                                            ; 3792: 0f          .  ; addition
-    db $31                                                            ; 3793: 31          1  ; duplicate
-    db $0f                                                            ; 3794: 0f          .  ; addition
-    db $31                                                            ; 3795: 31          1  ; duplicate
-    db $2a                                                            ; 3796: 2a          *  ; abs
-    db $a1                                                            ; 3797: a1          .  ; stk-one
-    db 3                                                              ; 3798: 03          .  ; subtract
-    db $31                                                            ; 3799: 31          1  ; duplicate
-    db $37                                                            ; 379a: 37          7  ; greater-0
-    db $c0                                                            ; 379b: c0          .  ; st-mem-0
-    db 0                                                              ; 379c: 00          .  ; jump-true
+    db 4                                                              ; 378b: 04          .   ; multiply
+    db $31                                                            ; 378c: 31          1   ; duplicate
+    db $a2                                                            ; 378d: a2          .   ; stk-half
+    db $0f                                                            ; 378e: 0f          .   ; addition
+    db $27                                                            ; 378f: 27          '   ; int
+    db 3                                                              ; 3790: 03          .   ; subtract
+    db $31                                                            ; 3791: 31          1   ; duplicate
+    db $0f                                                            ; 3792: 0f          .   ; addition
+    db $31                                                            ; 3793: 31          1   ; duplicate
+    db $0f                                                            ; 3794: 0f          .   ; addition
+    db $31                                                            ; 3795: 31          1   ; duplicate
+    db $2a                                                            ; 3796: 2a          *   ; abs
+    db $a1                                                            ; 3797: a1          .   ; stk-one
+    db 3                                                              ; 3798: 03          .   ; subtract
+    db $31                                                            ; 3799: 31          1   ; duplicate
+    db $37                                                            ; 379a: 37          7   ; greater-0
+    db $c0                                                            ; 379b: c0          .   ; st-mem-0
+    db 0                                                              ; 379c: 00          .   ; jump-true
     db zplus - $                                                      ; 379d: 04          .
-    db 2                                                              ; 379e: 02          .  ; delete
-    db $38                                                            ; 379f: 38          8  ; end-calc
+    db 2                                                              ; 379e: 02          .   ; delete
+    db $38                                                            ; 379f: 38          8   ; end-calc
 
     ret                                                               ; 37a0: c9          .   10 cycles
 
 zplus:
-    db $a1                                                            ; 37a1: a1          .  ; stk-one
-    db 3                                                              ; 37a2: 03          .  ; subtract
-    db 1                                                              ; 37a3: 01          .  ; exchange
-    db $36                                                            ; 37a4: 36          6  ; less-0
-    db 0                                                              ; 37a5: 00          .  ; jump-true
+    db $a1                                                            ; 37a1: a1          .   ; stk-one
+    db 3                                                              ; 37a2: 03          .   ; subtract
+    db 1                                                              ; 37a3: 01          .   ; exchange
+    db $36                                                            ; 37a4: 36          6   ; less-0
+    db 0                                                              ; 37a5: 00          .   ; jump-true
     db yneg - $                                                       ; 37a6: 02          .
-    db $1b                                                            ; 37a7: 1b          .  ; negate
+    db $1b                                                            ; 37a7: 1b          .   ; negate
 yneg:
-    db $38                                                            ; 37a8: 38          8  ; end-calc
+    db $38                                                            ; 37a8: 38          8   ; end-calc
 
     ret                                                               ; 37a9: c9          .   10 cycles
 
 cos:
     rst $28                                                           ; 37aa: ef          .   11 cycles
-    db $39                                                            ; 37ab: 39          9  ; get-argt
-    db $2a                                                            ; 37ac: 2a          *  ; abs
-    db $a1                                                            ; 37ad: a1          .  ; stk-one
-    db 3                                                              ; 37ae: 03          .  ; subtract
-    db $e0                                                            ; 37af: e0          .  ; get-mem-0
-    db 0                                                              ; 37b0: 00          .  ; jump-true
+    db $39                                                            ; 37ab: 39          9   ; get-argt
+    db $2a                                                            ; 37ac: 2a          *   ; abs
+    db $a1                                                            ; 37ad: a1          .   ; stk-one
+    db 3                                                              ; 37ae: 03          .   ; subtract
+    db $e0                                                            ; 37af: e0          .   ; get-mem-0
+    db 0                                                              ; 37b0: 00          .   ; jump-true
     db c_ent - $                                                      ; 37b1: 06          .
-    db $1b                                                            ; 37b2: 1b          .  ; negate
-    db $33                                                            ; 37b3: 33          3  ; jump
+    db $1b                                                            ; 37b2: 1b          .   ; negate
+    db $33                                                            ; 37b3: 33          3   ; jump
     db c_ent - $                                                      ; 37b4: 03          .
 
 sin:
     rst $28                                                           ; 37b5: ef          .   11 cycles
-    db $39                                                            ; 37b6: 39          9  ; get-argt
+    db $39                                                            ; 37b6: 39          9   ; get-argt
 c_ent:
-    db $31                                                            ; 37b7: 31          1  ; duplicate
-    db $31                                                            ; 37b8: 31          1  ; duplicate
-    db 4                                                              ; 37b9: 04          .  ; multiply
-    db $31                                                            ; 37ba: 31          1  ; duplicate
-    db $0f                                                            ; 37bb: 0f          .  ; addition
-    db $a1                                                            ; 37bc: a1          .  ; stk-one
-    db 3                                                              ; 37bd: 03          .  ; subtract
-    db $86                                                            ; 37be: 86          .  ; series-06
-    db $14, $e6                                                       ; 37bf: 14 e6       .. ; -3.346940503e-09
+    db $31                                                            ; 37b7: 31          1   ; duplicate
+    db $31                                                            ; 37b8: 31          1   ; duplicate
+    db 4                                                              ; 37b9: 04          .   ; multiply
+    db $31                                                            ; 37ba: 31          1   ; duplicate
+    db $0f                                                            ; 37bb: 0f          .   ; addition
+    db $a1                                                            ; 37bc: a1          .   ; stk-one
+    db 3                                                              ; 37bd: 03          .   ; subtract
+    db $86                                                            ; 37be: 86          .   ; series-06
+    db $14, $e6                                                       ; 37bf: 14 e6       ..  ; -3.346940503e-09
     db $5c, $1f, $0b                                                  ; 37c1: 5c 1f 0b    \.. ; 5.924812285e-07
     db $a3, $8f, $38, $ee                                             ; 37c4: a3 8f 38... ..8 ; -6.829375343e-05
     db $e9, $15, $63, $bb, $23                                        ; 37c8: e9 15 63... ..c ; 0.004559008003
     db $ee, $92, $0d, $cd, $ed                                        ; 37cd: ee 92 0d... ... ; -0.1426307846
     db $f1, $23, $5d, $1b, $ea                                        ; 37d2: f1 23 5d... .#] ; 1.276278962
-    db 4                                                              ; 37d7: 04          .  ; multiply
-    db $38                                                            ; 37d8: 38          8  ; end-calc
+    db 4                                                              ; 37d7: 04          .   ; multiply
+    db $38                                                            ; 37d8: 38          8   ; end-calc
 
     ret                                                               ; 37d9: c9          .   10 cycles
 
 tan:
     rst $28                                                           ; 37da: ef          .   11 cycles
-    db $31                                                            ; 37db: 31          1  ; duplicate
-    db $1f                                                            ; 37dc: 1f          .  ; sin
-    db 1                                                              ; 37dd: 01          .  ; exchange
-    db $20                                                            ; 37de: 20             ; cos
-    db 5                                                              ; 37df: 05          .  ; division
-    db $38                                                            ; 37e0: 38          8  ; end-calc
+    db $31                                                            ; 37db: 31          1   ; duplicate
+    db $1f                                                            ; 37dc: 1f          .   ; sin
+    db 1                                                              ; 37dd: 01          .   ; exchange
+    db $20                                                            ; 37de: 20              ; cos
+    db 5                                                              ; 37df: 05          .   ; division
+    db $38                                                            ; 37e0: 38          8   ; end-calc
 
     ret                                                               ; 37e1: c9          .   10 cycles
 
@@ -10705,36 +10705,36 @@ atn:
     cp $81                                                            ; 37e6: fe 81       ..  7 cycles
     jr c,small                                                        ; 37e8: 38 0e       8.  7/12 cycles
     rst $28                                                           ; 37ea: ef          .   11 cycles
-    db $a1                                                            ; 37eb: a1          .  ; stk-one
-    db $1b                                                            ; 37ec: 1b          .  ; negate
-    db 1                                                              ; 37ed: 01          .  ; exchange
-    db 5                                                              ; 37ee: 05          .  ; division
-    db $31                                                            ; 37ef: 31          1  ; duplicate
-    db $36                                                            ; 37f0: 36          6  ; less-0
-    db $a3                                                            ; 37f1: a3          .  ; stk-pi/2
-    db 1                                                              ; 37f2: 01          .  ; exchange
-    db 0                                                              ; 37f3: 00          .  ; jump-true
+    db $a1                                                            ; 37eb: a1          .   ; stk-one
+    db $1b                                                            ; 37ec: 1b          .   ; negate
+    db 1                                                              ; 37ed: 01          .   ; exchange
+    db 5                                                              ; 37ee: 05          .   ; division
+    db $31                                                            ; 37ef: 31          1   ; duplicate
+    db $36                                                            ; 37f0: 36          6   ; less-0
+    db $a3                                                            ; 37f1: a3          .   ; stk-pi/2
+    db 1                                                              ; 37f2: 01          .   ; exchange
+    db 0                                                              ; 37f3: 00          .   ; jump-true
     db cases - $                                                      ; 37f4: 06          .
-    db $1b                                                            ; 37f5: 1b          .  ; negate
-    db $33                                                            ; 37f6: 33          3  ; jump
+    db $1b                                                            ; 37f5: 1b          .   ; negate
+    db $33                                                            ; 37f6: 33          3   ; jump
     db cases - $                                                      ; 37f7: 03          .
 
 ; $37f8 referenced 1 time by $37e8
 small:
     rst $28                                                           ; 37f8: ef          .   11 cycles
-    db $a0                                                            ; 37f9: a0          .  ; stk-zero
+    db $a0                                                            ; 37f9: a0          .   ; stk-zero
 cases:
-    db 1                                                              ; 37fa: 01          .  ; exchange
-    db $31                                                            ; 37fb: 31          1  ; duplicate
-    db $31                                                            ; 37fc: 31          1  ; duplicate
-    db 4                                                              ; 37fd: 04          .  ; multiply
-    db $31                                                            ; 37fe: 31          1  ; duplicate
-    db $0f                                                            ; 37ff: 0f          .  ; addition
-    db $a1                                                            ; 3800: a1          .  ; stk-one
-    db 3                                                              ; 3801: 03          .  ; subtract
-    db $8c                                                            ; 3802: 8c          .  ; series-0C
-    db $10, $b2                                                       ; 3803: 10 b2       .. ; -1.618900569e-10
-    db $13, $0e                                                       ; 3805: 13 0e       .. ; 1.033185981e-09
+    db 1                                                              ; 37fa: 01          .   ; exchange
+    db $31                                                            ; 37fb: 31          1   ; duplicate
+    db $31                                                            ; 37fc: 31          1   ; duplicate
+    db 4                                                              ; 37fd: 04          .   ; multiply
+    db $31                                                            ; 37fe: 31          1   ; duplicate
+    db $0f                                                            ; 37ff: 0f          .   ; addition
+    db $a1                                                            ; 3800: a1          .   ; stk-one
+    db 3                                                              ; 3801: 03          .   ; subtract
+    db $8c                                                            ; 3802: 8c          .   ; series-0C
+    db $10, $b2                                                       ; 3803: 10 b2       ..  ; -1.618900569e-10
+    db $13, $0e                                                       ; 3805: 13 0e       ..  ; 1.033185981e-09
     db $55, $e4, $8d                                                  ; 3807: 55 e4 8d    U.. ; -6.651703188e-09
     db $58, $39, $bc                                                  ; 380a: 58 39 bc    X9. ; 4.324465408e-08
     db $5b, $98, $fd                                                  ; 380d: 5b 98 fd    [.. ; -2.8496288e-07
@@ -10745,82 +10745,82 @@ cases:
     db $e9, $36, $73, $1b, $5d                                        ; 3820: e9 36 73... .6s ; 0.005567921029
     db $ec, $d8, $de, $63, $be                                        ; 3825: ec d8 de... ... ; -0.05294646227
     db $f0, $61, $a1, $b3, $0c                                        ; 382a: f0 61 a1... .a. ; 0.8813735871
-    db 4                                                              ; 382f: 04          .  ; multiply
-    db $0f                                                            ; 3830: 0f          .  ; addition
-    db $38                                                            ; 3831: 38          8  ; end-calc
+    db 4                                                              ; 382f: 04          .   ; multiply
+    db $0f                                                            ; 3830: 0f          .   ; addition
+    db $38                                                            ; 3831: 38          8   ; end-calc
 
     ret                                                               ; 3832: c9          .   10 cycles
 
 asn:
     rst $28                                                           ; 3833: ef          .   11 cycles
-    db $31                                                            ; 3834: 31          1  ; duplicate
-    db $31                                                            ; 3835: 31          1  ; duplicate
-    db 4                                                              ; 3836: 04          .  ; multiply
-    db $a1                                                            ; 3837: a1          .  ; stk-one
-    db 3                                                              ; 3838: 03          .  ; subtract
-    db $1b                                                            ; 3839: 1b          .  ; negate
-    db $28                                                            ; 383a: 28          (  ; sqr
-    db $a1                                                            ; 383b: a1          .  ; stk-one
-    db $0f                                                            ; 383c: 0f          .  ; addition
-    db 5                                                              ; 383d: 05          .  ; division
-    db $24                                                            ; 383e: 24          $  ; atn
-    db $31                                                            ; 383f: 31          1  ; duplicate
-    db $0f                                                            ; 3840: 0f          .  ; addition
-    db $38                                                            ; 3841: 38          8  ; end-calc
+    db $31                                                            ; 3834: 31          1   ; duplicate
+    db $31                                                            ; 3835: 31          1   ; duplicate
+    db 4                                                              ; 3836: 04          .   ; multiply
+    db $a1                                                            ; 3837: a1          .   ; stk-one
+    db 3                                                              ; 3838: 03          .   ; subtract
+    db $1b                                                            ; 3839: 1b          .   ; negate
+    db $28                                                            ; 383a: 28          (   ; sqr
+    db $a1                                                            ; 383b: a1          .   ; stk-one
+    db $0f                                                            ; 383c: 0f          .   ; addition
+    db 5                                                              ; 383d: 05          .   ; division
+    db $24                                                            ; 383e: 24          $   ; atn
+    db $31                                                            ; 383f: 31          1   ; duplicate
+    db $0f                                                            ; 3840: 0f          .   ; addition
+    db $38                                                            ; 3841: 38          8   ; end-calc
 
     ret                                                               ; 3842: c9          .   10 cycles
 
 acs:
     rst $28                                                           ; 3843: ef          .   11 cycles
-    db $22                                                            ; 3844: 22          "  ; asn
-    db $a3                                                            ; 3845: a3          .  ; stk-pi/2
-    db 3                                                              ; 3846: 03          .  ; subtract
-    db $1b                                                            ; 3847: 1b          .  ; negate
-    db $38                                                            ; 3848: 38          8  ; end-calc
+    db $22                                                            ; 3844: 22          "   ; asn
+    db $a3                                                            ; 3845: a3          .   ; stk-pi/2
+    db 3                                                              ; 3846: 03          .   ; subtract
+    db $1b                                                            ; 3847: 1b          .   ; negate
+    db $38                                                            ; 3848: 38          8   ; end-calc
 
     ret                                                               ; 3849: c9          .   10 cycles
 
 sqr:
     rst $28                                                           ; 384a: ef          .   11 cycles
-    db $31                                                            ; 384b: 31          1  ; duplicate
-    db $30                                                            ; 384c: 30          0  ; not
-    db 0                                                              ; 384d: 00          .  ; jump-true
+    db $31                                                            ; 384b: 31          1   ; duplicate
+    db $30                                                            ; 384c: 30          0   ; not
+    db 0                                                              ; 384d: 00          .   ; jump-true
     db last - $                                                       ; 384e: 1e          .
-    db $a2                                                            ; 384f: a2          .  ; stk-half
-    db $38                                                            ; 3850: 38          8  ; end-calc
+    db $a2                                                            ; 384f: a2          .   ; stk-half
+    db $38                                                            ; 3850: 38          8   ; end-calc
 
 to_power:
     rst $28                                                           ; 3851: ef          .   11 cycles
-    db 1                                                              ; 3852: 01          .  ; exchange
-    db $31                                                            ; 3853: 31          1  ; duplicate
-    db $30                                                            ; 3854: 30          0  ; not
-    db 0                                                              ; 3855: 00          .  ; jump-true
+    db 1                                                              ; 3852: 01          .   ; exchange
+    db $31                                                            ; 3853: 31          1   ; duplicate
+    db $30                                                            ; 3854: 30          0   ; not
+    db 0                                                              ; 3855: 00          .   ; jump-true
     db xiso - $                                                       ; 3856: 07          .
-    db $25                                                            ; 3857: 25          %  ; ln
-    db 4                                                              ; 3858: 04          .  ; multiply
-    db $38                                                            ; 3859: 38          8  ; end-calc
+    db $25                                                            ; 3857: 25          %   ; ln
+    db 4                                                              ; 3858: 04          .   ; multiply
+    db $38                                                            ; 3859: 38          8   ; end-calc
 
     jp exp                                                            ; 385a: c3 c4 36    ..6 10 cycles
 
 xiso:
-    db 2                                                              ; 385d: 02          .  ; delete
-    db $31                                                            ; 385e: 31          1  ; duplicate
-    db $30                                                            ; 385f: 30          0  ; not
-    db 0                                                              ; 3860: 00          .  ; jump-true
+    db 2                                                              ; 385d: 02          .   ; delete
+    db $31                                                            ; 385e: 31          1   ; duplicate
+    db $30                                                            ; 385f: 30          0   ; not
+    db 0                                                              ; 3860: 00          .   ; jump-true
     db one - $                                                        ; 3861: 09          .
-    db $a0                                                            ; 3862: a0          .  ; stk-zero
-    db 1                                                              ; 3863: 01          .  ; exchange
-    db $37                                                            ; 3864: 37          7  ; greater-0
-    db 0                                                              ; 3865: 00          .  ; jump-true
+    db $a0                                                            ; 3862: a0          .   ; stk-zero
+    db 1                                                              ; 3863: 01          .   ; exchange
+    db $37                                                            ; 3864: 37          7   ; greater-0
+    db 0                                                              ; 3865: 00          .   ; jump-true
     db last - $                                                       ; 3866: 06          .
-    db $a1                                                            ; 3867: a1          .  ; stk-one
-    db 1                                                              ; 3868: 01          .  ; exchange
-    db 5                                                              ; 3869: 05          .  ; division
+    db $a1                                                            ; 3867: a1          .   ; stk-one
+    db 1                                                              ; 3868: 01          .   ; exchange
+    db 5                                                              ; 3869: 05          .   ; division
 one:
-    db 2                                                              ; 386a: 02          .  ; delete
-    db $a1                                                            ; 386b: a1          .  ; stk-one
+    db 2                                                              ; 386a: 02          .   ; delete
+    db $a1                                                            ; 386b: a1          .   ; stk-one
 last:
-    db $38                                                            ; 386c: 38          8  ; end-calc
+    db $38                                                            ; 386c: 38          8   ; end-calc
 
     ret                                                               ; 386d: c9          .   10 cycles
 
@@ -10924,7 +10924,7 @@ spare:
     db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff     ; 3cee: ff ff ff... ...
     db $ff, $ff, $ff, $ff, $ff, $ff                                   ; 3cfa: ff ff ff... ...
 char_set:
-    db %"--------"                                                    ; 3d00: 00          .  ; ' '
+    db %"--------"                                                    ; 3d00: 00          .   ; ' '
     db %"--------"                                                    ; 3d01: 00          .
     db %"--------"                                                    ; 3d02: 00          .
     db %"--------"                                                    ; 3d03: 00          .
@@ -10932,7 +10932,7 @@ char_set:
     db %"--------"                                                    ; 3d05: 00          .
     db %"--------"                                                    ; 3d06: 00          .
     db %"--------"                                                    ; 3d07: 00          .
-    db %"--------"                                                    ; 3d08: 00          .  ; '!'
+    db %"--------"                                                    ; 3d08: 00          .   ; '!'
     db %"---#----"                                                    ; 3d09: 10          .
     db %"---#----"                                                    ; 3d0a: 10          .
     db %"---#----"                                                    ; 3d0b: 10          .
@@ -10940,7 +10940,7 @@ char_set:
     db %"--------"                                                    ; 3d0d: 00          .
     db %"---#----"                                                    ; 3d0e: 10          .
     db %"--------"                                                    ; 3d0f: 00          .
-    db %"--------"                                                    ; 3d10: 00          .  ; '"'
+    db %"--------"                                                    ; 3d10: 00          .   ; '"'
     db %"--#--#--"                                                    ; 3d11: 24          $
     db %"--#--#--"                                                    ; 3d12: 24          $
     db %"--------"                                                    ; 3d13: 00          .
@@ -10948,7 +10948,7 @@ char_set:
     db %"--------"                                                    ; 3d15: 00          .
     db %"--------"                                                    ; 3d16: 00          .
     db %"--------"                                                    ; 3d17: 00          .
-    db %"--------"                                                    ; 3d18: 00          .  ; '#'
+    db %"--------"                                                    ; 3d18: 00          .   ; '#'
     db %"--#--#--"                                                    ; 3d19: 24          $
     db %"-######-"                                                    ; 3d1a: 7e          ~
     db %"--#--#--"                                                    ; 3d1b: 24          $
@@ -10956,7 +10956,7 @@ char_set:
     db %"-######-"                                                    ; 3d1d: 7e          ~
     db %"--#--#--"                                                    ; 3d1e: 24          $
     db %"--------"                                                    ; 3d1f: 00          .
-    db %"--------"                                                    ; 3d20: 00          .  ; '$'
+    db %"--------"                                                    ; 3d20: 00          .   ; '$'
     db %"----#---"                                                    ; 3d21: 08          .
     db %"--#####-"                                                    ; 3d22: 3e          >
     db %"--#-#---"                                                    ; 3d23: 28          (
@@ -10964,7 +10964,7 @@ char_set:
     db %"----#-#-"                                                    ; 3d25: 0a          .
     db %"--#####-"                                                    ; 3d26: 3e          >
     db %"----#---"                                                    ; 3d27: 08          .
-    db %"--------"                                                    ; 3d28: 00          .  ; '%'
+    db %"--------"                                                    ; 3d28: 00          .   ; '%'
     db %"-##---#-"                                                    ; 3d29: 62          b
     db %"-##--#--"                                                    ; 3d2a: 64          d
     db %"----#---"                                                    ; 3d2b: 08          .
@@ -10972,7 +10972,7 @@ char_set:
     db %"--#--##-"                                                    ; 3d2d: 26          &
     db %"-#---##-"                                                    ; 3d2e: 46          F
     db %"--------"                                                    ; 3d2f: 00          .
-    db %"--------"                                                    ; 3d30: 00          .  ; '&'
+    db %"--------"                                                    ; 3d30: 00          .   ; '&'
     db %"---#----"                                                    ; 3d31: 10          .
     db %"--#-#---"                                                    ; 3d32: 28          (
     db %"---#----"                                                    ; 3d33: 10          .
@@ -10980,7 +10980,7 @@ char_set:
     db %"-#---#--"                                                    ; 3d35: 44          D
     db %"--###-#-"                                                    ; 3d36: 3a          :
     db %"--------"                                                    ; 3d37: 00          .
-    db %"--------"                                                    ; 3d38: 00          .  ; '''
+    db %"--------"                                                    ; 3d38: 00          .   ; '''
     db %"----#---"                                                    ; 3d39: 08          .
     db %"---#----"                                                    ; 3d3a: 10          .
     db %"--------"                                                    ; 3d3b: 00          .
@@ -10988,7 +10988,7 @@ char_set:
     db %"--------"                                                    ; 3d3d: 00          .
     db %"--------"                                                    ; 3d3e: 00          .
     db %"--------"                                                    ; 3d3f: 00          .
-    db %"--------"                                                    ; 3d40: 00          .  ; '('
+    db %"--------"                                                    ; 3d40: 00          .   ; '('
     db %"-----#--"                                                    ; 3d41: 04          .
     db %"----#---"                                                    ; 3d42: 08          .
     db %"----#---"                                                    ; 3d43: 08          .
@@ -10996,7 +10996,7 @@ char_set:
     db %"----#---"                                                    ; 3d45: 08          .
     db %"-----#--"                                                    ; 3d46: 04          .
     db %"--------"                                                    ; 3d47: 00          .
-    db %"--------"                                                    ; 3d48: 00          .  ; ')'
+    db %"--------"                                                    ; 3d48: 00          .   ; ')'
     db %"--#-----"                                                    ; 3d49: 20
     db %"---#----"                                                    ; 3d4a: 10          .
     db %"---#----"                                                    ; 3d4b: 10          .
@@ -11004,7 +11004,7 @@ char_set:
     db %"---#----"                                                    ; 3d4d: 10          .
     db %"--#-----"                                                    ; 3d4e: 20
     db %"--------"                                                    ; 3d4f: 00          .
-    db %"--------"                                                    ; 3d50: 00          .  ; '*'
+    db %"--------"                                                    ; 3d50: 00          .   ; '*'
     db %"--------"                                                    ; 3d51: 00          .
     db %"---#-#--"                                                    ; 3d52: 14          .
     db %"----#---"                                                    ; 3d53: 08          .
@@ -11012,7 +11012,7 @@ char_set:
     db %"----#---"                                                    ; 3d55: 08          .
     db %"---#-#--"                                                    ; 3d56: 14          .
     db %"--------"                                                    ; 3d57: 00          .
-    db %"--------"                                                    ; 3d58: 00          .  ; '+'
+    db %"--------"                                                    ; 3d58: 00          .   ; '+'
     db %"--------"                                                    ; 3d59: 00          .
     db %"----#---"                                                    ; 3d5a: 08          .
     db %"----#---"                                                    ; 3d5b: 08          .
@@ -11020,7 +11020,7 @@ char_set:
     db %"----#---"                                                    ; 3d5d: 08          .
     db %"----#---"                                                    ; 3d5e: 08          .
     db %"--------"                                                    ; 3d5f: 00          .
-    db %"--------"                                                    ; 3d60: 00          .  ; ','
+    db %"--------"                                                    ; 3d60: 00          .   ; ','
     db %"--------"                                                    ; 3d61: 00          .
     db %"--------"                                                    ; 3d62: 00          .
     db %"--------"                                                    ; 3d63: 00          .
@@ -11028,7 +11028,7 @@ char_set:
     db %"----#---"                                                    ; 3d65: 08          .
     db %"----#---"                                                    ; 3d66: 08          .
     db %"---#----"                                                    ; 3d67: 10          .
-    db %"--------"                                                    ; 3d68: 00          .  ; '-'
+    db %"--------"                                                    ; 3d68: 00          .   ; '-'
     db %"--------"                                                    ; 3d69: 00          .
     db %"--------"                                                    ; 3d6a: 00          .
     db %"--------"                                                    ; 3d6b: 00          .
@@ -11036,7 +11036,7 @@ char_set:
     db %"--------"                                                    ; 3d6d: 00          .
     db %"--------"                                                    ; 3d6e: 00          .
     db %"--------"                                                    ; 3d6f: 00          .
-    db %"--------"                                                    ; 3d70: 00          .  ; '.'
+    db %"--------"                                                    ; 3d70: 00          .   ; '.'
     db %"--------"                                                    ; 3d71: 00          .
     db %"--------"                                                    ; 3d72: 00          .
     db %"--------"                                                    ; 3d73: 00          .
@@ -11044,7 +11044,7 @@ char_set:
     db %"---##---"                                                    ; 3d75: 18          .
     db %"---##---"                                                    ; 3d76: 18          .
     db %"--------"                                                    ; 3d77: 00          .
-    db %"--------"                                                    ; 3d78: 00          .  ; '/'
+    db %"--------"                                                    ; 3d78: 00          .   ; '/'
     db %"--------"                                                    ; 3d79: 00          .
     db %"------#-"                                                    ; 3d7a: 02          .
     db %"-----#--"                                                    ; 3d7b: 04          .
@@ -11052,7 +11052,7 @@ char_set:
     db %"---#----"                                                    ; 3d7d: 10          .
     db %"--#-----"                                                    ; 3d7e: 20
     db %"--------"                                                    ; 3d7f: 00          .
-    db %"--------"                                                    ; 3d80: 00          .  ; '0'
+    db %"--------"                                                    ; 3d80: 00          .   ; '0'
     db %"--####--"                                                    ; 3d81: 3c          <
     db %"-#---##-"                                                    ; 3d82: 46          F
     db %"-#--#-#-"                                                    ; 3d83: 4a          J
@@ -11060,7 +11060,7 @@ char_set:
     db %"-##---#-"                                                    ; 3d85: 62          b
     db %"--####--"                                                    ; 3d86: 3c          <
     db %"--------"                                                    ; 3d87: 00          .
-    db %"--------"                                                    ; 3d88: 00          .  ; '1'
+    db %"--------"                                                    ; 3d88: 00          .   ; '1'
     db %"---##---"                                                    ; 3d89: 18          .
     db %"--#-#---"                                                    ; 3d8a: 28          (
     db %"----#---"                                                    ; 3d8b: 08          .
@@ -11068,7 +11068,7 @@ char_set:
     db %"----#---"                                                    ; 3d8d: 08          .
     db %"--#####-"                                                    ; 3d8e: 3e          >
     db %"--------"                                                    ; 3d8f: 00          .
-    db %"--------"                                                    ; 3d90: 00          .  ; '2'
+    db %"--------"                                                    ; 3d90: 00          .   ; '2'
     db %"--####--"                                                    ; 3d91: 3c          <
     db %"-#----#-"                                                    ; 3d92: 42          B
     db %"------#-"                                                    ; 3d93: 02          .
@@ -11076,7 +11076,7 @@ char_set:
     db %"-#------"                                                    ; 3d95: 40          @
     db %"-######-"                                                    ; 3d96: 7e          ~
     db %"--------"                                                    ; 3d97: 00          .
-    db %"--------"                                                    ; 3d98: 00          .  ; '3'
+    db %"--------"                                                    ; 3d98: 00          .   ; '3'
     db %"--####--"                                                    ; 3d99: 3c          <
     db %"-#----#-"                                                    ; 3d9a: 42          B
     db %"----##--"                                                    ; 3d9b: 0c          .
@@ -11084,7 +11084,7 @@ char_set:
     db %"-#----#-"                                                    ; 3d9d: 42          B
     db %"--####--"                                                    ; 3d9e: 3c          <
     db %"--------"                                                    ; 3d9f: 00          .
-    db %"--------"                                                    ; 3da0: 00          .  ; '4'
+    db %"--------"                                                    ; 3da0: 00          .   ; '4'
     db %"----#---"                                                    ; 3da1: 08          .
     db %"---##---"                                                    ; 3da2: 18          .
     db %"--#-#---"                                                    ; 3da3: 28          (
@@ -11092,7 +11092,7 @@ char_set:
     db %"-######-"                                                    ; 3da5: 7e          ~
     db %"----#---"                                                    ; 3da6: 08          .
     db %"--------"                                                    ; 3da7: 00          .
-    db %"--------"                                                    ; 3da8: 00          .  ; '5'
+    db %"--------"                                                    ; 3da8: 00          .   ; '5'
     db %"-######-"                                                    ; 3da9: 7e          ~
     db %"-#------"                                                    ; 3daa: 40          @
     db %"-#####--"                                                    ; 3dab: 7c          |
@@ -11100,7 +11100,7 @@ char_set:
     db %"-#----#-"                                                    ; 3dad: 42          B
     db %"--####--"                                                    ; 3dae: 3c          <
     db %"--------"                                                    ; 3daf: 00          .
-    db %"--------"                                                    ; 3db0: 00          .  ; '6'
+    db %"--------"                                                    ; 3db0: 00          .   ; '6'
     db %"--####--"                                                    ; 3db1: 3c          <
     db %"-#------"                                                    ; 3db2: 40          @
     db %"-#####--"                                                    ; 3db3: 7c          |
@@ -11108,7 +11108,7 @@ char_set:
     db %"-#----#-"                                                    ; 3db5: 42          B
     db %"--####--"                                                    ; 3db6: 3c          <
     db %"--------"                                                    ; 3db7: 00          .
-    db %"--------"                                                    ; 3db8: 00          .  ; '7'
+    db %"--------"                                                    ; 3db8: 00          .   ; '7'
     db %"-######-"                                                    ; 3db9: 7e          ~
     db %"------#-"                                                    ; 3dba: 02          .
     db %"-----#--"                                                    ; 3dbb: 04          .
@@ -11116,7 +11116,7 @@ char_set:
     db %"---#----"                                                    ; 3dbd: 10          .
     db %"---#----"                                                    ; 3dbe: 10          .
     db %"--------"                                                    ; 3dbf: 00          .
-    db %"--------"                                                    ; 3dc0: 00          .  ; '8'
+    db %"--------"                                                    ; 3dc0: 00          .   ; '8'
     db %"--####--"                                                    ; 3dc1: 3c          <
     db %"-#----#-"                                                    ; 3dc2: 42          B
     db %"--####--"                                                    ; 3dc3: 3c          <
@@ -11124,7 +11124,7 @@ char_set:
     db %"-#----#-"                                                    ; 3dc5: 42          B
     db %"--####--"                                                    ; 3dc6: 3c          <
     db %"--------"                                                    ; 3dc7: 00          .
-    db %"--------"                                                    ; 3dc8: 00          .  ; '9'
+    db %"--------"                                                    ; 3dc8: 00          .   ; '9'
     db %"--####--"                                                    ; 3dc9: 3c          <
     db %"-#----#-"                                                    ; 3dca: 42          B
     db %"-#----#-"                                                    ; 3dcb: 42          B
@@ -11132,7 +11132,7 @@ char_set:
     db %"------#-"                                                    ; 3dcd: 02          .
     db %"--####--"                                                    ; 3dce: 3c          <
     db %"--------"                                                    ; 3dcf: 00          .
-    db %"--------"                                                    ; 3dd0: 00          .  ; ':'
+    db %"--------"                                                    ; 3dd0: 00          .   ; ':'
     db %"--------"                                                    ; 3dd1: 00          .
     db %"--------"                                                    ; 3dd2: 00          .
     db %"---#----"                                                    ; 3dd3: 10          .
@@ -11140,7 +11140,7 @@ char_set:
     db %"--------"                                                    ; 3dd5: 00          .
     db %"---#----"                                                    ; 3dd6: 10          .
     db %"--------"                                                    ; 3dd7: 00          .
-    db %"--------"                                                    ; 3dd8: 00          .  ; ';'
+    db %"--------"                                                    ; 3dd8: 00          .   ; ';'
     db %"--------"                                                    ; 3dd9: 00          .
     db %"---#----"                                                    ; 3dda: 10          .
     db %"--------"                                                    ; 3ddb: 00          .
@@ -11148,7 +11148,7 @@ char_set:
     db %"---#----"                                                    ; 3ddd: 10          .
     db %"---#----"                                                    ; 3dde: 10          .
     db %"--#-----"                                                    ; 3ddf: 20
-    db %"--------"                                                    ; 3de0: 00          .  ; '<'
+    db %"--------"                                                    ; 3de0: 00          .   ; '<'
     db %"--------"                                                    ; 3de1: 00          .
     db %"-----#--"                                                    ; 3de2: 04          .
     db %"----#---"                                                    ; 3de3: 08          .
@@ -11156,7 +11156,7 @@ char_set:
     db %"----#---"                                                    ; 3de5: 08          .
     db %"-----#--"                                                    ; 3de6: 04          .
     db %"--------"                                                    ; 3de7: 00          .
-    db %"--------"                                                    ; 3de8: 00          .  ; '='
+    db %"--------"                                                    ; 3de8: 00          .   ; '='
     db %"--------"                                                    ; 3de9: 00          .
     db %"--------"                                                    ; 3dea: 00          .
     db %"--#####-"                                                    ; 3deb: 3e          >
@@ -11164,7 +11164,7 @@ char_set:
     db %"--#####-"                                                    ; 3ded: 3e          >
     db %"--------"                                                    ; 3dee: 00          .
     db %"--------"                                                    ; 3def: 00          .
-    db %"--------"                                                    ; 3df0: 00          .  ; '>'
+    db %"--------"                                                    ; 3df0: 00          .   ; '>'
     db %"--------"                                                    ; 3df1: 00          .
     db %"---#----"                                                    ; 3df2: 10          .
     db %"----#---"                                                    ; 3df3: 08          .
@@ -11172,7 +11172,7 @@ char_set:
     db %"----#---"                                                    ; 3df5: 08          .
     db %"---#----"                                                    ; 3df6: 10          .
     db %"--------"                                                    ; 3df7: 00          .
-    db %"--------"                                                    ; 3df8: 00          .  ; '?'
+    db %"--------"                                                    ; 3df8: 00          .   ; '?'
     db %"--####--"                                                    ; 3df9: 3c          <
     db %"-#----#-"                                                    ; 3dfa: 42          B
     db %"-----#--"                                                    ; 3dfb: 04          .
@@ -11180,7 +11180,7 @@ char_set:
     db %"--------"                                                    ; 3dfd: 00          .
     db %"----#---"                                                    ; 3dfe: 08          .
     db %"--------"                                                    ; 3dff: 00          .
-    db %"--------"                                                    ; 3e00: 00          .  ; '@'
+    db %"--------"                                                    ; 3e00: 00          .   ; '@'
     db %"--####--"                                                    ; 3e01: 3c          <
     db %"-#--#-#-"                                                    ; 3e02: 4a          J
     db %"-#-#-##-"                                                    ; 3e03: 56          V
@@ -11188,7 +11188,7 @@ char_set:
     db %"-#------"                                                    ; 3e05: 40          @
     db %"--####--"                                                    ; 3e06: 3c          <
     db %"--------"                                                    ; 3e07: 00          .
-    db %"--------"                                                    ; 3e08: 00          .  ; 'A'
+    db %"--------"                                                    ; 3e08: 00          .   ; 'A'
     db %"--####--"                                                    ; 3e09: 3c          <
     db %"-#----#-"                                                    ; 3e0a: 42          B
     db %"-#----#-"                                                    ; 3e0b: 42          B
@@ -11196,7 +11196,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e0d: 42          B
     db %"-#----#-"                                                    ; 3e0e: 42          B
     db %"--------"                                                    ; 3e0f: 00          .
-    db %"--------"                                                    ; 3e10: 00          .  ; 'B'
+    db %"--------"                                                    ; 3e10: 00          .   ; 'B'
     db %"-#####--"                                                    ; 3e11: 7c          |
     db %"-#----#-"                                                    ; 3e12: 42          B
     db %"-#####--"                                                    ; 3e13: 7c          |
@@ -11204,7 +11204,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e15: 42          B
     db %"-#####--"                                                    ; 3e16: 7c          |
     db %"--------"                                                    ; 3e17: 00          .
-    db %"--------"                                                    ; 3e18: 00          .  ; 'C'
+    db %"--------"                                                    ; 3e18: 00          .   ; 'C'
     db %"--####--"                                                    ; 3e19: 3c          <
     db %"-#----#-"                                                    ; 3e1a: 42          B
     db %"-#------"                                                    ; 3e1b: 40          @
@@ -11212,7 +11212,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e1d: 42          B
     db %"--####--"                                                    ; 3e1e: 3c          <
     db %"--------"                                                    ; 3e1f: 00          .
-    db %"--------"                                                    ; 3e20: 00          .  ; 'D'
+    db %"--------"                                                    ; 3e20: 00          .   ; 'D'
     db %"-####---"                                                    ; 3e21: 78          x
     db %"-#---#--"                                                    ; 3e22: 44          D
     db %"-#----#-"                                                    ; 3e23: 42          B
@@ -11220,7 +11220,7 @@ char_set:
     db %"-#---#--"                                                    ; 3e25: 44          D
     db %"-####---"                                                    ; 3e26: 78          x
     db %"--------"                                                    ; 3e27: 00          .
-    db %"--------"                                                    ; 3e28: 00          .  ; 'E'
+    db %"--------"                                                    ; 3e28: 00          .   ; 'E'
     db %"-######-"                                                    ; 3e29: 7e          ~
     db %"-#------"                                                    ; 3e2a: 40          @
     db %"-#####--"                                                    ; 3e2b: 7c          |
@@ -11228,7 +11228,7 @@ char_set:
     db %"-#------"                                                    ; 3e2d: 40          @
     db %"-######-"                                                    ; 3e2e: 7e          ~
     db %"--------"                                                    ; 3e2f: 00          .
-    db %"--------"                                                    ; 3e30: 00          .  ; 'F'
+    db %"--------"                                                    ; 3e30: 00          .   ; 'F'
     db %"-######-"                                                    ; 3e31: 7e          ~
     db %"-#------"                                                    ; 3e32: 40          @
     db %"-#####--"                                                    ; 3e33: 7c          |
@@ -11236,7 +11236,7 @@ char_set:
     db %"-#------"                                                    ; 3e35: 40          @
     db %"-#------"                                                    ; 3e36: 40          @
     db %"--------"                                                    ; 3e37: 00          .
-    db %"--------"                                                    ; 3e38: 00          .  ; 'G'
+    db %"--------"                                                    ; 3e38: 00          .   ; 'G'
     db %"--####--"                                                    ; 3e39: 3c          <
     db %"-#----#-"                                                    ; 3e3a: 42          B
     db %"-#------"                                                    ; 3e3b: 40          @
@@ -11244,7 +11244,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e3d: 42          B
     db %"--####--"                                                    ; 3e3e: 3c          <
     db %"--------"                                                    ; 3e3f: 00          .
-    db %"--------"                                                    ; 3e40: 00          .  ; 'H'
+    db %"--------"                                                    ; 3e40: 00          .   ; 'H'
     db %"-#----#-"                                                    ; 3e41: 42          B
     db %"-#----#-"                                                    ; 3e42: 42          B
     db %"-######-"                                                    ; 3e43: 7e          ~
@@ -11252,7 +11252,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e45: 42          B
     db %"-#----#-"                                                    ; 3e46: 42          B
     db %"--------"                                                    ; 3e47: 00          .
-    db %"--------"                                                    ; 3e48: 00          .  ; 'I'
+    db %"--------"                                                    ; 3e48: 00          .   ; 'I'
     db %"--#####-"                                                    ; 3e49: 3e          >
     db %"----#---"                                                    ; 3e4a: 08          .
     db %"----#---"                                                    ; 3e4b: 08          .
@@ -11260,7 +11260,7 @@ char_set:
     db %"----#---"                                                    ; 3e4d: 08          .
     db %"--#####-"                                                    ; 3e4e: 3e          >
     db %"--------"                                                    ; 3e4f: 00          .
-    db %"--------"                                                    ; 3e50: 00          .  ; 'J'
+    db %"--------"                                                    ; 3e50: 00          .   ; 'J'
     db %"------#-"                                                    ; 3e51: 02          .
     db %"------#-"                                                    ; 3e52: 02          .
     db %"------#-"                                                    ; 3e53: 02          .
@@ -11268,7 +11268,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e55: 42          B
     db %"--####--"                                                    ; 3e56: 3c          <
     db %"--------"                                                    ; 3e57: 00          .
-    db %"--------"                                                    ; 3e58: 00          .  ; 'K'
+    db %"--------"                                                    ; 3e58: 00          .   ; 'K'
     db %"-#---#--"                                                    ; 3e59: 44          D
     db %"-#--#---"                                                    ; 3e5a: 48          H
     db %"-###----"                                                    ; 3e5b: 70          p
@@ -11276,7 +11276,7 @@ char_set:
     db %"-#---#--"                                                    ; 3e5d: 44          D
     db %"-#----#-"                                                    ; 3e5e: 42          B
     db %"--------"                                                    ; 3e5f: 00          .
-    db %"--------"                                                    ; 3e60: 00          .  ; 'L'
+    db %"--------"                                                    ; 3e60: 00          .   ; 'L'
     db %"-#------"                                                    ; 3e61: 40          @
     db %"-#------"                                                    ; 3e62: 40          @
     db %"-#------"                                                    ; 3e63: 40          @
@@ -11284,7 +11284,7 @@ char_set:
     db %"-#------"                                                    ; 3e65: 40          @
     db %"-######-"                                                    ; 3e66: 7e          ~
     db %"--------"                                                    ; 3e67: 00          .
-    db %"--------"                                                    ; 3e68: 00          .  ; 'M'
+    db %"--------"                                                    ; 3e68: 00          .   ; 'M'
     db %"-#----#-"                                                    ; 3e69: 42          B
     db %"-##--##-"                                                    ; 3e6a: 66          f
     db %"-#-##-#-"                                                    ; 3e6b: 5a          Z
@@ -11292,7 +11292,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e6d: 42          B
     db %"-#----#-"                                                    ; 3e6e: 42          B
     db %"--------"                                                    ; 3e6f: 00          .
-    db %"--------"                                                    ; 3e70: 00          .  ; 'N'
+    db %"--------"                                                    ; 3e70: 00          .   ; 'N'
     db %"-#----#-"                                                    ; 3e71: 42          B
     db %"-##---#-"                                                    ; 3e72: 62          b
     db %"-#-#--#-"                                                    ; 3e73: 52          R
@@ -11300,7 +11300,7 @@ char_set:
     db %"-#---##-"                                                    ; 3e75: 46          F
     db %"-#----#-"                                                    ; 3e76: 42          B
     db %"--------"                                                    ; 3e77: 00          .
-    db %"--------"                                                    ; 3e78: 00          .  ; 'O'
+    db %"--------"                                                    ; 3e78: 00          .   ; 'O'
     db %"--####--"                                                    ; 3e79: 3c          <
     db %"-#----#-"                                                    ; 3e7a: 42          B
     db %"-#----#-"                                                    ; 3e7b: 42          B
@@ -11308,7 +11308,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e7d: 42          B
     db %"--####--"                                                    ; 3e7e: 3c          <
     db %"--------"                                                    ; 3e7f: 00          .
-    db %"--------"                                                    ; 3e80: 00          .  ; 'P'
+    db %"--------"                                                    ; 3e80: 00          .   ; 'P'
     db %"-#####--"                                                    ; 3e81: 7c          |
     db %"-#----#-"                                                    ; 3e82: 42          B
     db %"-#----#-"                                                    ; 3e83: 42          B
@@ -11316,7 +11316,7 @@ char_set:
     db %"-#------"                                                    ; 3e85: 40          @
     db %"-#------"                                                    ; 3e86: 40          @
     db %"--------"                                                    ; 3e87: 00          .
-    db %"--------"                                                    ; 3e88: 00          .  ; 'Q'
+    db %"--------"                                                    ; 3e88: 00          .   ; 'Q'
     db %"--####--"                                                    ; 3e89: 3c          <
     db %"-#----#-"                                                    ; 3e8a: 42          B
     db %"-#----#-"                                                    ; 3e8b: 42          B
@@ -11324,7 +11324,7 @@ char_set:
     db %"-#--#-#-"                                                    ; 3e8d: 4a          J
     db %"--####--"                                                    ; 3e8e: 3c          <
     db %"--------"                                                    ; 3e8f: 00          .
-    db %"--------"                                                    ; 3e90: 00          .  ; 'R'
+    db %"--------"                                                    ; 3e90: 00          .   ; 'R'
     db %"-#####--"                                                    ; 3e91: 7c          |
     db %"-#----#-"                                                    ; 3e92: 42          B
     db %"-#----#-"                                                    ; 3e93: 42          B
@@ -11332,7 +11332,7 @@ char_set:
     db %"-#---#--"                                                    ; 3e95: 44          D
     db %"-#----#-"                                                    ; 3e96: 42          B
     db %"--------"                                                    ; 3e97: 00          .
-    db %"--------"                                                    ; 3e98: 00          .  ; 'S'
+    db %"--------"                                                    ; 3e98: 00          .   ; 'S'
     db %"--####--"                                                    ; 3e99: 3c          <
     db %"-#------"                                                    ; 3e9a: 40          @
     db %"--####--"                                                    ; 3e9b: 3c          <
@@ -11340,7 +11340,7 @@ char_set:
     db %"-#----#-"                                                    ; 3e9d: 42          B
     db %"--####--"                                                    ; 3e9e: 3c          <
     db %"--------"                                                    ; 3e9f: 00          .
-    db %"--------"                                                    ; 3ea0: 00          .  ; 'T'
+    db %"--------"                                                    ; 3ea0: 00          .   ; 'T'
     db %"#######-"                                                    ; 3ea1: fe          .
     db %"---#----"                                                    ; 3ea2: 10          .
     db %"---#----"                                                    ; 3ea3: 10          .
@@ -11348,7 +11348,7 @@ char_set:
     db %"---#----"                                                    ; 3ea5: 10          .
     db %"---#----"                                                    ; 3ea6: 10          .
     db %"--------"                                                    ; 3ea7: 00          .
-    db %"--------"                                                    ; 3ea8: 00          .  ; 'U'
+    db %"--------"                                                    ; 3ea8: 00          .   ; 'U'
     db %"-#----#-"                                                    ; 3ea9: 42          B
     db %"-#----#-"                                                    ; 3eaa: 42          B
     db %"-#----#-"                                                    ; 3eab: 42          B
@@ -11356,7 +11356,7 @@ char_set:
     db %"-#----#-"                                                    ; 3ead: 42          B
     db %"--####--"                                                    ; 3eae: 3c          <
     db %"--------"                                                    ; 3eaf: 00          .
-    db %"--------"                                                    ; 3eb0: 00          .  ; 'V'
+    db %"--------"                                                    ; 3eb0: 00          .   ; 'V'
     db %"-#----#-"                                                    ; 3eb1: 42          B
     db %"-#----#-"                                                    ; 3eb2: 42          B
     db %"-#----#-"                                                    ; 3eb3: 42          B
@@ -11364,7 +11364,7 @@ char_set:
     db %"--#--#--"                                                    ; 3eb5: 24          $
     db %"---##---"                                                    ; 3eb6: 18          .
     db %"--------"                                                    ; 3eb7: 00          .
-    db %"--------"                                                    ; 3eb8: 00          .  ; 'W'
+    db %"--------"                                                    ; 3eb8: 00          .   ; 'W'
     db %"-#----#-"                                                    ; 3eb9: 42          B
     db %"-#----#-"                                                    ; 3eba: 42          B
     db %"-#----#-"                                                    ; 3ebb: 42          B
@@ -11372,7 +11372,7 @@ char_set:
     db %"-#-##-#-"                                                    ; 3ebd: 5a          Z
     db %"--#--#--"                                                    ; 3ebe: 24          $
     db %"--------"                                                    ; 3ebf: 00          .
-    db %"--------"                                                    ; 3ec0: 00          .  ; 'X'
+    db %"--------"                                                    ; 3ec0: 00          .   ; 'X'
     db %"-#----#-"                                                    ; 3ec1: 42          B
     db %"--#--#--"                                                    ; 3ec2: 24          $
     db %"---##---"                                                    ; 3ec3: 18          .
@@ -11380,7 +11380,7 @@ char_set:
     db %"--#--#--"                                                    ; 3ec5: 24          $
     db %"-#----#-"                                                    ; 3ec6: 42          B
     db %"--------"                                                    ; 3ec7: 00          .
-    db %"--------"                                                    ; 3ec8: 00          .  ; 'Y'
+    db %"--------"                                                    ; 3ec8: 00          .   ; 'Y'
     db %"#-----#-"                                                    ; 3ec9: 82          .
     db %"-#---#--"                                                    ; 3eca: 44          D
     db %"--#-#---"                                                    ; 3ecb: 28          (
@@ -11388,7 +11388,7 @@ char_set:
     db %"---#----"                                                    ; 3ecd: 10          .
     db %"---#----"                                                    ; 3ece: 10          .
     db %"--------"                                                    ; 3ecf: 00          .
-    db %"--------"                                                    ; 3ed0: 00          .  ; 'Z'
+    db %"--------"                                                    ; 3ed0: 00          .   ; 'Z'
     db %"-######-"                                                    ; 3ed1: 7e          ~
     db %"-----#--"                                                    ; 3ed2: 04          .
     db %"----#---"                                                    ; 3ed3: 08          .
@@ -11396,7 +11396,7 @@ char_set:
     db %"--#-----"                                                    ; 3ed5: 20
     db %"-######-"                                                    ; 3ed6: 7e          ~
     db %"--------"                                                    ; 3ed7: 00          .
-    db %"--------"                                                    ; 3ed8: 00          .  ; '['
+    db %"--------"                                                    ; 3ed8: 00          .   ; '['
     db %"----###-"                                                    ; 3ed9: 0e          .
     db %"----#---"                                                    ; 3eda: 08          .
     db %"----#---"                                                    ; 3edb: 08          .
@@ -11404,7 +11404,7 @@ char_set:
     db %"----#---"                                                    ; 3edd: 08          .
     db %"----###-"                                                    ; 3ede: 0e          .
     db %"--------"                                                    ; 3edf: 00          .
-    db %"--------"                                                    ; 3ee0: 00          .  ; '\'
+    db %"--------"                                                    ; 3ee0: 00          .   ; '\'
     db %"--------"                                                    ; 3ee1: 00          .
     db %"-#------"                                                    ; 3ee2: 40          @
     db %"--#-----"                                                    ; 3ee3: 20
@@ -11412,7 +11412,7 @@ char_set:
     db %"----#---"                                                    ; 3ee5: 08          .
     db %"-----#--"                                                    ; 3ee6: 04          .
     db %"--------"                                                    ; 3ee7: 00          .
-    db %"--------"                                                    ; 3ee8: 00          .  ; ']'
+    db %"--------"                                                    ; 3ee8: 00          .   ; ']'
     db %"-###----"                                                    ; 3ee9: 70          p
     db %"---#----"                                                    ; 3eea: 10          .
     db %"---#----"                                                    ; 3eeb: 10          .
@@ -11420,7 +11420,7 @@ char_set:
     db %"---#----"                                                    ; 3eed: 10          .
     db %"-###----"                                                    ; 3eee: 70          p
     db %"--------"                                                    ; 3eef: 00          .
-    db %"--------"                                                    ; 3ef0: 00          .  ; '^'
+    db %"--------"                                                    ; 3ef0: 00          .   ; '^'
     db %"---#----"                                                    ; 3ef1: 10          .
     db %"--###---"                                                    ; 3ef2: 38          8
     db %"-#-#-#--"                                                    ; 3ef3: 54          T
@@ -11428,7 +11428,7 @@ char_set:
     db %"---#----"                                                    ; 3ef5: 10          .
     db %"---#----"                                                    ; 3ef6: 10          .
     db %"--------"                                                    ; 3ef7: 00          .
-    db %"--------"                                                    ; 3ef8: 00          .  ; '_'
+    db %"--------"                                                    ; 3ef8: 00          .   ; '_'
     db %"--------"                                                    ; 3ef9: 00          .
     db %"--------"                                                    ; 3efa: 00          .
     db %"--------"                                                    ; 3efb: 00          .
@@ -11436,7 +11436,7 @@ char_set:
     db %"--------"                                                    ; 3efd: 00          .
     db %"--------"                                                    ; 3efe: 00          .
     db %"########"                                                    ; 3eff: ff          .
-    db %"--------"                                                    ; 3f00: 00          .  ; $60 (pound sign)
+    db %"--------"                                                    ; 3f00: 00          .   ; $60 (pound sign)
     db %"---###--"                                                    ; 3f01: 1c          .
     db %"--#---#-"                                                    ; 3f02: 22          "
     db %"-####---"                                                    ; 3f03: 78          x
@@ -11444,7 +11444,7 @@ char_set:
     db %"--#-----"                                                    ; 3f05: 20
     db %"-######-"                                                    ; 3f06: 7e          ~
     db %"--------"                                                    ; 3f07: 00          .
-    db %"--------"                                                    ; 3f08: 00          .  ; 'a'
+    db %"--------"                                                    ; 3f08: 00          .   ; 'a'
     db %"--------"                                                    ; 3f09: 00          .
     db %"--###---"                                                    ; 3f0a: 38          8
     db %"-----#--"                                                    ; 3f0b: 04          .
@@ -11452,7 +11452,7 @@ char_set:
     db %"-#---#--"                                                    ; 3f0d: 44          D
     db %"--####--"                                                    ; 3f0e: 3c          <
     db %"--------"                                                    ; 3f0f: 00          .
-    db %"--------"                                                    ; 3f10: 00          .  ; 'b'
+    db %"--------"                                                    ; 3f10: 00          .   ; 'b'
     db %"--#-----"                                                    ; 3f11: 20
     db %"--#-----"                                                    ; 3f12: 20
     db %"--####--"                                                    ; 3f13: 3c          <
@@ -11460,7 +11460,7 @@ char_set:
     db %"--#---#-"                                                    ; 3f15: 22          "
     db %"--####--"                                                    ; 3f16: 3c          <
     db %"--------"                                                    ; 3f17: 00          .
-    db %"--------"                                                    ; 3f18: 00          .  ; 'c'
+    db %"--------"                                                    ; 3f18: 00          .   ; 'c'
     db %"--------"                                                    ; 3f19: 00          .
     db %"---###--"                                                    ; 3f1a: 1c          .
     db %"--#-----"                                                    ; 3f1b: 20
@@ -11468,7 +11468,7 @@ char_set:
     db %"--#-----"                                                    ; 3f1d: 20
     db %"---###--"                                                    ; 3f1e: 1c          .
     db %"--------"                                                    ; 3f1f: 00          .
-    db %"--------"                                                    ; 3f20: 00          .  ; 'd'
+    db %"--------"                                                    ; 3f20: 00          .   ; 'd'
     db %"-----#--"                                                    ; 3f21: 04          .
     db %"-----#--"                                                    ; 3f22: 04          .
     db %"--####--"                                                    ; 3f23: 3c          <
@@ -11476,7 +11476,7 @@ char_set:
     db %"-#---#--"                                                    ; 3f25: 44          D
     db %"--####--"                                                    ; 3f26: 3c          <
     db %"--------"                                                    ; 3f27: 00          .
-    db %"--------"                                                    ; 3f28: 00          .  ; 'e'
+    db %"--------"                                                    ; 3f28: 00          .   ; 'e'
     db %"--------"                                                    ; 3f29: 00          .
     db %"--###---"                                                    ; 3f2a: 38          8
     db %"-#---#--"                                                    ; 3f2b: 44          D
@@ -11484,7 +11484,7 @@ char_set:
     db %"-#------"                                                    ; 3f2d: 40          @
     db %"--####--"                                                    ; 3f2e: 3c          <
     db %"--------"                                                    ; 3f2f: 00          .
-    db %"--------"                                                    ; 3f30: 00          .  ; 'f'
+    db %"--------"                                                    ; 3f30: 00          .   ; 'f'
     db %"----##--"                                                    ; 3f31: 0c          .
     db %"---#----"                                                    ; 3f32: 10          .
     db %"---##---"                                                    ; 3f33: 18          .
@@ -11492,7 +11492,7 @@ char_set:
     db %"---#----"                                                    ; 3f35: 10          .
     db %"---#----"                                                    ; 3f36: 10          .
     db %"--------"                                                    ; 3f37: 00          .
-    db %"--------"                                                    ; 3f38: 00          .  ; 'g'
+    db %"--------"                                                    ; 3f38: 00          .   ; 'g'
     db %"--------"                                                    ; 3f39: 00          .
     db %"--####--"                                                    ; 3f3a: 3c          <
     db %"-#---#--"                                                    ; 3f3b: 44          D
@@ -11500,7 +11500,7 @@ char_set:
     db %"--####--"                                                    ; 3f3d: 3c          <
     db %"-----#--"                                                    ; 3f3e: 04          .
     db %"--###---"                                                    ; 3f3f: 38          8
-    db %"--------"                                                    ; 3f40: 00          .  ; 'h'
+    db %"--------"                                                    ; 3f40: 00          .   ; 'h'
     db %"-#------"                                                    ; 3f41: 40          @
     db %"-#------"                                                    ; 3f42: 40          @
     db %"-####---"                                                    ; 3f43: 78          x
@@ -11508,7 +11508,7 @@ char_set:
     db %"-#---#--"                                                    ; 3f45: 44          D
     db %"-#---#--"                                                    ; 3f46: 44          D
     db %"--------"                                                    ; 3f47: 00          .
-    db %"--------"                                                    ; 3f48: 00          .  ; 'i'
+    db %"--------"                                                    ; 3f48: 00          .   ; 'i'
     db %"---#----"                                                    ; 3f49: 10          .
     db %"--------"                                                    ; 3f4a: 00          .
     db %"--##----"                                                    ; 3f4b: 30          0
@@ -11516,7 +11516,7 @@ char_set:
     db %"---#----"                                                    ; 3f4d: 10          .
     db %"--###---"                                                    ; 3f4e: 38          8
     db %"--------"                                                    ; 3f4f: 00          .
-    db %"--------"                                                    ; 3f50: 00          .  ; 'j'
+    db %"--------"                                                    ; 3f50: 00          .   ; 'j'
     db %"-----#--"                                                    ; 3f51: 04          .
     db %"--------"                                                    ; 3f52: 00          .
     db %"-----#--"                                                    ; 3f53: 04          .
@@ -11524,7 +11524,7 @@ char_set:
     db %"-----#--"                                                    ; 3f55: 04          .
     db %"--#--#--"                                                    ; 3f56: 24          $
     db %"---##---"                                                    ; 3f57: 18          .
-    db %"--------"                                                    ; 3f58: 00          .  ; 'k'
+    db %"--------"                                                    ; 3f58: 00          .   ; 'k'
     db %"--#-----"                                                    ; 3f59: 20
     db %"--#-#---"                                                    ; 3f5a: 28          (
     db %"--##----"                                                    ; 3f5b: 30          0
@@ -11532,7 +11532,7 @@ char_set:
     db %"--#-#---"                                                    ; 3f5d: 28          (
     db %"--#--#--"                                                    ; 3f5e: 24          $
     db %"--------"                                                    ; 3f5f: 00          .
-    db %"--------"                                                    ; 3f60: 00          .  ; 'l'
+    db %"--------"                                                    ; 3f60: 00          .   ; 'l'
     db %"---#----"                                                    ; 3f61: 10          .
     db %"---#----"                                                    ; 3f62: 10          .
     db %"---#----"                                                    ; 3f63: 10          .
@@ -11540,7 +11540,7 @@ char_set:
     db %"---#----"                                                    ; 3f65: 10          .
     db %"----##--"                                                    ; 3f66: 0c          .
     db %"--------"                                                    ; 3f67: 00          .
-    db %"--------"                                                    ; 3f68: 00          .  ; 'm'
+    db %"--------"                                                    ; 3f68: 00          .   ; 'm'
     db %"--------"                                                    ; 3f69: 00          .
     db %"-##-#---"                                                    ; 3f6a: 68          h
     db %"-#-#-#--"                                                    ; 3f6b: 54          T
@@ -11548,7 +11548,7 @@ char_set:
     db %"-#-#-#--"                                                    ; 3f6d: 54          T
     db %"-#-#-#--"                                                    ; 3f6e: 54          T
     db %"--------"                                                    ; 3f6f: 00          .
-    db %"--------"                                                    ; 3f70: 00          .  ; 'n'
+    db %"--------"                                                    ; 3f70: 00          .   ; 'n'
     db %"--------"                                                    ; 3f71: 00          .
     db %"-####---"                                                    ; 3f72: 78          x
     db %"-#---#--"                                                    ; 3f73: 44          D
@@ -11556,7 +11556,7 @@ char_set:
     db %"-#---#--"                                                    ; 3f75: 44          D
     db %"-#---#--"                                                    ; 3f76: 44          D
     db %"--------"                                                    ; 3f77: 00          .
-    db %"--------"                                                    ; 3f78: 00          .  ; 'o'
+    db %"--------"                                                    ; 3f78: 00          .   ; 'o'
     db %"--------"                                                    ; 3f79: 00          .
     db %"--###---"                                                    ; 3f7a: 38          8
     db %"-#---#--"                                                    ; 3f7b: 44          D
@@ -11564,7 +11564,7 @@ char_set:
     db %"-#---#--"                                                    ; 3f7d: 44          D
     db %"--###---"                                                    ; 3f7e: 38          8
     db %"--------"                                                    ; 3f7f: 00          .
-    db %"--------"                                                    ; 3f80: 00          .  ; 'p'
+    db %"--------"                                                    ; 3f80: 00          .   ; 'p'
     db %"--------"                                                    ; 3f81: 00          .
     db %"-####---"                                                    ; 3f82: 78          x
     db %"-#---#--"                                                    ; 3f83: 44          D
@@ -11572,7 +11572,7 @@ char_set:
     db %"-####---"                                                    ; 3f85: 78          x
     db %"-#------"                                                    ; 3f86: 40          @
     db %"-#------"                                                    ; 3f87: 40          @
-    db %"--------"                                                    ; 3f88: 00          .  ; 'q'
+    db %"--------"                                                    ; 3f88: 00          .   ; 'q'
     db %"--------"                                                    ; 3f89: 00          .
     db %"--####--"                                                    ; 3f8a: 3c          <
     db %"-#---#--"                                                    ; 3f8b: 44          D
@@ -11580,7 +11580,7 @@ char_set:
     db %"--####--"                                                    ; 3f8d: 3c          <
     db %"-----#--"                                                    ; 3f8e: 04          .
     db %"-----##-"                                                    ; 3f8f: 06          .
-    db %"--------"                                                    ; 3f90: 00          .  ; 'r'
+    db %"--------"                                                    ; 3f90: 00          .   ; 'r'
     db %"--------"                                                    ; 3f91: 00          .
     db %"---###--"                                                    ; 3f92: 1c          .
     db %"--#-----"                                                    ; 3f93: 20
@@ -11588,7 +11588,7 @@ char_set:
     db %"--#-----"                                                    ; 3f95: 20
     db %"--#-----"                                                    ; 3f96: 20
     db %"--------"                                                    ; 3f97: 00          .
-    db %"--------"                                                    ; 3f98: 00          .  ; 's'
+    db %"--------"                                                    ; 3f98: 00          .   ; 's'
     db %"--------"                                                    ; 3f99: 00          .
     db %"--###---"                                                    ; 3f9a: 38          8
     db %"-#------"                                                    ; 3f9b: 40          @
@@ -11596,7 +11596,7 @@ char_set:
     db %"-----#--"                                                    ; 3f9d: 04          .
     db %"-####---"                                                    ; 3f9e: 78          x
     db %"--------"                                                    ; 3f9f: 00          .
-    db %"--------"                                                    ; 3fa0: 00          .  ; 't'
+    db %"--------"                                                    ; 3fa0: 00          .   ; 't'
     db %"---#----"                                                    ; 3fa1: 10          .
     db %"--###---"                                                    ; 3fa2: 38          8
     db %"---#----"                                                    ; 3fa3: 10          .
@@ -11604,7 +11604,7 @@ char_set:
     db %"---#----"                                                    ; 3fa5: 10          .
     db %"----##--"                                                    ; 3fa6: 0c          .
     db %"--------"                                                    ; 3fa7: 00          .
-    db %"--------"                                                    ; 3fa8: 00          .  ; 'u'
+    db %"--------"                                                    ; 3fa8: 00          .   ; 'u'
     db %"--------"                                                    ; 3fa9: 00          .
     db %"-#---#--"                                                    ; 3faa: 44          D
     db %"-#---#--"                                                    ; 3fab: 44          D
@@ -11612,7 +11612,7 @@ char_set:
     db %"-#---#--"                                                    ; 3fad: 44          D
     db %"--###---"                                                    ; 3fae: 38          8
     db %"--------"                                                    ; 3faf: 00          .
-    db %"--------"                                                    ; 3fb0: 00          .  ; 'v'
+    db %"--------"                                                    ; 3fb0: 00          .   ; 'v'
     db %"--------"                                                    ; 3fb1: 00          .
     db %"-#---#--"                                                    ; 3fb2: 44          D
     db %"-#---#--"                                                    ; 3fb3: 44          D
@@ -11620,7 +11620,7 @@ char_set:
     db %"--#-#---"                                                    ; 3fb5: 28          (
     db %"---#----"                                                    ; 3fb6: 10          .
     db %"--------"                                                    ; 3fb7: 00          .
-    db %"--------"                                                    ; 3fb8: 00          .  ; 'w'
+    db %"--------"                                                    ; 3fb8: 00          .   ; 'w'
     db %"--------"                                                    ; 3fb9: 00          .
     db %"-#---#--"                                                    ; 3fba: 44          D
     db %"-#-#-#--"                                                    ; 3fbb: 54          T
@@ -11628,7 +11628,7 @@ char_set:
     db %"-#-#-#--"                                                    ; 3fbd: 54          T
     db %"--#-#---"                                                    ; 3fbe: 28          (
     db %"--------"                                                    ; 3fbf: 00          .
-    db %"--------"                                                    ; 3fc0: 00          .  ; 'x'
+    db %"--------"                                                    ; 3fc0: 00          .   ; 'x'
     db %"--------"                                                    ; 3fc1: 00          .
     db %"-#---#--"                                                    ; 3fc2: 44          D
     db %"--#-#---"                                                    ; 3fc3: 28          (
@@ -11636,7 +11636,7 @@ char_set:
     db %"--#-#---"                                                    ; 3fc5: 28          (
     db %"-#---#--"                                                    ; 3fc6: 44          D
     db %"--------"                                                    ; 3fc7: 00          .
-    db %"--------"                                                    ; 3fc8: 00          .  ; 'y'
+    db %"--------"                                                    ; 3fc8: 00          .   ; 'y'
     db %"--------"                                                    ; 3fc9: 00          .
     db %"-#---#--"                                                    ; 3fca: 44          D
     db %"-#---#--"                                                    ; 3fcb: 44          D
@@ -11644,7 +11644,7 @@ char_set:
     db %"--####--"                                                    ; 3fcd: 3c          <
     db %"-----#--"                                                    ; 3fce: 04          .
     db %"--###---"                                                    ; 3fcf: 38          8
-    db %"--------"                                                    ; 3fd0: 00          .  ; 'z'
+    db %"--------"                                                    ; 3fd0: 00          .   ; 'z'
     db %"--------"                                                    ; 3fd1: 00          .
     db %"-#####--"                                                    ; 3fd2: 7c          |
     db %"----#---"                                                    ; 3fd3: 08          .
@@ -11652,7 +11652,7 @@ char_set:
     db %"--#-----"                                                    ; 3fd5: 20
     db %"-#####--"                                                    ; 3fd6: 7c          |
     db %"--------"                                                    ; 3fd7: 00          .
-    db %"--------"                                                    ; 3fd8: 00          .  ; '{'
+    db %"--------"                                                    ; 3fd8: 00          .   ; '{'
     db %"----###-"                                                    ; 3fd9: 0e          .
     db %"----#---"                                                    ; 3fda: 08          .
     db %"--##----"                                                    ; 3fdb: 30          0
@@ -11660,7 +11660,7 @@ char_set:
     db %"----#---"                                                    ; 3fdd: 08          .
     db %"----###-"                                                    ; 3fde: 0e          .
     db %"--------"                                                    ; 3fdf: 00          .
-    db %"--------"                                                    ; 3fe0: 00          .  ; '|'
+    db %"--------"                                                    ; 3fe0: 00          .   ; '|'
     db %"----#---"                                                    ; 3fe1: 08          .
     db %"----#---"                                                    ; 3fe2: 08          .
     db %"----#---"                                                    ; 3fe3: 08          .
@@ -11668,7 +11668,7 @@ char_set:
     db %"----#---"                                                    ; 3fe5: 08          .
     db %"----#---"                                                    ; 3fe6: 08          .
     db %"--------"                                                    ; 3fe7: 00          .
-    db %"--------"                                                    ; 3fe8: 00          .  ; '}'
+    db %"--------"                                                    ; 3fe8: 00          .   ; '}'
     db %"-###----"                                                    ; 3fe9: 70          p
     db %"---#----"                                                    ; 3fea: 10          .
     db %"----##--"                                                    ; 3feb: 0c          .
@@ -11676,7 +11676,7 @@ char_set:
     db %"---#----"                                                    ; 3fed: 10          .
     db %"-###----"                                                    ; 3fee: 70          p
     db %"--------"                                                    ; 3fef: 00          .
-    db %"--------"                                                    ; 3ff0: 00          .  ; '~'
+    db %"--------"                                                    ; 3ff0: 00          .   ; '~'
     db %"---#-#--"                                                    ; 3ff1: 14          .
     db %"--#-#---"                                                    ; 3ff2: 28          (
     db %"--------"                                                    ; 3ff3: 00          .
@@ -11684,7 +11684,7 @@ char_set:
     db %"--------"                                                    ; 3ff5: 00          .
     db %"--------"                                                    ; 3ff6: 00          .
     db %"--------"                                                    ; 3ff7: 00          .
-    db %"--####--"                                                    ; 3ff8: 3c          <  ; $7F (copyright sign)
+    db %"--####--"                                                    ; 3ff8: 3c          <   ; $7F (copyright sign)
     db %"-#----#-"                                                    ; 3ff9: 42          B
     db %"#--##--#"                                                    ; 3ffa: 99          .
     db %"#-#----#"                                                    ; 3ffb: a1          .

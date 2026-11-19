@@ -127,7 +127,7 @@ basic_end
     .word 0                                                           ; 100b: 00 00       ..
 
 sys_entry
-    lda #8                                                            ; 100d: a9 08       .. ; A=character to output
+    lda #8                                                            ; 100d: a9 08       ..  ; A=character to output
     jsr CHROUT                                                        ; 100f: 20 d2 ff     R. ; Output $08 (disable case switching)
     lda vic_vertical_position                                         ; 1012: ad 01 90    ...
     sbc #4                                                            ; 1015: e9 04       ..
@@ -213,7 +213,7 @@ loop_c1094
     jsr sub_c12a3                                                     ; 10a0: 20 a3 12     ..
     jsr sub_c168d                                                     ; 10a3: 20 8d 16     ..
     jsr GETIN                                                         ; 10a6: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
-    cmp #3                                                            ; 10a9: c9 03       I. ; A=character read
+    cmp #3                                                            ; 10a9: c9 03       I.  ; A=character read
     bne c10b0                                                         ; 10ab: d0 03       P.
     jmp kernal_reset                                                  ; 10ad: 4c 22 fd    l". ; The Kernal's reset handler
 
@@ -278,7 +278,8 @@ loop_c10fa
     lda #$20 ; ' '                                                    ; 1118: a9 20       .
 ; $111a referenced 1 time by $1120
 loop_c111a
-    sta screen_memory+281,x                                           ; 111a: 9d 19 1f    ...
+    ; Set 5 bytes of memory from screen_memory+281 onwards to 32
+    sta screen_memory+281,x                                           ; 111a: 9d 19 1f    ... ; A=$20
     inx                                                               ; 111d: e8          .
     cpx #5                                                            ; 111e: e0 05       ..
     bne loop_c111a                                                    ; 1120: d0 f8       P.
@@ -286,7 +287,7 @@ loop_c111a
     ldx #0                                                            ; 1124: a2 00       ..
 ; $1126 referenced 1 time by $112b
 loop_c1126
-    stx usr_jmp,y                                                     ; 1126: 96 00       ..
+    stx usr_jmp,y                                                     ; 1126: 96 00       ..  ; X=0
     iny                                                               ; 1128: c8          H
     cpy #$44 ; 'd'                                                    ; 1129: c0 44       .d
     bne loop_c1126                                                    ; 112b: d0 f9       P.
@@ -357,7 +358,7 @@ c1189
     lda joyval                                                        ; 1193: a5 42       .b
     sta qmandir                                                       ; 1195: 85 43       .c
     clc                                                               ; 1197: 18          .
-    bcc c11a1                                                         ; 1198: 90 07       .. ; ALWAYS branch
+    bcc c11a1                                                         ; 1198: 90 07       ..  ; ALWAYS branch
 
 ; $119a referenced 1 time by $1191
 c119a
@@ -383,7 +384,7 @@ c11b4
     and #7                                                            ; 11b9: 29 07       ).
     cmp #4                                                            ; 11bb: c9 04       I.
     bne c11ca                                                         ; 11bd: d0 0b       P.
-    inx                                                               ; 11bf: e8          .  ; X=1
+    inx                                                               ; 11bf: e8          .   ; X=1
     lda qmandir                                                       ; 11c0: a5 43       .c
     eor #2                                                            ; 11c2: 49 02       i.
     tay                                                               ; 11c4: a8          .
@@ -442,7 +443,7 @@ c1201
     sta digit                                                         ; 1215: 85 3e       .>
     sta chomp                                                         ; 1217: 85 3c       .<
     clc                                                               ; 1219: 18          .
-    bcc c127b                                                         ; 121a: 90 5f       .. ; ALWAYS branch
+    bcc c127b                                                         ; 121a: 90 5f       ..  ; ALWAYS branch
 
 ; $121c referenced 1 time by $1203
 c121c
@@ -508,7 +509,7 @@ loop_c126f
 ; $127b referenced 5 times by $11e0, $1207, $121a, $122a, $1232
 c127b
     jsr GETIN                                                         ; 127b: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
-    cmp #3                                                            ; 127e: c9 03       I. ; A=character read
+    cmp #3                                                            ; 127e: c9 03       I.  ; A=character read
     beq c1234                                                         ; 1280: f0 b2       ..
     jsr sub_c12a3                                                     ; 1282: 20 a3 12     ..
     ldx #$50 ; 'p'                                                    ; 1285: a2 50       .p
@@ -633,7 +634,7 @@ c133b
     cmp #5                                                            ; 133b: c9 05       I.
     bcs c1343                                                         ; 133d: b0 04       ..
     ldx #$ff                                                          ; 133f: a2 ff       ..
-    bne c1361                                                         ; 1341: d0 1e       P. ; ALWAYS branch
+    bne c1361                                                         ; 1341: d0 1e       P.  ; ALWAYS branch
 
 ; $1343 referenced 2 times by $132e, $133d
 c1343
@@ -810,14 +811,14 @@ c145b
     sta spritey,x                                                     ; 146d: 9d a3 02    ...
     ldx #3                                                            ; 1470: a2 03       ..
     stx basic_fn_ptr,y                                                ; 1472: 96 4e       .n
-    bne c1489                                                         ; 1474: d0 13       P. ; ALWAYS branch
+    bne c1489                                                         ; 1474: d0 13       P.  ; ALWAYS branch
 
 ; $1476 referenced 2 times by $1462, $1469
 c1476
     lda spritex,x                                                     ; 1476: bd a2 02    ...
     bne c147f                                                         ; 1479: d0 04       P.
     ldx usr_jmp                                                       ; 147b: a6 00       ..
-    sta basic_fn_ptr,x                                                ; 147d: 95 4e       .n
+    sta basic_fn_ptr,x                                                ; 147d: 95 4e       .n  ; A=0
 ; $147f referenced 1 time by $1479
 c147f
     cmp #$9f                                                          ; 147f: c9 9f       I.
@@ -846,7 +847,7 @@ loop_c148d
 c14a3
     jsr sub_c14e8                                                     ; 14a3: 20 e8 14     ..
     clc                                                               ; 14a6: 18          .
-    bcc c14ad                                                         ; 14a7: 90 04       .. ; ALWAYS branch
+    bcc c14ad                                                         ; 14a7: 90 04       ..  ; ALWAYS branch
 
 ; $14a9 referenced 1 time by $14a1
 c14a9
@@ -901,7 +902,7 @@ sub_c14e8
     sty monmove                                                       ; 14f4: 84 61       ..
     ldy #0                                                            ; 14f6: a0 00       ..
     sty fac1_mantissa+2                                               ; 14f8: 84 64       ..
-    beq c1504                                                         ; 14fa: f0 08       .. ; ALWAYS branch
+    beq c1504                                                         ; 14fa: f0 08       ..  ; ALWAYS branch
 
 ; $14fc referenced 1 time by $14f0
 c14fc
@@ -919,7 +920,7 @@ c1504
     sty fac1_mantissa                                                 ; 150e: 84 62       ..
     ldy #1                                                            ; 1510: a0 01       ..
     sty fac1_mantissa+1                                               ; 1512: 84 63       ..
-    bne c151e                                                         ; 1514: d0 08       P. ; ALWAYS branch
+    bne c151e                                                         ; 1514: d0 08       P.  ; ALWAYS branch
 
 ; $1516 referenced 1 time by $150a
 c1516
@@ -1002,7 +1003,7 @@ sub_c1577
     sta vic_background_border_colour                                  ; 1580: 8d 0f 90    ...
     lda #$af                                                          ; 1583: a9 af       ..
     sta vic_volume_aux_colour                                         ; 1585: 8d 0e 90    ...
-    lda #$93                                                          ; 1588: a9 93       .. ; A=character to output
+    lda #$93                                                          ; 1588: a9 93       ..  ; A=character to output
     jsr CHROUT                                                        ; 158a: 20 d2 ff     R. ; Output $93 (clear screen)
     ldx #$15                                                          ; 158d: a2 15       ..
 ; $158f referenced 1 time by $159c
@@ -1013,7 +1014,7 @@ loop_c158f
     sta screen_memory+227,x                                           ; 1598: 9d e3 1e    ...
     inx                                                               ; 159b: e8          .
     bne loop_c158f                                                    ; 159c: d0 f1       P.
-    stx dots                                                          ; 159e: 86 4a       .j
+    stx dots                                                          ; 159e: 86 4a       .j  ; X=0
     ldx #6                                                            ; 15a0: a2 06       ..
     jsr sub_c15f9                                                     ; 15a2: 20 f9 15     ..
     ldx #0                                                            ; 15a5: a2 00       ..
@@ -1079,7 +1080,7 @@ c15fb
     bcc c160c                                                         ; 1600: 90 0a       ..
     cmp #$3f ; '?'                                                    ; 1602: c9 3f       I?
     bcs c160c                                                         ; 1604: b0 06       ..
-    lda #1                                                            ; 1606: a9 01       .. ; Redundant instruction?
+    lda #1                                                            ; 1606: a9 01       ..  ; Redundant instruction?
     txa                                                               ; 1608: 8a          .
     sta colour_ram,y                                                  ; 1609: 99 00 96    ...
 ; $160c referenced 2 times by $1600, $1604
@@ -1137,7 +1138,7 @@ c163d
 c1657
     sta rs232_input_buffer_ptr                                        ; 1657: 85 f7       ..
     clc                                                               ; 1659: 18          .
-    bcc c1668                                                         ; 165a: 90 0c       .. ; ALWAYS branch
+    bcc c1668                                                         ; 165a: 90 0c       ..  ; ALWAYS branch
 
 ; $165c referenced 1 time by $164b
 c165c
@@ -1315,7 +1316,7 @@ c174f
     clc                                                               ; 1751: 18          .
     adc #$15                                                          ; 1752: 69 15       ..
     bcc c174a                                                         ; 1754: 90 f4       ..
-    bcs loop_c1746                                                    ; 1756: b0 ee       .. ; ALWAYS branch
+    bcs loop_c1746                                                    ; 1756: b0 ee       ..  ; ALWAYS branch
 
 ; $1758 referenced 2 times by $16b0, $16e0
 sub_c1758
@@ -1352,7 +1353,7 @@ loop_c1778
     tay                                                               ; 1780: a8          .
     lda saveback,y                                                    ; 1781: b9 dd 02    ...
     clc                                                               ; 1784: 18          .
-    bcc loop_c1778                                                    ; 1785: 90 f1       .. ; ALWAYS branch
+    bcc loop_c1778                                                    ; 1785: 90 f1       ..  ; ALWAYS branch
 
 ; $1787 referenced 2 times by $177a, $177e
 c1787
@@ -1379,9 +1380,9 @@ sub_c1790
 ; $17ab referenced 1 time by $17a2
 c17ab
     lda l02de,x                                                       ; 17ab: bd de 02    ...
-    sta (rs232_output_buffer_ptr),y                                   ; 17ae: 91 f9       ..
+    sta (rs232_output_buffer_ptr),y                                   ; 17ae: 91 f9       ..  ; Offset is Y=0
     lda #1                                                            ; 17b0: a9 01       ..
-    sta (free_zero_page+3),y                                          ; 17b2: 91 fe       ..
+    sta (free_zero_page+3),y                                          ; 17b2: 91 fe       ..  ; Offset is Y=0
 ; $17b4 referenced 1 time by $17a9
 return_3
     rts                                                               ; 17b4: 60          .
@@ -1399,14 +1400,15 @@ sub_c17b5
     sta basic_float_to_int_vector                                     ; 17c8: 85 03       ..
     tax                                                               ; 17ca: aa          .
     ldy #0                                                            ; 17cb: a0 00       ..
-    tya                                                               ; 17cd: 98          .  ; A=0
+    tya                                                               ; 17cd: 98          .   ; A=0
 ; $17ce referenced 1 time by $17d4
 loop_c17ce
-    sta tape_buffer+32,y                                              ; 17ce: 99 5c 03    ...
+    ; Clear 16 bytes of memory from tape_buffer+32 onwards
+    sta tape_buffer+32,y                                              ; 17ce: 99 5c 03    ... ; A=0
     iny                                                               ; 17d1: c8          H
     cpy #$10                                                          ; 17d2: c0 10       ..
     bne loop_c17ce                                                    ; 17d4: d0 f8       P.
-    tay                                                               ; 17d6: a8          .  ; Y=0
+    tay                                                               ; 17d6: a8          .   ; Y=0
 ; $17d7 referenced 1 time by $17e0
 loop_c17d7
     lda (basic_int_to_float_vector),y                                 ; 17d7: b1 05       ..
@@ -1435,7 +1437,7 @@ loop_c17ee
     bne loop_c17ec                                                    ; 17fb: d0 ef       P.
 ; $17fd referenced 1 time by $17ea
 c17fd
-    sty free_zero_page                                                ; 17fd: 84 fb       ..
+    sty free_zero_page                                                ; 17fd: 84 fb       ..  ; Y=0
 ; $17ff referenced 1 time by $1843
 c17ff
     lda usr_address                                                   ; 17ff: a5 01       ..
@@ -1516,11 +1518,11 @@ sub_c185b
     beq return_4                                                      ; 1876: f0 08       ..
 ; $1878 referenced 1 time by $186f
 c1878
-    lda (free_zero_page+1),y                                          ; 1878: b1 fc       ..
-    sta (free_zero_page+3),y                                          ; 187a: 91 fe       ..
+    lda (free_zero_page+1),y                                          ; 1878: b1 fc       ..  ; Offset is Y=0
+    sta (free_zero_page+3),y                                          ; 187a: 91 fe       ..  ; Offset is Y=0
     inx                                                               ; 187c: e8          .
     txa                                                               ; 187d: 8a          .
-    sta (rs232_output_buffer_ptr),y                                   ; 187e: 91 f9       ..
+    sta (rs232_output_buffer_ptr),y                                   ; 187e: 91 f9       ..  ; Offset is Y=0
 ; $1880 referenced 1 time by $1876
 return_4
     rts                                                               ; 1880: 60          .
@@ -1654,7 +1656,7 @@ loop_c1940
     inc l1a00,x                                                       ; 1947: fe 00 1a    ...
     dey                                                               ; 194a: 88          .
     bne loop_c193e                                                    ; 194b: d0 f1       P.
-    beq c1957                                                         ; 194d: f0 08       .. ; ALWAYS branch
+    beq c1957                                                         ; 194d: f0 08       ..  ; ALWAYS branch
 
 ; $194f referenced 1 time by $1945
 c194f
@@ -1715,7 +1717,7 @@ c198c
 c19a9
     sta vic_voice3_frequency                                          ; 19a9: 8d 0c 90    ...
     clc                                                               ; 19ac: 18          .
-    bcc c19b8                                                         ; 19ad: 90 09       .. ; ALWAYS branch
+    bcc c19b8                                                         ; 19ad: 90 09       ..  ; ALWAYS branch
 
 ; $19af referenced 1 time by $199a
 c19af
@@ -1740,7 +1742,7 @@ c19ca
     lda l1a07                                                         ; 19ce: ad 07 1a    ...
     cmp #$b1                                                          ; 19d1: c9 b1       I.
     bne c19e5                                                         ; 19d3: d0 10       P.
-    sta extraqman                                                     ; 19d5: 85 47       .g
+    sta extraqman                                                     ; 19d5: 85 47       .g  ; A=$b1
     ldx lives                                                         ; 19d7: a6 45       .e
     lda #$2d ; '-'                                                    ; 19d9: a9 2d       .-
     sta screen_memory+484,x                                           ; 19db: 9d e4 1f    ...
@@ -1952,7 +1954,7 @@ c1cca
     bne c1cca                                                         ; 1ccb: d0 fd       P.
     dey                                                               ; 1ccd: 88          .
     bne c1cca                                                         ; 1cce: d0 fa       P.
-    tya                                                               ; 1cd0: 98          .  ; A=0
+    tya                                                               ; 1cd0: 98          .   ; A=0
     rts                                                               ; 1cd1: 60          .
 
     .byte 0, 0, 0, 0, 0, 0, 0, $10, $10, $6c, $10, $10, 0, 0, $10     ; 1cd2: 00 00 00... ...

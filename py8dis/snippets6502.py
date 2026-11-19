@@ -54,6 +54,7 @@ import snippet6502
 import utils
 import session
 from align import Align
+from binaryaddrtype import BinaryAddrType
 from maker import make_add
 from snippethelper import *
 
@@ -545,6 +546,130 @@ def comment_set_memory_y_loop(p):
 
 
 # ************************************************************************************************
+OPCODE_INY                      = 0xc8      # iny
+OPCODE_DEY                      = 0x88      # dey
+OPCODE_BPL                      = 0x10      # bpl loop
+
+def _state_entering(p, label_name):
+    """What's known for certain (a CpuStateDisposition) on coming into the
+    instruction at the name's position from the instruction before it, or
+    None if the code doesn't run on into it from there (e.g. the
+    instruction before is data, or a JMP)."""
+    cpu = session.current().cpu
+    binary_addr = p.get_binary_address(label_name)
+    for length in (1, 2, 3):
+        before = binary_addr - length
+        if before < 0:
+            break
+        c = classification.get_classification(before)
+        if isinstance(c, cpu.Opcode) and c.length() == length:
+            state = cpu.cpu_states[before]
+            if c.is_block_end() or state is None or state.always_branch:
+                return None
+            return state.pessimistic
+    return None
+
+def comment_set_memory_one_register_loop(p, reg):
+    """Comment a loop that stores A in a run of bytes, with one register
+    ('reg') as both the index and the count, e.g. 'sta table,y : iny : cpy
+    #16 : bne loop' or 'sta table,x : dex : bpl loop': e.g. 'Clear 16 bytes
+    of memory from table onwards', or 'Set 8 bytes of memory from table+1
+    onwards to 255'.
+
+    The register's first value and A's value are what's known for certain
+    on coming into the loop from the instruction before it (see
+    join_states_at_labels(), which knows what's known across labels), and
+    the loop's start must have just one reference (the branch back to it),
+    so that it's the only way in. The bytes are worked out by stepping the
+    register through the loop (see _loop_run()); nothing is commented if
+    its first value isn't known, if the loop doesn't end, if the bytes
+    aren't one run, or if the branch doesn't go back to the loop's start.
+    The first byte is named by its label, and if it isn't the operand's
+    address, the operand is written as that label minus the difference.
+    With an indirect store ('(ptr),y'), the first byte is given as e.g.
+    '(ptr)+2'."""
+    cpu = session.current().cpu
+    for name in ('loop', 'update', 'branch'):
+        binary_addr = p.get_binary_address(name)
+        if not (isinstance(classification.get_classification(binary_addr), cpu.Opcode) and cpu.cpu_states[binary_addr] is not None):
+            # (It isn't traced code)
+            return
+    if not p.check_branch_matches('loop') or p.num_references('loop') != 1:
+        return
+    state = _state_entering(p, 'loop')
+    if state is None or state[reg].value is None:
+        return
+    start = state[reg].value
+    to_value = state['a'].value
+    step = 1 if p.get_memory('update') in (OPCODE_INX, OPCODE_INY) else -1
+    branch = p.get_memory('branch')
+    has_compare = p.get_binary_address('compare') != p.get_binary_address('branch')
+    if has_compare:
+        limit = p.get_memory('compare', 1)
+        if branch == OPCODE_BNE:
+            keep_going = lambda r: r != limit
+        elif branch == OPCODE_BCC:
+            keep_going = lambda r: r < limit
+        else:
+            # (BPL: while the difference is positive)
+            keep_going = lambda r: ((r - limit) & 0xff) < 0x80
+    elif branch == OPCODE_BNE:
+        keep_going = lambda r: r != 0
+    elif branch == OPCODE_BPL:
+        keep_going = lambda r: r < 0x80
+    else:
+        # (BCC without a compare: the carry doesn't change in the loop)
+        return
+    run = _loop_run(start, step, keep_going)
+    if run is None:
+        return
+    lowest, count = run
+
+    # The first byte. (Only names in this snippet are asked for: asking
+    # for another would add it to the pattern's names)
+    def matched(name):
+        return name in p.labels and p.get_memory(name) is not None
+    if matched('zpptr'):
+        first = utils.LazyString("(%s)%s", p.get_expr('zpptr'), "+{0}".format(lowest) if lowest else "")
+    elif matched('zpaddr'):
+        first = p.get_expr('zpaddr')
+        zp_addr = p.get_memory('zpaddr')
+        if lowest and zp_addr + lowest <= 0xff:
+            # (Named by its own label, e.g. 'l00e2', rather than as 'l0000 + 226')
+            binary_addr = p.get_binary_address('zpaddr')
+            first = disassembly.get_label(zp_addr + lowest, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+        elif lowest:
+            first = make_add(first, lowest)
+    else:
+        first = p.get_expr('addr', label_offset=0, final_offset=lowest)
+        if lowest:
+            store_operand = p.get_binary_address('loop') + 1
+            proposed_expression = p.make_subtract_wrapped(first, 'addr', lowest)
+            new_expression = classification.add_expression(store_operand, proposed_expression, force=False)
+            if new_expression is not None and new_expression != proposed_expression:
+                first = make_add(new_expression, lowest)
+
+    count_text = utils.count_with_units(count, "byte of memory", "bytes of memory")
+    if to_value == 0:
+        text = utils.LazyString("Clear %s from %s onwards", count_text, first)
+    elif to_value is not None:
+        text = utils.LazyString("Set %s from %s onwards to %s", count_text, first, to_value)
+    else:
+        text = utils.LazyString("Set %s from %s onwards", count_text, first)
+    disassembly.comment_binary(p.get_start_loc(), text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+
+def comment_set_memory_y_index_loop(p):
+    """Post-trace function for a loop that stores A with Y as both the
+    index and the count (see comment_set_memory_one_register_loop())."""
+    comment_set_memory_one_register_loop(p, 'y')
+
+def comment_set_memory_x_index_loop(p):
+    """Post-trace function for a loop that stores A with X as both the
+    index and the count (see comment_set_memory_one_register_loop())."""
+    comment_set_memory_one_register_loop(p, 'x')
+
+
+# ************************************************************************************************
 # More opcodes, for the push and pull snippets
 OPCODE_PHP                      = 0x08      # php
 OPCODE_PHA                      = 0x48      # pha
@@ -764,6 +889,30 @@ loop
     dex
 branch
     bne loop | bpl loop
+""")
+
+# (These two only comment code that's traced: their matches aren't traced
+# as code, since their bytes are common in data)
+register_snippet(None, comment_set_memory_y_index_loop, """
+loop
+    sta addr,y | sta (zpptr),y
+update
+    iny | dey
+compare
+?   cpy #nn
+branch
+    bne loop | bpl loop | bcc loop
+""")
+
+register_snippet(None, comment_set_memory_x_index_loop, """
+loop
+    sta addr,x | sta zpaddr,x
+update
+    inx | dex
+compare
+?   cpx #nn
+branch
+    bne loop | bpl loop | bcc loop
 """)
 
 register_code_snippet(comment_set_memory_y_loop, """

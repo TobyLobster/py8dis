@@ -63,10 +63,10 @@ c294d
 // $296a referenced 2 times by $2961, $2968
 c296a
     lda ppi_port_b                                                    // 296a: ad 01 b0    ...
-    and #$40 // '@'                                                   // 296d: 29 40       )@ // Test the CTRL key
+    and #$40 // '@'                                                   // 296d: 29 40       )@  // Test the CTRL key
     sta l0070                                                         // 296f: 85 70       .p
     lda ppi_port_c                                                    // 2971: ad 02 b0    ...
-    and #$40 // '@'                                                   // 2974: 29 40       )@ // Test the REPT key
+    and #$40 // '@'                                                   // 2974: 29 40       )@  // Test the REPT key
     sta l0071                                                         // 2976: 85 71       .q
     rts                                                               // 2978: 60          `
 

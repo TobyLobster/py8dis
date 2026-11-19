@@ -77,7 +77,7 @@ section pydis, org = &11ff, filename = "vic20_8k_test_baron"
     sta vic_voice3_frequency                                          ; 1225: 8d 0c 90    ...
     lda #colour_red                                                   ; 1228: a9 02       ..
     sta text_colour                                                   ; 122a: 8d 86 02    ...
-    lda #&93                                                          ; 122d: a9 93       .. ; A=character to output
+    lda #&93                                                          ; 122d: a9 93       ..  ; A=character to output
     jsr CHROUT                                                        ; 122f: 20 d2 ff     R. ; Output &93 (clear screen)
     ldx #0                                                            ; 1232: a2 00       ..
 ; &1234 referenced 1 time by &123d
@@ -90,8 +90,8 @@ section pydis, org = &11ff, filename = "vic20_8k_test_baron"
 ; &123f referenced 1 time by &1237
 .c123f
     clc                                                               ; 123f: 18          .
-    ldx #&0a                                                          ; 1240: a2 0a       .. ; X=cursor row
-    ldy #5                                                            ; 1242: a0 05       .. ; Y=cursor column
+    ldx #&0a                                                          ; 1240: a2 0a       ..  ; X=cursor row
+    ldy #5                                                            ; 1242: a0 05       ..  ; Y=cursor column
     jsr PLOT                                                          ; 1244: 20 f0 ff     .. ; Move the cursor to row 10, column 5
     ldx #&15                                                          ; 1247: a2 15       ..
 ; &1249 referenced 1 time by &1254
@@ -112,11 +112,11 @@ section pydis, org = &11ff, filename = "vic20_8k_test_baron"
     sta l129f                                                         ; 1269: 8d 9f 12    ...
     jsr GETIN                                                         ; 126c: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     sta l12a0                                                         ; 126f: 8d a0 12    ... ; A=character read
-    lda #<l128f                                                       ; 1272: a9 8f       .. ; A=string address (low byte)
-    ldy #>l128f                                                       ; 1274: a0 12       .. ; Y=string address (high byte)
+    lda #<l128f                                                       ; 1272: a9 8f       ..  ; A=string address (low byte)
+    ldy #>l128f                                                       ; 1274: a0 12       ..  ; Y=string address (high byte)
     jsr basic_print_string                                            ; 1276: 20 1e cb     .K ; Print the zero-terminated string at A/Y
-    lda #0                                                            ; 1279: a9 00       .. ; A=number to print (high byte)
-    ldx #&14                                                          ; 127b: a2 14       .. ; X=number to print (low byte)
+    lda #0                                                            ; 1279: a9 00       ..  ; A=number to print (high byte)
+    ldx #&14                                                          ; 127b: a2 14       ..  ; X=number to print (low byte)
     jsr basic_print_number                                            ; 127d: 20 cd dd     M. ; Print the 16-bit number in A/X
     rts                                                               ; 1280: 60          .
 

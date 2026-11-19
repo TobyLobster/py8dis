@@ -15,7 +15,7 @@ l412c   equ $412c
 pydis_start
 start
     ldx #$80                                                          ; ffe0: a2 80       ..
-    dfb $30, {l0020-*-2} & $ff ; bmi l0020 (a branch that wraps round memory) ; ffe2: 30 3c       0< ; ALWAYS branch
+    dfb $30, {l0020-*-2} & $ff ; bmi l0020 (a branch that wraps round memory) ; ffe2: 30 3c       0<  ; ALWAYS branch
 
     jmp cfffd                                                         ; ffe4: 4c fd ff    L..
 

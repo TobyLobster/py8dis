@@ -9,7 +9,7 @@ These are for going further than the ordinary commands: teaching py8dis to recog
 
 ## Snippets
 
-A snippet recognises a common piece of 6502 code and comments it, or traces the code it leads to. py8dis has some built in (e.g. memory copying loops), and `acorn.bbc()`, `commodore.c64()` etc. add more (e.g. code that sets an OS vector). A control file can add its own:
+A snippet recognises a common piece of 6502 code and comments it, or traces the code it leads to. py8dis has some built in (e.g. memory copying loops, and loops that set memory, e.g. `; Clear 16 bytes of memory from buffer onwards` before `sta buffer,y : iny : cpy #16 : bne loop`, using what's known about the registers coming into the loop), and `acorn.bbc()`, `commodore.c64()` etc. add more (e.g. code that sets an OS vector). A control file can add its own:
 
 `snippets6502.register_snippet(pre_trace_fn, post_trace_fn, snippet)`
 

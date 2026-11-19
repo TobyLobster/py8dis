@@ -207,7 +207,6 @@ l1089   equ $1089
 l108a   equ $108a
 l108b   equ $108b
 l108c   equ $108c
-l108f   equ $108f
 l1090   equ $1090
 l1091   equ $1091
 l1092   equ $1092
@@ -251,6 +250,7 @@ l10db   equ $10db
 l10dc   equ $10dc
 l10dd   equ $10dd
 l10de   equ $10de
+l10df   equ $10df
 l10e2   equ $10e2
 l10e3   equ $10e3
 l10e4   equ $10e4
@@ -607,7 +607,7 @@ c815f
     lda #$20 ; ' '                                                    ; 815f: a9 20       .
 ; $8161 referenced 1 time by $8167
 loop_c8161
-    sta l1000,x                                                       ; 8161: 9d 00 10    ...
+    sta l1000,x                                                       ; 8161: 9d 00 10    ...            ; A=$20
     inx                                                               ; 8164: e8          .
     cpx #$40 ; '@'                                                    ; 8165: e0 40       .@
     bne loop_c8161                                                    ; 8167: d0 f8       ..
@@ -1024,7 +1024,7 @@ sub_c8386
 ; $8390 referenced 1 time by $8395
 loop_c8390
     dey                                                               ; 8390: 88          .
-    sta (l00b0),y                                                     ; 8391: 91 b0       ..
+    sta (l00b0),y                                                     ; 8391: 91 b0       ..             ; A=0
     cpy #2                                                            ; 8393: c0 02       ..
     bne loop_c8390                                                    ; 8395: d0 f9       ..
 ; $8397 referenced 1 time by $839e
@@ -1039,7 +1039,7 @@ loop_c8397
     lda l0e0f,x                                                       ; 83a2: bd 0f 0e    ...
     bpl c83ab                                                         ; 83a5: 10 04       ..
     lda #8                                                            ; 83a7: a9 08       ..
-    sta (l00b0),y                                                     ; 83a9: 91 b0       ..
+    sta (l00b0),y                                                     ; 83a9: 91 b0       ..             ; Offset is Y=$0e
 ; $83ab referenced 1 time by $83a5
 c83ab
     lda l0f0e,x                                                       ; 83ab: bd 0e 0f    ...
@@ -1050,7 +1050,7 @@ c83ab
     lsr                                                               ; 83b6: 4a          J
     pha                                                               ; 83b7: 48          H
     and #3                                                            ; 83b8: 29 03       ).
-    sta (l00b0),y                                                     ; 83ba: 91 b0       ..
+    sta (l00b0),y                                                     ; 83ba: 91 b0       ..             ; Offset is Y=$0c
     pla                                                               ; 83bc: 68          h
     ldy #8                                                            ; 83bd: a0 08       ..
 ; $83bf referenced 1 time by $83b0
@@ -2533,14 +2533,14 @@ c8ce7
     bit l1087                                                         ; 8cee: 2c 87 10    ,..
     bcc c8cfc                                                         ; 8cf1: 90 09       ..
     bpl c8d0d                                                         ; 8cf3: 10 18       ..
-    sty l1088                                                         ; 8cf5: 8c 88 10    ...
+    sty l1088                                                         ; 8cf5: 8c 88 10    ...            ; Y=0
     and #$7f                                                          ; 8cf8: 29 7f       ).
     bpl c8d03                                                         ; 8cfa: 10 07       ..             ; ALWAYS branch
 
 ; $8cfc referenced 1 time by $8cf1
 c8cfc
     bvc c8d0d                                                         ; 8cfc: 50 0f       P.
-    sty l1089                                                         ; 8cfe: 8c 89 10    ...
+    sty l1089                                                         ; 8cfe: 8c 89 10    ...            ; Y=0
     and #$bf                                                          ; 8d01: 29 bf       ).
 ; $8d03 referenced 1 time by $8cfa
 c8d03
@@ -3108,7 +3108,7 @@ nmi_cmp_imm_or_bcs
 ; $8feb referenced 1 time by $905c
     bne c0d26                                                         ; 8fec: d0 0a       ..  :0d1a[4]
     lda l00a1                                                         ; 8fee: a5 a1       ..  :0d1c[4]
-    ror                                                               ; 8ff0: 6a          j   :0d1e[4]   ; Rotate in a set bit
+    ror                                                               ; 8ff0: 6a          j   :0d1e[4]
 c0d1f
 nmi_XXX5 equ c0d1f+1
     bcc c0d26                                                         ; 8ff1: 90 05       ..  :0d1f[4]
@@ -3361,7 +3361,7 @@ set_c_iff_have_fdc
     lda #$5a ; 'Z'                                                    ; 9106: a9 5a       .Z
 ; $9108 referenced 1 time by $9111
 loop_c9108
-    sta fdc_1770_track                                                ; 9108: 8d 85 fe    ...
+    sta fdc_1770_track                                                ; 9108: 8d 85 fe    ...            ; A=$5a
     cmp fdc_1770_track                                                ; 910b: cd 85 fe    ...
     beq c9115                                                         ; 910e: f0 05       ..
     dex                                                               ; 9110: ca          .
@@ -3639,7 +3639,7 @@ c92c7
     lda #0                                                            ; 92d4: a9 00       ..
 ; $92d6 referenced 1 time by $92d2
 c92d6
-    rol                                                               ; 92d6: 2a          *
+    rol                                                               ; 92d6: 2a          *              ; Rotate clear bit out (clears carry)
     rol                                                               ; 92d7: 2a          *              ; Rotate in a clear bit
     rol                                                               ; 92d8: 2a          *
     sta l108a                                                         ; 92d9: 8d 8a 10    ...
@@ -3738,7 +3738,7 @@ c936b
     ldx #0                                                            ; 936d: a2 00       ..
 ; $936f referenced 1 time by $937c
 loop_c936f
-    lda (l00b0,x)                                                     ; 936f: a1 b0       ..
+    lda (l00b0,x)                                                     ; 936f: a1 b0       ..             ; Offset is X=0
     sta (l00b2),y                                                     ; 9371: 91 b2       ..
     inc l00b0                                                         ; 9373: e6 b0       ..
     bne c9379                                                         ; 9375: d0 02       ..
@@ -3783,7 +3783,7 @@ c93a8
     lda #1                                                            ; 93af: a9 01       ..
 ; $93b1 referenced 1 time by $93ad
 c93b1
-    sta (l00b2),y                                                     ; 93b1: 91 b2       ..
+    sta (l00b2),y                                                     ; 93b1: 91 b2       ..             ; Offset is Y=$11
     tya                                                               ; 93b3: 98          .              ; A=$11
 ; $93b4 referenced 1 time by $9388
 sub_c93b4
@@ -3823,7 +3823,7 @@ sub_c93d8
     ldy #0                                                            ; 93d8: a0 00       ..
 ; $93da referenced 1 time by $93e3
 loop_c93da
-    sta (l00b4),y                                                     ; 93da: 91 b4       ..
+    sta (l00b4),y                                                     ; 93da: 91 b4       ..             ; Offset is Y=0
     inc l00b4                                                         ; 93dc: e6 b4       ..
     bne c93e2                                                         ; 93de: d0 02       ..
     inc l00b5                                                         ; 93e0: e6 b5       ..
@@ -4056,7 +4056,8 @@ sub_c9536
     lda #0                                                            ; 9538: a9 00       ..
 ; $953a referenced 1 time by $953e
 loop_c953a
-    sta l108f,x                                                       ; 953a: 9d 8f 10    ...
+    ; Clear 13 bytes of memory from l1090 onwards
+    sta l1090 - 1,x                                                   ; 953a: 9d 8f 10    ...            ; A=0
     dex                                                               ; 953d: ca          .
     bne loop_c953a                                                    ; 953e: d0 fa       ..
     lda #5                                                            ; 9540: a9 05       ..
@@ -4112,13 +4113,14 @@ loop_c9593
     bne loop_c9593                                                    ; 95a5: d0 ec       ..
     sty l1082                                                         ; 95a7: 8c 82 10    ...
     sty l1083                                                         ; 95aa: 8c 83 10    ...
-    stx l00cd                                                         ; 95ad: 86 cd       ..
+    stx l00cd                                                         ; 95ad: 86 cd       ..             ; X=0
     lda #$ff                                                          ; 95af: a9 ff       ..
     sta l1087                                                         ; 95b1: 8d 87 10    ...
     ldy #3                                                            ; 95b4: a0 03       ..
 ; $95b6 referenced 1 time by $95ba
 loop_c95b6
-    sta l108b,y                                                       ; 95b6: 99 8b 10    ...
+    ; Set 4 bytes of memory from l108b onwards to 255
+    sta l108b,y                                                       ; 95b6: 99 8b 10    ...            ; A=$ff
     dey                                                               ; 95b9: 88          .
     bpl loop_c95b6                                                    ; 95ba: 10 fa       ..
     ldx #$0f                                                          ; 95bc: a2 0f       ..
@@ -4178,7 +4180,8 @@ c95fd
     tya                                                               ; 9617: 98          .              ; A=0
 ; $9618 referenced 1 time by $961c
 loop_c9618
-    sta l10de,x                                                       ; 9618: 9d de 10    ...
+    ; Clear 3 bytes of memory from l10df onwards
+    sta l10df - 1,x                                                   ; 9618: 9d de 10    ...            ; A=0
     dex                                                               ; 961b: ca          .
     bne loop_c9618                                                    ; 961c: d0 fa       ..
     dey                                                               ; 961e: 88          .              ; Y=$ff
@@ -4264,7 +4267,7 @@ c9683
     cpy l00b1                                                         ; 9696: c4 b1       ..
     beq c969e                                                         ; 9698: f0 04       ..
     ldy #$d3                                                          ; 969a: a0 d3       ..
-    sta (l00b0),y                                                     ; 969c: 91 b0       ..
+    sta (l00b0),y                                                     ; 969c: 91 b0       ..             ; A=0
 ; $969e referenced 1 time by $9698
 c969e
     lda #$fd                                                          ; 969e: a9 fd       ..
@@ -5194,8 +5197,8 @@ c9c33
     ldx #7                                                            ; 9c36: a2 07       ..
 ; $9c38 referenced 1 time by $9c3e
 loop_c9c38
-    sta l00bc,x                                                       ; 9c38: 95 bc       ..
-    sta l1074,x                                                       ; 9c3a: 9d 74 10    .t.
+    sta l00bc,x                                                       ; 9c38: 95 bc       ..             ; A=0
+    sta l1074,x                                                       ; 9c3a: 9d 74 10    .t.            ; A=0
     dex                                                               ; 9c3d: ca          .
     bpl loop_c9c38                                                    ; 9c3e: 10 f8       ..
     dec l00be                                                         ; 9c40: c6 be       ..
@@ -5260,7 +5263,7 @@ loop_c9c90
     lda #0                                                            ; 9ca6: a9 00       ..
 ; $9ca8 referenced 1 time by $9cad
 loop_c9ca8
-    sta l1100,y                                                       ; 9ca8: 99 00 11    ...
+    sta l1100,y                                                       ; 9ca8: 99 00 11    ...            ; A=0
     iny                                                               ; 9cab: c8          .
     dex                                                               ; 9cac: ca          .
     bne loop_c9ca8                                                    ; 9cad: d0 f9       ..
@@ -6366,7 +6369,7 @@ sub_ca417
     sta l00c9                                                         ; a421: 85 c9       ..
     sta l00c8                                                         ; a423: 85 c8       ..
     sta l00c6                                                         ; a425: 85 c6       ..
-    sta l00a8                                                         ; a427: 85 a8       ..
+    sta l00a8                                                         ; a427: 85 a8       ..             ; A=0
     jsr sub_ca379                                                     ; a429: 20 79 a3     y.
     lda l10d1                                                         ; a42c: ad d1 10    ...
     sta l00cd                                                         ; a42f: 85 cd       ..
@@ -6825,8 +6828,8 @@ sub_ca76c
     tay                                                               ; a76e: a8          .              ; Y=0
 ; $a76f referenced 1 time by $a776
 loop_ca76f
-    sta l0e00,y                                                       ; a76f: 99 00 0e    ...
-    sta l0f00,y                                                       ; a772: 99 00 0f    ...
+    sta l0e00,y                                                       ; a76f: 99 00 0e    ...            ; A=0
+    sta l0f00,y                                                       ; a772: 99 00 0f    ...            ; A=0
     iny                                                               ; a775: c8          .
     bne loop_ca76f                                                    ; a776: d0 f7       ..
     rts                                                               ; a778: 60          `
@@ -7112,7 +7115,8 @@ sub_ca90d
     ldx #9                                                            ; a93f: a2 09       ..
 ; $a941 referenced 1 time by $a945
 loop_ca941
-    sta l1000,x                                                       ; a941: 9d 00 10    ...
+    ; Clear 10 bytes of memory from l1000 onwards
+    sta l1000,x                                                       ; a941: 9d 00 10    ...            ; A=0
     dex                                                               ; a944: ca          .
     bpl loop_ca941                                                    ; a945: 10 fa       ..
 ; $a947 referenced 1 time by $a966
@@ -7718,7 +7722,7 @@ sub_cac72
     sta bytev+1                                                       ; ac9f: 8d 0b 02    ...
 
     lda #$b2                                                          ; aca2: a9 b2       ..
-    sta (l00b0),y                                                     ; aca4: 91 b0       ..
+    sta (l00b0),y                                                     ; aca4: 91 b0       ..             ; Offset is Y=$0f
     iny                                                               ; aca6: c8          .              ; Y=$10
     lda #$ac                                                          ; aca7: a9 ac       ..
     sta (l00b0),y                                                     ; aca9: 91 b0       ..
@@ -8639,7 +8643,7 @@ loop_cb2d1
     bne cb2e1                                                         ; b2d5: d0 0a       ..
     and #$c0                                                          ; b2d7: 29 c0       ).
     sta l00bc                                                         ; b2d9: 85 bc       ..
-    lda (l00b8),y                                                     ; b2db: b1 b8       ..
+    lda (l00b8),y                                                     ; b2db: b1 b8       ..             ; Offset is Y=0
     and #$3f ; '?'                                                    ; b2dd: 29 3f       )?
     ora l00bc                                                         ; b2df: 05 bc       ..
 ; $b2e1 referenced 1 time by $b2d5
@@ -9178,7 +9182,7 @@ sub_cb5f2
     beq return_58                                                     ; b5f6: f0 f5       ..
     pha                                                               ; b5f8: 48          H
     lda #0                                                            ; b5f9: a9 00       ..
-    sta (l00b8),y                                                     ; b5fb: 91 b8       ..
+    sta (l00b8),y                                                     ; b5fb: 91 b8       ..             ; Offset is Y=$fa
     pla                                                               ; b5fd: 68          h
     tay                                                               ; b5fe: a8          .
     lda #osfind_close                                                 ; b5ff: a9 00       ..
@@ -9667,7 +9671,7 @@ sub_cb882
     ldy #$ee                                                          ; b888: a0 ee       ..
     sta (l00b8),y                                                     ; b88a: 91 b8       ..
     ldy #$fa                                                          ; b88c: a0 fa       ..
-    sta (l00b8),y                                                     ; b88e: 91 b8       ..
+    sta (l00b8),y                                                     ; b88e: 91 b8       ..             ; A=0
     ldy #$ff                                                          ; b890: a0 ff       ..
     lda #$4e ; 'N'                                                    ; b892: a9 4e       .N
     sta (l00b8),y                                                     ; b894: 91 b8       ..
@@ -10647,7 +10651,7 @@ cbe52
     sec                                                               ; be56: 38          8
     sbc #1                                                            ; be57: e9 01       ..
     bcc return_64                                                     ; be59: 90 1f       ..
-    sta (l00b8),y                                                     ; be5b: 91 b8       ..
+    sta (l00b8),y                                                     ; be5b: 91 b8       ..             ; Offset is Y=$f5
     jsr sub_cb616                                                     ; be5d: 20 16 b6     ..
     beq return_64                                                     ; be60: f0 18       ..
     ldx l00b7                                                         ; be62: a6 b7       ..
@@ -10985,6 +10989,8 @@ pydis_end
     err copyright - rom_header - 1 - $11
     err l00b3 - 9 - $aa
     err l00bc - 8 - $b4
+    err l1090 - 1 - $108f
+    err l10df - 1 - $10de
     err nmi3_handler_rom_end-nmi3_handler_rom_start - $0e
     err nmi_XXX1-{nmi_beq+2} - $48
     err nmi_XXX10-{nmi_bcs+2} - $32
@@ -12064,7 +12070,6 @@ pydis_end
 ;     l1079:                                              1
 ;     l107a:                                              1
 ;     l1083:                                              1
-;     l108f:                                              1
 ;     l8001:                                              1
 ;     l8002:                                              1
 ;     l8004:                                              1
@@ -13189,7 +13194,6 @@ pydis_end
 ;     l108a
 ;     l108b
 ;     l108c
-;     l108f
 ;     l1090
 ;     l1091
 ;     l1092
@@ -13233,6 +13237,7 @@ pydis_end
 ;     l10dc
 ;     l10dd
 ;     l10de
+;     l10df
 ;     l10e2
 ;     l10e3
 ;     l10e4

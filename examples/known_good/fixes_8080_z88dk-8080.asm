@@ -19,7 +19,7 @@ rst_08:
 
 ; $0b referenced 1 time by $00
 c000b:
-    rst $08                                                           ; 000b: cf          .  ; Set A to 1
+    rst $08                                                           ; 000b: cf          .   ; Set A to 1
     lxi h, $0120                                                      ; 000c: 21 20 01    ! .
     lxi b, $41 ; 'A'                                                  ; 000f: 01 41 00    .A.
     cpi 0                                                             ; 0012: fe 00       ..

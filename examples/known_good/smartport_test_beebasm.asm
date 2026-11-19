@@ -92,33 +92,33 @@ l085d = smartport+2
 ; &085c referenced 1 time by &0818
 ; &085d referenced 1 time by &081d
 .sp_status_params
-    equb 3                                                            ; 085e: 03          .  ; Parameter count
-    equb 0                                                            ; 085f: 00          .  ; Unit number
-    equw status_list                                                  ; 0860: 81 08       .. ; Status list
-    equb 0                                                            ; 0862: 00          .  ; Status code
+    equb 3                                                            ; 085e: 03          .   ; Parameter count
+    equb 0                                                            ; 085f: 00          .   ; Unit number
+    equw status_list                                                  ; 0860: 81 08       ..  ; Status list
+    equb 0                                                            ; 0862: 00          .   ; Status code
 .sp_readblock_params
-    equb 3                                                            ; 0863: 03          .  ; Parameter count
-    equb 1                                                            ; 0864: 01          .  ; Unit number
-    equw data_buffer                                                  ; 0865: 00 20       .. ; Data buffer (512 bytes)
+    equb 3                                                            ; 0863: 03          .   ; Parameter count
+    equb 1                                                            ; 0864: 01          .   ; Unit number
+    equw data_buffer                                                  ; 0865: 00 20       ..  ; Data buffer (512 bytes)
     equb 0, 0, 0                                                      ; 0867: 00 00 00    ... ; Block number
 .sp_writeblock_params
-    equb 3                                                            ; 086a: 03          .  ; Parameter count
-    equb 1                                                            ; 086b: 01          .  ; Unit number
-    equw data_buffer                                                  ; 086c: 00 20       .. ; Data buffer (512 bytes)
+    equb 3                                                            ; 086a: 03          .   ; Parameter count
+    equb 1                                                            ; 086b: 01          .   ; Unit number
+    equw data_buffer                                                  ; 086c: 00 20       ..  ; Data buffer (512 bytes)
     equb 1, 0, 0                                                      ; 086e: 01 00 00    ... ; Block number
 .sp_control_params
-    equb 3                                                            ; 0871: 03          .  ; Parameter count
-    equb 1                                                            ; 0872: 01          .  ; Unit number
-    equw control_list                                                 ; 0873: 89 08       .. ; Control list
-    equb 4                                                            ; 0875: 04          .  ; Control code
+    equb 3                                                            ; 0871: 03          .   ; Parameter count
+    equb 1                                                            ; 0872: 01          .   ; Unit number
+    equw control_list                                                 ; 0873: 89 08       ..  ; Control list
+    equb 4                                                            ; 0875: 04          .   ; Control code
 .sp_init_params
-    equb 1                                                            ; 0876: 01          .  ; Parameter count
-    equb 0                                                            ; 0877: 00          .  ; Unit number (0)
+    equb 1                                                            ; 0876: 01          .   ; Parameter count
+    equb 0                                                            ; 0877: 00          .   ; Unit number (0)
 .sp_read_params
-    equb 4                                                            ; 0878: 04          .  ; Parameter count
-    equb 2                                                            ; 0879: 02          .  ; Unit number
-    equw data_buffer_2                                                ; 087a: 00 22       .. ; Data buffer
-    equw &0200                                                        ; 087c: 00 02       .. ; Byte count
+    equb 4                                                            ; 0878: 04          .   ; Parameter count
+    equb 2                                                            ; 0879: 02          .   ; Unit number
+    equw data_buffer_2                                                ; 087a: 00 22       ..  ; Data buffer
+    equw &0200                                                        ; 087c: 00 02       ..  ; Byte count
     equb 0, 0, 0                                                      ; 087e: 00 00 00    ... ; Address
 .status_list
     equb 0, 0, 0, 0, 0, 0, 0, 0                                       ; 0881: 00 00 00... ...

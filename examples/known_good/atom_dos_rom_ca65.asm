@@ -275,7 +275,8 @@ sub_ce075:
     ldy #6                                                            ; e077: a0 06       ..
 ; $e079 referenced 1 time by $e07d
 loop_ce079:
-    sta l00a5,y                                                       ; e079: 99 a5 00    ...
+    ; Set 7 bytes of memory from l00a5 onwards to 32
+    sta l00a5,y                                                       ; e079: 99 a5 00    ...            ; A=$20
     dey                                                               ; e07c: 88          .
     bpl loop_ce079                                                    ; e07d: 10 fa       ..
 ; $e07f referenced 1 time by $e08d
@@ -1868,7 +1869,8 @@ ce971:
     ldx #8                                                            ; e973: a2 08       ..
 ; $e975 referenced 1 time by $e978
 loop_ce975:
-    sta l009b,x                                                       ; e975: 95 9b       ..
+    ; Clear 8 bytes of memory from l009c onwards
+    sta l009b,x                                                       ; e975: 95 9b       ..             ; A=0
     dex                                                               ; e977: ca          .
     bne loop_ce975                                                    ; e978: d0 fb       ..
     lda #$40 ; '@'                                                    ; e97a: a9 40       .@
@@ -1957,7 +1959,7 @@ loop_ce9dc:
     lda #0                                                            ; e9f1: a9 00       ..
 ; $e9f3 referenced 1 time by $e9f8
 loop_ce9f3:
-    sta l2200,y                                                       ; e9f3: 99 00 22    .."
+    sta l2200,y                                                       ; e9f3: 99 00 22    .."            ; A=0
     iny                                                               ; e9f6: c8          .
     dex                                                               ; e9f7: ca          .
     bne loop_ce9f3                                                    ; e9f8: d0 f9       ..
@@ -2780,14 +2782,14 @@ ceeaa:
     ldy #0                                                            ; eeac: a0 00       ..
 ; $eeae referenced 1 time by $eebb
 loop_ceeae:
-    sta l0400,y                                                       ; eeae: 99 00 04    ...
-    sta l0500,y                                                       ; eeb1: 99 00 05    ...
-    sta l0600,y                                                       ; eeb4: 99 00 06    ...
-    sta l0700,y                                                       ; eeb7: 99 00 07    ...
+    sta l0400,y                                                       ; eeae: 99 00 04    ...            ; A=$20
+    sta l0500,y                                                       ; eeb1: 99 00 05    ...            ; A=$20
+    sta l0600,y                                                       ; eeb4: 99 00 06    ...            ; A=$20
+    sta l0700,y                                                       ; eeb7: 99 00 07    ...            ; A=$20
     iny                                                               ; eeba: c8          .
     bne loop_ceeae                                                    ; eebb: d0 f1       ..
-    sty l00cf                                                         ; eebd: 84 cf       ..
-    sty l00d1                                                         ; eebf: 84 d1       ..
+    sty l00cf                                                         ; eebd: 84 cf       ..             ; Y=0
+    sty l00d1                                                         ; eebf: 84 d1       ..             ; Y=0
     ldy #$0d                                                          ; eec1: a0 0d       ..
 ; $eec3 referenced 1 time by $eecd
 loop_ceec3:

@@ -33,7 +33,7 @@ start
     jsr OSWRCH                                                        // 202b: 20 ee ff     .. // Write character
     // Set logical colour 1 to physical colour 4
     ldx #$13                                                          // 202e: a2 13       ..
-    txa                                                               // 2030: 8a          .  // A=$13
+    txa                                                               // 2030: 8a          .   // A=$13
     jsr OSWRCH                                                        // 2031: 20 ee ff     .. // Write character 19
     lda #1                                                            // 2034: a9 01       ..
     jsr OSWRCH                                                        // 2036: 20 ee ff     .. // Write character 1

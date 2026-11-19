@@ -282,7 +282,7 @@ GETIN   = &ffe4
 .handle_input
     jsr GETIN                                                         ; 2114: 20 e4 ff     .. ; Get a character from the input channel (from the keyboard, 0 if there's none)
     beq no_key                                                        ; 2117: f0 24       .$
-    cmp #&58 ; 'x'                                                    ; 2119: c9 58       Ix ; A=character read
+    cmp #&58 ; 'x'                                                    ; 2119: c9 58       Ix  ; A=character read
     beq quit_game                                                     ; 211b: f0 1f       ..
     ldx #0                                                            ; 211d: a2 00       ..
 ; &211f referenced 1 time by &2127

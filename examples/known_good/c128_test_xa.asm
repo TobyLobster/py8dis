@@ -69,7 +69,7 @@ sys_entry
     .byt $48, $45, $4c, $4c, $4f, $2c, $20, $43 // petscii "hello, c" // 1c1a: 48 45 4c... hel
     .byt $31, $32, $38, $0d, 0 // petscii "128", $0d, $00             // 1c22: 31 32 38... 128
 
-    lda #$21 // '!'                                                   // 1c27: a9 21       .! // A=character to output
+    lda #$21 // '!'                                                   // 1c27: a9 21       .!  // A=character to output
     jsr CHROUT                                                        // 1c29: 20 d2 ff     R. // Output '!'
     lda #colour_blue                                                  // 1c2c: a9 06       ..
     sta vic_border_colour                                             // 1c2e: 8d 20 d0    . P
@@ -125,18 +125,18 @@ loop_c1c36
     jsr JSRFAR                                                        // 1c83: 20 6e ff     .. // Call a routine in another bank (set up at $02-$08)
 
     jsr sub_c1cb0                                                     // 1c86: 20 b0 1c     ..
-    lda #1                                                            // 1c89: a9 01       .. // A=bank for the data
-    ldx #0                                                            // 1c8b: a2 00       .. // X=bank for the filename
+    lda #1                                                            // 1c89: a9 01       ..  // A=bank for the data
+    ldx #0                                                            // 1c8b: a2 00       ..  // X=bank for the filename
     jsr SETBNK                                                        // 1c8d: 20 68 ff     .. // Set the banks for LOAD, SAVE and VERIFY, and for the filename
-    lda #1                                                            // 1c90: a9 01       .. // A=logical file number
-    ldx #device_disk_8                                                // 1c92: a2 08       .. // X=device number
-    ldy #1                                                            // 1c94: a0 01       .. // Y=secondary address
+    lda #1                                                            // 1c90: a9 01       ..  // A=logical file number
+    ldx #device_disk_8                                                // 1c92: a2 08       ..  // X=device number
+    ldy #1                                                            // 1c94: a0 01       ..  // Y=secondary address
     jsr SETLFS                                                        // 1c96: 20 ba ff     .. // Set logical file 1 to device 8 (disk drive), secondary address 1
-    lda #4                                                            // 1c99: a9 04       .. // A=filename length
-    ldx #<filename                                                    // 1c9b: a2 c9       .I // X=filename address (low byte)
-    ldy #>filename                                                    // 1c9d: a0 1c       .. // Y=filename address (high byte)
+    lda #4                                                            // 1c99: a9 04       ..  // A=filename length
+    ldx #<filename                                                    // 1c9b: a2 c9       .I  // X=filename address (low byte)
+    ldy #>filename                                                    // 1c9d: a0 1c       ..  // Y=filename address (high byte)
     jsr SETNAM                                                        // 1c9f: 20 bd ff     .. // Set the filename to "data"
-    lda #0                                                            // 1ca2: a9 00       .. // A=0 to load, 1 to verify
+    lda #0                                                            // 1ca2: a9 00       ..  // A=0 to load, 1 to verify
     jsr LOAD                                                          // 1ca4: 20 d5 ff     U. // Load a file
     rts                                                               // 1ca7: 60          .
 

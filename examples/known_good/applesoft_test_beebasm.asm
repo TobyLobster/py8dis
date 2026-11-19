@@ -100,7 +100,7 @@ SETHCOL = &f6f0
     jsr HGLIN                                                         ; 0925: 20 3a f5    ..u ; Draw a hi-res line to (279, 191)
     jsr CHRGET                                                        ; 0928: 20 b1 00    .1. ; Get the program's next character (C clear for a digit)
     jsr GETBYT                                                        ; 092b: 20 f8 e6    .xf ; Evaluate a byte (0-255) into X
-    stx l0006                                                         ; 092e: 86 06       .. ; X=byte
+    stx l0006                                                         ; 092e: 86 06       ..  ; X=byte
     lda ERRNUM                                                        ; 0930: a5 de       %^
     sta l0007                                                         ; 0932: 85 07       ..
     lda TXTTAB                                                        ; 0934: a5 67       %.

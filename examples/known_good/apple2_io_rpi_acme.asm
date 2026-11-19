@@ -24,17 +24,17 @@ driver_block_high   = $47
 ; Autostart ROM boots ($3C at $c707, as a Disk II's)
 pydis_start
 slot_7_entry
-    cpx #$20                                                          ; c700: e0 20       `. ; Redundant instruction?
-    cpx #0                                                            ; c702: e0 00       `. ; Redundant instruction?
-    cpx #3                                                            ; c704: e0 03       `. ; Redundant instruction?
+    cpx #$20                                                          ; c700: e0 20       `.  ; Redundant instruction?
+    cpx #0                                                            ; c702: e0 00       `.  ; Redundant instruction?
+    cpx #3                                                            ; c704: e0 03       `.  ; Redundant instruction?
     cpx #$3c                                                          ; c706: e0 3c       `.
     lda #$3f                                                          ; c708: a9 3f       ).
     jmp PageJump                                                      ; c70a: 4c 19 c7    ..G
 
-    !byte <CommInit                                                   ; c70d: 11          .  ; Offset of CommInit
-    !byte <CommRead                                                   ; c70e: 43          .  ; Offset of CommRead
-    !byte <CommWrite                                                  ; c70f: 49          .  ; Offset of CommWrite
-    !byte <CommStatus                                                 ; c710: 4f          .  ; Offset of CommStatus
+    !byte <CommInit                                                   ; c70d: 11          .   ; Offset of CommInit
+    !byte <CommRead                                                   ; c70e: 43          .   ; Offset of CommRead
+    !byte <CommWrite                                                  ; c70f: 49          .   ; Offset of CommWrite
+    !byte <CommStatus                                                 ; c710: 4f          .   ; Offset of CommStatus
 
 CommInit
     lda #$0f                                                          ; c711: a9 0f       ).
@@ -194,9 +194,9 @@ loop_cc7f0
     rts                                                               ; c7f6: 60          .
 
     !byte 0, 0, 0, 0, 0                                               ; c7f7: 00 00 00... ...
-    !word 0                                                           ; c7fc: 00 00       .. ; Number of blocks (0: read it with STATUS)
-    !byte $17                                                         ; c7fe: 17          .  ; Status: 1 volume; writes, reads, gives its status
-    !byte <DriverEntry                                                ; c7ff: 1f          .  ; The low byte of the driver's address
+    !word 0                                                           ; c7fc: 00 00       ..  ; Number of blocks (0: read it with STATUS)
+    !byte $17                                                         ; c7fe: 17          .   ; Status: 1 volume; writes, reads, gives its status
+    !byte <DriverEntry                                                ; c7ff: 1f          .   ; The low byte of the driver's address
 pydis_end
 
 !if (<CommInit) != $11 {

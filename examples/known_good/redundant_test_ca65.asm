@@ -33,24 +33,24 @@ middle = c2002+1
     bit l04a9                                                         ; 2002: 2c a9 04    ,..
 ; overlapping: lda #4                                                 ; 2003: a9 04       ..
 ; $2003 referenced 1 time by $2034
-    ldx #5                                                            ; 2005: a2 05       .. ; Redundant instruction?
+    ldx #5                                                            ; 2005: a2 05       ..  ; Redundant instruction?
     tax                                                               ; 2007: aa          .
     clc                                                               ; 2008: 18          .
     adc #1                                                            ; 2009: 69 01       i.
     sta l0078                                                         ; 200b: 85 78       .x
-    lda l0070                                                         ; 200d: a5 70       .p ; Redundant instruction?
+    lda l0070                                                         ; 200d: a5 70       .p  ; Redundant instruction?
     pla                                                               ; 200f: 68          h
-    lda l0071                                                         ; 2010: a5 71       .q ; Redundant instruction?
-    and #3                                                            ; 2012: 29 03       ). ; Redundant instruction?
+    lda l0071                                                         ; 2010: a5 71       .q  ; Redundant instruction?
+    and #3                                                            ; 2012: 29 03       ).  ; Redundant instruction?
     lda l0072                                                         ; 2014: a5 72       .r
-    sec                                                               ; 2016: 38          8  ; Redundant instruction?
-    sec                                                               ; 2017: 38          8  ; Redundant instruction?
-    cpx l0073                                                         ; 2018: e4 73       .s ; Redundant instruction?
+    sec                                                               ; 2016: 38          8   ; Redundant instruction?
+    sec                                                               ; 2017: 38          8   ; Redundant instruction?
+    cpx l0073                                                         ; 2018: e4 73       .s  ; Redundant instruction?
     cpx l0073                                                         ; 201a: e4 73       .s
     bne return_1                                                      ; 201c: d0 18       ..
     lda l0074                                                         ; 201e: a5 74       .t
     sta l0075                                                         ; 2020: 85 75       .u
-    lda l0076                                                         ; 2022: a5 76       .v ; Redundant instruction?
+    lda l0076                                                         ; 2022: a5 76       .v  ; Redundant instruction?
     ldx lfe40                                                         ; 2024: ae 40 fe    .@.
     ldx #0                                                            ; 2027: a2 00       ..
     lda (l0077),y                                                     ; 2029: b1 77       .w

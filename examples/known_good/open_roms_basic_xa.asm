@@ -491,10 +491,10 @@ ca3fa
     lda basic_string_descriptor_ptr                                   // a3fa: a5 50       .p
     ldy #0                                                            // a3fc: a0 00       ..
     sta (basic_string_descriptor_ptr+1),y                             // a3fe: 91 51       .q
-    tya                                                               // a400: 98          .  // A=0
-    iny                                                               // a401: c8          H  // Y=1
+    tya                                                               // a400: 98          .   // A=0
+    iny                                                               // a401: c8          H   // Y=1
     sta (basic_string_descriptor_ptr+1),y                             // a402: 91 51       .q
-    iny                                                               // a404: c8          H  // Y=2
+    iny                                                               // a404: c8          H   // Y=2
     sta (basic_string_descriptor_ptr+1),y                             // a405: 91 51       .q
     rts                                                               // a407: 60          .
 
@@ -534,12 +534,12 @@ ca427
     beq ca435                                                         // a42c: f0 07       ..
     jsr sub_ca71b                                                     // a42e: 20 1b a7     ..
     lda #7                                                            // a431: a9 07       ..
-    bne ca420                                                         // a433: d0 eb       P. // ALWAYS branch
+    bne ca420                                                         // a433: d0 eb       P.  // ALWAYS branch
 
 // $a435 referenced 1 time by $a42c
 ca435
     lda #$0a                                                          // a435: a9 0a       ..
-    bne ca420                                                         // a437: d0 e7       P. // ALWAYS branch
+    bne ca420                                                         // a437: d0 e7       P.  // ALWAYS branch
 
 // $a439 referenced 1 time by $a41e
 ca439
@@ -550,17 +550,17 @@ ca439
     beq ca44f                                                         // a442: f0 0b       ..
     jsr sub_ca71b                                                     // a444: 20 1b a7     ..
     lda #9                                                            // a447: a9 09       ..
-    bne ca420                                                         // a449: d0 d5       PU // ALWAYS branch
+    bne ca420                                                         // a449: d0 d5       PU  // ALWAYS branch
 
 // $a44b referenced 1 time by $a43e
 ca44b
     lda #$0b                                                          // a44b: a9 0b       ..
-    bne ca420                                                         // a44d: d0 d1       PQ // ALWAYS branch
+    bne ca420                                                         // a44d: d0 d1       PQ  // ALWAYS branch
 
 // $a44f referenced 1 time by $a442
 ca44f
     lda #$0c                                                          // a44f: a9 0c       ..
-    bne ca420                                                         // a451: d0 cd       PM // ALWAYS branch
+    bne ca420                                                         // a451: d0 cd       PM  // ALWAYS branch
 
     rts                                                               // a453: 60          .
 
@@ -911,13 +911,13 @@ ca62b
     ldy #0                                                            // a62e: a0 00       ..
     lda basic_variable_name                                           // a630: a5 45       .e
     sta (basic_variable_ptr),y                                        // a632: 91 47       .g
-    iny                                                               // a634: c8          H  // Y=1
+    iny                                                               // a634: c8          H   // Y=1
     lda basic_variable_name+1                                         // a635: a5 46       .f
     sta (basic_variable_ptr),y                                        // a637: 91 47       .g
-    iny                                                               // a639: c8          H  // Y=2
+    iny                                                               // a639: c8          H   // Y=2
     lda #0                                                            // a63a: a9 00       ..
     sta (basic_variable_ptr),y                                        // a63c: 91 47       .g
-    iny                                                               // a63e: c8          H  // Y=3
+    iny                                                               // a63e: c8          H   // Y=3
     sta (basic_variable_ptr),y                                        // a63f: 91 47       .g
     jmp ca5c6                                                         // a641: 4c c6 a5    lF.
 
@@ -976,7 +976,7 @@ ca678
     ldy #0                                                            // a683: a0 00       ..
 // $a685 referenced 1 time by $a68b
 loop_ca685
-    lda (basic_index1),y                                              // a685: b1 22       ."
+    lda (basic_index1),y                                              // a685: b1 22       ."  // Offset is Y=0
     eor basic_index2+1                                                // a687: 45 25       e%
     and basic_index2                                                  // a689: 25 24       %$
     beq loop_ca685                                                    // a68b: f0 f8       ..
@@ -1181,7 +1181,7 @@ ca77d
     ora #$80                                                          // a785: 09 80       ..
     sta basic_variable_name                                           // a787: 85 45       .e
     lda #0                                                            // a789: a9 00       ..
-    beq ca791                                                         // a78b: f0 04       .. // ALWAYS branch
+    beq ca791                                                         // a78b: f0 04       ..  // ALWAYS branch
 
 // $a78d referenced 1 time by $a76d
 ca78d
@@ -1223,12 +1223,12 @@ sub_ca7b1
     tax                                                               // a7b9: aa          .
     jsr le457                                                         // a7ba: 20 57 e4     w.
     ldy #1                                                            // a7bd: a0 01       ..
-    tya                                                               // a7bf: 98          .  // A=1
+    tya                                                               // a7bf: 98          .   // A=1
     sta (basic_statement_ptr),y                                       // a7c0: 91 3d       .=
-    iny                                                               // a7c2: c8          H  // Y=2
+    iny                                                               // a7c2: c8          H   // Y=2
     lda basic_line_number                                             // a7c3: a5 14       ..
     sta (basic_statement_ptr),y                                       // a7c5: 91 3d       .=
-    iny                                                               // a7c7: c8          H  // Y=3
+    iny                                                               // a7c7: c8          H   // Y=3
     lda basic_line_number+1                                           // a7c8: a5 15       ..
     sta (basic_statement_ptr),y                                       // a7ca: 91 3d       .=
     inc basic_end_char                                                // a7cc: e6 08       ..
@@ -1280,8 +1280,8 @@ ca885
     sta basic_input_buffer,x                                          // a887: 9d 00 02    ...
     jsr CLALL                                                         // a88a: 20 e7 ff     .. // Close all files
     jsr leb8c                                                         // a88d: 20 8c eb     ..
-    lda #$0f                                                          // a890: a9 0f       .. // A=logical file number
-    ldy #$0f                                                          // a892: a0 0f       .. // Y=secondary address
+    lda #$0f                                                          // a890: a9 0f       ..  // A=logical file number
+    ldy #$0f                                                          // a892: a0 0f       ..  // Y=secondary address
     jsr SETLFS                                                        // a894: 20 ba ff     .. // Set the logical file number, device number and secondary address
     jsr sub_cbc45                                                     // a897: 20 45 bc     e.
     jsr sub_ca14f                                                     // a89a: 20 4f a1     o.
@@ -1342,7 +1342,7 @@ ca8ee
 
 // $a8f4 referenced 2 times by $a8c3, $a929
 sub_ca8f4
-    lda #0                                                            // a8f4: a9 00       .. // A=filename length
+    lda #0                                                            // a8f4: a9 00       ..  // A=filename length
     jsr SETNAM                                                        // a8f6: 20 bd ff     .. // Set no filename
     jsr OPEN                                                          // a8f9: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
     bcc ca901                                                         // a8fc: 90 03       ..
@@ -1350,7 +1350,7 @@ sub_ca8f4
 
 // $a901 referenced 1 time by $a8fc
 ca901
-    ldx #$0f                                                          // a901: a2 0f       .. // X=logical file number
+    ldx #$0f                                                          // a901: a2 0f       ..  // X=logical file number
     jsr CHKIN                                                         // a903: 20 c6 ff     F. // Open a channel for input
     bcc ca90b                                                         // a906: 90 03       ..
     jmp ca9ad                                                         // a908: 4c ad a9    l..
@@ -1408,14 +1408,14 @@ ca940
     dec basic_text_ptr                                                // a943: c6 7a       F.
 // $a945 referenced 1 time by $a8aa
 ca945
-    lda #0                                                            // a945: a9 00       .. // A=logical file number
-    ldx device_number                                                 // a947: a6 ba       .. // X=device number
-    ldy #$60                                                          // a949: a0 60       .. // Y=secondary address
+    lda #0                                                            // a945: a9 00       ..  // A=logical file number
+    ldx device_number                                                 // a947: a6 ba       ..  // X=device number
+    ldy #$60                                                          // a949: a0 60       ..  // Y=secondary address
     jsr SETLFS                                                        // a94b: 20 ba ff     .. // Set the logical file number, device number and secondary address
     jsr sub_ca9b5                                                     // a94e: 20 b5 a9     ..
     jsr OPEN                                                          // a951: 20 c0 ff     .. // Open a logical file (set up with SETLFS and SETNAM)
     bcs ca9ad                                                         // a954: b0 57       .w
-    ldx #0                                                            // a956: a2 00       .. // X=logical file number
+    ldx #0                                                            // a956: a2 00       ..  // X=logical file number
     jsr CHKIN                                                         // a958: 20 c6 ff     F. // Open a channel for input
     bcs ca9ad                                                         // a95b: b0 50       .p
     jsr CHRIN                                                         // a95d: 20 cf ff     O. // Read a character from the input channel
@@ -1443,7 +1443,7 @@ ca979
     bcc ca969                                                         // a980: 90 e7       ..
     lda basic_input_buffer,y                                          // a982: b9 00 02    ...
     bne ca969                                                         // a985: d0 e2       P.
-    beq ca98d                                                         // a987: f0 04       .. // ALWAYS branch
+    beq ca98d                                                         // a987: f0 04       ..  // ALWAYS branch
 
 // $a989 referenced 1 time by $a97c
 ca989
@@ -1483,9 +1483,9 @@ loop_ca9b7
     iny                                                               // a9b7: c8          H
     lda (basic_text_ptr),y                                            // a9b8: b1 7a       ..
     bne loop_ca9b7                                                    // a9ba: d0 fb       P.
-    tya                                                               // a9bc: 98          .  // A=filename length
-    ldx basic_text_ptr                                                // a9bd: a6 7a       .. // X=filename address (low byte)
-    ldy basic_text_ptr+1                                              // a9bf: a4 7b       .. // Y=filename address (high byte)
+    tya                                                               // a9bc: 98          .   // A=filename length
+    ldx basic_text_ptr                                                // a9bd: a6 7a       ..  // X=filename address (low byte)
+    ldy basic_text_ptr+1                                              // a9bf: a4 7b       ..  // Y=filename address (high byte)
     jmp SETNAM                                                        // a9c1: 4c bd ff    l.. // Set the filename
 
     .byt $60, $a9,   0, $85, $61, $60, $a5, $61, $f0, $fb, $a5, $69   // a9c4: 60 a9 00... ...
@@ -1541,7 +1541,7 @@ sub_cab1e
 loop_cab26
     tya                                                               // ab26: 98          .
     tax                                                               // ab27: aa          .
-    lda (basic_string_temp_ptr),y                                     // ab28: b1 35       .5 // A=character to output
+    lda (basic_string_temp_ptr),y                                     // ab28: b1 35       .5  // A=character to output
     beq cab34                                                         // ab2a: f0 08       ..
     jsr CHROUT                                                        // ab2c: 20 d2 ff     R. // Output a character
     txa                                                               // ab2f: 8a          .
@@ -1617,7 +1617,7 @@ cab86
     pla                                                               // aba7: 68          .
     cmp #$8f                                                          // aba8: c9 8f       I.
     bne cabae                                                         // abaa: d0 02       P.
-    sta quote_mode_flag                                               // abac: 85 d4       .T
+    sta quote_mode_flag                                               // abac: 85 d4       .T  // A=$8f
 // $abae referenced 2 times by $abaa, $abef
 cabae
     iny                                                               // abae: c8          H
@@ -1649,7 +1649,7 @@ cabc3
 
 // $abd1 referenced 3 times by $abb6, $abbc, $abc0
 cabd1
-    pla                                                               // abd1: 68          .  // A=character to output
+    pla                                                               // abd1: 68          .   // A=character to output
     jsr CHROUT                                                        // abd2: 20 d2 ff     R. // Output a character
 // $abd5 referenced 1 time by $abce
 cabd5
@@ -1704,7 +1704,7 @@ cac03
     jsr sub_cb959                                                     // ac05: 20 59 b9     y.
     lda #$ff                                                          // ac08: a9 ff       ..
     sta basic_current_line+1                                          // ac0a: 85 3a       .:
-    lda #$80                                                          // ac0c: a9 80       .. // A=message flags
+    lda #$80                                                          // ac0c: a9 80       ..  // A=message flags
     jsr SETMSG                                                        // ac0e: 20 90 ff     .. // Show only Kernal control messages
 // $ac11 referenced 2 times by $ac4e, $acad
 cac11
@@ -1713,7 +1713,7 @@ cac11
 cac13
     jsr CHRIN                                                         // ac13: 20 cf ff     O. // Read a character from the input channel
     bcs cac13                                                         // ac16: b0 fb       ..
-    cmp #$0d                                                          // ac18: c9 0d       I. // A=character read
+    cmp #$0d                                                          // ac18: c9 0d       I.  // A=character read
     beq cac2a                                                         // ac1a: f0 0e       ..
     cpx #$50 // 'p'                                                   // ac1c: e0 50       .p
     bcc cac23                                                         // ac1e: 90 03       ..
@@ -2043,13 +2043,13 @@ cae0d
 cae10
     lda #0                                                            // ae10: a9 00       ..
     sta basic_value_type                                              // ae12: 85 0d       ..
-    beq cae3a                                                         // ae14: f0 24       .$ // ALWAYS branch
+    beq cae3a                                                         // ae14: f0 24       .$  // ALWAYS branch
 
 // $ae16 referenced 1 time by $adbe
 cae16
     ldx #$ff                                                          // ae16: a2 ff       ..
     stx basic_value_type                                              // ae18: 86 0d       ..
-    inx                                                               // ae1a: e8          .  // X=0
+    inx                                                               // ae1a: e8          .   // X=0
     stx fac1_exponent                                                 // ae1b: 86 61       ..
     ldx basic_text_ptr                                                // ae1d: a6 7a       ..
     stx fac1_mantissa                                                 // ae1f: 86 62       ..
@@ -2174,7 +2174,7 @@ caec8
     lda #0                                                            // aed8: a9 00       ..
     pha                                                               // aeda: 48          h
     ldx #1                                                            // aedb: a2 01       ..
-    bne caefa                                                         // aedd: d0 1b       P. // ALWAYS branch
+    bne caefa                                                         // aedd: d0 1b       P.  // ALWAYS branch
 
 // $aedf referenced 1 time by $aed3
 caedf
@@ -2206,7 +2206,7 @@ caefa
     jsr sub_cacb6                                                     // aefc: 20 b6 ac     ..
     ldy #1                                                            // aeff: a0 01       ..
     sty fac1_mantissa                                                 // af01: 84 62       ..
-    dey                                                               // af03: 88          .  // Y=0
+    dey                                                               // af03: 88          .   // Y=0
     sty fac1_mantissa+1                                               // af04: 84 63       ..
     pla                                                               // af06: 68          .
     sta fac1_exponent                                                 // af07: 85 61       ..
@@ -2214,7 +2214,7 @@ caefa
     lda fac1_exponent                                                 // af0c: a5 61       ..
     ldy #4                                                            // af0e: a0 04       ..
     sta (basic_arrays_end),y                                          // af10: 91 31       .1
-    iny                                                               // af12: c8          H  // Y=5
+    iny                                                               // af12: c8          H   // Y=5
     tax                                                               // af13: aa          .
 // $af14 referenced 1 time by $af24
 loop_caf14
@@ -2233,13 +2233,13 @@ loop_caf14
     pla                                                               // af28: 68          .
     sta basic_garbage_step                                            // af29: 85 53       .s
     sta fac1_mantissa+2                                               // af2b: 85 64       ..
-    stx fac1_mantissa+3                                               // af2d: 86 65       ..
+    stx fac1_mantissa+3                                               // af2d: 86 65       ..  // X=0
     jsr sub_cb901                                                     // af2f: 20 01 b9     ..
     jsr sub_ca454                                                     // af32: 20 54 a4     t.
     ldy #0                                                            // af35: a0 00       ..
     pla                                                               // af37: 68          .
     sta (basic_arrays_end),y                                          // af38: 91 31       .1
-    iny                                                               // af3a: c8          H  // Y=1
+    iny                                                               // af3a: c8          H   // Y=1
     pla                                                               // af3b: 68          .
     sta (basic_arrays_end),y                                          // af3c: 91 31       .1
     lda #5                                                            // af3e: a9 05       ..
@@ -2250,7 +2250,7 @@ loop_caf14
     ldy #2                                                            // af49: a0 02       ..
     lda basic_index1                                                  // af4b: a5 22       ."
     sta (basic_arrays_end),y                                          // af4d: 91 31       .1
-    iny                                                               // af4f: c8          H  // Y=3
+    iny                                                               // af4f: c8          H   // Y=3
     lda basic_index1+1                                                // af50: a5 23       .#
     sta (basic_arrays_end),y                                          // af52: 91 31       .1
     clc                                                               // af54: 18          .
@@ -2265,7 +2265,7 @@ caf5f
 // $af61 referenced 1 time by $af78
 loop_caf61
     lda #0                                                            // af61: a9 00       ..
-    sta (basic_arrays_end),y                                          // af63: 91 31       .1
+    sta (basic_arrays_end),y                                          // af63: 91 31       .1  // Offset is Y=0
     inc basic_arrays_end                                              // af65: e6 31       .1
     bne caf6b                                                         // af67: d0 02       P.
     inc basic_arrays_end+1                                            // af69: e6 32       .2
@@ -2297,7 +2297,7 @@ caf7f
 sub_caf8c
     jsr sub_ca7e5                                                     // af8c: 20 e5 a7     ..
     ldy #1                                                            // af8f: a0 01       ..
-    tya                                                               // af91: 98          .  // A=1
+    tya                                                               // af91: 98          .   // A=1
     sta (basic_program_start),y                                       // af92: 91 2b       .+
     jsr ca7de                                                         // af94: 20 de a7     ..
     jmp cac01                                                         // af97: 4c 01 ac    l..
@@ -2349,7 +2349,8 @@ sub_cafd4
     ldy #$1d                                                          // afd6: a0 1d       ..
 // $afd8 referenced 1 time by $afdc
 loop_cafd8
-    sta l0101,y                                                       // afd8: 99 01 01    ...
+    // Clear 30 bytes of memory from l0101 onwards
+    sta l0101,y                                                       // afd8: 99 01 01    ... // A=0
     dey                                                               // afdb: 88          .
     bpl loop_cafd8                                                    // afdc: 10 fa       ..
 // $afde referenced 1 time by $b036
@@ -2565,7 +2566,7 @@ return_16
 sub_cb392
     sta ld07a                                                         // b392: 8d 7a d0    ..P
     lda #0                                                            // b395: a9 00       ..
-    beq cb39e                                                         // b397: f0 05       .. // ALWAYS branch
+    beq cb39e                                                         // b397: f0 05       ..  // ALWAYS branch
 
 sub_cb399
     sta ld07b                                                         // b399: 8d 7b d0    ..P
@@ -2635,16 +2636,16 @@ loop_cb3ef
 cb3fd
     stx filename_length                                               // b3fd: 86 b7       ..
     lda #0                                                            // b3ff: a9 00       ..
-    beq cb405                                                         // b401: f0 02       .. // ALWAYS branch
+    beq cb405                                                         // b401: f0 02       ..  // ALWAYS branch
 
 // $b403 referenced 1 time by $b3dc
 cb403
-    sta filename_length                                               // b403: 85 b7       ..
+    sta filename_length                                               // b403: 85 b7       ..  // A=0
 // $b405 referenced 1 time by $b401
 cb405
-    sta basic_load_verify_flag                                        // b405: 85 0a       ..
-    ldy #1                                                            // b407: a0 01       .. // Y=secondary address
-    ldx #7                                                            // b409: a2 07       .. // X=device number
+    sta basic_load_verify_flag                                        // b405: 85 0a       ..  // A=0
+    ldy #1                                                            // b407: a0 01       ..  // Y=secondary address
+    ldx #7                                                            // b409: a2 07       ..  // X=device number
     jmp SETLFS                                                        // b40b: 4c ba ff    l.. // Set the logical file number, device number and secondary address
 
 // $b40e referenced 3 times by $a2c3, $a711, $ab63
@@ -2653,7 +2654,7 @@ sub_cb40e
     stx fac1_exponent                                                 // b410: 86 61       ..
     ora fac1_exponent                                                 // b412: 05 61       ..
     bne cb41b                                                         // b414: d0 05       P.
-    lda #$30 // '0'                                                   // b416: a9 30       .0 // A=character to output
+    lda #$30 // '0'                                                   // b416: a9 30       .0  // A=character to output
     jmp CHROUT                                                        // b418: 4c d2 ff    lR. // Output '0'
 
 // $b41b referenced 1 time by $b414
@@ -2685,7 +2686,7 @@ loop_cb427
 cb43e
     txa                                                               // b43e: 8a          .
     clc                                                               // b43f: 18          .
-    adc #$30 // '0'                                                   // b440: 69 30       .0 // A=character to output
+    adc #$30 // '0'                                                   // b440: 69 30       .0  // A=character to output
     jsr CHROUT                                                        // b442: 20 d2 ff     R. // Output a character
     dey                                                               // b445: 88          .
     bpl cb425                                                         // b446: 10 dd       ..
@@ -2711,7 +2712,7 @@ loop_cb493
 basic_command_run
     jsr basic_command_clr                                             // b496: 20 00 ba     ..
     jsr sub_cbc12                                                     // b499: 20 12 bc     ..
-    lda #0                                                            // b49c: a9 00       .. // A=message flags
+    lda #0                                                            // b49c: a9 00       ..  // A=message flags
     jsr SETMSG                                                        // b49e: 20 90 ff     .. // Turn off Kernal messages
     jsr sub_cb9c1                                                     // b4a1: 20 c1 b9     A.
     bcs cb4ce                                                         // b4a4: b0 28       .(
@@ -2734,7 +2735,7 @@ cb4b9
 
 // $b4c1 referenced 1 time by $b4ad
 cb4c1
-    lda #0                                                            // b4c1: a9 00       .. // A=message flags
+    lda #0                                                            // b4c1: a9 00       ..  // A=message flags
     jsr SETMSG                                                        // b4c3: 20 90 ff     .. // Turn off Kernal messages
 // $b4c6 referenced 1 time by $b4b9
 cb4c6
@@ -2766,7 +2767,7 @@ cb4d5
     ldy #0                                                            // b4e6: a0 00       ..
     lda basic_variable_ptr                                            // b4e8: a5 47       .g
     sta (basic_strings_bottom),y                                      // b4ea: 91 33       .3
-    iny                                                               // b4ec: c8          H  // Y=1
+    iny                                                               // b4ec: c8          H   // Y=1
     lda basic_variable_ptr+1                                          // b4ed: a5 48       .h
     sta (basic_strings_bottom),y                                      // b4ef: 91 33       .3
     ldy #0                                                            // b4f1: a0 00       ..
@@ -2776,7 +2777,7 @@ cb4d5
     ldy #1                                                            // b4fb: a0 01       ..
     lda basic_strings_bottom                                          // b4fd: a5 33       .3
     sta (basic_variable_ptr),y                                        // b4ff: 91 47       .g
-    iny                                                               // b501: c8          H  // Y=2
+    iny                                                               // b501: c8          H   // Y=2
     lda basic_strings_bottom+1                                        // b502: a5 34       .4
     sta (basic_variable_ptr),y                                        // b504: 91 47       .g
     rts                                                               // b506: 60          .
@@ -2848,9 +2849,9 @@ cb599
 
 // $b5ad referenced 1 time by $b5a1
 cb5ad
-    sta l0106,y                                                       // b5ad: 99 06 01    ...
+    sta l0106,y                                                       // b5ad: 99 06 01    ... // A=0
     dey                                                               // b5b0: 88          .
-    sta l0106,y                                                       // b5b1: 99 06 01    ...
+    sta l0106,y                                                       // b5b1: 99 06 01    ... // A=0
     sty l0105                                                         // b5b4: 8c 05 01    ...
     inc l0104                                                         // b5b7: ee 04 01    ...
     rts                                                               // b5ba: 60          .
@@ -2878,7 +2879,7 @@ cb5d3
     sta basic_line_number                                             // b5d5: 85 14       ..
     lda #8                                                            // b5d7: a9 08       ..
     sta basic_line_number+1                                           // b5d9: 85 15       ..
-    bne cb5e7                                                         // b5db: d0 0a       P. // ALWAYS branch
+    bne cb5e7                                                         // b5db: d0 0a       P.  // ALWAYS branch
 
 // $b5dd referenced 1 time by $b5ca
 cb5dd
@@ -2915,9 +2916,9 @@ cb60d
     jsr le107                                                         // b60f: 20 07 e1     ..
     jsr le3eb                                                         // b612: 20 eb e3     ..
     jsr RDTIM                                                         // b615: 20 de ff     .. // Read the jiffy clock
-    sty basic_index2                                                  // b618: 84 24       .$ // Y=jiffy clock (low byte)
-    stx basic_index1+1                                                // b61a: 86 23       .# // X=jiffy clock (middle byte)
-    sta basic_index1                                                  // b61c: 85 22       ." // A=jiffy clock (high byte)
+    sty basic_index2                                                  // b618: 84 24       .$  // Y=jiffy clock (low byte)
+    stx basic_index1+1                                                // b61a: 86 23       .#  // X=jiffy clock (middle byte)
+    sta basic_index1                                                  // b61c: 85 22       ."  // A=jiffy clock (high byte)
     ldy #0                                                            // b61e: a0 00       ..
 // $b620 referenced 1 time by $b65e
 cb620
@@ -3023,7 +3024,7 @@ cb6c1
     beq return_18                                                     // b6ca: f0 f4       ..
     cmp #$22 // '"'                                                   // b6cc: c9 22       I"
     beq cb6da                                                         // b6ce: f0 0a       ..
-    bne cb6c1                                                         // b6d0: d0 ef       P. // ALWAYS branch
+    bne cb6c1                                                         // b6d0: d0 ef       P.  // ALWAYS branch
 
 // $b6d2 referenced 1 time by $b67f
 cb6d2
@@ -3151,9 +3152,9 @@ cb83b
     iny                                                               // b83b: c8          H
     cpy #6                                                            // b83c: c0 06       ..
     bne cb813                                                         // b83e: d0 d3       PS
-    ldy basic_index2                                                  // b840: a4 24       .$ // Y=jiffy clock (low byte)
-    ldx basic_index1+1                                                // b842: a6 23       .# // X=jiffy clock (middle byte)
-    lda basic_index1                                                  // b844: a5 22       ." // A=jiffy clock (high byte)
+    ldy basic_index2                                                  // b840: a4 24       .$  // Y=jiffy clock (low byte)
+    ldx basic_index1+1                                                // b842: a6 23       .#  // X=jiffy clock (middle byte)
+    lda basic_index1                                                  // b844: a5 22       ."  // A=jiffy clock (high byte)
     jmp SETTIM                                                        // b846: 4c db ff    l.. // Set the jiffy clock
 
     .byt $a0, $bf, $a9, $11, $4c, $67, $b8, $20, $25, $e4, $a5, $66   // b849: a0 bf a9... ...
@@ -3241,19 +3242,19 @@ return_19
 sub_cb953
     lda #$2d // '-'                                                   // b953: a9 2d       .-
     ldy #$b2                                                          // b955: a0 b2       ..
-    bne cb969                                                         // b957: d0 10       P. // ALWAYS branch
+    bne cb969                                                         // b957: d0 10       P.  // ALWAYS branch
 
 // $b959 referenced 5 times by $a2bc, $a6f5, $a6ff, $a70a, $ac05
 sub_cb959
     lda #$d3 // 'S'                                                   // b959: a9 d3       .S
     ldy #$b1                                                          // b95b: a0 b1       ..
-    bne cb969                                                         // b95d: d0 0a       P. // ALWAYS branch
+    bne cb969                                                         // b95d: d0 0a       P.  // ALWAYS branch
 
 // $b95f referenced 1 time by $abea
 sub_cb95f
     lda #$c0                                                          // b95f: a9 c0       ..
     ldy #$e3                                                          // b961: a0 e3       ..
-    bne cb969                                                         // b963: d0 04       P. // ALWAYS branch
+    bne cb969                                                         // b963: d0 04       P.  // ALWAYS branch
 
 // $b965 referenced 1 time by $aba2
 sub_cb965
@@ -3345,9 +3346,9 @@ cb9d1
 // $b9eb referenced 2 times by $b3d1, $bb09
 sub_cb9eb
     ldy #0                                                            // b9eb: a0 00       ..
-    tya                                                               // b9ed: 98          .  // A=0
+    tya                                                               // b9ed: 98          .   // A=0
     sta (basic_program_start),y                                       // b9ee: 91 2b       .+
-    iny                                                               // b9f0: c8          H  // Y=1
+    iny                                                               // b9f0: c8          H   // Y=1
     sta (basic_program_start),y                                       // b9f1: 91 2b       .+
     clc                                                               // b9f3: 18          .
     lda basic_program_start                                           // b9f4: a5 2b       .+
@@ -3459,7 +3460,7 @@ cba87
 sub_cba91
     sta basic_load_verify_flag                                        // ba91: 85 0a       ..
     jsr leb8c                                                         // ba93: 20 8c eb     ..
-    ldy #0                                                            // ba96: a0 00       .. // Y=secondary address
+    ldy #0                                                            // ba96: a0 00       ..  // Y=secondary address
     jmp SETLFS                                                        // ba98: 4c ba ff    l.. // Set the logical file number, device number and secondary address
 
 basic_command_verify
@@ -3536,9 +3537,9 @@ cbb67
     lda (basic_string_temp_ptr),y                                     // bb69: b1 35       .5
     cmp #$ff                                                          // bb6b: c9 ff       I.
     bne cbb79                                                         // bb6d: d0 0a       P.
-    iny                                                               // bb6f: c8          H  // Y=1
+    iny                                                               // bb6f: c8          H   // Y=1
     lda (basic_string_temp_ptr),y                                     // bb70: b1 35       .5
-    dey                                                               // bb72: 88          .  // Y=0
+    dey                                                               // bb72: 88          .   // Y=0
     cmp #$ff                                                          // bb73: c9 ff       I.
     bne cbb79                                                         // bb75: d0 02       P.
     sec                                                               // bb77: 38          8
@@ -3755,13 +3756,13 @@ sub_cbc9c
     ldy #4                                                            // bca0: a0 04       ..
     lda (basic_index1),y                                              // bca2: b1 22       ."
     sta fac1_mantissa+3                                               // bca4: 85 65       ..
-    dey                                                               // bca6: 88          .  // Y=3
+    dey                                                               // bca6: 88          .   // Y=3
     lda (basic_index1),y                                              // bca7: b1 22       ."
     sta fac1_mantissa+2                                               // bca9: 85 64       ..
-    dey                                                               // bcab: 88          .  // Y=2
+    dey                                                               // bcab: 88          .   // Y=2
     lda (basic_index1),y                                              // bcac: b1 22       ."
     sta fac1_mantissa+1                                               // bcae: 85 63       ..
-    dey                                                               // bcb0: 88          .  // Y=1
+    dey                                                               // bcb0: 88          .   // Y=1
     lda (basic_index1),y                                              // bcb1: b1 22       ."
     ora #$80                                                          // bcb3: 09 80       ..
     sta fac1_mantissa                                                 // bcb5: 85 62       ..
@@ -3775,7 +3776,7 @@ sub_cbc9c
 cbcbe
     lda #0                                                            // bcbe: a9 00       ..
     sta fac1_sign                                                     // bcc0: 85 66       ..
-    dey                                                               // bcc2: 88          .  // Y=0
+    dey                                                               // bcc2: 88          .   // Y=0
     lda (basic_index1),y                                              // bcc3: b1 22       ."
     sta fac1_exponent                                                 // bcc5: 85 61       ..
     sty fac1_rounding                                                 // bcc7: 84 70       ..
@@ -3814,7 +3815,7 @@ cbcdf
 // $bcee referenced 2 times by $bccd, $bcd3
 cbcee
     lda #0                                                            // bcee: a9 00       ..
-    tax                                                               // bcf0: aa          .  // X=0
+    tax                                                               // bcf0: aa          .   // X=0
     clc                                                               // bcf1: 18          .
     rts                                                               // bcf2: 60          .
 
@@ -4230,10 +4231,10 @@ cbee3
     ldy #0                                                            // bee3: a0 00       ..
     lda fac1_exponent                                                 // bee5: a5 61       ..
     sta (basic_variable_ptr),y                                        // bee7: 91 47       .g
-    iny                                                               // bee9: c8          H  // Y=1
+    iny                                                               // bee9: c8          H   // Y=1
     lda fac1_mantissa                                                 // beea: a5 62       ..
     sta (basic_variable_ptr),y                                        // beec: 91 47       .g
-    iny                                                               // beee: c8          H  // Y=2
+    iny                                                               // beee: c8          H   // Y=2
     lda fac1_mantissa+1                                               // beef: a5 63       ..
     sta (basic_variable_ptr),y                                        // bef1: 91 47       .g
     rts                                                               // bef3: 60          .
@@ -4312,7 +4313,7 @@ cbfa1
     beq loop_cbf8e                                                    // bfa8: f0 e4       ..
     cmp #$3b // ';'                                                   // bfaa: c9 3b       I;
     beq return_25                                                     // bfac: f0 05       ..
-    bne cbf8b                                                         // bfae: d0 db       P. // ALWAYS branch
+    bne cbf8b                                                         // bfae: d0 db       P.  // ALWAYS branch
 
 // $bfb0 referenced 2 times by $bf82, $bfa4
 cbfb0

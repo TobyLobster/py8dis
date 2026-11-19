@@ -6,7 +6,7 @@ l412c   = &412c
 .pydis_start
 .start
     ldx #&80                                                          ; ffe0: a2 80       ..
-    bmi P%+62                                                         ; ffe2: 30 3c       0< ; ALWAYS branch
+    bmi P%+62                                                         ; ffe2: 30 3c       0<  ; ALWAYS branch
 
     jmp cfffd                                                         ; ffe4: 4c fd ff    L..
 

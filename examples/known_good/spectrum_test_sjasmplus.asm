@@ -34,28 +34,28 @@ start:
     ld a,2                                                            ; 8003: 3e 02       >.
     call chan_open                                                    ; 8005: cd 01 16    ... ; Open a channel
     ld a,$16                                                          ; 8008: 3e 16       >.
-    rst $10                                                           ; 800a: d7          .  ; Print $16 (AT)
+    rst $10                                                           ; 800a: d7          .   ; Print $16 (AT)
     ld a,$0a                                                          ; 800b: 3e 0a       >.
-    rst $10                                                           ; 800d: d7          .  ; Print 10 (AT's line)
+    rst $10                                                           ; 800d: d7          .   ; Print 10 (AT's line)
     ld a,5                                                            ; 800e: 3e 05       >.
-    rst $10                                                           ; 8010: d7          .  ; Print 5 (AT's column)
+    rst $10                                                           ; 8010: d7          .   ; Print 5 (AT's column)
     ld de,message                                                     ; 8011: 11 76 80    .v.
     ld bc,message_end - message                                       ; 8014: 01 06 00    ...
-    call pr_string                                                    ; 8017: cd 3c 20    .< ; Print a string
+    call pr_string                                                    ; 8017: cd 3c 20    .<  ; Print a string
     rst $28                                                           ; 801a: ef          .
-    db $a3                                                            ; 801b: a3          .  ; stk-pi/2
-    db $34                                                            ; 801c: 34          4  ; stk-data
+    db $a3                                                            ; 801b: a3          .   ; stk-pi/2
+    db $34                                                            ; 801c: 34          4   ; stk-data
     db $40, $b0, 0, 4                                                 ; 801d: 40 b0 00... @.. ; 4
-    db 4                                                              ; 8021: 04          .  ; multiply
-    db $38                                                            ; 8022: 38          8  ; end-calc
+    db 4                                                              ; 8021: 04          .   ; multiply
+    db $38                                                            ; 8022: 38          8   ; end-calc
 
     call print_fp                                                     ; 8023: cd e3 2d    ..- ; Print the number on the calculator stack
     ld a,1                                                            ; 8026: 3e 01       >.
-    out (ula_port),a                                                  ; 8028: d3 fe       .. ; Border blue
+    out (ula_port),a                                                  ; 8028: d3 fe       ..  ; Border blue
 ; $802a referenced 1 time by $802f
 loop_c802a:
     ld a,$7f                                                          ; 802a: 3e 7f       >.
-    in a,(ula_port)                                                   ; 802c: db fe       .. ; Read the keyboard (SPACE-B)
+    in a,(ula_port)                                                   ; 802c: db fe       ..  ; Read the keyboard (SPACE-B)
     rra                                                               ; 802e: 1f          .
     jr c,loop_c802a                                                   ; 802f: 38 f9       8.
     xor a                                                             ; 8031: af          .
@@ -89,7 +89,7 @@ loop_c804f:
 
 resume:
     rst $08                                                           ; 806a: cf          .
-    db 8                                                              ; 806b: 08          .  ; Report 9 STOP statement
+    db 8                                                              ; 806b: 08          .   ; Report 9 STOP statement
 
 ; $806c referenced 1 time by $8067
 clear_screen:
