@@ -36,6 +36,26 @@ start
     ldx #9
     jsr calls_drop_return
     stx $72                 ; (X isn't known)
+
+    ; 5. save_all saves the flags, A, X and Y on the stack (X and Y
+    ;    through A) and gets them back before it returns, so they're all
+    ;    as they were after the call. Its 'On Exit' notes say so on one
+    ;    line: 'A, X, Y and C are preserved'
+    lda #1
+    ldx #2
+    ldy #3
+    clc
+    jsr save_all
+    sta $75                 ; A=1
+    stx $76                 ; X=2
+    sty $77                 ; Y=3
+    bcc +                   ; ALWAYS branch
++
+    ; 6. change_saved_a changes the A it saved, on the stack, before
+    ;    pulling it: so A isn't as it was after the call
+    lda #1
+    jsr change_saved_a
+    sta $78                 ; (A isn't known)
     rts
 
 clear_carry
@@ -67,5 +87,32 @@ calls_drop_return
 
 drop_return
     pla
+    pla
+    rts
+
+save_all
+    php
+    pha
+    txa
+    pha
+    tya
+    pha
+    lda $79
+    tax
+    tay
+    sec
+    pla
+    tay
+    pla
+    tax
+    pla
+    plp
+    rts
+
+change_saved_a
+    pha
+    lda #7
+    tsx
+    sta $0101,x
     pla
     rts

@@ -69,7 +69,7 @@ For the 6502, what's known at a label is what all the ways into it agree on, whe
 
 After a JSR to a subroutine in the code, what's known is what the subroutine leaves behind, whoever calls it:
 
-- the registers and flags it never changes (on any path to an RTS, counting the subroutines it calls and those it jumps to) are as they were before the call;
+- the registers and flags it never changes (on any path to an RTS, counting the subroutines it calls and those it jumps to) are as they were before the call, as are those it saves on the stack and gets back before returning, e.g. with `pha : ... : pla`, `txa : pha : ... : pla : tax` or `php : ... : plp`. (Unless what it saved may have been changed on the stack: by a write to page 1, by a call to a subroutine in the code that may write there, or, after TSX, by a write through a pointer. A subroutine outside the binary, e.g. an OS routine, is taken not to change what its caller saved.)
 - the rest are what's known at all of its RTSs (worked out knowing nothing at its start, since it could be called from anywhere), e.g. that it always returns with the carry clear;
 - a subroutine that jumps (or branches, or runs on) into another leaves what that one leaves too.
 

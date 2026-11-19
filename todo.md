@@ -2,7 +2,7 @@
 
 Ideas for improvements, roughly in order of value (19 Nov 2026).
 
-1. **What subroutines leave behind.** At the moment nothing is known after a JSR. Some facts about a subroutine don't depend on how it was called: which registers and flags it never writes (so a caller's X, say, is still known after the call), and what's known at every one of its RTSs (e.g. the carry is always clear). Carry these past each JSR to it, and note them in the subroutine's "On Exit" notes where a caller relies on them. *(Done 19 Nov: see docs/cpus.md. Not done: registers saved and restored with PHA/PLA count as changed.)*
+1. **What subroutines leave behind.** At the moment nothing is known after a JSR. Some facts about a subroutine don't depend on how it was called: which registers and flags it never writes (so a caller's X, say, is still known after the call), and what's known at every one of its RTSs (e.g. the carry is always clear). Carry these past each JSR to it, and note them in the subroutine's "On Exit" notes where a caller relies on them. *(Done 19 Nov, including registers and flags saved on the stack and got back: see docs/cpus.md.)*
 
 2. **Suggest control-file lines for what py8dis can't prove.** Where a jump table's dispatch is found but its index can't be bounded (e.g. anfs418 &8c93/&a13b/&a997, dfs226 &8740/&b238, Open ROMs &fe0a, memory128), or a table is rejected (e.g. Open ROMs BASIC's overlapping token tables), print a suggestion, e.g. `# probable RTS jump table at $a4c9, X not known: rts_code_ptr(...)`, ready to paste into the control file.
 

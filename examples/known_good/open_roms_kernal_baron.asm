@@ -1125,7 +1125,7 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
 
 ; ***************************************************************************************
 ; On Exit:
-;     Y is preserved
+;     X and Y are preserved
 ; ***************************************************************************************
 ; &e95a referenced 7 times by &e99c, &e9a6, &e9dc, &e9ee, &ecfa, &ed10, &ed1d
 .sub_ce95a
@@ -1242,6 +1242,7 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
 ; ***************************************************************************************
 ; On Exit:
 ;     A: &20
+;     X is preserved
 ; ***************************************************************************************
 ; &e9ff referenced 3 times by &e550, &e94e, &f498
 .sub_ce9ff

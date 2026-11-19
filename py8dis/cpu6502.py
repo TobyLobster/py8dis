@@ -863,8 +863,13 @@ class SubroutineSummary:
     subroutines it calls), returns those of its RTSs, tail_calls the entries
     of the subroutines it jumps (or branches, or runs on) into, and calls
     (JSR binary address, callee entry or None) for the JSRs in it. written
-    is the registers and flags ('axynvdizc') it may change, with those its
-    callees and tail calls change. valid is False if what it does to the
+    is the registers and flags ('axynvdizc') that may be different when it
+    returns, with what its callees and tail calls change: one it saves on
+    the stack and gets back before returning (e.g. 'pha : ... : pla', 'txa
+    : pha : ... : pla : tax', 'php : ... : plp') isn't written. touches_stack
+    is whether it (or a subroutine it calls) may write to what's already on
+    the stack (see Cpu6502.subroutine_summaries()), so that what a caller
+    saved there may not be what it gets back. valid is False if what it does to the
     stack isn't understood (e.g. an RTS with something still pushed, or
     TXS), or if it calls such a subroutine or one with a hook, or runs
     into data; then nothing is known after a call to it."""
@@ -876,6 +881,7 @@ class SubroutineSummary:
         self.tail_calls = set()
         self.calls = []
         self.written = set()
+        self.touches_stack = False
         self.valid = True
 
     def __repr__(self):
@@ -3625,13 +3631,16 @@ class Cpu6502(cpu.Cpu):
                     if target_runtime in hooks:
                         summary.valid = False
 
-        # Each one's body, returns, tail calls and calls, and what its own
-        # instructions write
-        own_writes = {}
+        # Each one's body, returns, tail calls and calls, where each of its
+        # instructions goes next, and whether it may write to the stack
+        edges = {}
         for entry, summary in entries.items():
             depth = {entry: 0}
             todo = [entry]
-            writes = set()
+            edges[entry] = summary_edges = {}
+            stack_writes = False
+            unknown_writes = False
+            tsx = False
             while todo and summary.valid:
                 b = todo.pop()
                 d = depth[b]
@@ -3660,12 +3669,17 @@ class Cpu6502(cpu.Cpu):
                 if mnemonic in ("txs", "rti", "brk") or isinstance(c, (self.OpcodeJmpInd, self.OpcodeReturn)) or c.addr_mode == self.mode_indexed_abs:
                     summary.valid = False
                     break
+                if mnemonic == "tsx":
+                    tsx = True
                 if mnemonic not in self._CONTROL_MNEMONICS:
-                    reads, w, _ = self._instruction_effects(c, b)
-                    if not w and reads == self._ALL_RESOURCES:
-                        # (An instruction whose effects aren't known)
-                        w = everything
-                    writes |= w
+                    if self._effects_unknown(c, b):
+                        stack_writes = True
+                    else:
+                        written_memory = self._memory_written(c, b)
+                        if written_memory == "unknown":
+                            unknown_writes = True
+                        elif written_memory is not None and written_memory[0] <= 0x1ff and written_memory[1] >= 0x100:
+                            stack_writes = True
                 # Where it goes next
                 runtime = movemanager.b2r(BinaryAddr(b))
                 following = []
@@ -3681,6 +3695,7 @@ class Cpu6502(cpu.Cpu):
                 else:
                     summary.valid = False
                     break
+                summary_edges[b] = following
                 for f in following:
                     if f is None or f not in node_set:
                         summary.valid = False
@@ -3692,39 +3707,172 @@ class Cpu6502(cpu.Cpu):
                     else:
                         depth[f] = d
                         todo.append(f)
-            own_writes[entry] = writes
+            # (A write through a pointer could go to the stack only if the
+            # subroutine has found out where the stack is)
+            summary.touches_stack = stack_writes or (tsx and unknown_writes)
 
-        # What each may change, with its callees and tail calls (until it
-        # settles, for subroutines that call each other), and which are
-        # valid (a call to an invalid one, or a tail call to one, makes the
-        # caller invalid)
-        for summary in entries.values():
-            summary.written = set(own_writes[summary.entry])
+        # Which are valid (a call to an invalid one, or a tail call to one,
+        # makes the caller invalid), and which may write to the stack, with
+        # their callees and tail calls (until it settles, for subroutines
+        # that call each other). (A subroutine outside the code, e.g. an OS
+        # routine, is taken not to write to its caller's part of the stack.)
         changed = True
         while changed:
             changed = False
             for summary in entries.values():
-                written = set(summary.written)
                 valid = summary.valid
+                touches_stack = summary.touches_stack
                 for jsr, callee in summary.calls:
                     if jsr in hooked_calls:
                         valid = False
-                    if callee is None:
-                        # (Outside the code: e.g. an OS routine, which may
-                        # change anything)
-                        written |= everything
-                    else:
-                        written |= entries[callee].written
+                    if callee is not None:
                         valid = valid and entries[callee].valid
+                        touches_stack = touches_stack or entries[callee].touches_stack
                 for t in summary.tail_calls:
-                    written |= entries[t].written
                     valid = valid and entries[t].valid
-                if written != summary.written or valid != summary.valid:
-                    summary.written = written
+                    touches_stack = touches_stack or entries[t].touches_stack
+                if valid != summary.valid or touches_stack != summary.touches_stack:
                     summary.valid = valid
+                    summary.touches_stack = touches_stack
                     changed = True
+
+        # What each may change, given what its callees and tail calls
+        # change (until it settles)
+        for summary in entries.values():
+            summary.written = set() if summary.valid else set(everything)
+        changed = True
+        while changed:
+            changed = False
+            for summary in entries.values():
+                if summary.valid:
+                    written = self._written_by_subroutine(summary, edges[summary.entry], entries, callee_of)
+                    if written != summary.written:
+                        summary.written = written
+                        changed = True
         self.jsr_callees = callee_of
         return entries
+
+    # Where a register is copied to, by a transfer instruction
+    _TRANSFERS = {"tax": ("a", "x"), "tay": ("a", "y"), "txa": ("x", "a"), "tya": ("y", "a")}
+    _PUSHED = {"pha": "a", "phx": "x", "phy": "y", "pla": "a", "plx": "x", "ply": "y"}
+    _FLAGS = frozenset("nvdizc")
+
+    def _effects_unknown(self, c, binary_addr):
+        """Whether what the instruction does isn't known (see
+        _instruction_effects())."""
+        reads, writes, _ = self._instruction_effects(c, binary_addr)
+        return not writes and reads == self._ALL_RESOURCES
+
+    def _memory_written(self, c, binary_addr):
+        """The runtime addresses the instruction may write (first, last), or
+        'unknown' for an indirect operand, or None if it doesn't write
+        memory."""
+        mnemonic = c.mnemonic.lower()
+        if mnemonic in ("sta", "stx", "sty", "stz") or (mnemonic.upper() in self._READ_MODIFY_WRITE_MNEMONICS and c.addr_mode not in (self.mode_accumulator, self.mode_implied)):
+            return self._memory_operand_range(c, binary_addr)
+        return None
+
+    def _written_by_subroutine(self, summary, edges, entries, callee_of):
+        """The registers and flags that may be different when the subroutine
+        returns (see SubroutineSummary.written), given what its callees and
+        tail calls change.
+
+        Works out, at each of its instructions, which registers still hold
+        the value they had at the entry (e.g. X after 'txa : pha : ... : pla
+        : tax' does), which flags are still as they were, and what's in each
+        thing it has pushed (a register's value at the entry, or the flags
+        with those that were still as they were): until they don't change,
+        taking at each instruction only what all the ways in agree on. One
+        that isn't as it was at a return, or before a tail call, or that the
+        tail call changes, is written. What it has pushed is forgotten (so
+        pulling it gets nothing back) at a write to the stack, or a call to
+        a subroutine that may write to it (see SubroutineSummary.touches_stack)."""
+        regs = "axy"
+        flags_all = self._FLAGS
+        everything = set(self._ALL_RESOURCES)
+
+        def join(s1, s2):
+            holds = tuple(h1 if h1 == h2 else None for h1, h2 in zip(s1[0], s2[0]))
+            stack = []
+            for t1, t2 in zip(s1[2], s2[2]):
+                if t1 == t2:
+                    stack.append(t1)
+                elif isinstance(t1, frozenset) and isinstance(t2, frozenset):
+                    stack.append(t1 & t2)
+                else:
+                    stack.append(None)
+            return (holds, s1[1] & s2[1], tuple(stack))
+
+        def not_as_at_entry(state):
+            return {r for r, h in zip(regs, state[0]) if h != r} | (flags_all - state[1])
+
+        entry = summary.entry
+        states = {entry: (tuple(regs), flags_all, ())}
+        todo = [entry]
+        written = set()
+        while todo:
+            b = todo.pop()
+            holds, flags, stack = states[b]
+            holds = dict(zip(regs, holds))
+            flags = set(flags)
+            stack = list(stack)
+            c = classification.get_classification(b)
+            mnemonic = c.mnemonic.lower()
+            if mnemonic == "rts":
+                written |= not_as_at_entry(states[b])
+                continue
+            if mnemonic in ("pha", "phx", "phy"):
+                stack.append(holds[self._PUSHED[mnemonic]])
+            elif mnemonic == "php":
+                # (Flags are pushed as the set of those still as they were)
+                stack.append(frozenset(flags))
+            elif mnemonic in ("pla", "plx", "ply"):
+                pulled = stack.pop()
+                holds[self._PUSHED[mnemonic]] = pulled if isinstance(pulled, str) else None
+                flags -= {"n", "z"}
+            elif mnemonic == "plp":
+                pulled = stack.pop()
+                flags = set(pulled) if isinstance(pulled, frozenset) else set()
+            elif mnemonic in self._TRANSFERS:
+                source, dest = self._TRANSFERS[mnemonic]
+                holds[dest] = holds[source]
+                flags -= {"n", "z"}
+            elif isinstance(c, self.OpcodeJsr):
+                callee = callee_of[b]
+                callee_written = everything if callee is None else entries[callee].written
+                for r in regs:
+                    if r in callee_written:
+                        holds[r] = None
+                flags -= callee_written
+                if callee is not None and entries[callee].touches_stack:
+                    stack = [None] * len(stack)
+            elif mnemonic not in self._CONTROL_MNEMONICS:
+                if self._effects_unknown(c, b):
+                    holds = dict.fromkeys(regs)
+                    flags = set()
+                    stack = [None] * len(stack)
+                else:
+                    _, w, _ = self._instruction_effects(c, b)
+                    for r in regs:
+                        if r in w:
+                            holds[r] = None
+                    flags -= w
+                    written_memory = self._memory_written(c, b)
+                    if written_memory is not None and (written_memory == "unknown" or (written_memory[0] <= 0x1ff and written_memory[1] >= 0x100)):
+                        if written_memory != "unknown" or summary.touches_stack:
+                            stack = [None] * len(stack)
+            after = (tuple(holds[r] for r in regs), frozenset(flags), tuple(stack))
+            for f in edges.get(b, []):
+                if f != entry and f in entries:
+                    # (A tail call)
+                    written |= not_as_at_entry(after) | entries[f].written
+                    continue
+                old = states.get(f)
+                new = after if old is None else join(old, after)
+                if new != old:
+                    states[f] = new
+                    todo.append(f)
+        return written
 
     def join_states_at_labels(self):
         """Work out what's known for certain (the pessimistic state) after

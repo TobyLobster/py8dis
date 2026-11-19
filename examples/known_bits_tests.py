@@ -38,8 +38,10 @@ run_tests.py -c when all the tests are run.
 
 4. What subroutines leave behind (see Cpu6502.subroutine_summaries()):
    random programs with subroutines, which call each other, jump to each
-   other (tail calls), and push and pull A (sometimes unevenly, so that an
-   RTS goes somewhere else), are traced and run on the simple 6502 with a
+   other (tail calls), push and pull A and the flags (sometimes unevenly,
+   so that an RTS goes somewhere else), save registers and flags on the
+   stack and get them back (perhaps through A), and write to the stack
+   (TSX : STA $01xx,X, which can change what was saved), are traced and run on the simple 6502 with a
    real stack. What py8dis says it knows is checked as in 3, and what it
    says it knows after a JSR is checked when the call returns. A run stops
    at an RTS that doesn't return to a call (it's a jump to an address that
@@ -567,12 +569,26 @@ def random_program_with_subroutines(rng, subroutines=3, main_slots=14, sub_slots
                 # the caller's caller)
                 kinds.append((block, "implied", 0x68))
                 kinds.append((block, "implied", 0x68))
-            elif r < 0.95:
-                kinds.append((block, "implied", rng.choice([0x48, 0x68])))      # PHA, PLA
+            elif r < 0.93:
+                kinds.append((block, "implied", rng.choice([0x48, 0x68, 0x08, 0x28])))      # PHA, PLA, PHP, PLP
+            elif r < 0.95 and block > 0:
+                # (Saving a register or the flags, and getting it back later
+                # in the subroutine, perhaps through A)
+                save, restore = rng.choice([([0x48], [0x68]), ([0x08], [0x28]), ([0x8a, 0x48], [0x68, 0xaa]),
+                                            ([0x98, 0x48], [0x68, 0xa8]), ([0x8a, 0x48], [0x68, 0xa8])])
+                for op in save:
+                    kinds.append((block, "implied", op))
+                kinds.append((block, "imm", rng.choice([0xa9, 0xa2, 0xa0]), rng.randrange(256)))
+                for op in restore:
+                    kinds.append((block, "implied", op))
+            elif r < 0.96:
+                # (Writing to the stack: TSX : STA $01xx,X)
+                kinds.append((block, "implied", 0xba))
+                kinds.append((block, "abs", 0x9d, 0x0101 + rng.randrange(4)))
             else:
                 kinds.append((block, "rts", 0x60))
         kinds.append((block, "rts", 0x60))
-    lengths = {"imm": 2, "implied": 1, "zp": 2, "branch": 2, "jmp": 3, "jsr": 3, "rts": 1}
+    lengths = {"imm": 2, "implied": 1, "zp": 2, "branch": 2, "jmp": 3, "jsr": 3, "rts": 1, "abs": 3}
     addrs = []
     starts = {}
     addr = 0x2000
@@ -596,6 +612,8 @@ def random_program_with_subroutines(rng, subroutines=3, main_slots=14, sub_slots
         elif kind in ("jsr", "jmp"):
             target = addrs[starts[k[3]]]
             program += [k[2], target & 0xff, target >> 8]
+        elif kind == "abs":
+            program += [k[2], k[3] & 0xff, k[3] >> 8]
         else:
             program += [k[2]]
     return program
@@ -657,6 +675,37 @@ def run_with_stack(program_bytes, s, memory, steps=400):
             s['n'] = bool(s['a'] & 0x80)
             s['z'] = s['a'] == 0
             pc += 1
+            yield here, None, None
+            continue
+        if op == 0x08:
+            push(sum(1 << bit for bit, flag in ((7, 'n'), (6, 'v'), (3, 'd'), (2, 'i'), (1, 'z'), (0, 'c')) if s[flag]) | 0x30)
+            pc += 1
+            yield here, None, None
+            continue
+        if op == 0x28:
+            p = pull()
+            for bit, flag in ((7, 'n'), (6, 'v'), (3, 'd'), (2, 'i'), (1, 'z'), (0, 'c')):
+                s[flag] = bool(p & (1 << bit))
+            if s['d']:
+                # (Decimal arithmetic isn't modelled)
+                return
+            pc += 1
+            yield here, None, None
+            continue
+        if op == 0xba:
+            s['x'] = sp
+            s['n'] = bool(sp & 0x80)
+            s['z'] = sp == 0
+            pc += 1
+            yield here, None, None
+            continue
+        if op == 0x9d:
+            address = (operand | program_bytes[pc - 0x2000 + 2] << 8) + s['x']
+            if 0x100 <= address <= 0x1ff:
+                stack[address & 0xff] = s['a']
+            elif address < 0x100:
+                memory[address] = s['a']
+            pc += 3
             yield here, None, None
             continue
         if op == 0x4c:
@@ -745,7 +794,27 @@ def test_sequences(rng):
 #   sub_b: ldx #7 : rts
 #   sub_c: jsr sub_d : ldy #2 : rts
 #   sub_d: pla : pla : ldy #3 : rts
-FIXED_PROGRAMS = ["a2052012208670a009201a20847120172060a9014c1720a20760202020a002606868a00360"]
+#
+# And registers and flags saved and got back (so they're as they were after
+# the call), and saved values that are changed on the stack (so they aren't)
+#
+#   main: lda #5 : ldx #6 : jsr sub_a : sta $70 : stx $71 : jsr sub_b :
+#         sta $72 : clc : jsr sub_c : bcs + : + jsr sub_d : sta $73 : rts
+#   sub_a: pha : txa : pha : lda #1 : tax : pla : tax : pla : rts
+#   sub_b: pha : jsr tamper : pla : rts
+#   tamper: lda #9 : tsx : sta $0103,x : rts   (changes sub_b's saved A)
+#   sub_c: php : sec : plp : rts
+#   sub_d: pha : lda #3 : tsx : sta $0101,x : pla : rts
+#
+# And flags pulled that aren't the caller's (so they aren't as they were)
+#
+#   main: clc : jsr sub_e : clc : jsr sub_f : bcs + : + rts
+#   sub_e: sec : php : plp : rts       (C is set after the call)
+#   sub_f: lda #$c0 : pha : plp : rts  (the flags are $c0's bits)
+FIXED_PROGRAMS = ["a2052012208670a009201a20847120172060a9014c1720a20760202020a002606868a00360",
+                  "a905a206201c2085708671202620857218203320b00020372085736048"
+                  "8a48a901aa68aa68604820" "2c20" "6860a909ba9d0301600838286048a903ba9d01016860",
+                  "18200b2018200f20b0006038082860a9c0482860"]
 
 def test_subroutines(rng, programs=200):
     import commands
