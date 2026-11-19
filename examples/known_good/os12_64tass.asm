@@ -8055,7 +8055,7 @@ loop_cecb1
     sta l082c,y                                                       ; ecb1: 99 2c 08    .,.
     dey                                                               ; ecb4: 88          .
     bpl loop_cecb1                                                    ; ecb5: 10 fa       ..
-    sty l0838                                                         ; ecb7: 8c 38 08    .8.
+    sty l0838                                                         ; ecb7: 8c 38 08    .8. ; Y=$ff
     bmi ced06                                                         ; ecba: 30 4a       0J  ; ALWAYS branch
 
 ; $ecbc referenced 1 time by $ecde
@@ -8839,7 +8839,7 @@ cf11e
 cf123
     dex                                                               ; f123: ca          .
     bpl cf0e3                                                         ; f124: 10 bd       ..
-    txa                                                               ; f126: 8a          .
+    txa                                                               ; f126: 8a          .   ; A=$ff
 ; $f127 referenced 2 times by $f112, $f11c
 cf127
     tax                                                               ; f127: aa          .
@@ -9465,9 +9465,9 @@ loop_cf49b
     sta l03be,x                                                       ; f49e: 9d be 03    ...
     dex                                                               ; f4a1: ca          .
     bpl loop_cf49b                                                    ; f4a2: 10 f7       ..
-    stx l00b2                                                         ; f4a4: 86 b2       ..
+    stx l00b2                                                         ; f4a4: 86 b2       ..  ; X=$ff
     stx l00b3                                                         ; f4a6: 86 b3       ..
-    inx                                                               ; f4a8: e8          .
+    inx                                                               ; f4a8: e8          .   ; X=0
     stx l00b0                                                         ; f4a9: 86 b0       ..
     lda #9                                                            ; f4ab: a9 09       ..
     sta l00b1                                                         ; f4ad: 85 b1       ..

@@ -20,12 +20,10 @@ for i, handler in enumerate(["irq", "brk", "nmi", "open", "close", "chkin", "chk
 # The screen editor's control codes: the code at &fdee compares the character
 # with each of the 17 codes at &ec4c (X from 16 down to 0), and jumps to the
 # code's routine with an RTS: the addresses minus 1, the low bytes at &ec5d
-# and the high bytes at &ec6e. (py8dis can't mark the table itself, since it
-# doesn't know that the loop's DEX stops at 0.)
+# and the high bytes at &ec6e. (py8dis finds the table itself, since it knows
+# X is 0 to 16 there.)
 label(0xec4c, "control_codes")
 label(0xec5d, "control_code_routines_low")
 label(0xec6e, "control_code_routines_high")
-for i in range(17):
-    rts_code_ptr(0xec5d + i, 0xec6e + i)
 
 go()

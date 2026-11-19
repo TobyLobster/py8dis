@@ -43,7 +43,7 @@ with -a.
 
 With -c, when all the tests are run, session_tests.py (several disassemblies in
 one process), render_tests.py (rendering output lines for each assembler) and
-known_bits_tests.py (what's known about the 6502's registers bit by bit) are
+cpu_state_tests.py (what's known about the 6502's registers and flags) are
 run as well: see those files. They're started first and reported first.
 
 The options (./run_tests.py --help lists them too):
@@ -369,7 +369,7 @@ ASSEMBLER_PROGRAMS = {
 
 # Test scripts run as well by -c, when all the tests are run. Each passes if
 # it exits with 0.
-OTHER_TEST_SCRIPTS = ["session_tests.py", "render_tests.py", "known_bits_tests.py"]
+OTHER_TEST_SCRIPTS = ["session_tests.py", "render_tests.py", "cpu_state_tests.py"]
 
 # The examples folder (main() makes it the current folder, so the paths
 # below are relative to it), the py8dis being tested and the JSON schema

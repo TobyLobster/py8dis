@@ -1568,6 +1568,7 @@ cia2_control_b          = &dd0f
 .control_codes
     equb &93, &13,   8,   9, &0e, &8e, &92, &12, &1d, &9d, &11, &91   ; ec4c: 93 13 08... ...
     equb &94,   3, &14, &0d, &8d                                      ; ec58: 94 03 14... ...
+; The low bytes of a jump table of 17 entries (each the address minus 1, for the RTS at &fe0e)
 ; &ec5d referenced 1 time by &fe0a
 .control_code_routines_low
     equb <(sub_cf7e9 - 1)                                             ; ec5d: e8          .
@@ -1587,6 +1588,7 @@ cia2_control_b          = &dd0f
     equb <(sub_cf38d - 1)                                             ; ec6b: 8c          .
     equb <(sub_cfb5b - 1)                                             ; ec6c: 5a          z
     equb <(sub_cfb5b - 1)                                             ; ec6d: 5a          z
+; The high bytes of the jump table
 ; &ec6e referenced 1 time by &fe06
 .control_code_routines_high
     equb >(sub_cf7e9 - 1)                                             ; ec6e: f7          .

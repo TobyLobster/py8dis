@@ -3754,7 +3754,7 @@ l8e54 = c8e52+2
 .c9505
     pla                                                               ; 9505: 68          h
     ldx #&c0                                                          ; 9506: a2 c0       ..
-    iny                                                               ; 9508: c8          .
+    iny                                                               ; 9508: c8          .              ; Y=0
     jsr sub_cac24                                                     ; 9509: 20 24 ac     $.
     bcc loop_c94f8                                                    ; 950c: 90 ea       ..
 ; &950e referenced 1 time by &9502
@@ -3780,7 +3780,7 @@ l8e54 = c8e52+2
     sta l0fc8,x                                                       ; 952a: 9d c8 0f    ...
     inx                                                               ; 952d: e8          .
     bmi loop_c9520                                                    ; 952e: 30 f0       0.
-    stx l0e07                                                         ; 9530: 8e 07 0e    ...
+    stx l0e07                                                         ; 9530: 8e 07 0e    ...            ; X=0
     jsr sub_cb559                                                     ; 9533: 20 59 b5     Y.
     pla                                                               ; 9536: 68          h
     ror a                                                             ; 9537: 6a          j
@@ -4360,7 +4360,7 @@ error_template_minus_1 = c96b3+1
     lda l0d6f                                                         ; 98ae: ad 6f 0d    .o.
     ; push A,Y onto the stack
     pha                                                               ; 98b1: 48          H
-    tya                                                               ; 98b2: 98          .
+    tya                                                               ; 98b2: 98          .              ; A=&ff
     pha                                                               ; 98b3: 48          H
     ldx #0                                                            ; 98b4: a2 00       ..
     lda (l009a,x)                                                     ; 98b6: a1 9a       ..
@@ -4446,7 +4446,7 @@ error_template_minus_1 = c96b3+1
     sta os_text_ptr,y                                                 ; 990c: 99 f2 00    ...
     dey                                                               ; 990f: 88          .
     bpl loop_c990a                                                    ; 9910: 10 f8       ..
-    iny                                                               ; 9912: c8          .
+    iny                                                               ; 9912: c8          .              ; Y=0
 ; &9913 referenced 1 time by &ae94
 .sub_c9913
     ldx #&ff                                                          ; 9913: a2 ff       ..
@@ -5145,7 +5145,7 @@ error_template_minus_1 = c96b3+1
     sta (l00bb),y                                                     ; 9ce3: 91 bb       ..
     dey                                                               ; 9ce5: 88          .
     bpl c9ce0                                                         ; 9ce6: 10 f8       ..
-    sty l0002,x                                                       ; 9ce8: 94 02       ..
+    sty l0002,x                                                       ; 9ce8: 94 02       ..             ; Y=&ff
     sty l0003,x                                                       ; 9cea: 94 03       ..
 ; &9cec referenced 1 time by &9cd7
 .c9cec
@@ -6920,7 +6920,7 @@ la841 = ca840+1
     iny                                                               ; a87f: c8          .
     dex                                                               ; a880: ca          .
     bpl loop_ca875                                                    ; a881: 10 f2       ..
-    stx l0d71                                                         ; a883: 8e 71 0d    .q.
+    stx l0d71                                                         ; a883: 8e 71 0d    .q.            ; X=&ff
     rol l0d61                                                         ; a886: 2e 61 0d    .a.
 ; &a889 referenced 2 times by &a88c, &a8b3
 .ca889
@@ -7268,7 +7268,7 @@ la841 = ca840+1
     sta (l009e),y                                                     ; aa61: 91 9e       ..
     dey                                                               ; aa63: 88          .
     bpl loop_caa5f                                                    ; aa64: 10 f9       ..
-    iny                                                               ; aa66: c8          .
+    iny                                                               ; aa66: c8          .              ; Y=0
     dec l009e                                                         ; aa67: c6 9e       ..
     lda l00ef                                                         ; aa69: a5 ef       ..
     sta (l009e),y                                                     ; aa6b: 91 9e       ..
@@ -7460,7 +7460,7 @@ la841 = ca840+1
     dey                                                               ; ab8e: 88          .
     dex                                                               ; ab8f: ca          .
     bpl loop_cab89                                                    ; ab90: 10 f7       ..
-    stx l0098                                                         ; ab92: 86 98       ..
+    stx l0098                                                         ; ab92: 86 98       ..             ; X=&ff
     ldy #2                                                            ; ab94: a0 02       ..
     lda (l009e),y                                                     ; ab96: b1 9e       ..
     pha                                                               ; ab98: 48          H
@@ -9249,7 +9249,7 @@ lb487 = cb485+2
     sta l10d1,x                                                       ; b5ea: 9d d1 10    ...            ; A=0
     dex                                                               ; b5ed: ca          .
     bpl loop_cb5ea                                                    ; b5ee: 10 fa       ..
-    stx l10cd                                                         ; b5f0: 8e cd 10    ...
+    stx l10cd                                                         ; b5f0: 8e cd 10    ...            ; X=&ff
     stx l10ce                                                         ; b5f3: 8e ce 10    ...
     ldx #&ca                                                          ; b5f6: a2 ca       ..
     ldy #&10                                                          ; b5f8: a0 10       ..

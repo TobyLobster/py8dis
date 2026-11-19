@@ -27,15 +27,15 @@ entry points.
 
 The CPU state. Once the code is traced, Cpu.calculate_cpu_states() goes
 through it working out what's known after each instruction: a CpuState,
-which holds what's known about A, X and Y (RegState: the value, bit by bit
-(see knownbits.py) and as a range, and which instruction last loaded,
-changed or used the register) and the flags. It
+which holds what's known about A, X and Y (RegState: the set of values it
+could have (see valuesets.py), and which instruction last loaded, changed or
+used the register) and the flags. It
 holds two versions of this (CpuStateDisposition): the pessimistic one is
 what's known for certain, which at a label is what all the ways into it
 agree on, where those are all branches in the code, and otherwise nothing
 (code can come there from elsewhere: see join_states_at_labels()); the optimistic one takes the code to have run
 straight through from the instruction before, even past a label. E.g. 'LDA
-#5' makes A 5, and 'AND #$0f' makes its top four bits 0; a conditional
+#5' makes A 5, and 'AND #$0f' makes it 0 to 15; a conditional
 branch is taken not to have been taken, so its flag is known after it (and
 after BNE or BEQ, what that says about the register that set Z, and after
 BPL or BMI, bit 7 of the register that set N: see z_source() and
@@ -72,7 +72,7 @@ import re
 import cpu
 import utils
 import textencoding
-import knownbits
+import valuesets
 from align import Align
 from binaryaddrtype import BinaryAddrType
 from memorymanager import BinaryAddr
@@ -211,20 +211,19 @@ class MemoryWrite:
 
 class RegState:
     """What's known about one register (A, X or Y) at a point in the code:
-    its value, bit by bit (see knownbits.py), and the binary addresses of
-    the instructions that last loaded, changed and used it (see the
-    attributes in clear()). The addresses are what the analysis comments or
-    names, e.g. the 'ldx #nn' that sets X up for a call to a subroutine.
+    the set of values it could have (see valuesets.py), and the binary
+    addresses of the instructions that last loaded, changed and used it (see
+    the attributes in clear()). The addresses are what the analysis comments
+    or names, e.g. the 'ldx #nn' that sets X up for a call to a subroutine.
 
-    'value' is the value if all eight bits are known, otherwise None (and
-    setting it sets all the bits, or with None, none). 'known_bits' is what's
-    known as a (known, bits) pair: e.g. (0xf0, 0x00) after 'and #$0f'.
-
-    'lo' and 'hi' are the least and greatest (unsigned) values it could be,
-    which can say more than the bits: e.g. after 'cmp #10 : bcs skip' it's
-    0 to 9. (The bits that all the values in the range share are known too,
-    e.g. the top four for 0 to 9.) Setting 'known_bits' or 'value' sets the
-    range to what the bits allow; set_range() sets both."""
+    'possible' is the set, as an int (see valuesets.py): e.g. the values 0 to
+    15 after 'and #$0f', and 0 to 9 after 'cmp #10 : bcs skip'. 'value' is
+    the value if there's only one, otherwise None (and setting it to a value
+    makes that the only one, or with None, any). The rest are worked out from
+    the set: 'known_bits' is what all the values agree on, bit by bit, as a
+    (known, bits) pair (e.g. (0xf0, 0) for 0 to 15), and 'known' and 'bits'
+    its two parts; 'lo' and 'hi' are the least and greatest values; and
+    possible_values() lists them all."""
 
     def __init__(self):
         """Nothing is known to start with."""
@@ -232,10 +231,7 @@ class RegState:
 
     def clear(self):
         """Forget everything about the register."""
-        self.known              = 0         # A 1 for each bit whose value is known
-        self.bits               = 0         # The values of the known bits (0 for the others)
-        self.lo                 = 0         # The least value it could be
-        self.hi                 = 0xff      # The greatest value it could be
+        self.possible           = valuesets.FULL    # The values it could have (see valuesets.py)
         self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
         self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
         self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
@@ -243,59 +239,46 @@ class RegState:
 
     @property
     def value(self):
-        """The value, if all its bits are known, otherwise None."""
-        return self.bits if self.known == 0xff else None
+        """The value, if it can only be one, otherwise None."""
+        return valuesets.value(self.possible)
 
     @value.setter
     def value(self, v):
         if v is None:
-            self.known = 0
-            self.bits = 0
-            self.lo = 0
-            self.hi = 0xff
+            self.possible = valuesets.FULL
         else:
             assert 0 <= v <= 0xff
-            self.known = 0xff
-            self.bits = v
-            self.lo = v
-            self.hi = v
+            self.possible = valuesets.exact(v)
 
     @property
     def known_bits(self):
-        """What's known, as a (known, bits) pair (see knownbits.py)."""
-        return (self.known, self.bits)
+        """What all the values it could have agree on, bit by bit, as a
+        (known, bits) pair (see valuesets.known_bits())."""
+        return valuesets.known_bits(self.possible)
 
-    @known_bits.setter
-    def known_bits(self, kb):
-        self.known, self.bits = kb
-        assert self.bits & ~self.known == 0
-        self.lo, self.hi = knownbits.bounds(kb)
+    @property
+    def known(self):
+        """A 1 for each bit that all the values it could have agree on."""
+        return self.known_bits[0]
 
-    def set_range(self, kb, lo, hi):
-        """It's kb (known bits) and from lo to hi: the range is narrowed to
-        what the bits allow, and the bits that all the values in the range
-        share become known (e.g. the top four for 0 to 9). If they can't
-        both be true (code that can't be reached this way), just kb is
-        kept."""
-        known, bits = kb
-        bits_lo, bits_hi = knownbits.bounds(kb)
-        lo = max(lo, bits_lo)
-        hi = min(hi, bits_hi)
-        if lo <= hi:
-            # (The bits above the highest one in which lo and hi differ)
-            shared = ~((1 << (lo ^ hi).bit_length()) - 1) & 0xff
-            if (lo & shared & known) == (bits & shared):
-                self.known = known | shared
-                self.bits = (bits & ~shared) | (lo & shared)
-                self.lo = lo
-                self.hi = hi
-                return
-        self.known_bits = kb
+    @property
+    def bits(self):
+        """The values of the bits in 'known' (and 0 for the others)."""
+        return self.known_bits[1]
+
+    @property
+    def lo(self):
+        """The least value it could be."""
+        return valuesets.bounds(self.possible)[0]
+
+    @property
+    def hi(self):
+        """The greatest value it could be."""
+        return valuesets.bounds(self.possible)[1]
 
     def possible_values(self):
-        """The values it could be, in order: those in the range that agree
-        with the known bits."""
-        return [v for v in range(self.lo, self.hi + 1) if (v & self.known) == self.bits]
+        """The values it could be, in order."""
+        return valuesets.values(self.possible)
 
     def copy(self):
         """A fast copy (all the attributes are immutable values)."""
@@ -314,9 +297,9 @@ class RegState:
 
     def __repr__(self):
         """The register's value as text (for __str__())."""
-        if self.known in (0, 0xff) and (self.lo, self.hi) == knownbits.bounds(self.known_bits):
+        if self.value is not None or self.possible == valuesets.FULL:
             return "value: {0}".format(self.value)
-        return "value: {0} ({1}-{2})".format(knownbits.show_bits(self.known_bits), self.lo, self.hi)
+        return "value: {0}".format(valuesets.describe(self.possible))
 
     def __str__(self):
         return self.__repr__()
@@ -451,17 +434,16 @@ class CpuStateDisposition:
     def join(self, other):
         """What's known both here and in 'other' (another
         CpuStateDisposition): the state where code can come from either
-        (see Cpu6502.join_states_at_labels()). A register's bits are known
-        where both know them and agree, and its range covers both; a flag is
+        (see Cpu6502.join_states_at_labels()). A register could have any of
+        the values it could have in either; a flag is
         known where both know it and agree ('pending' isn't kept); and z_from,
         n_from and c_from, and where a register was loaded, are kept where
         they're the same."""
         result = CpuStateDisposition()
         for reg in "axy":
             a, b = self._d[reg], other._d[reg]
-            known = a.known & b.known & ~(a.bits ^ b.bits) & 0xff
             r = result._d[reg]
-            r.set_range((known, a.bits & known), min(a.lo, b.lo), max(a.hi, b.hi))
+            r.possible = a.possible | b.possible
             for attr in ("previous_load_imm", "previous_load", "previous_adjust", "previous_use"):
                 value = getattr(a, attr)
                 setattr(r, attr, value if value == getattr(b, attr) else None)
@@ -476,18 +458,23 @@ class CpuStateDisposition:
 
     def widen(self, newer):
         """'newer' (the state after another time round a loop), with each
-        register's range that's grown since this one taken to the end it's
-        growing towards (0 or $ff), as far as its known bits allow (see
-        Cpu6502.join_states_at_labels())."""
+        register whose set of values has grown since this one made all the
+        values from its least to its greatest that agree on the bits that
+        they all agree on, with an end that's grown since this one taken to
+        the end it's growing towards (0 or $ff). (So it can only grow a few
+        more times: see Cpu6502.join_states_at_labels().)"""
         result = newer.copy()
         for reg in "axy":
-            old, new = self._d[reg], newer._d[reg]
-            lo, hi = new.lo, new.hi
-            if lo < old.lo:
+            old, new = self._d[reg].possible, newer._d[reg].possible
+            if new & ~old == 0:
+                continue
+            lo, hi = valuesets.bounds(new)
+            old_lo, old_hi = valuesets.bounds(old)
+            if lo < old_lo:
                 lo = 0
-            if hi > old.hi:
+            if hi > old_hi:
                 hi = 0xff
-            result._d[reg].set_range(new.known_bits, lo, hi)
+            result._d[reg].possible = valuesets.from_range(lo, hi) & valuesets.from_known_bits(*valuesets.known_bits(new))
         return result
 
     @staticmethod
@@ -509,43 +496,32 @@ class CpuStateDisposition:
             return None
         return bool(c)
 
-    def set_result(self, reg, kb, lo=0, hi=0xff):
-        """The register's value is now kb (known bits: see knownbits.py),
-        and from lo to hi, the result of an instruction, which sets N and Z
-        from it."""
-        r = self._d[reg]
-        r.set_range(kb, lo, hi)
-        self._d['n'] = knownbits.n_flag(r.known_bits)
-        self._d['z'] = knownbits.z_flag(r.known_bits)
-        if r.lo > 0:
-            self._d['z'] = False
+    def set_result(self, reg, possible):
+        """The register could now have the values in 'possible' (a set: see
+        valuesets.py), the result of an instruction, which sets N and Z from
+        it."""
+        self._d[reg].possible = possible
+        self._d['n'] = valuesets.n_flag(possible)
+        self._d['z'] = valuesets.z_flag(possible)
 
     def update_shift_a(self, binary_addr, kind):
-        """ASL, LSR, ROL or ROR A ('kind' is the mnemonic in lower case): the
-        bits of A that are known move along, the bit shifted in is known
-        for ASL and LSR (0), and for ROL and ROR if C is known, and C is
-        the bit shifted out, if that's known. N and Z are from the result."""
-        r = self._d['a']
-        a = r.known_bits
+        """ASL, LSR, ROL or ROR A ('kind' is the mnemonic in lower case): A
+        could be the shifted values of what it could be before (with the
+        bit rotated in for ROL and ROR from C, both ways if C isn't known),
+        and C is the bit shifted out, if they all agree on it. N and Z are
+        from the result."""
+        a = self._d['a'].possible
         carry_in = self.carry()
-        lo, hi = 0, 0xff
         if kind == "asl":
-            result, carry = knownbits.asl(a)
-            if r.hi < 0x80:
-                lo, hi = r.lo * 2, r.hi * 2
+            result, carry = valuesets.asl(a)
         elif kind == "lsr":
-            result, carry = knownbits.lsr(a)
-            lo, hi = r.lo >> 1, r.hi >> 1
+            result, carry = valuesets.lsr(a)
         elif kind == "rol":
-            result, carry = knownbits.rol(a, carry_in)
-            if r.hi < 0x80 and carry_in is not None:
-                lo, hi = r.lo * 2 + carry_in, r.hi * 2 + carry_in
+            result, carry = valuesets.rol(a, carry_in)
         else:
             assert kind == "ror"
-            result, carry = knownbits.ror(a, carry_in)
-            if carry_in is not None:
-                lo, hi = (r.lo >> 1) | (0x80 * carry_in), (r.hi >> 1) | (0x80 * carry_in)
-        self.set_result('a', result, lo, hi)
+            result, carry = valuesets.ror(a, carry_in)
+        self.set_result('a', result)
         self._d['c'] = carry
 
     def update_shift_memory(self, binary_addr, kind):
@@ -591,95 +567,70 @@ class CpuStateDisposition:
         self._d['c'] = None
 
     def update_AND_immediate(self, binary_addr):
-        """AND #imm (the instruction at binary_addr): the bits of A that the
-        operand clears are known to be 0, and the others are as known before
-        (so A is worked out if it was known, e.g. AND #0 makes A 0), with N
-        and Z from the result."""
+        """AND #imm (the instruction at binary_addr): A could be each value
+        it could be before AND the operand (so e.g. AND #0 makes A 0, and AND
+        #$0f makes it 0 to 15), with N and Z from the result."""
         v = session.current().memory.binary[binary_addr+1]
-        # (The result is at most the operand, and at most A)
-        self.set_result('a', knownbits.and_(self._d['a'].known_bits, knownbits.exact(v)), 0, min(v, self._d['a'].hi))
+        self.set_result('a', valuesets.and_(self._d['a'].possible, v))
 
     def update_ORA_immediate(self, binary_addr):
-        """ORA #imm (the instruction at binary_addr): the bits of A that the
-        operand sets are known to be 1 (so e.g. ORA #$80 sets N, and any
-        non-zero operand clears Z), and the others are as known before."""
+        """ORA #imm (the instruction at binary_addr): A could be each value
+        it could be before OR the operand (so e.g. ORA #$80 sets N, and any
+        non-zero operand clears Z)."""
         v = session.current().memory.binary[binary_addr+1]
-        # (The result is at least the operand, and at least A)
-        self.set_result('a', knownbits.or_(self._d['a'].known_bits, knownbits.exact(v)), max(v, self._d['a'].lo))
+        self.set_result('a', valuesets.or_(self._d['a'].possible, v))
 
     def update_EOR_immediate(self, binary_addr):
-        """EOR #imm (the instruction at binary_addr): the bits of A that
-        were known are known, flipped where the operand is 1."""
+        """EOR #imm (the instruction at binary_addr): A could be each value
+        it could be before EOR the operand."""
         v = session.current().memory.binary[binary_addr+1]
-        self.set_result('a', knownbits.eor(self._d['a'].known_bits, knownbits.exact(v)))
+        self.set_result('a', valuesets.eor(self._d['a'].possible, v))
 
     def compare_immediate(self, binary_addr, reg):
         """CMP, CPX or CPY #imm (the instruction at binary_addr), comparing
         'reg': as far as what's known about the register says, C is set if
         it's at least the operand, Z if it's equal, and N is bit 7 of the
-        difference. Z and C are 'pending' where they aren't known (see
+        difference (each known if it's the same for every value the register
+        could have). Z and C are 'pending' where they aren't known (see
         update_transfer())."""
         v = session.current().memory.binary[binary_addr+1]
-        r = self._d[reg]
-        result, carry = knownbits.subtract(r.known_bits, knownbits.exact(v), True)
-        z = knownbits.z_flag(result)
-        # (And as far as its range says)
-        if r.lo >= v:
-            carry = True
-        elif r.hi < v:
-            carry = False
-        if not r.lo <= v <= r.hi:
-            z = False
-        self._d['n'] = knownbits.n_flag(result)
+        n, z, carry = valuesets.compare(self._d[reg].possible, v)
+        self._d['n'] = n
         self._d['z'] = "pending" if z is None else z
         self._d['c'] = "pending" if carry is None else carry
 
     def adc_sbc_immediate(self, binary_addr, subtract):
         """ADC or SBC #imm (the instruction at binary_addr): if D is known
-        to be clear (binary arithmetic), the result's bits are worked out
-        as far as what's known about A and C says, with N, Z and C (and V
-        if A and C are known). Otherwise (decimal arithmetic could be on)
-        A, N, V, Z and C become unknown."""
+        to be clear (binary arithmetic), A could be the sum (or difference)
+        for each value it could be before, and each value of C if that isn't
+        known, with N, Z, C and V from that (each known if it's the same for
+        all of them). Otherwise (decimal arithmetic could be on) A, N, V, Z
+        and C become unknown."""
         if self._d['d'] is None or self._d['d']:
             self.update_adc_sbc(binary_addr)
             return
-        a = self._d['a'].known_bits
-        operand = knownbits.exact(session.current().memory.binary[binary_addr+1])
-        if subtract:
-            # (SBC adds the operand's complement)
-            operand = knownbits.invert(operand)
+        a = self._d['a'].possible
+        v = session.current().memory.binary[binary_addr+1]
         carry_in = self.carry()
-        result, carry = knownbits.add(a, operand, carry_in)
-        # (And as far as A's range says: the sum is from lo + operand to hi +
-        # operand (+ 1 if the carry isn't known); if all of that is less
-        # than $100, or all at least $100, the carry out is known)
-        r = self._d['a']
-        least = r.lo + operand[1] + (carry_in or 0)
-        most = r.hi + operand[1] + (1 if carry_in is None else carry_in)
-        lo, hi = 0, 0xff
-        if most <= 0xff:
-            lo, hi, carry = least, most, False
-        elif least >= 0x100 and most <= 0x1ff:
-            lo, hi, carry = least - 0x100, most - 0x100, True
-        self.set_result('a', result, lo, hi)
-        self._d['c'] = carry
-        if knownbits.is_exact(a) and carry_in is not None:
-            # Overflow: the operands have the same sign and the result doesn't
-            self._d['v'] = ((a[1] ^ result[1]) & (operand[1] ^ result[1]) & 0x80) != 0
+        if subtract:
+            result, carry = valuesets.subtract(a, v, carry_in)
         else:
-            self._d['v'] = None
+            result, carry = valuesets.add(a, v, carry_in)
+        self.set_result('a', result)
+        self._d['c'] = carry
+        self._d['v'] = valuesets.overflow(a, v, carry_in, subtracting=subtract)
 
     def bit_immediate(self, binary_addr):
         """The 65C02's BIT #imm (the instruction at binary_addr): only Z
         changes, set if A AND the operand is 0, as far as what's known
         about A says."""
         v = session.current().memory.binary[binary_addr+1]
-        self._d['z'] = knownbits.z_flag(knownbits.and_(self._d['a'].known_bits, knownbits.exact(v)))
+        self._d['z'] = valuesets.z_flag(valuesets.and_(self._d['a'].possible, v))
 
     def decrement(self, addr, reg):
         """DEX, DEY (or the 65C02's DEC A) at addr: the register is one less
-        (wrapping round from 0 to $ff), as far as what's known about it says
-        (e.g. bit 0 flips if it's known), with N and Z from it."""
+        than each value it could be (wrapping round from 0 to $ff), with N
+        and Z from it."""
         self.add_to_register(addr, reg, 0xff)
 
     def increment(self, addr, reg):
@@ -690,14 +641,7 @@ class CpuStateDisposition:
     def add_to_register(self, addr, reg, delta):
         """Add delta to the register (for increment() and decrement()),
         with N and Z from the result."""
-        r = self[reg]
-        result, _ = knownbits.add(r.known_bits, knownbits.exact(delta), False)
-        lo, hi = 0, 0xff
-        if delta == 1 and r.hi < 0xff:
-            lo, hi = r.lo + 1, r.hi + 1
-        elif delta == 0xff and r.lo > 0:
-            lo, hi = r.lo - 1, r.hi - 1
-        self.set_result(reg, result, lo, hi)
+        self.set_result(reg, valuesets.rotate(self[reg].possible, delta))
 
         # Now we have a new value for the register, the address where we previously
         # loaded the current value no longer valid
@@ -712,7 +656,7 @@ class CpuStateDisposition:
         # its operand's)
         addr = BinaryAddr(addr)
 
-        self.set_result(reg, knownbits.exact(v))
+        self.set_result(reg, valuesets.exact(v))
         self[reg].previous_load_imm = addr
         self[reg].previous_load     = addr
         self[reg].previous_adjust   = addr
@@ -723,7 +667,7 @@ class CpuStateDisposition:
         (as far as it's known), with N and Z from it, and the instruction at
         addr is where it was loaded."""
         addr = BinaryAddr(addr)
-        self.set_result(dest_reg, self[src_reg].known_bits, self[src_reg].lo, self[src_reg].hi)
+        self.set_result(dest_reg, self[src_reg].possible)
 
         # If we have a load address, keep it. This allows
         # the code (e.g. from basic4) to understand X and Y form an
@@ -747,10 +691,7 @@ class CpuStateDisposition:
           clear;
         - if Z is set, the registers whose result set it have the value
           that sets it (see z_from), and N is clear;
-        - if Z is clear, they aren't that value: so if only one of their
-          bits isn't known, and the others are the value's, that bit is the
-          opposite of the value's, and if the value is at one end of their
-          range, the range is one smaller;
+        - if Z is clear, they aren't that value;
         - the registers whose bit 7 N is (see n_from) have that bit known;
         - after a compare with an immediate n, if C is set the register is
           at least n, and if it's clear, less than n (see c_from).
@@ -770,7 +711,7 @@ class CpuStateDisposition:
             regs, value, z_addr = self.z_from
             for reg in regs:
                 if self[reg].value is None:
-                    self.set_inferred(reg, knownbits.exact(value))
+                    self.set_inferred(reg, valuesets.exact(value))
             if self['n'] is None:
                 self['n'] = False
         if flag == 'z' and flag_state == False and self.z_from is not None:
@@ -780,44 +721,39 @@ class CpuStateDisposition:
             # BCS addr : CMP #0 : BEQ addr')
             regs, value, z_addr = self.z_from
             for reg in regs:
-                r = self[reg]
-                known, bits = r.known_bits
-                unknown = ~known & 0xff
-                kb = r.known_bits
-                if unknown != 0 and (unknown & (unknown - 1)) == 0 and (value & known) == bits:
-                    kb = (0xff, bits | (~value & unknown))
-                lo = r.lo + 1 if value == r.lo else r.lo
-                hi = r.hi - 1 if value == r.hi else r.hi
-                self.set_inferred(reg, kb, lo, hi)
+                self.set_inferred(reg, valuesets.FULL & ~valuesets.exact(value))
         if flag == 'n' and self.n_from is not None and self['n'] in (True, False):
             # We have 'BPL addr' or 'BMI addr' after an instruction whose
             # result set N, so bit 7 of the result is known
             for reg in self.n_from:
-                if knownbits.bit(self[reg].known_bits, 7) is None:
-                    self.set_inferred(reg, knownbits.with_bit(self[reg].known_bits, 7, bool(self['n'])))
+                self.set_inferred(reg, valuesets.HIGH_HALF if self['n'] else valuesets.LOW_HALF)
         if flag == 'c' and self.c_from is not None and self['c'] in (True, False):
             # We have 'BCC addr' or 'BCS addr' after a compare with an
             # immediate n: the register is at least n if C is set, else less
             # than n
             reg, n = self.c_from
-            r = self[reg]
             if self['c']:
-                self.set_inferred(reg, r.known_bits, max(r.lo, n), r.hi)
+                self.set_inferred(reg, valuesets.from_range(n, 0xff))
             elif n > 0:
-                self.set_inferred(reg, r.known_bits, r.lo, min(r.hi, n - 1))
+                self.set_inferred(reg, valuesets.from_range(0, n - 1))
         if flag == 'c' and flag_state == False and self['z'] == 'pending':
             # We have 'BCS addr' with z == 'pending' from a previous compare instruction
             self['z'] = False
 
-    def set_inferred(self, reg, kb, lo=0, hi=0xff):
-        """The register is known to be more than it was (kb, as known bits,
-        and from lo to hi, as well as what was known), from a branch that
-        wasn't taken. If that makes its value known, no instruction set it
-        to that value: it's only that value after the branch, so comments
-        on its use (e.g. a VDU command) go where it's used."""
+    def set_inferred(self, reg, possible):
+        """The register can only have the values in 'possible' (a set: see
+        valuesets.py), as well as what was known, from a branch that wasn't
+        taken. (If that rules out every value it could have, the code can't
+        be reached that way, and what was known is kept.) If that makes its
+        value known, no instruction set it to that value: it's only that
+        value after the branch, so comments on its use (e.g. a VDU command)
+        go where it's used."""
         r = self[reg]
         was_known = r.value is not None
-        r.set_range(kb, max(lo, r.lo), min(hi, r.hi))
+        narrowed = r.possible & possible
+        if narrowed == 0:
+            return
+        r.possible = narrowed
         if r.value is not None and not was_known:
             r.previous_load_imm = None
             r.previous_load = None
@@ -833,7 +769,7 @@ class CpuStateDisposition:
             v = self._d[r].value
             if v is None:
                 # (Each hex digit that's known, e.g. '0-' after 'and #$0f')
-                text = knownbits.show(self._d[r].known_bits)
+                text = valuesets.show(self._d[r].possible)
                 return text if config.get_lower_case() else text.upper()
             return utils.plainhex2(v)
         s += "A:%s X:%s Y:%s" % (reg('a'), reg('x'), reg('y'))
@@ -2757,7 +2693,7 @@ class Cpu6502(cpu.Cpu):
             if carry is not None:
                 parts.append("rotate in a {0} bit".format("set" if carry else "clear"))
         if c.addr_mode in (self.mode_accumulator, self.mode_implied):
-            out = knownbits.bit(before['a'].known_bits, 7 if mnemonic in ("asl", "rol") else 0)
+            out = valuesets.bit(before['a'].possible, 7 if mnemonic in ("asl", "rol") else 0)
             if out is not None and self._carry_used_after(binary_addr, c):
                 parts.append("{0} {1} bit out ({2} carry)".format("rotate" if mnemonic in ("rol", "ror") else "shift",
                                                                  "set" if out else "clear", "sets" if out else "clears"))
@@ -3498,9 +3434,10 @@ class Cpu6502(cpu.Cpu):
     # ********************************************************************************************
     # What's known at labels: joining the states of the ways in
 
-    # How many times a label's state can change before the ranges that are
-    # still growing are widened to the end (so loops are worked out quickly:
-    # a loop counter's range is exact if the loop runs fewer times than this)
+    # How many times a label's state can change before the registers' sets of
+    # values that are still growing are widened (see
+    # CpuStateDisposition.widen(), so loops are worked out quickly: a loop
+    # counter's values are exact if the loop runs fewer times than this)
     JOIN_WIDEN_AFTER = 32
 
     # The instructions that write to an address they're given (zero page or
@@ -3905,7 +3842,7 @@ class Cpu6502(cpu.Cpu):
         Opcode.update_cpu_state().
 
         The states are worked out until they don't change (loops go round
-        until the states at their labels settle), with growing ranges
+        until the states at their labels settle), with growing sets of values
         widened after JOIN_WIDEN_AFTER changes. The optimistic state isn't
         changed."""
         labels = session.current().labels.labels
@@ -4252,7 +4189,7 @@ class Cpu6502(cpu.Cpu):
         """The values the index register 'reg' could have at run[j], if
         anything is known about it, otherwise None."""
         r = self.known_before(run, j)[reg]
-        if r.lo == 0 and r.hi == 0xff and r.known == 0:
+        if r.possible == valuesets.FULL:
             return None
         values = r.possible_values()
         return values if values else None

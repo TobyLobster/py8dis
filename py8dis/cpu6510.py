@@ -28,7 +28,7 @@ instruction in a comment.
 from cpu6502 import *
 import expression
 import output
-import knownbits
+import valuesets
 
 
 class Cpu6510(Cpu6502):
@@ -228,11 +228,11 @@ class Cpu6510(Cpu6502):
 
     def update_ALR(self, binary_addr, state):
         """ALR #imm: A = (A AND imm) LSR 1, as far as what's known about A
-        says (see knownbits.py)"""
+        says (see valuesets.py)"""
         memory_binary = session.current().memory.binary
-        imm = knownbits.exact(memory_binary[binary_addr + 1])
+        imm = memory_binary[binary_addr + 1]
         for s in (state.optimistic, state.pessimistic):
-            result, carry = knownbits.lsr(knownbits.and_(s['a'].known_bits, imm))
+            result, carry = valuesets.lsr(valuesets.and_(s['a'].possible, imm))
             s.set_result('a', result)
             s['c'] = carry
 

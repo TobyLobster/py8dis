@@ -2969,16 +2969,16 @@ loop_cff41:
     dex                                                               ; ff47: ca          .
     bpl loop_cff41                                                    ; ff48: 10 f7       ..
     txs                                                               ; ff4a: 9a          .
-    txa                                                               ; ff4b: 8a          .
-    inx                                                               ; ff4c: e8          .
+    txa                                                               ; ff4b: 8a          .   ; A=$ff
+    inx                                                               ; ff4c: e8          .   ; X=0
     stx nomon_flag                                                    ; ff4d: 86 ea       ..
     stx cursor_mask                                                   ; ff4f: 86 e1       ..
     stx lock_flag                                                     ; ff51: 86 e7       ..
     ldx #$33 ; '3'                                                    ; ff53: a2 33       .3
-    ; Set 52 bytes of memory from l02eb onwards
+    ; Set 52 bytes of memory from l02eb onwards to 255
 ; $ff55 referenced 1 time by $ff59
 loop_cff55:
-    sta l02eb,x                                                       ; ff55: 9d eb 02    ...
+    sta l02eb,x                                                       ; ff55: 9d eb 02    ... ; A=$ff
     dex                                                               ; ff58: ca          .
     bpl loop_cff55                                                    ; ff59: 10 fa       ..
     lda #$0a                                                          ; ff5b: a9 0a       ..

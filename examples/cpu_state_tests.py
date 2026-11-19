@@ -1,32 +1,37 @@
 #!/usr/bin/env python3
 """
-Known bits tests
+CPU state tests
 
-Tests for what py8dis knows about the 6502's registers bit by bit (see
-py8dis/knownbits.py and the CPU state in py8dis/cpu6502.py), run by
-run_tests.py -c when all the tests are run.
+Tests for what py8dis knows about the 6502's registers and flags (the sets
+of values in py8dis/valuesets.py and the CPU state in py8dis/cpu6502.py),
+run by run_tests.py -c when all the tests are run.
 
-1. The functions in knownbits.py: for random inputs with some bits known,
-   every bit a function says is known must be right for every value the
-   inputs could be (all of them, or a random 300 if there are more), and
-   for inputs that are wholly known, the result must be wholly known. Some
-   results that py8dis's comments rely on must be known, e.g. that A - $10
-   always borrows after 'and #$0f'.
+1. The functions in valuesets.py: for random sets (nothing known, one
+   value, a range, values with some bits known, a few values, or any
+   values), each operand and each carry (and an unknown one), the result of
+   each function must be exactly what working it out value by value gives:
+   the set of results, and each flag known if and only if every value
+   agrees on it.
 
-2. The CPU state (each register's known bits and its range, and the
-   flags): for each instruction whose update works on known bits
-   (AND, ORA, EOR, ADC, SBC, CMP, CPX and CPY with an immediate operand;
-   ASL, LSR, ROL and ROR of A and of memory; INX, DEX, INY, DEY; the
-   transfers and immediate loads; the 65C02's INC A, DEC A and BIT #imm;
-   the 6510's ANC and ALR), from a random state with some bits and flags
-   known, each register bit and flag py8dis says it knows afterwards must
-   be what a simple 6502 (below) gives, for every state that agrees with
-   what was known before (a random 64 of them). The same is done for each
-   of those instructions followed by a conditional branch that isn't taken,
-   where the branch says something about the result (e.g. A is 1 after
-   'and #1 : beq skip'), sometimes with another instruction between them
-   (e.g. 'cmp #5 : lda #9 : bcs', where what CMP said about A no longer
-   holds).
+2. The CPU state: for each instruction whose update works on what's known
+   about the registers (AND, ORA, EOR, ADC, SBC, CMP, CPX and CPY with an
+   immediate operand; ASL, LSR, ROL and ROR of A and of memory; INX, DEX,
+   INY, DEY; the transfers and immediate loads; the 65C02's INC A, DEC A
+   and BIT #imm; the 6510's ANC and ALR), from a random state (a random set
+   for each register, and some flags known), what py8dis says afterwards
+   must be what a simple 6502 (below) gives, for every state that agrees
+   with what was known before (a random 64 of them): each register must be
+   one of the values it says, and each flag it says it knows must be right.
+   Where there are few enough states to try them all, what it says must be
+   exact too: each register's set is just the values the instruction gives,
+   and a flag is known if and only if they all agree on it. The same is
+   done (without the exactness) for each of those instructions followed by
+   a conditional branch that isn't taken, where the branch says something
+   about the result (e.g. A is 1 after 'and #1 : beq skip'), sometimes with
+   another instruction between them (e.g. 'cmp #5 : lda #9 : bcs', where
+   what CMP said about A no longer holds). And some programs check what's
+   known where py8dis's comments rely on it (e.g. X is 0 to 16 at the start
+   of a 'dex : bpl' loop that starts with 'ldx #16', and $ff after it).
 
 3. Joining at labels (see Cpu6502.join_states_at_labels()): random
    programs of the instructions above, with loads, stores, conditional
@@ -41,18 +46,19 @@ run_tests.py -c when all the tests are run.
    other (tail calls), push and pull A and the flags (sometimes unevenly,
    so that an RTS goes somewhere else), save registers and flags on the
    stack and get them back (perhaps through A), and write to the stack
-   (TSX : STA $01xx,X, which can change what was saved), are traced and run on the simple 6502 with a
-   real stack. What py8dis says it knows is checked as in 3, and what it
-   says it knows after a JSR is checked when the call returns. A run stops
-   at an RTS that doesn't return to a call (it's a jump to an address that
-   was pushed, which py8dis can't follow).
+   (TSX : STA $01xx,X, which can change what was saved), are traced and run
+   on the simple 6502 with a real stack. What py8dis says it knows is
+   checked as in 3, and what it says it knows after a JSR is checked when
+   the call returns. A run stops at an RTS that doesn't return to a call
+   (it's a jump to an address that was pushed, which py8dis can't follow).
 
 The tests are randomised with a fixed seed, so they're the same each run.
 
-Usage: ./known_bits_tests.py   (exits with 1 if any fail)
+Usage: ./cpu_state_tests.py   (exits with 1 if any fail)
 """
 
 import collections
+import functools
 import random
 import sys
 from pathlib import Path
@@ -61,7 +67,7 @@ EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
 sys.path.insert(0, str(PY8DIS_DIR))
 
-import knownbits
+import valuesets
 
 failures = []
 
@@ -71,126 +77,104 @@ def fail(message):
         print("FAIL: " + message)
 
 
-# 1. knownbits.py
+# 1. valuesets.py
 
-def random_known_bits(rng):
-    """A random (known, bits) pair: sometimes nothing or everything known."""
+def random_set(rng):
+    """A random set of values: nothing known, one value, a range, the values
+    that agree with some known bits, a few values, or any values."""
     choice = rng.random()
     if choice < 0.1:
-        return knownbits.UNKNOWN
+        return valuesets.FULL
     if choice < 0.3:
-        return knownbits.exact(rng.randrange(256))
-    known = rng.randrange(256)
-    return (known, rng.randrange(256) & known)
-
-def values(kb, rng, limit=300):
-    """The values kb could be: all of them, or a random 'limit' of them."""
-    known, bits = kb
-    unknown = [n for n in range(8) if not (known >> n) & 1]
-    if 2 ** len(unknown) <= limit:
-        result = []
-        for i in range(2 ** len(unknown)):
-            v = bits
-            for j, n in enumerate(unknown):
-                if (i >> j) & 1:
-                    v |= 1 << n
-            result.append(v)
-        return result
-    return [bits | (rng.randrange(256) & ~known & 0xff) for _ in range(limit)]
+        return valuesets.exact(rng.randrange(256))
+    if choice < 0.5:
+        lo = rng.randrange(256)
+        return valuesets.from_range(lo, rng.randrange(lo, 256))
+    if choice < 0.7:
+        known = rng.randrange(256)
+        return valuesets.from_known_bits(known, rng.randrange(256) & known)
+    if choice < 0.9:
+        s = 0
+        for _ in range(rng.randint(1, 5)):
+            s |= valuesets.exact(rng.randrange(256))
+        return s
+    return rng.getrandbits(256) or 1
 
 def random_carry(rng):
     return rng.choice([None, True, False])
 
 def carries(c):
-    return [False, True] if c is None else [c]
+    return [0, 1] if c is None else [int(c)]
 
-def check_kb(name, kb, value, inputs):
-    """kb must agree with the actual value."""
-    known, bits = kb
-    if bits & ~known:
-        fail("%s: bits %02x outside known %02x for %s" % (name, bits, known, inputs))
-    elif (value & known) != bits:
-        fail("%s: says %s, but it's %02x, for %s" % (name, knownbits.show_bits(kb), value, inputs))
+def image(s, carry, f):
+    """The set of f(v, c) & $ff for each value v in s and carry c."""
+    result = 0
+    for v in valuesets.values(s):
+        for c in carries(carry):
+            result |= 1 << (f(v, c) & 0xff)
+    return result
+
+def agree(flags):
+    """The flag, if all of them are the same, otherwise None."""
+    flags = set(bool(f) for f in flags)
+    return flags.pop() if len(flags) == 1 else None
+
+def check_exact(name, got, want, inputs):
+    if got != want:
+        fail("%s: gave %s, but it's %s, for %s" % (name, valuesets.describe(got), valuesets.describe(want), inputs))
+
+def check_flag_exact(name, got, want, inputs):
+    if got != want:
+        fail("%s: gave %s, but it's %s, for %s" % (name, got, want, inputs))
 
 def check_flag(name, claimed, actual, inputs):
     if claimed is not None and bool(claimed) != bool(actual):
         fail("%s: says %s, but it's %s, for %s" % (name, claimed, actual, inputs))
 
-def test_knownbits(rng):
+def test_valuesets(rng):
     for _ in range(3000):
-        a = random_known_bits(rng)
-        b = random_known_bits(rng)
-        c = random_carry(rng)
-        n = rng.randrange(8)
-        inputs = (knownbits.show_bits(a), knownbits.show_bits(b), c)
-        and_r = knownbits.and_(a, b)
-        or_r = knownbits.or_(a, b)
-        eor_r = knownbits.eor(a, b)
-        add_r, add_c = knownbits.add(a, b, c)
-        sub_r, sub_c = knownbits.subtract(a, b, c)
-        asl_r, asl_c = knownbits.asl(a)
-        lsr_r, lsr_c = knownbits.lsr(a)
-        rol_r, rol_c = knownbits.rol(a, c)
-        ror_r, ror_c = knownbits.ror(a, c)
-        n_r = knownbits.n_flag(a)
-        z_r = knownbits.z_flag(a)
-        lo, hi = knownbits.bounds(a)
-        for av in values(a, rng, 40):
-            check_flag("n_flag", n_r, av & 0x80, inputs)
-            check_flag("z_flag", z_r, av == 0, inputs)
-            if not lo <= av <= hi:
-                fail("bounds: %02x outside %02x-%02x" % (av, lo, hi))
-            if not knownbits.could_be(a, av):
-                fail("could_be: %02x for %s" % (av, inputs))
-            for cv in carries(c):
-                check_kb("asl", asl_r, (av << 1) & 0xff, inputs)
-                check_flag("asl carry", asl_c, av & 0x80, inputs)
-                check_kb("lsr", lsr_r, av >> 1, inputs)
-                check_flag("lsr carry", lsr_c, av & 1, inputs)
-                check_kb("rol", rol_r, ((av << 1) | cv) & 0xff, inputs)
-                check_flag("rol carry", rol_c, av & 0x80, inputs)
-                check_kb("ror", ror_r, (av >> 1) | (0x80 if cv else 0), inputs)
-                check_flag("ror carry", ror_c, av & 1, inputs)
-                check_kb("with_bit", knownbits.with_bit(a, n, cv), (av & ~(1 << n)) | ((1 << n) if cv else 0), inputs)
-                for bv in values(b, rng, 8):
-                    check_kb("and", and_r, av & bv, inputs)
-                    check_kb("or", or_r, av | bv, inputs)
-                    check_kb("eor", eor_r, av ^ bv, inputs)
-                    total = av + bv + cv
-                    check_kb("add", add_r, total & 0xff, inputs)
-                    check_flag("add carry", add_c, total > 0xff, inputs)
-                    total = av + (~bv & 0xff) + cv
-                    check_kb("subtract", sub_r, total & 0xff, inputs)
-                    check_flag("subtract carry", sub_c, total > 0xff, inputs)
-        # Wholly known inputs give wholly known results
-        if knownbits.is_exact(a) and knownbits.is_exact(b) and c is not None:
-            for name, r, carry in (("add", add_r, add_c), ("subtract", sub_r, sub_c)):
-                if not knownbits.is_exact(r) or carry is None:
-                    fail("%s: not exact for exact inputs %s" % (name, inputs))
-            for name, r in (("and", and_r), ("or", or_r), ("eor", eor_r), ("asl", asl_r), ("lsr", lsr_r), ("rol", rol_r), ("ror", ror_r)):
-                if not knownbits.is_exact(r):
-                    fail("%s: not exact for exact inputs %s" % (name, inputs))
-
-
-def test_precision():
-    """Some results that must be known (not just right): those that
-    py8dis's comments rely on."""
-    low_nibble = (0xf0, 0x00)                       # After 'and #$0f'
-    cases = [
-        # (A at most $0f) - $10: always borrows, and isn't 0
-        ("subtract", knownbits.subtract(low_nibble, knownbits.exact(0x10), True), ((0x00, 0x00), False), True),
-        # (A at most $0f) + $f0 with carry clear: never carries, top nibble $f
-        ("add", knownbits.add(low_nibble, knownbits.exact(0xf0), False), ((0xf0, 0xf0), False), False),
-        # (A even) + 1: bit 0 set, the rest as they were, no carry
-        ("add", knownbits.add((0x01, 0x00), knownbits.exact(1), False), ((0x01, 0x01), False), False),
-        # (A at least $80) + $80: always carries
-        ("add", knownbits.add((0x80, 0x80), knownbits.exact(0x80), False), ((0x80, 0x00), True), False),
-    ]
-    for name, (result, carry), ((want_known, want_bits), want_carry), want_nonzero in cases:
-        if (result[0] & want_known) != want_known or (result[1] & want_known) != want_bits or carry != want_carry:
-            fail("precision: %s gave %s, carry %s" % (name, knownbits.show_bits(result), carry))
-        if want_nonzero and knownbits.z_flag(result) is not False:
-            fail("precision: %s gave %s, which could be 0" % (name, knownbits.show_bits(result)))
+        s = random_set(rng)
+        n = rng.randrange(256)
+        carry = random_carry(rng)
+        vs = valuesets.values(s)
+        inputs = "%s, #$%02x, carry %s" % (valuesets.describe(s), n, carry)
+        cs = carries(carry)
+        if not vs:
+            fail("random_set gave an empty set")
+            continue
+        if valuesets.bounds(s) != (min(vs), max(vs)):
+            fail("bounds: wrong for " + inputs)
+        known = ~functools.reduce(lambda a, b: a | (b ^ vs[0]), vs, 0) & 0xff
+        if valuesets.known_bits(s) != (known, vs[0] & known):
+            fail("known_bits: wrong for " + inputs)
+        if valuesets.from_known_bits(*valuesets.known_bits(s)) & s != s:
+            fail("from_known_bits: doesn't include the set for " + inputs)
+        if valuesets.value(s) != (vs[0] if len(vs) == 1 else None) or valuesets.count(s) != len(vs):
+            fail("value or count: wrong for " + inputs)
+        check_flag_exact("n_flag", valuesets.n_flag(s), agree(v >= 0x80 for v in vs), inputs)
+        check_flag_exact("z_flag", valuesets.z_flag(s), agree(v == 0 for v in vs), inputs)
+        for k in range(8):
+            check_flag_exact("bit %d" % k, valuesets.bit(s, k), agree((v >> k) & 1 for v in vs), inputs)
+        check_exact("and_", valuesets.and_(s, n), image(s, 0, lambda v, c: v & n), inputs)
+        check_exact("or_", valuesets.or_(s, n), image(s, 0, lambda v, c: v | n), inputs)
+        check_exact("eor", valuesets.eor(s, n), image(s, 0, lambda v, c: v ^ n), inputs)
+        check_exact("rotate", valuesets.rotate(s, n), image(s, 0, lambda v, c: v + n), inputs)
+        for name, (result, carry_out), want, want_carry in (
+                ("asl", valuesets.asl(s), image(s, 0, lambda v, c: v << 1), agree(v >> 7 for v in vs)),
+                ("lsr", valuesets.lsr(s), image(s, 0, lambda v, c: v >> 1), agree(v & 1 for v in vs)),
+                ("rol", valuesets.rol(s, carry), image(s, carry, lambda v, c: (v << 1) | c), agree(v >> 7 for v in vs)),
+                ("ror", valuesets.ror(s, carry), image(s, carry, lambda v, c: (v >> 1) | (c << 7)), agree(v & 1 for v in vs)),
+                ("add", valuesets.add(s, n, carry), image(s, carry, lambda v, c: v + n + c), agree(v + n + c > 0xff for v in vs for c in cs)),
+                ("subtract", valuesets.subtract(s, n, carry), image(s, carry, lambda v, c: v - n - (1 - c)), agree(v - n - (1 - c) >= 0 for v in vs for c in cs))):
+            check_exact(name, result, want, inputs)
+            check_flag_exact(name + " carry", carry_out, want_carry, inputs)
+        for subtracting in (False, True):
+            m = (~n & 0xff) if subtracting else n
+            want = agree((v ^ ((v + m + c) & 0xff)) & (m ^ ((v + m + c) & 0xff)) & 0x80 for v in vs for c in cs)
+            check_flag_exact("overflow" + (" (subtracting)" if subtracting else ""), valuesets.overflow(s, n, carry, subtracting), want, inputs)
+        flags = valuesets.compare(s, n)
+        want = (agree(((v - n) & 0xff) >= 0x80 for v in vs), agree(v == n for v in vs), agree(v >= n for v in vs))
+        check_flag_exact("compare (N, Z, C)", flags, want, inputs)
 
 
 # 2. The CPU state
@@ -286,19 +270,9 @@ def make_cpu(name):
     import cpu6510
     return {"6502": cpu6502.Cpu6502, "65C02": cpu65C02.Cpu65C02, "6510": cpu6510.Cpu6510}[name]()
 
-def random_range(rng, kb):
-    """A random range for a register with known bits kb: often what the
-    bits allow, otherwise narrower."""
-    lo, hi = knownbits.bounds(kb)
-    if rng.random() < 0.5:
-        return lo, hi
-    a = rng.randint(lo, hi)
-    b = rng.randint(lo, hi)
-    return min(a, b), max(a, b)
-
-def set_disposition(disposition, regs, flags, ranges):
+def set_disposition(disposition, regs, flags):
     for reg in "axy":
-        disposition[reg].set_range(regs[reg], *ranges[reg])
+        disposition[reg].possible = regs[reg]
     for flag in "nvdizc":
         disposition[flag] = flags[flag]
 
@@ -306,26 +280,36 @@ def check_disposition(name, disposition, s, inputs):
     """What the disposition says it knows must be what s (the 6502's
     state) is."""
     for reg in "axy":
-        check_kb(name + " " + reg.upper(), disposition[reg].known_bits, s[reg], inputs)
         r = disposition[reg]
-        if not r.lo <= s[reg] <= r.hi:
-            fail("%s %s: says %d-%d, but it's %d, for %s" % (name, reg.upper(), r.lo, r.hi, s[reg], inputs))
+        if not (r.possible >> s[reg]) & 1:
+            fail("%s %s: says %s, but it's %d, for %s" % (name, reg.upper(), valuesets.describe(r.possible), s[reg], inputs))
     for flag in "nvdizc":
         value = disposition[flag]
         if value == 'pending':
             continue
         check_flag(name + " flag " + flag, value, s[flag], inputs)
 
-def concrete_states(regs, flags, ranges, rng, count=64):
-    """Random 6502 states that agree with what's known (the known bits and
-    the ranges of the registers, and the flags)."""
-    choices = {}
+def check_disposition_exact(name, disposition, states, inputs):
+    """What the disposition says must be exactly what the 6502's states
+    (all those that agree with what was known before, after the
+    instruction) are: each register's set of values, and each flag, known
+    if they all agree on it."""
     for reg in "axy":
-        known, bits = regs[reg]
-        lo, hi = ranges[reg]
-        choices[reg] = [v for v in range(lo, hi + 1) if (v & known) == bits]
-        if not choices[reg]:
-            return []
+        want = functools.reduce(lambda a, b: a | b, (1 << s[reg] for s in states))
+        check_exact(name + " " + reg.upper(), disposition[reg].possible, want, inputs)
+    for flag in "nvdizc":
+        value = disposition[flag]
+        claimed = None if value is None or value == 'pending' else bool(value)
+        check_flag_exact(name + " flag " + flag, claimed, agree(s[flag] for s in states), inputs)
+
+def show_inputs(regs, flags):
+    return "A:%s X:%s Y:%s %s" % (valuesets.describe(regs['a']), valuesets.describe(regs['x']), valuesets.describe(regs['y']),
+                                 "".join("-" if flags[f] is None else (f.upper() if flags[f] else f) for f in "nvdizc"))
+
+def concrete_states(regs, flags, rng, count=64):
+    """Random 6502 states that agree with what's known (the registers' sets
+    of values, and the flags)."""
+    choices = {reg: valuesets.values(regs[reg]) for reg in "axy"}
     result = []
     for _ in range(count):
         s = {}
@@ -336,6 +320,26 @@ def concrete_states(regs, flags, ranges, rng, count=64):
             s[flag] = rng.choice([False, True]) if flags[flag] is None else flags[flag]
         result.append(s)
     return result
+
+def all_states(regs, flags, limit=2048):
+    """All the 6502 states that agree with what's known (with memory 0), or
+    None if there are more than 'limit'."""
+    states = [{'m': 0}]
+    for reg in "axy":
+        vs = valuesets.values(regs[reg])
+        if len(states) * len(vs) > limit:
+            return None
+        states = [dict(s, **{reg: v}) for s in states for v in vs]
+    for flag in "nvdizc":
+        options = [False, True] if flags[flag] is None else [flags[flag]]
+        if len(states) * len(options) > limit:
+            return None
+        states = [dict(s, **{flag: o}) for s in states for o in options]
+    return states
+
+# The instructions that work on memory (whose value py8dis doesn't know),
+# so what it says about them can't be exact
+MEMORY_INSTRUCTIONS = (0x06, 0x26, 0x46, 0x66)
 
 def test_cpu_state(rng):
     import memorymanager
@@ -354,6 +358,9 @@ def test_cpu_state(rng):
         cpu = s.cpu
         for trial in range(400):
             with_branch = trial % 2 == 1
+            # (Every fourth trial has few enough states to try them all, so
+            # what py8dis says can be checked for exactness)
+            few = trial % 4 == 0
             branch = rng.choice(BRANCHES) if with_branch else None
             operand = rng.randrange(256)
             # Sometimes another instruction between this one and the branch
@@ -364,30 +371,42 @@ def test_cpu_state(rng):
                 middle = (rng.choice([op for op, name in INSTRUCTIONS if name == "6502" and op not in DECIMAL_SENSITIVE]), rng.randrange(256))
             # (The branch goes to $2010, so it isn't to the next instruction)
             s.memory.binary[0x2000:0x2006] = [opcode, operand] + (list(middle) if middle else [0xea, 0xea]) + ([branch[0], 0x0a] if with_branch else [0xea, 0xea])
-            regs = {reg: random_known_bits(rng) for reg in "axy"}
-            ranges = {reg: random_range(rng, regs[reg]) for reg in "axy"}
+            regs = {reg: random_set(rng) for reg in "axy"}
             flags = {flag: random_flag(rng) for flag in "nvdizc"}
+            if few:
+                # (One register with a random set, and the others one value
+                # each; most flags known)
+                varied = rng.choice("axy")
+                for reg in "axy":
+                    if reg != varied:
+                        regs[reg] = valuesets.exact(rng.randrange(256))
+                for flag in "nvdizc":
+                    if rng.random() < 0.7:
+                        flags[flag] = rng.choice([False, True])
             if with_branch and opcode in DECIMAL_SENSITIVE:
                 flags['d'] = False
             state = cpu.CpuState()
-            set_disposition(state.pessimistic, regs, flags, ranges)
-            set_disposition(state.optimistic, regs, flags, ranges)
+            set_disposition(state.pessimistic, regs, flags)
+            set_disposition(state.optimistic, regs, flags)
             cpu.opcodes[opcode].update_cpu_state(memorymanager.BinaryAddr(0x2000), state)
             after_instruction = state.copy()
             if middle:
                 cpu.opcodes[middle[0]].update_cpu_state(memorymanager.BinaryAddr(0x2002), state)
             if with_branch:
                 cpu.opcodes[branch[0]].update_cpu_state(memorymanager.BinaryAddr(0x2004), state)
-            inputs = "opcode %02x #%02x%s%s from A:%s %s X:%s %s Y:%s %s %s" % (
+            inputs = "opcode %02x #%02x%s%s from %s" % (
                 opcode, operand, (" then %02x #%02x" % middle) if middle else "", (" then branch %02x" % branch[0]) if with_branch else "",
-                knownbits.show_bits(regs['a']), ranges['a'], knownbits.show_bits(regs['x']), ranges['x'],
-                knownbits.show_bits(regs['y']), ranges['y'],
-                "".join("-" if flags[f] is None else (f.upper() if flags[f] else f) for f in "nvdizc"))
-            for concrete in concrete_states(regs, flags, ranges, rng):
+                show_inputs(regs, flags))
+            if few and opcode not in MEMORY_INSTRUCTIONS:
+                states = all_states(regs, flags)
+                if states is not None and all(step(opcode, operand, st) for st in states):
+                    check_disposition_exact("exact", after_instruction.pessimistic, states, inputs)
+                    count += 1
+            for concrete in concrete_states(regs, flags, rng):
                 if not step(opcode, operand, concrete):
                     # (Decimal ADC or SBC: py8dis mustn't claim anything about the result)
                     d = after_instruction.pessimistic
-                    if d['a'].known != 0 or any(d[f] not in (None, 'pending') for f in "nvzc"):
+                    if d['a'].possible != valuesets.FULL or any(d[f] not in (None, 'pending') for f in "nvzc"):
                         fail("decimal: claims something for " + inputs)
                     continue
                 count += 1
@@ -400,6 +419,60 @@ def test_cpu_state(rng):
                     check_disposition("after the branch", state.pessimistic, concrete, inputs)
                 if with_branch and state.always_branch and concrete[branch[1]] == branch[2]:
                     fail("ALWAYS branch, but it isn't taken, for " + inputs)
+    return count
+
+
+# Programs for test_examples(), each (description, bytes at $2000, and
+# (address, register, the set of values it's known to have after the
+# instruction there))
+EXAMPLES = [
+    # ldx #16 : loop: dex : bpl loop : txa : rts. At the loop X is 0 to 16,
+    # so after DEX it's $ff or 0 to 15 (the range wraps round), and after
+    # the loop (BPL not taken) it's $ff
+    ("dex : bpl loop", "a210ca10fd8a60",
+     [(0x2002, "x", valuesets.from_range(0, 15) | valuesets.exact(0xff)), (0x2005, "a", valuesets.exact(0xff))]),
+    # lda $70 : cmp #$cf : bcc skip : asl : tax : skip: rts. A is $cf to $ff
+    # after BCC, so the even values $9e to $fe after ASL (49 of them)
+    ("asl after cmp #$cf : bcc", "a570c9cf90020aaa60",
+     [(0x2007, "x", valuesets.from_range(0x9e, 0xfe) & ~valuesets.from_known_bits(1, 1))]),
+    # lda $70 : bmi neg : lda #0 : beq done : neg: lda #$80 : done: tax :
+    # rts. A is 0 or $80 at 'done'
+    ("joining 0 and $80", "a5703004a900f002a980aa60",
+     [(0x200a, "x", valuesets.exact(0) | valuesets.exact(0x80))]),
+]
+
+def traced(program_bytes):
+    """The CPU of a session with the program (bytes at $2000) traced from
+    $2000."""
+    import commands
+    import os
+    import session
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+        f.write(bytes(program_bytes))
+        filename = f.name
+    try:
+        session.new_session(assembler="acme")
+        commands.load(0x2000, filename, "6502")
+        commands.entry(0x2000)
+        cpu = session.current().cpu
+        cpu.trace()
+    finally:
+        os.unlink(filename)
+    return cpu
+
+def test_examples():
+    """What py8dis knows after some instructions that its comments rely on
+    (see EXAMPLES), exactly."""
+    count = 0
+    for description, program, checks in EXAMPLES:
+        cpu = traced(bytes.fromhex(program))
+        for addr, reg, want in checks:
+            state = cpu.cpu_states[addr]
+            got = None if state is None else state.pessimistic[reg].possible
+            if got != want:
+                fail("%s: %s at $%04x is %s, not %s" % (description, reg.upper(), addr, "nothing" if got is None else valuesets.describe(got), valuesets.describe(want)))
+            count += 1
     return count
 
 
@@ -763,16 +836,15 @@ def test_sequences(rng):
                 for trial in range(6):
                     operands = (rng.randrange(256), rng.randrange(256))
                     s.memory.binary[0x2000:0x2006] = [first, operands[0], middle, operands[1], branch[0], 0x0a]
-                    regs = {reg: random_known_bits(rng) for reg in "axy"}
-                    ranges = {reg: random_range(rng, regs[reg]) for reg in "axy"}
+                    regs = {reg: random_set(rng) for reg in "axy"}
                     flags = {flag: random_flag(rng) for flag in "nvdizc"}
                     state = cpu.CpuState()
-                    set_disposition(state.pessimistic, regs, flags, ranges)
-                    set_disposition(state.optimistic, regs, flags, ranges)
+                    set_disposition(state.pessimistic, regs, flags)
+                    set_disposition(state.optimistic, regs, flags)
                     for addr in (0x2000, 0x2002, 0x2004):
                         cpu.opcodes[s.memory.binary[addr]].update_cpu_state(memorymanager.BinaryAddr(addr), state)
                     inputs = "%02x #%02x then %02x #%02x then branch %02x" % (first, operands[0], middle, operands[1], branch[0])
-                    for concrete in concrete_states(regs, flags, ranges, rng, 16):
+                    for concrete in concrete_states(regs, flags, rng, 16):
                         step(first, operands[0], concrete)
                         step(middle, operands[1], concrete)
                         if concrete[branch[1]] == branch[2]:
@@ -869,16 +941,16 @@ def test_subroutines(rng, programs=200):
 
 def main():
     rng = random.Random(6502)
-    test_knownbits(rng)
-    test_precision()
+    test_valuesets(rng)
     count = test_cpu_state(rng)
+    count += test_examples()
     count += test_joining(rng)
     count += test_sequences(rng)
     count += test_subroutines(rng)
     if failures:
         print("%d failed" % len(failures))
         sys.exit(1)
-    print("Known bits tests: all passed (%d CPU states checked)" % count)
+    print("CPU state tests: all passed (%d CPU states checked)" % count)
 
 if __name__ == "__main__":
     main()

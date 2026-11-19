@@ -3755,7 +3755,7 @@ loop_c92ef
     sta (l00b2),y                                                     ; 32f1: 91 b2       ..  :92f1[1]
     dey                                                               ; 32f3: 88          .   :92f3[1]
     bpl loop_c92ef                                                    ; 32f4: 10 f9       ..  :92f4[1]
-    iny                                                               ; 32f6: c8          .   :92f6[1]
+    iny                                                               ; 32f6: c8          .   :92f6[1]   ; Y=0
     sty l00b6                                                         ; 32f7: 84 b6       ..  :92f7[1]
     lda l00c3                                                         ; 32f9: a5 c3       ..  :92f9[1]
     pha                                                               ; 32fb: 48          H   :92fb[1]

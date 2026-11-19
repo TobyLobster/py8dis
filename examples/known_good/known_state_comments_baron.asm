@@ -93,15 +93,15 @@ section pydis, org = &2000, filename = "known_state_comments_baron"
     lda l0080                                                         ; 204e: a5 80       ..  A:-- X:01 Y:-- --d---
     and #&0f                                                          ; 2050: 29 0f       ).  A:0- X:01 Y:-- n-d---
     clc                                                               ; 2052: 18          .   A:0- X:01 Y:-- n-d--c
-    adc #&f0                                                          ; 2053: 69 f0       i.  A:f- X:01 Y:-- N-d-zc
+    adc #&f0                                                          ; 2053: 69 f0       i.  A:f- X:01 Y:-- Nvd-zc
     bcc c2057                                                         ; 2055: 90 00       ..  A:-- X:-- Y:-- ------ ; ALWAYS branch
 
 ; &2057 referenced 1 time by &2055
 .c2057
-    lda l0081                                                         ; 2057: a5 81       ..  A:-- X:01 Y:-- --d--c
-    cmp #7                                                            ; 2059: c9 07       ..  A:-- X:01 Y:-- --d-??
-    ror a                                                             ; 205b: 6a          j   A:-- X:01 Y:-- --d---
-    tax                                                               ; 205c: aa          .   A:-- X:-- Y:-- --d---
+    lda l0081                                                         ; 2057: a5 81       ..  A:-- X:01 Y:-- -vd--c
+    cmp #7                                                            ; 2059: c9 07       ..  A:-- X:01 Y:-- -vd-??
+    ror a                                                             ; 205b: 6a          j   A:-- X:01 Y:-- -vd---
+    tax                                                               ; 205c: aa          .   A:-- X:-- Y:-- -vd---
     rts                                                               ; 205d: 60          `   A:-- X:-- Y:-- ------
 
 ; &205e referenced 4 times by &2004, &2014, &2031, &2036

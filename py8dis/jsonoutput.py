@@ -34,7 +34,7 @@ import cpu8080
 import cpuz80
 import disassembly
 import expression
-import knownbits
+import valuesets
 import mainformatter
 import memorymanager
 import movemanager
@@ -592,7 +592,7 @@ def _cpu_state(disposition):
     for reg in "axy":
         result[reg] = disposition[reg].value
         if disposition[reg].value is None and disposition[reg].known != 0:
-            result[reg + "_bits"] = knownbits.show_bits(disposition[reg].known_bits)
+            result[reg + "_bits"] = valuesets.show_bits(disposition[reg].possible)
     for flag in "nvdizc":
         # (Anything else, e.g. None, means the flag isn't known)
         value = disposition[flag]
