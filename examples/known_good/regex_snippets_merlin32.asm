@@ -23,7 +23,7 @@ start
 ; $200a referenced 1 time by $2007
 c200a
     lda l2010                                                         ; 200a: ad 10 20    ..  ; Snippet 2 matched
-    sta l0070,x                                                       ; 200d: 95 70       .p  ; Offset is X=5
+    sta l0070,x                                                       ; 200d: 95 70       .p  ; Offset X=5
     rts                                                               ; 200f: 60          `
 
 ; $2010 referenced 1 time by $200a

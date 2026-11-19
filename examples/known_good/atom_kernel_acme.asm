@@ -122,8 +122,10 @@ l7fe0   = $7fe0
 
 ; Screen memory ($8000-$97ff)
 l8000   = $8000
+l8001   = $8001
 l80e0   = $80e0
 l8100   = $8100
+l8101   = $8101
 
 ; Utility ROM ($a000-$afff)
 la000   = $a000
@@ -851,7 +853,7 @@ cf4e7
 cf4ec
     lda #2                                                            ; f4ec: a9 02       ..
     sta basic_error_number                                            ; f4ee: 85 00       ..
-    sec                                                               ; f4f0: 38          8
+    sec                                                               ; f4f0: 38          8   ; Redundant instruction?
     lda l0067                                                         ; f4f1: a5 67       .g
     sbc l0331                                                         ; f4f3: ed 31 03    .1.
     sta l0067                                                         ; f4f6: 85 67       .g
@@ -1159,10 +1161,11 @@ cf6ab
 ; $f6c2 referenced 1 time by $f682
 cf6c2
     lda #$40 ; '@'                                                    ; f6c2: a9 40       .@
+; Set Y bytes of memory from l8001 onwards, and Y bytes from l8101 onwards to 64
 ; $f6c4 referenced 1 time by $f6cb
 loop_cf6c4
-    sta l8000,y                                                       ; f6c4: 99 00 80    ... ; A=$40
-    sta l8100,y                                                       ; f6c7: 99 00 81    ... ; A=$40
+    sta l8001 - 1,y                                                   ; f6c4: 99 00 80    ... ; A=$40
+    sta l8101 - 1,y                                                   ; f6c7: 99 00 81    ...
     dey                                                               ; f6ca: 88          .
     bne loop_cf6c4                                                    ; f6cb: d0 f7       ..
 cf6cd
@@ -1241,20 +1244,20 @@ cf720
     dex                                                               ; f727: ca          .
     beq cf731                                                         ; f728: f0 07       ..
     eor #$ff                                                          ; f72a: 49 ff       I.
-    and (l005f),y                                                     ; f72c: 31 5f       1_  ; Offset is Y=0
-    sta (l005f),y                                                     ; f72e: 91 5f       ._  ; Offset is Y=0
+    and (l005f),y                                                     ; f72c: 31 5f       1_  ; Offset Y=0
+    sta (l005f),y                                                     ; f72e: 91 5f       ._
     rts                                                               ; f730: 60          `
 
 ; $f731 referenced 1 time by $f728
 cf731
-    eor (l005f),y                                                     ; f731: 51 5f       Q_  ; Offset is Y=0
-    sta (l005f),y                                                     ; f733: 91 5f       ._  ; Offset is Y=0
+    eor (l005f),y                                                     ; f731: 51 5f       Q_  ; Offset Y=0
+    sta (l005f),y                                                     ; f733: 91 5f       ._
     rts                                                               ; f735: 60          `
 
 ; $f736 referenced 1 time by $f725
 cf736
-    ora (l005f),y                                                     ; f736: 11 5f       ._  ; Offset is Y=0
-    sta (l005f),y                                                     ; f738: 91 5f       ._  ; Offset is Y=0
+    ora (l005f),y                                                     ; f736: 11 5f       ._  ; Offset Y=0
+    sta (l005f),y                                                     ; f738: 91 5f       ._
 ; $f73a referenced 10 times by $f6e6, $f6ec, $f6f8, $f73f, $f743, $f758, $f75c, $f771, $f775, $f783
 return_2
     rts                                                               ; f73a: 60          `
@@ -1377,7 +1380,7 @@ loop_cf7d7
     inc l00e9                                                         ; f7dd: e6 e9       ..
 ; $f7df referenced 1 time by $f7db
 cf7df
-    lda (l00e8),y                                                     ; f7df: b1 e8       ..  ; Offset is Y=0
+    lda (l00e8),y                                                     ; f7df: b1 e8       ..  ; Offset Y=0
     bmi cf7e9                                                         ; f7e1: 30 06       0.
     jsr OSWRCH                                                        ; f7e3: 20 f4 ff     .. ; Write character
     jmp loop_cf7d7                                                    ; f7e6: 4c d7 f7    L..
@@ -2017,7 +2020,7 @@ loop_cfafa
     dex                                                               ; fafe: ca          .
     bne loop_cfafa                                                    ; faff: d0 f9       ..
     stx l00d0                                                         ; fb01: 86 d0       ..  ; X=0
-    stx l00d1                                                         ; fb03: 86 d1       ..  ; X=0
+    stx l00d1                                                         ; fb03: 86 d1       ..
     lda l00d5                                                         ; fb05: a5 d5       ..
     bne cfb0b                                                         ; fb07: d0 02       ..
     dec l00d6                                                         ; fb09: c6 d6       ..
@@ -2505,10 +2508,11 @@ wrch_clear_screen
     ldy #0                                                            ; fd6d: a0 00       ..
     sty ppi_port_a                                                    ; fd6f: 8c 00 b0    ... ; Select text mode
     lda #$20 ; ' '                                                    ; fd72: a9 20       .
+; Set 512 bytes of memory from l8000 onwards to 32
 ; $fd74 referenced 1 time by $fd7b
 loop_cfd74
     sta l8000,y                                                       ; fd74: 99 00 80    ... ; A=$20
-    sta l8100,y                                                       ; fd77: 99 00 81    ... ; A=$20
+    sta l8100,y                                                       ; fd77: 99 00 81    ...
     iny                                                               ; fd7a: c8          .
     bne loop_cfd74                                                    ; fd7b: d0 f7       ..
 wrch_home
@@ -2633,9 +2637,9 @@ loop_cfe19
     bne loop_cfe19                                                    ; fe20: d0 f7       ..
     ldy #$1f                                                          ; fe22: a0 1f       ..
     lda #$20 ; ' '                                                    ; fe24: a9 20       .
+; Set 32 bytes of memory from (screen_line_address) onwards to 32
 ; $fe26 referenced 1 time by $fe29
 loop_cfe26
-    ; Set 32 bytes of memory from (screen_line_address) onwards to 32
     sta (screen_line_address),y                                       ; fe26: 91 de       ..  ; A=$20
     dey                                                               ; fe28: 88          .
     bpl loop_cfe26                                                    ; fe29: 10 fb       ..
@@ -2888,8 +2892,8 @@ cff38
     and #$f0                                                          ; ff3b: 29 f0       ).
     bcs cff33                                                         ; ff3d: b0 f4       ..  ; ALWAYS branch
 
+; Copy 24 bytes of memory from default_vectors to irqvec
 reset
-    ; Copy 24 bytes of memory from default_vectors to irqvec
     ldx #$17                                                          ; ff3f: a2 17       ..
 ; $ff41 referenced 1 time by $ff48
 loop_cff41
@@ -2904,9 +2908,9 @@ loop_cff41
     stx cursor_mask                                                   ; ff4f: 86 e1       ..
     stx lock_flag                                                     ; ff51: 86 e7       ..
     ldx #$33 ; '3'                                                    ; ff53: a2 33       .3
+; Set 52 bytes of memory from l02eb onwards
 ; $ff55 referenced 1 time by $ff59
 loop_cff55
-    ; Set 52 bytes of memory from l02eb onwards
     sta l02eb,x                                                       ; ff55: 9d eb 02    ...
     dex                                                               ; ff58: ca          .
     bpl loop_cff55                                                    ; ff59: 10 fa       ..
@@ -3272,6 +3276,12 @@ pydis_end
 }
 !if (kernel_wrch) != $fe52 {
     !error "Assertion failed: kernel_wrch == $fe52"
+}
+!if (l8001 - 1) != $8000 {
+    !error "Assertion failed: l8001 - 1 == $8000"
+}
+!if (l8101 - 1) != $8100 {
+    !error "Assertion failed: l8101 - 1 == $8100"
 }
 !if (la000) != $a000 {
     !error "Assertion failed: la000 == $a000"
@@ -3956,8 +3966,10 @@ pydis_end
 ;     l2901
 ;     l7fe0
 ;     l8000
+;     l8001
 ;     l80e0
 ;     l8100
+;     l8101
 ;     la000
 ;     lc231
 ;     lc278

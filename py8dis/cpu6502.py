@@ -2554,7 +2554,9 @@ class Cpu6502(cpu.Cpu):
         carry is known (see _shift_comment()). And where a register whose
         value is known was set far back (see _set_far_back()): the value
         stored, e.g. 'A=0' on 'sta table,y' in a loop that clears the table,
-        and the index, e.g. 'Offset is Y=$11' on 'sta (ptr),y'."""
+        and the index, e.g. 'Offset Y=$11' on 'sta (ptr),y'. A value isn't
+        said again while it's the same, with no label in between (e.g.
+        only the first of 'stx a : stx b' says 'X=0')."""
         binary_addr = 0
         prev_state = self.EMPTY_STATE
         state = self.EMPTY_STATE
@@ -2565,6 +2567,10 @@ class Cpu6502(cpu.Cpu):
         def value_text(reg, r):
             """e.g. 'Y=$11'."""
             return "{0}={1}".format(reg.upper(), config.get_assembler().hex(r) if r > 9 else r)
+
+        # The value each register was last said to have, since the last
+        # label (and while it hasn't changed), so it isn't said again
+        said = {}
 
         # (Only the loaded data can be classified, so just loop over that)
         for range_start, range_end in memorymanager.loaded_ranges():
@@ -2589,6 +2595,8 @@ class Cpu6502(cpu.Cpu):
                         before = self.EMPTY_STATE.pessimistic
                     move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
                     binary_loc = movemanager.BinaryLocation(binary_addr, move_id)
+                    if not isinstance(c, self.Opcode) or (runtime_addr is not None and runtime_addr in session.current().labels.labels):
+                        said = {}
 
                     # Say what a rotate or shift does with the carry, where
                     # that's known (e.g. 'sec : ror' rotates in a set bit)
@@ -2602,12 +2610,15 @@ class Cpu6502(cpu.Cpu):
                     # loop that clears it)
                     if isinstance(c, self.Opcode):
                         reg = store_registers.get(c.mnemonic.lower())
-                        if reg is not None and before[reg].value is not None and self._set_far_back(before[reg], binary_addr):
+                        if (reg is not None and before[reg].value is not None and said.get(reg) != before[reg].value
+                                and self._set_far_back(before[reg], binary_addr)):
                             disassembly.comment_binary(binary_loc, value_text(reg, before[reg].value), align=Align.INLINE, auto_generated=True)
+                            said[reg] = before[reg].value
                         reg = index_registers.get(c.addr_mode)
                         if (reg is not None and c.mnemonic.lower() != "nop" and before[reg].value is not None
-                                and self._set_far_back(before[reg], binary_addr)):
-                            disassembly.comment_binary(binary_loc, "Offset is " + value_text(reg, before[reg].value), align=Align.INLINE, auto_generated=True)
+                                and said.get(reg) != before[reg].value and self._set_far_back(before[reg], binary_addr)):
+                            disassembly.comment_binary(binary_loc, "Offset " + value_text(reg, before[reg].value), align=Align.INLINE, auto_generated=True)
+                            said[reg] = before[reg].value
 
                     # Show the value of a register as an inline comment (if known) once they have been
                     # altered (e.g. for 'LDY #0:LDA (zp),Y:STA mem:INY' output '; Y=1' on the 'INY' line).
@@ -2621,6 +2632,9 @@ class Cpu6502(cpu.Cpu):
                                 r = state.pessimistic[reg].value
                                 if r is not None:
                                     disassembly.comment_binary(binary_loc, value_text(reg, r), align=Align.INLINE, auto_generated=True)
+                                    said[reg] = r
+                                else:
+                                    said.pop(reg, None)
 
                     # Check for ADC or SBC with carry in its opposite to normal state: auto comment it
                     # (not an immediate operand that the code changes: see is_operand_modified())
@@ -3038,8 +3052,9 @@ class Cpu6502(cpu.Cpu):
     def find_redundant_instructions(self):
         """Comment each instruction whose results are never used: in a
         straight run of code (see straight_runs()), each register and flag
-        it changes is changed again before anything reads it. E.g. 'lda
-        foo' just before 'pla'. Only instructions that just change registers
+        it changes is changed again before anything reads it, or is known
+        for certain to have that value already (see _changed_by()). E.g.
+        'lda foo' just before 'pla', or 'tay' when A and Y are both 0. Only instructions that just change registers
         and flags (e.g. not a store, or a read of I/O, which can have side
         effects) can be redundant, and not one that code jumps into the
         middle of (the BIT trick). The end of a run, a JSR or a branch counts
@@ -3053,11 +3068,59 @@ class Cpu6502(cpu.Cpu):
             for binary_addr in reversed(run):
                 c = classification.get_classification(binary_addr)
                 reads, writes, candidate = self._instruction_effects(c, binary_addr)
-                if candidate and writes and not (writes & live) and not self.is_entered_inside(binary_addr, c.length()):
+                # (What it writes that it changes: not a register or flag
+                # that's known to be the value already, e.g. 'tay' with A and
+                # Y both 0)
+                changed = self._changed_by(c, binary_addr, writes) if candidate else writes
+                if candidate and writes and not (changed & live) and not self.is_entered_inside(binary_addr, c.length()):
                     disassembly.comment_binary(BinaryAddr(binary_addr), "Redundant instruction?", align=Align.INLINE, word_wrap=False, auto_generated=True)
                     # (Its reads don't count, since it could be removed)
                     continue
                 live = (live - writes) | reads
+
+    def state_before(self, binary_addr):
+        """What's known for certain (a CpuStateDisposition) just before the
+        instruction at binary_addr: from join_states_at_labels() if it's
+        used, otherwise what's known after the instruction before it, or
+        nothing if there's a label at binary_addr."""
+        if self.states_before is not None:
+            state = self.states_before.get(binary_addr)
+            return CpuStateDisposition() if state is None else state
+        if movemanager.b2r(BinaryAddr(binary_addr)) in session.current().labels.labels:
+            return CpuStateDisposition()
+        for length in (1, 2, 3):
+            c = classification.get_classification(binary_addr - length)
+            if isinstance(c, self.Opcode) and c.length() == length and self.cpu_states[binary_addr - length] is not None:
+                return self.cpu_states[binary_addr - length].pessimistic
+        return CpuStateDisposition()
+
+    def _changed_by(self, c, binary_addr, writes):
+        """Which of 'writes' (the registers and flags the instruction c at
+        binary_addr writes, as 'axynvdizc') it can change: those not known
+        for certain to have the same value before and after it (e.g. not Y
+        for 'tay' when A and Y are both 0, nor C for 'clc' when the carry is
+        known to be clear), for find_redundant_instructions(). Only for an
+        instruction without an operand: for others, all of 'writes'."""
+        after_state = self.cpu_states[binary_addr]
+        if after_state is None or c.addr_mode != self.mode_implied:
+            # (Only an instruction without an operand, e.g. TAY or CLC, is a
+            # plain no-op when its result is already there: a load of a
+            # constant that's equal to the register by coincidence, e.g.
+            # 'ldx #>handler' when X already is that page, says something
+            # the code relies on if the constant changes)
+            return writes
+        before = self.state_before(binary_addr)
+        after = after_state.pessimistic
+        result = set()
+        for w in writes:
+            if w in "axy":
+                same = before[w].value is not None and before[w].value == after[w].value
+            else:
+                b, a = before[w], after[w]
+                same = b in (True, False, 0, 1) and a in (True, False, 0, 1) and bool(a) == bool(b)
+            if not same:
+                result.add(w)
+        return result
 
     def straight_runs(self):
         """The code, as runs of instructions (lists of binary addresses, in

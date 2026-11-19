@@ -321,7 +321,7 @@ c80a8
     jsr sub_cbf66                                                     ; 80ac: 20 66 bf     f.
     bne c80cc                                                         ; 80af: d0 1b       ..
     jsr sub_c80d8                                                     ; 80b1: 20 d8 80     ..
-    ; Copy 11 bytes of memory from l80c2 to l0100
+; Copy 11 bytes of memory from l80c2 to l0100
     ldx #$0a                                                          ; 80b4: a2 0a       ..
 ; $80b6 referenced 1 time by $80bd
 copy_to_stack_loop
@@ -2224,9 +2224,9 @@ c8dff
     jsr sub_c8e5f                                                     ; 8e0d: 20 5f 8e     _.
     jsr sub_c8e5f                                                     ; 8e10: 20 5f 8e     _.
     jsr sub_c8e5f                                                     ; 8e13: 20 5f 8e     _.
+; Copy Y bytes of memory
 ; $8e16 referenced 1 time by $8e1b
 loop_c8e16
-    ; Copy Y bytes of memory
     lda (l0039),y                                                     ; 8e16: b1 39       .9
     sta (l0037),y                                                     ; 8e18: 91 37       .7
     dey                                                               ; 8e1a: 88          .
@@ -2895,7 +2895,7 @@ c9193
     clc                                                               ; 9193: 18          .
     pha                                                               ; 9194: 48          H
     tax                                                               ; 9195: aa          .
-    lda (l002a),y                                                     ; 9196: b1 2a       .*  ; Offset is Y=2
+    lda (l002a),y                                                     ; 9196: b1 2a       .*  ; Offset Y=2
     adc (l002a)                                                       ; 9198: 72 2a       r*
     eor l0002                                                         ; 919a: 45 02       E.
     bne c91ad                                                         ; 919c: d0 0f       ..
@@ -2960,9 +2960,9 @@ c91ef
     jsr sub_cbe6b                                                     ; 91ef: 20 6b be     k.
     cpy #0                                                            ; 91f2: c0 00       ..
     beq c9201                                                         ; 91f4: f0 0b       ..
+; Copy Y bytes of memory from l0601
 ; $91f6 referenced 1 time by $91fc
 loop_c91f6
-    ; Copy Y bytes of memory from l0601
     lda l0601 - 1,y                                                   ; 91f6: b9 00 06    ...
     sta (l002a),y                                                     ; 91f9: 91 2a       .*
     dey                                                               ; 91fb: 88          .
@@ -4241,9 +4241,9 @@ loop_c9948
     bne loop_c9948                                                    ; 994f: d0 f7       ..
     rts                                                               ; 9951: 60          `
 
+; Clear X bytes of memory
 ; $9952 referenced 4 times by $9108, $9642, $997a, $b036
 sub_c9952
-    ; Clear X bytes of memory
     lda #0                                                            ; 9952: a9 00       ..
 ; $9954 referenced 1 time by $9958
 loop_c9954
@@ -6535,7 +6535,7 @@ sub_ca54d
     eor l0031                                                         ; a555: 45 31       E1
     and #$80                                                          ; a557: 29 80       ).
     eor l0031                                                         ; a559: 45 31       E1
-    sta (l004a),y                                                     ; a55b: 91 4a       .J  ; Offset is Y=1
+    sta (l004a),y                                                     ; a55b: 91 4a       .J  ; Offset Y=1
     lda l0032                                                         ; a55d: a5 32       .2
     iny                                                               ; a55f: c8          .   ; Y=2
     sta (l004a),y                                                     ; a560: 91 4a       .J
@@ -8880,7 +8880,7 @@ cb1de
 
 ; $b200 referenced 1 time by $b1e2
 cb200
-    lda (l002a),y                                                     ; b200: b1 2a       .*  ; Offset is Y=0
+    lda (l002a),y                                                     ; b200: b1 2a       .*  ; Offset Y=0
     jmp cae62                                                         ; b202: 4c 62 ae    Lb.
 
 ; $b205 referenced 2 times by $b1e6, $b5f1
@@ -9169,7 +9169,7 @@ cb39e
     eor l0031                                                         ; b3a6: 45 31       E1
     and #$80                                                          ; b3a8: 29 80       ).
     eor l0031                                                         ; b3aa: 45 31       E1
-    sta (l0037),y                                                     ; b3ac: 91 37       .7  ; Offset is Y=1
+    sta (l0037),y                                                     ; b3ac: 91 37       .7  ; Offset Y=1
     iny                                                               ; b3ae: c8          .   ; Y=2
     lda l0032                                                         ; b3af: a5 32       .2
     sta (l0037),y                                                     ; b3b1: 91 37       .7
@@ -10544,9 +10544,9 @@ sub_cbbdc
     sta l0001                                                         ; bbe4: 85 01       ..
     sta l0003                                                         ; bbe6: 85 03       ..
     jsr sub_cbbff                                                     ; bbe8: 20 ff bb     ..
+; Copy 16 bytes of memory from lbf72 to l07f0
 ; $bbeb referenced 1 time by $96f4
 sub_cbbeb
-    ; Copy 16 bytes of memory from lbf72 to l07f0
     ldx #$10                                                          ; bbeb: a2 10       ..
 ; $bbed referenced 1 time by $bbf4
 loop_cbbed
@@ -10619,7 +10619,7 @@ cbc3a
     eor l0031                                                         ; bc4a: 45 31       E1
     and #$80                                                          ; bc4c: 29 80       ).
     eor l0031                                                         ; bc4e: 45 31       E1
-    sta (l0004),y                                                     ; bc50: 91 04       ..  ; Offset is Y=1
+    sta (l0004),y                                                     ; bc50: 91 04       ..  ; Offset Y=1
     iny                                                               ; bc52: c8          .   ; Y=2
     lda l0032                                                         ; bc53: a5 32       .2
     sta (l0004),y                                                     ; bc55: 91 04       ..
@@ -10676,9 +10676,9 @@ cbc91
     jsr sub_cbd5e                                                     ; bc96: 20 5e bd     ^.
     ldy l0036                                                         ; bc99: a4 36       .6
     beq cbca5                                                         ; bc9b: f0 08       ..
+; Copy Y bytes of memory from l0600
 ; $bc9d referenced 1 time by $bca3
 loop_cbc9d
-    ; Copy Y bytes of memory from l0600
     lda l0600 - 1,y                                                   ; bc9d: b9 ff 05    ...
     sta (l0004),y                                                     ; bca0: 91 04       ..
     dey                                                               ; bca2: 88          .
@@ -10775,9 +10775,9 @@ sub_cbd12
     sta l0036                                                         ; bd14: 85 36       .6
     beq cbd23                                                         ; bd16: f0 0b       ..
     tay                                                               ; bd18: a8          .
+; Copy Y bytes of memory to l0600
 ; $bd19 referenced 1 time by $bd1f
 loop_cbd19
-    ; Copy Y bytes of memory to l0600
     lda (l0004),y                                                     ; bd19: b1 04       ..
     sta l0600 - 1,y                                                   ; bd1b: 99 ff 05    ...
     dey                                                               ; bd1e: 88          .
@@ -11228,9 +11228,9 @@ sub_cbf3e
     sty l0012                                                         ; bf51: 84 12       ..
     rts                                                               ; bf53: 60          `
 
+; Copy 10 bytes of memory from lb3be to l0600
 ; $bf54 referenced 1 time by $b46c
 cbf54
-    ; Copy 10 bytes of memory from lb3be to l0600
     ldy #9                                                            ; bf54: a0 09       ..
 ; $bf56 referenced 1 time by $bf5d
 loop_cbf56

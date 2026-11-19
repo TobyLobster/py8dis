@@ -1855,8 +1855,8 @@ cc717
 cc732
     jmp cca02                                                         ; c732: 4c 02 ca    L..
 
+; Copy 4 bytes of memory to l0328
 osword9EntryPoint
-    ; Copy 4 bytes of memory to l0328
     ldy #3                                                            ; c735: a0 03       ..
 ; $c737 referenced 1 time by $c73d
 loop_cc737
@@ -2030,9 +2030,9 @@ loop_cc833
 vdu20EntryPoint
     ldx #5                                                            ; c839: a2 05       ..
     lda #0                                                            ; c83b: a9 00       ..
+; Clear 6 bytes of memory from l0357 onwards
 ; $c83d referenced 1 time by $c841
 loop_cc83d
-    ; Clear 6 bytes of memory from l0357 onwards
     sta l0357,x                                                       ; c83d: 9d 57 03    .W. ; A=0
     dex                                                               ; c840: ca          .
     bpl loop_cc83d                                                    ; c841: 10 fa       ..
@@ -2180,9 +2180,9 @@ vdu23EntryPoint
     ldy #0                                                            ; c91a: a0 00       ..
     sty l00dc                                                         ; c91c: 84 dc       ..
     sty l00de                                                         ; c91e: 84 de       ..
+; Copy Y bytes of memory
 ; $c920 referenced 1 time by $c925
 loop_cc920
-    ; Copy Y bytes of memory
     lda (l00de),y                                                     ; c920: b1 de       ..
     sta (l00dc),y                                                     ; c922: 91 dc       ..
     dey                                                               ; c924: 88          .
@@ -2191,7 +2191,7 @@ loop_cc920
 cc927
     pla                                                               ; c927: 68          h
     jsr sub_cd03e                                                     ; c928: 20 3e d0     >.
-    ; Copy 8 bytes of memory from l031c
+; Copy 8 bytes of memory from l031c
     ldy #7                                                            ; c92b: a0 07       ..
 ; $c92d referenced 1 time by $c933
 loop_cc92d
@@ -2303,9 +2303,9 @@ cc9b3
 vdu26EntryPoint
     lda #0                                                            ; c9bd: a9 00       ..
     ldx #$2c ; ','                                                    ; c9bf: a2 2c       .,
+; Clear 45 bytes of memory from l0300 onwards
 ; $c9c1 referenced 1 time by $c9c5
 loop_cc9c1
-    ; Clear 45 bytes of memory from l0300 onwards
     sta l0300,x                                                       ; c9c1: 9d 00 03    ... ; A=0
     dex                                                               ; c9c4: ca          .
     bpl loop_cc9c1                                                    ; c9c5: 10 fa       ..
@@ -2521,9 +2521,9 @@ ccb1d
     ldx #$7f                                                          ; cb1e: a2 7f       ..
     lda #0                                                            ; cb20: a9 00       ..
     sta l00d0                                                         ; cb22: 85 d0       ..
+; Clear 127 bytes of memory from l0300 onwards
 ; $cb24 referenced 1 time by $cb28
 loop_ccb24
-    ; Clear 127 bytes of memory from l0300 onwards
     sta l0300 - 1,x                                                   ; cb24: 9d ff 02    ... ; A=0
     dex                                                               ; cb27: ca          .
     bne loop_ccb24                                                    ; cb28: d0 fa       ..
@@ -2745,9 +2745,9 @@ osbyte20EntryPoint
     sta l0367                                                         ; cd09: 8d 67 03    .g.
     lda #$0c                                                          ; cd0c: a9 0c       ..
     ldy #6                                                            ; cd0e: a0 06       ..
+; Set 7 bytes of memory from l0368 onwards to 12
 ; $cd10 referenced 1 time by $cd14
 loop_ccd10
-    ; Set 7 bytes of memory from l0368 onwards to 12
     sta l0368,y                                                       ; cd10: 99 68 03    .h. ; A=$0c
     dey                                                               ; cd13: 88          .
     bpl loop_ccd10                                                    ; cd14: 10 fa       ..
@@ -2820,7 +2820,7 @@ sub_ccd6a
     dey                                                               ; cd6f: 88          .
     bne ccd8f                                                         ; cd70: d0 1d       ..
     lda l0338                                                         ; cd72: ad 38 03    .8.
-    sta (l00d8),y                                                     ; cd75: 91 d8       ..  ; Offset is Y=0
+    sta (l00d8),y                                                     ; cd75: 91 d8       ..  ; Offset Y=0
 ; $cd77 referenced 2 times by $cd8c, $cda2
 ccd77
     pla                                                               ; cd77: 68          h
@@ -2838,10 +2838,10 @@ sub_ccd7a
     ldy l034f                                                         ; cd7c: ac 4f 03    .O.
     dey                                                               ; cd7f: 88          .
     bne ccd8f                                                         ; cd80: d0 0d       ..
-    lda (l00d8),y                                                     ; cd82: b1 d8       ..  ; Offset is Y=0
+    lda (l00d8),y                                                     ; cd82: b1 d8       ..  ; Offset Y=0
     sta l0338                                                         ; cd84: 8d 38 03    .8.
     lda l0366                                                         ; cd87: ad 66 03    .f.
-    sta (l00d8),y                                                     ; cd8a: 91 d8       ..  ; Offset is Y=0
+    sta (l00d8),y                                                     ; cd8a: 91 d8       ..
     jmp ccd77                                                         ; cd8c: 4c 77 cd    Lw.
 
 ; $cd8f referenced 2 times by $cd70, $cd80
@@ -3028,9 +3028,9 @@ sub_cce73
 cce7f
     ldy l034f                                                         ; ce7f: ac 4f 03    .O.
     dey                                                               ; ce82: 88          .
+; Copy Y+1 bytes of memory
 ; $ce83 referenced 1 time by $ce88
 loop_cce83
-    ; Copy Y+1 bytes of memory
     lda (l00da),y                                                     ; ce83: b1 da       ..
     sta (l00d8),y                                                     ; ce85: 91 d8       ..
     dey                                                               ; ce87: 88          .
@@ -3345,7 +3345,7 @@ loop_cd023
     ora l00d2                                                         ; d031: 05 d2       ..
     eor l00d3                                                         ; d033: 45 d3       E.
     sta (l00d8),y                                                     ; d035: 91 d8       ..
-    clc                                                               ; d037: 18          .
+    clc                                                               ; d037: 18          .   ; Redundant instruction?
     tya                                                               ; d038: 98          .
     adc #8                                                            ; d039: 69 08       i.
     tay                                                               ; d03b: a8          .
@@ -4600,7 +4600,7 @@ return_21
 osbyte135EntryPoint
     ldy l0360                                                         ; d7c2: ac 60 03    .`.
     bne cd7dc                                                         ; d7c5: d0 15       ..
-    lda (l00d8),y                                                     ; d7c7: b1 d8       ..  ; Offset is Y=0
+    lda (l00d8),y                                                     ; d7c7: b1 d8       ..  ; Offset Y=0
     ldy #2                                                            ; d7c9: a0 02       ..
 ; $d7cb referenced 1 time by $d7d5
 loop_cd7cb
@@ -4987,15 +4987,15 @@ cda4a
     sta user_via_ddra                                                 ; da50: 8d 63 fe    .c.
     txa                                                               ; da53: 8a          .   ; A=0
     ldx #$e2                                                          ; da54: a2 e2       ..
+; Clear 30 bytes of memory from l00e2 onwards
 ; $da56 referenced 1 time by $da59
 loop_cda56
-    ; Clear 30 bytes of memory from l00e2 onwards
     sta l0000,x                                                       ; da56: 95 00       ..  ; A=0
     inx                                                               ; da58: e8          .
     bne loop_cda56                                                    ; da59: d0 fb       ..
+; Copy Y bytes of memory from ld940 to userv
 ; $da5b referenced 1 time by $da62
 loop_cda5b
-    ; Copy Y bytes of memory from ld940 to userv
     lda ld940 - 1,y                                                   ; da5b: b9 3f d9    .?.
     sta userv - 1,y                                                   ; da5e: 99 ff 01    ...
     dey                                                               ; da61: 88          .
@@ -5005,10 +5005,11 @@ loop_cda5b
     jsr sub_cfb0a                                                     ; da68: 20 0a fb     ..
     lda #$7f                                                          ; da6b: a9 7f       ..
     inx                                                               ; da6d: e8          .
+; Set X+1 bytes of memory from system_via_ifr onwards, and X+1 bytes from user_via_ifr onwards to 127
 ; $da6e referenced 1 time by $da75
 loop_cda6e
     sta system_via_ifr,x                                              ; da6e: 9d 4d fe    .M. ; A=$7f
-    sta user_via_ifr,x                                                ; da71: 9d 6d fe    .m. ; A=$7f
+    sta user_via_ifr,x                                                ; da71: 9d 6d fe    .m.
     dex                                                               ; da74: ca          .
     bpl loop_cda6e                                                    ; da75: 10 f7       ..
     cli                                                               ; da77: 58          X
@@ -5107,7 +5108,7 @@ loop_cdb19
     dex                                                               ; db1e: ca          .
     bne loop_cdb19                                                    ; db1f: d0 f8       ..
     stx system_via_t2c_l                                              ; db21: 8e 48 fe    .H. ; X=0
-    stx system_via_t2c_h                                              ; db24: 8e 49 fe    .I. ; X=0
+    stx system_via_t2c_h                                              ; db24: 8e 49 fe    .I.
 ; $db27 referenced 1 time by $db14
 cdb27
     lda l028f                                                         ; db27: ad 8f 02    ...
@@ -5853,7 +5854,7 @@ loop_cdfc4
     and #$df                                                          ; dfc7: 29 df       ).
     bne cdfe2                                                         ; dfc9: d0 17       ..
     iny                                                               ; dfcb: c8          .
-    clc                                                               ; dfcc: 18          .
+    clc                                                               ; dfcc: 18          .   ; Redundant instruction?
 ; $dfcd referenced 1 time by $dff0
 cdfcd
     bcs cdff4                                                         ; dfcd: b0 25       .%
@@ -7263,8 +7264,8 @@ loop_ce8f2
     sta l0283                                                         ; e8fe: 8d 83 02    ...
     rts                                                               ; e901: 60          `
 
+; Copy 3 bytes of memory to l02b3
 osword0EntryPoint
-    ; Copy 3 bytes of memory to l02b3
     ldy #4                                                            ; e902: a0 04       ..
 ; $e904 referenced 1 time by $e90c
 loop_ce904
@@ -7273,7 +7274,7 @@ loop_ce904
     dey                                                               ; e909: 88          .
     cpy #2                                                            ; e90a: c0 02       ..
     bcs loop_ce904                                                    ; e90c: b0 f6       ..
-    lda (l00f0),y                                                     ; e90e: b1 f0       ..  ; Offset is Y=1
+    lda (l00f0),y                                                     ; e90e: b1 f0       ..  ; Offset Y=1
     sta l00e9                                                         ; e910: 85 e9       ..
     dey                                                               ; e912: 88          .   ; Y=0
     sty l0269                                                         ; e913: 8c 69 02    .i.
@@ -7420,9 +7421,9 @@ osbyte18EntryPoint
     lda #$10                                                          ; e9c8: a9 10       ..
     sta l0284                                                         ; e9ca: 8d 84 02    ...
     ldx #0                                                            ; e9cd: a2 00       ..
+; Set 256 bytes of memory from l0b00 onwards to 16
 ; $e9cf referenced 1 time by $e9d3
 loop_ce9cf
-    ; Set 256 bytes of memory from l0b00 onwards to 16
     sta l0b00,x                                                       ; e9cf: 9d 00 0b    ... ; A=$10
     inx                                                               ; e9d2: e8          .
     bne loop_ce9cf                                                    ; e9d3: d0 fa       ..
@@ -7908,13 +7909,13 @@ cec77
     lda #0                                                            ; ec7c: a9 00       ..
     sta l02cf,x                                                       ; ec7e: 9d cf 02    ...
     ldy #4                                                            ; ec81: a0 04       ..
+; Clear 4 bytes of memory from l082c onwards
 ; $ec83 referenced 1 time by $ec87
 loop_cec83
-    ; Clear 4 bytes of memory from l082c onwards
     sta l082c - 1,y                                                   ; ec83: 99 2b 08    .+. ; A=0
     dey                                                               ; ec86: 88          .
     bne loop_cec83                                                    ; ec87: d0 fa       ..
-    sta l0818,x                                                       ; ec89: 9d 18 08    ... ; A=0
+    sta l0818,x                                                       ; ec89: 9d 18 08    ...
     dey                                                               ; ec8c: 88          .   ; Y=$ff
     sty l0838                                                         ; ec8d: 8c 38 08    .8.
 ; $ec90 referenced 1 time by $ec7a
@@ -7937,9 +7938,9 @@ sub_ceca2
     sta l02cf,x                                                       ; eca9: 9d cf 02    ...
     sta l0800,x                                                       ; ecac: 9d 00 08    ...
     ldy #3                                                            ; ecaf: a0 03       ..
+; Set 4 bytes of memory from l082c onwards
 ; $ecb1 referenced 1 time by $ecb5
 loop_cecb1
-    ; Set 4 bytes of memory from l082c onwards
     sta l082c,y                                                       ; ecb1: 99 2c 08    .,.
     dey                                                               ; ecb4: 88          .
     bpl loop_cecb1                                                    ; ecb5: 10 fa       ..
@@ -8003,7 +8004,7 @@ ced06
     cpx #4                                                            ; ed09: e0 04       ..
     bne ced16                                                         ; ed0b: d0 09       ..
     and #$0f                                                          ; ed0d: 29 0f       ).
-    ora ceb3c,x                                                       ; ed0f: 1d 3c eb    .<. ; Offset is X=4
+    ora ceb3c,x                                                       ; ed0f: 1d 3c eb    .<. ; Offset X=4
     php                                                               ; ed12: 08          .
     jmp ced95                                                         ; ed13: 4c 95 ed    L..
 
@@ -8120,7 +8121,7 @@ cedb7
     bcc cedc8                                                         ; edbb: 90 0b       ..
     eor #$ff                                                          ; edbd: 49 ff       I.
     lsr                                                               ; edbf: 4a          J
-    sec                                                               ; edc0: 38          8
+    sec                                                               ; edc0: 38          8   ; Redundant instruction?
     sbc #$40 ; '@'                                                    ; edc1: e9 40       .@
     jsr sub_ceb0a                                                     ; edc3: 20 0a eb     ..
     lda #$ff                                                          ; edc6: a9 ff       ..
@@ -8747,7 +8748,7 @@ cf14b
 ; $f157 referenced 1 time by $f154
 cf157
     stx l00c6                                                         ; f157: 86 c6       ..
-    ; Copy 14 bytes of memory from ld952 to filev
+; Copy 14 bytes of memory from ld952 to filev
     ldx #$0e                                                          ; f159: a2 0e       ..
 ; $f15b referenced 1 time by $f162
 loop_cf15b
@@ -8985,7 +8986,7 @@ loop_cf290
 ; $f2a7 referenced 1 time by $f29e
 cf2a7
     sta l03c6                                                         ; f2a7: 8d c6 03    ... ; A=0
-    sta l03c7                                                         ; f2aa: 8d c7 03    ... ; A=0
+    sta l03c7                                                         ; f2aa: 8d c7 03    ...
 ; $f2ad referenced 1 time by $f2b5
 loop_cf2ad
     lda (l00c8),y                                                     ; f2ad: b1 c8       ..
@@ -9254,17 +9255,17 @@ loop_cf43e
     bne loop_cf43e                                                    ; f445: d0 f7       ..
     lda #$ff                                                          ; f447: a9 ff       ..
     ldx #8                                                            ; f449: a2 08       ..
+; Set 8 bytes of memory from l038c onwards to 255
 ; $f44b referenced 1 time by $f44f
 loop_cf44b
-    ; Set 8 bytes of memory from l038c onwards to 255
     sta l038c - 1,x                                                   ; f44b: 9d 8b 03    ... ; A=$ff
     dex                                                               ; f44e: ca          .
     bne loop_cf44b                                                    ; f44f: d0 fa       ..
     txa                                                               ; f451: 8a          .   ; A=0
     ldx #$14                                                          ; f452: a2 14       ..
+; Clear 10 bytes of memory from l0394 onwards
 ; $f454 referenced 1 time by $f45a
 loop_cf454
-    ; Clear 10 bytes of memory from l0394 onwards
     sta l0394 - 20,x                                                  ; f454: 9d 80 03    ... ; A=0
     inx                                                               ; f457: e8          .
     cpx #$1e                                                          ; f458: e0 1e       ..
@@ -9309,7 +9310,7 @@ sub_cf478
 ; $f496 referenced 2 times by $f48e, $f53f
 sub_cf496
     jsr sub_cfb1a                                                     ; f496: 20 1a fb     ..
-    ; Copy 18 bytes of memory from l038c to l03be
+; Copy 18 bytes of memory from l038c to l03be
     ldx #$11                                                          ; f499: a2 11       ..
 ; $f49b referenced 1 time by $f4a2
 loop_cf49b
@@ -9699,7 +9700,7 @@ cf6bd
     jsr sub_cfb69                                                     ; f6e3: 20 69 fb     i.
     stx l03dd                                                         ; f6e6: 8e dd 03    ...
     sty l03de                                                         ; f6e9: 8c de 03    ...
-    ; Copy 3 bytes of memory from l03c8 to l02ea
+; Copy 3 bytes of memory from l03c8 to l02ea
     ldx #2                                                            ; f6ec: a2 02       ..
 ; $f6ee referenced 1 time by $f6f5
 loop_cf6ee
@@ -9891,9 +9892,9 @@ sub_cf7ec
     php                                                               ; f7ec: 08          .
     ldx #3                                                            ; f7ed: a2 03       ..
     lda #0                                                            ; f7ef: a9 00       ..
+; Clear 4 bytes of memory from l03cb onwards
 ; $f7f1 referenced 1 time by $f7f5
 loop_cf7f1
-    ; Clear 4 bytes of memory from l03cb onwards
     sta l03cb,x                                                       ; f7f1: 9d cb 03    ... ; A=0
     dex                                                               ; f7f4: ca          .
     bpl loop_cf7f1                                                    ; f7f5: 10 fa       ..

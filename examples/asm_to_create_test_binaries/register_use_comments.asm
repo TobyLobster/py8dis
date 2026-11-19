@@ -17,7 +17,7 @@ start
     rts
 
 ; 1. Y is set well before it's used as the offset, so the STA says what it
-;    is ('Offset is Y=$11'); the LDA just after 'ldy #0' doesn't need it
+;    is ('Offset Y=$11'); the LDA just after 'ldy #0' doesn't need it
 index_far_back
     ldy #$11
     lda $70
@@ -25,7 +25,7 @@ index_far_back
     adc $71
     sta $72
     lda #1
-    sta ($74),y             ; Offset is Y=$11
+    sta ($74),y             ; Offset Y=$11
     ldy #0
     lda ($74),y
     rts

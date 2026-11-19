@@ -217,9 +217,9 @@ loop_c08ea
     lda Q7L,x                                                         ; 0915: bd 8e c0    =.@ ; Disk II: Q7 low (read mode)
 ; $0918 referenced 1 time by $091b
 loop_c0918
-    lda Q6L,x                                                         ; 0918: bd 8c c0    =.@ ; Offset is X=$60 ; Disk II: Q6 low (read the data latch)
+    lda Q6L,x                                                         ; 0918: bd 8c c0    =.@ ; Offset X=$60 ; Disk II: Q6 low (read the data latch)
     bpl loop_c0918                                                    ; 091b: 10 fb       .{
-    lda MOTOROFF,x                                                    ; 091d: bd 88 c0    =.@ ; Offset is X=$60 ; Disk II: turn the motor off
+    lda MOTOROFF,x                                                    ; 091d: bd 88 c0    =.@ ; Disk II: turn the motor off
     jsr IORTS                                                         ; 0920: 20 58 ff    ... ; Return (an RTS: code calls it to find its own address on the stack)
     tsx                                                               ; 0923: ba          :
     lda l0100,x                                                       ; 0924: bd 00 01    =..

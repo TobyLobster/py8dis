@@ -276,7 +276,7 @@ def comment_memory_copy_loop(p):
 
     # (The labels aren't named yet, so the text is a LazyString)
     text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
-    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_memory_copy_with_limited_end_loop(p):
@@ -363,7 +363,7 @@ def comment_memory_copy_with_limited_end_loop(p):
 
     # (The labels aren't named yet, so the text is a LazyString)
     text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
-    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
 
 
 # ************************************************************************************************
@@ -437,7 +437,7 @@ def comment_memory_copy_increment(p):
 
     # (The labels aren't named yet, so the text is a LazyString)
     text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
-    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_add_to_y(p):
@@ -530,7 +530,7 @@ def comment_set_memory_r_loop(p, reg, other_reg):
     else:
         # "This loop sets 18 bytes of memory at l20e1+Y to 0"
         text = utils.LazyString("Set%s%s%s", bytes_to_set_string, dest_label, to_value_string)
-    disassembly.comment_binary(comment_loc, text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
 
 # ************************************************************************************************
 def comment_set_memory_x_loop(p):
@@ -570,24 +570,31 @@ def _state_entering(p, label_name):
     return None
 
 def comment_set_memory_one_register_loop(p, reg):
-    """Comment a loop that stores A in a run of bytes, with one register
-    ('reg') as both the index and the count, e.g. 'sta table,y : iny : cpy
-    #16 : bne loop' or 'sta table,x : dex : bpl loop': e.g. 'Clear 16 bytes
-    of memory from table onwards', or 'Set 8 bytes of memory from table+1
-    onwards to 255'.
+    """Comment a loop that stores A in one or more runs of bytes (up to four
+    stores each time round), with one register ('reg') as both the index
+    and the count, e.g. 'sta table,y : iny : cpy #16 : bne loop' or 'sta
+    table,x : sta table+256,x : dex : bne loop': e.g. 'Clear 16 bytes of
+    memory from table onwards', 'Clear 512 bytes of memory from table
+    onwards' (runs that join up are given as one), or 'Set 8 bytes of
+    memory from table+1 onwards to 255'. The comment goes before the
+    loop's label.
 
     The register's first value and A's value are what's known for certain
     on coming into the loop from the instruction before it (see
     join_states_at_labels(), which knows what's known across labels), and
     the loop's start must have just one reference (the branch back to it),
     so that it's the only way in. The bytes are worked out by stepping the
-    register through the loop (see _loop_run()); nothing is commented if
-    its first value isn't known, if the loop doesn't end, if the bytes
-    aren't one run, or if the branch doesn't go back to the loop's start.
-    The first byte is named by its label, and if it isn't the operand's
-    address, the operand is written as that label minus the difference.
-    With an indirect store ('(ptr),y'), the first byte is given as e.g.
-    '(ptr)+2'."""
+    register through the loop (see _loop_run()). If the register's first
+    value isn't known, the loop is described in terms of it where the end
+    is known: counting up to a limit ('Set memory from table+X to table+63
+    to 32', taking X to be below the limit), or counting down to zero
+    ('Set X bytes of memory from table+1 onwards') or past it ('Set X+1
+    bytes of memory from table onwards', taking X to be below $80). Nothing
+    is commented if the loop doesn't end, if the bytes aren't one run, or if
+    the branch doesn't go back to the loop's start. The first byte is named
+    by its label, and if it isn't the operand's address, the operand is
+    written as that label minus the difference. With an indirect store
+    ('(ptr),y'), the first byte is given as e.g. '(ptr)+2'."""
     cpu = session.current().cpu
     for name in ('loop', 'update', 'branch'):
         binary_addr = p.get_binary_address(name)
@@ -597,15 +604,15 @@ def comment_set_memory_one_register_loop(p, reg):
     if not p.check_branch_matches('loop') or p.num_references('loop') != 1:
         return
     state = _state_entering(p, 'loop')
-    if state is None or state[reg].value is None:
+    if state is None:
         return
     start = state[reg].value
     to_value = state['a'].value
     step = 1 if p.get_memory('update') in (OPCODE_INX, OPCODE_INY) else -1
     branch = p.get_memory('branch')
     has_compare = p.get_binary_address('compare') != p.get_binary_address('branch')
+    limit = p.get_memory('compare', 1) if has_compare else None
     if has_compare:
-        limit = p.get_memory('compare', 1)
         if branch == OPCODE_BNE:
             keep_going = lambda r: r != limit
         elif branch == OPCODE_BCC:
@@ -620,43 +627,97 @@ def comment_set_memory_one_register_loop(p, reg):
     else:
         # (BCC without a compare: the carry doesn't change in the loop)
         return
-    run = _loop_run(start, step, keep_going)
-    if run is None:
-        return
-    lowest, count = run
 
-    # The first byte. (Only names in this snippet are asked for: asking
-    # for another would add it to the pattern's names)
+    # (Only names in this snippet are asked for: asking for another would
+    # add it to the pattern's names)
     def matched(name):
         return name in p.labels and p.get_memory(name) is not None
-    if matched('zpptr'):
-        first = utils.LazyString("(%s)%s", p.get_expr('zpptr'), "+{0}".format(lowest) if lowest else "")
-    elif matched('zpaddr'):
-        first = p.get_expr('zpaddr')
-        zp_addr = p.get_memory('zpaddr')
-        if lowest and zp_addr + lowest <= 0xff:
-            # (Named by its own label, e.g. 'l00e2', rather than as 'l0000 + 226')
-            binary_addr = p.get_binary_address('zpaddr')
-            first = disassembly.get_label(zp_addr + lowest, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-        elif lowest:
-            first = make_add(first, lowest)
-    else:
-        first = p.get_expr('addr', label_offset=0, final_offset=lowest)
+
+    # The stores, each as (the name of its operand, and the kind: 'abs',
+    # 'zp' or 'indirect')
+    stores = []
+    for n in range(1, 5):
+        for name, kind in (("addr%d" % n, "abs"), ("zpaddr%d" % n, "zp"), ("zpptr%d" % n, "indirect")):
+            if matched(name):
+                stores.append((name, kind))
+    if not stores:
+        return
+
+    def first_byte(name, kind, lowest):
+        """The first byte the store writes, for the comment: the operand plus
+        'lowest' (and an absolute operand is written as that byte's label
+        minus 'lowest')."""
+        if kind == "indirect":
+            return utils.LazyString("(%s)%s", p.get_expr(name), "+{0}".format(lowest) if lowest else "")
+        if kind == "zp":
+            zp_addr = p.get_memory(name)
+            if lowest and zp_addr + lowest <= 0xff:
+                # (Named by its own label, e.g. 'l00e2', rather than as 'l0000 + 226')
+                return disassembly.get_label(zp_addr + lowest, p.get_binary_address(name), binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+            return make_add(p.get_expr(name), lowest) if lowest else p.get_expr(name)
+        first = p.get_expr(name, label_offset=0, final_offset=lowest)
         if lowest:
-            store_operand = p.get_binary_address('loop') + 1
-            proposed_expression = p.make_subtract_wrapped(first, 'addr', lowest)
+            store_operand = p.get_binary_address(name)
+            proposed_expression = p.make_subtract_wrapped(first, name, lowest)
             new_expression = classification.add_expression(store_operand, proposed_expression, force=False)
             if new_expression is not None and new_expression != proposed_expression:
                 first = make_add(new_expression, lowest)
+        return first
 
-    count_text = utils.count_with_units(count, "byte of memory", "bytes of memory")
     if to_value == 0:
-        text = utils.LazyString("Clear %s from %s onwards", count_text, first)
-    elif to_value is not None:
-        text = utils.LazyString("Set %s from %s onwards to %s", count_text, first, to_value)
+        verb, to_text = "Clear", ""
     else:
-        text = utils.LazyString("Set %s from %s onwards", count_text, first)
-    disassembly.comment_binary(p.get_start_loc(), text, indent=1, align=Align.AFTER_LABEL, auto_generated=True)
+        verb, to_text = "Set", "" if to_value is None else " to {0}".format(to_value)
+    register = reg.upper()
+
+    if start is not None:
+        run = _loop_run(start, step, keep_going)
+        if run is None:
+            return
+        lowest, count = run
+        # Each store's bytes, as (first address, count, store), with those
+        # that join up (absolute stores, one after another) made one
+        runs = []
+        for name, kind in stores:
+            address = p.get_memory(name) + lowest if kind == "abs" else None
+            if runs and address is not None and runs[-1][0] is not None and runs[-1][0] + runs[-1][1] == address:
+                runs[-1] = (runs[-1][0], runs[-1][1] + count, runs[-1][2])
+            else:
+                runs.append((address, count, (name, kind)))
+        parts = []
+        for i, (address, n, (name, kind)) in enumerate(runs):
+            units = ("byte of memory", "bytes of memory") if i == 0 else ("byte", "bytes")
+            parts.append(utils.LazyString("%s from %s onwards", utils.count_with_units(n, *units), first_byte(name, kind, lowest)))
+    elif step == 1 and has_compare and branch in (OPCODE_BNE, OPCODE_BCC) and limit > 0:
+        # Counting up to the limit, from the register's value: the last
+        # byte is at limit-1
+        parts = []
+        for name, kind in stores:
+            if kind == "indirect":
+                last = utils.LazyString("(%s)+%d", p.get_expr(name), limit - 1)
+                parts.append(utils.LazyString("from (%s)+%s to %s", p.get_expr(name), register, last))
+            elif kind == "zp":
+                parts.append(utils.LazyString("from %s+%s to %s", p.get_expr(name), register, make_add(p.get_expr(name), limit - 1)))
+            else:
+                last = p.get_expr(name, label_offset=0, final_offset=limit - 1)
+                parts.append(utils.LazyString("from %s+%s to %s", p.get_expr(name), register, last))
+        parts[0] = utils.LazyString("memory %s", parts[0])
+    elif step == -1 and not has_compare:
+        # Counting down to zero (the register's value down to 1) or past it
+        # (down to 0)
+        count = register if branch == OPCODE_BNE else register + "+1"
+        lowest = 1 if branch == OPCODE_BNE else 0
+        parts = []
+        for i, (name, kind) in enumerate(stores):
+            units = "bytes of memory" if i == 0 else "bytes"
+            parts.append(utils.LazyString("%s %s from %s onwards", count, units, first_byte(name, kind, lowest)))
+    else:
+        return
+
+    # e.g. "Clear 256 bytes of memory from table onwards, and 256 bytes from
+    # table+512 onwards"
+    text = utils.LazyString("%s %s%s", verb, utils.LazyString(", and ".join(["%s"] * len(parts)), *parts), to_text)
+    disassembly.comment_binary(p.get_start_loc(), text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
 
 def comment_set_memory_y_index_loop(p):
     """Post-trace function for a loop that stores A with Y as both the
@@ -895,7 +956,10 @@ branch
 # as code, since their bytes are common in data)
 register_snippet(None, comment_set_memory_y_index_loop, """
 loop
-    sta addr,y | sta (zpptr),y
+    sta addr1,y | sta (zpptr1),y
+?   sta addr2,y | sta (zpptr2),y
+?   sta addr3,y | sta (zpptr3),y
+?   sta addr4,y | sta (zpptr4),y
 update
     iny | dey
 compare
@@ -906,7 +970,10 @@ branch
 
 register_snippet(None, comment_set_memory_x_index_loop, """
 loop
-    sta addr,x | sta zpaddr,x
+    sta addr1,x | sta zpaddr1,x
+?   sta addr2,x | sta zpaddr2,x
+?   sta addr3,x | sta zpaddr3,x
+?   sta addr4,x | sta zpaddr4,x
 update
     inx | dex
 compare

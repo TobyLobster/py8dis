@@ -3,9 +3,9 @@ lffee   = $ffee
 
     * = $4000
 
+// Copy 16 bytes of memory from ca000 to c4010
 pydis_start
 start
-    // Copy 16 bytes of memory from ca000 to c4010
     ldx #$0f                                                          // 4000: a2 0f       ..
 // $4002 referenced 1 time by $4009
 loop_c4002

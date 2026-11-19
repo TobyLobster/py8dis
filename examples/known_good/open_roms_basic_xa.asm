@@ -275,7 +275,7 @@ sub_ca1e4
 // $a1f2 referenced 1 time by $a1ed
 ca1f2
     lda basic_line_number                                             // a1f2: a5 14       ..
-    clc                                                               // a1f4: 18          .
+    clc                                                               // a1f4: 18          .   // Redundant instruction?
 // $a1f5 referenced 2 times by $a1e2, $a1e9
 return_4
     rts                                                               // a1f5: 60          .
@@ -848,7 +848,7 @@ ca5cd
 
 // $a5d5 referenced 1 time by $a5bf
 ca5d5
-    sec                                                               // a5d5: 38          8
+    sec                                                               // a5d5: 38          8   // Redundant instruction?
     lda basic_strings_bottom                                          // a5d6: a5 33       .3
     sbc basic_arrays_end                                              // a5d8: e5 31       .1
     pha                                                               // a5da: 48          h
@@ -976,7 +976,7 @@ ca678
     ldy #0                                                            // a683: a0 00       ..
 // $a685 referenced 1 time by $a68b
 loop_ca685
-    lda (basic_index1),y                                              // a685: b1 22       ."  // Offset is Y=0
+    lda (basic_index1),y                                              // a685: b1 22       ."  // Offset Y=0
     eor basic_index2+1                                                // a687: 45 25       e%
     and basic_index2                                                  // a689: 25 24       %$
     beq loop_ca685                                                    // a68b: f0 f8       ..
@@ -1519,7 +1519,7 @@ laabd
     .byt $a6, $20,   7, $e1, $a0,   1, $b1, $47, $85, $22, $c8, $b1   // aaf9: a6 20 07... . .
     .byt $47, $85, $23, $20, $94, $e4, $20, $5c, $bc                  // ab05: 47 85 23... g.#
 
-    // Copy 3 bytes of memory to fac1_exponent
+// Copy 3 bytes of memory to fac1_exponent
     ldy #2                                                            // ab0e: a0 02       ..
 // $ab10 referenced 1 time by $ab16
 loop_cab10
@@ -2265,7 +2265,7 @@ caf5f
 // $af61 referenced 1 time by $af78
 loop_caf61
     lda #0                                                            // af61: a9 00       ..
-    sta (basic_arrays_end),y                                          // af63: 91 31       .1  // Offset is Y=0
+    sta (basic_arrays_end),y                                          // af63: 91 31       .1  // Offset Y=0
     inc basic_arrays_end                                              // af65: e6 31       .1
     bne caf6b                                                         // af67: d0 02       P.
     inc basic_arrays_end+1                                            // af69: e6 32       .2
@@ -2347,9 +2347,9 @@ cafc9
 sub_cafd4
     lda #0                                                            // afd4: a9 00       ..
     ldy #$1d                                                          // afd6: a0 1d       ..
+// Clear 30 bytes of memory from l0101 onwards
 // $afd8 referenced 1 time by $afdc
 loop_cafd8
-    // Clear 30 bytes of memory from l0101 onwards
     sta l0101,y                                                       // afd8: 99 01 01    ... // A=0
     dey                                                               // afdb: 88          .
     bpl loop_cafd8                                                    // afdc: 10 fa       ..
@@ -2442,7 +2442,7 @@ cb045
     inc l0104                                                         // b060: ee 04 01    ...
 // $b063 referenced 1 time by $b089
 cb063
-    sec                                                               // b063: 38          8
+    sec                                                               // b063: 38          8   // Redundant instruction?
     ror l0102                                                         // b064: 6e 02 01    ... // Rotate in a set bit
     ror l0103                                                         // b067: 6e 03 01    ...
     bcc cb026                                                         // b06a: 90 ba       ..
@@ -2578,7 +2578,7 @@ cb39e
 
     .byt $60                                                          // b3a2: 60          .
 
-    // Copy 12 bytes of memory from la175 to basic_error_vector
+// Copy 12 bytes of memory from la175 to basic_error_vector
     ldy #$0b                                                          // b3a3: a0 0b       ..
 // $b3a5 referenced 1 time by $b3ac
 loop_cb3a5
@@ -2586,7 +2586,7 @@ loop_cb3a5
     sta basic_error_vector,y                                          // b3a8: 99 00 03    ...
     dey                                                               // b3ab: 88          .
     bpl loop_cb3a5                                                    // b3ac: 10 f7       ..
-    // Copy 5 bytes of memory from la181 to basic_float_to_int_vector
+// Copy 5 bytes of memory from la181 to basic_float_to_int_vector
     ldy #4                                                            // b3ae: a0 04       ..
 // $b3b0 referenced 1 time by $b3b7
 loop_cb3b0
@@ -2674,7 +2674,7 @@ loop_cb427
     jsr sub_cbbff                                                     // b427: 20 ff bb     ..
     bcc cb43e                                                         // b42a: 90 12       ..
     inx                                                               // b42c: e8          .
-    sec                                                               // b42d: 38          8
+    sec                                                               // b42d: 38          8   // Redundant instruction?
     lda fac1_exponent                                                 // b42e: a5 61       ..
     sbc le3ba,y                                                       // b430: f9 ba e3    ...
     sta fac1_exponent                                                 // b433: 85 61       ..
@@ -2685,7 +2685,7 @@ loop_cb427
 // $b43e referenced 1 time by $b42a
 cb43e
     txa                                                               // b43e: 8a          .
-    clc                                                               // b43f: 18          .
+    clc                                                               // b43f: 18          .   // Redundant instruction?
     adc #$30 // '0'                                                   // b440: 69 30       .0  // A=character to output
     jsr CHROUT                                                        // b442: 20 d2 ff     R. // Output a character
     dey                                                               // b445: 88          .
@@ -2851,7 +2851,7 @@ cb599
 cb5ad
     sta l0106,y                                                       // b5ad: 99 06 01    ... // A=0
     dey                                                               // b5b0: 88          .
-    sta l0106,y                                                       // b5b1: 99 06 01    ... // A=0
+    sta l0106,y                                                       // b5b1: 99 06 01    ...
     sty l0105                                                         // b5b4: 8c 05 01    ...
     inc l0104                                                         // b5b7: ee 04 01    ...
     rts                                                               // b5ba: 60          .
@@ -2940,7 +2940,7 @@ cb624
 // $b63d referenced 2 times by $b62b, $b634
 cb63d
     inc basic_index2+1                                                // b63d: e6 25       .%
-    sec                                                               // b63f: 38          8
+    sec                                                               // b63f: 38          8   // Redundant instruction?
     lda basic_index1                                                  // b640: a5 22       ."
     sbc le265,y                                                       // b642: f9 65 e2    ...
     sta basic_index1                                                  // b645: 85 22       ."
@@ -3005,7 +3005,7 @@ cb6ad
     txa                                                               // b6ad: 8a          .
     pha                                                               // b6ae: 48          h
     ldx l0100                                                         // b6af: ae 00 01    ...
-    clc                                                               // b6b2: 18          .
+    clc                                                               // b6b2: 18          .   // Redundant instruction?
     adc #$80                                                          // b6b3: 69 80       ..
     sta basic_input_buffer,x                                          // b6b5: 9d 00 02    ...
     jsr le28e                                                         // b6b8: 20 8e e2     ..
@@ -3080,7 +3080,7 @@ sub_cb795
     lda basic_variable_ptr                                            // b7a3: a5 47       .g
     cmp basic_arrays_end                                              // b7a5: c5 31       E1
     bne cb7ab                                                         // b7a7: d0 02       P.
-    sec                                                               // b7a9: 38          8
+    sec                                                               // b7a9: 38          8   // Redundant instruction?
     rts                                                               // b7aa: 60          .
 
 // $b7ab referenced 2 times by $b7a1, $b7a7
@@ -3408,7 +3408,7 @@ cba3d
     bcs cba84                                                         // ba54: b0 2e       ..
     jsr sub_cba7f                                                     // ba56: 20 7f ba     ..
     bcs cba84                                                         // ba59: b0 29       .)
-    clc                                                               // ba5b: 18          .
+    clc                                                               // ba5b: 18          .   // Redundant instruction?
     pla                                                               // ba5c: 68          .
     adc basic_line_number                                             // ba5d: 65 14       ..
     sta basic_line_number                                             // ba5f: 85 14       ..
@@ -3417,7 +3417,7 @@ cba3d
     sta basic_line_number+1                                           // ba64: 85 15       ..
     bcs cba86                                                         // ba66: b0 1e       ..
     pla                                                               // ba68: 68          .
-    clc                                                               // ba69: 18          .
+    clc                                                               // ba69: 18          .   // Redundant instruction?
     adc basic_line_number                                             // ba6a: 65 14       ..
     sta basic_line_number                                             // ba6c: 85 14       ..
     lda basic_line_number+1                                           // ba6e: a5 15       ..
@@ -3542,7 +3542,7 @@ cbb67
     dey                                                               // bb72: 88          .   // Y=0
     cmp #$ff                                                          // bb73: c9 ff       I.
     bne cbb79                                                         // bb75: d0 02       P.
-    sec                                                               // bb77: 38          8
+    sec                                                               // bb77: 38          8   // Redundant instruction?
     rts                                                               // bb78: 60          .
 
 // $bb79 referenced 3 times by $bb6d, $bb75, $bb85

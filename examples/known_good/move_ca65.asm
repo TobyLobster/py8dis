@@ -16,8 +16,8 @@ lffe3   = $ffe3
 
     .org $2000
 
+; Copy 15 bytes of memory from c201e to print_and_inc_zp
 pydis_start:
-    ; Copy 15 bytes of memory from c201e to print_and_inc_zp
     ldx #0                                                            ; 2000: a2 00       ..
 ; $2002 referenced 1 time by $200b
 loop_c2002:

@@ -265,9 +265,9 @@ OSWRCH  = &fff4
 .sub_ce075
     lda #&20 ; ' '                                                    ; e075: a9 20       .
     ldy #6                                                            ; e077: a0 06       ..
+; Set 7 bytes of memory from l00a5 onwards to 32
 ; &e079 referenced 1 time by &e07d
 .loop_ce079
-    ; Set 7 bytes of memory from l00a5 onwards to 32
     sta l00a5,y                                                       ; e079: 99 a5 00    ...            ; A=&20
     dey                                                               ; e07c: 88          .
     bpl loop_ce079                                                    ; e07d: 10 fa       ..
@@ -1881,9 +1881,9 @@ le95a = ce959+1
 .ce971
     lda #0                                                            ; e971: a9 00       ..
     ldx #8                                                            ; e973: a2 08       ..
+; Clear 8 bytes of memory from l009c onwards
 ; &e975 referenced 1 time by &e978
 .loop_ce975
-    ; Clear 8 bytes of memory from l009c onwards
     sta l009b,x                                                       ; e975: 95 9b       ..             ; A=0
     dex                                                               ; e977: ca          .
     bne loop_ce975                                                    ; e978: d0 fb       ..
@@ -1968,7 +1968,7 @@ le98b = ce98a+1
     inx                                                               ; e9ea: e8          .
     dec l00c5                                                         ; e9eb: c6 c5       ..
     bne loop_ce9dc                                                    ; e9ed: d0 ed       ..
-    ; Clear 16 bytes of memory at l2200+Y
+; Clear 16 bytes of memory at l2200+Y
     ldx #&10                                                          ; e9ef: a2 10       ..
     lda #0                                                            ; e9f1: a9 00       ..
 ; &e9f3 referenced 1 time by &e9f8
@@ -2794,16 +2794,17 @@ le98b = ce98a+1
 .ceeaa
     lda #&20 ; ' '                                                    ; eeaa: a9 20       .
     ldy #0                                                            ; eeac: a0 00       ..
+; Set 1024 bytes of memory from l0400 onwards to 32
 ; &eeae referenced 1 time by &eebb
 .loop_ceeae
     sta l0400,y                                                       ; eeae: 99 00 04    ...            ; A=&20
-    sta l0500,y                                                       ; eeb1: 99 00 05    ...            ; A=&20
-    sta l0600,y                                                       ; eeb4: 99 00 06    ...            ; A=&20
-    sta l0700,y                                                       ; eeb7: 99 00 07    ...            ; A=&20
+    sta l0500,y                                                       ; eeb1: 99 00 05    ...
+    sta l0600,y                                                       ; eeb4: 99 00 06    ...
+    sta l0700,y                                                       ; eeb7: 99 00 07    ...
     iny                                                               ; eeba: c8          .
     bne loop_ceeae                                                    ; eebb: d0 f1       ..
     sty l00cf                                                         ; eebd: 84 cf       ..             ; Y=0
-    sty l00d1                                                         ; eebf: 84 d1       ..             ; Y=0
+    sty l00d1                                                         ; eebf: 84 d1       ..
     ldy #&0d                                                          ; eec1: a0 0d       ..
 ; &eec3 referenced 1 time by &eecd
 .loop_ceec3
@@ -2825,9 +2826,9 @@ le98b = ce98a+1
     ldx l00d2                                                         ; eedf: a6 d2       ..
     rts                                                               ; eee1: 60          `
 
+; Copy 16 bytes of memory from default_vectors to lodvec
 ; &eee2 referenced 1 time by &e00a
 .ceee2
-    ; Copy 16 bytes of memory from default_vectors to lodvec
     ldx #&0c                                                          ; eee2: a2 0c       ..
 ; &eee4 referenced 1 time by &eeed
 .loop_ceee4

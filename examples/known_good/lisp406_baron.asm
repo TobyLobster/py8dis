@@ -235,8 +235,8 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta LSCHAR                                     ; 808a: 8d 30 04    .0.
     ldx #3                                         ; 808d: a2 03       ..
     lda #'0'                                       ; 808f: a9 30       .0
+; Set 4 bytes of memory from GENCNT onwards to 48
 .LOOP5
-    ; Set 4 bytes of memory from GENCNT onwards to 48
     sta GENCNT,x                                   ; 8091: 9d 34 04    .4. ; A=&30
     dex                                            ; 8094: ca          .
     bpl LOOP5                                      ; 8095: 10 fa       ..
@@ -275,10 +275,10 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta RELBS+1                                    ; 80cd: 85 7b       .{
     ldy #0                                         ; 80cf: a0 00       ..
 .LOOP3
-    lda (RELBS),y                                  ; 80d1: b1 7a       .z  ; Offset is Y=0
+    lda (RELBS),y                                  ; 80d1: b1 7a       .z  ; Offset Y=0
     clc                                            ; 80d3: 18          .
     adc #>(HILISP-LISVAL)                          ; 80d4: 69 57       iW
-    sta (RELBS),y                                  ; 80d6: 91 7a       .z  ; Offset is Y=0
+    sta (RELBS),y                                  ; 80d6: 91 7a       .z
     lda RELBS                                      ; 80d8: a5 7a       .z
     clc                                            ; 80da: 18          .
     adc #3                                         ; 80db: 69 03       i.  ; Next vector
@@ -659,7 +659,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta (RETADD),y                                 ; 835a: 91 85       ..
     ldy POPPY                                      ; 835c: a4 8d       ..  ; Fetch Y back
     bne POPPLE                                     ; 835e: d0 e1       ..  ; More bindings?
-    lda (SP),y                                     ; 8360: b1 7e       .~  ; Offset is Y=0
+    lda (SP),y                                     ; 8360: b1 7e       .~  ; Offset Y=0
     clc                                            ; 8362: 18          .   ; Set stack pointer
     adc SP                                         ; 8363: 65 7e       e~  ; to bottom of work-
     sta SP                                         ; 8365: 85 7e       .~  ; Space area as if
@@ -676,8 +676,8 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lda (SP),y                                     ; 8374: b1 7e       .~
     pha                                            ; 8376: 48          H
     dey                                            ; 8377: 88          .
+; Copy Y bytes of memory to TVSEXT
 .MORSP
-    ; Copy Y bytes of memory to TVSEXT
     lda (SP),y                                     ; 8378: b1 7e       .~  ; Copy back TVS
     sta TVSEXT - 1,y                               ; 837a: 99 32 00    .2. ; WSA, WSB and WSC
     dey                                            ; 837d: 88          .
@@ -752,8 +752,8 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta (SP),y                                     ; 83d8: 91 7e       .~
     dey                                            ; 83da: 88          .
     dey                                            ; 83db: 88          .
+; Copy Y+1 bytes of memory from BINDER
 .PILE
-    ; Copy Y+1 bytes of memory from BINDER
     lda BINDER,y                                   ; 83dc: b9 32 00    .2.
     sta (SP),y                                     ; 83df: 91 7e       .~
     dey                                            ; 83e1: 88          .
@@ -801,7 +801,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     adc #3                                         ; 8417: 69 03       i.  ; Carry is set ; Carry is set, so adding 4
     pha                                            ; 8419: 48          H
     lda WSD+1                                      ; 841a: a5 84       ..
-    sta (SP),y                                     ; 841c: 91 7e       .~  ; Offset is Y=4
+    sta (SP),y                                     ; 841c: 91 7e       .~  ; Offset Y=4
     dey                                            ; 841e: 88          .   ; Y=3
     lda WSD                                        ; 841f: a5 83       ..
     sta (SP),y                                     ; 8421: 91 7e       .~
@@ -1450,7 +1450,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta ARG                                        ; 8810: 85 30       .0
     lda POINT+1                                    ; 8812: a5 7b       .{
     sta ARG+1                                      ; 8814: 85 31       .1
-    ; Copy 4 bytes of memory from WSA
+; Copy 4 bytes of memory from WSA
     ldy #4                                         ; 8816: a0 04       ..
 .MORODD
     lda WSA - 1,y                                  ; 8818: b9 33 00    .3.
@@ -2179,14 +2179,14 @@ section pydis, org = &8000, filename = "lisp406_baron"
 .PINT
     ldx #5                                         ; 8c57: a2 05       ..
     lda #0                                         ; 8c59: a9 00       ..
+; Clear 6 bytes of memory from NBUFF onwards
 .CLDIV
-    ; Clear 6 bytes of memory from NBUFF onwards
     sta NBUFF,x                                    ; 8c5b: 95 14       ..  ; A=0
     dex                                            ; 8c5d: ca          .
     bpl CLDIV                                      ; 8c5e: 10 fb       ..
-    sta XTNDL                                      ; 8c60: 85 74       .t  ; A=0
-    sta XTNDL+1                                    ; 8c62: 85 75       .u  ; A=0
-    sta AUXL+1                                     ; 8c64: 85 77       .w  ; A=0
+    sta XTNDL                                      ; 8c60: 85 74       .t
+    sta XTNDL+1                                    ; 8c62: 85 75       .u
+    sta AUXL+1                                     ; 8c64: 85 77       .w
     lda #&0a                                       ; 8c66: a9 0a       ..
     sta AUXL                                       ; 8c68: 85 76       .v
 .NOMSIN
@@ -2507,7 +2507,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     ; **** CONS
 .CONS
     jsr ALPAIR                                     ; 8e1e: 20 53 84     S.
-    ; Copy 4 bytes of memory from ARGA
+; Copy 4 bytes of memory from ARGA
     ldy #4                                         ; 8e21: a0 04       ..
 .CONSLP
     lda ARGA - 1,y                                 ; 8e23: b9 39 00    .9.
@@ -2962,7 +2962,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sec                                            ; 90e4: 38          8
     sbc RELOFF                                     ; 90e5: ed 33 04    .3.
     sta AREVAL+1                                   ; 90e8: 8d 2e 04    ...
-    sta (RELBS),y                                  ; 90eb: 91 7a       .z  ; Real end of IMAGE ; Offset is Y=1
+    sta (RELBS),y                                  ; 90eb: 91 7a       .z  ; Real end of IMAGE
     lda #2                                         ; 90ed: a9 02       ..  ; Get first item
     bpl NXITU                                      ; 90ef: 10 49       .I  ; ALWAYS branch
 
@@ -3032,11 +3032,11 @@ section pydis, org = &8000, filename = "lisp406_baron"
     cmp AREVAL                                     ; 9154: cd 2d 04    .-.
     bcc OKOUT                                      ; 9157: 90 02       ..
 .NOTOK
-    sec                                            ; 9159: 38          8
+    sec                                            ; 9159: 38          8   ; Redundant instruction?
     rts                                            ; 915a: 60          `   ; End reached
 
 .OKOUT
-    clc                                            ; 915b: 18          .
+    clc                                            ; 915b: 18          .   ; Redundant instruction?
     rts                                            ; 915c: 60          `   ; End not reached
 
 
@@ -3087,7 +3087,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     beq OVFERR                                     ; 919b: f0 76       .v  ; Divide by zero!
     lda (ARGA),y                                   ; 919d: b1 3a       .:
     sta ACL+1                                      ; 919f: 85 73       .s
-    lda (ARGB),y                                   ; 91a1: b1 3c       .<  ; Offset is Y=3
+    lda (ARGB),y                                   ; 91a1: b1 3c       .<
     sta AUXL+1                                     ; 91a3: 85 77       .w
     jsr DIVPM                                      ; 91a5: 20 02 a0     .. ; Divide
     lsr SIGN                                       ; 91a8: 46 78       Fx  ; Check sign
@@ -3134,7 +3134,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lda #0                                         ; 91e9: a9 00       ..
     sbc (ARGA),y                                   ; 91eb: f1 3a       .:
 .FINONE
-    sta (POINT),y                                  ; 91ed: 91 7a       .z  ; Offset is Y=3
+    sta (POINT),y                                  ; 91ed: 91 7a       .z  ; Offset Y=3
     jmp AMADE                                      ; 91ef: 4c 67 88    Lg.
 
 
@@ -3195,7 +3195,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     adc (ARG),y                                    ; 924e: 71 30       q0
     bvs OVFERR                                     ; 9250: 70 c1       p.
 .PEX
-    sta (POINT),y                                  ; 9252: 91 7a       .z  ; Offset is Y=3
+    sta (POINT),y                                  ; 9252: 91 7a       .z  ; Offset Y=3
     dex                                            ; 9254: ca          .
     dex                                            ; 9255: ca          .
     cpx #&0a                                       ; 9256: e0 0a       ..
@@ -3392,10 +3392,10 @@ section pydis, org = &8000, filename = "lisp406_baron"
     iny                                            ; 937e: c8          .   ; Y=2
     lda (WSB),y                                    ; 937f: b1 36       .6
     sta WSD+1                                      ; 9381: 85 84       ..
-    lda (WSD,x)                                    ; 9383: a1 83       ..  ; Offset is X=0
+    lda (WSD,x)                                    ; 9383: a1 83       ..  ; Offset X=0
     bpl ALERR                                      ; 9385: 10 10       ..
     lda ARGB+1                                     ; 9387: a5 3d       .=
-    cmp (WSD),y                                    ; 9389: d1 83       ..  ; Offset is Y=2
+    cmp (WSD),y                                    ; 9389: d1 83       ..
     bne ROCKON                                     ; 938b: d0 d6       ..
     dey                                            ; 938d: 88          .   ; Y=1
     lda ARGB                                       ; 938e: a5 3c       .<
@@ -3482,7 +3482,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lda ARGC+1                                     ; 9419: a5 3f       .?
     sta ARG+1                                      ; 941b: 85 31       .1
     sta (POINT),y                                  ; 941d: 91 7a       .z
-    lda (ARGA),y                                   ; 941f: b1 3a       .:  ; Offset is Y=4
+    lda (ARGA),y                                   ; 941f: b1 3a       .:
     dey                                            ; 9421: 88          .   ; Y=3
     sta (WSB),y                                    ; 9422: 91 36       .6
     lda ARGC                                       ; 9424: a5 3e       .>
@@ -3759,7 +3759,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta WSD                                        ; 95da: 85 83       ..
     lda POINT                                      ; 95dc: a5 7a       .z
     sta (WSD),y                                    ; 95de: 91 83       ..
-    sta (WSA),y                                    ; 95e0: 91 34       .4  ; Offset is Y=3
+    sta (WSA),y                                    ; 95e0: 91 34       .4
     iny                                            ; 95e2: c8          .   ; Y=4
     lda POINT+1                                    ; 95e3: a5 7b       .{
     sta (WSD),y                                    ; 95e5: 91 83       ..
@@ -4074,11 +4074,11 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lda (ARGE),y                                   ; 97e0: b1 42       .B  ; Get carry
     cmp #1                                         ; 97e2: c9 01       ..  ; And adjust flag
     php                                            ; 97e4: 08          .
-    lda (ARGB),y                                   ; 97e5: b1 3c       .<  ; Get A ; Offset is Y=2
+    lda (ARGB),y                                   ; 97e5: b1 3c       .<  ; Get A
     pha                                            ; 97e7: 48          H
-    lda (ARGC),y                                   ; 97e8: b1 3e       .>  ; Get X ; Offset is Y=2
+    lda (ARGC),y                                   ; 97e8: b1 3e       .>  ; Get X
     tax                                            ; 97ea: aa          .
-    lda (ARGD),y                                   ; 97eb: b1 40       .@  ; Get Y ; Offset is Y=2
+    lda (ARGD),y                                   ; 97eb: b1 40       .@  ; Get Y
     tay                                            ; 97ed: a8          .
     pla                                            ; 97ee: 68          h
     plp                                            ; 97ef: 28          (
@@ -4171,7 +4171,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta ARG                                        ; 9867: 85 30       .0
     lda TVS+1,x                                    ; 9869: b5 31       .1
     sta ARG+1                                      ; 986b: 85 31       .1
-    lda (ARG),y                                    ; 986d: b1 30       .0  ; Offset is Y=2
+    lda (ARG),y                                    ; 986d: b1 30       .0  ; Offset Y=2
     sta OSWBUF-10,x                                ; 986f: 9d f6 05    ...
     iny                                            ; 9872: c8          .   ; Y=3
     lda (ARG),y                                    ; 9873: b1 30       .0
@@ -4254,8 +4254,8 @@ section pydis, org = &8000, filename = "lisp406_baron"
 .GCTIMZ
     lda #0                                         ; 98d6: a9 00       ..
     ldx #4                                         ; 98d8: a2 04       ..
+; Clear 5 bytes of memory from GCTIME onwards
 .MGCTIM
-    ; Clear 5 bytes of memory from GCTIME onwards
     sta GCTIME,x                                   ; 98da: 9d 20 04    . . ; A=0
     dex                                            ; 98dd: ca          .
     bpl MGCTIM                                     ; 98de: 10 fa       ..
@@ -4362,7 +4362,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     bpl PEXIST                                     ; 9993: 10 01       ..  ; Point on screen
     dex                                            ; 9995: ca          .   ; X=&ff
 .PEXIST
-    sta (POINT),y                                  ; 9996: 91 7a       .z  ; Offset is Y=2
+    sta (POINT),y                                  ; 9996: 91 7a       .z  ; Offset Y=2
     iny                                            ; 9998: c8          .   ; Y=3
     txa                                            ; 9999: 8a          .
     sta (POINT),y                                  ; 999a: 91 7a       .z
@@ -4418,7 +4418,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
 
 .INKER
     lda #&ff                                       ; 99eb: a9 ff       ..
-    sta (POINT),y                                  ; 99ed: 91 7a       .z  ; Offset is Y=2
+    sta (POINT),y                                  ; 99ed: 91 7a       .z  ; Offset Y=2
     iny                                            ; 99ef: c8          .   ; Y=3
     sta (POINT),y                                  ; 99f0: 91 7a       .z
     jmp AMADE                                      ; 99f2: 4c 67 88    Lg.
@@ -4509,9 +4509,9 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta WSA                                        ; 9a73: 85 34       .4
     lda TVS+1,x                                    ; 9a75: b5 31       .1
     sta WSA+1                                      ; 9a77: 85 35       .5
-    lda (WSA),y                                    ; 9a79: b1 34       .4  ; Offset is Y=2
-    and (POINT),y                                  ; 9a7b: 31 7a       1z  ; Offset is Y=2
-    sta (POINT),y                                  ; 9a7d: 91 7a       .z  ; Offset is Y=2
+    lda (WSA),y                                    ; 9a79: b1 34       .4  ; Offset Y=2
+    and (POINT),y                                  ; 9a7b: 31 7a       1z
+    sta (POINT),y                                  ; 9a7d: 91 7a       .z
     iny                                            ; 9a7f: c8          .   ; Y=3
     lda (WSA),y                                    ; 9a80: b1 34       .4
     and (POINT),y                                  ; 9a82: 31 7a       1z
@@ -4539,9 +4539,9 @@ section pydis, org = &8000, filename = "lisp406_baron"
     sta WSA                                        ; 9aa3: 85 34       .4
     lda TVS+1,x                                    ; 9aa5: b5 31       .1
     sta WSA+1                                      ; 9aa7: 85 35       .5
-    lda (WSA),y                                    ; 9aa9: b1 34       .4  ; Offset is Y=2
-    ora (POINT),y                                  ; 9aab: 11 7a       .z  ; Offset is Y=2
-    sta (POINT),y                                  ; 9aad: 91 7a       .z  ; Offset is Y=2
+    lda (WSA),y                                    ; 9aa9: b1 34       .4  ; Offset Y=2
+    ora (POINT),y                                  ; 9aab: 11 7a       .z
+    sta (POINT),y                                  ; 9aad: 91 7a       .z
     iny                                            ; 9aaf: c8          .   ; Y=3
     lda (WSA),y                                    ; 9ab0: b1 34       .4
     ora (POINT),y                                  ; 9ab2: 11 7a       .z
@@ -4847,7 +4847,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lsr a                                          ; 9c77: 4a          J
 .STUSE
     rol a                                          ; 9c78: 2a          *
-    clc                                            ; 9c79: 18          .
+    clc                                            ; 9c79: 18          .   ; Redundant instruction?
     bmi SIXG                                       ; 9c7a: 30 0a       0.
     cmp #SUBRF                                     ; 9c7c: c9 08       ..
     bcs SIXG                                       ; 9c7e: b0 06       ..
@@ -4874,7 +4874,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lda CELL+1                                     ; 9ca1: a5 7d       .}
     sbc AREVAL+1                                   ; 9ca3: ed 2e 04    ...
     bcs TADJ                                       ; 9ca6: b0 07       ..
-    lda (CELL),y                                   ; 9ca8: b1 7c       .|  ; Offset is Y=0
+    lda (CELL),y                                   ; 9ca8: b1 7c       .|  ; Offset Y=0
     lsr a                                          ; 9caa: 4a          J
     bcs STUSE                                      ; 9cab: b0 cb       ..
     bcc DLOP                                       ; 9cad: 90 8e       ..  ; ALWAYS branch
@@ -5117,7 +5117,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lsr a                                          ; 9e29: 4a          J
 .GCAON
     rol a                                          ; 9e2a: 2a          *
-    clc                                            ; 9e2b: 18          .
+    clc                                            ; 9e2b: 18          .   ; Redundant instruction?
     bmi SIXP                                       ; 9e2c: 30 0e       0.
     cmp #SUBRF                                     ; 9e2e: c9 08       ..
     bcs SIXP                                       ; 9e30: b0 0a       ..
@@ -5272,7 +5272,7 @@ DWARF=NERRC-1
     lda (SP,x)                                     ; 9f04: a1 7e       .~  ; Get binding state
     tay                                            ; 9f06: a8          .
     iny                                            ; 9f07: c8          .
-    clc                                            ; 9f08: 18          .
+    clc                                            ; 9f08: 18          .   ; Redundant instruction?
     adc (SP),y                                     ; 9f09: 71 7e       q~  ; Add work space
     tay                                            ; 9f0b: a8          .
     iny                                            ; 9f0c: c8          .
@@ -5316,7 +5316,7 @@ DWARF=NERRC-1
     and #&10                                       ; 9f4b: 29 10       ).  ; Clear top arg flag
     sta TOPBIN                                     ; 9f4d: 85 0f       ..
     beq BINS                                       ; 9f4f: f0 36       .6
-    lda (SP,x)                                     ; 9f51: a1 7e       .~  ; Any bound vars? ; Offset is X=0
+    lda (SP,x)                                     ; 9f51: a1 7e       .~  ; Any bound vars? ; Offset X=0
     beq BINS                                       ; 9f53: f0 32       .2
 
     ; **** Do bound var pairs
@@ -5523,7 +5523,7 @@ DWARF=NERRC-1
     dey                                            ; a06d: 88          .
     bpl MDIV3                                      ; a06e: 10 f3       ..
     bcc DIV40C                                     ; a070: 90 0e       ..
-    ; Copy 5 bytes of memory from TEMP40 to REM40
+; Copy 5 bytes of memory from TEMP40 to REM40
     ldx #4                                         ; a072: a2 04       ..
 .MDIV4
     lda TEMP40,x                                   ; a074: bd 11 04    ...

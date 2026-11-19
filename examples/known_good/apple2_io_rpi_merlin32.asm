@@ -97,7 +97,7 @@ Driver
     beq ReadBlock                                                     ; c75b: f0 10       p.
     cmp #2                                                            ; c75d: c9 02       I.
     beq WriteBlock                                                    ; c75f: f0 38       p.
-    sec                                                               ; c761: 38          .
+    sec                                                               ; c761: 38          .   ; Redundant instruction?
     lda #$53                                                          ; c762: a9 53       ).
     rts                                                               ; c764: 60          .
 

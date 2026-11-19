@@ -31,7 +31,7 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
     adc l0071                                                         ; 2018: 65 71       eq
     sta l0072                                                         ; 201a: 85 72       .r
     lda #1                                                            ; 201c: a9 01       ..
-    sta (l0074),y                                                     ; 201e: 91 74       .t  ; Offset is Y=&11
+    sta (l0074),y                                                     ; 201e: 91 74       .t  ; Offset Y=&11
     ldy #0                                                            ; 2020: a0 00       ..
     lda (l0074),y                                                     ; 2022: b1 74       .t
     rts                                                               ; 2024: 60          `
@@ -40,9 +40,9 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c2025
     ldy #0                                                            ; 2025: a0 00       ..
     tya                                                               ; 2027: 98          .   ; A=0
+; Clear 16 bytes of memory from table1 onwards
 ; &2028 referenced 1 time by &202e
 .loop_c2028
-    ; Clear 16 bytes of memory from table1 onwards
     sta table1,y                                                      ; 2028: 99 59 20    .Y  ; A=0
     iny                                                               ; 202b: c8          .
     cpy #&10                                                          ; 202c: c0 10       ..
@@ -53,9 +53,9 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c2031
     lda #&ff                                                          ; 2031: a9 ff       ..
     ldx #7                                                            ; 2033: a2 07       ..
+; Set 8 bytes of memory from table2 onwards to 255
 ; &2035 referenced 1 time by &2039
 .loop_c2035
-    ; Set 8 bytes of memory from table2 onwards to 255
     sta table2,x                                                      ; 2035: 9d 69 20    .i  ; A=&ff
     dex                                                               ; 2038: ca          .
     bpl loop_c2035                                                    ; 2039: 10 fa       ..
@@ -65,9 +65,9 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c203c
     lda #0                                                            ; 203c: a9 00       ..
     ldy #4                                                            ; 203e: a0 04       ..
+; Clear 4 bytes of memory from l2072 onwards
 ; &2040 referenced 1 time by &2044
 .loop_c2040
-    ; Clear 4 bytes of memory from l2072 onwards
     sta l2072 - 1,y                                                   ; 2040: 99 71 20    .q  ; A=0
     dey                                                               ; 2043: 88          .
     bne loop_c2040                                                    ; 2044: d0 fa       ..
@@ -77,9 +77,9 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c2047
     lda #0                                                            ; 2047: a9 00       ..
     tay                                                               ; 2049: a8          .   ; Y=0
+; Clear 256 bytes of memory from (l0074) onwards
 ; &204a referenced 1 time by &204d
 .loop_c204a
-    ; Clear 256 bytes of memory from (l0074) onwards
     sta (l0074),y                                                     ; 204a: 91 74       .t  ; A=0
     iny                                                               ; 204c: c8          .
     bne loop_c204a                                                    ; 204d: d0 fb       ..

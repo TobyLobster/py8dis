@@ -1513,7 +1513,7 @@ OSBYTE  = &fff4
     lda read + 1                                                      ; 19e9: a5 77       .w
     adc #>spritetable                                                 ; 19eb: 69 11       i.
     sta read + 1                                                      ; 19ed: 85 77       .w
-    lda (read),y                                                      ; 19ef: b1 76       .v             ; Offset is Y=0
+    lda (read),y                                                      ; 19ef: b1 76       .v             ; Offset Y=0
     sta spritewidthpixels                                             ; 19f1: 85 79       .y
     clc                                                               ; 19f3: 18          .
     adc #7                                                            ; 19f4: 69 07       i.
@@ -1673,7 +1673,7 @@ OSBYTE  = &fff4
 .dontawardextralife
     cmp #&0a                                                          ; 1ac4: c9 0a       ..
     bcc nomorecarry                                                   ; 1ac6: 90 0e       ..
-    sec                                                               ; 1ac8: 38          8
+    sec                                                               ; 1ac8: 38          8              ; Redundant instruction?
     sbc #&0a                                                          ; 1ac9: e9 0a       ..
     sta score,x                                                       ; 1acb: 95 28       .(
     jsr updatedigit                                                   ; 1acd: 20 d8 1a     ..
@@ -1783,9 +1783,10 @@ OSBYTE  = &fff4
     sta numbirds                                                      ; 1b62: 85 57       .W
     lda #0                                                            ; 1b64: a9 00       ..
     tax                                                               ; 1b66: aa          .              ; X=0
+; Clear 512 bytes of memory from mapdata onwards
 .clearmaploop
     sta mapdata,x                                                     ; 1b67: 9d 00 06    ...            ; A=0
-    sta mapdata + $0100,x                                             ; 1b6a: 9d 00 07    ...            ; A=0
+    sta mapdata + $0100,x                                             ; 1b6a: 9d 00 07    ...
     dex                                                               ; 1b6d: ca          .
     bne clearmaploop                                                  ; 1b6e: d0 f7       ..
     lda #PlatformColour                                               ; 1b70: a9 0a       ..
@@ -2045,7 +2046,7 @@ OSBYTE  = &fff4
 .get10sloop
     cmp #&0a                                                          ; 1d43: c9 0a       ..
     bcc got10s                                                        ; 1d45: 90 07       ..
-    sec                                                               ; 1d47: 38          8
+    sec                                                               ; 1d47: 38          8              ; Redundant instruction?
     sbc #&0a                                                          ; 1d48: e9 0a       ..
     inx                                                               ; 1d4a: e8          .
     jmp get10sloop                                                    ; 1d4b: 4c 43 1d    LC.
@@ -2057,7 +2058,7 @@ OSBYTE  = &fff4
 .get100sloop
     cmp #&0a                                                          ; 1d53: c9 0a       ..
     bcc got100s                                                       ; 1d55: 90 07       ..
-    sec                                                               ; 1d57: 38          8
+    sec                                                               ; 1d57: 38          8              ; Redundant instruction?
     sbc #&0a                                                          ; 1d58: e9 0a       ..
     inx                                                               ; 1d5a: e8          .
     jmp get100sloop                                                   ; 1d5b: 4c 53 1d    LS.
@@ -2428,7 +2429,7 @@ OSBYTE  = &fff4
 
 .notjumpedtotopofscreen
     lda playerfracx                                                   ; 1fad: a5 44       .D
-    clc                                                               ; 1faf: 18          .
+    clc                                                               ; 1faf: 18          .              ; Redundant instruction?
     adc movementx                                                     ; 1fb0: 65 46       eF
     cmp #3                                                            ; 1fb2: c9 03       ..
     bne notcatchingladdermidjump                                      ; 1fb4: d0 60       .`
@@ -2544,7 +2545,7 @@ OSBYTE  = &fff4
     cmp playerx                                                       ; 2071: c5 40       .@
     bcc nolifttolandon                                                ; 2073: 90 4a       .J
     lda playery                                                       ; 2075: a5 41       .A
-    sec                                                               ; 2077: 38          8
+    sec                                                               ; 2077: 38          8              ; Redundant instruction?
     sbc #&11                                                          ; 2078: e9 11       ..
     sta temp4                                                         ; 207a: 85 8b       ..
     sbc #2                                                            ; 207c: e9 02       ..
@@ -2593,7 +2594,7 @@ OSBYTE  = &fff4
     jsr tryhorizontalmovement                                         ; 20bf: 20 76 22     v"
     bcc jumpmove                                                      ; 20c2: 90 09       ..
     lda #0                                                            ; 20c4: a9 00       ..
-    sec                                                               ; 20c6: 38          8
+    sec                                                               ; 20c6: 38          8              ; Redundant instruction?
     sbc movementx                                                     ; 20c7: e5 46       .F
     sta movementx                                                     ; 20c9: 85 46       .F
     sta jumpdir                                                       ; 20cb: 85 4b       .K
@@ -3501,7 +3502,7 @@ OSBYTE  = &fff4
 
 .animatebirdleft
     lda birddata,x                                                    ; 2633: bd 00 04    ...
-    sec                                                               ; 2636: 38          8
+    sec                                                               ; 2636: 38          8              ; Redundant instruction?
     sbc #4                                                            ; 2637: e9 04       ..
     sta birddata,x                                                    ; 2639: 9d 00 04    ...
     lda birdstatus,x                                                  ; 263c: bd 14 04    ...
@@ -3751,14 +3752,14 @@ OSBYTE  = &fff4
     jsr gethiscoreaddr                                                ; 279c: 20 7c 27     |'
     ldy #&0f                                                          ; 279f: a0 0f       ..
     lda #' '                                                          ; 27a1: a9 20       .
+; Set 5 bytes of memory from (hiscoreaddr)+11 onwards to 32
 .clearhiscorenameloop
-    ; Set 5 bytes of memory from (hiscoreaddr)+11 onwards to 32
     sta (hiscoreaddr),y                                               ; 27a3: 91 76       .v             ; A=&20
     dey                                                               ; 27a5: 88          .
     cpy #&0a                                                          ; 27a6: c0 0a       ..
     bne clearhiscorenameloop                                          ; 27a8: d0 f9       ..
     lda #'F'                                                          ; 27aa: a9 46       .F
-    sta (hiscoreaddr),y                                               ; 27ac: 91 76       .v             ; Offset is Y=&0a
+    sta (hiscoreaddr),y                                               ; 27ac: 91 76       .v             ; Offset Y=&0a
     dey                                                               ; 27ae: 88          .              ; Y=9
     lda #char_ampersand                                               ; 27af: a9 26       .&
     sta (hiscoreaddr),y                                               ; 27b1: 91 76       .v
@@ -3767,8 +3768,8 @@ OSBYTE  = &fff4
     sta (hiscoreaddr),y                                               ; 27b6: 91 76       .v
     dey                                                               ; 27b8: 88          .              ; Y=7
     lda #0                                                            ; 27b9: a9 00       ..
+; Clear 8 bytes of memory from (hiscoreaddr) onwards
 .clearhiscoreloop
-    ; Clear 8 bytes of memory from (hiscoreaddr) onwards
     sta (hiscoreaddr),y                                               ; 27bb: 91 76       .v             ; A=0
     dey                                                               ; 27bd: 88          .
     bpl clearhiscoreloop                                              ; 27be: 10 fb       ..
@@ -3807,7 +3808,7 @@ OSBYTE  = &fff4
 
 .inserthiscore
     jsr shufflehiscores                                               ; 27ed: 20 06 28     .(
-    ; Copy 8 bytes of memory from score
+; Copy 8 bytes of memory from score
     ldy #7                                                            ; 27f0: a0 07       ..
 .inserthiscoreloop
     lda score,y                                                       ; 27f2: b9 28 00    .(.
@@ -3816,8 +3817,8 @@ OSBYTE  = &fff4
     bpl inserthiscoreloop                                             ; 27f8: 10 f8       ..
     ldy #&0f                                                          ; 27fa: a0 0f       ..
     lda #' '                                                          ; 27fc: a9 20       .
+; Set 8 bytes of memory from (hiscoreaddr)+8 onwards to 32
 .insertblanknameloop
-    ; Set 8 bytes of memory from (hiscoreaddr)+8 onwards to 32
     sta (hiscoreaddr),y                                               ; 27fe: 91 76       .v             ; A=&20
     dey                                                               ; 2800: 88          .
     cpy #7                                                            ; 2801: c0 07       ..
@@ -3835,7 +3836,7 @@ OSBYTE  = &fff4
     cpx temp3                                                         ; 280c: e4 8a       ..
     bcc shuffled                                                      ; 280e: 90 22       ."
     jsr gethiscoreaddr                                                ; 2810: 20 7c 27     |'
-    ; Copy 16 bytes of memory to bigbirdxpos
+; Copy 16 bytes of memory to bigbirdxpos
     ldy #&0f                                                          ; 2813: a0 0f       ..
 .readhiscoreloop
     lda (hiscoreaddr),y                                               ; 2815: b1 76       .v
@@ -3845,7 +3846,7 @@ OSBYTE  = &fff4
     ldx temp4                                                         ; 281d: a6 8b       ..
     inx                                                               ; 281f: e8          .
     jsr gethiscoreaddr                                                ; 2820: 20 7c 27     |'
-    ; Copy 16 bytes of memory from bigbirdxpos
+; Copy 16 bytes of memory from bigbirdxpos
     ldy #&0f                                                          ; 2823: a0 0f       ..
 .writehiscoreloop
     lda bigbirdxpos,y                                                 ; 2825: b9 30 00    .0.
@@ -4399,7 +4400,7 @@ OSBYTE  = &fff4
     asl a                                                             ; 2c16: 0a          .
     asl a                                                             ; 2c17: 0a          .
     tax                                                               ; 2c18: aa          .
-    ; Clear 8 bytes of memory at playerscore+X
+; Clear 8 bytes of memory at playerscore+X
     ldy #7                                                            ; 2c19: a0 07       ..
     lda #0                                                            ; 2c1b: a9 00       ..
 .resetplayerscores2
@@ -4707,7 +4708,7 @@ OSBYTE  = &fff4
     ldy #&10                                                          ; 2e2a: a0 10       ..
 .clearcollectedflags
     sta collectedeggsflags,x                                          ; 2e2c: 9d 10 05    ...            ; A=0
-    sta collectedseedflags,x                                          ; 2e2f: 9d 20 05    . .            ; A=0
+    sta collectedseedflags,x                                          ; 2e2f: 9d 20 05    . .
     inx                                                               ; 2e32: e8          .
     dey                                                               ; 2e33: 88          .
     bne clearcollectedflags                                           ; 2e34: d0 f6       ..
@@ -5466,14 +5467,14 @@ OSBYTE  = &fff4
     cmp #&0b                                                          ; 335e: c9 0b       ..  :0c5e[1]
     bcc jumpingupsound                                                ; 3360: 90 0a       ..  :0c60[1]
     lda #&be                                                          ; 3362: a9 be       ..  :0c62[1]
-    sec                                                               ; 3364: 38          8   :0c64[1]
+    sec                                                               ; 3364: 38          8   :0c64[1]   ; Redundant instruction?
     sbc jumpfalldist                                                  ; 3365: e5 4a       .J  :0c65[1]
     sbc jumpfalldist                                                  ; 3367: e5 4a       .J  :0c67[1]
     jmp playsoundblip                                                 ; 3369: 4c 8b 0c    L.. :0c69[1]
 
 .jumpingupsound
     lda #&96                                                          ; 336c: a9 96       ..  :0c6c[1]
-    clc                                                               ; 336e: 18          .   :0c6e[1]
+    clc                                                               ; 336e: 18          .   :0c6e[1]   ; Redundant instruction?
     adc jumpfalldist                                                  ; 336f: 65 4a       eJ  :0c6f[1]
     adc jumpfalldist                                                  ; 3371: 65 4a       eJ  :0c71[1]
     jmp playsoundblip                                                 ; 3373: 4c 8b 0c    L.. :0c73[1]
@@ -5482,7 +5483,7 @@ OSBYTE  = &fff4
     cmp #3                                                            ; 3376: c9 03       ..  :0c76[1]
     bne notfallingsound                                               ; 3378: d0 0a       ..  :0c78[1]
     lda #&6e                                                          ; 337a: a9 6e       .n  :0c7a[1]
-    sec                                                               ; 337c: 38          8   :0c7c[1]
+    sec                                                               ; 337c: 38          8   :0c7c[1]   ; Redundant instruction?
     sbc jumpfalldist                                                  ; 337d: e5 4a       .J  :0c7d[1]
     sbc jumpfalldist                                                  ; 337f: e5 4a       .J  :0c7f[1]
     jmp playsoundblip                                                 ; 3381: 4c 8b 0c    L.. :0c81[1]

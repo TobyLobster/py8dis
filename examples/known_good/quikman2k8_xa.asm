@@ -268,9 +268,9 @@ loop_c10fa
     jsr sub_c19e8                                                     // 1113: 20 e8 19     ..
     ldx #0                                                            // 1116: a2 00       ..
     lda #$20 // ' '                                                   // 1118: a9 20       .
+// Set 5 bytes of memory from screen_memory+281 onwards to 32
 // $111a referenced 1 time by $1120
 loop_c111a
-    // Set 5 bytes of memory from screen_memory+281 onwards to 32
     sta screen_memory+281,x                                           // 111a: 9d 19 1f    ... // A=$20
     inx                                                               // 111d: e8          .
     cpx #5                                                            // 111e: e0 05       ..
@@ -349,7 +349,7 @@ c1189
     bcs c119a                                                         // 1191: b0 07       ..
     lda joyval                                                        // 1193: a5 42       .b
     sta qmandir                                                       // 1195: 85 43       .c
-    clc                                                               // 1197: 18          .
+    clc                                                               // 1197: 18          .   // Redundant instruction?
     bcc c11a1                                                         // 1198: 90 07       ..  // ALWAYS branch
 
 // $119a referenced 1 time by $1191
@@ -617,7 +617,7 @@ c1328
     cmp spritex,y                                                     // 132b: d9 a2 02    Y..
     bne c1343                                                         // 132e: d0 13       P.
     lda spritey                                                       // 1330: ad a3 02    ...
-    sec                                                               // 1333: 38          8
+    sec                                                               // 1333: 38          8   // Redundant instruction?
     sbc spritey,y                                                     // 1334: f9 a3 02    ...
     bcs c133b                                                         // 1337: b0 02       ..
     eor #$ff                                                          // 1339: 49 ff       i.
@@ -634,7 +634,7 @@ c1343
     cmp spritey,y                                                     // 1346: d9 a3 02    Y..
     bne c135a                                                         // 1349: d0 0f       P.
     lda spritex                                                       // 134b: ad a2 02    ...
-    sec                                                               // 134e: 38          8
+    sec                                                               // 134e: 38          8   // Redundant instruction?
     sbc spritex,y                                                     // 134f: f9 a2 02    ...
     bcs c1356                                                         // 1352: b0 02       ..
     eor #$ff                                                          // 1354: 49 ff       i.
@@ -1053,7 +1053,7 @@ c15db
     inx                                                               // 15eb: e8          .
     stx basic_float_to_ascii_temp                                     // 15ec: 86 ff       ..
     lda fruitlevel                                                    // 15ee: a5 49       .i
-    sec                                                               // 15f0: 38          8
+    sec                                                               // 15f0: 38          8   // Redundant instruction?
     sbc basic_float_to_ascii_temp                                     // 15f1: e5 ff       ..
     tay                                                               // 15f3: a8          .
     cpx #7                                                            // 15f4: e0 07       ..
@@ -1122,7 +1122,7 @@ c163d
     cpx #2                                                            // 1649: e0 02       ..
     bcs c165c                                                         // 164b: b0 0f       ..
     lda rs232_input_buffer_ptr                                        // 164d: a5 f7       ..
-    clc                                                               // 164f: 18          .
+    clc                                                               // 164f: 18          .   // Redundant instruction?
     adc l1c90,x                                                       // 1650: 7d 90 1c    ...
     bcc c1657                                                         // 1653: 90 02       ..
     inc rs232_input_buffer_ptr+1                                      // 1655: e6 f8       ..
@@ -1135,7 +1135,7 @@ c1657
 // $165c referenced 1 time by $164b
 c165c
     lda rs232_input_buffer_ptr                                        // 165c: a5 f7       ..
-    sec                                                               // 165e: 38          8
+    sec                                                               // 165e: 38          8   // Redundant instruction?
     sbc l1c8e,x                                                       // 165f: fd 8e 1c    ...
     bcs c1666                                                         // 1662: b0 02       ..
     dec rs232_input_buffer_ptr+1                                      // 1664: c6 f8       F.
@@ -1206,7 +1206,7 @@ c16c7
     lda usr_jmp                                                       // 16c9: a5 00       ..
     cmp #5                                                            // 16cb: c9 05       I.
     bne c1691                                                         // 16cd: d0 c2       PB
-    // Copy 17 bytes of memory from sprite to spritelast
+// Copy 17 bytes of memory from sprite to spritelast
     ldx #0                                                            // 16cf: a2 00       ..
 // $16d1 referenced 1 time by $16da
 loop_c16d1
@@ -1344,7 +1344,7 @@ loop_c1778
     bcs c1787                                                         // 177e: b0 07       ..
     tay                                                               // 1780: a8          .
     lda saveback,y                                                    // 1781: b9 dd 02    ...
-    clc                                                               // 1784: 18          .
+    clc                                                               // 1784: 18          .   // Redundant instruction?
     bcc loop_c1778                                                    // 1785: 90 f1       ..  // ALWAYS branch
 
 // $1787 referenced 2 times by $177a, $177e
@@ -1372,9 +1372,9 @@ sub_c1790
 // $17ab referenced 1 time by $17a2
 c17ab
     lda l02de,x                                                       // 17ab: bd de 02    ...
-    sta (rs232_output_buffer_ptr),y                                   // 17ae: 91 f9       ..  // Offset is Y=0
+    sta (rs232_output_buffer_ptr),y                                   // 17ae: 91 f9       ..  // Offset Y=0
     lda #1                                                            // 17b0: a9 01       ..
-    sta (free_zero_page+3),y                                          // 17b2: 91 fe       ..  // Offset is Y=0
+    sta (free_zero_page+3),y                                          // 17b2: 91 fe       ..
 // $17b4 referenced 1 time by $17a9
 return_3
     rts                                                               // 17b4: 60          .
@@ -1393,9 +1393,9 @@ sub_c17b5
     tax                                                               // 17ca: aa          .
     ldy #0                                                            // 17cb: a0 00       ..
     tya                                                               // 17cd: 98          .   // A=0
+// Clear 16 bytes of memory from tape_buffer+32 onwards
 // $17ce referenced 1 time by $17d4
 loop_c17ce
-    // Clear 16 bytes of memory from tape_buffer+32 onwards
     sta tape_buffer+32,y                                              // 17ce: 99 5c 03    ... // A=0
     iny                                                               // 17d1: c8          H
     cpy #$10                                                          // 17d2: c0 10       ..
@@ -1457,7 +1457,7 @@ c1814
     lsr                                                               // 1822: 4a          j
     lsr                                                               // 1823: 4a          j
     lsr                                                               // 1824: 4a          j
-    clc                                                               // 1825: 18          .
+    clc                                                               // 1825: 18          .   // Redundant instruction?
     adc basic_int_to_float_vector+1                                   // 1826: 65 06       ..
     sta basic_int_to_float_vector+1                                   // 1828: 85 06       ..
     ldy #0                                                            // 182a: a0 00       ..
@@ -1510,11 +1510,11 @@ sub_c185b
     beq return_4                                                      // 1876: f0 08       ..
 // $1878 referenced 1 time by $186f
 c1878
-    lda (free_zero_page+1),y                                          // 1878: b1 fc       ..  // Offset is Y=0
-    sta (free_zero_page+3),y                                          // 187a: 91 fe       ..  // Offset is Y=0
+    lda (free_zero_page+1),y                                          // 1878: b1 fc       ..  // Offset Y=0
+    sta (free_zero_page+3),y                                          // 187a: 91 fe       ..
     inx                                                               // 187c: e8          .
     txa                                                               // 187d: 8a          .
-    sta (rs232_output_buffer_ptr),y                                   // 187e: 91 f9       ..  // Offset is Y=0
+    sta (rs232_output_buffer_ptr),y                                   // 187e: 91 f9       ..
 // $1880 referenced 1 time by $1876
 return_4
     rts                                                               // 1880: 60          .
@@ -1614,9 +1614,9 @@ loop_c1913
     inx                                                               // 191d: e8          .
     cpx #6                                                            // 191e: e0 06       ..
     bne loop_c1913                                                    // 1920: d0 f1       P.
+// Copy 6 bytes of memory from l1a06 to l1a0f
 // $1922 referenced 1 time by $191b
 c1922
-    // Copy 6 bytes of memory from l1a06 to l1a0f
     ldx #0                                                            // 1922: a2 00       ..
 // $1924 referenced 1 time by $192d
 loop_c1924
@@ -1625,9 +1625,9 @@ loop_c1924
     inx                                                               // 192a: e8          .
     cpx #6                                                            // 192b: e0 06       ..
     bne loop_c1924                                                    // 192d: d0 f5       P.
+// Copy 21 bytes of memory from l1a00 to pydis_end
 // $192f referenced 1 time by $1919
 c192f
-    // Copy 21 bytes of memory from l1a00 to pydis_end
     ldx #$15                                                          // 192f: a2 15       ..
 // $1931 referenced 1 time by $1938
 loop_c1931
@@ -1703,7 +1703,7 @@ c198c
     adc #$10                                                          // 19a0: 69 10       ..
     cmp #$f1                                                          // 19a2: c9 f1       I.
     bcc c19a9                                                         // 19a4: 90 03       ..
-    sec                                                               // 19a6: 38          8
+    sec                                                               // 19a6: 38          8   // Redundant instruction?
     sbc #1                                                            // 19a7: e9 01       ..
 // $19a9 referenced 1 time by $19a4
 c19a9
@@ -1714,7 +1714,7 @@ c19a9
 // $19af referenced 1 time by $199a
 c19af
     lda vic_voice3_frequency                                          // 19af: ad 0c 90    ...
-    sec                                                               // 19b2: 38          8
+    sec                                                               // 19b2: 38          8   // Redundant instruction?
     sbc #$10                                                          // 19b3: e9 10       ..
     sta vic_voice3_frequency                                          // 19b5: 8d 0c 90    ...
 // $19b8 referenced 2 times by $1993, $19ad

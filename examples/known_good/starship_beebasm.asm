@@ -698,7 +698,7 @@ OSBYTE  = &fff4
 .torpedo_present
     sec                                                               ; 233c: 38          8   :123c[1]
     sbc #1                                                            ; 233d: e9 01       ..  :123d[1]
-    sta (temp0_low),y                                                 ; 233f: 91 80       ..  :123f[1]   ; Offset is Y=0
+    sta (temp0_low),y                                                 ; 233f: 91 80       ..  :123f[1]   ; Offset Y=0
     bne torpedo_still_alive                                           ; 2341: d0 09       ..  :1241[1]
     dec number_of_live_starship_torpedoes                             ; 2343: ce 57 26    .W& :1243[1]
     jsr plot_expiring_torpedo                                         ; 2346: 20 8a 13     .. :1246[1]
@@ -819,7 +819,7 @@ OSBYTE  = &fff4
     sta temp0_high                                                    ; 240d: 85 81       ..  :130d[1]
     ldy #0                                                            ; 240f: a0 00       ..  :130f[1]
 .loop5
-    lda (temp0_low),y                                                 ; 2411: b1 80       ..  :1311[1]   ; Offset is Y=0
+    lda (temp0_low),y                                                 ; 2411: b1 80       ..  :1311[1]   ; Offset Y=0
     beq empty_torpedo_slot                                            ; 2413: f0 0e       ..  :1313[1]
     lda temp0_low                                                     ; 2415: a5 80       ..  :1315[1]
     clc                                                               ; 2417: 18          .   :1317[1]
@@ -834,7 +834,7 @@ OSBYTE  = &fff4
 ; ----------------------------------------------------------------------------------
 .empty_torpedo_slot
     lda starship_torpedoes_time_to_live                               ; 2423: ad 53 0e    .S. :1323[1]
-    sta (temp0_low),y                                                 ; 2426: 91 80       ..  :1326[1]   ; Offset is Y=0
+    sta (temp0_low),y                                                 ; 2426: 91 80       ..  :1326[1]   ; Offset Y=0
     lda temp0_low                                                     ; 2428: a5 80       ..  :1328[1]
     clc                                                               ; 242a: 18          .   :132a[1]
     adc #4                                                            ; 242b: 69 04       i.  :132b[1]
@@ -1104,7 +1104,7 @@ OSBYTE  = &fff4
 .enemy_torpedo_in_slot
     sec                                                               ; 25f0: 38          8   :14f0[1]
     sbc #1                                                            ; 25f1: e9 01       ..  :14f1[1]
-    sta (temp0_low),y                                                 ; 25f3: 91 80       ..  :14f3[1]   ; Offset is Y=0
+    sta (temp0_low),y                                                 ; 25f3: 91 80       ..  :14f3[1]   ; Offset Y=0
     bne enemy_torpedo_still_alive                                     ; 25f5: d0 06       ..  :14f5[1]
     jsr plot_expiring_torpedo                                         ; 25f7: 20 8a 13     .. :14f7[1]
     jmp move_to_next_enemy_torpedo                                    ; 25fa: 4c 89 15    L.. :14fa[1]
@@ -1136,7 +1136,7 @@ OSBYTE  = &fff4
     bcs remove_torpedo                                                ; 2625: b0 15       ..  :1525[1]
     ldy #2                                                            ; 2627: a0 02       ..  :1527[1]
     lda sine_table,x                                                  ; 2629: bd 58 0e    .X. :1529[1]
-    clc                                                               ; 262c: 18          .   :152c[1]
+    clc                                                               ; 262c: 18          .   :152c[1]   ; Redundant instruction?
     adc (temp0_low),y                                                 ; 262d: 71 80       q.  :152d[1]
     sta (temp0_low),y                                                 ; 262f: 91 80       ..  :152f[1]
     sec                                                               ; 2631: 38          8   :1531[1]
@@ -1154,7 +1154,7 @@ OSBYTE  = &fff4
 
 ; ----------------------------------------------------------------------------------
 .consider_collisions
-    lda (temp0_low),y                                                 ; 2644: b1 80       ..  :1544[1]   ; Offset is Y=2
+    lda (temp0_low),y                                                 ; 2644: b1 80       ..  :1544[1]   ; Offset Y=2
     cmp starship_maximum_x_for_collisions_with_enemy_torpedoes        ; 2646: cd d5 25    ..% :1546[1]
     bcs enemy_torpedo_missed_starship                                 ; 2649: b0 28       .(  :1549[1]
     cmp starship_minimum_x_for_collisions_with_enemy_torpedoes        ; 264b: cd d6 25    ..% :154b[1]
@@ -2050,7 +2050,7 @@ OSBYTE  = &fff4
 .calculate_pixel_position_in_bar
     cmp #&33                                                          ; 2c5d: c9 33       .3  :1b5d[1]
     bcc finished_calculating_pixel_position_in_bar                    ; 2c5f: 90 06       ..  :1b5f[1]
-    sec                                                               ; 2c61: 38          8   :1b61[1]
+    sec                                                               ; 2c61: 38          8   :1b61[1]   ; Redundant instruction?
     sbc #&32                                                          ; 2c62: e9 32       .2  :1b62[1]
     dex                                                               ; 2c64: ca          .   :1b64[1]
     bpl calculate_pixel_position_in_bar                               ; 2c65: 10 f6       ..  :1b65[1]
@@ -2490,11 +2490,11 @@ OSBYTE  = &fff4
     adc (temp0_low),y                                                 ; 2f15: 71 80       q.  :1e15[1]
     bcc skip20                                                        ; 2f17: 90 05       ..  :1e17[1]
     tya                                                               ; 2f19: 98          .   :1e19[1]   ; A=0
-    sta (temp0_low),y                                                 ; 2f1a: 91 80       ..  :1e1a[1]   ; Offset is Y=0
+    sta (temp0_low),y                                                 ; 2f1a: 91 80       ..  :1e1a[1]
     beq move_to_next_starship_explosion_piece                         ; 2f1c: f0 0d       ..  :1e1c[1]   ; ALWAYS branch
 
 .skip20
-    sta (temp0_low),y                                                 ; 2f1e: 91 80       ..  :1e1e[1]   ; Offset is Y=0
+    sta (temp0_low),y                                                 ; 2f1e: 91 80       ..  :1e1e[1]   ; Offset Y=0
     txa                                                               ; 2f20: 8a          .   :1e20[1]
     ldy #2                                                            ; 2f21: a0 02       ..  :1e21[1]
     sec                                                               ; 2f23: 38          8   :1e23[1]
@@ -2669,16 +2669,16 @@ OSBYTE  = &fff4
     lda rnd_1                                                         ; 3040: ad d1 1c    ... :1f40[1]
     and #&3c                                                          ; 3043: 29 3c       )<  :1f43[1]
     bne not_a_segment                                                 ; 3045: d0 06       ..  :1f45[1]
-    lda (temp0_low),y                                                 ; 3047: b1 80       ..  :1f47[1]   ; Offset is Y=1
+    lda (temp0_low),y                                                 ; 3047: b1 80       ..  :1f47[1]
     ora #&80                                                          ; 3049: 09 80       ..  :1f49[1]
-    sta (temp0_low),y                                                 ; 304b: 91 80       ..  :1f4b[1]   ; Offset is Y=1
+    sta (temp0_low),y                                                 ; 304b: 91 80       ..  :1f4b[1]
 .not_a_segment
     dey                                                               ; 304d: 88          .   :1f4d[1]   ; Y=0
     lda rnd_1                                                         ; 304e: ad d1 1c    ... :1f4e[1]
     and #&1f                                                          ; 3051: 29 1f       ).  :1f51[1]
     clc                                                               ; 3053: 18          .   :1f53[1]
     adc #1                                                            ; 3054: 69 01       i.  :1f54[1]
-    sta (temp0_low),y                                                 ; 3056: 91 80       ..  :1f56[1]   ; Offset is Y=0
+    sta (temp0_low),y                                                 ; 3056: 91 80       ..  :1f56[1]
     rts                                                               ; 3058: 60          `   :1f58[1]
 
     equb &ea, &ea, &ea, &ea                                           ; 3059: ea ea ea... ... :1f59[1]
@@ -2772,7 +2772,7 @@ OSBYTE  = &fff4
     txa                                                               ; 30f9: 8a          .   :1ff9[1]
     asl a                                                             ; 30fa: 0a          .   :1ffa[1]
     asl a                                                             ; 30fb: 0a          .   :1ffb[1]
-    clc                                                               ; 30fc: 18          .   :1ffc[1]
+    clc                                                               ; 30fc: 18          .   :1ffc[1]   ; Redundant instruction?
     adc (temp5),y                                                     ; 30fd: 71 86       q.  :1ffd[1]
     sta (temp5),y                                                     ; 30ff: 91 86       ..  :1fff[1]
 .move_to_next_piece_after_dey
@@ -3759,7 +3759,7 @@ OSBYTE  = &fff4
     bne leave_after_clearing_carry                                    ; 37d6: d0 16       ..  :26d6[1]
     ldy #0                                                            ; 37d8: a0 00       ..  :26d8[1]
 .find_enemy_torpedo_slot_loop
-    lda (temp0_low),y                                                 ; 37da: b1 80       ..  :26da[1]   ; Offset is Y=0
+    lda (temp0_low),y                                                 ; 37da: b1 80       ..  :26da[1]   ; Offset Y=0
     beq free_slot                                                     ; 37dc: f0 12       ..  :26dc[1]
     lda temp0_low                                                     ; 37de: a5 80       ..  :26de[1]
     clc                                                               ; 37e0: 18          .   :26e0[1]
@@ -4141,7 +4141,7 @@ OSBYTE  = &fff4
 
 .escape_capsule_collided_with_enemy_ship
     lda maximum_number_of_enemy_ships                                 ; 3a65: ad 4f 0e    .O. :2965[1]
-    sec                                                               ; 3a68: 38          8   :2968[1]
+    sec                                                               ; 3a68: 38          8   :2968[1]   ; Redundant instruction?
     sbc enemy_ships_still_to_consider                                 ; 3a69: ed 54 0e    .T. :2969[1]
     sta x_pixels                                                      ; 3a6c: 85 7a       .z  :296c[1]
     asl a                                                             ; 3a6e: 0a          .   :296e[1]
@@ -4255,7 +4255,7 @@ OSBYTE  = &fff4
     bcc skip28                                                        ; 3b44: 90 02       ..  :2a44[1]
     inc temp0_high                                                    ; 3b46: e6 81       ..  :2a46[1]
 .skip28
-    lda (temp0_low),y                                                 ; 3b48: b1 80       ..  :2a48[1]   ; Offset is Y=0
+    lda (temp0_low),y                                                 ; 3b48: b1 80       ..  :2a48[1]   ; Offset Y=0
     bne find_free_torpedo_slot                                        ; 3b4a: d0 ec       ..  :2a4a[1]
     rts                                                               ; 3b4c: 60          `   :2a4c[1]
 
@@ -4948,7 +4948,7 @@ OSBYTE  = &fff4
     beq return_1                                                      ; 3ef9: f0 63       .c  :2df9[1]
 .zero_score_delate
     sta score_delta_low                                               ; 3efb: 8d 63 2d    .c- :2dfb[1]   ; A=0
-    sta score_delta_high                                              ; 3efe: 8d 64 2d    .d- :2dfe[1]   ; A=0
+    sta score_delta_high                                              ; 3efe: 8d 64 2d    .d- :2dfe[1]
 ; calculate the characters to display the score, then display them
 .convert_score_as_bcd_to_score_as_digits
     lda score_as_bcd + 2                                              ; 3f01: ad 67 2d    .g- :2e01[1]
@@ -5445,8 +5445,8 @@ OSBYTE  = &fff4
     lda #&59                                                          ; 42a1: a9 59       .Y  :31a1[1]
     sta temp0_high                                                    ; 42a3: 85 81       ..  :31a3[1]
     ldx #8                                                            ; 42a5: a2 08       ..  :31a5[1]
+; Copy 64 bytes of memory
 .plot_static_row_loop
-    ; Copy 64 bytes of memory
     ldy #&3f                                                          ; 42a7: a0 3f       .?  :31a7[1]
 .plot_static_column_loop
     lda (temp5),y                                                     ; 42a9: b1 86       ..  :31a9[1]
@@ -5515,8 +5515,8 @@ OSBYTE  = &fff4
 .clear_long_range_scanner_row_loop
     ldy #&3f                                                          ; 430f: a0 3f       .?  :320f[1]
     lda #0                                                            ; 4311: a9 00       ..  :3211[1]
+; Clear 64 bytes of memory from (temp0_low) onwards
 .clear_long_range_scanner_column_loop
-    ; Clear 64 bytes of memory from (temp0_low) onwards
     sta (temp0_low),y                                                 ; 4313: 91 80       ..  :3213[1]   ; A=0
     dey                                                               ; 4315: 88          .   :3215[1]
     bpl clear_long_range_scanner_column_loop                          ; 4316: 10 fb       ..  :3216[1]
@@ -5926,21 +5926,21 @@ OSBYTE  = &fff4
     sta escape_capsule_destroyed                                      ; 460f: 8d 90 28    ..( :350f[1]
     sta score_delta_high                                              ; 4612: 8d 64 2d    .d- :3512[1]
     sta score_delta_low                                               ; 4615: 8d 63 2d    .c- :3515[1]   ; A=0
-    sta damage_high                                                   ; 4618: 8d 1e 19    ... :3518[1]   ; A=0
-    sta damage_low                                                    ; 461b: 8d 1f 19    ... :351b[1]   ; A=0
-    sta starship_energy_divided_by_sixteen                            ; 461e: 8d 22 19    .". :351e[1]   ; A=0
-    sta rotation_damper                                               ; 4621: 8d 2c 19    .,. :3521[1]   ; A=0
-    sta velocity_damper                                               ; 4624: 8d 31 19    .1. :3524[1]   ; A=0
-    sta velocity_gauge_position                                       ; 4627: 8d 61 2d    .a- :3527[1]   ; A=0
-    sta rotation_gauge_position                                       ; 462a: 8d 62 2d    .b- :352a[1]   ; A=0
-    sta starship_velocity_low                                         ; 462d: 8d 01 0f    ... :352d[1]   ; A=0
-    sta starship_rotation_magnitude                                   ; 4630: 8d 03 0f    ... :3530[1]   ; A=0
-    sta starship_rotation_cosine                                      ; 4633: 8d 04 0f    ... :3533[1]   ; A=0
-    sta starship_rotation_sine_magnitude                              ; 4636: 8d 05 0f    ... :3536[1]   ; A=0
-    sta starship_angle_delta                                          ; 4639: 8d 33 0e    .3. :3539[1]   ; A=0
-    sta previous_starship_automatic_shields                           ; 463c: 8d 3a 19    .:. :353c[1]   ; A=0
-    sta sound_needed_for_low_energy                                   ; 463f: 8d f1 25    ..% :353f[1]   ; A=0
-    sta energy_flash_timer                                            ; 4642: 8d f2 25    ..% :3542[1]   ; A=0
+    sta damage_high                                                   ; 4618: 8d 1e 19    ... :3518[1]
+    sta damage_low                                                    ; 461b: 8d 1f 19    ... :351b[1]
+    sta starship_energy_divided_by_sixteen                            ; 461e: 8d 22 19    .". :351e[1]
+    sta rotation_damper                                               ; 4621: 8d 2c 19    .,. :3521[1]
+    sta velocity_damper                                               ; 4624: 8d 31 19    .1. :3524[1]
+    sta velocity_gauge_position                                       ; 4627: 8d 61 2d    .a- :3527[1]
+    sta rotation_gauge_position                                       ; 462a: 8d 62 2d    .b- :352a[1]
+    sta starship_velocity_low                                         ; 462d: 8d 01 0f    ... :352d[1]
+    sta starship_rotation_magnitude                                   ; 4630: 8d 03 0f    ... :3530[1]
+    sta starship_rotation_cosine                                      ; 4633: 8d 04 0f    ... :3533[1]
+    sta starship_rotation_sine_magnitude                              ; 4636: 8d 05 0f    ... :3536[1]
+    sta starship_angle_delta                                          ; 4639: 8d 33 0e    .3. :3539[1]
+    sta previous_starship_automatic_shields                           ; 463c: 8d 3a 19    .:. :353c[1]
+    sta sound_needed_for_low_energy                                   ; 463f: 8d f1 25    ..% :353f[1]
+    sta energy_flash_timer                                            ; 4642: 8d f2 25    ..% :3542[1]
     lda #4                                                            ; 4645: a9 04       ..  :3545[1]
     sta starship_velocity_high                                        ; 4647: 8d 00 0f    ... :3547[1]
     lda #1                                                            ; 464a: a9 01       ..  :354a[1]
@@ -6136,7 +6136,7 @@ OSBYTE  = &fff4
     cmp #4                                                            ; 47a8: c9 04       ..  :36a8[1]
     bcs skip_enemy_regeneration                                       ; 47aa: b0 0e       ..  :36aa[1]
     lda enemy_ships_energy,x                                          ; 47ac: bd 89 04    ... :36ac[1]
-    clc                                                               ; 47af: 18          .   :36af[1]
+    clc                                                               ; 47af: 18          .   :36af[1]   ; Redundant instruction?
     adc regeneration_rate_for_enemy_ships                             ; 47b0: 6d b2 34    m.4 :36b0[1]
     bcc skip_ceiling3                                                 ; 47b3: 90 02       ..  :36b3[1]
     lda #&ff                                                          ; 47b5: a9 ff       ..  :36b5[1]
@@ -6321,7 +6321,7 @@ OSBYTE  = &fff4
     sta score_as_bcd                                                  ; 4906: 8d 65 2d    .e- :3806[1]
     lda maximum_number_of_stars_in_game                               ; 4909: ad b9 34    ..4 :3809[1]
     sta maximum_number_of_stars                                       ; 490c: 8d 50 0e    .P. :380c[1]
-    ; Copy 4 bytes of memory from initial_enemy_ship_spawning_probabilities to probability_of_new_enemy_ship_being_defensive_about_damage
+; Copy 4 bytes of memory from initial_enemy_ship_spawning_probabilities to probability_of_new_enemy_ship_being_defensive_about_damage
     ldy #3                                                            ; 490f: a0 03       ..  :380f[1]
 .reset_enemy_ship_spawning_probabilities_loop
     lda initial_enemy_ship_spawning_probabilities,y                   ; 4911: b9 cc 33    ..3 :3811[1]
@@ -6342,8 +6342,8 @@ OSBYTE  = &fff4
     sta starship_collided_with_enemy_ship                             ; 493b: 8d de 25    ..% :383b[1]
     sta starship_fired_torpedo                                        ; 493e: 8d 58 26    .X& :383e[1]
     sta enemy_ship_fired_torpedo                                      ; 4941: 8d dc 1c    ... :3841[1]   ; A=0
-    sta enemy_ships_collided_with_each_other                          ; 4944: 8d d1 17    ... :3844[1]   ; A=0
-    sta number_of_delay_loops                                         ; 4947: 8d 2d 0e    .-. :3847[1]   ; A=0
+    sta enemy_ships_collided_with_each_other                          ; 4944: 8d d1 17    ... :3844[1]
+    sta number_of_delay_loops                                         ; 4947: 8d 2d 0e    .-. :3847[1]
     jsr apply_velocity_to_enemy_ships                                 ; 494a: 20 31 16     1. :384a[1]
     lda #&ff                                                          ; 494d: a9 ff       ..  :384d[1]
     sta how_enemy_ship_was_damaged                                    ; 494f: 8d e0 1c    ... :384f[1]
@@ -7293,7 +7293,7 @@ OSBYTE  = &fff4
 .consider_next_record
     ; add 16 to X
     txa                                                               ; 561f: 8a          .   :451f[1]
-    clc                                                               ; 5620: 18          .   :4520[1]
+    clc                                                               ; 5620: 18          .   :4520[1]   ; Redundant instruction?
     adc #&10                                                          ; 5621: 69 10       i.  :4521[1]
     tax                                                               ; 5623: aa          .   :4523[1]
     dec temp8                                                         ; 5624: c6 75       .u  :4524[1]

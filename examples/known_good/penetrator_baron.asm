@@ -1669,7 +1669,7 @@ l5fac = logo_picture+8108
 ; &614d referenced 1 time by &6146
 .c614d
     lda playerShipX                                                   ; 614d: a5 7c       %.
-    clc                                                               ; 614f: 18          .
+    clc                                                               ; 614f: 18          .   ; Redundant instruction?
     adc #2                                                            ; 6150: 69 02       ..
     sta lb31c,x                                                       ; 6152: 9d 1c b3    ..3
     lda playerShipY                                                   ; 6155: a5 7d       %.
@@ -3195,7 +3195,7 @@ l6721 = loop_c671f+2
     lda #&5f                                                          ; 6b63: a9 5f       ).
     ldx #6                                                            ; 6b65: a2 06       ".
     stx tempBlock+18                                                  ; 6b67: 86 68       ..
-    ; Set 6 bytes of memory to 95
+; Set 6 bytes of memory to 95
     ldy #0                                                            ; 6b69: a0 00        .
 ; &6b6b referenced 1 time by &6b6f
 .loop_c6b6b
@@ -3733,7 +3733,7 @@ l6721 = loop_c671f+2
 ; &6ee0 referenced 1 time by &6ed5
 .c6ee0
     lda zWorldPtr                                                     ; 6ee0: a5 50       %.
-    sec                                                               ; 6ee2: 38          .
+    sec                                                               ; 6ee2: 38          .   ; Redundant instruction?
     sbc #3                                                            ; 6ee3: e9 03       i.
     sta zWorldPtr                                                     ; 6ee5: 85 50       ..
     bcs c6eeb                                                         ; 6ee7: b0 02       0.
@@ -3792,24 +3792,24 @@ l6721 = loop_c671f+2
     sta terrainOrigin                                                 ; 6f39: 85 7e       ..
     sta zCollision                                                    ; 6f3b: 85 55       ..
     sta stopScrolling                                                 ; 6f3d: 85 7f       ..  ; A=0
-    sta bufferInsert                                                  ; 6f3f: 85 86       ..  ; A=0
-    sta dangerTickIdx                                                 ; 6f41: 85 8a       ..  ; A=0
-    sta pause                                                         ; 6f43: 85 93       ..  ; A=0
+    sta bufferInsert                                                  ; 6f3f: 85 86       ..
+    sta dangerTickIdx                                                 ; 6f41: 85 8a       ..
+    sta pause                                                         ; 6f43: 85 93       ..
     tax                                                               ; 6f45: aa          *   ; X=0
 ; &6f46 referenced 1 time by &6f59
 .loop_c6f46
     sta lb422,x                                                       ; 6f46: 9d 22 b4    ..4 ; A=0
-    sta lb322,x                                                       ; 6f49: 9d 22 b3    ..3 ; A=0
-    sta lb522,x                                                       ; 6f4c: 9d 22 b5    ..5 ; A=0
-    sta lb622,x                                                       ; 6f4f: 9d 22 b6    ..6 ; A=0
-    sta lb822,x                                                       ; 6f52: 9d 22 b8    ..8 ; A=0
-    sta lb722,x                                                       ; 6f55: 9d 22 b7    ..7 ; A=0
+    sta lb322,x                                                       ; 6f49: 9d 22 b3    ..3
+    sta lb522,x                                                       ; 6f4c: 9d 22 b5    ..5
+    sta lb622,x                                                       ; 6f4f: 9d 22 b6    ..6
+    sta lb822,x                                                       ; 6f52: 9d 22 b8    ..8
+    sta lb722,x                                                       ; 6f55: 9d 22 b7    ..7
     dex                                                               ; 6f58: ca          J
     bne loop_c6f46                                                    ; 6f59: d0 eb       Pk
     ldx #4                                                            ; 6f5b: a2 04       ".
+; Clear 5 bytes of memory from lb2af onwards
 ; &6f5d referenced 1 time by &6f61
 .loop_c6f5d
-    ; Clear 5 bytes of memory from lb2af onwards
     sta lb2af,x                                                       ; 6f5d: 9d af b2    ./2 ; A=0
     dex                                                               ; 6f60: ca          J
     bpl loop_c6f5d                                                    ; 6f61: 10 fa       .z
@@ -3915,9 +3915,9 @@ l6fb8 = c6fb6+2
     lda lb422,x                                                       ; 7000: bd 22 b4    =.4
     sec                                                               ; 7003: 38          .
     sbc #1                                                            ; 7004: e9 01       i.
+; Set 4 bytes of memory at lb622+X
 ; &7006 referenced 1 time by &700b
 .loop_c7006
-    ; Set 4 bytes of memory at lb622+X
     sta lb622,x                                                       ; 7006: 9d 22 b6    ..6
     inx                                                               ; 7009: e8          h
     dey                                                               ; 700a: 88          .
@@ -4172,9 +4172,9 @@ l6fb8 = c6fb6+2
     sta lb2ab                                                         ; 717f: 8d ab b2    .+2
     sta lb2ac                                                         ; 7182: 8d ac b2    .,2 ; A=0
     ldx #4                                                            ; 7185: a2 04       ".
+; Clear 5 bytes of memory from lb2af onwards
 ; &7187 referenced 1 time by &718b
 .loop_c7187
-    ; Clear 5 bytes of memory from lb2af onwards
     sta lb2af,x                                                       ; 7187: 9d af b2    ./2 ; A=0
     dex                                                               ; 718a: ca          J
     bpl loop_c7187                                                    ; 718b: 10 fa       .z
@@ -4195,27 +4195,27 @@ l6fb8 = c6fb6+2
     sta zCollision                                                    ; 71a6: 85 55       ..
     sta stopScrolling                                                 ; 71a8: 85 7f       ..
     sta bufferInsert                                                  ; 71aa: 85 86       ..  ; A=0
-    sta dangerTickIdx                                                 ; 71ac: 85 8a       ..  ; A=0
-    sta moveHorz                                                      ; 71ae: 85 8b       ..  ; A=0
-    sta moveVert                                                      ; 71b0: 85 8c       ..  ; A=0
-    sta flipFlop                                                      ; 71b2: 85 8e       ..  ; A=0
-    sta pause                                                         ; 71b4: 85 93       ..  ; A=0
-    sta fireCoolDown                                                  ; 71b6: 85 94       ..  ; A=0
+    sta dangerTickIdx                                                 ; 71ac: 85 8a       ..
+    sta moveHorz                                                      ; 71ae: 85 8b       ..
+    sta moveVert                                                      ; 71b0: 85 8c       ..
+    sta flipFlop                                                      ; 71b2: 85 8e       ..
+    sta pause                                                         ; 71b4: 85 93       ..
+    sta fireCoolDown                                                  ; 71b6: 85 94       ..
     tax                                                               ; 71b8: aa          *   ; X=0
 ; &71b9 referenced 1 time by &71cc
 .loop_c71b9
     sta lb422,x                                                       ; 71b9: 9d 22 b4    ..4 ; A=0
-    sta lb322,x                                                       ; 71bc: 9d 22 b3    ..3 ; A=0
-    sta lb522,x                                                       ; 71bf: 9d 22 b5    ..5 ; A=0
-    sta lb622,x                                                       ; 71c2: 9d 22 b6    ..6 ; A=0
-    sta lb822,x                                                       ; 71c5: 9d 22 b8    ..8 ; A=0
-    sta lb722,x                                                       ; 71c8: 9d 22 b7    ..7 ; A=0
+    sta lb322,x                                                       ; 71bc: 9d 22 b3    ..3
+    sta lb522,x                                                       ; 71bf: 9d 22 b5    ..5
+    sta lb622,x                                                       ; 71c2: 9d 22 b6    ..6
+    sta lb822,x                                                       ; 71c5: 9d 22 b8    ..8
+    sta lb722,x                                                       ; 71c8: 9d 22 b7    ..7
     dex                                                               ; 71cb: ca          J
     bne loop_c71b9                                                    ; 71cc: d0 eb       Pk
     ldx #5                                                            ; 71ce: a2 05       ".
+; Clear 6 bytes of memory from lb31c onwards
 ; &71d0 referenced 1 time by &71d4
 .loop_c71d0
-    ; Clear 6 bytes of memory from lb31c onwards
     sta lb31c,x                                                       ; 71d0: 9d 1c b3    ..3 ; A=0
     dex                                                               ; 71d3: ca          J
     bpl loop_c71d0                                                    ; 71d4: 10 fa       .z
@@ -4638,7 +4638,7 @@ l6fb8 = c6fb6+2
     ldx bufferInsert                                                  ; 744b: a6 86       &.
     lda lb2ae                                                         ; 744d: ad ae b2    -.2
     bne c7477                                                         ; 7450: d0 25       P.
-    clc                                                               ; 7452: 18          .
+    clc                                                               ; 7452: 18          .   ; Redundant instruction?
     lda zWorldPtr                                                     ; 7453: a5 50       %.
     adc #3                                                            ; 7455: 69 03       ..
     sta zWorldPtr                                                     ; 7457: 85 50       ..
@@ -5121,13 +5121,13 @@ l6fb8 = c6fb6+2
     dey                                                               ; 771c: 88          .
     beq c7730                                                         ; 771d: f0 11       p.
     inx                                                               ; 771f: e8          h
-    sta lb522,x                                                       ; 7720: 9d 22 b5    ..5 ; A=0
-    sta lb622,x                                                       ; 7723: 9d 22 b6    ..6 ; A=0
+    sta lb522,x                                                       ; 7720: 9d 22 b5    ..5
+    sta lb622,x                                                       ; 7723: 9d 22 b6    ..6
     dey                                                               ; 7726: 88          .
     beq c7730                                                         ; 7727: f0 07       p.
     inx                                                               ; 7729: e8          h
-    sta lb522,x                                                       ; 772a: 9d 22 b5    ..5 ; A=0
-    sta lb622,x                                                       ; 772d: 9d 22 b6    ..6 ; A=0
+    sta lb522,x                                                       ; 772a: 9d 22 b5    ..5
+    sta lb622,x                                                       ; 772d: 9d 22 b6    ..6
 ; &7730 referenced 3 times by &76cd, &771d, &7727
 .c7730
     inc tempBlock+4                                                   ; 7730: e6 5a       f.
@@ -6981,7 +6981,7 @@ l82fe = c82fc+2
     cmp #&40                                                          ; 841e: c9 40       I.
     bcs return_22                                                     ; 8420: b0 1c       0.
     sta zScreenCol                                                    ; 8422: 85 53       ..
-    clc                                                               ; 8424: 18          .
+    clc                                                               ; 8424: 18          .   ; Redundant instruction?
     lda tempBlock+7                                                   ; 8425: a5 5d       %.
     adc zEnemyCol                                                     ; 8427: 65 54       ..
     sta zEnemyCol                                                     ; 8429: 85 54       ..
@@ -7071,7 +7071,7 @@ l8465 = c8463+2
     cpy #7                                                            ; 849e: c0 07       @.
     bcs c84ab                                                         ; 84a0: b0 09       0.
     lda tempBlock+8                                                   ; 84a2: a5 5e       %.
-    clc                                                               ; 84a4: 18          .
+    clc                                                               ; 84a4: 18          .   ; Redundant instruction?
     adc tempBlock+15                                                  ; 84a5: 65 65       ..
     sta tempBlock+8                                                   ; 84a7: 85 5e       ..
     bne loop_c848a                                                    ; 84a9: d0 df       P_
@@ -7410,9 +7410,9 @@ l8465 = c8463+2
     bpl loop_c8676                                                    ; 8681: 10 f3       .s
     lda #0                                                            ; 8683: a9 00       ).
     ldx #&0e                                                          ; 8685: a2 0e       ".
+; Clear 15 bytes of memory from lb2ca onwards
 ; &8687 referenced 1 time by &868b
 .loop_c8687
-    ; Clear 15 bytes of memory from lb2ca onwards
     sta lb2ca,x                                                       ; 8687: 9d ca b2    .J2 ; A=0
     dex                                                               ; 868a: ca          J
     bpl loop_c8687                                                    ; 868b: 10 fa       .z

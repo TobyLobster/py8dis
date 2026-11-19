@@ -163,6 +163,7 @@ l1005   = $1005
 l1006   = $1006
 l1007   = $1007
 l100e   = $100e
+l103f   = $103f
 l1045   = $1045
 l1047   = $1047
 l104d   = $104d
@@ -605,6 +606,7 @@ c815d
 // $215f referenced 1 time by $8141[1]
 c815f
     lda #$20 // ' '                                                   // 215f: a9 20       .   :815f[1]
+// Set memory from l1000+X to l103f to 32
 // $2161 referenced 1 time by $8167[1]
 loop_c8161
     sta l1000,x                                                       // 2161: 9d 00 10    ... :8161[1]   // A=$20
@@ -1039,7 +1041,7 @@ loop_c8397
     lda l0e0f,x                                                       // 23a2: bd 0f 0e    ... :83a2[1]
     bpl c83ab                                                         // 23a5: 10 04       ..  :83a5[1]
     lda #8                                                            // 23a7: a9 08       ..  :83a7[1]
-    sta (l00b0),y                                                     // 23a9: 91 b0       ..  :83a9[1]   // Offset is Y=$0e
+    sta (l00b0),y                                                     // 23a9: 91 b0       ..  :83a9[1]   // Offset Y=$0e
 // $23ab referenced 1 time by $83a5[1]
 c83ab
     lda l0f0e,x                                                       // 23ab: bd 0e 0f    ... :83ab[1]
@@ -1050,7 +1052,7 @@ c83ab
     lsr                                                               // 23b6: 4a          J   :83b6[1]
     pha                                                               // 23b7: 48          H   :83b7[1]
     and #3                                                            // 23b8: 29 03       ).  :83b8[1]
-    sta (l00b0),y                                                     // 23ba: 91 b0       ..  :83ba[1]   // Offset is Y=$0c
+    sta (l00b0),y                                                     // 23ba: 91 b0       ..  :83ba[1]   // Offset Y=$0c
     pla                                                               // 23bc: 68          h   :83bc[1]
     ldy #8                                                            // 23bd: a0 08       ..  :83bd[1]
 // $23bf referenced 1 time by $83b0[1]
@@ -1855,7 +1857,7 @@ c88a6
     and l0f0b,y                                                       // 28b3: 39 0b 0f    9.. :88b3[1]
     cmp #$ff                                                          // 28b6: c9 ff       ..  :88b6[1]
     bne c88f4                                                         // 28b8: d0 3a       .:  :88b8[1]
-    // Copy 7 bytes of memory from l1000 to l1007
+// Copy 7 bytes of memory from l1000 to l1007
     ldx #6                                                            // 28ba: a2 06       ..  :88ba[1]
 // $28bc referenced 1 time by $88c3[1]
 loop_c88bc
@@ -2452,7 +2454,7 @@ sub_c8c65
     jsr sub_c8f82                                                     // 2c68: 20 82 8f     .. :8c68[1]
     lda #0                                                            // 2c6b: a9 00       ..  :8c6b[1]
     sta l00a1                                                         // 2c6d: 85 a1       ..  :8c6d[1]
-    // Copy 3 bytes of memory to l00b3
+// Copy 3 bytes of memory to l00b3
     ldy #9                                                            // 2c6f: a0 09       ..  :8c6f[1]
 // $2c71 referenced 1 time by $8c79[1]
 loop_c8c71
@@ -2648,7 +2650,7 @@ c8d92
     bvs c8e0e                                                         // 2da3: 70 69       pi  :8da3[1]
     bit l108a                                                         // 2da5: 2c 8a 10    ,.. :8da5[1]
     bvc c8e0e                                                         // 2da8: 50 64       Pd  :8da8[1]
-    // Copy 52 bytes of memory from c0d60 to l1000
+// Copy 52 bytes of memory from c0d60 to l1000
     ldx #$33 // '3'                                                   // 2daa: a2 33       .3  :8daa[1]
 // $2dac referenced 1 time by $8db3[1]
 loop_c8dac
@@ -2657,7 +2659,7 @@ loop_c8dac
     dex                                                               // 2db2: ca          .   :8db2[1]
     bpl loop_c8dac                                                    // 2db3: 10 f7       ..  :8db3[1]
     jsr sub_c8dc6                                                     // 2db5: 20 c6 8d     .. :8db5[1]
-    // Copy 52 bytes of memory from l1000 to c0d60
+// Copy 52 bytes of memory from l1000 to c0d60
     ldx #$33 // '3'                                                   // 2db8: a2 33       .3  :8db8[1]
 // $2dba referenced 1 time by $8dc1[1]
 loop_c8dba
@@ -3025,9 +3027,9 @@ sub_c8f82
     sta l00a4                                                         // 2f91: 85 a4       ..  :8f91[1]
     rts                                                               // 2f93: 60          `   :8f93[1]
 
+// Copy 94 bytes of memory from nmi_handler_rom_start to nmi_handler_ram
 // $2f94 referenced 1 time by $8cb4[1]
 sub_c8f94
-    // Copy 94 bytes of memory from nmi_handler_rom_start to nmi_handler_ram
     ldx #nmi_handler_rom_end-nmi_handler_rom_start-1                  // 2f94: a2 5d       .]  :8f94[1]
 // $2f96 referenced 1 time by $8f9d[1]
 loop_c8f96
@@ -3040,7 +3042,7 @@ loop_c8f96
     bvc c8fb5                                                         // 2fa3: 50 10       P.  :8fa3[1]
     lda #nmi_XXX8-(nmi_beq+2)                                         // 2fa5: a9 4d       .M  :8fa5[1]
     sta nmi_lda_immXXX4+1                                             // 2fa7: 8d 22 0d    .". :8fa7[1]
-    // Copy 14 bytes of memory from nmi_handler_rom_end to (nmi_XXX2-1) + 1
+// Copy 14 bytes of memory from nmi_handler_rom_end to (nmi_XXX2-1) + 1
     ldx #nmi3_handler_rom_end-nmi3_handler_rom_start                  // 2faa: a2 0e       ..  :8faa[1]
 // $2fac referenced 1 time by $8fb3[1]
 loop_c8fac
@@ -3197,7 +3199,7 @@ nmi3_handler_rom_end
     ldx nmi_sta_abs+1                                                 // 303e: ae 3d 0d    .=. :903e[1]
     lda nmi_sta_abs+2                                                 // 3041: ad 3e 0d    .>. :9041[1]
     pha                                                               // 3044: 48          H   :9044[1]
-    // Copy 148 bytes of memory from nmi_handler2_rom_start to nmi_handler_ram
+// Copy 148 bytes of memory from nmi_handler2_rom_start to nmi_handler_ram
     ldy #nmi_handler2_rom_end-nmi_handler2_rom_start                  // 3045: a0 94       ..  :9045[1]
 // $3047 referenced 1 time by $904e[1]
 loop_c9047
@@ -3423,7 +3425,7 @@ c91af
     sta l1082                                                         // 31b1: 8d 82 10    ... :91b1[1]
     stx l00c7                                                         // 31b4: 86 c7       ..  :91b4[1]
     sty l00c8                                                         // 31b6: 84 c8       ..  :91b6[1]
-    // Copy 13 bytes of memory to l00ba
+// Copy 13 bytes of memory to l00ba
     ldy #$0c                                                          // 31b8: a0 0c       ..  :91b8[1]
 // $31ba referenced 1 time by $91c0[1]
 loop_c91ba
@@ -3648,7 +3650,7 @@ c92e3
     sta l00b6                                                         // 32e6: 85 b6       ..  :92e6[1]
     lda l9146,x                                                       // 32e8: bd 46 91    .F. :92e8[1]
     sta l00b7                                                         // 32eb: 85 b7       ..  :92eb[1]
-    // Copy 36 bytes of memory
+// Copy 36 bytes of memory
     ldy #$23 // '#'                                                   // 32ed: a0 23       .#  :92ed[1]
 // $32ef referenced 1 time by $92f4[1]
 loop_c92ef
@@ -3733,7 +3735,7 @@ c936b
     ldx #0                                                            // 336d: a2 00       ..  :936d[1]
 // $336f referenced 1 time by $937c[1]
 loop_c936f
-    lda (l00b0,x)                                                     // 336f: a1 b0       ..  :936f[1]   // Offset is X=0
+    lda (l00b0,x)                                                     // 336f: a1 b0       ..  :936f[1]   // Offset X=0
     sta (l00b2),y                                                     // 3371: 91 b2       ..  :9371[1]
     inc l00b0                                                         // 3373: e6 b0       ..  :9373[1]
     bne c9379                                                         // 3375: d0 02       ..  :9375[1]
@@ -3778,7 +3780,7 @@ c93a8
     lda #1                                                            // 33af: a9 01       ..  :93af[1]
 // $33b1 referenced 1 time by $93ad[1]
 c93b1
-    sta (l00b2),y                                                     // 33b1: 91 b2       ..  :93b1[1]   // Offset is Y=$11
+    sta (l00b2),y                                                     // 33b1: 91 b2       ..  :93b1[1]   // Offset Y=$11
     tya                                                               // 33b3: 98          .   :93b3[1]   // A=$11
 // $33b4 referenced 1 time by $9388[1]
 sub_c93b4
@@ -3818,7 +3820,7 @@ sub_c93d8
     ldy #0                                                            // 33d8: a0 00       ..  :93d8[1]
 // $33da referenced 1 time by $93e3[1]
 loop_c93da
-    sta (l00b4),y                                                     // 33da: 91 b4       ..  :93da[1]   // Offset is Y=0
+    sta (l00b4),y                                                     // 33da: 91 b4       ..  :93da[1]   // Offset Y=0
     inc l00b4                                                         // 33dc: e6 b4       ..  :93dc[1]
     bne c93e2                                                         // 33de: d0 02       ..  :93de[1]
     inc l00b5                                                         // 33e0: e6 b5       ..  :93e0[1]
@@ -4049,9 +4051,9 @@ return_26
 sub_c9536
     ldx #$0d                                                          // 3536: a2 0d       ..  :9536[1]
     lda #0                                                            // 3538: a9 00       ..  :9538[1]
+// Clear 13 bytes of memory from l1090 onwards
 // $353a referenced 1 time by $953e[1]
 loop_c953a
-    // Clear 13 bytes of memory from l1090 onwards
     sta l1090 - 1,x                                                   // 353a: 9d 8f 10    ... :953a[1]   // A=0
     dex                                                               // 353d: ca          .   :953d[1]
     bne loop_c953a                                                    // 353e: d0 fa       ..  :953e[1]
@@ -4079,7 +4081,7 @@ c956f
     lda #6                                                            // 3573: a9 06       ..  :9573[1]
     jsr sub_c8020                                                     // 3575: 20 20 80      . :9575[1]
     lda fdc_1770_data                                                 // 3578: ad 87 fe    ... :9578[1]
-    // Copy 14 bytes of memory from l9aec to filev
+// Copy 14 bytes of memory from l9aec to filev
     ldx #$0d                                                          // 357b: a2 0d       ..  :957b[1]
 // $357d referenced 1 time by $9584[1]
 loop_c957d
@@ -4112,9 +4114,9 @@ loop_c9593
     lda #$ff                                                          // 35af: a9 ff       ..  :95af[1]
     sta l1087                                                         // 35b1: 8d 87 10    ... :95b1[1]
     ldy #3                                                            // 35b4: a0 03       ..  :95b4[1]
+// Set 4 bytes of memory from l108b onwards to 255
 // $35b6 referenced 1 time by $95ba[1]
 loop_c95b6
-    // Set 4 bytes of memory from l108b onwards to 255
     sta l108b,y                                                       // 35b6: 99 8b 10    ... :95b6[1]   // A=$ff
     dey                                                               // 35b9: 88          .   :95b9[1]
     bpl loop_c95b6                                                    // 35ba: 10 fa       ..  :95ba[1]
@@ -4173,9 +4175,9 @@ c95fd
     sty l10c0                                                         // 3612: 8c c0 10    ... :9612[1]
     ldx #3                                                            // 3615: a2 03       ..  :9615[1]
     tya                                                               // 3617: 98          .   :9617[1]   // A=0
+// Clear 3 bytes of memory from l10df onwards
 // $3618 referenced 1 time by $961c[1]
 loop_c9618
-    // Clear 3 bytes of memory from l10df onwards
     sta l10df - 1,x                                                   // 3618: 9d de 10    ... :9618[1]   // A=0
     dex                                                               // 361b: ca          .   :961b[1]
     bne loop_c9618                                                    // 361c: d0 fa       ..  :961c[1]
@@ -4502,7 +4504,7 @@ sub_c97e8
     php                                                               // 37fa: 08          .   :97fa[1]
     sta l107f                                                         // 37fb: 8d 7f 10    ... :97fb[1]
     jsr sub_c995a                                                     // 37fe: 20 5a 99     Z. :97fe[1]
-    // Copy 13 bytes of memory to l1060
+// Copy 13 bytes of memory to l1060
     ldy #$0c                                                          // 3801: a0 0c       ..  :9801[1]
 // $3803 referenced 1 time by $9809[1]
 loop_c9803
@@ -4586,9 +4588,9 @@ c9873
     jsr sub_c9940                                                     // 3879: 20 40 99     @. :9879[1]
     ldy #$0c                                                          // 387c: a0 0c       ..  :987c[1]
     jsr sub_c995a                                                     // 387e: 20 5a 99     Z. :987e[1]
+// Copy Y+1 bytes of memory from l1060
 // $3881 referenced 1 time by $9887[1]
 loop_c9881
-    // Copy Y+1 bytes of memory from l1060
     lda l1060,y                                                       // 3881: b9 60 10    .`. :9881[1]
     sta (l00b4),y                                                     // 3884: 91 b4       ..  :9884[1]
     dey                                                               // 3886: 88          .   :9886[1]
@@ -5190,10 +5192,11 @@ c9c33
     php                                                               // 3c33: 08          .   :9c33[1]
     lda #0                                                            // 3c34: a9 00       ..  :9c34[1]
     ldx #7                                                            // 3c36: a2 07       ..  :9c36[1]
+// Clear 8 bytes of memory from l00bc onwards, and 8 bytes from l1074 onwards
 // $3c38 referenced 1 time by $9c3e[1]
 loop_c9c38
     sta l00bc,x                                                       // 3c38: 95 bc       ..  :9c38[1]   // A=0
-    sta l1074,x                                                       // 3c3a: 9d 74 10    .t. :9c3a[1]   // A=0
+    sta l1074,x                                                       // 3c3a: 9d 74 10    .t. :9c3a[1]
     dex                                                               // 3c3d: ca          .   :9c3d[1]
     bpl loop_c9c38                                                    // 3c3e: 10 f8       ..  :9c3e[1]
     dec l00be                                                         // 3c40: c6 be       ..  :9c40[1]
@@ -5253,7 +5256,7 @@ loop_c9c90
     inx                                                               // 3c9e: e8          .   :9c9e[1]
     dec l10c4                                                         // 3c9f: ce c4 10    ... :9c9f[1]
     bne loop_c9c90                                                    // 3ca2: d0 ec       ..  :9ca2[1]
-    // Clear 16 bytes of memory at l1100+Y
+// Clear 16 bytes of memory at l1100+Y
     ldx #$10                                                          // 3ca4: a2 10       ..  :9ca4[1]
     lda #0                                                            // 3ca6: a9 00       ..  :9ca6[1]
 // $3ca8 referenced 1 time by $9cad[1]
@@ -6141,7 +6144,7 @@ ca27a
     cpy #$f8                                                          // 427f: c0 f8       ..  :a27f[1]
     bne ca2ab                                                         // 4281: d0 28       .(  :a281[1]
     lda l0f07                                                         // 4283: ad 07 0f    ... :a283[1]
-    sec                                                               // 4286: 38          8   :a286[1]
+    sec                                                               // 4286: 38          8   :a286[1]   // Redundant instruction?
     sbc l00c8                                                         // 4287: e5 c8       ..  :a287[1]
     pha                                                               // 4289: 48          H   :a289[1]
     lda l0f06                                                         // 428a: ad 06 0f    ... :a28a[1]
@@ -6821,10 +6824,11 @@ sub_ca73d
 sub_ca76c
     lda #0                                                            // 476c: a9 00       ..  :a76c[1]
     tay                                                               // 476e: a8          .   :a76e[1]   // Y=0
+// Clear 512 bytes of memory from l0e00 onwards
 // $476f referenced 1 time by $a776[1]
 loop_ca76f
     sta l0e00,y                                                       // 476f: 99 00 0e    ... :a76f[1]   // A=0
-    sta l0f00,y                                                       // 4772: 99 00 0f    ... :a772[1]   // A=0
+    sta l0f00,y                                                       // 4772: 99 00 0f    ... :a772[1]
     iny                                                               // 4775: c8          .   :a775[1]
     bne loop_ca76f                                                    // 4776: d0 f7       ..  :a776[1]
     rts                                                               // 4778: 60          `   :a778[1]
@@ -7108,9 +7112,9 @@ sub_ca90d
     ldx #$1f                                                          // 493b: a2 1f       ..  :a93b[1]
     stx l00c1                                                         // 493d: 86 c1       ..  :a93d[1]
     ldx #9                                                            // 493f: a2 09       ..  :a93f[1]
+// Clear 10 bytes of memory from l1000 onwards
 // $4941 referenced 1 time by $a945[1]
 loop_ca941
-    // Clear 10 bytes of memory from l1000 onwards
     sta l1000,x                                                       // 4941: 9d 00 10    ... :a941[1]   // A=0
     dex                                                               // 4944: ca          .   :a944[1]
     bpl loop_ca941                                                    // 4945: 10 fa       ..  :a945[1]
@@ -7717,7 +7721,7 @@ sub_cac72
     sta bytev+1                                                       // 4c9f: 8d 0b 02    ... :ac9f[1]
 
     lda #$b2                                                          // 4ca2: a9 b2       ..  :aca2[1]
-    sta (l00b0),y                                                     // 4ca4: 91 b0       ..  :aca4[1]   // Offset is Y=$0f
+    sta (l00b0),y                                                     // 4ca4: 91 b0       ..  :aca4[1]   // Offset Y=$0f
     iny                                                               // 4ca6: c8          .   :aca6[1]   // Y=$10
     lda #$ac                                                          // 4ca7: a9 ac       ..  :aca7[1]
     sta (l00b0),y                                                     // 4ca9: 91 b0       ..  :aca9[1]
@@ -8464,7 +8468,7 @@ cb1d5
 cb1dd
     cmp #$42 // 'B'                                                   // 51dd: c9 42       .B  :b1dd[1]
     bne cb203                                                         // 51df: d0 22       ."  :b1df[1]
-    // Copy 2 bytes of memory to l00bc
+// Copy 2 bytes of memory to l00bc
     ldy #9                                                            // 51e1: a0 09       ..  :b1e1[1]
 // $51e3 referenced 1 time by $b1eb[1]
 loop_cb1e3
@@ -8473,9 +8477,9 @@ loop_cb1e3
     dey                                                               // 51e8: 88          .   :b1e8[1]
     cpy #8                                                            // 51e9: c0 08       ..  :b1e9[1]
     bcs loop_cb1e3                                                    // 51eb: b0 f6       ..  :b1eb[1]
+// Copy Y+1 bytes of memory to l00b0
 // $51ed referenced 1 time by $b1f3[1]
 loop_cb1ed
-    // Copy Y+1 bytes of memory to l00b0
     lda (l00f0),y                                                     // 51ed: b1 f0       ..  :b1ed[1]
     sta l00b0,y                                                       // 51ef: 99 b0 00    ... :b1ef[1]
     dey                                                               // 51f2: 88          .   :b1f2[1]
@@ -8641,7 +8645,7 @@ loop_cb2d1
     bne cb2e1                                                         // 52d5: d0 0a       ..  :b2d5[1]
     and #$c0                                                          // 52d7: 29 c0       ).  :b2d7[1]
     sta l00bc                                                         // 52d9: 85 bc       ..  :b2d9[1]
-    lda (l00b8),y                                                     // 52db: b1 b8       ..  :b2db[1]   // Offset is Y=0
+    lda (l00b8),y                                                     // 52db: b1 b8       ..  :b2db[1]   // Offset Y=0
     and #$3f // '?'                                                   // 52dd: 29 3f       )?  :b2dd[1]
     ora l00bc                                                         // 52df: 05 bc       ..  :b2df[1]
 // $52e1 referenced 1 time by $b2d5[1]
@@ -8761,7 +8765,7 @@ cb382
     bne cb397                                                         // 538d: d0 08       ..  :b38d[1]
     iny                                                               // 538f: c8          .   :b38f[1]   // Y=$f5
     lda (l00b8),y                                                     // 5390: b1 b8       ..  :b390[1]
-    sec                                                               // 5392: 38          8   :b392[1]
+    sec                                                               // 5392: 38          8   :b392[1]   // Redundant instruction?
     sbc #1                                                            // 5393: e9 01       ..  :b393[1]
     sta (l00b8),y                                                     // 5395: 91 b8       ..  :b395[1]
 // $5397 referenced 1 time by $b38d[1]
@@ -9180,7 +9184,7 @@ sub_cb5f2
     beq return_58                                                     // 55f6: f0 f5       ..  :b5f6[1]
     pha                                                               // 55f8: 48          H   :b5f8[1]
     lda #0                                                            // 55f9: a9 00       ..  :b5f9[1]
-    sta (l00b8),y                                                     // 55fb: 91 b8       ..  :b5fb[1]   // Offset is Y=$fa
+    sta (l00b8),y                                                     // 55fb: 91 b8       ..  :b5fb[1]   // Offset Y=$fa
     pla                                                               // 55fd: 68          h   :b5fd[1]
     tay                                                               // 55fe: a8          .   :b5fe[1]
     lda #osfind_close                                                 // 55ff: a9 00       ..  :b5ff[1]
@@ -9350,7 +9354,7 @@ sub_cb6e6
 // $56eb referenced 1 time by $b6e8[1]
 cb6eb
     tya                                                               // 56eb: 98          .   :b6eb[1]
-    sec                                                               // 56ec: 38          8   :b6ec[1]
+    sec                                                               // 56ec: 38          8   :b6ec[1]   // Redundant instruction?
     sbc #4                                                            // 56ed: e9 04       ..  :b6ed[1]
     tay                                                               // 56ef: a8          .   :b6ef[1]
     cpy #$0e                                                          // 56f0: c0 0e       ..  :b6f0[1]
@@ -9425,7 +9429,7 @@ sub_cb745
     inc l00b1                                                         // 5752: e6 b1       ..  :b752[1]
     lda #0                                                            // 5754: a9 00       ..  :b754[1]
     sta l00b0                                                         // 5756: 85 b0       ..  :b756[1]
-    // Copy 15 bytes of memory from cb736
+// Copy 15 bytes of memory from cb736
     ldy #$0e                                                          // 5758: a0 0e       ..  :b758[1]
 // $575a referenced 1 time by $b760[1]
 loop_cb75a
@@ -10152,7 +10156,7 @@ cbb6f
     ldy #$f2                                                          // 5b76: a0 f2       ..  :bb76[1]
     sec                                                               // 5b78: 38          8   :bb78[1]   // Redundant instruction?
     lda l00bc                                                         // 5b79: a5 bc       ..  :bb79[1]
-    sec                                                               // 5b7b: 38          8   :bb7b[1]
+    sec                                                               // 5b7b: 38          8   :bb7b[1]   // Redundant instruction?
     sbc (l00b8),y                                                     // 5b7c: f1 b8       ..  :bb7c[1]
     sta l00bc                                                         // 5b7e: 85 bc       ..  :bb7e[1]
     iny                                                               // 5b80: c8          .   :bb80[1]   // Y=$f3
@@ -10237,9 +10241,9 @@ cbbf3
     jsr sub_cba67                                                     // 5bf3: 20 67 ba     g. :bbf3[1]
     bcs cbbd0                                                         // 5bf6: b0 d8       ..  :bbf6[1]
     bvc cbc13                                                         // 5bf8: 50 19       P.  :bbf8[1]
-    sec                                                               // 5bfa: 38          8   :bbfa[1]   // Redundant instruction?
+    sec                                                               // 5bfa: 38          8   :bbfa[1]
     ldx #0                                                            // 5bfb: a2 00       ..  :bbfb[1]
-    sec                                                               // 5bfd: 38          8   :bbfd[1]
+    sec                                                               // 5bfd: 38          8   :bbfd[1]   // Redundant instruction?
 // $5bfe referenced 1 time by $bc08[1]
 loop_cbbfe
     lda l00bc,x                                                       // 5bfe: b5 bc       ..  :bbfe[1]
@@ -10629,7 +10633,7 @@ cbe52
     sec                                                               // 5e56: 38          8   :be56[1]
     sbc #1                                                            // 5e57: e9 01       ..  :be57[1]
     bcc return_64                                                     // 5e59: 90 1f       ..  :be59[1]
-    sta (l00b8),y                                                     // 5e5b: 91 b8       ..  :be5b[1]   // Offset is Y=$f5
+    sta (l00b8),y                                                     // 5e5b: 91 b8       ..  :be5b[1]   // Offset Y=$f5
     jsr sub_cb616                                                     // 5e5d: 20 16 b6     .. :be5d[1]
     beq return_64                                                     // 5e60: f0 18       ..  :be60[1]
     ldx l00b7                                                         // 5e62: a6 b7       ..  :be62[1]
@@ -13388,6 +13392,7 @@ pydis_end
 //     l1006
 //     l1007
 //     l100e
+//     l103f
 //     l1045
 //     l1047
 //     l104d

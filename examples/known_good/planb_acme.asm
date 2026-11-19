@@ -9916,7 +9916,7 @@ move_enemy_if_possible
     adc delta_x                                                       ; 3c78: 65 05       e.
     cmp #$28                                                          ; 3c7a: c9 28       .(
     bcs not_suitable_for_moving_enemy                                 ; 3c7c: b0 2b       .+
-    clc                                                               ; 3c7e: 18          .
+    clc                                                               ; 3c7e: 18          .   ; Redundant instruction?
     lda enemies_state + 2,y                                           ; 3c7f: b9 02 0c    ... ; get enemy Y position
     adc enemies_state + 4,y                                           ; 3c82: 79 04 0c    y.. ; add enemy delta Y
     sta cell_y                                                        ; 3c85: 85 01       ..
@@ -10119,7 +10119,7 @@ update_enemy
     stx delta_x                                                       ; 3dbd: 86 05       ..
     asl                                                               ; 3dbf: 0a          .
     asl                                                               ; 3dc0: 0a          .
-    clc                                                               ; 3dc1: 18          .
+    clc                                                               ; 3dc1: 18          .   ; Redundant instruction?
     adc #$45                                                          ; 3dc2: 69 45       iE
     sta enemies_state + 5,y                                           ; 3dc4: 99 05 0c    ... ; enemy sprite number
     lda enemies_state + 1,y                                           ; 3dc7: b9 01 0c    ... ; get enemy X position
@@ -10291,8 +10291,8 @@ print_keys_loop
     sta score_digits_2                                                ; 3f10: 85 2a       .*
     sta score_digits_3                                                ; 3f12: 85 2b       .+
     sta score_digits_4                                                ; 3f14: 85 2c       .,  ; A=$30
-    sta score_digits_5                                                ; 3f16: 85 2d       .-  ; A=$30
-    sta score_digits_6                                                ; 3f18: 85 2e       ..  ; A=$30
+    sta score_digits_5                                                ; 3f16: 85 2d       .-
+    sta score_digits_6                                                ; 3f18: 85 2e       ..
     jmp print_score                                                   ; 3f1a: 4c e3 3f    L.?
 
 ; ***************************************************************************************
@@ -10334,8 +10334,8 @@ draw_bar
     lda bar_pixels_set_table + 1,x                                    ; 3f4e: bd 5c 3f    .\?
     ldx #6                                                            ; 3f51: a2 06       ..
     iny                                                               ; 3f53: c8          .
+; Set 6 bytes of memory
 draw_bar_loop
-    ; Set 6 bytes of memory
     sta (print_addr_low),y                                            ; 3f54: 91 2f       ./
     iny                                                               ; 3f56: c8          .
     dex                                                               ; 3f57: ca          .
@@ -10386,8 +10386,8 @@ print_decremented_bar
     lda bar_pixels_set_table,x                                        ; 3f97: bd 5b 3f    .[?
     ldx #6                                                            ; 3f9a: a2 06       ..
     iny                                                               ; 3f9c: c8          .
+; Set 6 bytes of memory
 draw_bar_loop2
-    ; Set 6 bytes of memory
     sta (print_addr_low),y                                            ; 3f9d: 91 2f       ./
     iny                                                               ; 3f9f: c8          .
     dex                                                               ; 3fa0: ca          .
@@ -10599,12 +10599,12 @@ clear_memory
     lda #0                                                            ; 412e: a9 00       ..
 clear_memory_loop
     sta clock,y                                                       ; 4130: 99 00 0e    ... ; A=0
-    sta l0f00,y                                                       ; 4133: 99 00 0f    ... ; A=0
-    sta l1000,y                                                       ; 4136: 99 00 10    ... ; A=0
-    sta l1100,y                                                       ; 4139: 99 00 11    ... ; A=0
-    sta l110c,y                                                       ; 413c: 99 0c 11    ... ; A=0
-    sta dying_items,y                                                 ; 413f: 99 00 05    ... ; A=0
-    sta enemies_state,y                                               ; 4142: 99 00 0c    ... ; A=0
+    sta l0f00,y                                                       ; 4133: 99 00 0f    ...
+    sta l1000,y                                                       ; 4136: 99 00 10    ...
+    sta l1100,y                                                       ; 4139: 99 00 11    ...
+    sta l110c,y                                                       ; 413c: 99 0c 11    ...
+    sta dying_items,y                                                 ; 413f: 99 00 05    ...
+    sta enemies_state,y                                               ; 4142: 99 00 0c    ...
     iny                                                               ; 4145: c8          .
     bne clear_memory_loop                                             ; 4146: d0 e8       ..
     jmp clear_play_area                                               ; 4148: 4c e8 43    L.C
@@ -10623,8 +10623,8 @@ decode_room_commands
     sty number_of_enemies                                             ; 415c: 84 37       .7
     sty number_of_arrows_in_flight                                    ; 415e: 84 1f       ..
     sty number_of_dying_items                                         ; 4160: 84 19       ..
-    sty cell_x                                                        ; 4162: 84 00       ..  ; Y=0
-    sty temp_byte                                                     ; 4164: 84 0b       ..  ; Y=0
+    sty cell_x                                                        ; 4162: 84 00       ..
+    sty temp_byte                                                     ; 4164: 84 0b       ..
 copy_current_room_data_to_cache_loop
     lda (current_room_low),y                                          ; 4166: b1 08       ..
     sta current_room_cache,y                                          ; 4168: 99 00 04    ...
@@ -11051,6 +11051,7 @@ write_collision_map_loop
     ldy sprite_pixel_width_minus_one                                  ; 43c9: a4 02       ..
     dey                                                               ; 43cb: 88          .
     lda collision_map_byte_to_write                                   ; 43cc: a5 0c       ..
+; Set Y+1 bytes of memory from address_to_overwrite onwards
 inner_loop
 collision_map_dest_low = inner_loop+1
 collision_map_dest_high = inner_loop+2
@@ -11831,7 +11832,7 @@ got_free_arrow_slot
     bcs skip_make_arrow_right_facing                                  ; 4890: b0 0e       ..  ; if player is facing left then branch
 ; make arrow right facing
     lda arrow_slots + 1,y                                             ; 4892: b9 81 05    ...
-    clc                                                               ; 4895: 18          .
+    clc                                                               ; 4895: 18          .   ; Redundant instruction?
     adc #4                                                            ; 4896: 69 04       i.
     sta arrow_slots + 1,y                                             ; 4898: 99 81 05    ...
     lda #$81                                                          ; 489b: a9 81       ..
@@ -12081,7 +12082,7 @@ collectible_loop
     lda current_room_cache,y                                          ; 4a17: b9 00 04    ...
     bpl next_collectible2                                             ; 4a1a: 10 28       .(
     lda temp_addr_low                                                 ; 4a1c: a5 1d       ..
-    sec                                                               ; 4a1e: 38          8
+    sec                                                               ; 4a1e: 38          8   ; Redundant instruction?
     sbc current_room_cache + 1,y                                      ; 4a1f: f9 01 04    ...
     cmp #2                                                            ; 4a22: c9 02       ..
     bcs next_collectible2                                             ; 4a24: b0 1e       ..
@@ -12115,7 +12116,7 @@ computer_loop
     lda current_room_cache,y                                          ; 4a50: b9 00 04    ...
     bpl next_computer2                                                ; 4a53: 10 32       .2
     lda temp_addr_low                                                 ; 4a55: a5 1d       ..
-    sec                                                               ; 4a57: 38          8
+    sec                                                               ; 4a57: 38          8   ; Redundant instruction?
     sbc current_room_cache + 1,y                                      ; 4a58: f9 01 04    ...
     cmp #4                                                            ; 4a5b: c9 04       ..
     bcs next_computer2                                                ; 4a5d: b0 28       .(
@@ -12273,7 +12274,7 @@ update_key_count
     beq plot_updated_number                                           ; 4b5d: f0 2c       .,
     lda current_room_cache + 3,y                                      ; 4b5f: b9 03 04    ...
     pha                                                               ; 4b62: 48          H
-    ; Copy 256 bytes of memory from current_room_cache
+; Copy 256 bytes of memory from current_room_cache
     ldy #0                                                            ; 4b63: a0 00       ..
 copy_cache_back_to_room_definition
     lda current_room_cache,y                                          ; 4b65: b9 00 04    ...
@@ -12290,8 +12291,8 @@ copy_cache_back_to_room_definition
     ora #$80                                                          ; 4b7b: 09 80       ..
     and #$f8                                                          ; 4b7d: 29 f8       ).
     sta (temp_addr_low),y                                             ; 4b7f: 91 1d       ..
+; Copy 256 bytes of memory to current_room_cache
 skip_reset_door_animation
-    ; Copy 256 bytes of memory to current_room_cache
     ldy #0                                                            ; 4b81: a0 00       ..
 copy_room_definition_to_cache_loop
     lda (current_room_low),y                                          ; 4b83: b1 08       ..
@@ -12351,7 +12352,7 @@ no_teleport_destination_found
 change_room
     ldx stack_ptr                                                     ; 4bee: a6 36       .6
     txs                                                               ; 4bf0: 9a          .
-    ; Copy 256 bytes of memory from current_room_cache
+; Copy 256 bytes of memory from current_room_cache
     ldy #0                                                            ; 4bf1: a0 00       ..
 copy_current_room_cache_back_to_definition_loop
     lda current_room_cache,y                                          ; 4bf3: b9 00 04    ...

@@ -231,9 +231,9 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
     equb &26, &85,   1, &b1, &62, &4c, &8e, &e1,   8, &a9, &26, &85   ; e1a8: 26 85 01... &..
     equb   1                                                          ; e1b4: 01          .
 
+; Copy Y bytes of memory
 ; &e1b5 referenced 2 times by &e1ba, &e1c2
 .ce1b5
-    ; Copy Y bytes of memory
     lda (basic_index2),y                                              ; e1b5: b1 24       .$
     sta (basic_multiply_result),y                                     ; e1b7: 91 26       .&
     dey                                                               ; e1b9: 88          .
@@ -414,9 +414,9 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
 .ce544
     lda #&80                                                          ; e544: a9 80       ..
     ldy #&18                                                          ; e546: a0 18       ..
+; Set 25 bytes of memory from screen_line_links onwards to 128
 ; &e548 referenced 1 time by &e54c
 .loop_ce548
-    ; Set 25 bytes of memory from screen_line_links onwards to 128
     sta screen_line_links,y                                           ; e548: 99 d9 00    .Y. ; A=&80
     dey                                                               ; e54b: 88          .
     bpl loop_ce548                                                    ; e54c: 10 fa       ..
@@ -484,9 +484,9 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
 .sub_ce5a0
     lda #0                                                            ; e5a0: a9 00       ..
     ldx #&2e ; '.'                                                    ; e5a2: a2 2e       ..
+; Clear 47 bytes of memory from vic_sprite0_x onwards
 ; &e5a4 referenced 1 time by &e5a8
 .loop_ce5a4
-    ; Clear 47 bytes of memory from vic_sprite0_x onwards
     sta vic_sprite0_x,x                                               ; e5a4: 9d 00 d0    ..P ; A=0
     dex                                                               ; e5a7: ca          J
     bpl loop_ce5a4                                                    ; e5a8: 10 fa       ..
@@ -762,13 +762,13 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
 .ce728
     cmp #&40 ; '@'                                                    ; e728: c9 40       I@
     bcc return_3                                                      ; e72a: 90 0e       ..
-    sec                                                               ; e72c: 38          8
+    sec                                                               ; e72c: 38          8   ; Redundant instruction?
     sbc #&40 ; '@'                                                    ; e72d: e9 40       .@
     cmp #&20 ; ' '                                                    ; e72f: c9 20       I
     bcc return_3                                                      ; e731: 90 07       ..
     cmp #&40 ; '@'                                                    ; e733: c9 40       I@
     bcs return_3                                                      ; e735: b0 03       ..
-    clc                                                               ; e737: 18          .
+    clc                                                               ; e737: 18          .   ; Redundant instruction?
     adc #&20 ; ' '                                                    ; e738: 69 20       .
 ; &e73a referenced 3 times by &e72a, &e731, &e735
 .return_3
@@ -1058,9 +1058,9 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
     jsr sub_cf972                                                     ; e8f5: 20 72 f9     ..
     dey                                                               ; e8f8: 88          .
     bne loop_ce8f3                                                    ; e8f9: d0 f8       P.
+; Copy 24 bytes of memory from screen_line_links+1 to screen_line_links
 ; &e8fb referenced 1 time by &e8ef
 .ce8fb
-    ; Copy 24 bytes of memory from screen_line_links+1 to screen_line_links
     ldy #0                                                            ; e8fb: a0 00       ..
 ; &e8fd referenced 1 time by &e906
 .loop_ce8fd
@@ -1191,7 +1191,7 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
     jsr sub_cf8b4                                                     ; e9bb: 20 b4 f8     ..
     jsr sub_ce5f9                                                     ; e9be: 20 f9 e5     ..
     bcs ce98f                                                         ; e9c1: b0 cc       .L
-    ; Copy 11 bytes of memory from lf33f to l0100
+; Copy 11 bytes of memory from lf33f to l0100
     ldx #&0a                                                          ; e9c3: a2 0a       ..
 ; &e9c5 referenced 1 time by &e9cc
 .loop_ce9c5
@@ -3439,9 +3439,9 @@ lf7b6 = cf7b4+2
 .sub_cf8b4
     lda #0                                                            ; f8b4: a9 00       ..
     ldy #&1c                                                          ; f8b6: a0 1c       ..
+; Clear 29 bytes of memory from sid_voice1_frequency_low onwards
 ; &f8b8 referenced 1 time by &f8bc
 .loop_cf8b8
-    ; Clear 29 bytes of memory from sid_voice1_frequency_low onwards
     sta sid_voice1_frequency_low,y                                    ; f8b8: 99 00 d4    ..T ; A=0
     dey                                                               ; f8bb: 88          .
     bpl loop_cf8b8                                                    ; f8bc: 10 fa       ..
@@ -3968,7 +3968,7 @@ lf7b6 = cf7b4+2
 
 ; &fb23 referenced 1 time by &fb1b
 .cfb23
-    sec                                                               ; fb23: 38          8
+    sec                                                               ; fb23: 38          8   ; Redundant instruction?
     rts                                                               ; fb24: 60          .
 
 ; &fb25 referenced 2 times by &e960, &fb0d
@@ -4092,7 +4092,7 @@ lf7b6 = cf7b4+2
 ; &fbd5 referenced 1 time by &fbe2
 .loop_cfbd5
     sta vic_border_colour                                             ; fbd5: 8d 20 d0    . P
-    clc                                                               ; fbd8: 18          .
+    clc                                                               ; fbd8: 18          .   ; Redundant instruction?
     rts                                                               ; fbd9: 60          .
 
 ; &fbda referenced 1 time by &fbcc
@@ -4120,9 +4120,9 @@ lf7b6 = cf7b4+2
     sta (load_address_temp),y                                         ; fbf6: 91 c3       .C
     bcs cfbff                                                         ; fbf8: b0 05       ..  ; ALWAYS branch
 
+; Copy Y+1 bytes of memory to irq_vector
 ; &fbfa referenced 2 times by &fbf1, &fc00
 .cfbfa
-    ; Copy Y+1 bytes of memory to irq_vector
     lda (load_address_temp),y                                         ; fbfa: b1 c3       .C
     sta irq_vector,y                                                  ; fbfc: 99 14 03    ...
 ; &fbff referenced 1 time by &fbf8
@@ -4408,11 +4408,12 @@ lfc8a = cfc89+1
 .cfd50
     ldy #0                                                            ; fd50: a0 00       ..
     lda #0                                                            ; fd52: a9 00       ..
+; Clear 256 bytes of memory from basic_error_vector onwards, and 256 bytes from basic_input_buffer onwards, and 256 bytes from l0002 onwards
 ; &fd54 referenced 1 time by &fd5e
 .loop_cfd54
     sta basic_error_vector,y                                          ; fd54: 99 00 03    ... ; A=0
-    sta basic_input_buffer,y                                          ; fd57: 99 00 02    ... ; A=0
-    sta l0002,y                                                       ; fd5a: 99 02 00    ... ; A=0
+    sta basic_input_buffer,y                                          ; fd57: 99 00 02    ...
+    sta l0002,y                                                       ; fd5a: 99 02 00    ...
     iny                                                               ; fd5d: c8          H
     bne loop_cfd54                                                    ; fd5e: d0 f4       P.
     ldx #&3c ; '<'                                                    ; fd60: a2 3c       .<

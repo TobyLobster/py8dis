@@ -917,8 +917,8 @@ skip1:
     cmp (sneaky_pointer_low),y                                        ; d423: d1 23       .#
     bne dim_error                                                     ; d425: d0 1c       ..
     lsr                                                               ; d427: 4a          J   ; A=$55
-    sta (sneaky_pointer_low),y                                        ; d428: 91 23       .#  ; Offset is Y=0
-    cmp (sneaky_pointer_low),y                                        ; d42a: d1 23       .#  ; Offset is Y=0
+    sta (sneaky_pointer_low),y                                        ; d428: 91 23       .#  ; Offset Y=0
+    cmp (sneaky_pointer_low),y                                        ; d42a: d1 23       .#
     bne dim_error                                                     ; d42c: d0 15       ..
     jsr basic_interpreter_alphabetic_pre_test                         ; d42e: 20 34 c4     4.
     bcs dim_error                                                     ; d431: b0 10       ..
@@ -1325,8 +1325,8 @@ three_way_sign_of_float8A:
 
 zero_float8A_sign_exponent_and_overflow1:
     sta float8A_sign                                                  ; d699: 85 57       .W  ; A=0
-    sta float8A_exponent                                              ; d69b: 85 59       .Y  ; A=0
-    sta float8A_overflow                                              ; d69d: 85 58       .X  ; A=0
+    sta float8A_exponent                                              ; d69b: 85 59       .Y
+    sta float8A_overflow                                              ; d69d: 85 58       .X
 return_6:
     rts                                                               ; d69f: 60          `
 
@@ -1595,7 +1595,7 @@ pack_float8A_into_floatptr:
     lda float8A_man1                                                  ; d84a: a5 5a       .Z
     and #$7f                                                          ; d84c: 29 7f       ).
     ora float8A_sign                                                  ; d84e: 05 57       .W
-    sta (floatptr_low),y                                              ; d850: 91 6f       .o  ; Offset is Y=1
+    sta (floatptr_low),y                                              ; d850: 91 6f       .o
 loop_cd852:
     iny                                                               ; d852: c8          .
     lda float8A_exponent,y                                            ; d853: b9 59 00    .Y.
@@ -1676,8 +1676,8 @@ set_float8A_mantissa_to_7fffffff_and_clear_float8B:
 zero_float8B_bugged:
     ldx #8                                                            ; d8c7: a2 08       ..
     lda #0                                                            ; d8c9: a9 00       ..
+; Clear 8 bytes of memory from float8B_overflow onwards
 zero_float8B_loop:
-    ; Clear 8 bytes of memory from float8B_overflow onwards
     sta float8B_overflow - 1,x                                        ; d8cb: 95 5f       ._  ; A=0
     dex                                                               ; d8cd: ca          .
     bne zero_float8B_loop                                             ; d8ce: d0 fb       ..
@@ -1843,7 +1843,7 @@ add_float8A_and_float8B_mantissas:
     jmp apply_rounding_and_overflow                                   ; d9c5: 4c 9b da    L..
 
 float8A_minus_equals_float8B_mantissa:
-    sec                                                               ; d9c8: 38          8
+    sec                                                               ; d9c8: 38          8   ; Redundant instruction?
     lda float8A_rounding                                              ; d9c9: a5 5e       .^
     sbc float8B_rounding                                              ; d9cb: e5 66       .f
     sta float8A_rounding                                              ; d9cd: 85 5e       .^
@@ -1991,6 +1991,7 @@ dummy:
 error3 = dummy+1
     lda #0                                                            ; daa6: a9 00       ..
 ; overlapping: brk                                                    ; daa7: 00          .
+; Set X bytes of memory from float8A_sign onwards
 zero_loop:
     sta float8A_sign - 1,x                                            ; daa8: 95 56       .V
     dex                                                               ; daaa: ca          .
@@ -2566,9 +2567,10 @@ colour_function:
     ; Clear $8600 to $8800
     lda #0                                                            ; df19: a9 00       ..
     tay                                                               ; df1b: a8          .   ; Y=0
+; Clear 512 bytes of memory from l8600 onwards
 loop_cdf1c:
     sta l8600,y                                                       ; df1c: 99 00 86    ... ; A=0
-    sta l8700,y                                                       ; df1f: 99 00 87    ... ; A=0
+    sta l8700,y                                                       ; df1f: 99 00 87    ...
     dey                                                               ; df22: 88          .
     bne loop_cdf1c                                                    ; df23: d0 f7       ..
 cdf25:
@@ -2699,25 +2701,25 @@ cdfbe:
     dex                                                               ; dfe1: ca          .
     beq invert_pixel                                                  ; dfe2: f0 05       ..
     ; clear pixel
-    and (colour_screen_address_low),y                                 ; dfe4: 31 5f       1_  ; Offset is Y=0
-    sta (colour_screen_address_low),y                                 ; dfe6: 91 5f       ._  ; Offset is Y=0
+    and (colour_screen_address_low),y                                 ; dfe4: 31 5f       1_  ; Offset Y=0
+    sta (colour_screen_address_low),y                                 ; dfe6: 91 5f       ._
     rts                                                               ; dfe8: 60          `
 
 invert_pixel:
     eor #$ff                                                          ; dfe9: 49 ff       I.
-    eor (colour_screen_address_low),y                                 ; dfeb: 51 5f       Q_  ; Offset is Y=0
-    sta (colour_screen_address_low),y                                 ; dfed: 91 5f       ._  ; Offset is Y=0
+    eor (colour_screen_address_low),y                                 ; dfeb: 51 5f       Q_  ; Offset Y=0
+    sta (colour_screen_address_low),y                                 ; dfed: 91 5f       ._
     rts                                                               ; dfef: 60          `
 
 set_pixel:
     tax                                                               ; dff0: aa          .
-    and (colour_screen_address_low),y                                 ; dff1: 31 5f       1_  ; Offset is Y=0
-    sta (colour_screen_address_low),y                                 ; dff3: 91 5f       ._  ; Offset is Y=0
+    and (colour_screen_address_low),y                                 ; dff1: 31 5f       1_  ; Offset Y=0
+    sta (colour_screen_address_low),y                                 ; dff3: 91 5f       ._
     txa                                                               ; dff5: 8a          .
     eor #$ff                                                          ; dff6: 49 ff       I.
     and temp_colour_byte                                              ; dff8: 2d fd 03    -..
-    ora (colour_screen_address_low),y                                 ; dffb: 11 5f       ._  ; Offset is Y=0
-    sta (colour_screen_address_low),y                                 ; dffd: 91 5f       ._  ; Offset is Y=0
+    ora (colour_screen_address_low),y                                 ; dffb: 11 5f       ._
+    sta (colour_screen_address_low),y                                 ; dffd: 91 5f       ._
     rts                                                               ; dfff: 60          `
 
 pydis_end:

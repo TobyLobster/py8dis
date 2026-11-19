@@ -161,7 +161,7 @@ drive_code:
 loop_c0515:
     lda job_queue                                                     ; 0850: a5 00       ..  :0515[1]
     bmi loop_c0515                                                    ; 0852: 30 fc       0.  :0517[1]
-    ; Copy 69 bytes of memory from buffer_0+1 to buffer_0+70
+; Copy 69 bytes of memory from buffer_0+1 to buffer_0+70
     ldx #$45 ; 'e'                                                    ; 0854: a2 45       .e  :0519[1]
 ; $0856 referenced 1 time by $0522[1]
 loop_c051b:

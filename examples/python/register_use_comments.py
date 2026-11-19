@@ -1,6 +1,6 @@
 """Comments on where known registers are used (see
 asm_to_create_test_binaries/register_use_comments.asm): a register set well
-before it's used as an index ('Offset is Y=$11') or stored ('A=0' in a loop),
+before it's used as an index ('Offset Y=$11') or stored ('A=0' in a loop),
 memory set loops with one register as both the index and the count (counting
 up to a limit, down past zero, down to zero, and through a pointer), and an
 immediate operand that code changes, which isn't taken to be known."""
