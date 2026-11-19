@@ -2725,14 +2725,17 @@ l8e54 = c8e52+2
 just_rts:
     rts                                                               ; 8e58: 60          `
 
+; A table of 8 bytes, indexed by X (248 to 255), read at $b01b
 print:
     .byte "PRINT "                                                    ; 8e59: 50 52 49... PRI
     .byte 1, 0                                                        ; 8e5f: 01 00       ..
+; A table of 14 bytes, indexed by Y (0 to 13), read at $8b4c
 ; $8e61 referenced 1 time by $8b4c
 l8e61:
     .byte $1b, $ff, $1e, $ff, $21, $ff, $24, $ff, $27, $ff, $2a, $ff  ; 8e61: 1b ff 1e... ...
-    .byte $2d, $ff, $35, $99, $4a, $be, $9b, $44, $ce, $b7, $57, $4d  ; 8e6d: 2d ff 35... -.5
-    .byte $b8, $42, $2f, $9e, $41, $4e, $9d, $52, $33, $8e            ; 8e79: b8 42 2f... .B/
+    .byte $2d, $ff                                                    ; 8e6d: 2d ff       -.
+    .byte $35, $99, $4a, $be, $9b, $44, $ce, $b7, $57, $4d, $b8, $42  ; 8e6f: 35 99 4a... 5.J
+    .byte $2f, $9e, $41, $4e, $9d, $52, $33, $8e                      ; 8e7b: 2f 9e 41... /.A
 
 ; $8e83 referenced 3 times by $8081, $8f62, $970e
 sub_c8e83:
@@ -2867,6 +2870,7 @@ loop_c8f46:
     jmp c9215                                                         ; 8f46: 4c 15 92    L..
 
 ; $8f48 referenced 1 time by $8f18
+; A table of 3 bytes, indexed by X (1 to 3), read at $8f18
 l8f49:
     .byte $ff, $28, $0a                                               ; 8f49: ff 28 0a    .(.
 
@@ -3662,6 +3666,8 @@ c9486:
     pla                                                               ; 9489: 68          h
     rts                                                               ; 948a: 60          `
 
+; A table of 12 bytes, indexed by Y (24 to 35), read at $a8d3
+; A table of 12 bytes, indexed by Y (0 to 11), read at $9476
 ; $948b referenced 1 time by $9476
 l948b:
     .byte $80, $99, 0, 0, 0, $0f                                      ; 948b: 80 99 00... ...
@@ -4238,10 +4244,10 @@ c97a4:
 return_17:
     rts                                                               ; 97ac: 60          `
 
+; A table of 12 bytes, indexed by X (0 to 7 except 2) and Y (9 or 11), read at $9688 and $969b
 ; $97ad referenced 5 times by $961c, $965a, $9688, $969b, $9730
 l97ad:
-    .byte 0, $0d, $18                                                 ; 97ad: 00 0d 18    ...
-    .byte "!+++3?Veq"                                                 ; 97b0: 21 2b 2b... !++
+    .byte 0, $0d, $18, $21, $2b, $2b, $2b, $33, $3f, $56, $65, $71    ; 97ad: 00 0d 18... ...
 ; $97b9 referenced 8 times by $9624, $962a, $965d, $9668, $968c, $96a3, $96a9, $9734
 l97b9:
     .byte $a0                                                         ; 97b9: a0          .
@@ -4339,6 +4345,7 @@ c9882:
     pla                                                               ; 9884: 68          h
     jmp c929f                                                         ; 9885: 4c 9f 92    L..
 
+; A table of 12 bytes, indexed by Y (0 to 11), read at $989e and $98f8
 ; $9888 referenced 2 times by $989e, $98f8
 l9888:
     .byte $88, 0, $fd, $fd, $3a, $0d, $ff, $ff, $3e, $0d, $ff, $ff    ; 9888: 88 00 fd... ...
@@ -6128,6 +6135,7 @@ ca27d:
     ldy #3                                                            ; a28c: a0 03       ..
     jmp ca3e8                                                         ; a28e: 4c e8 a3    L..
 
+; A table of 8 bytes, indexed by X (0 to 7), read at $a230
 ; $a291 referenced 1 time by $a230
 la291:
     .byte "Library."                                                  ; a291: 4c 69 62... Lib
@@ -6902,6 +6910,7 @@ ca84a:
 return_24:
     rts                                                               ; a84c: 60          `
 
+; A table of 12 bytes, indexed by X (0 to 11), read at $a87a
 ; $a84d referenced 1 time by $a87a
 la84d:
     .byte $82, $9c, $ff, $ff                                          ; a84d: 82 9c ff... ...
@@ -7615,9 +7624,11 @@ loop_cac6f:
     pla                                                               ; ac7e: 68          h
     rts                                                               ; ac7f: 60          `
 
+; A table of 12 bytes, indexed by X (0 to 11), read at $ab89
 ; $ac80 referenced 1 time by $ab89
 lac80:
     .byte $80, $9f, 0, 0, $59, $8e, $ff, $ff, $61, $8e, $ff, $ff      ; ac80: 80 9f 00... ...
+; A table of 12 bytes, indexed by X (0 to 11), read at $aba8
 ; $ac8c referenced 1 time by $aba8
 lac8c:
     .byte $7f, $9e, $fd, $fd, $2d, $fc, $ff, $ff, $30, $fc, $ff, $ff  ; ac8c: 7f 9e fd... ...
@@ -8513,6 +8524,7 @@ loop_cb18b:
     bpl loop_cb18b                                                    ; b191: 10 f8       ..
     rts                                                               ; b193: 60          `
 
+; A table of 4 bytes, indexed by Y (0 to 3), read at $b18b
 ; $b194 referenced 1 time by $b18b
 lb194:
     .byte $80, $9f, $ff, $ff                                          ; b194: 80 9f ff... ...
@@ -8538,6 +8550,7 @@ cb1b1:
     plp                                                               ; b1b3: 28          (
     jmp caf88                                                         ; b1b4: 4c 88 af    L..
 
+; A table of 12 bytes, indexed by Y (120 to 131), read at $b2e2
     .byte $80, $9f, 0, 0, $10, 0, $ff, $ff, $18, 0, $ff, $ff          ; b1b7: 80 9f 00... ...
 
 sub_cb1c3:
@@ -13850,8 +13863,8 @@ pydis_end:
 ;     Data                     = 2233 bytes (14%)
 ;
 ;     Number of instructions   = 6944
-;     Number of data bytes     = 986 bytes
+;     Number of data bytes     = 995 bytes
 ;     Number of data words     = 60 bytes
-;     Number of string bytes   = 1187 bytes
-;     Number of strings        = 152
+;     Number of string bytes   = 1178 bytes
+;     Number of strings        = 151
 

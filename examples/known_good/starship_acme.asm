@@ -133,6 +133,7 @@ enemy_torpedo_table_address_high
     !byte >enemy_torpedoes_table                                      ; 1f3e: 4f          O   :0e3e[1]
 unused4
     !byte $37, $5f                                                    ; 1f3f: 37 5f       7_  :0e3f[1]
+; A table of 8 bytes, indexed by X (0 to 7), read at $0f41 and $0f8d
 bit_table
     !byte $80, $40, $20, $10, 8, 4, 2, 1                              ; 1f41: 80 40 20... .@  :0e41[1]   ; bitmask
 star_table_address_low
@@ -165,10 +166,12 @@ starship_shields_active
     !byte 1                                                           ; 1f56: 01          .   :0e56[1]
 unused5
     !byte $3a                                                         ; 1f57: 3a          :   :0e57[1]
+; A table of 128 bytes, indexed by X (0 to 127) and Y (0 to 31), read at $1529, $1654, $1c23 and 6 other places
 sine_table
     !byte   0,   1,   2,   3,   4,   5,   5,   6,   6,   6,   5,   5  ; 1f58: 00 01 02... ... :0e58[1]
     !byte   4,   3,   2,   1,   0, $ff, $fe, $fd, $fc, $fb, $fb, $fa  ; 1f64: 04 03 02... ... :0e64[1]
     !byte $fa, $fa, $fb, $fb, $fc, $fd, $fe, $ff                      ; 1f70: fa fa fb... ... :0e70[1]
+; A table of 128 bytes, indexed by X (0 to 127) and Y (0 to 31), read at $1514, $1659, $1c31 and 6 other places
 cosine_table
     !byte $fa, $fa, $fb, $fb, $fc, $fd, $fe, $ff, 0, 1, 2, 3,   4     ; 1f78: fa fa fb... ... :0e78[1]
     !byte   5,   5,   6,   6,   6,   5,   5,   4, 3, 2, 1, 0, $ff     ; 1f85: 05 05 06... ... :0e85[1]
@@ -198,7 +201,8 @@ rotated_x_correction_fraction
 rotated_x_correction_pixels
     !byte 0, $fe, $fb, $f6, $ef, $e6                                  ; 1fee: 00 fe fb... ... :0eee[1]
 rotated_y_correction_fraction
-    !byte 1, 0, 2, 0, $ff, $fe                                        ; 1ff4: 01 00 02... ... :0ef4[1]
+    !byte 1, 0, 2, 0                                                  ; 1ff4: 01 00 02... ... :0ef4[1]
+    !byte $ff, $fe                                                    ; 1ff8: ff fe       ..  :0ef8[1]
 rotated_y_correction_pixels
     !byte 0, 1, 4, 9, $0f, $18                                        ; 1ffa: 00 01 04... ... :0efa[1]
 starship_velocity_high
@@ -2360,8 +2364,10 @@ enemy_explosion_address_high_table
     !byte >(enemy_explosion_tables + $0340)                           ; 2e15: 50          P   :1d15[1]
     !byte >(enemy_explosion_tables + $0380)                           ; 2e16: 50          P   :1d16[1]
     !byte >(enemy_explosion_tables + $03c0)                           ; 2e17: 50          P   :1d17[1]
+; A table of 4 bytes, indexed by X (0 to 3), read at $1fd6
 enemy_explosion_piece_ageing_table
     !byte $0f, $11, $13, $15                                          ; 2e18: 0f 11 13... ... :1d18[1]
+; A table of 8 bytes, indexed by X (0 to 7), read at $1e10
 starship_explosion_piece_ageing_table
     !byte 5, 6, 7, 8, 9, $0a, $0b, $0c                                ; 2e1c: 05 06 07... ... :1d1c[1]
 
@@ -4279,6 +4285,7 @@ dont_add_any_more_torpedoes_to_cluster
 
 unused60
     !byte $ea, $ea, $ea, $ea, $ea                                     ; 3b51: ea ea ea... ... :2a51[1]
+; A table of 8 bytes, indexed by Y (0 to 7), read at $2be0
 angle_to_action_table
     !byte 0, 0, 1, 3, 7, 5, 2, 2                                      ; 3b56: 00 00 01... ... :2a56[1]
 unused61
@@ -5759,10 +5766,12 @@ set_retreating_and_head_towards_desired_velocity_and_angle
 unused80
     !byte $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff  ; 449e: ff ff ff... ... :339e[1]
     !byte $ff, $ff, $ff, $ff, $ff, $ff, $ff                           ; 44aa: ff ff ff... ... :33aa[1]
+; A table of 8 bytes, indexed by Y (0 to 7), read at $3476
 maximum_enemy_torpedo_cooldown_per_command
     !byte $0f, $0d, $0b, 9, 7, 5, 3, 2                                ; 44b1: 0f 0d 0b... ... :33b1[1]
 command_number_used_for_maximum_enemy_torpedo_cooldown_lookup
     !byte 0                                                           ; 44b9: 00          .   :33b9[1]
+; A table of 4 bytes, indexed by Y (0 to 3), read at $4650, and written at $3814 and $465c
 probability_of_new_enemy_ship_being_defensive_about_damage
     !byte 0                                                           ; 44ba: 00          .   :33ba[1]
 probability_of_new_enemy_ship_being_defensive_about_angle
@@ -5773,14 +5782,17 @@ probability_of_new_enemy_ship_being_large
     !byte 0                                                           ; 44bd: 00          .   :33bd[1]
 unused81
     !byte 0, 0                                                        ; 44be: 00 00       ..  :33be[1]
+; A table of 4 bytes, indexed by Y (0 to 3), read at $4659
 change_in_enemy_ship_spawning_probabilities_per_command
     !byte $ec, $f2, $0f, $17                                          ; 44c0: ec f2 0f... ... :33c0[1]
 unused82
     !byte 0, 0                                                        ; 44c4: 00 00       ..  :33c4[1]
+; A table of 4 bytes, indexed by Y (0 to 3), read at $4653
 ultimate_enemy_ship_probabilities
     !byte $20, 4, $b8, $ff                                            ; 44c6: 20 04 b8...  .. :33c6[1]
 unused83
     !byte 0, 0                                                        ; 44ca: 00 00       ..  :33ca[1]
+; A table of 4 bytes, indexed by Y (0 to 3), read at $3811
 initial_enemy_ship_spawning_probabilities
     !byte $c0, $82, 4, 2                                              ; 44cc: c0 82 04... ... :33cc[1]
 unused84
@@ -6475,6 +6487,7 @@ no_before_the_starship_exploded_string
     !byte $1f, 5, $0a, $4e, $4f, $1f, 5, $0b                          ; 4a97: 1f 05 0a... ... :3997[1]
     !text "before the starship exploded."                             ; 4a9f: 62 65 66... bef :399f[1]
     !byte $0d                                                         ; 4abc: 0d          .   :39bc[1]
+; A table of 256 bytes, indexed by Y (0 to 255 except 97), read at $3c81
 after_your_performance_string
     !byte $1f, 3, $16                                                 ; 4abd: 1f 03 16    ... :39bd[1]
     !text "After  your  performance  on  this"                        ; 4ac0: 41 66 74... Aft :39c0[1]
@@ -6511,6 +6524,7 @@ and_they_retire_you_string
     !byte $1f, 0, $1a                                                 ; 4c1b: 1f 00 1a    ... :3b1b[1]
     !text "and they retire you from active service."                  ; 4c1e: 61 6e 64... and :3b1e[1]
     !byte $0d                                                         ; 4c46: 0d          .   :3b46[1]
+; A table of 7 bytes, indexed by Y (1 to 7), read at $3cb2
 threshold_table
     !byte 2, 3, 4, 7, $0d, $14, $1e                                   ; 4c47: 02 03 04... ... :3b47[1]
 unused94

@@ -10190,8 +10190,10 @@ section pydis, org = &1210, filename = "planb_baron"
     lda #1                                                            ; 3e39: a9 01       ..
     jmp check_play_sound_a                                            ; 3e3b: 4c 65 40    Le@
 
+; A table of 8 bytes, indexed by X (0 to 7), read at &3cc1
 .delta_x_table
     equb 0, 1, 1, 1, 0, &ff, &ff, &ff                                 ; 3e3e: 00 01 01... ...
+; A table of 8 bytes, indexed by X (0 to 7), read at &3cc7
 .delta_y_table
     equb &ff, &ff, 0, 1, 1, 1, 0, &ff                                 ; 3e46: ff ff 00... ...
 
@@ -10351,8 +10353,10 @@ section pydis, org = &1210, filename = "planb_baron"
 .return_5
     rts                                                               ; 3f5a: 60          `
 
+; A table of 8 bytes, indexed by X (0 to 7), read at &3f97
 .bar_pixels_set_table
     equb 0                                                            ; 3f5b: 00          .
+; A table of 8 bytes, indexed by X (0 to 7), read at &3f4e
     equb &80, &c0, &e0, &f0, &f8, &fc, &fe, &ff                       ; 3f5c: 80 c0 e0... ...
 
 ; ***************************************************************************************

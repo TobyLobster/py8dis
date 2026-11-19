@@ -3468,18 +3468,21 @@ c9115:
     beq loop_c9113                                                    ; 911a: f0 f7       ..
     rts                                                               ; 911c: 60          `
 
+; A table of 4 bytes, indexed by X (0 to 3), read at $8cd8
 ; $911d referenced 1 time by $8cd8
 l911d:
-    .byte ")*-."                                                      ; 911d: 29 2a 2d... )*-
+    .byte $29, $2a, $2d, $2e                                          ; 911d: 29 2a 2d... )*-
 ; $9121 referenced 1 time by $8e15
 l9121:
     .byte 0, $10, $40, $50, $80, $81, $83, $a0, $a1, $c0, $e0, $f0    ; 9121: 00 10 40... ..@
 ; $912d referenced 1 time by $8e1b
 nmi_and_table:
     .byte $18, $18, $18, $18, $3f, $1f, $1f, $5f, $5f, $17, $1b, $5f  ; 912d: 18 18 18... ...
+; A table of 6 bytes, indexed by X (0 to 5), read at $8c58
 ; $9139 referenced 1 time by $8c58
 l9139:
     .byte 8, $10, $18, $20, $40, 0                                    ; 9139: 08 10 18... ...
+; A table of 6 bytes, indexed by X (0 to 5), read at $8c61
 ; $913f referenced 1 time by $8c61
 l913f:
     .byte $0e, $18, $0c, $20, $12, 0                                  ; 913f: 0e 18 0c... ...
@@ -3503,10 +3506,12 @@ l9146:
     .byte   1,   1,   1,   1, $0b,   6,   0,   1, $ff,   1,   1, $13  ; 9172: 01 01 01... ...
     .byte   3, $ff,   0,   0, $fe,   0,   0,   0,   0, $f7, $ff,   0  ; 917e: 03 ff 00... ...
     .byte   0, $fb, $e5, $e5, $f7, $ff, $ff                           ; 918a: 00 fb e5... ...
+; A table of 15 bytes, indexed by X (0 to 14), read at $91df
 ; $9191 referenced 1 time by $91df
 l9191:
-    .byte $0a, $0b, $0e, $0f, $12, $13, $16, $17, $1b, $1e, $1f       ; 9191: 0a 0b 0e... ...
-    .byte "#) 0"                                                      ; 919c: 23 29 20... #)
+    .byte $0a, $0b, $0e, $0f, $12, $13, $16, $17, $1b, $1e, $1f, $23  ; 9191: 0a 0b 0e... ...
+    .byte $29, $20, $30                                               ; 919d: 29 20 30    ) 0
+; A table of 15 bytes, indexed by X (0 to 14), read at $9201
 ; $91a0 referenced 1 time by $9201
 l91a0:
     .byte $a0, $a0, $a1, $a1, $80, $80, $81, $81, $c0, $83, $83, $f0  ; 91a0: a0 a0 a1... ...
@@ -5131,6 +5136,7 @@ osbyte_read:
 c9ae9:
     jmp OSBYTE                                                        ; 9ae9: 4c f4 ff    L..
 
+; A table of 14 bytes, indexed by X (0 to 13), read at $957d
 ; $9aec referenced 1 time by $957d
 l9aec:
     .byte $1b, $ff, $1e, $ff, $21, $ff, $24, $ff, $27, $ff, $2a, $ff  ; 9aec: 1b ff 1e... ...
@@ -5149,16 +5155,19 @@ l9aec:
     .byte 0                                                           ; 9b0b: 00          .
     .word sub_c97b6                                                   ; 9b0c: b6 97       ..
     .byte 0                                                           ; 9b0e: 00          .
+; A table of 9 bytes, indexed by X (0 to 8), read at $97c1
 ; $9b0f referenced 1 time by $97c1
 l9b0f:
-    .byte "1\o"                                                       ; 9b0f: 31 5c 6f    1\o
-    .byte $fd, $6f, $82, $50, $4b, $9a                                ; 9b12: fd 6f 82... .o.
+    .byte $31, $5c, $6f, $fd, $6f, $82, $50, $4b, $9a                 ; 9b0f: 31 5c 6f... 1\o
+; A table of 9 bytes, indexed by X (0 to 8), read at $97bd
 ; $9b18 referenced 1 time by $97bd
 l9b18:
     .byte $8a, $9e, $88, $86, $88, $84, $9b, $9b, $99                 ; 9b18: 8a 9e 88... ...
+; A table of 8 bytes, indexed by X (0 to 7), read at $97af
 ; $9b21 referenced 1 time by $97af
 l9b21:
     .byte $1a, $58, $c8, $db, $d3, $e3, $b4, $bd                      ; 9b21: 1a 58 c8... .X.
+; A table of 8 bytes, indexed by X (0 to 7), read at $97ab
 ; $9b29 referenced 1 time by $97ab
 l9b29:
     .byte $88, $88, $99, $99, $99, $99, $99, $99                      ; 9b29: 88 88 99... ...
@@ -9534,7 +9543,10 @@ cb6d2:
     adc cb6d2,y                                                       ; b6d2: 79 d2 b6    y..
     rts                                                               ; b6d5: 60          `
 
-    .byte $f0, $e0, $d0, $c0, $3f, $7f, $bf, $ff, $10                 ; b6d6: f0 e0 d0... ...
+; A table of 4 bytes, indexed by Y (16 to 19), read at $b6bc
+    .byte $f0, $e0, $d0, $c0, $3f, $7f, $bf, $ff                      ; b6d6: f0 e0 d0... ...
+; A table of 4 bytes, indexed by Y (16 to 19), read at $b6b3
+    .byte $10                                                         ; b6de: 10          .
     .byte " 0@"                                                       ; b6df: 20 30 40     0@
     .byte $80, $40, 0, $c0                                            ; b6e2: 80 40 00... .@.
 
@@ -10356,15 +10368,18 @@ cbb36:
     sec                                                               ; bb38: 38          8
     rts                                                               ; bb39: 60          `
 
+; A table of 4 bytes, indexed by X (0 to 3), read at $bb0c
 ; $bb3a referenced 1 time by $bb0c
 lbb3a:
-    .byte "0AWw"                                                      ; bb3a: 30 41 57... 0AW
+    .byte $30, $41, $57, $77                                          ; bb3a: 30 41 57... 0AW
+; A table of 4 bytes, indexed by X (0 to 3), read at $bb07
 ; $bb3e referenced 1 time by $bb07
 lbb3e:
-    .byte ":G[{"                                                      ; bb3e: 3a 47 5b... :G[
+    .byte $3a, $47, $5b, $7b                                          ; bb3e: 3a 47 5b... :G[
+; A table of 4 bytes, indexed by X (0 to 3), read at $bb11
 ; $bb42 referenced 1 time by $bb11
 lbb42:
-    .byte "07Gg"                                                      ; bb42: 30 37 47... 07G
+    .byte $30, $37, $47, $67                                          ; bb42: 30 37 47... 07G
 
 sub_cbb46:
     lda #$c0                                                          ; bb46: a9 c0       ..
@@ -14102,8 +14117,8 @@ pydis_end:
 ;     Data                     = 1905 bytes (12%)
 ;
 ;     Number of instructions   = 7013
-;     Number of data bytes     = 583 bytes
+;     Number of data bytes     = 606 bytes
 ;     Number of data words     = 38 bytes
-;     Number of string bytes   = 1284 bytes
-;     Number of strings        = 150
+;     Number of string bytes   = 1261 bytes
+;     Number of strings        = 144
 

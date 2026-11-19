@@ -1281,6 +1281,49 @@ def code_ptr(runtime_addr, runtime_addr_high=None, offset=0, label_name=None):
         return max(runtime_addr, runtime_addr_high) + 1
     return None
 
+def data_ptr(runtime_addr, runtime_addr_high=None, label_name=None):
+    """
+    Marks two bytes of data as being the address of something other than
+    code (e.g. a string, or a table), as code_ptr() does for the address of
+    code, but without tracing anything there.
+
+    The low and high bytes can be apart (e.g. in a table of low bytes and a
+    table of high bytes). The address is named 'label_name' if given, and
+    the bytes are written as its label: as a word if they're next to each
+    other (low byte first), otherwise as its low and high bytes. Returns
+    the runtime address after the two bytes if they're next to each other
+    (in either order), otherwise None. Stops with an error if either byte
+    isn't loaded.
+    """
+
+    memory_binary = session.current().memory.binary
+    runtime_addr = _check_addr("data_ptr", runtime_addr)
+    if runtime_addr_high is None:
+        runtime_addr_high = runtime_addr + 1
+    runtime_addr_high = _check_addr("data_ptr", runtime_addr_high)
+    binary_loc = movemanager.r2b_checked(runtime_addr)
+    binary_addr = binary_loc.binary_addr
+    binary_addr_high = movemanager.r2b_checked(runtime_addr_high).binary_addr
+    for (r, b) in ((runtime_addr, binary_addr), (runtime_addr_high, binary_addr_high)):
+        if not memorymanager.is_data_loaded_at_binary_addr(b):
+            utils.die("data_ptr(): no data is loaded at {0} ({1})".format(config.get_assembler().hex(r), memorymanager.describe_loaded_files()))
+    target = memorymanager.RuntimeAddr((memory_binary[binary_addr_high] << 8) | memory_binary[binary_addr])
+    if label_name is not None:
+        _check_name("data_ptr", target, label_name)
+        label(target, label_name)
+    stored_expr = disassembly.get_label(target, binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+    if binary_addr_high == binary_addr + 1 and runtime_addr_high == runtime_addr + 1:
+        word(runtime_addr)
+        expr(runtime_addr, stored_expr)
+    else:
+        byte(runtime_addr)
+        expr(runtime_addr, make_lo(stored_expr))
+        byte(runtime_addr_high)
+        expr(runtime_addr_high, make_hi(stored_expr))
+    if abs(runtime_addr_high - runtime_addr) == 1:
+        return max(runtime_addr, runtime_addr_high) + 1
+    return None
+
 def rts_code_ptr(runtime_addr, runtime_addr_high=None):
     """
     Marks two bytes of data as being the address of a subroutine.

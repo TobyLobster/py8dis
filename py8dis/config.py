@@ -78,6 +78,7 @@ class Settings:
         self.redundant_instruction_comments        = True
         self.find_jump_tables                      = True
         self.jump_table_suggestions                = True
+        self.find_data_tables                      = True
         self.join_states_at_labels                 = True
         self.subroutine_summaries                  = True
         self.upper_case_os_calls                   = True
@@ -350,6 +351,19 @@ def set_jump_table_suggestions(b):
     entries it seems to have, with the control file lines that would mark
     them (see Cpu6502.suggest_jump_tables())."""
     session.current().settings.jump_table_suggestions = b
+
+def get_find_data_tables():
+    """Whether py8dis marks 6502 tables of data that the code indexes (see
+    Cpu6502.find_data_tables())."""
+    return session.current().settings.find_data_tables
+
+def set_find_data_tables(b):
+    """Mark the 6502 tables of data that the code reads or writes with an
+    index whose possible values are known: tables of pointers that the code
+    copies into zero page and uses, each entry written as the label it
+    points to, and tables of bytes (or words), with a comment saying how
+    many and how they're used (see Cpu6502.find_data_tables())."""
+    session.current().settings.find_data_tables = b
 
 def get_join_states_at_labels():
     """Whether what's known for certain at a 6502 label is what all the

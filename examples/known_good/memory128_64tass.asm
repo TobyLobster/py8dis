@@ -891,6 +891,7 @@ fill_loop
 ; $25ab referenced 2 times by $25a2, $25df
 array
     .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0              ; 25ab: 00 00 00... ...
+; A table of 16 bytes, indexed by X (0 to 15), read at $2597, and written at $258b and $259e
 ; $25bb referenced 3 times by $258b, $2597, $259e
 used
     .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0              ; 25bb: 00 00 00... ...
@@ -1828,6 +1829,7 @@ c2bc5
     jsr VDCOUT                                                        ; 2c1b: 20 cc cd     LM
     rts                                                               ; 2c1e: 60          .
 
+; A table of 8 bytes, indexed by X (0 to 7), read at $2c42 and $2c49
 ; $2c1f referenced 2 times by $2c42, $2c49
 freqs
     .byte 0, $22, 0, $33, 0, $44, 0, $55                              ; 2c1f: 00 22 00... .".

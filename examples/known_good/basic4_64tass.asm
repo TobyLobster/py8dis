@@ -9290,6 +9290,7 @@ cb39e
     sta (l0037),y                                                     ; b3bb: 91 37       .7
     rts                                                               ; b3bd: 60          `
 
+; A table of 10 bytes, indexed by Y (0 to 9), read at $bf56
 ; $b3be referenced 1 time by $bf56
 lb3be
     .text "EDIT 12,2"                                                 ; b3be: 45 44 49... EDI
@@ -11374,16 +11375,18 @@ sub_cbf66
 
 ; $bf71 referenced 1 time by $bbed
     .byte $52                                                         ; bf71: 52          R
+; A table of 16 bytes, indexed by X (1 to 16), read at $bbed
 lbf72
     .byte $0b, $a8, $34, $a6, $e4, $a6, $0a, $a7, $10, $ad, $7e, $a5  ; bf72: 0b a8 34... ..4
-    .byte $4d, $a5, $4a, $2e, $7f, $5e, $5b, $d8, $aa,   0, $ca, $98  ; bf7e: 4d a5 4a... M.J
-    .byte $80, $81, $22, $f9, $83, $6e, $81, $49, $0f, $da, $a2, $21  ; bf8a: 80 81 22... .."
-    .byte $b3, $b2, $87, $80, $82, $38, $aa, $3b, $29, $80, $31, $72  ; bf96: b3 b2 87... ...
-    .byte $17, $f7, $d1, $5f, $5b, $e6, $ff, $66, $2b, $cc, $77, $6d  ; bfa2: 17 f7 d1... ...
-    .byte   6, $37, $bd, $73, $51, $b7, $17, $7a, $23, $d7, $0a, $81  ; bfae: 06 37 bd... .7.
-    .byte   0,   0,   0,   0, $82, $40,   0,   0,   0, $9a, $d4, $82  ; bfba: 00 00 00... ...
-    .byte $7f, $b9, $ff, $78, $7b, $0e, $fa, $35, $12, $86, $65, $2e  ; bfc6: 7f b9 ff... ...
-    .byte $e0, $d3, $7e, $88, $88, $88, $89, $7b, $8c                 ; bfd2: e0 d3 7e... ..~
+    .byte $4d, $a5, $4a, $2e                                          ; bf7e: 4d a5 4a... M.J
+    .byte $7f, $5e, $5b, $d8, $aa,   0, $ca, $98, $80, $81, $22, $f9  ; bf82: 7f 5e 5b... .^[
+    .byte $83, $6e, $81, $49, $0f, $da, $a2, $21, $b3, $b2, $87, $80  ; bf8e: 83 6e 81... .n.
+    .byte $82, $38, $aa, $3b, $29, $80, $31, $72, $17, $f7, $d1, $5f  ; bf9a: 82 38 aa... .8.
+    .byte $5b, $e6, $ff, $66, $2b, $cc, $77, $6d,   6, $37, $bd, $73  ; bfa6: 5b e6 ff... [..
+    .byte $51, $b7, $17, $7a, $23, $d7, $0a, $81,   0,   0,   0,   0  ; bfb2: 51 b7 17... Q..
+    .byte $82, $40,   0,   0,   0, $9a, $d4, $82, $7f, $b9, $ff, $78  ; bfbe: 82 40 00... .@.
+    .byte $7b, $0e, $fa, $35, $12, $86, $65, $2e, $e0, $d3, $7e, $88  ; bfca: 7b 0e fa... {..
+    .byte $88, $88, $89, $7b, $8c                                     ; bfd6: 88 88 89... ...
     .text "o-Y"                                                       ; bfdb: 6f 2d 59    o-Y
     .byte $81, $99, $99, $99, $9a, $f3, $9e, $7b, $77, $81, $c0, 0, 0 ; bfde: 81 99 99... ...
     .byte   0, $80, $93, $e6, $90,   0, $81, $c4                      ; bfeb: 00 80 93... ...

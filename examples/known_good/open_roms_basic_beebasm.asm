@@ -208,6 +208,7 @@ CLALL   = &ffe7
 .return_3
     rts                                                               ; a174: 60          .
 
+; A table of 12 bytes, indexed by Y (0 to 11), read at &b3a5
 ; &a175 referenced 1 time by &b3a5
 .la175
     equb &8b, &e3, &83, &a4, &7c, &a5, &1a, &a7, &e4, &a7, &86, &ae   ; a175: 8b e3 83... ...
@@ -355,6 +356,7 @@ CLALL   = &ffe7
 .return_14
     rts                                                               ; a273: 60          .
 
+; A table of 22 bytes, indexed by Y (1 to 22), read at &affd
     equb &3e, &3d, &3c, &2f, &2d, &2a ; petscii ">=</-*"              ; a274: 3e 3d 3c... >=<
     equb &5e                                                          ; a27a: 5e          .
     equb &2b, &51, &23, &28, &4b, &58, &59, &57 ; petscii "+q#(kxyw"  ; a27b: 2b 51 23... +q#
@@ -990,6 +992,7 @@ CLALL   = &ffe7
 ; &a69b referenced 3 times by &aff3, &b979, &b98e
 .la69b
     equb &60                                                          ; a69b: 60          .
+; A table of 14 bytes, indexed by X (1 to 14) and Y (1 to 14), read at &aff3, &b979 and &b98e
     equb &20, &55, &46, &4c, &44, &50, &49, &41 ; petscii " ufldpia"  ; a69c: 20 55 46...  uf
     equb &52, &4f, &53, &4e, &45, &54 ; petscii "rosnet"              ; a6a4: 52 4f 53... ros
 
@@ -3163,17 +3166,18 @@ lb6d5 = cb6d4+1
 
     equb &a0, &bf, &a9, &11, &4c, &67, &b8, &20, &25, &e4, &a5, &66   ; b849: a0 bf a9... ...
     equb &49, &ff, &85, &66, &4c, &6a, &b8                            ; b855: 49 ff 85... i..
+; A table of 6 bytes, indexed by Y (0 to 5), read at &b626, &b650 and &b831
 ; &b85c referenced 3 times by &b626, &b650, &b831
 .lb85c
-    equb &20,   3,   0,   0,   0,   0, &4c, &f7, &b6,   0,   0, &20   ; b85c: 20 03 00...  ..
-    equb &25, &e4, &a5, &69, &f0, &41, &a5, &61, &d0,   3, &4c, &37   ; b868: 25 e4 a5... %..
-    equb &ab, &20, &f7, &b6, &a5, &66, &45, &6e, &10,   3, &4c, &1f   ; b874: ab 20 f7... . .
-    equb &a8, &18, &a5, &6d, &65, &65, &85, &65, &a5, &6c, &65, &64   ; b880: a8 18 a5... ...
-    equb &85, &64, &a5, &6b, &65, &63, &85, &63, &a5, &6a, &65, &62   ; b88c: 85 64 a5... ...
-    equb &85, &62, &b0,   3, &4c, &1e, &b5, &e6, &61, &d0, &0d, &a9   ; b898: 85 62 b0... ...
-    equb &ff, &85, &61, &85, &65, &85, &64, &85, &63, &85, &62, &60   ; b8a4: ff 85 61... ...
-    equb &38, &66, &62, &66, &63, &66, &64, &66, &65, &66, &70, &60   ; b8b0: 38 66 62... 8..
-    equb &4c, &b2, &a6, &4c, &b2, &a6                                 ; b8bc: 4c b2 a6... l..
+    equb &20, 3, 0, 0, 0, 0                                           ; b85c: 20 03 00...  ..
+    equb &4c, &f7, &b6,   0,   0, &20, &25, &e4, &a5, &69, &f0, &41   ; b862: 4c f7 b6... l..
+    equb &a5, &61, &d0,   3, &4c, &37, &ab, &20, &f7, &b6, &a5, &66   ; b86e: a5 61 d0... ..P
+    equb &45, &6e, &10,   3, &4c, &1f, &a8, &18, &a5, &6d, &65, &65   ; b87a: 45 6e 10... e..
+    equb &85, &65, &a5, &6c, &65, &64, &85, &64, &a5, &6b, &65, &63   ; b886: 85 65 a5... ...
+    equb &85, &63, &a5, &6a, &65, &62, &85, &62, &b0,   3, &4c, &1e   ; b892: 85 63 a5... ...
+    equb &b5, &e6, &61, &d0, &0d, &a9, &ff, &85, &61, &85, &65, &85   ; b89e: b5 e6 61... ...
+    equb &64, &85, &63, &85, &62, &60, &38, &66, &62, &66, &63, &66   ; b8aa: 64 85 63... ...
+    equb &64, &66, &65, &66, &70, &60, &4c, &b2, &a6, &4c, &b2, &a6   ; b8b6: 64 66 65... ...
     equb &4f, &50, &45, &4e, &20, &52, &4f, &4d ; petscii "open rom"  ; b8c2: 4f 50 45... ope
     equb &53, &20, &47, &45, &4e, &45, &52, &49 ; petscii "s generi"  ; b8ca: 53 20 47... s g
     equb &43, &20, &42, &55, &49, &4c, &44 ; petscii "c build"        ; b8d2: 43 20 42... c b

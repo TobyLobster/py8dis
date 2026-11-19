@@ -1283,37 +1283,37 @@ sub_cc300
     !byte 7, 0                                                        ; c315: 07 00       ..
     !text "32K"                                                       ; c317: 33 32 4b    32K
     !byte 7, 0, 8, $0d, $0d                                           ; c31a: 07 00 08... ...
+; A table of 16 bytes, indexed by X (0 to 15), read at $cff6 and $d008
 ; $c31f referenced 2 times by $cff6, $d008
 lc31f
-    !byte 0, $11                                                      ; c31f: 00 11       ..
-    !text '"', "3DUfw"                                                ; c321: 22 33 44... "3D
-    !byte $88, $99, $aa, $bb, $cc, $dd, $ee, $ff                      ; c327: 88 99 aa... ...
+    !byte   0, $11, $22, $33, $44, $55, $66, $77, $88, $99, $aa, $bb  ; c31f: 00 11 22... .."
+    !byte $cc, $dd, $ee, $ff                                          ; c32b: cc dd ee... ...
+; A table of 4 bytes, indexed by X (0 to 3), read at $d02e
 ; $c32f referenced 1 time by $d02e
 lc32f
     !byte 0, $55, $aa, $ff                                            ; c32f: 00 55 aa... .U.
+; A table of 33 bytes, indexed by Y (0 to 32), read at $c4f0
 ; $c333 referenced 1 time by $c4f0
 lc333
     !byte $11, $3b, $96, $a1, $ad, $b9, $11, $6f, $c5, $64, $f0, $5b  ; c333: 11 3b 96... .;.
     !byte $59, $af, $8d, $a6, $c0, $f9, $fd, $92, $39, $9b, $eb, $f1  ; c33f: 59 af 8d... Y..
     !byte $39, $8c, $bd, $11, $fa, $a2, $79, $87, $ac                 ; c34b: 39 8c bd... 9..
+; A table of 33 bytes, indexed by Y (0 to 32), read at $c4f6
 ; $c354 referenced 1 time by $c4f6
 lc354
     !byte $c5, $2f, $c5, $c5, $c5, $c5, $c5, $e8, $c5, $c6, $c6, $c6  ; c354: c5 2f c5... ./.
-    !byte $c7, $c7, $c5, $c5, $c7                                     ; c360: c7 c7 c5... ...
-    !text "ON["                                                       ; c365: 4f 4e 5b    ON[
-    !byte $c8, $c5                                                    ; c368: c8 c5       ..
-    !text "_Wxk"                                                      ; c36a: 5f 57 78... _Wx
-    !byte $c9, $c5, $3c, $7c, $c7, $4e, $ca,   0,   0,   2, $80,   5  ; c36e: c9 c5 3c... ..<
-    !byte   0,   7, $80, $0a,   0, $0c, $80, $0f,   0, $11, $80, $14  ; c37a: 00 07 80... ...
-    !byte   0, $16, $80, $19,   0, $1b, $80, $1e,   0, $20, $80, $23  ; c386: 00 16 80... ...
-    !byte   0, $25, $80, $28,   0, $2a, $80, $2d,   0, $2f, $80, $32  ; c392: 00 25 80... .%.
-    !byte   0, $34, $80, $37,   0, $39, $80, $3c,   0, $3e, $80, $41  ; c39e: 00 34 80... .4.
-    !byte   0, $43, $80, $46,   0, $48, $80, $4b,   0, $4d, $80,   0  ; c3aa: 00 43 80... .C.
-    !byte   0,   0, $28,   0, $50,   0, $78,   0, $a0,   0, $c8,   0  ; c3b6: 00 00 28... ..(
-    !byte $f0,   1, $18,   1, $40,   1, $68,   1, $90,   1, $b8,   1  ; c3c2: f0 01 18... ...
-    !byte $e0,   2,   8,   2, $30,   2, $58,   2, $80,   2, $a8,   2  ; c3ce: e0 02 08... ...
-    !byte $d0,   2, $f8,   3, $20,   3, $48,   3, $70,   3, $98,   3  ; c3da: d0 02 f8... ...
-    !byte $c0                                                         ; c3e6: c0          .
+    !byte $c7, $c7, $c5, $c5, $c7, $4f, $4e, $5b, $c8, $c5, $5f, $57  ; c360: c7 c7 c5... ...
+    !byte $78, $6b, $c9, $c5, $3c, $7c, $c7, $4e, $ca                 ; c36c: 78 6b c9... xk.
+    !byte   0,   0,   2, $80,   5,   0,   7, $80, $0a,   0, $0c, $80  ; c375: 00 00 02... ...
+    !byte $0f,   0, $11, $80, $14,   0, $16, $80, $19,   0, $1b, $80  ; c381: 0f 00 11... ...
+    !byte $1e,   0, $20, $80, $23,   0, $25, $80, $28,   0, $2a, $80  ; c38d: 1e 00 20... ..
+    !byte $2d,   0, $2f, $80, $32,   0, $34, $80, $37,   0, $39, $80  ; c399: 2d 00 2f... -./
+    !byte $3c,   0, $3e, $80, $41,   0, $43, $80, $46,   0, $48, $80  ; c3a5: 3c 00 3e... <.>
+    !byte $4b,   0, $4d, $80,   0,   0,   0, $28,   0, $50,   0, $78  ; c3b1: 4b 00 4d... K.M
+    !byte   0, $a0,   0, $c8,   0, $f0,   1, $18,   1, $40,   1, $68  ; c3bd: 00 a0 00... ...
+    !byte   1, $90,   1, $b8,   1, $e0,   2,   8,   2, $30,   2, $58  ; c3c9: 01 90 01... ...
+    !byte   2, $80,   2, $a8,   2, $d0,   2, $f8,   3, $20,   3, $48  ; c3d5: 02 80 02... ...
+    !byte   3, $70,   3, $98,   3, $c0                                ; c3e1: 03 70 03... .p.
 ; $c3e7 referenced 2 times by $c705, $c9d3
 lc3e7
     !byte $1f, $1f, $1f, $18, $1f, $1f, $18, $18                      ; c3e7: 1f 1f 1f... ...
@@ -1323,15 +1323,19 @@ lc3ef
 ; $c3f7 referenced 1 time by $cba3
 lc3f7
     !byte $9c, $d8, $f4, $9c, $88, $c4, $88, $4b                      ; c3f7: 9c d8 f4... ...
+; A table of 8 bytes, indexed by X (0 to 7), read at $cb46
 ; $c3ff referenced 1 time by $cb46
 lc3ff
     !byte 8, $10, $20, 8, 8, $10, 8                                   ; c3ff: 08 10 20... ..
 ; $c406 referenced 2 times by $cb58, $d8a0
 lc406
-    !byte 1, $aa, $55, $88, $44, $22, $11                             ; c406: 01 aa 55... ..U
+    !byte 1                                                           ; c406: 01          .
+    !byte $aa, $55, $88, $44, $22, $11                                ; c407: aa 55 88... .U.
+; A table of 8 bytes, indexed by X (0 to 7), read at $c8ff and $d04c
 ; $c40d referenced 2 times by $c8ff, $d04c
 lc40d
     !byte $80, $40, $20, $10, 8, 4, 2                                 ; c40d: 80 40 20... .@  ; bitmask
+; A table of 8 bytes, indexed by X (0 to 7), read at $cb40
 ; $c414 referenced 1 time by $cb40
 lc414
     !byte 1, 3, $0f, 1, 1, 3, 1                                       ; c414: 01 03 0f... ...
@@ -1352,18 +1356,21 @@ lc423
     !byte 0, 0, $ff, 0, $0f, $f0, $ff, 0, 3, $0c, $0f                 ; c423: 00 00 ff... ...
     !text "03<?"                                                      ; c42e: 30 33 3c... 03<
     !byte $c0, $c3, $cc, $cf, $f0, $f3, $fc, $ff                      ; c432: c0 c3 cc... ...
+; A table of 8 bytes, indexed by X (0 to 7), read at $cb4c
 ; $c43a referenced 1 time by $cb4c
 lc43a
     !byte 7, 3, 1                                                     ; c43a: 07 03 01    ...
 ; $c43d referenced 1 time by $ed73
 lc43d
     !byte 0, 7, 3                                                     ; c43d: 00 07 03    ...
+; A table of 8 bytes, indexed by X (0 to 7) and Y (0 to 7), read at $cb64 and $d92a
 ; $c440 referenced 2 times by $cb64, $d92a
 lc440
     !byte 0, 0, 0, 1, 2, 2, 3                                         ; c440: 00 00 00... ...
 ; $c447 referenced 1 time by $d2a5
 lc447
-    !byte 4, 0, 6, 2                                                  ; c447: 04 00 06... ...
+    !byte 4                                                           ; c447: 04          .
+    !byte 0, 6, 2                                                     ; c448: 00 06 02    ...
 ; $c44b referenced 1 time by $cb70
 lc44b
     !byte $0d, 5, $0d, 5                                              ; c44b: 0d 05 0d... ...
@@ -1403,12 +1410,12 @@ lc46e
     !byte $1e, 2, $19, $1b, 1, 9, $67, 9                              ; c496: 1e 02 19... ...
     !text "?(3$"                                                      ; c49e: 3f 28 33... ?(3
     !byte $1e, 2, $19, $1b, $93, $12, $72, $13                        ; c4a2: 1e 02 19... ...
+; A table of 2 words, indexed by X (0 or 2), the low bytes read at $d220, and the high bytes read at $d226
 ; $c4aa referenced 1 time by $d220
 lc4aa
-    !byte $86                                                         ; c4aa: 86          .
+lc4ab = lc4aa+1
+    !word $d386, $d37e                                                ; c4aa: 86 d3 7e... ..~
 ; $c4ab referenced 1 time by $d226
-lc4ab
-    !byte $d3, $7e, $d3                                               ; c4ab: d3 7e d3    .~.
 ; $c4ae referenced 1 time by $d290
 lc4ae
     !byte <plotLine0                                                  ; c4ae: 6a          j
@@ -1421,12 +1428,14 @@ lc4b2
     !byte >plotLine1                                                  ; c4b3: d3          .
     !byte >plotLine2                                                  ; c4b4: d3          .
     !byte >plotLine3                                                  ; c4b5: d3          .
+; A table of 3 bytes, indexed by Y (0 to 2), read at $cfde and $d7d0
 ; $c4b6 referenced 2 times by $cfde, $d7d0
 lc4b6
     !byte $23                                                         ; c4b6: 23          #
+; A table of 3 bytes, indexed by Y (0 to 2), read at $cfe9 and $d7cb
 ; $c4b7 referenced 2 times by $cfe9, $d7cb
 lc4b7
-    !text "_`#"                                                       ; c4b7: 5f 60 23    _`#
+    !byte $5f, $60, $23                                               ; c4b7: 5f 60 23    _`#
 ; $c4ba referenced 1 time by $cd29
 lc4ba
     !byte 4, 5, 6, 0, 1, 2                                            ; c4ba: 04 05 06... ...
@@ -4929,11 +4938,13 @@ cd93e
 ; $d93f referenced 1 time by $da5b
     rts                                                               ; d93f: 60          `
 
+; A table of 141 bytes, indexed by Y (1 to 141), read at $da5b
 ld940
     !byte $10, $e3, $54, $dc, $93, $dc, $89, $de, $89, $df, $72, $e7  ; d940: 10 e3 54... ..T
     !byte $eb, $e7, $a4, $e0, $c5                                     ; d94c: eb e7 a4... ...
 ; $d951 referenced 1 time by $f15b
     !byte $de                                                         ; d951: de          .
+; A table of 14 bytes, indexed by X (1 to 14), read at $f15b
 ld952
     !byte $7d, $f2, $8e, $f1, $c9, $f4, $29, $f5, $a6, $ff, $ca, $f3  ; d952: 7d f2 8e... }..
     !byte $b1, $f1, $a6, $ff, $a6, $ff, $a6, $ff, $a6, $ff,   2, $ef  ; d95e: b1 f1 a6... ...
@@ -5816,6 +5827,7 @@ cdf05
     lda l00e6                                                         ; df09: a5 e6       ..
     rts                                                               ; df0b: 60          `
 
+; A table of 4 bytes, indexed by X (0 to 3), read at $dac8
 ; $df0c referenced 2 times by $dac8, $ee2f
 ldf0c
     !byte $29, $43                                                    ; df0c: 29 43       )C
@@ -7481,6 +7493,7 @@ osbyte166to255EntryPoint
 return_38
     rts                                                               ; e9ac: 60          `
 
+; A table of 9 bytes, indexed by X (0 to 8), read at $e696
 ; $e9ad referenced 2 times by $e1b3, $e696
 le9ad
     !byte $64, $7f, $5b, $6d, $c9, $f6, $d2, $e4, $40                 ; e9ad: 64 7f 5b... d.[
@@ -8266,11 +8279,11 @@ cedf7
     sta l0818,x                                                       ; edf7: 9d 18 08    ...
     rts                                                               ; edfa: 60          `
 
+; A table of 12 bytes, indexed by Y (0 to 11), read at $ed34
 ; $edfb referenced 1 time by $ed34
 ledfb
-    !byte $f0, $b7, $82, $4f, $20, $f3, $c8, $a0                      ; edfb: f0 b7 82... ...
-    !text "{W5"                                                       ; ee03: 7b 57 35    {W5
-    !byte $16                                                         ; ee06: 16          .
+    !byte $f0, $b7, $82, $4f, $20, $f3, $c8, $a0, $7b, $57, $35, $16  ; edfb: f0 b7 82... ...
+; A table of 12 bytes, indexed by Y (0 to 11), read at $ed3a
 ; $ee07 referenced 1 time by $ed3a
 lee07
     !byte $e7, $d7, $cb, $c3, $b7, $aa, $a2, $9a, $92, $8a, $82, $7a  ; ee07: e7 d7 cb... ...
@@ -8721,15 +8734,19 @@ cf068
     !byte 1                                                           ; f06b: 01          .
     !text "axfyjk@:"                                                  ; f06c: 61 78 66... axf
     !byte $0d                                                         ; f074: 0d          .
+; A table of 2 bytes, indexed by Y (0 or 1), read at $ee8a
 ; $f075 referenced 1 time by $ee8a
 lf075
     !byte 0, $ff                                                      ; f075: 00 ff       ..
+; A table of 2 bytes, indexed by Y (0 or 1), read at $ee94
 ; $f077 referenced 1 time by $ee94
 lf077
     !byte 1, 2                                                        ; f077: 01 02       ..
+; A table of 2 bytes, indexed by Y (0 or 1), read at $eea3
 ; $f079 referenced 1 time by $eea3
 lf079
-    !byte 9, $0a, 2                                                   ; f079: 09 0a 02    ...
+    !byte 9, $0a                                                      ; f079: 09 0a       ..
+    !byte 2                                                           ; f07b: 02          .
     !text "scghnl;]"                                                  ; f07c: 73 63 67... scg
     !byte $7f                                                         ; f084: 7f          .
 
@@ -14518,8 +14535,8 @@ pydis_end
 ;     Data                     = 3598 bytes (22%)
 ;
 ;     Number of instructions   = 6186
-;     Number of data bytes     = 2279 bytes
-;     Number of data words     = 178 bytes
-;     Number of string bytes   = 1141 bytes
-;     Number of strings        = 67
+;     Number of data bytes     = 2294 bytes
+;     Number of data words     = 182 bytes
+;     Number of string bytes   = 1122 bytes
+;     Number of strings        = 62
 

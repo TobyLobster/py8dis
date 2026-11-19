@@ -96,18 +96,21 @@ l2056 equ c2055+1
     txa                                                               ; 2057: 8a          .
     rts                                                               ; 2058: 60          `
 
+; A table of 16 bytes, indexed by Y (0 to 15), written at $2028
 ; $2059 referenced 1 time by $2028
 table1
     dfb $11, $11, $11, $11, $11, $11, $11, $11, $11, $11, $11, $11    ; 2059: 11 11 11... ...
     dfb $11, $11, $11, $11                                            ; 2065: 11 11 11... ...
+; A table of 8 bytes, indexed by X (0 to 7), written at $2035
 ; $2069 referenced 1 time by $2035
 table2
-    asc '""""""""'                                                    ; 2069: 22 22 22... """
+    dfb $22, $22, $22, $22, $22, $22, $22, $22                        ; 2069: 22 22 22... """
 ; $2071 referenced 1 time by $2040
 table3
     dfb $33                                                           ; 2071: 33          3
+; A table of 4 bytes, indexed by Y (1 to 4), written at $2040
 l2072
-    asc '3333'                                                        ; 2072: 33 33 33... 333
+    dfb $33, $33, $33, $33                                            ; 2072: 33 33 33... 333
 pydis_end
 
     err l2072 - 1 - $2071
@@ -160,7 +163,7 @@ pydis_end
 ;     Data                     = 29 bytes (25%)
 ;
 ;     Number of instructions   = 47
-;     Number of data bytes     = 17 bytes
+;     Number of data bytes     = 29 bytes
 ;     Number of data words     = 0 bytes
-;     Number of string bytes   = 12 bytes
-;     Number of strings        = 2
+;     Number of string bytes   = 0 bytes
+;     Number of strings        = 0

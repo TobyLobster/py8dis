@@ -4056,8 +4056,10 @@ osword0block
     .byt hiscorenamebuffer_end - hiscorenamebuffer - 1                // 299f: 08          .              // Maximum line length
     .byt $20                                                          // 29a0: 20                         // Min. acceptable character value
     .byt $7f                                                          // 29a1: 7f          .              // Max. acceptable character value
+// A table of 8 bytes, indexed by Y (8 to 15), read at $2930
 hiscorenamebuffer
-    .byt 0, 0, 0, 0, 0, 0, 0, 0, 0                                    // 29a2: 00 00 00... ...
+    .byt 0, 0, 0, 0, 0, 0, 0, 0                                       // 29a2: 00 00 00... ...
+    .byt 0                                                            // 29aa: 00          .
 
 // ----------------------------------------------------------------------------------
 // Entry point (only entered once at beginning of game)

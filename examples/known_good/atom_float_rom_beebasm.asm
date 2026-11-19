@@ -2642,8 +2642,10 @@ error3 = dummy+1
     equb >mode_2_colour_point_plot                                    ; df47: df          .
     equb >mode_3_colour_point_plot                                    ; df48: df          .
     equb >mode_4_colour_point_plot                                    ; df49: df          .
+; A table of 4 bytes, indexed by X (0 to 3), read at &dfd9
 .colour_bitmask_table
     equb %00111111, %11001111, %11110011, %11111100                   ; df4a: 3f cf f3... ?..
+; A table of 4 bytes, indexed by Y (0 to 3), read at &df0a
 .colour_byte_table
     equb %00000000, %01010101, %10101010, %11111111                   ; df4e: 00 55 aa... .U.
 

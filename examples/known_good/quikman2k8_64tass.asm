@@ -1779,15 +1779,18 @@ loop_c19f4
     .byte 0, 0, 0, 0, 0, 0                                            ; 19f9: 00 00 00... ...
 ; $19ff referenced 1 time by $1931
     .byte 0                                                           ; 19ff: 00          .
+; A table of 21 bytes, indexed by X (1 to 21), read at $1931
 ; $1a00 referenced 5 times by $158f, $15fb, $1940, $1947, $1951
 l1a00
     .byte $93, $83, $8f, $92, $85, $ba                                ; 1a00: 93 83 8f... ...
+; A table of 6 bytes, indexed by X (0 to 5), read at $1913 and $1924, and written at $10c8
 ; $1a06 referenced 3 times by $10c8, $1913, $1924
 l1a06
     .byte $b0                                                         ; 1a06: b0          .
 ; $1a07 referenced 1 time by $19ce
 l1a07
     .byte $b0, $b0, $b0, $b0, $b0, $a0, $a0, $a0                      ; 1a07: b0 b0 b0... ...
+; A table of 6 bytes, indexed by X (0 to 5), read at $1916, and written at $1927
 ; $1a0f referenced 2 times by $1916, $1927
 l1a0f
     .byte $b0, $b2, $b0, $b0, $b0, $b0                                ; 1a0f: b0 b2 b0... ...
@@ -1833,10 +1836,11 @@ l1ae3
     .byte $1e                                                         ; 1b0c: 1e          .
     .text "7:::   9"                                                  ; 1b0d: 37 3a 3a... 7::
     .byte $1e, $39                                                    ; 1b15: 1e 39       .9
+; A table of 9 bytes, indexed by X (0 to 8), written at $1cbc
 ; $1b17 referenced 1 time by $1cbc
 l1b17
-    .text "         9"                                                ; 1b17: 20 20 20...
-    .byte $1e                                                         ; 1b21: 1e          .
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20                 ; 1b17: 20 20 20...
+    .byte $39, $1e                                                    ; 1b20: 39 1e       9.
     .text "9   7::6"                                                  ; 1b22: 39 20 20... 9
     .byte $1e                                                         ; 1b2a: 1e          .
     .text "2 3::=::4 2"                                               ; 1b2b: 32 20 33... 2 3
@@ -1866,11 +1870,14 @@ l1b17
     .text "95:::::::::::::::::::"                                     ; 1bcd: 39 35 3a... 95:
 ; $1be2 referenced 1 time by $102e
 l1be2
-    .byte $36, $3f, $b2, $b0, $b0, $b8, $a0, $92, $88, $95, $92, $93  ; 1be2: 36 3f b2... 6?.
-    .byte $94, $a0, $a0, $86, $b7, $bd, $90, $8c, $81, $99            ; 1bee: 94 a0 a0... ...
+    .byte $36                                                         ; 1be2: 36          6
+; A table of 22 bytes, indexed by X (1 to 22), read at $102e
+    .byte $3f, $b2, $b0, $b0, $b8, $a0, $92, $88, $95, $92, $93, $94  ; 1be3: 3f b2 b0... ?..
+    .byte $a0, $a0, $86, $b7, $bd, $90, $8c, $81, $99                 ; 1bef: a0 a0 86... ...
 ; $1bf8 referenced 1 time by $120e
 l1bf8
-    .byte 1, 3, 5, 7, $0a, $14, $1e, $32                              ; 1bf8: 01 03 05... ...
+    .byte 1                                                           ; 1bf8: 01          .
+    .byte 3, 5, 7, $0a, $14, $1e, $32                                 ; 1bf9: 03 05 07... ...
 ; $1c00 referenced 1 time by $1851
 l1c00
     .byte $3e, $7c, $f8, $f0, $f0, $f8, $7c, $3e,   0,   0,   0,   0  ; 1c00: 3e 7c f8... >..
@@ -1880,6 +1887,7 @@ l1c00
     .byte $38, $7c, $fe, $92, $fe, $fe, $fe, $aa,   0,   0,   0,   0  ; 1c30: 38 7c fe... 8..
     .byte   0,   0,   0,   0, $38, $7c, $fe, $92, $fe, $fe, $fe, $aa  ; 1c3c: 00 00 00... ...
     .byte   0,   0,   0,   0,   0,   0,   0,   0                      ; 1c48: 00 00 00... ...
+; A table of 5 bytes, indexed by X (0 to 4) and Y (1 to 4), read at $15a7 and $18b9
 ; $1c50 referenced 2 times by $15a7, $18b9
 l1c50
     .byte 7                                                           ; 1c50: 07          .
@@ -1889,18 +1897,22 @@ l1c51
 ; $1c55 referenced 3 times by $1396, $1566, $1967
 l1c55
     .byte 0, $33, $76, $f9, 2, 3, 2, 0                                ; 1c55: 00 33 76... .3.
+; A table of 4 words, indexed by Y (0, 2, 4 or 6), the low bytes read at $1905, and the high bytes read at $190b
 ; $1c5d referenced 1 time by $1905
 l1c5d
-    .byte $a0                                                         ; 1c5d: a0          .
+l1c5e = l1c5d+1
+    .word $10a0, $1000, $b8a0, $b800                                  ; 1c5d: a0 10 00... ...
 ; $1c5e referenced 1 time by $190b
-l1c5e
-    .byte $10, 0, $10, $a0, $b8, 0, $b8                               ; 1c5e: 10 00 10... ...
+; A table of 13 bytes, indexed by X (0 to 12) and Y (0 to 12), read at $107e, $12b9 and $15db
 ; $1c65 referenced 3 times by $107e, $12b9, $15db
 l1c65
-    .text """#$$%%&&''(()"                                            ; 1c65: 22 23 24... "#$
+    .byte $22, $23, $24, $24, $25, $25, $26, $26, $27, $27, $28, $28  ; 1c65: 22 23 24... "#$
+    .byte $29                                                         ; 1c71: 29          )
+; A table of 13 bytes, indexed by X (0 to 12) and Y (0 to 12), read at $1084, $12bf and $15e1
 ; $1c72 referenced 4 times by $1084, $113b, $12bf, $15e1
 l1c72
     .byte 2, 2, 7, 7, 2, 2, 5, 5, 4, 4, 7, 7, 3                       ; 1c72: 02 02 07... ...
+; A table of 9 bytes, indexed by X (0 to 8), read at $1cb0
 ; $1c7f referenced 1 time by $1cb0
 l1c7f
     .byte $87, $81, $8d, $85, $a0, $8f, $96, $85, $92                 ; 1c7f: 87 81 8d... ...
@@ -1913,9 +1925,11 @@ l1c89
 ; $1c8e referenced 1 time by $165f
 l1c8e
     .byte 0, $ff                                                      ; 1c8e: 00 ff       ..
+; A table of 2 bytes, indexed by X (0 or 1), read at $1650
 ; $1c90 referenced 1 time by $1650
 l1c90
     .byte 1, $15                                                      ; 1c90: 01 15       ..
+; A table of 16 bytes, indexed by X (0 to 9) and Y (0 to 15), read at $10d9 and $156b
 ; $1c92 referenced 2 times by $10d9, $156b
 l1c92
     .byte $50, $88                                                    ; 1c92: 50 88       p.
@@ -1974,12 +1988,13 @@ c1cca
     .text "d(F(d"                                                     ; 1ce1: 44 28 c6... d(F
     .byte $10, 0, $92, $44, 0, $82, 0, $44, $92, 0, 0, 0, 0, $18, $18 ; 1ce6: 10 00 92... ...
     .byte   0, 0,   0                                                 ; 1cf5: 00 00 00    ...
+; A table of 8 bytes, indexed by X (0 to 7), read at $18d1, and written at $18d7
 ; $1cf8 referenced 2 times by $18d1, $18d7
 l1cf8
-    .byte   0, $3c, $7e, $7e, $7e, $7e, $3c,   0,   0,   0,   0,   0  ; 1cf8: 00 3c 7e... .<.
-    .byte   0,   0,   0,   0, $3c, $7e, $bd, $ff, $bd, $c3, $7e, $3c  ; 1d04: 00 00 00... ...
-    .byte   4,   8, $18, $24, $62, $f7, $f2, $60, $10, $7c, $fe, $aa  ; 1d10: 04 08 18... ...
-    .byte $d6, $aa                                                    ; 1d1c: d6 aa       V.
+    .byte 0, $3c, $7e, $7e, $7e, $7e, $3c, 0                          ; 1cf8: 00 3c 7e... .<.
+    .byte   0,   0,   0,   0,   0,   0,   0,   0, $3c, $7e, $bd, $ff  ; 1d00: 00 00 00... ...
+    .byte $bd, $c3, $7e, $3c,   4,   8, $18, $24, $62, $f7, $f2, $60  ; 1d0c: bd c3 7e... .C.
+    .byte $10, $7c, $fe, $aa, $d6, $aa                                ; 1d18: 10 7c fe... ...
     .text "t( "                                                       ; 1d1e: 54 28 20    t(
     .byte $10, $7c, $fe, $fe, $fe, $7c, $38,   8, $10, $7c, $fe, $fe  ; 1d21: 10 7c fe... ...
     .byte $fe, $7c, $28,   8, $10, $38, $38, $7c, $fe, $fe, $6c, $10  ; 1d2d: fe 7c 28... ..(
@@ -2543,8 +2558,8 @@ screen_memory
 ;     Data                     = 1007 bytes (28%)
 ;
 ;     Number of instructions   = 1248
-;     Number of data bytes     = 688 bytes
-;     Number of data words     = 6 bytes
-;     Number of string bytes   = 313 bytes
-;     Number of strings        = 41
+;     Number of data bytes     = 703 bytes
+;     Number of data words     = 14 bytes
+;     Number of string bytes   = 290 bytes
+;     Number of strings        = 39
 

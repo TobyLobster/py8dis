@@ -204,6 +204,12 @@ Marks `n` words (16-bit, low byte first) as addresses of code, e.g. a table of r
 
 Marks two bytes as the address of code, and traces the code. The low and high bytes needn't be next to each other: give the high byte's address as `runtime_addr_high` (by default it's the byte after `runtime_addr`), e.g. for a jump table with the low bytes in one table and the high bytes in another. `offset` is added to the value to get the code's address. `label_name` names the code. `code_ptr(addr)` is the same as `wordentry(addr)`. (py8dis finds some jump tables itself: see [cpus.md](cpus.md#jump-tables).)
 
+### data_ptr
+
+`data_ptr(runtime_addr, runtime_addr_high=None, label_name=None)`
+
+Marks two bytes as the address of data (e.g. a string or a table): as `code_ptr()`, but without tracing anything there. The two bytes are written as the address's label (a word if they're next to each other, low byte first, otherwise its low and high bytes), and `label_name` names the address. (py8dis finds some tables of pointers itself: see [cpus.md](cpus.md#data-tables).)
+
 ### rts_code_ptr
 
 `rts_code_ptr(runtime_addr, runtime_addr_high=None)`

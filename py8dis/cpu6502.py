@@ -1059,6 +1059,7 @@ class Cpu6502(cpu.Cpu):
         self.code_analysis_fns.append(self.find_redundant_instructions) # Comment instructions whose results are never used.
         self.code_analysis_fns.append(self.comment_subroutine_exits)    # 'On Exit' notes for what subroutines leave that callers use
         self.code_analysis_fns.append(self.suggest_jump_tables)         # Control file lines for jump tables that weren't marked
+        self.code_analysis_fns.append(self.find_data_tables)            # Tables of pointers, and the sizes of tables the code indexes
 
         # For labelling rts instructions numerically (see label_maker()): the
         # last number used, and the number of each RTS, by binary address
@@ -4287,6 +4288,39 @@ class Cpu6502(cpu.Cpu):
         table, or inside an instruction or data)."""
         import commands
         memory_binary = session.current().memory.binary
+        entries = self._table_entries(lo_table, hi_table, values)
+        if isinstance(entries, str):
+            return entries
+        table_bytes = set(binary_addr for entry in entries for _, binary_addr in entry)
+        for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
+            code = ((memory_binary[hi_binary] << 8 | memory_binary[lo_binary]) + offset) & 0xffff
+            code_binary, _ = movemanager.r2b(memorymanager.RuntimeAddr(code))
+            if code_binary is not None and memorymanager.is_data_loaded_at_binary_addr(code_binary):
+                c = classification.get_classification(code_binary)
+                if code_binary in table_bytes:
+                    return "into table"
+                if not (c is None or c.is_code(code_binary)):
+                    return "into data"
+        for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
+            commands.code_ptr(lo_runtime, hi_runtime, offset=offset)
+
+        # Say what the table is, before it
+        dispatch = "{0} at {1}".format(classification.get_classification(dispatch_binary_addr).mnemonic.upper(),
+                                       config.get_assembler().hex(movemanager.b2r(BinaryAddr(dispatch_binary_addr))))
+        how = " (each the address minus 1, for the {0})".format(dispatch) if offset else " (for the {0})".format(dispatch)
+        n = len(entries)
+        self._comment_address_table(entries, "a jump table of {0} {1}{2}".format(n, "entry" if n == 1 else "entries", how), "jump table")
+        return None
+
+    def _table_entries(self, lo_table, hi_table, values):
+        """The entries of a table of addresses (a jump table, or a table of
+        pointers), with their low bytes at lo_table + each of the values and
+        their high bytes at hi_table + each, as [((low byte's runtime
+        address, its binary address), (high byte's runtime address, its
+        binary address))], if they're all loaded, none of their bytes is
+        classified or has an expression, and no two share a byte. Otherwise
+        why not, as a string: 'not loaded', 'marked' or 'overlaps' (see
+        _mark_jump_table())."""
         expressions = session.current().classifications.expressions
         entries = []
         table_bytes = set()
@@ -4306,30 +4340,20 @@ class Cpu6502(cpu.Cpu):
                 table_bytes.add(binary_addr)
                 entry.append((runtime_addr, binary_addr))
             entries.append(entry)
-        for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
-            code = ((memory_binary[hi_binary] << 8 | memory_binary[lo_binary]) + offset) & 0xffff
-            code_binary, _ = movemanager.r2b(memorymanager.RuntimeAddr(code))
-            if code_binary is not None and memorymanager.is_data_loaded_at_binary_addr(code_binary):
-                c = classification.get_classification(code_binary)
-                if code_binary in table_bytes:
-                    return "into table"
-                if not (c is None or c.is_code(code_binary)):
-                    return "into data"
-        for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
-            commands.code_ptr(lo_runtime, hi_runtime, offset=offset)
+        return entries
 
-        # Say what the table is, before it
-        dispatch = "{0} at {1}".format(classification.get_classification(dispatch_binary_addr).mnemonic.upper(),
-                                       config.get_assembler().hex(movemanager.b2r(BinaryAddr(dispatch_binary_addr))))
-        how = " (each the address minus 1, for the {0})".format(dispatch) if offset else " (for the {0})".format(dispatch)
-        n = len(entries)
+    def _comment_address_table(self, entries, what, short):
+        """Say what a table of addresses is (see _table_entries()), before
+        it: 'A ...' and then 'what' (e.g. 'jump table of 7 entries (for the
+        RTS at $f1c3)') for a table of words, otherwise 'The low bytes of
+        ...' before its low bytes, and 'The high bytes of the ...' and then
+        'short' (e.g. 'jump table') before its high bytes."""
         first_lo, first_hi = entries[0][0][1], entries[0][1][1]
         if first_hi == first_lo + 1 and all(hi[1] == lo[1] + 1 for lo, hi in entries):
-            disassembly.comment_binary(first_lo, "A jump table of {0} {1}{2}".format(n, "entry" if n == 1 else "entries", how), align=Align.BEFORE_LABEL, auto_generated=True)
+            disassembly.comment_binary(first_lo, what[0].upper() + what[1:], align=Align.BEFORE_LABEL, auto_generated=True)
         else:
-            disassembly.comment_binary(first_lo, "The low bytes of a jump table of {0} {1}{2}".format(n, "entry" if n == 1 else "entries", how), align=Align.BEFORE_LABEL, auto_generated=True)
-            disassembly.comment_binary(first_hi, "The high bytes of the jump table", align=Align.BEFORE_LABEL, auto_generated=True)
-        return None
+            disassembly.comment_binary(first_lo, "The low bytes of " + what, align=Align.BEFORE_LABEL, auto_generated=True)
+            disassembly.comment_binary(first_hi, "The high bytes of the " + short, align=Align.BEFORE_LABEL, auto_generated=True)
 
     def suggest_jump_tables(self):
         """For each jump through a table that find_jump_tables() found but
@@ -4449,6 +4473,252 @@ class Cpu6502(cpu.Cpu):
                 for table in (lo_table, hi_table):
                     table_bytes.add(movemanager.r2b(memorymanager.RuntimeAddr(table + v))[0])
         return indexes
+
+    def find_data_tables(self):
+        """Mark the tables of data that the code reads (or writes) with an
+        index whose possible values are known, after tracing: first tables
+        of pointers (see _find_pointer_tables()), then tables of bytes (see
+        _size_data_tables()). Turned off with
+        config.set_find_data_tables(False)."""
+        if not config.get_find_data_tables():
+            return
+        self._find_pointer_tables()
+        self._size_data_tables()
+
+    def _find_pointer_tables(self):
+        """Mark the tables of pointers that the code copies an entry of into
+        zero page, and then uses as a pointer, e.g. 'lda lo,x : sta ptr :
+        lda hi,x : sta ptr+1 : ldy #0 : lda (ptr),y', with an index whose
+        possible values are known: each entry as the address of the data it
+        points to (see data_ptr()), written as its label, with a comment
+        before the table. As for jump tables (see find_jump_tables()), the
+        low and high bytes can be in tables of their own, or together as
+        words; the code must be in one straight run, with no JSR between
+        the stores and the use; and a table isn't marked if any of its bytes
+        is already classified (e.g. the control file marked it) or has an
+        expression, if its entries overlap, or if the index has more than
+        MAX_JUMP_TABLE_ENTRIES possible values."""
+        import commands
+        memory_binary = session.current().memory.binary
+        hex = config.get_assembler().hex
+        uses = (self.mode_indirect_indexed, self.mode_indirect_zp)
+        for run in self.straight_runs():
+            for i, binary_addr in enumerate(run):
+                c = classification.get_classification(binary_addr)
+                if c.addr_mode not in uses or self.is_operand_modified(binary_addr):
+                    continue
+                table = self._stored_jump_table(run, i, memory_binary[binary_addr + 1])
+                if table is None:
+                    continue
+                lo_table, hi_table, reg, values, offset = table
+                if values is None or len(values) > self.MAX_JUMP_TABLE_ENTRIES:
+                    continue
+                entries = self._table_entries(lo_table, hi_table, values)
+                if isinstance(entries, str):
+                    continue
+                for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
+                    commands.data_ptr(lo_runtime, hi_runtime)
+                n = len(entries)
+                user = "{0} at {1}".format(c.mnemonic.upper(), hex(movemanager.b2r(BinaryAddr(binary_addr))))
+                self._comment_address_table(entries, "a table of {0} {1} (for the {2})".format(n, "pointer" if n == 1 else "pointers", user), "table of pointers")
+
+    # How a data table is used, by mnemonic: those that write memory, and
+    # those that change it (read it and write it back)
+    _MEMORY_WRITES = {"sta", "stx", "sty", "stz"}
+    _MEMORY_CHANGES = {"asl", "lsr", "rol", "ror", "inc", "dec", "trb", "tsb"}
+
+    def _size_data_tables(self):
+        """Mark the tables of bytes that the code reads, writes or changes
+        with 'table,x' or 'table,y', where the index's possible values are
+        known (at least two of them): e.g. after 'ldy #31 : loop: lda
+        sine_table,y : ... dey : bpl loop', the 32 bytes from sine_table. A
+        table is the bytes from the least value the index can have to the
+        greatest (all of them for each instruction with that operand), with
+        a comment before it, e.g. 'A table of 32 bytes, indexed by Y (0 to
+        31), read at $1234'. A pair of tables one byte apart whose index goes up
+        in twos (e.g. 'lda table,x : ... lda table+1,x' after 'asl : tax')
+        is a table of words. Only bytes that are loaded, aren't classified
+        and don't have an expression are used: a table any of whose bytes
+        is otherwise is left alone.
+
+        The bytes of the tables (where tables overlap, together) are
+        classified as bytes (or words), so that the bytes after a table
+        start on a line of their own, and no string is found running into
+        it or out of it (e.g. 'ON[' in a table of addresses' high bytes),
+        except in a table with a run of at least four letters, digits or
+        spaces (in the session's text encoding), with at least three letters,
+        each word upper case, lower case or capitalised (e.g. 'PRINT ',
+        'Library' or '0123456789ABCDEF', but not '3DUfw'), which is likely
+        to be text: that's left for the search for
+        strings (see classification.autostring()). Each run
+        of bytes is classified up to the next label, so a label in the
+        middle of one (e.g. the start of another table) starts a new line."""
+        import textencoding
+        memory_binary = session.current().memory.binary
+        expressions = session.current().classifications.expressions
+        labels = session.current().labels.labels
+        hex = config.get_assembler().hex
+
+        def free(runtime_addr):
+            """The binary address of a byte that can be part of a table, or
+            None."""
+            if runtime_addr > 0xffff:
+                return None
+            binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr))
+            if (binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr)
+                    or classification.is_classified(binary_addr) or binary_addr in expressions):
+                return None
+            return binary_addr
+
+        # Each use of a table: by its operand's runtime address, [(the
+        # instruction's binary address, the index register, its possible
+        # values, how it uses the table)]
+        uses = collections.defaultdict(list)
+        for run in self.straight_runs():
+            for j, binary_addr in enumerate(run):
+                c = classification.get_classification(binary_addr)
+                if c.addr_mode not in (self.mode_abs_indexed_x, self.mode_abs_indexed_y) or self.is_operand_modified(binary_addr, 2):
+                    continue
+                reg = "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
+                possible = self.known_before(run, j)[reg].possible
+                if possible == valuesets.FULL or valuesets.value(possible) is not None:
+                    continue
+                mnemonic = c.mnemonic.lower()
+                kind = "written" if mnemonic in self._MEMORY_WRITES else "changed" if mnemonic in self._MEMORY_CHANGES else "read"
+                uses[memorymanager.get_u16_binary(binary_addr + 1)].append((binary_addr, reg, valuesets.values(possible), kind))
+
+        def describe_values(values):
+            """The values an index can have, as text, e.g. '0 to 7', '0 or
+            2', '0 to 14 in twos', or '9 values from 1 to 200'."""
+            n = len(values)
+            if n > 2 and values == list(range(values[0], values[-1] + 1)):
+                return "{0} to {1}".format(values[0], values[-1])
+            if n <= 4:
+                return ", ".join(str(v) for v in values[:-1]) + " or " + str(values[-1])
+            step = values[1] - values[0]
+            if values == list(range(values[0], values[-1] + 1, step)):
+                return "{0} to {1} in {2}s".format(values[0], values[-1], {2: "two", 4: "four"}.get(step, step))
+            missing = sorted(set(range(values[0], values[-1] + 1)) - set(values))
+            if len(missing) <= 2:
+                return "{0} to {1} except {2}".format(values[0], values[-1], " and ".join(str(v) for v in missing))
+            return "{0} values from {1} to {2}".format(n, values[0], values[-1])
+
+        def describe_index(table_uses):
+            """The index registers and their values, e.g. 'X (0 to 7)', or
+            'X (0 to 7) and Y (0 to 2)'."""
+            regs = collections.OrderedDict()
+            for binary_addr, reg, values, kind in sorted(table_uses, key=lambda u: u[1]):
+                regs.setdefault(reg, set()).update(values)
+            return utils.and_list("{0} ({1})".format(reg.upper(), describe_values(sorted(values))) for reg, values in regs.items())
+
+        def describe_kinds(table_uses, part=""):
+            """Where the instructions use a table, by how, e.g. 'read at
+            $1234 and $1250, and written at $1300' (with 'part' after each
+            how, e.g. 'the low bytes read at ...'). More than four places
+            are given as the first three and how many others."""
+            kinds = collections.OrderedDict()
+            for binary_addr, reg, values, kind in sorted(table_uses, key=lambda u: ("read", "written", "changed").index(u[3])):
+                kinds.setdefault(kind, []).append(binary_addr)
+            parts = []
+            for kind, binary_addrs in kinds.items():
+                addrs = [hex(movemanager.b2r(BinaryAddr(b))) for b in sorted(set(binary_addrs))]
+                if len(addrs) > 4:
+                    addrs = addrs[:3] + ["{0} other places".format(len(addrs) - 3)]
+                parts.append("{0}{1} at {2}".format(part, kind, utils.and_list(addrs)))
+            # (With a comma before the last 'and', since each part can be a
+            # list of its own)
+            return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + ", and " + parts[-1]
+
+        # The tables: (first binary address, number of bytes, words?, comment)
+        tables = []
+        done = set()
+        for base in sorted(uses):
+            if base in done:
+                continue
+            values = sorted(set(v for use in uses[base] for v in use[2]))
+            # A table of words: the same index values for the low bytes at
+            # base and the high bytes at base+1, going up in twos from 0
+            high_uses = uses.get(base + 1)
+            if (high_uses and len(set(tuple(u[2]) for u in uses[base] + high_uses)) == 1 and values[0] == 0
+                    and values == list(range(0, values[-1] + 1, 2))):
+                n = len(values)
+                binary_addrs = [free(base + i) for i in range(2 * n)]
+                if None not in binary_addrs:
+                    text = "A table of {0} words, indexed by {1}, {2}, and {3}".format(
+                        n, describe_index(uses[base] + high_uses), describe_kinds(uses[base], "the low bytes "), describe_kinds(high_uses, "the high bytes "))
+                    tables.append((binary_addrs, True, text))
+                    done.update((base, base + 1))
+                    continue
+            binary_addrs = [free(base + i) for i in range(values[0], values[-1] + 1)]
+            if None in binary_addrs:
+                continue
+            n = len(binary_addrs)
+            tables.append((binary_addrs, False, "A table of {0} bytes, indexed by {1}, {2}".format(n, describe_index(uses[base]), describe_kinds(uses[base]))))
+
+        # Say what each table is before it, and classify their bytes (where
+        # tables overlap, together): the tables of words that don't overlap
+        # another table (or have a label inside) as words, and the rest as
+        # bytes, apart from text
+        encoding = textencoding.current()
+
+        def alphanumeric(byte):
+            """The byte's character in the session's text encoding, if it's a
+            letter, a digit or a space, otherwise None."""
+            c = encoding.char(byte)
+            return c if c is not None and len(c) == 1 and (c.isalnum() or c == " ") else None
+
+        def word_case(word):
+            """Whether a word's letters are all upper case, all lower case,
+            or upper case then lower case (e.g. 'Library')."""
+            return word.isupper() or word.islower() or (word[0].isupper() and word[1:].islower())
+
+        def has_text(table_bytes):
+            """Whether the bytes have a run of at least four letters, digits
+            or spaces, with at least three letters, each word of which is
+            upper case, lower case, or capitalised: e.g. 'PRINT ' or
+            'Library', but not '3DUfw'."""
+            text = "".join(alphanumeric(b) or "\0" for b in table_bytes)
+            for run in text.split("\0"):
+                words = "".join(c if c.isalpha() else " " for c in run).split()
+                if len(run) >= 4 and sum(len(w) for w in words) >= 3 and all(word_case(w) for w in words):
+                    return True
+            return False
+
+        def is_label(binary_addr):
+            label = labels.get(movemanager.b2r(BinaryAddr(binary_addr)))
+            return label is not None and not label.is_only_an_expression()
+
+        byte_addrs = set()
+        word_tables = []
+        for binary_addrs, words, text in tables:
+            disassembly.comment_binary(binary_addrs[0], text, align=Align.BEFORE_LABEL, auto_generated=True)
+            if words:
+                word_tables.append(binary_addrs)
+                continue
+            table_bytes = [memory_binary[b] for b in binary_addrs]
+            if has_text(table_bytes):
+                # (Text, which the search for strings will find)
+                continue
+            byte_addrs.update(binary_addrs)
+        for binary_addrs in word_tables:
+            # (A label inside a word, e.g. from 'lda table+1,x', is written
+            # as an expression, e.g. 'l1235 = l1234+1')
+            if byte_addrs.isdisjoint(binary_addrs):
+                classification.add_classification(binary_addrs[0], classification.Word(len(binary_addrs)))
+            else:
+                byte_addrs.update(binary_addrs)
+        # (Each run of bytes up to the next label)
+        run_start = None
+        previous = None
+        for b in sorted(byte_addrs):
+            if run_start is not None and (b != previous + 1 or is_label(b)):
+                classification.add_classification(run_start, classification.Byte(previous + 1 - run_start))
+                run_start = None
+            if run_start is None:
+                run_start = b
+            previous = b
+        if run_start is not None:
+            classification.add_classification(run_start, classification.Byte(previous + 1 - run_start))
 
     def post_trace_effects(self):
         """Call the post-trace function of each effect pattern for each of

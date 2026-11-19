@@ -1046,6 +1046,7 @@ ce8d1
     sta key_repeat_counter                                            // e8d6: 8d 8b 02    ...
     rts                                                               // e8d9: 60          .
 
+// A table of 16 bytes, indexed by X (0 to 15), read at $fe14
 // $e8da referenced 1 time by $fe14
 le8da
     .byt $90,   5, $1c, $9f, $9c, $1e, $1f, $9e, $81, $95, $96, $97   // e8da: 90 05 1c... ...
@@ -1346,15 +1347,16 @@ cea81
     pla                                                               // ea85: 68          .
     rti                                                               // ea86: 40          @
 
+// A table of 4 bytes, indexed by X (0 to 3), read at $e8b5
 // $ea87 referenced 1 time by $e8b5
 lea87
-    .byt $3c,   2,   7,   0, $48, $78, $20, $a3, $fd, $20, $a0, $e5   // ea87: 3c 02 07... <..
-    .byt $20, $44, $e5, $a9,   0, $8d, $19,   3, $a2, $14, $a0, $0e   // ea93: 20 44 e5...  d.
-    .byt $20, $0c, $e5, $a2, $5c, $20, $71, $e9, $68, $f0, $17, $48   // ea9f: 20 0c e5...  ..
-    .byt $a2,   2, $a0,   2, $20, $0c, $e5, $68, $48, $20, $f1, $fa   // eaab: a2 02 a0... ...
-    .byt $68, $c9,   1, $d0,   5, $a2, $68, $20, $71, $e9, $a2,   0   // eab7: 68 c9 01... .I.
-    .byt $8e, $20, $d0, $e8, $10, $fd, $a2,   6, $8e, $20, $d0, $ea   // eac3: 8e 20 d0... . P
-    .byt $d0, $f0                                                     // eacf: d0 f0       P.
+    .byt $3c, 2, 7, 0                                                 // ea87: 3c 02 07... <..
+    .byt $48, $78, $20, $a3, $fd, $20, $a0, $e5, $20, $44, $e5, $a9   // ea8b: 48 78 20... h.
+    .byt   0, $8d, $19,   3, $a2, $14, $a0, $0e, $20, $0c, $e5, $a2   // ea97: 00 8d 19... ...
+    .byt $5c, $20, $71, $e9, $68, $f0, $17, $48, $a2,   2, $a0,   2   // eaa3: 5c 20 71... . .
+    .byt $20, $0c, $e5, $68, $48, $20, $f1, $fa, $68, $c9,   1, $d0   // eaaf: 20 0c e5...  ..
+    .byt   5, $a2, $68, $20, $71, $e9, $a2,   0, $8e, $20, $d0, $e8   // eabb: 05 a2 68... ...
+    .byt $10, $fd, $a2,   6, $8e, $20, $d0, $ea, $d0, $f0             // eac7: 10 fd a2... ...
 // $ead1 referenced 1 time by $e971
 lead1
     .byt $0d                                                          // ead1: 0d          .
@@ -1464,6 +1466,7 @@ cebbc
     sta screen_line_length                                            // ebbe: 85 d5       .U
     rts                                                               // ebc0: 60          .
 
+// A table of 7 bytes, indexed by X (0 to 6), read at $fc0a
 // $ebc1 referenced 1 time by $fc0a
 lebc1
     .byt $83, $85, $89, $86, $8a, $87, $88                            // ebc1: 83 85 89... ...
@@ -1482,6 +1485,7 @@ lebc8
     .byt 0                                                            // ebe1: 00          .
     .byt $40, $31, $31, $24 // petscii "@11$"                         // ebe2: 40 31 31... @11
     .byt 0                                                            // ebe6: 00          .
+// A table of 7 bytes, indexed by X (0 to 6), read at $fc14
 // $ebe7 referenced 1 time by $fc14
 lebe7
     .byt 0, 3, 7, $0c, $10, $15, $1a                                  // ebe7: 00 03 07... ...
@@ -1564,6 +1568,7 @@ cec49
     adc #$c0                                                          // ec49: 69 c0       ..
     rts                                                               // ec4b: 60          .
 
+// A table of 17 bytes, indexed by X (0 to 16), read at $fe01
 // $ec4c referenced 1 time by $fe01
 control_codes
     .byt $93, $13,   8,   9, $0e, $8e, $92, $12, $1d, $9d, $11, $91   // ec4c: 93 13 08... ...
@@ -2865,6 +2870,7 @@ cf336
     sta output_device                                                 // f33c: 85 9a       ..
     rts                                                               // f33e: 60          .
 
+// A table of 11 bytes, indexed by X (0 to 10), read at $e9c5
 // $f33f referenced 1 time by $e9c5
 lf33f
     .byt $a2, 0, $86, 1, $91, $c3, $a2, 0, $86, 1, $60                // f33f: a2 00 86... ...
@@ -3398,6 +3404,7 @@ lf7b6 = cf7b4+2
     jmp ACPTR                                                         // f7b4: 4c a5 ff    l.. // Read a byte from the serial bus
 
 // $f7b6 referenced 1 time by $f929
+// A table of 5 bytes, indexed by X (1 to 5), read at $f929
     .byt $c3, $c2, $cd, $38, $30 // petscii "CBM80"                   // f7b7: c3 c2 cd... CBM
 
 // $f7bc referenced 1 time by $f689
@@ -3504,6 +3511,7 @@ sub_cf813
 lf81b
     .byt 0, 8, $10, $18                                               // f81b: 00 08 10... ...
     .byt $20, $28, $30, $38 // petscii " (08"                         // f81f: 20 28 30...  (0
+// A table of 8 bytes, indexed by X (0 to 7), read at $eb56
 // $f823 referenced 1 time by $eb56
 lf823
     .byt 0, $40, $80, $ff, $c0, $ff, $ff, $ff                         // f823: 00 40 80... .@.
@@ -3663,12 +3671,15 @@ sub_cf8bf
     stx vic_sprite_enable                                             // f8c7: 8e 15 d0    ..P
     rts                                                               // f8ca: 60          .
 
+// A table of 4 bytes, indexed by Y (0 to 3), read at $e815
 // $f8cb referenced 1 time by $e815
 lf8cb
     .byt $fd, $bf, $7f, $7f                                           // f8cb: fd bf 7f... ...
+// A table of 4 bytes, indexed by Y (0 to 3), read at $e81b
 // $f8cf referenced 1 time by $e81b
 lf8cf
     .byt $80, $10, $20, 4                                             // f8cf: 80 10 20... ..
+// A table of 4 bytes, indexed by Y (0 to 3), read at $e826
 // $f8d3 referenced 1 time by $e826
 lf8d3
     .byt 1, 1, 2, 4                                                   // f8d3: 01 01 02... ...
@@ -3809,6 +3820,7 @@ cf949
     pla                                                               // f94b: 68          .
     jmp lfc75                                                         // f94c: 4c 75 fc    l..
 
+// A table of 16 bytes, indexed by X (0 to 15), read at $f2dd
 // $f94f referenced 1 time by $f2dd
 lf94f
     .byt   0, $80, $20, $a0, $40, $c0, $60, $e0, $10, $90, $30, $b0   // f94f: 00 80 20... ..
@@ -4759,6 +4771,7 @@ cfda3
     stx cia1_interrupt_control                                        // fde6: 8e 0d dc    ...
     jmp cf89e                                                         // fde9: 4c 9e f8    l..
 
+// A table of 2 bytes, indexed by X (0 or 1), read at $fcdb
 // $fdec referenced 1 time by $fcdb
 lfdec
     .byt $42, $40                                                     // fdec: 42 40       b@
@@ -5443,6 +5456,7 @@ IOBASE
     ldx #0                                                            // fff5: a2 00       ..
     rts                                                               // fff7: 60          .
 
+// A table of 2 bytes, indexed by X (0 or 1), read at $fcd5
 // $fff8 referenced 1 time by $fcd5
 lfff8
     .byt $95, $25                                                     // fff8: 95 25       .%
