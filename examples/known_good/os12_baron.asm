@@ -6290,7 +6290,7 @@ section pydis, org = &c000, filename = "os12_baron"
     equb &20, &ad, &e2, &90, &0b, &f0, &9e, &a2,   2, &20, &ad, &e2   ; e300: 20 ad e2...  ..
     equb &90,   2, &f0, &95                                           ; e30c: 90 02 f0... ...
 
-; &e310 referenced 2 times by &e29a, &f939
+; &e310 referenced 3 times by &e29a, &f55e, &f939
 .ce310
     brk                                                               ; e310: 00          .
 
@@ -8795,17 +8795,23 @@ le5b4 = le5b3+1
 .return_45
     rts                                                               ; f1a2: 60          `
 
+; A jump table of 7 entries (each the address minus 1, for the RTS at &f1c3)
 ; &f1a3 referenced 1 time by &f1bd
 .lf1a3
-    equb &4c                                                          ; f1a3: 4c          L
+lf1a4 = lf1a3+1
+    equw sub_cf54d - 1                                                ; f1a3: 4c f5       L.
 ; &f1a4 referenced 1 time by &f1b9
-.lf1a4
-    equb &f5, &1d, &f6, 4, &f3, &0f, &e3, 4, &f3, &2a, &f3, &74, &e2  ; f1a4: f5 1d f6... ...
+    equw sub_cf61e - 1                                                ; f1a5: 1d f6       ..
+    equw sub_cf305 - 1                                                ; f1a7: 04 f3       ..
+    equw ce310 - 1                                                    ; f1a9: 0f e3       ..
+    equw sub_cf305 - 1                                                ; f1ab: 04 f3       ..
+    equw sub_cf32b - 1                                                ; f1ad: 2a f3       *.
+    equw osbyte119EntryPoint - 1                                      ; f1af: 74 e2       t.
 
     cmp #7                                                            ; f1b1: c9 07       ..
     bcs return_45                                                     ; f1b3: b0 ed       ..
     stx l00bc                                                         ; f1b5: 86 bc       ..
-    asl a                                                             ; f1b7: 0a          .
+    asl a                                                             ; f1b7: 0a          .  ; Shift clear bit out (clears carry)
     tax                                                               ; f1b8: aa          .
     lda lf1a4,x                                                       ; f1b9: bd a4 f1    ...
     pha                                                               ; f1bc: 48          H
@@ -9024,6 +9030,7 @@ le5b4 = le5b3+1
     bne cf2c8                                                         ; f2fe: d0 c8       ..
     inc l03c7                                                         ; f300: ee c7 03    ...
     bne cf2c8                                                         ; f303: d0 c3       ..
+.sub_cf305
     jsr sub_cf25a                                                     ; f305: 20 5a f2     Z.
     ldx #&ff                                                          ; f308: a2 ff       ..
     stx l03c2                                                         ; f30a: 8e c2 03    ...
@@ -9045,9 +9052,13 @@ le5b4 = le5b3+1
     lda #4                                                            ; f326: a9 04       ..
     jmp cfbc7                                                         ; f328: 4c c7 fb    L..
 
-    equb &a9,   8, &20, &44, &f3, &20, &27, &fb, &a9, 0, &20, &48     ; f32b: a9 08 20... ..
-    equb &f3, &20, &fc, &fa                                           ; f337: f3 20 fc... . .
-
+.sub_cf32b
+    lda #8                                                            ; f32b: a9 08       ..
+    jsr sub_cf344                                                     ; f32d: 20 44 f3     D.
+    jsr sub_cfb27                                                     ; f330: 20 27 fb     '.
+    lda #0                                                            ; f333: a9 00       ..
+    jsr sub_cf348                                                     ; f335: 20 48 f3     H.
+    jsr sub_cfafc                                                     ; f338: 20 fc fa     ..
 ; &f33b referenced 1 time by &f9a0
 .sub_cf33b
     lda #&f7                                                          ; f33b: a9 f7       ..
@@ -9064,10 +9075,12 @@ le5b4 = le5b3+1
 ; &f342 referenced 3 times by &f42c, &f50e, &f513
 .sub_cf342
     lda #&40 ; '@'                                                    ; f342: a9 40       .@
-; &f344 referenced 3 times by &f421, &f46a, &f4dc
+; &f344 referenced 4 times by &f32d, &f421, &f46a, &f4dc
 .sub_cf344
     ora l00e2                                                         ; f344: 05 e2       ..
     bne loop_cf33f                                                    ; f346: d0 f7       ..
+; &f348 referenced 1 time by &f335
+.sub_cf348
     pha                                                               ; f348: 48          H
     lda l0247                                                         ; f349: ad 47 02    .G.
     beq cf359                                                         ; f34c: f0 0b       ..
@@ -9401,11 +9414,62 @@ le5b4 = le5b3+1
     lda l00c4                                                         ; f548: a5 c4       ..
     jmp cf46f                                                         ; f54a: 4c 6f f4    Lo.
 
-    equb &8a, &f0, &2e, &e0,   3, &f0, &1f, &c0,   3, &b0,   6, &ca   ; f54d: 8a f0 2e... ...
-    equb &f0,   6, &ca, &f0, &0a, &4c, &10, &e3, &a9, &33, &c8, &c8   ; f559: f0 06 ca... ...
-    equb &c8, &d0,   2, &a9, &cc, &c8, &25, &e3, &19, &81, &f5, &85   ; f565: c8 d0 02... ...
-    equb &e3, &60, &98, &30,   2, &d0,   2, &a9, &19, &8d, &d1,   3   ; f571: e3 60 98... .`.
-    equb &60, &a8, &f0, &ec, &a1,   0, &22, &11,   0, &88, &cc        ; f57d: 60 a8 f0... `..
+.sub_cf54d
+    txa                                                               ; f54d: 8a          .
+    beq cf57e                                                         ; f54e: f0 2e       ..
+    cpx #3                                                            ; f550: e0 03       ..
+    beq cf573                                                         ; f552: f0 1f       ..
+    cpy #3                                                            ; f554: c0 03       ..
+    bcs cf55e                                                         ; f556: b0 06       ..
+    dex                                                               ; f558: ca          .
+    beq cf561                                                         ; f559: f0 06       ..
+    dex                                                               ; f55b: ca          .
+    beq cf568                                                         ; f55c: f0 0a       ..
+; &f55e referenced 1 time by &f556
+.cf55e
+    jmp ce310                                                         ; f55e: 4c 10 e3    L..
+
+; &f561 referenced 1 time by &f559
+.cf561
+    lda #&33 ; '3'                                                    ; f561: a9 33       .3
+    iny                                                               ; f563: c8          .
+    iny                                                               ; f564: c8          .
+    iny                                                               ; f565: c8          .
+    bne cf56a                                                         ; f566: d0 02       ..
+; &f568 referenced 1 time by &f55c
+.cf568
+    lda #&cc                                                          ; f568: a9 cc       ..
+; &f56a referenced 1 time by &f566
+.cf56a
+    iny                                                               ; f56a: c8          .
+    and l00e3                                                         ; f56b: 25 e3       %.
+; &f56d referenced 1 time by &f57f
+.loop_cf56d
+    ora cf581,y                                                       ; f56d: 19 81 f5    ...
+    sta l00e3                                                         ; f570: 85 e3       ..
+    rts                                                               ; f572: 60          `
+
+; &f573 referenced 1 time by &f552
+.cf573
+    tya                                                               ; f573: 98          .
+    bmi cf578                                                         ; f574: 30 02       0.
+    bne cf57a                                                         ; f576: d0 02       ..
+; &f578 referenced 1 time by &f574
+.cf578
+    lda #&19                                                          ; f578: a9 19       ..
+; &f57a referenced 1 time by &f576
+.cf57a
+    sta l03d1                                                         ; f57a: 8d d1 03    ...
+    rts                                                               ; f57d: 60          `
+
+; &f57e referenced 1 time by &f54e
+.cf57e
+    tay                                                               ; f57e: a8          .
+    beq loop_cf56d                                                    ; f57f: f0 ec       ..
+; &f581 referenced 1 time by &f56d
+.cf581
+    lda (l0000,x)                                                     ; f581: a1 00       ..
+    equb &22, &11, 0, &88, &cc                                        ; f583: 22 11 00... "..
 
 ; &f588 referenced 2 times by &dcb0, &fae2
 .cf588
@@ -9522,6 +9586,7 @@ le5b4 = le5b3+1
 .return_50
     rts                                                               ; f61d: 60          `
 
+.sub_cf61e
     ; push A,Y onto the stack
     pha                                                               ; f61e: 48          H
     tya                                                               ; f61f: 98          .
@@ -10321,6 +10386,8 @@ le5b4 = le5b3+1
     jsr sub_cfbbd                                                     ; faf4: 20 bd fb     ..
     ldx #0                                                            ; faf7: a2 00       ..
     jsr sub_cfb95                                                     ; faf9: 20 95 fb     ..
+; &fafc referenced 1 time by &f338
+.sub_cfafc
     php                                                               ; fafc: 08          .
     sei                                                               ; fafd: 78          x
     lda l0282                                                         ; fafe: ad 82 02    ...
@@ -10355,7 +10422,7 @@ le5b4 = le5b3+1
     sta l00bb                                                         ; fb20: 85 bb       ..
     lda l03d1                                                         ; fb22: ad d1 03    ...
     bne cfb2f                                                         ; fb25: d0 08       ..
-; &fb27 referenced 3 times by &f1c6, &f2ba, &f45f
+; &fb27 referenced 4 times by &f1c6, &f2ba, &f330, &f45f
 .sub_cfb27
     lda l00e3                                                         ; fb27: a5 e3       ..
     and #&f0                                                          ; fb29: 29 f0       ).
@@ -10774,6 +10841,7 @@ lffb3 = osbyte150EntryPoint+1
     assert (>plotLine1) = &d3
     assert (>plotLine2) = &d3
     assert (>plotLine3) = &d3
+    assert (ce310 - 1) = &e30f
     assert (filev - 1) = &0211
     assert (l02b3 - 2) = &02b1
     assert (ld940 - 1) = &d93f
@@ -10783,6 +10851,7 @@ lffb3 = osbyte150EntryPoint+1
     assert (osbyte117EntryPoint) = &e86c
     assert (osbyte118EntryPoint) = &e9d9
     assert (osbyte119EntryPoint) = &e275
+    assert (osbyte119EntryPoint - 1) = &e274
     assert (osbyte11EntryPoint) = &e995
     assert (osbyte120EntryPoint) = &f045
     assert (osbyte121EntryPoint) = &f0cf
@@ -10859,6 +10928,10 @@ lffb3 = osbyte150EntryPoint+1
     assert (osword7EntryPoint) = &e82d
     assert (osword8EntryPoint) = &e8ae
     assert (osword9EntryPoint) = &c735
+    assert (sub_cf305 - 1) = &f304
+    assert (sub_cf32b - 1) = &f32a
+    assert (sub_cf54d - 1) = &f54c
+    assert (sub_cf61e - 1) = &f61d
     assert (userv - 1) = &01ff
     assert (uservJumper) = &e659
 
@@ -10996,8 +11069,10 @@ endsection
 ;     cea8f:                                    5
 ;     cf884:                                    5
 ;     crtc_address_register:                    5
+;     l0000:                                    5
 ;     l00ba:                                    5
 ;     l00e0:                                    5
+;     l00e3:                                    5
 ;     l00e4:                                    5
 ;     l0240:                                    5
 ;     l0256:                                    5
@@ -11048,7 +11123,6 @@ endsection
 ;     ceebb:                                    4
 ;     cf209:                                    4
 ;     cf61b:                                    4
-;     l0000:                                    4
 ;     l00b2:                                    4
 ;     l00b3:                                    4
 ;     l00b9:                                    4
@@ -11090,9 +11164,11 @@ endsection
 ;     sub_ce4b0:                                4
 ;     sub_ce57e:                                4
 ;     sub_ce7dc:                                4
+;     sub_cf344:                                4
 ;     sub_cf77b:                                4
 ;     sub_cf991:                                4
 ;     sub_cfa46:                                4
+;     sub_cfb27:                                4
 ;     system_via_ddra:                          4
 ;     adc_start_conversion_or_status:           3
 ;     cc4c0:                                    3
@@ -11113,6 +11189,7 @@ endsection
 ;     ce10d:                                    3
 ;     ce138:                                    3
 ;     ce1ad:                                    3
+;     ce310:                                    3
 ;     ce3c8:                                    3
 ;     ce539:                                    3
 ;     ce592:                                    3
@@ -11139,7 +11216,6 @@ endsection
 ;     l00c4:                                    3
 ;     l00c6:                                    3
 ;     l00ca:                                    3
-;     l00e3:                                    3
 ;     l00ef:                                    3
 ;     l00f3:                                    3
 ;     l0103:                                    3
@@ -11176,6 +11252,7 @@ endsection
 ;     l039d:                                    3
 ;     l039e:                                    3
 ;     l03c2:                                    3
+;     l03d1:                                    3
 ;     l03dd:                                    3
 ;     l03de:                                    3
 ;     l080c:                                    3
@@ -11208,12 +11285,10 @@ endsection
 ;     sub_cee51:                                3
 ;     sub_cf25a:                                3
 ;     sub_cf342:                                3
-;     sub_cf344:                                3
 ;     sub_cf875:                                3
 ;     sub_cf97a:                                3
 ;     sub_cfae8:                                3
 ;     sub_cfb1a:                                3
-;     sub_cfb27:                                3
 ;     sub_cfb69:                                3
 ;     sub_cfb78:                                3
 ;     sub_cfb9c:                                3
@@ -11274,7 +11349,6 @@ endsection
 ;     ce0f7:                                    2
 ;     ce13a:                                    2
 ;     ce1bb:                                    2
-;     ce310:                                    2
 ;     ce48f:                                    2
 ;     ce4e0:                                    2
 ;     ce513:                                    2
@@ -11373,7 +11447,6 @@ endsection
 ;     l0397:                                    2
 ;     l03be:                                    2
 ;     l03cb:                                    2
-;     l03d1:                                    2
 ;     l0406:                                    2
 ;     l083c:                                    2
 ;     l083f:                                    2
@@ -11924,6 +11997,15 @@ endsection
 ;     cf51b:                                    1
 ;     cf523:                                    1
 ;     cf545:                                    1
+;     cf55e:                                    1
+;     cf561:                                    1
+;     cf568:                                    1
+;     cf56a:                                    1
+;     cf573:                                    1
+;     cf578:                                    1
+;     cf57a:                                    1
+;     cf57e:                                    1
+;     cf581:                                    1
 ;     cf596:                                    1
 ;     cf5b0:                                    1
 ;     cf5bd:                                    1
@@ -12306,6 +12388,7 @@ endsection
 ;     loop_cf44b:                               1
 ;     loop_cf454:                               1
 ;     loop_cf49b:                               1
+;     loop_cf56d:                               1
 ;     loop_cf6ee:                               1
 ;     loop_cf739:                               1
 ;     loop_cf747:                               1
@@ -12453,6 +12536,7 @@ endsection
 ;     sub_cf246:                                1
 ;     sub_cf24d:                                1
 ;     sub_cf33b:                                1
+;     sub_cf348:                                1
 ;     sub_cf68d:                                1
 ;     sub_cf6ac:                                1
 ;     sub_cf7d7:                                1
@@ -12461,6 +12545,7 @@ endsection
 ;     sub_cf927:                                1
 ;     sub_cf975:                                1
 ;     sub_cf983:                                1
+;     sub_cfafc:                                1
 ;     sub_cfb0a:                                1
 ;     sub_cfb4a:                                1
 ;     sub_cfb90:                                1
@@ -13066,6 +13151,15 @@ endsection
 ;     cf51d
 ;     cf523
 ;     cf545
+;     cf55e
+;     cf561
+;     cf568
+;     cf56a
+;     cf573
+;     cf578
+;     cf57a
+;     cf57e
+;     cf581
 ;     cf588
 ;     cf596
 ;     cf5a9
@@ -13730,6 +13824,7 @@ endsection
 ;     loop_cf44b
 ;     loop_cf454
 ;     loop_cf49b
+;     loop_cf56d
 ;     loop_cf6ee
 ;     loop_cf739
 ;     loop_cf747
@@ -13958,11 +14053,16 @@ endsection
 ;     sub_cf249
 ;     sub_cf24d
 ;     sub_cf25a
+;     sub_cf305
+;     sub_cf32b
 ;     sub_cf33b
 ;     sub_cf342
 ;     sub_cf344
+;     sub_cf348
 ;     sub_cf478
 ;     sub_cf496
+;     sub_cf54d
+;     sub_cf61e
 ;     sub_cf631
 ;     sub_cf637
 ;     sub_cf68b
@@ -13991,6 +14091,7 @@ endsection
 ;     sub_cfa46
 ;     sub_cfa72
 ;     sub_cfae8
+;     sub_cfafc
 ;     sub_cfb0a
 ;     sub_cfb1a
 ;     sub_cfb27
@@ -14013,11 +14114,11 @@ endsection
 ; Stats:
 ;
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 12716 bytes (78%)
-;     Data                     = 3668 bytes (22%)
+;     Code                     = 12786 bytes (78%)
+;     Data                     = 3598 bytes (22%)
 ;
-;     Number of instructions   = 6149
-;     Number of data bytes     = 2363 bytes
-;     Number of data words     = 164 bytes
+;     Number of instructions   = 6186
+;     Number of data bytes     = 2279 bytes
+;     Number of data words     = 178 bytes
 ;     Number of string bytes   = 1141 bytes
 ;     Number of strings        = 67

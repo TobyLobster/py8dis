@@ -5267,7 +5267,7 @@ plot_enemy_ships_on_scanners_loop
     asl                                                               ; 4162: 0a          .   :3062[1]
     sta y_pixels                                                      ; 4163: 85 7b       .{  :3063[1]
     asl                                                               ; 4165: 0a          .   :3065[1]
-    asl                                                               ; 4166: 0a          .   :3066[1]
+    asl                                                               ; 4166: 0a          .   :3066[1]   ; Shift clear bit out (clears carry)
     adc y_pixels                                                      ; 4167: 65 7b       e{  :3067[1]
     sta y_pixels                                                      ; 4169: 85 7b       .{  :3069[1]
     ldx temp8                                                         ; 416b: a6 75       .u  :306b[1]
@@ -5285,7 +5285,7 @@ plot_enemy_ships_on_scanners_loop
     asl                                                               ; 417d: 0a          .   :307d[1]
     sta x_pixels                                                      ; 417e: 85 7a       .z  :307e[1]
     asl                                                               ; 4180: 0a          .   :3080[1]
-    asl                                                               ; 4181: 0a          .   :3081[1]
+    asl                                                               ; 4181: 0a          .   :3081[1]   ; Shift clear bit out (clears carry)
     adc x_pixels                                                      ; 4182: 65 7a       ez  :3082[1]
     sta x_pixels                                                      ; 4184: 85 7a       .z  :3084[1]
     lda enemy_ships_previous_x_pixels,x                               ; 4186: bd 02 04    ... :3086[1]
@@ -5348,7 +5348,7 @@ continue2
     asl                                                               ; 41f1: 0a          .   :30f1[1]
     sta y_pixels                                                      ; 41f2: 85 7b       .{  :30f2[1]
     asl                                                               ; 41f4: 0a          .   :30f4[1]
-    asl                                                               ; 41f5: 0a          .   :30f5[1]
+    asl                                                               ; 41f5: 0a          .   :30f5[1]   ; Shift clear bit out (clears carry)
     adc y_pixels                                                      ; 41f6: 65 7b       e{  :30f6[1]
     sta y_pixels                                                      ; 41f8: 85 7b       .{  :30f8[1]
     ldx temp8                                                         ; 41fa: a6 75       .u  :30fa[1]
@@ -5366,7 +5366,7 @@ continue2
     asl                                                               ; 420c: 0a          .   :310c[1]
     sta x_pixels                                                      ; 420d: 85 7a       .z  :310d[1]
     asl                                                               ; 420f: 0a          .   :310f[1]
-    asl                                                               ; 4210: 0a          .   :3110[1]
+    asl                                                               ; 4210: 0a          .   :3110[1]   ; Shift clear bit out (clears carry)
     adc x_pixels                                                      ; 4211: 65 7a       ez  :3111[1]
     sta x_pixels                                                      ; 4213: 85 7a       .z  :3113[1]
     lda enemy_ships_x_pixels,x                                        ; 4215: bd 82 04    ... :3115[1]

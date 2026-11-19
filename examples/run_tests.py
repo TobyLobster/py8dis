@@ -137,6 +137,8 @@ TESTS = [
     ("redundant_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "redundant instructions (whose results aren't used), with io_range() and the BIT trick"),
     ("branch_state",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
     ("known_state_comments",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "comments from what's known after a branch that isn't taken: ADC with carry set after CMP and BNE, A=0 after INY, BNE and TYA, and ROR and ROL after BCC"),
+    ("jump_tables",              ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "jump tables found from the index's known values (the RTS trick, JMP (zp), a stored JSR operand, a lower bound), and those not found"),
+    ("jump_tables_65c02",        ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "the 65C02's JMP (table,X) found as a jump table"),
     ("string_stuff1",            ["acme", "beebasm", "baron", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
     ("shift_by_32",              ["xa"],                       "an expression for xa with a shift by 32, which py8dis doesn't work out (xa takes the count modulo 32)"),

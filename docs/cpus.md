@@ -61,7 +61,8 @@ As it goes through the code, py8dis keeps track of what it knows for certain abo
 For the 6502:
 
 - A, X and Y are known bit by bit, so a register can be partly known: e.g. after `and #$0f` its top four bits are 0, after `ora #$80` bit 7 is 1, and after `asl` bit 0 is 0. AND, ORA and EOR with an immediate value, the shifts and rotates of A, INX, DEX, INY, DEY (and the 65C02's INC A and DEC A) and the transfers work on the bits that are known, and the flags they set are known where the bits say what they are: e.g. N is clear after `lsr`, Z is clear after `ora #1`, and C is clear after `and #$7f : asl`;
-- a compare with an immediate value sets the flags as far as the register's known bits say: e.g. after `and #$0f`, `cmp #$10` clears C (A is less than $10). ADC and SBC with an immediate value are only worked out when D is known to be clear (in decimal mode the result is different);
+- each register's range (the least and greatest value it could be) is known as well, which can say more than its bits: e.g. after `cmp #7 : bcs skip` A is 0 to 6 (C clear means it's less than 7, and C set after `cmp #2 : bcc skip` means it's at least 2), and after `asl` it's 0 to 12. The bits that every value in the range shares are known too, e.g. the top five for 0 to 6. What a compare says is forgotten once the register changes, e.g. after `cmp #7 : lda $70 : bcs skip`;
+- a compare with an immediate value sets the flags as far as the register's known bits and range say: e.g. after `and #$0f`, `cmp #$10` clears C (A is less than $10). ADC and SBC with an immediate value are only worked out when D is known to be clear (in decimal mode the result is different);
 - a rotate of memory puts C into bit 7 or bit 0: so `sec : ror flag` sets N (and clears Z), and LSR of memory always clears N;
 - after a conditional branch that isn't taken, its flag is known;
 - after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7B after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`);
@@ -85,6 +86,31 @@ For the Z80, the registers (including IX, IY, their halves, I and the alternate 
 - memory isn't tracked, so a value loaded from memory isn't known;
 - a call (or RST) could change anything;
 - after a conditional jump or return that isn't taken, its condition is known to be false (e.g. Z is set after `jr nz` falls through), as is B after DJNZ (it's 0), and BC after LDIR (0).
+
+## Jump tables
+
+On the 6502, py8dis finds jump tables itself when it knows the possible values of the index (from the code before it, in the same straight run: see above), and marks each entry as the address of code, as [`code_ptr()`](commands.md#code_ptr) would: the code is traced, and each entry is written as its label, with a comment before the table. E.g. in
+
+```
+    cmp #7
+    bcs bad
+    asl
+    tax
+    lda table+1,x
+    pha
+    lda table,x
+    pha
+    rts
+```
+
+X is 0, 2, ... or 12, so the table has 7 entries (each the address minus 1, for the RTS). The ways of jumping through a table it finds:
+
+- the RTS trick: pushing the high byte, then the low byte, then RTS;
+- storing the address and jumping through it: `lda lo,x : sta ptr : lda hi,x : sta ptr+1 : jmp (ptr)`;
+- storing the address in the operand of a JSR or JMP that follows (self-modifying code);
+- the 65C02's `jmp (table,x)`.
+
+The low and high bytes can be in two tables, or together as words. A table isn't marked if any of its bytes is already classified or has an expression (so a control file can mark it itself, e.g. with [`rts_code_ptr()`](commands.md#rts_code_ptr)), if its entries overlap, if an entry points into the table or into an instruction or data, or if the index has more than 64 possible values. The index must be bounded by code in the same straight run: a guard before a label (where code can come from elsewhere), e.g. `cpx #10 : bcc ok : ... ok: lda table,x`, isn't seen, nor is one in a subroutine's caller. `config.set_find_jump_tables(False)` turns it off.
 
 ## Redundant instructions
 

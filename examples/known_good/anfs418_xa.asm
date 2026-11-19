@@ -3123,7 +3123,7 @@ c919a
     asl                                                               // 91a4: 0a          .
     asl                                                               // 91a5: 0a          .
     asl                                                               // 91a6: 0a          .
-    asl                                                               // 91a7: 0a          .
+    asl                                                               // 91a7: 0a          .              // Shift clear bit out (clears carry)
     adc l00b3                                                         // 91a8: 65 b3       e.
     sta l00b2                                                         // 91aa: 85 b2       ..
     bcc c917d                                                         // 91ac: 90 cf       ..

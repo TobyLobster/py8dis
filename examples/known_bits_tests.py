@@ -13,7 +13,8 @@ run_tests.py -c when all the tests are run.
    results that py8dis's comments rely on must be known, e.g. that A - $10
    always borrows after 'and #$0f'.
 
-2. The CPU state: for each instruction whose update works on known bits
+2. The CPU state (each register's known bits and its range, and the
+   flags): for each instruction whose update works on known bits
    (AND, ORA, EOR, ADC, SBC, CMP, CPX and CPY with an immediate operand;
    ASL, LSR, ROL and ROR of A and of memory; INX, DEX, INY, DEY; the
    transfers and immediate loads; the 65C02's INC A, DEC A and BIT #imm;
@@ -23,7 +24,9 @@ run_tests.py -c when all the tests are run.
    what was known before (a random 64 of them). The same is done for each
    of those instructions followed by a conditional branch that isn't taken,
    where the branch says something about the result (e.g. A is 1 after
-   'and #1 : beq skip').
+   'and #1 : beq skip'), sometimes with another instruction between them
+   (e.g. 'cmp #5 : lda #9 : bcs', where what CMP said about A no longer
+   holds).
 
 The tests are randomised with a fixed seed, so they're the same each run.
 
@@ -261,9 +264,19 @@ def make_cpu(name):
     import cpu6510
     return {"6502": cpu6502.Cpu6502, "65C02": cpu65C02.Cpu65C02, "6510": cpu6510.Cpu6510}[name]()
 
-def set_disposition(disposition, regs, flags):
+def random_range(rng, kb):
+    """A random range for a register with known bits kb: often what the
+    bits allow, otherwise narrower."""
+    lo, hi = knownbits.bounds(kb)
+    if rng.random() < 0.5:
+        return lo, hi
+    a = rng.randint(lo, hi)
+    b = rng.randint(lo, hi)
+    return min(a, b), max(a, b)
+
+def set_disposition(disposition, regs, flags, ranges):
     for reg in "axy":
-        disposition[reg].known_bits = regs[reg]
+        disposition[reg].set_range(regs[reg], *ranges[reg])
     for flag in "nvdizc":
         disposition[flag] = flags[flag]
 
@@ -272,20 +285,30 @@ def check_disposition(name, disposition, s, inputs):
     state) is."""
     for reg in "axy":
         check_kb(name + " " + reg.upper(), disposition[reg].known_bits, s[reg], inputs)
+        r = disposition[reg]
+        if not r.lo <= s[reg] <= r.hi:
+            fail("%s %s: says %d-%d, but it's %d, for %s" % (name, reg.upper(), r.lo, r.hi, s[reg], inputs))
     for flag in "nvdizc":
         value = disposition[flag]
         if value == 'pending':
             continue
         check_flag(name + " flag " + flag, value, s[flag], inputs)
 
-def concrete_states(regs, flags, rng, count=64):
-    """Random 6502 states that agree with what's known."""
+def concrete_states(regs, flags, ranges, rng, count=64):
+    """Random 6502 states that agree with what's known (the known bits and
+    the ranges of the registers, and the flags)."""
+    choices = {}
+    for reg in "axy":
+        known, bits = regs[reg]
+        lo, hi = ranges[reg]
+        choices[reg] = [v for v in range(lo, hi + 1) if (v & known) == bits]
+        if not choices[reg]:
+            return []
     result = []
     for _ in range(count):
         s = {}
         for reg in "axy":
-            known, bits = regs[reg]
-            s[reg] = bits | (rng.randrange(256) & ~known & 0xff)
+            s[reg] = rng.choice(choices[reg])
         s['m'] = rng.randrange(256)
         for flag in "nvdizc":
             s[flag] = rng.choice([False, True]) if flags[flag] is None else flags[flag]
@@ -311,24 +334,34 @@ def test_cpu_state(rng):
             with_branch = trial % 2 == 1
             branch = rng.choice(BRANCHES) if with_branch else None
             operand = rng.randrange(256)
+            # Sometimes another instruction between this one and the branch
+            # (e.g. 'cmp #5 : lda #9 : bcs': what CMP says about A no longer
+            # holds after LDA)
+            middle = None
+            if with_branch and rng.random() < 0.4:
+                middle = (rng.choice([op for op, name in INSTRUCTIONS if name == "6502" and op not in DECIMAL_SENSITIVE]), rng.randrange(256))
             # (The branch goes to $2010, so it isn't to the next instruction)
-            s.memory.binary[0x2000:0x2004] = [opcode, operand] + ([branch[0], 0x0c] if with_branch else [0xea, 0xea])
+            s.memory.binary[0x2000:0x2006] = [opcode, operand] + (list(middle) if middle else [0xea, 0xea]) + ([branch[0], 0x0a] if with_branch else [0xea, 0xea])
             regs = {reg: random_known_bits(rng) for reg in "axy"}
+            ranges = {reg: random_range(rng, regs[reg]) for reg in "axy"}
             flags = {flag: random_flag(rng) for flag in "nvdizc"}
             if with_branch and opcode in DECIMAL_SENSITIVE:
                 flags['d'] = False
             state = cpu.CpuState()
-            set_disposition(state.pessimistic, regs, flags)
-            set_disposition(state.optimistic, regs, flags)
+            set_disposition(state.pessimistic, regs, flags, ranges)
+            set_disposition(state.optimistic, regs, flags, ranges)
             cpu.opcodes[opcode].update_cpu_state(memorymanager.BinaryAddr(0x2000), state)
             after_instruction = state.copy()
+            if middle:
+                cpu.opcodes[middle[0]].update_cpu_state(memorymanager.BinaryAddr(0x2002), state)
             if with_branch:
-                cpu.opcodes[branch[0]].update_cpu_state(memorymanager.BinaryAddr(0x2002), state)
-            inputs = "opcode %02x #%02x%s from A:%s X:%s Y:%s %s" % (
-                opcode, operand, (" then branch %02x" % branch[0]) if with_branch else "",
-                knownbits.show_bits(regs['a']), knownbits.show_bits(regs['x']), knownbits.show_bits(regs['y']),
+                cpu.opcodes[branch[0]].update_cpu_state(memorymanager.BinaryAddr(0x2004), state)
+            inputs = "opcode %02x #%02x%s%s from A:%s %s X:%s %s Y:%s %s %s" % (
+                opcode, operand, (" then %02x #%02x" % middle) if middle else "", (" then branch %02x" % branch[0]) if with_branch else "",
+                knownbits.show_bits(regs['a']), ranges['a'], knownbits.show_bits(regs['x']), ranges['x'],
+                knownbits.show_bits(regs['y']), ranges['y'],
                 "".join("-" if flags[f] is None else (f.upper() if flags[f] else f) for f in "nvdizc"))
-            for concrete in concrete_states(regs, flags, rng):
+            for concrete in concrete_states(regs, flags, ranges, rng):
                 if not step(opcode, operand, concrete):
                     # (Decimal ADC or SBC: py8dis mustn't claim anything about the result)
                     d = after_instruction.pessimistic
@@ -338,6 +371,8 @@ def test_cpu_state(rng):
                 count += 1
                 check_disposition("after", after_instruction.pessimistic, concrete, inputs)
                 check_disposition("after (optimistic)", after_instruction.optimistic, concrete, inputs)
+                if middle:
+                    step(middle[0], middle[1], concrete)
                 if with_branch and not state.always_branch and concrete[branch[1]] == branch[2]:
                     # The branch isn't taken in this state
                     check_disposition("after the branch", state.pessimistic, concrete, inputs)

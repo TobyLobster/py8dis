@@ -41,6 +41,7 @@ Each setting belongs to the current session, so `reset()` puts them all back to 
 | `config.set_show_all_labels(b)`            | False     | A list of all the labels (for debugging py8dis). |
 | `config.set_show_stats(b)`                 | True      | Statistics at the end: how much is code, data and strings. |
 | `config.set_include_assertions(b)`         | True      | Assertions at the end, which make the assembler check that each expression given with `expr()` has the right value. |
+| `config.set_find_jump_tables(b)`           | True      | Find 6502 jump tables whose index's possible values are known, e.g. after `cmp #7 : bcs bad : asl : tax`, and trace the code their entries point to (see [cpus.md](cpus.md#jump-tables)). |
 | `config.set_redundant_instruction_comments(b)` | True  | Comment 6502 and Z80 instructions whose results are never used: `; Redundant instruction?` (see [cpus.md](cpus.md#redundant-instructions)). |
 
 ## Names and values

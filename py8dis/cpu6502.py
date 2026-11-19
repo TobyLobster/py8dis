@@ -28,8 +28,8 @@ entry points.
 The CPU state. Once the code is traced, Cpu.calculate_cpu_states() goes
 through it working out what's known after each instruction: a CpuState,
 which holds what's known about A, X and Y (RegState: the value, bit by bit
-(see knownbits.py), and which instruction last loaded, changed or used the
-register) and the flags. It
+(see knownbits.py) and as a range, and which instruction last loaded,
+changed or used the register) and the flags. It
 holds two versions of this (CpuStateDisposition): the pessimistic one is
 what's known for certain, which is forgotten at each label (code can come
 there from elsewhere); the optimistic one takes the code to have run
@@ -47,7 +47,9 @@ name constants given with substitute_constants() (substitute_constants(),
 SubConst), comment known register values, branches that are always
 taken, ADC and SBC with an unusual carry, and rotates and shifts whose
 carry is known (show_register_knowledge()), and comment redundant instructions
-(find_redundant_instructions()). straight_runs() and memory_writes() say
+(find_redundant_instructions()). While tracing, find_jump_tables() finds the
+jump tables whose index's possible values are known, and traces the code
+their entries point to. straight_runs() and memory_writes() say
 what straight runs of code write to memory, for effect patterns and the
 machine modules (e.g. acorn.py and commodore.py).
 """
@@ -213,7 +215,13 @@ class RegState:
 
     'value' is the value if all eight bits are known, otherwise None (and
     setting it sets all the bits, or with None, none). 'known_bits' is what's
-    known as a (known, bits) pair: e.g. (0xf0, 0x00) after 'and #$0f'."""
+    known as a (known, bits) pair: e.g. (0xf0, 0x00) after 'and #$0f'.
+
+    'lo' and 'hi' are the least and greatest (unsigned) values it could be,
+    which can say more than the bits: e.g. after 'cmp #10 : bcs skip' it's
+    0 to 9. (The bits that all the values in the range share are known too,
+    e.g. the top four for 0 to 9.) Setting 'known_bits' or 'value' sets the
+    range to what the bits allow; set_range() sets both."""
 
     def __init__(self):
         """Nothing is known to start with."""
@@ -223,6 +231,8 @@ class RegState:
         """Forget everything about the register."""
         self.known              = 0         # A 1 for each bit whose value is known
         self.bits               = 0         # The values of the known bits (0 for the others)
+        self.lo                 = 0         # The least value it could be
+        self.hi                 = 0xff      # The greatest value it could be
         self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
         self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
         self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
@@ -238,10 +248,14 @@ class RegState:
         if v is None:
             self.known = 0
             self.bits = 0
+            self.lo = 0
+            self.hi = 0xff
         else:
             assert 0 <= v <= 0xff
             self.known = 0xff
             self.bits = v
+            self.lo = v
+            self.hi = v
 
     @property
     def known_bits(self):
@@ -252,6 +266,33 @@ class RegState:
     def known_bits(self, kb):
         self.known, self.bits = kb
         assert self.bits & ~self.known == 0
+        self.lo, self.hi = knownbits.bounds(kb)
+
+    def set_range(self, kb, lo, hi):
+        """It's kb (known bits) and from lo to hi: the range is narrowed to
+        what the bits allow, and the bits that all the values in the range
+        share become known (e.g. the top four for 0 to 9). If they can't
+        both be true (code that can't be reached this way), just kb is
+        kept."""
+        known, bits = kb
+        bits_lo, bits_hi = knownbits.bounds(kb)
+        lo = max(lo, bits_lo)
+        hi = min(hi, bits_hi)
+        if lo <= hi:
+            # (The bits above the highest one in which lo and hi differ)
+            shared = ~((1 << (lo ^ hi).bit_length()) - 1) & 0xff
+            if (lo & shared & known) == (bits & shared):
+                self.known = known | shared
+                self.bits = (bits & ~shared) | (lo & shared)
+                self.lo = lo
+                self.hi = hi
+                return
+        self.known_bits = kb
+
+    def possible_values(self):
+        """The values it could be, in order: those in the range that agree
+        with the known bits."""
+        return [v for v in range(self.lo, self.hi + 1) if (v & self.known) == self.bits]
 
     def copy(self):
         """A fast copy (all the attributes are immutable values)."""
@@ -270,7 +311,9 @@ class RegState:
 
     def __repr__(self):
         """The register's value as text (for __str__())."""
-        return "value: {0}".format(self.value if self.known in (0, 0xff) else knownbits.show_bits(self.known_bits))
+        if self.known in (0, 0xff) and (self.lo, self.hi) == knownbits.bounds(self.known_bits):
+            return "value: {0}".format(self.value)
+        return "value: {0} ({1}-{2})".format(knownbits.show_bits(self.known_bits), self.lo, self.hi)
 
     def __str__(self):
         return self.__repr__()
@@ -320,12 +363,21 @@ class CpuStateDisposition:
         # Opcode.update_cpu_state().)
         self.n_from = None
 
+        # What the C flag says about a register, if anything: (register, n)
+        # after a compare of it with an immediate n (e.g. ('a', 10) after
+        # CMP #10), while neither C nor the register has changed since. So
+        # when a branch that isn't taken shows what C is, the register is
+        # known to be at least n (C set) or less than n (C clear). (See
+        # Cpu6502.c_source().)
+        self.c_from = None
+
     def copy(self):
         """A fast copy (much faster than copy.deepcopy())."""
         result = CpuStateDisposition.__new__(CpuStateDisposition)
         result._d = {key: (value.copy() if isinstance(value, RegState) else value) for key, value in self._d.items()}
         result.z_from = self.z_from
         result.n_from = self.n_from
+        result.c_from = self.c_from
         return result
 
     def clear(self):
@@ -341,6 +393,7 @@ class CpuStateDisposition:
         self._d["c"] = None
         self.z_from = None
         self.n_from = None
+        self.c_from = None
 
     def __getitem__(self, key):
         assert key in "axynvdizc"
@@ -400,29 +453,43 @@ class CpuStateDisposition:
             return None
         return bool(c)
 
-    def set_result(self, reg, kb):
+    def set_result(self, reg, kb, lo=0, hi=0xff):
         """The register's value is now kb (known bits: see knownbits.py),
-        the result of an instruction, which sets N and Z from it."""
-        self._d[reg].known_bits = kb
-        self._d['n'] = knownbits.n_flag(kb)
-        self._d['z'] = knownbits.z_flag(kb)
+        and from lo to hi, the result of an instruction, which sets N and Z
+        from it."""
+        r = self._d[reg]
+        r.set_range(kb, lo, hi)
+        self._d['n'] = knownbits.n_flag(r.known_bits)
+        self._d['z'] = knownbits.z_flag(r.known_bits)
+        if r.lo > 0:
+            self._d['z'] = False
 
     def update_shift_a(self, binary_addr, kind):
         """ASL, LSR, ROL or ROR A ('kind' is the mnemonic in lower case): the
         bits of A that are known move along, the bit shifted in is known
         for ASL and LSR (0), and for ROL and ROR if C is known, and C is
         the bit shifted out, if that's known. N and Z are from the result."""
-        a = self._d['a'].known_bits
+        r = self._d['a']
+        a = r.known_bits
+        carry_in = self.carry()
+        lo, hi = 0, 0xff
         if kind == "asl":
             result, carry = knownbits.asl(a)
+            if r.hi < 0x80:
+                lo, hi = r.lo * 2, r.hi * 2
         elif kind == "lsr":
             result, carry = knownbits.lsr(a)
+            lo, hi = r.lo >> 1, r.hi >> 1
         elif kind == "rol":
-            result, carry = knownbits.rol(a, self.carry())
+            result, carry = knownbits.rol(a, carry_in)
+            if r.hi < 0x80 and carry_in is not None:
+                lo, hi = r.lo * 2 + carry_in, r.hi * 2 + carry_in
         else:
             assert kind == "ror"
-            result, carry = knownbits.ror(a, self.carry())
-        self.set_result('a', result)
+            result, carry = knownbits.ror(a, carry_in)
+            if carry_in is not None:
+                lo, hi = (r.lo >> 1) | (0x80 * carry_in), (r.hi >> 1) | (0x80 * carry_in)
+        self.set_result('a', result, lo, hi)
         self._d['c'] = carry
 
     def update_shift_memory(self, binary_addr, kind):
@@ -473,14 +540,16 @@ class CpuStateDisposition:
         (so A is worked out if it was known, e.g. AND #0 makes A 0), with N
         and Z from the result."""
         v = session.current().memory.binary[binary_addr+1]
-        self.set_result('a', knownbits.and_(self._d['a'].known_bits, knownbits.exact(v)))
+        # (The result is at most the operand, and at most A)
+        self.set_result('a', knownbits.and_(self._d['a'].known_bits, knownbits.exact(v)), 0, min(v, self._d['a'].hi))
 
     def update_ORA_immediate(self, binary_addr):
         """ORA #imm (the instruction at binary_addr): the bits of A that the
         operand sets are known to be 1 (so e.g. ORA #$80 sets N, and any
         non-zero operand clears Z), and the others are as known before."""
         v = session.current().memory.binary[binary_addr+1]
-        self.set_result('a', knownbits.or_(self._d['a'].known_bits, knownbits.exact(v)))
+        # (The result is at least the operand, and at least A)
+        self.set_result('a', knownbits.or_(self._d['a'].known_bits, knownbits.exact(v)), max(v, self._d['a'].lo))
 
     def update_EOR_immediate(self, binary_addr):
         """EOR #imm (the instruction at binary_addr): the bits of A that
@@ -495,8 +564,16 @@ class CpuStateDisposition:
         difference. Z and C are 'pending' where they aren't known (see
         update_transfer())."""
         v = session.current().memory.binary[binary_addr+1]
-        result, carry = knownbits.subtract(self._d[reg].known_bits, knownbits.exact(v), True)
+        r = self._d[reg]
+        result, carry = knownbits.subtract(r.known_bits, knownbits.exact(v), True)
         z = knownbits.z_flag(result)
+        # (And as far as its range says)
+        if r.lo >= v:
+            carry = True
+        elif r.hi < v:
+            carry = False
+        if not r.lo <= v <= r.hi:
+            z = False
         self._d['n'] = knownbits.n_flag(result)
         self._d['z'] = "pending" if z is None else z
         self._d['c'] = "pending" if carry is None else carry
@@ -517,7 +594,18 @@ class CpuStateDisposition:
             operand = knownbits.invert(operand)
         carry_in = self.carry()
         result, carry = knownbits.add(a, operand, carry_in)
-        self.set_result('a', result)
+        # (And as far as A's range says: the sum is from lo + operand to hi +
+        # operand (+ 1 if the carry isn't known); if all of that is less
+        # than $100, or all at least $100, the carry out is known)
+        r = self._d['a']
+        least = r.lo + operand[1] + (carry_in or 0)
+        most = r.hi + operand[1] + (1 if carry_in is None else carry_in)
+        lo, hi = 0, 0xff
+        if most <= 0xff:
+            lo, hi, carry = least, most, False
+        elif least >= 0x100 and most <= 0x1ff:
+            lo, hi, carry = least - 0x100, most - 0x100, True
+        self.set_result('a', result, lo, hi)
         self._d['c'] = carry
         if knownbits.is_exact(a) and carry_in is not None:
             # Overflow: the operands have the same sign and the result doesn't
@@ -546,8 +634,14 @@ class CpuStateDisposition:
     def add_to_register(self, addr, reg, delta):
         """Add delta to the register (for increment() and decrement()),
         with N and Z from the result."""
-        result, _ = knownbits.add(self[reg].known_bits, knownbits.exact(delta), False)
-        self.set_result(reg, result)
+        r = self[reg]
+        result, _ = knownbits.add(r.known_bits, knownbits.exact(delta), False)
+        lo, hi = 0, 0xff
+        if delta == 1 and r.hi < 0xff:
+            lo, hi = r.lo + 1, r.hi + 1
+        elif delta == 0xff and r.lo > 0:
+            lo, hi = r.lo - 1, r.hi - 1
+        self.set_result(reg, result, lo, hi)
 
         # Now we have a new value for the register, the address where we previously
         # loaded the current value no longer valid
@@ -573,7 +667,7 @@ class CpuStateDisposition:
         (as far as it's known), with N and Z from it, and the instruction at
         addr is where it was loaded."""
         addr = BinaryAddr(addr)
-        self.set_result(dest_reg, self[src_reg].known_bits)
+        self.set_result(dest_reg, self[src_reg].known_bits, self[src_reg].lo, self[src_reg].hi)
 
         # If we have a load address, keep it. This allows
         # the code (e.g. from basic4) to understand X and Y form an
@@ -591,13 +685,21 @@ class CpuStateDisposition:
     def update_transfer(self, addr, flag, flag_state):
         """A conditional branch at addr on 'flag' that isn't taken: the flag
         is flag_state (if it wasn't known already). And what that says about
-        the rest: after a compare, Z set means C is set, and C clear means Z
-        is clear; if Z is set, the registers whose result set it have the
-        value that sets it (see z_from), and N is clear; if Z is clear, they
-        aren't that value, which says what their last bit is if all the
-        others are known and are that value's; and the registers whose bit 7
-        N is (see n_from) have that bit known. (Called by the update
-        functions that Cpu6502.make_branch() makes.)"""
+        the rest:
+
+        - after a compare, Z set means C is set, and C clear means Z is
+          clear;
+        - if Z is set, the registers whose result set it have the value
+          that sets it (see z_from), and N is clear;
+        - if Z is clear, they aren't that value: so if only one of their
+          bits isn't known, and the others are the value's, that bit is the
+          opposite of the value's, and if the value is at one end of their
+          range, the range is one smaller;
+        - the registers whose bit 7 N is (see n_from) have that bit known;
+        - after a compare with an immediate n, if C is set the register is
+          at least n, and if it's clear, less than n (see c_from).
+
+        (Called by the update functions that Cpu6502.make_branch() makes.)"""
         if self[flag] is None or self[flag] == 'pending':
             self[flag] = flag_state
 
@@ -617,34 +719,53 @@ class CpuStateDisposition:
                 self['n'] = False
         if flag == 'z' and flag_state == False and self.z_from is not None:
             # We have 'BEQ addr' after an instruction whose result set Z, so
-            # the registers aren't the value that sets it: if only one bit
-            # isn't known, and the others are the value's, it's the opposite
-            # of the value's (e.g. A is 1 after 'AND #1 : BEQ addr')
+            # the registers aren't the value that sets it (e.g. A is 1 after
+            # 'AND #1 : BEQ addr', and 1 to 9 after 'AND #$0f : CMP #10 :
+            # BCS addr : CMP #0 : BEQ addr')
             regs, value, z_addr = self.z_from
             for reg in regs:
-                known, bits = self[reg].known_bits
+                r = self[reg]
+                known, bits = r.known_bits
                 unknown = ~known & 0xff
+                kb = r.known_bits
                 if unknown != 0 and (unknown & (unknown - 1)) == 0 and (value & known) == bits:
-                    self.set_inferred(reg, (0xff, bits | (~value & unknown)))
+                    kb = (0xff, bits | (~value & unknown))
+                lo = r.lo + 1 if value == r.lo else r.lo
+                hi = r.hi - 1 if value == r.hi else r.hi
+                self.set_inferred(reg, kb, lo, hi)
         if flag == 'n' and self.n_from is not None and self['n'] in (True, False):
             # We have 'BPL addr' or 'BMI addr' after an instruction whose
             # result set N, so bit 7 of the result is known
             for reg in self.n_from:
                 if knownbits.bit(self[reg].known_bits, 7) is None:
                     self.set_inferred(reg, knownbits.with_bit(self[reg].known_bits, 7, bool(self['n'])))
+        if flag == 'c' and self.c_from is not None and self['c'] in (True, False):
+            # We have 'BCC addr' or 'BCS addr' after a compare with an
+            # immediate n: the register is at least n if C is set, else less
+            # than n
+            reg, n = self.c_from
+            r = self[reg]
+            if self['c']:
+                self.set_inferred(reg, r.known_bits, max(r.lo, n), r.hi)
+            elif n > 0:
+                self.set_inferred(reg, r.known_bits, r.lo, min(r.hi, n - 1))
         if flag == 'c' and flag_state == False and self['z'] == 'pending':
             # We have 'BCS addr' with z == 'pending' from a previous compare instruction
             self['z'] = False
 
-    def set_inferred(self, reg, kb):
-        """The register is known (kb, as known bits) to be more than it was,
-        from a branch that wasn't taken. (No instruction set it to this
-        value: it's only this value after the branch, so comments on its
-        use, e.g. a VDU command, go where it's used.)"""
-        self[reg].known_bits = kb
-        self[reg].previous_load_imm = None
-        self[reg].previous_load = None
-        self[reg].previous_adjust = None
+    def set_inferred(self, reg, kb, lo=0, hi=0xff):
+        """The register is known to be more than it was (kb, as known bits,
+        and from lo to hi, as well as what was known), from a branch that
+        wasn't taken. If that makes its value known, no instruction set it
+        to that value: it's only that value after the branch, so comments
+        on its use (e.g. a VDU command) go where it's used."""
+        r = self[reg]
+        was_known = r.value is not None
+        r.set_range(kb, max(lo, r.lo), min(hi, r.hi))
+        if r.value is not None and not was_known:
+            r.previous_load_imm = None
+            r.previous_load = None
+            r.previous_adjust = None
 
     def show(self):
         """The state as text, e.g. 'A:05 X:-- Y:00 nvdIzc': '--' for a
@@ -771,6 +892,24 @@ class Cpu6502(cpu.Cpu):
     _Z_ACCUMULATOR_MNEMONICS = {"asl", "lsr", "rol", "ror", "inc", "dec"}
     _Z_COMPARE_REGISTERS = {"cmp": "a", "cpx": "x", "cpy": "y"}
 
+    # How instructions change the C flag (see c_source()): those that don't
+    # (including the 65C02's and the 6510's), and the compares
+    _C_UNCHANGED_MNEMONICS = _Z_UNCHANGED_MNEMONICS | set("""
+        lda ldx ldy lax las tax tay txa tya tsx inx iny dex dey inc dec ora eor and bit
+        trb tsb pla plx ply""".split())
+
+    @staticmethod
+    def c_source(opcode, binary_addr):
+        """What the C flag says about a register after the instruction (see
+        CpuStateDisposition.c_from): Z_UNCHANGED if it doesn't change C,
+        (register, n) for a compare with an immediate n, otherwise None."""
+        mnemonic = opcode.mnemonic.lower()
+        if mnemonic in Cpu6502._C_UNCHANGED_MNEMONICS:
+            return Cpu6502.Z_UNCHANGED
+        if mnemonic in Cpu6502._Z_COMPARE_REGISTERS and opcode.addr_mode == Cpu6502.mode_immediate:
+            return (Cpu6502._Z_COMPARE_REGISTERS[mnemonic], session.current().memory.binary[binary_addr + 1])
+        return None
+
     @staticmethod
     def z_source(opcode, binary_addr):
         """What the Z flag says about the registers after the instruction
@@ -858,6 +997,10 @@ class Cpu6502(cpu.Cpu):
         # pre-trace function has been called
         self.effect_matches = {}
         self.effect_matches_seen = set()
+
+        # The binary addresses of the jumps (e.g. the RTS of the RTS trick)
+        # whose jump tables find_jump_tables() has marked
+        self.jump_tables_marked = set()
 
         self.code_analysis_fns.append(self.subroutine_argument_finder)  # For trace.subroutine_argument_finder_hooks (see subroutine_argument_finder())
         self.code_analysis_fns.append(self.substitute_constants)        # For the substitute_constants() command
@@ -1416,6 +1559,21 @@ class Cpu6502(cpu.Cpu):
                     n_from = z_from[0] if z_from is not None and z_from[1] == 0 else None
                     state.optimistic.n_from = n_from
                     state.pessimistic.n_from = n_from
+                c_from = Cpu6502.c_source(self, binary_addr)
+                for disposition in (state.optimistic, state.pessimistic):
+                    # A 'pending' Z or C says something only while the other
+                    # is from the same compare: e.g. after 'cmp #n : txa', Z
+                    # is from TXA, so a BNE that isn't taken says nothing
+                    # about C
+                    if disposition['c'] == 'pending' and disposition['z'] != 'pending':
+                        disposition['c'] = None
+                    if disposition['z'] == 'pending' and disposition['c'] != 'pending':
+                        disposition['z'] = None
+                    if c_from is not Cpu6502.Z_UNCHANGED:
+                        disposition.c_from = c_from
+                    elif disposition.c_from is not None and self.reg_changes[disposition.c_from[0]] in "AOT":
+                        # (The register compared has changed since)
+                        disposition.c_from = None
                 # Code that jumps into the middle of this instruction (the
                 # BIT trick, e.g. 'bit $02a9' skipping 'lda #2') runs another
                 # instruction there, then continues after this one, so
@@ -2951,7 +3109,14 @@ class Cpu6502(cpu.Cpu):
         """Find the matches of the effect patterns (see effectpattern.py),
         and call each new match's pre-trace function (which can add entry
         points). The matches are kept for post_trace_effects(), so the last
-        call's are those for the code as finally traced."""
+        call's are those for the code as finally traced. Then find the jump
+        tables (see find_jump_tables())."""
+        self.find_effect_matches()
+        self.find_jump_tables()
+
+    def find_effect_matches(self):
+        """Find the matches of the effect patterns, and call each new match's
+        pre-trace function (see find_entry_points_from_effects())."""
         memory_binary = session.current().memory.binary
         bytes_array = None
         for index, details in enumerate(session.current().snippets):
@@ -2979,6 +3144,234 @@ class Cpu6502(cpu.Cpu):
                         details.pre_trace_function(helper, details.pre_trace_parameter)
                 except SnippetRejected:
                     self.rejected_snippet_matches.add(key)
+
+    # ********************************************************************************************
+    # Jump tables
+
+    # The most entries a jump table found by find_jump_tables() can have
+    # (an index with more possible values is more likely to be bounded by
+    # code that py8dis can't see, so the entries past the real ones would be
+    # taken for code)
+    MAX_JUMP_TABLE_ENTRIES = 64
+
+    # The instructions that use the stack, which mustn't come between the
+    # pushes of the RTS trick and its RTS
+    _STACK_MNEMONICS = {"pha", "php", "pla", "plp", "phx", "phy", "plx", "ply", "jsr", "txs", "rti", "brk"}
+
+    def find_jump_tables(self):
+        """Find the jump tables that the code uses with an index whose
+        possible values are known (see CpuStateDisposition), and mark their
+        entries as the addresses of code (as code_ptr() does: the code is
+        traced, and each entry is written as its label). E.g. with
+        'cmp #7 : bcs bad : asl : tax' before it, X is 0, 2, ... or 12, so
+        the table has 7 entries. The ways the code can jump through a table:
+
+        - the RTS trick: 'lda hi,x : pha : lda lo,x : pha : rts', where each
+          entry is the address minus 1;
+        - storing the address and jumping through it: 'lda lo,x : sta ptr :
+          lda hi,x : sta ptr+1 : jmp (ptr)';
+        - storing the address in the operand of a JSR or JMP that follows;
+        - the 65C02's 'jmp (table,x)'.
+
+        The low and high bytes can be in tables of their own, or together
+        as words (the high table one byte after the low one). Only code in
+        one straight run counts (see straight_runs()). A table isn't marked
+        if any of its bytes is already classified, or has an expression
+        (e.g. the control file marked it), if its entries overlap, if any
+        entry points into the table, or inside an instruction or data, or if
+        the index has more than MAX_JUMP_TABLE_ENTRIES possible values. Each
+        table is marked only once (see jump_tables_marked). Turned off with
+        config.set_find_jump_tables(False)."""
+        if not config.get_find_jump_tables():
+            return
+        for run in self.straight_runs():
+            for i, binary_addr in enumerate(run):
+                c = classification.get_classification(binary_addr)
+                if binary_addr in self.jump_tables_marked or not isinstance(c, self.Opcode):
+                    continue
+                mnemonic = c.mnemonic.lower()
+                table = None
+                if mnemonic == "rts":
+                    table = self._rts_jump_table(run, i)
+                elif mnemonic == "jmp" and c.addr_mode == self.mode_indirect_addr:
+                    table = self._stored_jump_table(run, i, memorymanager.get_u16_binary(binary_addr + 1))
+                elif mnemonic in ("jmp", "jsr") and c.addr_mode == self.mode_addr:
+                    # (Its own operand, if code before it stores there)
+                    table = self._stored_jump_table(run, i, (movemanager.b2r(BinaryAddr(binary_addr)) + 1) & 0xffff)
+                elif mnemonic == "jmp" and c.addr_mode == self.mode_indexed_abs:
+                    table = self._indexed_jump_table(run, i)
+                if table is not None and self._mark_jump_table(binary_addr, *table):
+                    self.jump_tables_marked.add(binary_addr)
+
+    def _last_change(self, run, i, reg):
+        """The index in the run of the last instruction before run[i] that
+        changes 'reg' ('a', 'x' or 'y'), or None."""
+        for j in range(i - 1, -1, -1):
+            c = classification.get_classification(run[j])
+            if c.reg_changes[reg] in "AOT":
+                return j
+        return None
+
+    def _table_load(self, run, j):
+        """If run[j] loads a register from a table, indexed by X or Y (e.g.
+        'lda table,x'), (the table's runtime address, the index register),
+        otherwise None."""
+        c = classification.get_classification(run[j])
+        if c.mnemonic.lower() not in ("lda", "ldx", "ldy") or c.addr_mode not in (self.mode_abs_indexed_x, self.mode_abs_indexed_y):
+            return None
+        return memorymanager.get_u16_binary(run[j] + 1), "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
+
+    def _index_values(self, run, j, k, reg):
+        """The values the index register 'reg' could have at the table loads
+        run[j] and run[k] (j < k), if it's known and doesn't change between
+        them, otherwise None."""
+        for m in range(j + 1, k):
+            if classification.get_classification(run[m]).reg_changes[reg] in "AOT":
+                return None
+        if j == 0:
+            # (Nothing is known at the start of a run)
+            return None
+        r = self.cpu_states[run[j - 1]].pessimistic[reg]
+        if r.lo == 0 and r.hi == 0xff and r.known == 0:
+            return None
+        values = r.possible_values()
+        if not 0 < len(values) <= self.MAX_JUMP_TABLE_ENTRIES:
+            return None
+        return values
+
+    def _two_loads(self, run, j_lo, j_hi):
+        """The table loads run[j_lo] (the low bytes) and run[j_hi] (the high
+        bytes), as (low table, high table, index values), if they're both
+        loads from tables with the same index register, whose values are
+        known, otherwise None."""
+        if j_lo is None or j_hi is None:
+            return None
+        lo_load = self._table_load(run, j_lo)
+        hi_load = self._table_load(run, j_hi)
+        if lo_load is None or hi_load is None or lo_load[1] != hi_load[1]:
+            return None
+        values = self._index_values(run, min(j_lo, j_hi), max(j_lo, j_hi), lo_load[1])
+        if values is None:
+            return None
+        return lo_load[0], hi_load[0], values
+
+    def _rts_jump_table(self, run, i):
+        """The table of the RTS trick ending at the RTS run[i] (see
+        find_jump_tables()), as (low table, high table, index values,
+        offset), or None. The high byte is pushed first."""
+        pushes = []
+        for j in range(i - 1, -1, -1):
+            mnemonic = classification.get_classification(run[j]).mnemonic.lower()
+            if mnemonic == "pha":
+                pushes.append(j)
+                if len(pushes) == 2:
+                    break
+            elif mnemonic in self._STACK_MNEMONICS:
+                return None
+        if len(pushes) != 2:
+            return None
+        push_lo, push_hi = pushes
+        loads = self._two_loads(run, self._last_change(run, push_lo, "a"), self._last_change(run, push_hi, "a"))
+        if loads is None:
+            return None
+        return loads + (1,)
+
+    def _stored_jump_table(self, run, i, target):
+        """The table whose entry the code before run[i] stores at target and
+        target+1 (runtime addresses), for run[i] to jump through (see
+        find_jump_tables()), as (low table, high table, index values,
+        offset), or None. Between each store and run[i] there mustn't be a
+        JSR, or a store whose address isn't known (an indexed or indirect
+        one)."""
+        stores = {}
+        for j in range(i - 1, -1, -1):
+            c = classification.get_classification(run[j])
+            mnemonic = c.mnemonic.lower()
+            if mnemonic == "jsr":
+                break
+            if mnemonic in ("sta", "stx", "sty", "stz"):
+                if c.addr_mode == self.mode_zp:
+                    address = session.current().memory.binary[run[j] + 1]
+                elif c.addr_mode == self.mode_addr:
+                    address = memorymanager.get_u16_binary(run[j] + 1)
+                else:
+                    break
+                for byte in (0, 1):
+                    if address == (target + byte) & 0xffff and byte not in stores:
+                        if mnemonic == "stz":
+                            # (It stores 0, not an entry from a table)
+                            return None
+                        stores[byte] = (j, mnemonic[2])
+                if len(stores) == 2:
+                    break
+        if len(stores) != 2:
+            return None
+        (j_lo, reg_lo), (j_hi, reg_hi) = stores[0], stores[1]
+        loads = self._two_loads(run, self._last_change(run, j_lo, reg_lo), self._last_change(run, j_hi, reg_hi))
+        if loads is None:
+            return None
+        return loads + (0,)
+
+    def _indexed_jump_table(self, run, i):
+        """The table of the 65C02's 'jmp (table,x)' at run[i], as (low table,
+        high table, index values, offset), or None."""
+        if i == 0:
+            return None
+        r = self.cpu_states[run[i - 1]].pessimistic["x"]
+        if r.lo == 0 and r.hi == 0xff and r.known == 0:
+            return None
+        values = r.possible_values()
+        if not 0 < len(values) <= self.MAX_JUMP_TABLE_ENTRIES:
+            return None
+        table = memorymanager.get_u16_binary(run[i] + 1)
+        return table, (table + 1) & 0xffff, values, 0
+
+    def _mark_jump_table(self, dispatch_binary_addr, lo_table, hi_table, values, offset):
+        """Mark the jump table (see find_jump_tables()): the entries at
+        lo_table + each of the values (the low bytes) and hi_table + each
+        (the high bytes), with the code at each entry's address plus
+        'offset'. Returns whether it was marked."""
+        import commands
+        memory_binary = session.current().memory.binary
+        expressions = session.current().classifications.expressions
+        entries = []
+        table_bytes = set()
+        for v in values:
+            entry = []
+            for table in (lo_table, hi_table):
+                runtime_addr = table + v
+                if runtime_addr > 0xffff:
+                    return False
+                binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr))
+                if (binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr)
+                        or classification.is_classified(binary_addr) or binary_addr in expressions
+                        or binary_addr in table_bytes):
+                    return False
+                table_bytes.add(binary_addr)
+                entry.append((runtime_addr, binary_addr))
+            entries.append(entry)
+        for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
+            code = ((memory_binary[hi_binary] << 8 | memory_binary[lo_binary]) + offset) & 0xffff
+            code_binary, _ = movemanager.r2b(memorymanager.RuntimeAddr(code))
+            if code_binary is not None and memorymanager.is_data_loaded_at_binary_addr(code_binary):
+                c = classification.get_classification(code_binary)
+                if code_binary in table_bytes or not (c is None or c.is_code(code_binary)):
+                    return False
+        for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
+            commands.code_ptr(lo_runtime, hi_runtime, offset=offset)
+
+        # Say what the table is, before it
+        dispatch = "{0} at {1}".format(classification.get_classification(dispatch_binary_addr).mnemonic.upper(),
+                                       config.get_assembler().hex(movemanager.b2r(BinaryAddr(dispatch_binary_addr))))
+        how = " (each the address minus 1, for the {0})".format(dispatch) if offset else " (for the {0})".format(dispatch)
+        n = len(entries)
+        first_lo, first_hi = entries[0][0][1], entries[0][1][1]
+        if first_hi == first_lo + 1 and all(hi[1] == lo[1] + 1 for lo, hi in entries):
+            disassembly.comment_binary(first_lo, "A jump table of {0} {1}{2}".format(n, "entry" if n == 1 else "entries", how), align=Align.BEFORE_LABEL, auto_generated=True)
+        else:
+            disassembly.comment_binary(first_lo, "The low bytes of a jump table of {0} {1}{2}".format(n, "entry" if n == 1 else "entries", how), align=Align.BEFORE_LABEL, auto_generated=True)
+            disassembly.comment_binary(first_hi, "The high bytes of the jump table", align=Align.BEFORE_LABEL, auto_generated=True)
+        return True
 
     def post_trace_effects(self):
         """Call the post-trace function of each effect pattern for each of

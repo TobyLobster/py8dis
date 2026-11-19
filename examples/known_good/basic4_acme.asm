@@ -5932,7 +5932,8 @@ ca22a
     stz l0048                                                         ; a238: 64 48       dH
     iny                                                               ; a23a: c8          .
     tya                                                               ; a23b: 98          .
-    bne ca261                                                         ; a23c: d0 23       .#
+    bne ca261                                                         ; a23c: d0 23       .# ; ALWAYS branch
+
 ; $a23e referenced 1 time by $a232
 ca23e
     lda l0037                                                         ; a23e: a5 37       .7
