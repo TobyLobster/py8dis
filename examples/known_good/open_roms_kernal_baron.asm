@@ -3500,6 +3500,7 @@ lf7b6 = cf7b4+2
     sta rs232_input_parity                                            ; f808: 85 ab       ..
     rts                                                               ; f80a: 60          .
 
+; A table of 8 bytes, indexed by Y (0 to 7), read at &e863
 ; &f80b referenced 2 times by &e84d, &e863
 .lf80b
     equb &fe, &fd, &fb, &f7, &ef, &df, &bf, &7f                       ; f80b: fe fd fb... ...

@@ -6910,8 +6910,8 @@ return_24
 la84d
     dfb $82, $9c, $ff, $ff                                            ; a84d: 82 9c ff... ...
     asc 'BRIDGE'                                                      ; a851: 42 52 49... BRI
-    dfb $9c, 0, $7f, $9c, 0, 0, $71, $0d, $ff, $ff, $73, $0d, $ff     ; a857: 9c 00 7f... ...
-    dfb $ff                                                           ; a864: ff          .
+    dfb $9c, 0                                                        ; a857: 9c 00       ..
+    dfb $7f, $9c, 0, 0, $71, $0d, $ff, $ff, $73, $0d, $ff, $ff        ; a859: 7f 9c 00... ...
 
 ; $a865 referenced 4 times by $8e09, $a0b4, $a71e, $a825
 sub_ca865

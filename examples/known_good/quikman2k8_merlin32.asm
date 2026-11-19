@@ -1900,6 +1900,7 @@ l1c50
 ; $1c51 referenced 1 time by $1390
 l1c51
     dfb 2, 5, 3, 7                                                    ; 1c51: 02 05 03... ...
+; A table of 16 bytes, indexed by X (0 to 3) and Y (0 to 15), read at $1566 and $1967
 ; $1c55 referenced 3 times by $1396, $1566, $1967
 l1c55
     dfb 0, $33, $76, $f9, 2, 3, 2, 0                                  ; 1c55: 00 33 76... .3.
@@ -1944,7 +1945,8 @@ l1c92
     dfb $58, $40, $58 ; petscii "x@x"                                 ; 1c99: 58 40 58    x@x
 ; $1c9c referenced 1 time by $19c2
 l1c9c
-    dfb 0, 0, $c0, $b8, $b0, $a8, $b0, $b8, $c0, $c8                  ; 1c9c: 00 00 c0... ...
+    dfb 0, 0, $c0, $b8, $b0, $a8                                      ; 1c9c: 00 00 c0... ...
+    dfb $b0, $b8, $c0, $c8                                            ; 1ca2: b0 b8 c0... ...
 ; $1ca6 referenced 3 times by $169d, $16a5, $16bf
 l1ca6
     dfb 1, 2, 4, 8, $10, $20, $40, $80                                ; 1ca6: 01 02 04... ... ; bitmask

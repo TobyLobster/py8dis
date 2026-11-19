@@ -166,12 +166,12 @@ starship_shields_active
     .byte 1                                                           ; 1f56: 01          .   :0e56[1]
 unused5
     .byte $3a                                                         ; 1f57: 3a          :   :0e57[1]
-; A table of 128 bytes, indexed by X (0 to 127) and Y (0 to 31), read at $1529, $1654, $1c23 and 6 other places
+; A table of 32 bytes, indexed by X (0 to 31) and Y (0 to 31), read at $1529, $1654, $1c23 and 5 other places
 sine_table
     .byte   0,   1,   2,   3,   4,   5,   5,   6,   6,   6,   5,   5  ; 1f58: 00 01 02... ... :0e58[1]
     .byte   4,   3,   2,   1,   0, $ff, $fe, $fd, $fc, $fb, $fb, $fa  ; 1f64: 04 03 02... ... :0e64[1]
     .byte $fa, $fa, $fb, $fb, $fc, $fd, $fe, $ff                      ; 1f70: fa fa fb... ... :0e70[1]
-; A table of 128 bytes, indexed by X (0 to 127) and Y (0 to 31), read at $1514, $1659, $1c31 and 6 other places
+; A table of 32 bytes, indexed by X (0 to 31) and Y (0 to 31), read at $1514, $1659, $1c31 and 5 other places
 cosine_table
     .byte $fa, $fa, $fb, $fb, $fc, $fd, $fe, $ff, 0, 1, 2, 3,   4     ; 1f78: fa fa fb... ... :0e78[1]
     .byte   5,   5,   6,   6,   6,   5,   5,   4, 3, 2, 1, 0, $ff     ; 1f85: 05 05 06... ... :0e85[1]
@@ -201,8 +201,7 @@ rotated_x_correction_fraction
 rotated_x_correction_pixels
     .byte 0, $fe, $fb, $f6, $ef, $e6                                  ; 1fee: 00 fe fb... ... :0eee[1]
 rotated_y_correction_fraction
-    .byte 1, 0, 2, 0                                                  ; 1ff4: 01 00 02... ... :0ef4[1]
-    .byte $ff, $fe                                                    ; 1ff8: ff fe       ..  :0ef8[1]
+    .byte 1, 0, 2, 0, $ff, $fe                                        ; 1ff4: 01 00 02... ... :0ef4[1]
 rotated_y_correction_pixels
     .byte 0, 1, 4, 9, $0f, $18                                        ; 1ffa: 00 01 04... ... :0efa[1]
 starship_velocity_high
@@ -6487,7 +6486,6 @@ no_before_the_starship_exploded_string
     .byte $1f, 5, $0a, $4e, $4f, $1f, 5, $0b                          ; 4a97: 1f 05 0a... ... :3997[1]
     .text "before the starship exploded."                             ; 4a9f: 62 65 66... bef :399f[1]
     .byte $0d                                                         ; 4abc: 0d          .   :39bc[1]
-; A table of 256 bytes, indexed by Y (0 to 255 except 97), read at $3c81
 after_your_performance_string
     .byte $1f, 3, $16                                                 ; 4abd: 1f 03 16    ... :39bd[1]
     .text "After  your  performance  on  this"                        ; 4ac0: 41 66 74... Aft :39c0[1]

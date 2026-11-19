@@ -9,6 +9,8 @@ l0074   = $0074
 l0075   = $0075
 l0076   = $0076
 l0077   = $0077
+l0078   = $0078
+l0079   = $0079
 l0080   = $0080
 l0090   = $0090
 l0091   = $0091
@@ -17,6 +19,7 @@ l0093   = $0093
 
 // Other
 l0400   = $0400
+l0500   = $0500
 
     * = $2000
 
@@ -190,6 +193,63 @@ l20df
 l20e3
     .asc "THREE"                                                      // 20e3: 54 48 52... THR
     .byt 0                                                            // 20e8: 00          .
+
+// Copy 8 bytes of memory from l2115 to l0400
+text_with_bytes
+    ldx #7                                                            // 20e9: a2 07       ..
+// $20eb referenced 1 time by $20f2
+loop_c20eb
+    lda l2115,x                                                       // 20eb: bd 15 21    ..!
+    sta l0400,x                                                       // 20ee: 9d 00 04    ...
+    dex                                                               // 20f1: ca          .
+    bpl loop_c20eb                                                    // 20f2: 10 f7       ..
+    rts                                                               // 20f4: 60          `
+
+half_known
+    ldx l0078                                                         // 20f5: a6 78       .x
+    bmi return_2                                                      // 20f7: 30 03       0.
+    lda l2120,x                                                       // 20f9: bd 20 21    . !
+// $20fc referenced 1 time by $20f7
+return_2
+    rts                                                               // 20fc: 60          `
+
+// Copy 6 bytes of memory from l2124 to l0500
+words_in_bytes
+    ldy #5                                                            // 20fd: a0 05       ..
+// $20ff referenced 1 time by $2106
+loop_c20ff
+    lda l2124,y                                                       // 20ff: b9 24 21    .$!
+    sta l0500,y                                                       // 2102: 99 00 05    ...
+    dey                                                               // 2105: 88          .
+    bpl loop_c20ff                                                    // 2106: 10 f7       ..
+    lda l0079                                                         // 2108: a5 79       .y
+    and #1                                                            // 210a: 29 01       ).
+    asl                                                               // 210c: 0a          .
+    tax                                                               // 210d: aa          .
+    lda l2126,x                                                       // 210e: bd 26 21    .&!
+    ldy l2127,x                                                       // 2111: bc 27 21    .'!
+    rts                                                               // 2114: 60          `
+
+// A table of 8 bytes, indexed by X (0 to 7), read at $20eb
+// $2115 referenced 1 time by $20eb
+l2115
+    .byt $82                                                          // 2115: 82          .
+    .asc "BRIDGE"                                                     // 2116: 42 52 49... BRI
+    .byt $9c                                                          // 211c: 9c          .
+    .byt $ff, $fe, $fd                                                // 211d: ff fe fd    ...
+// $2120 referenced 1 time by $20f9
+l2120
+    .byt $91, $92, $93, $94                                           // 2120: 91 92 93... ...
+// A table of 6 bytes, indexed by Y (0 to 5), read at $20ff
+// $2124 referenced 1 time by $20ff
+l2124
+    .byt $a1, $a2                                                     // 2124: a1 a2       ..
+// A table of 2 words, indexed by X (0 or 2), the low bytes read at $210e, and the high bytes read at $2111
+// $2126 referenced 1 time by $210e
+l2126
+l2127 = l2126+1
+    .word $1234, $5678                                                // 2126: 34 12 78... 4.x
+// $2127 referenced 1 time by $2111
 pydis_end
 
 #if ((l20d6) & $ff) <> $d6
@@ -226,6 +286,7 @@ pydis_end
 // Label references by decreasing frequency:
 //     l0090:        2
 //     l0092:        2
+//     l0400:        2
 //     l0070:        1
 //     l0071:        1
 //     l0072:        1
@@ -234,10 +295,12 @@ pydis_end
 //     l0075:        1
 //     l0076:        1
 //     l0077:        1
+//     l0078:        1
+//     l0079:        1
 //     l0080:        1
 //     l0091:        1
 //     l0093:        1
-//     l0400:        1
+//     l0500:        1
 //     l208f:        1
 //     l2097:        1
 //     l20a3:        1
@@ -250,8 +313,16 @@ pydis_end
 //     l20ca:        1
 //     l20cb:        1
 //     l20d2:        1
+//     l2115:        1
+//     l2120:        1
+//     l2124:        1
+//     l2126:        1
+//     l2127:        1
 //     loop_c202b:   1
+//     loop_c20eb:   1
+//     loop_c20ff:   1
 //     return_1:     1
+//     return_2:     1
 //     sub_c201c:    1
 //     sub_c2029:    1
 //     sub_c2035:    1
@@ -272,12 +343,15 @@ pydis_end
 //     l0075
 //     l0076
 //     l0077
+//     l0078
+//     l0079
 //     l0080
 //     l0090
 //     l0091
 //     l0092
 //     l0093
 //     l0400
+//     l0500
 //     l208f
 //     l2097
 //     l20a3
@@ -294,8 +368,16 @@ pydis_end
 //     l20db
 //     l20df
 //     l20e3
+//     l2115
+//     l2120
+//     l2124
+//     l2126
+//     l2127
 //     loop_c202b
+//     loop_c20eb
+//     loop_c20ff
 //     return_1
+//     return_2
 //     sub_c201c
 //     sub_c2029
 //     sub_c2035
@@ -308,13 +390,13 @@ pydis_end
 
 // Stats:
 //
-//     Total size (Code + Data) = 233 bytes
-//     Code                     = 143 bytes (61%)
-//     Data                     = 90 bytes (39%)
+//     Total size (Code + Data) = 298 bytes
+//     Code                     = 187 bytes (63%)
+//     Data                     = 111 bytes (37%)
 //
-//     Number of instructions   = 70
-//     Number of data bytes     = 47 bytes
-//     Number of data words     = 12 bytes
-//     Number of string bytes   = 31 bytes
-//     Number of strings        = 5
+//     Number of instructions   = 92
+//     Number of data bytes     = 58 bytes
+//     Number of data words     = 16 bytes
+//     Number of string bytes   = 37 bytes
+//     Number of strings        = 6
 

@@ -6911,8 +6911,8 @@ la841 = ca840+1
 .la84d
     equb &82, &9c, &ff, &ff                                           ; a84d: 82 9c ff... ...
     equs "BRIDGE"                                                     ; a851: 42 52 49... BRI
-    equb &9c, 0, &7f, &9c, 0, 0, &71, &0d, &ff, &ff, &73, &0d, &ff    ; a857: 9c 00 7f... ...
-    equb &ff                                                          ; a864: ff          .
+    equb &9c, 0                                                       ; a857: 9c 00       ..
+    equb &7f, &9c, 0, 0, &71, &0d, &ff, &ff, &73, &0d, &ff, &ff       ; a859: 7f 9c 00... ...
 
 ; &a865 referenced 4 times by &8e09, &a0b4, &a71e, &a825
 .sub_ca865

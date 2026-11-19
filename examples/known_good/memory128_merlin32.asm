@@ -882,6 +882,7 @@ fill_loop
     bne fill_loop                                                     ; 25a8: d0 e7       P.
     rts                                                               ; 25aa: 60          .
 
+; A table of 16 bytes, indexed by Y (0 to 15), written at $25a2
 ; $25ab referenced 2 times by $25a2, $25df
 array
     dfb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                ; 25ab: 00 00 00... ...

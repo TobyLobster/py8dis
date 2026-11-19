@@ -4522,6 +4522,12 @@ class Cpu6502(cpu.Cpu):
                 user = "{0} at {1}".format(c.mnemonic.upper(), hex(movemanager.b2r(BinaryAddr(binary_addr))))
                 self._comment_address_table(entries, "a table of {0} {1} (for the {2})".format(n, "pointer" if n == 1 else "pointers", user), "table of pointers")
 
+    # The most values an index can have to size a data table: more is likely
+    # to mean the index wasn't known before something that only halves it,
+    # or rules out a value or two (e.g. 0 to 127 after a BPL, the even values
+    # after an ASL, or all but $61 after 'cpy #$61 : bne loop')
+    MAX_DATA_TABLE_INDEX_VALUES = 119
+
     # How a data table is used, by mnemonic: those that write memory, and
     # those that change it (read it and write it back)
     _MEMORY_WRITES = {"sta", "stx", "sty", "stz"}
@@ -4530,7 +4536,8 @@ class Cpu6502(cpu.Cpu):
     def _size_data_tables(self):
         """Mark the tables of bytes that the code reads, writes or changes
         with 'table,x' or 'table,y', where the index's possible values are
-        known (at least two of them): e.g. after 'ldy #31 : loop: lda
+        known (at least two of them, and at most
+        MAX_DATA_TABLE_INDEX_VALUES): e.g. after 'ldy #31 : loop: lda
         sine_table,y : ... dey : bpl loop', the 32 bytes from sine_table. A
         table is the bytes from the least value the index can have to the
         greatest (all of them for each instruction with that operand), with
@@ -4549,8 +4556,9 @@ class Cpu6502(cpu.Cpu):
         spaces (in the session's text encoding), with at least three letters,
         each word upper case, lower case or capitalised (e.g. 'PRINT ',
         'Library' or '0123456789ABCDEF', but not '3DUfw'), which is likely
-        to be text: that's left for the search for
-        strings (see classification.autostring()). Each run
+        to be text: its runs of at least three printable characters are
+        classified as strings, and the rest of it as bytes (so the table
+        still ends where it ends). Each run
         of bytes is classified up to the next label, so a label in the
         middle of one (e.g. the start of another table) starts a new line."""
         import textencoding
@@ -4581,7 +4589,7 @@ class Cpu6502(cpu.Cpu):
                     continue
                 reg = "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
                 possible = self.known_before(run, j)[reg].possible
-                if possible == valuesets.FULL or valuesets.value(possible) is not None:
+                if valuesets.value(possible) is not None or valuesets.count(possible) > self.MAX_DATA_TABLE_INDEX_VALUES:
                     continue
                 mnemonic = c.mnemonic.lower()
                 kind = "written" if mnemonic in self._MEMORY_WRITES else "changed" if mnemonic in self._MEMORY_CHANGES else "read"
@@ -4656,9 +4664,8 @@ class Cpu6502(cpu.Cpu):
             tables.append((binary_addrs, False, "A table of {0} bytes, indexed by {1}, {2}".format(n, describe_index(uses[base]), describe_kinds(uses[base]))))
 
         # Say what each table is before it, and classify their bytes (where
-        # tables overlap, together): the tables of words that don't overlap
-        # another table (or have a label inside) as words, and the rest as
-        # bytes, apart from text
+        # tables overlap, together): the tables of words as words (unless
+        # one overlaps another), then the rest as bytes, apart from text
         encoding = textencoding.current()
 
         def alphanumeric(byte):
@@ -4690,23 +4697,26 @@ class Cpu6502(cpu.Cpu):
 
         byte_addrs = set()
         word_tables = []
+        text_tables = []
         for binary_addrs, words, text in tables:
             disassembly.comment_binary(binary_addrs[0], text, align=Align.BEFORE_LABEL, auto_generated=True)
             if words:
                 word_tables.append(binary_addrs)
                 continue
-            table_bytes = [memory_binary[b] for b in binary_addrs]
-            if has_text(table_bytes):
-                # (Text, which the search for strings will find)
+            if has_text([memory_binary[b] for b in binary_addrs]):
+                text_tables.append(binary_addrs)
                 continue
             byte_addrs.update(binary_addrs)
+        word_addrs = set()
         for binary_addrs in word_tables:
             # (A label inside a word, e.g. from 'lda table+1,x', is written
             # as an expression, e.g. 'l1235 = l1234+1')
-            if byte_addrs.isdisjoint(binary_addrs):
+            if word_addrs.isdisjoint(binary_addrs):
                 classification.add_classification(binary_addrs[0], classification.Word(len(binary_addrs)))
+                word_addrs.update(binary_addrs)
             else:
                 byte_addrs.update(binary_addrs)
+        byte_addrs -= word_addrs
         # (Each run of bytes up to the next label)
         run_start = None
         previous = None
@@ -4719,6 +4729,45 @@ class Cpu6502(cpu.Cpu):
             previous = b
         if run_start is not None:
             classification.add_classification(run_start, classification.Byte(previous + 1 - run_start))
+
+        # The text tables' bytes that aren't in another table: each run up
+        # to the next label, with its runs of at least three printable
+        # characters as strings, and the rest as bytes
+        printable = encoding.chars
+        for binary_addrs in text_tables:
+            # (Runs of the bytes that aren't classified yet, each up to the
+            # next label)
+            runs = []
+            for b in binary_addrs:
+                if classification.is_classified(b):
+                    continue
+                if runs and b == runs[-1][-1] + 1 and not is_label(b):
+                    runs[-1].append(b)
+                else:
+                    runs.append([b])
+            for run in runs:
+                # (Its pieces: the runs of at least three printable
+                # characters, and the bytes between them)
+                pieces = []
+                for b in run:
+                    is_text = memory_binary[b] in printable
+                    if pieces and pieces[-1][0] == is_text:
+                        pieces[-1][1].append(b)
+                    else:
+                        pieces.append((is_text, [b]))
+                merged = []
+                for is_text, piece in pieces:
+                    is_text = is_text and len(piece) >= 3
+                    if merged and not is_text and not merged[-1][0]:
+                        merged[-1][1].extend(piece)
+                    else:
+                        merged.append((is_text, list(piece)))
+                for is_text, piece in merged:
+                    if is_text:
+                        classification.string_binary(BinaryAddr(piece[0]), len(piece))
+                        classification.get_classification(piece[0]).auto_generated = True
+                    else:
+                        classification.add_classification(piece[0], classification.Byte(len(piece)))
 
     def post_trace_effects(self):
         """Call the post-trace function of each effect pattern for each of

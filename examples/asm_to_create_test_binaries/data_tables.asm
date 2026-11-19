@@ -144,3 +144,51 @@ message2
     !text "TWO", 0
 message3
     !text "THREE", 0
+
+; 10. A table of 8 bytes with text in it ("BRIDGE"): the text is a string,
+;     the rest of the table bytes, and the bytes after it start a line of
+;     their own (the control file gives this as an entry point)
+text_with_bytes
+    ldx #7
+-   lda packet,x
+    sta $0400,x
+    dex
+    bpl -
+    rts
+
+; 11. X is 0 to 127 after BMI, but that's only because nothing was known
+;     about it before, so it isn't taken to size a table
+half_known
+    ldx $78
+    bmi +
+    lda table11,x
++   rts
+
+; 12. A table of words inside a table of bytes (the 6 bytes a loop copies,
+;     the last 4 of which are 2 words): the words stay words
+words_in_bytes
+    ldy #5
+-   lda block,y
+    sta $0500,y
+    dey
+    bpl -
+    lda $79
+    and #1
+    asl
+    tax
+    lda block_words,x
+    ldy block_words+1,x
+    rts
+
+packet
+    !byte $82
+    !text "BRIDGE"
+    !byte $9c
+after_packet
+    !byte $ff, $fe, $fd
+table11
+    !byte $91, $92, $93, $94
+block
+    !byte $a1, $a2
+block_words
+    !word $1234, $5678

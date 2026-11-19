@@ -6907,8 +6907,8 @@ return_24
 la84d
     .byte $82, $9c, $ff, $ff                                          ; a84d: 82 9c ff... ...
     .text "BRIDGE"                                                    ; a851: 42 52 49... BRI
-    .byte $9c, 0, $7f, $9c, 0, 0, $71, $0d, $ff, $ff, $73, $0d, $ff   ; a857: 9c 00 7f... ...
-    .byte $ff                                                         ; a864: ff          .
+    .byte $9c, 0                                                      ; a857: 9c 00       ..
+    .byte $7f, $9c, 0, 0, $71, $0d, $ff, $ff, $73, $0d, $ff, $ff      ; a859: 7f 9c 00... ...
 
 ; $a865 referenced 4 times by $8e09, $a0b4, $a71e, $a825
 sub_ca865
