@@ -2605,7 +2605,7 @@ l8004 = service_entry+1
     stx l00a6                                                         ; 8d63: 86 a6       ..
     ror l00a1                                                         ; 8d65: 66 a1       f.
     sec                                                               ; 8d67: 38          8
-    rol l00a1                                                         ; 8d68: 26 a1       &.
+    rol l00a1                                                         ; 8d68: 26 a1       &.             ; Rotate in a set bit
     cmp #1                                                            ; 8d6a: c9 01       ..
     bne c8d74                                                         ; 8d6c: d0 06       ..
     lda nmi_lda_immXXX4+1                                             ; 8d6e: ad 22 0d    .".
@@ -2732,7 +2732,7 @@ l8004 = service_entry+1
     pha                                                               ; 8e1a: 48          H
     lda nmi_and_table,y                                               ; 8e1b: b9 2d 91    .-.
     sta nmi_and_imm+1                                                 ; 8e1e: 8d 05 0d    ...
-    ror l00a2                                                         ; 8e21: 66 a2       f.
+    ror l00a2                                                         ; 8e21: 66 a2       f.             ; Rotate in a set bit
     pla                                                               ; 8e23: 68          h
     bpl c8e72                                                         ; 8e24: 10 4c       .L
     bit l00a1                                                         ; 8e26: 24 a1       $.
@@ -3103,7 +3103,7 @@ l8004 = service_entry+1
 ; &8feb referenced 1 time by &905c
     bne c0d26                                                         ; 8fec: d0 0a       ..  :0d1a[4]
     lda l00a1                                                         ; 8fee: a5 a1       ..  :0d1c[4]
-    ror a                                                             ; 8ff0: 6a          j   :0d1e[4]
+    ror a                                                             ; 8ff0: 6a          j   :0d1e[4]   ; Rotate in a set bit
 .c0d1f
 nmi_XXX5 = c0d1f+1
     bcc c0d26                                                         ; 8ff1: 90 05       ..  :0d1f[4]
@@ -3930,7 +3930,7 @@ nmi_XXX5 = c0d1f+1
     cmp #&20 ; ' '                                                    ; 9472: c9 20       .
     bne c948d                                                         ; 9474: d0 17       ..
     lda l1096                                                         ; 9476: ad 96 10    ...
-    ror a                                                             ; 9479: 6a          j
+    ror a                                                             ; 9479: 6a          j              ; Rotate in a set bit
     bcs return_25                                                     ; 947a: b0 c8       ..
     jsr generate_error                                                ; 947c: 20 48 80     H.
     equb &bc                                                          ; 947f: bc          .
@@ -8036,8 +8036,9 @@ l0600 = c05ff+1
 .c06a7
     lda l00ff                                                         ; ae82: a5 ff       ..  :06a7[2]
     sec                                                               ; ae84: 38          8   :06a9[2]
-    ror a                                                             ; ae85: 6a          j   :06aa[2]
-    bmi write_tube_r1_data                                            ; ae86: 30 0f       0.  :06ab[2]
+    ror a                                                             ; ae85: 6a          j   :06aa[2]   ; Rotate in a set bit
+    bmi write_tube_r1_data                                            ; ae86: 30 0f       0.  :06ab[2]   ; ALWAYS branch
+
 .tube_evntv_handler
     pha                                                               ; ae88: 48          H   :06ad[2]
     lda #0                                                            ; ae89: a9 00       ..  :06ae[2]
@@ -10636,7 +10637,8 @@ lb6ce = cb6cd+1
     bne cbe52                                                         ; be4b: d0 05       ..
     inx                                                               ; be4d: e8          .              ; X=2
     cpx #4                                                            ; be4e: e0 04       ..
-    bcc cbe47                                                         ; be50: 90 f5       ..
+    bcc cbe47                                                         ; be50: 90 f5       ..             ; ALWAYS branch
+
 ; &be52 referenced 1 time by &be4b
 .cbe52
     ldy #&f5                                                          ; be52: a0 f5       ..

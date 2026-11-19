@@ -34,6 +34,7 @@ import cpu8080
 import cpuz80
 import disassembly
 import expression
+import knownbits
 import mainformatter
 import memorymanager
 import movemanager
@@ -585,10 +586,13 @@ def _instruction_fields(binary_loc, c, instruction):
 def _cpu_state(disposition):
     """The 6502's state (a CpuStateDisposition) for the JSON: what's known,
     with None where it isn't: A, X and Y as numbers, and the flags N, V, D,
-    I, Z and C as True or False."""
+    I, Z and C as True or False. A register with only some of its bits
+    known has them as well, as e.g. 'a_bits': '0000----' after 'and #$0f'."""
     result = {}
     for reg in "axy":
         result[reg] = disposition[reg].value
+        if disposition[reg].value is None and disposition[reg].known != 0:
+            result[reg + "_bits"] = knownbits.show_bits(disposition[reg].known_bits)
     for flag in "nvdizc":
         # (Anything else, e.g. None, means the flag isn't known)
         value = disposition[flag]

@@ -10,7 +10,7 @@ l0070   = &0070
 .start
     lda #&ff                                                          ; 2000: a9 ff       .. ; Snippet 1 matched
     sta l0007                                                         ; 2002: 85 07       ..
-    asl a                                                             ; 2004: 0a          .
+    asl a                                                             ; 2004: 0a          .  ; A=&fe
     ldx #5                                                            ; 2005: a2 05       ..
     bne c200a                                                         ; 2007: d0 01       .. ; ALWAYS branch
 

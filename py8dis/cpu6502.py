@@ -27,22 +27,26 @@ entry points.
 
 The CPU state. Once the code is traced, Cpu.calculate_cpu_states() goes
 through it working out what's known after each instruction: a CpuState,
-which holds what's known about A, X and Y (RegState: the value, and which
-instruction last loaded, changed or used the register) and the flags. It
+which holds what's known about A, X and Y (RegState: the value, bit by bit
+(see knownbits.py), and which instruction last loaded, changed or used the
+register) and the flags. It
 holds two versions of this (CpuStateDisposition): the pessimistic one is
 what's known for certain, which is forgotten at each label (code can come
 there from elsewhere); the optimistic one takes the code to have run
 straight through from the instruction before, even past a label. E.g. 'LDA
-#5' makes A 5; a conditional branch is taken not to have been taken, so its
-flag is known after it (and after BNE, the register that set Z: see
-z_source()); and nothing is known after a JSR, JMP or RTS. docs/cpus.md
-describes this for users.
+#5' makes A 5, and 'AND #$0f' makes its top four bits 0; a conditional
+branch is taken not to have been taken, so its flag is known after it (and
+after BNE or BEQ, what that says about the register that set Z, and after
+BPL or BMI, bit 7 of the register that set N: see z_source() and
+CpuStateDisposition.n_from); and nothing is known after a JSR, JMP or RTS.
+docs/cpus.md describes this for users.
 
 Analysis. The functions in code_analysis_fns use the CPU states to comment
 calls to subroutines described with subroutine() (find_subroutine_calls()),
 name constants given with substitute_constants() (substitute_constants(),
-SubConst), comment known register values and branches that are always
-taken (show_register_knowledge()), and comment redundant instructions
+SubConst), comment known register values, branches that are always
+taken, ADC and SBC with an unusual carry, and rotates and shifts whose
+carry is known (show_register_knowledge()), and comment redundant instructions
 (find_redundant_instructions()). straight_runs() and memory_writes() say
 what straight runs of code write to memory, for effect patterns and the
 machine modules (e.g. acorn.py and commodore.py).
@@ -63,6 +67,7 @@ import re
 import cpu
 import utils
 import textencoding
+import knownbits
 from align import Align
 from binaryaddrtype import BinaryAddrType
 from memorymanager import BinaryAddr
@@ -201,10 +206,14 @@ class MemoryWrite:
 
 class RegState:
     """What's known about one register (A, X or Y) at a point in the code:
-    its value, and the binary addresses of the instructions that last
-    loaded, changed and used it (see the attributes in clear()). The
-    addresses are what the analysis comments or names, e.g. the 'ldx #nn'
-    that sets X up for a call to a subroutine."""
+    its value, bit by bit (see knownbits.py), and the binary addresses of
+    the instructions that last loaded, changed and used it (see the
+    attributes in clear()). The addresses are what the analysis comments or
+    names, e.g. the 'ldx #nn' that sets X up for a call to a subroutine.
+
+    'value' is the value if all eight bits are known, otherwise None (and
+    setting it sets all the bits, or with None, none). 'known_bits' is what's
+    known as a (known, bits) pair: e.g. (0xf0, 0x00) after 'and #$0f'."""
 
     def __init__(self):
         """Nothing is known to start with."""
@@ -212,11 +221,37 @@ class RegState:
 
     def clear(self):
         """Forget everything about the register."""
-        self.value              = None      # Current value, if known
+        self.known              = 0         # A 1 for each bit whose value is known
+        self.bits               = 0         # The values of the known bits (0 for the others)
         self.previous_load_imm  = None      # The address of the previous load immediate instruction if no adjustments made since
         self.previous_load      = None      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
         self.previous_adjust    = None      # The address of the previous load or adjust instruction if present
         self.previous_use       = None      # The address of the previous 'read only use of a register' instruction if present
+
+    @property
+    def value(self):
+        """The value, if all its bits are known, otherwise None."""
+        return self.bits if self.known == 0xff else None
+
+    @value.setter
+    def value(self, v):
+        if v is None:
+            self.known = 0
+            self.bits = 0
+        else:
+            assert 0 <= v <= 0xff
+            self.known = 0xff
+            self.bits = v
+
+    @property
+    def known_bits(self):
+        """What's known, as a (known, bits) pair (see knownbits.py)."""
+        return (self.known, self.bits)
+
+    @known_bits.setter
+    def known_bits(self, kb):
+        self.known, self.bits = kb
+        assert self.bits & ~self.known == 0
 
     def copy(self):
         """A fast copy (all the attributes are immutable values)."""
@@ -235,7 +270,7 @@ class RegState:
 
     def __repr__(self):
         """The register's value as text (for __str__())."""
-        return "value: {0}".format(self.value)
+        return "value: {0}".format(self.value if self.known in (0, 0xff) else knownbits.show_bits(self.known_bits))
 
     def __str__(self):
         return self.__repr__()
@@ -279,11 +314,18 @@ class CpuStateDisposition:
         # set, the registers' values are known. (See Cpu6502.z_source().)
         self.z_from = None
 
+        # The registers whose bit 7 the N flag is, if any (e.g. ('a',) after
+        # LDA or AND): so when a branch that isn't taken shows what N is,
+        # that bit of them is known. (Set with z_from, by
+        # Opcode.update_cpu_state().)
+        self.n_from = None
+
     def copy(self):
         """A fast copy (much faster than copy.deepcopy())."""
         result = CpuStateDisposition.__new__(CpuStateDisposition)
         result._d = {key: (value.copy() if isinstance(value, RegState) else value) for key, value in self._d.items()}
         result.z_from = self.z_from
+        result.n_from = self.n_from
         return result
 
     def clear(self):
@@ -298,6 +340,7 @@ class CpuStateDisposition:
         self._d["z"] = None
         self._d["c"] = None
         self.z_from = None
+        self.n_from = None
 
     def __getitem__(self, key):
         assert key in "axynvdizc"
@@ -349,27 +392,54 @@ class CpuStateDisposition:
         self._d['z'] = "pending"
         self._d['c'] = "pending"
 
-    def update_rora(self, binary_addr):
-        """ROR A: if A and C are known, A, N, Z and C are worked out;
-        otherwise they become unknown."""
-        # Note carry may be 'pending' (after a compare), which counts as unknown here.
-        if self._d['a'].value is not None and self._d['c'] in (True, False):
-            # We know that state of A and carry, so we can calculate the new value of A
-            oldv = self._d['a'].value
-            newc = oldv & 1
-            self._d['a'].value = oldv // 2
-            if self._d['c']:
-                self._d['a'].value += 0x80
+    def carry(self):
+        """The C flag as True or False, or None if it isn't known (or is
+        'pending')."""
+        c = self._d['c']
+        if c is None or c == 'pending':
+            return None
+        return bool(c)
 
-            self._d['n'] = (self._d['a'].value & 0x80) == 0x80
-            self._d['z'] = (self._d['a'].value == 0)
-            self._d['c'] = newc
-            return
+    def set_result(self, reg, kb):
+        """The register's value is now kb (known bits: see knownbits.py),
+        the result of an instruction, which sets N and Z from it."""
+        self._d[reg].known_bits = kb
+        self._d['n'] = knownbits.n_flag(kb)
+        self._d['z'] = knownbits.z_flag(kb)
 
+    def update_shift_a(self, binary_addr, kind):
+        """ASL, LSR, ROL or ROR A ('kind' is the mnemonic in lower case): the
+        bits of A that are known move along, the bit shifted in is known
+        for ASL and LSR (0), and for ROL and ROR if C is known, and C is
+        the bit shifted out, if that's known. N and Z are from the result."""
+        a = self._d['a'].known_bits
+        if kind == "asl":
+            result, carry = knownbits.asl(a)
+        elif kind == "lsr":
+            result, carry = knownbits.lsr(a)
+        elif kind == "rol":
+            result, carry = knownbits.rol(a, self.carry())
+        else:
+            assert kind == "ror"
+            result, carry = knownbits.ror(a, self.carry())
+        self.set_result('a', result)
+        self._d['c'] = carry
+
+    def update_shift_memory(self, binary_addr, kind):
+        """ASL, LSR, ROL or ROR of memory ('kind' is the mnemonic in lower
+        case): memory isn't known, so C, and N and Z, are unknown, except
+        that LSR always clears N, ROR copies C into N, and ROL or ROR of
+        a set C leaves a set bit, so Z clear."""
+        carry = self.carry()
         self._d['n'] = None
         self._d['z'] = None
         self._d['c'] = None
-        self._d['a'].value = None
+        if kind == "lsr":
+            self._d['n'] = False
+        elif kind == "ror" and carry is not None:
+            self._d['n'] = carry
+        if kind in ("rol", "ror") and carry:
+            self._d['z'] = False
 
     def update_bit(self, binary_addr):
         """N, V and Z become unknown (BIT)."""
@@ -398,101 +468,92 @@ class CpuStateDisposition:
         self._d['c'] = None
 
     def update_AND_immediate(self, binary_addr):
-        """AND #imm (the instruction at binary_addr): A, N and Z are worked
-        out if A is known, and otherwise as far as the operand says (e.g.
-        AND #0 makes A 0)."""
-        memory_binary = session.current().memory.binary
-        assert binary_addr is not None
-        v = memory_binary[binary_addr+1]
-        if self._d['a'].value is not None:
-            # Value of A is known, so calculate new value of A
-            v = self._d['a'].value & v
-            self._d['a'].value = v
-
-            # Update the flags based on new value of A
-            self._d['n'] = ((v & 0x80) == 0x80)
-            self._d['z'] = (v == 0)
-        elif v == 0:
-            # AND #0 sets the Z flag, and A=0
-            self._d['a'].value = 0
-            self._d['n'] = 0
-            self._d['z'] = 1
-        else:
-            # A is unknown, so the result (and therefore Z) is unknown
-            self._d['z'] = None
-
-            # AND with value $01-$7f leaves the N flag clear, otherwise it is unknown
-            self._d['n'] = 0 if v < 0x80 else None
+        """AND #imm (the instruction at binary_addr): the bits of A that the
+        operand clears are known to be 0, and the others are as known before
+        (so A is worked out if it was known, e.g. AND #0 makes A 0), with N
+        and Z from the result."""
+        v = session.current().memory.binary[binary_addr+1]
+        self.set_result('a', knownbits.and_(self._d['a'].known_bits, knownbits.exact(v)))
 
     def update_ORA_immediate(self, binary_addr):
-        """ORA #imm (the instruction at binary_addr): A, N and Z are worked
-        out if A is known, and otherwise as far as the operand says (e.g.
-        ORA #$ff makes A $ff)."""
-        memory_binary = session.current().memory.binary
-        assert binary_addr is not None
-        v = memory_binary[binary_addr+1]
-        if self._d['a'].value is not None:
-            # Value of A is known, so calculate new value of A
-            v = self._d['a'].value | v
-            self._d['a'].value = v
+        """ORA #imm (the instruction at binary_addr): the bits of A that the
+        operand sets are known to be 1 (so e.g. ORA #$80 sets N, and any
+        non-zero operand clears Z), and the others are as known before."""
+        v = session.current().memory.binary[binary_addr+1]
+        self.set_result('a', knownbits.or_(self._d['a'].known_bits, knownbits.exact(v)))
 
-            # Update the flags based on new value of A
-            self._d['n'] = ((v & 0x80) == 0x80)
-            self._d['z'] = (v == 0)
-        elif v == 0xff:
-            # ORA #$ff sets A=$ff
-            self._d['a'].value = 0xff
-            self._d['n'] = 1
-            self._d['z'] = 0
-        elif v > 0:
-            # ORA with non-zero value means Z is clear
-            self._d['z'] = 0
+    def update_EOR_immediate(self, binary_addr):
+        """EOR #imm (the instruction at binary_addr): the bits of A that
+        were known are known, flipped where the operand is 1."""
+        v = session.current().memory.binary[binary_addr+1]
+        self.set_result('a', knownbits.eor(self._d['a'].known_bits, knownbits.exact(v)))
 
-            # ORA with a value $80-$ff sets the N flag, otherwise it is unknown
-            self._d['n'] = 1 if v >= 0x80 else None
+    def compare_immediate(self, binary_addr, reg):
+        """CMP, CPX or CPY #imm (the instruction at binary_addr), comparing
+        'reg': as far as what's known about the register says, C is set if
+        it's at least the operand, Z if it's equal, and N is bit 7 of the
+        difference. Z and C are 'pending' where they aren't known (see
+        update_transfer())."""
+        v = session.current().memory.binary[binary_addr+1]
+        result, carry = knownbits.subtract(self._d[reg].known_bits, knownbits.exact(v), True)
+        z = knownbits.z_flag(result)
+        self._d['n'] = knownbits.n_flag(result)
+        self._d['z'] = "pending" if z is None else z
+        self._d['c'] = "pending" if carry is None else carry
+
+    def adc_sbc_immediate(self, binary_addr, subtract):
+        """ADC or SBC #imm (the instruction at binary_addr): if D is known
+        to be clear (binary arithmetic), the result's bits are worked out
+        as far as what's known about A and C says, with N, Z and C (and V
+        if A and C are known). Otherwise (decimal arithmetic could be on)
+        A, N, V, Z and C become unknown."""
+        if self._d['d'] is None or self._d['d']:
+            self.update_adc_sbc(binary_addr)
+            return
+        a = self._d['a'].known_bits
+        operand = knownbits.exact(session.current().memory.binary[binary_addr+1])
+        if subtract:
+            # (SBC adds the operand's complement)
+            operand = knownbits.invert(operand)
+        carry_in = self.carry()
+        result, carry = knownbits.add(a, operand, carry_in)
+        self.set_result('a', result)
+        self._d['c'] = carry
+        if knownbits.is_exact(a) and carry_in is not None:
+            # Overflow: the operands have the same sign and the result doesn't
+            self._d['v'] = ((a[1] ^ result[1]) & (operand[1] ^ result[1]) & 0x80) != 0
         else:
-            # ORA #0 leaves A unchanged (but unknown), so N and Z are unknown
-            self._d['n'] = None
-            self._d['z'] = None
+            self._d['v'] = None
+
+    def bit_immediate(self, binary_addr):
+        """The 65C02's BIT #imm (the instruction at binary_addr): only Z
+        changes, set if A AND the operand is 0, as far as what's known
+        about A says."""
+        v = session.current().memory.binary[binary_addr+1]
+        self._d['z'] = knownbits.z_flag(knownbits.and_(self._d['a'].known_bits, knownbits.exact(v)))
 
     def decrement(self, addr, reg):
-        """DEX, DEY (or the 65C02's DEC A) at addr: if the register is
-        known, it's one less (wrapping round from 0 to $ff), with N and Z
-        from it; otherwise N and Z become unknown."""
-        v = self[reg].value
-        if v is not None:
-            v -= 1
-            if v == -1:
-                v = 0xff
-            self[reg].value = v
-            self['n'] = ((v & 0x80) == 0x80)
-            self['z'] = (v == 0)
-
-            # Now we have a new value for the register, the address where we previously
-            # loaded the current value no longer valid
-            self[reg].previous_load_imm = None
-            self[reg].previous_load     = None
-            self[reg].previous_adjust   = BinaryAddr(addr)
-        else:
-            self.update_clear_nz(addr)
+        """DEX, DEY (or the 65C02's DEC A) at addr: the register is one less
+        (wrapping round from 0 to $ff), as far as what's known about it says
+        (e.g. bit 0 flips if it's known), with N and Z from it."""
+        self.add_to_register(addr, reg, 0xff)
 
     def increment(self, addr, reg):
         """INX, INY (or the 65C02's INC A) at addr, as decrement() but one
         more (wrapping round from $ff to 0)."""
-        v = self[reg].value
-        if v is not None:
-            v += 1
-            if v == 0x100:
-                v = 0
-            self[reg].value = v
-            self['n'] = ((v & 0x80) == 0x80)
-            self['z'] = (v == 0)
+        self.add_to_register(addr, reg, 1)
 
-            self[reg].previous_load_imm    = None
-            self[reg].previous_load        = None
-            self[reg].previous_adjust      = BinaryAddr(addr)
-        else:
-            self.update_clear_nz(addr)
+    def add_to_register(self, addr, reg, delta):
+        """Add delta to the register (for increment() and decrement()),
+        with N and Z from the result."""
+        result, _ = knownbits.add(self[reg].known_bits, knownbits.exact(delta), False)
+        self.set_result(reg, result)
+
+        # Now we have a new value for the register, the address where we previously
+        # loaded the current value no longer valid
+        self[reg].previous_load_imm = None
+        self[reg].previous_load     = None
+        self[reg].previous_adjust   = BinaryAddr(addr)
 
     def load_immediate(self, addr, reg, v):
         """LDA, LDX or LDY #v at addr: the register is v, with N and Z from
@@ -501,9 +562,7 @@ class CpuStateDisposition:
         # its operand's)
         addr = BinaryAddr(addr)
 
-        self[reg].value = v
-        self['n'] = ((v & 0x80) == 0x80)
-        self['z'] = (v == 0)
+        self.set_result(reg, knownbits.exact(v))
         self[reg].previous_load_imm = addr
         self[reg].previous_load     = addr
         self[reg].previous_adjust   = addr
@@ -511,10 +570,10 @@ class CpuStateDisposition:
 
     def transfer(self, addr, src_reg, dest_reg):
         """A transfer (TAX, TXA etc.) at addr: dest_reg gets src_reg's value
-        (if known), with N and Z from it, and the instruction at addr is
-        where it was loaded."""
+        (as far as it's known), with N and Z from it, and the instruction at
+        addr is where it was loaded."""
         addr = BinaryAddr(addr)
-        self[dest_reg].value = self[src_reg].value
+        self.set_result(dest_reg, self[src_reg].known_bits)
 
         # If we have a load address, keep it. This allows
         # the code (e.g. from basic4) to understand X and Y form an
@@ -529,21 +588,16 @@ class CpuStateDisposition:
         self[dest_reg].previous_load = addr
         self[dest_reg].previous_adjust = addr
 
-        v = self[dest_reg].value
-        if v is not None:
-            self['n'] = ((v & 0x80) == 0x80)
-            self['z'] = (v == 0)
-        else:
-            self['n'] = None
-            self['z'] = None
-
     def update_transfer(self, addr, flag, flag_state):
         """A conditional branch at addr on 'flag' that isn't taken: the flag
         is flag_state (if it wasn't known already). And what that says about
         the rest: after a compare, Z set means C is set, and C clear means Z
-        is clear; and if Z is set, the registers whose result set it have
-        the value that sets it (see z_from), and N is clear. (Called by the
-        update functions that Cpu6502.make_branch() makes.)"""
+        is clear; if Z is set, the registers whose result set it have the
+        value that sets it (see z_from), and N is clear; if Z is clear, they
+        aren't that value, which says what their last bit is if all the
+        others are known and are that value's; and the registers whose bit 7
+        N is (see n_from) have that bit known. (Called by the update
+        functions that Cpu6502.make_branch() makes.)"""
         if self[flag] is None or self[flag] == 'pending':
             self[flag] = flag_state
 
@@ -558,18 +612,39 @@ class CpuStateDisposition:
             regs, value, z_addr = self.z_from
             for reg in regs:
                 if self[reg].value is None:
-                    # (No instruction set it to this value: it's only this
-                    # value after the branch, so comments on its use, e.g.
-                    # a VDU command, go where it's used)
-                    self[reg].value = value
-                    self[reg].previous_load_imm = None
-                    self[reg].previous_load = None
-                    self[reg].previous_adjust = None
+                    self.set_inferred(reg, knownbits.exact(value))
             if self['n'] is None:
                 self['n'] = False
+        if flag == 'z' and flag_state == False and self.z_from is not None:
+            # We have 'BEQ addr' after an instruction whose result set Z, so
+            # the registers aren't the value that sets it: if only one bit
+            # isn't known, and the others are the value's, it's the opposite
+            # of the value's (e.g. A is 1 after 'AND #1 : BEQ addr')
+            regs, value, z_addr = self.z_from
+            for reg in regs:
+                known, bits = self[reg].known_bits
+                unknown = ~known & 0xff
+                if unknown != 0 and (unknown & (unknown - 1)) == 0 and (value & known) == bits:
+                    self.set_inferred(reg, (0xff, bits | (~value & unknown)))
+        if flag == 'n' and self.n_from is not None and self['n'] in (True, False):
+            # We have 'BPL addr' or 'BMI addr' after an instruction whose
+            # result set N, so bit 7 of the result is known
+            for reg in self.n_from:
+                if knownbits.bit(self[reg].known_bits, 7) is None:
+                    self.set_inferred(reg, knownbits.with_bit(self[reg].known_bits, 7, bool(self['n'])))
         if flag == 'c' and flag_state == False and self['z'] == 'pending':
             # We have 'BCS addr' with z == 'pending' from a previous compare instruction
             self['z'] = False
+
+    def set_inferred(self, reg, kb):
+        """The register is known (kb, as known bits) to be more than it was,
+        from a branch that wasn't taken. (No instruction set it to this
+        value: it's only this value after the branch, so comments on its
+        use, e.g. a VDU command, go where it's used.)"""
+        self[reg].known_bits = kb
+        self[reg].previous_load_imm = None
+        self[reg].previous_load = None
+        self[reg].previous_adjust = None
 
     def show(self):
         """The state as text, e.g. 'A:05 X:-- Y:00 nvdIzc': '--' for a
@@ -580,7 +655,9 @@ class CpuStateDisposition:
         def reg(r):
             v = self._d[r].value
             if v is None:
-                return "--"
+                # (Each hex digit that's known, e.g. '0-' after 'and #$0f')
+                text = knownbits.show(self._d[r].known_bits)
+                return text if config.get_lower_case() else text.upper()
             return utils.plainhex2(v)
         s += "A:%s X:%s Y:%s" % (reg('a'), reg('x'), reg('y'))
 
@@ -821,75 +898,75 @@ class Cpu6502(cpu.Cpu):
             0x00: self.OpcodeReturn(            "BRK",        "---", cycles="7"),
             0x01: self.OpcodeZp(                "ORA (zp,X)", "AU-", cycles="6", has_abs_version=False, update=self.update_clear_nza),
             0x05: self.OpcodeZp(                "ORA zp",     "A--", cycles="3", update=self.update_clear_nza),
-            0x06: self.OpcodeZp(                "ASL zp",     "---", cycles="5", update=self.update_clear_nzc),
+            0x06: self.OpcodeZp(                "ASL zp",     "---", cycles="5", update=self.make_shift_memory("asl")),
             0x08: self.OpcodeImplied(           "PHP",        "---", cycles="3", update=self.neutral),
             0x09: self.OpcodeImmediate(         "ORA #imm",   "A--", cycles="2", update=self.update_ORA_immediate),
-            0x0a: self.OpcodeImplied(           "ASL A",      "A--", cycles="2", update=self.update_clear_nzca),
+            0x0a: self.OpcodeImplied(           "ASL A",      "A--", cycles="2", update=self.make_shift_a("asl")),
             0x0d: self.OpcodeDataAbs(           "ORA addr",   "A--", cycles="4", update=self.update_clear_nza),
-            0x0e: self.OpcodeDataAbs(           "ASL addr",   "---", cycles="6", update=self.update_clear_nzc),
+            0x0e: self.OpcodeDataAbs(           "ASL addr",   "---", cycles="6", update=self.make_shift_memory("asl")),
             0x10: self.OpcodeConditionalBranch( "BPL offset", "---", cycles="2a", update=self.make_branch('n', True)),
             0x11: self.OpcodeZp(                "ORA (zp),Y", "A-U", cycles="5b", has_abs_version=False, update=self.update_clear_nza),
             0x15: self.OpcodeZp(                "ORA zp,X",   "AU-", cycles="4",  update=self.update_clear_nza),
-            0x16: self.OpcodeZp(                "ASL zp,X",   "-U-", cycles="6",  update=self.update_clear_nzc),
+            0x16: self.OpcodeZp(                "ASL zp,X",   "-U-", cycles="6",  update=self.make_shift_memory("asl")),
             0x18: self.OpcodeImplied(           "CLC",        "---", cycles="2",  update=self.make_update_flag('c', False)),
             0x19: self.OpcodeDataAbs(           "ORA addr,Y", "A-U", cycles="4f", has_zp_version=False, update=self.update_clear_nza),
             0x1d: self.OpcodeDataAbs(           "ORA addr,X", "AU-", cycles="4f", update=self.update_clear_nza),
-            0x1e: self.OpcodeDataAbs(           "ASL addr,X", "-U-", cycles="7",  update=self.update_clear_nzc),
+            0x1e: self.OpcodeDataAbs(           "ASL addr,X", "-U-", cycles="7",  update=self.make_shift_memory("asl")),
             0x20: self.OpcodeJsr(               "JSR addr",   "---", cycles="6"),
             0x21: self.OpcodeZp(                "AND (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_clear_nza),
             0x24: self.OpcodeZp(                "BIT zp",     "U--", cycles="3",  update=self.update_bit),
             0x25: self.OpcodeZp(                "AND zp",     "A--", cycles="3",  update=self.update_clear_nza),
-            0x26: self.OpcodeZp(                "ROL zp",     "---", cycles="5",  update=self.update_clear_nzc),
+            0x26: self.OpcodeZp(                "ROL zp",     "---", cycles="5",  update=self.make_shift_memory("rol")),
             0x28: self.OpcodeImplied(           "PLP",        "---", cycles="4",  update=self.update_all_flags),
             0x29: self.OpcodeImmediate(         "AND #imm",   "A--", cycles="2",  update=self.update_AND_immediate),
-            0x2a: self.OpcodeImplied(           "ROL A",      "A--", cycles="2",  update=self.update_clear_nzca),
+            0x2a: self.OpcodeImplied(           "ROL A",      "A--", cycles="2",  update=self.make_shift_a("rol")),
             0x2c: self.OpcodeDataAbs(           "BIT addr",   "U--", cycles="4",  update=self.update_bit),
             0x2d: self.OpcodeDataAbs(           "AND addr",   "A--", cycles="4",  update=self.update_clear_nza),
-            0x2e: self.OpcodeDataAbs(           "ROL addr",   "---", cycles="6",  update=self.update_clear_nzc),
+            0x2e: self.OpcodeDataAbs(           "ROL addr",   "---", cycles="6",  update=self.make_shift_memory("rol")),
             0x30: self.OpcodeConditionalBranch( "BMI offset", "---", cycles="2a", update=self.make_branch('n', False)),
             0x31: self.OpcodeZp(                "AND (zp),Y", "A-U", cycles="5b", has_abs_version=False, update=self.update_clear_nza),
             0x35: self.OpcodeZp(                "AND zp,X",   "AU-", cycles="4",  update=self.update_clear_nza),
-            0x36: self.OpcodeZp(                "ROL zp,X",   "-U-", cycles="6",  update=self.update_clear_nzc),
+            0x36: self.OpcodeZp(                "ROL zp,X",   "-U-", cycles="6",  update=self.make_shift_memory("rol")),
             0x38: self.OpcodeImplied(           "SEC",        "---", cycles="2",  update=self.make_update_flag('c', True)),
             0x39: self.OpcodeDataAbs(           "AND addr,Y", "A-U", cycles="4f", has_zp_version=False, update=self.update_clear_nza),
             0x3d: self.OpcodeDataAbs(           "AND addr,X", "AU-", cycles="4f", update=self.update_clear_nza),
-            0x3e: self.OpcodeDataAbs(           "ROL addr,X", "-U-", cycles="7",  update=self.update_clear_nzc),
+            0x3e: self.OpcodeDataAbs(           "ROL addr,X", "-U-", cycles="7",  update=self.make_shift_memory("rol")),
             0x40: self.OpcodeReturn(            "RTI",        "---", cycles="6"),
             0x41: self.OpcodeZp(                "EOR (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_clear_nza),
             0x45: self.OpcodeZp(                "EOR zp",     "A--", cycles="3",  update=self.update_clear_nza),
-            0x46: self.OpcodeZp(                "LSR zp",     "---", cycles="5",  update=self.update_clear_nzc),
+            0x46: self.OpcodeZp(                "LSR zp",     "---", cycles="5",  update=self.make_shift_memory("lsr")),
             0x48: self.OpcodeImplied(           "PHA",        "U--", cycles="3",  update=self.neutral),
-            0x49: self.OpcodeImmediate(         "EOR #imm",   "A--", cycles="2",  update=self.update_clear_nza),
-            0x4a: self.OpcodeImplied(           "LSR A",      "A--", cycles="2",  update=self.update_clear_nzca),
+            0x49: self.OpcodeImmediate(         "EOR #imm",   "A--", cycles="2",  update=self.update_EOR_immediate),
+            0x4a: self.OpcodeImplied(           "LSR A",      "A--", cycles="2",  update=self.make_shift_a("lsr")),
             0x4c: self.OpcodeJmpAbs(            "JMP addr",   "---", cycles="3"),
             0x4d: self.OpcodeDataAbs(           "EOR addr",   "A--", cycles="4",  update=self.update_clear_nza),
-            0x4e: self.OpcodeDataAbs(           "LSR addr",   "---", cycles="6",  update=self.update_clear_nzc),
+            0x4e: self.OpcodeDataAbs(           "LSR addr",   "---", cycles="6",  update=self.make_shift_memory("lsr")),
             0x50: self.OpcodeConditionalBranch( "BVC offset", "---", cycles="2a", update=self.make_branch('v', True)),
             0x51: self.OpcodeZp(                "EOR (zp),Y", "A-U", cycles="5b", has_abs_version=False, update=self.update_clear_nza),
             0x55: self.OpcodeZp(                "EOR zp,X",   "AU-", cycles="4",  update=self.update_clear_nza),
-            0x56: self.OpcodeZp(                "LSR zp,X",   "-U-", cycles="6",  update=self.update_clear_nzc),
+            0x56: self.OpcodeZp(                "LSR zp,X",   "-U-", cycles="6",  update=self.make_shift_memory("lsr")),
             0x58: self.OpcodeImplied(           "CLI",        "---", cycles="2",  update=self.make_update_flag('i', False)),
             0x59: self.OpcodeDataAbs(           "EOR addr,Y", "A-U", cycles="4f", has_zp_version=False, update=self.update_clear_nza),
             0x5d: self.OpcodeDataAbs(           "EOR addr,X", "AU-", cycles="4f", update=self.update_clear_nza),
-            0x5e: self.OpcodeDataAbs(           "LSR addr,X", "-U-", cycles="7",  update=self.update_clear_nzc),
+            0x5e: self.OpcodeDataAbs(           "LSR addr,X", "-U-", cycles="7",  update=self.make_shift_memory("lsr")),
             0x60: self.OpcodeReturn(            "RTS",        "---", cycles="6"),
             0x61: self.OpcodeZp(                "ADC (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_adc_sbc),
             0x65: self.OpcodeZp(                "ADC zp",     "A--", cycles="3",  update=self.update_adc_sbc),
-            0x66: self.OpcodeZp(                "ROR zp",     "---", cycles="5",  update=self.update_clear_nzc),
+            0x66: self.OpcodeZp(                "ROR zp",     "---", cycles="5",  update=self.make_shift_memory("ror")),
             0x68: self.OpcodeImplied(           "PLA",        "O--", cycles="4",  update=self.update_clear_nz),
-            0x69: self.OpcodeImmediate(         "ADC #imm",   "A--", cycles="2",  update=self.update_adc_sbc),
-            0x6a: self.OpcodeImplied(           "ROR A",      "A--", cycles="2",  update=self.update_rora),
+            0x69: self.OpcodeImmediate(         "ADC #imm",   "A--", cycles="2",  update=self.make_adc_sbc_immediate(False)),
+            0x6a: self.OpcodeImplied(           "ROR A",      "A--", cycles="2",  update=self.make_shift_a("ror")),
             0x6c: self.OpcodeJmpInd(            "JMP (addr)", "---", cycles="5"),
             0x6d: self.OpcodeDataAbs(           "ADC addr",   "A--", cycles="4",  update=self.update_adc_sbc),
-            0x6e: self.OpcodeDataAbs(           "ROR addr",   "---", cycles="6",  update=self.update_clear_nzc),
+            0x6e: self.OpcodeDataAbs(           "ROR addr",   "---", cycles="6",  update=self.make_shift_memory("ror")),
             0x70: self.OpcodeConditionalBranch( "BVS offset", "---", cycles="2a", update=self.make_branch('v', False)),
             0x71: self.OpcodeZp(                "ADC (zp),Y", "A-U", cycles="5b", has_abs_version=False, update=self.update_adc_sbc),
             0x75: self.OpcodeZp(                "ADC zp,X",   "AU-", cycles="4",  update=self.update_adc_sbc),
-            0x76: self.OpcodeZp(                "ROR zp,X",   "-U-", cycles="6",  update=self.update_clear_nzc),
+            0x76: self.OpcodeZp(                "ROR zp,X",   "-U-", cycles="6",  update=self.make_shift_memory("ror")),
             0x78: self.OpcodeImplied(           "SEI",        "---", cycles="2",  update=self.make_update_flag('i', True)),
             0x79: self.OpcodeDataAbs(           "ADC addr,Y", "A-U", cycles="4f", has_zp_version=False, update=self.update_adc_sbc),
             0x7d: self.OpcodeDataAbs(           "ADC addr,X", "AU-", cycles="4f", update=self.update_adc_sbc),
-            0x7e: self.OpcodeDataAbs(           "ROR addr,X", "-U-", cycles="7",  update=self.update_clear_nzc),
+            0x7e: self.OpcodeDataAbs(           "ROR addr,X", "-U-", cycles="7",  update=self.make_shift_memory("ror")),
             0x81: self.OpcodeZp(                "STA (zp,X)", "UU-", cycles="6",  has_abs_version=False, update=self.neutral),
             0x84: self.OpcodeZp(                "STY zp",     "--U", cycles="3",  update=self.neutral),
             0x85: self.OpcodeZp(                "STA zp",     "U--", cycles="3",  update=self.neutral),
@@ -931,13 +1008,13 @@ class Cpu6502(cpu.Cpu):
             0xbc: self.OpcodeDataAbs(           "LDY addr,X", "-UO", cycles="4f", update=self.update_clear_nz),
             0xbd: self.OpcodeDataAbs(           "LDA addr,X", "OU-", cycles="4f", update=self.update_clear_nz),
             0xbe: self.OpcodeDataAbs(           "LDX addr,Y", "-OU", cycles="4f", update=self.update_clear_nz),
-            0xc0: self.OpcodeImmediate(         "CPY #imm",   "--U", cycles="2",  update=self.update_compare),
+            0xc0: self.OpcodeImmediate(         "CPY #imm",   "--U", cycles="2",  update=self.make_compare_immediate("y")),
             0xc1: self.OpcodeZp(                "CMP (zp,X)", "UU-", cycles="6",  has_abs_version=False, update=self.update_compare),
             0xc4: self.OpcodeZp(                "CPY zp",     "--U", cycles="3",  update=self.update_compare),
             0xc5: self.OpcodeZp(                "CMP zp",     "U--", cycles="3",  update=self.update_compare),
             0xc6: self.OpcodeZp(                "DEC zp",     "---", cycles="5",  update=self.update_clear_nz),
             0xc8: self.OpcodeImplied(           "INY",        "--A", cycles="2",  update=self.make_increment('y')),
-            0xc9: self.OpcodeImmediate(         "CMP #imm",   "U--", cycles="2",  update=self.update_compare),
+            0xc9: self.OpcodeImmediate(         "CMP #imm",   "U--", cycles="2",  update=self.make_compare_immediate("a")),
             0xca: self.OpcodeImplied(           "DEX",        "-A-", cycles="2",  update=self.make_decrement('x')),
             0xcc: self.OpcodeDataAbs(           "CPY addr",   "--U", cycles="4",  update=self.update_compare),
             0xcd: self.OpcodeDataAbs(           "CMP addr",   "U--", cycles="4",  update=self.update_compare),
@@ -950,13 +1027,13 @@ class Cpu6502(cpu.Cpu):
             0xd9: self.OpcodeDataAbs(           "CMP addr,Y", "U-U", cycles="4f", has_zp_version=False, update=self.update_compare),
             0xdd: self.OpcodeDataAbs(           "CMP addr,X", "UU-", cycles="4f", update=self.update_compare),
             0xde: self.OpcodeDataAbs(           "DEC addr,X", "-U-", cycles="7",  update=self.update_clear_nz),
-            0xe0: self.OpcodeImmediate(         "CPX #imm",   "-U-", cycles="2",  update=self.update_compare),
+            0xe0: self.OpcodeImmediate(         "CPX #imm",   "-U-", cycles="2",  update=self.make_compare_immediate("x")),
             0xe1: self.OpcodeZp(                "SBC (zp,X)", "AU-", cycles="6",  has_abs_version=False, update=self.update_adc_sbc),
             0xe4: self.OpcodeZp(                "CPX zp",     "-U-", cycles="3",  update=self.update_compare),
             0xe5: self.OpcodeZp(                "SBC zp",     "A--", cycles="3",  update=self.update_adc_sbc),
             0xe6: self.OpcodeZp(                "INC zp",     "---", cycles="5",  update=self.update_clear_nz),
             0xe8: self.OpcodeImplied(           "INX",        "-A-", cycles="2",  update=self.make_increment('x')),
-            0xe9: self.OpcodeImmediate(         "SBC #imm",   "A--", cycles="2",  update=self.update_adc_sbc),
+            0xe9: self.OpcodeImmediate(         "SBC #imm",   "A--", cycles="2",  update=self.make_adc_sbc_immediate(True)),
             0xea: self.OpcodeImplied(           "NOP",        "---", cycles="2",  update=self.neutral),
             0xec: self.OpcodeDataAbs(           "CPX addr",   "-U-", cycles="4",  update=self.update_compare),
             0xed: self.OpcodeDataAbs(           "SBC addr",   "A--", cycles="4",  update=self.update_adc_sbc),
@@ -1334,6 +1411,11 @@ class Cpu6502(cpu.Cpu):
                 if z_from is not Cpu6502.Z_UNCHANGED:
                     state.optimistic.z_from = z_from
                     state.pessimistic.z_from = z_from
+                    # (N is bit 7 of the same result, or of a compare with
+                    # 0; on the 6502 an instruction that changes N changes Z)
+                    n_from = z_from[0] if z_from is not None and z_from[1] == 0 else None
+                    state.optimistic.n_from = n_from
+                    state.pessimistic.n_from = n_from
                 # Code that jumps into the middle of this instruction (the
                 # BIT trick, e.g. 'bit $02a9' skipping 'lda #2') runs another
                 # instruction there, then continues after this one, so
@@ -1997,12 +2079,6 @@ class Cpu6502(cpu.Cpu):
         state.optimistic.update_clear_nz_pending_c(binary_addr)
         state.pessimistic.update_clear_nz_pending_c(binary_addr)
 
-    def update_rora(self, binary_addr, state):
-        """ROR A (see CpuStateDisposition.update_rora())."""
-        assert binary_addr is not None
-        state.optimistic.update_rora(binary_addr)
-        state.pessimistic.update_rora(binary_addr)
-
     def update_bit(self, binary_addr, state):
         """BIT: N, V and Z become unknown."""
         assert binary_addr is not None
@@ -2020,6 +2096,44 @@ class Cpu6502(cpu.Cpu):
         assert binary_addr is not None
         state.optimistic.update_all_flags(binary_addr)
         state.pessimistic.update_all_flags(binary_addr)
+
+    def make_shift_a(self, kind):
+        """An update function for ASL, LSR, ROL or ROR A ('kind' is the
+        mnemonic in lower case: see CpuStateDisposition.update_shift_a())."""
+        def shift_a(binary_addr, state):
+            state.optimistic.update_shift_a(binary_addr, kind)
+            state.pessimistic.update_shift_a(binary_addr, kind)
+        return shift_a
+
+    def make_shift_memory(self, kind):
+        """An update function for ASL, LSR, ROL or ROR of memory (see
+        CpuStateDisposition.update_shift_memory())."""
+        def shift_memory(binary_addr, state):
+            state.optimistic.update_shift_memory(binary_addr, kind)
+            state.pessimistic.update_shift_memory(binary_addr, kind)
+        return shift_memory
+
+    def make_compare_immediate(self, reg):
+        """An update function for CMP, CPX or CPY #imm, comparing 'reg' (see
+        CpuStateDisposition.compare_immediate())."""
+        def compare_immediate(binary_addr, state):
+            state.optimistic.compare_immediate(binary_addr, reg)
+            state.pessimistic.compare_immediate(binary_addr, reg)
+        return compare_immediate
+
+    def make_adc_sbc_immediate(self, subtract):
+        """An update function for ADC #imm, or SBC #imm if 'subtract' (see
+        CpuStateDisposition.adc_sbc_immediate())."""
+        def adc_sbc_immediate(binary_addr, state):
+            state.optimistic.adc_sbc_immediate(binary_addr, subtract)
+            state.pessimistic.adc_sbc_immediate(binary_addr, subtract)
+        return adc_sbc_immediate
+
+    def update_EOR_immediate(self, binary_addr, state):
+        """EOR #imm (see CpuStateDisposition.update_EOR_immediate())."""
+        assert binary_addr is not None
+        state.optimistic.update_EOR_immediate(binary_addr)
+        state.pessimistic.update_EOR_immediate(binary_addr)
 
     def update_AND_immediate(self, binary_addr, state):
         """AND #imm (see CpuStateDisposition.update_AND_immediate())."""
@@ -2172,9 +2286,10 @@ class Cpu6502(cpu.Cpu):
         known for certain, from the pessimistic state): e.g. 'Y=1' on an
         instruction that changes a register to a known value (e.g. INY,
         TAX), 'Carry is set, so adding 6' or '+1 because carry is set' on an
-        ADC (and the same for an SBC with carry clear), and 'ALWAYS branch'
+        ADC (and the same for an SBC with carry clear), 'ALWAYS branch'
         on a conditional branch that's always taken (with a blank line
-        after it)."""
+        after it), and 'Rotate in a set bit' etc. on a rotate or shift whose
+        carry is known (see _shift_comment())."""
         binary_addr = 0
         prev_state = self.EMPTY_STATE
         state = self.EMPTY_STATE
@@ -2193,6 +2308,14 @@ class Cpu6502(cpu.Cpu):
                     if runtime_addr is not None:
                         if runtime_addr in session.current().labels.labels:
                             prev_state = self.EMPTY_STATE
+
+                    # Say what a rotate or shift does with the carry, where
+                    # that's known (e.g. 'sec : ror' rotates in a set bit)
+                    if isinstance(c, self.Opcode) and prev_state:
+                        text = self._shift_comment(c, binary_addr, prev_state.pessimistic)
+                        if text is not None:
+                            move_id = session.current().moves.move_id_for_binary_addr[binary_addr]
+                            disassembly.comment_binary(movemanager.BinaryLocation(binary_addr, move_id), text, align=Align.INLINE, auto_generated=True)
 
                     # Show the value of a register as an inline comment (if known) once they have been
                     # altered (e.g. for 'LDY #0:LDA (zp),Y:STA mem:INY' output '; Y=1' on the 'INY' line).
@@ -2245,6 +2368,64 @@ class Cpu6502(cpu.Cpu):
                     binary_addr += 1
                     prev_state = self.EMPTY_STATE
 
+
+    def _shift_comment(self, c, binary_addr, before):
+        """The comment for a rotate or shift (the opcode c, at binary_addr),
+        from what's known before it ('before', a CpuStateDisposition), or
+        None: a rotate with C known rotates in a set or clear bit, and a
+        rotate or shift of A whose bit shifted out is known sets or clears
+        C, if the carry is used afterwards (see _carry_used_after()). E.g.
+        'Rotate in a set bit' for 'sec : ror', and 'Rotate set bit out (sets
+        carry)' for 'ora #$80 : rol : rts'."""
+        mnemonic = c.mnemonic.lower()
+        if mnemonic not in ("asl", "lsr", "rol", "ror"):
+            return None
+        parts = []
+        if mnemonic in ("rol", "ror"):
+            carry = before.carry()
+            if carry is not None:
+                parts.append("rotate in a {0} bit".format("set" if carry else "clear"))
+        if c.addr_mode in (self.mode_accumulator, self.mode_implied):
+            out = knownbits.bit(before['a'].known_bits, 7 if mnemonic in ("asl", "rol") else 0)
+            if out is not None and self._carry_used_after(binary_addr, c):
+                parts.append("{0} {1} bit out ({2} carry)".format("rotate" if mnemonic in ("rol", "ror") else "shift",
+                                                                 "set" if out else "clear", "sets" if out else "clears"))
+        if not parts:
+            return None
+        text = ", ".join(parts)
+        return text[0].upper() + text[1:]
+
+    def _carry_used_after(self, binary_addr, c):
+        """Whether the carry that the instruction (the opcode c, at
+        binary_addr) leaves is used: going on through the code that follows
+        it (past labels, and past branches other than BCC and BCS, which are
+        followed where they don't branch), an instruction reads C (e.g. ADC,
+        ROL, BCC or PHP), or an RTS or RTI returns it, before anything sets
+        it. A jump or call, or anything else that isn't known to read C,
+        counts as not using it. (So the carry from the first two of 'asl :
+        asl : asl' isn't used.)"""
+        binary_addr += c.length()
+        for _ in range(64):
+            c = classification.get_classification(binary_addr)
+            if not isinstance(c, self.Opcode):
+                return False
+            mnemonic = c.mnemonic.lower()
+            if mnemonic in ("rts", "rti", "bcc", "bcs"):
+                return True
+            if isinstance(c, self.OpcodeConditionalBranch):
+                binary_addr += c.length()
+                continue
+            if mnemonic in ("adc", "sbc", "php") or (mnemonic in ("rol", "ror")):
+                return True
+            reads, writes, _ = self._instruction_effects(c, binary_addr)
+            if c.is_block_end() or reads == self._ALL_RESOURCES:
+                # (A jump or call, or an instruction whose effects aren't
+                # known, e.g. one of the 6510's undocumented opcodes)
+                return False
+            if 'c' in writes:
+                return False
+            binary_addr += c.length()
+        return False
 
     def find_subroutine_calls(self):
         """Finds calls to subroutines, and calls its hook function.

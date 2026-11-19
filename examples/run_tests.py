@@ -42,8 +42,9 @@ should run successfully and give the expected warning. Neither kind is run
 with -a.
 
 With -c, when all the tests are run, session_tests.py (several disassemblies in
-one process) and render_tests.py (rendering output lines for each assembler)
-are run as well: see those files. They're started first and reported first.
+one process), render_tests.py (rendering output lines for each assembler) and
+known_bits_tests.py (what's known about the 6502's registers bit by bit) are
+run as well: see those files. They're started first and reported first.
 
 The options (./run_tests.py --help lists them too):
 
@@ -135,6 +136,7 @@ TESTS = [
     ("cycles_65c02",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "65C02 cycle counts: ADC and SBC in decimal mode, and absolute indexed BIT and shifts"),
     ("redundant_test",           ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "redundant instructions (whose results aren't used), with io_range() and the BIT trick"),
     ("branch_state",             ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "registers known after a BNE that isn't taken (after DEY, CMP #n etc.)"),
+    ("known_state_comments",     ["acme", "beebasm", "baron", "xa", "64tass", "ca65", "merlin32"], "comments from what's known after a branch that isn't taken: ADC with carry set after CMP and BNE, A=0 after INY, BNE and TYA, and ROR and ROL after BCC"),
     ("string_stuff1",            ["acme", "beebasm", "baron", "64tass"],"xa and ca65 omitted since they can't do string constants e.g. 'page = \"1900\"'"),
     ("string_stuff2",            ["beebasm"],                  "testing the beebasm specific expression 'STR$~(page)'"),
     ("shift_by_32",              ["xa"],                       "an expression for xa with a shift by 32, which py8dis doesn't work out (xa takes the count modulo 32)"),
@@ -355,7 +357,7 @@ ASSEMBLER_PROGRAMS = {
 
 # Test scripts run as well by -c, when all the tests are run. Each passes if
 # it exits with 0.
-OTHER_TEST_SCRIPTS = ["session_tests.py", "render_tests.py"]
+OTHER_TEST_SCRIPTS = ["session_tests.py", "render_tests.py", "known_bits_tests.py"]
 
 # The examples folder (main() makes it the current folder, so the paths
 # below are relative to it), the py8dis being tested and the JSON schema

@@ -1548,8 +1548,9 @@ c609c
     lda #$ff                                                          ; 60a1: a9 ff       ).
     cpx #$20                                                          ; 60a3: e0 20       `.
     bcs c60ab                                                         ; 60a5: b0 04       0.
-    eor #2                                                            ; 60a7: 49 02       ..
-    bne c60b1                                                         ; 60a9: d0 06       P.
+    eor #2                                                            ; 60a7: 49 02       .. ; A=$fd
+    bne c60b1                                                         ; 60a9: d0 06       P. ; ALWAYS branch
+
 ; $60ab referenced 1 time by $60a5
 c60ab
     cpx #$60                                                          ; 60ab: e0 60       `.

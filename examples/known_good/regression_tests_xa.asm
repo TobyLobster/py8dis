@@ -42,8 +42,8 @@ start
     bmi c202c                                                         // 2024: 30 06       0.
     lda #5                                                            // 2026: a9 05       ..
     cmp #7                                                            // 2028: c9 07       ..
-    ror                                                               // 202a: 6a          j
-    tax                                                               // 202b: aa          .
+    ror                                                               // 202a: 6a          j              // Rotate in a clear bit // A=2
+    tax                                                               // 202b: aa          .              // X=2
 // $202c referenced 2 times by $201c, $2024
 c202c
     jmp part2                                                         // 202c: 4c 80 20    L.

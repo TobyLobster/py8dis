@@ -2400,7 +2400,7 @@ la6cc = ca6cb+1
 ; &b01f referenced 1 time by &b043
 .cb01f
     clc                                                               ; b01f: 18          .
-    ror l0102                                                         ; b020: 6e 02 01    ...
+    ror l0102                                                         ; b020: 6e 02 01    ... ; Rotate in a clear bit
     ror l0103                                                         ; b023: 6e 03 01    ...
 ; &b026 referenced 1 time by &b06a
 .cb026
@@ -2442,7 +2442,7 @@ la6cc = ca6cb+1
 ; &b063 referenced 1 time by &b089
 .cb063
     sec                                                               ; b063: 38          8
-    ror l0102                                                         ; b064: 6e 02 01    ...
+    ror l0102                                                         ; b064: 6e 02 01    ... ; Rotate in a set bit
     ror l0103                                                         ; b067: 6e 03 01    ...
     bcc cb026                                                         ; b06a: 90 ba       ..
 ; &b06c referenced 1 time by &b048

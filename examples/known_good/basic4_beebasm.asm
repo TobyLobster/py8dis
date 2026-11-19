@@ -369,9 +369,9 @@ OSCLI   = &fff7
     bne c80ff                                                         ; 80f1: d0 0c       ..
     lda #&41 ; 'A'                                                    ; 80f3: a9 41       .A
     sta l000d                                                         ; 80f5: 85 0d       ..
-    eor #&13                                                          ; 80f7: 49 13       I.
+    eor #&13                                                          ; 80f7: 49 13       I. ; A=&52
     sta l000e                                                         ; 80f9: 85 0e       ..
-    eor #5                                                            ; 80fb: 49 05       I.
+    eor #5                                                            ; 80fb: 49 05       I. ; A=&57
     sta l000f                                                         ; 80fd: 85 0f       ..
 ; &80ff referenced 1 time by &80f1
 .c80ff
@@ -6895,9 +6895,9 @@ l8993 = c8992+1
 .ca712
     lda l0035                                                         ; a712: a5 35       .5
     bpl ca725                                                         ; a714: 10 0f       ..
-    asl a                                                             ; a716: 0a          .
+    asl a                                                             ; a716: 0a          .  ; Shift set bit out (sets carry)
     bne ca71e                                                         ; a717: d0 05       ..
-    rol a                                                             ; a719: 2a          *
+    rol a                                                             ; a719: 2a          *  ; Rotate in a set bit ; A=1
     and l0034                                                         ; a71a: 25 34       %4
     bne ca725                                                         ; a71c: d0 07       ..
 ; &a71e referenced 1 time by &a717
@@ -10082,7 +10082,7 @@ l8993 = c8992+1
     sty l0036                                                         ; b944: 84 36       .6
     asl l004c                                                         ; b946: 06 4c       .L
     clc                                                               ; b948: 18          .
-    ror l004c                                                         ; b949: 66 4c       fL
+    ror l004c                                                         ; b949: 66 4c       fL ; Rotate in a clear bit
     bit l004c                                                         ; b94b: 24 4c       $L
     bvs cb968                                                         ; b94d: 70 19       p.
 ; &b94f referenced 1 time by &b936

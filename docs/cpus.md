@@ -60,9 +60,23 @@ As it goes through the code, py8dis keeps track of what it knows for certain abo
 
 For the 6502:
 
+- A, X and Y are known bit by bit, so a register can be partly known: e.g. after `and #$0f` its top four bits are 0, after `ora #$80` bit 7 is 1, and after `asl` bit 0 is 0. AND, ORA and EOR with an immediate value, the shifts and rotates of A, INX, DEX, INY, DEY (and the 65C02's INC A and DEC A) and the transfers work on the bits that are known, and the flags they set are known where the bits say what they are: e.g. N is clear after `lsr`, Z is clear after `ora #1`, and C is clear after `and #$7f : asl`;
+- a compare with an immediate value sets the flags as far as the register's known bits say: e.g. after `and #$0f`, `cmp #$10` clears C (A is less than $10). ADC and SBC with an immediate value are only worked out when D is known to be clear (in decimal mode the result is different);
+- a rotate of memory puts C into bit 7 or bit 0: so `sec : ror flag` sets N (and clears Z), and LSR of memory always clears N;
 - after a conditional branch that isn't taken, its flag is known;
 - after a BNE that isn't taken, so is the register whose result set Z: it's 0 after e.g. `dey : bne loop` or `lda $70 : bne skip`, and after a compare with an immediate value it's that value, e.g. A is $7B after `cmp #$7b : bne skip` (and X is 3 after `cpx #3 : bne skip`);
+- after a BEQ that isn't taken, that register isn't that value: so if only one of its bits isn't known, that bit is known, e.g. A is 1 after `and #1 : beq skip`;
+- after a BPL or BMI that isn't taken, bit 7 of the register whose result set N is known, e.g. bit 7 of A is set after `lda $70 : bpl skip`;
 - a branch to the next instruction says nothing.
+
+The state is shown like this: `A:0- X:-- Y:00 n---Zc`, where each register is shown as two hex digits, with `-` for a digit that isn't wholly known (so `0-` is a value from 0 to $0F), and each flag is upper case if it's set, lower case if it's clear, `-` if it isn't known, or `?` if it's unknown but follows from a compare (a BNE that isn't taken then says C is set). The JSON output has the known bits of a register that's partly known, e.g. `"a_bits": "0000----"`.
+
+What's known is used for comments, which are all on by default:
+
+- a register's value, when an instruction changes it to one that's known, e.g. `; Y=1` on the `iny` of `ldy #0 : ... : iny`;
+- an ADC with carry set, or an SBC with carry clear, e.g. `; Carry is set, so adding 4` on the `adc #3` of `cmp $71 : bne skip : adc #3`;
+- a conditional branch that's always taken, `; ALWAYS branch`, e.g. the `bmi` of `ora #$80 : bmi skip`;
+- a rotate with the carry known, `; Rotate in a set bit` or `; Rotate in a clear bit`, e.g. `sec : ror flag`; and a rotate or shift of A whose bit shifted out is known, e.g. `; Shift clear bit out (clears carry)` on the `asl` of `and #$7f : asl : adc #1`, but only if the carry is used afterwards: something reads it, or an RTS or RTI returns it, before anything sets it (so not on the first two of `asl : asl : asl`).
 
 For the 8080, A to L, SP and the flags S, Z, P, CY and AC are tracked.
 

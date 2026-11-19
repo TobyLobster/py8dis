@@ -3352,7 +3352,7 @@ sub_cd03e
     rol a                                                             ; d040: 2a          *
     sta l00de                                                         ; d041: 85 de       ..
     and #3                                                            ; d043: 29 03       ).
-    rol a                                                             ; d045: 2a          *
+    rol a                                                             ; d045: 2a          *  ; Rotate clear bit out (clears carry)
     tax                                                               ; d046: aa          .
     and #3                                                            ; d047: 29 03       ).
     adc #$bf                                                          ; d049: 69 bf       i.
@@ -4904,7 +4904,7 @@ ld9b7
     lsr a                                                             ; d9e1: 4a          J
     cmp #1                                                            ; d9e2: c9 01       ..
     bne cda03                                                         ; d9e4: d0 1d       ..
-    lsr a                                                             ; d9e6: 4a          J
+    lsr a                                                             ; d9e6: 4a          J  ; A=0
 ; $d9e7 referenced 1 time by $d9dc
 cd9e7
     ldx #4                                                            ; d9e7: a2 04       ..
@@ -5287,7 +5287,7 @@ loop_cdc5d
 ; $dc68 referenced 2 times by $dccb, $dcd4
 cdc68
     sec                                                               ; dc68: 38          8
-    ror l024f                                                         ; dc69: 6e 4f 02    nO.
+    ror l024f                                                         ; dc69: 6e 4f 02    nO. ; Rotate in a set bit
     bit l0250                                                         ; dc6c: 2c 50 02    ,P.
     bpl cdc78                                                         ; dc6f: 10 07       ..
     jsr sub_ce741                                                     ; dc71: 20 41 e7     A.
@@ -5714,7 +5714,7 @@ cdec7
     ldy l0256                                                         ; decd: ac 56 02    .V. ; Y=file handle
     beq cdee6                                                         ; ded0: f0 14       ..
     sec                                                               ; ded2: 38          8
-    ror l00eb                                                         ; ded3: 66 eb       f.
+    ror l00eb                                                         ; ded3: 66 eb       f. ; Rotate in a set bit
     jsr OSBGET                                                        ; ded5: 20 d7 ff     .. ; Read a single byte from an open file Y
     php                                                               ; ded8: 08          .
     lsr l00eb                                                         ; ded9: 46 eb       F.
@@ -6031,7 +6031,7 @@ ce0f7
     pla                                                               ; e103: 68          h
     pha                                                               ; e104: 48          H
     sec                                                               ; e105: 38          8
-    ror l00eb                                                         ; e106: 66 eb       f.
+    ror l00eb                                                         ; e106: 66 eb       f. ; Rotate in a set bit
     jsr OSBPUT                                                        ; e108: 20 d4 ff     .. ; Write a single byte A to an open file Y
     lsr l00eb                                                         ; e10b: 46 eb       F.
 ; $e10d referenced 3 times by $e0b9, $e0fc, $e101
@@ -6169,7 +6169,7 @@ sub_ce1ae
 ; $e1bb referenced 2 times by $e1b1, $e1b6
 ce1bb
     sec                                                               ; e1bb: 38          8
-    ror l02cf,x                                                       ; e1bc: 7e cf 02    ~..
+    ror l02cf,x                                                       ; e1bc: 7e cf 02    ~.. ; Rotate in a set bit
     cpx #2                                                            ; e1bf: e0 02       ..
     bcs ce1cb                                                         ; e1c1: b0 08       ..
     lda #0                                                            ; e1c3: a9 00       ..
@@ -7154,8 +7154,9 @@ vdu7EntryPoint
 ; $e887 referenced 1 time by $e867
 ce887
     sec                                                               ; e887: 38          8
-    ror l0800,x                                                       ; e888: 7e 00 08    ~..
-    bmi ce8a4                                                         ; e88b: 30 17       0.
+    ror l0800,x                                                       ; e888: 7e 00 08    ~.. ; Rotate in a set bit
+    bmi ce8a4                                                         ; e88b: 30 17       0. ; ALWAYS branch
+
 ; $e88d referenced 1 time by $e832
 ce88d
     php                                                               ; e88d: 08          .
@@ -7170,7 +7171,7 @@ ce88d
     ldx #8                                                            ; e89a: a2 08       ..
     jsr ce1f8                                                         ; e89c: 20 f8 e1     ..
     bcs ce869                                                         ; e89f: b0 c8       ..
-    ror l02d7                                                         ; e8a1: 6e d7 02    n..
+    ror l02d7                                                         ; e8a1: 6e d7 02    n.. ; Rotate in a clear bit
 ; $e8a4 referenced 1 time by $e88b
 ce8a4
     pla                                                               ; e8a4: 68          h
@@ -7293,7 +7294,7 @@ ce924
     bcs ce972                                                         ; e927: b0 49       .I
     tax                                                               ; e929: aa          .  ; A=character read
     lda l027c                                                         ; e92a: ad 7c 02    .|.
-    ror a                                                             ; e92d: 6a          j
+    ror a                                                             ; e92d: 6a          j  ; Rotate in a clear bit
     ror a                                                             ; e92e: 6a          j
     txa                                                               ; e92f: 8a          .
     bcs ce937                                                         ; e930: b0 05       ..
@@ -7306,7 +7307,8 @@ ce937
     cpy #0                                                            ; e93b: c0 00       ..
     beq ce924                                                         ; e93d: f0 e5       ..
     dey                                                               ; e93f: 88          .
-    bcs ce921                                                         ; e940: b0 df       ..
+    bcs ce921                                                         ; e940: b0 df       .. ; ALWAYS branch
+
 ; $e942 referenced 1 time by $e939
 ce942
     cmp #$15                                                          ; e942: c9 15       ..
@@ -7484,7 +7486,7 @@ sub_cea11
 ; $ea1d referenced 1 time by $f260
 sub_cea1d
     clc                                                               ; ea1d: 18          .
-    ror l00e4                                                         ; ea1e: 66 e4       f.
+    ror l00e4                                                         ; ea1e: 66 e4       f. ; Rotate in a clear bit
     jsr sub_ce03a                                                     ; ea20: 20 3a e0     :.
     iny                                                               ; ea23: c8          .
     cmp #$22 ; '"'                                                    ; ea24: c9 22       ."
@@ -7794,7 +7796,7 @@ ceb91
     rol a                                                             ; ebc8: 2a          *
     lda #$3f ; '?'                                                    ; ebc9: a9 3f       .?
     bcs cebcf                                                         ; ebcb: b0 02       ..
-    eor #$ff                                                          ; ebcd: 49 ff       I.
+    eor #$ff                                                          ; ebcd: 49 ff       I. ; A=$c0
 ; $ebcf referenced 2 times by $ebc6, $ebcb
 cebcf
     sta l0804,x                                                       ; ebcf: 9d 04 08    ...
@@ -7803,7 +7805,7 @@ cebcf
     bpl cebe1                                                         ; ebd6: 10 09       ..
     lda #$3f ; '?'                                                    ; ebd8: a9 3f       .?
     bcc cebde                                                         ; ebda: 90 02       ..
-    eor #$ff                                                          ; ebdc: 49 ff       I.
+    eor #$ff                                                          ; ebdc: 49 ff       I. ; A=$c0
 ; $ebde referenced 1 time by $ebda
 cebde
     sta l0804,x                                                       ; ebde: 9d 04 08    ...
@@ -9243,7 +9245,7 @@ loop_cf454
     inx                                                               ; f457: e8          .
     cpx #$1e                                                          ; f458: e0 1e       ..
     bne loop_cf454                                                    ; f45a: d0 f8       ..
-    rol l0397                                                         ; f45c: 2e 97 03    ...
+    rol l0397                                                         ; f45c: 2e 97 03    ... ; Rotate in a set bit
     jsr sub_cfb27                                                     ; f45f: 20 27 fb     '.
     jsr sub_cf934                                                     ; f462: 20 34 f9     4.
     jsr cfaf2                                                         ; f465: 20 f2 fa     ..
@@ -9761,7 +9763,7 @@ cf7b0
     php                                                               ; f7b0: 08          .
     pha                                                               ; f7b1: 48          H
     sec                                                               ; f7b2: 38          8
-    ror l00cb                                                         ; f7b3: 66 cb       f.
+    ror l00cb                                                         ; f7b3: 66 cb       f. ; Rotate in a set bit
     eor l00bf                                                         ; f7b5: 45 bf       E.
     sta l00bf                                                         ; f7b7: 85 bf       ..
 ; $f7b9 referenced 1 time by $f7d0
@@ -9769,7 +9771,7 @@ loop_cf7b9
     lda l00bf                                                         ; f7b9: a5 bf       ..
     rol a                                                             ; f7bb: 2a          *
     bcc cf7ca                                                         ; f7bc: 90 0c       ..
-    ror a                                                             ; f7be: 6a          j
+    ror a                                                             ; f7be: 6a          j  ; Rotate in a set bit
     eor #8                                                            ; f7bf: 49 08       I.
     sta l00bf                                                         ; f7c1: 85 bf       ..
     lda l00be                                                         ; f7c3: a5 be       ..

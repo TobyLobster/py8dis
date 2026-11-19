@@ -2617,7 +2617,7 @@ c8d5d:
     stx l00a6                                                         ; 2d63: 86 a6       ..  :8d63[1]
     ror l00a1                                                         ; 2d65: 66 a1       f.  :8d65[1]
     sec                                                               ; 2d67: 38          8   :8d67[1]
-    rol l00a1                                                         ; 2d68: 26 a1       &.  :8d68[1]
+    rol l00a1                                                         ; 2d68: 26 a1       &.  :8d68[1]   ; Rotate in a set bit
     cmp #1                                                            ; 2d6a: c9 01       ..  :8d6a[1]
     bne c8d74                                                         ; 2d6c: d0 06       ..  :8d6c[1]
     lda nmi_lda_immXXX4+1                                             ; 2d6e: ad 22 0d    .". :8d6e[1]
@@ -2744,7 +2744,7 @@ loop_c8e14:
     pha                                                               ; 2e1a: 48          H   :8e1a[1]
     lda nmi_and_table,y                                               ; 2e1b: b9 2d 91    .-. :8e1b[1]
     sta nmi_and_imm+1                                                 ; 2e1e: 8d 05 0d    ... :8e1e[1]
-    ror l00a2                                                         ; 2e21: 66 a2       f.  :8e21[1]
+    ror l00a2                                                         ; 2e21: 66 a2       f.  :8e21[1]   ; Rotate in a set bit
     pla                                                               ; 2e23: 68          h   :8e23[1]
     bpl c8e72                                                         ; 2e24: 10 4c       .L  :8e24[1]
     bit l00a1                                                         ; 2e26: 24 a1       $.  :8e26[1]
@@ -3117,7 +3117,7 @@ nmi_cmp_imm_or_bcs:
 ; $2feb referenced 1 time by $905c[1]
     bne c0d26                                                         ; 2fec: d0 0a       ..  :0d1a[5]
     lda l00a1                                                         ; 2fee: a5 a1       ..  :0d1c[5]
-    ror                                                               ; 2ff0: 6a          j   :0d1e[5]
+    ror                                                               ; 2ff0: 6a          j   :0d1e[5]   ; Rotate in a set bit
 c0d1f:
 nmi_XXX5 = c0d1f+1
     bcc c0d26                                                         ; 2ff1: 90 05       ..  :0d1f[5]
@@ -3942,7 +3942,7 @@ c945c:
     cmp #$20 ; ' '                                                    ; 3472: c9 20       .   :9472[1]
     bne c948d                                                         ; 3474: d0 17       ..  :9474[1]
     lda l1096                                                         ; 3476: ad 96 10    ... :9476[1]
-    ror                                                               ; 3479: 6a          j   :9479[1]
+    ror                                                               ; 3479: 6a          j   :9479[1]   ; Rotate in a set bit
     bcs return_25                                                     ; 347a: b0 c8       ..  :947a[1]
     jsr generate_error                                                ; 347c: 20 48 80     H. :947c[1]
     .byte $bc                                                         ; 347f: bc          .   :947f[1]
@@ -8049,8 +8049,9 @@ write_tube_r4_data:
 c06a7:
     lda l00ff                                                         ; 4e82: a5 ff       ..  :06a7[3]
     sec                                                               ; 4e84: 38          8   :06a9[3]
-    ror                                                               ; 4e85: 6a          j   :06aa[3]
-    bmi write_tube_r1_data                                            ; 4e86: 30 0f       0.  :06ab[3]
+    ror                                                               ; 4e85: 6a          j   :06aa[3]   ; Rotate in a set bit
+    bmi write_tube_r1_data                                            ; 4e86: 30 0f       0.  :06ab[3]   ; ALWAYS branch
+
 tube_evntv_handler:
     pha                                                               ; 4e88: 48          H   :06ad[3]
     lda #0                                                            ; 4e89: a9 00       ..  :06ae[3]
@@ -10632,7 +10633,8 @@ cbe47:
     bne cbe52                                                         ; 5e4b: d0 05       ..  :be4b[1]
     inx                                                               ; 5e4d: e8          .   :be4d[1]   ; X=2
     cpx #4                                                            ; 5e4e: e0 04       ..  :be4e[1]
-    bcc cbe47                                                         ; 5e50: 90 f5       ..  :be50[1]
+    bcc cbe47                                                         ; 5e50: 90 f5       ..  :be50[1]   ; ALWAYS branch
+
 ; $5e52 referenced 1 time by $be4b[1]
 cbe52:
     ldy #$f5                                                          ; 5e52: a0 f5       ..  :be52[1]

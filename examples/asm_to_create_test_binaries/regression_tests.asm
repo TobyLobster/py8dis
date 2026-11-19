@@ -37,11 +37,14 @@ start
     ora #1
     bmi +                   ; must not be 'ALWAYS branch'
 
-    ; Carry is 'pending' (unknown) after a compare, so ROR A gives an unknown result
+    ; A 'pending' carry after a compare must never count as set (giving
+    ; X=&82). Here A is known, so the compare works out that carry is clear
+    ; (5 < 7) and ROR A makes A 2 (known_state_comments has a compare with A
+    ; unknown, which leaves A unknown after the ROR)
     lda #5
     cmp #7
-    ror
-    tax                     ; must not be commented 'X=&82'
+    ror                     ; A=2
+    tax                     ; X=2, not X=&82
 +
     jmp part2
 

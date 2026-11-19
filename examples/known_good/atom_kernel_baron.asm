@@ -381,7 +381,7 @@ lf11c = cf11b+1
     sta (int_workspace_stack_mid1-2),y                                ; f11f: 91 23       .#
     cmp (int_workspace_stack_mid1-2),y                                ; f121: d1 23       .#
     bne lf11c                                                         ; f123: d0 f7       ..
-    lsr a                                                             ; f125: 4a          J
+    lsr a                                                             ; f125: 4a          J  ; A=&55
     sta (int_workspace_stack_mid1-2),y                                ; f126: 91 23       .#
     cmp (int_workspace_stack_mid1-2),y                                ; f128: d1 23       .#
     bne lf11c                                                         ; f12a: d0 f0       ..
@@ -1017,7 +1017,7 @@ lf250 = assembler_mode_base_opcodes+63
     lda #0                                                            ; f5f1: a9 00       ..
     sbc l0055                                                         ; f5f3: e5 55       .U
     sec                                                               ; f5f5: 38          8
-    ror a                                                             ; f5f6: 6a          j
+    ror a                                                             ; f5f6: 6a          j  ; Rotate in a set bit
     sta l0059                                                         ; f5f7: 85 59       .Y
     ror l0057                                                         ; f5f9: 66 57       fW
 ; &f5fb referenced 2 times by &f614, &f619
@@ -1711,13 +1711,13 @@ lf8bf = cos_command_table+1
 .cf94e
     ror l00dd                                                         ; f94e: 66 dd       f.
     clc                                                               ; f950: 18          .
-    ror l00dd                                                         ; f951: 66 dd       f.
+    ror l00dd                                                         ; f951: 66 dd       f. ; Rotate in a clear bit
     plp                                                               ; f953: 28          (
     rts                                                               ; f954: 60          `
 
 .star_fload
     sec                                                               ; f955: 38          8
-    ror l00dd                                                         ; f956: 66 dd       f.
+    ror l00dd                                                         ; f956: 66 dd       f. ; Rotate in a set bit
 ; &f958 referenced 1 time by &fa20
 .star_load
     jsr sub_cf818                                                     ; f958: 20 18 f8     ..
@@ -2350,7 +2350,7 @@ lf9a3 = cf9a2+1
 ; &fcaf referenced 1 time by &fc9a
 .cfcaf
     sec                                                               ; fcaf: 38          8
-    ror l00c0                                                         ; fcb0: 66 c0       f.
+    ror l00c0                                                         ; fcb0: 66 c0       f. ; Rotate in a set bit
     dec l00c1                                                         ; fcb2: c6 c1       ..
     bne cfc90                                                         ; fcb4: d0 da       ..
     ldy l00c3                                                         ; fcb6: a4 c3       ..
@@ -2927,7 +2927,7 @@ lf9a3 = cf9a2+1
     sta l2901                                                         ; ff83: 8d 01 29    ..)
     cmp l2901                                                         ; ff86: cd 01 29    ..)
     bne cff97                                                         ; ff89: d0 0c       ..
-    asl a                                                             ; ff8b: 0a          .
+    asl a                                                             ; ff8b: 0a          .  ; A=&aa
     sta l2901                                                         ; ff8c: 8d 01 29    ..)
     cmp l2901                                                         ; ff8f: cd 01 29    ..)
     bne cff97                                                         ; ff92: d0 03       ..

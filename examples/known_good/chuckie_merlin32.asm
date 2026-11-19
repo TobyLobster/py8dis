@@ -1534,17 +1534,17 @@ plotspriteatcharpos
     pha                                                               ; 1a0c: 48          H
     txa                                                               ; 1a0d: 8a          .
     clc                                                               ; 1a0e: 18          .
-    rol                                                               ; 1a0f: 2a          *
+    rol                                                               ; 1a0f: 2a          *              ; Rotate in a clear bit
     rol                                                               ; 1a10: 2a          *
     rol                                                               ; 1a11: 2a          *
     tax                                                               ; 1a12: aa          .
     tya                                                               ; 1a13: 98          .
     sec                                                               ; 1a14: 38          8
-    rol                                                               ; 1a15: 2a          *
+    rol                                                               ; 1a15: 2a          *              ; Rotate in a set bit
     sec                                                               ; 1a16: 38          8
-    rol                                                               ; 1a17: 2a          *
+    rol                                                               ; 1a17: 2a          *              ; Rotate in a set bit
     sec                                                               ; 1a18: 38          8
-    rol                                                               ; 1a19: 2a          *
+    rol                                                               ; 1a19: 2a          *              ; Rotate in a set bit
     tay                                                               ; 1a1a: a8          .
     jsr calcscrnaddr                                                  ; 1a1b: 20 87 19     ..
     pla                                                               ; 1a1e: 68          h

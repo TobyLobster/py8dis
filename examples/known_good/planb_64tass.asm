@@ -11684,7 +11684,7 @@ collect
     jsr check_play_sound_a                                            ; 4797: 20 65 40     e@
     lda #$19                                                          ; 479a: a9 19       ..
     sta temp_counter                                                  ; 479c: 85 3a       .:
-    asl a                                                             ; 479e: 0a          .
+    asl a                                                             ; 479e: 0a          .  ; A=$32
     sta temp_slash_divisor                                            ; 479f: 85 31       .1
     lda #5                                                            ; 47a1: a9 05       ..
     jsr add_a_to_score                                                ; 47a3: 20 ca 3f     .?

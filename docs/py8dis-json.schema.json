@@ -239,11 +239,17 @@
       ]
     },
 
+    "known_bits": {
+      "description": "6502 and 65C02: the bits known of a register whose value isn't wholly known, from bit 7 to bit 0, with '-' for a bit that isn't known.",
+      "type": "string", "pattern": "^[01-]{8}$"
+    },
+
     "cpu_state": {
-      "description": "What py8dis knows for certain about the registers and flags once the instruction has run (as set_show_cpu_state(True) shows): null where unknown. For the 6502 and 65C02: a, x, y and the flags n, v, d, i, z, c. For the 8080: a, b, c, d, e, h, l, sp and the flags s, z, ac (auxiliary carry), p, cy. For the Z80: a, b, c, d, e, h, l, ixh, ixl, iyh, iyl, sp, i and the flags s, z, hc (half carry), pv (parity or overflow), n, cy; then the alternate set, a' to l' and the flags s' to cy'.",
+      "description": "What py8dis knows for certain about the registers and flags once the instruction has run (as set_show_cpu_state(True) shows): null where unknown. For the 6502 and 65C02: a, x, y and the flags n, v, d, i, z, c; and a_bits, x_bits or y_bits for a register with only some of its bits known. For the 8080: a, b, c, d, e, h, l, sp and the flags s, z, ac (auxiliary carry), p, cy. For the Z80: a, b, c, d, e, h, l, ixh, ixl, iyh, iyl, sp, i and the flags s, z, hc (half carry), pv (parity or overflow), n, cy; then the alternate set, a' to l' and the flags s' to cy'.",
       "type": "object",
       "properties": {
         "a": { "type": ["integer", "null"] }, "x": { "type": ["integer", "null"] }, "y": { "type": ["integer", "null"] },
+        "a_bits": { "$ref": "#/$defs/known_bits" }, "x_bits": { "$ref": "#/$defs/known_bits" }, "y_bits": { "$ref": "#/$defs/known_bits" },
         "b": { "type": ["integer", "null"] }, "c": { "type": ["integer", "boolean", "null"] }, "d": { "type": ["integer", "boolean", "null"] },
         "e": { "type": ["integer", "null"] }, "h": { "type": ["integer", "null"] }, "l": { "type": ["integer", "null"] },
         "sp": { "type": ["integer", "null"] },

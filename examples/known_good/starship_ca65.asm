@@ -2588,7 +2588,7 @@ skip_uninversion_cosine:
     bpl plot_variable_size_fragment                                   ; 2f9e: 10 26       .&  :1e9e[1]
     lda temp8                                                         ; 2fa0: a5 75       .u  :1ea0[1]
     clc                                                               ; 2fa2: 18          .   :1ea2[1]
-    rol                                                               ; 2fa3: 2a          *   :1ea3[1]
+    rol                                                               ; 2fa3: 2a          *   :1ea3[1]   ; Rotate in a clear bit
     rol                                                               ; 2fa4: 2a          *   :1ea4[1]
     rol                                                               ; 2fa5: 2a          *   :1ea5[1]
     sta output_pixels                                                 ; 2fa6: 85 72       .r  :1ea6[1]
@@ -2596,7 +2596,7 @@ skip_uninversion_cosine:
     clc                                                               ; 2faa: 18          .   :1eaa[1]
     adc #1                                                            ; 2fab: 69 01       i.  :1eab[1]
     sec                                                               ; 2fad: 38          8   :1ead[1]
-    rol                                                               ; 2fae: 2a          *   :1eae[1]
+    rol                                                               ; 2fae: 2a          *   :1eae[1]   ; Rotate in a set bit
     sta segment_length                                                ; 2faf: 85 74       .t  :1eaf[1]
     inc output_pixels                                                 ; 2fb1: e6 72       .r  :1eb1[1]
     iny                                                               ; 2fb3: c8          .   :1eb3[1]
@@ -3521,7 +3521,7 @@ play_sound_for_exploding_starship:
     sbc frame_of_starship_explosion_after_which_no_sound              ; 3606: ed da 1c    ... :2506[1]
     bcc skip_starship_explosion_sound                                 ; 3609: 90 38       .8  :2509[1]
     sta x_pixels                                                      ; 360b: 85 7a       .z  :250b[1]
-    rol                                                               ; 360d: 2a          *   :250d[1]
+    rol                                                               ; 360d: 2a          *   :250d[1]   ; Rotate in a set bit
     cmp #$56                                                          ; 360e: c9 56       .V  :250e[1]
     bcc skip_pitch_bend                                               ; 3610: 90 04       ..  :2510[1]
     sbc #$40                                                          ; 3612: e9 40       .@  :2512[1]

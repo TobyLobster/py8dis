@@ -72,7 +72,7 @@ class Cpu65C02(Cpu6502):
             0x7a: self.OpcodeImplied(               "PLY",          "--O", cycles="4",  update=self.update_clear_nz),
             0x7c: self.OpcodeJmpAbsX(               "JMP (addr,X)", "-U-", cycles="6"),
             0x80: self.OpcodeUnconditionalBranch(   "BRA offset",   "---", cycles="3d"),
-            0x89: self.OpcodeImmediate(             "BIT #imm",     "U--", cycles="2",  update=self.update_clear_z), # BIT immediate only affects Z
+            0x89: self.OpcodeImmediate(             "BIT #imm",     "U--", cycles="2",  update=self.update_bit_immediate), # BIT immediate only affects Z
             0x92: self.OpcodeZp(                    "STA (zp)",     "U--", cycles="5",  has_abs_version=False, update=self.neutral),
             0x9c: self.OpcodeDataAbs(               "STZ addr",     "---", cycles="4",  update=self.neutral),
             0x9e: self.OpcodeDataAbs(               "STZ addr,X",   "-U-", cycles="5",  update=self.neutral),
@@ -83,15 +83,15 @@ class Cpu65C02(Cpu6502):
             0xfa: self.OpcodeImplied(               "PLX",          "-O-", cycles="4",  update=self.update_clear_nz),
 
             # 6502 instructions with changed cycle counts
-            0x1e: self.OpcodeDataAbs(               "ASL addr,X",   "-U-", cycles="6f", update=self.update_clear_nzc),
-            0x3e: self.OpcodeDataAbs(               "ROL addr,X",   "-U-", cycles="6f", update=self.update_clear_nzc),
-            0x5e: self.OpcodeDataAbs(               "LSR addr,X",   "-U-", cycles="6f", update=self.update_clear_nzc),
+            0x1e: self.OpcodeDataAbs(               "ASL addr,X",   "-U-", cycles="6f", update=self.make_shift_memory("asl")),
+            0x3e: self.OpcodeDataAbs(               "ROL addr,X",   "-U-", cycles="6f", update=self.make_shift_memory("rol")),
+            0x5e: self.OpcodeDataAbs(               "LSR addr,X",   "-U-", cycles="6f", update=self.make_shift_memory("lsr")),
             0x6c: self.OpcodeJmpInd(                "JMP (addr)",   "---", cycles="6"),
-            0x7e: self.OpcodeDataAbs(               "ROR addr,X",   "-U-", cycles="6f", update=self.update_clear_nzc),
+            0x7e: self.OpcodeDataAbs(               "ROR addr,X",   "-U-", cycles="6f", update=self.make_shift_memory("ror")),
 
             0x61: self.OpcodeZp(                    "ADC (zp,X)",   "AU-", cycles="6e", has_abs_version=False, update=self.update_adc_sbc),
             0x65: self.OpcodeZp(                    "ADC zp",       "A--", cycles="3e", update=self.update_adc_sbc),
-            0x69: self.OpcodeImmediate(             "ADC #imm",     "A--", cycles="2e", update=self.update_adc_sbc),
+            0x69: self.OpcodeImmediate(             "ADC #imm",     "A--", cycles="2e", update=self.make_adc_sbc_immediate(False)),
             0x6d: self.OpcodeDataAbs(               "ADC addr",     "A--", cycles="4e", update=self.update_adc_sbc),
             0x71: self.OpcodeZp(                    "ADC (zp),Y",   "A-U", cycles="5c", has_abs_version=False, update=self.update_adc_sbc),
             0x75: self.OpcodeZp(                    "ADC zp,X",     "AU-", cycles="4e", update=self.update_adc_sbc),
@@ -99,7 +99,7 @@ class Cpu65C02(Cpu6502):
             0x7d: self.OpcodeDataAbs(               "ADC addr,X",   "AU-", cycles="4c", update=self.update_adc_sbc),
             0xe1: self.OpcodeZp(                    "SBC (zp,X)",   "AU-", cycles="6e", has_abs_version=False, update=self.update_adc_sbc),
             0xe5: self.OpcodeZp(                    "SBC zp",       "A--", cycles="3e", update=self.update_adc_sbc),
-            0xe9: self.OpcodeImmediate(             "SBC #imm",     "A--", cycles="2e", update=self.update_adc_sbc),
+            0xe9: self.OpcodeImmediate(             "SBC #imm",     "A--", cycles="2e", update=self.make_adc_sbc_immediate(True)),
             0xed: self.OpcodeDataAbs(               "SBC addr",     "A--", cycles="4e", update=self.update_adc_sbc),
             0xf1: self.OpcodeZp(                    "SBC (zp),Y",   "A-U", cycles="5c", has_abs_version=False, update=self.update_adc_sbc),
             0xf5: self.OpcodeZp(                    "SBC zp,X",     "AU-", cycles="4e", update=self.update_adc_sbc),
@@ -174,8 +174,13 @@ class Cpu65C02(Cpu6502):
             """Nothing more to trace from here."""
             return [None]
 
+    def update_bit_immediate(self, binary_addr, state):
+        """BIT #imm: only Z changes (see CpuStateDisposition.bit_immediate())."""
+        state.optimistic.bit_immediate(binary_addr)
+        state.pessimistic.bit_immediate(binary_addr)
+
     def update_clear_z(self, binary_addr, state):
-        """Z becomes unknown (TSB, TRB and BIT #imm, which only change Z)."""
+        """Z becomes unknown (TSB and TRB, which only change Z)."""
         state.optimistic['z'] = None
         state.pessimistic['z'] = None
 

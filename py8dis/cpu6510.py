@@ -28,6 +28,7 @@ instruction in a comment.
 from cpu6502 import *
 import expression
 import output
+import knownbits
 
 
 class Cpu6510(Cpu6502):
@@ -226,25 +227,14 @@ class Cpu6510(Cpu6502):
             s['c'] = s['n']
 
     def update_ALR(self, binary_addr, state):
-        """ALR #imm: A = (A AND imm) LSR 1"""
+        """ALR #imm: A = (A AND imm) LSR 1, as far as what's known about A
+        says (see knownbits.py)"""
         memory_binary = session.current().memory.binary
-        imm = memory_binary[binary_addr + 1]
+        imm = knownbits.exact(memory_binary[binary_addr + 1])
         for s in (state.optimistic, state.pessimistic):
-            a = s['a'].value
-            if a is not None:
-                v = a & imm
-                s['c'] = v & 1
-                v >>= 1
-                s['a'].value = v
-                s['z'] = (v == 0)
-            else:
-                # The bit shifted out into C is clear if imm's bit 0 is
-                s['c'] = 0 if (imm & 1) == 0 else None
-                s['z'] = True if imm in (0, 1) else None
-                if imm in (0, 1):
-                    s['a'].value = 0
-            # (A shift right always clears N)
-            s['n'] = 0
+            result, carry = knownbits.lsr(knownbits.and_(s['a'].known_bits, imm))
+            s.set_result('a', result)
+            s['c'] = carry
 
     def update_SBX(self, binary_addr, state):
         """SBX #imm: X = (A AND X) - imm, setting N, Z and C as a compare

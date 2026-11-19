@@ -936,7 +936,7 @@ lc425 = check_fp_rom+1
 ; $c425 referenced 1 time by $c468
     cmp #$aa                                                          ; c427: c9 aa       ..
     bne cc463                                                         ; c429: d0 38       .8
-    lsr a                                                             ; c42b: 4a          J
+    lsr a                                                             ; c42b: 4a          J  ; A=$55
     cmp fp_rom_id+1                                                   ; c42c: cd 01 d0    ...
     bne cc463                                                         ; c42f: d0 32       .2
     ldy l005e                                                         ; c431: a4 5e       .^
@@ -2701,7 +2701,7 @@ loop_cce23
     sta (l000d),y                                                     ; ce3e: 91 0d       ..
     cmp (l000d),y                                                     ; ce40: d1 0d       ..
     bne lcdf6                                                         ; ce42: d0 b2       ..
-    asl a                                                             ; ce44: 0a          .
+    asl a                                                             ; ce44: 0a          .  ; A=$aa
     sta (l000d),y                                                     ; ce45: 91 0d       ..
     cmp (l000d),y                                                     ; ce47: d1 0d       ..
     bne lcdf6                                                         ; ce49: d0 ab       ..

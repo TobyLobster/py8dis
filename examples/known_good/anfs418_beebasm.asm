@@ -535,7 +535,7 @@ l8004 = service_entry+1
     lda #&44 ; 'D'                                                    ; 8150: a9 44       .D
     sta econet_control1_or_status1                                    ; 8152: 8d a0 fe    ...
     sec                                                               ; 8155: 38          8
-    ror l0099                                                         ; 8156: 66 99       f.
+    ror l0099                                                         ; 8156: 66 99       f.             ; Rotate in a set bit
     lda l0d31                                                         ; 8158: ad 31 0d    .1.
     bne c8160                                                         ; 815b: d0 03       ..
     jmp c8455                                                         ; 815d: 4c 55 84    LU.
@@ -1323,7 +1323,7 @@ l8004 = service_entry+1
     stx l0d0c                                                         ; 8659: 8e 0c 0d    ...
     sty l0d0d                                                         ; 865c: 8c 0d 0d    ...
     sec                                                               ; 865f: 38          8
-    ror l0099                                                         ; 8660: 66 99       f.
+    ror l0099                                                         ; 8660: 66 99       f.             ; Rotate in a set bit
     bit video_ula_control                                             ; 8662: 2c 20 fe    , .
     lda l0d25                                                         ; 8665: ad 25 0d    .%.
     bne c86ac                                                         ; 8668: d0 42       .B
@@ -2017,7 +2017,7 @@ l8004 = service_entry+1
 .c8a53
     rol l0df0,x                                                       ; 8a53: 3e f0 0d    >..
     sec                                                               ; 8a56: 38          8
-    ror l0df0,x                                                       ; 8a57: 7e f0 0d    ~..
+    ror l0df0,x                                                       ; 8a57: 7e f0 0d    ~..            ; Rotate in a set bit
 ; &8a5a referenced 2 times by &8a43, &8a51
 .service_handler_common2
     lda l0df0,x                                                       ; 8a5a: bd f0 0d    ...
@@ -2188,9 +2188,9 @@ l8004 = service_entry+1
     dey                                                               ; 8b3e: 88          .
     cpy #1                                                            ; 8b3f: c0 01       ..
     bne loop_c8b39                                                    ; 8b41: d0 f6       ..
-    rol l0d6c                                                         ; 8b43: 2e 6c 0d    .l.
+    rol l0d6c                                                         ; 8b43: 2e 6c 0d    .l.            ; Rotate in a set bit
     clc                                                               ; 8b46: 18          .
-    ror l0d6c                                                         ; 8b47: 6e 6c 0d    nl.
+    ror l0d6c                                                         ; 8b47: 6e 6c 0d    nl.            ; Rotate in a clear bit
     ; Copy 14 bytes of memory from l8e61 to filev
     ldy #&0d                                                          ; 8b4a: a0 0d       ..
 ; &8b4c referenced 1 time by &8b53
@@ -5093,7 +5093,8 @@ error_template_minus_1 = c96b3+1
 ; &9cf0 referenced 1 time by &9cec
 .c9cf0
     lsr a                                                             ; 9cf0: 4a          J
-    bpl c9cc9                                                         ; 9cf1: 10 d6       ..
+    bpl c9cc9                                                         ; 9cf1: 10 d6       ..             ; ALWAYS branch
+
 ; &9cf3 referenced 1 time by &9d61
 .c9cf3
     and #&3f ; '?'                                                    ; 9cf3: 29 3f       )?
@@ -5111,7 +5112,7 @@ error_template_minus_1 = c96b3+1
     ldy #6                                                            ; 9d0d: a0 06       ..
     bit l9491                                                         ; 9d0f: 2c 91 94    ,..
     sec                                                               ; 9d12: 38          8
-    ror l0098                                                         ; 9d13: 66 98       f.
+    ror l0098                                                         ; 9d13: 66 98       f.             ; Rotate in a set bit
     jsr c94ae                                                         ; 9d15: 20 ae 94     ..
     bcs c9d87                                                         ; 9d18: b0 6d       .m
     lda #&ff                                                          ; 9d1a: a9 ff       ..
@@ -5159,7 +5160,7 @@ error_template_minus_1 = c96b3+1
     lda l0f06                                                         ; 9d6b: ad 06 0f    ...
     ror a                                                             ; 9d6e: 6a          j
     bcs c9d7d                                                         ; 9d6f: b0 0c       ..
-    ror a                                                             ; 9d71: 6a          j
+    ror a                                                             ; 9d71: 6a          j              ; Rotate in a clear bit
     bcc c9d7d                                                         ; 9d72: 90 09       ..
     bit l0f07                                                         ; 9d74: 2c 07 0f    ,..
     bpl c9d7d                                                         ; 9d77: 10 04       ..
@@ -5548,7 +5549,7 @@ error_template_minus_1 = c96b3+1
     lda #&0d                                                          ; 9fbc: a9 0d       ..
     sta l0f06                                                         ; 9fbe: 8d 06 0f    ...
     sta l00b2                                                         ; 9fc1: 85 b2       ..
-    lsr a                                                             ; 9fc3: 4a          J
+    lsr a                                                             ; 9fc3: 4a          J              ; A=6
     sta l0f05                                                         ; 9fc4: 8d 05 0f    ...
     clc                                                               ; 9fc7: 18          .
     jsr sub_c94da                                                     ; 9fc8: 20 da 94     ..
@@ -5768,7 +5769,7 @@ error_template_minus_1 = c96b3+1
 .sub_ca0fa
     jsr sub_ca0cc                                                     ; a0fa: 20 cc a0     ..
     bcc ca109                                                         ; a0fd: 90 0a       ..
-    ror l0d6c                                                         ; a0ff: 6e 6c 0d    nl.
+    ror l0d6c                                                         ; a0ff: 6e 6c 0d    nl.            ; Rotate in a set bit
     lda l00f0                                                         ; a102: a5 f0       ..
     rol a                                                             ; a104: 2a          *
     rol l0d6c                                                         ; a105: 2e 6c 0d    .l.
@@ -5974,8 +5975,8 @@ error_template_minus_1 = c96b3+1
     beq ca25d                                                         ; a20e: f0 4d       .M
     lda l1071                                                         ; a210: ad 71 10    .q.
     bmi ca25a                                                         ; a213: 30 45       0E
-    rol a                                                             ; a215: 2a          *
-    rol a                                                             ; a216: 2a          *
+    rol a                                                             ; a215: 2a          *              ; Rotate clear bit out (clears carry)
+    rol a                                                             ; a216: 2a          *              ; Rotate in a clear bit
     bmi ca243                                                         ; a217: 30 2a       0*
     bcs ca25d                                                         ; a219: b0 42       .B
     ldx #&ff                                                          ; a21b: a2 ff       ..
@@ -6840,7 +6841,7 @@ la841 = ca840+1
     pha                                                               ; a86d: 48          H
     ldy #&18                                                          ; a86e: a0 18       ..
     ldx #&0b                                                          ; a870: a2 0b       ..
-    ror l0d61                                                         ; a872: 6e 61 0d    na.
+    ror l0d61                                                         ; a872: 6e 61 0d    na.            ; Rotate in a set bit
 ; &a875 referenced 1 time by &a881
 .loop_ca875
     lda la841,y                                                       ; a875: b9 41 a8    .A.
@@ -6987,7 +6988,7 @@ la841 = ca840+1
     pha                                                               ; a958: 48          H
     jsr sub_caa7c                                                     ; a959: 20 7c aa     |.
     sec                                                               ; a95c: 38          8
-    ror l0098                                                         ; a95d: 66 98       f.
+    ror l0098                                                         ; a95d: 66 98       f.             ; Rotate in a set bit
     jsr sub_ca976                                                     ; a95f: 20 76 a9     v.
 ; &a962 referenced 1 time by &a963
 .loop_ca962
@@ -7271,7 +7272,7 @@ la841 = ca840+1
     bcc cab75                                                         ; ab1c: 90 57       .W
     lda l0d6a                                                         ; ab1e: ad 6a 0d    .j.
     pha                                                               ; ab21: 48          H
-    ror a                                                             ; ab22: 6a          j
+    ror a                                                             ; ab22: 6a          j              ; Rotate in a set bit
     pla                                                               ; ab23: 68          h
     bcs cab33                                                         ; ab24: b0 0d       ..
     ora #3                                                            ; ab26: 09 03       ..
@@ -9061,7 +9062,7 @@ lb487 = cb485+2
     rol a                                                             ; b5c1: 2a          *
     bpl cb5b7                                                         ; b5c2: 10 f3       ..
     sec                                                               ; b5c4: 38          8
-    ror a                                                             ; b5c5: 6a          j
+    ror a                                                             ; b5c5: 6a          j              ; Rotate in a set bit
     sta l10b8,x                                                       ; b5c6: 9d b8 10    ...
     ldx l10c8                                                         ; b5c9: ae c8 10    ...
     rts                                                               ; b5cc: 60          `
@@ -10406,8 +10407,9 @@ lbd94 = cbd93+1
 
     lda l00ff                                                         ; be3b: a5 ff       ..
     sec                                                               ; be3d: 38          8
-    ror a                                                             ; be3e: 6a          j
-    bmi cbe50                                                         ; be3f: 30 0f       0.
+    ror a                                                             ; be3e: 6a          j              ; Rotate in a set bit
+    bmi cbe50                                                         ; be3f: 30 0f       0.             ; ALWAYS branch
+
     pha                                                               ; be41: 48          H
     lda #0                                                            ; be42: a9 00       ..
     jsr l06bc                                                         ; be44: 20 bc 06     ..

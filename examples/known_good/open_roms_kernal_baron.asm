@@ -1947,7 +1947,8 @@ section pydis, org = &e000, filename = "open_roms_kernal_baron"
     ora #&20 ; ' '                                                    ; eeaf: 09 20       .
     sta cia2_port_a                                                   ; eeb1: 8d 00 dd    ...
     and #&ef                                                          ; eeb4: 29 ef       ).
-    bne ceeca                                                         ; eeb6: d0 12       P.
+    bne ceeca                                                         ; eeb6: d0 12       P. ; ALWAYS branch
+
 ; &eeb8 referenced 1 time by &fb97
 .sub_ceeb8
     lda cia2_port_a                                                   ; eeb8: ad 00 dd    ...

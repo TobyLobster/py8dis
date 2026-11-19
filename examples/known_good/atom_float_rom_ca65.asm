@@ -916,7 +916,7 @@ skip1:
     sta (sneaky_pointer_low),y                                        ; d421: 91 23       .#
     cmp (sneaky_pointer_low),y                                        ; d423: d1 23       .#
     bne dim_error                                                     ; d425: d0 1c       ..
-    lsr                                                               ; d427: 4a          J
+    lsr                                                               ; d427: 4a          J  ; A=$55
     sta (sneaky_pointer_low),y                                        ; d428: 91 23       .#
     cmp (sneaky_pointer_low),y                                        ; d42a: d1 23       .#
     bne dim_error                                                     ; d42c: d0 15       ..

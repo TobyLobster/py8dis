@@ -1418,7 +1418,7 @@ loop_c17ec
 // $17ee referenced 1 time by $17f8
 loop_c17ee
     clc                                                               // 17ee: 18          .
-    ror tape_buffer+32,x                                              // 17ef: 7e 5c 03    ...
+    ror tape_buffer+32,x                                              // 17ef: 7e 5c 03    ... // Rotate in a clear bit
     ror tape_buffer+40,x                                              // 17f2: 7e 64 03    ...
     inx                                                               // 17f5: e8          .
     cpx #8                                                            // 17f6: e0 08       ..

@@ -4590,12 +4590,12 @@ REGCDR
 REGPIN
     ror                                            ; 9adb: 6a          j
     bcs REGRTS                                     ; 9adc: b0 2d       .-
-    ror                                            ; 9ade: 6a          j
+    ror                                            ; 9ade: 6a          j  ; Rotate in a clear bit
     bcc VIRGIN                                     ; 9adf: 90 32       .2
     ldy #4                                         ; 9ae1: a0 04       ..
-    rol                                            ; 9ae3: 2a          *
+    rol                                            ; 9ae3: 2a          *  ; Rotate in a set bit
     sec                                            ; 9ae4: 38          8
-    rol                                            ; 9ae5: 2a          *
+    rol                                            ; 9ae5: 2a          *  ; Rotate in a set bit
     sta (GCA,x)                                    ; 9ae6: 81 04       ..
     bmi LIN                                        ; 9ae8: 30 01       0.
     iny                                            ; 9aea: c8          .  ; Y=5
@@ -4633,7 +4633,7 @@ VIRGIN
     clv                                            ; 9b13: b8          .
     ldy #2                                         ; 9b14: a0 02       ..
     sec                                            ; 9b16: 38          8
-    rol                                            ; 9b17: 2a          *
+    rol                                            ; 9b17: 2a          *  ; Rotate in a set bit
     asl                                            ; 9b18: 0a          .
     sta (GCA,x)                                    ; 9b19: 81 04       ..
     bmi LINJ                                       ; 9b1b: 30 01       0.
