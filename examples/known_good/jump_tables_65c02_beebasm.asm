@@ -4,6 +4,7 @@
 
 ; Zero page (&0000-&00ff)
 l0070   = &0070
+l0071   = &0071
 
     org &2000
 
@@ -39,6 +40,14 @@ l0070   = &0070
     lda #&0d                                                          ; 201a: a9 0d       ..
     rts                                                               ; 201c: 60          `
 
+.unguarded
+    ldx l0071                                                         ; 201d: a6 71       .q
+    jmp (l2022,x)                                                     ; 201f: 7c 22 20    |"
+
+; &2022 referenced 1 time by &201f
+.l2022
+    equs "& ) "                                                       ; 2022: 26 20 29... & )
+    equb &a9, &0e, &60, &a9, &0f, &60                                 ; 2026: a9 0e 60... ..`
 .pydis_end
 
     assert &2011 == sub_c2011
@@ -50,11 +59,15 @@ save pydis_start, pydis_end
 
 ; Label references by decreasing frequency:
 ;     l0070:   1
+;     l0071:   1
 ;     l2009:   1
+;     l2022:   1
 
 ; Automatically generated labels:
 ;     l0070
+;     l0071
 ;     l2009
+;     l2022
 ;     sub_c2011
 ;     sub_c2014
 ;     sub_c2017
@@ -62,13 +75,13 @@ save pydis_start, pydis_end
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 29 bytes
-;     Code                     = 21 bytes (72%)
-;     Data                     = 8 bytes (28%)
+;     Total size (Code + Data) = 44 bytes
+;     Code                     = 26 bytes (59%)
+;     Data                     = 18 bytes (41%)
 ;
-;     Number of instructions   = 13
-;     Number of data bytes     = 0 bytes
+;     Number of instructions   = 15
+;     Number of data bytes     = 6 bytes
 ;     Number of data words     = 8 bytes
-;     Number of string bytes   = 0 bytes
-;     Number of strings        = 0
+;     Number of string bytes   = 4 bytes
+;     Number of strings        = 1
 

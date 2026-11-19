@@ -74,7 +74,10 @@ lower_bound
     pha
     rts
 
-; 5. No guard: nothing is known about the index, so the table isn't found
+; 5. No guard: nothing is known about the index, so the table isn't found.
+;    py8dis prints a note (to stderr) that the table seems to have two
+;    entries (after them, table6 is already marked), with the control file
+;    lines that would mark them
 no_guard
     lda $74
     asl
@@ -155,4 +158,31 @@ routine6a
     rts
 routine6b
     lda #$6b
+    rts
+
+; 7. No guard, with tables of the low and high bytes (the control file
+;    gives this as an entry point): py8dis prints a note that the table
+;    seems to have three entries, since the low bytes can't run into the
+;    high bytes
+no_guard_split
+    ldx $76
+    lda table7_high,x
+    pha
+    lda table7_low,x
+    pha
+    rts
+
+table7_low
+    !byte <(routine7a - 1), <(routine7b - 1), <(routine7c - 1)
+table7_high
+    !byte >(routine7a - 1), >(routine7b - 1), >(routine7c - 1)
+
+routine7a
+    lda #$7a
+    rts
+routine7b
+    lda #$7b
+    rts
+routine7c
+    lda #$7c
     rts

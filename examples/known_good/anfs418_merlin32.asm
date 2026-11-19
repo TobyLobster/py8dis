@@ -7120,12 +7120,35 @@ sub_ca993
 
 ; $a99e referenced 1 time by $a997
 la99e
-    dfb $57, $ec, $ec, $ec, $af, $d7, $57, $e1, $50                   ; a99e: 57 ec ec... W..
+    dfb <{just_rts - 1}                                               ; a99e: 57          W
+    dfb <{sub_caaed - 1}                                              ; a99f: ec          .
+    dfb <{sub_caaed - 1}                                              ; a9a0: ec          .
+    dfb <{sub_caaed - 1}                                              ; a9a1: ec          .
+    dfb <{sub_ca9b0 - 1}                                              ; a9a2: af          .
+    dfb <{sub_caad8 - 1}                                              ; a9a3: d7          .
+    dfb <{just_rts - 1}                                               ; a9a4: 57          W
+    dfb <{sub_ca9e2 - 1}                                              ; a9a5: e1          .
+    dfb <{sub_caa51 - 1}                                              ; a9a6: 50          P
 ; $a9a7 referenced 1 time by $a993
 la9a7
-    dfb $8e, $aa, $aa, $aa, $a9, $aa, $8e, $a9, $aa, $ba, $7e, 6, 1   ; a9a7: 8e aa aa... ...
-    dfb $1e,   6,   1, $98, $a0, $da, $91, $9e, $a9,   0              ; a9b4: 1e 06 01... ...
+    dfb >{just_rts - 1}                                               ; a9a7: 8e          .
+    dfb >{sub_caaed - 1}                                              ; a9a8: aa          .
+    dfb >{sub_caaed - 1}                                              ; a9a9: aa          .
+    dfb >{sub_caaed - 1}                                              ; a9aa: aa          .
+    dfb >{sub_ca9b0 - 1}                                              ; a9ab: a9          .
+    dfb >{sub_caad8 - 1}                                              ; a9ac: aa          .
+    dfb >{just_rts - 1}                                               ; a9ad: 8e          .
+    dfb >{sub_ca9e2 - 1}                                              ; a9ae: a9          .
+    dfb >{sub_caa51 - 1}                                              ; a9af: aa          .
 
+sub_ca9b0
+    tsx                                                               ; a9b0: ba          .
+    ror l0106,x                                                       ; a9b1: 7e 06 01    ~..
+    asl l0106,x                                                       ; a9b4: 1e 06 01    ...
+    tya                                                               ; a9b7: 98          .
+    ldy #$da                                                          ; a9b8: a0 da       ..
+    sta (l009e),y                                                     ; a9ba: 91 9e       ..
+    lda #0                                                            ; a9bc: a9 00       ..
 ; $a9be referenced 3 times by $8ae7, $aa11, $aa77
 sub_ca9be
     ldy #$d9                                                          ; a9be: a0 d9       ..
@@ -7149,6 +7172,7 @@ sub_ca9be
     sta l009a                                                         ; a9df: 85 9a       ..
     rts                                                               ; a9e1: 60          `
 
+sub_ca9e2
     ldy l00f1                                                         ; a9e2: a4 f1       ..
     cmp #$81                                                          ; a9e4: c9 81       ..
     beq ca9fb                                                         ; a9e6: f0 13       ..
@@ -7221,17 +7245,26 @@ caa36
     beq return_28                                                     ; aa39: f0 03       ..
     dex                                                               ; aa3b: ca          .
     bpl caa36                                                         ; aa3c: 10 f8       ..
-; $aa3e referenced 1 time by $aa39
+; $aa3e referenced 2 times by $aa39, $aa59
 return_28
     rts                                                               ; aa3e: 60          `
 
 ; $aa3f referenced 1 time by $aa36
 laa3f
     dfb   4,   9, $0a, $14, $15, $9a, $9b, $e1, $e2, $e3, $e4, $0b    ; aa3f: 04 09 0a... ...
-    dfb $0c, $0f, $79, $7a, $86, $87, $a0, $0e, $c9,   7, $f0,   4    ; aa4b: 0c 0f 79... ..y
-    dfb $c9,   8, $d0, $e3, $a2, $db, $86, $9e                        ; aa57: c9 08 d0... ...
+    dfb $0c, $0f, $79, $7a, $86, $87                                  ; aa4b: 0c 0f 79... ..y
 
-; Copy Y+1 bytes of memory
+sub_caa51
+    ldy #$0e                                                          ; aa51: a0 0e       ..
+    cmp #7                                                            ; aa53: c9 07       ..
+    beq caa5b                                                         ; aa55: f0 04       ..
+    cmp #8                                                            ; aa57: c9 08       ..
+    bne return_28                                                     ; aa59: d0 e3       ..
+; $aa5b referenced 1 time by $aa55
+caa5b
+    ldx #$db                                                          ; aa5b: a2 db       ..
+    stx l009e                                                         ; aa5d: 86 9e       ..
+    ; Copy Y+1 bytes of memory
 ; $aa5f referenced 1 time by $aa64
 loop_caa5f
     lda (l00f0),y                                                     ; aa5f: b1 f0       ..
@@ -7302,9 +7335,15 @@ laab1
     dfb $85,   0, $fd, $fd, $7d, $fc, $ff, $ff, $7e, $fc, $ff, $ff    ; aab1: 85 00 fd... ...
     dfb   0,   0, $fe, $80, $93, $fd, $fd, $d9, $fc, $ff, $ff, $de    ; aabd: 00 00 fe... ...
     dfb $fc, $ff, $ff, $fe, $d1, $fd, $fd, $21, $fd, $ff, $ff, $fd    ; aac9: fc ff ff... ...
-    dfb $fd, $ff, $ff, $ca, $e4, $f0, $d0, $0f, $a5, $d0, $6a, $b0    ; aad5: fd ff ff... ...
-    dfb $0a                                                           ; aae1: 0a          .
+    dfb $fd, $ff, $ff                                                 ; aad5: fd ff ff    ...
 
+sub_caad8
+    dex                                                               ; aad8: ca          .
+    cpx l00f0                                                         ; aad9: e4 f0       ..
+    bne return_29                                                     ; aadb: d0 0f       ..
+    lda l00d0                                                         ; aadd: a5 d0       ..
+    ror                                                               ; aadf: 6a          j              ; Rotate in a set bit
+    bcs return_29                                                     ; aae0: b0 0a       ..
 ; ***************************************************************************************
 ; On Exit:
 ;     X is preserved
@@ -7315,10 +7354,11 @@ caae2
     sta l0d6b                                                         ; aae4: 8d 6b 0d    .k.
     lda #$41 ; 'A'                                                    ; aae7: a9 41       .A
     sta l0d6a                                                         ; aae9: 8d 6a 0d    .j.
-; $aaec referenced 2 times by $aaef, $ab03
+; $aaec referenced 4 times by $aadb, $aae0, $aaef, $ab03
 return_29
     rts                                                               ; aaec: 60          `
 
+sub_caaed
     cpy #4                                                            ; aaed: c0 04       ..
     bne return_29                                                     ; aaef: d0 fb       ..
     txa                                                               ; aaf1: 8a          .
@@ -10880,6 +10920,11 @@ pydis_end
     err {sub_ca391 - 1} & $ff - $90
     err {sub_ca39b - 1} & $ff - $9a
     err {sub_ca4ee - 1} & $ff - $ed
+    err {sub_ca9b0 - 1} & $ff - $af
+    err {sub_ca9e2 - 1} & $ff - $e1
+    err {sub_caa51 - 1} & $ff - $50
+    err {sub_caad8 - 1} & $ff - $d7
+    err {sub_caaed - 1} & $ff - $ec
     err {sub_cac98 - 1} & $ff - $97
     err {sub_cad80 - 1} & $ff - $7f
     err {sub_caf3e - 1} & $ff - $3d
@@ -10916,6 +10961,11 @@ pydis_end
     err {sub_ca391 - 1} & $ffff / $0100 - $a3
     err {sub_ca39b - 1} & $ffff / $0100 - $a3
     err {sub_ca4ee - 1} & $ffff / $0100 - $a4
+    err {sub_ca9b0 - 1} & $ffff / $0100 - $a9
+    err {sub_ca9e2 - 1} & $ffff / $0100 - $a9
+    err {sub_caa51 - 1} & $ffff / $0100 - $aa
+    err {sub_caad8 - 1} & $ffff / $0100 - $aa
+    err {sub_caaed - 1} & $ffff / $0100 - $aa
     err {sub_cac98 - 1} & $ffff / $0100 - $ac
     err {sub_cad80 - 1} & $ffff / $0100 - $ad
     err {sub_caf3e - 1} & $ffff / $0100 - $af
@@ -10965,7 +11015,7 @@ pydis_end
     err {255 - inkey_key_ctrl} ! 128 - $81
 
 ; Label references by decreasing frequency:
-;     l009e:                                   86
+;     l009e:                                   88
 ;     l0f05:                                   67
 ;     l00bb:                                   55
 ;     l009c:                                   52
@@ -11062,6 +11112,8 @@ pydis_end
 ;     l00b1:                                    7
 ;     l00c0:                                    7
 ;     l00c4:                                    7
+;     l00d0:                                    7
+;     l00f0:                                    7
 ;     l069e:                                    7
 ;     l0d20:                                    7
 ;     l0d60:                                    7
@@ -11077,8 +11129,6 @@ pydis_end
 ;     c9cc9:                                    6
 ;     cbc3d:                                    6
 ;     l00cc:                                    6
-;     l00d0:                                    6
-;     l00f0:                                    6
 ;     l00f3:                                    6
 ;     l0d14:                                    6
 ;     l0d6b:                                    6
@@ -11105,6 +11155,7 @@ pydis_end
 ;     l00bf:                                    5
 ;     l00ff:                                    5
 ;     l0102:                                    5
+;     l0106:                                    5
 ;     l0d21:                                    5
 ;     l0d30:                                    5
 ;     l0d31:                                    5
@@ -11150,6 +11201,7 @@ pydis_end
 ;     l0e0a:                                    4
 ;     l0f09:                                    4
 ;     l10a8:                                    4
+;     return_29:                                4
 ;     sub_c8cb9:                                4
 ;     sub_c912f:                                4
 ;     sub_ca865:                                4
@@ -11203,7 +11255,6 @@ pydis_end
 ;     l0054:                                    3
 ;     l00a1:                                    3
 ;     l00fd:                                    3
-;     l0106:                                    3
 ;     l0355:                                    3
 ;     l0582:                                    3
 ;     l059e:                                    3
@@ -11412,7 +11463,7 @@ pydis_end
 ;     return_15:                                2
 ;     return_22:                                2
 ;     return_27:                                2
-;     return_29:                                2
+;     return_28:                                2
 ;     return_38:                                2
 ;     return_39:                                2
 ;     return_40:                                2
@@ -11814,6 +11865,7 @@ pydis_end
 ;     ca98c:                                    1
 ;     caa04:                                    1
 ;     caa2e:                                    1
+;     caa5b:                                    1
 ;     caa9f:                                    1
 ;     caaa1:                                    1
 ;     caaa7:                                    1
@@ -12297,7 +12349,6 @@ pydis_end
 ;     return_23:                                1
 ;     return_24:                                1
 ;     return_26:                                1
-;     return_28:                                1
 ;     return_3:                                 1
 ;     return_31:                                1
 ;     return_32:                                1
@@ -12822,6 +12873,7 @@ pydis_end
 ;     caa04
 ;     caa2e
 ;     caa36
+;     caa5b
 ;     caa8a
 ;     caa9f
 ;     caaa1
@@ -13693,10 +13745,15 @@ pydis_end
 ;     sub_ca92b
 ;     sub_ca976
 ;     sub_ca993
+;     sub_ca9b0
 ;     sub_ca9be
+;     sub_ca9e2
+;     sub_caa51
 ;     sub_caa7c
 ;     sub_caa85
 ;     sub_caa89
+;     sub_caad8
+;     sub_caaed
 ;     sub_cab12
 ;     sub_cac24
 ;     sub_cac98
@@ -13784,11 +13841,11 @@ pydis_end
 ; Stats:
 ;
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 14113 bytes (86%)
-;     Data                     = 2271 bytes (14%)
+;     Code                     = 14151 bytes (86%)
+;     Data                     = 2233 bytes (14%)
 ;
-;     Number of instructions   = 6924
-;     Number of data bytes     = 1024 bytes
+;     Number of instructions   = 6944
+;     Number of data bytes     = 986 bytes
 ;     Number of data words     = 60 bytes
 ;     Number of string bytes   = 1187 bytes
 ;     Number of strings        = 152

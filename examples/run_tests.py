@@ -332,7 +332,8 @@ ERROR_TESTS = [
 
 # Each warning test is (name, expected warning). The control file is
 # python/warnings/<name>.py, which must run successfully (with beebasm) and
-# give this warning (as one line of its error output).
+# give this warning (as one line of its error output, or, for a warning of
+# more than one line, as lines one after another).
 WARNING_TESTS = [
     ("load_prg_file",           "warning: load(&07ff, 'build/load_prg_file.prg'): this looks like a Commodore PRG file, whose first two bytes are the address to load it at, not data; load_prg('build/load_prg_file.prg') loads it at that address without them"),
     ("load_atm_file",           "warning: load(&28ea, 'build/load_atm_file.atm'): this looks like an Acorn Atom ATM file, whose first 22 bytes are a header (its name, addresses and length), not data; load_atm('build/load_atm_file.atm') loads it at its load address without them"),
@@ -342,6 +343,12 @@ WARNING_TESTS = [
     ("load_dos33_length",       "warning: load_dos33_binary('build/load_dos33_length.dos33'): the header says the data is 21 bytes long, but there are 32 bytes after it (all of which are loaded; load(&6000, 'build/load_dos33_length.dos33', offset=4, length=21) loads just the 21)"),
     ("jump_to_shared_address",  "warning: &1004: the jump or call to &8000 isn't traced, since more than one move puts code there (moves 1 and 2): trace the right one with entry() in a 'with' block for its move"),
     ("move_splits_data",        "warning: move boundary at binary address &3002 splits a classification"),
+    ("jump_table_suggestions",  "note: &206d: the RTS there jumps through the table at &2097 (indexed by X), but X can be any of 128 values. It seems to have 2 entries; to mark them, put this in the control file:\n"
+                                "for i in range(0, 4, 2): rts_code_ptr(0x2097 + i)\n"
+                                "note: &20d3: the RTS there jumps through a table (the low bytes at &20d4 and the high bytes at &20d7, indexed by X), but what X can be isn't known. It seems to have 3 entries; to mark them, put this in the control file:\n"
+                                "for i in range(3): rts_code_ptr(0x20d4 + i, 0x20d7 + i)"),
+    ("jump_table_suggestions_65c02", "note: &201f: the JMP (&2022,X) there jumps through a table, but what X can be isn't known. It seems to have 2 entries; to mark them, put this in the control file:\n"
+                                "for i in range(0, 4, 2): code_ptr(0x2022 + i)"),
 ]
 
 # The program each assembler needs: if it isn't on the PATH, the output
@@ -1156,15 +1163,16 @@ def run_warning_test(name, expected, env):
 
     It runs python/warnings/<name>.py with --beebasm, in the environment
     'env', and passes if that succeeds and 'expected' is one of the lines it
-    writes to stderr (ignoring the spaces at either end). Its asm, printed
-    to stdout, isn't checked."""
+    writes to stderr (ignoring the spaces at either end), or for an
+    'expected' of more than one line, they're lines it writes one after
+    another. Its asm, printed to stdout, isn't checked."""
     result = Result(name, "warning")
     proc = subprocess.run([sys.executable, str(Path("python") / "warnings" / f"{name}.py"), "--beebasm"],
                           capture_output=True, text=True, env=env)
     lines = [line.strip() for line in proc.stderr.splitlines() if line.strip()]
     if proc.returncode != 0:
         result.failure = "py8dis stopped with an error:\n      " + (lines[-1] if lines else "<no error output>")
-    elif expected not in lines:
+    elif not any(lines[i:i + len(expected.splitlines())] == [line.strip() for line in expected.splitlines()] for i in range(len(lines))):
         result.failure = f"py8dis didn't give the expected warning:\n      expected: {expected}\n      got:      " + ("\n                " .join(lines) or "<nothing>")
     return result
 

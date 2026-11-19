@@ -8,6 +8,7 @@ l0072   = $0072
 l0073   = $0073
 l0074   = $0074
 l0075   = $0075
+l0076   = $0076
 l0080   = $0080
 l0081   = $0081
 
@@ -208,6 +209,21 @@ sub_c20c6
     lda #$6b // 'k'                                                   // 20c6: a9 6b       .k
     rts                                                               // 20c8: 60          `
 
+no_guard_split
+    ldx l0076                                                         // 20c9: a6 76       .v
+    lda l20d7,x                                                       // 20cb: bd d7 20    ..
+    pha                                                               // 20ce: 48          H
+    lda l20d4,x                                                       // 20cf: bd d4 20    ..
+    pha                                                               // 20d2: 48          H
+    rts                                                               // 20d3: 60          `
+
+// $20d4 referenced 1 time by $20cf
+l20d4
+    .byt $d9, $dc, $df                                                // 20d4: d9 dc df    ...
+// $20d7 referenced 1 time by $20cb
+l20d7
+    .asc "   "                                                        // 20d7: 20 20 20
+    .byt $a9, $7a, $60, $a9, $7b, $60, $a9, $7c, $60                  // 20da: a9 7a 60... .z`
 pydis_end
 
 #if ((sub_c20a8) & $ff) <> $a8
@@ -272,6 +288,7 @@ pydis_end
 //     l0073:       1
 //     l0074:       1
 //     l0075:       1
+//     l0076:       1
 //     l0081:       1
 //     l2049:       1
 //     l204a:       1
@@ -286,6 +303,8 @@ pydis_end
 //     l2097:       1
 //     l2098:       1
 //     l209c:       1
+//     l20d4:       1
+//     l20d7:       1
 //     sub_c2013:   1
 //     sub_c2024:   1
 //     sub_c2036:   1
@@ -303,6 +322,7 @@ pydis_end
 //     l0073
 //     l0074
 //     l0075
+//     l0076
 //     l0080
 //     l0081
 //     l2049
@@ -318,6 +338,8 @@ pydis_end
 //     l2097
 //     l2098
 //     l209c
+//     l20d4
+//     l20d7
 //     return_1
 //     sub_c2013
 //     sub_c2024
@@ -340,13 +362,13 @@ pydis_end
 
 // Stats:
 //
-//     Total size (Code + Data) = 201 bytes
-//     Code                     = 161 bytes (80%)
-//     Data                     = 40 bytes (20%)
+//     Total size (Code + Data) = 227 bytes
+//     Code                     = 172 bytes (76%)
+//     Data                     = 55 bytes (24%)
 //
-//     Number of instructions   = 87
-//     Number of data bytes     = 26 bytes
+//     Number of instructions   = 93
+//     Number of data bytes     = 38 bytes
 //     Number of data words     = 14 bytes
-//     Number of string bytes   = 0 bytes
-//     Number of strings        = 0
+//     Number of string bytes   = 3 bytes
+//     Number of strings        = 1
 

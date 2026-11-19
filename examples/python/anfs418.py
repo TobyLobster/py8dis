@@ -143,6 +143,15 @@ hook_subroutine(0x96d1, "generate_error_inline3", stringz_no_return_hook)
 for i in range(36):
     rts_code_ptr(0x89ca + 1 + i, 0x89ef + 1 + i)
 
+# The NETV handler (at &a97a; its address is in the extended vector table at
+# &8e8a) checks that the reason code (the A it was called with) is less than
+# 9, then calls &a993 with it in X, which jumps to the reason's routine with
+# an RTS: the addresses minus 1, the low bytes at &a99e and the high bytes at
+# &a9a7. (py8dis can't mark the table itself, since the check is in the
+# caller.)
+for i in range(9):
+    rts_code_ptr(0xa99e + i, 0xa9a7 + i)
+
 def stringz_block(pc, n):
     """Mark n zero-terminated strings, one after another, from pc. (Not
     used.)"""
@@ -196,8 +205,6 @@ entry(0xa802)
 entry(0xa81a)
 entry(0xa825)
 entry(0xa8c5)
-entry(0xa9e2)
-entry(0xaaed)
 expr(0xb01c, make_subtract("print", make_hex(0xf8)))
 entry(0xb4ec)
 entry(0xbcb3)

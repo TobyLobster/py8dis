@@ -145,6 +145,7 @@ l4fa9   = $4fa9
 l8000   = $8000
 l8002   = $8002
 l8003   = $8003
+l80a9   = $80a9
 
 ; BASIC ROM ($a000-$bfff)
 la000   = $a000
@@ -413,7 +414,7 @@ ce534
 ce541
     jmp cf273                                                         ; e541: 4c 73 f2    l..
 
-; $e544 referenced 1 time by $fc44
+; $e544 referenced 2 times by $f7e9, $fc44
 ce544
     lda #$80                                                          ; e544: a9 80       ..
     ldy #$18                                                          ; e546: a0 18       ..
@@ -433,7 +434,7 @@ loop_ce550
 
     .byte $20, $94, $e5, $90, 3, $4c, $7e, $fc, 9, $e0, $4c, $89, $e5 ; e559: 20 94 e5...  ..
 
-; $e566 referenced 1 time by $e556
+; $e566 referenced 2 times by $e556, $f7e3
 ce566
     lda #0                                                            ; e566: a9 00       ..
     sta cursor_column                                                 ; e568: 85 d3       .S
@@ -1057,7 +1058,7 @@ le8da
     .byte $90,   5, $1c, $9f, $9c, $1e, $1f, $9e, $81, $95, $96, $97  ; e8da: 90 05 1c... ...
     .byte $98, $99, $9a, $9b                                          ; e8e6: 98 99 9a... ...
 
-; $e8ea referenced 3 times by $e955, $f412, $f9aa
+; $e8ea referenced 4 times by $e955, $ecc2, $f412, $f9aa
 ce8ea
     lda shift_key_flags                                               ; e8ea: ad 8d 02    ...
     and #4                                                            ; e8ed: 29 04       ).
@@ -1484,7 +1485,7 @@ lebc8
 lebe7
     .byte 0, 3, 7, $0c, $10, $15, $1a                                 ; ebe7: 00 03 07... ...
 
-; $ebee referenced 3 times by $e56c, $e957, $f40f
+; $ebee referenced 5 times by $e56c, $e957, $f3eb, $f40f, $fb70
 cebee
     ldx cursor_row                                                    ; ebee: a6 d6       .V
 ; $ebf0 referenced 1 time by $ea01
@@ -1563,17 +1564,47 @@ cec49
     rts                                                               ; ec4b: 60          .
 
 ; $ec4c referenced 1 time by $fe01
-lec4c
+control_codes
     .byte $93, $13,   8,   9, $0e, $8e, $92, $12, $1d, $9d, $11, $91  ; ec4c: 93 13 08... ...
     .byte $94,   3, $14, $0d, $8d                                     ; ec58: 94 03 14... ...
 ; $ec5d referenced 1 time by $fe0a
-lec5d
-    .byte $e8, $e2, $95, $92, $9c, $91, $62, $5f, $c9, $d8, $bb, $b2  ; ec5d: e8 e2 95... ...
-    .byte $fc, $3a, $8c, $5a, $5a                                     ; ec69: fc 3a 8c... .:.
+control_code_routines_low
+    .byte <(sub_cf7e9 - 1)                                            ; ec5d: e8          .
+    .byte <(sub_cf7e3 - 1)                                            ; ec5e: e2          .
+    .byte <(sub_cf896 - 1)                                            ; ec5f: 95          .
+    .byte <(sub_cf893 - 1)                                            ; ec60: 92          .
+    .byte <(sub_cf99d - 1)                                            ; ec61: 9c          .
+    .byte <(sub_cf992 - 1)                                            ; ec62: 91          .
+    .byte <(sub_cf863 - 1)                                            ; ec63: 62          .
+    .byte <(sub_cf860 - 1)                                            ; ec64: 5f          .
+    .byte <(sub_cecca - 1)                                            ; ec65: c9          I
+    .byte <(cecd9 - 1)                                                ; ec66: d8          X
+    .byte <(sub_cecbc - 1)                                            ; ec67: bb          .
+    .byte <(sub_cecb3 - 1)                                            ; ec68: b2          .
+    .byte <(sub_cf5fd - 1)                                            ; ec69: fc          .
+    .byte <(sub_cf83b - 1)                                            ; ec6a: 3a          :
+    .byte <(sub_cf38d - 1)                                            ; ec6b: 8c          .
+    .byte <(sub_cfb5b - 1)                                            ; ec6c: 5a          z
+    .byte <(sub_cfb5b - 1)                                            ; ec6d: 5a          z
 ; $ec6e referenced 1 time by $fe06
-lec6e
-    .byte $f7, $f7, $f8, $f8, $f9, $f9, $f8, $f8, $ec, $ec, $ec, $ec  ; ec6e: f7 f7 f8... ...
-    .byte $f5, $f8, $f3, $fb, $fb                                     ; ec7a: f5 f8 f3... ...
+control_code_routines_high
+    .byte >(sub_cf7e9 - 1)                                            ; ec6e: f7          .
+    .byte >(sub_cf7e3 - 1)                                            ; ec6f: f7          .
+    .byte >(sub_cf896 - 1)                                            ; ec70: f8          .
+    .byte >(sub_cf893 - 1)                                            ; ec71: f8          .
+    .byte >(sub_cf99d - 1)                                            ; ec72: f9          .
+    .byte >(sub_cf992 - 1)                                            ; ec73: f9          .
+    .byte >(sub_cf863 - 1)                                            ; ec74: f8          .
+    .byte >(sub_cf860 - 1)                                            ; ec75: f8          .
+    .byte >(sub_cecca - 1)                                            ; ec76: ec          .
+    .byte >(cecd9 - 1)                                                ; ec77: ec          .
+    .byte >(sub_cecbc - 1)                                            ; ec78: ec          .
+    .byte >(sub_cecb3 - 1)                                            ; ec79: ec          .
+    .byte >(sub_cf5fd - 1)                                            ; ec7a: f5          .
+    .byte >(sub_cf83b - 1)                                            ; ec7b: f8          .
+    .byte >(sub_cf38d - 1)                                            ; ec7c: f3          .
+    .byte >(sub_cfb5b - 1)                                            ; ec7d: fb          .
+    .byte >(sub_cfb5b - 1)                                            ; ec7e: fb          .
 
 ; $ec7f referenced 3 times by $ea1f, $ee3d, $eed8
 sub_cec7f
@@ -1615,21 +1646,48 @@ cecae
     sec                                                               ; ecb0: 38          8
     bcs loop_ceca8                                                    ; ecb1: b0 f5       ..  ; ALWAYS branch
 
+sub_cecb3
     lda cursor_row                                                    ; ecb3: a5 d6       .V
     beq cecb9                                                         ; ecb5: f0 02       ..
     dec cursor_row                                                    ; ecb7: c6 d6       FV
-; $ecb9 referenced 1 time by $ecb5
+; $ecb9 referenced 4 times by $ecb5, $ecd7, $ece1, $ece9
 cecb9
     jmp cee22                                                         ; ecb9: 4c 22 ee    l".
 
-    .byte $a5, $d6, $c9, $18, $d0, 3, $20, $ea, $e8, $e6              ; ecbc: a5 d6 c9... .VI
-    .text "Vl"""                                                      ; ecc6: d6 4c 22    Vl"
-    .byte $ee, $20, $f0, $f8, $c0, $27, $d0,   3, $4c, $a4, $f9, $c8  ; ecc9: ee 20 f0... . .
-    .byte $84, $d3, $10, $e0, $20, $f0, $f8, $88, $10, $f6, $a5, $d6  ; ecd5: 84 d3 10... .S.
-    .byte $f0                                                         ; ece1: f0          .
-    .text "VFV"                                                       ; ece2: d6 c6 d6    VFV
-    .byte $a9, $27, $85                                               ; ece5: a9 27 85    .'.
-    .text "SPN"                                                       ; ece8: d3 d0 ce    SPN
+sub_cecbc
+    lda cursor_row                                                    ; ecbc: a5 d6       .V
+    cmp #$18                                                          ; ecbe: c9 18       I.
+    bne cecc5                                                         ; ecc0: d0 03       P.
+    jsr ce8ea                                                         ; ecc2: 20 ea e8     ..
+; $ecc5 referenced 1 time by $ecc0
+cecc5
+    inc cursor_row                                                    ; ecc5: e6 d6       .V
+    jmp cee22                                                         ; ecc7: 4c 22 ee    l".
+
+sub_cecca
+    jsr sub_cf8f0                                                     ; ecca: 20 f0 f8     ..
+    cpy #$27 ; '''                                                    ; eccd: c0 27       .'
+    bne cecd4                                                         ; eccf: d0 03       P.
+    jmp cf9a4                                                         ; ecd1: 4c a4 f9    l..
+
+; $ecd4 referenced 1 time by $eccf
+cecd4
+    iny                                                               ; ecd4: c8          H
+; $ecd5 referenced 1 time by $ecdd
+loop_cecd5
+    sty cursor_column                                                 ; ecd5: 84 d3       .S
+    bpl cecb9                                                         ; ecd7: 10 e0       ..
+; $ecd9 referenced 1 time by $f3b1
+cecd9
+    jsr sub_cf8f0                                                     ; ecd9: 20 f0 f8     ..
+    dey                                                               ; ecdc: 88          .
+    bpl loop_cecd5                                                    ; ecdd: 10 f6       ..
+    lda cursor_row                                                    ; ecdf: a5 d6       .V
+    beq cecb9                                                         ; ece1: f0 d6       .V
+    dec cursor_row                                                    ; ece3: c6 d6       FV
+    lda #$27 ; '''                                                    ; ece5: a9 27       .'
+    sta cursor_column                                                 ; ece7: 85 d3       .S
+    bne cecb9                                                         ; ece9: d0 ce       PN  ; ALWAYS branch
 
 ; $eceb referenced 2 times by $e98f, $ecff
 ceceb
@@ -1857,10 +1915,10 @@ cee1b
     bcc cee22                                                         ; ee1d: 90 03       ..
     jmp cf9a4                                                         ; ee1f: 4c a4 f9    l..
 
-; $ee22 referenced 3 times by $ecb9, $ee1d, $f9b3
+; $ee22 referenced 8 times by $ecb9, $ecc7, $ee1d, $f3c9, $f61f, $f7e6, $f7ec, $f9b3
 cee22
     jsr sub_ce56c                                                     ; ee22: 20 6c e5     ..
-; $ee25 referenced 2 times by $fe1c, $fe22
+; $ee25 referenced 7 times by $f604, $f841, $f867, $f89b, $f99a, $fe1c, $fe22
 cee25
     jsr sub_cf95f                                                     ; ee25: 20 5f f9     ..
     jmp cf1f1                                                         ; ee28: 4c f1 f1    l..
@@ -2857,18 +2915,50 @@ cf388
     ora #$90                                                          ; f388: 09 90       ..
     jmp cf9bf                                                         ; f38a: 4c bf f9    l..
 
-    .byte $a6, $d8, $f0,   5, $a9, $14, $4c, $74, $f8, $a4, $d3, $f0  ; f38d: a6 d8 f0... .X.
-    .byte $47, $c0, $28, $d0, $16, $a5, $f3, $d0,   4, $c6, $f4       ; f399: 47 c0 28... g.(
-    .text "FRF"                                                       ; f3a4: c6 d2 c6    FRF
-    .byte $f3, $c6, $d1, $a2, $27, $a0, 0, $20, $cc, $f3, $4c, $d9    ; f3a7: f3 c6 d1... .FQ
-    .byte $ec, $20, $f0, $f8, $84                                     ; f3b3: ec 20 f0... . .
-    .text "S j"                                                       ; f3b8: d3 20 4a    S j
-    .byte $fa, $98, $38, $e5, $d3, $aa, $a4, $d3, $88, $20, $cc, $f3  ; f3bb: fa 98 38... ..8
-    .text "FSl"""                                                     ; f3c7: c6 d3 4c... FSl
-    .byte $ee                                                         ; f3cb: ee          .
+sub_cf38d
+    ldx insert_count                                                  ; f38d: a6 d8       .X
+    beq cf396                                                         ; f38f: f0 05       ..
+    lda #$14                                                          ; f391: a9 14       ..
+    jmp cf874                                                         ; f393: 4c 74 f8    l..
 
-; $f3cc referenced 1 time by $f3da
-loop_cf3cc
+; $f396 referenced 1 time by $f38f
+cf396
+    ldy cursor_column                                                 ; f396: a4 d3       .S
+    beq cf3e1                                                         ; f398: f0 47       .g
+    cpy #$28 ; '('                                                    ; f39a: c0 28       .(
+    bne cf3b4                                                         ; f39c: d0 16       P.
+    lda colour_ram_line_ptr                                           ; f39e: a5 f3       ..
+    bne cf3a6                                                         ; f3a0: d0 04       P.
+    dec colour_ram_line_ptr+1                                         ; f3a2: c6 f4       F.
+    dec screen_line_ptr+1                                             ; f3a4: c6 d2       FR
+; $f3a6 referenced 1 time by $f3a0
+cf3a6
+    dec colour_ram_line_ptr                                           ; f3a6: c6 f3       F.
+    dec screen_line_ptr                                               ; f3a8: c6 d1       FQ
+    ldx #$27 ; '''                                                    ; f3aa: a2 27       .'
+    ldy #0                                                            ; f3ac: a0 00       ..
+    jsr cf3cc                                                         ; f3ae: 20 cc f3     L.
+    jmp cecd9                                                         ; f3b1: 4c d9 ec    lY.
+
+; $f3b4 referenced 1 time by $f39c
+cf3b4
+    jsr sub_cf8f0                                                     ; f3b4: 20 f0 f8     ..
+    sty cursor_column                                                 ; f3b7: 84 d3       .S
+    jsr sub_cfa4a                                                     ; f3b9: 20 4a fa     j.
+    tya                                                               ; f3bc: 98          .
+    sec                                                               ; f3bd: 38          8
+    sbc cursor_column                                                 ; f3be: e5 d3       .S
+    tax                                                               ; f3c0: aa          .
+    ldy cursor_column                                                 ; f3c1: a4 d3       .S
+    dey                                                               ; f3c3: 88          .
+    jsr cf3cc                                                         ; f3c4: 20 cc f3     L.
+    dec cursor_column                                                 ; f3c7: c6 d3       FS
+; $f3c9 referenced 2 times by $f3e3, $f3f4
+cf3c9
+    jmp cee22                                                         ; f3c9: 4c 22 ee    l".
+
+; $f3cc referenced 3 times by $f3ae, $f3c4, $f3da
+cf3cc
     iny                                                               ; f3cc: c8          H
     lda (colour_ram_line_ptr),y                                       ; f3cd: b1 f3       ..
     dey                                                               ; f3cf: 88          .
@@ -2879,15 +2969,25 @@ loop_cf3cc
     sta (screen_line_ptr),y                                           ; f3d6: 91 d1       .Q
     iny                                                               ; f3d8: c8          H
     dex                                                               ; f3d9: ca          J
-    bpl loop_cf3cc                                                    ; f3da: 10 f0       ..
+    bpl cf3cc                                                         ; f3da: 10 f0       ..
     lda #$20 ; ' '                                                    ; f3dc: a9 20       .
     sta (screen_line_ptr),y                                           ; f3de: 91 d1       .Q
     rts                                                               ; f3e0: 60          .
 
-    .byte $a4, $d6, $f0, $e4, $c6, $d6, $a9, $27, $85, $d3, $20, $ee  ; f3e1: a4 d6 f0... .V.
-    .byte $eb, $a0, $27, $a9, $20, $91                                ; f3ed: eb a0 27... ..'
-    .text "QPS"                                                       ; f3f3: d1 d0 d3    QPS
-    .byte $60                                                         ; f3f6: 60          .
+; $f3e1 referenced 1 time by $f398
+cf3e1
+    ldy cursor_row                                                    ; f3e1: a4 d6       .V
+    beq cf3c9                                                         ; f3e3: f0 e4       ..
+    dec cursor_row                                                    ; f3e5: c6 d6       FV
+    lda #$27 ; '''                                                    ; f3e7: a9 27       .'
+    sta cursor_column                                                 ; f3e9: 85 d3       .S
+    jsr cebee                                                         ; f3eb: 20 ee eb     ..
+    ldy #$27 ; '''                                                    ; f3ee: a0 27       .'
+    lda #$20 ; ' '                                                    ; f3f0: a9 20       .
+    sta (screen_line_ptr),y                                           ; f3f2: 91 d1       .Q
+    bne cf3c9                                                         ; f3f4: d0 d3       PS  ; ALWAYS branch
+
+    rts                                                               ; f3f6: 60          .
 
 ; $f3f7 referenced 3 times by $e76e, $fc54, $ffb4
 cf3f7
@@ -2916,7 +3016,7 @@ loop_cf40f
 ; $f412 referenced 1 time by $f41e
 loop_cf412
     jsr ce8ea                                                         ; f412: 20 ea e8     ..
-; $f415 referenced 1 time by $ee14
+; $f415 referenced 2 times by $ee14, $f61c
 sub_cf415
     ldy cursor_row                                                    ; f415: a4 d6       .V
     lda screen_line_links,y                                           ; f417: b9 d9 00    .Y.
@@ -3092,15 +3192,56 @@ default_save_handler
 cf5fa
     jmp cff49                                                         ; f5fa: 4c 49 ff    li.
 
-    .byte $20, $13, $f8, $f0,   5, $f0,   3, $4c, $25, $ee, $20, $4a  ; f5fd: 20 13 f8...  ..
-    .byte $fa, $a6, $d6, $b5, $d9, $10, $12, $20, $32, $f6, $a9, $20  ; f609: fa a6 d6... ..V
-    .byte $91, $d1, $20, $13, $f8, $f0,   3, $20, $15, $f4, $4c, $22  ; f615: 91 d1 20... .Q
-    .byte $ee, $a5, $d3, $38, $e9, $28, $85                           ; f621: ee a5 d3... ..S
-    .text "S 2"                                                       ; f628: d3 20 32    S 2
-    .byte $f6, $a9, $20, $91, $d1, $d0, $ed, $88, $b1, $f3, $c8, $91  ; f62b: f6 a9 20... ..
-    .byte $f3, $88, $b1, $d1, $c8, $91, $d1, $88                      ; f637: f3 88 b1... ...
-    .text "DSP"                                                       ; f63f: c4 d3 d0    DSP
-    .byte $ef, $e6, $d8, $60, $60                                     ; f642: ef e6 d8... ..X
+sub_cf5fd
+    jsr sub_cf813                                                     ; f5fd: 20 13 f8     ..
+    beq cf607                                                         ; f600: f0 05       ..
+    beq cf607                                                         ; f602: f0 03       ..
+    jmp cee25                                                         ; f604: 4c 25 ee    l%.
+
+; $f607 referenced 2 times by $f600, $f602
+cf607
+    jsr sub_cfa4a                                                     ; f607: 20 4a fa     j.
+    ldx cursor_row                                                    ; f60a: a6 d6       .V
+    lda screen_line_links,x                                           ; f60c: b5 d9       .Y
+    bpl cf622                                                         ; f60e: 10 12       ..
+    jsr cf632                                                         ; f610: 20 32 f6     2.
+    lda #$20 ; ' '                                                    ; f613: a9 20       .
+    sta (screen_line_ptr),y                                           ; f615: 91 d1       .Q
+    jsr sub_cf813                                                     ; f617: 20 13 f8     ..
+    beq cf61f                                                         ; f61a: f0 03       ..
+    jsr sub_cf415                                                     ; f61c: 20 15 f4     ..
+; $f61f referenced 2 times by $f61a, $f630
+cf61f
+    jmp cee22                                                         ; f61f: 4c 22 ee    l".
+
+; $f622 referenced 1 time by $f60e
+cf622
+    lda cursor_column                                                 ; f622: a5 d3       .S
+    sec                                                               ; f624: 38          8
+    sbc #$28 ; '('                                                    ; f625: e9 28       .(
+    sta cursor_column                                                 ; f627: 85 d3       .S
+    jsr cf632                                                         ; f629: 20 32 f6     2.
+    lda #$20 ; ' '                                                    ; f62c: a9 20       .
+    sta (screen_line_ptr),y                                           ; f62e: 91 d1       .Q
+    bne cf61f                                                         ; f630: d0 ed       P.  ; ALWAYS branch
+
+; $f632 referenced 3 times by $f610, $f629, $f641
+cf632
+    dey                                                               ; f632: 88          .
+    lda (colour_ram_line_ptr),y                                       ; f633: b1 f3       ..
+    iny                                                               ; f635: c8          H
+    sta (colour_ram_line_ptr),y                                       ; f636: 91 f3       ..
+    dey                                                               ; f638: 88          .
+    lda (screen_line_ptr),y                                           ; f639: b1 d1       .Q
+    iny                                                               ; f63b: c8          H
+    sta (screen_line_ptr),y                                           ; f63c: 91 d1       .Q
+    dey                                                               ; f63e: 88          .
+    cpy cursor_column                                                 ; f63f: c4 d3       DS
+    bne cf632                                                         ; f641: d0 ef       P.
+    inc insert_count                                                  ; f643: e6 d8       .X
+    rts                                                               ; f645: 60          .
+
+    .byte $60                                                         ; f646: 60          .
 
 ; $f647 referenced 5 times by $e586, $e590, $f0bf, $fa2d, $ff7a
 cf647
@@ -3303,7 +3444,13 @@ loop_cf7df
     bpl loop_cf7df                                                    ; f7e0: 10 fd       ..
     rts                                                               ; f7e2: 60          .
 
-    .byte $20, $66, $e5, $4c, $22, $ee, $20, $44, $e5, $4c, $22, $ee  ; f7e3: 20 66 e5...  ..
+sub_cf7e3
+    jsr ce566                                                         ; f7e3: 20 66 e5     ..
+    jmp cee22                                                         ; f7e6: 4c 22 ee    l".
+
+sub_cf7e9
+    jsr ce544                                                         ; f7e9: 20 44 e5     d.
+    jmp cee22                                                         ; f7ec: 4c 22 ee    l".
 
 ; ***************************************************************************************
 ; On Exit:
@@ -3338,9 +3485,15 @@ sub_cf804
 
 ; $f80b referenced 2 times by $e84d, $e863
 lf80b
-    .byte $fe, $fd, $fb, $f7, $ef, $df, $bf, $7f, $20, $4a, $fa, $b1  ; f80b: fe fd fb... ...
-    .text "QI "                                                       ; f817: d1 c9 20    QI
-    .byte $60                                                         ; f81a: 60          .
+    .byte $fe, $fd, $fb, $f7, $ef, $df, $bf, $7f                      ; f80b: fe fd fb... ...
+
+; $f813 referenced 2 times by $f5fd, $f617
+sub_cf813
+    jsr sub_cfa4a                                                     ; f813: 20 4a fa     j.
+    lda (screen_line_ptr),y                                           ; f816: b1 d1       .Q
+    cmp #$20 ; ' '                                                    ; f818: c9 20       I
+    rts                                                               ; f81a: 60          .
+
 ; $f81b referenced 1 time by $e86a
 lf81b
     .byte 0, 8, $10, $18                                              ; f81b: 00 08 10... ...
@@ -3359,9 +3512,11 @@ sub_cf833
     sta serial_char_buffered_flag                                     ; f838: 85 94       ..
     rts                                                               ; f83a: 60          .
 
-    .byte $a9, 0, $85, $d4, $85                                       ; f83b: a9 00 85... ...
-    .text "Xl%"                                                       ; f840: d8 4c 25    Xl%
-    .byte $ee                                                         ; f843: ee          .
+sub_cf83b
+    lda #0                                                            ; f83b: a9 00       ..
+    sta quote_mode_flag                                               ; f83d: 85 d4       .T
+    sta insert_count                                                  ; f83f: 85 d8       .X
+    jmp cee25                                                         ; f841: 4c 25 ee    l%.
 
 ; $f844 referenced 1 time by $ffde
 cf844
@@ -3391,9 +3546,15 @@ cf85b
     pla                                                               ; f85c: 68          .
     jmp cff43                                                         ; f85d: 4c 43 ff    lc.
 
-    .byte $a9, $80, $2c, $a9, 0, $85                                  ; f860: a9 80 2c... ..,
-    .text "Gl%"                                                       ; f866: c7 4c 25    Gl%
-    .byte $ee                                                         ; f869: ee          .
+sub_cf860
+    lda #$80                                                          ; f860: a9 80       ..
+; overlapping: bit @w rs232_start_bit_flag                            ; f862: 2c a9 00    ,..
+    .byte $2c                                                         ; f862: 2c          ,
+
+sub_cf863
+    lda #0                                                            ; f863: a9 00       ..
+    sta reverse_flag                                                  ; f865: 85 c7       .G
+    jmp cee25                                                         ; f867: 4c 25 ee    l%.
 
 ; ***************************************************************************************
 ; On Exit:
@@ -3410,7 +3571,7 @@ sub_cf86a
 return_14
     rts                                                               ; f873: 60          .
 
-; $f874 referenced 1 time by $fdfd
+; $f874 referenced 2 times by $f393, $fdfd
 cf874
     clc                                                               ; f874: 18          .
     adc #$80                                                          ; f875: 69 80       ..
@@ -3442,7 +3603,15 @@ cf888
 cf890
     jmp cef21                                                         ; f890: 4c 21 ef    l!.
 
-    .byte $a9, 0, $2c, $a9, $80, $8d, $91, 2, $4c, $25, $ee           ; f893: a9 00 2c... ..,
+sub_cf893
+    lda #0                                                            ; f893: a9 00       ..
+; overlapping: bit l80a9                                              ; f895: 2c a9 80    ,..
+    .byte $2c                                                         ; f895: 2c          ,
+
+sub_cf896
+    lda #$80                                                          ; f896: a9 80       ..
+    sta charset_switch_flag                                           ; f898: 8d 91 02    ...
+    jmp cee25                                                         ; f89b: 4c 25 ee    l%.
 
 ; $f89e referenced 3 times by $f64e, $fab0, $fde9
 cf89e
@@ -3530,7 +3699,7 @@ cf8ed
 ; On Exit:
 ;     X is preserved
 ; ***************************************************************************************
-; $f8f0 referenced 4 times by $eb9b, $eda6, $edcd, $edf4
+; $f8f0 referenced 7 times by $eb9b, $ecca, $ecd9, $eda6, $edcd, $edf4, $f3b4
 sub_cf8f0
     ldy cursor_column                                                 ; f8f0: a4 d3       .S
     cpy #$28 ; '('                                                    ; f8f2: c0 28       .(
@@ -3702,11 +3871,20 @@ cf98f
     sta io_status                                                     ; f98f: 85 90       ..
     rts                                                               ; f991: 60          .
 
-    .byte $ad, $18, $d0, $29, 2, $8d, $18                             ; f992: ad 18 d0... ..P
-    .text "Pl%"                                                       ; f999: d0 4c 25    Pl%
-    .byte $ee, $ad, $18, $d0, 9, 2, $d0, $f3                          ; f99c: ee ad 18... ...
+sub_cf992
+    lda vic_memory_setup                                              ; f992: ad 18 d0    ..P
+    and #2                                                            ; f995: 29 02       ).
+; $f997 referenced 1 time by $f9a2
+loop_cf997
+    sta vic_memory_setup                                              ; f997: 8d 18 d0    ..P
+    jmp cee25                                                         ; f99a: 4c 25 ee    l%.
 
-; $f9a4 referenced 1 time by $ee1f
+sub_cf99d
+    lda vic_memory_setup                                              ; f99d: ad 18 d0    ..P
+    ora #2                                                            ; f9a0: 09 02       ..
+    bne loop_cf997                                                    ; f9a2: d0 f3       P.  ; ALWAYS branch
+
+; $f9a4 referenced 3 times by $ecd1, $ee1f, $fb73
 cf9a4
     ldy cursor_row                                                    ; f9a4: a4 d6       .V
     cpy #$18                                                          ; f9a6: c0 18       ..
@@ -3841,7 +4019,7 @@ sub_cfa1e
     plp                                                               ; fa46: 28          (
     jmp cfaa6                                                         ; fa47: 4c a6 fa    l..
 
-; $fa4a referenced 1 time by $f6be
+; $fa4a referenced 4 times by $f3b9, $f607, $f6be, $f813
 sub_cfa4a
     ldy cursor_row                                                    ; fa4a: a4 d6       .V
     cpy #$18                                                          ; fa4c: c0 18       ..
@@ -4074,9 +4252,21 @@ cfb53
     jsr sub_cf0c9                                                     ; fb55: 20 c9 f0     I.
     jmp loop_cfb42                                                    ; fb58: 4c 42 fb    lb.
 
-    .byte $a9,   0, $85, $d4, $85, $d8, $85, $c7, $a4, $d6, $c0, $18  ; fb5b: a9 00 85... ...
-    .byte $f0, $0a, $b9, $da,   0, $30,   5, $e6, $d6, $20, $ee, $eb  ; fb67: f0 0a b9... ...
-    .byte $4c, $a4, $f9                                               ; fb73: 4c a4 f9    l..
+sub_cfb5b
+    lda #0                                                            ; fb5b: a9 00       ..
+    sta quote_mode_flag                                               ; fb5d: 85 d4       .T
+    sta insert_count                                                  ; fb5f: 85 d8       .X
+    sta reverse_flag                                                  ; fb61: 85 c7       .G
+    ldy cursor_row                                                    ; fb63: a4 d6       .V
+    cpy #$18                                                          ; fb65: c0 18       ..
+    beq cfb73                                                         ; fb67: f0 0a       ..
+    lda screen_line_links+1,y                                         ; fb69: b9 da 00    .Z.
+    bmi cfb73                                                         ; fb6c: 30 05       0.
+    inc cursor_row                                                    ; fb6e: e6 d6       .V
+    jsr cebee                                                         ; fb70: 20 ee eb     ..
+; $fb73 referenced 2 times by $fb67, $fb6c
+cfb73
+    jmp cf9a4                                                         ; fb73: 4c a4 f9    l..
 
 ; $fb76 referenced 3 times by $e5f9, $e6a7, $e6b0
 sub_cfb76
@@ -4587,11 +4777,11 @@ cfe00
     tya                                                               ; fe00: 98          .
 ; $fe01 referenced 1 time by $fdf3
 cfe01
-    cmp lec4c,x                                                       ; fe01: dd 4c ec    .l.
+    cmp control_codes,x                                               ; fe01: dd 4c ec    .l.
     bne cfe0f                                                         ; fe04: d0 09       P.
-    lda lec6e,x                                                       ; fe06: bd 6e ec    ...
+    lda control_code_routines_high,x                                  ; fe06: bd 6e ec    ...
     pha                                                               ; fe09: 48          h
-    lda lec5d,x                                                       ; fe0a: bd 5d ec    .].
+    lda control_code_routines_low,x                                   ; fe0a: bd 5d ec    .].
     pha                                                               ; fe0d: 48          h
     rts                                                               ; fe0e: 60          .
 
@@ -5255,6 +5445,38 @@ lfff8
     .word irq_entry                                                   ; fffe: 53 ea       s.
 pydis_end
 
+.cerror (<(cecd9 - 1)) != $d8, "Assertion failed: <(cecd9 - 1) == $d8"
+.cerror (<(sub_cecb3 - 1)) != $b2, "Assertion failed: <(sub_cecb3 - 1) == $b2"
+.cerror (<(sub_cecbc - 1)) != $bb, "Assertion failed: <(sub_cecbc - 1) == $bb"
+.cerror (<(sub_cecca - 1)) != $c9, "Assertion failed: <(sub_cecca - 1) == $c9"
+.cerror (<(sub_cf38d - 1)) != $8c, "Assertion failed: <(sub_cf38d - 1) == $8c"
+.cerror (<(sub_cf5fd - 1)) != $fc, "Assertion failed: <(sub_cf5fd - 1) == $fc"
+.cerror (<(sub_cf7e3 - 1)) != $e2, "Assertion failed: <(sub_cf7e3 - 1) == $e2"
+.cerror (<(sub_cf7e9 - 1)) != $e8, "Assertion failed: <(sub_cf7e9 - 1) == $e8"
+.cerror (<(sub_cf83b - 1)) != $3a, "Assertion failed: <(sub_cf83b - 1) == $3a"
+.cerror (<(sub_cf860 - 1)) != $5f, "Assertion failed: <(sub_cf860 - 1) == $5f"
+.cerror (<(sub_cf863 - 1)) != $62, "Assertion failed: <(sub_cf863 - 1) == $62"
+.cerror (<(sub_cf893 - 1)) != $92, "Assertion failed: <(sub_cf893 - 1) == $92"
+.cerror (<(sub_cf896 - 1)) != $95, "Assertion failed: <(sub_cf896 - 1) == $95"
+.cerror (<(sub_cf992 - 1)) != $91, "Assertion failed: <(sub_cf992 - 1) == $91"
+.cerror (<(sub_cf99d - 1)) != $9c, "Assertion failed: <(sub_cf99d - 1) == $9c"
+.cerror (<(sub_cfb5b - 1)) != $5a, "Assertion failed: <(sub_cfb5b - 1) == $5a"
+.cerror (>(cecd9 - 1)) != $ec, "Assertion failed: >(cecd9 - 1) == $ec"
+.cerror (>(sub_cecb3 - 1)) != $ec, "Assertion failed: >(sub_cecb3 - 1) == $ec"
+.cerror (>(sub_cecbc - 1)) != $ec, "Assertion failed: >(sub_cecbc - 1) == $ec"
+.cerror (>(sub_cecca - 1)) != $ec, "Assertion failed: >(sub_cecca - 1) == $ec"
+.cerror (>(sub_cf38d - 1)) != $f3, "Assertion failed: >(sub_cf38d - 1) == $f3"
+.cerror (>(sub_cf5fd - 1)) != $f5, "Assertion failed: >(sub_cf5fd - 1) == $f5"
+.cerror (>(sub_cf7e3 - 1)) != $f7, "Assertion failed: >(sub_cf7e3 - 1) == $f7"
+.cerror (>(sub_cf7e9 - 1)) != $f7, "Assertion failed: >(sub_cf7e9 - 1) == $f7"
+.cerror (>(sub_cf83b - 1)) != $f8, "Assertion failed: >(sub_cf83b - 1) == $f8"
+.cerror (>(sub_cf860 - 1)) != $f8, "Assertion failed: >(sub_cf860 - 1) == $f8"
+.cerror (>(sub_cf863 - 1)) != $f8, "Assertion failed: >(sub_cf863 - 1) == $f8"
+.cerror (>(sub_cf893 - 1)) != $f8, "Assertion failed: >(sub_cf893 - 1) == $f8"
+.cerror (>(sub_cf896 - 1)) != $f8, "Assertion failed: >(sub_cf896 - 1) == $f8"
+.cerror (>(sub_cf992 - 1)) != $f9, "Assertion failed: >(sub_cf992 - 1) == $f9"
+.cerror (>(sub_cf99d - 1)) != $f9, "Assertion failed: >(sub_cf99d - 1) == $f9"
+.cerror (>(sub_cfb5b - 1)) != $fb, "Assertion failed: >(sub_cfb5b - 1) == $fb"
 .cerror (default_brk_handler) != $fe66, "Assertion failed: default_brk_handler == $fe66"
 .cerror (default_chkin_handler) != $f20e, "Assertion failed: default_chkin_handler == $f20e"
 .cerror (default_chkout_handler) != $f250, "Assertion failed: default_chkout_handler == $f250"
@@ -5278,24 +5500,24 @@ pydis_end
 
 ; Label references by decreasing frequency:
 ;     cia2_port_a:                  59
+;     cursor_row:                   29
 ;     io_temp_2:                    29
 ;     io_end_ptr:                   28
+;     screen_line_ptr:              25
+;     cursor_column:                21
 ;     serial_char_buffered_flag:    21
-;     cursor_row:                   20
 ;     io_temp_1:                    20
 ;     device_number:                18
-;     screen_line_ptr:              18
+;     colour_ram_line_ptr:          17
 ;     cpu_port:                     17
 ;     load_address_temp:            16
 ;     rs232_input_bits:             15
-;     colour_ram_line_ptr:          13
 ;     tape_buffer_ptr:              12
 ;     io_start_ptr:                 11
+;     screen_line_links:            11
 ;     cfd91:                        10
-;     cursor_column:                10
 ;     filename_length:              10
 ;     kernal_x_save:                10
-;     screen_line_links:            10
 ;     sub_cf90e:                    10
 ;     vic_border_colour:            10
 ;     vic_control_1:                10
@@ -5303,20 +5525,25 @@ pydis_end
 ;     device_number_table:           9
 ;     logical_file_table:            9
 ;     CHROUT:                        8
+;     cee22:                         8
 ;     cf4cd:                         8
 ;     io_address_ptr:                8
+;     quote_mode_flag:               8
 ;     sub_ce971:                     8
 ;     tape_parity:                   8
 ;     ce885:                         7
+;     cee25:                         7
 ;     cf9f4:                         7
 ;     cfc7b:                         7
 ;     cia1_port_a:                   7
 ;     cia1_port_b:                   7
+;     insert_count:                  7
 ;     io_status:                     7
 ;     keyboard_buffer_length:        7
 ;     secondary_address:             7
 ;     shift_key_flags:               7
 ;     sub_ce95a:                     7
+;     sub_cf8f0:                     7
 ;     vic_raster_line:               7
 ;     ce717:                         6
 ;     ce73e:                         6
@@ -5327,8 +5554,9 @@ pydis_end
 ;     cursor_blink_phase:            6
 ;     load_verify_flag:              6
 ;     open_files_count:              6
-;     quote_mode_flag:               6
+;     vic_memory_setup:              6
 ;     ce6b0:                         5
+;     cebee:                         5
 ;     cf055:                         5
 ;     cf647:                         5
 ;     cfaa6:                         5
@@ -5355,6 +5583,8 @@ pydis_end
 ;     tape_pass2_errors:             5
 ;     text_colour:                   5
 ;     ce4f1:                         4
+;     ce8ea:                         4
+;     cecb9:                         4
 ;     cefe3:                         4
 ;     cf2a1:                         4
 ;     cfaf1:                         4
@@ -5368,40 +5598,41 @@ pydis_end
 ;     output_device:                 4
 ;     rs232_input_parity:            4
 ;     sid_volume_filter_mode:        4
-;     sub_cf8f0:                     4
+;     sub_cfa4a:                     4
 ;     sub_cfeb9:                     4
 ;     tape_pass1_errors:             4
 ;     vic_sprite_enable:             4
 ;     ce6c8:                         3
 ;     ce7b1:                         3
-;     ce8ea:                         3
 ;     cea15:                         3
 ;     cea2f:                         3
-;     cebee:                         3
 ;     cec41:                         3
 ;     cecae:                         3
-;     cee22:                         3
 ;     ceeca:                         3
 ;     cef21:                         3
 ;     cf231:                         3
+;     cf3cc:                         3
 ;     cf3f7:                         3
+;     cf632:                         3
 ;     cf89e:                         3
+;     cf9a4:                         3
 ;     cf9b6:                         3
 ;     cf9fe:                         3
 ;     cfa5d:                         3
 ;     cfab0:                         3
 ;     cfb0b:                         3
 ;     cfb81:                         3
+;     charset_switch_flag:           3
 ;     cia2_data_direction_b:         3
 ;     cia2_interrupt_control:        3
 ;     input_line_end:                3
-;     insert_count:                  3
 ;     irq_vector:                    3
 ;     keyboard_buffer_size:          3
 ;     last_key_pressed:              3
 ;     logical_file_number:           3
 ;     return_3:                      3
 ;     return_5:                      3
+;     reverse_flag:                  3
 ;     secondary_address_table:       3
 ;     sub_ce572:                     3
 ;     sub_ce9ff:                     3
@@ -5423,12 +5654,13 @@ pydis_end
 ;     tape_sync_number:              3
 ;     tape_timing:                   3
 ;     vic_control_2:                 3
-;     vic_memory_setup:              3
 ;     IOINIT:                        2
 ;     RESTOR:                        2
 ;     brk_vector:                    2
 ;     ce1b5:                         2
 ;     ce4dd:                         2
+;     ce544:                         2
+;     ce566:                         2
 ;     ce589:                         2
 ;     ce59e:                         2
 ;     ce5ce:                         2
@@ -5455,7 +5687,6 @@ pydis_end
 ;     ced69:                         2
 ;     ced98:                         2
 ;     ceddd:                         2
-;     cee25:                         2
 ;     cee78:                         2
 ;     cee7a:                         2
 ;     ceef9:                         2
@@ -5472,17 +5703,22 @@ pydis_end
 ;     cf27b:                         2
 ;     cf386:                         2
 ;     cf388:                         2
+;     cf3c9:                         2
 ;     cf439:                         2
+;     cf607:                         2
+;     cf61f:                         2
 ;     cf666:                         2
 ;     cf675:                         2
 ;     cf689:                         2
 ;     cf6c2:                         2
 ;     cf7d7:                         2
+;     cf874:                         2
 ;     cf8e9:                         2
 ;     cf915:                         2
 ;     cf949:                         2
 ;     cf975:                         2
 ;     cf98f:                         2
+;     cfb73:                         2
 ;     cfb91:                         2
 ;     cfbe4:                         2
 ;     cfbfa:                         2
@@ -5495,7 +5731,6 @@ pydis_end
 ;     cff4f:                         2
 ;     cff5b:                         2
 ;     char_under_cursor:             2
-;     charset_switch_flag:           2
 ;     cia2_control_a:                2
 ;     cia2_control_b:                2
 ;     cia2_timer_b_low:              2
@@ -5530,9 +5765,11 @@ pydis_end
 ;     sub_ceece:                     2
 ;     sub_cf043:                     2
 ;     sub_cf1fb:                     2
+;     sub_cf415:                     2
 ;     sub_cf7c1:                     2
 ;     sub_cf7cb:                     2
 ;     sub_cf7dd:                     2
+;     sub_cf813:                     2
 ;     sub_cf833:                     2
 ;     sub_cf86a:                     2
 ;     sub_cf8bf:                     2
@@ -5571,8 +5808,6 @@ pydis_end
 ;     ce529:                         1
 ;     ce534:                         1
 ;     ce541:                         1
-;     ce544:                         1
-;     ce566:                         1
 ;     ce57a:                         1
 ;     ce5c9:                         1
 ;     ce5ea:                         1
@@ -5623,7 +5858,9 @@ pydis_end
 ;     cec44:                         1
 ;     cec95:                         1
 ;     ceca2:                         1
-;     cecb9:                         1
+;     cecc5:                         1
+;     cecd4:                         1
+;     cecd9:                         1
 ;     ced3a:                         1
 ;     ced56:                         1
 ;     ced83:                         1
@@ -5690,6 +5927,10 @@ pydis_end
 ;     cf35c:                         1
 ;     cf361:                         1
 ;     cf36a:                         1
+;     cf396:                         1
+;     cf3a6:                         1
+;     cf3b4:                         1
+;     cf3e1:                         1
 ;     cf402:                         1
 ;     cf404:                         1
 ;     cf464:                         1
@@ -5703,6 +5944,7 @@ pydis_end
 ;     cf4d8:                         1
 ;     cf5dd:                         1
 ;     cf5fa:                         1
+;     cf622:                         1
 ;     cf657:                         1
 ;     cf65e:                         1
 ;     cf697:                         1
@@ -5716,7 +5958,6 @@ pydis_end
 ;     cf844:                         1
 ;     cf84d:                         1
 ;     cf85b:                         1
-;     cf874:                         1
 ;     cf87b:                         1
 ;     cf87e:                         1
 ;     cf885:                         1
@@ -5730,7 +5971,6 @@ pydis_end
 ;     cf917:                         1
 ;     cf921:                         1
 ;     cf93e:                         1
-;     cf9a4:                         1
 ;     cf9ad:                         1
 ;     cf9bf:                         1
 ;     cf9d4:                         1
@@ -5808,6 +6048,9 @@ pydis_end
 ;     clall_vector:                  1
 ;     close_vector:                  1
 ;     clrchn_vector:                 1
+;     control_code_routines_high:    1
+;     control_code_routines_low:     1
+;     control_codes:                 1
 ;     default_clrchn_handler:        1
 ;     default_irq_handler:           1
 ;     default_nmi_handler:           1
@@ -5832,9 +6075,6 @@ pydis_end
 ;     lebc1:                         1
 ;     lebc8:                         1
 ;     lebe7:                         1
-;     lec4c:                         1
-;     lec5d:                         1
-;     lec6e:                         1
 ;     lf33f:                         1
 ;     lf7b6:                         1
 ;     lf81b:                         1
@@ -5876,6 +6116,7 @@ pydis_end
 ;     loop_cebfd:                    1
 ;     loop_cec87:                    1
 ;     loop_ceca8:                    1
+;     loop_cecd5:                    1
 ;     loop_cecf6:                    1
 ;     loop_cecf8:                    1
 ;     loop_ced10:                    1
@@ -5894,7 +6135,6 @@ pydis_end
 ;     loop_cf208:                    1
 ;     loop_cf313:                    1
 ;     loop_cf34f:                    1
-;     loop_cf3cc:                    1
 ;     loop_cf40d:                    1
 ;     loop_cf40f:                    1
 ;     loop_cf412:                    1
@@ -5904,6 +6144,7 @@ pydis_end
 ;     loop_cf8b8:                    1
 ;     loop_cf926:                    1
 ;     loop_cf934:                    1
+;     loop_cf997:                    1
 ;     loop_cf9fb:                    1
 ;     loop_cfa11:                    1
 ;     loop_cfa79:                    1
@@ -5945,7 +6186,6 @@ pydis_end
 ;     return_25:                     1
 ;     return_4:                      1
 ;     return_8:                      1
-;     reverse_flag:                  1
 ;     save_vector:                   1
 ;     screen_line_length:            1
 ;     serial_buffered_char:          1
@@ -5975,13 +6215,11 @@ pydis_end
 ;     sub_cf04c:                     1
 ;     sub_cf0d5:                     1
 ;     sub_cf169:                     1
-;     sub_cf415:                     1
 ;     sub_cf7bc:                     1
 ;     sub_cf856:                     1
 ;     sub_cf95f:                     1
 ;     sub_cf970:                     1
 ;     sub_cf9ca:                     1
-;     sub_cfa4a:                     1
 ;     sub_cfa60:                     1
 ;     sub_cfa77:                     1
 ;     sub_cfa81:                     1
@@ -6096,6 +6334,9 @@ pydis_end
 ;     ceca2
 ;     cecae
 ;     cecb9
+;     cecc5
+;     cecd4
+;     cecd9
 ;     ceceb
 ;     ced09
 ;     ced3a
@@ -6191,6 +6432,12 @@ pydis_end
 ;     cf36a
 ;     cf386
 ;     cf388
+;     cf396
+;     cf3a6
+;     cf3b4
+;     cf3c9
+;     cf3cc
+;     cf3e1
 ;     cf3f7
 ;     cf402
 ;     cf404
@@ -6207,6 +6454,10 @@ pydis_end
 ;     cf4d8
 ;     cf5dd
 ;     cf5fa
+;     cf607
+;     cf61f
+;     cf622
+;     cf632
 ;     cf647
 ;     cf657
 ;     cf65e
@@ -6275,6 +6526,7 @@ pydis_end
 ;     cfb36
 ;     cfb49
 ;     cfb53
+;     cfb73
 ;     cfb81
 ;     cfb91
 ;     cfba9
@@ -6357,6 +6609,7 @@ pydis_end
 ;     l8000
 ;     l8002
 ;     l8003
+;     l80a9
 ;     la000
 ;     la002
 ;     le8da
@@ -6365,9 +6618,6 @@ pydis_end
 ;     lebc1
 ;     lebc8
 ;     lebe7
-;     lec4c
-;     lec5d
-;     lec6e
 ;     lf33f
 ;     lf7b6
 ;     lf80b
@@ -6411,6 +6661,7 @@ pydis_end
 ;     loop_cebfd
 ;     loop_cec87
 ;     loop_ceca8
+;     loop_cecd5
 ;     loop_cecf6
 ;     loop_cecf8
 ;     loop_ced10
@@ -6429,7 +6680,6 @@ pydis_end
 ;     loop_cf208
 ;     loop_cf313
 ;     loop_cf34f
-;     loop_cf3cc
 ;     loop_cf40d
 ;     loop_cf40f
 ;     loop_cf412
@@ -6439,6 +6689,7 @@ pydis_end
 ;     loop_cf8b8
 ;     loop_cf926
 ;     loop_cf934
+;     loop_cf997
 ;     loop_cf9fb
 ;     loop_cfa11
 ;     loop_cfa79
@@ -6507,6 +6758,9 @@ pydis_end
 ;     sub_cebf0
 ;     sub_cec1b
 ;     sub_cec7f
+;     sub_cecb3
+;     sub_cecbc
+;     sub_cecca
 ;     sub_ced25
 ;     sub_ced33
 ;     sub_ced5f
@@ -6530,16 +6784,26 @@ pydis_end
 ;     sub_cf0d5
 ;     sub_cf169
 ;     sub_cf1fb
+;     sub_cf38d
 ;     sub_cf415
+;     sub_cf5fd
 ;     sub_cf7bc
 ;     sub_cf7c1
 ;     sub_cf7cb
 ;     sub_cf7dd
+;     sub_cf7e3
+;     sub_cf7e9
 ;     sub_cf7ef
 ;     sub_cf804
+;     sub_cf813
 ;     sub_cf833
+;     sub_cf83b
 ;     sub_cf856
+;     sub_cf860
+;     sub_cf863
 ;     sub_cf86a
+;     sub_cf893
+;     sub_cf896
 ;     sub_cf8a9
 ;     sub_cf8b4
 ;     sub_cf8bf
@@ -6555,6 +6819,8 @@ pydis_end
 ;     sub_cf972
 ;     sub_cf985
 ;     sub_cf98b
+;     sub_cf992
+;     sub_cf99d
 ;     sub_cf9ca
 ;     sub_cf9df
 ;     sub_cfa1e
@@ -6565,6 +6831,7 @@ pydis_end
 ;     sub_cfad7
 ;     sub_cfb25
 ;     sub_cfb40
+;     sub_cfb5b
 ;     sub_cfb76
 ;     sub_cfbc9
 ;     sub_cfc03
@@ -6587,12 +6854,12 @@ pydis_end
 ; Stats:
 ;
 ;     Total size (Code + Data) = 8192 bytes
-;     Code                     = 5770 bytes (70%)
-;     Data                     = 2422 bytes (30%)
+;     Code                     = 6068 bytes (74%)
+;     Data                     = 2124 bytes (26%)
 ;
-;     Number of instructions   = 2783
-;     Number of data bytes     = 2107 bytes
+;     Number of instructions   = 2921
+;     Number of data bytes     = 1849 bytes
 ;     Number of data words     = 38 bytes
-;     Number of string bytes   = 277 bytes
-;     Number of strings        = 48
+;     Number of string bytes   = 237 bytes
+;     Number of strings        = 35
 

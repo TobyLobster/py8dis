@@ -1093,6 +1093,11 @@ class Cpu6502(cpu.Cpu):
         # whose jump tables find_jump_tables() has marked
         self.jump_tables_marked = set()
 
+        # The jumps through tables that find_jump_tables() found but hasn't
+        # marked, by binary address: (low table, high table, index register,
+        # its possible values or None, offset, why it isn't marked)
+        self.jump_table_candidates = {}
+
         # True while join_states_at_labels() works out the states (so the
         # opcodes' update_cpu_state() doesn't forget what's known at labels)
         self.joining_states = False
@@ -1117,6 +1122,7 @@ class Cpu6502(cpu.Cpu):
         self.code_analysis_fns.append(self.show_register_knowledge)     # Show places where we use an inferred value of a register.
         self.code_analysis_fns.append(self.find_redundant_instructions) # Comment instructions whose results are never used.
         self.code_analysis_fns.append(self.comment_subroutine_exits)    # 'On Exit' notes for what subroutines leave that callers use
+        self.code_analysis_fns.append(self.suggest_jump_tables)         # Control file lines for jump tables that weren't marked
 
         # For labelling rts instructions numerically (see label_maker()): the
         # last number used, and the number of each RTS, by binary address
@@ -4206,8 +4212,20 @@ class Cpu6502(cpu.Cpu):
                     table = self._stored_jump_table(run, i, (movemanager.b2r(BinaryAddr(binary_addr)) + 1) & 0xffff)
                 elif mnemonic == "jmp" and c.addr_mode == self.mode_indexed_abs and not self.is_operand_modified(binary_addr, 2):
                     table = self._indexed_jump_table(run, i)
-                if table is not None and self._mark_jump_table(binary_addr, *table):
+                if table is None:
+                    continue
+                lo_table, hi_table, reg, values, offset = table
+                if values is None:
+                    reason = "unknown index"
+                elif len(values) > self.MAX_JUMP_TABLE_ENTRIES:
+                    reason = "too many"
+                else:
+                    reason = self._mark_jump_table(binary_addr, lo_table, hi_table, values, offset)
+                if reason is None:
                     self.jump_tables_marked.add(binary_addr)
+                    self.jump_table_candidates.pop(binary_addr, None)
+                else:
+                    self.jump_table_candidates[binary_addr] = (lo_table, hi_table, reg, values, offset, reason)
 
     def _last_change(self, run, i, reg):
         """The index in the run of the last instruction before run[i] that
@@ -4230,41 +4248,38 @@ class Cpu6502(cpu.Cpu):
             return None
         return memorymanager.get_u16_binary(run[j] + 1), "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
 
-    def _index_values(self, run, j, k, reg):
-        """The values the index register 'reg' could have at the table loads
-        run[j] and run[k] (j < k), if it's known and doesn't change between
-        them, otherwise None."""
-        for m in range(j + 1, k):
-            if classification.get_classification(run[m]).reg_changes[reg] in "AOT":
-                return None
+    def _index_values(self, run, j, reg):
+        """The values the index register 'reg' could have at run[j], if
+        anything is known about it, otherwise None."""
         r = self.known_before(run, j)[reg]
         if r.lo == 0 and r.hi == 0xff and r.known == 0:
             return None
         values = r.possible_values()
-        if not 0 < len(values) <= self.MAX_JUMP_TABLE_ENTRIES:
-            return None
-        return values
+        return values if values else None
 
     def _two_loads(self, run, j_lo, j_hi):
         """The table loads run[j_lo] (the low bytes) and run[j_hi] (the high
-        bytes), as (low table, high table, index values), if they're both
-        loads from tables with the same index register, whose values are
-        known, otherwise None."""
+        bytes), as (low table, high table, index register, its possible
+        values or None if they aren't known), if they're both loads from
+        tables with the same index register, which doesn't change between
+        them, otherwise None."""
         if j_lo is None or j_hi is None:
             return None
         lo_load = self._table_load(run, j_lo)
         hi_load = self._table_load(run, j_hi)
         if lo_load is None or hi_load is None or lo_load[1] != hi_load[1]:
             return None
-        values = self._index_values(run, min(j_lo, j_hi), max(j_lo, j_hi), lo_load[1])
-        if values is None:
-            return None
-        return lo_load[0], hi_load[0], values
+        reg = lo_load[1]
+        j, k = min(j_lo, j_hi), max(j_lo, j_hi)
+        for m in range(j + 1, k):
+            if classification.get_classification(run[m]).reg_changes[reg] in "AOT":
+                return None
+        return lo_load[0], hi_load[0], reg, self._index_values(run, j, reg)
 
     def _rts_jump_table(self, run, i):
         """The table of the RTS trick ending at the RTS run[i] (see
-        find_jump_tables()), as (low table, high table, index values,
-        offset), or None. The high byte is pushed first."""
+        find_jump_tables()), as (low table, high table, index register,
+        index values or None, offset), or None. The high byte is pushed first."""
         pushes = []
         for j in range(i - 1, -1, -1):
             mnemonic = classification.get_classification(run[j]).mnemonic.lower()
@@ -4285,8 +4300,8 @@ class Cpu6502(cpu.Cpu):
     def _stored_jump_table(self, run, i, target):
         """The table whose entry the code before run[i] stores at target and
         target+1 (runtime addresses), for run[i] to jump through (see
-        find_jump_tables()), as (low table, high table, index values,
-        offset), or None. Between each store and run[i] there mustn't be a
+        find_jump_tables()), as (low table, high table, index register,
+        index values or None, offset), or None. Between each store and run[i] there mustn't be a
         JSR, or a store whose address isn't known (an indexed or indirect
         one)."""
         stores = {}
@@ -4320,21 +4335,19 @@ class Cpu6502(cpu.Cpu):
 
     def _indexed_jump_table(self, run, i):
         """The table of the 65C02's 'jmp (table,x)' at run[i], as (low table,
-        high table, index values, offset), or None."""
-        r = self.known_before(run, i)["x"]
-        if r.lo == 0 and r.hi == 0xff and r.known == 0:
-            return None
-        values = r.possible_values()
-        if not 0 < len(values) <= self.MAX_JUMP_TABLE_ENTRIES:
-            return None
+        high table, index register, index values or None, offset)."""
         table = memorymanager.get_u16_binary(run[i] + 1)
-        return table, (table + 1) & 0xffff, values, 0
+        return table, (table + 1) & 0xffff, "x", self._index_values(run, i, "x"), 0
 
     def _mark_jump_table(self, dispatch_binary_addr, lo_table, hi_table, values, offset):
         """Mark the jump table (see find_jump_tables()): the entries at
         lo_table + each of the values (the low bytes) and hi_table + each
         (the high bytes), with the code at each entry's address plus
-        'offset'. Returns whether it was marked."""
+        'offset'. Returns None if it was marked, otherwise why not: 'marked'
+        (a byte of it is already classified or has an expression, e.g. from
+        the control file), 'not loaded', 'overlaps' (an entry's bytes are
+        another's), 'into table' or 'into data' (an entry points into the
+        table, or inside an instruction or data)."""
         import commands
         memory_binary = session.current().memory.binary
         expressions = session.current().classifications.expressions
@@ -4345,12 +4358,14 @@ class Cpu6502(cpu.Cpu):
             for table in (lo_table, hi_table):
                 runtime_addr = table + v
                 if runtime_addr > 0xffff:
-                    return False
+                    return "not loaded"
                 binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr))
-                if (binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr)
-                        or classification.is_classified(binary_addr) or binary_addr in expressions
-                        or binary_addr in table_bytes):
-                    return False
+                if binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr):
+                    return "not loaded"
+                if classification.is_classified(binary_addr) or binary_addr in expressions:
+                    return "marked"
+                if binary_addr in table_bytes:
+                    return "overlaps"
                 table_bytes.add(binary_addr)
                 entry.append((runtime_addr, binary_addr))
             entries.append(entry)
@@ -4359,8 +4374,10 @@ class Cpu6502(cpu.Cpu):
             code_binary, _ = movemanager.r2b(memorymanager.RuntimeAddr(code))
             if code_binary is not None and memorymanager.is_data_loaded_at_binary_addr(code_binary):
                 c = classification.get_classification(code_binary)
-                if code_binary in table_bytes or not (c is None or c.is_code(code_binary)):
-                    return False
+                if code_binary in table_bytes:
+                    return "into table"
+                if not (c is None or c.is_code(code_binary)):
+                    return "into data"
         for (lo_runtime, lo_binary), (hi_runtime, hi_binary) in entries:
             commands.code_ptr(lo_runtime, hi_runtime, offset=offset)
 
@@ -4375,7 +4392,126 @@ class Cpu6502(cpu.Cpu):
         else:
             disassembly.comment_binary(first_lo, "The low bytes of a jump table of {0} {1}{2}".format(n, "entry" if n == 1 else "entries", how), align=Align.BEFORE_LABEL, auto_generated=True)
             disassembly.comment_binary(first_hi, "The high bytes of the jump table", align=Align.BEFORE_LABEL, auto_generated=True)
-        return True
+        return None
+
+    def suggest_jump_tables(self):
+        """For each jump through a table that find_jump_tables() found but
+        couldn't mark because what the index can be isn't known (or it can
+        be too many values), print a note of the entries the table seems to
+        have, and the control file lines that would mark them, e.g.:
+
+            note: &a99d: the RTS there jumps through a table (the low bytes at
+            &a99e and the high bytes at &a9a7, indexed by X), but what X can be
+            isn't known. It seems to have 9 entries; to mark them, put this in
+            the control file:
+                for i in range(9): rts_code_ptr(0xa99e + i, 0xa9a7 + i)
+
+        The entries are those from the first index (0, or the first value
+        the index can have) for as long as they look right (see
+        _jump_table_entries()), and only if there are at least two: so
+        nothing is suggested for a table whose first entry is already
+        classified (e.g. the control file marks it, perhaps between the
+        names in a command table). Turned off with
+        config.set_jump_table_suggestions(False)."""
+        if not (config.get_find_jump_tables() and config.get_jump_table_suggestions()):
+            return
+        hex = config.get_assembler().hex
+        for dispatch, (lo_table, hi_table, reg, values, offset, reason) in sorted(self.jump_table_candidates.items()):
+            if dispatch in self.jump_tables_marked or reason not in ("unknown index", "too many"):
+                continue
+            indexes = self._jump_table_entries(lo_table, hi_table, values, offset)
+            if len(indexes) < 2:
+                continue
+            c = classification.get_classification(dispatch)
+            if c.addr_mode == self.mode_indexed_abs:
+                how = "the JMP ({0},X) there jumps through a table".format(hex(lo_table))
+            elif hi_table == lo_table + 1:
+                how = "the {0} there jumps through the table at {1} (indexed by {2})".format(c.mnemonic.upper(), hex(lo_table), reg.upper())
+            elif lo_table == hi_table + 1:
+                how = "the {0} there jumps through the table at {1} (the high byte of each entry first, indexed by {2})".format(c.mnemonic.upper(), hex(hi_table), reg.upper())
+            else:
+                how = "the {0} there jumps through a table (the low bytes at {1} and the high bytes at {2}, indexed by {3})".format(
+                    c.mnemonic.upper(), hex(lo_table), hex(hi_table), reg.upper())
+            if values is None:
+                known = "what {0} can be isn't known".format(reg.upper())
+            else:
+                known = "{0} can be any of {1} values".format(reg.upper(), len(values))
+            command = "rts_code_ptr" if offset == 1 else "code_ptr"
+            if hi_table == lo_table + 1:
+                arguments = "0x{0:04x} + i".format(lo_table)
+            else:
+                arguments = "0x{0:04x} + i, 0x{1:04x} + i".format(lo_table, hi_table)
+            if offset not in (0, 1):
+                arguments += ", offset={0}".format(offset)
+            step = indexes[1] - indexes[0]
+            if all(b - a == step for a, b in zip(indexes, indexes[1:])):
+                if indexes[0] == 0 and step == 1:
+                    loop = "range({0})".format(len(indexes))
+                elif step == 1:
+                    loop = "range({0}, {1})".format(indexes[0], indexes[-1] + 1)
+                else:
+                    loop = "range({0}, {1}, {2})".format(indexes[0], indexes[-1] + step, step)
+            else:
+                loop = "({0})".format(", ".join(str(i) for i in indexes))
+            utils.note("{0}: {1}, but {2}. It seems to have {3} entries; to mark them, put this in the control file:\n"
+                       "    for i in {4}: {5}({6})".format(hex(movemanager.b2r(BinaryAddr(dispatch))), how, known, len(indexes), loop, command, arguments))
+
+    def _jump_table_entries(self, lo_table, hi_table, values, offset):
+        """The indexes of the entries a jump table that wasn't marked seems
+        to have (see suggest_jump_tables()): from the first of the index's
+        possible values (or 0, if they aren't known; then the index goes up
+        in twos for a table of words), for as long as each entry looks
+        right: its bytes are loaded and not yet classified, don't have an
+        expression and aren't part of an earlier entry, and the code it
+        points to (its value plus 'offset') is loaded, isn't in the table,
+        and is the start of an instruction (or isn't classified yet, and is
+        an opcode other than BRK). A table of low bytes stops before the
+        table of high bytes, and the other way round."""
+        memory_binary = session.current().memory.binary
+        expressions = session.current().classifications.expressions
+        words = abs(hi_table - lo_table) == 1
+        if values is None:
+            values = range(0, 256, 2 if words else 1)
+        if not words:
+            # (The first table can't run into the second)
+            values = [v for v in values if v < abs(hi_table - lo_table)]
+        table_bytes = set()
+        targets = []
+        indexes = []
+        for v in values:
+            entry = []
+            for table in (lo_table, hi_table):
+                runtime_addr = table + v
+                binary_addr = None
+                if runtime_addr <= 0xffff:
+                    binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr))
+                if (binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr)
+                        or classification.is_classified(binary_addr) or binary_addr in expressions
+                        or binary_addr in table_bytes):
+                    return indexes
+                entry.append(binary_addr)
+            code = ((memory_binary[entry[1]] << 8 | memory_binary[entry[0]]) + offset) & 0xffff
+            code_binary, _ = movemanager.r2b(memorymanager.RuntimeAddr(code))
+            if code_binary is None or not memorymanager.is_data_loaded_at_binary_addr(code_binary) or code_binary in table_bytes or code_binary in entry:
+                return indexes
+            c = classification.get_classification(code_binary)
+            if c is None:
+                if memory_binary[code_binary] not in self.opcodes or memory_binary[code_binary] == 0:
+                    return indexes
+            elif not c.is_code(code_binary):
+                return indexes
+            table_bytes.update(entry)
+            targets.append(code_binary)
+            indexes.append(v)
+        # (An entry can't point into an entry that comes after it either)
+        while indexes and any(t in table_bytes for t in targets):
+            indexes.pop()
+            targets.pop()
+            table_bytes = set()
+            for v in indexes:
+                for table in (lo_table, hi_table):
+                    table_bytes.add(movemanager.r2b(memorymanager.RuntimeAddr(table + v))[0])
+        return indexes
 
     def post_trace_effects(self):
         """Call the post-trace function of each effect pattern for each of

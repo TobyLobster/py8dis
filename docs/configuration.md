@@ -44,6 +44,7 @@ Each setting belongs to the current session, so `reset()` puts them all back to 
 | `config.set_join_states_at_labels(b)`      | True      | At a 6502 label whose ways in are all branches in the code, know what all of them agree on, e.g. A is less than 7 at the target of `cmp #7 : bcc target` (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)). With False, nothing is known at any label. |
 | `config.set_subroutine_summaries(b)`       | True      | After a 6502 JSR to a subroutine in the code, know what it doesn't change and what it leaves at all its returns, and add "On Exit" notes for what callers rely on (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)). |
 | `config.set_find_jump_tables(b)`           | True      | Find 6502 jump tables whose index's possible values are known, e.g. after `cmp #7 : bcs bad : asl : tax`, and trace the code their entries point to (see [cpus.md](cpus.md#jump-tables)). |
+| `config.set_jump_table_suggestions(b)`     | True      | For a 6502 jump table that py8dis finds but can't mark (its index isn't known), print a note of the entries it seems to have, with the control file lines that would mark them (see [cpus.md](cpus.md#jump-tables)). |
 | `config.set_redundant_instruction_comments(b)` | True  | Comment 6502 and Z80 instructions whose results are never used: `; Redundant instruction?` (see [cpus.md](cpus.md#redundant-instructions)). |
 
 ## Names and values

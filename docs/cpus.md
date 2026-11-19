@@ -132,6 +132,15 @@ X is 0, 2, ... or 12, so the table has 7 entries (each the address minus 1, for 
 
 The low and high bytes can be in two tables, or together as words. A table isn't marked if any of its bytes is already classified or has an expression (so a control file can mark it itself, e.g. with [`rts_code_ptr()`](commands.md#rts_code_ptr)), if its entries overlap, if an entry points into the table or into an instruction or data, or if the index has more than 64 possible values. The index must be bounded by code that py8dis can follow to the table, including through the branches to labels on the way (see above), e.g. `cpx #10 : bcc ok : ... ok: lda table,x`, or a loop's counter; a bound in a subroutine's caller isn't seen. `config.set_find_jump_tables(False)` turns it off.
 
+When py8dis finds a jump through a table but can't mark it because what the index can be isn't known (or it can be more than 64 values), it prints a note (to stderr) after tracing, with how many entries the table seems to have and the lines that would mark them, ready to paste into the control file:
+
+```
+note: &a99d: the RTS there jumps through a table (the low bytes at &a99e and the high bytes at &a9a7, indexed by X), but what X can be isn't known. It seems to have 9 entries; to mark them, put this in the control file:
+    for i in range(9): rts_code_ptr(0xa99e + i, 0xa9a7 + i)
+```
+
+The entries counted are those from the first index (0, or the lowest value the index can have; for a table of words, the index goes up in twos) for as long as each looks like an entry: its bytes aren't classified yet, and it points to the start of an instruction (or to an opcode that isn't classified yet, other than BRK), not into the table. A table of low bytes can't run into the table of high bytes. Nothing is printed unless there are at least two such entries, so a table the control file already marks (or one whose entries are mixed in with other data, such as the names in a command table, starting with that data) gets no note. It's only a suggestion: check that the entries are right before using it. `config.set_jump_table_suggestions(False)` turns the notes off.
+
 ## Redundant instructions
 
 For the 6502 and the Z80, an instruction whose results are never used is commented `; Redundant instruction?`. That's when every register and flag it changes is changed again before anything reads it, e.g. `lda foo` just before `pla`, or `lda foo : and #3` before `lda bar` (both are redundant), or `sec` before `cmp`. On the 6502, an instruction without an operand is also redundant if what it would change is known for certain to be that already (see above): e.g. `sec` after `cmp #10 : bcc less` (the carry is already set), or `tay` when A and Y are both 0 (and the flags already agree). A load of a constant that happens to equal the register isn't counted, since the constant may mean something else (e.g. `ldx #>handler`). This can point to a bug, or to code that was left behind. `config.set_redundant_instruction_comments(False)` turns it off.

@@ -52,6 +52,11 @@ def warn(s):
     """Print a warning message, 'warning: ...' (to stderr), and carry on."""
     print("warning: %s" % (s), file=sys.stderr)
 
+def note(s):
+    """Print a note, 'note: ...' (to stderr), e.g. a suggestion for the
+    control file."""
+    print("note: %s" % (s), file=sys.stderr)
+
 def and_list(items):
     """The items (strings) as English: 'a', 'a and b', or 'a, b and c'."""
     items = list(items)

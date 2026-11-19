@@ -77,6 +77,7 @@ class Settings:
         self.text_encoding                         = "ascii"    # see textencoding.py
         self.redundant_instruction_comments        = True
         self.find_jump_tables                      = True
+        self.jump_table_suggestions                = True
         self.join_states_at_labels                 = True
         self.subroutine_summaries                  = True
         self.upper_case_os_calls                   = True
@@ -337,6 +338,18 @@ def set_find_jump_tables(b):
     after 'cmp #7 : bcs bad : asl : tax'), and trace the code their entries
     point to, as code_ptr() would (see Cpu6502.find_jump_tables())."""
     session.current().settings.find_jump_tables = b
+
+def get_jump_table_suggestions():
+    """Whether py8dis suggests control file lines for jump tables it finds
+    but can't mark (see Cpu6502.suggest_jump_tables())."""
+    return session.current().settings.jump_table_suggestions
+
+def set_jump_table_suggestions(b):
+    """For each 6502 jump table that py8dis finds but can't mark, because
+    what its index can be isn't known, print a note (to stderr) of how many
+    entries it seems to have, with the control file lines that would mark
+    them (see Cpu6502.suggest_jump_tables())."""
+    session.current().settings.jump_table_suggestions = b
 
 def get_join_states_at_labels():
     """Whether what's known for certain at a 6502 label is what all the

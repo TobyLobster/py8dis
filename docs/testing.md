@@ -35,7 +35,7 @@ py8dis itself needs only Python 3. The tests also use these, when they're instal
 The tests and what each one covers are listed in `run_tests.py`. Besides the disassemblies, it has:
 
 - the error tests (control files in `examples/python/errors`), each of which should make py8dis stop with a particular error message;
-- the warning tests (in `examples/python/warnings`), each of which should give a particular warning.
+- the warning tests (in `examples/python/warnings`), each of which should give a particular warning (or note, such as a jump table suggestion: one of more than one line must appear as lines one after another).
 
 With `-c`, when all the tests are run, it also runs `session_tests.py` (several disassemblies in one process, using py8dis as a library, and a check that each of py8dis's modules can be imported on its own) `render_tests.py` (how each kind of line is written for each assembler; `./render_tests.py --print` shows what each test gives now) and `known_bits_tests.py` (that what py8dis knows about the 6502's registers bit by bit, and the flags, is right: each update of the CPU state, from random states with some bits known, is checked against a simple 6502 for every state that agrees with what was known; and random programs with branches and loops, and with subroutines that call each other, tail call and push and pull, are disassembled, then run on the simple 6502 with a real stack, checking what py8dis says it knows at every instruction run and after every call that returns).
 
