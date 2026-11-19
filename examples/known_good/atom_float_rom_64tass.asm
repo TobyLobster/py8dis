@@ -986,6 +986,10 @@ sub_cd494
     jsr basic_evaluate_numeric_expression_without_copy_result         ; d494: 20 bc c8     ..
     jmp basic_verify_comma                                            ; d497: 4c 31 c2    L1.
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 sub_cd49a
     ldy sneaky_pointer_high,x                                         ; d49a: b4 24       .$
     lda int_workspace_stack_low - 1,x                                 ; d49c: b5 15       ..
@@ -1295,6 +1299,10 @@ skip3
     bne times_ten_loop                                                ; d678: d0 da       ..
     rts                                                               ; d67a: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 get_next_output_buffer_character
     sty temp_offset                                                   ; d67b: 84 55       .U
     ldy output_buffer_offset                                          ; d67d: a4 54       .T
@@ -1353,6 +1361,10 @@ copy_float_loop
     bne copy_float_loop                                               ; d6ca: d0 f9       ..
     rts                                                               ; d6cc: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 shift_mantissa_up_one_bit
     asl float8A_rounding                                              ; d6cd: 06 5e       .^
     rol float8A_man4                                                  ; d6cf: 26 5d       &]
@@ -1361,6 +1373,10 @@ shift_mantissa_up_one_bit
     rol float8A_man1                                                  ; d6d5: 26 5a       &Z
     rts                                                               ; d6d7: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 shift_mantissa_down_one_bit
     ror float8A_man1                                                  ; d6d8: 66 5a       fZ
     ror float8A_man2                                                  ; d6da: 66 5b       f[
@@ -1384,6 +1400,11 @@ shift_mantissa_down_eight_bits
 
 float8B_equals_half_float8A
     jsr set_float8B_equal_to_float8A                                  ; d6f8: 20 c3 d6     ..
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+;     Y: (preserved)
+; ***************************************************************************************
 halve_float8B_mantissa
     lsr float8B_man1                                                  ; d6fb: 46 62       Fb
     ror float8B_man2                                                  ; d6fd: 66 63       fc
@@ -1540,6 +1561,10 @@ skip6
     dec float8A_exponent                                              ; d7ff: c6 59       .Y
     jmp normalise_by_bits_loop                                        ; d801: 4c f2 d7    L..
 
+; ***************************************************************************************
+; On Exit:
+;     V: (preserved)
+; ***************************************************************************************
 unpack_from_floatptr_into_float8B
     ldy #4                                                            ; d804: a0 04       ..
     lda #0                                                            ; d806: a9 00       ..
@@ -1565,13 +1590,16 @@ return_9
 
 pack_float8A_into_float2_setting_floatptr
     jsr point_floatptr_at_float2                                      ; d827: 20 a2 db     ..
-    bne pack_float8A_into_floatptr                                    ; d82a: d0 11       ..
+    bne pack_float8A_into_floatptr                                    ; d82a: d0 11       ..  ; ALWAYS branch
+
 pack_float8A_into_float3_setting_floatptr
     jsr point_floatptr_at_float3                                      ; d82c: 20 a6 db     ..
-    bne pack_float8A_into_floatptr                                    ; d82f: d0 0c       ..
+    bne pack_float8A_into_floatptr                                    ; d82f: d0 0c       ..  ; ALWAYS branch
+
 pack_float8A_into_float1_setting_floatptr
     jsr point_floatptr_at_float1                                      ; d831: 20 aa db     ..
-    bne pack_float8A_into_floatptr                                    ; d834: d0 07       ..
+    bne pack_float8A_into_floatptr                                    ; d834: d0 07       ..  ; ALWAYS branch
+
 sub_cd836
     ldx workspace_stack_pointer                                       ; d836: a6 04       ..
     ldy #$6f                                                          ; d838: a0 6f       .o
@@ -1637,7 +1665,8 @@ midpoint_round_mantissa
 
 convert_float8A_to_integer_in_mantissa
     jsr zero_float8B_bugged                                           ; d89a: 20 c7 d8     ..
-    beq shift_float8A_down                                            ; d89d: f0 06       ..  ; ALWAYS branch!
+    beq shift_float8A_down                                            ; d89d: f0 06       ..  ; ALWAYS branch! ; ALWAYS branch
+
 
 shift_down_loop
     lda float8A_exponent                                              ; d89f: a5 59       .Y
@@ -1665,6 +1694,10 @@ set_float8A_mantissa_to_7fffffff_and_clear_float8B
     sta float8A_man4                                                  ; d8c5: 85 5d       .]
     ; Out by one error, it zeroes everything in float8B except the the sign byte, and
     ; mistakenly zeroes result_man1
+; ***************************************************************************************
+; On Exit:
+;     Z: set
+; ***************************************************************************************
 zero_float8B_bugged
     ldx #8                                                            ; d8c7: a2 08       ..
     lda #0                                                            ; d8c9: a9 00       ..
@@ -1994,7 +2027,8 @@ return_14
 reciprocate_float8A
     jsr pack_float8A_into_float1_setting_floatptr                     ; daae: 20 31 d8     1.
     jsr set_float8A_to_one                                            ; dab1: 20 8d de     ..
-    bne divide_float8A_by_floatptr                                    ; dab4: d0 26       .&
+    bne divide_float8A_by_floatptr                                    ; dab4: d0 26       .&  ; ALWAYS branch
+
 float8A_equals_floatptr_divided_by_float8A
     jsr three_way_sign_of_float8A                                     ; dab6: 20 86 d6     ..
     beq error3                                                        ; dab9: f0 ec       ..
@@ -2126,14 +2160,26 @@ point_floatptr_at_float4
     lda #<float4                                                      ; db9e: a9 d4       ..
     bne set_floatptr                                                  ; dba0: d0 0a       ..  ; ALWAYS branch
 
+; ***************************************************************************************
+; On Exit:
+;     Z: clear
+; ***************************************************************************************
 point_floatptr_at_float2
     lda #<float2                                                      ; dba2: a9 ca       ..
     bne set_floatptr                                                  ; dba4: d0 06       ..  ; ALWAYS branch
 
+; ***************************************************************************************
+; On Exit:
+;     Z: clear
+; ***************************************************************************************
 point_floatptr_at_float3
     lda #<float3                                                      ; dba6: a9 cf       ..
     bne set_floatptr                                                  ; dba8: d0 02       ..  ; ALWAYS branch
 
+; ***************************************************************************************
+; On Exit:
+;     Z: clear
+; ***************************************************************************************
 point_floatptr_at_float1
     lda #<float1                                                      ; dbaa: a9 c5       ..
 set_floatptr
@@ -2169,7 +2215,7 @@ log_function_within_valid_range
     jsr series_evaluator                                              ; dbdb: 20 27 dc     '.
     jsr pack_float8A_into_float1_setting_floatptr                     ; dbde: 20 31 d8     1.
     pla                                                               ; dbe1: 68          h
-    sec                                                               ; dbe2: 38          8
+    sec                                                               ; dbe2: 38          8   ; Redundant instruction?
     sbc #$81                                                          ; dbe3: e9 81       ..
     jsr set_float8A_to_the_accumulator                                ; dbe5: 20 b2 d7     ..
     lda #<ln2                                                         ; dbe8: a9 f9       ..
@@ -2489,6 +2535,10 @@ cde83
     bcc cdebc                                                         ; de87: 90 33       .3
     cmp #$85                                                          ; de89: c9 85       ..
     bcc cde98                                                         ; de8b: 90 0b       ..
+; ***************************************************************************************
+; On Exit:
+;     Z: clear
+; ***************************************************************************************
 set_float8A_to_one
     jsr zero_float8A                                                  ; de8d: 20 a4 da     ..
     ldy #$80                                                          ; de90: a0 80       ..

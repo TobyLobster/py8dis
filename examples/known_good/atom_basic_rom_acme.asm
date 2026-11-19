@@ -1898,16 +1898,21 @@ sub_cc962
 function_top
     ldy #$0d                                                          ; c973: a0 0d       ..
     jsr sub_cc9a1                                                     ; c975: 20 a1 c9     ..
-    beq cc981                                                         ; c978: f0 07       ..
+    beq cc981                                                         ; c978: f0 07       ..  ; ALWAYS branch
+
 function_count
     lda l0007                                                         ; c97a: a5 07       ..
+; ***************************************************************************************
+; On Exit:
+;     A: 0
+; ***************************************************************************************
 ; $c97c referenced 6 times by $c95c, $c9cf, $ca53, $ca58, $cf63, $cfb3
 cc97c
     jsr sub_cc9b3                                                     ; c97c: 20 b3 c9     ..
-    sta int_workspace_stack_mid1-1,x                                  ; c97f: 95 24       .$
+    sta int_workspace_stack_mid1-1,x                                  ; c97f: 95 24       .$  ; A=0
 ; $c981 referenced 1 time by $c978
 cc981
-    sta int_workspace_stack_mid2-1,x                                  ; c981: 95 33       .3
+    sta int_workspace_stack_mid2-1,x                                  ; c981: 95 33       .3  ; A=0
     sta int_workspace_stack_high-1,x                                  ; c983: 95 42       .B
     rts                                                               ; c985: 60          `
 
@@ -1929,9 +1934,17 @@ loop_cc988
     dey                                                               ; c99a: 88          .
     bne loop_cc988                                                    ; c99b: d0 eb       ..
     ldy #8                                                            ; c99d: a0 08       ..
+; ***************************************************************************************
+; On Exit:
+;     A: 0
+; ***************************************************************************************
 ; $c99f referenced 3 times by $c4db, $c852, $cf38
 cc99f
     ldx workspace_stack_pointer                                       ; c99f: a6 04       ..
+; ***************************************************************************************
+; On Exit:
+;     Z: set
+; ***************************************************************************************
 ; $c9a1 referenced 1 time by $c975
 sub_cc9a1
     lda basic_line_number,y                                           ; c9a1: b9 01 00    ...
@@ -1941,6 +1954,10 @@ sub_cc9a1
     lda parsing_ptr_offset,y                                          ; c9ab: b9 03 00    ...
     sta int_workspace_stack_high,x                                    ; c9ae: 95 43       .C
     lda basic_error_number,y                                          ; c9b0: b9 00 00    ...
+; ***************************************************************************************
+; On Exit:
+;     A: 0
+; ***************************************************************************************
 ; $c9b3 referenced 1 time by $c97c
 sub_cc9b3
     sta int_workspace_stack_low,x                                     ; c9b3: 95 16       ..
@@ -2031,7 +2048,7 @@ statement_list
     jsr cc97c                                                         ; ca53: 20 7c c9     |.
     lda #$ff                                                          ; ca56: a9 ff       ..
     jsr cc97c                                                         ; ca58: 20 7c c9     |.
-    sta workspace_stack_pointer                                       ; ca5b: 85 04       ..
+    sta workspace_stack_pointer                                       ; ca5b: 85 04       ..  ; A=0
     ldy #$7f                                                          ; ca5d: a0 7f       ..
     sty int_workspace_stack_mid1+1                                    ; ca5f: 84 26       .&
     jsr sub_cc465                                                     ; ca61: 20 65 c4     e.
@@ -2592,19 +2609,28 @@ ccda4
     cmp #$0d                                                          ; cda7: c9 0d       ..
     bne ccda4                                                         ; cda9: d0 f9       ..
     jsr sub_ccdbc                                                     ; cdab: 20 bc cd     ..
-    lda (l000d),y                                                     ; cdae: b1 0d       ..
+    lda (l000d),y                                                     ; cdae: b1 0d       ..  ; Offset Y=1
     bmi ccdb5                                                         ; cdb0: 30 03       0.
-    iny                                                               ; cdb2: c8          .
-    bne ccda4                                                         ; cdb3: d0 ef       ..
+    iny                                                               ; cdb2: c8          .   ; Y=2
+    bne ccda4                                                         ; cdb3: d0 ef       ..  ; ALWAYS branch
+
 ; $cdb5 referenced 1 time by $cdb0
 ccdb5
-    iny                                                               ; cdb5: c8          .
+    iny                                                               ; cdb5: c8          .   ; Y=2
     jsr sub_ccdbc                                                     ; cdb6: 20 bc cd     ..
     jmp cc2cf                                                         ; cdb9: 4c cf c2    L..
 
+; ***************************************************************************************
+; On Exit:
+;     Y: 1
+; ***************************************************************************************
 ; $cdbc referenced 2 times by $cdab, $cdb6
 sub_ccdbc
     clc                                                               ; cdbc: 18          .
+; ***************************************************************************************
+; On Exit:
+;     Y: 1
+; ***************************************************************************************
 ; $cdbd referenced 2 times by $ce15, $ce32
 sub_ccdbd
     tya                                                               ; cdbd: 98          .
@@ -2698,7 +2724,7 @@ loop_cce23
     sta l0052                                                         ; ce35: 85 52       .R
     lda l000e                                                         ; ce37: a5 0e       ..
     sta l0053                                                         ; ce39: 85 53       .S
-    dey                                                               ; ce3b: 88          .
+    dey                                                               ; ce3b: 88          .   ; Y=0
     lda #$55 ; 'U'                                                    ; ce3c: a9 55       .U
     sta (l000d),y                                                     ; ce3e: 91 0d       ..
     cmp (l000d),y                                                     ; ce40: d1 0d       ..
@@ -2877,7 +2903,7 @@ function_ptr
     jsr OSRDAR                                                        ; cf33: 20 da ff     .. ; Read a file's arguments
     ldy #$52 ; 'R'                                                    ; cf36: a0 52       .R
     jsr cc99f                                                         ; cf38: 20 9f c9     ..
-    sta int_workspace_stack_high-1,x                                  ; cf3b: 95 42       .B
+    sta int_workspace_stack_high-1,x                                  ; cf3b: 95 42       .B  ; A=0
     rts                                                               ; cf3d: 60          `
 
 ; $cf3e referenced 3 times by $c22c, $cf2d, $cf5b

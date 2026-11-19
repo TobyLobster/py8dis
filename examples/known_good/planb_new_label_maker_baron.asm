@@ -10212,6 +10212,10 @@ section pydis, org = &1210, filename = "planb_new_label_maker_baron"
     jsr increment_print_address                                       ; 3e64: 20 6a 3e     j>
     jmp (print_addr_low)                                              ; 3e67: 6c 2f 00    l/.
 
+; ***************************************************************************************
+; On Exit:
+;     Y: (preserved)
+; ***************************************************************************************
 .increment_print_address
     inc print_addr_low                                                ; 3e6a: e6 2f       ./
     bne return_3                                                      ; 3e6c: d0 02       ..
@@ -11032,6 +11036,10 @@ routine_addr_high = opcode1+2
     pha                                                               ; 43a2: 48          H
     jsr plot_sprite_set                                               ; 43a3: 20 ad 44     .D
     pla                                                               ; 43a6: 68          h
+; ***************************************************************************************
+; On Exit:
+;     Z: set
+; ***************************************************************************************
 .plot_room_sprite_a_to_collision_map
     pha                                                               ; 43a7: 48          H
     clc                                                               ; 43a8: 18          .
@@ -12424,6 +12432,10 @@ screen_addr_high = opcode10+2
 
 ; ***************************************************************************************
 ; returns with carry clear if a closed door is near the player
+; ***************************************************************************************
+; On Exit:
+;     Y: (preserved)
+; ***************************************************************************************
 .is_closed_door_near_player
     lda current_room_cache,y                                          ; 4c5c: b9 00 04    ...
     and #&40                                                          ; 4c5f: 29 40       )@  ; check type of door (vertical or horizontal)

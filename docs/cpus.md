@@ -67,6 +67,14 @@ For the 6502, what's known at a label is what all the ways into it agree on, whe
 
 `config.set_join_states_at_labels(False)` makes py8dis forget everything at every label instead, as it did before.
 
+After a JSR to a subroutine in the code, what's known is what the subroutine leaves behind, whoever calls it:
+
+- the registers and flags it never changes (on any path to an RTS, counting the subroutines it calls and those it jumps to) are as they were before the call;
+- the rest are what's known at all of its RTSs (worked out knowing nothing at its start, since it could be called from anywhere), e.g. that it always returns with the carry clear;
+- a subroutine that jumps (or branches, or runs on) into another leaves what that one leaves too.
+
+Nothing is known after a call to a subroutine whose use of the stack py8dis doesn't follow: one that returns with something still pushed (e.g. the RTS trick), pulls more than it pushed (e.g. throwing its return address away), uses TXS, RTI, BRK or an indirect jump, runs into data, or calls such a subroutine, or one with a hook (see `hook_subroutine()`); nor after a call to code outside the binary (e.g. an OS routine). Before a subroutine, an "On Exit" note says what it leaves behind that the code after a call to it relies on: that it doesn't change a register or flag (`X: (preserved)`), or a register's value or a flag (`C: clear`), when something after a call reads it before changing it. A subroutine whose `subroutine()` gives its own `on_exit` notes doesn't get them. `config.set_subroutine_summaries(False)` turns this off (nothing is known after a JSR).
+
 Also, for the 6502:
 
 - A, X and Y are known bit by bit, so a register can be partly known: e.g. after `and #$0f` its top four bits are 0, after `ora #$80` bit 7 is 1, and after `asl` bit 0 is 0. AND, ORA and EOR with an immediate value, the shifts and rotates of A, INX, DEX, INY, DEY (and the 65C02's INC A and DEC A) and the transfers work on the bits that are known, and the flags they set are known where the bits say what they are: e.g. N is clear after `lsr`, Z is clear after `ora #1`, and C is clear after `and #$7f : asl`;

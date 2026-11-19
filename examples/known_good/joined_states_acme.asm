@@ -9,11 +9,11 @@ l0072   = $72
 
 pydis_start
 start
-    jsr sub_c2010                                                     ; 2000: 20 10 20     .  A:-- X:-- Y:-- ------
+    jsr sub_c2010                                                     ; 2000: 20 10 20     .  A:05 X:-- Y:05 n---z-
     jsr sub_c201c                                                     ; 2003: 20 1c 20     .  A:-- X:-- Y:-- ------
     jsr sub_c202e                                                     ; 2006: 20 2e 20     .  A:-- X:-- Y:-- ------
     jsr sub_c2049                                                     ; 2009: 20 49 20     I  A:-- X:-- Y:-- ------
-    jsr sub_c2050                                                     ; 200c: 20 50 20     P  A:-- X:-- Y:-- ------
+    jsr sub_c2050                                                     ; 200c: 20 50 20     P  A:-- X:-- Y:07 ------
     rts                                                               ; 200f: 60          `   A:-- X:-- Y:-- ------
 
 ; $2010 referenced 1 time by $2000
@@ -85,7 +85,7 @@ c204e
 ; $2050 referenced 1 time by $200c
 sub_c2050
     ldy #7                                                            ; 2050: a0 07       ..  A:-- X:-- Y:07 n---z-
-    jsr sub_c2056                                                     ; 2052: 20 56 20     V  A:-- X:-- Y:-- ------
+    jsr sub_c2056                                                     ; 2052: 20 56 20     V  A:-- X:-- Y:07 ------
     rts                                                               ; 2055: 60          `   A:-- X:-- Y:-- ------
 
 ; $2056 referenced 1 time by $2052

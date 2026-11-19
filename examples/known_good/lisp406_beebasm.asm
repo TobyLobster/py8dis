@@ -1579,6 +1579,10 @@ OSCLI   = &fff7
 
 
     ; **** Look for terminators
+; ***************************************************************************************
+; On Exit:
+;     A: (preserved)
+; ***************************************************************************************
 .TERMQ
     cmp TERMS,y                                    ; 88e5: d9 43 82    .C.
     beq TERRTS                                     ; 88e8: f0 03       ..
@@ -1622,6 +1626,10 @@ OSCLI   = &fff7
     beq LCHAR                                      ; 891a: f0 f5       ..
     cmp #')'                                       ; 891c: c9 29       .)
     beq LISTND                                     ; 891e: f0 1f       ..
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 .PUTBCK
     pha                                            ; 8920: 48          H
     ldy HANDLE                                     ; 8921: a4 13       ..
@@ -1786,9 +1794,9 @@ OSCLI   = &fff7
 .CHKCLL
     ldy #0                                         ; 8a0f: a0 00       ..
 .CHKCLM
-    lda (CELL),y                                   ; 8a11: b1 7c       .|
+    lda (CELL),y                                   ; 8a11: b1 7c       .|  ; Offset Y=0
     bne NXTCLL                                     ; 8a13: d0 36       .6
-    iny                                            ; 8a15: c8          .
+    iny                                            ; 8a15: c8          .   ; Y=1
     lda (CELL),y                                   ; 8a16: b1 7c       .|
     cmp ACL+1                                      ; 8a18: c5 73       .s
     bne NXTCLL                                     ; 8a1a: d0 2f       ./
@@ -1843,6 +1851,10 @@ OSCLI   = &fff7
     bne MCAP                                       ; 8a6d: d0 f7       ..
     rts                                            ; 8a6f: 60          `   ; New cell made
 
+; ***************************************************************************************
+; On Exit:
+;     Y: 0
+; ***************************************************************************************
 .NXCELL
     ldy #0                                         ; 8a70: a0 00       ..  ; Given pointer
     lda (CELL),y                                   ; 8a72: b1 7c       .|  ; in CELL, finds next
@@ -2199,7 +2211,7 @@ OSCLI   = &fff7
 .NOMSIN
     jsr DIV                                        ; 8c6a: 20 05 a0     ..
     lda XTNDL                                      ; 8c6d: a5 74       .t
-    sty XTNDL                                      ; 8c6f: 84 74       .t
+    sty XTNDL                                      ; 8c6f: 84 74       .t  ; Y=0
     ora #&30                                       ; 8c71: 09 30       .0
     ldx NIND                                       ; 8c73: a6 19       ..
     sta NBUFF,x                                    ; 8c75: 95 14       ..
@@ -2863,6 +2875,10 @@ OSCLI   = &fff7
     bcc BOOM                                       ; 9038: 90 c6       ..
     jmp POP                                        ; 903a: 4c 3a 83    L:.
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 .USEFUL
     ldy #2                                         ; 903d: a0 02       ..  ; Checks for
     lda (CELL),y                                   ; 903f: b1 7c       .|  ; string rather than
@@ -4563,6 +4579,10 @@ OSCLI   = &fff7
     ; Garbage collector file.
     ; ******************************
     ; **** Set CELL to image start
+; ***************************************************************************************
+; On Exit:
+;     C: (preserved)
+; ***************************************************************************************
 .SETCEL
     lda #WSBOT                                     ; 9abe: a9 02       ..
     sta CELL                                       ; 9ac0: 85 7c       .|
@@ -4576,7 +4596,7 @@ OSCLI   = &fff7
     jsr SETCEL                                     ; 9ac8: 20 be 9a     ..
     ldy #0                                         ; 9acb: a0 00       ..
 .RZ
-    lda (CELL),y                                   ; 9acd: b1 7c       .|
+    lda (CELL),y                                   ; 9acd: b1 7c       .|  ; Offset Y=0
     and #&fc                                       ; 9acf: 29 fc       ).
     sta (CELL),y                                   ; 9ad1: 91 7c       .|
     jsr NXCELL                                     ; 9ad3: 20 70 8a     p.
@@ -4738,7 +4758,7 @@ OSCLI   = &fff7
 .STCOLL
     jsr SPREG                                      ; 9bc0: 20 72 9e     r.
     bne STCOLL                                     ; 9bc3: d0 fb       ..
-    lda (CELL),y                                   ; 9bc5: b1 7c       .|
+    lda (CELL),y                                   ; 9bc5: b1 7c       .|  ; Offset Y=0
 .BOWDUN
     sec                                            ; 9bc7: 38          8
     adc CELL                                       ; 9bc8: 65 7c       e|  ; +1 because carry is set
@@ -4746,7 +4766,7 @@ OSCLI   = &fff7
     bcc SPOCK                                      ; 9bcc: 90 02       ..
     inc CELL+1                                     ; 9bce: e6 7d       .}
 .SPOCK
-    lda (CELL),y                                   ; 9bd0: b1 7c       .|
+    lda (CELL),y                                   ; 9bd0: b1 7c       .|  ; Offset Y=0
     tay                                            ; 9bd2: a8          .
     jsr SPREG                                      ; 9bd3: 20 72 9e     r.
     dey                                            ; 9bd6: 88          .   ; Avoid the return addr
@@ -4754,7 +4774,7 @@ OSCLI   = &fff7
 .STCOL
     jsr SPREG                                      ; 9bd8: 20 72 9e     r.
     bne STCOL                                      ; 9bdb: d0 fb       ..
-    lda (CELL),y                                   ; 9bdd: b1 7c       .|
+    lda (CELL),y                                   ; 9bdd: b1 7c       .|  ; Offset Y=0
     sec                                            ; 9bdf: 38          8
 .CXH
     adc CELL                                       ; 9be0: 65 7c       e|
@@ -4779,7 +4799,7 @@ OSCLI   = &fff7
     bcs NOREG                                      ; 9c01: b0 14       ..  ; finished,
     jsr USEFUL                                     ; 9c03: 20 3d 90     =.
     beq NOREG                                      ; 9c06: f0 0f       ..
-    lda (CELL,x)                                   ; 9c08: a1 7c       .|
+    lda (CELL,x)                                   ; 9c08: a1 7c       .|  ; Offset X=0
 .DOREG
     ldy CELL                                       ; 9c0a: a4 7c       .|  ; or if char atom
     sty GCA                                        ; 9c0c: 84 04       ..
@@ -4805,7 +4825,7 @@ OSCLI   = &fff7
     sty DISPM                                      ; 9c24: 84 0b       ..
     sty DISPM+1                                    ; 9c26: 84 0c       ..
 .ML
-    lda (CELL),y                                   ; 9c28: b1 7c       .|
+    lda (CELL),y                                   ; 9c28: b1 7c       .|  ; Offset Y=0
     lsr a                                          ; 9c2a: 4a          J
     bcc SETMIN                                     ; 9c2b: 90 08       ..
     jsr NXCELL                                     ; 9c2d: 20 70 8a     p.
@@ -4831,7 +4851,7 @@ OSCLI   = &fff7
 .STFR
     jsr NXCELL                                     ; 9c50: 20 70 8a     p.
     bcs TADJ                                       ; 9c53: b0 5a       .Z
-    lda (CELL),y                                   ; 9c55: b1 7c       .|
+    lda (CELL),y                                   ; 9c55: b1 7c       .|  ; Offset Y=0
     lsr a                                          ; 9c57: 4a          J
     bcc STFR                                       ; 9c58: 90 f6       ..
     lda CELL                                       ; 9c5a: a5 7c       .|
@@ -4937,7 +4957,7 @@ OSCLI   = &fff7
     jsr SETCEL                                     ; 9cf5: 20 be 9a     ..
     ldy #0                                         ; 9cf8: a0 00       ..  ; Revises pointer over
 .ADJUT
-    lda (CELL),y                                   ; 9cfa: b1 7c       .|  ; whole of
+    lda (CELL),y                                   ; 9cfa: b1 7c       .|  ; whole of ; Offset Y=0
     lsr a                                          ; 9cfc: 4a          J
     bcc NXADJ                                      ; 9cfd: 90 11       ..
     ldy #4                                         ; 9cff: a0 04       ..
@@ -4964,7 +4984,7 @@ OSCLI   = &fff7
 .SAL
     jsr NXCELL                                     ; 9d1d: 20 70 8a     p.
     bcs CLUP                                       ; 9d20: b0 53       .S
-    lda (CELL),y                                   ; 9d22: b1 7c       .|
+    lda (CELL),y                                   ; 9d22: b1 7c       .|  ; Offset Y=0
     lsr a                                          ; 9d24: 4a          J
     bcc SAL                                        ; 9d25: 90 f6       ..
     lda CELL                                       ; 9d27: a5 7c       .|
@@ -4974,7 +4994,7 @@ OSCLI   = &fff7
 .MOLE
     jsr NXCELL                                     ; 9d2f: 20 70 8a     p.
     bcs ABGO                                       ; 9d32: b0 05       ..
-    lda (CELL),y                                   ; 9d34: b1 7c       .|
+    lda (CELL),y                                   ; 9d34: b1 7c       .|  ; Offset Y=0
     lsr a                                          ; 9d36: 4a          J
     bcs MOLE                                       ; 9d37: b0 f6       ..
 .ABGO
@@ -5030,7 +5050,7 @@ OSCLI   = &fff7
     sta AREVAL+1                                   ; 9d7c: 8d 2e 04    ...
 .CLUPB
     jsr CLEARF                                     ; 9d7f: 20 c8 9a     ..
-    sec                                            ; 9d82: 38          8
+    sec                                            ; 9d82: 38          8   ; Redundant instruction?
     lda OLDEXT                                     ; 9d83: a5 1b       ..
     sbc AREVAL                                     ; 9d85: ed 2d 04    .-.
     sta ACL                                        ; 9d88: 85 72       .r
@@ -5453,6 +5473,10 @@ DWARF=NERRC-1
     ; **** 16 bit divide
 .DIVPM
     jsr MDA                                        ; a002: 20 25 a0     %.
+; ***************************************************************************************
+; On Exit:
+;     Y: 0
+; ***************************************************************************************
 .DIV
     ldy #&10                                       ; a005: a0 10       ..
 .DIVB
@@ -5483,6 +5507,10 @@ DWARF=NERRC-1
     ldx #AUXL                                      ; a029: a2 76       .v  ; AUXL with sign in
     jsr MDB                                        ; a02b: 20 30 a0     0.
     ldx #ACL                                       ; a02e: a2 72       .r  ; ls bit of SIGN
+; ***************************************************************************************
+; On Exit:
+;     Y: (preserved)
+; ***************************************************************************************
 .MDB
     lda GCNO+1,x                                   ; a030: b5 01       ..
     bpl MDRTS                                      ; a032: 10 0d       ..

@@ -460,6 +460,10 @@ lf250 = assembler_mode_base_opcodes+63
     equb   7,   7,   7,   7,   5,   9,   3,   3,   1,   1,   1,   1   ; f281: 07 07 07... ...
     equb   2,   1,   1,   1                                           ; f28d: 02 01 01... ...
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 ; &f291 referenced 13 times by &f299, &f32e, &f333, &f360, &f396, &f3f2, &f408, &f40f, &f465, &f470, &f477, &f48c, &f493
 .cf291
     ldy parsing_ptr_offset                                            ; f291: a4 03       ..
@@ -590,6 +594,10 @@ lf250 = assembler_mode_base_opcodes+63
     iny                                                               ; f35b: c8          .
     sta (l0052),y                                                     ; f35c: 91 52       .R
     bne cf396                                                         ; f35e: d0 36       .6
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 ; &f360 referenced 3 times by &f369, &f3a7, &f49b
 .cf360
     jsr cf291                                                         ; f360: 20 91 f2     ..
@@ -1539,6 +1547,9 @@ lf7cb = bit_masks+2
 ; On Entry:
 ;     Y: offset in the input buffer
 ; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 ; &f876 referenced 4 times by &f818, &f89b, &f8f6, &fa76
 .skip_input_buffer_spaces
     lda input_buffer,y                                                ; f876: b9 00 01    ...
@@ -1546,6 +1557,11 @@ lf7cb = bit_masks+2
     beq loop_cf875                                                    ; f87b: f0 f8       ..
     rts                                                               ; f87d: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+;     Y: (preserved)
+; ***************************************************************************************
 ; &f87e referenced 1 time by &f8a1
 .sub_cf87e
     cmp #&30 ; '0'                                                    ; f87e: c9 30       .0
@@ -2063,7 +2079,7 @@ lf9a3 = cf9a2+1
 .sub_cfb3b
     ldx #7                                                            ; fb3b: a2 07       ..
     jsr sub_cfb7a                                                     ; fb3d: 20 7a fb     z.
-    stx l00dc                                                         ; fb40: 86 dc       ..
+    stx l00dc                                                         ; fb40: 86 dc       ..  ; X=0
     ldy #4                                                            ; fb42: a0 04       ..  ; Y=file handle
 ; &fb44 referenced 1 time by &fb4a
 .loop_cfb44
@@ -2088,7 +2104,7 @@ lf9a3 = cf9a2+1
     jsr sub_cfb81                                                     ; fb61: 20 81 fb     ..
     bit l00d2                                                         ; fb64: 24 d2       $.
     bvc cfb73                                                         ; fb66: 50 0b       P.
-    dey                                                               ; fb68: 88          .
+    dey                                                               ; fb68: 88          .   ; Y=&ff
 ; &fb69 referenced 1 time by &fb71
 .loop_cfb69
     iny                                                               ; fb69: c8          .   ; Y=file handle
@@ -2101,12 +2117,21 @@ lf9a3 = cf9a2+1
     lda l00dc                                                         ; fb73: a5 dc       ..
     jsr OSBPUT                                                        ; fb75: 20 d1 ff     .. ; Write byte A to file Y
     ldx #4                                                            ; fb78: a2 04       ..
+; ***************************************************************************************
+; On Exit:
+;     X: 0
+; ***************************************************************************************
 ; &fb7a referenced 2 times by &faf2, &fb3d
 .sub_cfb7a
     stx ppi_port_c                                                    ; fb7a: 8e 02 b0    ...
     ldx #&78 ; 'x'                                                    ; fb7d: a2 78       .x
     bne cfb83                                                         ; fb7f: d0 02       ..  ; ALWAYS branch
 
+; ***************************************************************************************
+; On Exit:
+;     A: (preserved)
+;     Y: (preserved)
+; ***************************************************************************************
 ; &fb81 referenced 1 time by &fb61
 .sub_cfb81
     ldx #&1e                                                          ; fb81: a2 1e       ..
@@ -2253,6 +2278,10 @@ lf9a3 = cf9a2+1
     pla                                                               ; fc29: 68          h
     rts                                                               ; fc2a: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     Y: (preserved)
+; ***************************************************************************************
 ; &fc2b referenced 2 times by &f936, &f9e0
 .sub_cfc2b
     lda l00cd                                                         ; fc2b: a5 cd       ..
@@ -2333,7 +2362,8 @@ lf9a3 = cf9a2+1
     ldx #7                                                            ; fc92: a2 07       ..
     stx ppi_port_c                                                    ; fc94: 8e 02 b0    ... ; Tape output high, turn the 2.4 kHz tape tone on, speaker high, select colour set 0
     jsr sub_cfcda                                                     ; fc97: 20 da fc     ..
-    bmi cfcaf                                                         ; fc9a: 30 13       0.
+    bmi cfcaf                                                         ; fc9a: 30 13       0.  ; ALWAYS branch
+
 ; &fc9c referenced 1 time by &fc90
 .cfc9c
     ldy #4                                                            ; fc9c: a0 04       ..
@@ -2358,6 +2388,10 @@ lf9a3 = cf9a2+1
     plp                                                               ; fcbb: 28          (
     rts                                                               ; fcbc: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     V: (preserved)
+; ***************************************************************************************
 ; &fcbd referenced 2 times by &fba4, &fbf8
 .sub_cfcbd
     ldx #0                                                            ; fcbd: a2 00       ..
@@ -2373,6 +2407,10 @@ lf9a3 = cf9a2+1
 .return_9
     rts                                                               ; fccc: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+; ***************************************************************************************
 ; &fccd referenced 2 times by &fc0a, &fcc5
 .sub_cfccd
     sty l00c5                                                         ; fccd: 84 c5       ..
@@ -2382,9 +2420,17 @@ lf9a3 = cf9a2+1
     and #&20 ; ' '                                                    ; fcd5: 29 20       )
     rts                                                               ; fcd7: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     Y: (preserved)
+; ***************************************************************************************
 ; &fcd8 referenced 3 times by &fc88, &fca3, &fca9
 .sub_cfcd8
     ldx #0                                                            ; fcd8: a2 00       ..
+; ***************************************************************************************
+; On Exit:
+;     N: set
+; ***************************************************************************************
 ; &fcda referenced 1 time by &fc97
 .sub_cfcda
     lda #&10                                                          ; fcda: a9 10       ..
@@ -2491,7 +2537,8 @@ lf9a3 = cf9a2+1
     lda #&20 ; ' '                                                    ; fd53: a9 20       .
     jsr wait_for_flyback_or_now                                       ; fd55: 20 6b fe     k. ; Wait for the field flyback, unless it's under way
     sta (screen_line_address),y                                       ; fd58: 91 de       ..
-    bpl cfd42                                                         ; fd5a: 10 e6       ..
+    bpl cfd42                                                         ; fd5a: 10 e6       ..  ; ALWAYS branch
+
 .wrch_backspace
     jsr sub_cfe35                                                     ; fd5c: 20 35 fe     5.
     jmp cfd42                                                         ; fd5f: 4c 42 fd    LB.
@@ -2707,12 +2754,22 @@ lf9a3 = cf9a2+1
 ; ***************************************************************************************
 ; Wait for the start of the next field flyback
 ; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
+;     Y: (preserved)
+; ***************************************************************************************
 ; &fe66 referenced 4 times by &f14f, &fb83, &fe0a, &fe69
 .wait_for_flyback
     bit ppi_port_c                                                    ; fe66: 2c 02 b0    ,.. ; Test the field sync
     bpl wait_for_flyback                                              ; fe69: 10 fb       ..  ; Wait for the start of the next field flyback
 ; ***************************************************************************************
 ; Wait for the field flyback, unless it's under way
+; ***************************************************************************************
+; On Exit:
+;     A: (preserved)
+;     Y: (preserved)
+;     C: (preserved)
+;     N: clear
 ; ***************************************************************************************
 ; &fe6b referenced 6 times by &fd33, &fd45, &fd55, &fdb0, &fe16, &fe6e
 .wait_for_flyback_or_now
@@ -2798,6 +2855,9 @@ lf9a3 = cf9a2+1
 ;     A: character
 ;     X: index to search down from (#0A for OSWRCH's control codes, #17 for OSRDCH's
 ;        keys)
+; ***************************************************************************************
+; On Exit:
+;     Y: (preserved)
 ; ***************************************************************************************
 ; &fec5 referenced 2 times by &fd03, &feb4
 .find_control_code

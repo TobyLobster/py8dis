@@ -28,8 +28,8 @@ section pydis, org = &2000, filename = "regression_tests_baron"
     ldy #3                                                            ; 2000: a0 03       ..
     lda #7                                                            ; 2002: a9 07       ..             ; A=value to store
     jsr store_value                                                   ; 2004: 20 2f 20     /             ; Store a value
-    stx temp                                                          ; 2007: 86 71       .q
-    sty temp_2                                                        ; 2009: 84 72       .r             ; Y=count
+    stx temp                                                          ; 2007: 86 71       .q             ; X=0
+    sty temp_2                                                        ; 2009: 84 72       .r             ; Y=count ; Y=1
     jsr quiet_routine                                                 ; 200b: 20 36 20     6             ; Calls quiet_routine ; quiet_routine is quiet
     lda #5                                                            ; 200e: a9 05       ..
     sec                                                               ; 2010: 38          8
@@ -72,6 +72,9 @@ section pydis, org = &2000, filename = "regression_tests_baron"
 
 ; ***************************************************************************************
 ; Quiet routine
+; ***************************************************************************************
+; On Exit:
+;     X: (preserved)
 ; ***************************************************************************************
 ; &2036 referenced 1 time by &200b
 .quiet_routine

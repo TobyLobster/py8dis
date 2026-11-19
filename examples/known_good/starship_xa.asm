@@ -463,6 +463,10 @@ add_starship_velocity_to_position
     rts                                                               // 2180: 60          `   :1080[1]
 
 // ----------------------------------------------------------------------------------
+// ***************************************************************************************
+// On Exit:
+//     X: (preserved)
+// ***************************************************************************************
 multiply_enemy_position_by_starship_rotation_sine_magnitude
     lda starship_rotation_sine_magnitude                              // 2181: ad 05 0f    ... :1081[1]
     sta segment_length                                                // 2184: 85 74       .t  :1084[1]
@@ -491,6 +495,10 @@ input_bit_unset1
     rts                                                               // 21ae: 60          `   :10ae[1]
 
 // ----------------------------------------------------------------------------------
+// ***************************************************************************************
+// On Exit:
+//     X: (preserved)
+// ***************************************************************************************
 multiply_enemy_position_by_starship_rotation_cosine
     lda starship_rotation_cosine                                      // 21af: ad 04 0f    ... :10af[1]
     sta segment_angle                                                 // 21b2: 85 78       .x  :10b2[1]
@@ -2949,6 +2957,11 @@ plot_enemy_explosion_segments
 unused38
     .byt $ea, $ea, $ea, $ea                                           // 320f: ea ea ea... ... :210f[1]
 
+// ***************************************************************************************
+// On Exit:
+//     X: (preserved)
+//     Y: (preserved)
+// ***************************************************************************************
 random_number_generator
     lda rnd_1                                                         // 3213: ad d1 1c    ... :2113[1]
     sta y_pixels                                                      // 3216: 85 7b       .{  :2116[1]
@@ -4409,6 +4422,11 @@ skip_inversion8
     adc x_pixels                                                      // 3c23: 65 7a       ez  :2b23[1]
     rts                                                               // 3c25: 60          `   :2b25[1]
 
+// ***************************************************************************************
+// On Exit:
+//     X: (preserved)
+//     Y: (preserved)
+// ***************************************************************************************
 get_rectilinear_distance_from_centre_of_screen
     lda enemy_ships_x_pixels,x                                        // 3c26: bd 82 04    ... :2b26[1]
     bmi skip_inversion_x4                                             // 3c29: 30 02       0.  :2b29[1]
@@ -4440,6 +4458,10 @@ turn_enemy_ship_towards_starship_using_pixels_unused
 
 turn_enemy_ship_towards_starship
     jsr calculate_enemy_ship_angle_to_starship                        // 3c5e: 20 58 27     X' :2b5e[1]
+// ***************************************************************************************
+// On Exit:
+//     X: (preserved)
+// ***************************************************************************************
 turn_enemy_ship_towards_desired_angle_accounting_for_starship_velocity
     lda enemy_ship_desired_angle_divided_by_eight                     // 3c61: ad 55 26    .U& :2b61[1]
     clc                                                               // 3c64: 18          .   :2b64[1]
@@ -4557,6 +4579,10 @@ unused_routine_to_turn_enemy_ship_on_screen_towards_starship
     jsr calculate_enemy_ship_angle_to_starship                        // 3d23: 20 58 27     X' :2c23[1]
     jmp turn_enemy_ship_towards_desired_angle                         // 3d26: 4c cf 2b    L.+ :2c26[1]
 
+// ***************************************************************************************
+// On Exit:
+//     X: (preserved)
+// ***************************************************************************************
 decrease_enemy_ship_velocity
     lda enemy_ships_velocity,x                                        // 3d29: bd 08 04    ... :2c29[1]
     beq return23                                                      // 3d2c: f0 06       ..  :2c2c[1]
@@ -4569,6 +4595,10 @@ return23
 unused68
     .byt $ea, $ea, $ea, $ea, $ea                                      // 3d35: ea ea ea... ... :2c35[1]
 
+// ***************************************************************************************
+// On Exit:
+//     X: (preserved)
+// ***************************************************************************************
 increase_or_decrease_enemy_ship_velocity_towards_desired_velocity
     lda enemy_ship_desired_velocity                                   // 3d3a: ad 81 2a    ..* :2c3a[1]
     cmp enemy_ships_velocity,x                                        // 3d3d: dd 08 04    ... :2c3d[1]

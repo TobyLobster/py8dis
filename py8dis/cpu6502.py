@@ -854,6 +854,35 @@ class CpuStateDisposition:
     def __str__(self):
         return self.__repr__()
 
+class SubroutineSummary:
+    """What a subroutine leaves behind, whoever calls it (see
+    Cpu6502.subroutine_summaries()).
+
+    entry is its binary address. body is the binary addresses of its
+    instructions (following branches and jumps, and stepping over the
+    subroutines it calls), returns those of its RTSs, tail_calls the entries
+    of the subroutines it jumps (or branches, or runs on) into, and calls
+    (JSR binary address, callee entry or None) for the JSRs in it. written
+    is the registers and flags ('axynvdizc') it may change, with those its
+    callees and tail calls change. valid is False if what it does to the
+    stack isn't understood (e.g. an RTS with something still pushed, or
+    TXS), or if it calls such a subroutine or one with a hook, or runs
+    into data; then nothing is known after a call to it."""
+
+    def __init__(self, entry):
+        self.entry = entry
+        self.body = set()
+        self.returns = []
+        self.tail_calls = set()
+        self.calls = []
+        self.written = set()
+        self.valid = True
+
+    def __repr__(self):
+        return "SubroutineSummary(%s, valid=%s, written=%s, returns=%s, tail_calls=%s)" % (
+            hex(self.entry), self.valid, "".join(sorted(self.written)), [hex(r) for r in self.returns], [hex(t) for t in self.tail_calls])
+
+
 def branch_target(binary_addr):
     """The target of the relative branch at binary_addr, without wrapping
     round the top or bottom of memory (so it can be below 0 or above $ffff)."""
@@ -950,7 +979,7 @@ class Cpu6502(cpu.Cpu):
 
     # How instructions change the C flag (see c_source()): those that don't
     # (including the 65C02's and the 6510's), and the compares
-    _C_UNCHANGED_MNEMONICS = _Z_UNCHANGED_MNEMONICS | set("""
+    _C_UNCHANGED_MNEMONICS = (_Z_UNCHANGED_MNEMONICS - {"clc", "sec"}) | set("""
         lda ldx ldy lax las tax tay txa tya tsx inx iny dex dey inc dec ora eor and bit
         trb tsb pla plx ply""".split())
 
@@ -1066,6 +1095,12 @@ class Cpu6502(cpu.Cpu):
         # address, from join_states_at_labels() (or None if it isn't used)
         self.states_before = None
 
+        # The subroutine each JSR calls (binary addresses; None if it's not
+        # in the traced code), and what each subroutine leaves behind (see
+        # join_states_at_labels())
+        self.jsr_callees = {}
+        self.subroutine_exits = {}
+
         # The addresses the traced code writes to (see modified_addresses()),
         # worked out with the CPU states, or None before then
         self.modified = None
@@ -1075,6 +1110,7 @@ class Cpu6502(cpu.Cpu):
         self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
         self.code_analysis_fns.append(self.show_register_knowledge)     # Show places where we use an inferred value of a register.
         self.code_analysis_fns.append(self.find_redundant_instructions) # Comment instructions whose results are never used.
+        self.code_analysis_fns.append(self.comment_subroutine_exits)    # 'On Exit' notes for what subroutines leave that callers use
 
         # For labelling rts instructions numerically (see label_maker()): the
         # last number used, and the number of each RTS, by binary address
@@ -3094,6 +3130,86 @@ class Cpu6502(cpu.Cpu):
                 return self.cpu_states[binary_addr - length].pessimistic
         return CpuStateDisposition()
 
+    # The flag each branch reads
+    _BRANCH_FLAGS = {"bpl": "n", "bmi": "n", "bvc": "v", "bvs": "v", "bcc": "c", "bcs": "c", "bne": "z", "beq": "z"}
+
+    def _read_after(self, binary_addr):
+        """The registers and flags ('axynvdizc') that the code after the
+        instruction at binary_addr reads before changing them: going on
+        through the code that follows (past labels, and past branches,
+        which read their flag, where they don't branch), until a jump, call
+        or return, or an instruction whose effects aren't known."""
+        result = set()
+        written = set()
+        c = classification.get_classification(binary_addr)
+        binary_addr += c.length()
+        for _ in range(64):
+            c = classification.get_classification(binary_addr)
+            if not isinstance(c, self.Opcode):
+                break
+            mnemonic = c.mnemonic.lower()
+            if mnemonic in self._BRANCH_FLAGS:
+                flag = self._BRANCH_FLAGS[mnemonic]
+                if flag not in written:
+                    result.add(flag)
+                binary_addr += c.length()
+                continue
+            reads, writes, _ = self._instruction_effects(c, binary_addr)
+            if c.is_block_end() or reads == self._ALL_RESOURCES:
+                break
+            result |= reads - written
+            written |= writes
+            binary_addr += c.length()
+        return result
+
+    def comment_subroutine_exits(self):
+        """Note what each subroutine leaves behind (see
+        subroutine_summaries()) that the code after a call to it relies on,
+        as 'On Exit' notes before it, e.g. 'C: clear' if it always returns
+        with the carry clear and a caller branches on the carry, or 'X:
+        (preserved)' if it doesn't change X and a caller uses X after the
+        call. Something it leaves that no caller uses isn't noted. Not for a
+        subroutine whose 'On Exit' notes are given with subroutine()."""
+        declared = {}
+        for subroutine in session.current().trace.subroutines_list:
+            declared[subroutine.runtime_addr] = subroutine
+        callers = collections.defaultdict(list)
+        for jsr, callee in self.jsr_callees.items():
+            if callee is not None:
+                callers[callee].append(jsr)
+        for entry, (summary, at_exit) in sorted(self.subroutine_exits.items()):
+            runtime_addr = movemanager.b2r(BinaryAddr(entry))
+            subroutine = declared.get(runtime_addr)
+            if subroutine is not None and subroutine.on_exit:
+                continue
+            relied_on = set()
+            for jsr in callers[entry]:
+                relied_on |= self._read_after(jsr)
+            lines = []
+            for name in "axyczvn":
+                if name not in relied_on:
+                    continue
+                if name not in summary.written:
+                    lines.append((name, "(preserved)"))
+                elif at_exit is None:
+                    continue
+                elif name in "axy":
+                    value = at_exit[name].value
+                    if value is not None:
+                        lines.append((name, config.get_assembler().hex(value) if value > 9 else str(value)))
+                elif at_exit[name] in (True, False, 0, 1):
+                    lines.append((name, "set" if at_exit[name] else "clear"))
+            if not lines:
+                continue
+            move_id = session.current().moves.move_id_for_binary_addr[entry]
+            binary_loc = movemanager.BinaryLocation(BinaryAddr(entry), move_id)
+            if config.get_subroutine_header() is not None:
+                disassembly.comment_binary(binary_loc, config.get_subroutine_header(), word_wrap=False, auto_generated=True)
+            text = "On Exit:\n" + "\n".join(config.get_indent_string() + name.upper() + ": " + value for name, value in lines)
+            disassembly.comment_binary(binary_loc, text, word_wrap=False, auto_generated=True)
+            if config.get_subroutine_footer() is not None:
+                disassembly.comment_binary(binary_loc, config.get_subroutine_footer(), word_wrap=False, auto_generated=True)
+
     def _changed_by(self, c, binary_addr, writes):
         """Which of 'writes' (the registers and flags the instruction c at
         binary_addr writes, as 'axynvdizc') it can change: those not known
@@ -3462,6 +3578,148 @@ class Cpu6502(cpu.Cpu):
                 result.add(addr)
         return result
 
+    _PUSH_MNEMONICS = {"pha", "php", "phx", "phy"}
+    _PULL_MNEMONICS = {"pla", "plp", "plx", "ply"}
+    # (Instructions that write nothing to the registers or flags, whose
+    # _instruction_effects() are 'reads everything')
+    _CONTROL_MNEMONICS = {"bpl", "bmi", "bvc", "bvs", "bcc", "bcs", "bne", "beq", "bra", "jmp", "jsr", "rts"}
+
+    def _node_at(self, runtime_addr, move_id, node_set):
+        """The instruction (binary address in node_set) that a jump, call or
+        branch to runtime_addr from code in move_id reaches, or None."""
+        binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr & 0xffff), move_id)
+        if binary_addr is None:
+            binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr & 0xffff))
+        return binary_addr if binary_addr in node_set else None
+
+    def subroutine_summaries(self, nodes, node_set):
+        """A SubroutineSummary for each subroutine (each instruction a traced
+        JSR goes to), by its binary address: what it may change, and where
+        it returns (see join_states_at_labels(), which carries what it
+        leaves past each call to it)."""
+        move_ids = session.current().moves.move_id_for_binary_addr
+        hooks = getattr(self, "subroutine_hooks", {})
+        everything = set(self._ALL_RESOURCES)
+
+        # The subroutines, and the JSRs to each
+        entries = {}
+        callee_of = {}
+        hooked_calls = set()
+        for b in nodes:
+            c = classification.get_classification(b)
+            if isinstance(c, self.OpcodeJsr):
+                target_runtime = c.target(b)
+                target = self._node_at(target_runtime, move_ids[b], node_set)
+                callee_of[b] = target
+                if target_runtime in hooks:
+                    # (The hook says where it goes on after the call)
+                    hooked_calls.add(b)
+                if target is not None:
+                    summary = entries.setdefault(target, SubroutineSummary(target))
+                    if target_runtime in hooks:
+                        summary.valid = False
+
+        # Each one's body, returns, tail calls and calls, and what its own
+        # instructions write
+        own_writes = {}
+        for entry, summary in entries.items():
+            depth = {entry: 0}
+            todo = [entry]
+            writes = set()
+            while todo and summary.valid:
+                b = todo.pop()
+                d = depth[b]
+                c = classification.get_classification(b)
+                mnemonic = c.mnemonic.lower()
+                if b != entry and b in entries:
+                    # (Into another subroutine: a tail call)
+                    if d != 0:
+                        summary.valid = False
+                    summary.tail_calls.add(b)
+                    continue
+                summary.body.add(b)
+                if mnemonic in self._PUSH_MNEMONICS:
+                    d += 1
+                elif mnemonic in self._PULL_MNEMONICS:
+                    d -= 1
+                    if d < 0:
+                        summary.valid = False
+                        break
+                if mnemonic == "rts":
+                    if d != 0:
+                        summary.valid = False
+                        break
+                    summary.returns.append(b)
+                    continue
+                if mnemonic in ("txs", "rti", "brk") or isinstance(c, (self.OpcodeJmpInd, self.OpcodeReturn)) or c.addr_mode == self.mode_indexed_abs:
+                    summary.valid = False
+                    break
+                if mnemonic not in self._CONTROL_MNEMONICS:
+                    reads, w, _ = self._instruction_effects(c, b)
+                    if not w and reads == self._ALL_RESOURCES:
+                        # (An instruction whose effects aren't known)
+                        w = everything
+                    writes |= w
+                # Where it goes next
+                runtime = movemanager.b2r(BinaryAddr(b))
+                following = []
+                if isinstance(c, self.OpcodeConditionalBranch):
+                    following = [b + c.length(), self._node_at(c.target(b), move_ids[b], node_set)]
+                elif isinstance(c, self.OpcodeJmpAbs) or mnemonic == "bra":
+                    following = [self._node_at(c.target(b), move_ids[b], node_set)]
+                elif isinstance(c, self.OpcodeJsr):
+                    summary.calls.append((b, callee_of[b]))
+                    following = [b + c.length()]
+                elif not c.is_block_end():
+                    following = [b + c.length()]
+                else:
+                    summary.valid = False
+                    break
+                for f in following:
+                    if f is None or f not in node_set:
+                        summary.valid = False
+                        break
+                    if f in depth:
+                        if depth[f] != d:
+                            summary.valid = False
+                            break
+                    else:
+                        depth[f] = d
+                        todo.append(f)
+            own_writes[entry] = writes
+
+        # What each may change, with its callees and tail calls (until it
+        # settles, for subroutines that call each other), and which are
+        # valid (a call to an invalid one, or a tail call to one, makes the
+        # caller invalid)
+        for summary in entries.values():
+            summary.written = set(own_writes[summary.entry])
+        changed = True
+        while changed:
+            changed = False
+            for summary in entries.values():
+                written = set(summary.written)
+                valid = summary.valid
+                for jsr, callee in summary.calls:
+                    if jsr in hooked_calls:
+                        valid = False
+                    if callee is None:
+                        # (Outside the code: e.g. an OS routine, which may
+                        # change anything)
+                        written |= everything
+                    else:
+                        written |= entries[callee].written
+                        valid = valid and entries[callee].valid
+                for t in summary.tail_calls:
+                    written |= entries[t].written
+                    valid = valid and entries[t].valid
+                if written != summary.written or valid != summary.valid:
+                    summary.written = written
+                    summary.valid = valid
+                    changed = True
+        self.jsr_callees = callee_of
+        return entries
+
     def join_states_at_labels(self):
         """Work out what's known for certain (the pessimistic state) after
         each instruction again, so that at a label it's what all the ways in
@@ -3546,10 +3804,91 @@ class Cpu6502(cpu.Cpu):
         taken = {}              # What's known at its target if it's a branch that's taken (None: never)
         changes = collections.Counter()
 
+        # What subroutines leave behind (see subroutine_summaries()), and
+        # for each RTS, the JSRs whose way on it affects: those to the
+        # subroutines it returns from, and to those that tail call them
+        summaries = self.subroutine_summaries(nodes, node_set) if config.get_subroutine_summaries() else {}
+        jsrs_to = collections.defaultdict(list)
+        for jsr, callee in self.jsr_callees.items():
+            if callee is not None:
+                jsrs_to[callee].append(jsr)
+        tail_callers = collections.defaultdict(set)
+        for summary in summaries.values():
+            for t in summary.tail_calls:
+                tail_callers[t].add(summary.entry)
+        affected_by_return = collections.defaultdict(set)
+        for summary in summaries.values():
+            if not summary.valid:
+                continue
+            routines = {summary.entry}
+            todo = [summary.entry]
+            while todo:
+                for caller in tail_callers[todo.pop()]:
+                    if caller not in routines:
+                        routines.add(caller)
+                        todo.append(caller)
+            for r in summary.returns:
+                for routine in routines:
+                    affected_by_return[r].update(jsrs_to[routine])
+
+        def exit_state(entry, visiting=()):
+            """What's known at every return from the subroutine at entry (and
+            the subroutines it tail calls), or None if none has been worked
+            out yet."""
+            summary = summaries[entry]
+            result = None
+            for r in summary.returns:
+                s = state_in.get(r)
+                if s is not None:
+                    result = s if result is None else result.join(s)
+            for t in summary.tail_calls:
+                if t not in visiting:
+                    s = exit_state(t, visiting + (entry,))
+                    if s is not None:
+                        result = s if result is None else result.join(s)
+            return result
+
+        def after_call(p):
+            """What's known after the JSR at p returns, if what the subroutine
+            leaves is known: what it doesn't change is as before the call,
+            and the rest is what's known at all its returns. None if nothing
+            has been worked out yet; 'unknown' if the subroutine isn't
+            understood (see SubroutineSummary.valid)."""
+            callee = self.jsr_callees.get(p)
+            if callee is None or not summaries[callee].valid:
+                return "unknown"
+            before = state_in.get(p)
+            at_exit = exit_state(callee)
+            if before is None or at_exit is None:
+                return None
+            written = summaries[callee].written
+            result = at_exit.copy()
+            for reg in "axy":
+                if reg not in written:
+                    result[reg] = before[reg].copy()
+            for flag in "nvdizc":
+                if flag not in written:
+                    value = before[flag]
+                    result[flag] = None if value == "pending" else value
+            # What a flag says about registers: if the subroutine sets the
+            # flag, what it says at the returns; otherwise what it said
+            # before the call, if the subroutine doesn't change them
+            for name, flag, regs_of in (("z_from", "z", lambda v: v[0]), ("n_from", "n", lambda v: v), ("c_from", "c", lambda v: (v[0],))):
+                if flag not in written:
+                    value = getattr(before, name)
+                    if value is not None and any(r in written for r in regs_of(value)):
+                        value = None
+                    setattr(result, name, value)
+            return result
+
         def way_state(p, kind):
             """What's known on the way from p (None: it never goes that way)."""
             if kind == "taken":
                 return taken.get(p)
+            if p in self.jsr_callees:
+                result = after_call(p)
+                if result != "unknown":
+                    return result
             after = state_after.get(p)
             if after is None or after.always_branch:
                 return None
@@ -3622,7 +3961,12 @@ class Cpu6502(cpu.Cpu):
                     first.discard(b)
                     state_in[b] = new
                     update(b)
-                    for successor in ways_out[b]:
+                    successors = list(ways_out[b])
+                    for jsr in affected_by_return.get(b, ()):
+                        # (A return whose state changed: the ways on from
+                        # the calls to its subroutine)
+                        successors.extend(ways_out[jsr])
+                    for successor in successors:
                         if successor not in queued:
                             queued.add(successor)
                             heapq.heappush(worklist, successor)
@@ -3631,6 +3975,11 @@ class Cpu6502(cpu.Cpu):
 
         # What's known for certain before each instruction (see known_before())
         self.states_before = state_in
+
+        # What subroutines leave behind, for their 'On Exit' notes (see
+        # comment_subroutine_exits()): (summary, what's known at all its
+        # returns), by its entry
+        self.subroutine_exits = {entry: (summary, exit_state(entry)) for entry, summary in summaries.items() if summary.valid}
 
         # What's known for certain after each instruction (nothing, after
         # one that no way in reaches, e.g. after an 'ALWAYS branch')
@@ -3642,6 +3991,11 @@ class Cpu6502(cpu.Cpu):
             else:
                 self.cpu_states[b].pessimistic = after.pessimistic
                 self.cpu_states[b].always_branch = after.always_branch
+                if b in self.jsr_callees:
+                    # (What's known after the call returns)
+                    returned = after_call(b)
+                    if returned is not None and returned != "unknown":
+                        self.cpu_states[b].pessimistic = returned
 
     # ********************************************************************************************
     # Jump tables

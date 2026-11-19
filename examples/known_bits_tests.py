@@ -36,11 +36,21 @@ run_tests.py -c when all the tests are run.
    certain after it must be so (after a branch, only when it isn't taken,
    and a branch it says is always taken must be).
 
+4. What subroutines leave behind (see Cpu6502.subroutine_summaries()):
+   random programs with subroutines, which call each other, jump to each
+   other (tail calls), and push and pull A (sometimes unevenly, so that an
+   RTS goes somewhere else), are traced and run on the simple 6502 with a
+   real stack. What py8dis says it knows is checked as in 3, and what it
+   says it knows after a JSR is checked when the call returns. A run stops
+   at an RTS that doesn't return to a call (it's a jump to an address that
+   was pushed, which py8dis can't follow).
+
 The tests are randomised with a fixed seed, so they're the same each run.
 
 Usage: ./known_bits_tests.py   (exits with 1 if any fail)
 """
 
+import collections
 import random
 import sys
 from pathlib import Path
@@ -238,6 +248,8 @@ def step(opcode, operand, s):
     elif opcode == 0xa9: s['a'] = nz(operand)
     elif opcode == 0xa2: s['x'] = nz(operand)
     elif opcode == 0xa0: s['y'] = nz(operand)
+    elif opcode == 0x18: s['c'] = False                        # CLC
+    elif opcode == 0x38: s['c'] = True                         # SEC
     elif opcode == 0x0b:                                        # 6510: ANC
         s['a'] = nz(s['a'] & operand)
         s['c'] = s['n']
@@ -252,7 +264,7 @@ def step(opcode, operand, s):
 # The instructions tested, with the CPU they're for
 INSTRUCTIONS = [(op, "6502") for op in (0x29, 0x09, 0x49, 0x69, 0xe9, 0xc9, 0xe0, 0xc0, 0x0a, 0x06, 0x2a, 0x26,
                                         0x4a, 0x46, 0x6a, 0x66, 0xe8, 0xca, 0xc8, 0x88, 0xaa, 0x8a, 0xa8, 0x98,
-                                        0xa9, 0xa2, 0xa0)] + \
+                                        0xa9, 0xa2, 0xa0, 0x18, 0x38)] + \
                [(op, "65C02") for op in (0x1a, 0x3a, 0x89)] + [(op, "6510") for op in (0x0b, 0x4b)]
 
 # The branches: (opcode, flag, the value the flag has if it isn't taken)
@@ -525,12 +537,275 @@ def test_joining(rng, programs=150):
     return count
 
 
+# 4. Subroutines
+
+def random_program_with_subroutines(rng, subroutines=3, main_slots=14, sub_slots=9):
+    """A random program at $2000: a main block and some subroutines, each
+    a list of instructions ending with RTS, as one list of bytes. Each
+    block's branches go within it; JSRs and JMPs (tail calls) go to the
+    subroutines."""
+    blocks = [main_slots] + [sub_slots] * subroutines
+    kinds = []          # (block, kind...)
+    for block, slots in enumerate(blocks):
+        for i in range(slots - 1):
+            r = rng.random()
+            if r < 0.22:
+                kinds.append((block, "imm", rng.choice(PROGRAM_IMMEDIATE), rng.choice([0, 1, 3, 7, 0x0f, 0x10, 0x80, 0xff, rng.randrange(256)])))
+            elif r < 0.45:
+                kinds.append((block, "implied", rng.choice(PROGRAM_IMPLIED)))
+            elif r < 0.55:
+                kinds.append((block, "zp", rng.choice(PROGRAM_ZP), 0x70 + rng.randrange(4)))
+            elif r < 0.68:
+                kinds.append((block, "branch", rng.choice(PROGRAM_BRANCHES), rng.randrange(slots)))
+            elif r < 0.80:
+                kinds.append((block, "jsr", 0x20, 1 + rng.randrange(subroutines)))
+            elif r < 0.88 and block > 0:
+                # (A tail call)
+                kinds.append((block, "jmp", 0x4c, 1 + rng.randrange(subroutines)))
+            elif r < 0.91 and block > 0:
+                # (Throwing away the return address, so the RTS returns to
+                # the caller's caller)
+                kinds.append((block, "implied", 0x68))
+                kinds.append((block, "implied", 0x68))
+            elif r < 0.95:
+                kinds.append((block, "implied", rng.choice([0x48, 0x68])))      # PHA, PLA
+            else:
+                kinds.append((block, "rts", 0x60))
+        kinds.append((block, "rts", 0x60))
+    lengths = {"imm": 2, "implied": 1, "zp": 2, "branch": 2, "jmp": 3, "jsr": 3, "rts": 1}
+    addrs = []
+    starts = {}
+    addr = 0x2000
+    index_in_block = []
+    counts = collections.Counter()
+    for k in kinds:
+        if k[0] not in starts:
+            starts[k[0]] = len(addrs)
+        index_in_block.append(counts[k[0]])
+        counts[k[0]] += 1
+        addrs.append(addr)
+        addr += lengths[k[1]]
+    program = []
+    for i, k in enumerate(kinds):
+        block, kind = k[0], k[1]
+        if kind in ("imm", "zp"):
+            program += [k[2], k[3]]
+        elif kind == "branch":
+            target = addrs[starts[block] + k[3]]
+            program += [k[2], (target - (addrs[i] + 2)) & 0xff]
+        elif kind in ("jsr", "jmp"):
+            target = addrs[starts[k[3]]]
+            program += [k[2], target & 0xff, target >> 8]
+        else:
+            program += [k[2]]
+    return program
+
+def run_with_stack(program_bytes, s, memory, steps=400):
+    """Run the program (bytes at $2000) on the simple 6502 from the state s,
+    with a stack (page 1, from $ff) and zero page 'memory'. Yields
+    (address, branch taken or None, JSR returned to or None) after each
+    instruction; for a JSR that's returned from, the third is the JSR's
+    address, with s as it is after the return."""
+    stack = [0] * 256
+    sp = 0xff
+    pc = 0x2000
+    calls = []          # (the JSR's address, SP after its push)
+    end = 0x2000 + len(program_bytes)
+    def push(v):
+        nonlocal sp
+        stack[sp] = v
+        sp = (sp - 1) & 0xff
+    def pull():
+        nonlocal sp
+        sp = (sp + 1) & 0xff
+        return stack[sp]
+    for _ in range(steps):
+        if not 0x2000 <= pc < end:
+            return
+        op = program_bytes[pc - 0x2000]
+        operand = program_bytes[pc - 0x2000 + 1] if pc + 1 < end else 0
+        here = pc
+        if op == 0x60:
+            lo = pull()
+            hi = pull()
+            pc = ((hi << 8 | lo) + 1) & 0xffff
+            # A return to a call (perhaps an outer one, if the subroutine
+            # pulled its own return address) is checked; any other RTS is a
+            # jump that py8dis can't see (to an address pushed as data), so
+            # the run stops there
+            while calls and calls[-1][1] + 2 < sp:
+                calls.pop()
+            if calls and calls[-1][1] + 2 == sp and pc == calls[-1][0] + 3:
+                yield here, None, calls.pop()[0]
+                continue
+            return
+        if op == 0x20:
+            target = operand | program_bytes[pc - 0x2000 + 2] << 8
+            ret = pc + 2
+            push(ret >> 8)
+            push(ret & 0xff)
+            calls.append((pc, sp))
+            pc = target
+            continue
+        if op == 0x48:
+            push(s['a'])
+            pc += 1
+            yield here, None, None
+            continue
+        if op == 0x68:
+            s['a'] = pull()
+            s['n'] = bool(s['a'] & 0x80)
+            s['z'] = s['a'] == 0
+            pc += 1
+            yield here, None, None
+            continue
+        if op == 0x4c:
+            pc = operand | program_bytes[pc - 0x2000 + 2] << 8
+            yield here, None, None
+            continue
+        if op in PROGRAM_BRANCHES:
+            flag, value = [(f, v) for b, f, v in BRANCHES if b == op][0]
+            taken = s[flag] != value
+            pc = (pc + 2 + (operand - 256 if operand & 0x80 else operand)) if taken else pc + 2
+            yield here, taken, None
+            continue
+        if op in (0xa5, 0xa6, 0xa4):
+            reg = {0xa5: 'a', 0xa6: 'x', 0xa4: 'y'}[op]
+            s[reg] = memory[operand]
+            s['n'] = bool(s[reg] & 0x80)
+            s['z'] = s[reg] == 0
+            pc += 2
+        elif op in (0x85, 0x86, 0x84):
+            memory[operand] = s[{0x85: 'a', 0x86: 'x', 0x84: 'y'}[op]]
+            pc += 2
+        elif op == 0x18:
+            s['c'] = False
+            pc += 1
+        elif op == 0x38:
+            s['c'] = True
+            pc += 1
+        elif op == 0xd8:
+            s['d'] = False
+            pc += 1
+        elif op == 0xea:
+            pc += 1
+        else:
+            assert step(op, operand, s)
+            pc += 2 if op in PROGRAM_IMMEDIATE else 1
+        yield here, None, None
+
+def test_sequences(rng):
+    """Each compare (and some other instructions), followed by each 6502
+    instruction tested here, then each branch, from random states: what's
+    known after the branch must be so. (So that e.g. 'cmp #n : sec : bcs'
+    is always tried: SEC changes the carry, so it no longer says anything
+    about how the register compared.)"""
+    import memorymanager
+    import session
+    s = session.new_session(assembler="acme")
+    cpu = make_cpu("6502")
+    s.cpu = cpu
+    count = 0
+    firsts = [0xc9, 0xe0, 0xc0, 0x29, 0xa9, 0x0a, 0xca]
+    middles = [op for op, name in INSTRUCTIONS if name == "6502" and op not in DECIMAL_SENSITIVE]
+    for first in firsts:
+        for middle in middles:
+            for branch in BRANCHES:
+                for trial in range(6):
+                    operands = (rng.randrange(256), rng.randrange(256))
+                    s.memory.binary[0x2000:0x2006] = [first, operands[0], middle, operands[1], branch[0], 0x0a]
+                    regs = {reg: random_known_bits(rng) for reg in "axy"}
+                    ranges = {reg: random_range(rng, regs[reg]) for reg in "axy"}
+                    flags = {flag: random_flag(rng) for flag in "nvdizc"}
+                    state = cpu.CpuState()
+                    set_disposition(state.pessimistic, regs, flags, ranges)
+                    set_disposition(state.optimistic, regs, flags, ranges)
+                    for addr in (0x2000, 0x2002, 0x2004):
+                        cpu.opcodes[s.memory.binary[addr]].update_cpu_state(memorymanager.BinaryAddr(addr), state)
+                    inputs = "%02x #%02x then %02x #%02x then branch %02x" % (first, operands[0], middle, operands[1], branch[0])
+                    for concrete in concrete_states(regs, flags, ranges, rng, 16):
+                        step(first, operands[0], concrete)
+                        step(middle, operands[1], concrete)
+                        if concrete[branch[1]] == branch[2]:
+                            if state.always_branch:
+                                fail("ALWAYS branch, but it isn't taken, for " + inputs)
+                            else:
+                                check_disposition("sequence", state.pessimistic, concrete, inputs)
+                                count += 1
+    return count
+
+# Programs for test_subroutines() that random ones rarely make: a tail
+# call to a subroutine that changes X (so X after the call isn't the
+# caller's), and a subroutine that throws away its return address (so its
+# caller's call doesn't return where the JSR is)
+#
+#   main: ldx #5 : jsr sub_a : stx $70 : ldy #9 : jsr sub_c : sty $71 :
+#         jsr sub_b : rts
+#   sub_a: lda #1 : jmp sub_b
+#   sub_b: ldx #7 : rts
+#   sub_c: jsr sub_d : ldy #2 : rts
+#   sub_d: pla : pla : ldy #3 : rts
+FIXED_PROGRAMS = ["a2052012208670a009201a20847120172060a9014c1720a20760202020a002606868a00360"]
+
+def test_subroutines(rng, programs=200):
+    import commands
+    import os
+    import session
+    import tempfile
+    count = 0
+    for n in range(len(FIXED_PROGRAMS) + programs):
+        if n < len(FIXED_PROGRAMS):
+            program_bytes = list(bytes.fromhex(FIXED_PROGRAMS[n]))
+        else:
+            program_bytes = random_program_with_subroutines(rng)
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+            f.write(bytes(program_bytes))
+            filename = f.name
+        try:
+            session.new_session(assembler="acme")
+            commands.load(0x2000, filename, "6502")
+            commands.entry(0x2000)
+            cpu = session.current().cpu
+            cpu.trace()
+        finally:
+            os.unlink(filename)
+        inputs = "program %d (%s)" % (n, " ".join("%02x" % b for b in program_bytes))
+        for trial in range(30):
+            s = {reg: rng.randrange(256) for reg in "axy"}
+            for flag in "nvizc":
+                s[flag] = rng.choice([False, True])
+            s['d'] = False
+            memory = [rng.randrange(256) for _ in range(256)]
+            for here, taken, returned in run_with_stack(program_bytes, s, memory):
+                if returned is not None:
+                    # The state after the JSR, now that the call has returned
+                    state = cpu.cpu_states[returned]
+                    if state is not None:
+                        check_disposition("after the call", state.pessimistic, s, "JSR at $%04x in %s" % (returned, inputs))
+                        count += 1
+                    continue
+                state = cpu.cpu_states[here]
+                if state is None:
+                    continue
+                c = cpu.opcodes.get(program_bytes[here - 0x2000])
+                if c is not None and c.mnemonic.lower() in ("rts", "jsr"):
+                    continue
+                if taken is False and state.always_branch:
+                    fail("ALWAYS branch, but it isn't taken, at $%04x in %s" % (here, inputs))
+                if not taken and not state.always_branch:
+                    check_disposition("subroutines", state.pessimistic, s, "$%04x in %s" % (here, inputs))
+                    count += 1
+    return count
+
+
 def main():
     rng = random.Random(6502)
     test_knownbits(rng)
     test_precision()
     count = test_cpu_state(rng)
     count += test_joining(rng)
+    count += test_sequences(rng)
+    count += test_subroutines(rng)
     if failures:
         print("%d failed" % len(failures))
         sys.exit(1)
